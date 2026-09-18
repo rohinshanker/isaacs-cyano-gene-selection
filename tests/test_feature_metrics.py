@@ -13,8 +13,10 @@ from build_features import (
     add_context,
     cds_segments,
     circular_slice,
+    codon_occurrences,
     effective_anticodon,
     exclusion_reason,
+    expression_proxy_scores,
     expression_percentiles,
     gene_pair_metrics,
     is_cai_reference,
@@ -223,13 +225,37 @@ def test_expression_loader_is_generic_and_percentiles_handle_ties(tmp_path):
         "c\t20\ts3\n",
         encoding="utf-8",
     )
-    values = load_expression(tmp_path)
+    values, source_id = load_expression(tmp_path)
     assert values == {"a": 10.0, "b": 20.0, "c": 20.0}
+    assert source_id == "replacement"
     assert expression_percentiles(values) == {
         "a": pytest.approx(1 / 3),
         "b": pytest.approx(5 / 6),
         "c": pytest.approx(5 / 6),
     }
+
+
+def test_expression_proxy_is_a_tie_aware_zero_to_one_cai_tai_rank():
+    genes = [
+        {"id": "low", "cai": 0.25, "tai": 0.25},
+        {"id": "middle-a", "cai": 0.5, "tai": 0.5},
+        {"id": "middle-b", "cai": 1.0, "tai": 0.25},
+        {"id": "high", "cai": 1.0, "tai": 1.0},
+    ]
+    assert expression_proxy_scores(genes) == {
+        "low": 0.0,
+        "middle-a": pytest.approx(0.5),
+        "middle-b": pytest.approx(0.5),
+        "high": 1.0,
+    }
+
+
+def test_codon_occurrences_exclude_only_position_zero_from_editable_counts():
+    counts = codon_occurrences(["GTGTTGTAA", "TTGGTGTAG"])
+    assert counts["GTG"] == {"total": 2, "editable": 1}
+    assert counts["TTG"] == {"total": 2, "editable": 1}
+    assert counts["TAA"] == {"total": 1, "editable": 1}
+    assert counts["TAG"] == {"total": 1, "editable": 1}
 
 
 def test_inclusion_reasons_cover_every_contract_branch():

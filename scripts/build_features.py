@@ -46,6 +46,7 @@ S_VALUES = {
     "L:A": 0.89,
 }
 LYSIDINE_TRNA = ("Ile", "CAT")
+MISSING_POLICY = "null renders as unknown, never as zero or median"
 REFERENCE_PATTERNS = (
     "translation elongation factor",
     "translation initiation factor",
@@ -54,6 +55,51 @@ REFERENCE_PATTERNS = (
     "dna-directed rna polymerase subunit",
     "atp synthase subunit",
 )
+
+METRIC_DEFINITIONS = {
+    "gc": "Fraction of G or C bases across the sense CDS, excluding the terminal stop; ranges from 0 to 1 and is computed from the RefSeq coding sequence.",
+    "gc1": "Fraction of sense codons with G or C at codon position 1; ranges from 0 to 1, excludes the terminal stop, and is computed from the RefSeq coding sequence.",
+    "gc2": "Fraction of sense codons with G or C at codon position 2; ranges from 0 to 1, excludes the terminal stop, and is computed from the RefSeq coding sequence.",
+    "gc3": "Fraction of sense codons with G or C at codon position 3; ranges from 0 to 1, excludes the terminal stop, and includes Met and Trp sites unlike the GC3s value used for expected ENC.",
+    "a3": "Fraction of sense codons with A at codon position 3; ranges from 0 to 1, excludes the terminal stop, and is computed from the RefSeq coding sequence.",
+    "t3": "Fraction of sense codons with T at codon position 3; ranges from 0 to 1, excludes the terminal stop, and is computed from the RefSeq coding sequence.",
+    "g3": "Fraction of sense codons with G at codon position 3; ranges from 0 to 1, excludes the terminal stop, and is computed from the RefSeq coding sequence.",
+    "c3": "Fraction of sense codons with C at codon position 3; ranges from 0 to 1, excludes the terminal stop, and is computed from the RefSeq coding sequence.",
+    "enc": "Effective number of codons (Wright 1990), ranging from 20 for maximal synonymous concentration to 61 for equal synonymous use. Families observed fewer than twice use a degeneracy-class estimate; 1,446 of 2,715 genes (53%) require at least one such substitution, flagged by encHasSubstitutedFamilies.",
+    "encExpected": "Expected effective number of codons on Wright's neutral curve, ranging from 20 to 61 and calculated from GC3 at synonymous sites after excluding Met and Trp; it is a compositional expectation, not a measured optimum.",
+    "deltaEnc": "Expected ENC minus observed ENC, in codons and centred on zero; positive values mean more codon concentration than the GC3s neutral curve predicts, subject to the ENC family-substitution caveat.",
+    "cai": "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and calculated against the 71-gene ribosomal-plus-housekeeping reference set; zero reference counts receive a 0.5 pseudocount and Met and Trp are excluded.",
+    "tai": "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and derived from this genome's tRNA gene copies with bacterial wobble penalties; TTA has no cognate tRNA and uses the geometric mean of non-zero codon weights.",
+    "expression": "DESeq2-normalized transcript count measured in S. elongatus PCC 7942 WT fresh BG-11 on day 1; non-negative and null for genes without a mapped measurement. It is from another strain and an unusual biofilm-study condition, so use it only as a rough overlay.",
+    "expressionPercentile": "Average-rank percentile of the measured PCC 7942 expression values, in (0, 1]; null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
+    "rareFraction": "Fraction of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to 1 and treats an alternative start codon as translated methionine.",
+    "rareCount": "Number of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to the gene's sense-codon length and excludes the terminal stop.",
+    "longestRareRun": "Longest consecutive run of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to the gene's sense-codon length.",
+    "rampRareCount": "Count of rare codons in the first 50 sense codons, or the whole gene when shorter; ranges from 0 to min(50, protein length) and uses the genome-wide 0.1 frequency threshold.",
+    "minLocalTai": "Minimum mean tRNA-adaptation weight across all sliding 9-codon windows, shortened to the whole gene when necessary; ranges from 0 to 1 and inherits the tAI TTA substitution caveat.",
+    "cps": "Mean Coleman-style codon-pair log odds over adjacent sense-codon pairs; signed around zero and estimated from this genome after conditioning on the encoded amino-acid pair, with a 0.5 pseudocount.",
+    "underrepresentedPairFraction": "Fraction of adjacent sense-codon pairs with a negative genome-derived codon-pair log-odds score; ranges from 0 to 1 and is zero for genes with no pair.",
+    "mfeStart": "Minimum folding free energy for the genomic RNA window from 30 nt upstream through 60 nt downstream of the translation start; reported in kcal/mol by ViennaRNA and includes flanking sequence rather than only the CDS.",
+    "mfeFirst100": "Minimum folding free energy of the first 100 nt of the CDS, or the entire CDS when shorter; reported in kcal/mol by ViennaRNA and computed on the fixed wild-type window.",
+    "minLocalGc": "Minimum GC fraction across all sliding 30-nt CDS windows, shortened to the whole CDS when necessary; ranges from 0 to 1 and includes the terminal stop when it falls in a window.",
+    "maxLocalGc": "Maximum GC fraction across all sliding 30-nt CDS windows, shortened to the whole CDS when necessary; ranges from 0 to 1 and includes the terminal stop when it falls in a window.",
+    "gc5prime": "GC fraction in the first 30 nt of the CDS, or the whole CDS when shorter; ranges from 0 to 1 and uses the fixed 5-prime window.",
+    "lengthNt": "Annotated CDS length in nucleotides, including the terminal stop and summing joined CDS segments rather than the outer genomic span.",
+    "lengthCodons": "Number of sense codons in the CDS, excluding the terminal stop; this is the denominator for target fractions and targets per kilobase.",
+    "neighborUpstreamNt": "Strand-aware distance in nucleotides from the CDS to its upstream coding neighbor on the circular replicon; negative values denote overlap and null is never coerced to zero.",
+    "neighborDownstreamNt": "Strand-aware distance in nucleotides from the CDS to its downstream coding neighbor on the circular replicon; negative values denote overlap and null is never coerced to zero.",
+    "operonPosition": "One-based transcription-order position within a predicted same-strand operon; null for singleton genes. Operons are inferred from adjacent CDSs separated by at most 100 nt, not measured experimentally.",
+    "operonSize": "Number of genes in the predicted same-strand operon; at least 1. Operons are inferred from adjacent CDSs separated by at most 100 nt, not measured experimentally.",
+}
+
+DIVERGING_METRICS = {
+    "deltaEnc",
+    "cps",
+    "mfeStart",
+    "mfeFirst100",
+    "neighborUpstreamNt",
+    "neighborDownstreamNt",
+}
 
 
 def is_cai_reference(product: str) -> bool:
@@ -172,8 +218,8 @@ def verified_trna_species(path: Path) -> dict[tuple[str, str], int]:
         }
 
 
-def load_expression(directory: Path) -> dict[str, float]:
-    """Loads the single generic three-column expression table in a directory."""
+def load_expression(directory: Path) -> tuple[dict[str, float], str]:
+    """Loads one generic expression table and derives its dataset identifier."""
     tables = sorted(directory.glob("*.tsv"))
     if len(tables) != 1:
         raise ValueError(
@@ -183,7 +229,10 @@ def load_expression(directory: Path) -> dict[str, float]:
         rows = csv.DictReader(handle, delimiter="\t")
         if rows.fieldnames != ["locus_tag", "abundance", "source_gene_id"]:
             raise ValueError(f"Unexpected expression columns: {rows.fieldnames}")
-        return {row["locus_tag"]: float(row["abundance"]) for row in rows}
+        values = {row["locus_tag"]: float(row["abundance"]) for row in rows}
+    source_id = tables[0].stem.split("_", 1)[0]
+    require(bool(source_id), f"Cannot derive an expression source ID from {tables[0].name}")
+    return values, source_id
 
 
 def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
@@ -200,6 +249,47 @@ def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
             result[locus] = average_rank / len(ordered)
         start = end
     return result
+
+
+def zero_one_ranks(values: Mapping[str, float]) -> dict[str, float]:
+    """Returns tie-aware average ranks scaled to the closed interval [0, 1]."""
+    ordered = sorted(values.items(), key=lambda item: item[1])
+    if len(ordered) == 1:
+        return {ordered[0][0]: 0.5}
+    result = {}
+    start = 0
+    while start < len(ordered):
+        end = start + 1
+        while end < len(ordered) and ordered[end][1] == ordered[start][1]:
+            end += 1
+        average_zero_based_rank = (start + end - 1) / 2
+        for key, _ in ordered[start:end]:
+            result[key] = average_zero_based_rank / (len(ordered) - 1)
+        start = end
+    return result
+
+
+def expression_proxy_scores(genes: Iterable[Mapping[str, Any]]) -> dict[str, float]:
+    """Ranks the geometric mean of each gene's CAI and tAI on [0, 1]."""
+    combined = {
+        gene["id"]: math.sqrt(gene["cai"] * gene["tai"])
+        for gene in genes
+    }
+    return zero_one_ranks(combined)
+
+
+def codon_occurrences(sequences: Iterable[str]) -> dict[str, dict[str, int]]:
+    """Counts literal codons in total and after excluding initiation position zero."""
+    total: collections.Counter[str] = collections.Counter()
+    editable: collections.Counter[str] = collections.Counter()
+    for sequence in sequences:
+        codons = fm.split_codons(sequence, remove_stop=False)
+        total.update(codons)
+        editable.update(codons[1:])
+    return {
+        codon: {"total": total[codon], "editable": editable[codon]}
+        for codon in fm.CODONS
+    }
 
 
 def fasta_dict(path: Path) -> dict[str, str]:
@@ -521,14 +611,11 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
     )
 
-    expression = load_expression(repository / "data/expression")
+    expression, expression_source_id = load_expression(repository / "data/expression")
     percentiles = expression_percentiles(expression)
-    require(
-        len(expression) == 2551,
-        f"Expression table has {len(expression)} rows; expected 2,551",
-    )
 
     sequences = [gene["sequence"] for gene in included]
+    occurrences = codon_occurrences(sequences)
     counts, frequencies = codon_frequencies(sequences)
     counts.update(terminal_stops)
     references = [
@@ -572,6 +659,9 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values["tai"] = fm.trna_adaptation_index(sequence, tai)
         values["expression"] = expression.get(source["id"])
         values["expressionPercentile"] = percentiles.get(source["id"])
+        values["expressionSourceId"] = (
+            expression_source_id if values["expression"] is not None else None
+        )
         values.update(fm.rare_codon_metrics(sequence, frequencies, tai, RARE_THRESHOLD))
         values.update(gene_pair_metrics(sequence, pairs))
         values["mfeStart"] = RNA.fold(start_window(source, genomes[source["seqid"]]))[1]
@@ -587,6 +677,12 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values["_contextStart"] = source["_contextStart"]
         values["_contextEnd"] = source["_contextEnd"]
         genes.append(values)
+    proxy_scores = expression_proxy_scores(genes)
+    for gene in genes:
+        gene["expressionProxy"] = proxy_scores[gene["id"]]
+        gene["expressionBasis"] = (
+            "measured" if gene["expression"] is not None else "proxy"
+        )
     add_context(genes, {seqid: len(sequence) for seqid, sequence in genomes.items()})
     for gene in genes:
         del gene["_contextStart"]
@@ -678,6 +774,7 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
             {"sym": symbol, "codon": codon, "aa": fm.AA_BY_CODON[codon]}
             for symbol, codon in zip(fm.SYMBOLS, fm.CODONS, strict=True)
         ],
+        "codonOccurrences": occurrences,
         "rscuOrder": list(fm.RSCU_ORDER),
         "defaultReplacement": replacement_map(counts),
         "highExpressedReplacement": replacement_map(reference_counts),
@@ -704,7 +801,7 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
             ),
         },
         "expressionSource": {
-            "accession": "GSE205444",
+            "accession": expression_source_id,
             "organismMeasured": "Synechococcus elongatus PCC 7942",
             "isTargetOrganism": False,
             "condition": "WT, fresh BG-11, day 1, mean of 3 replicates",
@@ -715,6 +812,17 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
                 "Use as a rough guide only."
             ),
             "provenanceDoc": "data/expression/PROVENANCE.md",
+        },
+        "expressionProxy": {
+            "method": (
+                "tie-aware average rank of sqrt(CAI * tAI), scaled across all genes "
+                "to the closed interval [0, 1]"
+            ),
+            "range": [0, 1],
+            "meaning": (
+                "codon-adaptation proxy rank, not transcript or protein abundance"
+            ),
+            "coverage": {"withValue": len(genes), "total": len(genes)},
         },
         "rareCodonThreshold": RARE_THRESHOLD,
         "umap": {"seed": UMAP_SEED, "features": risk_fields},
@@ -729,7 +837,14 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         "encExpectedGc3Convention": "GC3s over synonymous sites, excluding Met and Trp",
         "rscuAbsentFamilyConvention": "zero for every codon in an absent amino-acid family",
         "metrics": {
-            key: {"label": label, "unit": unit, "desc": label}
+            key: {
+                "label": label,
+                "unit": unit,
+                "desc": METRIC_DEFINITIONS[key],
+                "scale": "diverging" if key in DIVERGING_METRICS else "sequential",
+                "missingPolicy": MISSING_POLICY,
+                "direction": "contextual",
+            }
             for key, (label, unit) in metric_labels.items()
         },
     }
