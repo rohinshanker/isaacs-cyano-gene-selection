@@ -32,6 +32,33 @@ protein loci remain correctly excluded. There is still no public tidy per-gene
 UTEX 2973 abundance matrix; PRJNA420395 provides the biologically matched raw
 dRNA-seq/TSS resources and would require a separate quantification workflow.
 
+### Coordinator disposition of the blocking findings, 2026-09-18
+
+| # | Finding | Status |
+| --- | --- | --- |
+| 1 | Terminal stop not recoverable | **Fixed** in contract `138508e`. `terminalStop`, `translationalException`, and `cdsSegments` added, with denominator and position-zero rules stated. Both agents notified mid-run. |
+| 2 | Validator's protein check was fake | **Fixed** in `d612b69`. Real translation against `protein_id`, plus an assertion that the four dual-locus proteins appear for both loci. All 2,715 genes pass. |
+| 3 | Contiguity assertion wrong for `prfB` | **Fixed** in `7ec46af`. The three spliced CDSs are exempted and named. |
+| 4 | Contract said 2,711 and used an excluded pseudogene as its example | **Fixed** in `138508e`. Corrected to 2,715 and to `M744_RS11720` (`rpsL`) with measured values. |
+| 5 | Pages workflow had no gate | **Fixed** in `d612b69`. Deployment now needs genome checksum verification, an explicit organism-identity check, contract validation, and the test suite. |
+
+**One claim in this ticket is incorrect and is corrected here.** The section above
+states that the current PCC 7942 GFF carries `Synpcc7942_####` old locus tags and
+that `data/expression/PROVENANCE.md` was therefore stale. That was checked directly
+against three annotations:
+
+| Annotation | CDS locus tag form | `old_locus_tag` |
+| --- | --- | --- |
+| `GCF_000012525.1` RefSeq | `SYNPCC7942_RS#####` | none |
+| `GCF_030544905.1` RefSeq | `QY054_RS#####` | none |
+| `GCA_000012525.1` GenBank | `Synpcc7942_####` | none |
+
+No RefSeq annotation carries those tags. They are the **GenBank record's primary
+locus tags**, so the bridge is GenBank-to-RefSeq by genomic coordinate, not an
+`old_locus_tag` lookup. The provenance doc was right and has been expanded with the
+verified route and an independent reproduction: 2,231 of 2,551 mappings confirmed,
+zero contradictions.
+
 ### Blocking review findings
 
 1. The data contract removes each terminal stop from `genes.json.codons` while
