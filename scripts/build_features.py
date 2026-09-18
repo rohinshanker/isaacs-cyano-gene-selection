@@ -130,10 +130,19 @@ def parse_gff(
                         "gene_biotype", "protein_coding"
                     )
                     == "protein_coding",
+                    "translationalException": (
+                        attributes["exception"].replace(" ", "_")
+                        if "exception" in attributes
+                        else None
+                    ),
                 },
             )
             entry["start"] = min(entry["start"], start_i)
             entry["end"] = max(entry["end"], end_i)
+            if attributes.get("exception"):
+                entry["translationalException"] = attributes["exception"].replace(
+                    " ", "_"
+                )
     return cds, dict(anticodons), dict(trna_species)
 
 
@@ -194,6 +203,16 @@ def cds_records(path: Path) -> list[dict[str, str]]:
     return records
 
 
+def cds_segments(location: str) -> list[list[int]] | None:
+    """Returns explicit one-based closed segments for a joined CDS location."""
+    if "join(" not in location:
+        return None
+    return [
+        [int(start), int(end)]
+        for start, end in re.findall(r"(\d+)\.\.(\d+)", location)
+    ]
+
+
 def exclusion_reason(sequence: str, annotation: Mapping[str, Any]) -> str | None:
     """Returns the first failed frozen-contract inclusion condition."""
     if set(sequence) - set("ACGT"):
@@ -228,7 +247,9 @@ def start_window(annotation: Mapping[str, Any], genome: str) -> str:
 
 def codon_frequencies(sequences: Iterable[str]) -> tuple[collections.Counter, dict[str, float]]:
     """Returns counts and within-amino-acid codon frequencies."""
-    counts = collections.Counter(c for sequence in sequences for c in fm.split_codons(sequence))
+    counts = collections.Counter(
+        codon for sequence in sequences for codon in fm.translated_codons(sequence)
+    )
     frequencies = {}
     for family in fm.SYNONYMS.values():
         total = sum(counts[codon] for codon in family)
@@ -260,7 +281,7 @@ def pair_scores(sequences: Iterable[str]) -> dict[tuple[str, str], float]:
     pair_counts: collections.Counter[tuple[str, str]] = collections.Counter()
     aa_pair_counts: collections.Counter[tuple[str, str]] = collections.Counter()
     for sequence in sequences:
-        codons = fm.split_codons(sequence)
+        codons = fm.translated_codons(sequence)
         codon_counts.update(codons)
         aa_counts.update(fm.AA_BY_CODON[c] for c in codons)
         pair_counts.update(zip(codons, codons[1:]))
@@ -286,7 +307,7 @@ def pair_scores(sequences: Iterable[str]) -> dict[tuple[str, str], float]:
 
 def gene_pair_metrics(sequence: str, scores: Mapping[tuple[str, str], float]) -> dict[str, float]:
     """Summarizes codon-pair scores for a gene."""
-    codons = fm.split_codons(sequence)
+    codons = fm.translated_codons(sequence)
     values = [scores[pair] for pair in zip(codons, codons[1:])]
     return {
         "cps": sum(values) / len(values) if values else 0.0,
@@ -400,9 +421,17 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         if reason:
             excluded.append({"id": locus, "reason": reason, "lengthNt": len(sequence)})
         else:
-            included.append({**annotation, "sequence": sequence})
+            included.append(
+                {
+                    **annotation,
+                    "sequence": sequence,
+                    "cdsSegments": cds_segments(record.get("location", "")),
+                }
+            )
     assert len(included) + len(excluded) == 2722
     assert len(included) == 2715
+    terminal_stops = collections.Counter(gene["sequence"][-3:] for gene in included)
+    assert terminal_stops == {"TAG": 1071, "TAA": 895, "TGA": 749}
 
     expression = load_expression(repository / "data/expression")
     percentiles = expression_percentiles(expression)
@@ -425,8 +454,19 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
     genes = []
     for source in included:
         sequence = source["sequence"]
-        identity_fields = ("id", "name", "product", "seqid", "start", "end", "strand")
+        identity_fields = (
+            "id",
+            "name",
+            "product",
+            "seqid",
+            "start",
+            "end",
+            "strand",
+            "translationalException",
+            "cdsSegments",
+        )
         values: dict[str, Any] = {key: source[key] for key in identity_fields}
+        values["terminalStop"] = sequence[-3:]
         values.update(fm.composition(sequence))
         values["enc"] = fm.effective_number_of_codons(sequence)
         values["encExpected"] = fm.expected_enc(values["gc3"])
@@ -442,6 +482,7 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values.update(fm.local_gc(sequence))
         values["rscu"] = fm.rscu(sequence)
         values["codons"] = fm.pack_codons(sequence)
+        assert fm.unpack_codons(values["codons"]) + values["terminalStop"] == sequence
         genes.append(values)
     add_context(genes)
 

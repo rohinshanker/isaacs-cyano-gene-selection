@@ -11,6 +11,7 @@ import feature_metrics as fm
 from build_features import (
     S_VALUES,
     add_context,
+    cds_segments,
     circular_slice,
     effective_anticodon,
     exclusion_reason,
@@ -30,6 +31,24 @@ def test_contract_alphabet_and_packing_round_trip():
     assert fm.unpack_codons("AG/") == "TTTTCAGGG"
 
 
+def test_alternative_start_is_methionine_for_translation_metrics():
+    sequence = "GTGGTTTAA"
+    assert fm.translated_codons(sequence) == ["ATG", "GTT"]
+
+    rscu = dict(zip(fm.RSCU_ORDER, fm.rscu(sequence), strict=True))
+    assert rscu["GTT"] == 4.0
+    assert rscu["GTG"] == 0.0
+
+    cai_weights = {codon: 1.0 for codon in fm.SENSE_CODONS}
+    cai_weights["GTG"] = 0.01
+    assert fm.codon_adaptation_index(sequence, cai_weights) == 1.0
+
+    tai_weights = {codon: 1.0 for codon in fm.SENSE_CODONS}
+    tai_weights.update(ATG=0.25, GTG=0.01)
+    assert fm.trna_adaptation_index(sequence, tai_weights) == pytest.approx(0.5)
+    assert gene_pair_metrics(sequence, {("ATG", "GTT"): 2.0})["cps"] == 2.0
+
+
 def test_composition_is_hand_computed():
     values = fm.composition("ATGGCTTAA")
     assert values["lengthNt"] == 9
@@ -45,7 +64,7 @@ def test_composition_is_hand_computed():
 
 
 def test_rscu_and_absent_amino_acid_are_hand_computed():
-    values = dict(zip(fm.RSCU_ORDER, fm.rscu("TTTTTCTTCTAA"), strict=True))
+    values = dict(zip(fm.RSCU_ORDER, fm.rscu("ATGTTTTTCTTCTAA"), strict=True))
     assert values["TTT"] == pytest.approx(2 / 3)
     assert values["TTC"] == pytest.approx(4 / 3)
     assert values["TTA"] == 0
@@ -60,10 +79,10 @@ def test_enc_edge_cases_and_expected_curve():
 
 
 def test_cai_zero_adjustment_and_single_codon_gene():
-    weights = fm.cai_weights(["TTTTTTTAA"])
+    weights = fm.cai_weights(["ATGTTTTTTTAA"])
     assert weights["TTT"] == 1.0
     assert weights["TTC"] == pytest.approx(0.25)
-    assert fm.codon_adaptation_index("TTCTAA", weights) == pytest.approx(0.25)
+    assert fm.codon_adaptation_index("ATGTTCTAA", weights) == pytest.approx(0.25)
     assert fm.codon_adaptation_index("ATGTAA", weights) == 1.0
 
 
@@ -74,7 +93,9 @@ def test_tai_watson_crick_wobble_and_geometric_mean():
     assert fm.trna_adaptiveness("TTT", {"GAA": 2}, s_values) == pytest.approx(1.2)
     weights = {codon: 1.0 for codon in fm.SENSE_CODONS}
     weights.update(TTT=0.25, TTC=1.0)
-    assert fm.trna_adaptation_index("TTTTTCTAA", weights) == pytest.approx(0.5)
+    assert fm.trna_adaptation_index("ATGTTTTTCTAA", weights) == pytest.approx(
+        0.25 ** (1 / 3)
+    )
     assert fm.trna_adaptiveness("ATA", {"LAT": 1}, {"L:A": 0.89}) == pytest.approx(0.11)
 
 
@@ -93,13 +114,13 @@ def test_rare_features_include_ramp_run_and_short_local_window():
     frequencies.update(TTT=0.05, TTC=0.05)
     tai = {codon: 1.0 for codon in fm.SENSE_CODONS}
     tai.update(TTT=0.2, TTC=0.4)
-    values = fm.rare_codon_metrics("TTTTTCGCTTAA", frequencies, tai)
+    values = fm.rare_codon_metrics("ATGTTTTTCGCTTAA", frequencies, tai)
     assert values == {
-        "rareFraction": 2 / 3,
+        "rareFraction": 2 / 4,
         "rareCount": 2,
         "longestRareRun": 2,
         "rampRareCount": 2,
-        "minLocalTai": pytest.approx((0.2 + 0.4 + 1) / 3),
+        "minLocalTai": pytest.approx((1 + 0.2 + 0.4 + 1) / 4),
     }
 
 
@@ -111,16 +132,20 @@ def test_local_gc_is_hand_computed():
 
 
 def test_pair_summary_and_single_codon_edge_case():
-    scores = {("TTT", "TTC"): -1.0, ("TTC", "TTT"): 1.0}
-    assert gene_pair_metrics("TTTTTCTTTTAA", scores) == {
+    scores = {
+        ("ATG", "TTT"): 0.0,
+        ("TTT", "TTC"): -1.0,
+        ("TTC", "TTT"): 1.0,
+    }
+    assert gene_pair_metrics("ATGTTTTTCTTTTAA", scores) == {
         "cps": 0.0,
-        "underrepresentedPairFraction": 0.5,
+        "underrepresentedPairFraction": 1 / 3,
     }
     assert gene_pair_metrics("ATGTAA", {}) == {"cps": 0.0, "underrepresentedPairFraction": 0.0}
 
 
 def test_pair_scores_and_replacements_are_deterministic():
-    scores = pair_scores(["TTTTTCTAA"])
+    scores = pair_scores(["ATGTTTTTCTAA"])
     assert scores[("TTT", "TTC")] == pytest.approx(math.log(1.5 / 0.75))
     replacements = replacement_map({"TTT": 1, "TTC": 3})
     assert replacements["TTT"] == "TTC"
@@ -132,6 +157,18 @@ def test_attributes_decode_gff_escaping():
         "product": "alpha subunit",
         "locus_tag": "X",
     }
+
+
+def test_joined_cds_segments_preserve_location_order():
+    assert cds_segments("join(169621..169692,169694..170743)") == [
+        [169621, 169692],
+        [169694, 170743],
+    ]
+    assert cds_segments("complement(join(45877..46366,1..2510))") == [
+        [45877, 46366],
+        [1, 2510],
+    ]
+    assert cds_segments("2370396..2370770") is None
 
 
 def test_expression_loader_is_generic_and_percentiles_handle_ties(tmp_path):

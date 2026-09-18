@@ -36,6 +36,19 @@ def split_codons(sequence: str, remove_stop: bool = True) -> list[str]:
     return codons
 
 
+def translated_codons(sequence: str) -> list[str]:
+    """Returns sense codons with the initiator represented as methionine.
+
+    Bacterial alternative starts still translate as methionine at position zero.
+    Codon-usage metrics must therefore not assign a literal GTG, TTG, ATC, CTG,
+    or ATT start to its standard internal amino-acid family.
+    """
+    codons = split_codons(sequence)
+    if codons:
+        codons[0] = "ATG"
+    return codons
+
+
 def composition(sequence: str) -> dict[str, float | int]:
     """Returns length and whole-sequence/codon-position composition."""
     codons = split_codons(sequence)
@@ -63,7 +76,7 @@ def composition(sequence: str) -> dict[str, float | int]:
 
 def rscu(sequence: str) -> list[float]:
     """Returns 59 RSCU values; absent amino-acid families are all zero."""
-    counts = collections.Counter(split_codons(sequence))
+    counts = collections.Counter(translated_codons(sequence))
     values = {}
     for family in SYNONYMS.values():
         total = sum(counts[codon] for codon in family)
@@ -89,7 +102,7 @@ def effective_number_of_codons(sequence: str) -> float:
     A degeneracy class with no represented amino acid contributes its neutral
     maximum (F=1/k). This avoids NaN while preserving the 20..61 ENC range.
     """
-    counts = collections.Counter(split_codons(sequence))
+    counts = collections.Counter(translated_codons(sequence))
     class_sizes = {2: 9, 3: 1, 4: 5, 6: 3}
     result = 2.0  # Met and Trp.
     for degeneracy, number_of_families in class_sizes.items():
@@ -113,7 +126,7 @@ def expected_enc(gc3: float) -> float:
 def cai_weights(reference_sequences: Iterable[str]) -> dict[str, float]:
     """Builds Sharp-Li relative adaptiveness weights with a 0.5 pseudocount."""
     counts = collections.Counter(
-        codon for sequence in reference_sequences for codon in split_codons(sequence)
+        codon for sequence in reference_sequences for codon in translated_codons(sequence)
     )
     weights = {}
     for family in SYNONYMS.values():
@@ -125,7 +138,11 @@ def cai_weights(reference_sequences: Iterable[str]) -> dict[str, float]:
 
 def codon_adaptation_index(sequence: str, weights: Mapping[str, float]) -> float:
     """Returns CAI, excluding the non-degenerate Met and Trp codons."""
-    codons = [c for c in split_codons(sequence) if AA_BY_CODON[c] not in {"M", "W"}]
+    codons = [
+        codon
+        for codon in translated_codons(sequence)
+        if AA_BY_CODON[codon] not in {"M", "W"}
+    ]
     if not codons:
         return 1.0
     return math.exp(sum(math.log(weights[codon]) for codon in codons) / len(codons))
@@ -172,7 +189,7 @@ def tai_weights(
 
 def trna_adaptation_index(sequence: str, weights: Mapping[str, float]) -> float:
     """Returns the geometric mean relative tRNA adaptiveness."""
-    codons = split_codons(sequence)
+    codons = translated_codons(sequence)
     if not codons:
         return 1.0
     return math.exp(sum(math.log(weights[codon]) for codon in codons) / len(codons))
@@ -186,7 +203,7 @@ def rare_codon_metrics(
     local_window: int = 9,
 ) -> dict[str, float | int]:
     """Returns target-independent rare-codon and local-tAI features."""
-    codons = split_codons(sequence)
+    codons = translated_codons(sequence)
     rare = [frequencies.get(codon, 0.0) < threshold for codon in codons]
     longest = current = 0
     for value in rare:

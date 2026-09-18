@@ -51,9 +51,17 @@ def _proteins(raw_dir: Path) -> dict[str, str]:
         return {record.id: str(record.seq).rstrip("*") for record in SeqIO.parse(handle, "fasta")}
 
 
+def _translated_codons(sequence: str) -> list[str]:
+    """Splits a CDS and represents its bacterial initiator as methionine."""
+    codons = [sequence[index : index + 3] for index in range(0, len(sequence) - 3, 3)]
+    if codons:
+        codons[0] = "ATG"
+    return codons
+
+
 def independent_rscu(sequence: str) -> list[float]:
     """Computes RSCU directly from the definition, independently of the pipeline."""
-    codons = [sequence[index : index + 3] for index in range(0, len(sequence) - 3, 3)]
+    codons = _translated_codons(sequence)
     counts = collections.Counter(codons)
     result = []
     for codon in fm.RSCU_ORDER:
@@ -66,7 +74,7 @@ def independent_rscu(sequence: str) -> list[float]:
 
 def independent_enc(sequence: str) -> float:
     """Reimplements Wright 1990 from family counts without pipeline helpers."""
-    codons = [sequence[index : index + 3] for index in range(0, len(sequence) - 3, 3)]
+    codons = _translated_codons(sequence)
     counts = collections.Counter(codons)
     families = collections.defaultdict(list)
     for codon, amino_acid in TABLE.forward_table.items():
@@ -91,9 +99,9 @@ def independent_enc(sequence: str) -> float:
 def independent_cai_weights(sequences: list[str]) -> dict[str, float]:
     """Computes Sharp-Li weights from raw reference sequences."""
     counts = collections.Counter(
-        sequence[index : index + 3]
+        codon
         for sequence in sequences
-        for index in range(0, len(sequence) - 3, 3)
+        for codon in _translated_codons(sequence)
     )
     families = collections.defaultdict(list)
     for codon, amino_acid in TABLE.forward_table.items():
@@ -109,9 +117,9 @@ def independent_cai_weights(sequences: list[str]) -> dict[str, float]:
 def independent_cai(sequence: str, weights: dict[str, float]) -> float:
     """Computes CAI from its log-geometric-mean definition."""
     codons = [
-        sequence[index : index + 3]
-        for index in range(0, len(sequence) - 3, 3)
-        if TABLE.forward_table[sequence[index : index + 3]] not in {"M", "W"}
+        codon
+        for codon in _translated_codons(sequence)
+        if TABLE.forward_table[codon] not in {"M", "W"}
     ]
     if not codons:
         return 1.0
@@ -159,7 +167,7 @@ def independent_tai_weights(data_dir: Path) -> dict[str, float]:
 
 def independent_tai(sequence: str, weights: dict[str, float]) -> float:
     """Computes the gene tAI geometric mean from independent weights."""
-    codons = [sequence[index : index + 3] for index in range(0, len(sequence) - 3, 3)]
+    codons = _translated_codons(sequence)
     return math.exp(sum(math.log(weights[codon]) for codon in codons) / len(codons))
 
 
@@ -170,12 +178,18 @@ def validate(raw_dir: Path, data_dir: Path, sample_size: int = 30) -> dict[str, 
     excluded = json.loads((data_dir / "excluded.json").read_text())
     raw = _raw_records(raw_dir)
     proteins = _proteins(raw_dir)
+    terminal_stops: collections.Counter[str] = collections.Counter()
+    reconstructed = 0
     for gene in genes:
         source = raw[gene["id"]]
-        assert fm.unpack_codons(gene["codons"]) == source["sequence"][:-3]
+        full_cds = fm.unpack_codons(gene["codons"]) + gene["terminalStop"]
+        assert full_cds == source["sequence"]
+        reconstructed += 1
+        terminal_stops[gene["terminalStop"]] += 1
         translated = str(Seq(source["sequence"]).translate(table=11, cds=True))
         assert translated == proteins[source["proteinId"]]
     assert len(genes) + len(excluded) == len(raw) == 2722
+    assert terminal_stops == {"TAG": 1071, "TAA": 895, "TGA": 749}
 
     reference_sequences = [raw[locus]["sequence"] for locus in meta["caiReferenceSet"]["locusTags"]]
     cai_weights = independent_cai_weights(reference_sequences)
@@ -198,6 +212,10 @@ def validate(raw_dir: Path, data_dir: Path, sample_size: int = 30) -> dict[str, 
         "sampleSize": sample_size,
         "geneCount": len(genes),
         "excludedCount": len(excluded),
+        "fullCdsReconstructed": reconstructed,
+        "terminalStopTAG": terminal_stops["TAG"],
+        "terminalStopTAA": terminal_stops["TAA"],
+        "terminalStopTGA": terminal_stops["TGA"],
     }
     for metric in ("enc", "cai", "tai", "rscu"):
         result[f"{metric}Correlation"] = float(
