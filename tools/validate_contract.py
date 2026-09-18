@@ -78,7 +78,17 @@ REQUIRED_GENE_FIELDS = (
     "neighborUpstreamNt", "neighborDownstreamNt", "overlapsNeighbor",
     "operonId", "operonPosition", "operonSize",
     "rscu", "codonPca", "riskUmap", "codons",
+    "terminalStop", "translationalException", "cdsSegments",
 )
+
+# Measured directly from the raw CDS records over the included set. These are
+# exact, not approximate: a drift here means the inclusion rule changed.
+EXPECTED_TERMINAL_STOPS = {"TAG": 1071, "TAA": 895, "TGA": 749}
+
+# The three CDSs that are a join of non-adjacent segments, and the one of them
+# with an NCBI-recorded translational exception.
+EXPECTED_SPLICED = {"M744_RS00920", "M744_RS13290", "M744_RS13620"}
+EXPECTED_EXCEPTIONS = {"M744_RS00920": "ribosomal_slippage"}
 
 
 def codon_table() -> dict[str, str]:
@@ -405,6 +415,53 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
     report.check(not coordinate_problems, "coordinates and strand are self-consistent",
                  f"{len(coordinate_problems)} problems, e.g. {coordinate_problems[:3]}")
 
+    # Stop-codon reassignment is a supported scheme, so every gene must carry a
+    # recoverable terminal stop and the distribution must be exactly as measured.
+    stops = collections.Counter(
+        g.get("terminalStop") for g in genes if isinstance(g, dict))
+    bad_stops = {s: n for s, n in stops.items() if s not in STOP_CODONS}
+    report.check(not bad_stops, "every terminalStop is a real stop codon",
+                 f"found {bad_stops}")
+    report.check(dict(stops) == EXPECTED_TERMINAL_STOPS,
+                 "terminal stop distribution is TAG 1071, TAA 895, TGA 749",
+                 f"got {dict(stops.most_common())}")
+
+    observed_spliced = {g["id"] for g in genes
+                        if isinstance(g, dict) and g.get("cdsSegments")}
+    report.check(observed_spliced == EXPECTED_SPLICED,
+                 "cdsSegments is set for exactly the three joined CDSs",
+                 f"got {sorted(observed_spliced)}")
+
+    observed_exceptions = {g["id"]: g.get("translationalException") for g in genes
+                           if isinstance(g, dict) and g.get("translationalException")}
+    report.check(observed_exceptions == EXPECTED_EXCEPTIONS,
+                 "translationalException is set for exactly prfB",
+                 f"got {observed_exceptions}")
+
+    segment_problems = []
+    for gene in genes:
+        segments = gene.get("cdsSegments") if isinstance(gene, dict) else None
+        if not segments:
+            continue
+        total = sum(end - start + 1 for start, end in segments)
+        if total != gene.get("lengthNt"):
+            segment_problems.append(
+                f"{gene.get('id')}: segments sum to {total}, lengthNt={gene.get('lengthNt')}")
+    report.check(not segment_problems, "cdsSegments lengths sum to lengthNt",
+                 "; ".join(segment_problems))
+
+    # Unmeasured expression must stay null. Zero would be a real measurement and
+    # would be silently removed by a threshold.
+    if any("expression" in g for g in genes if isinstance(g, dict)):
+        measured = [g for g in genes if isinstance(g, dict)
+                    and g.get("expression") is not None]
+        zeros = [g["id"] for g in measured if g.get("expression") == 0]
+        report.check(not zeros, "no gene has expression exactly zero",
+                     f"{len(zeros)} genes, e.g. {zeros[:3]}")
+        report.check(len(measured) == 2551,
+                     "expression is present for exactly 2,551 genes",
+                     f"got {len(measured)}")
+
 
 def validate_codon_pca(pca: Any, meta: dict[str, Any], report: Report) -> None:
     """Checks the precomputed native-codon PCA."""
@@ -492,8 +549,12 @@ def cross_check_against_genome(
             continue
         rebuilt = "".join(symbol_to_codon.get(ch, "???") for ch in codons)
         checked += 1
-        # The reference retains its terminal stop; the packed string drops it.
-        if reference[:-3] != rebuilt:
+        # The packed string drops the terminal stop, so a lossless round trip
+        # requires terminalStop. This is the check that would have caught the
+        # stop-burden defect: without the field, no scheme touching a stop codon
+        # can be evaluated at all.
+        stop = gene.get("terminalStop") or ""
+        if reference != rebuilt + stop:
             mismatched += 1
             if len(examples) < 3:
                 examples.append(gid)
@@ -501,7 +562,7 @@ def cross_check_against_genome(
     report.check(checked > 0, "matched genes against raw CDS records by locus tag",
                  f"matched {checked}, unmatched {unmatched}")
     report.check(mismatched == 0,
-                 "decoded codon strings reproduce the raw CDS exactly",
+                 "codons plus terminalStop reproduce the raw CDS exactly",
                  f"{mismatched} of {checked} differ, e.g. {examples}")
     report.check(unmatched == 0, "every gene id resolves to a raw CDS record",
                  f"{unmatched} unresolved")
