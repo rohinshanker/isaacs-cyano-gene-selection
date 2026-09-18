@@ -38,11 +38,15 @@ Baseline established by the interactive coordinator:
 
 ### Work Streams
 
-| Stream | Owner | Branch | State |
-| --- | --- | --- | --- |
-| Feature pipeline | `codex-implementer` | `feat/pipeline` | dispatched |
-| Interactive site | `claude-implementer` | `feat/site` | dispatched |
-| Expression dataset | `codex-scout` | read-only | dispatched |
+| Stream | Owner | Issue | Branch | State |
+| --- | --- | --- | --- | --- |
+| Feature pipeline | `codex-implementer` | DEM-27 | `feat/pipeline` | running |
+| Interactive site | `claude-specialist` | DEM-28 | `feat/site` | running |
+| Expression dataset | `codex-scout` | DEM-29 | read-only | running |
+
+The site went to `claude-specialist` rather than `claude-implementer` because it
+carries live in-browser PCA, a packed-codon scan under a latency budget, and three
+comparison views. That is frontier-judgment UI work, not a clear bounded slice.
 
 Cross-provider review follows integration: `claude-reviewer` on the Codex
 pipeline patch, `codex-reviewer` on the Claude site patch.

@@ -1,0 +1,81 @@
+# Genome Provenance and Verification Runbook
+
+- Purpose: Reacquire and re-verify the genome of record from scratch.
+- Scope: `data/raw/` in this repository.
+- Last verified: 2026-09-18
+
+## Genome of record
+
+**`GCF_000817325.1`** (ASM81732v1), *Synechococcus elongatus* UTEX 2973, taxid
+1350461, complete genome, submitted 2015-01-09 under BioProject PRJNA209528.
+
+| Sequence | Length | Role |
+| --- | --- | --- |
+| `NZ_CP006471.1` | 2,690,418 bp | chromosome |
+| `NZ_CP006472.1` | 46,366 bp | plasmid |
+| `NZ_CP006473.1` | 7,842 bp | plasmid |
+| **Total** | **2,744,626 bp** | |
+
+## Wrong-accession trap
+
+`GCF_000817745.x` is ***Aphanocapsa montana* BDHKU210001**, a different organism.
+The accession differs from the correct one by three digits and is easy to reach by
+guessing. Version `.2` of that record additionally carries only report files, so a
+naive download returns 990-byte HTML error pages named as if they were data.
+
+Never take an assembly accession from memory. Resolve it by query:
+
+```sh
+curl -sSL -H "Accept: application/json" \
+  "https://api.ncbi.nlm.nih.gov/datasets/v2alpha/genome/taxon/Synechococcus%20elongatus%20UTEX%202973/dataset_report"
+```
+
+Confirm `organism_name` and `infraspecific_names.strain` in the response before
+downloading anything.
+
+## Acquisition
+
+```sh
+B="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1"
+cd data/raw
+curl -sSL -O "$B/md5checksums.txt"
+for f in genomic.fna.gz genomic.gff.gz protein.faa.gz cds_from_genomic.fna.gz \
+         translated_cds.faa.gz rna_from_genomic.fna.gz feature_table.txt.gz genomic.gbff.gz; do
+  curl -sSL -O "$B/GCF_000817325.1_ASM81732v1_${f}"
+done
+curl -sSL -O "$B/GCF_000817325.1_ASM81732v1_assembly_report.txt"
+```
+
+## Verification, in order
+
+Each step must pass before the next is meaningful.
+
+1. **Size sanity.** Any file at exactly 990 bytes is an NCBI "Object not found!"
+   HTML page. Identical sizes across differently sized files means the download
+   failed, not that the data is uniform.
+2. **Checksums.** Verify every file against `md5checksums.txt`. The macOS shell
+   here may lack `md5` and `awk` on a non-login PATH, so use Python's `hashlib`
+   rather than assuming those binaries exist.
+3. **Assembly identity.** Confirm organism, strain, and taxid in the assembly
+   report against the table above. This is the step that catches a wrong accession
+   whose checksums pass perfectly.
+4. **Total length.** Sum the FASTA records and require exactly 2,744,626 bp.
+5. **Content counts.** Expect 2,715 `protein_coding` genes, 2,723 CDS features,
+   2,722 CDS sequences, 7 pseudogenes, 44 tRNA genes, and 6 rRNA genes.
+6. **CDS integrity.** Expect exactly one CDS not divisible by three
+   (`M744_RS03825`), two CDSs with internal stops, and zero non-`ACGT` characters.
+   Start codons distribute as ATG 2248, GTG 356, TTG 103, with 12 non-canonical
+   starts. Stop codons distribute as TAG 1074, TAA 897, TGA 750, with one record
+   ending in `GTT` because it is a partial CDS.
+
+## Notes carried forward
+
+- **TAG is the most common stop codon here**, at 1,074 of 2,722. Amber
+  reassignment therefore touches more genes in this organism than in many
+  bacteria, which matters when reading target-burden distributions.
+- tRNA anticodons come from the `anticodon=` attribute on tRNA features in the
+  GFF. The `product=tRNA-Ala` form names only the amino acid and is insufficient
+  for tAI.
+- `protein.faa.gz` holds 2,711 records against 2,722 CDS sequences. The difference
+  is the pseudogenes and malformed CDSs that the inclusion rule excludes, and the
+  two counts should reconcile exactly.
