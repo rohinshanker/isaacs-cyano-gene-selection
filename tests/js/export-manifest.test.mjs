@@ -4,7 +4,6 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadDataset } from '../../site/js/core/dataset.js';
 import { computeLiveMetrics } from '../../site/js/core/live-metrics.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
@@ -12,7 +11,7 @@ import {
   buildExport, parseCsv, schemeIdOf, canonicalJson, fnv1a64, recodedSequence,
   WILD_TYPE_SCHEME_ID, MANIFEST_VERSION,
 } from '../../site/js/core/export-manifest.js';
-import { fileFetch } from './helpers.mjs';
+import { expressionFixtureDataset } from './helpers.mjs';
 
 const SYN61 = { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' };
 const AMBER = { TAG: 'TAA' };
@@ -21,10 +20,7 @@ let cached = null;
 /** The expression fixture, which carries basis, proxy, spliced genes and exceptions. */
 async function context() {
   if (cached) return cached;
-  const dataset = await loadDataset({
-    baseUrl: new URL('../fixtures/data-expression/', import.meta.url).href,
-    fetchImpl: fileFetch(),
-  });
+  const dataset = await expressionFixtureDataset();
   const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
   cached = { dataset, registry };
