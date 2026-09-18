@@ -463,6 +463,59 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
                      f"got {len(measured)}")
 
 
+def validate_distributions(genes: list[dict[str, Any]], meta: dict[str, Any],
+                           report: Report) -> None:
+    """Smell tests for metrics that are in range but computed by a wrong convention.
+
+    Cross-provider review found two defects that every structural check passed:
+    ENC deflated on short genes by treating unestimable synonymous families as
+    maximally biased, and tAI using an arbitrary floor for codons with no cognate
+    tRNA instead of the dos Reis geometric-mean substitution. Both produced values
+    inside their valid ranges and internally consistent with every other field.
+    Only the shape of the distribution exposed them.
+
+    These are heuristics, not proofs. Thresholds are deliberately generous so that
+    only an egregious artifact trips them, because some genuine correlation between
+    codon bias and gene length is expected in real genomes.
+    """
+    lengths = [g.get("lengthCodons") for g in genes]
+    encs = [g.get("enc") for g in genes]
+    pairs = [(x, y) for x, y in zip(lengths, encs)
+             if isinstance(x, (int, float)) and isinstance(y, (int, float))]
+    if len(pairs) > 100:
+        n = len(pairs)
+        mx = sum(p[0] for p in pairs) / n
+        my = sum(p[1] for p in pairs) / n
+        cov = sum((a - mx) * (b - my) for a, b in pairs)
+        sx = math.sqrt(sum((a - mx) ** 2 for a, _ in pairs))
+        sy = math.sqrt(sum((b - my) ** 2 for _, b in pairs))
+        r = cov / (sx * sy) if sx and sy else 0.0
+        report.check(abs(r) < 0.25,
+                     "ENC is not dominated by gene length",
+                     f"Pearson r(lengthCodons, ENC) = {r:.3f}; a large positive value "
+                     f"means short genes are being scored as highly biased")
+
+        # The most codon-biased genes should not simply be the shortest genes.
+        ranked = sorted((g for g in genes if isinstance(g.get("enc"), (int, float))),
+                        key=lambda g: g["enc"])[:50]
+        top_lengths = sorted(g["lengthCodons"] for g in ranked)
+        all_lengths = sorted(p[0] for p in pairs)
+        top_median = top_lengths[len(top_lengths) // 2]
+        all_median = all_lengths[len(all_lengths) // 2]
+        report.check(top_median > all_median * 0.5,
+                     "the most codon-biased genes are not merely the shortest",
+                     f"top-50 lowest-ENC median length {top_median} vs genome median "
+                     f"{all_median}")
+
+    # dos Reis substitutes the geometric mean of non-zero weights for codons with no
+    # cognate tRNA. An arbitrary floor understates them and distorts every tAI rank.
+    tai = meta.get("tai", {})
+    floor = tai.get("unavailableWeightFloor")
+    report.check(floor is None,
+                 "tAI uses geometric-mean substitution, not an arbitrary floor",
+                 f"meta.tai.unavailableWeightFloor = {floor}")
+
+
 def validate_codon_pca(pca: Any, meta: dict[str, Any], report: Report) -> None:
     """Checks the precomputed native-codon PCA."""
     if not isinstance(pca, dict):
@@ -647,6 +700,7 @@ def main() -> int:
             report.skip("contiguity check for spliced CDSs",
                         f"exempt: {sorted(spliced)}")
         validate_genes(genes, meta, report, spliced)
+        validate_distributions(genes, meta, report)
         cross_check_against_genome(genes, meta, args.raw_dir, report)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
