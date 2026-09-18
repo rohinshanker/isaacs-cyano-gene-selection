@@ -1,0 +1,187 @@
+# O_data-annotation-release-readiness__20260918 — Open
+
+- **Scope**: `isaacs-cyano-gene-selection` after the pipeline and site work in
+  `A_gene-diversity-site__20260918.md` is integrated.
+- **Status**: open
+- **Opened**: 2026-09-18
+- **Updated**: 2026-09-18
+
+## Current State
+
+`main` at `26e4d586b40a765a9623248ec52f2b9c675ed586` is a strong data and
+contract scaffold, not yet a working application. It has the verified genome,
+expression fallback, tRNA table, contract, validator, and Pages workflow, but no
+tracked pipeline, generated JSON, tests, or browser page. Those implementation
+streams are active in separate worktrees and must not be duplicated here.
+
+The authoritative genome is RefSeq `GCF_000817325.1` (ASM81732v1), taxid
+1350461. The checked-in raw inputs use NCBI RefSeq annotation release
+`GCF_000817325.1-RS_2026_05_13` (PGAP 6.11, 2026-05-13), but that annotation
+release is not yet frozen explicitly in the contract. Nine required downloads
+match NCBI's MD5 manifest. The manifest also lists richer files that have not
+been acquired, including the GO annotation, protein GenPept, annotation hashes,
+assembly statistics, and feature counts.
+
+The current expression overlay contains 2,551 unique, finite, non-negative
+values from PCC 7942, not UTEX 2973. An independent reconstruction using the
+current PCC 7942 GFF reproduced all 2,551 retained mappings exactly through
+`old_locus_tag -> locus_tag -> protein_id -> M744_RS locus_tag`. This means
+`data/expression/PROVENANCE.md` lines 73–76 are stale: the current PCC GFF does
+carry the `Synpcc7942_####` old locus tags. The eight ambiguous duplicated-
+protein loci remain correctly excluded. There is still no public tidy per-gene
+UTEX 2973 abundance matrix; PRJNA420395 provides the biologically matched raw
+dRNA-seq/TSS resources and would require a separate quantification workflow.
+
+### Blocking review findings
+
+1. The data contract removes each terminal stop from `genes.json.codons` while
+   also defining stop-codon replacement such as `TAG -> TAA`. The browser cannot
+   recover a gene's terminal stop, count stop-target burden, or reconstruct the
+   full recoded CDS. The included set contains 1,071 TAG-, 895 TAA-, and 749
+   TGA-ending genes, so this is not an edge case.
+2. `tools/validate_contract.py` does not perform its claimed protein comparison.
+   It reads `protein.faa.gz` and checks only that records exist. It also validates
+   reconciliation by counts rather than independently deriving the exact included
+   and excluded locus-tag sets, accepts malformed/duplicated metadata structures,
+   and skips required raw-data checks when inputs are absent.
+3. The validator's contiguous coordinate assertion is wrong for the genuine
+   programmed-frame-shift gene `prfB` (`M744_RS00920`), whose CDS is
+   `join(169621..169692,169694..170743)`. The delivered pipeline candidate's 18
+   tests pass, but the independent validator fails this record.
+4. The frozen contract gives `meta.geneCount` as 2,711 even though the required
+   included set is 2,715, and its example gene `M744_RS03825` is one of the seven
+   excluded pseudogenes.
+5. The Pages workflow uploads `site/` without a build, contract validation, test,
+   or rendered-UI gate. The public GitHub repository currently has no remote
+   branch and Pages is disabled, so no deployment exists yet.
+
+## Next Steps
+
+### P0 — Make the existing contract lossless and testable
+
+- Preserve the terminal stop per gene, either in the packed sequence or a required
+  `terminalStop` field. Define whether burden/fraction denominators include it and
+  test full-CDS reconstruction for TAG, TAA, and TGA targets.
+- Define initiation-codon semantics. Alternative bacterial starts must translate as
+  methionine at position zero even though the same triplet has its standard internal
+  amino-acid meaning.
+- Represent discontinuous CDSs or translational exceptions explicitly. At minimum,
+  carry CDS segments and the `ribosomal_slippage`/programmed-frameshift flag for
+  `M744_RS00920`; never make genomic span equal coding length by silently changing
+  the coordinates.
+- Correct the 2,711/2,715 contract example and replace the pseudogene example with
+  an included locus.
+- Turn the protein gate into a real check: join each locus to `protein_id`, translate
+  its reconstructed CDS with table 11, compare the sequence, and handle the four
+  protein accessions shared by two loci without deduplicating genes.
+- Add negative validator tests for duplicate RSCU codons, invalid/self/unknown
+  replacement maps, duplicate or unknown CAI reference loci, invented exclusions,
+  malformed arrays, missing raw inputs, stale checksums, and expression provenance.
+
+### P1 — Freeze and reproduce the annotation layer
+
+- Record assembly accession, RefSeq annotation name/date, PGAP version, retrieval
+  date, direct URL, byte size, and MD5 for every input in a machine-readable
+  manifest. Fail builds if the release or checksum changes unexpectedly.
+- Download and assess the remaining files in the current NCBI directory, especially
+  `annotation_hashes.txt`, `gene_ontology.gaf.gz`, `protein.gpff.gz`,
+  `feature_count.txt`, and `assembly_stats.txt`. Keep only inputs that feed a
+  documented feature or validation gate.
+- Generate a versioned identifier crosswalk with one row per relationship, not one
+  row per assumed gene: current and old UTEX locus tags, gene symbol, `protein_id`,
+  sequence accession, coordinates/CDS segments, PCC 7942 ortholog, and any accepted
+  UniProt/KEGG identifier. Preserve one-to-many mappings and label ambiguity.
+- Parse and expose annotation evidence that changes recoding risk: pseudogene/partial
+  flags, ribosomal slippage, overlapping CDSs, nearby non-coding RNAs, plasmid versus
+  chromosome, and annotation confidence/inference.
+
+Primary sources:
+
+- [NCBI assembly and annotation](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000817325.1/)
+- [NCBI assembly file directory](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/)
+- [UniProt UTEX 2973 proteome candidate](https://www.uniprot.org/proteomes/UP000031358)
+
+### P2 — Replace heuristic biological context with evidence where available
+
+- Import GO terms from the matching RefSeq release and assess EC/pathway coverage.
+  Store source, evidence code, release, and mapping method; do not collapse conflicting
+  annotations into an unqualified label.
+- Evaluate the PCC 7942 genome-wide essentiality dataset as a cross-strain annotation.
+  Map by the versioned crosswalk, retain essential/beneficial/unknown evidence and
+  coverage, and label it as PCC 7942 rather than UTEX 2973. Essentiality should be a
+  caution/selection feature, not an automatic exclusion without a lab decision.
+- Use the UTEX 2973 primary-transcriptome study for TSS and transcription-unit evidence.
+  Keep experimentally supported units separate from distance-inferred operons and show
+  method/confidence in the UI.
+- Evaluate CyanoOmicsDB only as a secondary discovery/cross-check source. Never replace
+  the frozen RefSeq coordinate model without a documented reconciliation.
+
+Primary references:
+
+- [UTEX 2973 primary transcriptome (Tan et al. 2018)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6091082/)
+- [PRJNA420395 raw UTEX 2973 sequencing](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA420395)
+- [PCC 7942 essential gene set (Rubin et al. 2015)](https://pmc.ncbi.nlm.nih.gov/articles/PMC4672817/)
+- [CyanoOmicsDB resource paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC8728175/)
+
+### P3 — Make abundance data replaceable without losing provenance
+
+- Check in a reproducible PCC 7942 mapping script or generated crosswalk, source-file
+  checksum, exact sample IDs, averaging rule, and an exclusion ledger that accounts for
+  all 164 missing target genes. Correct the stale provenance statement.
+- Replace the implicit "drop a TSV in the directory" rule with an explicit selected
+  dataset manifest. It must name organism/strain, annotation release, assay, sample IDs,
+  condition, replicates, units/normalization, source URL/checksum, mapping artifact, and
+  licence/redistribution status. The build must reject multiple unselected datasets or
+  metadata that do not match the table.
+- Keep GSE205444 opt-in, visibly labelled PCC 7942, and include unmeasured genes by
+  default. Do not treat DESeq2 normalized counts as comparable across unrelated studies.
+- If native UTEX abundance is required, scope a separate alignment/quantification task
+  for PRJNA420395 or obtain new RNA-seq/Ribo-seq/proteomics under the lab's intended
+  light, temperature, CO2, and growth-phase conditions. Preserve condition-specific
+  values rather than presenting a pooled universal expression score.
+
+Current fallback source:
+
+- [GSE205444 processed PCC 7942 expression](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205444)
+
+### P4 — Integrate and release only behind gates
+
+- Integrate the pipeline and site only after their exact final commits receive the
+  planned cross-provider reviews. Re-run all tests and the hardened validator on the
+  merged tree.
+- Add CI that installs the recorded environment, runs unit/integration/negative tests,
+  builds or verifies generated data, runs the independent validator with raw fixtures,
+  and only then uploads the Pages artifact.
+- Render and inspect the real site at desktop and narrow viewports. Verify stop-codon
+  presets, expression warnings, missing-data controls, annotation evidence labels,
+  filtering, shortlist comparisons, URL/local-storage round trips, accessibility, and
+  the published performance budgets.
+- Decide whether `file://` is truly supported. Test it in the target browsers; if JSON
+  fetches or ES modules require HTTP, remove the local-file promise and document a
+  one-command local static server.
+- Push `main`, enable GitHub Pages, and run a post-deploy smoke test only with explicit
+  user authorization.
+
+## Verification
+
+This ticket is complete when all of the following hold:
+
+- The merged repository rebuilds from checksum-verified, release-pinned inputs and all
+  tests, the independent validator, and rendered UI checks pass.
+- Exactly 2,715 included and seven excluded unique locus tags reconcile to the raw CDS
+  set; full CDSs including terminal stops reconstruct and translate correctly.
+- Programmed frameshifts and other annotation exceptions are represented and tested.
+- Every external annotation reports source organism, release, evidence, mapping method,
+  coverage, ambiguity, and unmatched counts. One-to-many mappings are never silently
+  collapsed.
+- The expression overlay is reproducible from its source matrix and manifest, all 164
+  missing values have an accounted reason, and the UI cannot imply it is UTEX data.
+- Pages deploys only after automated gates pass, and the deployed application receives
+  a recorded smoke test.
+
+## Cleanup
+
+When resolved, move reusable source-manifest, identifier-crosswalk, annotation-evidence,
+expression-import, and release-gate procedures into `docs/validation/`, update its
+index, remove this ticket from the live queue, and delete the resolved ticket. Do not
+retain downloaded working files or one-off audit output.

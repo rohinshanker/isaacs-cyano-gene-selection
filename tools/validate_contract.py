@@ -255,7 +255,31 @@ def validate_meta(meta: Any, report: Report) -> dict[str, Any] | None:
     return meta
 
 
-def validate_genes(genes: Any, meta: dict[str, Any], report: Report) -> None:
+def spliced_loci(raw_dir: str) -> set[str]:
+    """Returns locus tags whose CDS is a join of non-adjacent genomic segments.
+
+    These genes are shorter than their genomic span, so the usual
+    ``end - start + 1 == lengthNt`` identity does not hold for them. In this
+    genome the set is small and biologically real: ``M744_RS00920`` is ``prfB``,
+    whose peptide chain release factor 2 is produced by a programmed ribosomal
+    frameshift that skips a single base.
+    """
+    path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_cds_from_genomic.fna.gz")
+    if not os.path.exists(path):
+        return set()
+    tags: set[str] = set()
+    with gzip.open(path, "rt") as handle:
+        for line in handle:
+            if not line.startswith(">") or "join(" not in line:
+                continue
+            match = re.search(r"\[locus_tag=([^\]]+)\]", line)
+            if match:
+                tags.add(match.group(1))
+    return tags
+
+
+def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
+                   spliced: set[str]) -> None:
     """Checks per-gene records for structure, ranges, and codon-string integrity."""
     if not isinstance(genes, list):
         report.fail("genes.json is an array", repr(type(genes)))
@@ -353,7 +377,8 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report) -> None:
         if isinstance(start, int) and isinstance(end, int):
             if start > end:
                 coordinate_problems.append(f"{gid}: start {start} > end {end}")
-            elif isinstance(length_nt, int) and (end - start + 1) != length_nt:
+            elif (gid not in spliced and isinstance(length_nt, int)
+                  and (end - start + 1) != length_nt):
                 coordinate_problems.append(
                     f"{gid}: end-start+1={end - start + 1} != lengthNt={length_nt}")
         if gene.get("strand") not in ("+", "-"):
@@ -505,7 +530,11 @@ def main() -> int:
     excluded = load_json(os.path.join(args.data_dir, "excluded.json"), report)
 
     if meta is not None and isinstance(genes, list):
-        validate_genes(genes, meta, report)
+        spliced = spliced_loci(args.raw_dir)
+        if spliced:
+            report.skip("contiguity check for spliced CDSs",
+                        f"exempt: {sorted(spliced)}")
+        validate_genes(genes, meta, report, spliced)
         cross_check_against_genome(genes, meta, args.raw_dir, report)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
