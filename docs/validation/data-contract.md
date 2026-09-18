@@ -137,6 +137,56 @@ should surface that flag rather than hide it.
 `metrics` drives every axis menu, tooltip, and side-panel label in the site. The
 site must not hardcode metric labels.
 
+### Every metric carries a real definition
+
+Each entry in `metrics` must supply:
+
+```jsonc
+"enc": {
+  "label": "ENC",
+  "unit": "codons",
+  "desc": "Effective number of codons, Wright 1990. Ranges 20 to 61: 20 means the gene uses one codon per amino acid, 61 means it uses all synonyms equally. Estimated from families observed more than once; encHasSubstitutedFamilies marks genes where some family was substituted.",
+  "scale": "sequential",          // or "diverging" for signed quantities
+  "missingPolicy": "null renders as unknown, never as zero or median",
+  "direction": "contextual"       // informational only; see below
+}
+```
+
+**`desc` must not equal `label`.** The validator fails the build when it does.
+A description that restates the label teaches nothing, and the panel then
+"explains" GC as "GC". Every one of the 33 metrics needs a genuine definition
+giving the quantity, its range or window, its source, and any caveat.
+
+`scale` tells the site which colour ramp family to use. Signed quantities such as
+ΔGC3 use a diverging ramp centred on zero; unsigned magnitudes use a sequential
+ramp. Different metrics may use different ramps, and a ramp is a way of reading a
+value, not a claim about whether high is good. `direction` is recorded for
+documentation and is **not** used to colour anything.
+
+### Codon occurrence counts
+
+`meta.codonOccurrences` publishes, per codon, `total` and `editable`, where
+`editable` excludes occurrences at position zero. Anywhere the interface offers a
+codon as a recoding target it must quote the editable count, because the
+initiation triplet can never be recoded. For example GTG occurs 18,659 times of
+which 18,303 are editable, and TTG 20,427 of which 20,324.
+
+### Expression: measured first, proxy as a labelled fallback
+
+The threshold axis prefers a real measurement and falls back to a codon-adaptation
+proxy per gene, never silently.
+
+- `expression` holds a measured abundance, or `null`. It is never filled with a proxy.
+- `expressionProxy` holds a CAI/tAI-derived rank in 0 to 1, available for every gene.
+- `expressionBasis` is `"measured"` when that gene has a real value, `"proxy"` when
+  the interface is falling back, and `null` when neither exists.
+- `expressionSourceId` names the dataset behind a measured value.
+
+The site must show, per gene, which basis a displayed value came from, and must be
+able to filter to measured-only. A measured abundance and a proxy rank are different
+quantities in different units, so the interface must never present a mixed column as
+though it were one measurement.
+
 ### `genes.json`
 
 Array of gene records. All metrics here are target-independent and never change
@@ -173,8 +223,11 @@ when the recoding scheme changes.
   "neighborUpstreamNt": 112, "neighborDownstreamNt": -4,
   "overlapsNeighbor": true, "operonId": "op_0421", "operonPosition": 2, "operonSize": 4,
 
-  "expression": 1284.6,          // optional, null when unmeasured; see below
-  "expressionPercentile": 0.71,  // optional, null when expression is null
+  "expression": 1284.6,          // measured abundance only; null when unmeasured
+  "expressionPercentile": 0.71,  // null when expression is null
+  "expressionBasis": "measured", // "measured" | "proxy" | null — never inferred by the site
+  "expressionProxy": 0.63,       // CAI/tAI-derived rank in 0..1; the documented fallback
+  "expressionSourceId": "GSE205444",  // which dataset supplied a measured value
 
   "rscu": [1.02, 0.41, ...],     // 59 floats, order = meta.rscuOrder
   "codonPca": [ -2.14, 0.88, 1.03, ... ],  // first 6 PCs of native codon space
