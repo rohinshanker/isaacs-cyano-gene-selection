@@ -1,4 +1,4 @@
-# ISAACS Cyano Gene Selection
+# Isaacs Lab Cyano Gene Selection
 
 An interactive map of the *Synechococcus elongatus* UTEX 2973 coding genome, built to
 help choose which genes to target for genome recoding.
