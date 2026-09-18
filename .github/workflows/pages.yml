@@ -39,6 +39,19 @@ jobs:
       - name: Validate generated data against the contract
         run: python3 tools/validate_contract.py --data-dir site/data --raw-dir data/raw
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The site's unit tests run against synthetic fixtures. This runs the same
+      # live-metric code against the real generated data, so a scheme that
+      # miscounts on the actual genome cannot reach production.
+      - name: Check live metrics against real data
+        run: node tools/check_live_metrics.mjs
+
+      - name: Run site unit tests
+        run: node --test "tests/js/*.test.mjs"
+
       - name: Install pipeline dependencies
         run: pip install --quiet -r requirements.txt
 
