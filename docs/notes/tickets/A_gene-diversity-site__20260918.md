@@ -72,6 +72,19 @@ comparison views. That is frontier-judgment UI work, not a clear bounded slice.
 Cross-provider review follows integration: `claude-reviewer` on the Codex
 pipeline patch, `codex-reviewer` on the Claude site patch.
 
+### Queued work on the site stream (DEM-28)
+
+1. **Metric alignment.** The browser recomputes CAI, tAI, ENC and codon-pair with the
+   conventions that predated the pipeline's ENC singleton and tAI fixes, so the side
+   panel shows two different values for one quantity. ENC differs by up to 24.2 units.
+   Assertions in `tools/check_live_metrics.mjs` fail until this is fixed.
+2. **Gene search by product text.** The search resolves only a locus tag today.
+   Searching `rubisco` returns a chaperone, a domain protein and an accumulation
+   factor, while missing both real subunits, which the annotation spells as `ribulose
+   bisphosphate carboxylase`. Needs product matching plus a curated alias table.
+3. **Shortlist list view.** Chips with a remove button exist; the lab wants a readable
+   list they can prune without returning to the map.
+
 ## Verification
 
 Required before resolution:
