@@ -93,6 +93,37 @@ for (const preset of PRESETS) {
     ok ? '' : JSON.stringify(result?.firstMismatch ?? result).slice(0, 140));
 }
 
+// The browser recomputes CAI, tAI, ENC, GC3 and codon-pair score from the packed
+// sequence so that a recoded value is directly comparable to wild type. Those
+// wild-type recomputations must agree with the pipeline's own numbers, or the
+// side panel shows two different values for one quantity and the live PCA
+// disagrees with the filters and the colour scale. The site measures this
+// already but reports any magnitude as agreement, so assert it here.
+const wildType = computeLiveMetrics(dataset, compileScheme({}, table));
+const TOLERANCES = { gc3: 1e-6, cai: 1e-6, tai: 1e-6, enc: 1e-6, cps: 1e-6 };
+const RECOMPUTED = { gc3: 'recodedGc3', cai: 'recodedCai', tai: 'recodedTai',
+                     enc: 'recodedEnc', cps: 'recodedCps' };
+for (const [key, field] of Object.entries(RECOMPUTED)) {
+  const values = wildType.fields[field];
+  if (!values) continue;
+  let worst = 0;
+  let worstGene = null;
+  let sum = 0;
+  let n = 0;
+  for (let g = 0; g < genes.length; g += 1) {
+    const reported = genes[g][key];
+    const computed = values[g];
+    if (!Number.isFinite(reported) || !Number.isFinite(computed)) continue;
+    const difference = Math.abs(reported - computed);
+    sum += difference;
+    n += 1;
+    if (difference > worst) { worst = difference; worstGene = genes[g].id; }
+  }
+  note(worst <= TOLERANCES[key],
+    `browser and pipeline agree on ${key}`,
+    `mean ${(sum / n).toExponential(2)}, worst ${worst.toExponential(2)} at ${worstGene}`);
+}
+
 // The whole-genome scan must stay inside the interaction budget.
 note(amber.elapsedMs < 400, 'a scheme change scans the genome within budget',
   `${amber.elapsedMs.toFixed(1)} ms for ${amber.codonsScanned.toLocaleString()} codons`);
