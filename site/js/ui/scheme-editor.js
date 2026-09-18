@@ -6,7 +6,9 @@
  * Nothing that would change a protein can be selected, and the result is checked
  * against every gene's real sequence before it is applied.
  */
-import { PRESETS, prefillReplacement, recodableCodons } from '../core/scheme.js';
+import {
+  PRESETS, prefillReplacement, recodableCodons, codonOccurrenceCounts,
+} from '../core/scheme.js';
 import { formatCount } from './format.js';
 
 /** Amino acid full names, for labelling codon groups in plain language. */
@@ -37,17 +39,12 @@ export class SchemeEditor {
     this.host = host;
     this.dataset = dataset;
     this.handlers = handlers;
-    // Sense codons are counted in the packed string; terminal stops are not in it,
-    // so they are counted from each gene's terminalStop field.
-    this.codonOccurrences = new Map(
-      dataset.table.codons.map((codon, i) => [codon, dataset.genomeCounts[i]]),
-    );
-    for (const gene of dataset.genes) {
-      if (!gene.terminalStop) continue;
-      this.codonOccurrences.set(
-        gene.terminalStop, (this.codonOccurrences.get(gene.terminalStop) ?? 0) + 1,
-      );
-    }
+    // Wherever a codon is offered as a target the count quoted is the editable one,
+    // which leaves out each gene's start codon. A dataset that does not publish it
+    // gets raw counts, labelled as such.
+    const occurrences = codonOccurrenceCounts(dataset);
+    this.codonOccurrences = occurrences.counts;
+    this.countsEditable = occurrences.published;
     this.build();
   }
 
@@ -91,7 +88,11 @@ export class SchemeEditor {
       const group = document.createElement('optgroup');
       group.label = `${AA_NAMES[aa] ?? aa} (${aa})`;
       for (const codon of codons) {
-        group.append(option(codon, `${codon} — ${formatCount(this.codonOccurrences.get(codon))} in genome`));
+        group.append(option(
+          codon,
+          `${codon} — ${formatCount(this.codonOccurrences.get(codon))} `
+            + `${this.countsEditable ? 'editable' : 'in genome'}`,
+        ));
       }
       this.addSelect.append(group);
     }
@@ -274,7 +275,9 @@ export class SchemeEditor {
       const isStop = table.isStop[index] === 1;
       count.textContent = occurrences === 0
         ? 'not present in this dataset'
-        : `${formatCount(occurrences)} ${isStop ? 'genes end with it' : 'occurrences'}`;
+        : `${formatCount(occurrences)} ${isStop
+          ? 'genes end with it'
+          : this.countsEditable ? 'editable occurrences, start codons excluded' : 'occurrences'}`;
 
       const remove = document.createElement('button');
       remove.type = 'button';

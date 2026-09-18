@@ -83,6 +83,38 @@ export function compileScheme(map, table) {
   return { targets, replacement, isTarget, active: targets.length > 0 };
 }
 
+/**
+ * How often each codon can actually be recoded.
+ *
+ * The contract publishes `meta.codonOccurrences[codon].editable`, which excludes
+ * position zero because the initiation triplet is never recoded. That is the
+ * number the interface must quote wherever it offers a codon as a target. When a
+ * dataset predates the field the counts are computed from the packed sequence
+ * plus terminal stops, position zero included, and `published` is false so the
+ * caller can label them as raw rather than editable.
+ *
+ * @param {object} dataset from `loadDataset`.
+ * @returns {{counts: Map<string, number>, published: boolean}}
+ */
+export function codonOccurrenceCounts(dataset) {
+  const { table, meta, genomeCounts, genes } = dataset;
+  const publishedTable = meta?.codonOccurrences ?? null;
+  const published = Boolean(publishedTable)
+    && table.codons.every((codon) => typeof publishedTable[codon]?.editable === 'number');
+  const counts = new Map();
+  if (published) {
+    for (const codon of table.codons) counts.set(codon, publishedTable[codon].editable);
+    return { counts, published };
+  }
+  table.codons.forEach((codon, i) => counts.set(codon, genomeCounts[i]));
+  // The packed string holds sense codons only, so stops are tallied from the field.
+  for (const gene of genes) {
+    if (!gene.terminalStop) continue;
+    counts.set(gene.terminalStop, (counts.get(gene.terminalStop) ?? 0) + 1);
+  }
+  return { counts, published };
+}
+
 /** The codons a scheme could target: those with at least one synonymous alternative. */
 export function recodableCodons(table) {
   return table.codons.filter((codon) => table.synonymsOf(codon).length > 0);
