@@ -70,9 +70,13 @@ Each step must pass before the next is meaningful.
 
 ## The lab's `utex.gb` file, and why it is not the ground truth
 
-A GenBank flat file named `utex.gb` was supplied separately. It was analysed and
-**deliberately not adopted**. It is kept for reference at
-`data/reference/utex_2017_annotation.gb`.
+A GenBank flat file named `utex.gb` was supplied separately. It was analysed,
+**deliberately not adopted**, and then **deleted at the lab's request on 2026-09-18**
+since nothing reads it. The file was never committed, so it is not recoverable from
+this repository. The comparison below is the surviving record of what it contained.
+
+To obtain an equivalent file again, request the archived 2017 annotation release of
+`NZ_CP006471` from NCBI. Nothing in this project needs it.
 
 It is the **same assembly**, `GCF_000817325.1`, stated in its own `DBLINK` line. So
 this is not a conflict about which genome to use. It is a difference of annotation
