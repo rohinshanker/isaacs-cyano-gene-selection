@@ -478,8 +478,23 @@ def validate_distributions(genes: list[dict[str, Any]], meta: dict[str, Any],
     only an egregious artifact trips them, because some genuine correlation between
     codon bias and gene length is expected in real genomes.
     """
-    lengths = [g.get("lengthCodons") for g in genes]
-    encs = [g.get("enc") for g in genes]
+    # ENC is inherently noisy on short genes no matter how correct the estimator
+    # is: with few codons you cannot observe the full synonymous repertoire, so
+    # some families are never seen and must be substituted. Judging the whole
+    # genome at once therefore mixes reliable and unreliable estimates and
+    # produces a length signal that no estimator can remove. Where the pipeline
+    # discloses which genes rest on substituted families, test only the rest.
+    reliable = [g for g in genes if not g.get("encHasSubstitutedFamilies")]
+    if len(reliable) > 500:
+        population = reliable
+        scope = f"{len(reliable)} genes with a fully observed codon repertoire"
+    else:
+        population = genes
+        scope = "all genes; no reliability flag present"
+    report.check(True, "ENC distribution scope", scope)
+
+    lengths = [g.get("lengthCodons") for g in population]
+    encs = [g.get("enc") for g in population]
     pairs = [(x, y) for x, y in zip(lengths, encs)
              if isinstance(x, (int, float)) and isinstance(y, (int, float))]
     if len(pairs) > 100:
@@ -496,7 +511,7 @@ def validate_distributions(genes: list[dict[str, Any]], meta: dict[str, Any],
                      f"means short genes are being scored as highly biased")
 
         # The most codon-biased genes should not simply be the shortest genes.
-        ranked = sorted((g for g in genes if isinstance(g.get("enc"), (int, float))),
+        ranked = sorted((g for g in population if isinstance(g.get("enc"), (int, float))),
                         key=lambda g: g["enc"])[:50]
         top_lengths = sorted(g["lengthCodons"] for g in ranked)
         all_lengths = sorted(p[0] for p in pairs)
