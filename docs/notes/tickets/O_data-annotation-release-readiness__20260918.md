@@ -41,23 +41,22 @@ dRNA-seq/TSS resources and would require a separate quantification workflow.
 | 3 | Contiguity assertion wrong for `prfB` | **Fixed** in `7ec46af`. The three spliced CDSs are exempted and named. |
 | 4 | Contract said 2,711 and used an excluded pseudogene as its example | **Fixed** in `138508e`. Corrected to 2,715 and to `M744_RS11720` (`rpsL`) with measured values. |
 | 5 | Pages workflow had no gate | **Fixed** in `d612b69`. Deployment now needs genome checksum verification, an explicit organism-identity check, contract validation, and the test suite. |
+| 6 | Expression provenance stale about `old_locus_tag` | **Conceded and fixed.** The reviewer was right; see the paragraph below. `PROVENANCE.md` now documents the verified gene-level route and the full 2,551-row reproduction. |
 
-**One claim in this ticket is incorrect and is corrected here.** The section above
-states that the current PCC 7942 GFF carries `Synpcc7942_####` old locus tags and
-that `data/expression/PROVENANCE.md` was therefore stale. That was checked directly
-against three annotations:
+**Finding 5 is correct, and an earlier revision of this section wrongly disputed it.**
+That dispute was based on a parse that filtered to `CDS` features. `old_locus_tag`
+appears only on gene-level features, so the check returned zero and the wrong
+conclusion followed. `GCF_000012525.1` does carry `old_locus_tag=Synpcc7942_####` on
+2,670 gene features and 4 pseudogene features.
 
-| Annotation | CDS locus tag form | `old_locus_tag` |
-| --- | --- | --- |
-| `GCF_000012525.1` RefSeq | `SYNPCC7942_RS#####` | none |
-| `GCF_030544905.1` RefSeq | `QY054_RS#####` | none |
-| `GCA_000012525.1` GenBank | `Synpcc7942_####` | none |
+Re-running the verification through the correct route reproduced **all 2,551 shipped
+mappings exactly, with zero contradictions and none unreproduced**, matching the
+reviewer's result. `data/expression/PROVENANCE.md` now documents that route.
 
-No RefSeq annotation carries those tags. They are the **GenBank record's primary
-locus tags**, so the bridge is GenBank-to-RefSeq by genomic coordinate, not an
-`old_locus_tag` lookup. The provenance doc was right and has been expanded with the
-verified route and an independent reproduction: 2,231 of 2,551 mappings confirmed,
-zero contradictions.
+One related trap is recorded there: `prfB` (`M744_RS00920`) has a joined CDS, so the
+GFF emits two CDS rows sharing one `protein_id` and one `locus_tag`. Testing
+uniqueness by row count rather than by distinct locus tag makes that protein look
+ambiguous and silently drops the gene. Exactly four proteins are genuinely ambiguous.
 
 ### Blocking review findings
 

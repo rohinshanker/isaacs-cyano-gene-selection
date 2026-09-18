@@ -44,36 +44,44 @@ labelled optional overlay.
 Identifiers were translated `Synpcc7942_####` → PCC current locus tag → shared
 RefSeq `WP_` protein accession → UTEX `M744_RS#####`.
 
-### Where the `Synpcc7942_####` identifiers actually come from
+### Where the `Synpcc7942_####` identifiers come from
 
-They are the **primary locus tags of the GenBank annotation** `GCA_000012525.1`,
-not an `old_locus_tag` attribute on the RefSeq record. This was checked directly:
+The RefSeq PCC 7942 annotation `GCF_000012525.1` carries them directly as
+`old_locus_tag`, on **2,670 gene features and 4 pseudogene features**. The attribute
+appears on gene-level features, never on CDS features, which is the detail that makes
+this easy to get wrong: a parser that filters to `CDS` rows finds zero and concludes
+the attribute is absent. It is not.
 
-| Annotation | CDS locus tag form | Count | `old_locus_tag` |
-| --- | --- | --- | --- |
-| `GCA_000012525.1` (GenBank) | `Synpcc7942_####` | 2,661 | none |
-| `GCF_000012525.1` (RefSeq) | `SYNPCC7942_RS#####` | 2,720 | none |
-| `GCF_030544905.1` (RefSeq, newer) | `QY054_RS#####` | 2,730 | none |
+The newer RefSeq annotation `GCF_030544905.1` also carries `old_locus_tag`, but under
+a different scheme (`QY054_*`), so it does not serve this mapping.
 
-No RefSeq PCC 7942 annotation carries the `Synpcc7942_####` tags, so the join
-cannot be reproduced from a RefSeq GFF alone. Bridging GenBank to RefSeq requires
-matching CDS features by genomic coordinate, since both annotate the same assembly.
+### The verified route
+
+```
+Synpcc7942_####                  old_locus_tag on the PCC gene feature
+  -> SYNPCC7942_RS#####          locus_tag on the same feature
+  -> WP_#########.#              protein_id on that gene's CDS feature
+  -> M744_RS#####                UTEX locus tag whose CDS carries the same protein
+```
 
 ### Independent verification
 
-The coordinate-bridge route was rebuilt from scratch and compared against the
-shipped table:
+This route was rebuilt from scratch and compared row by row against the shipped table:
 
 | Outcome | Rows |
 | --- | --- |
-| Independently reproduced and identical | 2,231 |
+| Independently reproduced and identical | **2,551** |
 | Independently reproduced and contradictory | **0** |
-| Not resolvable by the coordinate bridge | 320 |
+| Unreproduced | **0** |
 
-Zero contradictions. The 320 unresolved rows are a limit of the bridge, not evidence
-against them: GenBank and RefSeq disagree on exact CDS boundaries for a subset of
-genes, so a strict coordinate match cannot resolve those. Every mapping that could be
-checked independently held.
+Every shipped mapping holds.
+
+One subtlety worth recording, because it produces a false ambiguity. Deciding whether
+a protein maps to a single UTEX locus requires deduplicating locus tags first.
+`M744_RS00920` (`prfB`) has a joined CDS, so the GFF emits two CDS rows carrying the
+same `protein_id` and the same `locus_tag`. Counting rows rather than distinct tags
+makes that protein look ambiguous and silently drops the gene. After deduplication,
+exactly four proteins are genuinely ambiguous, and they are the four listed below.
 
 That route is only valid where the protein accession is unique on both sides. It
 is not unique for four proteins, each encoded at two loci in UTEX 2973:
@@ -101,10 +109,10 @@ unknown, never as zero, and must not be silently removed by a threshold.
   5712016, CC BY 4.0) publishes transcription-start-site and coverage data plus
   raw reads, not a per-gene abundance matrix. Producing one requires running an
   alignment and quantification pipeline, which is out of scope here.
-- 320 of the 2,551 shipped mappings could not be independently re-derived, because
-  the GenBank-to-RefSeq coordinate bridge does not resolve genes whose CDS boundaries
-  differ between the two annotations. None of those 320 is contradicted; they are
-  simply unverified by a second route.
+- The identifier mapping is fully verified, but that says nothing about whether PCC
+  7942 abundance is a good proxy for UTEX 2973 abundance. It is not, for the four
+  reasons listed above. Verified provenance and biological applicability are separate
+  questions, and only the first one is settled here.
 - No dataset-specific redistribution licence was found for the GEO files.
 
 ## If you want a real UTEX 2973 expression axis
