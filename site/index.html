@@ -144,6 +144,12 @@ if (window.location.protocol === 'file:') {
 }
 </script>
 
+<!-- Shown only when a metric this page recomputes does not match the pipeline's
+     published value. A disagreement means the maps and the controls describe the
+     same gene with different numbers, so it belongs at the top of the page rather
+     than inside the About card. -->
+<div id="metric-agreement" class="metric-alert" role="alert" hidden></div>
+
 <main class="layout" id="main" hidden>
   <aside class="column controls" aria-label="Scheme, filters, and shortlist">
     <section class="card">

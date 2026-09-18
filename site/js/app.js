@@ -7,6 +7,7 @@
 import { loadDataset } from './core/dataset.js';
 import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillReplacement } from './core/scheme.js';
 import { computeLiveMetrics } from './core/live-metrics.js';
+import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues, describeExpressionSource,
 } from './core/metric-registry.js';
@@ -488,6 +489,87 @@ function buildGeneSearch() {
   });
 }
 
+/** One line per metric: how far the browser's recomputation sits from the pipeline's. */
+function describeDivergence(entry, meta) {
+  // meta.metrics carries the reader-facing name, so tAI does not become TAI.
+  const label = meta.metrics?.[entry.key]?.label ?? entry.key;
+  return `${label}: worst ${entry.worst.toExponential(2)} at `
+    + `${entry.worstGene}, mean ${entry.meanAbsDifference.toExponential(2)}, over `
+    + `${formatCount(entry.compared)} genes`;
+}
+
+/**
+ * Collect everything that says the browser and the pipeline computed one quantity
+ * two different ways: a metric outside tolerance, tAI weights that do not
+ * reproduce the published substitution, or an ENC family flag that disagrees.
+ */
+function recomputationProblems() {
+  const { provenance, meta } = context.dataset;
+  const checked = provenance.agreement.filter((entry) => entry.compared > 0);
+  const problems = checked
+    .filter((entry) => !entry.agrees)
+    .map((entry) => describeDivergence(entry, meta));
+  const tai = provenance.taiReport;
+  if (!tai.substitutionAgrees) {
+    problems.push('tAI zero-weight substitution: this page computes '
+      + `${tai.recomputedSubstitution.toFixed(6)} from the published tRNA copies, but `
+      + `meta.json publishes ${tai.publishedSubstitution}`);
+  }
+  if (!tai.zeroWeightCodonsAgree) {
+    problems.push('tAI zero-weight codons: this page finds '
+      + `${tai.zeroWeightCodons.join(', ') || 'none'}, meta.json publishes `
+      + `${(tai.publishedZeroWeightCodons ?? []).join(', ') || 'none'}`);
+  }
+  if (provenance.encFlagMismatches > 0) {
+    problems.push(`ENC family substitution: ${formatCount(provenance.encFlagMismatches)} genes `
+      + 'disagree with the published encHasSubstitutedFamilies flag');
+  }
+  return { checked, problems };
+}
+
+/**
+ * Show a banner when a recomputed metric does not match the pipeline.
+ *
+ * A difference here is not a tolerance to be reported as agreement. The maps and
+ * the deltas are drawn from the browser's numbers while the filters, the colour
+ * scales and the Translation section show the pipeline's, so a disagreement means
+ * one gene carries two values for one quantity and the controls no longer
+ * describe the picture. That has to be impossible to miss.
+ */
+function renderMetricAgreement() {
+  const banner = element('metric-agreement');
+  const { checked, problems } = recomputationProblems();
+  banner.replaceChildren();
+  if (problems.length === 0) {
+    banner.hidden = true;
+    return;
+  }
+  banner.hidden = false;
+  const heading = document.createElement('strong');
+  heading.textContent = 'These numbers disagree with the published dataset. Do not trust the '
+    + 'absolute values on this page.';
+  const what = document.createElement('p');
+  what.textContent = `${problems.length} recomputation check`
+    + `${problems.length === 1 ? '' : 's'} of ${formatCount(checked.length)} metrics failed. `
+    + 'This page recomputes each metric so a recoded gene can be compared with wild type. '
+    + 'Where that recomputation differs from the pipeline, the maps and deltas are built from '
+    + 'one set of numbers while the filters, the colour scale and the Translation section show '
+    + 'the other, so the same gene can display two values for one quantity.';
+  const list = document.createElement('ul');
+  for (const problem of problems) {
+    const item = document.createElement('li');
+    item.textContent = problem;
+    list.append(item);
+  }
+  const tolerance = document.createElement('p');
+  tolerance.textContent = 'Anything above '
+    + `${checked[0]?.tolerance ?? RECOMPUTATION_TOLERANCE} is a convention the two sides do not `
+    + 'share, not rounding: genes.json publishes six decimals, so rounding alone cannot exceed '
+    + '5e-7. Differences between two schemes are computed browser against browser and stay '
+    + 'internally consistent, so scheme comparisons remain meaningful.';
+  banner.append(heading, what, list, tolerance);
+}
+
 function renderProvenance() {
   const host = element('provenance');
   const { meta, provenance } = context.dataset;
@@ -500,6 +582,7 @@ function renderProvenance() {
     const dd = document.createElement('dd');
     dd.textContent = description;
     list.append(dt, dd);
+    return dd;
   };
   add('Genome', `${meta.genome?.accession ?? 'unknown'} · taxid ${meta.genome?.taxid ?? '?'}`);
   add('Built', meta.builtAt ?? 'unknown');
@@ -510,12 +593,45 @@ function renderProvenance() {
   add('CAI reference set', provenance.caiReferenceFallback
     ? 'not found in this dataset, so weights come from genome-wide usage'
     : `${formatCount(provenance.caiReferenceGenes)} genes`);
-  const worst = provenance.agreement
-    .filter((entry) => entry.compared > 0)
-    .sort((a, b) => b.worst - a.worst)[0];
-  add('Recomputation check', worst
-    ? `Browser and pipeline agree to ${worst.worst.toExponential(1)} at worst, on ${worst.key}`
-    : 'no comparable pipeline metrics');
+
+  const { checked, problems } = recomputationProblems();
+  const check = add('Recomputation check', problems.length === 0
+    ? `${formatCount(checked.length)} metrics recomputed here match the pipeline to `
+      + `${checked[0]?.tolerance ?? RECOMPUTATION_TOLERANCE}, the rounding limit of the `
+      + 'six decimals genes.json publishes'
+    : `${problems.length} check${problems.length === 1 ? '' : 's'} failed. See the warning at `
+      + 'the top of the page.');
+  if (problems.length > 0) check.className = 'provenance-warning';
+
+  const report = provenance.conventionReport;
+  add('Metric conventions',
+    `${report.fromMeta.length} read from meta.json, ${report.fallbacks.length} not published `
+    + 'and assumed here');
+
+  if (meta.encFamilyConvention) add('ENC families', meta.encFamilyConvention);
+
+  const tai = provenance.taiReport;
+  add('tAI zero-weight codons', tai.zeroWeightCodons.length === 0
+    ? 'none: every sense codon has a tRNA that reads it'
+    : `${tai.zeroWeightCodons.join(', ')} `
+      + `${tai.zeroWeightCodons.length === 1 ? 'takes' : 'take'} the substituted weight `
+      + `${tai.substitution.toFixed(6)}`);
+  if (provenance.conventionReport.sDefaulted.length > 0) {
+    add('tAI constraints', `${provenance.conventionReport.sDefaulted.length} selective-constraint `
+      + `value${provenance.conventionReport.sDefaulted.length === 1 ? '' : 's'} `
+      + `(${provenance.conventionReport.sDefaulted.join(', ')}) were not published and use the `
+      + 'dos Reis fitted defaults');
+  }
+  if (tai.modifiedAnticodons.length > 0 && meta.tai?.lysidineConvention) {
+    add('Modified anticodons', `${tai.modifiedAnticodons.join(', ')}. `
+      + meta.tai.lysidineConvention);
+  }
+  if (tai.unconstrainedPairings.length > 0) {
+    add('tAI pairings without a constraint',
+      `${tai.unconstrainedPairings.length} anticodon-codon pairings have no published s value, `
+      + 'so they are scored as unable to decode, as the pipeline does');
+  }
+
   if (provenance.expressionSource) {
     add('Expression data', describeExpressionSource(provenance.expressionSource));
   }
@@ -523,11 +639,26 @@ function renderProvenance() {
     add('Terminal stops', `${formatCount(provenance.genesWithoutTerminalStop)} genes carry no `
       + 'terminalStop field, so a stop-reassignment scheme cannot be costed for them');
   }
-  if (provenance.taiReport.sDefaulted.length > 0) {
-    add('tAI constraints', `${provenance.taiReport.sDefaulted.length} of 9 selective-constraint `
-      + 'values were not supplied and use the published defaults');
-  }
   host.append(list);
+
+  // The convention list carries long field names, so it sits outside the
+  // two-column definition grid where a narrow value cell would break it a
+  // character at a time.
+  const details = document.createElement('details');
+  details.className = 'convention-details';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Which convention came from where';
+  details.append(summary);
+  const conventionList = document.createElement('ul');
+  for (const entry of [...report.fromMeta, ...report.fallbacks]) {
+    const item = document.createElement('li');
+    const label = document.createElement('b');
+    label.textContent = entry.label;
+    item.append(label, document.createTextNode(` — ${entry.detail}`));
+    conventionList.append(item);
+  }
+  details.append(conventionList);
+  host.append(details);
 }
 
 async function boot() {
@@ -665,6 +796,7 @@ async function boot() {
   updatePanelTabs();
   buildColorSelect();
   buildGeneSearch();
+  renderMetricAgreement();
   renderProvenance();
 
   element('reset-view').addEventListener('click', () => {

@@ -5,7 +5,12 @@
  * and happens once at start-up.
  */
 import { CodonTable } from './codon-table.js';
-import { buildCaiWeights, buildTaiWeights, buildCodonPairScores } from './codon-metrics.js';
+import {
+  buildCaiWeights, buildTaiWeights, buildCodonPairScores, encFromCounts,
+} from './codon-metrics.js';
+import {
+  resolveConventions, applyInitiatorConvention, RECOMPUTATION_TOLERANCE,
+} from './conventions.js';
 import { compileScheme } from './scheme.js';
 import { computeLiveMetrics } from './live-metrics.js';
 
@@ -29,7 +34,13 @@ function requireArray(value, name) {
   return value;
 }
 
-/** Mean absolute difference and worst case between a pipeline field and a recomputed one. */
+/**
+ * Compare a pipeline field with the browser's recomputation of the same quantity.
+ *
+ * These are two computations of one number, so a difference is a convention the
+ * two sides do not share, not a tolerance to be reported as agreement. The
+ * verdict is carried here so no caller has to decide what counts as agreeing.
+ */
 function agreement(genes, key, recomputed) {
   let sum = 0;
   let worst = 0;
@@ -49,7 +60,15 @@ function agreement(genes, key, recomputed) {
     }
     n += 1;
   }
-  return { key, compared: n, meanAbsDifference: n > 0 ? sum / n : NaN, worst, worstGene };
+  return {
+    key,
+    compared: n,
+    meanAbsDifference: n > 0 ? sum / n : NaN,
+    worst,
+    worstGene,
+    tolerance: RECOMPUTATION_TOLERANCE,
+    agrees: n > 0 && worst <= RECOMPUTATION_TOLERANCE,
+  };
 }
 
 /**
@@ -70,6 +89,8 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   requireArray(genes, 'genes.json');
   if (genes.length === 0) throw new Error('genes.json is empty');
   const table = new CodonTable(meta.codonAlphabet);
+  const conventions = resolveConventions(meta, table);
+  const { initiatorIndex } = conventions;
 
   const n = genes.length;
   const offsets = new Int32Array(n + 1);
@@ -94,7 +115,11 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   const stopCodons = new Int8Array(n).fill(-1);
   const counts = new Uint16Array(n * 64);
   const genomeCounts = new Float64Array(64);
-  const pairCounts = new Float64Array(4096);
+  // Codon-usage metrics count position zero as methionine, so the genome-wide
+  // tables the codon-pair scores are built from use that view; `genomeCounts`
+  // stays literal because it is what the interface shows as observed usage.
+  const translatedGenomeCounts = new Float64Array(64);
+  const translatedPairCounts = new Float64Array(4096);
   const lengthsNt = new Float64Array(n);
   let genesWithoutStop = 0;
   for (let i = 0; i < n; i += 1) {
@@ -112,27 +137,62 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
       genesWithoutStop += 1;
     }
     const countBase = i * 64;
+    let previousTranslated = -1;
     for (let j = 0; j < decoded.length; j += 1) {
       const codon = decoded[j];
       counts[countBase + codon] += 1;
       genomeCounts[codon] += 1;
-      if (j > 0) pairCounts[decoded[j - 1] * 64 + codon] += 1;
+      const translatedCodon = j === 0 ? initiatorIndex : codon;
+      translatedGenomeCounts[translatedCodon] += 1;
+      if (previousTranslated >= 0) {
+        translatedPairCounts[previousTranslated * 64 + translatedCodon] += 1;
+      }
+      previousTranslated = translatedCodon;
     }
   }
 
+  // The reference set feeds the CAI weights, so it is counted under the same
+  // convention as the genes those weights will score.
   const referenceTags = new Set(meta.caiReferenceSet?.locusTags ?? []);
   const referenceCounts = new Float64Array(64);
+  const scratch = new Float64Array(64);
   let referenceGenes = 0;
+  let encFlagMismatches = 0;
+  const encReport = {};
   for (let i = 0; i < n; i += 1) {
-    if (!referenceTags.has(genes[i].id)) continue;
-    referenceGenes += 1;
-    for (let c = 0; c < 64; c += 1) referenceCounts[c] += counts[i * 64 + c];
+    for (let c = 0; c < 64; c += 1) scratch[c] = counts[i * 64 + c];
+    applyInitiatorConvention(scratch, packed[offsets[i]], initiatorIndex);
+    if (referenceTags.has(genes[i].id)) {
+      referenceGenes += 1;
+      for (let c = 0; c < 64; c += 1) referenceCounts[c] += scratch[c];
+    }
+    // The pipeline publishes whether a gene's Nc leaned on a class average.
+    // Recomputing it is a free check that both sides read the same families.
+    if (typeof genes[i].encHasSubstitutedFamilies === 'boolean') {
+      encFromCounts(scratch, table, encReport);
+      if (encReport.hasSubstitutedFamilies !== genes[i].encHasSubstitutedFamilies) {
+        encFlagMismatches += 1;
+      }
+    }
   }
   const caiReferenceFallback = referenceGenes === 0;
-  const caiWeights = buildCaiWeights(caiReferenceFallback ? genomeCounts : referenceCounts, table);
-  const { weights: taiWeights, report: taiReport } =
-    buildTaiWeights(meta.tai?.tRNAGeneCopies, meta.tai?.sValues, table);
-  const cpsScores = buildCodonPairScores(pairCounts, genomeCounts, table);
+  const caiWeights = buildCaiWeights(
+    caiReferenceFallback ? translatedGenomeCounts : referenceCounts,
+    table,
+    conventions.cai.zeroCountAdjustment,
+  );
+  const { weights: taiWeights, report: taiReport } = buildTaiWeights(
+    meta.tai?.tRNAGeneCopies,
+    conventions.tai.sValues,
+    table,
+    {
+      publishedSubstitution: conventions.tai.publishedSubstitution,
+      publishedZeroWeightCodons: conventions.tai.publishedZeroWeightCodons,
+    },
+  );
+  const cpsScores = buildCodonPairScores(
+    translatedPairCounts, translatedGenomeCounts, table, conventions.cps.smoothing,
+  );
 
   const dataset = {
     meta,
@@ -140,6 +200,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     codonPca,
     excluded: excluded ?? [],
     table,
+    conventions,
     packed,
     offsets,
     stopCodons,
@@ -156,6 +217,8 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
       caiReferenceGenes: referenceGenes,
       caiReferenceFallback,
       taiReport,
+      conventionReport: conventions.report,
+      encFlagMismatches,
       declaredGeneCount: meta.geneCount ?? null,
       loadedGeneCount: n,
       excludedCount: (excluded ?? []).length,

@@ -264,6 +264,24 @@ input[type="range"] { width: 100%; }
 .scheme-note { display: block; margin-top: 0.25rem; }
 .scheme-note.warn { color: #6b4100; font-weight: 600; }
 
+/* A recomputed metric that disagrees with the pipeline means the map and the
+   controls no longer describe the same numbers. It is a red condition, not a
+   note, so it uses the strongest treatment on the page and never colour alone. */
+.metric-alert {
+  margin: 0 1.25rem var(--gap);
+  padding: 0.7rem 0.9rem;
+  border: 2px solid #8c1d18;
+  border-left-width: 6px;
+  border-radius: var(--radius);
+  background: #fdecea;
+  color: #5c1512;
+  font-size: 0.86rem;
+}
+.metric-alert strong { display: block; font-size: 0.95rem; margin-bottom: 0.3rem; }
+.metric-alert p { margin: 0.3rem 0; }
+.metric-alert ul { margin: 0.3rem 0; padding-left: 1.2rem; }
+.metric-alert li { margin: 0.15rem 0; font-variant-numeric: tabular-nums; }
+
 /* Filters --------------------------------------------------------------- */
 
 .traffic-filter { border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
@@ -477,8 +495,19 @@ input[type="range"] { width: 100%; }
 .sort-button { background: none; border: none; cursor: pointer; font: inherit; font-weight: 600; padding: 0; text-align: left; }
 .sort-arrow { color: var(--accent); }
 
-.provenance-list { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.6rem; margin: 0; font-size: 0.8rem; }
-.provenance-list dt { color: var(--ink-muted); }
+/* Long meta.json field names would break a character at a time inside the
+   provenance grid's value column, so this disclosure spans the whole card. */
+.convention-details { margin-top: 0.5rem; font-size: 0.8rem; }
+.convention-details summary { cursor: pointer; color: var(--ink-muted); }
+.convention-details ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+.convention-details li { margin-bottom: 0.35rem; }
+
+/* The About card lives in the narrow control column, where a two-column
+   definition list leaves a value only a few characters wide. Term above value
+   gives every entry the full card width. */
+.provenance-list { margin: 0; font-size: 0.8rem; }
+.provenance-list dt { color: var(--ink-muted); margin-top: 0.5rem; }
+.provenance-list dt:first-child { margin-top: 0; }
 .provenance-list dd { margin: 0; overflow-wrap: anywhere; }
 
 .site-footer { padding: 0 1.25rem 2rem; color: var(--ink-muted); font-size: 0.82rem; }

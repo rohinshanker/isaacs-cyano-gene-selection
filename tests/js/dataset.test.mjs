@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { loadDataset } from '../../site/js/core/dataset.js';
+import { RECOMPUTATION_TOLERANCE } from '../../site/js/core/conventions.js';
 import { fixtureDataset, fileFetch, FIXTURE_DIR } from './helpers.mjs';
 
 test('the fixture loads and indexes into the shapes the site expects', async () => {
@@ -44,6 +45,68 @@ test('recomputed wild-type values agree with the published ones', async () => {
   assert.equal(dataset.baseline.recodedCai[3].toFixed(9), dataset.genes[3].cai.toFixed(9));
   assert.equal(dataset.baseline.recodedEnc[3].toFixed(9), dataset.genes[3].enc.toFixed(9));
   assert.equal(dataset.baseline.recodedTai[3].toFixed(9), dataset.genes[3].tai.toFixed(9));
+});
+
+test('every recomputation carries its own verdict, not a bare magnitude', async () => {
+  const dataset = await fixtureDataset();
+  for (const entry of dataset.provenance.agreement) {
+    assert.equal(typeof entry.agrees, 'boolean', `${entry.key} has no verdict`);
+    assert.equal(entry.tolerance, RECOMPUTATION_TOLERANCE);
+    assert.equal(entry.agrees, entry.worst <= entry.tolerance);
+    assert.ok(entry.agrees, `${entry.key} differs by ${entry.worst} at worst`);
+  }
+});
+
+test('the published ENC family flag is reproduced for every gene', async () => {
+  const dataset = await fixtureDataset();
+  assert.equal(dataset.provenance.encFlagMismatches, 0);
+  assert.ok(dataset.genes.some((gene) => gene.encHasSubstitutedFamilies === true),
+    'the fixture must contain a gene that leaned on a class average');
+  assert.ok(dataset.genes.some((gene) => gene.encHasSubstitutedFamilies === false));
+});
+
+test('tAI weights reproduce the substitution and zero-weight set meta publishes', async () => {
+  const dataset = await fixtureDataset();
+  const report = dataset.provenance.taiReport;
+  assert.equal(report.substitutionAgrees, true);
+  assert.equal(report.zeroWeightCodonsAgree, true);
+  assert.deepEqual(report.zeroWeightCodons, dataset.meta.tai.zeroWeightCodons);
+  // The modified wobble bases are the reason this cannot be derived by reverse
+  // complement, so the fixture must exercise them.
+  assert.ok(report.modifiedAnticodons.length > 0);
+});
+
+test('conventions come from meta.json, and any assumption is named', async () => {
+  const dataset = await fixtureDataset();
+  const report = dataset.provenance.conventionReport;
+  const labels = report.fromMeta.map((entry) => entry.label);
+  assert.ok(labels.includes('tAI excluded amino acids'));
+  assert.ok(labels.includes('tAI zero-weight substitution'));
+  assert.ok(labels.includes('CAI zero-count adjustment'));
+  assert.equal(report.unknownExcludedAminoAcids.length, 0);
+  for (const entry of report.fallbacks) {
+    assert.ok(entry.label && entry.detail, 'an assumed convention must say what it assumed');
+  }
+});
+
+test('a convention change in meta.json changes the numbers with no code edit', async () => {
+  // Excluding tryptophan as well as methionine from tAI must move tAI, which is
+  // what proves the exclusion list is read rather than compiled in.
+  const base = await loadDataset({ baseUrl: `file://${FIXTURE_DIR}/`, fetchImpl: fileFetch() });
+  const altered = await loadDataset({
+    baseUrl: `file://${FIXTURE_DIR}/`,
+    fetchImpl: async (url) => {
+      const response = await fileFetch()(url);
+      if (!url.endsWith('meta.json')) return response;
+      const meta = await response.json();
+      meta.tai.excludedAminoAcids = ['M', 'W'];
+      return { ok: true, status: 200, json: async () => meta };
+    },
+  });
+  assert.deepEqual(altered.conventions.tai.excludedAminoAcids, ['M', 'W']);
+  const moved = altered.genes.some((gene, i) => altered.baseline.recodedTai[i]
+    !== base.baseline.recodedTai[i]);
+  assert.ok(moved, 'excluding another amino acid must change tAI');
 });
 
 test('the wild-type baseline is computed once and carries no target load', async () => {

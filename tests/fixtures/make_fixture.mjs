@@ -34,6 +34,10 @@ import {
   buildCaiWeights, buildTaiWeights, buildCodonPairScores,
   gc3FromCounts, encFromCounts, encExpected, caiFromCounts, taiFromCounts,
 } from '../../site/js/core/codon-metrics.js';
+import {
+  resolveInitiatorIndex, applyInitiatorConvention, DEFAULT_TAI_S_VALUES,
+  DEFAULT_CAI_ZERO_COUNT_ADJUSTMENT, DEFAULT_CPS_SMOOTHING,
+} from '../../site/js/core/conventions.js';
 import { pca } from '../../site/js/core/pca.js';
 
 const SYMBOLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -71,19 +75,39 @@ const AA_FREQUENCY = {
   T: 0.057, W: 0.014, Y: 0.028, V: 0.070,
 };
 
-/** tRNA gene copy numbers by anticodon, sized like a 44-gene bacterial set. */
+/**
+ * tRNA gene copy numbers by anticodon, sized like a 44-gene bacterial set.
+ *
+ * Two entries carry a modified wobble base, exactly as the real genome's table
+ * does: `ICG` is the inosine-modified arginine tRNA that reads all four CGN
+ * codons, and `LAT` is the lysidine-modified isoleucine tRNA that reads ATA
+ * while methionine's own `CAT` does not. A fixture without them would not
+ * exercise the codons most easily left unweighted.
+ */
 const TRNA_GENE_COPIES = {
-  AGC: 4, TGC: 1, ACG: 2, CCG: 1, TCG: 1, GTT: 2, GCA: 1, TTG: 2, TCC: 1, GCC: 2,
-  GTG: 1, GAT: 3, TAT: 1, CAT: 3, TTT: 2, CAA: 2, TAA: 1, GAA: 2, CTT: 1, TAG: 1,
+  AGC: 4, TGC: 1, ICG: 2, CCG: 1, TCG: 1, GTT: 2, GCA: 1, TTG: 2, TCC: 1, GCC: 2,
+  GTG: 1, GAT: 3, LAT: 1, CAT: 3, TTT: 2, CAA: 2, TAA: 1, GAA: 2, CTT: 1, TAG: 1,
   CAG: 1, GGG: 1, TGG: 1, GCT: 2, TGA: 2, CGA: 1, GGT: 1, TGT: 1, GGC: 1, GTA: 1,
   CCA: 1, GTC: 1, TAC: 2, GAC: 1, CGT: 1, CCT: 1,
 };
 
-/** Selective constraints for the nine codon-anticodon pairings (dos Reis et al. 2004). */
-const TAI_S_VALUES = {
-  'U:A': 0, 'C:G': 0, 'A:U': 0, 'G:C': 0, 'G:U': 0.41,
-  'I:C': 0.28, 'I:A': 0.9999, 'U:G': 0.68, 'L:A': 0.89,
-};
+/**
+ * Selective constraints, keyed `anticodonWobbleBase:codonThirdBase` as the
+ * pipeline keys them. Watson-Crick pairings need no entry; they contribute their
+ * full copy number.
+ */
+const TAI_S_VALUES = { ...DEFAULT_TAI_S_VALUES };
+
+/** Amino acids dos Reis excludes from the tAI geometric mean. */
+const TAI_EXCLUDED_AMINO_ACIDS = ['M'];
+
+/** How the pipeline treats a synonymous family it observed fewer than twice. */
+const ENC_FAMILY_CONVENTION = 'families with fewer than two observations use the mean F of '
+  + 'estimable families in the same degeneracy class; an entirely unestimable class uses '
+  + 'neutral F=1/k';
+
+const LYSIDINE_CONVENTION = 'Ile-CAT is represented as LAT and decodes ATA with s=0.89; '
+  + 'Met-CAT remains a separate species decoding ATG';
 
 const PRODUCTS = [
   'hypothetical protein', 'ATP synthase subunit beta', '30S ribosomal protein S12',
@@ -222,18 +246,37 @@ function main() {
     });
   }
 
-  // Genome-wide counts drive CAI weights, codon-pair scores, and rarity.
+  // Codon-usage metrics count position zero as methionine, whatever triplet is
+  // there, because every bacterial start translates as methionine. Composition
+  // metrics use the literal sequence. Both views are built here so the fixture
+  // carries the same conventions the site reads back out of meta.json.
+  const initiatorIndex = resolveInitiatorIndex(table);
+  const translatedIndices = packedIndices.map((indices) => {
+    const translated = Int32Array.from(indices);
+    if (translated.length > 0) translated[0] = initiatorIndex;
+    return translated;
+  });
+
   const genomeCounts = new Float64Array(64);
-  const pairCounts = new Float64Array(4096);
+  const translatedGenomeCounts = new Float64Array(64);
+  const translatedPairCounts = new Float64Array(4096);
   const perGeneCounts = [];
-  packedIndices.forEach((indices) => {
+  const perGeneTranslatedCounts = [];
+  packedIndices.forEach((indices, g) => {
     const counts = new Float64Array(64);
     for (let i = 0; i < indices.length; i += 1) {
       counts[indices[i]] += 1;
       genomeCounts[indices[i]] += 1;
-      if (i > 0) pairCounts[indices[i - 1] * 64 + indices[i]] += 1;
     }
     perGeneCounts.push(counts);
+    const translated = Float64Array.from(counts);
+    if (indices.length > 0) applyInitiatorConvention(translated, indices[0], initiatorIndex);
+    perGeneTranslatedCounts.push(translated);
+    const chain = translatedIndices[g];
+    for (let i = 0; i < chain.length; i += 1) {
+      translatedGenomeCounts[chain[i]] += 1;
+      if (i > 0) translatedPairCounts[chain[i - 1] * 64 + chain[i]] += 1;
+    }
   });
 
   const referenceOrder = genes
@@ -242,20 +285,37 @@ function main() {
     .slice(0, Math.min(57, genes.length));
   const referenceCounts = new Float64Array(64);
   for (const { index } of referenceOrder) {
-    for (let c = 0; c < 64; c += 1) referenceCounts[c] += perGeneCounts[index][c];
+    for (let c = 0; c < 64; c += 1) referenceCounts[c] += perGeneTranslatedCounts[index][c];
   }
 
-  const caiWeights = buildCaiWeights(referenceCounts, table);
-  const { weights: taiWeights } = buildTaiWeights(TRNA_GENE_COPIES, TAI_S_VALUES, table);
-  const cpsScores = buildCodonPairScores(pairCounts, genomeCounts, table);
+  // The excluded families are named in meta.json below, so the site derives the
+  // same masks rather than assuming them.
+  const maskFor = (aminoAcids) => {
+    const mask = new Uint8Array(64);
+    for (const aa of aminoAcids) for (const index of table.family.get(aa) ?? []) mask[index] = 1;
+    return mask;
+  };
+  const taiExcludedMask = maskFor(TAI_EXCLUDED_AMINO_ACIDS);
+  const caiExcludedMask = maskFor([...table.family]
+    .filter(([aa, indices]) => aa !== '*' && indices.length === 1)
+    .map(([aa]) => aa));
+
+  const caiWeights =
+    buildCaiWeights(referenceCounts, table, DEFAULT_CAI_ZERO_COUNT_ADJUSTMENT);
+  const { weights: taiWeights, report: taiReport } =
+    buildTaiWeights(TRNA_GENE_COPIES, TAI_S_VALUES, table, {});
+  const cpsScores = buildCodonPairScores(
+    translatedPairCounts, translatedGenomeCounts, table, DEFAULT_CPS_SMOOTHING,
+  );
 
   // Relative synonymous frequency genome-wide decides which codons count as rare.
   const relativeFrequency = new Float64Array(64);
   for (const indices of table.family.values()) {
     let familyTotal = 0;
-    for (const index of indices) familyTotal += genomeCounts[index];
+    for (const index of indices) familyTotal += translatedGenomeCounts[index];
     for (const index of indices) {
-      relativeFrequency[index] = familyTotal > 0 ? genomeCounts[index] / familyTotal : 0;
+      relativeFrequency[index] =
+        familyTotal > 0 ? translatedGenomeCounts[index] / familyTotal : 0;
     }
   }
   const rareCodonThreshold = 0.1;
@@ -266,7 +326,7 @@ function main() {
 
   const rscuMatrix = new Float64Array(genes.length * rscuOrder.length);
   genes.forEach((gene, g) => {
-    const counts = perGeneCounts[g];
+    const counts = perGeneTranslatedCounts[g];
     rscuOrder.forEach((codon, c) => {
       const index = table.indexOf(codon);
       const family = table.family.get(table.aas[index]);
@@ -282,6 +342,8 @@ function main() {
   const records = genes.map((gene, g) => {
     const indices = packedIndices[g];
     const counts = perGeneCounts[g];
+    const translated = perGeneTranslatedCounts[g];
+    const translatedChain = translatedIndices[g];
     let nucleotides = '';
     for (let i = 0; i < indices.length; i += 1) nucleotides += table.codons[indices[i]];
 
@@ -315,7 +377,8 @@ function main() {
     };
 
     const gc3 = gc3FromCounts(counts, table);
-    const enc = encFromCounts(counts, table);
+    const encReport = {};
+    const enc = encFromCounts(translated, table, encReport);
     const expected = encExpected(gc3);
     const local = windowGc(99);
 
@@ -323,8 +386,8 @@ function main() {
     let longestRareRun = 0;
     let currentRun = 0;
     let rampRareCount = 0;
-    for (let i = 0; i < indices.length; i += 1) {
-      if (isRare[indices[i]]) {
+    for (let i = 0; i < translatedChain.length; i += 1) {
+      if (isRare[translatedChain[i]]) {
         rareCount += 1;
         currentRun += 1;
         longestRareRun = Math.max(longestRareRun, currentRun);
@@ -336,19 +399,21 @@ function main() {
 
     const taiWindow = 15;
     let minLocalTai = Infinity;
-    if (indices.length >= taiWindow) {
+    if (translatedChain.length >= taiWindow) {
       let logSum = 0;
-      for (let i = 0; i < indices.length; i += 1) {
-        logSum += Math.log(Math.max(1e-6, taiWeights[indices[i]]));
-        if (i >= taiWindow) logSum -= Math.log(Math.max(1e-6, taiWeights[indices[i - taiWindow]]));
+      for (let i = 0; i < translatedChain.length; i += 1) {
+        logSum += Math.log(Math.max(1e-6, taiWeights[translatedChain[i]]));
+        if (i >= taiWindow) {
+          logSum -= Math.log(Math.max(1e-6, taiWeights[translatedChain[i - taiWindow]]));
+        }
         if (i >= taiWindow - 1) minLocalTai = Math.min(minLocalTai, Math.exp(logSum / taiWindow));
       }
     }
 
     let cpsSum = 0;
     let underrepresented = 0;
-    for (let i = 1; i < indices.length; i += 1) {
-      const score = cpsScores[indices[i - 1] * 64 + indices[i]];
+    for (let i = 1; i < translatedChain.length; i += 1) {
+      const score = cpsScores[translatedChain[i - 1] * 64 + translatedChain[i]];
       cpsSum += score;
       if (score < 0) underrepresented += 1;
     }
@@ -379,10 +444,11 @@ function main() {
       g3: baseFraction('G'),
       c3: baseFraction('C'),
       enc,
+      encHasSubstitutedFamilies: encReport.hasSubstitutedFamilies,
       encExpected: expected,
       deltaEnc: expected - enc,
-      cai: caiFromCounts(counts, caiWeights),
-      tai: taiFromCounts(counts, taiWeights, table),
+      cai: caiFromCounts(translated, caiWeights, caiExcludedMask),
+      tai: taiFromCounts(translated, taiWeights, table, taiExcludedMask),
       rareFraction: rareCount / indices.length,
       rareCount,
       longestRareRun,
@@ -529,14 +595,24 @@ function main() {
     geneCount: records.length,
     codonAlphabet: alphabet,
     rscuOrder,
-    defaultReplacement: mostUsedSynonym(genomeCounts),
+    defaultReplacement: mostUsedSynonym(translatedGenomeCounts),
     highExpressedReplacement: mostUsedSynonym(referenceCounts),
     caiReferenceSet: {
       method: 'simulated-high-expression',
       locusTags: referenceOrder.map(({ index }) => genes[index].id),
       n: referenceOrder.length,
+      zeroCountAdjustment: DEFAULT_CAI_ZERO_COUNT_ADJUSTMENT,
     },
-    tai: { sValues: TAI_S_VALUES, tRNAGeneCopies: TRNA_GENE_COPIES },
+    tai: {
+      method: 'synthetic anticodon copy number',
+      sValues: TAI_S_VALUES,
+      tRNAGeneCopies: TRNA_GENE_COPIES,
+      excludedAminoAcids: TAI_EXCLUDED_AMINO_ACIDS,
+      zeroWeightSubstitution: taiReport.substitution,
+      zeroWeightCodons: taiReport.zeroWeightCodons,
+      lysidineConvention: LYSIDINE_CONVENTION,
+    },
+    encFamilyConvention: ENC_FAMILY_CONVENTION,
     rareCodonThreshold,
     metrics,
   };

@@ -7,15 +7,28 @@ import {
 } from '../../site/js/core/live-metrics.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { buildCaiWeights, buildTaiWeights, buildCodonPairScores } from '../../site/js/core/codon-metrics.js';
+import {
+  resolveConventions, applyInitiatorConvention, DEFAULT_TAI_S_VALUES,
+} from '../../site/js/core/conventions.js';
 import { standardTable, fixtureDataset } from './helpers.mjs';
 
 const table = standardTable();
 
-/** One 120-codon gene with targets at positions chosen so every field is checkable by hand. */
-function handBuiltDataset(targetPositions, { terminalStop = 'TAA' } = {}) {
+/** The conventions a minimal meta.json publishes, resolved once for these tests. */
+const conventions = resolveConventions({
+  tai: { sValues: DEFAULT_TAI_S_VALUES, excludedAminoAcids: ['M'] },
+  caiReferenceSet: { zeroCountAdjustment: 0.5 },
+}, table);
+
+/**
+ * One 120-codon gene with targets at positions chosen so every field is checkable
+ * by hand. `start` is the initiation triplet, which the scan must never recode and
+ * which codon-usage metrics count as methionine.
+ */
+function handBuiltDataset(targetPositions, { terminalStop = 'TAA', start = 'ATG' } = {}) {
   const length = 120;
   const packed = new Uint8Array(length).fill(table.indexOf('GCT'));
-  packed[0] = table.indexOf('ATG');
+  packed[0] = table.indexOf(start);
   for (const position of targetPositions) packed[position] = table.indexOf('TCG');
   const counts = new Float64Array(64);
   const pairCounts = new Float64Array(4096);
@@ -23,16 +36,20 @@ function handBuiltDataset(targetPositions, { terminalStop = 'TAA' } = {}) {
     counts[packed[i]] += 1;
     if (i > 0) pairCounts[packed[i - 1] * 64 + packed[i]] += 1;
   }
+  const translated = Float64Array.from(counts);
+  applyInitiatorConvention(translated, packed[0], conventions.initiatorIndex);
   return {
     table,
+    conventions,
     packed,
     offsets: Int32Array.from([0, length]),
     lengthsNt: Float64Array.from([length * 3 + 3]),
     stopCodons: Int8Array.from([terminalStop ? table.indexOf(terminalStop) : -1]),
     genes: [{ id: 'TEST_0001', lengthCodons: length, lengthNt: length * 3 + 3, terminalStop }],
-    caiWeights: buildCaiWeights(counts, table),
-    taiWeights: buildTaiWeights({ AGC: 3, AGA: 2, CGA: 1 }, {}, table).weights,
-    cpsScores: buildCodonPairScores(pairCounts, counts, table),
+    caiWeights: buildCaiWeights(translated, table, conventions.cai.zeroCountAdjustment),
+    taiWeights: buildTaiWeights({ AGC: 3, AGA: 2, CGA: 1 }, conventions.tai.sValues, table, {})
+      .weights,
+    cpsScores: buildCodonPairScores(pairCounts, translated, table, conventions.cps.smoothing),
   };
 }
 
@@ -137,6 +154,41 @@ test('GC3 moves when the replacement changes the third base', () => {
   const { fields: baseline } = computeLiveMetrics(dataset, identity);
   const { fields } = computeLiveMetrics(dataset, compileScheme({ TCG: 'TCA' }, table), { baseline });
   assert.equal(fields.dGc3[0].toFixed(6), (-4 / 120).toFixed(6));
+});
+
+test('codon-usage metrics count a non-ATG start as methionine, and GC3 does not', () => {
+  // Position zero translates as methionine whatever the triplet is. Two genes
+  // identical but for their start must therefore carry the same CAI, tAI, ENC and
+  // codon-pair score, while GC3 reads the literal third base and must differ.
+  const identity = compileScheme({}, table);
+  const fromAtg = computeLiveMetrics(handBuiltDataset([40], { start: 'ATG' }), identity).fields;
+  const fromGtg = computeLiveMetrics(handBuiltDataset([40], { start: 'GTG' }), identity).fields;
+
+  assert.equal(fromGtg.recodedCai[0], fromAtg.recodedCai[0]);
+  assert.equal(fromGtg.recodedTai[0], fromAtg.recodedTai[0]);
+  assert.equal(fromGtg.recodedEnc[0], fromAtg.recodedEnc[0]);
+  assert.equal(fromGtg.recodedCps[0], fromAtg.recodedCps[0]);
+  // ATG, GTG and TTG all end in G, so GC3 cannot separate them. ATT is one of the
+  // rarer annotated starts and ends in T, which makes the literal reading visible.
+  const fromAtt = computeLiveMetrics(handBuiltDataset([40], { start: 'ATT' }), identity).fields;
+  assert.equal(fromAtt.recodedCai[0], fromAtg.recodedCai[0]);
+  assert.equal(fromAtt.recodedTai[0], fromAtg.recodedTai[0]);
+  assert.equal(fromAtt.recodedGc3[0].toFixed(6), (fromAtg.recodedGc3[0] - 1 / 120).toFixed(6));
+});
+
+test('the initiation codon is excluded from tAI even when its family is not', () => {
+  // A gene starting GTG must not charge valine for that position. Recoding valine
+  // elsewhere still moves tAI, which proves the exclusion is positional and not a
+  // blanket skip of the whole family.
+  const dataset = handBuiltDataset([40], { start: 'GTG' });
+  const identity = compileScheme({}, table);
+  const { fields: baseline } = computeLiveMetrics(dataset, identity);
+  assert.equal(baseline.recodedTai[0],
+    computeLiveMetrics(handBuiltDataset([40], { start: 'ATG' }), identity).fields.recodedTai[0]);
+  const { fields } = computeLiveMetrics(
+    dataset, compileScheme({ GCT: 'GCC' }, table), { baseline },
+  );
+  assert.notEqual(fields.dTai[0], 0, 'recoding the body still changes tAI');
 });
 
 test('every gene in the fixture agrees with a brute-force target count', async () => {

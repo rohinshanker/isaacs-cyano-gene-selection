@@ -5,6 +5,7 @@
  * scheme-dependent number for every gene. Nothing here is recomputed per render.
  */
 import { gc3FromCounts, encFromCounts, caiFromCounts, taiFromCounts } from './codon-metrics.js';
+import { applyInitiatorConvention } from './conventions.js';
 
 /** Codons per sliding window for local target density. */
 export const WINDOW_CODONS = 50;
@@ -101,12 +102,18 @@ export function computeLiveMetrics(dataset, scheme, options = {}) {
   const started = performance.now();
   const {
     packed, offsets, table, caiWeights, taiWeights, cpsScores, lengthsNt, stopCodons,
+    conventions,
   } = dataset;
+  const { initiatorIndex } = conventions;
   const n = offsets.length - 1;
   const fields = allocate(n);
   const baseline = options.baseline ?? null;
 
+  // `counts` holds the literal recoded codons, which is what GC3 is defined over.
+  // `translated` counts position zero as methionine, the convention every
+  // codon-usage metric uses; see conventions.js.
   const counts = new Float64Array(64);
+  const translated = new Float64Array(64);
   let maxLength = 0;
   for (let g = 0; g < n; g += 1) maxLength = Math.max(maxLength, offsets[g + 1] - offsets[g]);
   const targetFlags = new Uint8Array(maxLength);
@@ -126,14 +133,17 @@ export function computeLiveMetrics(dataset, scheme, options = {}) {
     let maxClusterSpan = 0;
     let lastTarget = -1;
     let cpsSum = 0;
-    let previousRecoded = -1;
+    let previousTranslated = -1;
 
     for (let i = 0; i < length; i += 1) {
       const original = packed[start + i];
       const recoded = i === INITIATION_INDEX ? original : replacement[original];
       counts[recoded] += 1;
-      if (previousRecoded >= 0) cpsSum += cpsScores[previousRecoded * 64 + recoded];
-      previousRecoded = recoded;
+      // The codon-pair chain is scored over translated codons, so its first link
+      // starts from the initiator rather than the literal start triplet.
+      const translatedCodon = i === INITIATION_INDEX ? initiatorIndex : recoded;
+      if (previousTranslated >= 0) cpsSum += cpsScores[previousTranslated * 64 + translatedCodon];
+      previousTranslated = translatedCodon;
 
       const hit = i === INITIATION_INDEX ? 0 : isTarget[original];
       targetFlags[i] = hit;
@@ -174,10 +184,13 @@ export function computeLiveMetrics(dataset, scheme, options = {}) {
     fields.targetClusters[g] = clusters;
     fields.maxClusterSpan[g] = maxClusterSpan;
 
+    translated.set(counts);
+    applyInitiatorConvention(translated, packed[start], initiatorIndex);
+
     const gc3 = gc3FromCounts(counts, table);
-    const cai = caiFromCounts(counts, caiWeights);
-    const tai = taiFromCounts(counts, taiWeights, table);
-    const enc = encFromCounts(counts, table);
+    const cai = caiFromCounts(translated, caiWeights, conventions.cai.excludedMask);
+    const tai = taiFromCounts(translated, taiWeights, table, conventions.tai.excludedMask);
+    const enc = encFromCounts(translated, table);
     const cps = length > 1 ? cpsSum / (length - 1) : NaN;
     fields.recodedGc3[g] = gc3;
     fields.recodedCai[g] = cai;
