@@ -49,6 +49,10 @@ jobs:
       - name: Check live metrics against real data
         run: node tools/check_live_metrics.mjs
 
+      # Fixture data is generated, not committed; the generator is the asset.
+      - name: Generate test fixtures
+        run: node tests/fixtures/make_fixture.mjs
+
       - name: Run site unit tests
         run: node --test "tests/js/*.test.mjs"
 

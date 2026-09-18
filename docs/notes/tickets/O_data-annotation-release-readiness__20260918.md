@@ -85,7 +85,7 @@ ambiguous and silently drops the gene. Exactly four proteins are genuinely ambig
 
 Standing policy is to prefer TypeSafe's System One model (Jev) over frontier-model
 credits for bounded semantic judgments. See the "TypeSafe First for Bounded Judgments"
-section of `/Users/Rohin/.codex/AGENTS.md`.
+section of the global working policy at `~/.codex/AGENTS.md`.
 
 **Blocked:** no API key, SDK, or MCP server exists on this machine, so nothing below
 can run yet. The skill is documentation only.

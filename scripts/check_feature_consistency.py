@@ -26,10 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
 
 
-RAW_DEFAULT = Path(
-    "/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/"
-    "isaacs-cyano-gene-selection/data/raw"
-)
+RAW_DEFAULT = Path(__file__).resolve().parents[1] / "data/raw"
 PREFIX = "GCF_000817325.1_ASM81732v1_"
 TABLE = CodonTable.unambiguous_dna_by_id[11]
 

@@ -753,10 +753,7 @@ def main() -> None:
     parser.add_argument(
         "--raw-dir",
         type=Path,
-        default=Path(
-            "/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/"
-            "isaacs-cyano-gene-selection/data/raw"
-        ),
+        default=repository / "data/raw",
     )
     parser.add_argument("--output-dir", type=Path, default=repository / "site/data")
     args = parser.parse_args()
