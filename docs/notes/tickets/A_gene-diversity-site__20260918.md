@@ -42,7 +42,28 @@ Baseline established by the interactive coordinator:
 | --- | --- | --- | --- | --- |
 | Feature pipeline | `codex-implementer` | DEM-27 | `feat/pipeline` | running |
 | Interactive site | `claude-specialist` | DEM-28 | `feat/site` | running |
-| Expression dataset | `codex-scout` | DEM-29 | read-only | running |
+| Expression dataset | `codex-scout` | DEM-29 | read-only | **resolved** |
+
+### Expression outcome (DEM-29, resolved 2026-09-18)
+
+No public per-gene abundance table exists for UTEX 2973. The only genuine UTEX
+transcriptomic study (Tan et al. 2018, PRJNA420395) publishes transcription-start-site
+and coverage data, not a gene-level matrix, and quantifying it needs an alignment
+pipeline that is out of scope.
+
+The best available substitute is GSE205444, measured in **PCC 7942** in a biofilm and
+conditioned-media experiment. The coordinator independently re-derived the identifier
+join and found a real defect: the four proteins encoded at two loci each caused two
+distinct PCC genes to collapse onto one UTEX tag, with candidate values differing up
+to twentyfold. All eight affected loci are excluded rather than guessed, leaving
+2,551 of 2,715 genes covered.
+
+**Decision.** Ship it as a labelled opt-in overlay, not the default axis. The
+low-traffic threshold defaults to CAI and tAI, which come from this genome. Caveats
+live in `data/expression/PROVENANCE.md`, and the loader is generic so a real UTEX
+table can replace it with no code change. This is a deviation worth the user's
+attention: they asked for real published data, and the honest finding is that the
+available data is from a different strain under unusual conditions.
 
 The site went to `claude-specialist` rather than `claude-implementer` because it
 carries live in-browser PCA, a packed-codon scan under a latency budget, and three
