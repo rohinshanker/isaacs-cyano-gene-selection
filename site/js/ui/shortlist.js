@@ -1,12 +1,14 @@
 /**
- * Candidate shortlist: a readable list, CSV export, and the disabled folding
- * affordance.
+ * Candidate shortlist: a readable list, a reproducible export, and the disabled
+ * folding affordance.
  *
  * The lab prunes the shortlist here rather than going back to the map, so each row
  * carries enough to judge the gene on: what it is, and what the active scheme
- * would cost it.
+ * would cost it. The export writes a CSV plus a manifest so two exports under two
+ * schemes stay distinguishable without relying on filenames.
  */
-import { csvField, formatCount, formatValue } from './format.js';
+import { formatCount, formatValue } from './format.js';
+import { buildExport } from '../core/export-manifest.js';
 
 /**
  * Live metrics shown per row, in order, when a scheme is active. These are the two
@@ -45,8 +47,25 @@ export class ShortlistPanel {
     this.exportButton = document.createElement('button');
     this.exportButton.type = 'button';
     this.exportButton.className = 'chip-button';
-    this.exportButton.textContent = 'Export CSV';
+    this.exportButton.textContent = 'Export CSV and manifest';
+    this.exportButton.setAttribute('aria-describedby', 'export-note');
     this.exportButton.addEventListener('click', () => this.exportCsv());
+
+    this.savedSchemesRow = document.createElement('div');
+    this.savedSchemesRow.className = 'checkbox-row export-saved-row';
+    this.savedSchemesInput = document.createElement('input');
+    this.savedSchemesInput.type = 'checkbox';
+    this.savedSchemesInput.id = 'export-saved-schemes';
+    this.savedSchemesLabel = document.createElement('label');
+    this.savedSchemesLabel.htmlFor = this.savedSchemesInput.id;
+    this.savedSchemesRow.append(this.savedSchemesInput, this.savedSchemesLabel);
+
+    this.exportNote = document.createElement('p');
+    this.exportNote.className = 'panel-note';
+    this.exportNote.id = 'export-note';
+    this.exportNote.textContent = 'The export is a flat CSV with one row per gene and scheme, '
+      + 'plus a manifest naming the dataset, its checksums, the full scheme map, and every '
+      + 'metric definition. Each row carries the manifest and scheme identifiers.';
     this.clearButton = document.createElement('button');
     this.clearButton.type = 'button';
     this.clearButton.className = 'chip-button danger';
@@ -72,11 +91,12 @@ export class ShortlistPanel {
     this.status.className = 'panel-note';
     this.status.setAttribute('role', 'status');
 
-    this.host.append(this.list, this.status, actions, foldNote);
+    this.host.append(this.list, this.status, this.savedSchemesRow, actions, this.exportNote, foldNote);
   }
 
   /**
-   * @param {{ids: string[], dataset: object, registry: object}} state
+   * @param {{ids: string[], dataset: object, registry: object, schemeActive: boolean,
+   *   schemes: {active: {name: string, map: object}, saved: Array<{name: string, map: object}>}}} state
    */
   update(state) {
     this.state = state;
@@ -96,6 +116,10 @@ export class ShortlistPanel {
       + `${state.ids.length === 1 ? '' : 's'} shortlisted.`;
     this.exportButton.disabled = state.ids.length === 0;
     this.clearButton.disabled = state.ids.length === 0;
+    const saved = state.schemes?.saved ?? [];
+    this.savedSchemesRow.hidden = saved.length === 0 || state.ids.length === 0;
+    this.savedSchemesLabel.textContent = `Also export the ${formatCount(saved.length)} saved `
+      + `scheme${saved.length === 1 ? '' : 's'}, one row per gene and scheme`;
   }
 
   /** One row: what the gene is, what the scheme costs it, and how to drop it. */
@@ -166,36 +190,37 @@ export class ShortlistPanel {
     return parts.length > 0 ? parts.join(' · ') : null;
   }
 
-  /** Build the CSV text for the current shortlist: one row per gene, every metric. */
-  buildCsv() {
+  /** The schemes an export covers: the active one, plus the saved ones on request. */
+  schemesToExport() {
+    const active = this.state.schemes?.active ?? { name: '', map: {} };
+    const saved = this.state.schemes?.saved ?? [];
+    const includeSaved = !this.savedSchemesRow.hidden && this.savedSchemesInput.checked;
+    return includeSaved ? [active, ...saved] : [active];
+  }
+
+  /** Build the export for the current shortlist without downloading it. */
+  buildExport(generatedAt = new Date()) {
     const { ids, dataset, registry } = this.state;
-    const descriptive = ['id', 'name', 'product', 'seqid', 'start', 'end', 'strand'];
-    const header = [...descriptive, ...registry.metrics.map((metric) => metric.key)];
-    const units = [...descriptive.map(() => ''), ...registry.metrics.map((metric) => metric.unit ?? '')];
-    const lines = [header.map(csvField).join(','), units.map(csvField).join(',')];
-    for (const id of ids) {
-      const index = dataset.indexById.get(id);
-      if (index === undefined) continue;
-      const gene = dataset.genes[index];
-      const row = descriptive.map((key) => gene[key]);
-      for (const metric of registry.metrics) {
-        const value = metric.read(index);
-        row.push(Number.isFinite(value) ? value : '');
-      }
-      lines.push(row.map(csvField).join(','));
-    }
-    return `${lines.join('\n')}\n`;
+    return buildExport({ dataset, registry, ids, schemes: this.schemesToExport(), generatedAt });
   }
 
   exportCsv() {
-    const blob = new Blob([this.buildCsv()], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'recoding-candidates.csv';
-    document.body.append(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    const result = this.buildExport();
+    for (const file of result.files) {
+      const blob = new Blob([file.content], { type: file.type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+    const schemeCount = result.manifest.schemes.length;
+    this.status.textContent = `Exported ${formatCount(result.rows.length)} row`
+      + `${result.rows.length === 1 ? '' : 's'} for ${formatCount(schemeCount)} scheme`
+      + `${schemeCount === 1 ? '' : 's'} as ${result.baseName}.csv, manifest `
+      + `${result.manifest.manifestId}.`;
   }
 }

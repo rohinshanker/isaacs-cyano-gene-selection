@@ -24,7 +24,11 @@
  *   --seed <n>           PRNG seed (default 20260918)
  *   --with-expression    add the contract's `expression` fields plus
  *                        `meta.expressionSource`, so the opt-in low-traffic
- *                        overlay and its provenance notice can be exercised
+ *                        overlay and its provenance notice can be exercised.
+ *                        Every gene then carries `expressionBasis`: most are
+ *                        measured, one in seventeen has only the proxy, and one
+ *                        in fifty-three has neither, so the interface's rule that
+ *                        missing never looks like the median is actually tested.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -489,11 +493,17 @@ function main() {
     };
     if (args.expression) {
       // The real table leaves 164 of 2,715 genes unmeasured; null means unknown.
-      const measured = g % 17 !== 3;
-      record.expression = measured
+      // Per the contract, `expression` is only ever a measurement. A gene with
+      // none falls back to the codon-adaptation proxy, and its basis says so.
+      // A few genes have neither, so the null basis is exercised too.
+      const basis = g % 53 === 11 ? null : g % 17 === 3 ? 'proxy' : 'measured';
+      record.expression = basis === 'measured'
         ? Math.round(Math.exp(2.4 + 5.2 * gene._expression + random() * 0.9) * 100) / 100
         : null;
       record.expressionPercentile = null;
+      record.expressionBasis = basis;
+      record.expressionProxy = null;
+      record.expressionSourceId = basis === 'measured' ? 'GSE205444' : null;
     }
     return record;
   });
@@ -506,6 +516,18 @@ function main() {
     measured.forEach((entry, rank) => {
       records[entry.index].expressionPercentile =
         Math.round((rank / Math.max(1, measured.length - 1)) * 1e4) / 1e4;
+    });
+    // The proxy is a rank in 0..1 of the mean of CAI and tAI, this genome's own
+    // adaptation measures. It exists for every gene except those whose basis is
+    // null, which the contract reserves for "neither exists".
+    const ranked = records
+      .map((record, index) => ({ index, value: (record.cai + record.tai) / 2 }))
+      .sort((a, b) => a.value - b.value);
+    ranked.forEach((entry, rank) => {
+      const record = records[entry.index];
+      record.expressionProxy = record.expressionBasis === null
+        ? null
+        : Math.round((rank / Math.max(1, ranked.length - 1)) * 1e4) / 1e4;
     });
   }
 
@@ -542,47 +564,62 @@ function main() {
   };
 
   const metrics = {
-    lengthNt: { label: 'CDS length', unit: 'nt', family: 'Size', desc: 'Coding sequence length including the stop codon.' },
-    lengthCodons: { label: 'Length', unit: 'codons', family: 'Size', desc: 'Sense codons, the stop codon excluded.' },
-    gc: { label: 'GC', unit: 'fraction', family: 'Base composition', desc: 'G or C across the whole coding sequence.' },
-    gc1: { label: 'GC1', unit: 'fraction', family: 'Base composition', desc: 'G or C at first codon positions.' },
-    gc2: { label: 'GC2', unit: 'fraction', family: 'Base composition', desc: 'G or C at second codon positions.' },
-    gc3: { label: 'GC3', unit: 'fraction', family: 'Base composition', desc: 'G or C at third codon positions, where synonymous choice shows up most.' },
-    a3: { label: 'A3', unit: 'fraction', family: 'Base composition', desc: 'Adenine at third codon positions.' },
-    t3: { label: 'T3', unit: 'fraction', family: 'Base composition', desc: 'Thymine at third codon positions.' },
-    g3: { label: 'G3', unit: 'fraction', family: 'Base composition', desc: 'Guanine at third codon positions.' },
-    c3: { label: 'C3', unit: 'fraction', family: 'Base composition', desc: 'Cytosine at third codon positions.' },
-    enc: { label: 'ENC', unit: 'codons 20-61', family: 'Codon usage', desc: 'Effective number of codons. 20 is maximal bias, 61 is none.' },
-    encExpected: { label: 'ENC expected', unit: 'codons 20-61', family: 'Codon usage', desc: 'ENC predicted from GC3 alone if only mutation acted.' },
-    deltaEnc: { label: 'ENC shortfall', unit: 'codons', family: 'Codon usage', desc: 'Expected ENC minus observed. Positive means bias beyond mutation.' },
-    cai: { label: 'CAI', unit: 'index 0-1', family: 'Translation', desc: 'Codon adaptation index against highly expressed genes.' },
-    tai: { label: 'tAI', unit: 'index 0-1', family: 'Translation', desc: 'tRNA adaptation index, how well codons match tRNA supply.' },
-    rareFraction: { label: 'Rare codon fraction', unit: 'fraction', family: 'Rare codons', desc: 'Share of codons used below the rarity threshold genome-wide.' },
-    rareCount: { label: 'Rare codons', unit: 'codons', family: 'Rare codons', desc: 'Count of rare codons in the gene.' },
-    longestRareRun: { label: 'Longest rare run', unit: 'codons', family: 'Rare codons', desc: 'Longest consecutive stretch of rare codons.' },
-    rampRareCount: { label: 'Rare codons in ramp', unit: 'codons', family: 'Rare codons', desc: 'Rare codons in the first 50 codons.' },
-    minLocalTai: { label: 'Minimum local tAI', unit: 'index 0-1', family: 'Rare codons', desc: 'Weakest 15-codon window of tRNA supply.' },
-    cps: { label: 'Codon-pair score', unit: 'mean log ratio', family: 'Codon pairs', desc: 'Mean codon-pair bias. Negative means avoided pairs.' },
-    underrepresentedPairFraction: { label: 'Avoided pair fraction', unit: 'fraction', family: 'Codon pairs', desc: 'Share of adjacent codon pairs used less than expected.' },
-    mfeStart: { label: 'Start folding energy', unit: 'kcal/mol', family: 'RNA structure', desc: 'Folding energy from 30 nt before to 60 nt after the start codon.' },
-    mfeFirst100: { label: 'First 100 nt folding energy', unit: 'kcal/mol', family: 'RNA structure', desc: 'Folding energy of the first 100 coding nucleotides.' },
-    minLocalGc: { label: 'Minimum local GC', unit: 'fraction', family: 'Base composition', desc: 'Lowest GC in any 99 nt window.' },
-    maxLocalGc: { label: 'Maximum local GC', unit: 'fraction', family: 'Base composition', desc: 'Highest GC in any 99 nt window.' },
-    gc5prime: { label: "5' GC", unit: 'fraction', family: 'Base composition', desc: 'GC across the first 150 coding nucleotides.' },
-    neighborUpstreamNt: { label: 'Upstream gap', unit: 'nt', family: 'Genomic context', desc: 'Distance to the previous gene. Negative means overlap.' },
-    neighborDownstreamNt: { label: 'Downstream gap', unit: 'nt', family: 'Genomic context', desc: 'Distance to the next gene. Negative means overlap.' },
-    operonPosition: { label: 'Operon position', unit: 'index', family: 'Genomic context', desc: 'Rank of this gene within its predicted operon.' },
-    operonSize: { label: 'Operon size', unit: 'genes', family: 'Genomic context', desc: 'Genes in this predicted operon.' },
+    lengthNt: { label: 'CDS length', unit: 'nt', family: 'Size', desc: 'Coding sequence length including the stop codon.', scale: 'sequential' },
+    lengthCodons: { label: 'Length', unit: 'codons', family: 'Size', desc: 'Sense codons, the stop codon excluded.', scale: 'sequential' },
+    gc: { label: 'GC', unit: 'fraction', family: 'Base composition', desc: 'G or C across the whole coding sequence.', scale: 'sequential' },
+    gc1: { label: 'GC1', unit: 'fraction', family: 'Base composition', desc: 'G or C at first codon positions.', scale: 'sequential' },
+    gc2: { label: 'GC2', unit: 'fraction', family: 'Base composition', desc: 'G or C at second codon positions.', scale: 'sequential' },
+    gc3: { label: 'GC3', unit: 'fraction', family: 'Base composition', desc: 'G or C at third codon positions, where synonymous choice shows up most.', scale: 'sequential' },
+    a3: { label: 'A3', unit: 'fraction', family: 'Base composition', desc: 'Adenine at third codon positions.', scale: 'sequential' },
+    t3: { label: 'T3', unit: 'fraction', family: 'Base composition', desc: 'Thymine at third codon positions.', scale: 'sequential' },
+    g3: { label: 'G3', unit: 'fraction', family: 'Base composition', desc: 'Guanine at third codon positions.', scale: 'sequential' },
+    c3: { label: 'C3', unit: 'fraction', family: 'Base composition', desc: 'Cytosine at third codon positions.', scale: 'sequential' },
+    enc: { label: 'ENC', unit: 'codons 20-61', family: 'Codon usage', desc: 'Effective number of codons. 20 is maximal bias, 61 is none.', scale: 'sequential' },
+    encExpected: { label: 'ENC expected', unit: 'codons 20-61', family: 'Codon usage', desc: 'ENC predicted from GC3 alone if only mutation acted.', scale: 'sequential' },
+    deltaEnc: { label: 'ENC shortfall', unit: 'codons', family: 'Codon usage', desc: 'Expected ENC minus observed. Positive means bias beyond mutation.', scale: 'diverging' },
+    cai: { label: 'CAI', unit: 'index 0-1', family: 'Translation', desc: 'Codon adaptation index against highly expressed genes.', scale: 'sequential' },
+    tai: { label: 'tAI', unit: 'index 0-1', family: 'Translation', desc: 'tRNA adaptation index, how well codons match tRNA supply.', scale: 'sequential' },
+    rareFraction: { label: 'Rare codon fraction', unit: 'fraction', family: 'Rare codons', desc: 'Share of codons used below the rarity threshold genome-wide.', scale: 'sequential' },
+    rareCount: { label: 'Rare codons', unit: 'codons', family: 'Rare codons', desc: 'Count of rare codons in the gene.', scale: 'sequential' },
+    longestRareRun: { label: 'Longest rare run', unit: 'codons', family: 'Rare codons', desc: 'Longest consecutive stretch of rare codons.', scale: 'sequential' },
+    rampRareCount: { label: 'Rare codons in ramp', unit: 'codons', family: 'Rare codons', desc: 'Rare codons in the first 50 codons.', scale: 'sequential' },
+    minLocalTai: { label: 'Minimum local tAI', unit: 'index 0-1', family: 'Rare codons', desc: 'Weakest 15-codon window of tRNA supply.', scale: 'sequential' },
+    cps: { label: 'Codon-pair score', unit: 'mean log ratio', family: 'Codon pairs', desc: 'Mean codon-pair bias. Negative means avoided pairs.', scale: 'diverging' },
+    underrepresentedPairFraction: { label: 'Avoided pair fraction', unit: 'fraction', family: 'Codon pairs', desc: 'Share of adjacent codon pairs used less than expected.', scale: 'sequential' },
+    mfeStart: { label: 'Start folding energy', unit: 'kcal/mol', family: 'RNA structure', desc: 'Folding energy from 30 nt before to 60 nt after the start codon.', scale: 'sequential' },
+    mfeFirst100: { label: 'First 100 nt folding energy', unit: 'kcal/mol', family: 'RNA structure', desc: 'Folding energy of the first 100 coding nucleotides.', scale: 'sequential' },
+    minLocalGc: { label: 'Minimum local GC', unit: 'fraction', family: 'Base composition', desc: 'Lowest GC in any 99 nt window.', scale: 'sequential' },
+    maxLocalGc: { label: 'Maximum local GC', unit: 'fraction', family: 'Base composition', desc: 'Highest GC in any 99 nt window.', scale: 'sequential' },
+    gc5prime: { label: "5' GC", unit: 'fraction', family: 'Base composition', desc: 'GC across the first 150 coding nucleotides.', scale: 'sequential' },
+    neighborUpstreamNt: { label: 'Upstream gap', unit: 'nt', family: 'Genomic context', desc: 'Distance to the previous gene. Negative means overlap.', scale: 'diverging' },
+    neighborDownstreamNt: { label: 'Downstream gap', unit: 'nt', family: 'Genomic context', desc: 'Distance to the next gene. Negative means overlap.', scale: 'diverging' },
+    operonPosition: { label: 'Operon position', unit: 'index', family: 'Genomic context', desc: 'Rank of this gene within its predicted operon.', scale: 'sequential' },
+    operonSize: { label: 'Operon size', unit: 'genes', family: 'Genomic context', desc: 'Genes in this predicted operon.', scale: 'sequential' },
   };
   if (args.expression) {
     metrics.expression = {
       label: 'Expression', unit: 'normalized counts', family: 'Expression',
-      desc: 'Transcript abundance from the reference dataset. Measured in a different strain.',
+      desc: 'Transcript abundance from the reference dataset. Measured in a different strain. '
+        + 'Null when unmeasured; never filled with the proxy.',
+      scale: 'sequential',
     };
     metrics.expressionPercentile = {
       label: 'Expression percentile', unit: 'fraction', family: 'Expression',
       desc: 'Rank of this gene\u2019s abundance among the genes that carry a measurement.',
+      scale: 'sequential',
     };
+    metrics.expressionProxy = {
+      label: 'Expression proxy', unit: 'rank 0-1', family: 'Expression',
+      desc: 'Rank of the mean of CAI and tAI, from this genome. A stand-in for expression where '
+        + 'no measurement exists, in a different unit from any abundance.',
+      scale: 'sequential',
+    };
+  }
+  // The contract's documentation-only fields. `direction` is recorded so the
+  // site's refusal to colour by it can be tested; `missingPolicy` states the rule.
+  for (const definition of Object.values(metrics)) {
+    definition.missingPolicy = 'null renders as unknown, never as zero or median';
+    definition.direction = 'contextual';
   }
 
   const meta = {
@@ -661,5 +698,5 @@ await Promise.all([
 ]);
 process.stdout.write(
   `wrote ${records.length} genes to ${args.out}` +
-  `${args.expression ? ' with expressionTpm' : ''}\n`,
+  `${args.expression ? ' with expression, expressionBasis, and expressionProxy' : ''}\n`,
 );

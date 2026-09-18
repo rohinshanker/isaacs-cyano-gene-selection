@@ -2,13 +2,22 @@
  * Candidate comparison: three views over one shared sortable table.
  *
  * Radar and parallel coordinates both need a comparable scale, so both use a
- * robust z-score against the genome median. Series are told apart by colour,
- * line pattern, and a named legend together, never by colour alone.
+ * robust z-score against the genome median. Series are told apart by colour, line
+ * pattern, and marker shape together, never by colour alone, and one candidate can
+ * be focused across chart, legend, and table.
+ *
+ * A missing value is drawn as a gap plus an open cross where no value could sit.
+ * It is never placed at the median, so the picture and the table agree.
  */
-import { CATEGORICAL, divergingColor } from './colors.js';
+import { divergingColor } from './colors.js';
 import { formatValue, formatDelta, formatCount, MISSING } from './format.js';
-import { metricValues } from '../core/metric-registry.js';
-import { sortedFinite, medianSorted, quantileSorted } from '../core/stats.js';
+import {
+  metricValues, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
+} from '../core/metric-registry.js';
+import {
+  robustScale, zScore, seriesStyle, defaultAxes, MIN_AXES, Z_LIMIT, presentRuns,
+  countMissing, missingRanks, wrapLabel, describeMissing, pluralise, drawMarker, drawMissingGlyph,
+} from './compare-model.js';
 
 const TABS = [
   { id: 'radar', label: 'Radar' },
@@ -16,25 +25,27 @@ const TABS = [
   { id: 'delta', label: 'Pairwise delta' },
 ];
 
-/** Metrics the comparison views prefer when the user has not chosen. */
-const DEFAULT_AXES = [
-  'gc3', 'enc', 'cai', 'tai', 'rareFraction', 'cps', 'mfeStart', 'targetFraction',
-];
+const FONT = '11px system-ui, sans-serif';
+const LINE_HEIGHT = 13;
+/** Labels wider than this wrap onto two lines before the chart is widened. */
+const LABEL_MAX_WIDTH = 92;
+/** Smallest radar the labels may squeeze; below this the chart scrolls instead. */
+const RADAR_MIN_RADIUS = 84;
+const RADAR_LABEL_GAP = 18;
+/** Narrowest spacing between parallel axes before the chart scrolls. */
+const PARALLEL_MIN_STEP = 88;
+const PARALLEL_MARGIN = 58;
+const PARALLEL_TOP = 26;
+const PARALLEL_BOTTOM_MARGIN = 66;
+const MARKER_SIZE = 3.2;
+const MISSING_GLYPH_SIZE = 3;
+/** Spacing between the markers of several candidates missing the same axis. */
+const MISSING_GLYPH_STEP = 9;
 
-const DASHES = [[], [7, 4], [2, 3], [10, 3, 2, 3], [5, 3, 1, 3], [1, 3], [12, 4], [4, 2, 8, 2]];
-
-/** Median and scaled median absolute deviation, a spread that outliers cannot inflate. */
-function robustScale(values) {
-  const sorted = sortedFinite(values);
-  if (sorted.length === 0) return { median: NaN, spread: NaN };
-  const median = medianSorted(sorted);
-  const deviations = sortedFinite(Float64Array.from(sorted, (value) => Math.abs(value - median)));
-  const mad = medianSorted(deviations) * 1.4826;
-  const spread = mad > 1e-12
-    ? mad
-    : (quantileSorted(sorted, 0.75) - quantileSorted(sorted, 0.25)) || 1;
-  return { median, spread };
-}
+const INK = '#1b2733';
+const INK_MUTED = '#4a5568';
+const GRID = '#e3e8ee';
+const GRID_STRONG = '#b7c1cc';
 
 function fitCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1;
@@ -45,7 +56,30 @@ function fitCanvas(canvas) {
   const context = canvas.getContext('2d');
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
   context.clearRect(0, 0, width, height);
+  context.font = FONT;
   return { context, width, height };
+}
+
+function seriesLabel(entry) {
+  return entry.gene.name ? `${entry.id} ${entry.gene.name}` : entry.id;
+}
+
+/** A visually hidden span, for text a screen reader needs and a sighted reader does not. */
+function hiddenText(text) {
+  const span = document.createElement('span');
+  span.className = 'visually-hidden';
+  span.textContent = text;
+  return span;
+}
+
+/** The small tag that says where an expression value came from. */
+function basisTag(gene) {
+  const { basis, short, text } = expressionBasisOf(gene);
+  const tag = document.createElement('span');
+  tag.className = `basis-tag basis-${basis}`;
+  tag.textContent = short;
+  tag.title = text;
+  return tag;
 }
 
 export class ComparePanel {
@@ -61,6 +95,8 @@ export class ComparePanel {
     this.brushes = new Map();
     this.sort = { key: 'id', direction: 1 };
     this.deltaPair = [null, null];
+    this.focusId = null;
+    this.droppedAxes = [];
     this.build();
     this.resizeObserver = new ResizeObserver(() => this.drawActive());
     this.resizeObserver.observe(this.chartHost);
@@ -102,6 +138,9 @@ export class ComparePanel {
     this.axisOptions.className = 'axis-options';
     this.axisPicker.append(summary, this.axisOptions);
 
+    this.unavailableNote = document.createElement('p');
+    this.unavailableNote.className = 'panel-note axis-unavailable-note';
+
     this.panel = document.createElement('div');
     this.panel.id = 'compare-panel';
     this.panel.setAttribute('role', 'tabpanel');
@@ -116,6 +155,14 @@ export class ComparePanel {
 
     this.legend = document.createElement('ul');
     this.legend.className = 'series-legend';
+    this.legend.setAttribute('aria-label', 'Candidates in the chart. Select one to focus it.');
+    this.legend.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && this.focusId) this.setFocus(null);
+    });
+
+    this.focusBar = document.createElement('p');
+    this.focusBar.className = 'focus-bar';
+    this.focusBar.setAttribute('role', 'status');
 
     this.note = document.createElement('p');
     this.note.className = 'panel-note';
@@ -126,7 +173,9 @@ export class ComparePanel {
     this.deltaTableHost = document.createElement('div');
     this.deltaTableHost.className = 'table-scroll';
 
-    this.panel.append(this.deltaControls, this.chartHost, this.legend, this.note, this.deltaTableHost);
+    this.panel.append(
+      this.deltaControls, this.chartHost, this.legend, this.focusBar, this.note, this.deltaTableHost,
+    );
 
     this.tableHeading = document.createElement('h3');
     this.tableHeading.className = 'table-heading';
@@ -134,7 +183,9 @@ export class ComparePanel {
     this.tableHost = document.createElement('div');
     this.tableHost.className = 'table-scroll';
 
-    this.host.append(this.tablist, this.axisPicker, this.panel, this.tableHeading, this.tableHost);
+    this.host.append(
+      this.tablist, this.axisPicker, this.unavailableNote, this.panel, this.tableHeading, this.tableHost,
+    );
 
     this.canvas.addEventListener('pointerdown', (event) => this.onBrushStart(event));
     this.canvas.addEventListener('pointermove', (event) => this.onBrushMove(event));
@@ -147,19 +198,23 @@ export class ComparePanel {
     this.render();
   }
 
-  /** Metrics currently on the radar and parallel axes. */
+  /**
+   * Metrics currently on the radar and parallel axes. A chosen set wins; otherwise
+   * the defaults, minus any metric with no spread, which `droppedAxes` explains.
+   */
   activeAxes() {
-    const available = this.registry.metrics.filter((metric) => metric.key !== 'lengthNt');
     if (this.axisKeys) {
       const chosen = this.axisKeys
         .map((key) => this.registry.byKey.get(key))
         .filter(Boolean);
-      if (chosen.length >= 3) return chosen;
+      if (chosen.length >= MIN_AXES) {
+        this.droppedAxes = [];
+        return chosen;
+      }
     }
-    const defaults = DEFAULT_AXES
-      .map((key) => this.registry.byKey.get(key))
-      .filter(Boolean);
-    return defaults.length >= 3 ? defaults : available.slice(0, 8);
+    const { axes, dropped } = defaultAxes(this.registry, (metric) => this.scaleFor(metric));
+    this.droppedAxes = dropped;
+    return axes;
   }
 
   /**
@@ -169,6 +224,7 @@ export class ComparePanel {
     this.state = state;
     this.registry = state.registry;
     if (state.tab && state.tab !== this.tab) this.tab = state.tab;
+    if (this.focusId && !state.ids.includes(this.focusId)) this.focusId = null;
     this.scales = new Map();
     this.render();
   }
@@ -182,10 +238,7 @@ export class ComparePanel {
   }
 
   zScore(metric, index) {
-    const { median, spread } = this.scaleFor(metric);
-    const value = metric.read(index);
-    if (!Number.isFinite(value) || !Number.isFinite(median) || !Number.isFinite(spread)) return NaN;
-    return Math.max(-3, Math.min(3, (value - median) / spread));
+    return zScore(metric.read(index), this.scaleFor(metric));
   }
 
   render() {
@@ -199,8 +252,10 @@ export class ComparePanel {
 
     const isDelta = this.tab === 'delta';
     this.axisPicker.hidden = isDelta;
+    this.unavailableNote.hidden = isDelta;
     this.chartHost.hidden = isDelta;
     this.legend.hidden = isDelta;
+    this.focusBar.hidden = isDelta || !this.focusId;
     this.deltaControls.hidden = !isDelta;
     this.deltaTableHost.hidden = !isDelta;
 
@@ -212,6 +267,7 @@ export class ComparePanel {
 
   renderAxisPicker() {
     const active = new Set(this.activeAxes().map((metric) => metric.key));
+    const dropped = new Map(this.droppedAxes.map(({ metric, reason }) => [metric.key, reason]));
     this.axisOptions.replaceChildren();
     for (const family of this.registry.families) {
       const group = document.createElement('fieldset');
@@ -236,10 +292,21 @@ export class ComparePanel {
           this.render();
         });
         label.append(input, document.createTextNode(` ${metric.label}`));
+        if (dropped.has(metric.key)) {
+          const why = document.createElement('span');
+          why.className = 'axis-unavailable';
+          why.textContent = ' — left out of the defaults: no spread';
+          label.append(why);
+        }
         group.append(label);
       }
       this.axisOptions.append(group);
     }
+    this.unavailableNote.textContent = this.droppedAxes.length === 0
+      ? ''
+      : `Not on the default axes: ${this.droppedAxes.map(({ reason }) => reason).join(' ')} `
+        + 'You can still add these under Choose metrics.';
+    this.unavailableNote.hidden = this.tab === 'delta' || this.droppedAxes.length === 0;
   }
 
   seriesFor() {
@@ -247,12 +314,21 @@ export class ComparePanel {
     return ids
       .map((id, order) => ({ id, index: dataset.indexById.get(id), order }))
       .filter((entry) => entry.index !== undefined)
-      .map((entry) => ({
-        ...entry,
-        gene: dataset.genes[entry.index],
-        color: CATEGORICAL[entry.order % CATEGORICAL.length],
-        dash: DASHES[entry.order % DASHES.length],
-      }));
+      .map((entry) => ({ ...entry, gene: dataset.genes[entry.index], ...seriesStyle(entry.order) }));
+  }
+
+  /** Series in drawing order: the focused candidate last, so it sits on top. */
+  drawOrder(series) {
+    if (!this.focusId) return series;
+    return [...series.filter((entry) => entry.id !== this.focusId),
+      ...series.filter((entry) => entry.id === this.focusId)];
+  }
+
+  setFocus(id) {
+    this.focusId = this.focusId === id ? null : id;
+    this.focusBar.hidden = this.tab === 'delta' || !this.focusId;
+    this.renderTable();
+    this.drawActive();
   }
 
   drawActive() {
@@ -261,149 +337,318 @@ export class ComparePanel {
     else if (this.tab === 'parallel') this.drawParallel();
   }
 
-  emptyChart(context, width, height, message) {
-    context.fillStyle = '#4a5568';
+  /**
+   * Give the canvas the width its labels need. When the host is narrower the
+   * canvas keeps its minimum and the host scrolls, so no axis name is clipped.
+   */
+  sizeCanvas(neededWidth) {
+    const hostWidth = this.chartHost.clientWidth;
+    this.scrollsSideways = neededWidth > hostWidth;
+    this.canvas.style.width = this.scrollsSideways ? `${Math.ceil(neededWidth)}px` : '100%';
+    this.chartHost.classList.toggle('scrolls', this.scrollsSideways);
+  }
+
+  /** Said in the chart's own note, because a sideways scroll is easy to miss. */
+  scrollHint() {
+    return this.scrollsSideways
+      ? ' This chart is wider than the screen so no axis name is cut off; scroll it sideways to '
+        + 'see the rest.'
+      : '';
+  }
+
+  emptyChart(message) {
+    this.sizeCanvas(0);
+    const { context, width, height } = fitCanvas(this.canvas);
+    context.fillStyle = INK_MUTED;
     context.font = '14px system-ui, sans-serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillText(message, width / 2, height / 2);
     this.legend.replaceChildren();
+    this.focusBar.hidden = true;
   }
 
-  renderLegend(series, extra = []) {
+  /** Alpha and width for one series given focus and brushing. */
+  emphasis(entry, brushedOut) {
+    const focused = this.focusId === entry.id;
+    const dimmed = brushedOut || (this.focusId && !focused);
+    return {
+      alpha: dimmed ? 0.22 : 1,
+      lineWidth: focused ? 3.4 : dimmed ? 1.2 : 2.2,
+      markerSize: focused ? MARKER_SIZE + 1.2 : MARKER_SIZE,
+    };
+  }
+
+  renderLegend(series, missing, brushedOut = new Set()) {
     this.legend.replaceChildren();
     for (const entry of series) {
       const item = document.createElement('li');
-      const swatch = document.createElement('canvas');
-      swatch.width = 34;
-      swatch.height = 12;
-      swatch.className = 'legend-swatch';
-      const context = swatch.getContext('2d');
-      context.strokeStyle = entry.color;
-      context.lineWidth = 2.5;
-      context.setLineDash(entry.dash);
-      context.beginPath();
-      context.moveTo(1, 6);
-      context.lineTo(33, 6);
-      context.stroke();
-      const label = document.createElement('span');
-      label.textContent = entry.gene.name ? `${entry.id} ${entry.gene.name}` : entry.id;
+      const focused = this.focusId === entry.id;
+      item.classList.toggle('focused', focused);
+      item.classList.toggle('dimmed', brushedOut.has(entry.id) || (Boolean(this.focusId) && !focused));
+
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'chip-link';
-      button.append(swatch, label);
-      button.addEventListener('click', () => this.handlers.onSelect(entry.id));
+      button.className = 'chip-link legend-entry';
+      button.setAttribute('aria-pressed', String(focused));
+      button.title = focused ? 'Clear focus' : `Focus ${entry.id} across the chart and the table`;
+      button.append(this.swatch(entry));
+      const label = document.createElement('span');
+      label.textContent = seriesLabel(entry);
+      button.append(label);
+      const count = missing.bySeries.get(entry.id) ?? 0;
+      if (count > 0) {
+        const note = document.createElement('span');
+        note.className = 'legend-missing';
+        note.textContent = ` · ${count} missing`;
+        button.append(note);
+      }
+      if (entry.repeated) {
+        const warn = document.createElement('span');
+        warn.className = 'legend-missing';
+        warn.textContent = ' · repeats an earlier style';
+        button.append(warn);
+      }
+      button.addEventListener('click', () => this.setFocus(entry.id));
       item.append(button);
-      if (extra.includes(entry.id)) item.classList.add('dimmed');
       this.legend.append(item);
     }
+    this.focusBar.replaceChildren();
+    if (this.focusId) {
+      this.focusBar.append(document.createTextNode(`Focused on ${this.focusId}. `));
+      const clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'chip-button';
+      clear.textContent = 'Clear focus';
+      clear.addEventListener('click', () => this.setFocus(null));
+      this.focusBar.append(clear);
+    }
+  }
+
+  /** The line-and-marker sample that identifies a series in legend and table. */
+  swatch(entry) {
+    const swatch = document.createElement('canvas');
+    const ratio = window.devicePixelRatio || 1;
+    swatch.width = Math.round(38 * ratio);
+    swatch.height = Math.round(14 * ratio);
+    swatch.className = 'legend-swatch';
+    swatch.setAttribute('aria-hidden', 'true');
+    const context = swatch.getContext('2d');
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.strokeStyle = entry.color;
+    context.fillStyle = entry.color;
+    context.lineWidth = 2.2;
+    context.setLineDash(entry.dash);
+    context.beginPath();
+    context.moveTo(1, 7);
+    context.lineTo(37, 7);
+    context.stroke();
+    context.setLineDash([]);
+    context.lineWidth = 1.8;
+    drawMarker(context, entry.marker, 19, 7, MARKER_SIZE);
+    return swatch;
+  }
+
+  /** Wrapped label lines for every axis and the widest line among them. */
+  measureLabels(context, axes) {
+    const measure = (text) => context.measureText(text).width;
+    const lines = axes.map((metric) => wrapLabel(metric.label, LABEL_MAX_WIDTH, measure));
+    const widest = Math.max(0, ...lines.flat().map(measure));
+    return { lines, widest };
   }
 
   drawRadar() {
-    const { context, width, height } = fitCanvas(this.canvas);
     const series = this.seriesFor();
     const axes = this.activeAxes();
+    const read = (metric, index) => metric.read(index);
+    const missing = countMissing(series, axes, read);
+    const ranks = missingRanks(series, axes, read);
     this.canvas.setAttribute(
       'aria-label',
-      `Radar chart of ${series.length} shortlisted genes across ${axes.length} metrics, `
-        + 'z-scored against the genome median. The same numbers are in the table below.',
+      `Radar chart of ${pluralise(series.length, 'shortlisted gene')} across `
+        + `${pluralise(axes.length, 'metric')}, `
+        + `z-scored against the genome median. ${describeMissing(missing.total)}`
+        + `${missing.total > 0 ? ', drawn as gaps with an open cross beyond the outer ring, never at the median' : ''}. `
+        + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
+        + 'The same numbers are in the table below.',
     );
-    this.note.textContent = 'Each spoke is one metric, scaled so the genome median sits on the '
-      + 'middle ring. Further out means higher than typical, further in means lower.';
     if (series.length === 0) {
-      this.emptyChart(context, width, height, 'Shortlist a gene to compare it here.');
+      this.note.textContent = 'Each spoke is one metric, scaled so the genome median sits on the '
+        + 'middle ring. Further out means higher than typical, further in means lower.';
+      this.emptyChart('Shortlist a gene to compare it here.');
       return;
     }
-    const cx = width / 2;
-    const cy = height / 2 + 6;
-    const radius = Math.max(40, Math.min(width, height) / 2 - 58);
 
-    context.strokeStyle = '#e3e8ee';
+    // Measure first so the radius leaves room for the widest label.
+    const probe = this.canvas.getContext('2d');
+    probe.font = FONT;
+    const { lines, widest } = this.measureLabels(probe, axes);
+    // Room for the label, plus the fan of markers for candidates missing that axis.
+    const deepestFan = Math.max(0, ...[...missingRanks(series, axes, read).values()]
+      .map((entry) => entry.size)) * MISSING_GLYPH_STEP;
+    const labelRoom = RADAR_LABEL_GAP + deepestFan + widest + 8;
+    this.sizeCanvas(2 * (RADAR_MIN_RADIUS + labelRoom));
+    const { context, width, height } = fitCanvas(this.canvas);
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = Math.max(
+      RADAR_MIN_RADIUS,
+      Math.min(width / 2 - labelRoom, height / 2 - 2 * LINE_HEIGHT - labelRoom),
+    );
+    const radiusFor = (z) => radius * ((z + Z_LIMIT) / (2 * Z_LIMIT));
+
     context.lineWidth = 1;
-    for (let ring = 1; ring <= 3; ring += 1) {
+    for (const z of [-1, 1, 3]) {
+      context.strokeStyle = GRID;
       context.beginPath();
-      context.arc(cx, cy, (radius * ring) / 3, 0, Math.PI * 2);
+      context.arc(cx, cy, radiusFor(z), 0, Math.PI * 2);
       context.stroke();
     }
-    context.fillStyle = '#4a5568';
-    context.font = '11px system-ui, sans-serif';
+    context.strokeStyle = GRID_STRONG;
+    context.setLineDash([3, 3]);
+    context.beginPath();
+    context.arc(cx, cy, radiusFor(0), 0, Math.PI * 2);
+    context.stroke();
+    context.setLineDash([]);
+    context.fillStyle = INK_MUTED;
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText('median', cx + 4, cy - radiusFor(0) - 2);
+
+    const angleOf = (i) => (i / axes.length) * Math.PI * 2 - Math.PI / 2;
     axes.forEach((metric, i) => {
-      const angle = (i / axes.length) * Math.PI * 2 - Math.PI / 2;
-      const x = cx + Math.cos(angle) * radius;
-      const y = cy + Math.sin(angle) * radius;
-      context.strokeStyle = '#e3e8ee';
+      const angle = angleOf(i);
+      context.strokeStyle = GRID;
       context.beginPath();
       context.moveTo(cx, cy);
-      context.lineTo(x, y);
+      context.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
       context.stroke();
-      const labelX = cx + Math.cos(angle) * (radius + 14);
-      const labelY = cy + Math.sin(angle) * (radius + 14);
-      context.textAlign = Math.abs(Math.cos(angle)) < 0.3
-        ? 'center' : Math.cos(angle) > 0 ? 'left' : 'right';
-      context.textBaseline = Math.abs(Math.cos(angle)) < 0.3
-        ? (Math.sin(angle) > 0 ? 'top' : 'bottom') : 'middle';
-      context.fillText(metric.label, labelX, labelY);
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const gap = RADAR_LABEL_GAP + (ranks.get(metric.key)?.size ?? 0) * MISSING_GLYPH_STEP;
+      const labelX = cx + cos * (radius + gap);
+      const labelY = cy + sin * (radius + gap);
+      context.fillStyle = INK;
+      context.textAlign = Math.abs(cos) < 0.3 ? 'center' : cos > 0 ? 'left' : 'right';
+      context.textBaseline = 'middle';
+      const block = lines[i];
+      const firstY = labelY - ((block.length - 1) * LINE_HEIGHT) / 2 + (Math.abs(cos) < 0.3 ? sin * LINE_HEIGHT * (block.length - 1) / 2 : 0);
+      block.forEach((line, k) => context.fillText(line, labelX, firstY + k * LINE_HEIGHT));
     });
 
-    for (const entry of series) {
+    for (const entry of this.drawOrder(series)) {
+      const { alpha, lineWidth, markerSize } = this.emphasis(entry, false);
+      const points = axes.map((metric, i) => {
+        const z = this.zScore(metric, entry.index);
+        const angle = angleOf(i);
+        const present = Number.isFinite(z);
+        const r = present ? radiusFor(z) : NaN;
+        const place = ranks.get(metric.key)?.get(entry.id);
+        return {
+          present,
+          angle,
+          // Several candidates missing one axis fan outward instead of stacking.
+          missingRadius: radius + 7 + (place?.rank ?? 0) * MISSING_GLYPH_STEP,
+          x: cx + Math.cos(angle) * r,
+          y: cy + Math.sin(angle) * r,
+        };
+      });
+      context.globalAlpha = alpha;
       context.strokeStyle = entry.color;
-      context.lineWidth = 2.2;
+      context.fillStyle = entry.color;
+      context.lineWidth = lineWidth;
       context.setLineDash(entry.dash);
-      context.beginPath();
-      axes.forEach((metric, i) => {
-        const angle = (i / axes.length) * Math.PI * 2 - Math.PI / 2;
-        const z = this.zScore(metric, entry.index);
-        const r = Number.isFinite(z) ? radius * ((z + 3) / 6) : radius / 2;
-        const x = cx + Math.cos(angle) * r;
-        const y = cy + Math.sin(angle) * r;
-        if (i === 0) context.moveTo(x, y);
-        else context.lineTo(x, y);
-      });
-      context.closePath();
-      context.stroke();
-      context.setLineDash([]);
-      axes.forEach((metric, i) => {
-        const angle = (i / axes.length) * Math.PI * 2 - Math.PI / 2;
-        const z = this.zScore(metric, entry.index);
-        if (!Number.isFinite(z)) return;
-        const r = radius * ((z + 3) / 6);
-        context.fillStyle = entry.color;
+      const runs = presentRuns(points.map((point) => point.present), { closed: true });
+      const complete = runs.length === 1 && runs[0].length === axes.length;
+      for (const run of runs) {
+        if (run.length < 2 && !complete) continue;
         context.beginPath();
-        context.arc(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, 2.6, 0, Math.PI * 2);
-        context.fill();
+        run.forEach((index, k) => {
+          const point = points[index];
+          if (k === 0) context.moveTo(point.x, point.y);
+          else context.lineTo(point.x, point.y);
+        });
+        if (complete) context.closePath();
+        context.stroke();
+      }
+      context.setLineDash([]);
+      context.lineWidth = 1.8;
+      points.forEach((point) => {
+        if (point.present) {
+          drawMarker(context, entry.marker, point.x, point.y, markerSize);
+        } else {
+          const r = point.missingRadius;
+          drawMissingGlyph(
+            context, cx + Math.cos(point.angle) * r, cy + Math.sin(point.angle) * r, MISSING_GLYPH_SIZE,
+          );
+        }
       });
+      context.globalAlpha = 1;
     }
-    this.renderLegend(series);
+
+    this.note.textContent = 'Each spoke is one metric, scaled so the genome median sits on the '
+      + 'dashed ring. Further out means higher than typical, further in means lower. '
+      + (missing.total > 0
+        ? `${describeMissing(missing.total)}: a gap in the outline and an open cross just past the `
+          + 'outer ring mark where a gene has no value; nothing is drawn at the median for it. '
+        : 'Every plotted gene has a value on every axis. ')
+      + 'Select a legend entry to focus one candidate; select a locus tag in the table to pin it.'
+      + this.scrollHint();
+    this.renderLegend(series, missing);
   }
 
   parallelGeometry(width, height, axisCount) {
-    const left = 62;
-    const right = width - 62;
-    const top = 26;
-    const bottom = height - 54;
+    const left = PARALLEL_MARGIN;
+    const right = width - PARALLEL_MARGIN;
+    const top = PARALLEL_TOP;
+    const bottom = height - PARALLEL_BOTTOM_MARGIN;
     const step = axisCount > 1 ? (right - left) / (axisCount - 1) : 0;
     return { left, right, top, bottom, step };
   }
 
   drawParallel() {
-    const { context, width, height } = fitCanvas(this.canvas);
     const series = this.seriesFor();
     const axes = this.activeAxes();
+    const read = (metric, index) => metric.read(index);
+    const missing = countMissing(series, axes, read);
+    const ranks = missingRanks(series, axes, read);
     this.canvas.setAttribute(
       'aria-label',
-      `Parallel coordinates of ${series.length} shortlisted genes across ${axes.length} metrics. `
+      `Parallel coordinates of ${pluralise(series.length, 'shortlisted gene')} across `
+        + `${pluralise(axes.length, 'metric')}, `
+        + `z-scored against the genome median. ${describeMissing(missing.total)}`
+        + `${missing.total > 0 ? ', drawn as a break in the line with an open cross below the axis, never at the median' : ''}. `
+        + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
         + 'The same numbers are in the table below.',
     );
     if (series.length === 0) {
-      this.emptyChart(context, width, height, 'Shortlist a gene to compare it here.');
       this.note.textContent = 'Each line is one candidate crossing every metric axis.';
+      this.emptyChart('Shortlist a gene to compare it here.');
       return;
     }
+
+    this.sizeCanvas(2 * PARALLEL_MARGIN + PARALLEL_MIN_STEP * (axes.length - 1));
+    const { context, width, height } = fitCanvas(this.canvas);
     const geometry = this.parallelGeometry(width, height, axes.length);
     this.geometry = geometry;
     this.axesCache = axes;
+    const { lines } = this.measureLabels(context, axes);
 
-    context.font = '11px system-ui, sans-serif';
+    // The z scale is drawn once, at the left, rather than on every axis.
+    context.fillStyle = INK_MUTED;
+    context.textAlign = 'right';
+    context.textBaseline = 'middle';
+    context.fillText(`+${Z_LIMIT}`, geometry.left - 10, geometry.top);
+    context.fillText('median', geometry.left - 10, (geometry.top + geometry.bottom) / 2);
+    context.fillText(`−${Z_LIMIT}`, geometry.left - 10, geometry.bottom);
+    context.strokeStyle = GRID_STRONG;
+    context.setLineDash([3, 3]);
+    context.beginPath();
+    context.moveTo(geometry.left, (geometry.top + geometry.bottom) / 2);
+    context.lineTo(geometry.right, (geometry.top + geometry.bottom) / 2);
+    context.stroke();
+    context.setLineDash([]);
+
     axes.forEach((metric, i) => {
       const x = geometry.left + geometry.step * i;
       context.strokeStyle = '#c8d0d8';
@@ -419,43 +664,67 @@ export class ComparePanel {
         context.strokeStyle = '#2f6f8f';
         context.strokeRect(x - 7, Math.min(brush.a, brush.b), 14, Math.abs(brush.b - brush.a));
       }
-      // The end axes sit against the edges, so their labels align inward.
-      context.textAlign = i === 0 ? 'left' : i === axes.length - 1 ? 'right' : 'center';
-      const anchor = i === 0 ? x - 8 : i === axes.length - 1 ? x + 8 : x;
+      context.fillStyle = INK;
+      context.textAlign = 'center';
       context.textBaseline = 'top';
-      context.fillStyle = '#4a5568';
-      context.fillText('+3', anchor, geometry.top - 15);
-      context.fillText('−3', anchor, geometry.bottom + 6);
-      context.fillStyle = '#1b2733';
-      const label = metric.label.length > 18 ? `${metric.label.slice(0, 17)}…` : metric.label;
-      context.fillText(label, anchor, geometry.bottom + 22);
+      lines[i].forEach((line, k) => {
+        context.fillText(line, x, geometry.bottom + 20 + k * LINE_HEIGHT);
+      });
     });
 
     const brushed = this.brushedIds(axes, geometry);
-    for (const entry of series) {
-      const dim = brushed !== null && !brushed.has(entry.id);
-      context.globalAlpha = dim ? 0.18 : 1;
-      context.strokeStyle = entry.color;
-      context.lineWidth = dim ? 1.2 : 2.2;
-      context.setLineDash(entry.dash);
-      context.beginPath();
-      axes.forEach((metric, i) => {
-        const x = geometry.left + geometry.step * i;
+    const brushedOut = new Set(
+      brushed === null ? [] : series.filter((entry) => !brushed.has(entry.id)).map((entry) => entry.id),
+    );
+    for (const entry of this.drawOrder(series)) {
+      const { alpha, lineWidth, markerSize } = this.emphasis(entry, brushedOut.has(entry.id));
+      const points = axes.map((metric, i) => {
         const z = this.zScore(metric, entry.index);
-        const y = this.zToY(z, geometry);
-        if (i === 0) context.moveTo(x, y);
-        else context.lineTo(x, y);
+        const present = Number.isFinite(z);
+        const place = ranks.get(metric.key)?.get(entry.id);
+        const x = geometry.left + geometry.step * i;
+        return {
+          present,
+          x,
+          y: present ? this.zToY(z, geometry) : NaN,
+          // Candidates missing one axis spread along it rather than stacking.
+          missingX: x + ((place?.rank ?? 0) - ((place?.total ?? 1) - 1) / 2) * MISSING_GLYPH_STEP,
+        };
       });
-      context.stroke();
+      context.globalAlpha = alpha;
+      context.strokeStyle = entry.color;
+      context.fillStyle = entry.color;
+      context.lineWidth = lineWidth;
+      context.setLineDash(entry.dash);
+      for (const run of presentRuns(points.map((point) => point.present))) {
+        if (run.length < 2) continue;
+        context.beginPath();
+        run.forEach((index, k) => {
+          const point = points[index];
+          if (k === 0) context.moveTo(point.x, point.y);
+          else context.lineTo(point.x, point.y);
+        });
+        context.stroke();
+      }
       context.setLineDash([]);
+      context.lineWidth = 1.8;
+      points.forEach((point) => {
+        if (point.present) drawMarker(context, entry.marker, point.x, point.y, markerSize);
+        else drawMissingGlyph(context, point.missingX, geometry.bottom + 9, MISSING_GLYPH_SIZE);
+      });
       context.globalAlpha = 1;
     }
 
+    const missingText = missing.total > 0
+      ? ` ${describeMissing(missing.total)}: the line breaks and an open cross sits below the axis; `
+        + 'a gene with no value on a brushed axis is never kept by that brush.'
+      : '';
     this.note.textContent = brushed === null
-      ? 'Each line is one candidate. Drag up or down on an axis to brush a range; lines outside it fade.'
+      ? 'Each line is one candidate. Drag up or down on an axis to brush a range; lines outside '
+        + `it fade.${missingText} Select a legend entry to focus one candidate.${this.scrollHint()}`
       : `Brushing keeps ${formatCount(brushed.size)} of ${formatCount(series.length)} candidates. `
-        + 'Drag again to adjust, or use Clear brushes.';
-    this.renderLegend(series, brushed === null ? [] : series.filter((entry) => !brushed.has(entry.id)).map((entry) => entry.id));
+        + `Drag again to adjust, or use Clear brushes.${missingText}${this.scrollHint()}`;
+    this.renderLegend(series, missing, brushedOut);
 
     if (this.brushes.size > 0 && !this.clearBrushButton) {
       this.clearBrushButton = document.createElement('button');
@@ -472,9 +741,9 @@ export class ComparePanel {
     }
   }
 
+  /** Pixel row for a finite z-score. Callers never pass a missing value here. */
   zToY(z, geometry) {
-    const clamped = Number.isFinite(z) ? z : 0;
-    return geometry.bottom - ((clamped + 3) / 6) * (geometry.bottom - geometry.top);
+    return geometry.bottom - ((z + Z_LIMIT) / (2 * Z_LIMIT)) * (geometry.bottom - geometry.top);
   }
 
   brushedIds(axes, geometry) {
@@ -485,7 +754,13 @@ export class ComparePanel {
       for (const metric of axes) {
         const brush = this.brushes.get(metric.key);
         if (!brush) continue;
-        const y = this.zToY(this.zScore(metric, entry.index), geometry);
+        const z = this.zScore(metric, entry.index);
+        // Unknown is not inside any range.
+        if (!Number.isFinite(z)) {
+          passes = false;
+          break;
+        }
+        const y = this.zToY(z, geometry);
         const low = Math.min(brush.a, brush.b);
         const high = Math.max(brush.a, brush.b);
         if (y < low || y > high) {
@@ -542,12 +817,30 @@ export class ComparePanel {
     this.drawParallel();
   }
 
+  /** A table cell for a metric value: the number, or an explicit missing mark. */
+  valueCell(metric, value, gene) {
+    const td = document.createElement('td');
+    td.className = 'numeric';
+    if (Number.isFinite(value)) {
+      td.textContent = formatValue(metric, value);
+    } else {
+      td.classList.add('missing');
+      td.textContent = MISSING;
+      td.append(hiddenText('no value'));
+    }
+    if (gene && isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
+      td.append(' ', basisTag(gene));
+    }
+    return td;
+  }
+
   renderDelta() {
     const series = this.seriesFor();
     this.deltaControls.replaceChildren();
     this.deltaTableHost.replaceChildren();
     this.note.textContent = 'Signed difference for every metric, A minus B. Bars run left for '
-      + 'lower and right for higher, and the sign is printed as well.';
+      + 'lower and right for higher, and the sign is printed as well. A missing value on '
+      + 'either side leaves the difference missing.';
 
     if (series.length < 2) {
       const empty = document.createElement('p');
@@ -573,7 +866,7 @@ export class ComparePanel {
       for (const entry of series) {
         const option = document.createElement('option');
         option.value = entry.id;
-        option.textContent = entry.gene.name ? `${entry.id} ${entry.gene.name}` : entry.id;
+        option.textContent = seriesLabel(entry);
         select.append(option);
       }
       select.value = this.deltaPair[slot];
@@ -586,8 +879,9 @@ export class ComparePanel {
     };
     this.deltaControls.append(makeSelect(0, 'Gene A'), makeSelect(1, 'Gene B'));
 
-    const indexA = this.state.dataset.indexById.get(this.deltaPair[0]);
-    const indexB = this.state.dataset.indexById.get(this.deltaPair[1]);
+    const { dataset } = this.state;
+    const indexA = dataset.indexById.get(this.deltaPair[0]);
+    const indexB = dataset.indexById.get(this.deltaPair[1]);
     const table = document.createElement('table');
     table.className = 'data-table';
     const caption = document.createElement('caption');
@@ -617,8 +911,9 @@ export class ComparePanel {
       track.className = 'delta-track';
       const fill = document.createElement('span');
       fill.className = 'delta-fill';
-      const magnitude = Number.isFinite(z) ? Math.min(1, Math.abs(z) / 3) : 0;
+      const magnitude = Number.isFinite(z) ? Math.min(1, Math.abs(z) / Z_LIMIT) : 0;
       fill.style.width = `${magnitude * 50}%`;
+      // A signed difference always reads on a diverging ramp, centred on no change.
       fill.style.background = Number.isFinite(z) ? divergingColor(0.5 + Math.sign(z) * magnitude * 0.5) : 'transparent';
       fill.style.left = Number.isFinite(z) && z < 0 ? `${50 - magnitude * 50}%` : '50%';
       track.append(fill);
@@ -627,13 +922,16 @@ export class ComparePanel {
       magnitudeText.textContent = Number.isFinite(z)
         ? `${formatDelta({ integer: false }, Number(z.toFixed(2)))} spreads`
         : MISSING;
+      if (!Number.isFinite(z)) magnitudeText.append(hiddenText('no value'));
       bar.append(track, magnitudeText);
 
+      const deltaCell = this.valueCell(metric, difference, null);
+      if (Number.isFinite(difference)) deltaCell.textContent = formatDelta(metric, difference);
       row.append(
         label,
-        Object.assign(document.createElement('td'), { className: 'numeric', textContent: formatValue(metric, a) }),
-        Object.assign(document.createElement('td'), { className: 'numeric', textContent: formatValue(metric, b) }),
-        Object.assign(document.createElement('td'), { className: 'numeric', textContent: formatDelta(metric, difference) }),
+        this.valueCell(metric, a, dataset.genes[indexA]),
+        this.valueCell(metric, b, dataset.genes[indexB]),
+        deltaCell,
         bar,
       );
       body.append(row);
@@ -654,11 +952,15 @@ export class ComparePanel {
       return;
     }
     const metrics = this.registry.metrics;
+    const missing = countMissing(series, metrics, (metric, index) => metric.read(index));
     const table = document.createElement('table');
     table.className = 'data-table sortable';
     const caption = document.createElement('caption');
-    caption.textContent = `${formatCount(series.length)} shortlisted genes. `
-      + 'Select a column heading to sort. This table is shared by all three views above.';
+    caption.textContent = `${pluralise(formatCount(series.length), 'shortlisted gene')}, `
+      + `${describeMissing(missing.total)}`
+      + `${missing.total > 0 ? ' shown as a blank cell' : ''}. `
+      + 'Select a column heading to sort; missing values sort last. '
+      + 'This table is shared by all three views above.';
     const head = document.createElement('thead');
     const headRow = document.createElement('tr');
 
@@ -713,30 +1015,42 @@ export class ComparePanel {
       if (typeof va === 'string' || typeof vb === 'string') {
         return String(va).localeCompare(String(vb)) * this.sort.direction;
       }
-      const fa = Number.isFinite(va) ? va : -Infinity;
-      const fb = Number.isFinite(vb) ? vb : -Infinity;
-      return (fa - fb) * this.sort.direction;
+      // Unknown has no rank, so it goes last whichever way the column is sorted.
+      const missingA = !Number.isFinite(va);
+      const missingB = !Number.isFinite(vb);
+      if (missingA && missingB) return 0;
+      if (missingA) return 1;
+      if (missingB) return -1;
+      return (va - vb) * this.sort.direction;
     });
 
     const body = document.createElement('tbody');
     for (const entry of rows) {
       const tr = document.createElement('tr');
+      const focused = this.focusId === entry.id;
+      tr.classList.toggle('focused', focused);
+      tr.classList.toggle('dimmed', Boolean(this.focusId) && !focused);
       const first = document.createElement('th');
       first.scope = 'row';
+      const focus = document.createElement('button');
+      focus.type = 'button';
+      focus.className = 'series-focus';
+      focus.setAttribute('aria-pressed', String(focused));
+      focus.setAttribute('aria-label', focused ? `Clear focus on ${entry.id}` : `Focus ${entry.id} in the chart`);
+      focus.append(this.swatch(entry));
+      focus.addEventListener('click', () => this.setFocus(entry.id));
       const link = document.createElement('button');
       link.type = 'button';
       link.className = 'chip-link';
       link.textContent = entry.id;
+      link.setAttribute('aria-label', `Pin ${entry.id} in the gene panel`);
       link.addEventListener('click', () => this.handlers.onSelect(entry.id));
-      first.append(link);
+      first.append(focus, ' ', link);
       tr.append(first);
       tr.append(Object.assign(document.createElement('td'), { textContent: entry.gene.name ?? MISSING }));
       tr.append(Object.assign(document.createElement('td'), { textContent: entry.gene.product ?? MISSING }));
       for (const metric of metrics) {
-        tr.append(Object.assign(document.createElement('td'), {
-          className: 'numeric',
-          textContent: formatValue(metric, metric.read(entry.index)),
-        }));
+        tr.append(this.valueCell(metric, metric.read(entry.index), entry.gene));
       }
       body.append(tr);
     }

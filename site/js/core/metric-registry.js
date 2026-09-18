@@ -44,6 +44,76 @@ export function isExpressionMetric(metric) {
 }
 
 /**
+ * True for the codon-adaptation stand-in the contract calls `expressionProxy`.
+ * It is derived from this genome, so it carries no borrowed-measurement warning,
+ * and it is a rank in a different unit from any abundance, so the interface must
+ * never present the two as one column.
+ */
+export function isExpressionProxyMetric(metric) {
+  return isExpressionMetric(metric) && /proxy/i.test(`${metric.key} ${metric.label}`);
+}
+
+/** The four states the contract's `expressionBasis` can be in, in display order. */
+export const EXPRESSION_BASES = Object.freeze(['measured', 'proxy', 'none', 'unrecorded']);
+
+/**
+ * Where a gene's displayed expression value comes from, per the contract.
+ *
+ * `measured` and `proxy` are the pipeline's own words. `none` is the contract's
+ * null: neither a measurement nor a proxy exists. `unrecorded` means the dataset
+ * predates the field, which is an explicit unknown and never assumed to be a
+ * measurement. Callers show `text` beside any expression value.
+ *
+ * @param {object} gene a `genes.json` record.
+ * @returns {{basis: 'measured'|'proxy'|'none'|'unrecorded', text: string, short: string}}
+ */
+export function expressionBasisOf(gene) {
+  if (!gene || !Object.hasOwn(gene, 'expressionBasis')) {
+    return {
+      basis: 'unrecorded',
+      short: 'basis not recorded',
+      text: 'The dataset does not record whether this value is measured or a proxy.',
+    };
+  }
+  const basis = gene.expressionBasis;
+  if (basis === 'measured') {
+    const source = gene.expressionSourceId ? ` in ${gene.expressionSourceId}` : '';
+    return { basis, short: 'measured', text: `Measured abundance${source}.` };
+  }
+  if (basis === 'proxy') {
+    return {
+      basis,
+      short: 'proxy only',
+      text: 'No measurement. The expression proxy, a CAI/tAI rank from this genome, stands in '
+        + 'and is a different quantity in a different unit.',
+    };
+  }
+  if (basis === null) {
+    return { basis: 'none', short: 'no basis', text: 'Neither a measurement nor a proxy exists.' };
+  }
+  return {
+    basis: 'unrecorded',
+    short: 'basis not recognised',
+    text: `The dataset records an expression basis of "${basis}", which this page does not know.`,
+  };
+}
+
+/**
+ * How many genes fall under each basis, for legends and filters.
+ * @param {object[]} genes
+ * @returns {{counts: Map<string, number>, recorded: boolean}} `recorded` is false when
+ *   no gene carries the field at all, so a filter on it would be meaningless.
+ */
+export function expressionBasisCounts(genes) {
+  const counts = new Map(EXPRESSION_BASES.map((basis) => [basis, 0]));
+  for (const gene of genes) {
+    const { basis } = expressionBasisOf(gene);
+    counts.set(basis, counts.get(basis) + 1);
+  }
+  return { counts, recorded: counts.get('unrecorded') < genes.length };
+}
+
+/**
  * A plain-language sentence naming where an expression measurement came from.
  * The interface shows this next to the value rather than in a tooltip, because a
  * measurement from another strain must not be mistaken for this genome's own.
@@ -85,12 +155,16 @@ export function buildMetricRegistry(meta, genes, liveFields) {
       declaredButMissing.push(key);
       continue;
     }
+    // `scale` is the ramp family the contract lets the pipeline declare; null
+    // means undeclared and the colour scale then says it inferred one.
+    // `direction` is documentation in the contract and is deliberately not read.
     const metric = {
       key,
       label: definition.label ?? key,
       unit: definition.unit ?? '',
       desc: definition.desc ?? '',
       family: definition.family ?? FAMILY_BY_KEY.get(key) ?? 'Other',
+      scale: definition.scale ?? null,
       source: 'pipeline',
       integer: INTEGER_KEYS.has(key),
       read: (index) => {
@@ -98,9 +172,11 @@ export function buildMetricRegistry(meta, genes, liveFields) {
         return typeof value === 'number' ? value : NaN;
       },
     };
-    // An expression metric carries its provenance so every place that shows it
-    // can say where it came from.
-    if (isExpressionMetric(metric)) metric.provenance = meta.expressionSource ?? null;
+    // A measured expression metric carries its provenance so every place that
+    // shows it can say where it came from. The proxy is this genome's own.
+    if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
+      metric.provenance = meta.expressionSource ?? null;
+    }
     metrics.push(metric);
   }
 
@@ -108,6 +184,7 @@ export function buildMetricRegistry(meta, genes, liveFields) {
     const values = liveFields[definition.key];
     metrics.push({
       ...definition,
+      scale: definition.scale ?? null,
       source: 'live',
       integer: isCountMetric(definition.key),
       read: (index) => values[index],

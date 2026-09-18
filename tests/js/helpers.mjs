@@ -7,6 +7,7 @@ import { loadDataset } from '../../site/js/core/dataset.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FIXTURE_DIR = resolve(HERE, '../fixtures/data');
+export const EXPRESSION_FIXTURE_DIR = resolve(HERE, '../fixtures/data-expression');
 export const SYMBOLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 /** The standard alphabet, shaped exactly like `meta.codonAlphabet`. */
@@ -41,4 +42,15 @@ export async function fixtureDataset() {
     cached = await loadDataset({ baseUrl: `file://${FIXTURE_DIR}/`, fetchImpl: fileFetch() });
   }
   return cached;
+}
+
+let cachedExpression = null;
+/** The fixture with expression, basis, and proxy fields, loaded once per process. */
+export async function expressionFixtureDataset() {
+  if (!cachedExpression) {
+    cachedExpression = await loadDataset({
+      baseUrl: `file://${EXPRESSION_FIXTURE_DIR}/`, fetchImpl: fileFetch(),
+    });
+  }
+  return cachedExpression;
 }

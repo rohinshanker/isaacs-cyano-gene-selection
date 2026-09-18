@@ -23,49 +23,50 @@ export const INITIATION_INDEX = 0;
 /**
  * Definitions for the metrics this module produces. The site's menus read these
  * exactly as they read `meta.metrics`, so a live metric and a pipeline metric
- * are interchangeable everywhere a metric can be chosen.
+ * are interchangeable everywhere a metric can be chosen. `scale` follows the
+ * contract: diverging for a signed change, sequential for a magnitude.
  */
 export const LIVE_METRICS = Object.freeze([
-  { key: 'targetCount', label: 'Target codons', unit: 'codons', family: 'Recoding load',
+  { key: 'targetCount', scale: 'sequential', label: 'Target codons', unit: 'codons', family: 'Recoding load',
     desc: 'Edits this scheme would make: sense codons plus the terminal stop when the '
       + 'scheme reassigns it. The start codon is never counted.' },
-  { key: 'targetStopEdit', label: 'Terminal stop reassigned', unit: '0 or 1', family: 'Recoding load',
+  { key: 'targetStopEdit', scale: 'sequential', label: 'Terminal stop reassigned', unit: '0 or 1', family: 'Recoding load',
     desc: 'One when the scheme replaces this gene\u2019s terminal stop codon, which the '
       + 'packed sequence does not contain.' },
-  { key: 'targetFraction', label: 'Target fraction', unit: 'fraction of sense codons', family: 'Recoding load',
+  { key: 'targetFraction', scale: 'sequential', label: 'Target fraction', unit: 'fraction of sense codons', family: 'Recoding load',
     desc: 'Edits divided by sense codons. The denominator excludes the terminal stop.' },
-  { key: 'targetPerKb', label: 'Targets per kb', unit: 'per kb CDS', family: 'Recoding load',
+  { key: 'targetPerKb', scale: 'sequential', label: 'Targets per kb', unit: 'per kb CDS', family: 'Recoding load',
     desc: 'Edit density per kilobase of the full coding sequence, stop included, '
       + 'the usual way synthesis cost is quoted.' },
-  { key: 'targetFirstRamp', label: `Targets in first ${RAMP_CODONS} codons`, unit: 'codons', family: 'Recoding load',
+  { key: 'targetFirstRamp', scale: 'sequential', label: `Targets in first ${RAMP_CODONS} codons`, unit: 'codons', family: 'Recoding load',
     desc: 'Sense-codon edits inside the translation ramp, where changes disturb '
       + 'initiation most. The start codon and the terminal stop are excluded.' },
-  { key: 'maxLocalTargetDensity', label: `Max local target density`, unit: `fraction per ${WINDOW_CODONS}-codon window`, family: 'Recoding load',
+  { key: 'maxLocalTargetDensity', scale: 'sequential', label: `Max local target density`, unit: `fraction per ${WINDOW_CODONS}-codon window`, family: 'Recoding load',
     desc: `The busiest ${WINDOW_CODONS}-codon stretch of sense codons: the highest share `
       + 'of targets in any window. The terminal stop is in no window.' },
-  { key: 'targetClusters', label: 'Target clusters', unit: 'clusters', family: 'Recoding load',
+  { key: 'targetClusters', scale: 'sequential', label: 'Target clusters', unit: 'clusters', family: 'Recoding load',
     desc: `Groups of sense-codon targets no more than ${CLUSTER_GAP_CODONS} codons apart.` },
-  { key: 'maxClusterSpan', label: 'Longest cluster', unit: 'codons', family: 'Recoding load',
+  { key: 'maxClusterSpan', scale: 'sequential', label: 'Longest cluster', unit: 'codons', family: 'Recoding load',
     desc: 'Sense codons spanned by the widest cluster of targets.' },
-  { key: 'recodedGc3', label: 'Recoded GC3', unit: 'fraction', family: 'Recoded value',
+  { key: 'recodedGc3', scale: 'sequential', label: 'Recoded GC3', unit: 'fraction', family: 'Recoded value',
     desc: 'GC at third codon positions after recoding.' },
-  { key: 'recodedCai', label: 'Recoded CAI', unit: 'index 0-1', family: 'Recoded value',
+  { key: 'recodedCai', scale: 'sequential', label: 'Recoded CAI', unit: 'index 0-1', family: 'Recoded value',
     desc: 'Codon adaptation index after recoding.' },
-  { key: 'recodedTai', label: 'Recoded tAI', unit: 'index 0-1', family: 'Recoded value',
+  { key: 'recodedTai', scale: 'sequential', label: 'Recoded tAI', unit: 'index 0-1', family: 'Recoded value',
     desc: 'tRNA adaptation index after recoding.' },
-  { key: 'recodedEnc', label: 'Recoded ENC', unit: 'codons 20-61', family: 'Recoded value',
+  { key: 'recodedEnc', scale: 'sequential', label: 'Recoded ENC', unit: 'codons 20-61', family: 'Recoded value',
     desc: 'Effective number of codons after recoding.' },
-  { key: 'recodedCps', label: 'Recoded codon-pair score', unit: 'mean log ratio', family: 'Recoded value',
+  { key: 'recodedCps', scale: 'sequential', label: 'Recoded codon-pair score', unit: 'mean log ratio', family: 'Recoded value',
     desc: 'Mean codon-pair score after recoding, against wild-type genome expectations.' },
-  { key: 'dGc3', label: 'ΔGC3', unit: 'fraction', family: 'Change from wild type',
+  { key: 'dGc3', scale: 'diverging', label: 'ΔGC3', unit: 'fraction', family: 'Change from wild type',
     desc: 'Recoded GC3 minus wild-type GC3.' },
-  { key: 'dCai', label: 'ΔCAI', unit: 'index', family: 'Change from wild type',
+  { key: 'dCai', scale: 'diverging', label: 'ΔCAI', unit: 'index', family: 'Change from wild type',
     desc: 'Recoded CAI minus wild-type CAI. Negative means less adapted.' },
-  { key: 'dTai', label: 'ΔtAI', unit: 'index', family: 'Change from wild type',
+  { key: 'dTai', scale: 'diverging', label: 'ΔtAI', unit: 'index', family: 'Change from wild type',
     desc: 'Recoded tAI minus wild-type tAI. Negative means scarcer tRNA supply.' },
-  { key: 'dEnc', label: 'ΔENC', unit: 'codons', family: 'Change from wild type',
+  { key: 'dEnc', scale: 'diverging', label: 'ΔENC', unit: 'codons', family: 'Change from wild type',
     desc: 'Recoded ENC minus wild-type ENC. Positive means more even codon use.' },
-  { key: 'dCps', label: 'Δcodon-pair score', unit: 'mean log ratio', family: 'Change from wild type',
+  { key: 'dCps', scale: 'diverging', label: 'Δcodon-pair score', unit: 'mean log ratio', family: 'Change from wild type',
     desc: 'Recoded codon-pair score minus wild type. Negative means more avoided pairs.' },
 ]);
 
