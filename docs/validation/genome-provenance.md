@@ -76,6 +76,10 @@ Each step must pass before the next is meaningful.
 - tRNA anticodons come from the `anticodon=` attribute on tRNA features in the
   GFF. The `product=tRNA-Ala` form names only the amino acid and is insufficient
   for tAI.
-- `protein.faa.gz` holds 2,711 records against 2,722 CDS sequences. The difference
-  is the pseudogenes and malformed CDSs that the inclusion rule excludes, and the
-  two counts should reconcile exactly.
+- `protein.faa.gz` holds 2,711 records against 2,722 CDS sequences, but the gap is
+  **not** simply the excluded CDSs. The inclusion rule keeps 2,715 genes and drops
+  7 pseudogenes. The remaining difference is duplication: `protein.faa.gz` is keyed
+  by `WP_` accession and deduplicated, and four accessions are each shared by two
+  CDS records (`WP_011243185.1`, `WP_011242480.1`, `WP_011242807.1`,
+  `WP_011242808.1`), which are identical proteins encoded at two loci. Join by
+  `protein_id` and never assert equality of record counts.

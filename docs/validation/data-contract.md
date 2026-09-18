@@ -28,8 +28,18 @@ A CDS enters the analysis set only if all hold:
 5. Sequence contains only `ACGT`.
 
 Every excluded CDS is recorded in `excluded.json` with its locus tag and reason.
-The expected analysis set is about 2,711 genes; the pipeline asserts a count
-between 2,650 and 2,725 and fails loudly outside that range.
+
+Applying this rule to the 2,722 CDS records yields **exactly 2,715 genes and 7
+exclusions**, measured independently by the coordinator. All seven exclusions are
+pseudogenes; the one CDS whose length is not a multiple of three and the two with
+internal stops are among those seven. The pipeline asserts a count between 2,650
+and 2,725 and fails loudly outside that range.
+
+**Do not assert equality against the 2,711 records in `protein.faa.gz`.** That file
+is keyed by `WP_` protein accession and deduplicated, and four accessions are each
+shared by two CDS records: `WP_011243185.1`, `WP_011242480.1`, `WP_011242807.1`,
+and `WP_011242808.1`. So 2,715 CDSs map onto 2,711 unique proteins. Join by
+`protein_id`, never by record count.
 
 ## Codon packing
 
