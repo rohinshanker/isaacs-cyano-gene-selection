@@ -255,6 +255,54 @@ def validate_meta(meta: Any, report: Report) -> dict[str, Any] | None:
         report.check(not missing_labels, "every meta.metrics entry has a label",
                      f"missing for {missing_labels[:5]}")
 
+        # A description that restates its label teaches nothing: the detail panel
+        # then "explains" GC as "GC". Every metric needs a real definition giving
+        # the quantity, its range or window, its source, and any caveat.
+        echoed = [k for k, v in metrics.items() if isinstance(v, dict)
+                  and str(v.get("desc", "")).strip().lower()
+                  == str(v.get("label", "")).strip().lower()]
+        report.check(not echoed,
+                     "no metric description merely restates its label",
+                     f"{len(echoed)} of {len(metrics)} do, e.g. {echoed[:4]}")
+
+        thin = [k for k, v in metrics.items() if isinstance(v, dict)
+                and len(str(v.get("desc", "")).strip()) < 40 and k not in echoed]
+        report.check(not thin,
+                     "every metric description is substantive",
+                     f"{len(thin)} under 40 characters, e.g. {thin[:4]}")
+
+        valid_scales = {"sequential", "diverging"}
+        bad_scale = [k for k, v in metrics.items() if isinstance(v, dict)
+                     and v.get("scale") not in valid_scales]
+        report.check(not bad_scale,
+                     "every metric declares a sequential or diverging colour scale",
+                     f"{len(bad_scale)} do not, e.g. {bad_scale[:4]}")
+
+    # Occurrences must be published as total and editable, because the initiation
+    # triplet can never be recoded and quoting the raw total overstates the burden.
+    occurrences = meta.get("codonOccurrences")
+    if isinstance(occurrences, dict) and occurrences:
+        shape_problems = [c for c, v in occurrences.items()
+                          if not isinstance(v, dict)
+                          or not isinstance(v.get("total"), int)
+                          or not isinstance(v.get("editable"), int)
+                          or v["editable"] > v["total"]]
+        report.check(not shape_problems,
+                     "codonOccurrences gives total and editable per codon",
+                     f"malformed: {shape_problems[:4]}")
+        for codon, expected_total, expected_editable in (
+                ("GTG", 18659, 18303), ("TTG", 20427, 20324)):
+            entry = occurrences.get(codon, {})
+            report.check(
+                entry.get("total") == expected_total
+                and entry.get("editable") == expected_editable,
+                f"{codon} occurrence counts match a direct scan",
+                f"got {entry.get('total')}/{entry.get('editable')}, "
+                f"expected {expected_total}/{expected_editable}")
+    else:
+        report.fail("meta.codonOccurrences is present",
+                    "required so the interface can quote editable, not raw, counts")
+
     tai = meta.get("tai", {})
     report.check(isinstance(tai, dict) and isinstance(tai.get("sValues"), dict),
                  "meta.tai.sValues is recorded")
@@ -458,9 +506,36 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
         zeros = [g["id"] for g in measured if g.get("expression") == 0]
         report.check(not zeros, "no gene has expression exactly zero",
                      f"{len(zeros)} genes, e.g. {zeros[:3]}")
-        report.check(len(measured) == 2551,
-                     "expression is present for exactly 2,551 genes",
-                     f"got {len(measured)}")
+
+    # A proxy must never be written into the measured field, and the basis must
+    # say which of the two a displayed value came from. Without that the fallback
+    # is silent and a codon-adaptation rank reads as an abundance.
+    if any("expressionBasis" in g for g in genes if isinstance(g, dict)):
+        mismatched = []
+        for gene in genes:
+            if not isinstance(gene, dict):
+                continue
+            basis = gene.get("expressionBasis")
+            has_measured = gene.get("expression") is not None
+            has_proxy = gene.get("expressionProxy") is not None
+            if basis == "measured" and not has_measured:
+                mismatched.append(f"{gene.get('id')}: basis measured, expression null")
+            elif basis == "proxy" and not has_proxy:
+                mismatched.append(f"{gene.get('id')}: basis proxy, no expressionProxy")
+            elif basis is None and has_measured:
+                mismatched.append(f"{gene.get('id')}: measured value with null basis")
+            elif basis not in (None, "measured", "proxy"):
+                mismatched.append(f"{gene.get('id')}: basis {basis!r}")
+        report.check(not mismatched,
+                     "expressionBasis agrees with the fields it describes",
+                     f"{len(mismatched)} problems, e.g. {mismatched[:3]}")
+
+        sourced = [g["id"] for g in genes if isinstance(g, dict)
+                   and g.get("expressionBasis") == "measured"
+                   and not g.get("expressionSourceId")]
+        report.check(not sourced,
+                     "every measured expression names its source dataset",
+                     f"{len(sourced)} without one, e.g. {sourced[:3]}")
 
 
 def validate_distributions(genes: list[dict[str, Any]], meta: dict[str, Any],
