@@ -9,8 +9,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import feature_metrics as fm
 from build_features import (
+    S_VALUES,
     add_context,
     circular_slice,
+    effective_anticodon,
     exclusion_reason,
     expression_percentiles,
     gene_pair_metrics,
@@ -74,6 +76,16 @@ def test_tai_watson_crick_wobble_and_geometric_mean():
     weights.update(TTT=0.25, TTC=1.0)
     assert fm.trna_adaptation_index("TTTTTCTAA", weights) == pytest.approx(0.5)
     assert fm.trna_adaptiveness("ATA", {"LAT": 1}, {"L:A": 0.89}) == pytest.approx(0.11)
+
+
+def test_lysidine_ile_cat_supports_ata_without_colliding_with_met_cat():
+    anticodon_counts = {
+        effective_anticodon("Ile", "CAT"): 1,
+        effective_anticodon("Met", "CAT"): 2,
+    }
+    assert anticodon_counts == {"LAT": 1, "CAT": 2}
+    assert fm.trna_adaptiveness("ATA", anticodon_counts, S_VALUES) > 0
+    assert fm.tai_weights(anticodon_counts, S_VALUES)["ATA"] > 0.01
 
 
 def test_rare_features_include_ramp_run_and_short_local_window():

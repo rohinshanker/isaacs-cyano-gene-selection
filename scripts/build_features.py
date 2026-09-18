@@ -67,6 +67,18 @@ def parse_attributes(value: str) -> dict[str, str]:
     return result
 
 
+def effective_anticodon(amino_acid: str, genomic_anticodon: str) -> str:
+    """Returns the modified anticodon used by the bacterial tAI model."""
+    anticodon = genomic_anticodon
+    if anticodon.startswith("A"):
+        anticodon = "I" + anticodon[1:]
+    # Ile-CAT is modified at C34 to lysidine. It decodes ATA, not ATG; the
+    # same raw CAT anticodon occurs in two Met tRNAs and must remain distinct.
+    if (amino_acid, anticodon) == LYSIDINE_TRNA:
+        return "LAT"
+    return anticodon
+
+
 def parse_gff(
     path: Path, genomes: Mapping[str, str]
 ) -> tuple[dict[str, dict], dict[str, int], dict[tuple[str, str], int]]:
@@ -97,13 +109,7 @@ def parse_gff(
                     trna_species[(amino_acid, anticodon)] += 1
                     # NCBI records genomic bases. Apply the two standard bacterial
                     # wobble-position modifications needed by the dos-Reis model.
-                    if anticodon.startswith("A"):
-                        anticodon = "I" + anticodon[1:]
-                    # Ile-CAT is modified at C34 to lysidine. It decodes ATA, not
-                    # ATG; the same raw CAT anticodon occurs in two Met tRNAs.
-                    if (amino_acid, anticodon) == LYSIDINE_TRNA:
-                        anticodon = "LAT"
-                    anticodons[anticodon] += 1
+                    anticodons[effective_anticodon(amino_acid, anticodon)] += 1
                 continue
             locus = attributes.get("locus_tag")
             if not locus:
