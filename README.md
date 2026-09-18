@@ -7,6 +7,24 @@ Filter roughly 2,700 genes down to the ones worth looking at, see where each sit
 codon-usage and recoding-risk space, and build a shortlist of candidates to compare.
 It is a static site, so it runs from a local file or from GitHub Pages with no server.
 
+## What you can do with it
+
+- **Find a gene by what it is**, not just by its identifier. Search matches locus tag,
+  gene symbol, and product text, with an alias table for the names people actually type.
+  Searching `rubisco` returns both subunits of the enzyme ahead of its chaperone, even
+  though the annotation spells them "ribulose bisphosphate carboxylase". The alias table
+  is one editable constant, so the lab can extend it.
+- **Define a recoding scheme and see its cost immediately.** A scheme is a codon-to-codon
+  map, so the page reconstructs each recoded gene and reports the burden and the change
+  in every metric against wild type. Amber reassignment, for instance, touches 1,071 of
+  2,715 genes.
+- **Build a shortlist of candidates** from the search results or the map, compare them as
+  a table, a radar, or parallel coordinates, and remove them from a list without hunting
+  through the map.
+- **Export a shortlist that stays interpretable.** Every export carries a manifest naming
+  the dataset, the annotation release, checksums, the full scheme map, and the metric
+  definitions, so two exports under two schemes can never be confused.
+
 ---
 
 ## Read this before trusting a number
@@ -40,23 +58,46 @@ old annotation.
 
 The full comparison is in [`docs/validation/genome-provenance.md`](docs/validation/genome-provenance.md).
 
-### 2. The expression filter is measured in a different strain
+### 2. Every expression number says where it came from
 
-**No public per-gene expression table exists for UTEX 2973.** The threshold that hides
-low-traffic genes therefore defaults to CAI and tAI, which are computed directly from
-this genome.
+**No public per-gene RNA abundance table exists for UTEX 2973.** Rather than hide that,
+the page labels each gene with the basis of its value, and you can filter to measured
+genes only.
 
-An optional expression overlay is available, but it is measured in *S. elongatus*
-**PCC 7942** in a biofilm and conditioned-media experiment with no light or CO₂
-metadata recorded. It covers 2,551 of 2,715 genes. It is a rough guide, not ground
-truth, and the interface labels it as such.
+| Basis | Genes | What it is |
+| --- | --- | --- |
+| `measured` | 2,551 | Transcript abundance from GEO **GSE205444** |
+| `proxy` | 164 | A CAI/tAI-derived rank, the documented fallback |
 
-Eight loci are deliberately excluded from it, because four proteins are each encoded
-at two loci and the identifier mapping collapses them ambiguously. Values for those
-pairs differed by up to twentyfold, so assigning either would be a guess.
+The measured values come from *S. elongatus* **PCC 7942**, a different strain, in a
+biofilm and conditioned-media experiment with no light or CO₂ metadata recorded. Useful
+as a rough guide, not as ground truth.
 
-Genes with no measurement are **null, never zero**. Do not let a threshold silently
-discard them. Full caveats: [`data/expression/PROVENANCE.md`](data/expression/PROVENANCE.md).
+A proxy rank is never written into the measured field, and a measured abundance and a
+codon-adaptation rank are never blended into one column. They are different quantities
+in different units.
+
+Eight loci are excluded from the measured set because four proteins are each encoded at
+two loci and the identifier mapping collapses them; the candidate values differed by up
+to twentyfold, so assigning either would be a guess.
+
+**A third source is staged but not yet wired in.**
+[`data/expression/tan2018_utex2973_tss_initiation.tsv`](data/expression/TAN2018_TSS_PROVENANCE.md)
+is the only direct measurement of the correct strain, covering 1,727 genes under known
+conditions. It is a transcription-start-site initiation score, not abundance, and it
+correlates with the PCC 7942 table at Spearman 0.313 across shared genes, so the two
+measure genuinely different things. Full caveats:
+[`data/expression/PROVENANCE.md`](data/expression/PROVENANCE.md) and
+[`TAN2018_TSS_PROVENANCE.md`](data/expression/TAN2018_TSS_PROVENANCE.md).
+
+### 2b. Missing means missing, everywhere
+
+A gene with no measurement is rendered as unknown in the charts, the legend, and the
+table alike. It is never placed on the median ring, never mapped to zero, and never
+imputed. Where several genes are missing the same metric, their markers are staggered so
+that five unknowns read as five rather than one. Charts report how many values are
+absent, and an axis with no usable spread is dropped from the defaults with the reason
+stated.
 
 ### 3. Never recode position zero
 
@@ -141,10 +182,12 @@ correct assembly.
 | `scripts/` | Python pipeline that builds `site/data/` from the genome. |
 | `tools/validate_contract.py` | Independent check that generated data honours the contract. |
 | `tools/fetch_genome.sh` | Pinned, checksum-verified genome download. |
+| `tools/check_live_metrics.mjs` | Runs the site's own metric code against the real genome. |
 | `data/raw/` | Downloaded genome files, gitignored. |
-| `data/expression/` | Expression overlay and its provenance. |
+| `data/expression/` | Expression sources and their provenance. |
 | `data/trna/` | Verified anticodon table, including the lysidine case. |
-| `docs/validation/` | The data contract and the genome runbook. |
+| `docs/validation/` | The data contract, the genome runbook, and validation runbooks. |
+| `docs/notes/tickets/` | Open work, with `INDEX.md` as the live queue. |
 
 ## Rebuilding
 
@@ -153,13 +196,29 @@ python3 -m venv .venv
 ./.venv/bin/python -m pip install -r requirements.txt
 ./tools/fetch_genome.sh data/raw
 ./.venv/bin/python scripts/build_features.py
-./.venv/bin/python tools/validate_contract.py
 ```
 
-The validator is deliberately independent of the pipeline. It re-derives the codon
-decoding, the full-CDS round trip, and the gene reconciliation from the raw genome
-rather than trusting the pipeline's assertions, so a bug mirrored in the pipeline's own
-tests still fails here. **Treat a validator failure as blocking.**
+Then run the full gate. All four must pass:
+
+```sh
+./.venv/bin/python tools/validate_contract.py        # 60 checks against the contract
+node tools/check_live_metrics.mjs                    # site's own code vs the real genome
+./.venv/bin/python -m pytest -q                      # pipeline tests
+node tests/fixtures/make_fixture.mjs
+node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
+node --test "tests/js/*.test.mjs"                    # site tests
+```
+
+Both fixture variants are required; the export and expression-basis suites load the
+second one. Fixtures are generated rather than committed, because the generator is the
+asset and its output is not.
+
+The two checking tools are deliberately independent of the code they check. The contract
+validator re-derives the codon decoding, the full-CDS round trip, and the gene
+reconciliation from the raw genome rather than trusting the pipeline's assertions, so a
+bug mirrored in the pipeline's own tests still fails here. The live-metric check runs the
+site's own modules against the real dataset, which is what caught the browser and
+pipeline disagreeing by up to 24 ENC units. **Treat a failure in either as blocking.**
 
 ## Deploying
 
