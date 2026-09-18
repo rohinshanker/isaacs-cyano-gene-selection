@@ -50,8 +50,12 @@ jobs:
         run: node tools/check_live_metrics.mjs
 
       # Fixture data is generated, not committed; the generator is the asset.
+      # Both variants are required: the export and basis suites load the
+      # expression variant, and without it twelve tests fail on a clean checkout.
       - name: Generate test fixtures
-        run: node tests/fixtures/make_fixture.mjs
+        run: |
+          node tests/fixtures/make_fixture.mjs
+          node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
 
       - name: Run site unit tests
         run: node --test "tests/js/*.test.mjs"
