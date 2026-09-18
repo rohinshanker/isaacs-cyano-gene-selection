@@ -329,6 +329,51 @@ input[type="range"] { width: 100%; }
 .filter-summary { font-size: 0.86rem; margin: 0.6rem 0; }
 .filter-summary.hiding { font-weight: 600; border-left: 3px solid #8a5300; padding-left: 0.5rem; }
 
+/* Gene search results ---------------------------------------------------- */
+
+#gene-search-results { margin-top: 0.25rem; }
+.search-status { margin: 0.25rem 0; font-size: 0.85rem; color: var(--ink-muted); }
+.search-alias-note {
+  margin: 0.25rem 0;
+  font-size: 0.8rem;
+  color: #6b4100;
+  background: #fdf3e2;
+  border: 1px solid #e3c893;
+  border-radius: var(--radius);
+  padding: 0.25rem 0.45rem;
+}
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+/* Narrow enough and the two buttons would squeeze the product text to a word per
+   line, so they drop to their own line instead. */
+.search-result {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.search-result-text { flex: 1 1 15rem; min-width: 0; }
+.search-result-name { margin: 0; font-size: 0.88rem; overflow-wrap: anywhere; }
+.search-result-field { color: var(--ink-muted); font-size: 0.78rem; }
+.search-result-product {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.search-result-actions { display: flex; gap: 0.3rem; flex: 0 0 auto; }
+
 /* Map ------------------------------------------------------------------- */
 
 .tablist { display: flex; flex-wrap: wrap; column-gap: 0.3rem; row-gap: 0; border-bottom: 1px solid var(--line); }
@@ -352,8 +397,13 @@ input[type="range"] { width: 100%; }
 }
 
 .panel-blurb { color: var(--ink-muted); max-width: 88ch; font-size: 0.88rem; margin: 0; }
-.map-toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+/* Two rows: colour-by and search on the first, view controls on the second, so
+   the search box and its result list get the width they need. */
+.map-toolbar { display: flex; flex-direction: column; gap: 0.5rem; }
+.map-toolbar-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .map-toolbar .field-row { margin-bottom: 0; }
+.map-toolbar .field-row-grow { flex: 1 1 18rem; }
+.map-toolbar .field-row-grow > input[type="search"] { flex: 1 1 12rem; }
 
 .filter-banner { margin: 0; font-size: 0.85rem; color: transparent; min-height: 1.2rem; }
 .filter-banner.active {
@@ -448,18 +498,46 @@ input[type="range"] { width: 100%; }
 
 /* Shortlist and comparison --------------------------------------------- */
 
-.shortlist-chips { list-style: none; margin: 0 0 0.5rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.shortlist-chip {
+/* A readable list the lab can prune without going back to the map. */
+.shortlist-list { list-style: none; margin: 0 0 0.5rem; padding: 0; display: grid; gap: 0.35rem; }
+.shortlist-row {
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  padding: 0.1rem 0.4rem 0.1rem 0.6rem;
-  background: var(--surface-sunken);
-  font-size: 0.83rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
 }
-.shortlist-chip .chip-link { border-bottom: none; }
+.shortlist-row-text { flex: 1 1 12rem; min-width: 0; }
+.shortlist-row-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+}
+.shortlist-row-link:hover { text-decoration: underline; }
+.shortlist-row-product {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.shortlist-row-metrics {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.shortlist-row > .chip-button { flex: 0 0 auto; }
+
+/* A locus tag is an identifier the reader copies, so it reads as one. */
+.locus-tag { font-family: var(--mono); }
 .shortlist-empty { color: var(--ink-muted); font-style: italic; font-size: 0.85rem; }
 
 .compare-section { margin: 0 1.25rem 1.25rem; }

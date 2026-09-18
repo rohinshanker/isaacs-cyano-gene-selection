@@ -22,6 +22,7 @@ import { SchemeEditor } from './ui/scheme-editor.js';
 import { FilterPanel } from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
+import { GeneSearchResults } from './ui/gene-search-results.js';
 import { ComparePanel } from './ui/compare.js';
 import { formatCount } from './ui/format.js';
 
@@ -217,6 +218,7 @@ let schemeEditor = null;
 let filterPanel = null;
 let sidePanel = null;
 let shortlistPanel = null;
+let searchResults = null;
 let comparePanel = null;
 let timingHandle = 0;
 
@@ -349,7 +351,11 @@ function renderAll({ schemeErrors = [] } = {}) {
     ids: state.shortlist,
     dataset: context.dataset,
     registry: context.registry,
+    // With no scheme set there is no burden to report, so the rows say nothing
+    // rather than showing a column of zeros that looks like a measurement.
+    schemeActive: Object.keys(state.schemeMap).length > 0,
   });
+  if (searchResults) searchResults.refresh();
   comparePanel.update({
     ids: state.shortlist,
     dataset: context.dataset,
@@ -468,25 +474,28 @@ function buildColorSelect() {
 }
 
 function buildGeneSearch() {
-  const list = element('gene-options');
-  const fragment = document.createDocumentFragment();
-  for (const gene of context.dataset.genes) {
-    const option = document.createElement('option');
-    option.value = gene.name ? `${gene.id} ${gene.name}` : gene.id;
-    fragment.append(option);
-  }
-  list.replaceChildren(fragment);
-  const input = element('gene-search');
-  input.addEventListener('change', () => {
-    const query = input.value.trim().split(/\s+/)[0];
-    const index = context.dataset.indexById.get(query);
-    if (index === undefined) {
-      announce(`No gene matches ${input.value}.`);
-      return;
-    }
-    setPinned(index);
-    input.value = '';
+  // No datalist: it could only complete a locus tag prefix, it put 2,715 option
+  // elements in the document, and its native dropdown covered the result list
+  // that replaced it.
+  searchResults = new GeneSearchResults(element('gene-search-results'), {
+    onPin: (index) => setPinned(index),
+    // toggleShortlist re-renders, and that refreshes this list's buttons.
+    onShortlist: (index) => toggleShortlist(index),
+    isShortlisted: (id) => state.shortlist.includes(id),
   });
+  searchResults.setGenes(context.dataset.genes);
+
+  const input = element('gene-search');
+  const run = () => {
+    const result = searchResults.search(input.value);
+    if (!result) return;
+    announce(result.total === 0
+      ? `Nothing matches ${input.value.trim()}.`
+      : `${result.total} gene${result.total === 1 ? '' : 's'} match ${input.value.trim()}.`);
+  };
+  input.addEventListener('input', () => searchResults.search(input.value));
+  input.addEventListener('change', run);
+  input.addEventListener('search', run);
 }
 
 /** One line per metric: how far the browser's recomputation sits from the pipeline's. */
