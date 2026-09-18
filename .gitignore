@@ -7,3 +7,4 @@ data/raw/*.txt
 !data/raw/md5checksums.txt
 data/interim/
 .pytest_cache/
+data/reference/*.gb
