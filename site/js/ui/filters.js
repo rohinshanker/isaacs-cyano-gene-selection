@@ -1,0 +1,441 @@
+/**
+ * Metric filters.
+ *
+ * Every filter is generated from the metric registry, so a metric added to
+ * meta.json becomes filterable with no change here. Two rules from the data
+ * contract shape the design: the low-traffic threshold defaults to a measure
+ * derived from this genome rather than to borrowed expression data, and a gene
+ * with no value for a metric is unknown rather than zero, so it is kept unless
+ * the user says otherwise and the count is always visible.
+ */
+import { isExpressionMetric, metricValues, describeExpressionSource } from '../core/metric-registry.js';
+import { formatCount, formatValue } from './format.js';
+import { sortedFinite, quantileSorted } from '../core/stats.js';
+
+const HISTOGRAM_BINS = 44;
+
+/** Candidate axes for the low-traffic threshold, best first. */
+const TRAFFIC_PREFERENCE = ['cai', 'tai'];
+
+function drawHistogram(canvas, values, min, max) {
+  const ratio = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 200;
+  const height = canvas.clientHeight || 34;
+  canvas.width = Math.round(width * ratio);
+  canvas.height = Math.round(height * ratio);
+  const context = canvas.getContext('2d');
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  context.clearRect(0, 0, width, height);
+
+  const finite = sortedFinite(values);
+  if (finite.length === 0) return;
+  const low = finite[0];
+  const high = finite[finite.length - 1];
+  const span = high - low || 1;
+  const bins = new Float64Array(HISTOGRAM_BINS);
+  for (let i = 0; i < finite.length; i += 1) {
+    const bin = Math.min(HISTOGRAM_BINS - 1, Math.floor(((finite[i] - low) / span) * HISTOGRAM_BINS));
+    bins[bin] += 1;
+  }
+  let peak = 0;
+  for (const value of bins) peak = Math.max(peak, value);
+  const barWidth = width / HISTOGRAM_BINS;
+  for (let i = 0; i < HISTOGRAM_BINS; i += 1) {
+    const binLow = low + (i / HISTOGRAM_BINS) * span;
+    const binHigh = low + ((i + 1) / HISTOGRAM_BINS) * span;
+    const passes = binHigh >= (min ?? -Infinity) && binLow <= (max ?? Infinity);
+    context.fillStyle = passes ? '#2f6f8f' : '#d8dde3';
+    const barHeight = peak > 0 ? (bins[i] / peak) * (height - 3) : 0;
+    context.fillRect(i * barWidth, height - barHeight, Math.max(1, barWidth - 0.6), barHeight);
+  }
+}
+
+/** A filter range with both ends open and unmeasured genes kept. */
+function openRange(finite) {
+  return {
+    min: finite.length ? finite[0] : null,
+    max: finite.length ? finite[finite.length - 1] : null,
+    includeMissing: true,
+  };
+}
+
+export class FilterPanel {
+  /**
+   * @param {HTMLElement} host
+   * @param {{onChange: (filters: object) => void,
+   *   onExceptionFilterChange: (mode: string) => void}} handlers
+   */
+  constructor(host, handlers) {
+    this.host = host;
+    this.handlers = handlers;
+    this.trafficKey = null;
+    this.build();
+  }
+
+  build() {
+    this.host.replaceChildren();
+
+    this.trafficHost = document.createElement('section');
+    this.trafficHost.className = 'traffic-filter';
+
+    this.exceptionHost = document.createElement('div');
+    this.exceptionHost.className = 'exception-filter';
+
+    const addRow = document.createElement('div');
+    addRow.className = 'field-row';
+    const label = document.createElement('label');
+    label.htmlFor = 'filter-add';
+    label.textContent = 'Add filter';
+    this.addSelect = document.createElement('select');
+    this.addSelect.id = 'filter-add';
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'chip-button';
+    addButton.textContent = 'Add';
+    addButton.addEventListener('click', () => this.addFilter());
+    addRow.append(label, this.addSelect, addButton);
+
+    this.list = document.createElement('div');
+    this.list.className = 'filter-list';
+
+    this.summary = document.createElement('p');
+    this.summary.className = 'filter-summary';
+    this.summary.setAttribute('role', 'status');
+
+    this.clearButton = document.createElement('button');
+    this.clearButton.type = 'button';
+    this.clearButton.className = 'chip-button';
+    this.clearButton.textContent = 'Clear all filters';
+    this.clearButton.addEventListener('click', () => this.handlers.onChange({}));
+
+    this.host.append(
+      this.trafficHost, this.exceptionHost, addRow, this.list, this.summary, this.clearButton,
+    );
+  }
+
+  addFilter() {
+    const key = this.addSelect.value;
+    if (!key) return;
+    const metric = this.registry.byKey.get(key);
+    const values = metricValues(metric, this.count);
+    const next = { ...this.filters };
+    next[key] = openRange(sortedFinite(values));
+    this.addSelect.value = '';
+    this.handlers.onChange(next);
+  }
+
+  /** Metrics the low-traffic threshold can be applied to, in preference order. */
+  trafficCandidates() {
+    const preferred = TRAFFIC_PREFERENCE
+      .map((key) => this.registry.byKey.get(key))
+      .filter(Boolean);
+    const expression = this.registry.metrics.filter(isExpressionMetric);
+    return [...preferred, ...expression];
+  }
+
+  /**
+   * @param {{registry: object, filters: object, count: number, passing: number,
+   *   exceptionFilter: string, exceptionCount: number,
+   *   missingHidden: Map<string, number>}} state
+   */
+  update(state) {
+    this.registry = state.registry;
+    this.filters = state.filters;
+    this.count = state.count;
+
+    const active = Object.keys(state.filters);
+    const byFamily = new Map();
+    for (const metric of state.registry.metrics) {
+      if (active.includes(metric.key)) continue;
+      if (!byFamily.has(metric.family)) byFamily.set(metric.family, []);
+      byFamily.get(metric.family).push(metric);
+    }
+    const selected = this.addSelect.value;
+    this.addSelect.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose a metric…';
+    this.addSelect.append(placeholder);
+    for (const [family, metrics] of byFamily) {
+      const group = document.createElement('optgroup');
+      group.label = family;
+      for (const metric of metrics) {
+        const option = document.createElement('option');
+        option.value = metric.key;
+        option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
+        group.append(option);
+      }
+      this.addSelect.append(group);
+    }
+    if (selected && !active.includes(selected)) this.addSelect.value = selected;
+
+    this.renderTraffic(state);
+    this.renderExceptionFilter(state);
+    this.renderRows(state);
+
+    const hidden = state.count - state.passing;
+    this.summary.classList.toggle('hiding', hidden > 0);
+    this.summary.textContent = hidden > 0
+      ? `${formatCount(state.passing)} of ${formatCount(state.count)} genes pass. `
+        + `${formatCount(hidden)} are hidden.`
+      : `All ${formatCount(state.count)} genes pass. No filter is hiding anything.`;
+    this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any';
+  }
+
+  renderTraffic(state) {
+    this.trafficHost.replaceChildren();
+    const candidates = this.trafficCandidates();
+    if (candidates.length === 0) {
+      const note = document.createElement('p');
+      note.className = 'panel-note';
+      note.textContent = 'No metric in this dataset can stand in for gene activity, so the '
+        + 'low-traffic threshold is unavailable.';
+      this.trafficHost.append(note);
+      return;
+    }
+    if (!this.trafficKey || !candidates.some((metric) => metric.key === this.trafficKey)) {
+      this.trafficKey = candidates[0].key;
+    }
+    const metric = this.registry.byKey.get(this.trafficKey);
+
+    const heading = document.createElement('h3');
+    heading.className = 'traffic-heading';
+    heading.textContent = 'Hide low-traffic genes';
+
+    const chooser = document.createElement('div');
+    chooser.className = 'field-row';
+    const chooserLabel = document.createElement('label');
+    chooserLabel.htmlFor = 'traffic-metric';
+    chooserLabel.textContent = 'Judge activity by';
+    const select = document.createElement('select');
+    select.id = 'traffic-metric';
+    for (const candidate of candidates) {
+      const option = document.createElement('option');
+      option.value = candidate.key;
+      option.textContent = isExpressionMetric(candidate)
+        ? `${candidate.label} (measured elsewhere)`
+        : `${candidate.label} (from this genome)`;
+      select.append(option);
+    }
+    select.value = this.trafficKey;
+    select.addEventListener('change', () => {
+      const next = { ...state.filters };
+      delete next[this.trafficKey];
+      this.trafficKey = select.value;
+      this.handlers.onChange(next);
+    });
+    chooser.append(chooserLabel, select);
+    this.trafficHost.append(heading, chooser);
+
+    if (isExpressionMetric(metric)) {
+      const notice = document.createElement('p');
+      notice.className = 'provenance-warning';
+      notice.textContent = describeExpressionSource(metric.provenance)
+        ?? 'This expression measurement carries no recorded provenance, so treat it with care.';
+      this.trafficHost.append(notice);
+    }
+
+    const values = metricValues(metric, state.count);
+    const finite = sortedFinite(values);
+    const range = state.filters[this.trafficKey];
+    const current = range?.min ?? finite[0] ?? 0;
+
+    const sliderLabel = document.createElement('label');
+    sliderLabel.className = 'traffic-label';
+    sliderLabel.htmlFor = 'traffic-threshold';
+    sliderLabel.textContent = `Hide genes below this ${metric.label.toLowerCase()}`
+      + `${metric.unit ? ` (${metric.unit})` : ''}`;
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.id = 'traffic-threshold';
+    slider.min = String(finite[0] ?? 0);
+    slider.max = String(finite[finite.length - 1] ?? 1);
+    slider.step = String(Math.max(1e-6, ((finite[finite.length - 1] ?? 1) - (finite[0] ?? 0)) / 400));
+    slider.value = String(current);
+
+    const readout = document.createElement('output');
+    readout.htmlFor = 'traffic-threshold';
+    readout.className = 'traffic-readout';
+    const describe = (value) => {
+      const index = finite.findIndex((entry) => entry >= value);
+      const kept = index < 0 ? 0 : finite.length - index;
+      readout.textContent = `${formatValue(metric, value)} ${metric.unit} — `
+        + `keeps ${formatCount(kept)} of ${formatCount(finite.length)} measured genes`;
+    };
+    describe(Number(slider.value));
+    slider.addEventListener('input', () => describe(Number(slider.value)));
+    slider.addEventListener('change', () => {
+      const next = { ...state.filters };
+      const existing = state.filters[this.trafficKey];
+      next[this.trafficKey] = {
+        min: Number(slider.value),
+        max: existing?.max ?? finite[finite.length - 1] ?? null,
+        includeMissing: existing?.includeMissing ?? true,
+      };
+      this.handlers.onChange(next);
+    });
+
+    const quartile = document.createElement('p');
+    quartile.className = 'panel-note';
+    quartile.textContent = `Median ${formatValue(metric, quantileSorted(finite, 0.5))}; `
+      + `the quietest quarter of measured genes sit below `
+      + `${formatValue(metric, quantileSorted(finite, 0.25))}.`;
+
+    this.trafficHost.append(sliderLabel, slider, readout, quartile);
+
+    const missing = state.count - finite.length;
+    if (missing > 0) {
+      this.trafficHost.append(this.missingControl(state, this.trafficKey, missing, metric));
+    }
+  }
+
+  /** The explicit include-or-drop control for genes with no measurement. */
+  missingControl(state, key, missing, metric) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'checkbox-row missing-control';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = `include-missing-${key}`;
+    input.checked = state.filters[key]?.includeMissing ?? true;
+    input.addEventListener('change', () => {
+      const next = { ...state.filters };
+      const values = metricValues(metric, state.count);
+      const existing = state.filters[key] ?? openRange(sortedFinite(values));
+      next[key] = { ...existing, includeMissing: input.checked };
+      this.handlers.onChange(next);
+    });
+    const label = document.createElement('label');
+    label.htmlFor = input.id;
+    const hiddenNow = state.missingHidden.get(key) ?? 0;
+    label.textContent = `Include the ${formatCount(missing)} genes with no `
+      + `${metric.label.toLowerCase()} measurement`
+      + (input.checked ? '' : ` — currently hiding ${formatCount(hiddenNow)}`);
+    wrapper.append(input, label);
+    return wrapper;
+  }
+
+  renderExceptionFilter(state) {
+    this.exceptionHost.replaceChildren();
+    if (state.exceptionCount === 0) return;
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'flag-filter';
+    const legend = document.createElement('legend');
+    legend.textContent = 'Translational exceptions';
+    fieldset.append(legend);
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    note.textContent = `${formatCount(state.exceptionCount)} `
+      + `${state.exceptionCount === 1 ? 'gene needs' : 'genes need'} a programmed frameshift or `
+      + 'a similar event to translate. Those are high-risk recoding targets.';
+    fieldset.append(note);
+    const options = [
+      ['any', 'Show all genes'],
+      ['only', 'Only genes with an exception'],
+      ['none', 'Hide genes with an exception'],
+    ];
+    for (const [value, text] of options) {
+      const row = document.createElement('div');
+      row.className = 'checkbox-row';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'exception-filter';
+      input.id = `exception-${value}`;
+      input.value = value;
+      input.checked = state.exceptionFilter === value;
+      input.addEventListener('change', () => this.handlers.onExceptionFilterChange(value));
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+      label.textContent = text;
+      row.append(input, label);
+      fieldset.append(row);
+    }
+    this.exceptionHost.append(fieldset);
+  }
+
+  renderRows(state) {
+    this.list.replaceChildren();
+    for (const key of Object.keys(state.filters)) {
+      if (key === this.trafficKey) continue;
+      const metric = state.registry.byKey.get(key);
+      if (!metric) continue;
+      const range = state.filters[key];
+      const values = metricValues(metric, state.count);
+      const finite = sortedFinite(values);
+
+      const row = document.createElement('div');
+      row.className = 'filter-row';
+
+      const heading = document.createElement('div');
+      heading.className = 'filter-heading';
+      const title = document.createElement('span');
+      title.className = 'filter-title';
+      title.textContent = metric.label;
+      const unit = document.createElement('span');
+      unit.className = 'filter-unit';
+      unit.textContent = metric.unit;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'icon-button';
+      remove.textContent = 'Remove';
+      remove.setAttribute('aria-label', `Remove the ${metric.label} filter`);
+      remove.addEventListener('click', () => {
+        const next = { ...state.filters };
+        delete next[key];
+        this.handlers.onChange(next);
+      });
+      heading.append(title, unit, remove);
+      row.append(heading);
+
+      if (metric.provenance) {
+        const notice = document.createElement('p');
+        notice.className = 'provenance-warning';
+        notice.textContent = describeExpressionSource(metric.provenance);
+        row.append(notice);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'filter-histogram';
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute(
+        'aria-label',
+        `Distribution of ${metric.label}. Filter keeps ${formatValue(metric, range.min)} `
+          + `to ${formatValue(metric, range.max)}.`,
+      );
+
+      const inputs = document.createElement('div');
+      inputs.className = 'filter-inputs';
+      const step = finite.length > 1
+        ? Math.max(1e-6, (finite[finite.length - 1] - finite[0]) / 500)
+        : 1;
+      const makeInput = (bound) => {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'filter-input';
+        const inputLabel = document.createElement('label');
+        inputLabel.htmlFor = `filter-${key}-${bound}`;
+        inputLabel.textContent = bound === 'min' ? 'At least' : 'At most';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = `filter-${key}-${bound}`;
+        input.step = metric.integer ? '1' : String(step);
+        input.value = range[bound] === null ? '' : String(Number(range[bound].toPrecision(6)));
+        input.addEventListener('change', () => {
+          const next = { ...state.filters };
+          const parsed = input.value === '' ? null : Number(input.value);
+          next[key] = { ...range, [bound]: Number.isFinite(parsed) ? parsed : null };
+          this.handlers.onChange(next);
+        });
+        wrapper.append(inputLabel, input);
+        return wrapper;
+      };
+      inputs.append(makeInput('min'), makeInput('max'));
+      row.append(canvas, inputs);
+
+      const missing = state.count - finite.length;
+      if (missing > 0) row.append(this.missingControl(state, key, missing, metric));
+
+      this.list.append(row);
+      drawHistogram(canvas, values, range.min, range.max);
+    }
+  }
+}

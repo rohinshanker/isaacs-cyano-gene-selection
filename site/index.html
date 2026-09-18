@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recoding-diversity map — Synechococcus elongatus UTEX 2973</title>
+<meta name="description" content="Interactive gene-level map of the Synechococcus elongatus UTEX 2973 coding genome for choosing genome-recoding targets.">
+<!-- An empty icon reference keeps the browser from requesting a favicon this static site
+     does not ship, which would otherwise log a failed request on every page load. -->
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#map-section">Skip to the map</a>
+
+<header class="site-header">
+  <div class="header-text">
+    <h1>Recoding-diversity map</h1>
+    <p class="tagline">
+      Every protein-coding gene of <i>Synechococcus elongatus</i> UTEX 2973, arranged so you can
+      see which genes a recoding scheme would disturb, and build a shortlist to compare.
+    </p>
+  </div>
+  <div class="header-actions">
+    <button type="button" id="help-toggle" class="chip-button" aria-expanded="false" aria-controls="help">
+      How to read this
+    </button>
+  </div>
+</header>
+
+<section id="help" class="help" hidden aria-label="How to read this page">
+  <h2>How to read this</h2>
+  <div class="help-grid">
+    <div>
+      <h3>What a dot is</h3>
+      <p>
+        One dot is one gene. There are about 2,700 of them. Wherever you see a scatter of dots on
+        this page, every dot is the same gene it was on the previous plot, so a gene you pin stays
+        highlighted when you switch views.
+      </p>
+      <h3>What “close together” means</h3>
+      <p>
+        Each map takes many numbers per gene and squeezes them onto two axes, the way a shadow
+        squeezes a three-dimensional object onto a wall. Genes that land near each other are
+        similar in the numbers that map used. The axis numbers themselves have no units and no
+        meaning on their own; only relative position matters.
+      </p>
+      <p>
+        Under each map, <b>What drives these axes</b> lists which measurements pull genes left,
+        right, up, or down. That list is how you find out what a region of the map actually means.
+      </p>
+      <h3>Why there are four maps</h3>
+      <p>
+        They answer different questions. <b>Native codon space</b> asks how a gene writes its
+        codons today. <b>Recoding-risk space</b> asks how exposed a gene is to the scheme you set.
+        <b>Baseline risk UMAP</b> is a grouping view: it clusters similar genes tightly, but the
+        gaps between clusters mean nothing. <b>Perturbation space</b> asks how far recoding would
+        move a gene from where it started, which is a different question from where it started.
+      </p>
+    </div>
+    <div>
+      <h3>Setting a recoding scheme</h3>
+      <p>
+        A scheme is a list of codons you want to remove, each paired with the synonymous codon
+        that replaces it. The replacement is prefilled with the codon this genome already uses
+        most for that amino acid, and you can change it to any synonymous alternative. You cannot
+        pick a replacement that changes the protein; the page checks every gene's real sequence
+        and says so underneath.
+      </p>
+      <h3>What counts as an edit</h3>
+      <p>
+        Burden numbers count the codons inside the gene that the scheme would replace, plus the
+        gene's final stop codon when the scheme reassigns stops. Two codons are deliberately
+        left out. The first codon is never recoded: it is read as methionine whatever the
+        triplet says, so swapping it would change the protein even though the codon table calls
+        it synonymous. The final stop is counted as an edit but is not part of any density
+        window or cluster, which are measured across the coding codons only.
+      </p>
+      <h3>Genes that need a warning</h3>
+      <p>
+        A few genes only translate correctly because the ribosome does something unusual, such
+        as shifting frame partway through. Those are flagged in the gene panel and can be
+        filtered on. They are poor recoding candidates, so the page shows the flag rather than
+        quietly dropping them.
+      </p>
+      <h3>Reading a percentile</h3>
+      <p>
+        In the gene panel, “78th pct” means this gene's value is higher than 78 % of genes in
+        the genome. That is usually more useful than the raw number, because it tells you whether
+        the gene is ordinary or unusual.
+      </p>
+      <h3>Reading a change</h3>
+      <p>
+        With a scheme set, each gene gets a wild-type value, a recoded value, and the difference.
+        Both values are recalculated here in the same way, so the difference is fair. A negative
+        ΔCAI or ΔtAI means the recoded gene is a worse match for this organism's translation
+        machinery, which is usually the thing you are trying to avoid.
+      </p>
+      <h3>Where numbers come from</h3>
+      <p>
+        Most numbers here are computed from this genome's own sequence. Expression is the
+        exception: when a dataset carries it, it may have been measured in a different strain
+        or condition, so wherever it appears the page prints its source next to it. It is never
+        the default way to judge whether a gene is worth keeping; codon adaptation and tRNA
+        adaptation are, because those come from this genome. A gene with no measurement is
+        unknown, not zero, and is kept unless you choose otherwise.
+      </p>
+      <h3>Colour</h3>
+      <p>
+        Colour is never the only signal. Shortlisted genes also get a diamond outline, the pinned
+        gene gets a ring with crosshairs, genes with no value for the current metric are drawn as
+        open circles, and genes hidden by a filter shrink to small grey dots.
+      </p>
+    </div>
+  </div>
+</section>
+
+<p id="load-status" class="load-status" role="status">Loading gene data…</p>
+<script>
+// Deliberately a classic inline script, not a module. Browsers refuse to load a
+// module script from a file path, so when this page is opened by double-clicking
+// it, js/app.js never runs and nothing below can report that. This runs anyway.
+if (window.location.protocol === 'file:') {
+  // Named `notice`, not `status`: a global `var status` would collide with
+  // window.status, which is a string, and silently break every call below.
+  var notice = document.getElementById('load-status');
+  notice.className = 'load-status error';
+  notice.textContent = '';
+  var heading = document.createElement('strong');
+  heading.textContent = 'This page needs to be served, not opened from a file.';
+  var why = document.createElement('p');
+  why.textContent = 'Browsers block a page opened from a file path from loading JavaScript '
+    + 'modules or reading its own data files. Serve this folder instead, which needs no '
+    + 'network access and no build step:';
+  var command = document.createElement('pre');
+  command.textContent = 'python3 -m http.server 8000 --directory site';
+  var then = document.createElement('p');
+  then.textContent = 'Then open http://localhost:8000/. Published on GitHub Pages the page is '
+    + 'already served, so this notice never appears there.';
+  notice.appendChild(heading);
+  notice.appendChild(why);
+  notice.appendChild(command);
+  notice.appendChild(then);
+}
+</script>
+
+<main class="layout" id="main" hidden>
+  <aside class="column controls" aria-label="Scheme, filters, and shortlist">
+    <section class="card">
+      <h2>Recoding scheme</h2>
+      <p class="panel-note">
+        Choose the codons to remove. Each gets a synonymous replacement you can change.
+      </p>
+      <div id="scheme-editor"></div>
+    </section>
+    <section class="card">
+      <h2>Filters</h2>
+      <div id="filters"></div>
+    </section>
+    <section class="card">
+      <h2>Candidate shortlist</h2>
+      <div id="shortlist"></div>
+    </section>
+    <section class="card" id="provenance-card">
+      <h2>About this dataset</h2>
+      <div id="provenance"></div>
+    </section>
+  </aside>
+
+  <section class="column map card" id="map-section" aria-label="Gene map">
+    <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map"></div>
+    <p class="panel-blurb" id="panel-blurb"></p>
+    <div class="map-toolbar">
+      <span class="field-row">
+        <label for="color-by">Colour by</label>
+        <select id="color-by"></select>
+      </span>
+      <span class="field-row">
+        <label for="gene-search">Find a gene</label>
+        <input id="gene-search" type="search" list="gene-options" autocomplete="off"
+               placeholder="Locus tag or gene name">
+        <datalist id="gene-options"></datalist>
+      </span>
+      <button type="button" id="reset-view" class="chip-button">Reset view</button>
+      <span class="checkbox-row">
+        <input type="checkbox" id="show-hidden" checked>
+        <label for="show-hidden">Show filtered-out genes as grey dots</label>
+      </span>
+    </div>
+    <p class="filter-banner" id="filter-banner" role="status"></p>
+    <div class="canvas-host">
+      <canvas id="map-canvas" tabindex="0" role="img"
+              aria-label="Scatter plot of genes. Use the arrow keys to move between genes."></canvas>
+    </div>
+    <p class="hint">
+      Drag to pan, scroll to zoom, double-click to reset. With the map focused: arrow keys move to
+      the next gene, Shift and an arrow pans, plus and minus zoom, 0 resets, Enter pins, S adds or
+      removes the pinned gene from the shortlist.
+    </p>
+    <div class="map-footer">
+      <div id="legend" class="legend"></div>
+      <div id="timing" class="timing"></div>
+    </div>
+    <details id="loadings-details">
+      <summary>What drives these axes</summary>
+      <div id="loadings"></div>
+    </details>
+  </section>
+
+  <aside class="column detail card" aria-label="Gene detail" id="detail"></aside>
+</main>
+
+<section class="compare-section card" id="compare-section" hidden aria-label="Compare candidates">
+  <h2>Compare candidates</h2>
+  <div id="compare"></div>
+</section>
+
+<footer class="site-footer" id="site-footer" hidden>
+  <p>
+    Built from the pipeline's <code>site/data</code> files. Everything that depends on the recoding
+    scheme is computed in this browser; nothing is sent anywhere.
+  </p>
+</footer>
+
+<div id="announcer" class="visually-hidden" role="status" aria-live="polite"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
