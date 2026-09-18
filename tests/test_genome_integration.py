@@ -31,7 +31,7 @@ def test_generated_documents_follow_contract():
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
     assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
-    assert len(meta["metrics"]) == 33
+    assert len(meta["metrics"]) == 34
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -39,6 +39,19 @@ def test_generated_documents_follow_contract():
         and definition["direction"]
         for definition in meta["metrics"].values()
     )
+    assert meta["metrics"]["expressionProxy"] == {
+        "label": "Expression proxy rank",
+        "unit": "rank",
+        "desc": (
+            "Tie-aware average rank of sqrt(CAI × tAI) across all genes, scaled "
+            "from 0 to 1; this is a codon-adaptation proxy, not measured transcript "
+            "or protein abundance."
+        ),
+        "scale": "sequential",
+        "missingPolicy": "complete coverage; no missing values",
+        "direction": "contextual",
+    }
+    assert "expressionBasis" not in meta["metrics"]
     assert meta["tai"]["tRNAGeneCopies"]["LAT"] == 1
     assert meta["tai"]["zeroWeightCodons"] == ["TTA"]
     assert meta["tai"]["zeroWeightSubstitution"] == pytest.approx(0.3799, abs=1e-4)

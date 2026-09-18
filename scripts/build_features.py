@@ -72,6 +72,7 @@ METRIC_DEFINITIONS = {
     "tai": "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and derived from this genome's tRNA gene copies with bacterial wobble penalties; TTA has no cognate tRNA and uses the geometric mean of non-zero codon weights.",
     "expression": "DESeq2-normalized transcript count measured in S. elongatus PCC 7942 WT fresh BG-11 on day 1; non-negative and null for genes without a mapped measurement. It is from another strain and an unusual biofilm-study condition, so use it only as a rough overlay.",
     "expressionPercentile": "Average-rank percentile of the measured PCC 7942 expression values, in (0, 1]; null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
+    "expressionProxy": "Tie-aware average rank of sqrt(CAI × tAI) across all genes, scaled from 0 to 1; this is a codon-adaptation proxy, not measured transcript or protein abundance.",
     "rareFraction": "Fraction of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to 1 and treats an alternative start codon as translated methionine.",
     "rareCount": "Number of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to the gene's sense-codon length and excludes the terminal stop.",
     "longestRareRun": "Longest consecutive run of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to the gene's sense-codon length.",
@@ -736,6 +737,7 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         "tai": ("tAI", "index"),
         "expression": ("Expression (PCC 7942)", "normalized count"),
         "expressionPercentile": ("Expression percentile (PCC 7942)", "fraction"),
+        "expressionProxy": ("Expression proxy rank", "rank"),
         "rareFraction": ("Rare codon fraction", "fraction"),
         "rareCount": ("Rare codons", "count"),
         "longestRareRun": ("Longest rare run", "codons"),
@@ -842,7 +844,11 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
                 "unit": unit,
                 "desc": METRIC_DEFINITIONS[key],
                 "scale": "diverging" if key in DIVERGING_METRICS else "sequential",
-                "missingPolicy": MISSING_POLICY,
+                "missingPolicy": (
+                    "complete coverage; no missing values"
+                    if key == "expressionProxy"
+                    else MISSING_POLICY
+                ),
                 "direction": "contextual",
             }
             for key, (label, unit) in metric_labels.items()
