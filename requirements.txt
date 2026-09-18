@@ -1,0 +1,8 @@
+numpy>=1.26
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+biopython>=1.83
+umap-learn>=0.5.6
+ViennaRNA==2.7.2
+pytest>=8

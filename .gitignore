@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+data/raw/*.gz
+data/raw/*.txt
+!data/raw/md5checksums.txt
+data/interim/
+.pytest_cache/
