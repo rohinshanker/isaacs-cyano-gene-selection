@@ -114,6 +114,9 @@ when the recoding scheme changes.
   "neighborUpstreamNt": 112, "neighborDownstreamNt": -4,
   "overlapsNeighbor": true, "operonId": "op_0421", "operonPosition": 2, "operonSize": 4,
 
+  "expression": 1284.6,          // optional, null when unmeasured; see below
+  "expressionPercentile": 0.71,  // optional, null when expression is null
+
   "rscu": [1.02, 0.41, ...],     // 59 floats, order = meta.rscuOrder
   "codonPca": [ -2.14, 0.88, 1.03, ... ],  // first 6 PCs of native codon space
   "riskUmap": [ 4.21, -1.09 ],   // baseline UMAP, target-independent features only
@@ -123,6 +126,46 @@ when the recoding scheme changes.
 
 Nulls are permitted for `name`, `operonId`, and any metric that genuinely could
 not be computed. The site renders null as an em-space, never as zero.
+
+## Expression, and why it is not the default
+
+`expression` is loaded from `data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv`,
+a three-column `locus_tag`, `abundance`, `source_gene_id` table. The pipeline joins
+it by locus tag and writes `null` for the 164 genes with no value.
+
+**This measurement is from *S. elongatus* PCC 7942, not UTEX 2973**, comes from a
+biofilm and conditioned-media experiment, and lacks light and CO2 metadata. Full
+caveats and the eight loci deliberately excluded for ambiguous mapping are in
+`data/expression/PROVENANCE.md`.
+
+Consequences that both the pipeline and the site must honour:
+
+- The low-traffic threshold **defaults to CAI and tAI**, which are derived from this
+  genome. Expression is an opt-in overlay, never the default axis.
+- Wherever expression is displayed or used to filter, the interface states the
+  source organism in plain words. A user must not be able to threshold on it while
+  believing it is UTEX 2973 data.
+- `null` renders as unknown, never as zero. A threshold must not silently discard
+  genes that simply have no measurement; offer an explicit "include unmeasured"
+  control, defaulting to include.
+
+`meta.json` carries the same provenance so the site can display it:
+
+```jsonc
+"expressionSource": {
+  "accession": "GSE205444",
+  "organismMeasured": "Synechococcus elongatus PCC 7942",
+  "isTargetOrganism": false,
+  "condition": "WT, fresh BG-11, day 1, mean of 3 replicates",
+  "normalization": "DESeq2 normalized counts",
+  "coverage": { "withValue": 2551, "total": 2715 },
+  "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study. Use as a rough guide only.",
+  "provenanceDoc": "data/expression/PROVENANCE.md"
+}
+```
+
+Dropping a real UTEX 2973 table into the same directory and rerunning the pipeline
+is the only change needed to switch axes; nothing downstream hardcodes this dataset.
 
 ### `codon_pca.json`
 
