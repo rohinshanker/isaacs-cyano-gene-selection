@@ -27,11 +27,18 @@ def test_generated_documents_follow_contract():
     assert len(genes) + len(excluded) == 2722
     assert len(meta["codonAlphabet"]) == 64
     assert len(meta["rscuOrder"]) == 59
-    assert meta["expressionSource"]["coverage"] == {
-        "withValue": 2551,
-        "total": 2715,
-    }
+    assert meta["expressionSource"]["coverage"]["total"] == len(genes)
     assert meta["expressionSource"]["isTargetOrganism"] is False
+    assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
+    assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
+    assert len(meta["metrics"]) == 33
+    assert all(
+        definition["desc"] != definition["label"]
+        and definition["scale"] in {"sequential", "diverging"}
+        and definition["missingPolicy"]
+        and definition["direction"]
+        for definition in meta["metrics"].values()
+    )
     assert meta["tai"]["tRNAGeneCopies"]["LAT"] == 1
     assert meta["tai"]["zeroWeightCodons"] == ["TTA"]
     assert meta["tai"]["zeroWeightSubstitution"] == pytest.approx(0.3799, abs=1e-4)
@@ -49,20 +56,36 @@ def test_generated_documents_follow_contract():
         "underrepresentedPairFraction", "mfeStart", "mfeFirst100", "minLocalGc",
         "maxLocalGc", "gc5prime", "neighborUpstreamNt", "neighborDownstreamNt",
         "overlapsNeighbor", "operonId", "operonPosition", "operonSize", "rscu",
-        "expression", "expressionPercentile", "codonPca", "riskUmap", "codons",
+        "expression", "expressionPercentile", "expressionProxy", "expressionBasis",
+        "expressionSourceId", "codonPca", "riskUmap", "codons",
         "terminalStop", "translationalException", "cdsSegments",
         "encHasSubstitutedFamilies",
     }
     assert required <= genes[0].keys()
     assert all(isinstance(gene["encHasSubstitutedFamilies"], bool) for gene in genes)
     measured = [gene for gene in genes if gene["expression"] is not None]
-    assert len(measured) == 2551
+    assert meta["expressionSource"]["coverage"]["withValue"] == len(measured)
     assert all(gene["expressionPercentile"] is not None for gene in measured)
     assert all(
         gene["expressionPercentile"] is None
         for gene in genes
         if gene["expression"] is None
     )
+    assert all(0 <= gene["expressionProxy"] <= 1 for gene in genes)
+    assert min(gene["expressionProxy"] for gene in genes) == 0
+    assert max(gene["expressionProxy"] for gene in genes) == 1
+    assert all(gene["expressionBasis"] == "measured" for gene in measured)
+    assert all(gene["expressionSourceId"] == "GSE205444" for gene in measured)
+    assert all(
+        gene["expressionBasis"] == "proxy" and gene["expressionSourceId"] is None
+        for gene in genes
+        if gene["expression"] is None
+    )
+    assert meta["expressionProxy"]["coverage"] == {
+        "withValue": 2715,
+        "total": 2715,
+    }
+    assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
 
     by_id = {gene["id"]: gene for gene in genes}
     assert by_id["M744_RS00920"]["translationalException"] == "ribosomal_slippage"
