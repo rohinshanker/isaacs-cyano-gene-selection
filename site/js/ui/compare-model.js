@@ -152,6 +152,27 @@ export function presentRuns(present, { closed = false } = {}) {
 }
 
 /**
+ * Rank each series among the series missing the same axis.
+ *
+ * Several candidates missing one metric would otherwise stack their markers on
+ * one another, so the chart would show a single mark where the description
+ * counts several. The rank lets the caller fan them out.
+ *
+ * @returns {Map<string, Map<string, {rank: number, total: number}>>} axis key to
+ *   series id to its place among that axis's missing series.
+ */
+export function missingRanks(series, axes, read) {
+  const byAxis = new Map();
+  for (const metric of axes) {
+    const missing = series.filter((entry) => !Number.isFinite(read(metric, entry.index)));
+    byAxis.set(metric.key, new Map(
+      missing.map((entry, rank) => [entry.id, { rank, total: missing.length }]),
+    ));
+  }
+  return byAxis;
+}
+
+/**
  * Count missing values per series and in total.
  * @param {Array<{id: string, index: number}>} series
  * @param {object[]} axes
@@ -198,10 +219,15 @@ export function wrapLabel(text, maxWidth, measure) {
   return best.lines;
 }
 
+/** `count` of `noun`, pluralised: 1 shortlisted gene, 2 shortlisted genes. */
+export function pluralise(count, noun, plural = `${noun}s`) {
+  return `${count} ${count === 1 ? noun : plural}`;
+}
+
 /** Plain-language count of missing values for a description or legend entry. */
 export function describeMissing(count) {
   if (count === 0) return 'no missing values';
-  return `${count} missing value${count === 1 ? '' : 's'}`;
+  return pluralise(count, 'missing value');
 }
 
 /**

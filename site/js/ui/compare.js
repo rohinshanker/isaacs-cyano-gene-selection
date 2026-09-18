@@ -16,7 +16,7 @@ import {
 } from '../core/metric-registry.js';
 import {
   robustScale, zScore, seriesStyle, defaultAxes, MIN_AXES, Z_LIMIT, presentRuns,
-  countMissing, wrapLabel, describeMissing, drawMarker, drawMissingGlyph,
+  countMissing, missingRanks, wrapLabel, describeMissing, pluralise, drawMarker, drawMissingGlyph,
 } from './compare-model.js';
 
 const TABS = [
@@ -39,6 +39,8 @@ const PARALLEL_TOP = 26;
 const PARALLEL_BOTTOM_MARGIN = 66;
 const MARKER_SIZE = 3.2;
 const MISSING_GLYPH_SIZE = 3;
+/** Spacing between the markers of several candidates missing the same axis. */
+const MISSING_GLYPH_STEP = 9;
 
 const INK = '#1b2733';
 const INK_MUTED = '#4a5568';
@@ -341,8 +343,17 @@ export class ComparePanel {
    */
   sizeCanvas(neededWidth) {
     const hostWidth = this.chartHost.clientWidth;
-    this.canvas.style.width = neededWidth > hostWidth ? `${Math.ceil(neededWidth)}px` : '100%';
-    this.chartHost.classList.toggle('scrolls', neededWidth > hostWidth);
+    this.scrollsSideways = neededWidth > hostWidth;
+    this.canvas.style.width = this.scrollsSideways ? `${Math.ceil(neededWidth)}px` : '100%';
+    this.chartHost.classList.toggle('scrolls', this.scrollsSideways);
+  }
+
+  /** Said in the chart's own note, because a sideways scroll is easy to miss. */
+  scrollHint() {
+    return this.scrollsSideways
+      ? ' This chart is wider than the screen so no axis name is cut off; scroll it sideways to '
+        + 'see the rest.'
+      : '';
   }
 
   emptyChart(message) {
@@ -451,9 +462,11 @@ export class ComparePanel {
     const axes = this.activeAxes();
     const read = (metric, index) => metric.read(index);
     const missing = countMissing(series, axes, read);
+    const ranks = missingRanks(series, axes, read);
     this.canvas.setAttribute(
       'aria-label',
-      `Radar chart of ${series.length} shortlisted genes across ${axes.length} metrics, `
+      `Radar chart of ${pluralise(series.length, 'shortlisted gene')} across `
+        + `${pluralise(axes.length, 'metric')}, `
         + `z-scored against the genome median. ${describeMissing(missing.total)}`
         + `${missing.total > 0 ? ', drawn as gaps with an open cross beyond the outer ring, never at the median' : ''}. `
         + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
@@ -470,16 +483,17 @@ export class ComparePanel {
     const probe = this.canvas.getContext('2d');
     probe.font = FONT;
     const { lines, widest } = this.measureLabels(probe, axes);
-    this.sizeCanvas(2 * (RADAR_MIN_RADIUS + RADAR_LABEL_GAP + widest + 8));
+    // Room for the label, plus the fan of markers for candidates missing that axis.
+    const deepestFan = Math.max(0, ...[...missingRanks(series, axes, read).values()]
+      .map((entry) => entry.size)) * MISSING_GLYPH_STEP;
+    const labelRoom = RADAR_LABEL_GAP + deepestFan + widest + 8;
+    this.sizeCanvas(2 * (RADAR_MIN_RADIUS + labelRoom));
     const { context, width, height } = fitCanvas(this.canvas);
     const cx = width / 2;
     const cy = height / 2;
     const radius = Math.max(
       RADAR_MIN_RADIUS,
-      Math.min(
-        width / 2 - widest - RADAR_LABEL_GAP - 8,
-        height / 2 - 2 * LINE_HEIGHT - RADAR_LABEL_GAP - 8,
-      ),
+      Math.min(width / 2 - labelRoom, height / 2 - 2 * LINE_HEIGHT - labelRoom),
     );
     const radiusFor = (z) => radius * ((z + Z_LIMIT) / (2 * Z_LIMIT));
 
@@ -511,8 +525,9 @@ export class ComparePanel {
       context.stroke();
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
-      const labelX = cx + cos * (radius + RADAR_LABEL_GAP);
-      const labelY = cy + sin * (radius + RADAR_LABEL_GAP);
+      const gap = RADAR_LABEL_GAP + (ranks.get(metric.key)?.size ?? 0) * MISSING_GLYPH_STEP;
+      const labelX = cx + cos * (radius + gap);
+      const labelY = cy + sin * (radius + gap);
       context.fillStyle = INK;
       context.textAlign = Math.abs(cos) < 0.3 ? 'center' : cos > 0 ? 'left' : 'right';
       context.textBaseline = 'middle';
@@ -528,7 +543,15 @@ export class ComparePanel {
         const angle = angleOf(i);
         const present = Number.isFinite(z);
         const r = present ? radiusFor(z) : NaN;
-        return { present, angle, x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
+        const place = ranks.get(metric.key)?.get(entry.id);
+        return {
+          present,
+          angle,
+          // Several candidates missing one axis fan outward instead of stacking.
+          missingRadius: radius + 7 + (place?.rank ?? 0) * MISSING_GLYPH_STEP,
+          x: cx + Math.cos(angle) * r,
+          y: cy + Math.sin(angle) * r,
+        };
       });
       context.globalAlpha = alpha;
       context.strokeStyle = entry.color;
@@ -554,7 +577,7 @@ export class ComparePanel {
         if (point.present) {
           drawMarker(context, entry.marker, point.x, point.y, markerSize);
         } else {
-          const r = radius + 7;
+          const r = point.missingRadius;
           drawMissingGlyph(
             context, cx + Math.cos(point.angle) * r, cy + Math.sin(point.angle) * r, MISSING_GLYPH_SIZE,
           );
@@ -569,7 +592,8 @@ export class ComparePanel {
         ? `${describeMissing(missing.total)}: a gap in the outline and an open cross just past the `
           + 'outer ring mark where a gene has no value; nothing is drawn at the median for it. '
         : 'Every plotted gene has a value on every axis. ')
-      + 'Select a legend entry to focus one candidate; select a locus tag in the table to pin it.';
+      + 'Select a legend entry to focus one candidate; select a locus tag in the table to pin it.'
+      + this.scrollHint();
     this.renderLegend(series, missing);
   }
 
@@ -587,9 +611,11 @@ export class ComparePanel {
     const axes = this.activeAxes();
     const read = (metric, index) => metric.read(index);
     const missing = countMissing(series, axes, read);
+    const ranks = missingRanks(series, axes, read);
     this.canvas.setAttribute(
       'aria-label',
-      `Parallel coordinates of ${series.length} shortlisted genes across ${axes.length} metrics, `
+      `Parallel coordinates of ${pluralise(series.length, 'shortlisted gene')} across `
+        + `${pluralise(axes.length, 'metric')}, `
         + `z-scored against the genome median. ${describeMissing(missing.total)}`
         + `${missing.total > 0 ? ', drawn as a break in the line with an open cross below the axis, never at the median' : ''}. `
         + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
@@ -655,7 +681,15 @@ export class ComparePanel {
       const points = axes.map((metric, i) => {
         const z = this.zScore(metric, entry.index);
         const present = Number.isFinite(z);
-        return { present, x: geometry.left + geometry.step * i, y: present ? this.zToY(z, geometry) : NaN };
+        const place = ranks.get(metric.key)?.get(entry.id);
+        const x = geometry.left + geometry.step * i;
+        return {
+          present,
+          x,
+          y: present ? this.zToY(z, geometry) : NaN,
+          // Candidates missing one axis spread along it rather than stacking.
+          missingX: x + ((place?.rank ?? 0) - ((place?.total ?? 1) - 1) / 2) * MISSING_GLYPH_STEP,
+        };
       });
       context.globalAlpha = alpha;
       context.strokeStyle = entry.color;
@@ -676,7 +710,7 @@ export class ComparePanel {
       context.lineWidth = 1.8;
       points.forEach((point) => {
         if (point.present) drawMarker(context, entry.marker, point.x, point.y, markerSize);
-        else drawMissingGlyph(context, point.x, geometry.bottom + 9, MISSING_GLYPH_SIZE);
+        else drawMissingGlyph(context, point.missingX, geometry.bottom + 9, MISSING_GLYPH_SIZE);
       });
       context.globalAlpha = 1;
     }
@@ -687,9 +721,9 @@ export class ComparePanel {
       : '';
     this.note.textContent = brushed === null
       ? 'Each line is one candidate. Drag up or down on an axis to brush a range; lines outside '
-        + `it fade.${missingText} Select a legend entry to focus one candidate.`
+        + `it fade.${missingText} Select a legend entry to focus one candidate.${this.scrollHint()}`
       : `Brushing keeps ${formatCount(brushed.size)} of ${formatCount(series.length)} candidates. `
-        + `Drag again to adjust, or use Clear brushes.${missingText}`;
+        + `Drag again to adjust, or use Clear brushes.${missingText}${this.scrollHint()}`;
     this.renderLegend(series, missing, brushedOut);
 
     if (this.brushes.size > 0 && !this.clearBrushButton) {
@@ -922,7 +956,8 @@ export class ComparePanel {
     const table = document.createElement('table');
     table.className = 'data-table sortable';
     const caption = document.createElement('caption');
-    caption.textContent = `${formatCount(series.length)} shortlisted genes, ${describeMissing(missing.total)}`
+    caption.textContent = `${pluralise(formatCount(series.length), 'shortlisted gene')}, `
+      + `${describeMissing(missing.total)}`
       + `${missing.total > 0 ? ' shown as a blank cell' : ''}. `
       + 'Select a column heading to sort; missing values sort last. '
       + 'This table is shared by all three views above.';

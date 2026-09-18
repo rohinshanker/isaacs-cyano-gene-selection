@@ -6,7 +6,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   robustScale, zScore, seriesStyle, SERIES_STYLES, defaultAxes, axisUnavailableReason,
-  presentRuns, countMissing, wrapLabel, describeMissing, Z_LIMIT, MIN_AXES, DEFAULT_AXES,
+  presentRuns, countMissing, missingRanks, wrapLabel, describeMissing, pluralise,
+  Z_LIMIT, MIN_AXES, DEFAULT_AXES,
 } from '../../site/js/ui/compare-model.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
 
@@ -119,6 +120,29 @@ test('missing values are counted per series, per axis, and in total', () => {
   assert.equal(missing.bySeries.get('g1'), 1);
   assert.equal(missing.bySeries.get('g2'), 2);
   assert.equal(missing.byAxis.get('b'), 2);
+});
+
+test('candidates missing the same axis are ranked so their marks do not stack', () => {
+  const axes = [{ key: 'mfeStart' }, { key: 'gc3' }];
+  const series = [{ id: 'g1', index: 0 }, { id: 'g2', index: 1 }, { id: 'g3', index: 2 }];
+  const values = { mfeStart: [NaN, 1.5, NaN], gc3: [0.5, 0.6, 0.7] };
+  const ranks = missingRanks(series, axes, (metric, index) => values[metric.key][index]);
+  const onMfe = ranks.get('mfeStart');
+  // Two genes lack this metric, so they take distinct places and each knows the total.
+  assert.equal(onMfe.size, 2);
+  assert.deepEqual(onMfe.get('g1'), { rank: 0, total: 2 });
+  assert.deepEqual(onMfe.get('g3'), { rank: 1, total: 2 });
+  assert.equal(onMfe.get('g2'), undefined);
+  // An axis every gene has produces no marks at all.
+  assert.equal(ranks.get('gc3').size, 0);
+});
+
+test('counts read with the right singular or plural', () => {
+  assert.equal(pluralise(1, 'shortlisted gene'), '1 shortlisted gene');
+  assert.equal(pluralise(10, 'shortlisted gene'), '10 shortlisted genes');
+  assert.equal(pluralise(0, 'metric'), '0 metrics');
+  assert.equal(pluralise(1, 'match', 'matches'), '1 match');
+  assert.equal(pluralise(3, 'match', 'matches'), '3 matches');
 });
 
 test('a long axis name wraps rather than being truncated', () => {

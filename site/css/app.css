@@ -616,7 +616,12 @@ input[type="range"] { width: 100%; }
 .delta-magnitude { font-size: 0.74rem; color: var(--ink-muted); margin-left: 0.4rem; font-variant-numeric: tabular-nums; }
 
 .table-heading { margin-top: 1rem; }
-.table-scroll { overflow-x: auto; max-width: 100%; }
+/* The shared metric table is far wider than any viewport and scrolls inside this
+   box. `contain: paint` keeps that scrolling contained: without it the table's
+   width leaks into the document's scroll area, and the whole page scrolls
+   sideways over several thousand pixels of blank space. Paint containment says
+   what this box already means, that nothing inside it is drawn outside it. */
+.table-scroll { overflow-x: auto; max-width: 100%; contain: paint; }
 .data-table { border-collapse: collapse; font-size: 0.82rem; min-width: 100%; }
 .data-table caption { text-align: left; color: var(--ink-muted); padding-bottom: 0.35rem; font-size: 0.8rem; }
 .data-table th, .data-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
