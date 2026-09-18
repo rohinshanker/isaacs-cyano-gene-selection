@@ -21,6 +21,7 @@ import json
 import math
 import os
 import re
+import collections
 import sys
 from typing import Any, Callable, Iterable, Iterator
 
@@ -505,15 +506,65 @@ def cross_check_against_genome(
     report.check(unmatched == 0, "every gene id resolves to a raw CDS record",
                  f"{unmatched} unresolved")
 
-    if os.path.exists(protein_path):
-        table = codon_table()
-        proteins: dict[str, str] = {}
-        for header, sequence in read_fasta(protein_path):
-            proteins[header.split()[0]] = sequence.upper()
-        report.check(len(proteins) > 0, "read NCBI protein records",
-                     f"{len(proteins)} records")
-    else:
-        report.skip("protein cross-check", f"not found at {protein_path}")
+    if not os.path.exists(protein_path):
+        report.skip("translated CDSs match NCBI proteins",
+                    f"not found at {protein_path}")
+        return
+
+    # protein_id per locus tag, taken from the CDS FASTA headers.
+    protein_id_of: dict[str, str] = {}
+    for header, _ in read_fasta(cds_path):
+        locus = re.search(r"\[locus_tag=([^\]]+)\]", header)
+        pid = re.search(r"\[protein_id=([^\]]+)\]", header)
+        if locus and pid:
+            protein_id_of[locus.group(1)] = pid.group(1)
+
+    proteins: dict[str, str] = {}
+    for header, sequence in read_fasta(protein_path):
+        proteins[header.split()[0]] = sequence.upper()
+
+    table = codon_table()
+    compared = differing = no_protein = 0
+    diff_examples: list[str] = []
+    for gene in genes:
+        gid = gene.get("id")
+        codons = gene.get("codons")
+        if not isinstance(gid, str) or not isinstance(codons, str) or not codons:
+            continue
+        pid = protein_id_of.get(gid)
+        reference = proteins.get(pid) if pid else None
+        if reference is None:
+            no_protein += 1
+            continue
+        triplets = [symbol_to_codon.get(ch, "???") for ch in codons]
+        # Bacterial translation: any annotated initiation triplet reads as
+        # methionine at position zero regardless of its internal meaning.
+        residues = ["M"] + [table.get(c, "X") for c in triplets[1:]]
+        translated = "".join(residues)
+        compared += 1
+        if translated != reference:
+            differing += 1
+            if len(diff_examples) < 3:
+                diff_examples.append(
+                    f"{gid}/{pid}: len {len(translated)} vs {len(reference)}")
+
+    report.check(compared > 0, "translated CDSs were compared to NCBI proteins",
+                 f"compared {compared}, no protein record for {no_protein}")
+    report.check(differing == 0,
+                 "every translated CDS matches its NCBI protein exactly",
+                 f"{differing} of {compared} differ, e.g. {diff_examples}")
+    report.check(no_protein == 0, "every gene resolves to an NCBI protein record",
+                 f"{no_protein} unresolved")
+
+    # Four protein accessions are shared by two loci each. Genes must not have
+    # been deduplicated to match the protein file's record count.
+    shared = collections.Counter(
+        protein_id_of[g["id"]] for g in genes
+        if isinstance(g, dict) and g.get("id") in protein_id_of)
+    duplicated = {p: n for p, n in shared.items() if n > 1}
+    report.check(len(duplicated) == 4,
+                 "the four dual-locus proteins are present for both loci",
+                 f"found {len(duplicated)}: {sorted(duplicated)[:6]}")
 
 
 def main() -> int:

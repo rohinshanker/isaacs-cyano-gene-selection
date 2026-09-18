@@ -1,7 +1,9 @@
-name: Deploy site to GitHub Pages
+name: Validate and deploy site
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -15,7 +17,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # The raw genome is gitignored, so fetch and checksum it here. This also
+      # verifies the organism, because a valid checksum only proves the download
+      # was intact, not that it is the right assembly.
+      - name: Fetch and verify genome
+        run: |
+          chmod +x tools/fetch_genome.sh
+          ./tools/fetch_genome.sh data/raw
+
+      # validate_contract.py uses only the standard library on purpose, so the
+      # gate cannot be broken by a dependency resolution failure.
+      - name: Validate generated data against the contract
+        run: python3 tools/validate_contract.py --data-dir site/data --raw-dir data/raw
+
+      - name: Install pipeline dependencies
+        run: pip install --quiet -r requirements.txt
+
+      - name: Run pipeline tests
+        run: python -m pytest -q
+
   deploy:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
