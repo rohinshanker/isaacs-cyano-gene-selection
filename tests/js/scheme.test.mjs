@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PRESETS, validateSchemeMap, compileScheme, recodableCodons, prefillReplacement,
-  serializeSchemeMap, parseSchemeMap, verifyProteinsUnchanged,
+  serializeSchemeMap, parseSchemeMap, verifyProteinsUnchanged, codonOccurrenceCounts,
 } from '../../site/js/core/scheme.js';
 import { standardTable, fixtureDataset } from './helpers.mjs';
 
@@ -145,4 +145,43 @@ test('protein verification catches a map that slipped through as non-synonymous'
   assert.equal(result.ok, false);
   assert.equal(result.firstMismatch.from, 'GCT');
   assert.equal(result.firstMismatch.to, 'TTT');
+});
+
+
+test('published editable counts are quoted, and they leave out the start codon', async () => {
+  const dataset = await fixtureDataset();
+  const { counts, published } = codonOccurrenceCounts(dataset);
+  assert.equal(published, true, 'the fixture must publish meta.codonOccurrences');
+  const { table, packed, offsets, genes } = dataset;
+  // Recount from the sequence: every occurrence except position zero.
+  const editable = new Map(table.codons.map((codon) => [codon, 0]));
+  for (let g = 0; g < genes.length; g += 1) {
+    for (let i = offsets[g] + 1; i < offsets[g + 1]; i += 1) {
+      const codon = table.codons[packed[i]];
+      editable.set(codon, editable.get(codon) + 1);
+    }
+    editable.set(genes[g].terminalStop, editable.get(genes[g].terminalStop) + 1);
+  }
+  for (const codon of table.codons) {
+    assert.equal(counts.get(codon), editable.get(codon), `${codon} editable count`);
+  }
+  // Start codons occur at position zero, so their editable count is below the raw one.
+  const atgIndex = table.indexOf('ATG');
+  assert.ok(counts.get('ATG') < dataset.genomeCounts[atgIndex]);
+  // A stop's editable count is the number of genes that end with it.
+  assert.equal(counts.get('TAG'), genes.filter((gene) => gene.terminalStop === 'TAG').length);
+});
+
+test('a dataset without published counts falls back to raw counts and says so', async () => {
+  const dataset = await fixtureDataset();
+  const { meta, ...rest } = dataset;
+  const { codonOccurrences: _dropped, ...metaWithout } = meta;
+  const { counts, published } = codonOccurrenceCounts({ ...rest, meta: metaWithout });
+  assert.equal(published, false);
+  const atgIndex = dataset.table.indexOf('ATG');
+  assert.equal(counts.get('ATG'), dataset.genomeCounts[atgIndex]);
+  assert.equal(counts.get('TAG'), dataset.genes.filter((gene) => gene.terminalStop === 'TAG').length);
+  // A partial table is not trusted either: every codon must be published.
+  const partial = codonOccurrenceCounts({ ...rest, meta: { ...metaWithout, codonOccurrences: { ATG: { total: 1, editable: 1 } } } });
+  assert.equal(partial.published, false);
 });

@@ -622,6 +622,25 @@ function main() {
     definition.direction = 'contextual';
   }
 
+  // Per the contract: every codon's total, and the editable count that leaves out
+  // position zero. Stops live only at the terminus, so both numbers are the tally
+  // of genes ending with them.
+  const codonOccurrences = {};
+  codons.forEach((codon, index) => {
+    codonOccurrences[codon] = { total: 0, editable: 0 };
+  });
+  packedIndices.forEach((indices) => {
+    for (let i = 0; i < indices.length; i += 1) {
+      const entry = codonOccurrences[codons[indices[i]]];
+      entry.total += 1;
+      if (i > 0) entry.editable += 1;
+    }
+  });
+  for (const gene of genes) {
+    codonOccurrences[gene.terminalStop].total += 1;
+    codonOccurrences[gene.terminalStop].editable += 1;
+  }
+
   const meta = {
     schemaVersion: 1,
     builtAt: new Date(Date.UTC(2026, 8, 18, 20, 0, 0)).toISOString(),
@@ -651,6 +670,7 @@ function main() {
     },
     encFamilyConvention: ENC_FAMILY_CONVENTION,
     rareCodonThreshold,
+    codonOccurrences,
     metrics,
   };
   if (args.expression) {
