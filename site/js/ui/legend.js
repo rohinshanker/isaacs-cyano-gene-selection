@@ -2,10 +2,32 @@
 import { formatValue, formatCount } from './format.js';
 import { MISSING_COLOR, GHOST_COLOR } from './colors.js';
 
+/** One sentence naming the ramp family and where the choice came from. */
+export function describeRamp(metric, scale) {
+  const family = scale.diverging ? 'diverging, centred on zero' : 'sequential';
+  if (scale.scaleSource === 'declared') {
+    return `Ramp: ${family}, as the dataset declares for ${metric.label}. A ramp reads the value; `
+      + 'it does not say whether high is good.';
+  }
+  return `Ramp: ${family}, inferred from the sign of the data because the dataset declares no `
+    + `scale for ${metric.label}.`;
+}
+
+/** Plain-language count of expression bases, or null when the dataset records none. */
+export function describeBasisCounts(basisCounts) {
+  if (!basisCounts || !basisCounts.recorded) return null;
+  const { counts } = basisCounts;
+  const parts = [`${formatCount(counts.get('measured'))} measured`];
+  if (counts.get('proxy') > 0) parts.push(`${formatCount(counts.get('proxy'))} proxy only`);
+  if (counts.get('none') > 0) parts.push(`${formatCount(counts.get('none'))} with neither`);
+  if (counts.get('unrecorded') > 0) parts.push(`${formatCount(counts.get('unrecorded'))} with no basis recorded`);
+  return `Expression basis: ${parts.join(', ')}. Only measured values are coloured here.`;
+}
+
 /**
  * @param {HTMLElement} host
  * @param {{metric: object, scale: object, missingCount: number, hiddenCount: number,
- *   provenanceNote: string|null}} state
+ *   provenanceNote: string|null, basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
  */
 export function renderLegend(host, state) {
   host.replaceChildren();
@@ -72,7 +94,18 @@ export function renderLegend(host, state) {
   addNote('diamond', '#1b2733', 'Shortlisted: diamond outline', 'open');
   addNote('pin', '#b3261e', 'Pinned: ring with crosshairs', 'open');
 
-  host.append(title, canvas, ticks, notes);
+  const ramp = document.createElement('p');
+  ramp.className = 'legend-ramp-note';
+  ramp.textContent = describeRamp(metric, scale);
+
+  host.append(title, canvas, ticks, notes, ramp);
+  const basis = describeBasisCounts(state.basisCounts);
+  if (basis) {
+    const note = document.createElement('p');
+    note.className = 'legend-ramp-note';
+    note.textContent = basis;
+    host.append(note);
+  }
   if (state.provenanceNote) {
     const note = document.createElement('p');
     note.className = 'provenance-warning';

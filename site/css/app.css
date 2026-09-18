@@ -445,6 +445,7 @@ input[type="range"] { width: 100%; }
 .legend-swatch-box.open { border-radius: 50%; }
 .legend-swatch-box.diamond { transform: rotate(45deg); }
 .legend-swatch-box.pin { border-radius: 50%; }
+.legend-ramp-note { font-size: 0.76rem; color: var(--ink-muted); margin: 0.35rem 0 0; max-width: 38ch; }
 
 .timing { font-size: 0.76rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; max-width: 46ch; }
 
@@ -546,6 +547,7 @@ input[type="range"] { width: 100%; }
 /* A locus tag is an identifier the reader copies, so it reads as one. */
 .locus-tag { font-family: var(--mono); }
 .shortlist-empty { color: var(--ink-muted); font-style: italic; font-size: 0.85rem; }
+.export-saved-row { font-size: 0.85rem; margin-bottom: 0.5rem; }
 
 .compare-section { margin: 0 1.25rem 1.25rem; }
 .compare-panel { padding-top: 0.6rem; }
@@ -557,10 +559,54 @@ input[type="range"] { width: 100%; }
 .axis-option { display: block; font-size: 0.82rem; }
 
 .chart-host { width: 100%; height: clamp(280px, 42vh, 440px); }
+/* When axis labels need more room than the viewport gives, the chart keeps its
+   minimum width and scrolls sideways rather than clipping a name. */
+.chart-host.scrolls { overflow-x: auto; overflow-y: hidden; }
 .compare-canvas { display: block; width: 100%; height: 100%; }
-.series-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0; margin: 0.4rem 0; font-size: 0.83rem; }
+.series-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; padding: 0; margin: 0.4rem 0; font-size: 0.83rem; }
 .series-legend .dimmed { opacity: 0.45; }
-.legend-swatch { vertical-align: middle; }
+.series-legend .focused .legend-entry { border-bottom: 2px solid var(--ink); color: var(--ink); font-weight: 600; }
+.legend-entry[aria-pressed="true"] { background: var(--accent-soft); border-radius: 4px 4px 0 0; }
+.legend-swatch { vertical-align: middle; width: 38px; height: 14px; flex: none; }
+.legend-missing { color: #6b4100; font-weight: 600; }
+.focus-bar { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin: 0.25rem 0; }
+.focus-bar .chip-button { min-height: 28px; padding: 0.15rem 0.6rem; }
+.axis-unavailable { color: var(--ink-muted); font-size: 0.76rem; }
+.axis-unavailable-note { margin-top: -0.25rem; }
+
+/* Where an expression value comes from, said beside the number every time. */
+.basis-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink-muted);
+  background: var(--surface-sunken);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.basis-tag.basis-measured { border-color: #7fb1c6; color: #1f5f7d; background: var(--accent-soft); }
+.basis-tag.basis-proxy { border-color: #e3c893; color: #6b4100; background: #fdf3e2; }
+.basis-tag.basis-none, .basis-tag.basis-unrecorded { border-style: dashed; }
+
+/* A row-identity swatch that doubles as the focus toggle in the shared table. */
+.series-focus {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.05rem 0.2rem;
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 0;
+}
+.series-focus:hover { border-color: var(--line-strong); }
+.series-focus[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.data-table tbody tr.focused td, .data-table tbody tr.focused th { background: var(--accent-soft); font-weight: 600; }
+.data-table tbody tr.dimmed td, .data-table tbody tr.dimmed th:not(:first-child) { color: var(--ink-muted); }
+.data-table td.missing { color: var(--ink-muted); }
+.data-table td.missing::before { content: '—'; color: var(--line-strong); }
 
 .delta-controls { display: flex; flex-wrap: wrap; gap: 1rem; }
 .delta-controls .field-row { margin-bottom: 0; }

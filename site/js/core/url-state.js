@@ -9,8 +9,11 @@ import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
-  exceptionFilter: 'e',
+  exceptionFilter: 'e', expressionFilter: 'm',
 };
+
+/** Values the expression-basis filter can take. */
+export const EXPRESSION_FILTERS = Object.freeze(['any', 'measured']);
 
 function encodeFilters(filters) {
   return Object.entries(filters)
@@ -58,6 +61,9 @@ export function encodeState(state) {
   if (state.exceptionFilter && state.exceptionFilter !== 'any') {
     push(KEYS.exceptionFilter, state.exceptionFilter);
   }
+  if (state.expressionFilter && state.expressionFilter !== 'any') {
+    push(KEYS.expressionFilter, state.expressionFilter);
+  }
   if (!state.showHidden) push(KEYS.showHidden, '0');
   return parts.join('&');
 }
@@ -87,6 +93,10 @@ export function decodeState(hash) {
   if (values.has(KEYS.exceptionFilter)) {
     const mode = values.get(KEYS.exceptionFilter);
     if (['any', 'only', 'none'].includes(mode)) state.exceptionFilter = mode;
+  }
+  if (values.has(KEYS.expressionFilter)) {
+    const mode = values.get(KEYS.expressionFilter);
+    if (EXPRESSION_FILTERS.includes(mode)) state.expressionFilter = mode;
   }
   if (values.has(KEYS.showHidden)) state.showHidden = values.get(KEYS.showHidden) !== '0';
   return state;

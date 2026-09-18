@@ -8,7 +8,9 @@
  * with no value for a metric is unknown rather than zero, so it is kept unless
  * the user says otherwise and the count is always visible.
  */
-import { isExpressionMetric, metricValues, describeExpressionSource } from '../core/metric-registry.js';
+import {
+  isExpressionMetric, isExpressionProxyMetric, metricValues, describeExpressionSource,
+} from '../core/metric-registry.js';
 import { formatCount, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
 
@@ -63,7 +65,8 @@ export class FilterPanel {
   /**
    * @param {HTMLElement} host
    * @param {{onChange: (filters: object) => void,
-   *   onExceptionFilterChange: (mode: string) => void}} handlers
+   *   onExceptionFilterChange: (mode: string) => void,
+   *   onExpressionFilterChange: (mode: string) => void}} handlers
    */
   constructor(host, handlers) {
     this.host = host;
@@ -80,6 +83,9 @@ export class FilterPanel {
 
     this.exceptionHost = document.createElement('div');
     this.exceptionHost.className = 'exception-filter';
+
+    this.basisHost = document.createElement('div');
+    this.basisHost.className = 'basis-filter';
 
     const addRow = document.createElement('div');
     addRow.className = 'field-row';
@@ -109,7 +115,8 @@ export class FilterPanel {
     this.clearButton.addEventListener('click', () => this.handlers.onChange({}));
 
     this.host.append(
-      this.trafficHost, this.exceptionHost, addRow, this.list, this.summary, this.clearButton,
+      this.trafficHost, this.basisHost, this.exceptionHost, addRow, this.list, this.summary,
+      this.clearButton,
     );
   }
 
@@ -136,7 +143,8 @@ export class FilterPanel {
   /**
    * @param {{registry: object, filters: object, count: number, passing: number,
    *   exceptionFilter: string, exceptionCount: number,
-   *   missingHidden: Map<string, number>}} state
+   *   missingHidden: Map<string, number>, expressionFilter: string,
+   *   basisCounts: {counts: Map<string, number>, recorded: boolean}}} state
    */
   update(state) {
     this.registry = state.registry;
@@ -170,6 +178,7 @@ export class FilterPanel {
     if (selected && !active.includes(selected)) this.addSelect.value = selected;
 
     this.renderTraffic(state);
+    this.renderBasisFilter(state);
     this.renderExceptionFilter(state);
     this.renderRows(state);
 
@@ -179,7 +188,8 @@ export class FilterPanel {
       ? `${formatCount(state.passing)} of ${formatCount(state.count)} genes pass. `
         + `${formatCount(hidden)} are hidden.`
       : `All ${formatCount(state.count)} genes pass. No filter is hiding anything.`;
-    this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any';
+    this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
+      && (state.expressionFilter ?? 'any') === 'any';
   }
 
   renderTraffic(state) {
@@ -212,9 +222,12 @@ export class FilterPanel {
     for (const candidate of candidates) {
       const option = document.createElement('option');
       option.value = candidate.key;
-      option.textContent = isExpressionMetric(candidate)
-        ? `${candidate.label} (measured elsewhere)`
-        : `${candidate.label} (from this genome)`;
+      // A proxy rank is this genome's own; a measurement may not be.
+      option.textContent = isExpressionProxyMetric(candidate)
+        ? `${candidate.label} (proxy from this genome)`
+        : isExpressionMetric(candidate)
+          ? `${candidate.label} (measured elsewhere)`
+          : `${candidate.label} (from this genome)`;
       select.append(option);
     }
     select.value = this.trafficKey;
@@ -227,11 +240,17 @@ export class FilterPanel {
     chooser.append(chooserLabel, select);
     this.trafficHost.append(heading, chooser);
 
-    if (isExpressionMetric(metric)) {
+    if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
       const notice = document.createElement('p');
       notice.className = 'provenance-warning';
       notice.textContent = describeExpressionSource(metric.provenance)
         ?? 'This expression measurement carries no recorded provenance, so treat it with care.';
+      this.trafficHost.append(notice);
+    } else if (isExpressionProxyMetric(metric)) {
+      const notice = document.createElement('p');
+      notice.className = 'panel-note';
+      notice.textContent = 'A rank derived from codon adaptation in this genome, not a '
+        + 'measurement. It is in a different unit from any abundance value.';
       this.trafficHost.append(notice);
     }
 
@@ -313,6 +332,46 @@ export class FilterPanel {
       + (input.checked ? '' : ` — currently hiding ${formatCount(hiddenNow)}`);
     wrapper.append(input, label);
     return wrapper;
+  }
+
+  /**
+   * The measured-only control. Shown only when the dataset records an expression
+   * basis at all; with no basis recorded there is nothing truthful to filter on.
+   */
+  renderBasisFilter(state) {
+    this.basisHost.replaceChildren();
+    const basisCounts = state.basisCounts;
+    if (!basisCounts?.recorded) return;
+    const measured = basisCounts.counts.get('measured');
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'flag-filter';
+    const legend = document.createElement('legend');
+    legend.textContent = 'Expression basis';
+    fieldset.append(legend);
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    const proxy = basisCounts.counts.get('proxy');
+    const none = basisCounts.counts.get('none');
+    note.textContent = `${formatCount(measured)} of ${formatCount(state.count)} genes carry a `
+      + `measured expression value; ${formatCount(proxy)} have only the codon-adaptation proxy`
+      + `${none > 0 ? ` and ${formatCount(none)} have neither` : ''}. A proxy rank is never shown `
+      + 'as a measurement.';
+    fieldset.append(note);
+    const row = document.createElement('div');
+    row.className = 'checkbox-row';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = 'expression-measured-only';
+    input.checked = state.expressionFilter === 'measured';
+    input.addEventListener('change', () => {
+      this.handlers.onExpressionFilterChange(input.checked ? 'measured' : 'any');
+    });
+    const label = document.createElement('label');
+    label.htmlFor = input.id;
+    label.textContent = 'Only genes with a measured expression value';
+    row.append(input, label);
+    fieldset.append(row);
+    this.basisHost.append(fieldset);
   }
 
   renderExceptionFilter(state) {

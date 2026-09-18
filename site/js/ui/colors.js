@@ -19,10 +19,16 @@ const DIVERGING = [
   [222, 222, 222], [253, 200, 148], [244, 155, 70], [204, 108, 20], [140, 70, 8],
 ];
 
-/** Okabe-Ito qualitative palette. */
+/**
+ * Ten qualitative colours: the eight Okabe-Ito hues plus wine and teal from Tol's
+ * muted set, all separable under the common colour-vision deficiencies. Ten is
+ * the lab's largest candidate panel. Colour is one of three channels a series
+ * carries; see SERIES_STYLES in compare-model.js for the dash and marker.
+ */
 export const CATEGORICAL = [
   '#0072b2', '#e69f00', '#009e73', '#cc79a7',
   '#56b4e9', '#d55e00', '#f0e442', '#333333',
+  '#882255', '#44aa99',
 ];
 
 /** Colour for a point with no value: an unsaturated grey, paired with an open marker. */
@@ -50,14 +56,24 @@ export function divergingColor(t) {
   return interpolate(DIVERGING, t);
 }
 
+/** Ramp families a metric definition may declare in `meta.metrics[key].scale`. */
+export const SCALE_FAMILIES = Object.freeze(['sequential', 'diverging']);
+
 /**
  * A colour scale over a set of values.
  *
+ * The ramp family comes from the metric's declared `scale` when the pipeline
+ * publishes one: diverging for signed quantities, sequential for magnitudes.
+ * A ramp reads a value; it says nothing about whether high is good, so the
+ * metric's `direction` is never consulted. When no scale is declared the family
+ * is inferred from the sign of the data and `scaleSource` says so, so the
+ * legend can tell the reader the choice was a guess rather than a contract.
+ *
  * @param {Float64Array|number[]} values
- * @param {{diverging?: boolean}} options
+ * @param {{scale?: string|null}} options
  * @returns {{color(value: number): string, normalize(value: number): number,
  *   min: number, max: number, mid: number, diverging: boolean, buckets: string[],
- *   bucketOf(value: number): number}}
+ *   bucketOf(value: number): number, scaleSource: 'declared'|'inferred'}}
  */
 export function buildColorScale(values, options = {}) {
   let min = Infinity;
@@ -73,7 +89,9 @@ export function buildColorScale(values, options = {}) {
     max = 1;
   }
   if (min === max) max = min + 1;
-  const diverging = options.diverging ?? (min < 0 && max > 0);
+  const declared = SCALE_FAMILIES.includes(options.scale) ? options.scale : null;
+  const diverging = declared ? declared === 'diverging' : (min < 0 && max > 0);
+  const scaleSource = declared ? 'declared' : 'inferred';
   const extent = diverging ? Math.max(Math.abs(min), Math.abs(max)) : 0;
   const lo = diverging ? -extent : min;
   const hi = diverging ? extent : max;
@@ -93,6 +111,7 @@ export function buildColorScale(values, options = {}) {
     max: hi,
     mid: diverging ? 0 : (lo + hi) / 2,
     diverging,
+    scaleSource,
     normalize,
     buckets,
     bucketOf,

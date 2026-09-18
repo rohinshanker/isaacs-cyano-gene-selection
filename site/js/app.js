@@ -10,6 +10,7 @@ import { computeLiveMetrics } from './core/live-metrics.js';
 import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues, describeExpressionSource,
+  expressionBasisOf, expressionBasisCounts, isExpressionMetric, isExpressionProxyMetric,
 } from './core/metric-registry.js';
 import { encodeState, decodeState } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
@@ -63,6 +64,7 @@ const state = {
   compareTab: 'radar',
   showHidden: true,
   exceptionFilter: 'any',
+  expressionFilter: 'any',
 };
 
 const context = {
@@ -155,6 +157,15 @@ function computeMask() {
       if (!mask[i]) continue;
       const flagged = Boolean(dataset.genes[i].translationalException);
       if (state.exceptionFilter === 'only' ? !flagged : flagged) mask[i] = 0;
+    }
+  }
+
+  // Measured-only keeps genes whose expression basis is a real measurement. A
+  // proxy, nothing, or an unrecorded basis all fail it: none of them is a measurement.
+  if (state.expressionFilter === 'measured') {
+    for (let i = 0; i < count; i += 1) {
+      if (!mask[i]) continue;
+      if (expressionBasisOf(dataset.genes[i]).basis !== 'measured') mask[i] = 0;
     }
   }
 
@@ -258,7 +269,9 @@ function renderMap() {
   const metric = context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
   state.colorBy = metric.key;
   const values = metricValues(metric, context.dataset.genes.length);
-  const scale = buildColorScale(values, { diverging: metric.family === 'Change from wild type' });
+  // The ramp family is whatever the metric declares; undeclared is inferred and
+  // the legend says so. `direction` is never read.
+  const scale = buildColorScale(values, { scale: metric.scale });
   plot.setColor({ values, scale });
   plot.setMask(context.mask);
   plot.setShowHidden(state.showHidden);
@@ -285,6 +298,8 @@ function renderMap() {
       missingCount: missing,
       hiddenCount: context.dataset.genes.length - context.passing,
       provenanceNote: describeExpressionSource(metric.provenance),
+      basisCounts: isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
+        ? context.basisCounts : null,
     });
   }
 
@@ -346,6 +361,8 @@ function renderAll({ schemeErrors = [] } = {}) {
     missingHidden: context.missingHidden,
     exceptionFilter: state.exceptionFilter,
     exceptionCount: context.exceptionCount,
+    expressionFilter: state.expressionFilter,
+    basisCounts: context.basisCounts,
   });
   shortlistPanel.update({
     ids: state.shortlist,
@@ -354,6 +371,12 @@ function renderAll({ schemeErrors = [] } = {}) {
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
     schemeActive: Object.keys(state.schemeMap).length > 0,
+    schemes: {
+      active: { name: state.schemeName, map: state.schemeMap },
+      saved: Object.entries(store.read(STORAGE_SCHEMES, {}))
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, map]) => ({ name, map })),
+    },
   });
   if (searchResults) searchResults.refresh();
   comparePanel.update({
@@ -685,6 +708,9 @@ async function boot() {
   context.dataset = dataset;
   context.exceptionCount = dataset.genes
     .filter((gene) => Boolean(gene.translationalException)).length;
+  context.basisCounts = expressionBasisCounts(dataset.genes);
+  // A measured-only filter is meaningless when no gene records a basis.
+  if (!context.basisCounts.recorded) state.expressionFilter = 'any';
 
   // Drop any shortlisted gene that is not in this dataset, so a stale link degrades cleanly.
   state.shortlist = state.shortlist.filter((id) => dataset.indexById.has(id));
@@ -767,6 +793,13 @@ async function boot() {
         : mode === 'only'
           ? 'Showing only genes with a translational exception.'
           : 'Hiding genes with a translational exception.');
+    },
+    onExpressionFilterChange: (mode) => {
+      state.expressionFilter = mode;
+      renderAll();
+      announce(mode === 'measured'
+        ? `Showing only the ${formatCount(context.passing)} genes with a measured expression value.`
+        : 'Showing genes whatever their expression basis.');
     },
   });
 

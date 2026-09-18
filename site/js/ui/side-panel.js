@@ -7,7 +7,9 @@
  * value is unusual.
  */
 import { formatValue, formatDelta, formatPercentile, formatCount, formatSpan, MISSING } from './format.js';
-import { describeExpressionSource } from '../core/metric-registry.js';
+import {
+  describeExpressionSource, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
+} from '../core/metric-registry.js';
 
 /** Families opened by default; the rest start collapsed to keep the panel short. */
 const OPEN_FAMILIES = new Set(['Size', 'Translation', 'Recoding load', 'Change from wild type']);
@@ -187,6 +189,23 @@ export class SidePanel {
         unit.className = 'row-unit';
         unit.textContent = metric.unit ?? '';
         valueCell.append(' ', unit);
+        if (!Number.isFinite(value)) {
+          valueCell.classList.add('missing');
+          const hidden = document.createElement('span');
+          hidden.className = 'visually-hidden';
+          hidden.textContent = 'no value';
+          valueCell.append(hidden);
+        }
+        // A measured expression value says per gene whether it is a measurement,
+        // a proxy standing in, or nothing at all. The proxy metric is its own row.
+        if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
+          const { basis, short, text } = expressionBasisOf(gene);
+          const tag = document.createElement('span');
+          tag.className = `basis-tag basis-${basis}`;
+          tag.textContent = short;
+          tag.title = text;
+          valueCell.append(document.createElement('br'), tag);
+        }
 
         const percentile = state.percentileOf(metric.key, value);
         const rankCell = document.createElement('td');
