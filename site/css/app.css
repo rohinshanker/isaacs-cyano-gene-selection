@@ -402,7 +402,14 @@ input[type="range"] { width: 100%; }
 .map-toolbar { display: flex; flex-direction: column; gap: 0.5rem; }
 .map-toolbar-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .map-toolbar .field-row { margin-bottom: 0; }
-.map-toolbar .field-row-grow { flex: 1 1 18rem; }
+/* Both controls share the first line. A native select is as wide as its longest
+   option, and "Expected ENC − observed (codons)" is long enough to claim the
+   whole row and push the search box onto a line of its own. Giving the colour-by
+   wrapper a shrinkable basis stops that; the search box grows harder, so it
+   takes the remaining width. They still wrap at a narrow viewport, which is
+   intended. */
+.map-toolbar-row > .field-row { flex: 1 1 11rem; min-width: 0; }
+.map-toolbar .field-row-grow { flex: 3 1 14rem; }
 .map-toolbar .field-row-grow > input[type="search"] { flex: 1 1 12rem; }
 
 .filter-banner { margin: 0; font-size: 0.85rem; color: transparent; min-height: 1.2rem; }
