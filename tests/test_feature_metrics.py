@@ -17,10 +17,12 @@ from build_features import (
     exclusion_reason,
     expression_percentiles,
     gene_pair_metrics,
+    is_cai_reference,
     load_expression,
     pair_scores,
     parse_attributes,
     replacement_map,
+    require,
     start_window,
 )
 
@@ -45,7 +47,7 @@ def test_alternative_start_is_methionine_for_translation_metrics():
 
     tai_weights = {codon: 1.0 for codon in fm.SENSE_CODONS}
     tai_weights.update(ATG=0.25, GTG=0.01)
-    assert fm.trna_adaptation_index(sequence, tai_weights) == pytest.approx(0.5)
+    assert fm.trna_adaptation_index(sequence, tai_weights) == 1.0
     assert gene_pair_metrics(sequence, {("ATG", "GTT"): 2.0})["cps"] == 2.0
 
 
@@ -78,6 +80,21 @@ def test_enc_edge_cases_and_expected_curve():
     assert fm.expected_enc(0.0) == pytest.approx(31.0)
 
 
+def test_enc_singletons_use_same_degeneracy_class_average():
+    # Balanced Phe supplies F2=0.5. Singleton Tyr is unestimable and uses that
+    # same 2-fold class average rather than being treated as maximally biased.
+    enc, substituted = fm.effective_number_of_codons_with_substitution(
+        "ATGTTTTTCTATTAA"
+    )
+    assert enc == 61.0
+    assert substituted is True
+
+
+def test_expected_enc_uses_silent_gc3():
+    # Met's G-ending third position is not a synonymous site; the two Phe sites are.
+    assert fm.silent_gc3("ATGTTTTTCTAA") == pytest.approx(0.5)
+
+
 def test_cai_zero_adjustment_and_single_codon_gene():
     weights = fm.cai_weights(["ATGTTTTTTTAA"])
     assert weights["TTT"] == 1.0
@@ -93,9 +110,7 @@ def test_tai_watson_crick_wobble_and_geometric_mean():
     assert fm.trna_adaptiveness("TTT", {"GAA": 2}, s_values) == pytest.approx(1.2)
     weights = {codon: 1.0 for codon in fm.SENSE_CODONS}
     weights.update(TTT=0.25, TTC=1.0)
-    assert fm.trna_adaptation_index("ATGTTTTTCTAA", weights) == pytest.approx(
-        0.25 ** (1 / 3)
-    )
+    assert fm.trna_adaptation_index("ATGTTTTTCTAA", weights) == pytest.approx(0.5)
     assert fm.trna_adaptiveness("ATA", {"LAT": 1}, {"L:A": 0.89}) == pytest.approx(0.11)
 
 
@@ -107,6 +122,16 @@ def test_lysidine_ile_cat_supports_ata_without_colliding_with_met_cat():
     assert anticodon_counts == {"LAT": 1, "CAT": 2}
     assert fm.trna_adaptiveness("ATA", anticodon_counts, S_VALUES) > 0
     assert fm.tai_weights(anticodon_counts, S_VALUES)["ATA"] > 0.01
+
+
+def test_tai_zero_weights_use_nonzero_geometric_mean_and_exclude_met():
+    weights, substitution = fm.tai_weights_with_substitution(
+        {"GAA": 2}, {"G:T": 0.4}
+    )
+    assert substitution == pytest.approx(math.sqrt(0.6))
+    assert weights["TTA"] == pytest.approx(substitution)
+    weights.update(ATG=0.01, TTT=0.25, TTC=1.0)
+    assert fm.trna_adaptation_index("ATGTTTTTCTAA", weights) == pytest.approx(0.5)
 
 
 def test_rare_features_include_ramp_run_and_short_local_window():
@@ -150,6 +175,24 @@ def test_pair_scores_and_replacements_are_deterministic():
     replacements = replacement_map({"TTT": 1, "TTC": 3})
     assert replacements["TTT"] == "TTC"
     assert replacements["TTC"] == "TTT"
+    stop_replacements = replacement_map({"TAG": 4, "TAA": 3, "TGA": 2})
+    assert stop_replacements == {
+        **{codon: stop_replacements[codon] for codon in fm.SENSE_CODONS},
+        "TAA": "TAG",
+        "TAG": "TAA",
+        "TGA": "TAG",
+    }
+
+
+def test_cai_reference_rejects_ribosomal_modifying_enzymes():
+    assert is_cai_reference("30S ribosomal protein S12")
+    assert not is_cai_reference("50S ribosomal protein L11 methyltransferase")
+    assert not is_cai_reference("ribosomal protein S18-alanine N-acetyltransferase")
+
+
+def test_require_is_not_disabled_by_python_optimization():
+    with pytest.raises(ValueError, match="observed value"):
+        require(False, "observed value is invalid")
 
 
 def test_attributes_decode_gff_escaping():
@@ -228,3 +271,41 @@ def test_context_uses_transcription_direction_and_minus_operon_order():
     assert genes[0]["neighborDownstreamNt"] is None
     assert genes[0]["operonPosition"] == 2
     assert genes[1]["operonPosition"] == 1
+
+
+def test_context_wraps_around_circular_replicons():
+    genes = [
+        {
+            "id": "first",
+            "seqid": "s",
+            "start": 20,
+            "end": 30,
+            "strand": "+",
+            "_contextStart": 20,
+            "_contextEnd": 30,
+        },
+        {
+            "id": "middle",
+            "seqid": "s",
+            "start": 200,
+            "end": 210,
+            "strand": "-",
+            "_contextStart": 200,
+            "_contextEnd": 210,
+        },
+        {
+            "id": "wrapped",
+            "seqid": "s",
+            "start": 1,
+            "end": 1000,
+            "strand": "+",
+            "_contextStart": 900,
+            "_contextEnd": 1010,
+        },
+    ]
+    add_context(genes, {"s": 1000})
+    by_id = {gene["id"]: gene for gene in genes}
+    assert by_id["wrapped"]["neighborDownstreamNt"] == 9
+    assert by_id["first"]["neighborUpstreamNt"] == 9
+    assert all(gene["neighborUpstreamNt"] is not None for gene in genes)
+    assert all(gene["neighborDownstreamNt"] is not None for gene in genes)

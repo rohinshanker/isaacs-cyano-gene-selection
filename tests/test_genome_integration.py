@@ -7,9 +7,11 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import feature_metrics as fm
-from validate_features import RAW_DEFAULT, validate
+from check_feature_consistency import RAW_DEFAULT, validate
 
 
 DATA = Path(__file__).resolve().parents[1] / "site/data"
@@ -31,6 +33,13 @@ def test_generated_documents_follow_contract():
     }
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["tai"]["tRNAGeneCopies"]["LAT"] == 1
+    assert meta["tai"]["zeroWeightCodons"] == ["TTA"]
+    assert meta["tai"]["zeroWeightSubstitution"] == pytest.approx(0.3799, abs=1e-4)
+    assert "unavailableWeightFloor" not in meta["tai"]
+    assert meta["tai"]["excludedAminoAcids"] == ["M"]
+    assert "fewer than two observations" in meta["encFamilyConvention"]
+    assert meta["encExpectedGc3Convention"].startswith("GC3s")
+    assert meta["caiReferenceSet"]["n"] == 71
     assert pca["nComponents"] == 6
     assert len(pca["loadings"]) == 59
     required = {
@@ -42,8 +51,10 @@ def test_generated_documents_follow_contract():
         "overlapsNeighbor", "operonId", "operonPosition", "operonSize", "rscu",
         "expression", "expressionPercentile", "codonPca", "riskUmap", "codons",
         "terminalStop", "translationalException", "cdsSegments",
+        "encHasSubstitutedFamilies",
     }
     assert required <= genes[0].keys()
+    assert all(isinstance(gene["encHasSubstitutedFamilies"], bool) for gene in genes)
     measured = [gene for gene in genes if gene["expression"] is not None]
     assert len(measured) == 2551
     assert all(gene["expressionPercentile"] is not None for gene in measured)
@@ -69,6 +80,21 @@ def test_generated_documents_follow_contract():
         "M744_RS13290": [[45877, 46366], [1, 2510]],
         "M744_RS13620": [[7830, 7842], [1, 281]],
     }
+    replicon_lengths = {
+        "NZ_CP006471.1": 2_690_418,
+        "NZ_CP006472.1": 46_366,
+        "NZ_CP006473.1": 7_842,
+    }
+    assert all(
+        1 <= gene["start"] <= gene["end"] <= replicon_lengths[gene["seqid"]]
+        for gene in genes
+    )
+    assert all(gene["neighborUpstreamNt"] is not None for gene in genes)
+    assert all(gene["neighborDownstreamNt"] is not None for gene in genes)
+    assert meta["defaultReplacement"]["TGA"] == "TAG"
+    assert meta["highExpressedReplacement"]["TGA"] == "TAG"
+    assert "M744_RS01650" not in meta["caiReferenceSet"]["locusTags"]
+    assert "M744_RS08135" not in meta["caiReferenceSet"]["locusTags"]
 
 
 def test_full_cds_reconstruction_and_terminal_stop_distribution():
@@ -101,7 +127,7 @@ def test_full_cds_reconstruction_and_terminal_stop_distribution():
     }
 
 
-def test_whole_genome_round_trip_translation_and_independent_metrics():
+def test_whole_genome_round_trip_translation_and_metric_consistency():
     result = validate(RAW_DEFAULT, DATA, sample_size=30)
     assert result["geneCount"] + result["excludedCount"] == 2722
     assert result["fullCdsReconstructed"] == 2715

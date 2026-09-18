@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Independent numerical and sequence validation for generated feature JSON."""
+"""Checks generated feature JSON for arithmetic and sequence consistency.
+
+This checker independently reimplements the pipeline's documented arithmetic, but
+it intentionally shares biological conventions such as wobble penalties and ENC
+substitution rules. It is an internal-consistency check, not an independent proof
+that those conventions are scientifically correct.
+"""
 
 from __future__ import annotations
 
@@ -86,9 +92,7 @@ def independent_enc(sequence: str) -> float:
             if len(family) != degeneracy:
                 continue
             total = sum(counts[codon] for codon in family)
-            if total == 1:
-                estimates.append(1.0)
-            elif total > 1:
+            if total > 1:
                 squared = sum((counts[codon] / total) ** 2 for codon in family)
                 estimates.append(max((total * squared - 1) / (total - 1), 1 / degeneracy))
         mean_f = sum(estimates) / len(estimates) if estimates else 1 / degeneracy
@@ -162,12 +166,22 @@ def independent_tai_weights(data_dir: Path) -> dict[str, float]:
                 value += copies * (1 - penalties[f"{anticodon[0]}:{codon[2]}"])
         absolute[codon] = value
     maximum = max(absolute.values())
-    return {codon: max(value / maximum, 0.01) for codon, value in absolute.items()}
+    relative = {codon: value / maximum for codon, value in absolute.items()}
+    nonzero = [value for value in relative.values() if value > 0]
+    substitution = math.exp(sum(math.log(value) for value in nonzero) / len(nonzero))
+    return {
+        codon: value if value > 0 else substitution
+        for codon, value in relative.items()
+    }
 
 
 def independent_tai(sequence: str, weights: dict[str, float]) -> float:
     """Computes the gene tAI geometric mean from independent weights."""
-    codons = _translated_codons(sequence)
+    codons = [
+        codon
+        for codon in _translated_codons(sequence)
+        if TABLE.forward_table[codon] != "M"
+    ]
     return math.exp(sum(math.log(weights[codon]) for codon in codons) / len(codons))
 
 
@@ -183,13 +197,17 @@ def validate(raw_dir: Path, data_dir: Path, sample_size: int = 30) -> dict[str, 
     for gene in genes:
         source = raw[gene["id"]]
         full_cds = fm.unpack_codons(gene["codons"]) + gene["terminalStop"]
-        assert full_cds == source["sequence"]
+        if full_cds != source["sequence"]:
+            raise ValueError(f"Full-CDS reconstruction failed for {gene['id']}")
         reconstructed += 1
         terminal_stops[gene["terminalStop"]] += 1
         translated = str(Seq(source["sequence"]).translate(table=11, cds=True))
-        assert translated == proteins[source["proteinId"]]
-    assert len(genes) + len(excluded) == len(raw) == 2722
-    assert terminal_stops == {"TAG": 1071, "TAA": 895, "TGA": 749}
+        if translated != proteins[source["proteinId"]]:
+            raise ValueError(f"Protein translation failed for {gene['id']}")
+    if len(genes) + len(excluded) != len(raw) or len(raw) != 2722:
+        raise ValueError("Included/excluded counts do not reconcile to 2,722 CDSs")
+    if terminal_stops != {"TAG": 1071, "TAA": 895, "TGA": 749}:
+        raise ValueError(f"Unexpected terminal-stop distribution: {terminal_stops}")
 
     reference_sequences = [raw[locus]["sequence"] for locus in meta["caiReferenceSet"]["locusTags"]]
     cai_weights = independent_cai_weights(reference_sequences)

@@ -90,37 +90,54 @@ def _family_homozygosity(counts: Mapping[str, int], family: Sequence[str]) -> fl
     n = sum(counts.get(codon, 0) for codon in family)
     if not n:
         return None
-    if n == 1:
-        return 1.0
+    if n < 2:
+        return None
     sum_squared = sum((counts.get(codon, 0) / n) ** 2 for codon in family)
     return max((n * sum_squared - 1.0) / (n - 1.0), 1.0 / len(family))
 
 
-def effective_number_of_codons(sequence: str) -> float:
-    """Computes Wright's ENC, omitting absent amino acids within each class.
+def effective_number_of_codons_with_substitution(sequence: str) -> tuple[float, bool]:
+    """Computes Wright's ENC and reports use of class-average substitution.
 
-    A degeneracy class with no represented amino acid contributes its neutral
-    maximum (F=1/k). This avoids NaN while preserving the 20..61 ENC range.
+    Families with fewer than two observations have no unbiased F estimate. They
+    therefore use the mean F of estimable families in the same degeneracy class.
+    A class with no estimable family uses its neutral expectation, F=1/k.
     """
     counts = collections.Counter(translated_codons(sequence))
     class_sizes = {2: 9, 3: 1, 4: 5, 6: 3}
     result = 2.0  # Met and Trp.
+    substituted = False
     for degeneracy, number_of_families in class_sizes.items():
-        estimates = [
-            _family_homozygosity(counts, family)
-            for family in SYNONYMS.values()
-            if len(family) == degeneracy
+        families = [
+            family for family in SYNONYMS.values() if len(family) == degeneracy
         ]
+        estimates = [_family_homozygosity(counts, family) for family in families]
         represented = [value for value in estimates if value is not None]
+        substituted |= len(represented) != len(families)
         mean_f = sum(represented) / len(represented) if represented else 1.0 / degeneracy
         result += number_of_families / mean_f
-    return min(61.0, max(20.0, result))
+    return min(61.0, max(20.0, result)), substituted
+
+
+def effective_number_of_codons(sequence: str) -> float:
+    """Returns Wright's ENC with class-average substitution."""
+    return effective_number_of_codons_with_substitution(sequence)[0]
 
 
 def expected_enc(gc3: float) -> float:
     """Returns the standard Wright neutral-curve ENC at the supplied GC3."""
     denominator = gc3**2 + (1.0 - gc3) ** 2
     return 2.0 + gc3 + 29.0 / denominator
+
+
+def silent_gc3(sequence: str) -> float:
+    """Returns GC3 over synonymous sites, excluding Met and Trp codons."""
+    codons = [
+        codon
+        for codon in translated_codons(sequence)
+        if AA_BY_CODON[codon] not in {"M", "W"}
+    ]
+    return sum(codon[2] in "GC" for codon in codons) / len(codons) if codons else 0.0
 
 
 def cai_weights(reference_sequences: Iterable[str]) -> dict[str, float]:
@@ -175,21 +192,38 @@ def trna_adaptiveness(
     return total
 
 
-def tai_weights(
+def tai_weights_with_substitution(
     anticodon_counts: Mapping[str, int], s_values: Mapping[str, float]
-) -> dict[str, float]:
-    """Builds relative tAI weights, using 0.01 for unavailable isoacceptors."""
+) -> tuple[dict[str, float], float]:
+    """Builds tAI weights using dos Reis's zero-weight substitution."""
     absolute = {
         codon: trna_adaptiveness(codon, anticodon_counts, s_values)
         for codon in SENSE_CODONS
     }
     maximum = max(absolute.values(), default=1.0) or 1.0
-    return {codon: max(value / maximum, 0.01) for codon, value in absolute.items()}
+    relative = {codon: value / maximum for codon, value in absolute.items()}
+    nonzero = [value for value in relative.values() if value > 0]
+    substitution = math.exp(sum(math.log(value) for value in nonzero) / len(nonzero))
+    return {
+        codon: value if value > 0 else substitution
+        for codon, value in relative.items()
+    }, substitution
+
+
+def tai_weights(
+    anticodon_counts: Mapping[str, int], s_values: Mapping[str, float]
+) -> dict[str, float]:
+    """Returns relative tAI weights with dos Reis zero-weight substitution."""
+    return tai_weights_with_substitution(anticodon_counts, s_values)[0]
 
 
 def trna_adaptation_index(sequence: str, weights: Mapping[str, float]) -> float:
-    """Returns the geometric mean relative tRNA adaptiveness."""
-    codons = translated_codons(sequence)
+    """Returns tAI, excluding Met as in the dos Reis convention."""
+    codons = [
+        codon
+        for codon in translated_codons(sequence)
+        if AA_BY_CODON[codon] != "M"
+    ]
     if not codons:
         return 1.0
     return math.exp(sum(math.log(weights[codon]) for codon in codons) / len(codons))

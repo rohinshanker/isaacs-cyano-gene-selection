@@ -47,7 +47,6 @@ S_VALUES = {
 }
 LYSIDINE_TRNA = ("Ile", "CAT")
 REFERENCE_PATTERNS = (
-    "ribosomal protein",
     "translation elongation factor",
     "translation initiation factor",
     "translation termination factor",
@@ -55,6 +54,23 @@ REFERENCE_PATTERNS = (
     "dna-directed rna polymerase subunit",
     "atp synthase subunit",
 )
+
+
+def is_cai_reference(product: str) -> bool:
+    """Returns whether a product belongs in the CAI reference set."""
+    normalized = product.lower()
+    is_ribosomal_protein = (
+        "ribosomal protein" in normalized and "transferase" not in normalized
+    )
+    return is_ribosomal_protein or any(
+        pattern in normalized for pattern in REFERENCE_PATTERNS
+    )
+
+
+def require(condition: bool, message: str) -> None:
+    """Raises a persistent, descriptive input-contract error."""
+    if not condition:
+        raise ValueError(message)
 
 
 def parse_attributes(value: str) -> dict[str, str]:
@@ -317,25 +333,35 @@ def gene_pair_metrics(sequence: str, scores: Mapping[tuple[str, str], float]) ->
     }
 
 
-def add_context(genes: list[dict[str, Any]]) -> None:
-    """Adds genomic-neighbor and same-strand <=100-nt operon context."""
+def add_context(
+    genes: list[dict[str, Any]], replicon_lengths: Mapping[str, int] | None = None
+) -> None:
+    """Adds circular-neighbor and same-strand <=100-nt operon context."""
     operon_number = 0
     for seqid in sorted({gene["seqid"] for gene in genes}):
         ordered = sorted(
             (gene for gene in genes if gene["seqid"] == seqid),
-            key=lambda item: item["start"],
+            key=lambda item: item.get("_contextStart", item["start"]),
         )
+        replicon_length = replicon_lengths.get(seqid) if replicon_lengths else None
+
+        def gap_after(index: int) -> int | None:
+            if index + 1 < len(ordered):
+                next_start = ordered[index + 1].get(
+                    "_contextStart", ordered[index + 1]["start"]
+                )
+            elif replicon_length is not None:
+                next_start = ordered[0].get("_contextStart", ordered[0]["start"])
+                next_start += replicon_length
+            else:
+                return None
+            current_end = ordered[index].get("_contextEnd", ordered[index]["end"])
+            return next_start - current_end - 1
+
+        gaps = [gap_after(index) for index in range(len(ordered))]
         for index, gene in enumerate(ordered):
-            lower_gap = (
-                gene["start"] - ordered[index - 1]["end"] - 1
-                if index
-                else None
-            )
-            upper_gap = (
-                ordered[index + 1]["start"] - gene["end"] - 1
-                if index + 1 < len(ordered)
-                else None
-            )
+            lower_gap = gaps[index - 1] if index or replicon_length is not None else None
+            upper_gap = gaps[index]
             if gene["strand"] == "+":
                 upstream, downstream = lower_gap, upper_gap
             else:
@@ -345,20 +371,53 @@ def add_context(genes: list[dict[str, Any]]) -> None:
             gene["overlapsNeighbor"] = (
                 upstream is not None and upstream < 0
             ) or (downstream is not None and downstream < 0)
-        index = 0
-        while index < len(ordered):
-            group = [ordered[index]]
-            while index + 1 < len(ordered):
-                gap = ordered[index + 1]["start"] - ordered[index]["end"] - 1
-                if ordered[index + 1]["strand"] != ordered[index]["strand"] or gap > OPERON_GAP:
-                    break
-                index += 1
-                group.append(ordered[index])
+        parents = list(range(len(ordered)))
+
+        def find(index: int) -> int:
+            while parents[index] != index:
+                parents[index] = parents[parents[index]]
+                index = parents[index]
+            return index
+
+        def union(first: int, second: int) -> None:
+            first_root, second_root = find(first), find(second)
+            if first_root != second_root:
+                parents[second_root] = first_root
+
+        edge_count = len(ordered) if replicon_length is not None else len(ordered) - 1
+        for index in range(edge_count):
+            next_index = (index + 1) % len(ordered)
+            gap = gaps[index]
+            if (
+                gap is not None
+                and gap <= OPERON_GAP
+                and ordered[index]["strand"] == ordered[next_index]["strand"]
+            ):
+                union(index, next_index)
+
+        components: dict[int, list[int]] = collections.defaultdict(list)
+        for index in range(len(ordered)):
+            components[find(index)].append(index)
+        for indexes in sorted(components.values(), key=min):
+            group = [ordered[index] for index in indexes]
             if len(group) > 1:
                 operon_number += 1
-                transcription_order = (
-                    group if group[0]["strand"] == "+" else list(reversed(group))
-                )
+                ordered_indexes = sorted(indexes)
+                if replicon_length is not None and len(ordered_indexes) < len(ordered):
+                    modular_gaps = [
+                        (
+                            (ordered_indexes[(offset + 1) % len(ordered_indexes)] - index)
+                            % len(ordered),
+                            offset,
+                        )
+                        for offset, index in enumerate(ordered_indexes)
+                    ]
+                    _, break_offset = max(modular_gaps)
+                    start = (break_offset + 1) % len(ordered_indexes)
+                    ordered_indexes = ordered_indexes[start:] + ordered_indexes[:start]
+                transcription_order = [ordered[index] for index in ordered_indexes]
+                if transcription_order[0]["strand"] == "-":
+                    transcription_order.reverse()
                 for position, gene in enumerate(transcription_order, 1):
                     gene.update(
                         operonId=f"op_{operon_number:04d}",
@@ -367,7 +426,6 @@ def add_context(genes: list[dict[str, Any]]) -> None:
                     )
             else:
                 group[0].update(operonId=None, operonPosition=None, operonSize=1)
-            index += 1
 
 
 def round_floats(value: Any) -> Any:
@@ -402,7 +460,11 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         )
     }
     genomes = fasta_dict(paths["genomic.fna"])
-    assert sum(map(len, genomes.values())) == TOTAL_LENGTH
+    observed_total_length = sum(map(len, genomes.values()))
+    require(
+        observed_total_length == TOTAL_LENGTH,
+        f"Genome length {observed_total_length:,} != expected {TOTAL_LENGTH:,}",
+    )
     annotations, anticodon_counts, trna_species = parse_gff(
         paths["genomic.gff"], genomes
     )
@@ -410,9 +472,15 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
     verified_trna = verified_trna_species(
         repository / "data/trna/anticodon_gene_copies.tsv"
     )
-    assert trna_species == verified_trna
+    require(
+        trna_species == verified_trna,
+        f"Derived tRNA species differ from verified table: {trna_species!r}",
+    )
     raw_records = cds_records(paths["cds_from_genomic.fna"])
-    assert len(raw_records) == 2722
+    require(
+        len(raw_records) == 2722,
+        f"Observed {len(raw_records)} CDS records; expected 2,722",
+    )
     included, excluded = [], []
     for record in raw_records:
         locus, sequence = record["locus_tag"], record["sequence"]
@@ -421,34 +489,61 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         if reason:
             excluded.append({"id": locus, "reason": reason, "lengthNt": len(sequence)})
         else:
+            segments = cds_segments(record.get("location", ""))
+            context_start, context_end = annotation["start"], annotation["end"]
+            display_start, display_end = context_start, context_end
+            replicon_length = len(genomes[annotation["seqid"]])
+            if segments and context_end > replicon_length:
+                display_start = min(start for start, _ in segments)
+                display_end = max(end for _, end in segments)
             included.append(
                 {
                     **annotation,
                     "sequence": sequence,
-                    "cdsSegments": cds_segments(record.get("location", "")),
+                    "cdsSegments": segments,
+                    "_displayStart": display_start,
+                    "_displayEnd": display_end,
+                    "_contextStart": context_start,
+                    "_contextEnd": context_end,
                 }
             )
-    assert len(included) + len(excluded) == 2722
-    assert len(included) == 2715
+    require(
+        len(included) + len(excluded) == len(raw_records),
+        "Included and excluded CDS counts do not reconcile with the input",
+    )
+    require(
+        2650 <= len(included) <= 2725,
+        f"Included gene count {len(included)} is outside contract range [2650, 2725]",
+    )
     terminal_stops = collections.Counter(gene["sequence"][-3:] for gene in included)
-    assert terminal_stops == {"TAG": 1071, "TAA": 895, "TGA": 749}
+    require(
+        terminal_stops == {"TAG": 1071, "TAA": 895, "TGA": 749},
+        f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
+    )
 
     expression = load_expression(repository / "data/expression")
     percentiles = expression_percentiles(expression)
-    assert len(expression) == 2551
+    require(
+        len(expression) == 2551,
+        f"Expression table has {len(expression)} rows; expected 2,551",
+    )
 
     sequences = [gene["sequence"] for gene in included]
     counts, frequencies = codon_frequencies(sequences)
+    counts.update(terminal_stops)
     references = [
         gene
         for gene in included
-        if any(pattern in gene["product"].lower() for pattern in REFERENCE_PATTERNS)
+        if is_cai_reference(gene["product"])
     ]
     if len(references) < 30:
         raise ValueError("CAI reference selection unexpectedly produced fewer than 30 genes")
     reference_counts, _ = codon_frequencies(gene["sequence"] for gene in references)
+    reference_counts.update(gene["sequence"][-3:] for gene in references)
     cai = fm.cai_weights(gene["sequence"] for gene in references)
-    tai = fm.tai_weights(anticodon_counts, S_VALUES)
+    tai, tai_zero_substitution = fm.tai_weights_with_substitution(
+        anticodon_counts, S_VALUES
+    )
     pairs = pair_scores(sequences)
 
     genes = []
@@ -459,17 +554,19 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
             "name",
             "product",
             "seqid",
-            "start",
-            "end",
             "strand",
             "translationalException",
             "cdsSegments",
         )
         values: dict[str, Any] = {key: source[key] for key in identity_fields}
+        values["start"] = source["_displayStart"]
+        values["end"] = source["_displayEnd"]
         values["terminalStop"] = sequence[-3:]
         values.update(fm.composition(sequence))
-        values["enc"] = fm.effective_number_of_codons(sequence)
-        values["encExpected"] = fm.expected_enc(values["gc3"])
+        values["enc"], values["encHasSubstitutedFamilies"] = (
+            fm.effective_number_of_codons_with_substitution(sequence)
+        )
+        values["encExpected"] = fm.expected_enc(fm.silent_gc3(sequence))
         values["deltaEnc"] = values["encExpected"] - values["enc"]
         values["cai"] = fm.codon_adaptation_index(sequence, cai)
         values["tai"] = fm.trna_adaptation_index(sequence, tai)
@@ -482,9 +579,18 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values.update(fm.local_gc(sequence))
         values["rscu"] = fm.rscu(sequence)
         values["codons"] = fm.pack_codons(sequence)
-        assert fm.unpack_codons(values["codons"]) + values["terminalStop"] == sequence
+        reconstructed = fm.unpack_codons(values["codons"]) + values["terminalStop"]
+        require(
+            reconstructed == sequence,
+            f"Packed CDS round trip failed for {source['id']}",
+        )
+        values["_contextStart"] = source["_contextStart"]
+        values["_contextEnd"] = source["_contextEnd"]
         genes.append(values)
-    add_context(genes)
+    add_context(genes, {seqid: len(sequence) for seqid, sequence in genomes.items()})
+    for gene in genes:
+        del gene["_contextStart"]
+        del gene["_contextEnd"]
 
     rscu_matrix = np.asarray([gene["rscu"] for gene in genes])
     scaled_rscu = StandardScaler().fit_transform(rscu_matrix)
@@ -585,7 +691,13 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
             "method": "dos Reis genomic anticodon copy number",
             "sValues": S_VALUES,
             "tRNAGeneCopies": anticodon_counts,
-            "unavailableWeightFloor": 0.01,
+            "zeroWeightSubstitution": tai_zero_substitution,
+            "zeroWeightCodons": [
+                codon
+                for codon in fm.SENSE_CODONS
+                if fm.trna_adaptiveness(codon, anticodon_counts, S_VALUES) == 0
+            ],
+            "excludedAminoAcids": ["M"],
             "lysidineConvention": (
                 "Ile-CAT is represented as LAT and decodes ATA with s=0.89; "
                 "Met-CAT remains a separate two-copy species decoding ATG"
@@ -609,6 +721,12 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         "operon": {"method": "adjacent same-strand CDS", "maximumIntergenicNt": OPERON_GAP},
         "localGcWindowNt": 30,
         "deltaEncConvention": "expected Wright neutral-curve ENC minus observed ENC",
+        "encFamilyConvention": (
+            "families with fewer than two observations use the mean F of estimable "
+            "families in the same degeneracy class; an entirely unestimable class "
+            "uses neutral F=1/k"
+        ),
+        "encExpectedGc3Convention": "GC3s over synonymous sites, excluding Met and Trp",
         "rscuAbsentFamilyConvention": "zero for every codon in an absent amino-acid family",
         "metrics": {
             key: {"label": label, "unit": unit, "desc": label}
