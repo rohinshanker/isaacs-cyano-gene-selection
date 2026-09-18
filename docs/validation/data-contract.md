@@ -43,7 +43,7 @@ and `WP_011242808.1`. So 2,715 CDSs map onto 2,711 unique proteins. Join by
 
 ## Codon packing
 
-`codons` is the per-gene coding sequence with the terminal stop removed, encoded
+`codons` is the per-gene coding sequence **with the terminal stop removed**, encoded
 one character per codon over this fixed 64-symbol alphabet:
 
 ```
@@ -57,6 +57,61 @@ index-to-codon list; the site must read it rather than recompute the ordering.
 This field is what makes recoding schemes a runtime input. Any metric that depends
 on which codons are targets is computed in the browser by scanning this string.
 
+### The terminal stop is carried separately, and it matters
+
+Because `codons` excludes the stop, the packed string alone is **lossless only for
+sense codons**. `terminalStop` carries the removed codon so the full coding sequence
+is `decode(codons) + terminalStop`.
+
+This is not bookkeeping. Stop-codon reassignment is a mainstream recoding scheme, and
+in the included set the terminal stops distribute as:
+
+| Stop | Genes |
+| --- | --- |
+| TAG | 1,071 |
+| TAA | 895 |
+| TGA | 749 |
+
+An amber-reassignment scheme (`TAG` → `TAA`) touches 1,071 genes. Computing its
+burden from `codons` alone would report zero for every gene, because no stop codon
+appears there. Always read `terminalStop` when the active scheme maps a stop codon.
+
+**Denominator rule, so numbers are comparable.** `lengthCodons` counts sense codons
+and excludes the stop. Target fraction and targets per kb use that denominator.
+A reassigned terminal stop contributes to `targetTotal` and to the edit count, but
+never to local-density windows or cluster statistics, which are defined over sense
+codons only. State the convention wherever a burden number is displayed.
+
+### Start codons
+
+`codons[0]` holds the literal initiation triplet. Across the 2,715 included genes
+these distribute as:
+
+| Start | Genes |
+| --- | --- |
+| ATG | 2,244 |
+| GTG | 356 |
+| TTG | 103 |
+| ATC, CTG, ATT | 12 combined |
+
+All of them translate as methionine at position zero regardless of the triplet's
+standard internal meaning, so a substitution there is not synonymous in effect even
+when the codon table says it is. **Never recode position zero.** The site excludes
+it from target matching and says so where burden is reported.
+
+### Discontinuous CDSs
+
+Three genes have a CDS that is a join of non-adjacent genomic segments, so their
+coding length is shorter than `end - start + 1`. For those, `cdsSegments` carries
+the explicit segment list and `translationalException` names the cause where NCBI
+records one. `M744_RS00920` is `prfB`, whose release factor 2 requires a programmed
+ribosomal frameshift; it is annotated `ribosomal_slippage`. The other two,
+`M744_RS13290` and `M744_RS13620`, are spliced without a recorded exception.
+
+Never adjust coordinates to force the span to match the coding length. A gene whose
+translation depends on a frameshift is a high-risk recoding target, and the site
+should surface that flag rather than hide it.
+
 ## Files
 
 ### `meta.json`
@@ -67,7 +122,7 @@ on which codons are targets is computed in the browser by scanning this string.
   "builtAt": "2026-09-18T20:00:00Z",
   "genome": { "accession": "GCF_000817325.1", "taxid": 1350461, "totalLength": 2744626 },
   "sourceChecksums": { "GCF_000817325.1_ASM81732v1_genomic.fna.gz": "610ceb15..." },
-  "geneCount": 2711,
+  "geneCount": 2715,
   "codonAlphabet": [ { "sym": "A", "codon": "TTT", "aa": "F" }, ... ],   // 64 entries
   "rscuOrder": [ "TTT", "TTC", ... ],          // 59 synonymous codons, column order
   "defaultReplacement": { "TCG": "AGC", ... }, // most-used synonymous codon, genome-wide
@@ -89,12 +144,16 @@ when the recoding scheme changes.
 
 ```jsonc
 {
-  "id": "M744_RS03825",          // locus tag, stable key used everywhere
+  "id": "M744_RS11720",          // locus tag, stable key used everywhere
   "name": "rpsL",                // gene symbol or null
   "product": "30S ribosomal protein S12",
   "seqid": "NZ_CP006471.1",
-  "start": 812345, "end": 813100, "strand": "+",
-  "lengthNt": 756, "lengthCodons": 251,
+  "start": 2370396, "end": 2370770, "strand": "+",
+  "lengthNt": 375, "lengthCodons": 124,
+  "terminalStop": "TAG",         // the stop codon removed from `codons`; never null
+  "translationalException": null, // or "ribosomal_slippage"
+  "cdsSegments": null,           // or [[169621,169692],[169694,170743]] when spliced
+
 
   "gc": 0.554, "gc1": 0.601, "gc2": 0.412, "gc3": 0.648,
   "a3": 0.12, "t3": 0.23, "g3": 0.34, "c3": 0.31,
