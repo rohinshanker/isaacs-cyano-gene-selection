@@ -81,6 +81,54 @@ ambiguous and silently drops the gene. Exactly four proteins are genuinely ambig
    or rendered-UI gate. The public GitHub repository currently has no remote
    branch and Pages is disabled, so no deployment exists yet.
 
+## TypeSafe candidates in this repository
+
+Standing policy is to prefer TypeSafe's System One model (Jev) over frontier-model
+credits for bounded semantic judgments. See the "TypeSafe First for Bounded Judgments"
+section of `/Users/Rohin/.codex/AGENTS.md`.
+
+**Blocked:** no API key, SDK, or MCP server exists on this machine, so nothing below
+can run yet. The skill is documentation only.
+
+Two places here qualify, and the first fixes a defect the review already found.
+
+### 1. CAI reference-set selection (`scripts/build_features.py:49-67`)
+
+The reference set is chosen by substring matching on product names, with a hand-patched
+exclusion: `"ribosomal protein" in product and "transferase" not in product`. That
+carve-out is the tell. The independent review found **two substring false positives**
+in the resulting 71-gene set, and false positives here shift CAI for every gene, since
+CAI is measured against this reference.
+
+This is a judgment pretending to be a rule. A Noul question, "is this product a
+ribosomal protein or a highly expressed housekeeping protein suitable for a CAI
+reference set", returns a calibrated probability per product with an explicit
+no-match outcome, and the threshold can be set on inspected data rather than guessed.
+
+### 2. Functional category and pathway annotation
+
+The original handoff asks for functional category and pathway as colouring dimensions,
+and they remain unimplemented. A Choice question over a defined category set covers it.
+
+Note that **394 genes, 14.5 percent, are annotated "hypothetical protein"** and carry
+no information to classify. The category set needs an explicit unknown outcome, and the
+site must not let an unknown masquerade as a category.
+
+### Cost
+
+| Measure | Value |
+| --- | --- |
+| Distinct product strings | 1,768 |
+| Approximate tokens across them | 8,200 |
+| Jev input pricing | $42 per billion tokens, output free |
+
+Even allowing generous per-question overhead across all 1,768 products, both jobs
+together cost well under one cent. Neither needs a frontier model.
+
+Validate before adopting: hand-check a sample against the current substring result,
+record the threshold and its evidence, and keep the raw probabilities so a threshold
+change does not require rerunning inference.
+
 ## Next Steps
 
 ### P0 — Make the existing contract lossless and testable
