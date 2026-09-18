@@ -710,10 +710,22 @@ def main() -> int:
     excluded = load_json(os.path.join(args.data_dir, "excluded.json"), report)
 
     if meta is not None and isinstance(genes, list):
-        spliced = spliced_loci(args.raw_dir)
+        # Prefer the data's own declaration over the raw genome. `cdsSegments` is
+        # contractual and is separately asserted to name exactly the three joined
+        # CDSs, so deriving the exemption from it lets this run on a fresh clone
+        # where data/raw is gitignored and absent. Falling back to the raw FASTA
+        # there would silently exempt nothing and report three false coordinate
+        # failures, which invites someone to "fix" correct data.
+        declared = {g["id"] for g in genes
+                    if isinstance(g, dict) and g.get("cdsSegments")}
+        spliced = declared or spliced_loci(args.raw_dir)
+        source = "declared by cdsSegments" if declared else "derived from the raw genome"
         if spliced:
             report.skip("contiguity check for spliced CDSs",
-                        f"exempt: {sorted(spliced)}")
+                        f"exempt ({source}): {sorted(spliced)}")
+        else:
+            report.skip("contiguity check for spliced CDSs",
+                        "no spliced CDSs declared and no raw genome available")
         validate_genes(genes, meta, report, spliced)
         validate_distributions(genes, meta, report)
         cross_check_against_genome(genes, meta, args.raw_dir, report)
