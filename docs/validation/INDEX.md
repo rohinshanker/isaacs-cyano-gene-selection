@@ -10,3 +10,6 @@ Reusable contracts and runbooks for this repository.
 | [candidate-comparison-and-export.md](candidate-comparison-and-export.md) | Missing-value integrity, ten distinguishable candidates, colour ramps, expression basis, and reproducible exports |
 | [annotation-release-readiness.md](annotation-release-readiness.md) | Release manifest, companion-input gates, ambiguity-preserving crosswalk, annotation evidence, GO evidence, and external-source boundaries |
 | [rna-folding.md](rna-folding.md) | Exact local ViennaRNA build, strand-aware context, cancellation/cache semantics, numeric and rendered validation |
+| [responsive-workspace.md](responsive-workspace.md) | Center-column workflow, breakpoint behavior, bounded detail scrolling, and responsive checks |
+| [guided-panel-design.md](guided-panel-design.md) | Deterministic constrained panel objective, feature/missing-data policy, golden case, and export contract |
+| [viewer-interaction-state.md](viewer-interaction-state.md) | Keyboard/touch map behavior, URL version and precedence, live navigation, and draft clearing |

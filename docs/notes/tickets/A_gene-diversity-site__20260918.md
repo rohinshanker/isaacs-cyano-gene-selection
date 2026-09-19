@@ -1,105 +1,53 @@
 # A_gene-diversity-site__20260918 — Active
 
-- **Scope**: `isaacs-cyano-gene-selection` — genome feature pipeline and the interactive
-  gene-diversity site published to GitHub Pages.
+- **Scope**: UTEX 2973 feature pipeline and interactive gene-diversity site.
 - **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 
 ## Current State
 
-Baseline established by the interactive coordinator:
+The local application is complete and integrated. It contains the release-pinned
+2,715-gene dataset; exact browser/pipeline metric parity; manifest-selected PCC
+7942 expression plus native UTEX TSS evidence; map/search/filter/detail and
+comparison workflows; reproducible shortlist export; live versioned URL state;
+keyboard/touch map controls; a deterministic guided 6–10-gene panel designer;
+and exact on-demand ViennaRNA folding for recoded shortlisted genes.
 
-- Genome downloaded and verified: RefSeq `GCF_000817325.1` (ASM81732v1),
-  *Synechococcus elongatus* UTEX 2973, taxid 1350461. All nine downloaded files
-  pass NCBI MD5. Total length 2,744,626 bp matches the assembly report exactly.
-- Content validated: 2,715 protein-coding genes, 2,723 CDS features, 2,722 CDS
-  sequences, 7 pseudogenes, 44 tRNA genes, 6 rRNA genes. One CDS is not a
-  multiple of three and two carry internal stops; these are excluded by rule.
-- Python 3.12 virtualenv at `.venv` with numpy 2.5.3, pandas 3.0.6, scipy 1.18.1,
-  scikit-learn 1.9.1, biopython 1.88, umap-learn 0.5.12, ViennaRNA 2.7.2, pytest 9.1.1.
-  ViennaRNA folding smoke-tested.
-- Data contract frozen at `docs/validation/data-contract.md`.
+The desktop workspace keeps map, comparison, the compact panel entry point,
+shortlist, and provenance together in the center column. Detail is bounded and
+sticky on wide screens and follows logical source order on narrow screens.
+Tutorials explain maps, sharing, scheme semantics, panel selection, shortlist
+flow, and RNA folding without expanding the default page.
 
-### Decisions
+Current merged verification passes:
 
-- A recoding scheme is a **codon-to-codon map**, not a set of forbidden codons.
-  Replacements prefill from genome-wide synonymous frequency and stay editable.
-- Every target-dependent metric is computed in the browser from a packed codon
-  string, so trying a new scheme never requires rerunning the pipeline.
-- RNA folding is precomputed for wild type only. Recoded folding runs on demand
-  for shortlisted candidate genes.
-- All four optional feature blocks are in scope: 5′ folding energy, codon-pair
-  scores, rare-codon runs, and genomic context.
-- The candidate comparison panel ships all three views as tabs: z-scored radar,
-  parallel coordinates, and pairwise delta.
-- Expression data comes from a published dataset that must be located and
-  validated against this annotation, not from CAI/tAI proxies.
+- 235 JavaScript tests;
+- 122 Python tests;
+- 62 contract checks with one declared spliced-CDS contiguity skip;
+- all live-genome metric/protein checks;
+- 15 release inputs and four generated annotation artifacts;
+- 15 annotation-readiness/negative tests; and
+- 24 browser/Python folding parity cases, ten-gene responsiveness/cache, all
+  folding lifecycle states, and responsive rendered checks with no overflow or
+  unexpected console errors.
 
-### Work Streams
+## Remaining Work
 
-| Stream | Owner | Issue | Branch | State |
-| --- | --- | --- | --- | --- |
-| Feature pipeline | `codex-implementer` | DEM-27 | `feat/pipeline` | running |
-| Interactive site | `claude-specialist` | DEM-28 | `feat/site` | running |
-| Expression dataset | `codex-scout` | DEM-29 | read-only | **resolved** |
-
-### Expression outcome (DEM-29, resolved 2026-09-18)
-
-No public per-gene abundance table exists for UTEX 2973. The only genuine UTEX
-transcriptomic study (Tan et al. 2018, PRJNA420395) publishes transcription-start-site
-and coverage data, not a gene-level matrix, and quantifying it needs an alignment
-pipeline that is out of scope.
-
-The best available substitute is GSE205444, measured in **PCC 7942** in a biofilm and
-conditioned-media experiment. The coordinator independently re-derived the identifier
-join and found a real defect: the four proteins encoded at two loci each caused two
-distinct PCC genes to collapse onto one UTEX tag, with candidate values differing up
-to twentyfold. All eight affected loci are excluded rather than guessed, leaving
-2,551 of 2,715 genes covered.
-
-**Decision.** Ship it as a labelled opt-in overlay, not the default axis. The
-low-traffic threshold defaults to CAI and tAI, which come from this genome. Caveats
-live in `data/expression/PROVENANCE.md`, and the loader is generic so a real UTEX
-table can replace it with no code change. This is a deviation worth the user's
-attention: they asked for real published data, and the honest finding is that the
-available data is from a different strain under unusual conditions.
-
-The site went to `claude-specialist` rather than `claude-implementer` because it
-carries live in-browser PCA, a packed-codon scan under a latency budget, and three
-comparison views. That is frontier-judgment UI work, not a clear bounded slice.
-
-Cross-provider review follows integration: `claude-reviewer` on the Codex
-pipeline patch, `codex-reviewer` on the Claude site patch.
-
-### Queued work on the site stream (DEM-28)
-
-1. **Metric alignment.** The browser recomputes CAI, tAI, ENC and codon-pair with the
-   conventions that predated the pipeline's ENC singleton and tAI fixes, so the side
-   panel shows two different values for one quantity. ENC differs by up to 24.2 units.
-   Assertions in `tools/check_live_metrics.mjs` fail until this is fixed.
-2. **Gene search by product text.** The search resolves only a locus tag today.
-   Searching `rubisco` returns a chaperone, a domain protein and an accumulation
-   factor, while missing both real subunits, which the annotation spells as `ribulose
-   bisphosphate carboxylase`. Needs product matching plus a curated alias table.
-3. **Shortlist list view.** Chips with a remove button exist; the lab wants a readable
-   list they can prune without returning to the map.
+Publication is intentionally not implicit. The repository has not been pushed
+and GitHub Pages has not been enabled because that is an external state change
+requiring explicit user authorization. The active annotation-readiness ticket
+also records optional external evidence/licensing decisions that must not be
+filled with heuristic substitutes.
 
 ## Verification
 
-Required before resolution:
-
-- Pipeline unit tests cover every metric against hand-computed fixtures.
-- ENC, CAI, tAI, and RSCU validated against an independent implementation on a
-  sample of genes.
-- Gene count assertion holds and `excluded.json` accounts for every dropped CDS.
-- Site rendered and inspected per `ui-render-inspect-repair`, across routes,
-  viewports, and states. Source inspection alone is not sufficient.
-- Scheme round-trip: applying a map and reconstructing the protein yields the
-  wild-type protein for every gene.
+To resolve this umbrella ticket, authorize the intended Git remote push and
+Pages publication, let the gated workflow pass, then record a smoke test against
+the deployed URL. Review the manual scientific/licensing decisions listed in the
+handoff before treating a generated panel as an experiment plan.
 
 ## Cleanup
 
-On resolution, distil the reusable pipeline and validation guidance into
-`docs/validation/`, update `docs/validation/INDEX.md`, delete this ticket, and
-remove its row from `docs/notes/tickets/INDEX.md`.
+After deployment validation, update only reusable runbook guidance, remove this
+ticket from the live index, and delete it.
