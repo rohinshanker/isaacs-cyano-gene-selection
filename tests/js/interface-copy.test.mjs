@@ -67,6 +67,10 @@ test('axis loadings use the shared internal table scroller', () => {
   assert.match(appHtml, /<div id="loadings" class="table-scroll"><\/div>/);
 });
 
+test('completed export statuses wrap their collision-resistant identifiers', () => {
+  assert.match(appCss, /#shortlist > \.panel-note\[role="status"\],\s*\.panel-export > \.panel-note\[role="status"\]\s*\{\s*overflow-wrap: anywhere;\s*\}/);
+});
+
 test('pairwise comparison leads with the signed result and keeps raw values available', () => {
   assert.deepEqual(
     DELTA_COLUMNS.map(({ key, label }) => [key, label]),

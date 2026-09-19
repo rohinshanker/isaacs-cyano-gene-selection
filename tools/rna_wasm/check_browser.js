@@ -104,6 +104,21 @@ async (page) => {
     check(parity.cacheHits === 10 && parity.errors.length === 0, 'ten-gene cache/results');
     check(parity.measuredCacheHits === 0, 'warmed-engine workload must perform ten real folds');
 
+    // The completed export status contains collision-resistant filenames and IDs;
+    // keep that real long-token state inside the narrow shortlist card.
+    await page.getByRole('button', { name: 'Export CSV and manifest', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#shortlist > [role="status"]')
+      ?.textContent.startsWith('Exported'));
+
+    // Generate and export a real panel too; its separate status carries the same
+    // long filename and manifest-ID shape as the shortlist exporter.
+    const designer = page.getByRole('region', { name: 'Design a panel' });
+    await designer.locator('summary').first().click();
+    await designer.getByRole('button', { name: 'Design panel', exact: true }).click();
+    await designer.getByRole('button', { name: 'Export panel and manifest', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('.panel-export > [role="status"]')
+      ?.textContent.startsWith('Exported'));
+
     // Keep the wide axis-loadings table open so it cannot leak width into the document.
     await page.locator('#loadings-details').evaluate((element) => { element.open = true; });
 
@@ -276,7 +291,7 @@ async (page) => {
     check(uncovered.length === 0, `UI module has uncovered source lines: ${uncovered.join(', ')}`);
     check(diagnostics.length === 0, JSON.stringify(diagnostics));
     return { parity, lifecycle, searchInteractions, uiCoverage: { uncoveredLines: uncovered }, semanticSnapshot,
-      diagnostics, states: ['success', 'cache', 'tutorial', 'loading', 'cancelled', 'offline', 'partial', 'unsupported', 'empty'] };
+      diagnostics, states: ['success', 'cache', 'shortlist-exported', 'panel-exported', 'tutorial', 'loading', 'cancelled', 'offline', 'partial', 'unsupported', 'empty'] };
   } finally {
     // A failed assertion must not poison the next run with an active profiler,
     // a blocked route, or an offline browser.

@@ -602,6 +602,8 @@ input[type="range"] { width: 100%; }
   font-variant-numeric: tabular-nums;
 }
 .shortlist-row > .chip-button { flex: 0 0 auto; }
+#shortlist > .panel-note[role="status"],
+.panel-export > .panel-note[role="status"] { overflow-wrap: anywhere; }
 
 /* A locus tag is an identifier the reader copies, so it reads as one. */
 .locus-tag { font-family: var(--mono); }
