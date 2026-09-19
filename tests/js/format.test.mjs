@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatValue, formatDelta, formatPercentile, formatCount, formatSpan, csvField, MISSING,
-  ordinalSuffix,
+  formatValue, formatDelta, formatExpressionSource, formatPercentile, formatCount,
+  formatSpan, csvField, MISSING, ordinalSuffix,
 } from '../../site/js/ui/format.js';
 
 test('a missing value renders as an em-space, never as zero', () => {
@@ -59,4 +59,13 @@ test('counts, spans, and CSV fields are shaped for reading and for machines', ()
   assert.equal(csvField('say "hi"'), '"say ""hi"""');
   assert.equal(csvField(null), '');
   assert.equal(csvField(undefined), '');
+});
+
+test('expression provenance formats coverage counts for the interface', () => {
+  const source = {
+    organism: 'Synechococcus elongatus PCC 7942',
+    isTargetOrganism: false,
+    coverage: { withValue: 2551, total: 2715 },
+  };
+  assert.match(formatExpressionSource(source), /2,551 of 2,715 genes carry a value/);
 });

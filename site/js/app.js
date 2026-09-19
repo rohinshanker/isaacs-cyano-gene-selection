@@ -9,7 +9,7 @@ import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillRepla
 import { computeLiveMetrics } from './core/live-metrics.js';
 import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
-  buildMetricRegistry, rebindLiveMetrics, metricValues, describeExpressionSource,
+  buildMetricRegistry, rebindLiveMetrics, metricValues,
   expressionBasisOf, expressionBasisCounts, isExpressionMetric, isExpressionProxyMetric,
 } from './core/metric-registry.js';
 import {
@@ -28,7 +28,7 @@ import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
 import { ComparePanel } from './ui/compare.js';
 import { PanelDesigner } from './ui/panel-designer.js';
-import { formatCount } from './ui/format.js';
+import { formatCount, formatExpressionSource } from './ui/format.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
@@ -330,7 +330,7 @@ function renderMap() {
       missingCount: missing,
       hiddenCount: context.dataset.genes.length - context.passing,
       showHidden: state.showHidden,
-      provenanceNote: describeExpressionSource(metric.provenance),
+      provenanceNote: formatExpressionSource(metric.provenance),
       basisCounts: isMeasuredExpressionMetric
         ? expressionBasisCounts(context.dataset.genes, metric) : null,
     });
@@ -739,7 +739,7 @@ function renderProvenance() {
   }
 
   if (provenance.expressionSource) {
-    add('Expression data', describeExpressionSource(provenance.expressionSource));
+    add('Expression data', formatExpressionSource(provenance.expressionSource));
   }
   if (provenance.genesWithoutTerminalStop > 0) {
     add('Terminal stops', `${formatCount(provenance.genesWithoutTerminalStop)} genes carry no `

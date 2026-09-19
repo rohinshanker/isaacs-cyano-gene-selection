@@ -6,9 +6,12 @@
  * the genome, because a bare number does not tell a bench scientist whether the
  * value is unusual.
  */
-import { formatValue, formatDelta, formatPercentile, formatCount, formatSpan, MISSING } from './format.js';
 import {
-  describeExpressionSource, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
+  formatValue, formatDelta, formatPercentile, formatCount, formatExpressionSource,
+  formatSpan, MISSING,
+} from './format.js';
+import {
+  isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
 } from '../core/metric-registry.js';
 import { annotationEvidenceModel } from '../core/annotation-evidence.js';
 
@@ -294,7 +297,7 @@ export class SidePanel {
           noteCell.colSpan = 3;
           noteCell.className = metric.provenance.isTargetOrganism === false
             ? 'provenance-warning' : 'panel-note';
-          noteCell.textContent = describeExpressionSource(metric.provenance);
+          noteCell.textContent = formatExpressionSource(metric.provenance);
           noteRow.append(noteCell);
           body.append(noteRow);
         }

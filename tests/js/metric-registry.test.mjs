@@ -108,6 +108,10 @@ test('an expression metric carries the provenance the interface must display', a
   assert.match(sentence, /different organism/);
   assert.match(sentence, /2551 of 2715/);
   assert.match(sentence, /rough guide/);
+  assert.match(
+    describeExpressionSource(expressionSource, (value) => Number(value).toLocaleString('en-US')),
+    /2,551 of 2,715/,
+  );
   assert.equal(describeExpressionSource(null), null);
 });
 

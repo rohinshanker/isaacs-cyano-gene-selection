@@ -189,9 +189,10 @@ function normalizeExpressionSource(source) {
  * The interface shows this next to the value rather than in a tooltip, because a
  * measurement from another strain must not be mistaken for this genome's own.
  * @param {object|null} source a `meta.expressionSource` or `meta.expressionSources` entry.
+ * @param {(value: number) => string} [formatCoverageCount] optional presentation formatter.
  * @returns {string|null}
  */
-export function describeExpressionSource(source) {
+export function describeExpressionSource(source, formatCoverageCount = String) {
   const normalized = normalizeExpressionSource(source);
   if (!normalized) return null;
   const parts = [];
@@ -201,7 +202,8 @@ export function describeExpressionSource(source) {
   if (normalized.condition) parts.push(`Condition: ${normalized.condition}.`);
   if (normalized.units) parts.push(`Values are ${normalized.units}.`);
   if (normalized.coverage?.total) {
-    parts.push(`${normalized.coverage.withValue} of ${normalized.coverage.total} genes carry a value; `
+    parts.push(`${formatCoverageCount(normalized.coverage.withValue)} of `
+      + `${formatCoverageCount(normalized.coverage.total)} genes carry a value; `
       + 'the rest are unknown, not zero.');
   }
   if (normalized.id) parts.push(`Source: ${normalized.id}.`);

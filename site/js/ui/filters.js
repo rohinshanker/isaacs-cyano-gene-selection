@@ -9,10 +9,10 @@
  * the user says otherwise and the count is always visible.
  */
 import {
-  isExpressionMetric, isExpressionProxyMetric, metricValues, describeExpressionSource,
+  isExpressionMetric, isExpressionProxyMetric, metricValues,
   expressionSourceScope,
 } from '../core/metric-registry.js';
-import { formatCount, formatValue } from './format.js';
+import { formatCount, formatExpressionSource, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
 
 const HISTOGRAM_BINS = 44;
@@ -272,7 +272,7 @@ export class FilterPanel {
       const notice = document.createElement('p');
       notice.className = metric.provenance?.isTargetOrganism === false
         ? 'provenance-warning' : 'panel-note';
-      notice.textContent = describeExpressionSource(metric.provenance)
+      notice.textContent = formatExpressionSource(metric.provenance)
         ?? 'This expression measurement carries no recorded provenance, so treat it with care.';
       this.trafficHost.append(notice);
     } else if (isExpressionProxyMetric(metric)) {
@@ -477,7 +477,7 @@ export class FilterPanel {
         const notice = document.createElement('p');
         notice.className = metric.provenance.isTargetOrganism === false
           ? 'provenance-warning' : 'panel-note';
-        notice.textContent = describeExpressionSource(metric.provenance);
+        notice.textContent = formatExpressionSource(metric.provenance);
         row.append(notice);
       }
 

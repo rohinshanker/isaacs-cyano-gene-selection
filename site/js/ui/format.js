@@ -1,4 +1,5 @@
 /** Value formatting. A missing value is an em-space, never a zero. */
+import { describeExpressionSource } from '../core/metric-registry.js';
 
 /** What a null or non-finite metric renders as, per the data contract. */
 export const MISSING = ' ';
@@ -51,6 +52,11 @@ export function formatPercentile(fraction) {
 /** Whole numbers with thousands separators. */
 export function formatCount(value) {
   return Number(value).toLocaleString('en-US');
+}
+
+/** Expression provenance copy with coverage counts formatted for the interface. */
+export function formatExpressionSource(source) {
+  return describeExpressionSource(source, formatCount);
 }
 
 /** Genome coordinates as `812,345-813,100 (+)`. */
