@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "GCF_000817325.1-RS_2026_05_13",
+  "retrievedDate": "2026-09-18",
+  "sources": [
+    {
+      "id": "utex2973-refseq",
+      "organism": "Synechococcus elongatus UTEX 2973",
+      "taxid": 1350461,
+      "assemblyAccession": "GCF_000817325.1",
+      "assemblyName": "ASM81732v1",
+      "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+      "annotationDate": "2026-05-13",
+      "pgapVersion": "6.11",
+      "baseUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1",
+      "files": [
+        {
+          "role": "assembly-report",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_assembly_report.txt",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_assembly_report.txt",
+          "byteSize": 1478,
+          "md5": "659d6c6910aea558d426fce4d096a87c",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "coding-sequences",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_cds_from_genomic.fna.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_cds_from_genomic.fna.gz",
+          "byteSize": 872748,
+          "md5": "ebd0cc91df6f3f49e3cb9209c23bac5d",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "feature-table",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_feature_table.txt.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_feature_table.txt.gz",
+          "byteSize": 129434,
+          "md5": "b9969b40b83fb6be3ece8d352ad38cb9",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "genome-fasta",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_genomic.fna.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_genomic.fna.gz",
+          "byteSize": 815693,
+          "md5": "610ceb15a9859046e143d80915d4c984",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "genbank-annotation",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_genomic.gbff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_genomic.gbff.gz",
+          "byteSize": 2046735,
+          "md5": "fc86ce730ae02cc1cbad14129d50cd45",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "gff-annotation",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+          "byteSize": 240383,
+          "md5": "61d1557c71a39db3f0cbf3a82ad341a5",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "protein-fasta",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_protein.faa.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_protein.faa.gz",
+          "byteSize": 534154,
+          "md5": "f6484effe55411383e9ec4d5fe84d684",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "rna-sequences",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_rna_from_genomic.fna.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_rna_from_genomic.fna.gz",
+          "byteSize": 4912,
+          "md5": "a29fe725560677df5f547455fd548110",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "translated-coding-sequences",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_translated_cds.faa.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_translated_cds.faa.gz",
+          "byteSize": 616206,
+          "md5": "8f0c8c66f3f83463fcb7fe4d450344c4",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        },
+        {
+          "role": "annotation-hashes",
+          "localPath": "data/annotation/source/annotation_hashes.txt",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/annotation_hashes.txt",
+          "byteSize": 410,
+          "md5": "8c25b76dc159d9615e3bf2fff0c51e51",
+          "retention": "tracked-release-gate",
+          "redistribution": "NCBI data usage policies; source bytes retained for release-hash validation"
+        },
+        {
+          "role": "assembly-statistics",
+          "localPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_assembly_stats.txt",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_assembly_stats.txt",
+          "byteSize": 8094,
+          "md5": "574a87d0a2d21547f9199a163b4a0f89",
+          "retention": "tracked-release-gate",
+          "redistribution": "NCBI data usage policies; source bytes retained for assembly identity and length validation"
+        },
+        {
+          "role": "feature-counts",
+          "localPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_feature_count.txt",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_feature_count.txt",
+          "byteSize": 1173,
+          "md5": "6119b4e6f75cd482197d7a260532f7bc",
+          "retention": "tracked-release-gate",
+          "redistribution": "NCBI data usage policies; source bytes retained for feature-count reconciliation"
+        },
+        {
+          "role": "go-annotations",
+          "localPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_gene_ontology.gaf.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_gene_ontology.gaf.gz",
+          "byteSize": 105088,
+          "md5": "151ad9c3a212f588d10d5ca89ad1f0b3",
+          "retention": "tracked-derived-feature-input",
+          "redistribution": "NCBI data usage policies; source bytes retained to reproduce evidence-coded GO relationships"
+        },
+        {
+          "role": "protein-genpept",
+          "localPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_protein.gpff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_protein.gpff.gz",
+          "byteSize": 1685646,
+          "md5": "8782c5a9d6ec6edce34c5dc74b884a69",
+          "retention": "tracked-derived-feature-input",
+          "redistribution": "NCBI data usage policies; source bytes retained to reproduce protein-name evidence"
+        }
+      ]
+    },
+    {
+      "id": "pcc7942-refseq-crosswalk",
+      "organism": "Synechococcus elongatus PCC 7942",
+      "taxid": 1140,
+      "assemblyAccession": "GCF_000012525.1",
+      "assemblyName": "ASM1252v1",
+      "annotationRelease": "GCF_000012525.1-RS_2025_04_10",
+      "annotationDate": "2025-04-10",
+      "pgapVersion": "6.10",
+      "baseUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1",
+      "files": [
+        {
+          "role": "pcc7942-crosswalk-gff",
+          "localPath": "data/annotation/source/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+          "byteSize": 238918,
+          "md5": "c7072d2dda95b751e24769db2e35686c",
+          "retention": "tracked-derived-feature-input",
+          "redistribution": "NCBI data usage policies; source bytes retained to reproduce PCC 7942 identifier relationships"
+        }
+      ]
+    }
+  ]
+}

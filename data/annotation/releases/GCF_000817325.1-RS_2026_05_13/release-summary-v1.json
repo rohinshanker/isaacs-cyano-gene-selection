@@ -1,0 +1,56 @@
+{
+  "counts": {
+    "annotationEvidenceRecords": 2776,
+    "crosswalkRelationships": 22356,
+    "discontinuousCdsLoci": 3,
+    "goAmbiguousRelationships": 24,
+    "goMappedLoci": 1584,
+    "goMappedRelationships": 3898,
+    "goSourceRecords": 3886,
+    "goUniqueTerms": 1120,
+    "goUnmatchedProteinIds": 0,
+    "lociWithNearbyNoncodingRna": 93,
+    "lociWithOverlappingCds": 715,
+    "nearbyNoncodingRnaRelationships": 100,
+    "overlappingCdsPairs": 401,
+    "partialLoci": 4,
+    "pccAmbiguousCurrentRelationships": 16,
+    "pccCurrentRelationships": 2656,
+    "pccLegacyRelationships": 2567,
+    "pccMappedSourceLoci": 2648,
+    "pccMappedTargetLoci": 2648,
+    "proteinNameEvidenceLoci": 2301,
+    "pseudogenes": 7,
+    "sharedProteinIds": 4,
+    "translationalExceptionLoci": 1
+  },
+  "discontinuousCdsLoci": [
+    "M744_RS00920",
+    "M744_RS13290",
+    "M744_RS13620"
+  ],
+  "generatedFiles": {
+    "annotation-evidence-v1.jsonl": {
+      "byteSize": 2326094,
+      "sha256": "0d1abeddd104b281f54ae657d0bcd43cc25ac935abacb290fae1a20341c36cf7"
+    },
+    "go-annotations-v1.tsv": {
+      "byteSize": 544230,
+      "sha256": "0d91f6654e7ec03a31306e571f781c58e0a7d3287308a68865121cca70a6935c"
+    },
+    "identifier-crosswalk-v1.tsv": {
+      "byteSize": 3333032,
+      "sha256": "97e3022e53cd1e31f5931ead37f425e1d99c032704e5ff8f02c0d75d1755e9ae"
+    }
+  },
+  "manifest": "data/manifest/annotation-release-v1.json",
+  "nearbyNoncodingRnaMaxDistanceNt": 250,
+  "releaseId": "GCF_000817325.1-RS_2026_05_13",
+  "schemaVersion": 1,
+  "sharedProteinIds": [
+    "WP_011242480.1",
+    "WP_011242807.1",
+    "WP_011242808.1",
+    "WP_011243185.1"
+  ]
+}

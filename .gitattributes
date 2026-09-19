@@ -1,0 +1,3 @@
+# Retained NCBI source artifacts must remain byte-identical to their manifest
+# checksums on every platform, including the upstream CRLF text files.
+data/annotation/source/** binary

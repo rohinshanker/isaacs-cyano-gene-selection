@@ -34,6 +34,20 @@ jobs:
           chmod +x tools/fetch_genome.sh
           ./tools/fetch_genome.sh data/raw
 
+      # This gate is driven by the release manifest, not by the downloader's
+      # file list. It checks all core and retained companion inputs, the pinned
+      # RefSeq/PGAP releases, and deterministic annotation artifacts.
+      - name: Verify pinned annotation release
+        run: |
+          python3 tools/annotation_release.py verify
+          python3 tools/annotation_release.py check
+
+      # Standard-library negative tests run before installing pipeline
+      # dependencies, keeping checksum/release failures independent of pytest
+      # or scientific-package resolution.
+      - name: Run annotation readiness and negative-fixture tests
+        run: python3 -m unittest discover -s tests/readiness -p 'test_*.py'
+
       # validate_contract.py uses only the standard library on purpose, so the
       # gate cannot be broken by a dependency resolution failure.
       - name: Validate generated data against the contract
