@@ -3,7 +3,7 @@
 - **Scope**: Release-pinned annotation, external biological evidence, and gated publication.
 - **Status**: active
 - **Opened**: 2026-09-18
-- **Updated**: 2026-09-18
+- **Updated**: 2026-09-19
 
 ## Current State
 
@@ -23,6 +23,12 @@ non-coding-RNA relationships, seven pseudogenes, four partial loci, inference
 strings, replicon identity, and 895 loci with EC evidence. Exact PCC 7942 mapping
 covers 2,648 UTEX loci and labels every ambiguous relationship.
 
+The site build now verifies and exact-joins the release evidence into a separate
+annotation payload for all 2,715 displayed genes. Gene detail presents it in a
+collapsed disclosure with coordinate-evidence and GO interpretation guidance;
+the core gene payload remains under its 6 MB budget. GO Consortium attribution,
+CC BY 4.0 terms, release identity, and checksums travel with the site metadata.
+
 Expression is selected by manifest rather than file presence. The PCC 7942
 GSE205444 overlay remains visibly borrowed and opt-in; the native UTEX 2973 TSS
 source remains a TSS signal rather than being mislabelled as abundance. Missing
@@ -36,9 +42,9 @@ variants, and runs the JavaScript and Python suites before upload.
 
 Reusable procedures are in
 `docs/validation/annotation-release-readiness.md` and the other validation
-runbooks. Current local verification: 15 inputs, four generated artifacts, 15
-readiness tests, 62 contract checks with one declared spliced-CDS skip, 122
-Python tests, 235 JavaScript tests, and all live-genome checks pass.
+runbooks. Current local verification: 15 inputs, four generated artifacts, 18
+readiness tests, 62 contract checks with one declared spliced-CDS skip, 132
+Python tests, 245 JavaScript tests, and all live-genome checks pass.
 
 ## Remaining External Decisions
 
