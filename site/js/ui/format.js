@@ -25,13 +25,27 @@ export function formatDelta(metric, value) {
   return '0';
 }
 
+/**
+ * The English ordinal suffix for a whole number: 1st, 2nd, 3rd, 4th, and the
+ * eleven-to-thirteen exceptions that take "th" despite their last digit.
+ */
+export function ordinalSuffix(value) {
+  const n = Math.abs(Math.round(value));
+  if (n % 100 >= 11 && n % 100 <= 13) return 'th';
+  if (n % 10 === 1) return 'st';
+  if (n % 10 === 2) return 'nd';
+  if (n % 10 === 3) return 'rd';
+  return 'th';
+}
+
 /** A percentile as a plain-language rank. */
 export function formatPercentile(fraction) {
   if (!Number.isFinite(fraction)) return MISSING;
   const percent = fraction * 100;
   if (percent >= 99.5) return 'top 1%';
   if (percent <= 0.5) return 'bottom 1%';
-  return `${percent.toFixed(0)}th pct`;
+  const whole = Number(percent.toFixed(0));
+  return `${whole}${ordinalSuffix(whole)} pct`;
 }
 
 /** Whole numbers with thousands separators. */

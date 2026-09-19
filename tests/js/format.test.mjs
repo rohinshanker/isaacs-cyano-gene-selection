@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   formatValue, formatDelta, formatPercentile, formatCount, formatSpan, csvField, MISSING,
+  ordinalSuffix,
 } from '../../site/js/ui/format.js';
 
 test('a missing value renders as an em-space, never as zero', () => {
@@ -32,9 +33,22 @@ test('deltas carry an explicit sign', () => {
 
 test('percentiles read as plain rank language', () => {
   assert.equal(formatPercentile(0.78), '78th pct');
+  // A rank reads as English: 1st, 2nd, 3rd, and the eleven-to-thirteen exceptions.
+  assert.equal(formatPercentile(0.01), '1st pct');
+  assert.equal(formatPercentile(0.02), '2nd pct');
+  assert.equal(formatPercentile(0.03), '3rd pct');
+  assert.equal(formatPercentile(0.04), '4th pct');
+  assert.equal(formatPercentile(0.11), '11th pct');
+  assert.equal(formatPercentile(0.12), '12th pct');
+  assert.equal(formatPercentile(0.13), '13th pct');
+  assert.equal(formatPercentile(0.21), '21st pct');
+  assert.equal(formatPercentile(0.22), '22nd pct');
+  assert.equal(formatPercentile(0.23), '23rd pct');
   assert.equal(formatPercentile(0.999), 'top 1%');
   assert.equal(formatPercentile(0.001), 'bottom 1%');
   assert.equal(formatPercentile(NaN), MISSING);
+  assert.deepEqual([1, 2, 3, 4, 11, 12, 13, 101, 111].map(ordinalSuffix),
+    ['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'st', 'th']);
 });
 
 test('counts, spans, and CSV fields are shaped for reading and for machines', () => {

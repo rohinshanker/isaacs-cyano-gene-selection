@@ -27,6 +27,7 @@ import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
 import { ComparePanel } from './ui/compare.js';
+import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount } from './ui/format.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
@@ -229,6 +230,7 @@ let sidePanel = null;
 let shortlistPanel = null;
 let searchResults = null;
 let comparePanel = null;
+let panelDesigner = null;
 let timingHandle = 0;
 
 function updateTiming() {
@@ -392,6 +394,20 @@ function renderAll({ schemeErrors = [] } = {}) {
     registry: context.registry,
     tab: state.compareTab,
   });
+  if (panelDesigner) {
+    panelDesigner.update({
+      dataset: context.dataset,
+      registry: context.registry,
+      shortlist: state.shortlist,
+      pinnedId: state.pinnedId,
+      schemes: {
+        active: { name: state.schemeName, map: state.schemeMap },
+        saved: Object.entries(store.read(STORAGE_SCHEMES, {}))
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([name, map]) => ({ name, map })),
+      },
+    });
+  }
   persist();
 }
 
@@ -801,6 +817,7 @@ async function boot() {
   element('load-status').hidden = true;
   element('main').hidden = false;
   element('compare-section').hidden = false;
+  element('panel-section').hidden = false;
   element('site-footer').hidden = false;
 
   plot = new ScatterPlot(element('map-canvas'), {
@@ -952,6 +969,21 @@ async function boot() {
     onTabChange: (tab) => {
       state.compareTab = tab;
       persist();
+    },
+  });
+
+  panelDesigner = new PanelDesigner(element('panel-designer'), {
+    onSelect: (id) => {
+      const index = context.dataset.indexById.get(id);
+      if (index !== undefined) setPinned(index);
+    },
+    onAnnounce: announce,
+    onShortlist: (ids) => {
+      const added = ids.filter((id) => !state.shortlist.includes(id));
+      state.shortlist = [...state.shortlist, ...added];
+      renderAll();
+      announce(`${formatCount(added.length)} gene${added.length === 1 ? '' : 's'} added to the `
+        + `shortlist. ${formatCount(state.shortlist.length)} in total.`);
     },
   });
 
