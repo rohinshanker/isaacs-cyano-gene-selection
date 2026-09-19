@@ -161,6 +161,18 @@ test('a borrowed measurement stays out of the space until it is switched on', as
   assert.deepEqual(allowed.borrowed, [expression.key]);
 });
 
+test('the default space adds one borrowed-source representative only after opt-in', async () => {
+  const { dataset, registry } = await context();
+  const withheld = buildPanelSpace({ dataset, registry });
+  const allowed = buildPanelSpace({ dataset, registry, allowBorrowed: true });
+
+  assert.ok(!withheld.keys.includes('expression'));
+  assert.ok(!withheld.keys.includes('expressionPercentile'));
+  assert.ok(allowed.keys.includes('expression'));
+  assert.ok(!allowed.keys.includes('expressionPercentile'));
+  assert.deepEqual(allowed.borrowed, ['expression']);
+});
+
 test('each selected scheme contributes its own per-scheme features', async () => {
   const { dataset, registry } = await context();
   const compiled = compileScheme(SYN61, dataset.table);

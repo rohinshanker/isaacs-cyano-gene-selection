@@ -62,6 +62,7 @@ test('the design round-trips through its manifest and rebuilds the same panel', 
   const restored = readPanelDesign(manifest);
 
   assert.equal(manifest.panelDesign.panelDesignVersion, PANEL_DESIGN_VERSION);
+  assert.equal(manifest.panelDesign.eligibleGeneCount, design.eligibility.pool.length);
   assert.deepEqual(restored.selected, design.selected);
   assert.equal(restored.config.size, 9);
   assert.deepEqual(restored.config.seeds, config.seeds);

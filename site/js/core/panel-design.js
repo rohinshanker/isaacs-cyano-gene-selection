@@ -111,7 +111,9 @@ function rangeText(metric, range) {
   const parts = [];
   if (Number.isFinite(range.min)) parts.push(`at least ${range.min}`);
   if (Number.isFinite(range.max)) parts.push(`at most ${range.max}`);
-  const body = parts.length > 0 ? parts.join(' and ') : 'any value';
+  const body = parts.length > 0
+    ? parts.join(' and ')
+    : range.includeMissing ? 'any value' : 'with a recorded value';
   return `${metric.label} ${body}`;
 }
 
@@ -141,7 +143,9 @@ export function resolveConstraints({ registry, config }) {
       max: Number.isFinite(range?.max) ? Number(range.max) : null,
       includeMissing: range?.includeMissing !== false,
     };
-    if (normalised.min === null && normalised.max === null) continue;
+    // No numeric bounds still expresses a real constraint when the reader asks
+    // to require a recorded value. Only a completely permissive row is inert.
+    if (normalised.min === null && normalised.max === null && normalised.includeMissing) continue;
     // A live metric is whatever the currently active scheme makes it, so a hard
     // constraint on one would mean something different the moment the scheme
     // changed. Constraints stay on the scheme-independent published metrics.

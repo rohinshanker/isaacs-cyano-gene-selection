@@ -232,6 +232,25 @@ test('unknown is not out of range unless the reader says a value is required', a
   assert.match(dropped.rejections.get(withoutValue).join(' '), /has no value/);
 });
 
+test('require a value remains active without numeric bounds', async () => {
+  const { dataset, registry } = await context();
+  const mfe = registry.byKey.get('mfeStart');
+  const withoutValue = dataset.genes.findIndex((_, i) => !Number.isFinite(mfe.read(i)));
+  assert.ok(withoutValue >= 0, 'the fixture should contain a gene with no folding energy');
+
+  const config = normaliseConfig({
+    ranges: { mfeStart: { min: null, max: null, includeMissing: false } },
+  });
+  const constraints = resolveConstraints({ registry, config });
+  const range = constraints.active.find((entry) => entry.id === 'range:mfeStart');
+  assert.ok(range);
+  assert.match(range.label, /recorded value/);
+
+  const eligible = eligibleGenes({ dataset, config, constraints: constraints.active });
+  assert.ok(!eligible.pool.includes(withoutValue));
+  assert.match(eligible.rejections.get(withoutValue).join(' '), /requires one/);
+});
+
 test('borrowed expression is refused until it is switched on, and labelled when it is', async () => {
   const { registry } = await context();
   const config = normaliseConfig({

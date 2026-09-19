@@ -148,6 +148,11 @@ export function buildMetricRegistry(meta, genes, liveFields) {
   const metrics = [];
   const declaredButMissing = [];
   const sample = genes.slice(0, Math.min(genes.length, 200));
+  const expressionSources = new Map(
+    (meta.expressionSources ?? [])
+      .filter((source) => source && typeof source.metricKey === 'string')
+      .map((source) => [source.metricKey, source]),
+  );
 
   for (const [key, definition] of Object.entries(meta.metrics ?? {})) {
     const present = sample.some((gene) => typeof gene[key] === 'number' && Number.isFinite(gene[key]));
@@ -175,7 +180,14 @@ export function buildMetricRegistry(meta, genes, liveFields) {
     // A measured expression metric carries its provenance so every place that
     // shows it can say where it came from. The proxy is this genome's own.
     if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-      metric.provenance = meta.expressionSource ?? null;
+      // Prefer the per-metric manifest. A derived percentile inherits the
+      // source of its raw measurement. `expressionSource` is the legacy single-
+      // source declaration and applies only to that raw field and its rank.
+      const rawKey = key.replace(/Percentile$/i, '');
+      metric.provenance = expressionSources.get(key)
+        ?? expressionSources.get(rawKey)
+        ?? (rawKey === 'expression' ? meta.expressionSource : null)
+        ?? null;
     }
     metrics.push(metric);
   }

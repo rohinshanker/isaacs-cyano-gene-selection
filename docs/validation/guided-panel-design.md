@@ -33,7 +33,10 @@ constraints keep an unknown by default unless **require a value** is selected.
 
 Translational exceptions and overlapping/discontinuous loci are excluded by
 default. Borrowed PCC 7942 expression is absent from the space and constraints
-until explicitly enabled, and remains labelled as another-organism evidence.
+until explicitly enabled. Enabling it adds one raw representative of that
+source to the default feature space (never both the raw value and its derived
+percentile), and it remains labelled as another-organism evidence. Native UTEX
+2973 TSS initiation stays available without that opt-in.
 
 ## Export contract
 

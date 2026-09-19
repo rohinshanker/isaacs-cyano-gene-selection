@@ -71,6 +71,32 @@ export function isBorrowedMetric(metric) {
   return isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
 }
 
+/**
+ * Curated default features plus one representative of each borrowed expression
+ * source when the reader explicitly opts in. A raw measurement wins over a
+ * percentile derived from the same values, so one source cannot count twice.
+ */
+export function defaultBaselineFeatures(registry, allowBorrowed = false) {
+  const keys = [...DEFAULT_BASELINE_FEATURES];
+  if (!allowBorrowed) return keys;
+
+  const representatives = new Map();
+  for (const metric of registry.metrics ?? []) {
+    if (metric.source !== 'pipeline' || !isBorrowedMetric(metric)) continue;
+    const group = metric.provenance
+      ?? metric.key.replace(/Percentile$/i, '').toLowerCase();
+    const previous = representatives.get(group);
+    const isDerivedRank = /percentile/i.test(`${metric.key} ${metric.label}`);
+    if (!previous || (previous.isDerivedRank && !isDerivedRank)) {
+      representatives.set(group, { key: metric.key, isDerivedRank });
+    }
+  }
+  for (const { key } of representatives.values()) {
+    if (!keys.includes(key)) keys.push(key);
+  }
+  return keys;
+}
+
 function columnPercentiles(read, count) {
   const raw = new Float64Array(count);
   for (let i = 0; i < count; i += 1) raw[i] = read(i);
@@ -99,7 +125,7 @@ function columnPercentiles(read, count) {
  */
 export function buildPanelSpace({
   dataset, registry, schemes = [], schemeFields = new Map(),
-  baselineFeatures = DEFAULT_BASELINE_FEATURES,
+  baselineFeatures,
   schemeFeatures = DEFAULT_SCHEME_FEATURES,
   allowBorrowed = false,
 } = {}) {
@@ -107,8 +133,10 @@ export function buildPanelSpace({
   const columns = [];
   const dropped = [];
   const borrowed = [];
+  const selectedBaselineFeatures = baselineFeatures
+    ?? defaultBaselineFeatures(registry, allowBorrowed);
 
-  for (const key of baselineFeatures) {
+  for (const key of selectedBaselineFeatures) {
     const metric = registry.byKey.get(key);
     if (!metric) {
       dropped.push({ key, reason: `${key} is not in this dataset.` });

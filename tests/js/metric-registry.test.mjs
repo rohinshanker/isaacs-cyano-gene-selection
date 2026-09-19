@@ -95,6 +95,40 @@ test('an expression metric carries the provenance the interface must display', a
   assert.equal(describeExpressionSource(null), null);
 });
 
+test('expression provenance is resolved per metric source', async () => {
+  const dataset = await fixtureDataset();
+  const genes = dataset.genes.map((gene, index) => ({
+    ...gene,
+    expression: index + 1,
+    expressionPercentile: (index + 1) / dataset.genes.length,
+    tssInitiation: index + 2,
+  }));
+  const borrowed = {
+    id: 'BORROWED', metricKey: 'expression', isTargetOrganism: false,
+    organism: 'another strain',
+  };
+  const native = {
+    id: 'NATIVE', metricKey: 'tssInitiation', isTargetOrganism: true,
+    organism: 'this strain',
+  };
+  const meta = {
+    ...dataset.meta,
+    expressionSource: borrowed,
+    expressionSources: [borrowed, native],
+    metrics: {
+      ...dataset.meta.metrics,
+      expression: { label: 'Expression', family: 'Expression' },
+      expressionPercentile: { label: 'Expression percentile', family: 'Expression' },
+      tssInitiation: { label: 'TSS initiation', family: 'Expression' },
+    },
+  };
+  const registry = buildMetricRegistry(meta, genes, dataset.baseline);
+
+  assert.equal(registry.byKey.get('expression').provenance, borrowed);
+  assert.equal(registry.byKey.get('expressionPercentile').provenance, borrowed);
+  assert.equal(registry.byKey.get('tssInitiation').provenance, native);
+});
+
 test('a measurement from this organism is described as such', () => {
   const sentence = describeExpressionSource({
     organismMeasured: 'Synechococcus elongatus UTEX 2973',

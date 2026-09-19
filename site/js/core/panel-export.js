@@ -102,7 +102,7 @@ function designBlock(design, space) {
     constraintsBlocked: constraints.blocked.map((entry) => ({
       id: entry.id, label: entry.label, reason: entry.reason,
     })),
-    eligibleGeneCount: design.pool.length + design.indices.length,
+    eligibleGeneCount: design.eligibility.pool.length,
     feasible: design.feasible,
     shortfall: design.shortfall,
     problems: design.problems,
