@@ -1,7 +1,7 @@
-# O_map-input-accessibility__20260918 — Open
+# A_map-input-accessibility__20260918 — Active
 
 - **Scope**: Keyboard, touch, and state feedback for the canvas gene map.
-- **Status**: open
+- **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 - **Priority**: P1 — the documented controls do not match the implemented controls.

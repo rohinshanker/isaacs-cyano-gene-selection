@@ -1,8 +1,8 @@
-# O_data-annotation-release-readiness__20260918 — Open
+# A_data-annotation-release-readiness__20260918 — Active
 
 - **Scope**: `isaacs-cyano-gene-selection` after the pipeline and site work in
   `A_gene-diversity-site__20260918.md` is integrated.
-- **Status**: open
+- **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 

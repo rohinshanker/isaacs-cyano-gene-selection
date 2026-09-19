@@ -1,7 +1,7 @@
-# O_guided-gene-panel-design__20260918 — Open
+# A_guided-gene-panel-design__20260918 — Active
 
 - **Scope**: Deterministic generation of a diverse 6–10-gene experimental panel across recoding schemes.
-- **Status**: open
+- **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 - **Priority**: P1 feature — this is the shortest path from the viewer to a defensible fitness experiment.

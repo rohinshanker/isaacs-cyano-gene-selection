@@ -1,7 +1,7 @@
-# O_shareable-state-and-scheme-drafts__20260918 — Open
+# A_shareable-state-and-scheme-drafts__20260918 — Active
 
 - **Scope**: URL/local-storage state restoration and recoding-scheme draft names.
-- **Status**: open
+- **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 - **Priority**: P1 — the address bar can claim one analysis while the page shows another.

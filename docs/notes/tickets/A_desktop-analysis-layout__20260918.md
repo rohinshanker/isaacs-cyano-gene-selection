@@ -1,7 +1,7 @@
-# O_desktop-analysis-layout__20260918 — Open
+# A_desktop-analysis-layout__20260918 — Active
 
 - **Scope**: Relationship between controls, map, detail, and candidate comparison on desktop.
-- **Status**: open
+- **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 - **Priority**: P1 — the comparison workflow is separated from the map by several blank screens.

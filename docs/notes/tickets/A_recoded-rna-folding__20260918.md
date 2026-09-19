@@ -1,7 +1,7 @@
-# O_recoded-rna-folding__20260918 — Open
+# A_recoded-rna-folding__20260918 — Active
 
 - **Scope**: On-demand wild-type/recoded RNA folding for shortlisted genes.
-- **Status**: open
+- **Status**: active
 - **Opened**: 2026-09-18
 - **Updated**: 2026-09-18
 - **Priority**: P1 — the interface ships a permanently disabled control for a contract feature.
