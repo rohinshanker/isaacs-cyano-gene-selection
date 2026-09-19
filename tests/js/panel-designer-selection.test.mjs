@@ -7,7 +7,7 @@ import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { buildExport, schemeIdOf } from '../../site/js/core/export-manifest.js';
 import { describeSchemes } from '../../site/js/core/panel-export.js';
 import {
-  reconcileSchemeSelection, savedSchemeKey, selectedSchemes,
+  panelInputKey, panelResultIsStale, reconcileSchemeSelection, savedSchemeKey, selectedSchemes,
 } from '../../site/js/ui/panel-designer.js';
 import { expressionFixtureDataset } from './helpers.mjs';
 
@@ -99,4 +99,20 @@ test('computed and exported scheme remains the selected map after reorder', asyn
   });
   assert.deepEqual(exported.manifest.schemes.map((entry) => entry.schemeId), [schemeIdOf(SYN61)]);
   assert.deepEqual(exported.manifest.schemes[0].map, SYN61);
+});
+
+test('panel results become stale only when a result-defining input changes', () => {
+  const config = { size: 8, seeds: ['M744_RS00005'], ranges: { cai: { min: 0.4 } } };
+  const schemes = [{ name: 'Syn61', map: SYN61 }];
+  const key = panelInputKey(config, schemes);
+
+  assert.equal(panelResultIsStale(key, {
+    ranges: { cai: { min: 0.4 } }, seeds: ['M744_RS00005'], size: 8,
+  }, schemes), false, 'object property order does not make an unchanged result stale');
+  assert.equal(panelResultIsStale(key, { ...config, size: 9 }, schemes), true);
+  assert.equal(panelResultIsStale(key, config, [{ name: 'Syn61', map: AMBER }]), true);
+  assert.equal(panelResultIsStale(key, config, [{ name: 'Renamed Syn61', map: SYN61 }]), true,
+    'the scheme name is part of the exported result');
+  assert.equal(panelResultIsStale('', config, schemes), false,
+    'there is no stale state before a result exists');
 });

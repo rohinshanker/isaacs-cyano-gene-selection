@@ -21,7 +21,7 @@ import {
 import {
   buildPanelExport, buildSchemeMatrix, describeSchemes,
 } from '../core/panel-export.js';
-import { schemeIdOf } from '../core/export-manifest.js';
+import { canonicalJson, schemeIdOf } from '../core/export-manifest.js';
 import { isBorrowedMetric } from '../core/panel-features.js';
 import { formatValue, formatCount, formatPercentile } from './format.js';
 
@@ -106,6 +106,22 @@ export function selectedSchemes(schemes, selectedKeys) {
   return chosen.length > 0 ? chosen : [{ name: 'Wild type', map: {} }];
 }
 
+/** Canonical identity for every setting that determines a generated panel and its export. */
+export function panelInputKey(config, schemes) {
+  return canonicalJson({
+    config: normaliseConfig(config),
+    schemes: schemes.map((scheme) => ({
+      name: scheme.name ?? '',
+      schemeId: schemeIdOf(scheme.map),
+    })),
+  });
+}
+
+/** Whether the controls no longer describe the panel result on screen. */
+export function panelResultIsStale(resultKey, config, schemes) {
+  return Boolean(resultKey) && resultKey !== panelInputKey(config, schemes);
+}
+
 export class PanelDesigner {
   /**
    * @param {HTMLElement} host
@@ -120,6 +136,7 @@ export class PanelDesigner {
     this.design = null;
     this.space = null;
     this.spaceKey = '';
+    this.designInputKey = '';
     this.build();
   }
 
@@ -128,6 +145,9 @@ export class PanelDesigner {
     this.host.append(this.buildIntro(), this.buildHelp());
 
     this.form = element('div', 'panel-config');
+    const refreshResultStatus = () => queueMicrotask(() => this.renderResult());
+    this.form.addEventListener('change', refreshResultStatus);
+    this.form.addEventListener('click', refreshResultStatus);
     this.host.append(this.form);
 
     this.resultHost = element('div', 'panel-result');
@@ -272,6 +292,7 @@ export class PanelDesigner {
       this.config = normaliseConfig({ size: DEFAULT_PANEL_SIZE });
       this.selectedSchemeKeys = new Set(['active']);
       this.design = null;
+      this.designInputKey = '';
       this.renderForm();
       this.renderResult();
       this.handlers.onAnnounce('Panel settings reset.');
@@ -555,6 +576,7 @@ export class PanelDesigner {
     const space = this.ensureSpace(schemes);
     this.schemes = schemes;
     this.design = designPanel({ dataset, registry, space, config: this.config });
+    this.designInputKey = panelInputKey(this.config, this.chosenSchemes());
     this.renderForm();
     this.renderResult();
     this.handlers.onAnnounce(this.design.feasible
@@ -572,6 +594,17 @@ export class PanelDesigner {
       return;
     }
     const { design } = this;
+
+    if (panelResultIsStale(this.designInputKey, this.config, this.chosenSchemes())) {
+      const stale = element('div', 'gene-flag');
+      stale.setAttribute('role', 'status');
+      stale.append(
+        element('strong', null, 'Settings changed. '),
+        'These results and exports still use the settings from the last design. '
+          + 'Select Regenerate panel to update them.',
+      );
+      this.resultHost.append(stale);
+    }
 
     if (design.problems.length > 0) {
       const alert = element('div', design.feasible ? 'gene-flag' : 'metric-alert');
