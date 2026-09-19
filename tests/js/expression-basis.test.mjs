@@ -69,6 +69,50 @@ test('the basis summary counts each state in plain language', () => {
   assert.match(text, /1 with neither/);
 });
 
+test('a native TSS metric is measured by its own finite value, never by the PCC proxy state', () => {
+  const tss = {
+    key: 'tssInitiation', label: 'TSS initiation (UTEX 2973)',
+    provenance: { id: 'TAN2018_TSS', isTargetOrganism: true },
+  };
+  // A PCC-proxy gene (no PCC measurement) that does carry a native TSS value
+  // must show that TSS value as measured, not inherit the PCC "proxy only" tag.
+  const proxyGeneWithTss = { expressionBasis: 'proxy', tssInitiation: 4.2 };
+  const tssMeasured = expressionBasisOf(proxyGeneWithTss, tss, 4.2);
+  assert.equal(tssMeasured.basis, 'measured');
+  assert.match(tssMeasured.text, /TAN2018_TSS/);
+
+  // A gene with a real PCC measurement but no TSS score must not borrow the
+  // PCC "measured" state either: TSS is absent for it, plainly.
+  const measuredGeneNoTss = { expressionBasis: 'measured', expressionSourceId: 'GSE205444' };
+  const tssAbsent = expressionBasisOf(measuredGeneNoTss, tss, NaN);
+  assert.equal(tssAbsent.basis, 'none');
+  assert.notEqual(tssAbsent.basis, 'proxy');
+
+  // The primary PCC metric itself is unaffected: it still reads its own
+  // gene-level basis and never the metric-scoped logic.
+  const pcc = { key: 'expression', label: 'Expression' };
+  const pccBasis = expressionBasisOf(proxyGeneWithTss, pcc, NaN);
+  assert.equal(pccBasis.basis, 'proxy');
+});
+
+test('a TSS legend counts TSS coverage, not the PCC field it happens to sit beside', () => {
+  const tss = { key: 'tssInitiation', label: 'TSS initiation', read: (i) => genes[i].tssInitiation };
+  const genes = [
+    { expressionBasis: 'measured', tssInitiation: 1 },
+    { expressionBasis: 'proxy', tssInitiation: 2 },
+    { expressionBasis: 'proxy', tssInitiation: NaN },
+    { expressionBasis: 'measured', tssInitiation: NaN },
+  ];
+  const pccCounts = expressionBasisCounts(genes);
+  assert.equal(pccCounts.counts.get('measured'), 2);
+  assert.equal(pccCounts.counts.get('proxy'), 2);
+
+  const tssCounts = expressionBasisCounts(genes, tss);
+  assert.equal(tssCounts.counts.get('measured'), 2);
+  assert.equal(tssCounts.counts.get('proxy'), 0);
+  assert.equal(tssCounts.counts.get('none'), 2);
+});
+
 test('the proxy metric is told apart from a measured one', () => {
   const proxy = { key: 'expressionProxy', label: 'Expression proxy', unit: 'rank 0-1', family: 'Expression' };
   const measured = { key: 'expression', label: 'Expression', unit: 'normalized counts', family: 'Expression' };

@@ -295,6 +295,9 @@ function renderMap() {
   if (projection.available) {
     let missing = 0;
     for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
+    // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
+    // primary PCC abundance field's, even though both share the same basis states.
+    const isMeasuredExpressionMetric = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
     renderLegend(legendHost, {
       metric,
       scale,
@@ -302,8 +305,8 @@ function renderMap() {
       hiddenCount: context.dataset.genes.length - context.passing,
       showHidden: state.showHidden,
       provenanceNote: describeExpressionSource(metric.provenance),
-      basisCounts: isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
-        ? context.basisCounts : null,
+      basisCounts: isMeasuredExpressionMetric
+        ? expressionBasisCounts(context.dataset.genes, metric) : null,
     });
   }
 

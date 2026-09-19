@@ -73,8 +73,8 @@ function hiddenText(text) {
 }
 
 /** The small tag that says where an expression value came from. */
-function basisTag(gene) {
-  const { basis, short, text } = expressionBasisOf(gene);
+function basisTag(gene, metric, value) {
+  const { basis, short, text } = expressionBasisOf(gene, metric, value);
   const tag = document.createElement('span');
   tag.className = `basis-tag basis-${basis}`;
   tag.textContent = short;
@@ -830,7 +830,7 @@ export class ComparePanel {
       td.append(hiddenText('no value'));
     }
     if (gene && isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-      td.append(' ', basisTag(gene));
+      td.append(' ', basisTag(gene, metric, value));
     }
     return td;
   }

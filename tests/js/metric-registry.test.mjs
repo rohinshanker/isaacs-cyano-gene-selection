@@ -153,3 +153,75 @@ test('a measurement from this organism is described as such', () => {
   });
   assert.match(sentence, /this genome's own organism/);
 });
+
+test('describeExpressionSource reads the current shipped source schema, not just the legacy one', () => {
+  // meta.expressionSources entries ship as organism/units/id, never as the
+  // legacy organismMeasured/normalization/accession fields.
+  const shipped = {
+    id: 'TAN2018_TSS',
+    organism: 'Synechococcus elongatus UTEX 2973',
+    units: 'summed mean TSS counts',
+    isTargetOrganism: true,
+    condition: 'control, high light, high temperature, dark, pooled',
+    coverage: { withValue: 1727, total: 2715 },
+    caveat: 'Transcription initiation strength, not transcript abundance.',
+  };
+  const sentence = describeExpressionSource(shipped);
+  assert.match(sentence, /UTEX 2973/);
+  assert.match(sentence, /this genome's own organism/);
+  assert.match(sentence, /summed mean TSS counts/);
+  assert.match(sentence, /1727 of 2715/);
+  assert.match(sentence, /Source: TAN2018_TSS\./);
+  assert.match(sentence, /Transcription initiation strength/);
+
+  // The legacy shape must still work: this is the boundary both feed through.
+  const legacy = {
+    accession: 'GSE205444',
+    organismMeasured: 'Synechococcus elongatus PCC 7942',
+    isTargetOrganism: false,
+    normalization: 'DESeq2 normalized counts',
+    coverage: { withValue: 2551, total: 2715 },
+  };
+  const legacySentence = describeExpressionSource(legacy);
+  assert.match(legacySentence, /PCC 7942/);
+  assert.match(legacySentence, /DESeq2 normalized counts/);
+  assert.match(legacySentence, /Source: GSE205444\./);
+});
+
+test('a sparse metric is detected wherever its first finite value falls, not only in the first 200 genes', async () => {
+  const dataset = await fixtureDataset();
+  const genes = dataset.genes.map((gene, index) => ({
+    ...gene,
+    // 300 genes in the fixture; a lone finite value past index 199 must still
+    // be found, however the genes happen to be ordered.
+    sparseLateMetric: index === 250 ? 42 : null,
+  }));
+  const meta = {
+    ...dataset.meta,
+    metrics: {
+      ...dataset.meta.metrics,
+      sparseLateMetric: { label: 'Sparse late metric', unit: 'z' },
+    },
+  };
+  assert.ok(genes.length > 200, 'fixture must exceed the old 200-gene sample to exercise this');
+  const registry = buildMetricRegistry(meta, genes, dataset.baseline);
+  assert.equal(registry.declaredButMissing.includes('sparseLateMetric'), false);
+  assert.equal(registry.byKey.get('sparseLateMetric').read(250), 42);
+});
+
+test('discovery finds a declared metric regardless of gene order (permutation invariance)', async () => {
+  const dataset = await fixtureDataset();
+  const forward = dataset.genes.map((gene, index) => ({
+    ...gene,
+    permutedMetric: index === 299 ? 7 : null,
+  }));
+  const reversed = [...forward].reverse();
+  const meta = {
+    ...dataset.meta,
+    metrics: { ...dataset.meta.metrics, permutedMetric: { label: 'Permuted metric', unit: 'z' } },
+  };
+  const forwardRegistry = buildMetricRegistry(meta, forward, dataset.baseline);
+  const reversedRegistry = buildMetricRegistry(meta, reversed, dataset.baseline);
+  assert.equal(forwardRegistry.declaredButMissing.includes('permutedMetric'), false);
+  assert.equal(reversedRegistry.declaredButMissing.includes('permutedMetric'), false);
+});

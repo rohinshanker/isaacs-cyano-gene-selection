@@ -65,6 +65,28 @@ export function expressionSourceScope(metric) {
 /** The four states the contract's `expressionBasis` can be in, in display order. */
 export const EXPRESSION_BASES = Object.freeze(['measured', 'proxy', 'none', 'unrecorded']);
 
+/** The primary abundance metric's own key, stripped of a `Percentile` suffix. */
+function isPrimaryAbundanceMetric(metric) {
+  return metric.key.replace(/Percentile$/i, '') === 'expression';
+}
+
+/**
+ * Basis for a metric that is a real measurement but is not the primary PCC
+ * abundance field: it carries no proxy, so a gene either has a finite value
+ * for it or it does not. Never inherits the primary metric's proxy state.
+ */
+function metricScopedExpressionBasis(metric, value) {
+  if (Number.isFinite(value)) {
+    const source = metric.provenance?.id ? ` in ${metric.provenance.id}` : '';
+    return { basis: 'measured', short: 'measured', text: `Measured value for ${metric.label}${source}.` };
+  }
+  return {
+    basis: 'none',
+    short: 'no basis',
+    text: `This gene has no ${metric.label} value.`,
+  };
+}
+
 /**
  * Where a gene's displayed expression value comes from, per the contract.
  *
@@ -73,10 +95,21 @@ export const EXPRESSION_BASES = Object.freeze(['measured', 'proxy', 'none', 'unr
  * predates the field, which is an explicit unknown and never assumed to be a
  * measurement. Callers show `text` beside any expression value.
  *
+ * A gene-level `expressionBasis`/`expressionSourceId` describes only the primary
+ * PCC abundance field and its proxy fallback. Any other real expression metric
+ * (a native TSS score, say) is scoped to `metric` and `value` instead, so it is
+ * never reported as a PCC proxy: it is either measured for this metric or it
+ * has no basis at all.
+ *
  * @param {object} gene a `genes.json` record.
+ * @param {object|null} [metric] the metric being displayed, when known.
+ * @param {number} [value] `metric.read(index)` for this gene, when `metric` is given.
  * @returns {{basis: 'measured'|'proxy'|'none'|'unrecorded', text: string, short: string}}
  */
-export function expressionBasisOf(gene) {
+export function expressionBasisOf(gene, metric = null, value = undefined) {
+  if (metric && !isPrimaryAbundanceMetric(metric)) {
+    return metricScopedExpressionBasis(metric, value);
+  }
   if (!gene || !Object.hasOwn(gene, 'expressionBasis')) {
     return {
       basis: 'unrecorded',
@@ -108,41 +141,71 @@ export function expressionBasisOf(gene) {
 }
 
 /**
- * How many genes fall under each basis, for legends and filters.
+ * How many genes fall under each basis, for legends and filters. With no
+ * `metric` this counts the primary PCC abundance field, as it always has.
+ * With a `metric` given, counts are scoped to that metric's own values, so a
+ * TSS legend reports TSS coverage rather than the primary metric's.
  * @param {object[]} genes
+ * @param {object|null} [metric]
  * @returns {{counts: Map<string, number>, recorded: boolean}} `recorded` is false when
  *   no gene carries the field at all, so a filter on it would be meaningless.
  */
-export function expressionBasisCounts(genes) {
+export function expressionBasisCounts(genes, metric = null) {
   const counts = new Map(EXPRESSION_BASES.map((basis) => [basis, 0]));
-  for (const gene of genes) {
-    const { basis } = expressionBasisOf(gene);
+  for (let i = 0; i < genes.length; i += 1) {
+    const value = metric ? metric.read(i) : undefined;
+    const { basis } = expressionBasisOf(genes[i], metric, value);
     counts.set(basis, counts.get(basis) + 1);
   }
   return { counts, recorded: counts.get('unrecorded') < genes.length };
 }
 
 /**
+ * Reconciles the two shapes a source declaration is shipped in: the legacy
+ * single-source contract (`organismMeasured`/`normalization`/`accession`) and
+ * the current `meta.expressionSources` entries (`organism`/`units`/`id`).
+ * Every reader of a source goes through this boundary, so a caller never has
+ * to know which shape it received.
+ * @param {object|null} source
+ * @returns {{organism: string|undefined, units: string|undefined, id: string|undefined,
+ *   isTargetOrganism: boolean|undefined, condition: string|undefined,
+ *   coverage: {withValue: number, total: number}|undefined, caveat: string|undefined}|null}
+ */
+function normalizeExpressionSource(source) {
+  if (!source) return null;
+  return {
+    organism: source.organism ?? source.organismMeasured,
+    units: source.units ?? source.normalization,
+    id: source.id ?? source.accession,
+    isTargetOrganism: source.isTargetOrganism,
+    condition: source.condition,
+    coverage: source.coverage,
+    caveat: source.caveat,
+  };
+}
+
+/**
  * A plain-language sentence naming where an expression measurement came from.
  * The interface shows this next to the value rather than in a tooltip, because a
  * measurement from another strain must not be mistaken for this genome's own.
- * @param {object|null} source `meta.expressionSource`.
+ * @param {object|null} source a `meta.expressionSource` or `meta.expressionSources` entry.
  * @returns {string|null}
  */
 export function describeExpressionSource(source) {
-  if (!source) return null;
+  const normalized = normalizeExpressionSource(source);
+  if (!normalized) return null;
   const parts = [];
-  parts.push(source.isTargetOrganism
-    ? `Measured in ${source.organismMeasured}, this genome's own organism.`
-    : `Measured in ${source.organismMeasured}, a different organism from the one on this page.`);
-  if (source.condition) parts.push(`Condition: ${source.condition}.`);
-  if (source.normalization) parts.push(`Values are ${source.normalization}.`);
-  if (source.coverage?.total) {
-    parts.push(`${source.coverage.withValue} of ${source.coverage.total} genes carry a value; `
+  parts.push(normalized.isTargetOrganism
+    ? `Measured in ${normalized.organism}, this genome's own organism.`
+    : `Measured in ${normalized.organism}, a different organism from the one on this page.`);
+  if (normalized.condition) parts.push(`Condition: ${normalized.condition}.`);
+  if (normalized.units) parts.push(`Values are ${normalized.units}.`);
+  if (normalized.coverage?.total) {
+    parts.push(`${normalized.coverage.withValue} of ${normalized.coverage.total} genes carry a value; `
       + 'the rest are unknown, not zero.');
   }
-  if (source.accession) parts.push(`Source: ${source.accession}.`);
-  if (source.caveat) parts.push(source.caveat);
+  if (normalized.id) parts.push(`Source: ${normalized.id}.`);
+  if (normalized.caveat) parts.push(normalized.caveat);
   return parts.join(' ');
 }
 
@@ -156,7 +219,6 @@ export function describeExpressionSource(source) {
 export function buildMetricRegistry(meta, genes, liveFields) {
   const metrics = [];
   const declaredButMissing = [];
-  const sample = genes.slice(0, Math.min(genes.length, 200));
   const expressionSources = new Map(
     (meta.expressionSources ?? [])
       .filter((source) => source && typeof source.metricKey === 'string')
@@ -164,7 +226,9 @@ export function buildMetricRegistry(meta, genes, liveFields) {
   );
 
   for (const [key, definition] of Object.entries(meta.metrics ?? {})) {
-    const present = sample.some((gene) => typeof gene[key] === 'number' && Number.isFinite(gene[key]));
+    // Every gene, not a prefix sample: a sparse metric's first finite value can
+    // land anywhere in gene order, and `.some` still exits on the first hit.
+    const present = genes.some((gene) => typeof gene[key] === 'number' && Number.isFinite(gene[key]));
     if (!present) {
       declaredButMissing.push(key);
       continue;

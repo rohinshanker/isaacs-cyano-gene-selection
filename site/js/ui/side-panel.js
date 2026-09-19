@@ -262,7 +262,7 @@ export class SidePanel {
         // A measured expression value says per gene whether it is a measurement,
         // a proxy standing in, or nothing at all. The proxy metric is its own row.
         if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-          const { basis, short, text } = expressionBasisOf(gene);
+          const { basis, short, text } = expressionBasisOf(gene, metric, value);
           const tag = document.createElement('span');
           tag.className = `basis-tag basis-${basis}`;
           tag.textContent = short;
