@@ -69,6 +69,13 @@ GFF coordinates, including joined and origin-spanning annotations. Missing raw
 inputs are explicitly reported as a skipped genomic check; structural checks
 always run. Regression tests: `python -m pytest tests/test_rna_contract_validator.py`.
 
+For a CDS split across multiple GFF rows, validation orders bases in strand
+direction on the circular replicon and rotates the segments after their unique
+largest inter-segment gap. It therefore handles a join that crosses the origin
+without trusting GFF row order or an ordinary numeric coordinate sort. Focused
+fixtures cover both strands, reversed row order, overlapping origin segments,
+and an ambiguous segment layout that must fail closed.
+
 For the browser, serve the repository root on an unused task-specific port:
 
 ```bash

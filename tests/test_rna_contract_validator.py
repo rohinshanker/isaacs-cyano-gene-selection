@@ -21,7 +21,11 @@ def synthetic_case(tmp_path, strand="+", kind="ordinary", compact=False):
     """Write a controlled raw genome and GFF; do not call any producer code."""
     dna = "GTG" + "GCT" * (1 if kind == "short" else 30) + "TAG"
     start = (290 if strand == "+" else 200) if kind == "boundary" else 51
-    if kind == "joined":
+    if kind == "origin-joined":
+        segments = [(270, 300), (1, 65)]
+    elif kind == "ambiguous-joined":
+        segments = [(1, 48), (151, 198)]
+    elif kind == "joined":
         segments = [(start, start + 47), (start + 50, start + len(dna) + 1)]
     else:
         segments = [(start, start + len(dna) - 1)]
@@ -57,7 +61,9 @@ def synthetic_case(tmp_path, strand="+", kind="ordinary", compact=False):
 
 
 @pytest.mark.parametrize("strand", ["+", "-"])
-@pytest.mark.parametrize("kind", ["ordinary", "boundary", "joined", "short"])
+@pytest.mark.parametrize(
+    "kind", ["ordinary", "boundary", "joined", "origin-joined", "short"]
+)
 def test_independent_raw_window_and_map(tmp_path, strand, kind):
     gene = synthetic_case(tmp_path, strand, kind)
     cds, window, offsets = decode_rna_context(gene)
@@ -68,6 +74,36 @@ def test_independent_raw_window_and_map(tmp_path, strand, kind):
     cross_check_rna_context([gene], str(tmp_path), report)
     assert not report.failures
     assert len(report.passes) == 1
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+def test_origin_join_order_does_not_depend_on_gff_row_order(tmp_path, strand):
+    gene = synthetic_case(tmp_path, strand, "origin-joined")
+    gff_path = tmp_path / f"{ASSEMBLY_PREFIX}_genomic.gff.gz"
+    with gzip.open(gff_path, "rt") as handle:
+        header, *rows = handle.readlines()
+    with gzip.open(gff_path, "wt") as handle:
+        handle.writelines([header, *reversed(rows)])
+    report = Report()
+    cross_check_rna_context([gene], str(tmp_path), report)
+    assert not report.failures
+
+
+def test_origin_join_rejects_overlap_and_ambiguous_segment_order(tmp_path):
+    gene = synthetic_case(tmp_path, kind="origin-joined")
+    gff_path = tmp_path / f"{ASSEMBLY_PREFIX}_genomic.gff.gz"
+    with gzip.open(gff_path, "at") as handle:
+        handle.write(
+            "circle\ttest\tCDS\t295\t305\t.\t+\t0\tlocus_tag=test\n"
+        )
+    report = Report()
+    cross_check_rna_context([gene], str(tmp_path), report)
+    assert "repeats a genomic position" in report.failures[0]
+
+    gene = synthetic_case(tmp_path, kind="ambiguous-joined")
+    report = Report()
+    cross_check_rna_context([gene], str(tmp_path), report)
+    assert "ambiguous circular CDS segment order" in report.failures[0]
 
 
 @pytest.mark.parametrize("strand", ["+", "-"])

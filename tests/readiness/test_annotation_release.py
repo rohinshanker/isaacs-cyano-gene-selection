@@ -45,6 +45,9 @@ class ManifestTest(unittest.TestCase):
                 "go-annotations", "protein-genpept", "pcc7942-crosswalk-gff",
             },
         )
+        go_entry = entries["go-annotations"]
+        self.assertIn("Gene Ontology Consortium", go_entry["redistribution"])
+        self.assertIn("CC BY 4.0", go_entry["redistribution"])
         release.verify_files(self.manifest, ROOT)
         release.verify_release_metadata(self.manifest, ROOT)
 
@@ -52,6 +55,12 @@ class ManifestTest(unittest.TestCase):
         changed = json.loads(json.dumps(self.manifest))
         changed["sources"][0]["pgapVersion"] = "6.12"
         with self.assertRaisesRegex(release.ReleaseError, "PGAP pin"):
+            release.verify_release_metadata(changed, ROOT)
+
+    def test_release_metadata_rejects_changed_go_version_pin(self) -> None:
+        changed = json.loads(json.dumps(self.manifest))
+        changed["sources"][0]["goVersion"] = "2099-01-01"
+        with self.assertRaisesRegex(release.ReleaseError, "GO version"):
             release.verify_release_metadata(changed, ROOT)
 
     def test_manifest_rejects_bad_schema_duplicate_path_and_external_url(self) -> None:
@@ -148,6 +157,12 @@ class ParserTest(unittest.TestCase):
             {"product": "protein, alpha", "flag": "true"},
             release.parse_attributes("product=protein%2C alpha;flag=true"),
         )
+        self.assertEqual(
+            {"old_locus_tag": ("legacy,part", "legacy_two")},
+            release.parse_attribute_values(
+                "old_locus_tag=legacy%2Cpart,legacy_two"
+            ),
+        )
         with self.assertRaisesRegex(release.ReleaseError, "malformed"):
             release.parse_attributes("missing-equals")
 
@@ -170,6 +185,47 @@ class ParserTest(unittest.TestCase):
             path.write_text("##gff-version 3\nseq\tbad\n", encoding="utf-8")
             with self.assertRaisesRegex(release.ReleaseError, "expected 9"):
                 release.parse_gff(path)
+
+    def test_parsed_identifier_lists_preserve_percent_encoded_commas(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "identifiers.gff"
+            path.write_text(
+                "##gff-version 3\n"
+                "##sequence-region seq 1 100\n"
+                "seq\tRefSeq\tgene\t1\t9\t.\t+\t.\t"
+                "locus_tag=x;old_locus_tag=legacy%2Cpart,legacy_two\n",
+                encoding="utf-8",
+            )
+            features, _ = release.parse_gff(path)
+            self.assertEqual(
+                ("legacy,part", "legacy_two"),
+                features[0].attr_values["old_locus_tag"],
+            )
+
+    def test_plasmid_without_name_falls_back_to_seqid_not_chromosome(self) -> None:
+        def region(seqid, attrs):
+            return release.Feature(
+                seqid=seqid, source="RefSeq", kind="region",
+                start=1, end=100, strand="+", phase=".", attrs=attrs,
+                attr_values={key: (value,) for key, value in attrs.items()},
+            )
+
+        self.assertEqual(
+            ("plasmid", "NZ_PLASMID.1"),
+            release._replicon_identity(region("NZ_PLASMID.1", {"genome": "plasmid"})),
+        )
+        self.assertEqual(
+            ("plasmid", "pSYNA"),
+            release._replicon_identity(region("NZ_NAMED.1", {"plasmid-name": "pSYNA"})),
+        )
+        self.assertEqual(
+            ("chromosome", "chromosome"),
+            release._replicon_identity(region("NZ_CHROM.1", {"genome": "chromosome"})),
+        )
+        self.assertEqual(
+            (None, "NZ_UNKNOWN.1"),
+            release._replicon_identity(region("NZ_UNKNOWN.1", {})),
+        )
 
     def test_gpff_parser_preserves_structured_name_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -61,6 +61,7 @@ class Feature:
     strand: str
     phase: str
     attrs: dict[str, str]
+    attr_values: dict[str, tuple[str, ...]]
 
 
 def open_text(path: Path) -> Any:
@@ -186,6 +187,19 @@ def _gff_headers(path: Path) -> dict[str, str]:
     return headers
 
 
+def _gaf_headers(path: Path) -> dict[str, str]:
+    """Returns colon-delimited metadata from a Gene Association File header."""
+    headers: dict[str, str] = {}
+    with open_text(path) as handle:
+        for line in handle:
+            if not line.startswith("!"):
+                break
+            key, separator, value = line[1:].strip().partition(":")
+            if separator:
+                headers[key.strip()] = value.strip()
+    return headers
+
+
 def _read_role(manifest: dict[str, Any], root: Path, role: str) -> Path:
     try:
         return root / entries_by_role(manifest)[role]["localPath"]
@@ -254,6 +268,14 @@ def verify_release_metadata(manifest: dict[str, Any], root: Path) -> None:
     ):
         raise ReleaseError("annotation hashes do not match the pinned release")
 
+    go_headers = _gaf_headers(_read_role(manifest, root, "go-annotations"))
+    if (
+        go_headers.get("GO version") != target.get("goVersion")
+        or go_headers.get("generated-by") != "NCBI"
+        or go_headers.get("date-generated") != "2026-05-14"
+    ):
+        raise ReleaseError("GO version or RefSeq GAF provenance differs from manifest")
+
     pcc_source = next(
         source for source in manifest["sources"]
         if source["id"] == "pcc7942-refseq-crosswalk"
@@ -306,17 +328,27 @@ def fetch_inputs(
     return downloaded, reused
 
 
-def parse_attributes(raw: str) -> dict[str, str]:
-    """Parses GFF3 attributes while preserving comma-delimited evidence values."""
-    attrs: dict[str, str] = {}
+def parse_attribute_values(raw: str) -> dict[str, tuple[str, ...]]:
+    """Parses GFF3 lists before decoding escaped commas inside their values."""
+    attrs: dict[str, tuple[str, ...]] = {}
     for item in raw.split(";"):
         if not item:
             continue
         key, separator, value = item.partition("=")
         if not separator:
             raise ReleaseError(f"malformed GFF3 attribute: {item!r}")
-        attrs[urllib.parse.unquote(key)] = urllib.parse.unquote(value)
+        attrs[urllib.parse.unquote(key)] = tuple(
+            urllib.parse.unquote(member) for member in value.split(",")
+        )
     return attrs
+
+
+def parse_attributes(raw: str) -> dict[str, str]:
+    """Returns decoded attributes, retaining their conventional text form."""
+    return {
+        key: ",".join(values)
+        for key, values in parse_attribute_values(raw).items()
+    }
 
 
 def parse_gff(path: Path) -> tuple[list[Feature], dict[str, int]]:
@@ -335,11 +367,14 @@ def parse_gff(path: Path) -> tuple[list[Feature], dict[str, int]]:
             fields = line.split("\t")
             if len(fields) != 9:
                 raise ReleaseError(f"{path}:{line_number}: expected 9 GFF fields")
+            attr_values = parse_attribute_values(fields[8])
             features.append(
                 Feature(
                     seqid=fields[0], source=fields[1], kind=fields[2],
                     start=int(fields[3]), end=int(fields[4]), strand=fields[6],
-                    phase=fields[7], attrs=parse_attributes(fields[8]),
+                    phase=fields[7],
+                    attrs={key: ",".join(values) for key, values in attr_values.items()},
+                    attr_values=attr_values,
                 )
             )
     if not lengths:
@@ -493,6 +528,21 @@ def _nearby_ncrnas(
     return dict(result)
 
 
+def _replicon_identity(region: Feature) -> tuple[str | None, str]:
+    """Returns a non-contradictory replicon type and display name."""
+    replicon_type = region.attrs.get("genome", "")
+    plasmid_name = region.attrs.get("plasmid-name")
+    if not replicon_type and plasmid_name:
+        replicon_type = "plasmid"
+    if plasmid_name:
+        replicon_name = plasmid_name
+    elif replicon_type == "chromosome":
+        replicon_name = "chromosome"
+    else:
+        replicon_name = region.seqid
+    return replicon_type or None, replicon_name
+
+
 def _pcc_orthologs(
     target_proteins: dict[str, list[str]], pcc_features: list[Feature]
 ) -> list[tuple[str, str, str, bool]]:
@@ -511,8 +561,8 @@ def _pcc_orthologs(
         for target_locus in target_loci:
             for pcc_locus in pcc_loci:
                 rows.append((target_locus, pcc_locus, protein, ambiguous))
-                old_tags = pcc_genes[pcc_locus].attrs.get("old_locus_tag", "")
-                for old_tag in filter(None, old_tags.split(",")):
+                old_tags = pcc_genes[pcc_locus].attr_values.get("old_locus_tag", ())
+                for old_tag in filter(None, old_tags):
                     rows.append((target_locus, old_tag, protein, ambiguous))
     return rows
 
@@ -570,7 +620,7 @@ def build_crosswalk(
         gene = genes[locus]
         add(locus, "current_locus_tag", "RefSeq_locus_tag", locus,
             "UTEX RefSeq GFF3", "direct annotation")
-        for old_tag in filter(None, gene.attrs.get("old_locus_tag", "").split(",")):
+        for old_tag in filter(None, gene.attr_values.get("old_locus_tag", ())):
             add(locus, "old_locus_tag", "legacy_locus_tag", old_tag,
                 "UTEX RefSeq GFF3", "direct old_locus_tag qualifier")
         symbol = gene.attrs.get("gene")
@@ -695,9 +745,7 @@ def build_annotation_evidence(
             partial_count += int(partial)
             gpff_evidence_count += int(any(name_evidence.get(protein) for protein in proteins))
             region = regions[gene.seqid]
-            replicon_type = region.attrs.get("genome", "")
-            if not replicon_type and region.attrs.get("plasmid-name"):
-                replicon_type = "plasmid"
+            replicon_type, replicon_name = _replicon_identity(region)
             record = {
                 "schemaVersion": 1,
                 "releaseId": "GCF_000817325.1-RS_2026_05_13",
@@ -707,8 +755,8 @@ def build_annotation_evidence(
                 "start": gene.start,
                 "end": gene.end,
                 "strand": gene.strand,
-                "repliconType": replicon_type or None,
-                "repliconName": region.attrs.get("plasmid-name") or "chromosome",
+                "repliconType": replicon_type,
+                "repliconName": replicon_name,
                 "pseudogene": pseudogene,
                 "partial": partial,
                 "cdsSegments": [list(segment) for segment in _feature_segments(cds, lengths)],

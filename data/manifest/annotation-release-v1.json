@@ -12,6 +12,7 @@
       "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
       "annotationDate": "2026-05-13",
       "pgapVersion": "6.11",
+      "goVersion": "2026-03-25",
       "baseUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1",
       "files": [
         {
@@ -129,7 +130,7 @@
           "byteSize": 105088,
           "md5": "151ad9c3a212f588d10d5ca89ad1f0b3",
           "retention": "tracked-derived-feature-input",
-          "redistribution": "NCBI data usage policies; source bytes retained to reproduce evidence-coded GO relationships"
+          "redistribution": "NCBI RefSeq source attribution; Gene Ontology Consortium data and data products are CC BY 4.0; source bytes retained to reproduce evidence-coded GO relationships"
         },
         {
           "role": "protein-genpept",

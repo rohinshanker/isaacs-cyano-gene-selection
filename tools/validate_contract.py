@@ -384,6 +384,49 @@ def decode_rna_context(gene: dict[str, Any]) -> tuple[str, str, list[int]]:
     return cds, restored, offsets
 
 
+def ordered_cds_positions(
+    rows: list[tuple[str, int, int, str]], genome_length: int, strand: str
+) -> list[int]:
+    """Returns CDS genomic positions in translation order on a circular replicon.
+
+    GFF rows need not be in biological order. The unique largest inter-segment
+    gap is treated as the region outside the CDS, so an origin-spanning join is
+    rotated to begin at its true translation-start segment on either strand.
+    """
+    direction = 1 if strand == "+" else -1
+    oriented_segments: list[list[int]] = []
+    for _, start, end, _ in rows:
+        if start < 1 or end < start or end - start + 1 > genome_length:
+            raise ValueError("invalid raw GFF CDS coordinates")
+        if strand == "+":
+            segment = [position % genome_length for position in range(start - 1, end)]
+        else:
+            segment = [
+                position % genome_length
+                for position in range(end - 1, start - 2, -1)
+            ]
+        oriented_segments.append(segment)
+
+    all_positions = [position for segment in oriented_segments for position in segment]
+    if len(set(all_positions)) != len(all_positions):
+        raise ValueError("raw CDS repeats a genomic position")
+    if len(oriented_segments) == 1:
+        return all_positions
+
+    oriented_segments.sort(key=lambda segment: segment[0], reverse=strand == "-")
+    gaps = []
+    for index, segment in enumerate(oriented_segments):
+        next_segment = oriented_segments[(index + 1) % len(oriented_segments)]
+        steps = (direction * (next_segment[0] - segment[-1])) % genome_length
+        gaps.append(steps - 1)
+    largest_gap = max(gaps)
+    if gaps.count(largest_gap) != 1:
+        raise ValueError("ambiguous circular CDS segment order")
+    first = (gaps.index(largest_gap) + 1) % len(oriented_segments)
+    ordered = oriented_segments[first:] + oriented_segments[:first]
+    return [position for segment in ordered for position in segment]
+
+
 def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
                             report: Report) -> None:
     """Independently check context and edit maps using raw genomic FASTA and GFF.
@@ -439,16 +482,7 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
             genome = genomes.get(seqid, "")
             if seqid not in valid_genomes:
                 raise ValueError("missing or ambiguous raw genomic sequence")
-            segments = sorted((row[1], row[2]) for row in rows)
-            if any(start < 1 or end < start or end - start + 1 > len(genome)
-                   for start, end in segments):
-                raise ValueError("invalid raw GFF CDS coordinates")
-            positions = [position % len(genome) for start, end in segments
-                         for position in range(start - 1, end)]
-            if strand == "-":
-                positions.reverse()
-            if len(set(positions)) != len(positions):
-                raise ValueError("raw CDS repeats a genomic position")
+            positions = ordered_cds_positions(rows, len(genome), strand)
             raw_cds = "".join(genome[position] for position in positions)
             if strand == "-":
                 raw_cds = raw_cds.translate(complement)
@@ -456,7 +490,7 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
                 raise ValueError("packed CDS differs from raw GFF genomic segments")
             # Use raw annotation coordinates, not the site's display coordinates:
             # an origin-spanning gene's displayed min/max may span the replicon.
-            anchor = min(start for start, _ in segments) - 1 if strand == "+" else max(end for _, end in segments) - 1
+            anchor = positions[0]
             direction = 1 if strand == "+" else -1
             window_positions = [(anchor + direction * delta) % len(genome) for delta in range(-30, 60)]
             expected = "".join(genome[position] for position in window_positions)
