@@ -1,0 +1,9 @@
+{
+  "name": "isaacs-cyano-gene-selection",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:live-metrics": "node tools/check_live_metrics.mjs",
+    "test": "node --test \"tests/js/*.test.mjs\""
+  }
+}

@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -73,6 +75,18 @@ jobs:
 
       - name: Run site unit tests
         run: node --test "tests/js/*.test.mjs"
+
+      - name: Reject whitespace and conflict-marker damage
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE_SHA" ] &&
+             [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] &&
+             git cat-file -e "$BASE_SHA^{commit}"; then
+            git diff --check "$BASE_SHA" HEAD
+          else
+            git diff-tree --check --root -r HEAD
+          fi
 
       - name: Install pipeline dependencies
         run: pip install --quiet -r requirements.txt
