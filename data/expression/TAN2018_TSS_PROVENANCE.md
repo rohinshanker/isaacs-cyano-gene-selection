@@ -59,8 +59,9 @@ tells the reader which of these they are looking at. The strain is right and the
 conditions are documented, which the PCC data cannot claim; the quantity is indirect,
 which the PCC data can.
 
-## Also searched, and not found
+## Other evidence in this release
 
-No Ribo-seq dataset exists for this organism. A 2025 UTEX 2973 RNA-seq paper,
-doi:10.1007/s10123-025-00715-x, states that no datasets were generated or analysed and
-provides no usable accession.
+This release does not include a verified UTEX 2973 Ribo-seq dataset. A 2025 UTEX
+2973 RNA-seq paper, doi:10.1007/s10123-025-00715-x, states that no datasets were
+generated or analysed and provides no usable accession. That bounded release
+statement should not be read as proof that no relevant dataset can exist.

@@ -104,11 +104,11 @@ unknown, never as zero, and must not be silently removed by a threshold.
 
 ## What could not be verified
 
-- No public, tidy, per-gene abundance table exists for UTEX 2973 itself. The one
-  genuine UTEX 2973 transcriptomic study (Tan et al. 2018, PRJNA420395, Figshare
-  5712016, CC BY 4.0) publishes transcription-start-site and coverage data plus
-  raw reads, not a per-gene abundance matrix. Producing one requires running an
-  alignment and quantification pipeline, which is out of scope here.
+- This release does not include a verified, tidy, per-gene abundance table for
+  UTEX 2973 itself. Tan et al. 2018 (PRJNA420395, Figshare 5712016, CC BY 4.0)
+  publishes transcription-start-site and coverage data plus raw reads, not a
+  ready-to-use per-gene abundance matrix. Producing one requires validating the
+  library design, then running a pinned alignment and quantification pipeline.
 - The identifier mapping is fully verified, but that says nothing about whether PCC
   7942 abundance is a good proxy for UTEX 2973 abundance. It is not, for the four
   reasons listed above. Verified provenance and biological applicability are separate

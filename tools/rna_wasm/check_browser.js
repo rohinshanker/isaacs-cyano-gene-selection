@@ -180,6 +180,36 @@ async (page) => {
     await page.getByRole('button', { name: 'Clear shortlist', exact: true }).click();
     check(await fold.isDisabled(), 'empty shortlist disables action');
     await region.screenshot({ path: `${artifacts}/empty-mobile.png` });
+
+    // The input's blur/change event must not replace a result between pointer
+    // down and click, and state-driven refreshes must keep keyboard focus in the
+    // same row.
+    const search = page.getByLabel('Find a gene');
+    const searchRegion = page.getByRole('region', { name: 'Gene search results' });
+    const resultButton = (name) => searchRegion.getByRole('button', { name });
+    const focusedLabel = () => page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    const hashList = (key) => page.evaluate((name) => (
+      new URLSearchParams(window.location.hash.slice(1)).get(name)?.split(',') ?? []
+    ), key);
+    await search.fill('rubisco');
+    await resultButton('Pin M744_RS09005 in the gene panel').click();
+    check((await hashList('g')).includes('M744_RS09005'), 'first pointer Pin click must commit');
+    check(await focusedLabel() === 'Pin M744_RS09005 in the gene panel', 'Pin refresh preserves focus');
+    await search.fill('M744_RS09005');
+    await resultButton('Add M744_RS09005 to the shortlist').click();
+    check((await hashList('l')).includes('M744_RS09005'), 'first pointer Shortlist click must commit');
+    check(await focusedLabel() === 'Pin M744_RS09005 in the gene panel', 'disabled Shortlist returns focus to Pin');
+    await search.fill('rubisco');
+    await resultButton('Pin M744_RS09000 in the gene panel').focus();
+    await page.keyboard.press('Enter');
+    check((await hashList('g')).includes('M744_RS09000'), 'keyboard Pin must commit');
+    check(await focusedLabel() === 'Pin M744_RS09000 in the gene panel', 'keyboard Pin preserves focus');
+    await resultButton('Add M744_RS09000 to the shortlist').focus();
+    await page.keyboard.press('Enter');
+    check((await hashList('l')).includes('M744_RS09000'), 'keyboard Shortlist must commit');
+    check(await focusedLabel() === 'Pin M744_RS09000 in the gene panel', 'keyboard Shortlist keeps row focus');
+    const searchInteractions = 'first-click Pin/Shortlist and keyboard focus passed';
+
     const lifecycle = await page.evaluate(async () => {
       const { FoldingPanel } = await import('./js/ui/folding-panel.js');
       const host = document.createElement('section');
@@ -242,7 +272,7 @@ async (page) => {
     }
     check(uncovered.length === 0, `UI module has uncovered source lines: ${uncovered.join(', ')}`);
     check(diagnostics.length === 0, JSON.stringify(diagnostics));
-    return { parity, lifecycle, uiCoverage: { uncoveredLines: uncovered }, semanticSnapshot,
+    return { parity, lifecycle, searchInteractions, uiCoverage: { uncoveredLines: uncovered }, semanticSnapshot,
       diagnostics, states: ['success', 'cache', 'tutorial', 'loading', 'cancelled', 'offline', 'partial', 'unsupported', 'empty'] };
   } finally {
     // A failed assertion must not poison the next run with an active profiler,

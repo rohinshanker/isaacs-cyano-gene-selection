@@ -1,0 +1,17 @@
+{
+  "api_url": "https://api.typesafe.ai/v1/systemone",
+  "audit_started_at": "2026-09-19T22:18:03Z",
+  "audit_completed_at": "2026-09-19T22:22:35Z",
+  "batch_size": 1,
+  "candidate_count": 2715,
+  "requested_model": "jev-1.13.0",
+  "rubric_version": "2026-09-19.1",
+  "inventory_sha256": "1b8fb871a3293f5687d4fbdff611db0b11fa0a026ff84c2c065a53f6bcd7e08c",
+  "blind_candidates_sha256": "c9dc172007e07df51a6e15e4c0a8d67326d45bc862e188afd184a66e32589304",
+  "rubric_sha256": "319cc22b858b2fa9bacea2ba46f6de0dcc2fb43620e460625c3cc8f3402b2b9e",
+  "evaluation_set_sha256": "2e9d1cdbec0c53651d792d13042de33d8e4d0a156d1be2028c452415b3edf34e",
+  "results_sha256": "169ac77f76c6c4e420bf6c43877226cac40fdc092935d3a9bd0abcdfaba21858",
+  "summary_sha256": "b0b9399820a2a2afc5dc79cb8e756174181aadad994790673e10424246e5f2bc",
+  "disagreements_sha256": "2dddafa891d5d3e0ae1e995c96fffb145701e99c245c3c7c6e3ef0e476be2ea6",
+  "manual_review_sha256": "db587515b44824999644f5cba6c847c0d2181f316174ed02b0de75967ea91d4a"
+}

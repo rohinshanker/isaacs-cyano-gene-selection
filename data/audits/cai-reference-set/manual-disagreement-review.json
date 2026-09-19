@@ -1,0 +1,74 @@
+{
+  "reviewed_at": "2026-09-19T22:24:00Z",
+  "scope": "Manual semantic inspection of the 11 final TypeSafe-versus-deterministic membership disagreements using the product annotation and the declared rubric.",
+  "limitation": "This review checks annotation-to-rubric consistency only. It is not independent biological evidence that a protein should be used in a CAI reference set.",
+  "recommendation": "Keep automatic membership changes disabled. Preserve the current fixed set for this release unless a domain expert explicitly approves a revised reference-set definition and regenerated CAI values.",
+  "rows": [
+    {
+      "locus_tag": "M744_RS00920",
+      "product": "peptide chain release factor 2",
+      "jev_choice": "translation_termination_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule misses standard release-factor nomenclature."
+    },
+    {
+      "locus_tag": "M744_RS01275",
+      "product": "ATP synthase F1 subunit delta",
+      "jev_choice": "atp_synthase_subunit",
+      "review": "Rubric-consistent semantic addition; the deterministic word-order pattern misses this explicit subunit."
+    },
+    {
+      "locus_tag": "M744_RS01290",
+      "product": "ATP synthase F0 subunit C",
+      "jev_choice": "atp_synthase_subunit",
+      "review": "Rubric-consistent semantic addition; the deterministic word-order pattern misses this explicit subunit."
+    },
+    {
+      "locus_tag": "M744_RS03255",
+      "product": "elongation factor P",
+      "jev_choice": "translation_elongation_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule requires the word translation."
+    },
+    {
+      "locus_tag": "M744_RS04290",
+      "product": "peptide chain release factor 3",
+      "jev_choice": "translation_termination_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule misses standard release-factor nomenclature."
+    },
+    {
+      "locus_tag": "M744_RS04390",
+      "product": "30S ribosomal protein PSRP-3",
+      "jev_choice": "no_match",
+      "review": "Likely Jev error or ambiguity: the product explicitly says 30S ribosomal protein and the answer was low-confidence (choice probability 0.51, confidence 0.44). The deterministic inclusion is rubric-consistent."
+    },
+    {
+      "locus_tag": "M744_RS04530",
+      "product": "ATP synthase F1 subunit epsilon",
+      "jev_choice": "atp_synthase_subunit",
+      "review": "Rubric-consistent semantic addition; the deterministic word-order pattern misses this explicit subunit."
+    },
+    {
+      "locus_tag": "M744_RS05110",
+      "product": "peptide chain release factor 1",
+      "jev_choice": "translation_termination_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule misses standard release-factor nomenclature."
+    },
+    {
+      "locus_tag": "M744_RS05740",
+      "product": "elongation factor G",
+      "jev_choice": "translation_elongation_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule requires the word translation."
+    },
+    {
+      "locus_tag": "M744_RS11730",
+      "product": "elongation factor G",
+      "jev_choice": "translation_elongation_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule requires the word translation."
+    },
+    {
+      "locus_tag": "M744_RS11735",
+      "product": "elongation factor Tu",
+      "jev_choice": "translation_elongation_factor",
+      "review": "Rubric-consistent semantic addition; the deterministic phrase rule requires the word translation."
+    }
+  ]
+}

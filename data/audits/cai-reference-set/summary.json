@@ -1,0 +1,383 @@
+{
+  "audit_completed_at": "2026-09-19T22:22:35Z",
+  "audit_started_at": "2026-09-19T22:18:03Z",
+  "deterministic_comparison": {
+    "deterministic_selected": 71,
+    "membership_agreements": 2704,
+    "membership_disagreements": 11,
+    "semantic_additions_for_review": 10,
+    "semantic_exclusions_for_review": 1,
+    "semantic_inclusions": 80
+  },
+  "evaluation": {
+    "binary_membership_accuracy": 1.0,
+    "binary_membership_matches": 28,
+    "count": 28,
+    "errors": [],
+    "exact_label_accuracy": 1.0,
+    "exact_label_matches": 28,
+    "high_confidence_count": 28,
+    "high_confidence_coverage": 1.0,
+    "high_confidence_definition": "confidence >= 0.8 and declared-choice probability >= 0.8",
+    "high_confidence_exact_accuracy": 1.0,
+    "high_confidence_exact_matches": 28,
+    "rows": [
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "ribosomal_structural_protein",
+        "locus_tag": "M744_RS00700",
+        "membership_match": true,
+        "predicted": "ribosomal_structural_protein",
+        "product": "30S ribosomal protein S14",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "ribosomal_structural_protein",
+        "locus_tag": "M744_RS11720",
+        "membership_match": true,
+        "predicted": "ribosomal_structural_protein",
+        "product": "30S ribosomal protein S12",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 0.99,
+        "confidence": 0.99,
+        "exact_match": true,
+        "expected": "translation_initiation_factor",
+        "locus_tag": "M744_RS02660",
+        "membership_match": true,
+        "predicted": "translation_initiation_factor",
+        "product": "translation initiation factor IF-3",
+        "top_probability": 0.99
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "translation_elongation_factor",
+        "locus_tag": "M744_RS03440",
+        "membership_match": true,
+        "predicted": "translation_elongation_factor",
+        "product": "translation elongation factor Ts",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "chaperonin",
+        "locus_tag": "M744_RS04545",
+        "membership_match": true,
+        "predicted": "chaperonin",
+        "product": "chaperonin GroEL",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "dna_directed_rna_polymerase_subunit",
+        "locus_tag": "M744_RS05080",
+        "membership_match": true,
+        "predicted": "dna_directed_rna_polymerase_subunit",
+        "product": "DNA-directed RNA polymerase subunit alpha",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "dna_directed_rna_polymerase_subunit",
+        "locus_tag": "M744_RS08250",
+        "membership_match": true,
+        "predicted": "dna_directed_rna_polymerase_subunit",
+        "product": "DNA-directed RNA polymerase subunit beta",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "atp_synthase_subunit",
+        "locus_tag": "M744_RS01270",
+        "membership_match": true,
+        "predicted": "atp_synthase_subunit",
+        "product": "F0F1 ATP synthase subunit alpha",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "atp_synthase_subunit",
+        "locus_tag": "M744_RS01275",
+        "membership_match": true,
+        "predicted": "atp_synthase_subunit",
+        "product": "ATP synthase F1 subunit delta",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "atp_synthase_subunit",
+        "locus_tag": "M744_RS01290",
+        "membership_match": true,
+        "predicted": "atp_synthase_subunit",
+        "product": "ATP synthase F0 subunit C",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "translation_termination_factor",
+        "locus_tag": "M744_RS05110",
+        "membership_match": true,
+        "predicted": "translation_termination_factor",
+        "product": "peptide chain release factor 1",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "translation_termination_factor",
+        "locus_tag": "M744_RS00920",
+        "membership_match": true,
+        "predicted": "translation_termination_factor",
+        "product": "peptide chain release factor 2",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS01650",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "ribosomal protein S18-alanine N-acetyltransferase",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS03545",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "30S ribosomal protein S12 methylthiotransferase RimO",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS01175",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "30S ribosome-binding factor RbfA",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS02150",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "ribosome silencing factor",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS04415",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "ribosome biogenesis GTPase Der",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS13915",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "ribosome maturation factor RimM",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 0.99,
+        "confidence": 0.98,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS04540",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "co-chaperone GroES",
+        "top_probability": 0.99
+      },
+      {
+        "choice_probability": 0.98,
+        "confidence": 0.98,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS03155",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "molecular chaperone DnaK",
+        "top_probability": 0.98
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS00090",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "RpoD/SigA family RNA polymerase sigma factor",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS07410",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "circadian expression RNA polymerase sigma factor SigA2",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 0.98,
+        "confidence": 0.98,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS06840",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "peptide chain release factor N(5)-glutamine methyltransferase",
+        "top_probability": 0.98
+      },
+      {
+        "choice_probability": 0.85,
+        "confidence": 0.83,
+        "exact_match": true,
+        "expected": "no_match",
+        "locus_tag": "M744_RS08265",
+        "membership_match": true,
+        "predicted": "no_match",
+        "product": "translational GTPase TypA",
+        "top_probability": 0.85
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "insufficient_evidence",
+        "locus_tag": "M744_RS00030",
+        "membership_match": true,
+        "predicted": "insufficient_evidence",
+        "product": "hypothetical protein",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "insufficient_evidence",
+        "locus_tag": "M744_RS00055",
+        "membership_match": true,
+        "predicted": "insufficient_evidence",
+        "product": "hypothetical protein",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "insufficient_evidence",
+        "locus_tag": "M744_RS00065",
+        "membership_match": true,
+        "predicted": "insufficient_evidence",
+        "product": "hypothetical protein",
+        "top_probability": 1.0
+      },
+      {
+        "choice_probability": 1.0,
+        "confidence": 1.0,
+        "exact_match": true,
+        "expected": "insufficient_evidence",
+        "locus_tag": "M744_RS00150",
+        "membership_match": true,
+        "predicted": "insufficient_evidence",
+        "product": "hypothetical protein",
+        "top_probability": 1.0
+      }
+    ]
+  },
+  "label_counts": {
+    "atp_synthase_subunit": 10,
+    "chaperonin": 2,
+    "dna_directed_rna_polymerase_subunit": 3,
+    "insufficient_evidence": 722,
+    "no_match": 1913,
+    "ribosomal_structural_protein": 52,
+    "translation_elongation_factor": 6,
+    "translation_initiation_factor": 4,
+    "translation_termination_factor": 3
+  },
+  "provenance": {
+    "api_url": "https://api.typesafe.ai/v1/systemone",
+    "audit_started_at": "2026-09-19T22:18:03Z",
+    "batch_size": 1,
+    "blind_candidates_sha256": "c9dc172007e07df51a6e15e4c0a8d67326d45bc862e188afd184a66e32589304",
+    "candidate_count": 2715,
+    "evaluation_set_sha256": "2e9d1cdbec0c53651d792d13042de33d8e4d0a156d1be2028c452415b3edf34e",
+    "inventory_source": "site/data/genes.json plus scripts/build_features.py:is_cai_reference",
+    "inventory_sha256": "1b8fb871a3293f5687d4fbdff611db0b11fa0a026ff84c2c065a53f6bcd7e08c",
+    "requested_model": "jev-1.13.0",
+    "rubric_sha256": "319cc22b858b2fa9bacea2ba46f6de0dcc2fb43620e460625c3cc8f3402b2b9e",
+    "rubric_version": "2026-09-19.1"
+  },
+  "response_integrity": {
+    "choice_probability_argmax_mismatches": 0
+  },
+  "review_policy": {
+    "automatic_membership_changes": "disabled",
+    "rationale": "The deterministic set has no independent biological ground truth, and typed Jev output is review evidence rather than truth.",
+    "review_queue_count": 924,
+    "review_trigger": "Any deterministic disagreement, insufficient_evidence answer, declared choice/argmax mismatch, confidence below 0.8, or declared-choice probability below 0.8."
+  },
+  "service_coverage": {
+    "audited_candidates": 2715,
+    "batch_count": 2715,
+    "candidate_count": 2715,
+    "first_request_at": "2026-09-19T22:18:03Z",
+    "fraction": 1.0,
+    "last_response_at": "2026-09-19T22:22:34Z",
+    "returned_models_by_batch": {
+      "jev-1.13.0": 2715
+    },
+    "usage": {
+      "input_tokens": 3167802,
+      "output_tokens": 356996
+    }
+  }
+}

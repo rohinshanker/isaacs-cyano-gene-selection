@@ -167,32 +167,26 @@ documented gate or feature:
 
 ## External-source boundaries
 
-- **UniProt `UP000031358`: not imported.** On 2026-09-18 the current UniProt
-  proteome metadata still described the historical 2,641-protein ENA proteome,
-  but the current UniProtKB stream for that proteome and for taxid 1350461
-  returned no protein records. There is therefore no current accession mapping
-  to ingest without silently treating stale metadata as data. Smallest follow-up:
-  obtain a dated UniProt archive export for `UP000031358`, pin its release and
-  checksum, then join only explicit RefSeq cross-references while retaining
-  one-to-many relationships.
-- **Rubin et al. PCC 7942 essentiality: not redistributed.** Dataset S3 is
-  downloadable from the PMC article as `pnas.1519220112.sd03.xlsx`, and the paper
-  reports 718 essential, 157 beneficial, 75 ambiguous, and 1,748 nonessential
-  genes. The PMC record supplies only a copyright notice and no explicit reusable
-  data licence. Mapping is also cross-strain and must use the ambiguity-preserving
-  crosswalk above. Smallest follow-up: obtain written redistribution terms (or
-  fetch the supplement at build time without committing it), pin its checksum,
-  parse the published calls, and label every mapped value as PCC 7942 evidence.
-- **CyanoOmicsDB: not imported.** The cited resource is suitable only as a
-  secondary cross-check; no release-pinned bulk artifact and redistribution
-  contract was established for this build. Smallest follow-up: identify a stable
-  versioned export and licence, then reconcile it against the frozen RefSeq
-  coordinates rather than replacing them.
-- **KEGG: not imported.** None of the pinned NCBI inputs exposes a KEGG gene
-  cross-reference, and no release-pinned KEGG artifact with redistribution terms
-  was supplied. Smallest follow-up: use lab-authorized KEGG access, pin the
-  response date and checksum, and add relationship rows only where the source
-  carries an explicit identifier link.
+- **UniProt `UP000031358`: waived for this release.** Current UniProtKB queries
+  for both the proteome and taxid 1350461 returned zero records in release
+  `2026_03` on 2026-09-19. No UniProt-derived assertion is included. Reconsider
+  only when a nonempty, dated export can be pinned and joined through explicit
+  RefSeq cross-references without collapsing one-to-many relationships.
+- **Rubin et al. PCC 7942 essentiality: waived for this release.** Dataset S3 is
+  downloadable as `pnas.1519220112.sd03.xlsx`, but the inspected record does not
+  establish redistribution terms for a checked-in derivative. Fetching at build
+  time would not resolve the rights of the derivative published in the static
+  site. Any future import needs recorded terms, a pinned checksum, and the
+  ambiguity-preserving PCC 7942-to-UTEX crosswalk; values must remain visibly
+  condition-specific PCC 7942 evidence.
+- **CyanoOmicsDB: waived for this release.** No bulk artifact is imported. The
+  resource advertises processed Figshare datasets, but their version, bytes,
+  applicable data licence, and UTEX mapping must be verified before admission.
+- **KEGG: waived for this release.** No KEGG pathway or gene relationships are
+  included. Future use requires authorized access, a pinned artifact, acceptable
+  publication and redistribution terms, and explicit identifier relationships.
 
 These are explicit absence states. No essentiality, UniProt, KEGG, pathway, or
 heuristic functional-category assertion is present in the generated artifacts.
+The ranked acquisition candidates and their admission gates are in
+[`future-data-roadmap.md`](future-data-roadmap.md).

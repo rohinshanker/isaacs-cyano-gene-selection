@@ -1,0 +1,38 @@
+{
+  "rubric_version": "2026-09-19.1",
+  "requested_model": "jev-1.13.0",
+  "purpose": "Bounded semantic audit of product annotations for membership in the fixed CAI reference-protein categories.",
+  "positive_labels": [
+    "ribosomal_structural_protein",
+    "translation_elongation_factor",
+    "translation_initiation_factor",
+    "translation_termination_factor",
+    "chaperonin",
+    "dna_directed_rna_polymerase_subunit",
+    "atp_synthase_subunit"
+  ],
+  "question": {
+    "type": "choice",
+    "instructions": {
+      "task": "Using only the product annotation and optional gene symbol at the named candidate path, choose exactly one category that the annotation explicitly denotes.",
+      "scope": "Classify the protein itself. Do not classify a pathway it affects, a protein it binds, or a likely operon neighbor.",
+      "evidence_policy": [
+        "Use only the candidate's product annotation and optional gene symbol; the locus tag is only an identifier.",
+        "Do not infer category membership from genomic context, likely expression level, or unstated biological knowledge.",
+        "Choose no_match when the annotation explicitly describes another protein or an excluded accessory, modifying, regulatory, maturation, biogenesis, or assembly factor.",
+        "Choose insufficient_evidence when the annotation is hypothetical, uncharacterized, generic, truncated, or genuinely ambiguous, so it does not establish either a listed category or an explicit other function."
+      ]
+    },
+    "criteria": {
+      "ribosomal_structural_protein": "A canonical structural protein of the bacterial 30S or 50S ribosome, such as an S-numbered or L-numbered ribosomal protein. Exclude ribosome binding, silencing, maturation, biogenesis, assembly, and modifying factors or enzymes whose substrate is a ribosomal protein.",
+      "translation_elongation_factor": "A canonical protein explicitly annotated as a translation elongation factor, such as EF-Tu, EF-Ts, EF-G, EF-P, or another annotation that directly says translation elongation factor. Exclude unrelated translational GTPases and modifying or regulatory enzymes.",
+      "translation_initiation_factor": "A canonical protein explicitly annotated as translation initiation factor IF-1, IF-2, IF-3, or another annotation that directly says translation initiation factor. Exclude ribosome-binding, assembly, maturation, and regulatory factors.",
+      "translation_termination_factor": "A canonical translation termination or peptide-chain release factor, including RF1, RF2, or RF3. Exclude release-factor methyltransferases, recyclers, modifiers, and other proteins that merely act on a release factor.",
+      "chaperonin": "A protein explicitly annotated as a chaperonin, such as GroEL/Hsp60. Keep this category narrow: exclude co-chaperonins such as GroES, other molecular chaperones such as DnaK, and chaperone-associated regulators.",
+      "dna_directed_rna_polymerase_subunit": "A structural core subunit of DNA-directed RNA polymerase, such as alpha, beta, beta-prime, omega, or another annotation that directly says DNA-directed RNA polymerase subunit. Exclude sigma factors, transcription factors, accessory proteins, and RNA-polymerase modifiers.",
+      "atp_synthase_subunit": "A structural subunit of the F-type/F0F1 ATP synthase complex, including named alpha, beta, gamma, delta, epsilon, a, b, or c subunits when explicitly annotated. Exclude assembly/accessory factors, regulators, ATP-dependent enzymes, and other ATPases.",
+      "no_match": "The annotation explicitly denotes a protein or function outside all seven listed categories, including an explicitly described accessory, modifying, regulatory, maturation, biogenesis, binding, silencing, or assembly factor.",
+      "insufficient_evidence": "The annotation is hypothetical, uncharacterized, generic, truncated, or ambiguous and therefore does not provide enough evidence to decide that the protein belongs to a listed category or clearly has another function."
+    }
+  }
+}

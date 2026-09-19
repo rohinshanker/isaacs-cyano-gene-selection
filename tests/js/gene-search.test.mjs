@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { searchGenes, GENE_ALIASES } from '../../site/js/core/gene-search.js';
+import {
+  focusActionAfterRefresh, shouldRenderSearch,
+} from '../../site/js/ui/gene-search-results.js';
 
 /**
  * A miniature stand-in for the real annotation, carrying the case the lab hit:
@@ -18,6 +21,19 @@ const GENES = [
 ];
 
 const ids = (result) => result.shown.map((hit) => hit.gene.id);
+
+test('a blur event for the rendered query preserves the result being clicked', () => {
+  assert.equal(shouldRenderSearch('', 'rubisco', undefined), true);
+  assert.equal(shouldRenderSearch('rubisco', 'rubisco', { total: 5 }), false);
+  assert.equal(shouldRenderSearch('', '', null), false);
+  assert.equal(shouldRenderSearch('rubisco', 'rpsL', { total: 5 }), true);
+});
+
+test('a refreshed search row preserves focus or moves it to its remaining action', () => {
+  assert.equal(focusActionAfterRefresh('pin', false), 'pin');
+  assert.equal(focusActionAfterRefresh('shortlist', false), 'shortlist');
+  assert.equal(focusActionAfterRefresh('shortlist', true), 'pin');
+});
 
 test('an exact locus tag is the first result', () => {
   const result = searchGenes(GENES, 'M744_RS09005');

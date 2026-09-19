@@ -8,6 +8,16 @@
 import { searchGenes, SEARCH_RESULT_LIMIT } from '../core/gene-search.js';
 import { formatCount } from './format.js';
 
+/** A repeated blur/change event must not replace a result while it is being clicked. */
+export function shouldRenderSearch(currentQuery, nextQuery, currentResult) {
+  return currentQuery !== nextQuery || currentResult === undefined;
+}
+
+/** Keep keyboard focus in the result row when the activated button becomes disabled. */
+export function focusActionAfterRefresh(action, actionDisabled) {
+  return actionDisabled ? 'pin' : action;
+}
+
 export class GeneSearchResults {
   /**
    * @param {HTMLElement} host
@@ -29,6 +39,7 @@ export class GeneSearchResults {
 
   /** Run a query and render it. An empty query clears the list. */
   search(query) {
+    if (!shouldRenderSearch(this.query, query, this.result)) return this.result;
     this.query = query;
     this.render();
     return this.result;
@@ -36,7 +47,22 @@ export class GeneSearchResults {
 
   /** Re-render the current query, so shortlist buttons reflect the live state. */
   refresh() {
-    if (this.query) this.render();
+    if (!this.query) return;
+    const active = document.activeElement;
+    const focus = this.host.contains(active)
+      ? { geneId: active.dataset.geneId, action: active.dataset.searchAction }
+      : null;
+    this.render();
+    if (!focus?.geneId || !focus.action) return;
+    const sameAction = [...this.host.querySelectorAll('[data-search-action]')]
+      .find((button) => button.dataset.geneId === focus.geneId
+        && button.dataset.searchAction === focus.action);
+    const targetAction = focusActionAfterRefresh(focus.action, sameAction?.disabled ?? true);
+    const target = [...this.host.querySelectorAll('[data-search-action]')]
+      .find((button) => button.dataset.geneId === focus.geneId
+        && button.dataset.searchAction === targetAction
+        && !button.disabled);
+    target?.focus();
   }
 
   render() {
@@ -126,6 +152,8 @@ export class GeneSearchResults {
     const pin = document.createElement('button');
     pin.type = 'button';
     pin.className = 'chip-button';
+    pin.dataset.geneId = gene.id;
+    pin.dataset.searchAction = 'pin';
     pin.textContent = 'Pin';
     pin.setAttribute('aria-label', `Pin ${gene.id} in the gene panel`);
     pin.addEventListener('click', () => this.handlers.onPin(index));
@@ -134,6 +162,8 @@ export class GeneSearchResults {
     const add = document.createElement('button');
     add.type = 'button';
     add.className = 'chip-button';
+    add.dataset.geneId = gene.id;
+    add.dataset.searchAction = 'shortlist';
     add.textContent = shortlisted ? 'Shortlisted' : 'Shortlist';
     add.disabled = shortlisted;
     add.setAttribute('aria-label', shortlisted

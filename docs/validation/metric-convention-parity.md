@@ -57,6 +57,9 @@ is published per gene so the browser can confirm it read the same families.
 family absent from the reference set entirely normalizes to weight 1 throughout:
 no evidence means no penalty, not exclusion. Non-degenerate amino acids are
 excluded from the gene's geometric mean rather than given weight zero.
+The reference-set rule, full TypeSafe semantic audit, reviewed disagreements,
+and frozen-set decision are in
+[`cai-reference-set.md`](cai-reference-set.md).
 
 **Codon-pair score.** Expected count is the amino-acid pair count scaled by each
 codon's share of its own amino acid's usage, with the same additive smoothing of

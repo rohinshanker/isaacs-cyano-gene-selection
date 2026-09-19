@@ -1,42 +1,21 @@
-# Next steps and validation checklist
+# Validation and experimental-use checklist
 
-Use this document as the single handoff checklist for reviewing a candidate
-panel and publishing the UTEX 2973 gene-selection site. Automated checks prove
-that data and outputs reproduce in the tested environment; they do not decide
-whether a biological design is appropriate or replace a dependency/toolchain
-reproducibility policy.
+Use this document to validate and publish the UTEX 2973 gene-selection site, and
+to review an exact exported panel before experimental use. Those are separate
+acceptance decisions. Automated checks prove that data and outputs reproduce in
+the tested environment; they do not approve a biological design or replace a
+dependency/toolchain reproducibility policy.
 
-## Current status
-
-- [x] Requested features and fixes are implemented locally on `main`.
-- [x] Candidate shortlist and **About this dataset** are in the center column.
-- [x] The guided panel designer, exact RNA folding, URL sharing, annotation
-  evidence, tutorials, responsive layout, and release gates are integrated.
-- [x] The last local run passed 273 JavaScript tests, 132 Python tests, 18
-  annotation-readiness tests, 62 contract checks with one declared
-  discontinuous-CDS exemption, all live-genome checks, and the complete
-  real-browser RNA-folding matrix with no uncovered UI lines or diagnostics.
-- [ ] The scientific choices below have been reviewed by the lab.
-- [ ] External evidence sources have each been acquired or explicitly waived.
-- [ ] The repository has been pushed and GitHub Pages has been enabled.
-- [ ] The deployed site has passed the smoke test below.
-
-The requested implementation is integrated locally. Automated local checks are
-marked separately from human interface acceptance. Scientific sign-off,
-evidence/licensing decisions, push/Pages authorization, and the deployed-site
-smoke test remain external or manual release requirements.
+The production site is
+[rohinshanker.github.io/isaacs-cyano-gene-selection](https://rohinshanker.github.io/isaacs-cyano-gene-selection/).
 
 ## Recommended order
 
-1. Run the site locally and complete the interface checks.
-2. Create the intended 6–10-gene panel and complete its biological review.
-3. Record the external-evidence decisions.
-4. Run the complete automated gate on the exact commit to publish.
-5. Review the Git diff and authorize the push and Pages deployment.
-6. Smoke-test the deployed URL and record the release details.
-
-Do not use a generated panel as an experiment plan until steps 1–3 are complete.
-Do not publish until the automated gate passes on a clean worktree.
+For a site release, complete the interface checks, confirm the external-source
+dispositions, run the complete gate on the intended commit, review the diff,
+deploy, and smoke-test production. Review an exact exported 6–10-gene panel under
+section 2 only when it may become an experiment plan. Site publication does not
+require choosing or approving a panel; experimental use does.
 
 ## 1. Open and inspect the local site
 
@@ -175,28 +154,29 @@ Stop and investigate if a locus tag points to a different gene model than the
 one used for primers, guides, or constructs. The current annotation differs in
 boundary from the older 2017 annotation for 288 shared genes.
 
-## 3. Resolve external evidence and licensing decisions
+## 3. Confirm external evidence and licensing decisions
 
 An explicit, documented waiver is acceptable. A silent guess or a product-name
 substitute is not. Record the decision, rationale, source version, license, and
 reviewer for every row.
 
-| Source or review | Current limitation | Allowed decision | Recorded decision |
-| --- | --- | --- | --- |
-| UniProt | The 2026-09-18 check returned no records for proteome `UP000031358` / taxid 1350461. | Recheck and import a pinned result, or waive. | |
-| Rubin PCC 7942 essentiality | Redistribution terms for a checked-in derivative are not sufficiently explicit. | Obtain permission/license clarity, link without redistribution if appropriate, or waive. | |
-| KEGG | No release-pinned, licensed bulk artifact is established. | Acquire under acceptable terms, or waive. | |
-| CyanoOmicsDB | No release-pinned, licensed bulk artifact is established. | Acquire under acceptable terms, or waive. | |
-| CAI reference-set audit | Product-name classifications have not had a TypeSafe/Jev bounded-classification audit because credentials are unavailable. | Supply credentials and validate on a reviewed sample, or accept and document the existing reviewed rule. | |
+| Source or review | Current release disposition | Admission condition for a future release |
+| --- | --- | --- |
+| UniProt | Waived; no UniProt assertions. Release `2026_03` returned zero records for proteome `UP000031358` and taxid 1350461 on 2026-09-19. | Nonempty dated export, checksum, and explicit RefSeq relationships. |
+| Rubin PCC 7942 essentiality | Waived; no calls or derivative table redistributed. | Recorded redistribution terms plus an ambiguity-preserving, visibly cross-strain join. |
+| KEGG | Waived; no KEGG relationships included. | Authorized access, pinned artifact, acceptable publication terms, and explicit identifier links. |
+| CyanoOmicsDB | Waived; no bulk data imported. | Verify the exact artifact version, bytes, data licence, and UTEX mapping. |
+| CAI reference-set audit | The published set remains a reproducible reference convention, not measured high expression. See [`cai-reference-set.md`](cai-reference-set.md). | Independently reviewed labels and a validated change policy before changing membership. |
 
-If TypeSafe/Jev is used, record:
+These dispositions are release decisions, not claims that the sources lack value.
+The ranked acquisition backlog and per-source gates are in
+[`future-data-roadmap.md`](future-data-roadmap.md).
 
-- [ ] Exact candidate labels and explicit no-match outcome.
-- [ ] Reviewed evaluation sample and ground truth.
-- [ ] Decision threshold chosen from observed errors and consequences.
-- [ ] False-positive and false-negative counts.
-- [ ] Model/service version and run date.
-- [ ] Final accepted reference-set changes, if any.
+Any TypeSafe/Jev audit record must preserve the exact labels and no-match
+outcome, the reviewed evaluation sample and its limitations, error counts,
+model/service version, run date, threshold or explicit no-automatic-change
+policy, and the final human decision. The current CAI audit records all of these
+in [`cai-reference-set.md`](cai-reference-set.md).
 
 Preserve NCBI, Gene Ontology, expression-study, and ViennaRNA attribution in
 redistributed data, screenshots, presentations, and publications. Gene Ontology
@@ -208,6 +188,9 @@ mapping changes in `data/annotation/PROVENANCE.md`.
 Run from the repository root on the exact commit intended for publication. If
 the raw files are missing, first run `./tools/fetch_genome.sh data/raw` and
 `python3 tools/annotation_release.py fetch`.
+
+Do not publish until the automated gate passes and the intended commit has a
+clean worktree.
 
 Complete the [README setup](../../README.md#rebuilding) first. CI's reference
 environment is Python 3.12 and Node 22. The browser procedure also requires
@@ -237,14 +220,14 @@ Expected results for the current implementation:
 
 - [ ] All 15 pinned annotation inputs verify.
 - [ ] All four generated annotation artifacts reproduce byte-for-byte.
-- [ ] 18 readiness and negative-fixture tests pass.
+- [ ] 20 readiness, audit-integrity, and negative-fixture tests pass.
 - [ ] Contract validator reports `passed=62 failed=0 skipped=1`; the sole skip
   is the declared contiguity exemption for the three discontinuous CDSs.
 - [ ] Every live-genome check passes, including protein preservation and metric
   parity within `1e-6`.
-- [ ] 273 JavaScript tests pass, including static HTML/CSS, module, worker, and
+- [ ] 275 JavaScript tests pass, including static HTML/CSS, module, worker, and
   required runtime-asset resolution.
-- [ ] 132 Python tests pass.
+- [ ] 134 Python tests pass.
 - [ ] The RNA-folding browser check passes all 32 parity cases, lifecycle
   states, UI source coverage, current breakpoint widths, and diagnostic checks.
 - [ ] Both working-tree and reviewed-commit-range `git diff --check` commands
@@ -280,17 +263,13 @@ Validation record:
 - [ ] Decide whether floating minimum Python dependency versions and major-tagged
   GitHub Actions are an accepted maintenance risk, or separately adopt a tested
   dependency lock and action-SHA policy before release.
-- [ ] Obtain explicit authorization to push `main` and enable GitHub Pages.
-
-The push and Pages setting are intentional external changes. They have not been
-performed as part of local implementation.
+- [ ] Confirm the intended commit is on `main` and Pages still uses the gated
+  GitHub Actions workflow.
 
 ## 6. Publish and smoke-test
 
-After authorization:
-
 1. Push the reviewed `main` commit to the intended GitHub remote.
-2. In repository settings, select **GitHub Actions** as the Pages source.
+2. Confirm Pages uses **GitHub Actions** as its source.
 3. Wait for `.github/workflows/pages.yml` to finish both `validate` and `deploy`.
 4. Record the workflow URL, deployed commit, and Pages URL below.
 5. Run the production smoke test.
@@ -310,6 +289,9 @@ Production smoke test:
 
 Release record:
 
+This is a reusable template. Store completed values with the lab's release
+record rather than turning this validation document into a release history.
+
 | Item | Value |
 | --- | --- |
 | Deployed commit | |
@@ -322,23 +304,14 @@ Release record:
 
 ## 7. Completion criteria
 
-The work is fully resolved only when all of the following are true:
+A **site release** is complete when every included or omitted external source has
+an explicit disposition, the full automated gate passes on the deployed commit,
+the gated Pages workflow succeeds, and the production smoke test passes.
 
-- [ ] The intended panel has a completed biological review and saved manifest.
-- [ ] Every external evidence source has an acquisition or waiver decision.
-- [ ] The full automated gate passes on the deployed commit.
-- [ ] The reviewed commit is pushed and Pages deployment succeeds.
-- [ ] The production smoke test passes and the release record is complete.
-- [ ] `A_gene-diversity-site__20260918` and
-  `A_data-annotation-release-readiness__20260918` are resolved according to the
-  repository ticket lifecycle: preserve only reusable runbook guidance, remove
-  their index rows, and delete the resolved ticket files.
+An **experimental panel review** is complete only when the exact exported
+manifest has a scientific reviewer, the section 2 checks are recorded with the
+lab record, and the reviewer explicitly approves or rejects experimental use.
+Never infer panel approval from a successful site release.
 
-## Issues found during review
-
-Record defects here or open a new ticket if they require code, data, or
-configuration changes.
-
-| Date | Area | Observation | Severity | Resolution or ticket |
-| --- | --- | --- | --- | --- |
-| | | | | |
+Open a ticket for any defect that requires code, data, or configuration changes;
+do not use this reusable checklist as a defect ledger.

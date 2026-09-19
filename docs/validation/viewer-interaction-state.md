@@ -18,6 +18,15 @@ Unavailable projections disable all view buttons and canvas navigation/zoom is a
 defensive no-op. The canvas instructions are linked with `aria-describedby`.
 The legend names hidden grey dots only when those dots are actually rendered.
 
+## Search result activation
+
+Typing may replace the result list, but a blur/change event for an unchanged
+query must not. A pointer click moves focus away from the search field between
+pointer-down and pointer-up; replacing the button during that interval swallows
+the first Pin or Shortlist activation. Repeated searches for the already rendered
+query are therefore idempotent. Validate both actions with one click immediately
+after typing, as well as with keyboard activation.
+
 ## URL and local persistence
 
 The current encoder is `ver=2`. A viewer-generated hash is a complete shareable
@@ -51,7 +60,8 @@ selection clears and disables both actions rather than leaving silent no-ops.
 
 Regression coverage is in `tests/js/scatter-navigation.test.mjs` and
 `tests/js/url-state.test.mjs`; the all-channel reset is covered in
-`tests/js/interface-copy.test.mjs`. Browser validation must include live hash changes,
-back/forward, seeded local storage plus explicit empty shortlist, unavailable-map
-controls, keyboard preview followed by search/pointer pinning, and explicit
-scheme clear.
+`tests/js/interface-copy.test.mjs`, and idempotent search rendering is covered in
+`tests/js/gene-search.test.mjs`. Browser validation must include live hash
+changes, back/forward, seeded local storage plus explicit empty shortlist,
+unavailable-map controls, first-click and keyboard search activation, keyboard
+preview followed by search/pointer pinning, and explicit scheme clear.

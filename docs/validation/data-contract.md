@@ -162,7 +162,7 @@ numerical tolerance and the browser verification command.
   "rscuOrder": [ "TTT", "TTC", ... ],          // 59 synonymous codons, column order
   "defaultReplacement": { "TCG": "AGC", ... }, // most-used synonymous codon, genome-wide
   "highExpressedReplacement": { "TCG": "AGC", ... }, // same, from the CAI reference set
-  "caiReferenceSet": { "method": "ribosomal+housekeeping", "locusTags": [...], "n": 57 },
+  "caiReferenceSet": { "method": "ribosomal+housekeeping product-name match", "locusTags": [...], "n": 71 },
   "tai": { "sValues": { "...": 0.0 }, "tRNAGeneCopies": { "AGC": 2, ... } },
   "rareCodonThreshold": 0.1,
   "metrics": { "gc3": { "label": "GC3", "unit": "fraction", "desc": "..." }, ... }

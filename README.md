@@ -9,9 +9,11 @@ It is a static site with no application backend. Browsers still require it to be
 served over HTTP so ES modules, JSON, workers, and WebAssembly can load; a one-line
 local server command is shown below.
 
-For the remaining biological review, evidence/licensing decisions, release
-validation, and deployment record, use the
-[`Next steps and validation checklist`](docs/validation/manual-review-checklist.md).
+The published site is
+[rohinshanker.github.io/isaacs-cyano-gene-selection](https://rohinshanker.github.io/isaacs-cyano-gene-selection/).
+For release validation and the separate review required before using an exported
+panel experimentally, use the
+[`Validation and experimental-use checklist`](docs/validation/manual-review-checklist.md).
 
 ## What you can do with it
 
@@ -80,9 +82,9 @@ The full comparison is in [`docs/validation/genome-provenance.md`](docs/validati
 
 ### 2. Every expression number says where it came from
 
-**No public per-gene RNA abundance table exists for UTEX 2973.** Rather than hide that,
-the page labels each gene with the basis of its value, and you can filter to measured
-genes only.
+**This release does not include a verified per-gene RNA abundance table for UTEX
+2973.** Rather than hide that gap, the page labels each gene with the basis of its
+value, and you can filter to measured genes only.
 
 | Basis | Genes | What it is |
 | --- | --- | --- |
@@ -229,7 +231,7 @@ python3 -m venv .venv
 
 Then run the core developer gate. Every command must pass; the complete release
 gate, including annotation, Git-integrity, and rendered-browser checks, is in the
-[`Next steps and validation checklist`](docs/validation/manual-review-checklist.md).
+[`Validation and experimental-use checklist`](docs/validation/manual-review-checklist.md).
 
 ```sh
 ./.venv/bin/python tools/validate_contract.py --raw-dir data/raw  # 62 checks against the contract
@@ -262,8 +264,8 @@ intentionally unsupported because browsers block the required module/data/worker
 
 Pushing to `main` publishes `site/` through `.github/workflows/pages.yml`. Deployment
 is gated: the genome is fetched and checksummed, the organism is verified, the contract
-validator must pass, and the test suite must pass. Enable Pages for the repository with
-"GitHub Actions" as the source.
+validator must pass, and the test suite must pass. GitHub Pages is configured to use
+the workflow artifact; verify the production URL after every deployment.
 
 ## Contract
 
