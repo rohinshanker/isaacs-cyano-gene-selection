@@ -5,7 +5,9 @@ help choose which genes to target for genome recoding.
 
 Filter roughly 2,700 genes down to the ones worth looking at, see where each sits in
 codon-usage and recoding-risk space, and build a shortlist of candidates to compare.
-It is a static site, so it runs from a local file or from GitHub Pages with no server.
+It is a static site with no application backend. Browsers still require it to be
+served over HTTP so ES modules, JSON, workers, and WebAssembly can load; a one-line
+local server command is shown below.
 
 ## What you can do with it
 
@@ -21,6 +23,15 @@ It is a static site, so it runs from a local file or from GitHub Pages with no s
 - **Build a shortlist of candidates** from the search results or the map, compare them as
   a table, a radar, or parallel coordinates, and remove them from a list without hunting
   through the map.
+- **Design a reproducible 6–10-gene panel** across one or several recoding schemes.
+  Seeds, exclusions, hard constraints, missing-data rules, and borrowed expression are
+  explicit; every selected gene says which part of the feature space it adds.
+- **Share the exact live view.** The URL follows maps, filters, schemes, draft names,
+  the activity basis, pins, and even an explicitly empty shortlist. Back/forward and a
+  pasted hash apply without reload.
+- **Fold shortlisted recoded genes locally.** The on-demand ViennaRNA worker compares
+  wild type with the exact recoded start and CDS windows, supports cancellation, and
+  caches identical requests.
 - **Export a shortlist that stays interpretable.** Every export carries a manifest naming
   the dataset, the annotation release, checksums, the full scheme map, and the metric
   definitions, so two exports under two schemes can never be confused.
@@ -207,10 +218,10 @@ python3 -m venv .venv
 ./.venv/bin/python scripts/build_features.py
 ```
 
-Then run the full gate. All four must pass:
+Then run the full gate. Every command must pass:
 
 ```sh
-./.venv/bin/python tools/validate_contract.py        # 60 checks against the contract
+./.venv/bin/python tools/validate_contract.py --raw-dir data/raw  # 62 checks against the contract
 node tools/check_live_metrics.mjs                    # site's own code vs the real genome
 ./.venv/bin/python -m pytest -q                      # pipeline tests
 node tests/fixtures/make_fixture.mjs
@@ -228,6 +239,15 @@ reconciliation from the raw genome rather than trusting the pipeline's assertion
 bug mirrored in the pipeline's own tests still fails here. The live-metric check runs the
 site's own modules against the real dataset, which is what caught the browser and
 pipeline disagreeing by up to 24 ENC units. **Treat a failure in either as blocking.**
+
+To use the viewer locally after validation:
+
+```sh
+python3 -m http.server 8000 --directory site
+```
+
+Then open `http://localhost:8000/`. Opening `site/index.html` through `file://` is
+intentionally unsupported because browsers block the required module/data/worker loads.
 
 ## Deploying
 
