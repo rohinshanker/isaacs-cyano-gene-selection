@@ -66,11 +66,15 @@ export class FilterPanel {
    * @param {HTMLElement} host
    * @param {{onChange: (filters: object) => void,
    *   onExceptionFilterChange: (mode: string) => void,
-   *   onExpressionFilterChange: (mode: string) => void}} handlers
+   *   onExpressionFilterChange: (mode: string) => void,
+   *   onTrafficKeyChange: (key: string) => void}} handlers
    */
   constructor(host, handlers) {
     this.host = host;
     this.handlers = handlers;
+    // Mirrors `state.trafficKey` between updates; `update()` resyncs it from
+    // the passed-in state so a value round-tripped through the URL wins over
+    // whatever this instance last picked on its own.
     this.trafficKey = null;
     this.build();
   }
@@ -144,12 +148,13 @@ export class FilterPanel {
    * @param {{registry: object, filters: object, count: number, passing: number,
    *   exceptionFilter: string, exceptionCount: number,
    *   missingHidden: Map<string, number>, expressionFilter: string,
-   *   basisCounts: {counts: Map<string, number>, recorded: boolean}}} state
+   *   basisCounts: {counts: Map<string, number>, recorded: boolean}, trafficKey: string|null}} state
    */
   update(state) {
     this.registry = state.registry;
     this.filters = state.filters;
     this.count = state.count;
+    if (state.trafficKey) this.trafficKey = state.trafficKey;
 
     const active = Object.keys(state.filters);
     const byFamily = new Map();
@@ -232,10 +237,10 @@ export class FilterPanel {
     }
     select.value = this.trafficKey;
     select.addEventListener('change', () => {
-      const next = { ...state.filters };
-      delete next[this.trafficKey];
+      const filters = { ...state.filters };
+      delete filters[this.trafficKey];
       this.trafficKey = select.value;
-      this.handlers.onChange(next);
+      this.handlers.onTrafficKeyChange(this.trafficKey, filters);
     });
     chooser.append(chooserLabel, select);
     this.trafficHost.append(heading, chooser);

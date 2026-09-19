@@ -32,8 +32,8 @@ export class SchemeEditor {
    * @param {HTMLElement} host
    * @param {object} dataset
    * @param {{onChange: (map: object) => void, onHighExpressedChange: (value: boolean) => void,
-   *   onSaveScheme: (name: string) => void, onLoadScheme: (name: string) => void,
-   *   onDeleteScheme: (name: string) => void}} handlers
+   *   onNameChange: (name: string) => void, onSaveScheme: (name: string) => void,
+   *   onLoadScheme: (name: string) => void, onDeleteScheme: (name: string) => void}} handlers
    */
   constructor(host, dataset, handlers) {
     this.host = host;
@@ -139,6 +139,13 @@ export class SchemeEditor {
     this.nameInput.id = 'scheme-name';
     this.nameInput.placeholder = 'e.g. Syn61-style';
     this.nameInput.autocomplete = 'off';
+    // A typed name is a draft the moment it exists, not only once Save is
+    // clicked: it must survive an unrelated re-render (adding a target
+    // codon, say), which it can only do by living in application state
+    // rather than solely in this input's own DOM value.
+    this.nameInput.addEventListener('input', () => {
+      this.handlers.onNameChange(this.nameInput.value);
+    });
     const saveButton = document.createElement('button');
     saveButton.type = 'button';
     saveButton.className = 'chip-button';
@@ -184,6 +191,7 @@ export class SchemeEditor {
       if (replacement) map[codon] = replacement;
     }
     this.nameInput.value = preset.name;
+    this.handlers.onNameChange(preset.name);
     this.handlers.onChange(map);
   }
 

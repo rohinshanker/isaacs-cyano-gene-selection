@@ -9,8 +9,76 @@
 import { GHOST_COLOR, MISSING_COLOR } from './colors.js';
 
 const PADDING = { left: 58, right: 18, top: 18, bottom: 46 };
-const MIN_ZOOM = 0.4;
-const MAX_ZOOM = 200;
+export const MIN_ZOOM = 0.4;
+export const MAX_ZOOM = 200;
+
+/** Keep a zoom factor inside the range the plot can actually render. */
+export function clampZoom(zoom) {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+}
+
+/**
+ * Which gene Enter pins: only the one the keyboard has explicitly made
+ * active. An arrow key never silently pins anything on its own, so a user
+ * who has only ever hovered or landed on a gene by chance cannot pin it by
+ * accident; they first have to move to it with the keyboard.
+ */
+export function enterTarget(active) {
+  return active >= 0 ? active : -1;
+}
+
+/**
+ * Which gene S adds to or removes from the shortlist: the keyboard-active
+ * gene if there is one, otherwise the pinned gene. This is "the documented
+ * candidate" the map-input-accessibility contract refers to.
+ */
+export function shortlistTarget(active, pinned) {
+  return active >= 0 ? active : pinned;
+}
+
+/**
+ * Nearest point from `from` in a compass direction, in screen space. Pure
+ * geometry: takes the projection, an optional filter mask, and a screen
+ * transform directly, so it needs no canvas or DOM to test. Points behind
+ * the direction of travel are excluded, and lateral offset is penalised, so
+ * repeated presses walk across the map instead of circling.
+ * @param {{x: Float64Array, y: Float64Array}} projection
+ * @param {Uint8Array|null} mask
+ * @param {{k: number, cx: number, cy: number, ox: number, oy: number}} transform
+ * @param {number} from
+ * @param {'left'|'right'|'up'|'down'} direction
+ */
+export function findNeighbor(projection, mask, transform, from, direction) {
+  const { x, y } = projection;
+  const { k, cx, cy, ox, oy } = transform;
+  if (from < 0) {
+    for (let i = 0; i < x.length; i += 1) {
+      if ((!mask || mask[i]) && Number.isFinite(x[i])) return i;
+    }
+    return -1;
+  }
+  const originX = ox + (x[from] - cx) * k;
+  const originY = oy - (y[from] - cy) * k;
+  let best = -1;
+  let bestScore = Infinity;
+  for (let i = 0; i < x.length; i += 1) {
+    if (i === from) continue;
+    if (mask && !mask[i]) continue;
+    if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
+    const dx = ox + (x[i] - cx) * k - originX;
+    const dy = oy - (y[i] - cy) * k - originY;
+    const along = direction === 'right' ? dx : direction === 'left' ? -dx
+      : direction === 'up' ? -dy : dy;
+    if (along <= 0.5) continue;
+    const lateral = direction === 'left' || direction === 'right' ? Math.abs(dy) : Math.abs(dx);
+    const score = along + lateral * 2.5;
+    if (score < bestScore) {
+      bestScore = score;
+      best = i;
+    }
+  }
+  return best;
+}
 
 /** Shorten text with an ellipsis until it fits `maxWidth`. */
 function fitText(context, text, maxWidth) {
@@ -41,8 +109,9 @@ function niceTicks(low, high, target = 6) {
 export class ScatterPlot {
   /**
    * @param {HTMLCanvasElement} canvas
-   * @param {{onHover: (index: number) => void, onSelect: (index: number) => void,
-   *   onShortlistToggle: (index: number) => void, onViewChange: () => void}} handlers
+   * @param {{onHover: (index: number) => void, onPreview: (index: number) => void,
+   *   onSelect: (index: number) => void, onShortlistToggle: (index: number) => void,
+   *   onEnterWithNothingActive: () => void, onViewChange: () => void}} handlers
    */
   constructor(canvas, handlers = {}) {
     this.canvas = canvas;
@@ -54,6 +123,9 @@ export class ScatterPlot {
     this.buckets = null;
     this.pinned = -1;
     this.hovered = -1;
+    // Distinct from `pinned`: where the keyboard has moved to, previewed but
+    // not committed. Arrow keys move it; Enter is what promotes it to pinned.
+    this.active = -1;
     this.shortlist = new Set();
     this.showHidden = true;
     this.zoom = 1;
@@ -140,9 +212,12 @@ export class ScatterPlot {
     return this.buckets;
   }
 
-  setMarks({ pinned = this.pinned, hovered = this.hovered, shortlist = this.shortlist }) {
+  setMarks({
+    pinned = this.pinned, hovered = this.hovered, active = this.active, shortlist = this.shortlist,
+  }) {
     this.pinned = pinned;
     this.hovered = hovered;
+    this.active = active;
     this.shortlist = shortlist;
     this.draw();
   }
@@ -266,40 +341,11 @@ export class ScatterPlot {
 
   /**
    * Nearest gene from `from` in a compass direction, for keyboard navigation.
-   * Points behind the direction of travel are excluded, and lateral offset is
-   * penalised, so repeated presses walk across the map instead of circling.
+   * See {@link findNeighbor} for the geometry.
    */
   neighbor(from, direction) {
     if (!this.projection?.available) return -1;
-    const { x, y } = this.projection;
-    if (from < 0) {
-      for (let i = 0; i < x.length; i += 1) {
-        if ((!this.mask || this.mask[i]) && Number.isFinite(x[i])) return i;
-      }
-      return -1;
-    }
-    const { k, cx, cy, ox, oy } = this.transform();
-    const originX = ox + (x[from] - cx) * k;
-    const originY = oy - (y[from] - cy) * k;
-    let best = -1;
-    let bestScore = Infinity;
-    for (let i = 0; i < x.length; i += 1) {
-      if (i === from) continue;
-      if (this.mask && !this.mask[i]) continue;
-      if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
-      const dx = ox + (x[i] - cx) * k - originX;
-      const dy = oy - (y[i] - cy) * k - originY;
-      const along = direction === 'right' ? dx : direction === 'left' ? -dx
-        : direction === 'up' ? -dy : dy;
-      if (along <= 0.5) continue;
-      const lateral = direction === 'left' || direction === 'right' ? Math.abs(dy) : Math.abs(dx);
-      const score = along + lateral * 2.5;
-      if (score < bestScore) {
-        bestScore = score;
-        best = i;
-      }
-    }
-    return best;
+    return findNeighbor(this.projection, this.mask, this.transform(), from, direction);
   }
 
   bindEvents() {
@@ -353,12 +399,18 @@ export class ScatterPlot {
 
   zoomAt(screenX, screenY, factor) {
     const before = this.toData(screenX, screenY);
-    this.zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, this.zoom * factor));
+    this.zoom = clampZoom(this.zoom * factor);
     const after = this.toScreen(before.x, before.y);
     this.panX += screenX - after.x;
     this.panY += screenY - after.y;
     this.draw();
     this.handlers.onViewChange?.();
+  }
+
+  /** Zoom by `factor` about the centre of the plot, for buttons and touch. */
+  zoomStep(factor) {
+    const rect = this.plotRect;
+    this.zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
   }
 
   onKeyDown(event) {
@@ -377,8 +429,22 @@ export class ScatterPlot {
         this.handlers.onViewChange?.();
         return;
       }
-      const next = this.neighbor(this.pinned, direction);
-      if (next >= 0) this.handlers.onSelect?.(next);
+      // Arrow keys move and preview the active gene; they never pin on their
+      // own, so landing on a gene by accident cannot silently commit it.
+      const from = this.active >= 0 ? this.active : this.pinned;
+      const next = this.neighbor(from, direction);
+      if (next >= 0) {
+        this.active = next;
+        this.draw();
+        this.handlers.onPreview?.(next);
+      }
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const target = enterTarget(this.active);
+      if (target >= 0) this.handlers.onSelect?.(target);
+      else this.handlers.onEnterWithNothingActive?.();
       return;
     }
     if (event.key === '+' || event.key === '=') {
@@ -390,9 +456,12 @@ export class ScatterPlot {
     } else if (event.key === '0') {
       event.preventDefault();
       this.resetView();
-    } else if (event.key.toLowerCase() === 's' && this.pinned >= 0) {
-      event.preventDefault();
-      this.handlers.onShortlistToggle?.(this.pinned);
+    } else if (event.key.toLowerCase() === 's') {
+      const target = shortlistTarget(this.active, this.pinned);
+      if (target >= 0) {
+        event.preventDefault();
+        this.handlers.onShortlistToggle?.(target);
+      }
     }
   }
 
@@ -508,6 +577,11 @@ export class ScatterPlot {
 
     if (this.hovered >= 0 && this.hovered !== this.pinned) {
       this.drawFocus(this.hovered, '#4a5568', false);
+    }
+    // The active ring is a distinct colour from both hover and pinned, and
+    // never carries the "pinned" label: it is a preview, not a commitment.
+    if (this.active >= 0 && this.active !== this.hovered && this.active !== this.pinned) {
+      this.drawFocus(this.active, '#2f6f8f', false);
     }
     if (this.pinned >= 0) {
       this.drawFocus(this.pinned, '#b3261e', true);

@@ -65,6 +65,7 @@ const state = {
   showHidden: true,
   exceptionFilter: 'any',
   expressionFilter: 'any',
+  trafficKey: null,
 };
 
 const context = {
@@ -76,6 +77,7 @@ const context = {
   mask: null,
   passing: 0,
   hoveredIndex: -1,
+  activeIndex: -1,
   schemeVersion: 0,
   projections: new Map(),
   percentiles: new Map(),
@@ -217,11 +219,19 @@ function pinnedIndex() {
   return index === undefined ? -1 : index;
 }
 
+// `replaceState` never fires `hashchange`/`popstate` in any browser, so the
+// live-hash listener below cannot loop back on this call. The flag is a
+// defensive belt for that guarantee, since a broken loop here would be a
+// silent, expensive one: every render would re-decode and re-render forever.
+let applyingHash = false;
+
 function persist() {
   store.write(STORAGE_SHORTLIST, state.shortlist);
   const hash = encodeState(state);
   const target = `${window.location.pathname}${window.location.search}${hash ? `#${hash}` : ''}`;
+  applyingHash = true;
   window.history.replaceState(null, '', target);
+  applyingHash = false;
 }
 
 let plot = null;
@@ -278,6 +288,7 @@ function renderMap() {
   plot.setMarks({
     pinned: pinnedIndex(),
     hovered: context.hoveredIndex,
+    active: context.activeIndex,
     shortlist: new Set(
       state.shortlist
         .map((id) => context.dataset.indexById.get(id))
@@ -297,6 +308,7 @@ function renderMap() {
       scale,
       missingCount: missing,
       hiddenCount: context.dataset.genes.length - context.passing,
+      showHidden: state.showHidden,
       provenanceNote: describeExpressionSource(metric.provenance),
       basisCounts: isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
         ? context.basisCounts : null,
@@ -312,8 +324,7 @@ function renderMap() {
     'aria-label',
     projection.available
       ? `${panel.name}: ${formatCount(context.passing)} of `
-        + `${formatCount(context.dataset.genes.length)} genes shown, coloured by ${metric.label}. `
-        + 'Use the arrow keys to move between genes.'
+        + `${formatCount(context.dataset.genes.length)} genes shown, coloured by ${metric.label}.`
       : `${panel.name}: ${projection.message}`,
   );
 
@@ -327,10 +338,16 @@ function renderMap() {
 }
 
 function renderDetail() {
-  const index = context.hoveredIndex >= 0 ? context.hoveredIndex : pinnedIndex();
+  // Pointer hover wins over keyboard preview, which wins over the pinned gene:
+  // whichever one the user is actively looking at now is the one this panel
+  // should describe.
+  const index = context.hoveredIndex >= 0 ? context.hoveredIndex
+    : context.activeIndex >= 0 ? context.activeIndex
+      : pinnedIndex();
   sidePanel.update({
     index,
-    isPinned: index >= 0 && index === pinnedIndex() && context.hoveredIndex < 0,
+    isPinned: index >= 0 && index === pinnedIndex()
+      && context.hoveredIndex < 0 && context.activeIndex < 0,
     dataset: context.dataset,
     registry: context.registry,
     percentileOf,
@@ -363,6 +380,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     exceptionCount: context.exceptionCount,
     expressionFilter: state.expressionFilter,
     basisCounts: context.basisCounts,
+    trafficKey: state.trafficKey,
   });
   shortlistPanel.update({
     ids: state.shortlist,
@@ -416,6 +434,22 @@ function setPinned(index) {
   if (gene) {
     announce(`Pinned ${gene.id}${gene.name ? ` ${gene.name}` : ''}. ${gene.product ?? ''}`);
   }
+}
+
+/**
+ * Arrow-key navigation moves this without pinning anything. It is what Enter
+ * pins and what S adds to the shortlist when nothing is pinned yet, and it
+ * drives the same detail panel a pointer hover would, so a keyboard user gets
+ * the same information a mouse user does.
+ */
+function previewActive(index) {
+  context.activeIndex = index;
+  plot.setMarks({ active: index });
+  renderDetail();
+  if (index < 0) return;
+  const gene = context.dataset.genes[index];
+  announce(`${gene.id}${gene.name ? ` ${gene.name}` : ''} active. `
+    + 'Press Enter to pin, S to add or remove it from the shortlist.');
 }
 
 function toggleShortlist(index) {
@@ -693,11 +727,62 @@ function renderProvenance() {
   host.append(details);
 }
 
-async function boot() {
-  const saved = decodeState(window.location.hash);
-  Object.assign(state, saved);
-  if (!saved.shortlist) state.shortlist = store.read(STORAGE_SHORTLIST, []);
+/**
+ * Apply a decoded (partial) state, honouring precedence once: an explicit URL
+ * value wins; a field the URL truly leaves unspecified falls back to local
+ * persistence (only the shortlist has any); anything still unset falls back
+ * to a default. Called from boot with the initial hash and again from the
+ * live hash/popstate handlers, so both paths normalize identically.
+ */
+function normalizeAndApply(decoded, { isInitial = false } = {}) {
+  Object.assign(state, decoded);
+  if (isInitial && !('shortlist' in decoded)) state.shortlist = store.read(STORAGE_SHORTLIST, []);
 
+  // Drop any shortlisted or pinned gene that is not in this dataset, so a stale link degrades cleanly.
+  state.shortlist = state.shortlist.filter((id) => context.dataset.indexById.has(id));
+  if (state.pinnedId && !context.dataset.indexById.has(state.pinnedId)) state.pinnedId = null;
+  if (!PANELS.some((panel) => panel.id === state.panel)) state.panel = 'native';
+  if (!context.basisCounts.recorded) state.expressionFilter = 'any';
+
+  const schemeErrors = recomputeScheme();
+  if (schemeErrors.length > 0) {
+    state.schemeMap = {};
+    recomputeScheme();
+  }
+  if (!context.registry) {
+    context.registry = buildMetricRegistry(context.dataset.meta, context.dataset.genes, context.live);
+  }
+  if (!state.colorBy || !context.registry.byKey.has(state.colorBy)) {
+    state.colorBy = context.registry.byKey.has('gc3') ? 'gc3' : context.registry.metrics[0].key;
+  }
+}
+
+/**
+ * Apply a hash the address bar now carries, live: a shared link pasted or
+ * edited into an already-open tab, or a back/forward navigation across two
+ * such links. Without this, the viewer only ever reads its hash once, in
+ * `boot`, and the address bar can claim one analysis while every panel still
+ * shows another until the page is reloaded.
+ */
+function applyLiveHash() {
+  if (applyingHash || !context.dataset) return;
+  const decoded = decodeState(window.location.hash);
+  normalizeAndApply(decoded);
+  context.hoveredIndex = -1;
+  context.activeIndex = -1;
+  // Forces renderMap's own `setProjection` call to treat this as a fresh
+  // panel and reset pan/zoom, since a pasted link should show what it
+  // encodes at a known scale rather than whatever view the old panel was
+  // left at.
+  plot.projectionId = null;
+  updatePanelTabs();
+  element('color-by').value = state.colorBy;
+  element('show-hidden').checked = state.showHidden;
+  renderAll();
+  announce('View updated from the address bar.');
+}
+
+async function boot() {
   let dataset;
   try {
     dataset = await loadDataset({ baseUrl: resolveDataBase() });
@@ -709,23 +794,8 @@ async function boot() {
   context.exceptionCount = dataset.genes
     .filter((gene) => Boolean(gene.translationalException)).length;
   context.basisCounts = expressionBasisCounts(dataset.genes);
-  // A measured-only filter is meaningless when no gene records a basis.
-  if (!context.basisCounts.recorded) state.expressionFilter = 'any';
 
-  // Drop any shortlisted gene that is not in this dataset, so a stale link degrades cleanly.
-  state.shortlist = state.shortlist.filter((id) => dataset.indexById.has(id));
-  if (state.pinnedId && !dataset.indexById.has(state.pinnedId)) state.pinnedId = null;
-  if (!PANELS.some((panel) => panel.id === state.panel)) state.panel = 'native';
-
-  const schemeErrors = recomputeScheme();
-  if (schemeErrors.length > 0) {
-    state.schemeMap = {};
-    recomputeScheme();
-  }
-  context.registry = buildMetricRegistry(dataset.meta, dataset.genes, context.live);
-  if (!state.colorBy || !context.registry.byKey.has(state.colorBy)) {
-    state.colorBy = context.registry.byKey.has('gc3') ? 'gc3' : context.registry.metrics[0].key;
-  }
+  normalizeAndApply(decodeState(window.location.hash), { isInitial: true });
 
   element('load-status').hidden = true;
   element('main').hidden = false;
@@ -740,12 +810,24 @@ async function boot() {
       renderDetail();
     },
     onSelect: (index) => setPinned(index),
+    onPreview: (index) => previewActive(index),
+    onEnterWithNothingActive: () => announce('Nothing is active yet. Use the arrow keys to move '
+      + 'to a gene before pressing Enter to pin it.'),
     onShortlistToggle: (index) => toggleShortlist(index),
     onViewChange: scheduleTiming,
   });
 
   schemeEditor = new SchemeEditor(element('scheme-editor'), dataset, {
     onChange: (map) => setScheme(map),
+    // A name typed here is a draft: it belongs in state the moment it is
+    // typed, not only once Save is clicked, or a re-render triggered by an
+    // unrelated edit (adding a target, say) would wipe it back to whatever
+    // was last saved, since the editor's own DOM value never survived a
+    // render pass on its own.
+    onNameChange: (name) => {
+      state.schemeName = name;
+      persist();
+    },
     onHighExpressedChange: (value) => {
       state.highExpressed = value;
       const targets = Object.keys(state.schemeMap);
@@ -801,6 +883,11 @@ async function boot() {
         ? `Showing only the ${formatCount(context.passing)} genes with a measured expression value.`
         : 'Showing genes whatever their expression basis.');
     },
+    onTrafficKeyChange: (key, filters) => {
+      state.trafficKey = key;
+      state.filters = filters;
+      renderAll();
+    },
   });
 
   sidePanel = new SidePanel(element('detail'), {
@@ -845,12 +932,16 @@ async function boot() {
     plot.resetFrameStats();
     plot.resetView();
   });
+  element('zoom-in').addEventListener('click', () => plot.zoomStep(1.4));
+  element('zoom-out').addEventListener('click', () => plot.zoomStep(1 / 1.4));
   const showHidden = element('show-hidden');
   showHidden.checked = state.showHidden;
   showHidden.addEventListener('change', () => {
     state.showHidden = showHidden.checked;
-    plot.setShowHidden(state.showHidden);
-    persist();
+    // A full render, not just `plot.setShowHidden`: the legend's hidden-dot
+    // note must disappear along with the dots it describes, and only
+    // `renderMap` (via `renderAll`) rebuilds the legend.
+    renderAll();
   });
   const helpToggle = element('help-toggle');
   helpToggle.addEventListener('click', () => {
@@ -859,6 +950,12 @@ async function boot() {
     helpToggle.setAttribute('aria-expanded', String(open));
     if (open) element('help').scrollIntoView({ block: 'nearest' });
   });
+
+  window.addEventListener('hashchange', applyLiveHash);
+  // Belt for the browsers/paths where a hash-only history navigation fires
+  // `popstate` without also firing `hashchange`; `applyLiveHash` reads the
+  // current hash either way, so a duplicate call is a harmless no-op render.
+  window.addEventListener('popstate', applyLiveHash);
 
   renderAll();
   announce(`${formatCount(dataset.genes.length)} genes loaded.`);

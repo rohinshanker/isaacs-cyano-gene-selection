@@ -9,8 +9,17 @@ import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
-  exceptionFilter: 'e', expressionFilter: 'm',
+  exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
 };
+
+/**
+ * Encoding version. A hash carrying `ver` was produced by this encoder, so its
+ * absence of a field (other than `ver` itself) means that field is genuinely
+ * unset, not merely omitted by an older encoder. Bump this only when a change
+ * to what gets encoded could make an older reader misinterpret a newer hash
+ * (or vice versa) `l`'s explicit-empty behaviour below is why version 1 became 2.
+ */
+export const STATE_VERSION = 2;
 
 /** Values the expression-basis filter can take. */
 export const EXPRESSION_FILTERS = Object.freeze(['any', 'measured']);
@@ -44,7 +53,7 @@ function decodeFilters(text) {
 
 /** Serialize the shareable part of the application state into a hash string. */
 export function encodeState(state) {
-  const parts = [];
+  const parts = [`${KEYS.version}=${STATE_VERSION}`];
   const push = (key, value) => {
     if (value === '' || value === null || value === undefined) return;
     parts.push(`${key}=${encodeURIComponent(value)}`);
@@ -55,7 +64,13 @@ export function encodeState(state) {
   push(KEYS.schemeName, state.schemeName);
   if (state.highExpressed) push(KEYS.highExpressed, '1');
   push(KEYS.filters, encodeFilters(state.filters));
-  push(KEYS.shortlist, state.shortlist.join(','));
+  push(KEYS.trafficKey, state.trafficKey);
+  // Always present, and never through `push`: an omitted shortlist means "the
+  // hash does not speak to this," which is how a recipient's own localStorage
+  // shortlist survives an old-style partial link. Every state this app
+  // produces is a complete snapshot, so it always says so explicitly, even
+  // when the shortlist is empty.
+  parts.push(`${KEYS.shortlist}=${encodeURIComponent(state.shortlist.join(','))}`);
   push(KEYS.pinned, state.pinnedId ?? '');
   push(KEYS.compareTab, state.compareTab);
   if (state.exceptionFilter && state.exceptionFilter !== 'any') {
@@ -79,6 +94,7 @@ export function decodeState(hash) {
     values.set(part.slice(0, separator), decodeURIComponent(part.slice(separator + 1)));
   }
   const state = {};
+  if (values.has(KEYS.version)) state.version = Number(values.get(KEYS.version)) || undefined;
   if (values.has(KEYS.panel)) state.panel = values.get(KEYS.panel);
   if (values.has(KEYS.colorBy)) state.colorBy = values.get(KEYS.colorBy);
   if (values.has(KEYS.scheme)) state.schemeMap = parseSchemeMap(values.get(KEYS.scheme));
@@ -99,5 +115,6 @@ export function decodeState(hash) {
     if (EXPRESSION_FILTERS.includes(mode)) state.expressionFilter = mode;
   }
   if (values.has(KEYS.showHidden)) state.showHidden = values.get(KEYS.showHidden) !== '0';
+  if (values.has(KEYS.trafficKey)) state.trafficKey = values.get(KEYS.trafficKey);
   return state;
 }

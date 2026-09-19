@@ -108,11 +108,39 @@
       <h3>Colour</h3>
       <p>
         Colour is never the only signal. Shortlisted genes also get a diamond outline, the pinned
-        gene gets a ring with crosshairs, genes with no value for the current metric are drawn as
-        open circles, and genes hidden by a filter shrink to small grey dots.
+        gene gets a ring with crosshairs, an active gene reached by arrow key gets a third,
+        distinct ring while you decide whether to pin it, and genes hidden by a filter shrink to
+        small grey dots.
       </p>
     </div>
   </div>
+  <details class="convention-details">
+    <summary>Moving the map and sharing a link</summary>
+    <div class="help-grid">
+      <div>
+        <h3>Moving around the map</h3>
+        <p>
+          Drag to pan and scroll to zoom with a mouse or trackpad; the Zoom in and Zoom out
+          buttons do the same on a touch screen, with no pinch gesture required. With the map
+          focused, arrow keys move an active gene and announce it without pinning anything, Enter
+          pins that active gene, and S adds or removes it — or, if nothing is active yet, the
+          pinned gene — from the shortlist.
+        </p>
+      </div>
+      <div>
+        <h3>Sharing a link</h3>
+        <p>
+          The address bar always matches what is on screen, including while you paste in a
+          different link or use the browser's back and forward buttons: the page applies the new
+          view live, without a reload. A link encodes its shortlist explicitly, even an empty one,
+          so sending someone a cleared shortlist actually clears theirs instead of quietly showing
+          whatever they had saved locally. Anything a link does not mention — most often, on a
+          first visit with no link at all — falls back to what this browser last saved, and only
+          then to the page's defaults.
+        </p>
+      </div>
+    </div>
+  </details>
 </section>
 
 <p id="load-status" class="load-status" role="status">Loading gene data…</p>
@@ -193,6 +221,8 @@ if (window.location.protocol === 'file:') {
       </div>
       <div class="map-toolbar-row">
         <button type="button" id="reset-view" class="chip-button">Reset view</button>
+        <button type="button" id="zoom-in" class="chip-button" aria-label="Zoom in">Zoom in (+)</button>
+        <button type="button" id="zoom-out" class="chip-button" aria-label="Zoom out">Zoom out (−)</button>
         <span class="checkbox-row">
           <input type="checkbox" id="show-hidden" checked>
           <label for="show-hidden">Show filtered-out genes as grey dots</label>
@@ -206,13 +236,15 @@ if (window.location.protocol === 'file:') {
     <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
     <p class="filter-banner" id="filter-banner" role="status"></p>
     <div class="canvas-host">
-      <canvas id="map-canvas" tabindex="0" role="img"
+      <canvas id="map-canvas" tabindex="0" role="img" aria-describedby="map-instructions"
               aria-label="Scatter plot of genes. Use the arrow keys to move between genes."></canvas>
     </div>
-    <p class="hint">
-      Drag to pan, scroll to zoom, double-click to reset. With the map focused: arrow keys move to
-      the next gene, Shift and an arrow pans, plus and minus zoom, 0 resets, Enter pins, S adds or
-      removes the pinned gene from the shortlist.
+    <p class="hint" id="map-instructions">
+      Drag to pan, scroll or the Zoom in/out buttons to zoom, double-click or 0 to reset. With the
+      map focused: arrow keys move an active gene without pinning it and announce what it is,
+      Shift and an arrow pans, plus and minus zoom, Enter pins the active gene, S adds or removes
+      the active gene (or, with nothing active, the pinned gene) from the shortlist. The zoom
+      buttons also work by touch.
     </p>
     <div class="map-footer">
       <div id="legend" class="legend"></div>

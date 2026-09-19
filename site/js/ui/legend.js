@@ -27,7 +27,8 @@ export function describeBasisCounts(basisCounts) {
 /**
  * @param {HTMLElement} host
  * @param {{metric: object, scale: object, missingCount: number, hiddenCount: number,
- *   provenanceNote: string|null, basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
+ *   showHidden: boolean, provenanceNote: string|null,
+ *   basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
  */
 export function renderLegend(host, state) {
   host.replaceChildren();
@@ -87,10 +88,14 @@ export function renderLegend(host, state) {
     'open', MISSING_COLOR,
     `${formatCount(state.missingCount)} genes have no value: open circles`, 'open',
   );
-  addNote(
-    'ghost', GHOST_COLOR,
-    `${formatCount(state.hiddenCount)} hidden by filters: small grey dots`,
-  );
+  // Only true when those grey dots are actually drawn: with "Show filtered-out
+  // genes" unchecked, the map has nothing this note could be describing.
+  if (state.showHidden) {
+    addNote(
+      'ghost', GHOST_COLOR,
+      `${formatCount(state.hiddenCount)} hidden by filters: small grey dots`,
+    );
+  }
   addNote('diamond', '#1b2733', 'Shortlisted: diamond outline', 'open');
   addNote('pin', '#b3261e', 'Pinned: ring with crosshairs', 'open');
 
