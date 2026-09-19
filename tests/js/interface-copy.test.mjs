@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  trafficThresholdLabel, trafficThresholdReadout,
+  clearedFilterState, trafficThresholdLabel, trafficThresholdReadout,
 } from '../../site/js/ui/filters.js';
 import { foldInputsInvalidateResult } from '../../site/js/ui/folding-panel.js';
 import { metricFamilyStartsOpen } from '../../site/js/ui/side-panel.js';
@@ -14,6 +14,15 @@ test('activity threshold copy preserves metric capitalization and avoids calling
     trafficThresholdReadout(metric, 0.348, 2715, 2715),
     '0.348 index — keeps 2,715 of 2,715 genes with a value',
   );
+});
+
+test('clear all filters resets numeric and categorical channels together', () => {
+  assert.deepEqual(clearedFilterState(), {
+    filters: {},
+    exceptionFilter: 'any',
+    expressionFilter: 'any',
+    trafficKey: null,
+  });
 });
 
 test('folding inputs are not called stale before the first folding request', () => {

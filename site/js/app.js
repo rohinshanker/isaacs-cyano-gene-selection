@@ -22,7 +22,7 @@ import { renderLegend } from './ui/legend.js';
 import { buildColorScale } from './ui/colors.js';
 import { ScatterPlot } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
-import { FilterPanel } from './ui/filters.js';
+import { FilterPanel, clearedFilterState } from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
@@ -924,6 +924,11 @@ async function boot() {
     onChange: (filters) => {
       state.filters = filters;
       renderAll();
+    },
+    onClear: () => {
+      Object.assign(state, clearedFilterState());
+      renderAll();
+      announce(`All filters cleared. Showing all ${formatCount(context.dataset.genes.length)} genes.`);
     },
     onExceptionFilterChange: (mode) => {
       state.exceptionFilter = mode;

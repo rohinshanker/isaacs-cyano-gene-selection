@@ -31,6 +31,16 @@ export function trafficThresholdReadout(metric, value, kept, total) {
     + `${formatCount(total)} genes with a value`;
 }
 
+/** Every independent filter channel reset by the control labelled "Clear all filters". */
+export function clearedFilterState() {
+  return {
+    filters: {},
+    exceptionFilter: 'any',
+    expressionFilter: 'any',
+    trafficKey: null,
+  };
+}
+
 function drawHistogram(canvas, values, min, max) {
   const ratio = window.devicePixelRatio || 1;
   const width = canvas.clientWidth || 200;
@@ -77,6 +87,7 @@ export class FilterPanel {
   /**
    * @param {HTMLElement} host
    * @param {{onChange: (filters: object) => void,
+   *   onClear: () => void,
    *   onExceptionFilterChange: (mode: string) => void,
    *   onExpressionFilterChange: (mode: string) => void,
    *   onTrafficKeyChange: (key: string) => void}} handlers
@@ -128,7 +139,7 @@ export class FilterPanel {
     this.clearButton.type = 'button';
     this.clearButton.className = 'chip-button';
     this.clearButton.textContent = 'Clear all filters';
-    this.clearButton.addEventListener('click', () => this.handlers.onChange({}));
+    this.clearButton.addEventListener('click', () => this.handlers.onClear());
 
     this.host.append(
       this.trafficHost, this.basisHost, this.exceptionHost, addRow, this.list, this.summary,
