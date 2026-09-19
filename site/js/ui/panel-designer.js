@@ -21,6 +21,7 @@ import {
 import {
   buildPanelExport, buildSchemeMatrix, describeSchemes,
 } from '../core/panel-export.js';
+import { schemeIdOf } from '../core/export-manifest.js';
 import { isBorrowedMetric } from '../core/panel-features.js';
 import { formatValue, formatCount, formatPercentile } from './format.js';
 
@@ -80,6 +81,29 @@ function checkbox(id, labelText, checked, onChange) {
   label.htmlFor = id;
   row.append(input, label);
   return { row, input, label };
+}
+
+/** A saved scheme's selection follows its map, not its position in the sorted list. */
+export function savedSchemeKey(scheme) {
+  return `saved:${schemeIdOf(scheme.map)}`;
+}
+
+/** Drop selections whose saved scheme was deleted, without transferring them to another row. */
+export function reconcileSchemeSelection(selectedKeys, schemes) {
+  const available = new Set(['active', ...schemes.saved.map(savedSchemeKey)]);
+  return new Set([...selectedKeys].filter((key) => available.has(key)));
+}
+
+/** Resolve checkbox state to the maps used by panel computation and export. */
+export function selectedSchemes(schemes, selectedKeys) {
+  const chosen = [];
+  if (selectedKeys.has('active')) {
+    chosen.push({ name: schemes.active.name || 'Current scheme', map: schemes.active.map });
+  }
+  for (const scheme of schemes.saved) {
+    if (selectedKeys.has(savedSchemeKey(scheme))) chosen.push(scheme);
+  }
+  return chosen.length > 0 ? chosen : [{ name: 'Wild type', map: {} }];
 }
 
 export class PanelDesigner {
@@ -165,21 +189,14 @@ export class PanelDesigner {
    */
   update(state) {
     this.state = state;
+    this.selectedSchemeKeys = reconcileSchemeSelection(this.selectedSchemeKeys, state.schemes);
     this.renderForm();
     this.renderResult();
   }
 
   /** The schemes the reader ticked, as `{name, map}` in a stable order. */
   chosenSchemes() {
-    const { schemes } = this.state;
-    const chosen = [];
-    if (this.selectedSchemeKeys.has('active')) {
-      chosen.push({ name: schemes.active.name || 'Current scheme', map: schemes.active.map });
-    }
-    schemes.saved.forEach((scheme, i) => {
-      if (this.selectedSchemeKeys.has(`saved:${i}`)) chosen.push(scheme);
-    });
-    return chosen.length > 0 ? chosen : [{ name: 'Wild type', map: {} }];
+    return selectedSchemes(this.state.schemes, this.selectedSchemeKeys);
   }
 
   renderForm() {
@@ -214,11 +231,15 @@ export class PanelDesigner {
       { key: 'active', label: schemes.active.name
         ? `Current scheme: ${schemes.active.name}`
         : (Object.keys(schemes.active.map).length > 0 ? 'Current scheme' : 'Wild type (no scheme set)') },
-      ...schemes.saved.map((scheme, i) => ({ key: `saved:${i}`, label: `Saved: ${scheme.name}` })),
+      ...schemes.saved.map((scheme, i) => ({
+        key: savedSchemeKey(scheme),
+        id: `panel-scheme-saved-${i}`,
+        label: `Saved: ${scheme.name}`,
+      })),
     ];
     for (const option of options) {
       const { row } = checkbox(
-        `panel-scheme-${option.key.replace(':', '-')}`,
+        option.id ?? `panel-scheme-${option.key}`,
         option.label,
         this.selectedSchemeKeys.has(option.key),
         (checked) => {
