@@ -150,11 +150,11 @@ pre {
 @media (min-width: 960px) {
   .layout { grid-template-columns: 300px minmax(0, 1fr); }
   .detail { grid-column: 1 / -1; }
-  .detail-jump { display: none; }
   .shortlist-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 }
 @media (min-width: 1240px) {
   .layout { grid-template-columns: 280px minmax(0, 1fr) 320px; }
+  .detail-jump { display: none; }
   .detail {
     grid-column: auto;
     position: sticky;

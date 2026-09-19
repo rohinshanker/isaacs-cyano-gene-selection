@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
 const app = await readFile(new URL('../../site/js/app.js', import.meta.url), 'utf8');
+const css = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 
 test('analysis panels keep a logical source order inside one center column', () => {
   const analysisStart = html.indexOf('<div class="column analysis">');
@@ -41,4 +42,12 @@ test('the header offers a visible direct route past the long control column', ()
   assert.match(app, /document\.querySelectorAll\('\.map-jump'\)/);
   assert.match(app, /event\.preventDefault\(\)/,
     'map jumps must not replace the URL hash that carries live application state');
+});
+
+test('the selected-detail shortcut remains until detail becomes a sticky side rail', () => {
+  const tabletStart = css.indexOf('@media (min-width: 960px)');
+  const wideStart = css.indexOf('@media (min-width: 1240px)');
+  assert.ok(tabletStart >= 0 && wideStart > tabletStart);
+  assert.doesNotMatch(css.slice(tabletStart, wideStart), /\.detail-jump\s*\{[^}]*display:\s*none/);
+  assert.match(css.slice(wideStart), /\.detail-jump\s*\{[^}]*display:\s*none/);
 });

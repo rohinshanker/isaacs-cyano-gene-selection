@@ -105,7 +105,8 @@ async (page) => {
     check(parity.measuredCacheHits === 0, 'warmed-engine workload must perform ten real folds');
 
     // Entire page plus the affected region, with semantic snapshots at every size.
-    for (const [width, height] of [[375, 812], [768, 1024], [1280, 800], [1440, 900], [959, 900], [961, 900], [1359, 900], [1361, 900]]) {
+    for (const [width, height] of [[375, 812], [768, 1024], [959, 900], [960, 900],
+      [1239, 900], [1240, 900], [1280, 800], [1440, 900]]) {
       await page.setViewportSize({ width, height });
       await region.scrollIntoViewIfNeeded();
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
