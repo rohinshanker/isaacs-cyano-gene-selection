@@ -154,7 +154,12 @@ export class FilterPanel {
     this.registry = state.registry;
     this.filters = state.filters;
     this.count = state.count;
-    if (state.trafficKey) this.trafficKey = state.trafficKey;
+    // Always resynced, including an explicit `null`: app state just came
+    // back from a hash that does not mention a traffic metric, which means
+    // "back to the default candidate," not "keep whatever this widget
+    // remembers from before." `renderTraffic` below picks the default
+    // candidate whenever this is falsy.
+    this.trafficKey = state.trafficKey;
 
     const active = Object.keys(state.filters);
     const byFamily = new Map();

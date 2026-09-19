@@ -12,7 +12,9 @@ import {
   buildMetricRegistry, rebindLiveMetrics, metricValues, describeExpressionSource,
   expressionBasisOf, expressionBasisCounts, isExpressionMetric, isExpressionProxyMetric,
 } from './core/metric-registry.js';
-import { encodeState, decodeState } from './core/url-state.js';
+import {
+  encodeState, decodeState, defaultState, applyDecoded,
+} from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection } from './ui/panels.js';
 import { renderLoadings } from './ui/loadings.js';
@@ -52,21 +54,7 @@ const store = {
   },
 };
 
-const state = {
-  panel: 'native',
-  colorBy: null,
-  schemeMap: {},
-  schemeName: '',
-  highExpressed: false,
-  filters: {},
-  shortlist: [],
-  pinnedId: null,
-  compareTab: 'radar',
-  showHidden: true,
-  exceptionFilter: 'any',
-  expressionFilter: 'any',
-  trafficKey: null,
-};
+const state = defaultState();
 
 const context = {
   dataset: null,
@@ -733,10 +721,22 @@ function renderProvenance() {
  * persistence (only the shortlist has any); anything still unset falls back
  * to a default. Called from boot with the initial hash and again from the
  * live hash/popstate handlers, so both paths normalize identically.
+ *
+ * Every call rebuilds from a fresh `defaultState()` before layering `decoded`
+ * on top, rather than patching whatever is already on screen. `encodeState`
+ * only ever writes non-default fields, so a hash that means "back to
+ * defaults" for, say, the scheme or the filters says nothing about them at
+ * all; patching onto live state would leave that old scheme or filter
+ * displayed forever, which is exactly the "address bar says one thing, the
+ * page shows another" bug this whole mechanism exists to prevent.
  */
-function normalizeAndApply(decoded, { isInitial = false } = {}) {
-  Object.assign(state, decoded);
-  if (isInitial && !('shortlist' in decoded)) state.shortlist = store.read(STORAGE_SHORTLIST, []);
+function normalizeAndApply(decoded) {
+  applyDecoded(state, decoded);
+  // The shortlist is the one field with a second, local source of truth: a
+  // hash that never mentions it (a bare initial load, or a partial/legacy
+  // link) defers to what this browser last saved, not to the empty default
+  // and not to whatever was on screen a moment ago.
+  if (!('shortlist' in decoded)) state.shortlist = store.read(STORAGE_SHORTLIST, []);
 
   // Drop any shortlisted or pinned gene that is not in this dataset, so a stale link degrades cleanly.
   state.shortlist = state.shortlist.filter((id) => context.dataset.indexById.has(id));
@@ -795,7 +795,7 @@ async function boot() {
     .filter((gene) => Boolean(gene.translationalException)).length;
   context.basisCounts = expressionBasisCounts(dataset.genes);
 
-  normalizeAndApply(decodeState(window.location.hash), { isInitial: true });
+  normalizeAndApply(decodeState(window.location.hash));
 
   element('load-status').hidden = true;
   element('main').hidden = false;

@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { encodeState, decodeState, STATE_VERSION } from '../../site/js/core/url-state.js';
+import {
+  encodeState, decodeState, applyDecoded, defaultState, STATE_VERSION,
+} from '../../site/js/core/url-state.js';
 
 const full = {
   panel: 'risk',
@@ -77,4 +79,52 @@ test('the traffic metric is absent from the hash when unset', () => {
   const hash = encodeState({ ...full, trafficKey: null });
   assert.ok(!/(^|&)k=/.test(hash));
   assert.ok(!('trafficKey' in decodeState(hash)));
+});
+
+// `encodeState` only ever writes non-default fields, so navigating to a hash
+// that means "back to defaults" says nothing about the scheme, filters, pin,
+// or traffic metric at all. `applyDecoded` is what must clear them anyway;
+// a merge that only overlays `decoded` onto whatever the target already
+// holds would leave every one of these stale on screen. This is a
+// regression test for exactly that shipped bug.
+test('applying a plain hash after a full one clears every field to its default, not the prior state', () => {
+  const state = defaultState();
+  applyDecoded(state, decodeState(`#${encodeState(full)}`));
+  assert.equal(state.panel, 'risk');
+  assert.equal(state.pinnedId, 'M744_RS00005');
+
+  const plainHash = encodeState({
+    panel: 'native', colorBy: 'gc3', schemeMap: {}, schemeName: '', highExpressed: false,
+    filters: {}, trafficKey: null, shortlist: [], pinnedId: null, compareTab: 'radar',
+    showHidden: true, exceptionFilter: 'any',
+  });
+  applyDecoded(state, decodeState(`#${plainHash}`));
+  assert.equal(state.panel, 'native');
+  assert.equal(state.colorBy, 'gc3');
+  assert.deepEqual(state.schemeMap, {});
+  assert.equal(state.schemeName, '');
+  assert.equal(state.highExpressed, false);
+  assert.deepEqual(state.filters, {});
+  assert.equal(state.trafficKey, null);
+  assert.deepEqual(state.shortlist, []);
+  assert.equal(state.pinnedId, null);
+  assert.equal(state.compareTab, 'radar');
+  assert.equal(state.showHidden, true);
+  assert.equal(state.exceptionFilter, 'any');
+});
+
+test('applyDecoded resets a field to default even when the new hash omits it entirely', () => {
+  const state = defaultState();
+  applyDecoded(state, { trafficKey: 'tai', pinnedId: 'M744_RS00005' });
+  assert.equal(state.trafficKey, 'tai');
+  applyDecoded(state, {});
+  assert.equal(state.trafficKey, null);
+  assert.equal(state.pinnedId, null);
+});
+
+test('defaultState returns an independent object every call, so mutating one shortlist cannot leak into the next reset', () => {
+  const a = defaultState();
+  a.shortlist.push('M744_RS00005');
+  const b = defaultState();
+  assert.deepEqual(b.shortlist, []);
 });

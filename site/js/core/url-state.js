@@ -24,6 +24,48 @@ export const STATE_VERSION = 2;
 /** Values the expression-basis filter can take. */
 export const EXPRESSION_FILTERS = Object.freeze(['any', 'measured']);
 
+/**
+ * A fresh defaults object, not a shared reference: several of these fields
+ * (`shortlist` above all) are mutated in place by the app, so reusing one
+ * literal across calls would let a later mutation corrupt what "default"
+ * means for the next reset.
+ */
+export function defaultState() {
+  return {
+    panel: 'native',
+    colorBy: null,
+    schemeMap: {},
+    schemeName: '',
+    highExpressed: false,
+    filters: {},
+    shortlist: [],
+    pinnedId: null,
+    compareTab: 'radar',
+    showHidden: true,
+    exceptionFilter: 'any',
+    expressionFilter: 'any',
+    trafficKey: null,
+  };
+}
+
+/**
+ * Apply a decoded (partial) hash onto `target`, in place, honouring
+ * precedence: every field is reset to its default first, and only then does
+ * an explicit `decoded` value override it.
+ *
+ * This reset-first order is the whole point. `encodeState` only ever writes
+ * non-default fields (a plain view has a plain link), so a hash that means
+ * "the scheme is cleared" or "the traffic metric is unset" says nothing
+ * about `s` or `k` at all. Merging `decoded` onto whatever is already in
+ * `target` — instead of onto a fresh default — would leave that old scheme
+ * or traffic metric displayed forever: the address bar says one thing, the
+ * page still shows another. That was a real, shipped bug.
+ */
+export function applyDecoded(target, decoded) {
+  Object.assign(target, defaultState(), decoded);
+  return target;
+}
+
 function encodeFilters(filters) {
   return Object.entries(filters)
     .map(([key, range]) => {
