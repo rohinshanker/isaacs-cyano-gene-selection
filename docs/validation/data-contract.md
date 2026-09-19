@@ -171,6 +171,56 @@ codon as a recoding target it must quote the editable count, because the
 initiation triplet can never be recoded. For example GTG occurs 18,659 times of
 which 18,303 are editable, and TTG 20,427 of which 20,324.
 
+### More than one measured source
+
+The build must not infer its inputs from a directory listing. `data/expression/sources.json`
+names every selected source explicitly, and the loader reads only what it lists:
+
+```jsonc
+[
+  {
+    "id": "GSE205444",
+    "file": "GSE205444_pcc7942_wt_bg11_day1.tsv",
+    "metricKey": "expression",
+    "label": "Expression (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "DESeq2 normalized counts",
+    "condition": "WT, fresh BG-11, day 1, mean of 3 replicates",
+    "sha256": "...",
+    "licence": "GEO/NCBI public repository terms",
+    "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study."
+  },
+  {
+    "id": "TAN2018_TSS",
+    "file": "tan2018_utex2973_tss_initiation.tsv",
+    "metricKey": "tssInitiation",
+    "label": "TSS initiation (UTEX 2973)",
+    "organism": "Synechococcus elongatus UTEX 2973",
+    "isTargetOrganism": true,
+    "assay": "dRNA-seq transcription start site initiation",
+    "units": "summed mean TSS counts",
+    "condition": "Tan et al. 2018, four conditions pooled",
+    "caveat": "Initiation strength, NOT transcript abundance."
+  }
+]
+```
+
+Each source contributes **its own per-gene field**, named by its `metricKey`, and **its
+own `meta.metrics` entry**, which is what makes it appear in the filters and the
+colour-by menu with no site change. `meta.expressionSources` echoes the manifest so the
+page can show provenance.
+
+**Sources are never merged, averaged, or ranked together.** TSS initiation and
+transcript abundance correlate at Spearman 0.313 on this genome; they answer different
+questions and a combined score would hide that. A gene absent from a source is `null`
+for that source, never zero and never filled from another source.
+
+Adding a source is a manifest entry plus its table. Nothing downstream is hardcoded to a
+particular source, and the existing `cai`, `tai`, `expressionProxy` and every other
+metric remain filterable exactly as before.
+
 ### Expression: measured first, proxy as a labelled fallback
 
 The threshold axis prefers a real measurement and falls back to a codon-adaptation
