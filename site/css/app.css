@@ -134,16 +134,24 @@ pre {
 
 .column { min-width: 0; }
 .controls { display: grid; gap: var(--gap); align-content: start; }
+.analysis {
+  display: grid;
+  gap: var(--gap);
+  align-content: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+.analysis > * { min-width: 0; }
 .map { display: flex; flex-direction: column; gap: 0.6rem; }
 .detail { max-height: none; overflow: visible; }
 
 @media (min-width: 960px) {
-  .layout { grid-template-columns: 330px minmax(0, 1fr); }
+  .layout { grid-template-columns: 300px minmax(0, 1fr); }
   .detail { grid-column: 1 / -1; }
+  .shortlist-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 }
-@media (min-width: 1360px) {
-  .layout { grid-template-columns: 330px minmax(0, 1fr) 350px; }
-  .detail { grid-column: auto; position: sticky; top: var(--gap); max-height: calc(100vh - 2rem); overflow-y: auto; }
+@media (min-width: 1240px) {
+  .layout { grid-template-columns: 280px minmax(0, 1fr) 320px; }
+  .detail { grid-column: auto; }
 }
 
 /* Controls -------------------------------------------------------------- */
@@ -549,7 +557,7 @@ input[type="range"] { width: 100%; }
 .shortlist-empty { color: var(--ink-muted); font-style: italic; font-size: 0.85rem; }
 .export-saved-row { font-size: 0.85rem; margin-bottom: 0.5rem; }
 
-.compare-section { margin: 0 1.25rem 1.25rem; }
+.compare-section { margin: 0; }
 .compare-panel { padding-top: 0.6rem; }
 .axis-picker { margin: 0.5rem 0; }
 .axis-picker summary { cursor: pointer; font-size: 0.88rem; font-weight: 600; }
@@ -631,16 +639,22 @@ input[type="range"] { width: 100%; }
 .sort-button { background: none; border: none; cursor: pointer; font: inherit; font-weight: 600; padding: 0; text-align: left; }
 .sort-arrow { color: var(--accent); }
 
+/* The center column keeps workflow content in document flow. These small
+   disclosures explain the relocated panels without recreating a tall sidebar. */
+.workflow-help,
+.provenance-disclosure { margin: 0 0 0.65rem; }
+.workflow-help summary,
+.provenance-disclosure summary { cursor: pointer; color: var(--ink-muted); font-size: 0.82rem; }
+.workflow-help p { margin: 0.45rem 0 0; max-width: 72ch; font-size: 0.82rem; color: var(--ink-muted); }
+.provenance-disclosure > #provenance { margin-top: 0.65rem; }
+
 /* Long meta.json field names would break a character at a time inside the
-   provenance grid's value column, so this disclosure spans the whole card. */
+   provenance list, so this nested disclosure gives them the full card width. */
 .convention-details { margin-top: 0.5rem; font-size: 0.8rem; }
 .convention-details summary { cursor: pointer; color: var(--ink-muted); }
 .convention-details ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
 .convention-details li { margin-bottom: 0.35rem; }
 
-/* The About card lives in the narrow control column, where a two-column
-   definition list leaves a value only a few characters wide. Term above value
-   gives every entry the full card width. */
 .provenance-list { margin: 0; font-size: 0.8rem; }
 .provenance-list dt { color: var(--ink-muted); margin-top: 0.5rem; }
 .provenance-list dt:first-child { margin-top: 0; }
