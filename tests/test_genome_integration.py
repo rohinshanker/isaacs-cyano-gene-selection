@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from scipy.stats import spearmanr
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import feature_metrics as fm
@@ -15,6 +16,9 @@ from check_feature_consistency import RAW_DEFAULT, validate
 
 
 DATA = Path(__file__).resolve().parents[1] / "site/data"
+EXPRESSION_MANIFEST = (
+    Path(__file__).resolve().parents[1] / "data/expression/sources.json"
+)
 
 
 def test_generated_documents_follow_contract():
@@ -31,7 +35,7 @@ def test_generated_documents_follow_contract():
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
     assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
-    assert len(meta["metrics"]) == 34
+    assert len(meta["metrics"]) == 35
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -52,6 +56,12 @@ def test_generated_documents_follow_contract():
         "direction": "contextual",
     }
     assert "expressionBasis" not in meta["metrics"]
+    assert {
+        "cai", "tai", "expression", "expressionPercentile", "expressionProxy",
+        "tssInitiation",
+    } <= meta["metrics"].keys()
+    assert meta["metrics"]["expression"]["scale"] == "sequential"
+    assert meta["metrics"]["tssInitiation"]["scale"] == "sequential"
     assert meta["tai"]["tRNAGeneCopies"]["LAT"] == 1
     assert meta["tai"]["zeroWeightCodons"] == ["TTA"]
     assert meta["tai"]["zeroWeightSubstitution"] == pytest.approx(0.3799, abs=1e-4)
@@ -99,6 +109,34 @@ def test_generated_documents_follow_contract():
         "total": 2715,
     }
     assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
+
+    manifest = json.loads(EXPRESSION_MANIFEST.read_text())
+    assert len(meta["expressionSources"]) == len(manifest) == 2
+    for emitted, selected in zip(meta["expressionSources"], manifest, strict=True):
+        assert emitted | selected == emitted
+    assert [source["coverage"]["withValue"] for source in meta["expressionSources"]] == [
+        2551,
+        1727,
+    ]
+    assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
+    tss_definition = meta["metrics"]["tssInitiation"]
+    assert "transcription initiation strength" in tss_definition["desc"]
+    assert "not transcript abundance" in tss_definition["desc"]
+    assert "Tan et al. 2018" in tss_definition["desc"]
+    assert "1,727 of 2,715 genes" in tss_definition["desc"]
+
+    tss_measured = [gene for gene in genes if gene["tssInitiation"] is not None]
+    tss_missing = [gene for gene in genes if gene["tssInitiation"] is None]
+    assert len(tss_measured) == 1727
+    assert len(tss_missing) == 988
+    assert len(measured) == 2551
+    shared = [gene for gene in measured if gene["tssInitiation"] is not None]
+    assert len(shared) == 1666
+    correlation = spearmanr(
+        [gene["tssInitiation"] for gene in shared],
+        [gene["expression"] for gene in shared],
+    ).statistic
+    assert correlation == pytest.approx(0.313, abs=0.0005)
 
     by_id = {gene["id"]: gene for gene in genes}
     assert by_id["M744_RS00920"]["translationalException"] == "ribosomal_slippage"

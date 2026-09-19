@@ -70,7 +70,6 @@ METRIC_DEFINITIONS = {
     "deltaEnc": "Expected ENC minus observed ENC, in codons and centred on zero; positive values mean more codon concentration than the GC3s neutral curve predicts, subject to the ENC family-substitution caveat.",
     "cai": "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and calculated against the 71-gene ribosomal-plus-housekeeping reference set; zero reference counts receive a 0.5 pseudocount and Met and Trp are excluded.",
     "tai": "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and derived from this genome's tRNA gene copies with bacterial wobble penalties; TTA has no cognate tRNA and uses the geometric mean of non-zero codon weights.",
-    "expression": "DESeq2-normalized transcript count measured in S. elongatus PCC 7942 WT fresh BG-11 on day 1; non-negative and null for genes without a mapped measurement. It is from another strain and an unusual biofilm-study condition, so use it only as a rough overlay.",
     "expressionPercentile": "Average-rank percentile of the measured PCC 7942 expression values, in (0, 1]; null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
     "expressionProxy": "Tie-aware average rank of sqrt(CAI × tAI) across all genes, scaled from 0 to 1; this is a codon-adaptation proxy, not measured transcript or protein abundance.",
     "rareFraction": "Fraction of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to 1 and treats an alternative start codon as translated methionine.",
@@ -101,6 +100,22 @@ DIVERGING_METRICS = {
     "neighborUpstreamNt",
     "neighborDownstreamNt",
 }
+
+EXPRESSION_SOURCE_FIELDS = (
+    "id",
+    "file",
+    "metricKey",
+    "label",
+    "organism",
+    "isTargetOrganism",
+    "assay",
+    "units",
+    "condition",
+    "sha256",
+    "licence",
+    "caveat",
+    "provenanceDoc",
+)
 
 
 def is_cai_reference(product: str) -> bool:
@@ -219,21 +234,130 @@ def verified_trna_species(path: Path) -> dict[tuple[str, str], int]:
         }
 
 
-def load_expression(directory: Path) -> tuple[dict[str, float], str]:
-    """Loads one generic expression table and derives its dataset identifier."""
-    tables = sorted(directory.glob("*.tsv"))
-    if len(tables) != 1:
+def sha256(path: Path) -> str:
+    """Returns the SHA-256 checksum used by the expression-source manifest."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def load_expression_sources(
+    directory: Path, existing_metric_keys: Iterable[str] = ()
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
+    """Loads only the measured sources selected by ``sources.json``."""
+    manifest_path = directory / "sources.json"
+    require(
+        manifest_path.is_file(),
+        f"Expression source manifest is missing: {manifest_path}",
+    )
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
         raise ValueError(
-            f"Expected exactly one expression TSV in {directory}, found {len(tables)}"
+            f"Expression source manifest is invalid JSON: {manifest_path}: {error}"
+        ) from error
+    require(
+        isinstance(manifest, list) and bool(manifest),
+        f"Expression source manifest must be a non-empty array: {manifest_path}",
+    )
+
+    claimed_metric_keys = set(existing_metric_keys)
+    claimed_source_ids: set[str] = set()
+    sources: list[dict[str, Any]] = []
+    values_by_metric: dict[str, dict[str, float]] = {}
+    for index, raw_source in enumerate(manifest):
+        require(
+            isinstance(raw_source, dict),
+            f"Expression source entry {index} must be an object",
         )
-    with tables[0].open(encoding="utf-8", newline="") as handle:
-        rows = csv.DictReader(handle, delimiter="\t")
-        if rows.fieldnames != ["locus_tag", "abundance", "source_gene_id"]:
-            raise ValueError(f"Unexpected expression columns: {rows.fieldnames}")
-        values = {row["locus_tag"]: float(row["abundance"]) for row in rows}
-    source_id = tables[0].stem.split("_", 1)[0]
-    require(bool(source_id), f"Cannot derive an expression source ID from {tables[0].name}")
-    return values, source_id
+        missing = [field for field in EXPRESSION_SOURCE_FIELDS if field not in raw_source]
+        require(
+            not missing,
+            f"Expression source entry {index} is missing fields: {', '.join(missing)}",
+        )
+        source = dict(raw_source)
+        source_id = source["id"]
+        metric_key = source["metricKey"]
+        require(
+            isinstance(source_id, str) and bool(source_id),
+            f"Expression source entry {index} has an invalid id",
+        )
+        require(
+            source_id not in claimed_source_ids,
+            f"Expression source id collision: {source_id}",
+        )
+        require(
+            isinstance(metric_key, str)
+            and re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", metric_key) is not None,
+            f"Expression source {source_id} has an invalid metricKey: {metric_key!r}",
+        )
+        require(
+            metric_key not in claimed_metric_keys,
+            f"Expression metricKey collision: {metric_key}",
+        )
+        claimed_source_ids.add(source_id)
+        claimed_metric_keys.add(metric_key)
+
+        file_name = source["file"]
+        require(
+            isinstance(file_name, str) and Path(file_name).name == file_name,
+            f"Expression source {source_id} has an invalid file name: {file_name!r}",
+        )
+        table_path = directory / file_name
+        require(
+            table_path.is_file(),
+            f"Expression source file listed in {manifest_path.name} is missing: {table_path}",
+        )
+        observed_sha256 = sha256(table_path)
+        require(
+            observed_sha256 == source["sha256"],
+            f"Expression source checksum mismatch for {file_name}: "
+            f"expected {source['sha256']}, got {observed_sha256}",
+        )
+
+        with table_path.open(encoding="utf-8", newline="") as handle:
+            rows = csv.DictReader(handle, delimiter="\t")
+            require(
+                rows.fieldnames == ["locus_tag", "abundance", "source_gene_id"],
+                f"Unexpected expression columns in {file_name}: {rows.fieldnames}",
+            )
+            values: dict[str, float] = {}
+            for row in rows:
+                locus = row["locus_tag"]
+                require(
+                    locus not in values,
+                    f"Duplicate locus_tag {locus} in expression source {source_id}",
+                )
+                value = float(row["abundance"])
+                require(
+                    math.isfinite(value) and value >= 0,
+                    f"Invalid value for {locus} in expression source {source_id}: {value}",
+                )
+                values[locus] = value
+        sources.append(source)
+        values_by_metric[metric_key] = values
+    return sources, values_by_metric
+
+
+def expression_metric_definition(
+    source: Mapping[str, Any], with_value: int, total: int
+) -> dict[str, str]:
+    """Builds a reader-facing metric definition from manifest provenance."""
+    return {
+        "label": source["label"],
+        "unit": source["units"],
+        "desc": (
+            f"{source['assay']} measured in {source['organism']} under "
+            f"{source['condition']}, reported in {source['units']}; available for "
+            f"{with_value:,} of {total:,} genes. {source['caveat']}"
+        ),
+        "family": "Expression",
+        "scale": "sequential",
+        "missingPolicy": MISSING_POLICY,
+        "direction": "contextual",
+    }
 
 
 def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
@@ -612,7 +736,16 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
     )
 
-    expression, expression_source_id = load_expression(repository / "data/expression")
+    expression_sources, expression_values = load_expression_sources(
+        repository / "data/expression", METRIC_DEFINITIONS
+    )
+    sources_by_metric = {source["metricKey"]: source for source in expression_sources}
+    require(
+        "expression" in sources_by_metric,
+        "Expression source manifest must select the primary abundance metric 'expression'",
+    )
+    primary_expression_source = sources_by_metric["expression"]
+    expression = expression_values["expression"]
     percentiles = expression_percentiles(expression)
 
     sequences = [gene["sequence"] for gene in included]
@@ -658,10 +791,13 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values["deltaEnc"] = values["encExpected"] - values["enc"]
         values["cai"] = fm.codon_adaptation_index(sequence, cai)
         values["tai"] = fm.trna_adaptation_index(sequence, tai)
-        values["expression"] = expression.get(source["id"])
+        for metric_key, source_values in expression_values.items():
+            values[metric_key] = source_values.get(source["id"])
         values["expressionPercentile"] = percentiles.get(source["id"])
         values["expressionSourceId"] = (
-            expression_source_id if values["expression"] is not None else None
+            primary_expression_source["id"]
+            if values["expression"] is not None
+            else None
         )
         values.update(fm.rare_codon_metrics(sequence, frequencies, tai, RARE_THRESHOLD))
         values.update(gene_pair_metrics(sequence, pairs))
@@ -735,7 +871,6 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         "deltaEnc": ("Expected ENC − observed", "codons"),
         "cai": ("CAI", "index"),
         "tai": ("tAI", "index"),
-        "expression": ("Expression (PCC 7942)", "normalized count"),
         "expressionPercentile": ("Expression percentile (PCC 7942)", "fraction"),
         "expressionProxy": ("Expression proxy rank", "rank"),
         "rareFraction": ("Rare codon fraction", "fraction"),
@@ -802,19 +937,28 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
                 "Met-CAT remains a separate two-copy species decoding ATG"
             ),
         },
+        # Kept for the existing expressionBasis contract: this always describes
+        # the primary abundance field, never the other measured sources.
         "expressionSource": {
-            "accession": expression_source_id,
-            "organismMeasured": "Synechococcus elongatus PCC 7942",
-            "isTargetOrganism": False,
-            "condition": "WT, fresh BG-11, day 1, mean of 3 replicates",
-            "normalization": "DESeq2 normalized counts",
+            "accession": primary_expression_source["id"],
+            "organismMeasured": primary_expression_source["organism"],
+            "isTargetOrganism": primary_expression_source["isTargetOrganism"],
+            "condition": primary_expression_source["condition"],
+            "normalization": primary_expression_source["units"],
             "coverage": {"withValue": len(expression), "total": len(genes)},
-            "caveat": (
-                "Measured in PCC 7942, not UTEX 2973, in a biofilm study. "
-                "Use as a rough guide only."
-            ),
-            "provenanceDoc": "data/expression/PROVENANCE.md",
+            "caveat": primary_expression_source["caveat"],
+            "provenanceDoc": primary_expression_source["provenanceDoc"],
         },
+        "expressionSources": [
+            {
+                **source,
+                "coverage": {
+                    "withValue": len(expression_values[source["metricKey"]]),
+                    "total": len(genes),
+                },
+            }
+            for source in expression_sources
+        ],
         "expressionProxy": {
             "method": (
                 "tie-aware average rank of sqrt(CAI * tAI), scaled across all genes "
@@ -839,19 +983,31 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         "encExpectedGc3Convention": "GC3s over synonymous sites, excluding Met and Trp",
         "rscuAbsentFamilyConvention": "zero for every codon in an absent amino-acid family",
         "metrics": {
-            key: {
-                "label": label,
-                "unit": unit,
-                "desc": METRIC_DEFINITIONS[key],
-                "scale": "diverging" if key in DIVERGING_METRICS else "sequential",
-                "missingPolicy": (
-                    "complete coverage; no missing values"
-                    if key == "expressionProxy"
-                    else MISSING_POLICY
-                ),
-                "direction": "contextual",
-            }
-            for key, (label, unit) in metric_labels.items()
+            **{
+                key: {
+                    "label": label,
+                    "unit": unit,
+                    "desc": METRIC_DEFINITIONS[key],
+                    "scale": (
+                        "diverging" if key in DIVERGING_METRICS else "sequential"
+                    ),
+                    "missingPolicy": (
+                        "complete coverage; no missing values"
+                        if key == "expressionProxy"
+                        else MISSING_POLICY
+                    ),
+                    "direction": "contextual",
+                }
+                for key, (label, unit) in metric_labels.items()
+            },
+            **{
+                source["metricKey"]: expression_metric_definition(
+                    source,
+                    len(expression_values[source["metricKey"]]),
+                    len(genes),
+                )
+                for source in expression_sources
+            },
         },
     }
     output_dir.mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,7 @@
 """Hand-computed unit tests for target-independent feature metrics."""
 
+import hashlib
+import json
 import math
 import sys
 from pathlib import Path
@@ -20,7 +22,7 @@ from build_features import (
     expression_percentiles,
     gene_pair_metrics,
     is_cai_reference,
-    load_expression,
+    load_expression_sources,
     pair_scores,
     parse_attributes,
     replacement_map,
@@ -216,23 +218,91 @@ def test_joined_cds_segments_preserve_location_order():
     assert cds_segments("2370396..2370770") is None
 
 
-def test_expression_loader_is_generic_and_percentiles_handle_ties(tmp_path):
-    table = tmp_path / "replacement.tsv"
-    table.write_text(
-        "locus_tag\tabundance\tsource_gene_id\n"
-        "a\t10\ts1\n"
-        "b\t20\ts2\n"
-        "c\t20\ts3\n",
-        encoding="utf-8",
+def expression_source(file_name, metric_key, digest):
+    """Returns a complete test manifest entry."""
+    return {
+        "id": metric_key.upper(),
+        "file": file_name,
+        "metricKey": metric_key,
+        "label": metric_key,
+        "organism": "test organism",
+        "isTargetOrganism": True,
+        "assay": "test assay",
+        "units": "test units",
+        "condition": "test condition",
+        "sha256": digest,
+        "licence": "test licence",
+        "caveat": "test caveat",
+        "provenanceDoc": "data/expression/test.md",
+    }
+
+
+def write_expression_table(directory, file_name, rows):
+    """Writes a small source table and returns its SHA-256 digest."""
+    content = "locus_tag\tabundance\tsource_gene_id\n" + "".join(
+        f"{locus}\t{value}\t{source_id}\n" for locus, value, source_id in rows
     )
-    values, source_id = load_expression(tmp_path)
-    assert values == {"a": 10.0, "b": 20.0, "c": 20.0}
-    assert source_id == "replacement"
-    assert expression_percentiles(values) == {
+    (directory / file_name).write_text(content, encoding="utf-8")
+    return hashlib.sha256(content.encode()).hexdigest()
+
+
+def test_expression_manifest_loads_only_selected_sources_and_keeps_nulls(tmp_path):
+    first_digest = write_expression_table(
+        tmp_path, "first.tsv", [("a", 10, "s1"), ("b", 20, "s2"), ("c", 20, "s3")]
+    )
+    second_digest = write_expression_table(
+        tmp_path, "second.tsv", [("b", 7, "t1")]
+    )
+    # This valid-looking table is deliberately not selected by the manifest.
+    write_expression_table(tmp_path, "ignored.tsv", [("a", 999, "ignored")])
+    manifest = [
+        expression_source("first.tsv", "expression", first_digest),
+        expression_source("second.tsv", "tssInitiation", second_digest),
+    ]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    sources, values = load_expression_sources(tmp_path)
+
+    assert [source["id"] for source in sources] == ["EXPRESSION", "TSSINITIATION"]
+    assert values == {
+        "expression": {"a": 10.0, "b": 20.0, "c": 20.0},
+        "tssInitiation": {"b": 7.0},
+    }
+    assert values["expression"].get("a") == 10
+    assert values["tssInitiation"].get("a") is None
+    assert expression_percentiles(values["expression"]) == {
         "a": pytest.approx(1 / 3),
         "b": pytest.approx(5 / 6),
         "c": pytest.approx(5 / 6),
     }
+
+
+def test_expression_manifest_is_required(tmp_path):
+    with pytest.raises(ValueError, match="source manifest is missing"):
+        load_expression_sources(tmp_path)
+
+
+def test_expression_manifest_rejects_a_missing_listed_file(tmp_path):
+    manifest = [expression_source("missing.tsv", "expression", "0" * 64)]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="listed in sources.json is missing"):
+        load_expression_sources(tmp_path)
+
+
+def test_expression_manifest_rejects_a_checksum_mismatch(tmp_path):
+    write_expression_table(tmp_path, "source.tsv", [("a", 10, "s1")])
+    manifest = [expression_source("source.tsv", "expression", "0" * 64)]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="checksum mismatch for source.tsv"):
+        load_expression_sources(tmp_path)
+
+
+def test_expression_manifest_rejects_a_metric_key_collision(tmp_path):
+    digest = write_expression_table(tmp_path, "source.tsv", [("a", 10, "s1")])
+    manifest = [expression_source("source.tsv", "cai", digest)]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="metricKey collision: cai"):
+        load_expression_sources(tmp_path, {"cai"})
 
 
 def test_expression_proxy_is_a_tie_aware_zero_to_one_cai_tai_rank():

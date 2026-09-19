@@ -1,0 +1,32 @@
+[
+  {
+    "id": "GSE205444",
+    "file": "GSE205444_pcc7942_wt_bg11_day1.tsv",
+    "metricKey": "expression",
+    "label": "Expression (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "DESeq2 normalized counts",
+    "condition": "WT, fresh BG-11, day 1, mean of 3 replicates",
+    "sha256": "d8a44d3fbeaf5b550dc815f4657cd67fc9180b91549068bbbb2b65ab3637fe57",
+    "licence": "GEO/NCBI public repository terms",
+    "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study. Use as a rough guide only.",
+    "provenanceDoc": "data/expression/PROVENANCE.md"
+  },
+  {
+    "id": "TAN2018_TSS",
+    "file": "tan2018_utex2973_tss_initiation.tsv",
+    "metricKey": "tssInitiation",
+    "label": "TSS initiation (UTEX 2973)",
+    "organism": "Synechococcus elongatus UTEX 2973",
+    "isTargetOrganism": true,
+    "assay": "dRNA-seq transcription initiation strength",
+    "units": "summed mean TSS counts",
+    "condition": "Tan et al. 2018: control (33 °C, 50 µmol photons m⁻² s⁻¹, 3% CO2), high light, high temperature, and dark conditions pooled",
+    "sha256": "5ebd8043e70309a2ea04fcec37e475069cb8540397f9d052bd246401aa6325be",
+    "licence": "CC BY 4.0",
+    "caveat": "Transcription initiation strength, not transcript abundance; genes without an associated TSS are unknown, not zero.",
+    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md"
+  }
+]
