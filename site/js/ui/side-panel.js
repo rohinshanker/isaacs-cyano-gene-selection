@@ -12,8 +12,14 @@ import {
 } from '../core/metric-registry.js';
 import { annotationEvidenceModel } from '../core/annotation-evidence.js';
 
-/** Families opened by default; the rest start collapsed to keep the panel short. */
-const OPEN_FAMILIES = new Set(['Size', 'Translation', 'Recoding load', 'Change from wild type']);
+/** Baseline context stays visible; scheme-only results open only when a scheme exists. */
+const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
+const SCHEME_OPEN_FAMILIES = new Set(['Recoding load', 'Change from wild type']);
+
+export function metricFamilyStartsOpen(family, schemeActive) {
+  return BASE_OPEN_FAMILIES.has(family)
+    || (schemeActive && SCHEME_OPEN_FAMILIES.has(family));
+}
 
 const DELTA_ROWS = [
   { label: 'GC3', unit: 'fraction', wild: 'recodedGc3', recoded: 'recodedGc3', delta: 'dGc3' },
@@ -220,7 +226,7 @@ export class SidePanel {
       if (metrics.length === 0) continue;
       const details = document.createElement('details');
       details.className = 'metric-group';
-      details.open = OPEN_FAMILIES.has(family);
+      details.open = metricFamilyStartsOpen(family, state.schemeActive);
       const summary = document.createElement('summary');
       summary.textContent = `${family} (${metrics.length})`;
       const table = document.createElement('table');

@@ -242,6 +242,7 @@ export class ComparePanel {
   }
 
   render() {
+    this.chartHost.classList.toggle('empty', this.state.ids.length === 0);
     TABS.forEach((tab, i) => {
       const selected = tab.id === this.tab;
       this.tabButtons[i].setAttribute('aria-selected', String(selected));

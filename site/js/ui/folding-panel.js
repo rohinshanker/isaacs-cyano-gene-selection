@@ -1,6 +1,11 @@
 import { FoldingClient } from '../core/folding-client.js';
 import { serializeSchemeMap } from '../core/scheme.js';
 
+/** A changed input only invalidates something after the user has actually started a fold. */
+export function foldInputsInvalidateResult(previousSignature, nextSignature, hasStarted) {
+  return hasStarted && previousSignature !== undefined && previousSignature !== nextSignature;
+}
+
 /** A compact on-demand calculation with a captured, visible scheme identity. */
 export class FoldingPanel {
   constructor(host, client = new FoldingClient()) {
@@ -33,7 +38,7 @@ export class FoldingPanel {
 
   update(state) {
     const signature = JSON.stringify([state.ids, serializeSchemeMap(state.schemes?.active?.map)]);
-    if (this.signature !== undefined && this.signature !== signature) {
+    if (foldInputsInvalidateResult(this.signature, signature, this.hasStarted)) {
       this.client.cancel();
       this.generation += 1;
       this.results.replaceChildren();
@@ -78,6 +83,7 @@ export class FoldingPanel {
 
   async run() {
     if (this.client.running) return;
+    this.hasStarted = true;
     const generation = ++this.generation;
     const { ids, dataset, schemes } = this.state;
     const active = schemes?.active ?? { name: '', map: {} };

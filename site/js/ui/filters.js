@@ -20,6 +20,17 @@ const HISTOGRAM_BINS = 44;
 /** Candidate axes for the low-traffic threshold, best first. */
 const TRAFFIC_PREFERENCE = ['cai', 'tai'];
 
+/** Reader-facing copy for a registry metric without destroying scientific capitalization. */
+export function trafficThresholdLabel(metric) {
+  return `Hide genes below: ${metric.label}${metric.unit ? ` (${metric.unit})` : ''}`;
+}
+
+/** The threshold population is every finite value, which is not always a measurement. */
+export function trafficThresholdReadout(metric, value, kept, total) {
+  return `${formatValue(metric, value)} ${metric.unit} — keeps ${formatCount(kept)} of `
+    + `${formatCount(total)} genes with a value`;
+}
+
 function drawHistogram(canvas, values, min, max) {
   const ratio = window.devicePixelRatio || 1;
   const width = canvas.clientWidth || 200;
@@ -269,8 +280,7 @@ export class FilterPanel {
     const sliderLabel = document.createElement('label');
     sliderLabel.className = 'traffic-label';
     sliderLabel.htmlFor = 'traffic-threshold';
-    sliderLabel.textContent = `Hide genes below this ${metric.label.toLowerCase()}`
-      + `${metric.unit ? ` (${metric.unit})` : ''}`;
+    sliderLabel.textContent = trafficThresholdLabel(metric);
 
     const slider = document.createElement('input');
     slider.type = 'range';
@@ -286,8 +296,7 @@ export class FilterPanel {
     const describe = (value) => {
       const index = finite.findIndex((entry) => entry >= value);
       const kept = index < 0 ? 0 : finite.length - index;
-      readout.textContent = `${formatValue(metric, value)} ${metric.unit} — `
-        + `keeps ${formatCount(kept)} of ${formatCount(finite.length)} measured genes`;
+      readout.textContent = trafficThresholdReadout(metric, value, kept, finite.length);
     };
     describe(Number(slider.value));
     slider.addEventListener('input', () => describe(Number(slider.value)));
@@ -305,7 +314,7 @@ export class FilterPanel {
     const quartile = document.createElement('p');
     quartile.className = 'panel-note';
     quartile.textContent = `Median ${formatValue(metric, quantileSorted(finite, 0.5))}; `
-      + `the quietest quarter of measured genes sit below `
+      + `the lowest quarter of genes with a value sit below `
       + `${formatValue(metric, quantileSorted(finite, 0.25))}.`;
 
     this.trafficHost.append(sliderLabel, slider, readout, quartile);

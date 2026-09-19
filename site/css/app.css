@@ -91,6 +91,8 @@ pre {
 }
 .header-text { max-width: 62ch; }
 .tagline { color: var(--ink-muted); margin: 0; }
+.header-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.header-link { display: inline-flex; align-items: center; color: var(--ink); text-decoration: none; }
 
 .help {
   background: var(--surface);
@@ -532,6 +534,34 @@ input[type="range"] { width: 100%; }
 .rank-track { display: block; height: 4px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 2px; }
 .rank-fill { display: block; height: 100%; background: var(--accent); }
 
+/* The metric description, value, and percentile do not fit as three columns in
+   either the phone card or the fixed 320 px desktop detail rail. Give the label
+   the first row and the percentile the full second row instead of wrapping the
+   description into a vertical ribbon of one-word lines. */
+@media (max-width: 520px), (min-width: 1240px) {
+  .metric-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: start;
+    column-gap: 0.65rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .metric-table th,
+  .metric-table td { min-width: 0; border-bottom: 0; }
+  .metric-table td.numeric { grid-column: 2; }
+  .metric-table .rank-cell {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: max-content minmax(4rem, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    width: auto;
+    padding-top: 0;
+  }
+  .metric-table .rank-text { text-align: left; }
+  .metric-table td[colspan] { grid-column: 1 / -1; }
+}
+
 /* Shortlist and comparison --------------------------------------------- */
 
 /* A readable list the lab can prune without going back to the map. */
@@ -587,6 +617,7 @@ input[type="range"] { width: 100%; }
 .axis-option { display: block; font-size: 0.82rem; }
 
 .chart-host { width: 100%; height: clamp(280px, 42vh, 440px); }
+.chart-host.empty { height: 7rem; }
 /* When axis labels need more room than the viewport gives, the chart keeps its
    minimum width and scrolls sideways rather than clipping a name. */
 .chart-host.scrolls { overflow-x: auto; overflow-y: hidden; }

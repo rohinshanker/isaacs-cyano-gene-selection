@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
+const app = await readFile(new URL('../../site/js/app.js', import.meta.url), 'utf8');
 
 test('analysis panels keep a logical source order inside one center column', () => {
   const analysisStart = html.indexOf('<div class="column analysis">');
@@ -31,4 +32,13 @@ test('relocated support panels use compact native disclosures', () => {
   assert.equal((html.match(/id="compare-section"/g) ?? []).length, 1);
   assert.equal((html.match(/id="shortlist"/g) ?? []).length, 1);
   assert.equal((html.match(/id="provenance"/g) ?? []).length, 1);
+});
+
+test('the header offers a visible direct route past the long control column', () => {
+  assert.match(html,
+    /<a class="chip-button header-link map-jump" href="#map-section">Jump to map<\/a>/);
+  assert.match(html, /<a class="skip-link map-jump" href="#map-section">Skip to the map<\/a>/);
+  assert.match(app, /document\.querySelectorAll\('\.map-jump'\)/);
+  assert.match(app, /event\.preventDefault\(\)/,
+    'map jumps must not replace the URL hash that carries live application state');
 });

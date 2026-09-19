@@ -1007,6 +1007,17 @@ async function boot() {
   });
   element('zoom-in').addEventListener('click', () => plot.zoomStep(1.4));
   element('zoom-out').addEventListener('click', () => plot.zoomStep(1 / 1.4));
+  // The application state lives in the URL hash, so a normal #map-section
+  // navigation would replace the scheme, filters, shortlist, and pinned gene.
+  // Preserve that state while giving pointer and keyboard users a real focus
+  // destination at the map.
+  for (const link of document.querySelectorAll('.map-jump')) {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      element('map-section').scrollIntoView({ block: 'start' });
+      element('map-canvas').focus({ preventScroll: true });
+    });
+  }
   const showHidden = element('show-hidden');
   showHidden.checked = state.showHidden;
   showHidden.addEventListener('change', () => {
