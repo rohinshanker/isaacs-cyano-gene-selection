@@ -7,3 +7,5 @@ data/raw/*.txt
 !data/raw/md5checksums.txt
 data/interim/
 .pytest_cache/
+.playwright-cli/rna-folding/
+.artifacts/rna-folding/

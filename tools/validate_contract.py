@@ -78,7 +78,7 @@ REQUIRED_GENE_FIELDS = (
     "neighborUpstreamNt", "neighborDownstreamNt", "overlapsNeighbor",
     "operonId", "operonPosition", "operonSize",
     "rscu", "codonPca", "riskUmap", "codons",
-    "terminalStop", "translationalException", "cdsSegments",
+    "terminalStop", "translationalException", "cdsSegments", "rnaContext",
 )
 
 # Measured directly from the raw CDS records over the included set. These are

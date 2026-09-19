@@ -1,6 +1,5 @@
 /**
- * Candidate shortlist: a readable list, a reproducible export, and the disabled
- * folding affordance.
+ * Candidate shortlist: a readable list, a reproducible export, and local folding.
  *
  * The lab prunes the shortlist here rather than going back to the map, so each row
  * carries enough to judge the gene on: what it is, and what the active scheme
@@ -9,6 +8,7 @@
  */
 import { formatCount, formatValue } from './format.js';
 import { buildExport } from '../core/export-manifest.js';
+import { FoldingPanel } from './folding-panel.js';
 
 /**
  * Live metrics shown per row, in order, when a scheme is active. These are the two
@@ -72,26 +72,16 @@ export class ShortlistPanel {
     this.clearButton.textContent = 'Clear shortlist';
     this.clearButton.addEventListener('click', () => this.handlers.onClear());
 
-    this.foldButton = document.createElement('button');
-    this.foldButton.type = 'button';
-    this.foldButton.className = 'chip-button';
-    this.foldButton.textContent = 'Fold recoded RNA';
-    this.foldButton.disabled = true;
-    this.foldButton.id = 'fold-button';
-    this.foldButton.setAttribute('aria-describedby', 'fold-note');
-    const foldNote = document.createElement('p');
-    foldNote.className = 'panel-note';
-    foldNote.id = 'fold-note';
-    foldNote.textContent = 'On-demand folding of recoded shortlisted genes is deliberately not '
-      + 'available yet. Folding cannot run genome-wide in a browser, so it will arrive as a '
-      + 'separate on-request calculation.';
+    const foldHost = document.createElement('section');
+    foldHost.setAttribute('aria-label', 'On-demand RNA folding');
+    this.folding = new FoldingPanel(foldHost);
 
-    actions.append(this.exportButton, this.clearButton, this.foldButton);
+    actions.append(this.exportButton, this.clearButton);
     this.status = document.createElement('p');
     this.status.className = 'panel-note';
     this.status.setAttribute('role', 'status');
 
-    this.host.append(this.list, this.status, this.savedSchemesRow, actions, this.exportNote, foldNote);
+    this.host.append(this.list, this.status, this.savedSchemesRow, actions, this.exportNote, foldHost);
   }
 
   /**
@@ -100,6 +90,7 @@ export class ShortlistPanel {
    */
   update(state) {
     this.state = state;
+    this.folding.update(state);
     this.list.replaceChildren();
     if (state.ids.length === 0) {
       const empty = document.createElement('li');

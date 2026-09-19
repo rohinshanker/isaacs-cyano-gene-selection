@@ -112,6 +112,41 @@ Never adjust coordinates to force the span to match the coding length. A gene wh
 translation depends on a frameshift is a high-risk recoding target, and the site
 should surface that flag rather than hide it.
 
+### Exact local RNA folding context
+
+Every gene carries `rnaContext`. For ordinary CDSs it is simply
+`{"upstream":"<30 ACGT bases>"}` in transcription orientation. Concatenate this
+with the first 60 literal CDS bases for the genomic start window. This includes
+the literal initiation triplet, not an artificial ATG.
+
+When that construction is not exact (a short CDS, a join within the window, or
+another exceptional genomic mapping), the alternate form is
+`{"sequence":"<90 ACGT bases>","cdsOffsets":[...90 integers...]}`. Each offset
+is the zero-based nucleotide position in the complete, spliced CDS including its
+terminal stop, or `-1` for a base outside this gene. Replace only mapped positions
+with the corresponding recoded CDS base. The decoder validates every mapped
+wild-type base against the CDS before folding. Genomic positions repeated within
+one CDS cannot be independently edited and are rejected by the producer.
+
+The start window is exactly the existing pipeline's **[-30,60)** relative to the
+first translation-start base: 30 upstream plus 60 downstream bases, 90 total.
+All three replicons wrap circularly at their boundaries; negative-strand windows
+are reverse-complemented into transcription orientation. A genomic window stays
+genomic across a splice, while `first100` is the first `min(100,lengthNt)` bases
+of the spliced CDS. Both include terminal-stop bases when those positions fall
+inside the window. Only this gene's mapped bases are edited; overlapping
+neighbors and flanks otherwise remain wild type. Neighbor protein identity is
+not guaranteed by this calculation.
+
+Recoding never changes codon position zero. Sense substitutions must preserve
+their amino acid; a terminal stop may map only to another stop. No padded or
+invented upstream sequence is allowed: missing context fails that gene explicitly.
+
+On request, the local worker folds wild type and recoded RNA with the shipped
+ViennaRNA 2.7.2 build and reports both energies and **Δ = recoded − wild type**.
+See [RNA folding validation](rna-folding.md) for settings, provenance, caching,
+numerical tolerance and the browser verification command.
+
 ## Files
 
 ### `meta.json`
@@ -251,6 +286,7 @@ when the recoding scheme changes.
   "start": 2370396, "end": 2370770, "strand": "+",
   "lengthNt": 375, "lengthCodons": 124,
   "terminalStop": "TAG",         // the stop codon removed from `codons`; never null
+  "rnaContext": { "upstream": "<30 strand-oriented ACGT bases>" }, // alternate form above
   "translationalException": null, // or "ribosomal_slippage"
   "cdsSegments": null,           // or [[169621,169692],[169694,170743]] when spliced
 

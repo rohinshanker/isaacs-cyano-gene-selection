@@ -27,6 +27,7 @@ from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
+from rna_context import folding_context, restore_start_window  # noqa: E402
 
 
 ACCESSION = "GCF_000817325.1"
@@ -783,6 +784,12 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values["start"] = source["_displayStart"]
         values["end"] = source["_displayEnd"]
         values["terminalStop"] = sequence[-3:]
+        values["rnaContext"] = folding_context(source, genomes[source["seqid"]], sequence)
+        require(
+            restore_start_window(values["rnaContext"], sequence)
+            == start_window(source, genomes[source["seqid"]]),
+            f"RNA start context round trip failed for {source['id']}",
+        )
         values.update(fm.composition(sequence))
         values["enc"], values["encHasSubstitutedFamilies"] = (
             fm.effective_number_of_codons_with_substitution(sequence)

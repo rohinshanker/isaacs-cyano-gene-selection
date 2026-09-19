@@ -158,6 +158,10 @@ cluster statistics.
 RNA folding is the one exception to live computation. Folding cannot run genome-wide in
 a browser, so wild-type folding energy is precomputed and recoded folding is available
 on demand for shortlisted genes only.
+The shortlist action runs a locally served ViennaRNA 2.7.2 WebAssembly worker,
+reports WT/recoded MFE and ΔMFE for both exact windows, and supports cancellation
+and repeated-request caching. [Folding validation and engine provenance](docs/validation/rna-folding.md)
+document the sequence contract, numerical model, licenses, and reproducible checks.
 
 ---
 

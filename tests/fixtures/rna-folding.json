@@ -1,0 +1,1648 @@
+{
+  "engine": "ViennaRNA 2.7.2",
+  "toleranceKcalMol": 1e-05,
+  "cases": [
+    {
+      "gene": {
+        "id": "+-ordinary",
+        "start": 51,
+        "end": 146,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATTCCTTACCAACCCAGTTAGGAAT"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "wildMfe": -27.5,
+          "recodedMfe": -27.5
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.0
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-ordinary",
+        "start": 51,
+        "end": 146,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATTCCTTACCAACCCAGTTAGGAAT"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
+          "wildMfe": -27.5,
+          "recodedMfe": -26.799999237060547
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.20000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-ordinary",
+        "start": 51,
+        "end": 146,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATTCCTTACCAACCCAGTTAGGAAT"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
+          "wildMfe": -27.5,
+          "recodedMfe": -33.599998474121094
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -40.0,
+          "recodedMfe": -54.70000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-boundary",
+        "start": 270,
+        "end": 365,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GCCGATCCGTGTAGAGACCAGCACCCAAAT"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "wildMfe": -27.600000381469727,
+          "recodedMfe": -27.600000381469727
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.0
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-boundary",
+        "start": 270,
+        "end": 365,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GCCGATCCGTGTAGAGACCAGCACCCAAAT"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
+          "wildMfe": -27.600000381469727,
+          "recodedMfe": -25.5
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.20000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-boundary",
+        "start": 270,
+        "end": 365,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GCCGATCCGTGTAGAGACCAGCACCCAAAT"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
+          "wildMfe": -27.600000381469727,
+          "recodedMfe": -30.299999237060547
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -40.0,
+          "recodedMfe": -54.70000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-short-overlap",
+        "start": 51,
+        "end": 71,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "GTATGATTCCTTACCAACCCAGTTAGGAATGTGTCGTCAGTGTTGGCGTAGCACGGAGCGTGTCTCGAGATTGGGGTACCTAAAGCGGAG",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
+          "wildMfe": -19.899999618530273,
+          "recodedMfe": -19.899999618530273
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -4.099999904632568,
+          "recodedMfe": -4.099999904632568
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-short-overlap",
+        "start": 51,
+        "end": 71,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "GTATGATTCCTTACCAACCCAGTTAGGAATGTGTCGTCAGTGTTGGCGTAGCACGGAGCGTGTCTCGAGATTGGGGTACCTAAAGCGGAG",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGAGCAGUGUGUUGGCGUAACACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
+          "wildMfe": -19.899999618530273,
+          "recodedMfe": -19.700000762939453
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -4.099999904632568,
+          "recodedMfe": -4.199999809265137
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-short-overlap",
+        "start": 51,
+        "end": 71,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zHGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "GTATGATTCCTTACCAACCCAGTTAGGAATGTGTCGTCAGTGTTGGCGTAGCACGGAGCGTGTCTCGAGATTGGGGTACCTAAAGCGGAG",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUCCUGGCGUGACACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
+          "wildMfe": -19.899999618530273,
+          "recodedMfe": -22.700000762939453
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -4.099999904632568,
+          "recodedMfe": -4.099999904632568
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-joined",
+        "start": 51,
+        "end": 148,
+        "strand": "+",
+        "cdsSegments": [
+          [
+            51,
+            62
+          ],
+          [
+            65,
+            148
+          ]
+        ],
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "GTATGATTCCTTACCAACCCAGTTAGGAATGTGTCGTCAGTGGATTGGCGTCGTCAGTGTTGGCGTCGTCAGTGTTGGCGTCGTCAGTGT",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            -1,
+            -1,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57
+          ]
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
+          "wildMfe": -28.100000381469727,
+          "recodedMfe": -28.100000381469727
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.0
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-joined",
+        "start": 51,
+        "end": 148,
+        "strand": "+",
+        "cdsSegments": [
+          [
+            51,
+            62
+          ],
+          [
+            65,
+            148
+          ]
+        ],
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "GTATGATTCCTTACCAACCCAGTTAGGAATGTGTCGTCAGTGGATTGGCGTCGTCAGTGTTGGCGTCGTCAGTGTTGGCGTCGTCAGTGT",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            -1,
+            -1,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57
+          ]
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGAGCAGUGUGGAUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGU",
+          "wildMfe": -28.100000381469727,
+          "recodedMfe": -22.399999618530273
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.20000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "+-joined",
+        "start": 51,
+        "end": 148,
+        "strand": "+",
+        "cdsSegments": [
+          [
+            51,
+            62
+          ],
+          [
+            65,
+            148
+          ]
+        ],
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "GTATGATTCCTTACCAACCCAGTTAGGAATGTGTCGTCAGTGGATTGGCGTCGTCAGTGTTGGCGTCGTCAGTGTTGGCGTCGTCAGTGT",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            -1,
+            -1,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57
+          ]
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
+          "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUCGACUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCC",
+          "wildMfe": -28.100000381469727,
+          "recodedMfe": -35.29999923706055
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -40.0,
+          "recodedMfe": -54.70000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--ordinary",
+        "start": 51,
+        "end": 146,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "AGGCCTTACCTCCGACCAGCGCACATATAA"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "wildMfe": -25.5,
+          "recodedMfe": -25.5
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.0
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--ordinary",
+        "start": 51,
+        "end": 146,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "AGGCCTTACCTCCGACCAGCGCACATATAA"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
+          "wildMfe": -25.5,
+          "recodedMfe": -30.5
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.20000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--ordinary",
+        "start": 51,
+        "end": 146,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "AGGCCTTACCTCCGACCAGCGCACATATAA"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
+          "wildMfe": -25.5,
+          "recodedMfe": -33.70000076293945
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -40.0,
+          "recodedMfe": -54.70000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--boundary",
+        "start": 200,
+        "end": 295,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CATACCTGCCGTACCCAGTGTGCAAATGCT"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "wildMfe": -31.600000381469727,
+          "recodedMfe": -31.600000381469727
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.0
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--boundary",
+        "start": 200,
+        "end": 295,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CATACCTGCCGTACCCAGTGTGCAAATGCT"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
+          "wildMfe": -31.600000381469727,
+          "recodedMfe": -30.100000381469727
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.20000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--boundary",
+        "start": 200,
+        "end": 295,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CATACCTGCCGTACCCAGTGTGCAAATGCT"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
+          "wildMfe": -31.600000381469727,
+          "recodedMfe": -35.599998474121094
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -40.0,
+          "recodedMfe": -54.70000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--short-overlap",
+        "start": 51,
+        "end": 71,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "AGGTACCCCAATCTCGAGACACGCTCCGTGGTGTCGTCAGTGTTGGCGTAGATTCCTAACTGGGTTGGTAAGGAATCATACCTGCCGTAC",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
+          "recoded": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
+          "wildMfe": -26.899999618530273,
+          "recodedMfe": -26.899999618530273
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -4.099999904632568,
+          "recodedMfe": -4.099999904632568
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--short-overlap",
+        "start": 51,
+        "end": 71,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "AGGTACCCCAATCTCGAGACACGCTCCGTGGTGTCGTCAGTGTTGGCGTAGATTCCTAACTGGGTTGGTAAGGAATCATACCTGCCGTAC",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
+          "recoded": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGAGCAGUGUGUUGGCGUAAAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
+          "wildMfe": -26.899999618530273,
+          "recodedMfe": -23.100000381469727
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -4.099999904632568,
+          "recodedMfe": -4.199999809265137
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--short-overlap",
+        "start": 51,
+        "end": 71,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zHGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "sequence": "AGGTACCCCAATCTCGAGACACGCTCCGTGGTGTCGTCAGTGTTGGCGTAGATTCCTAACTGGGTTGGTAAGGAATCATACCTGCCGTAC",
+          "cdsOffsets": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
+          "recoded": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUCCUGGCGUGAAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
+          "wildMfe": -26.899999618530273,
+          "recodedMfe": -22.0
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -4.099999904632568,
+          "recodedMfe": -4.099999904632568
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--joined",
+        "start": 51,
+        "end": 148,
+        "strand": "-",
+        "cdsSegments": [
+          [
+            51,
+            62
+          ],
+          [
+            65,
+            148
+          ]
+        ],
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "ATAGGCCTTACCTCCGACCAGCGCACATAT"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "wildMfe": -27.799999237060547,
+          "recodedMfe": -27.799999237060547
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.0
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--joined",
+        "start": 51,
+        "end": 148,
+        "strand": "-",
+        "cdsSegments": [
+          [
+            51,
+            62
+          ],
+          [
+            65,
+            148
+          ]
+        ],
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "ATAGGCCTTACCTCCGACCAGCGCACATAT"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
+          "wildMfe": -27.799999237060547,
+          "recodedMfe": -31.100000381469727
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -40.0,
+          "recodedMfe": -40.20000076293945
+        }
+      }
+    },
+    {
+      "gene": {
+        "id": "--joined",
+        "start": 51,
+        "end": 148,
+        "strand": "-",
+        "cdsSegments": [
+          [
+            51,
+            62
+          ],
+          [
+            65,
+            148
+          ]
+        ],
+        "codons": "zHGzD3HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "ATAGGCCTTACCTCCGACCAGCGCACATAT"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
+          "recoded": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
+          "wildMfe": -27.799999237060547,
+          "recodedMfe": -33.900001525878906
+        },
+        "first100": {
+          "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -40.0,
+          "recodedMfe": -54.70000076293945
+        }
+      }
+    }
+  ]
+}

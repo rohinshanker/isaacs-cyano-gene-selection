@@ -677,3 +677,9 @@ input[type="range"] { width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+/* Folding reports remain readable without creating horizontal table scrolling. */
+.folding-panel { margin-top: var(--gap); min-width: 0; }
+.folding-panel summary { cursor: pointer; font-size: .85rem; }
+.folding-panel progress { max-width: 100%; width: 100%; }
+.folding-result { margin-block: .75rem; font-size: .8rem; overflow-wrap: anywhere; }
+.folding-result p { margin-block: .25rem; }
