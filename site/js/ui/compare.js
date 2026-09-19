@@ -16,7 +16,8 @@ import {
 } from '../core/metric-registry.js';
 import {
   robustScale, zScore, seriesStyle, defaultAxes, MIN_AXES, Z_LIMIT, presentRuns,
-  countMissing, missingRanks, wrapLabel, describeMissing, pluralise, drawMarker, drawMissingGlyph,
+  countMissing, missingRanks, wrapLabel, describeMissing, describeMissingSentence,
+  describeDroppedAxes, pluralise, drawMarker, drawMissingGlyph,
 } from './compare-model.js';
 
 const TABS = [
@@ -24,6 +25,15 @@ const TABS = [
   { id: 'parallel', label: 'Parallel coordinates' },
   { id: 'delta', label: 'Pairwise delta' },
 ];
+
+/** The signed result leads; raw inputs remain available to its right. */
+export const DELTA_COLUMNS = Object.freeze([
+  Object.freeze({ key: 'metric', label: 'Metric' }),
+  Object.freeze({ key: 'difference', label: 'A − B' }),
+  Object.freeze({ key: 'magnitude', label: 'Relative size' }),
+  Object.freeze({ key: 'a', label: 'A' }),
+  Object.freeze({ key: 'b', label: 'B' }),
+]);
 
 const FONT = '11px system-ui, sans-serif';
 const LINE_HEIGHT = 13;
@@ -303,10 +313,7 @@ export class ComparePanel {
       }
       this.axisOptions.append(group);
     }
-    this.unavailableNote.textContent = this.droppedAxes.length === 0
-      ? ''
-      : `Not on the default axes: ${this.droppedAxes.map(({ reason }) => reason).join(' ')} `
-        + 'You can still add these under Choose metrics.';
+    this.unavailableNote.textContent = describeDroppedAxes(this.droppedAxes);
     this.unavailableNote.hidden = this.tab === 'delta' || this.droppedAxes.length === 0;
   }
 
@@ -468,8 +475,8 @@ export class ComparePanel {
       'aria-label',
       `Radar chart of ${pluralise(series.length, 'shortlisted gene')} across `
         + `${pluralise(axes.length, 'metric')}, `
-        + `z-scored against the genome median. ${describeMissing(missing.total)}`
-        + `${missing.total > 0 ? ', drawn as gaps with an open cross beyond the outer ring, never at the median' : ''}. `
+        + `z-scored against the genome median. ${describeMissingSentence(missing.total)} `
+        + `${missing.total > 0 ? 'Missing values are drawn as gaps with an open cross beyond the outer ring, never at the median. ' : ''}`
         + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
         + 'The same numbers are in the table below.',
     );
@@ -617,8 +624,8 @@ export class ComparePanel {
       'aria-label',
       `Parallel coordinates of ${pluralise(series.length, 'shortlisted gene')} across `
         + `${pluralise(axes.length, 'metric')}, `
-        + `z-scored against the genome median. ${describeMissing(missing.total)}`
-        + `${missing.total > 0 ? ', drawn as a break in the line with an open cross below the axis, never at the median' : ''}. `
+        + `z-scored against the genome median. ${describeMissingSentence(missing.total)} `
+        + `${missing.total > 0 ? 'Missing values are drawn as a break in the line with an open cross below the axis, never at the median. ' : ''}`
         + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
         + 'The same numbers are in the table below.',
     );
@@ -884,10 +891,11 @@ export class ComparePanel {
     const indexA = dataset.indexById.get(this.deltaPair[0]);
     const indexB = dataset.indexById.get(this.deltaPair[1]);
     const table = document.createElement('table');
-    table.className = 'data-table';
+    table.className = 'data-table delta-data-table';
     const tableScroll = document.createElement('div');
     tableScroll.className = 'table-scroll';
-    const captionText = `${this.deltaPair[0]} minus ${this.deltaPair[1]}, every metric`;
+    const captionText = `${this.deltaPair[0]} minus ${this.deltaPair[1]}. `
+      + 'Signed differences come first; on narrow screens, scroll right for the raw A and B values.';
     const captionNote = document.createElement('p');
     captionNote.className = 'table-caption';
     captionNote.id = 'compare-delta-caption';
@@ -897,8 +905,15 @@ export class ComparePanel {
     caption.className = 'visually-hidden';
     caption.textContent = 'Pairwise metric differences';
     const head = document.createElement('thead');
-    head.innerHTML = '<tr><th scope="col">Metric</th><th scope="col">A</th><th scope="col">B</th>'
-      + '<th scope="col">A − B</th><th scope="col">Size of the difference</th></tr>';
+    const headerRow = document.createElement('tr');
+    for (const column of DELTA_COLUMNS) {
+      const heading = document.createElement('th');
+      heading.scope = 'col';
+      heading.className = `delta-column-${column.key}`;
+      heading.textContent = column.label;
+      headerRow.append(heading);
+    }
+    head.append(headerRow);
     const body = document.createElement('tbody');
     for (const metric of this.registry.metrics) {
       const a = metric.read(indexA);
@@ -909,6 +924,7 @@ export class ComparePanel {
       const row = document.createElement('tr');
       const label = document.createElement('th');
       label.scope = 'row';
+      label.className = 'delta-column-metric';
       label.textContent = metric.label;
       const unit = document.createElement('span');
       unit.className = 'row-unit';
@@ -916,7 +932,7 @@ export class ComparePanel {
       label.append(' ', unit);
 
       const bar = document.createElement('td');
-      bar.className = 'delta-bar-cell';
+      bar.className = 'delta-bar-cell delta-column-magnitude';
       const track = document.createElement('span');
       track.className = 'delta-track';
       const fill = document.createElement('span');
@@ -936,14 +952,14 @@ export class ComparePanel {
       bar.append(track, magnitudeText);
 
       const deltaCell = this.valueCell(metric, difference, null);
+      deltaCell.classList.add('delta-column-difference');
       if (Number.isFinite(difference)) deltaCell.textContent = formatDelta(metric, difference);
-      row.append(
-        label,
-        this.valueCell(metric, a, dataset.genes[indexA]),
-        this.valueCell(metric, b, dataset.genes[indexB]),
-        deltaCell,
-        bar,
-      );
+      const aCell = this.valueCell(metric, a, dataset.genes[indexA]);
+      aCell.classList.add('delta-column-a');
+      const bCell = this.valueCell(metric, b, dataset.genes[indexB]);
+      bCell.classList.add('delta-column-b');
+      const cells = { metric: label, difference: deltaCell, magnitude: bar, a: aCell, b: bCell };
+      row.append(...DELTA_COLUMNS.map(({ key }) => cells[key]));
       body.append(row);
     }
     table.append(caption, head, body);

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import {
   robustScale, zScore, seriesStyle, SERIES_STYLES, defaultAxes, axisUnavailableReason,
   presentRuns, countMissing, missingRanks, wrapLabel, describeMissing, pluralise,
-  Z_LIMIT, MIN_AXES, DEFAULT_AXES,
+  describeMissingSentence, describeDroppedAxes, Z_LIMIT, MIN_AXES, DEFAULT_AXES,
 } from '../../site/js/ui/compare-model.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
 
@@ -159,4 +159,23 @@ test('the missing count reads as plain language', () => {
   assert.equal(describeMissing(0), 'no missing values');
   assert.equal(describeMissing(1), '1 missing value');
   assert.equal(describeMissing(4), '4 missing values');
+});
+
+test('a missing count becomes a capitalized, punctuated chart sentence', () => {
+  assert.equal(describeMissingSentence(0), 'No missing values.');
+  assert.equal(describeMissingSentence(1), '1 missing value.');
+  assert.equal(describeMissingSentence(4), '4 missing values.');
+});
+
+test('dropped-axis guidance separates its lead-in without a double colon', () => {
+  assert.equal(describeDroppedAxes([]), '');
+  const copy = describeDroppedAxes([
+    { reason: 'Target fraction: every gene is 0, so there is nothing to compare.' },
+  ]);
+  assert.equal(
+    copy,
+    'Not on the default axes — Target fraction: every gene is 0, so there is nothing to compare. '
+      + 'You can still add these under Choose metrics.',
+  );
+  assert.doesNotMatch(copy, /axes: [^:]+:/);
 });

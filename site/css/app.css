@@ -673,10 +673,28 @@ input[type="range"] { width: 100%; }
 
 .delta-controls { display: flex; flex-wrap: wrap; gap: 1rem; }
 .delta-controls .field-row { margin-bottom: 0; }
-.delta-track { position: relative; display: block; width: 130px; height: 9px; background: var(--surface-sunken); border: 1px solid var(--line); }
+.delta-track { position: relative; display: block; width: 112px; height: 9px; background: var(--surface-sunken); border: 1px solid var(--line); }
 .delta-fill { position: absolute; top: 0; height: 100%; }
 .delta-bar-cell { white-space: nowrap; }
 .delta-magnitude { font-size: 0.74rem; color: var(--ink-muted); margin-left: 0.4rem; font-variant-numeric: tabular-nums; }
+/* The signed result and its visual scale are the purpose of this table, so they
+   precede the supporting raw values. A bounded, wrapping metric label keeps all
+   three core columns visible when the centre workspace is narrow. */
+.delta-data-table .delta-column-metric {
+  min-width: 7rem;
+  width: 15rem;
+  max-width: 15rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.delta-data-table tbody .delta-column-metric { z-index: 1; }
+.delta-data-table thead .delta-column-metric {
+  left: 0;
+  z-index: 2;
+}
+.delta-data-table .delta-column-difference,
+.delta-data-table .delta-column-a,
+.delta-data-table .delta-column-b { text-align: right; }
 
 .table-heading { margin-top: 1rem; }
 /* The shared metric table is far wider than any viewport and scrolls inside this

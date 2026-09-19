@@ -7,6 +7,7 @@ import {
 } from '../../site/js/ui/filters.js';
 import { foldInputsInvalidateResult } from '../../site/js/ui/folding-panel.js';
 import { metricFamilyStartsOpen } from '../../site/js/ui/side-panel.js';
+import { DELTA_COLUMNS } from '../../site/js/ui/compare.js';
 
 const compareSource = await readFile(new URL('../../site/js/ui/compare.js', import.meta.url), 'utf8');
 const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
@@ -56,4 +57,22 @@ test('wide comparison tables keep their complete guidance outside the horizontal
   assert.doesNotMatch(compareSource, /this\.(?:deltaTableHost|tableHost)\.append\(captionNote, table\)/);
   assert.match(appCss, /\.table-caption\s*\{/);
   assert.doesNotMatch(appCss, /\.data-table caption\s*\{/);
+});
+
+test('pairwise comparison leads with the signed result and keeps raw values available', () => {
+  assert.deepEqual(
+    DELTA_COLUMNS.map(({ key, label }) => [key, label]),
+    [
+      ['metric', 'Metric'],
+      ['difference', 'A − B'],
+      ['magnitude', 'Relative size'],
+      ['a', 'A'],
+      ['b', 'B'],
+    ],
+  );
+  assert.match(
+    compareSource,
+    /Signed differences come first; on narrow screens, scroll right for the raw A and B values\./,
+  );
+  assert.match(appCss, /\.delta-data-table \.delta-column-metric\s*\{/);
 });

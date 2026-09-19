@@ -230,6 +230,19 @@ export function describeMissing(count) {
   return pluralise(count, 'missing value');
 }
 
+/** A complete sentence for chart accessible names. */
+export function describeMissingSentence(count) {
+  if (count === 0) return 'No missing values.';
+  return `${pluralise(count, 'missing value')}.`;
+}
+
+/** Explain which preferred axes were omitted without stacking two colons. */
+export function describeDroppedAxes(droppedAxes) {
+  if (droppedAxes.length === 0) return '';
+  return `Not on the default axes — ${droppedAxes.map(({ reason }) => reason).join(' ')} `
+    + 'You can still add these under Choose metrics.';
+}
+
 /**
  * Draw a series marker centred on (x, y). Filled shapes use `fill`, stroked
  * shapes use `stroke`; both are the series colour, set by the caller.
