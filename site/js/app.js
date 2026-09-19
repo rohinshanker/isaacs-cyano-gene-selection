@@ -332,6 +332,7 @@ function renderDetail() {
   const index = context.hoveredIndex >= 0 ? context.hoveredIndex
     : context.activeIndex >= 0 ? context.activeIndex
       : pinnedIndex();
+  element('detail-jump').hidden = index < 0;
   sidePanel.update({
     index,
     isPinned: index >= 0 && index === pinnedIndex()
@@ -815,6 +816,39 @@ async function boot() {
       + 'to a gene before pressing Enter to pin it.'),
     onShortlistToggle: (index) => toggleShortlist(index),
     onViewChange: scheduleTiming,
+  });
+
+  element('detail-jump').addEventListener('click', () => {
+    const detail = element('detail');
+    detail.scrollIntoView({ block: 'start' });
+    detail.focus({ preventScroll: true });
+  });
+
+  // Chromium does not consistently route paging keys into a focused overflow
+  // landmark. Handle them only on the landmark itself, leaving controls inside
+  // it native, and hand movement back to the page at either scroll boundary.
+  element('detail').addEventListener('keydown', (event) => {
+    if (event.target !== event.currentTarget) return;
+    const detail = event.currentTarget;
+    const page = Math.max(80, detail.clientHeight * 0.8);
+    const steps = {
+      ArrowDown: 40,
+      ArrowUp: -40,
+      PageDown: page,
+      PageUp: -page,
+    };
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      detail.scrollTop = event.key === 'Home' ? 0 : detail.scrollHeight;
+      return;
+    }
+    const step = steps[event.key];
+    if (!step) return;
+    event.preventDefault();
+    const max = detail.scrollHeight - detail.clientHeight;
+    const canScroll = step > 0 ? detail.scrollTop < max : detail.scrollTop > 0;
+    if (canScroll) detail.scrollBy({ top: step });
+    else window.scrollBy({ top: step });
   });
 
   schemeEditor = new SchemeEditor(element('scheme-editor'), dataset, {

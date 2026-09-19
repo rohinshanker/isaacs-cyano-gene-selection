@@ -18,6 +18,8 @@ test('analysis panels keep a logical source order inside one center column', () 
   assert.ok(comparison < shortlist, 'shortlist follows the comparison it drives');
   assert.ok(shortlist < provenance, 'dataset help follows the active workflow');
   assert.ok(provenance < detail, 'gene detail remains last in the single-column source order');
+  assert.ok(html.indexOf('id="detail-jump"', map) < comparison,
+    'the mobile selected-detail shortcut stays with the map that creates the selection');
 });
 
 test('relocated support panels use compact native disclosures', () => {

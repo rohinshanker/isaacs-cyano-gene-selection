@@ -247,6 +247,9 @@ if (window.location.protocol === 'file:') {
         <summary>What drives these axes</summary>
         <div id="loadings"></div>
       </details>
+      <button type="button" id="detail-jump" class="chip-button detail-jump" hidden>
+        Jump to selected gene detail
+      </button>
     </section>
 
     <section class="compare-section card" id="compare-section" hidden aria-label="Compare candidates">
@@ -275,8 +278,14 @@ if (window.location.protocol === 'file:') {
     </section>
   </div>
 
-  <aside class="column detail card" aria-label="Gene detail" id="detail"></aside>
+  <aside class="column detail card" aria-label="Gene detail" id="detail" tabindex="0"
+         aria-describedby="detail-scroll-hint"></aside>
 </main>
+
+<p id="detail-scroll-hint" class="visually-hidden">
+  On wide screens, this panel scrolls independently when its content is taller than the viewport.
+  Focus the panel and use the arrow, Page Up, Page Down, Home, or End keys to scroll it.
+</p>
 
 <footer class="site-footer" id="site-footer" hidden>
   <p>

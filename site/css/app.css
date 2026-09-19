@@ -143,15 +143,27 @@ pre {
 .analysis > * { min-width: 0; }
 .map { display: flex; flex-direction: column; gap: 0.6rem; }
 .detail { max-height: none; overflow: visible; }
+.detail-jump { align-self: flex-start; }
 
 @media (min-width: 960px) {
   .layout { grid-template-columns: 300px minmax(0, 1fr); }
   .detail { grid-column: 1 / -1; }
+  .detail-jump { display: none; }
   .shortlist-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 }
 @media (min-width: 1240px) {
   .layout { grid-template-columns: 280px minmax(0, 1fr) 320px; }
-  .detail { grid-column: auto; }
+  .detail {
+    grid-column: auto;
+    position: sticky;
+    top: var(--gap);
+    max-height: calc(100vh - 2 * var(--gap));
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+    scrollbar-gutter: stable;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Controls -------------------------------------------------------------- */
