@@ -53,6 +53,15 @@ export function isExpressionProxyMetric(metric) {
   return isExpressionMetric(metric) && /proxy/i.test(`${metric.key} ${metric.label}`);
 }
 
+/** Short, honest source label for expression selectors. */
+export function expressionSourceScope(metric) {
+  if (isExpressionProxyMetric(metric)) return 'proxy from this genome';
+  if (!isExpressionMetric(metric)) return 'from this genome';
+  if (metric.provenance?.isTargetOrganism === true) return 'measured in this organism';
+  if (metric.provenance?.isTargetOrganism === false) return 'measured elsewhere';
+  return 'measurement source unrecorded';
+}
+
 /** The four states the contract's `expressionBasis` can be in, in display order. */
 export const EXPRESSION_BASES = Object.freeze(['measured', 'proxy', 'none', 'unrecorded']);
 

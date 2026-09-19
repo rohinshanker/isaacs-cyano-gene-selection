@@ -244,6 +244,139 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def load_annotation_layer(
+    release_dir: Path, included_loci: set[str]
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+    """Loads the pinned annotation evidence consumed by the site.
+
+    The annotation release builder remains the sole writer of these artifacts.
+    This consumer verifies their published digests and exact release identity,
+    then keeps only evidence with a direct per-locus meaning in the viewer.
+    """
+    summary_path = release_dir / "release-summary-v1.json"
+    evidence_path = release_dir / "annotation-evidence-v1.jsonl"
+    go_path = release_dir / "go-annotations-v1.tsv"
+    for path in (summary_path, evidence_path, go_path):
+        require(path.is_file(), f"Annotation release artifact is missing: {path}")
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    require(summary.get("schemaVersion") == 1, "Unsupported annotation summary schema")
+    release_id = summary.get("releaseId")
+    require(
+        isinstance(release_id, str) and release_id,
+        "Annotation summary must name its releaseId",
+    )
+    generated = summary.get("generatedFiles", {})
+    for path in (evidence_path, go_path):
+        declared = generated.get(path.name, {})
+        require(
+            declared.get("sha256") == sha256(path),
+            f"Annotation artifact checksum differs from the release summary: {path.name}",
+        )
+
+    evidence_by_locus: dict[str, dict[str, Any]] = {}
+    with evidence_path.open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            locus = record.get("locusTag")
+            require(
+                isinstance(locus, str) and locus,
+                f"Annotation evidence row {line_number} has no locusTag",
+            )
+            require(
+                locus not in evidence_by_locus,
+                f"Annotation evidence repeats locus {locus}",
+            )
+            require(
+                record.get("releaseId") == release_id,
+                f"Annotation evidence for {locus} names another release",
+            )
+            evidence_by_locus[locus] = record
+
+    missing = sorted(included_loci - evidence_by_locus.keys())
+    require(
+        not missing,
+        f"Annotation evidence is missing included loci: {', '.join(missing[:10])}",
+    )
+
+    go_by_locus: dict[str, list[dict[str, str]]] = collections.defaultdict(list)
+    with go_path.open(encoding="utf-8", newline="") as handle:
+        rows = csv.DictReader(handle, delimiter="\t")
+        required = {
+            "locus_tag", "go_id", "qualifier", "aspect", "evidence_code",
+            "reference", "with_from", "assigned_by", "mapping_ambiguity",
+            "mapping_method",
+        }
+        require(
+            rows.fieldnames is not None and required <= set(rows.fieldnames),
+            "GO annotation artifact is missing required columns",
+        )
+        for row_number, row in enumerate(rows, start=2):
+            locus = row["locus_tag"]
+            require(
+                locus in evidence_by_locus,
+                f"GO row {row_number} names unknown locus {locus}",
+            )
+            if locus not in included_loci:
+                continue
+            go_by_locus[locus].append(
+                {
+                    "goId": row["go_id"],
+                    "qualifier": row["qualifier"],
+                    "aspect": row["aspect"],
+                    "evidenceCode": row["evidence_code"],
+                    "reference": row["reference"],
+                    "withFrom": row["with_from"],
+                    "assignedBy": row["assigned_by"],
+                    "mappingAmbiguity": row["mapping_ambiguity"],
+                    "mappingMethod": row["mapping_method"],
+                }
+            )
+
+    site_evidence = {}
+    for locus in sorted(included_loci):
+        source = evidence_by_locus[locus]
+        site_evidence[locus] = {
+            "repliconType": source.get("repliconType"),
+            "repliconName": source.get("repliconName"),
+            "annotationMethods": source.get("annotationMethods", []),
+            "inferences": source.get("inferences", []),
+            "overlappingCds": source.get("overlappingCds", []),
+            "nearbyNoncodingRnas": source.get("nearbyNoncodingRnas", []),
+            "goAnnotations": go_by_locus.get(locus, []),
+        }
+
+    metadata = {
+        "releaseId": release_id,
+        "schemaVersion": 1,
+        "evidenceFile": evidence_path.name,
+        "goFile": go_path.name,
+        "siteFile": "annotations.json",
+        "checksums": {
+            evidence_path.name: generated[evidence_path.name]["sha256"],
+            go_path.name: generated[go_path.name]["sha256"],
+        },
+        "coverage": {
+            "siteGenes": len(included_loci),
+            "withAnnotationEvidence": len(site_evidence),
+            "withGoAnnotations": len(go_by_locus),
+            "goRelationships": sum(map(len, go_by_locus.values())),
+        },
+        "goAttribution": {
+            "creator": "Gene Ontology Consortium",
+            "license": "CC BY 4.0",
+            "source": "https://geneontology.org/",
+            "notice": (
+                "GO relationships are evidence-coded annotations, not an inferred "
+                "pathway or functional-category assignment."
+            ),
+        },
+    }
+    return site_evidence, metadata
+
+
 def load_expression_sources(
     directory: Path, existing_metric_keys: Iterable[str] = ()
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
@@ -664,8 +797,10 @@ def checksum(path: Path) -> str:
     return digest.hexdigest()
 
 
-def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict, dict]:
-    """Builds and writes all four contracted JSON documents."""
+def build(
+    raw_dir: Path, output_dir: Path, annotation_dir: Path | None = None
+) -> tuple[list[dict], list[dict], dict, dict]:
+    """Builds and writes the contracted site JSON documents."""
     paths = {
         suffix: raw_dir / f"{PREFIX}{suffix}.gz"
         for suffix in (
@@ -737,6 +872,16 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
     )
 
+    included_loci = {gene["id"] for gene in included}
+    if annotation_dir is None:
+        annotation_dir = (
+            repository
+            / "data/annotation/releases/GCF_000817325.1-RS_2026_05_13"
+        )
+    annotation_evidence, annotation_release = load_annotation_layer(
+        annotation_dir, included_loci
+    )
+
     expression_sources, expression_values = load_expression_sources(
         repository / "data/expression", METRIC_DEFINITIONS
     )
@@ -784,9 +929,11 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         values["start"] = source["_displayStart"]
         values["end"] = source["_displayEnd"]
         values["terminalStop"] = sequence[-3:]
-        values["rnaContext"] = folding_context(source, genomes[source["seqid"]], sequence)
+        values["_rnaContext"] = folding_context(
+            source, genomes[source["seqid"]], sequence
+        )
         require(
-            restore_start_window(values["rnaContext"], sequence)
+            restore_start_window(values["_rnaContext"], sequence)
             == start_window(source, genomes[source["seqid"]]),
             f"RNA start context round trip failed for {source['id']}",
         )
@@ -855,6 +1002,10 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
     ).fit_transform(risk)
     for gene, point in zip(genes, embedding, strict=True):
         gene["riskUmap"] = point.tolist()
+        # Keep the large context at the end of each compact record. This is
+        # semantically irrelevant but makes a rebuild byte-identical to the
+        # established site payload rather than rewriting every one-line record.
+        gene["rnaContext"] = gene.pop("_rnaContext")
 
     codon_pca = {
         "explainedVariance": pca.explained_variance_ratio_.tolist(),
@@ -908,6 +1059,7 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
         .isoformat()
         .replace("+00:00", "Z"),
         "genome": {"accession": ACCESSION, "taxid": 1350461, "totalLength": TOTAL_LENGTH},
+        "annotationRelease": annotation_release,
         "sourceChecksums": {
             path.name: checksum(path)
             for path in sorted(raw_dir.iterdir())
@@ -1020,6 +1172,7 @@ def build(raw_dir: Path, output_dir: Path) -> tuple[list[dict], list[dict], dict
     output_dir.mkdir(parents=True, exist_ok=True)
     documents = {
         "genes.json": genes,
+        "annotations.json": annotation_evidence,
         "excluded.json": excluded,
         "meta.json": meta,
         "codon_pca.json": codon_pca,
@@ -1040,8 +1193,16 @@ def main() -> None:
         default=repository / "data/raw",
     )
     parser.add_argument("--output-dir", type=Path, default=repository / "site/data")
+    parser.add_argument(
+        "--annotation-dir",
+        type=Path,
+        default=(
+            repository
+            / "data/annotation/releases/GCF_000817325.1-RS_2026_05_13"
+        ),
+    )
     args = parser.parse_args()
-    genes, excluded, _, _ = build(args.raw_dir, args.output_dir)
+    genes, excluded, _, _ = build(args.raw_dir, args.output_dir, args.annotation_dir)
     print(f"Wrote {len(genes)} genes and {len(excluded)} exclusions to {args.output_dir}")
 
 

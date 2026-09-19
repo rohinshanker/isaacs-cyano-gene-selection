@@ -79,15 +79,28 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
   const url = (name) => new URL(name, base).href;
 
-  const [meta, genes, codonPca, excluded] = await Promise.all([
+  const [meta, genes, codonPca, excluded, annotations] = await Promise.all([
     fetchJson(fetchImpl, url('meta.json')),
     fetchJson(fetchImpl, url('genes.json')),
     fetchJson(fetchImpl, url('codon_pca.json'), { optional: true }),
     fetchJson(fetchImpl, url('excluded.json'), { optional: true }),
+    fetchJson(fetchImpl, url('annotations.json'), { optional: true }),
   ]);
 
   requireArray(genes, 'genes.json');
   if (genes.length === 0) throw new Error('genes.json is empty');
+  if (meta.annotationRelease && (!annotations || typeof annotations !== 'object')) {
+    throw new Error('annotations.json is required by meta.annotationRelease');
+  }
+  if (annotations) {
+    for (const gene of genes) {
+      const evidence = annotations[gene.id];
+      if (!evidence || typeof evidence !== 'object') {
+        throw new Error(`annotations.json has no evidence for ${gene.id}`);
+      }
+      gene.annotationEvidence = evidence;
+    }
+  }
   const table = new CodonTable(meta.codonAlphabet);
   const conventions = resolveConventions(meta, table);
   const { initiatorIndex } = conventions;

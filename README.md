@@ -32,6 +32,11 @@ local server command is shown below.
 - **Fold shortlisted recoded genes locally.** The on-demand ViennaRNA worker compares
   wild type with the exact recoded start and CDS windows, supports cancellation, and
   caches identical requests.
+- **Inspect release-pinned annotation evidence without crowding the workspace.** Each
+  gene detail has a collapsed disclosure for replicon identity, overlapping CDSs,
+  nearby non-coding RNAs, annotation methods/inferences, and evidence-coded GO
+  relationships. Coordinate proximity is not presented as regulation, and GO rows are
+  not converted into invented pathways or functional categories.
 - **Export a shortlist that stays interpretable.** Every export carries a manifest naming
   the dataset, the annotation release, checksums, the full scheme map, and the metric
   definitions, so two exports under two schemes can never be confused.

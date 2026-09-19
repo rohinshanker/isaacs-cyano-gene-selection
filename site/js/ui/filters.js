@@ -10,6 +10,7 @@
  */
 import {
   isExpressionMetric, isExpressionProxyMetric, metricValues, describeExpressionSource,
+  expressionSourceScope,
 } from '../core/metric-registry.js';
 import { formatCount, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
@@ -232,12 +233,7 @@ export class FilterPanel {
     for (const candidate of candidates) {
       const option = document.createElement('option');
       option.value = candidate.key;
-      // A proxy rank is this genome's own; a measurement may not be.
-      option.textContent = isExpressionProxyMetric(candidate)
-        ? `${candidate.label} (proxy from this genome)`
-        : isExpressionMetric(candidate)
-          ? `${candidate.label} (measured elsewhere)`
-          : `${candidate.label} (from this genome)`;
+      option.textContent = `${candidate.label} (${expressionSourceScope(candidate)})`;
       select.append(option);
     }
     select.value = this.trafficKey;
@@ -252,7 +248,8 @@ export class FilterPanel {
 
     if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
       const notice = document.createElement('p');
-      notice.className = 'provenance-warning';
+      notice.className = metric.provenance?.isTargetOrganism === false
+        ? 'provenance-warning' : 'panel-note';
       notice.textContent = describeExpressionSource(metric.provenance)
         ?? 'This expression measurement carries no recorded provenance, so treat it with care.';
       this.trafficHost.append(notice);
@@ -458,7 +455,8 @@ export class FilterPanel {
 
       if (metric.provenance) {
         const notice = document.createElement('p');
-        notice.className = 'provenance-warning';
+        notice.className = metric.provenance.isTargetOrganism === false
+          ? 'provenance-warning' : 'panel-note';
         notice.textContent = describeExpressionSource(metric.provenance);
         row.append(notice);
       }

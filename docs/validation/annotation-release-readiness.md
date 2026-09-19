@@ -5,6 +5,16 @@
 - Annotation: `GCF_000817325.1-RS_2026_05_13`, PGAP 6.11, 2026-05-13.
 - Manifest: `data/manifest/annotation-release-v1.json`.
 
+The feature build consumes `annotation-evidence-v1.jsonl` and
+`go-annotations-v1.tsv` only after verifying their release-summary SHA-256s. It
+joins every published site gene by exact locus tag and writes the preserved
+relationships to `site/data/annotations.json`. The browser requires that file
+when `meta.annotationRelease` is declared, joins it to the in-memory genes, and
+exposes it in a collapsed gene-detail disclosure. The separate file keeps the
+map's core `genes.json` within its interaction budget. The crosswalk remains a
+release/audit artifact rather than being flattened into one assumed identifier
+per gene.
+
 ## Reproducible commands
 
 From the repository root:

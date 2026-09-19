@@ -517,6 +517,14 @@ input[type="range"] { width: 100%; }
 
 .metric-group { border-bottom: 1px solid var(--line); }
 .metric-group summary { cursor: pointer; font-weight: 600; font-size: 0.85rem; padding: 0.35rem 0; }
+.annotation-evidence { overflow-wrap: anywhere; }
+.annotation-evidence > .panel-note { margin: 0.15rem 0 0.55rem; }
+.annotation-evidence-list { margin: 0 0 0.55rem; font-size: 0.78rem; }
+.annotation-evidence-list > div { margin-bottom: 0.45rem; }
+.annotation-evidence-list dt { color: var(--ink-muted); font-weight: 600; }
+.annotation-evidence-list dd { margin: 0.08rem 0 0; }
+.annotation-evidence-list ul { margin: 0; padding-left: 1.1rem; }
+.annotation-evidence-list li { margin-bottom: 0.12rem; }
 .metric-label { display: block; font-weight: 600; }
 .metric-desc { display: block; color: var(--ink-muted); font-weight: 400; font-size: 0.75rem; }
 .rank-cell { width: 6.5rem; }

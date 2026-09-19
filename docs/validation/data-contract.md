@@ -289,6 +289,19 @@ when the recoding scheme changes.
   "rnaContext": { "upstream": "<30 strand-oriented ACGT bases>" }, // alternate form above
   "translationalException": null, // or "ribosomal_slippage"
   "cdsSegments": null,           // or [[169621,169692],[169694,170743]] when spliced
+  "annotationEvidence": {       // joined from annotations.json at load time
+    "repliconType": "chromosome", "repliconName": "chromosome",
+    "annotationMethods": ["Protein Homology"],
+    "inferences": ["COORDINATES: similar to AA sequence:RefSeq:WP_..."],
+    "overlappingCds": [{"locusTag": "M744_RS...", "overlapNt": 7}],
+    "nearbyNoncodingRnas": [{"locusTag": "M744_RS...", "biotype": "tRNA", "distanceNt": 8}],
+    "goAnnotations": [{
+      "goId": "GO:0016787", "qualifier": "enables", "aspect": "F",
+      "evidenceCode": "IEA", "reference": "PMID:33270901",
+      "withFrom": "HMM:NF...", "assignedBy": "RefSeq",
+      "mappingAmbiguity": "", "mappingMethod": "exact RefSeq protein_id"
+    }]
+  },
 
 
   "gc": 0.554, "gc1": 0.601, "gc2": 0.412, "gc3": 0.648,
@@ -324,6 +337,17 @@ when the recoding scheme changes.
 
 Nulls are permitted for `name`, `operonId`, and any metric that genuinely could
 not be computed. The site renders null as an em-space, never as zero.
+
+`annotations.json` is an object keyed by every published gene's exact locus tag.
+The loader requires it when `meta.annotationRelease` is present and attaches its
+record to the in-memory gene as `annotationEvidence`. Keeping this relationship
+payload separate preserves the `genes.json` interaction budget. It is not a
+metric space: overlaps and nearby RNA are
+coordinate relationships, annotation methods/inferences remain source text, and
+GO relationships retain their qualifier, aspect, evidence code, reference,
+assigner, mapping method, and ambiguity. The viewer keeps this material in a
+collapsed gene-detail disclosure and never derives a pathway, confidence score,
+regulatory interaction, or functional category from it.
 
 ## Expression, and why it is not the default
 
@@ -410,6 +434,7 @@ link reproduces the exact view.
 ## Size budget
 
 The site must load in under three seconds on a normal connection. `genes.json`
-stays under 6 MB uncompressed; GitHub Pages serves it gzipped. If it exceeds
-that, move `rscu` and `codons` into a separate lazily-fetched file rather than
-dropping precision.
+stays under 6 MB uncompressed; the relationship-heavy `annotations.json` is a
+separate payload joined by locus tag, and GitHub Pages serves both compressed.
+If the core file exceeds the budget, move `rscu` and `codons` into a separate
+lazily-fetched file rather than dropping precision.

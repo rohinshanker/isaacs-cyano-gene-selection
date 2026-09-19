@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues, isExpressionMetric,
-  describeExpressionSource,
+  describeExpressionSource, expressionSourceScope,
 } from '../../site/js/core/metric-registry.js';
 import { LIVE_METRICS } from '../../site/js/core/live-metrics.js';
 import { fixtureDataset } from './helpers.mjs';
@@ -49,6 +49,22 @@ test('an expression metric is recognised by family, by name, and by unit', () =>
   assert.equal(isExpressionMetric({ key: 'rnaSeqCounts', unit: 'counts', family: 'Other' }), true);
   assert.equal(isExpressionMetric({ key: 'abundance', unit: 'TPM', family: 'Other' }), true);
   assert.equal(isExpressionMetric({ key: 'gc3', unit: 'fraction', family: 'Base composition' }), false);
+});
+
+test('expression labels distinguish native, borrowed, proxy, and unknown sources', () => {
+  assert.equal(expressionSourceScope({
+    key: 'tssInitiation', family: 'Expression', provenance: { isTargetOrganism: true },
+  }), 'measured in this organism');
+  assert.equal(expressionSourceScope({
+    key: 'expression', family: 'Expression', provenance: { isTargetOrganism: false },
+  }), 'measured elsewhere');
+  assert.equal(expressionSourceScope({
+    key: 'expressionProxy', family: 'Expression', label: 'Expression proxy',
+  }), 'proxy from this genome');
+  assert.equal(expressionSourceScope({ key: 'expression', family: 'Expression' }),
+    'measurement source unrecorded');
+  assert.equal(expressionSourceScope({ key: 'gc3', family: 'Composition' }),
+    'from this genome');
 });
 
 test('rebinding live metrics swaps the values without rebuilding the registry', async () => {

@@ -10,6 +10,7 @@ import { formatValue, formatDelta, formatPercentile, formatCount, formatSpan, MI
 import {
   describeExpressionSource, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
 } from '../core/metric-registry.js';
+import { annotationEvidenceModel } from '../core/annotation-evidence.js';
 
 /** Families opened by default; the rest start collapsed to keep the panel short. */
 const OPEN_FAMILIES = new Set(['Size', 'Translation', 'Recoding load', 'Change from wild type']);
@@ -27,6 +28,59 @@ function cell(text, className) {
   element.textContent = text;
   if (className) element.className = className;
   return element;
+}
+
+function labelledList(label, values) {
+  const row = document.createElement('div');
+  const term = document.createElement('dt');
+  term.textContent = label;
+  const detail = document.createElement('dd');
+  if (values.length === 0) {
+    detail.textContent = 'None recorded';
+  } else {
+    const list = document.createElement('ul');
+    for (const value of values) {
+      const item = document.createElement('li');
+      item.textContent = value;
+      list.append(item);
+    }
+    detail.append(list);
+  }
+  row.append(term, detail);
+  return row;
+}
+
+function annotationDisclosure(gene, meta) {
+  const model = annotationEvidenceModel(gene, meta);
+  if (!model) return null;
+  const details = document.createElement('details');
+  details.className = 'metric-group annotation-evidence';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Annotation evidence and recoding context';
+  const intro = document.createElement('p');
+  intro.className = 'panel-note';
+  intro.textContent = `Pinned RefSeq release ${model.releaseId}. Overlap and nearby-RNA rows are `
+    + 'coordinate evidence, not proof of regulation. GO rows retain their evidence codes and are '
+    + 'not collapsed into pathway or functional-category claims.';
+  const list = document.createElement('dl');
+  list.className = 'annotation-evidence-list';
+  list.append(
+    labelledList('Replicon', [model.replicon]),
+    labelledList('Annotation method', model.methods),
+    labelledList('Inference', model.inferences),
+    labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
+    labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
+    labelledList('GO relationships', model.go.map((entry) => entry.text)),
+  );
+  details.append(summary, intro, list);
+  if (model.attribution) {
+    const source = document.createElement('p');
+    source.className = 'panel-note';
+    source.textContent = `GO: ${model.attribution.creator}; ${model.attribution.license}; `
+      + `${model.attribution.source}`;
+    details.append(source);
+  }
+  return details;
 }
 
 export class SidePanel {
@@ -116,6 +170,9 @@ export class SidePanel {
 
     header.append(shortlistButton);
     this.host.append(header);
+
+    const annotation = annotationDisclosure(gene, dataset.meta);
+    if (annotation) this.host.append(annotation);
 
     if (state.schemeActive) {
       const section = document.createElement('section');
@@ -229,7 +286,8 @@ export class SidePanel {
           const noteRow = document.createElement('tr');
           const noteCell = document.createElement('td');
           noteCell.colSpan = 3;
-          noteCell.className = 'provenance-warning';
+          noteCell.className = metric.provenance.isTargetOrganism === false
+            ? 'provenance-warning' : 'panel-note';
           noteCell.textContent = describeExpressionSource(metric.provenance);
           noteRow.append(noteCell);
           body.append(noteRow);
