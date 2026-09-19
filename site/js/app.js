@@ -290,6 +290,8 @@ function renderMap() {
   const legendHost = element('legend');
   legendHost.hidden = !projection.available;
   element('reset-view').disabled = !projection.available;
+  element('zoom-in').disabled = !projection.available;
+  element('zoom-out').disabled = !projection.available;
   if (projection.available) {
     let missing = 0;
     for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
@@ -435,6 +437,10 @@ function setPinned(index) {
   const gene = index >= 0 ? context.dataset.genes[index] : null;
   state.pinnedId = gene ? gene.id : null;
   context.hoveredIndex = -1;
+  // A committed pointer/search/keyboard selection supersedes an old keyboard
+  // preview. Otherwise the detail panel keeps describing the stale active gene
+  // while the URL and announcer correctly name the newly pinned one.
+  context.activeIndex = -1;
   renderAll();
   if (gene) {
     announce(`Pinned ${gene.id}${gene.name ? ` ${gene.name}` : ''}. ${gene.product ?? ''}`);
@@ -870,6 +876,7 @@ async function boot() {
 
   schemeEditor = new SchemeEditor(element('scheme-editor'), dataset, {
     onChange: (map) => setScheme(map),
+    onClear: () => setScheme({}, { name: '' }),
     // A name typed here is a draft: it belongs in state the moment it is
     // typed, not only once Save is clicked, or a re-render triggered by an
     // unrelated edit (adding a target, say) would wipe it back to whatever

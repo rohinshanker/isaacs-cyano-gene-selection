@@ -32,7 +32,7 @@ export class SchemeEditor {
    * @param {HTMLElement} host
    * @param {object} dataset
    * @param {{onChange: (map: object) => void, onHighExpressedChange: (value: boolean) => void,
-   *   onNameChange: (name: string) => void, onSaveScheme: (name: string) => void,
+   *   onClear: () => void, onNameChange: (name: string) => void, onSaveScheme: (name: string) => void,
    *   onLoadScheme: (name: string) => void, onDeleteScheme: (name: string) => void}} handlers
    */
   constructor(host, dataset, handlers) {
@@ -67,7 +67,10 @@ export class SchemeEditor {
     clear.type = 'button';
     clear.className = 'chip-button';
     clear.textContent = 'No scheme';
-    clear.addEventListener('click', () => this.handlers.onChange({}));
+    clear.addEventListener('click', () => {
+      if (this.handlers.onClear) this.handlers.onClear();
+      else this.handlers.onChange({});
+    });
     presetRow.append(clear);
 
     const addRow = document.createElement('div');

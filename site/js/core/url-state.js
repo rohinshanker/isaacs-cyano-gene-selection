@@ -133,7 +133,12 @@ export function decodeState(hash) {
     if (!part) continue;
     const separator = part.indexOf('=');
     if (separator < 0) continue;
-    values.set(part.slice(0, separator), decodeURIComponent(part.slice(separator + 1)));
+    try {
+      values.set(part.slice(0, separator), decodeURIComponent(part.slice(separator + 1)));
+    } catch {
+      // One damaged field must not strand the whole viewer on its loading state.
+      // Other well-formed fields in the same shared link remain usable.
+    }
   }
   const state = {};
   if (values.has(KEYS.version)) state.version = Number(values.get(KEYS.version)) || undefined;

@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  findNeighbor, clampZoom, enterTarget, shortlistTarget, MIN_ZOOM, MAX_ZOOM,
+  findNeighbor, clampZoom, projectionCanZoom, enterTarget, shortlistTarget, MIN_ZOOM, MAX_ZOOM,
 } from '../../site/js/ui/scatter.js';
 
 // Four points around the origin: right, left, up, down, one screen unit apart.
@@ -51,6 +51,13 @@ test('zoom is clamped to the range the plot can render', () => {
   assert.equal(clampZoom(MIN_ZOOM / 10), MIN_ZOOM);
   assert.equal(clampZoom(MAX_ZOOM * 10), MAX_ZOOM);
   assert.equal(clampZoom(1), 1);
+});
+
+test('an unavailable projection cannot enter the zoom path', () => {
+  assert.equal(projectionCanZoom(null), false);
+  assert.equal(projectionCanZoom({ available: false }), false);
+  assert.equal(projectionCanZoom({ available: true }), false);
+  assert.equal(projectionCanZoom({ available: true, x: projection.x, y: projection.y }), true);
 });
 
 test('Enter only ever pins the explicitly active gene, never the pinned one by default', () => {

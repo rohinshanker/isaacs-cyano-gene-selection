@@ -17,6 +17,11 @@ export function clampZoom(zoom) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
 }
 
+/** Whether a projection has the coordinates needed for navigation and zoom. */
+export function projectionCanZoom(projection) {
+  return Boolean(projection?.available && projection.x && projection.y);
+}
+
 /**
  * Which gene Enter pins: only the one the keyboard has explicitly made
  * active. An arrow key never silently pins anything on its own, so a user
@@ -387,6 +392,7 @@ export class ScatterPlot {
       }
     });
     canvas.addEventListener('wheel', (event) => {
+      if (!projectionCanZoom(this.projection)) return;
       event.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const px = event.clientX - rect.left;
@@ -398,6 +404,7 @@ export class ScatterPlot {
   }
 
   zoomAt(screenX, screenY, factor) {
+    if (!projectionCanZoom(this.projection)) return false;
     const before = this.toData(screenX, screenY);
     this.zoom = clampZoom(this.zoom * factor);
     const after = this.toScreen(before.x, before.y);
@@ -405,6 +412,7 @@ export class ScatterPlot {
     this.panY += screenY - after.y;
     this.draw();
     this.handlers.onViewChange?.();
+    return true;
   }
 
   /** Zoom by `factor` about the centre of the plot, for buttons and touch. */
@@ -414,6 +422,7 @@ export class ScatterPlot {
   }
 
   onKeyDown(event) {
+    if (!this.projection?.available) return;
     const rect = this.plotRect;
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;

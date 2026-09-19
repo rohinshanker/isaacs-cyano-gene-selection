@@ -67,7 +67,15 @@ test('an empty or malformed hash decodes to an empty patch, with no shortlist ke
   assert.deepEqual(decodeState(''), {});
   assert.deepEqual(decodeState('#'), {});
   assert.deepEqual(decodeState('#garbage&also'), {});
+  assert.deepEqual(decodeState('#n=%E0%A4%A'), {});
   assert.ok(!('shortlist' in decodeState('')), 'no hash at all must leave local persistence in charge');
+});
+
+test('one malformed percent-encoded field does not discard valid fields beside it', () => {
+  assert.deepEqual(decodeState('#p=risk&n=%E0%A4%A&t=parallel'), {
+    panel: 'risk',
+    compareTab: 'parallel',
+  });
 });
 
 test('a scheme name with separators survives encoding', () => {
