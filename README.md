@@ -81,12 +81,17 @@ Eight loci are excluded from the measured set because four proteins are each enc
 two loci and the identifier mapping collapses them; the candidate values differed by up
 to twentyfold, so assigning either would be a guess.
 
-**A third source is staged but not yet wired in.**
-[`data/expression/tan2018_utex2973_tss_initiation.tsv`](data/expression/TAN2018_TSS_PROVENANCE.md)
-is the only direct measurement of the correct strain, covering 1,727 genes under known
-conditions. It is a transcription-start-site initiation score, not abundance, and it
-correlates with the PCC 7942 table at Spearman 0.313 across shared genes, so the two
-measure genuinely different things. Full caveats:
+**A second measured source is now wired in.**
+**TSS initiation (UTEX 2973)** is the only direct measurement of the correct strain,
+covering 1,727 genes under known conditions, with 988 genes unknown. It is a
+transcription-start-site initiation score, **not** transcript abundance, and it
+correlates with the PCC 7942 table at only Spearman 0.313 across the 1,666 shared genes.
+
+The two are kept as separate filter axes and are never merged, averaged, or combined
+into one score. They disagree about which genes are busy, and that disagreement is
+information rather than noise. Sources are declared in `data/expression/sources.json`
+with organism, assay, condition, units, checksum and licence; adding another is a
+manifest entry plus its table, and it becomes filterable with no code change. Full caveats:
 [`data/expression/PROVENANCE.md`](data/expression/PROVENANCE.md) and
 [`TAN2018_TSS_PROVENANCE.md`](data/expression/TAN2018_TSS_PROVENANCE.md).
 
