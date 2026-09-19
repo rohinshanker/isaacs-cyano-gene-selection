@@ -9,6 +9,7 @@ import { describeSchemes } from '../../site/js/core/panel-export.js';
 import {
   panelInputKey, panelResultIsStale, reconcileSchemeSelection, savedSchemeKey, selectedSchemes,
 } from '../../site/js/ui/panel-designer.js';
+import { savedSchemeControlState } from '../../site/js/ui/scheme-editor.js';
 import { expressionFixtureDataset } from './helpers.mjs';
 
 const AMBER = { TAG: 'TAA' };
@@ -115,4 +116,25 @@ test('panel results become stale only when a result-defining input changes', () 
     'the scheme name is part of the exported result');
   assert.equal(panelResultIsStale('', config, schemes), false,
     'there is no stale state before a result exists');
+});
+
+test('saved-scheme controls only enable actions for an existing selection', () => {
+  assert.deepEqual(savedSchemeControlState([], ''), {
+    selected: '', selectDisabled: true, actionsDisabled: true,
+  });
+  assert.deepEqual(savedSchemeControlState(['Amber', 'Syn61'], ''), {
+    selected: '', selectDisabled: false, actionsDisabled: true,
+  });
+  assert.deepEqual(savedSchemeControlState(['Amber', 'Syn61'], 'Syn61'), {
+    selected: 'Syn61', selectDisabled: false, actionsDisabled: false,
+  });
+});
+
+test('deleting the selected saved scheme clears and disables its actions', () => {
+  assert.deepEqual(savedSchemeControlState(['Amber'], 'Syn61'), {
+    selected: '', selectDisabled: false, actionsDisabled: true,
+  });
+  assert.deepEqual(savedSchemeControlState([], 'Syn61'), {
+    selected: '', selectDisabled: true, actionsDisabled: true,
+  });
 });

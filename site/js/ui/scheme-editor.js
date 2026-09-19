@@ -27,6 +27,16 @@ function option(value, label) {
   return element;
 }
 
+/** Selection and disabled state for the saved-scheme controls. */
+export function savedSchemeControlState(savedNames, selectedName) {
+  const selected = savedNames.includes(selectedName) ? selectedName : '';
+  return {
+    selected,
+    selectDisabled: savedNames.length === 0,
+    actionsDisabled: selected === '',
+  };
+}
+
 export class SchemeEditor {
   /**
    * @param {HTMLElement} host
@@ -166,23 +176,34 @@ export class SchemeEditor {
     savedLabel.textContent = 'Saved schemes';
     this.savedSelect = document.createElement('select');
     this.savedSelect.id = 'scheme-saved';
-    const loadButton = document.createElement('button');
-    loadButton.type = 'button';
-    loadButton.className = 'chip-button';
-    loadButton.textContent = 'Load';
-    loadButton.addEventListener('click', () => {
+    this.savedSelect.disabled = true;
+    this.savedSelect.addEventListener('change', () => this.syncSavedSchemeControls());
+    this.loadButton = document.createElement('button');
+    this.loadButton.type = 'button';
+    this.loadButton.className = 'chip-button';
+    this.loadButton.textContent = 'Load';
+    this.loadButton.disabled = true;
+    this.loadButton.addEventListener('click', () => {
       if (this.savedSelect.value) this.handlers.onLoadScheme(this.savedSelect.value);
     });
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
-    deleteButton.className = 'chip-button danger';
-    deleteButton.textContent = 'Delete';
-    deleteButton.addEventListener('click', () => {
+    this.deleteButton = document.createElement('button');
+    this.deleteButton.type = 'button';
+    this.deleteButton.className = 'chip-button danger';
+    this.deleteButton.textContent = 'Delete';
+    this.deleteButton.disabled = true;
+    this.deleteButton.addEventListener('click', () => {
       if (this.savedSelect.value) this.handlers.onDeleteScheme(this.savedSelect.value);
     });
-    savedRow.append(savedLabel, this.savedSelect, loadButton, deleteButton);
+    savedRow.append(savedLabel, this.savedSelect, this.loadButton, this.deleteButton);
 
     this.host.append(presetRow, addRow, prefillRow, this.targetList, this.status, saveRow, savedRow);
+  }
+
+  /** Keep every saved-scheme action aligned with the current selection. */
+  syncSavedSchemeControls() {
+    const disabled = !this.savedSelect.value;
+    this.loadButton.disabled = disabled;
+    this.deleteButton.disabled = disabled;
   }
 
   applyPreset(preset) {
@@ -235,10 +256,13 @@ export class SchemeEditor {
     this.highExpressed.checked = state.highExpressed;
     if (document.activeElement !== this.nameInput) this.nameInput.value = state.name ?? '';
 
-    const selected = this.savedSelect.value;
+    const controls = savedSchemeControlState(state.savedNames, this.savedSelect.value);
     this.savedSelect.replaceChildren(option('', state.savedNames.length ? 'Choose…' : 'None saved yet'));
     for (const name of state.savedNames) this.savedSelect.append(option(name, name));
-    if (state.savedNames.includes(selected)) this.savedSelect.value = selected;
+    this.savedSelect.value = controls.selected;
+    this.savedSelect.disabled = controls.selectDisabled;
+    this.loadButton.disabled = controls.actionsDisabled;
+    this.deleteButton.disabled = controls.actionsDisabled;
 
     const { table } = this.dataset;
     this.targetList.replaceChildren();

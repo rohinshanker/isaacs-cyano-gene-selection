@@ -151,7 +151,10 @@ export class PanelDesigner {
     this.host.append(this.form);
 
     this.resultHost = element('div', 'panel-result');
-    this.resultHost.setAttribute('aria-live', 'polite');
+    // The concise result is announced through the page announcer. Keeping the
+    // entire (potentially very long) result in a live region would make screen
+    // readers repeat every table and explanation after each design. Important
+    // changes inside the result retain their own status or alert role.
     this.host.append(this.resultHost);
   }
 

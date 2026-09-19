@@ -10,6 +10,9 @@ import { metricFamilyStartsOpen } from '../../site/js/ui/side-panel.js';
 import { DELTA_COLUMNS } from '../../site/js/ui/compare.js';
 
 const compareSource = await readFile(new URL('../../site/js/ui/compare.js', import.meta.url), 'utf8');
+const panelDesignerSource = await readFile(
+  new URL('../../site/js/ui/panel-designer.js', import.meta.url), 'utf8',
+);
 const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 
 test('activity threshold copy preserves metric capitalization and avoids calling proxies measured', () => {
@@ -75,4 +78,11 @@ test('pairwise comparison leads with the signed result and keeps raw values avai
     /Signed differences come first; on narrow screens, scroll right for the raw A and B values\./,
   );
   assert.match(appCss, /\.delta-data-table \.delta-column-metric\s*\{/);
+});
+
+test('panel results announce concise status instead of the entire generated result', () => {
+  assert.doesNotMatch(panelDesignerSource, /resultHost\.setAttribute\(['"]aria-live['"]/);
+  assert.match(panelDesignerSource, /stale\.setAttribute\('role', 'status'\)/);
+  assert.match(panelDesignerSource, /alert\.setAttribute\('role', design\.feasible \? 'status' : 'alert'\)/);
+  assert.match(panelDesignerSource, /this\.handlers\.onAnnounce\(this\.design\.feasible/);
 });
