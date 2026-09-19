@@ -104,6 +104,9 @@ async (page) => {
     check(parity.cacheHits === 10 && parity.errors.length === 0, 'ten-gene cache/results');
     check(parity.measuredCacheHits === 0, 'warmed-engine workload must perform ten real folds');
 
+    // Keep the wide axis-loadings table open so it cannot leak width into the document.
+    await page.locator('#loadings-details').evaluate((element) => { element.open = true; });
+
     // Entire page plus the affected region, with semantic snapshots at every size.
     for (const [width, height] of [[375, 812], [768, 1024], [959, 900], [960, 900],
       [1239, 900], [1240, 900], [1280, 800], [1440, 900]]) {

@@ -25,14 +25,16 @@ screens detail returns to document flow, and a selection-only **Jump to selected
 gene detail** button makes the distant card reachable without changing state.
 
 The designer, shortlist help, and provenance use native disclosures so support
-content does not dominate the default page. Wide tables scroll inside their own
-containers. The document itself must not scroll horizontally.
+content does not dominate the default page. Wide tables, including the opened
+axis-loadings table, scroll inside their own containers. The document itself
+must not scroll horizontally.
 
 ## Regression checks
 
 Render at 375×812, 768×1024, 959/960 px, 1239/1240 px, 1280×800, and
 1440×900. Exercise empty, one-gene, and ten-gene shortlists; expanded provenance;
-an open designer with results; and a long selected-gene detail. Verify:
+an opened axis-loadings table; an open designer with results; and a long selected-gene
+detail. Verify:
 
 - comparison begins immediately after the map rather than after a sidebar;
 - source order and focus order remain map → comparison → designer → shortlist →

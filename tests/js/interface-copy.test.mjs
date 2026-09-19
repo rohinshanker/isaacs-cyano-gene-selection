@@ -14,6 +14,7 @@ const panelDesignerSource = await readFile(
   new URL('../../site/js/ui/panel-designer.js', import.meta.url), 'utf8',
 );
 const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
+const appHtml = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
 
 test('activity threshold copy preserves metric capitalization and avoids calling proxies measured', () => {
   const metric = { label: 'CAI', unit: 'index', integer: false };
@@ -60,6 +61,10 @@ test('wide comparison tables keep their complete guidance outside the horizontal
   assert.doesNotMatch(compareSource, /this\.(?:deltaTableHost|tableHost)\.append\(captionNote, table\)/);
   assert.match(appCss, /\.table-caption\s*\{/);
   assert.doesNotMatch(appCss, /\.data-table caption\s*\{/);
+});
+
+test('axis loadings use the shared internal table scroller', () => {
+  assert.match(appHtml, /<div id="loadings" class="table-scroll"><\/div>/);
 });
 
 test('pairwise comparison leads with the signed result and keeps raw values available', () => {

@@ -225,7 +225,7 @@ Expected results for the current implementation:
   is the declared contiguity exemption for the three discontinuous CDSs.
 - [ ] Every live-genome check passes, including protein preservation and metric
   parity within `1e-6`.
-- [ ] 275 JavaScript tests pass, including static HTML/CSS, module, worker, and
+- [ ] 276 JavaScript tests pass, including static HTML/CSS, module, worker, and
   required runtime-asset resolution.
 - [ ] 134 Python tests pass.
 - [ ] The RNA-folding browser check passes all 32 parity cases, lifecycle
@@ -280,7 +280,8 @@ Production smoke test:
 - [ ] The map and all 2,715 site genes load.
 - [ ] Search, filters, schemes, selection, and map controls work.
 - [ ] A shared URL restores the intended state in a fresh browser session.
-- [ ] Shortlist CSV/manifest export and manifest import work.
+- [ ] Shortlist CSV and manifest export work; the automated gate covers panel-manifest
+  round-trip import.
 - [ ] `site/data/annotations.json` loads and a gene's collapsed annotation
   evidence renders correctly.
 - [ ] ViennaRNA WebAssembly loads and a fold completes; cancellation still works.
