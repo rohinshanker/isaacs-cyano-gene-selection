@@ -56,6 +56,7 @@ const store = {
 };
 
 const state = defaultState();
+let pendingMapJump = false;
 
 const context = {
   dataset: null,
@@ -96,6 +97,31 @@ function showLoadError(error) {
   hint.textContent = 'Check that the pipeline has written meta.json and genes.json into the '
     + 'folder this page reads, and that the server can serve them.';
   status.append(hint);
+}
+
+/**
+ * Move to the map without replacing the URL hash, which is application state.
+ * A jump requested while the dataset is loading is completed after the map is
+ * revealed. The controls are buttons, so even a click before this module loads
+ * cannot navigate to a fragment and erase that state.
+ */
+function jumpToMap() {
+  if (element('main').hidden) {
+    pendingMapJump = true;
+    return;
+  }
+  pendingMapJump = false;
+  element('map-section').scrollIntoView({ block: 'start' });
+  element('map-canvas').focus({ preventScroll: true });
+}
+
+function installMapJumps() {
+  for (const control of document.querySelectorAll('.map-jump')) {
+    control.addEventListener('click', (event) => {
+      event.preventDefault();
+      jumpToMap();
+    });
+  }
 }
 
 function percentileOf(key, value) {
@@ -1015,17 +1041,6 @@ async function boot() {
   });
   element('zoom-in').addEventListener('click', () => plot.zoomStep(1.4));
   element('zoom-out').addEventListener('click', () => plot.zoomStep(1 / 1.4));
-  // The application state lives in the URL hash, so a normal #map-section
-  // navigation would replace the scheme, filters, shortlist, and pinned gene.
-  // Preserve that state while giving pointer and keyboard users a real focus
-  // destination at the map.
-  for (const link of document.querySelectorAll('.map-jump')) {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      element('map-section').scrollIntoView({ block: 'start' });
-      element('map-canvas').focus({ preventScroll: true });
-    });
-  }
   const showHidden = element('show-hidden');
   showHidden.checked = state.showHidden;
   showHidden.addEventListener('change', () => {
@@ -1050,7 +1065,11 @@ async function boot() {
   window.addEventListener('popstate', applyLiveHash);
 
   renderAll();
+  if (pendingMapJump) jumpToMap();
   announce(`${formatCount(dataset.genes.length)} genes loaded.`);
 }
 
+// Install these handlers before boot reaches its first await so a click during
+// the data fetch can be completed once the map is visible.
+installMapJumps();
 boot();

@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "check:live-metrics": "node tools/check_live_metrics.mjs",
+    "generate:test-fixtures": "node tests/fixtures/make_fixture.mjs && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression",
+    "pretest": "npm run generate:test-fixtures",
     "test": "node --test \"tests/js/*.test.mjs\""
   }
 }

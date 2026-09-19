@@ -37,11 +37,20 @@ test('relocated support panels use compact native disclosures', () => {
 
 test('the header offers a visible direct route past the long control column', () => {
   assert.match(html,
-    /<a class="chip-button header-link map-jump" href="#map-section">Jump to map<\/a>/);
-  assert.match(html, /<a class="skip-link map-jump" href="#map-section">Skip to the map<\/a>/);
+    /<button type="button" class="chip-button header-link map-jump" aria-controls="map-section">Jump to map<\/button>/);
+  assert.match(html,
+    /<button type="button" class="skip-link map-jump" aria-controls="map-section">Skip to the map<\/button>/);
+  assert.doesNotMatch(html, /class="[^"]*map-jump[^"]*"[^>]*href=/,
+    'map-jump controls cannot replace application state before JavaScript loads');
   assert.match(app, /document\.querySelectorAll\('\.map-jump'\)/);
   assert.match(app, /event\.preventDefault\(\)/,
     'map jumps must not replace the URL hash that carries live application state');
+  const install = app.lastIndexOf('installMapJumps();');
+  const boot = app.lastIndexOf('boot();');
+  assert.ok(install >= 0 && install < boot,
+    'map-jump interception is installed synchronously before dataset loading begins');
+  assert.match(app, /if \(pendingMapJump\) jumpToMap\(\)/,
+    'a map jump requested while loading completes once the map is visible');
 });
 
 test('the selected-detail shortcut remains until detail becomes a sticky side rail', () => {

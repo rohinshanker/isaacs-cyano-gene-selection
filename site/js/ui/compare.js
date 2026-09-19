@@ -171,7 +171,7 @@ export class ComparePanel {
     this.deltaControls.className = 'delta-controls';
 
     this.deltaTableHost = document.createElement('div');
-    this.deltaTableHost.className = 'table-scroll';
+    this.deltaTableHost.className = 'table-region';
 
     this.panel.append(
       this.deltaControls, this.chartHost, this.legend, this.focusBar, this.note, this.deltaTableHost,
@@ -181,7 +181,7 @@ export class ComparePanel {
     this.tableHeading.className = 'table-heading';
     this.tableHeading.textContent = 'Shortlisted genes';
     this.tableHost = document.createElement('div');
-    this.tableHost.className = 'table-scroll';
+    this.tableHost.className = 'table-region';
 
     this.host.append(
       this.tablist, this.axisPicker, this.unavailableNote, this.panel, this.tableHeading, this.tableHost,
@@ -885,8 +885,17 @@ export class ComparePanel {
     const indexB = dataset.indexById.get(this.deltaPair[1]);
     const table = document.createElement('table');
     table.className = 'data-table';
+    const tableScroll = document.createElement('div');
+    tableScroll.className = 'table-scroll';
+    const captionText = `${this.deltaPair[0]} minus ${this.deltaPair[1]}, every metric`;
+    const captionNote = document.createElement('p');
+    captionNote.className = 'table-caption';
+    captionNote.id = 'compare-delta-caption';
+    captionNote.textContent = captionText;
+    table.setAttribute('aria-describedby', captionNote.id);
     const caption = document.createElement('caption');
-    caption.textContent = `${this.deltaPair[0]} minus ${this.deltaPair[1]}, every metric`;
+    caption.className = 'visually-hidden';
+    caption.textContent = 'Pairwise metric differences';
     const head = document.createElement('thead');
     head.innerHTML = '<tr><th scope="col">Metric</th><th scope="col">A</th><th scope="col">B</th>'
       + '<th scope="col">A − B</th><th scope="col">Size of the difference</th></tr>';
@@ -938,7 +947,8 @@ export class ComparePanel {
       body.append(row);
     }
     table.append(caption, head, body);
-    this.deltaTableHost.append(table);
+    tableScroll.append(table);
+    this.deltaTableHost.append(captionNote, tableScroll);
   }
 
   renderTable() {
@@ -956,12 +966,21 @@ export class ComparePanel {
     const missing = countMissing(series, metrics, (metric, index) => metric.read(index));
     const table = document.createElement('table');
     table.className = 'data-table sortable';
-    const caption = document.createElement('caption');
-    caption.textContent = `${pluralise(formatCount(series.length), 'shortlisted gene')}, `
+    const tableScroll = document.createElement('div');
+    tableScroll.className = 'table-scroll';
+    const captionText = `${pluralise(formatCount(series.length), 'shortlisted gene')}, `
       + `${describeMissing(missing.total)}`
       + `${missing.total > 0 ? ' shown as a blank cell' : ''}. `
       + 'Select a column heading to sort; missing values sort last. '
       + 'This table is shared by all three views above.';
+    const captionNote = document.createElement('p');
+    captionNote.className = 'table-caption';
+    captionNote.id = 'compare-table-caption';
+    captionNote.textContent = captionText;
+    table.setAttribute('aria-describedby', captionNote.id);
+    const caption = document.createElement('caption');
+    caption.className = 'visually-hidden';
+    caption.textContent = 'Shortlisted gene comparison';
     const head = document.createElement('thead');
     const headRow = document.createElement('tr');
 
@@ -1056,6 +1075,7 @@ export class ComparePanel {
       body.append(tr);
     }
     table.append(caption, head, body);
-    this.tableHost.append(table);
+    tableScroll.append(table);
+    this.tableHost.append(captionNote, tableScroll);
   }
 }

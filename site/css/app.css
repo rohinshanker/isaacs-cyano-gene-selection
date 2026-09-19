@@ -75,6 +75,7 @@ pre {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 0.5rem 0.75rem;
+  cursor: pointer;
   transition: top 120ms ease;
 }
 .skip-link:focus { top: 0.5rem; }
@@ -685,7 +686,7 @@ input[type="range"] { width: 100%; }
    what this box already means, that nothing inside it is drawn outside it. */
 .table-scroll { overflow-x: auto; max-width: 100%; contain: paint; }
 .data-table { border-collapse: collapse; font-size: 0.82rem; min-width: 100%; }
-.data-table caption { text-align: left; color: var(--ink-muted); padding-bottom: 0.35rem; font-size: 0.8rem; }
+.table-caption { color: var(--ink-muted); margin: 0 0 0.35rem; font-size: 0.8rem; }
 .data-table th, .data-table td { padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .data-table thead th { background: var(--surface-sunken); position: sticky; top: 0; text-align: left; }
 /* A heading over a column of right-aligned numbers has to be right-aligned too,

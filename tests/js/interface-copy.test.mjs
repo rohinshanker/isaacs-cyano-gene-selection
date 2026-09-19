@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -6,6 +7,9 @@ import {
 } from '../../site/js/ui/filters.js';
 import { foldInputsInvalidateResult } from '../../site/js/ui/folding-panel.js';
 import { metricFamilyStartsOpen } from '../../site/js/ui/side-panel.js';
+
+const compareSource = await readFile(new URL('../../site/js/ui/compare.js', import.meta.url), 'utf8');
+const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 
 test('activity threshold copy preserves metric capitalization and avoids calling proxies measured', () => {
   const metric = { label: 'CAI', unit: 'index', integer: false };
@@ -38,4 +42,18 @@ test('scheme-only metric families stay collapsed until a scheme is active', () =
   assert.equal(metricFamilyStartsOpen('Change from wild type', false), false);
   assert.equal(metricFamilyStartsOpen('Recoding load', true), true);
   assert.equal(metricFamilyStartsOpen('Change from wild type', true), true);
+});
+
+test('wide comparison tables keep their complete guidance outside the horizontal scroller', () => {
+  assert.match(compareSource, /captionNote\.className = 'table-caption'/);
+  assert.match(compareSource, /caption\.className = 'visually-hidden'/);
+  assert.match(compareSource, /setAttribute\('aria-describedby', captionNote\.id\)/);
+  assert.equal(
+    [...compareSource.matchAll(/tableScroll\.append\(table\);\s*this\.(?:deltaTableHost|tableHost)\.append\(captionNote, tableScroll\)/g)].length,
+    2,
+    'both comparison tables keep their guidance outside the scrolling child',
+  );
+  assert.doesNotMatch(compareSource, /this\.(?:deltaTableHost|tableHost)\.append\(captionNote, table\)/);
+  assert.match(appCss, /\.table-caption\s*\{/);
+  assert.doesNotMatch(appCss, /\.data-table caption\s*\{/);
 });
