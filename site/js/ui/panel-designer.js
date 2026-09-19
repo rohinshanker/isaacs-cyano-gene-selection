@@ -83,9 +83,9 @@ function checkbox(id, labelText, checked, onChange) {
   return { row, input, label };
 }
 
-/** A saved scheme's selection follows its map, not its position in the sorted list. */
+/** A saved scheme's selection follows its name and map, not its sorted-list position. */
 export function savedSchemeKey(scheme) {
-  return `saved:${schemeIdOf(scheme.map)}`;
+  return `saved:${encodeURIComponent(String(scheme.name))}:${schemeIdOf(scheme.map)}`;
 }
 
 /** Drop selections whose saved scheme was deleted, without transferring them to another row. */

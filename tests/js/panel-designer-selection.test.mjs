@@ -38,6 +38,18 @@ test('saved scheme selection survives insertion before it and arbitrary reorderi
   ]);
 });
 
+test('saved schemes with different names remain distinct when their maps match', () => {
+  const first = { name: 'Syn61 first', map: SYN61 };
+  const second = { name: 'Syn61: second / β', map: { ...SYN61 } };
+  const schemes = state([first, second]);
+
+  assert.notEqual(savedSchemeKey(first), savedSchemeKey(second));
+
+  const selected = reconcileSchemeSelection(new Set([savedSchemeKey(second)]), schemes);
+  assert.deepEqual(selectedSchemes(schemes, selected), [second]);
+  assert.deepEqual(computedSchemes(schemes, selected).map((entry) => entry.name), [second.name]);
+});
+
 test('deleting a selected saved scheme clears its identity instead of selecting its neighbour', () => {
   const selected = new Set([savedSchemeKey({ name: 'Syn61 B', map: SYN61 })]);
   const remaining = state([{ name: 'Amber A', map: AMBER }]);
