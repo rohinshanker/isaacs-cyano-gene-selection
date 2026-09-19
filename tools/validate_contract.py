@@ -24,6 +24,7 @@ import re
 import collections
 import sys
 from typing import Any, Callable, Iterable, Iterator
+from urllib.parse import unquote
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 BASES = "TCAG"
@@ -337,6 +338,141 @@ def spliced_loci(raw_dir: str) -> set[str]:
     return tags
 
 
+def decode_rna_context(gene: dict[str, Any]) -> tuple[str, str, list[int]]:
+    """Validate either context form; return full CDS, WT window and CDS offsets.
+
+    This uses only the frozen alphabet and standard-library operations, not the
+    producer's decoder. Booleans are deliberately not accepted as integer offsets.
+    """
+    packed, stop = gene.get("codons"), gene.get("terminalStop")
+    if not isinstance(packed, str) or not packed or set(packed) - set(ALPHABET):
+        raise ValueError("cannot reconstruct a valid packed CDS")
+    lookup = dict(zip(ALPHABET, codon_order()))
+    sense = [lookup[symbol] for symbol in packed]
+    if stop not in STOP_CODONS or any(codon in STOP_CODONS for codon in sense):
+        raise ValueError("CDS must have exactly one terminal stop")
+    cds = "".join(sense) + stop
+    context = gene.get("rnaContext")
+    if not isinstance(context, dict):
+        raise ValueError("rnaContext must be an object")
+    if set(context) == {"upstream"}:
+        upstream = context["upstream"]
+        if not isinstance(upstream, str) or re.fullmatch(r"[ACGT]{30}", upstream) is None:
+            raise ValueError("upstream must contain exactly 30 ACGT bases")
+        if len(cds) < 60:
+            raise ValueError("short CDS requires the explicit 90-base context form")
+        return cds, upstream + cds[:60], [-1] * 30 + list(range(60))
+    if set(context) != {"sequence", "cdsOffsets"}:
+        raise ValueError("rnaContext must use exactly one contracted form and no extra fields")
+    sequence, offsets = context["sequence"], context["cdsOffsets"]
+    if not isinstance(sequence, str) or re.fullmatch(r"[ACGT]{90}", sequence) is None:
+        raise ValueError("sequence must contain exactly 90 ACGT bases")
+    if not isinstance(offsets, list) or len(offsets) != 90:
+        raise ValueError("cdsOffsets must be an array of exactly 90 integers")
+    if any(type(offset) is not int or not -1 <= offset < len(cds) for offset in offsets):
+        raise ValueError("cdsOffsets must be integers in [-1, full CDS length)")
+    mapped = [offset for offset in offsets if offset >= 0]
+    if len(set(mapped)) != len(mapped):
+        raise ValueError("cdsOffsets must not repeat a mapped CDS position")
+    if offsets[30] != 0:
+        raise ValueError("translation-start base must map to CDS offset zero")
+    if any(offset >= 0 and sequence[index] != cds[offset]
+           for index, offset in enumerate(offsets)):
+        raise ValueError("mapped context base differs from the full CDS")
+    restored = "".join(base if offset == -1 else cds[offset]
+                       for base, offset in zip(sequence, offsets))
+    return cds, restored, offsets
+
+
+def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
+                            report: Report) -> None:
+    """Independently check context and edit maps using raw genomic FASTA and GFF.
+
+    GFF extended coordinates may pass the circular origin. Multiple CDS rows
+    are concatenated in transcription order, including genuine internal joins.
+    The start window remains genomic; it does not splice out intervening bases.
+    """
+    genome_path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_genomic.fna.gz")
+    gff_path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_genomic.gff.gz")
+    label = "RNA contexts and CDS maps reproduce raw strand-oriented genomic windows"
+    missing = [path for path in (genome_path, gff_path) if not os.path.exists(path)]
+    if missing:
+        report.skip(label, "missing raw input: " + ", ".join(missing))
+        return
+    annotations: dict[str, list[tuple[str, int, int, str]]] = collections.defaultdict(list)
+    loci = {gene.get("id") for gene in genes if isinstance(gene, dict)}
+    try:
+        genomes = {header.split()[0]: sequence.upper()
+                   for header, sequence in read_fasta(genome_path)}
+        with gzip.open(gff_path, "rt") as handle:
+            for line in handle:
+                if line.startswith("#") or not line.strip():
+                    continue
+                fields = line.rstrip().split("\t")
+                if len(fields) != 9 or fields[2] != "CDS":
+                    continue
+                attributes = dict(part.split("=", 1) for part in fields[8].split(";") if "=" in part)
+                locus = unquote(attributes.get("locus_tag", ""))
+                if locus in loci:
+                    annotations[locus].append((fields[0], int(fields[3]), int(fields[4]), fields[6]))
+    except (OSError, ValueError) as error:
+        report.fail(label, f"cannot read raw genomic input: {error}")
+        return
+    problems = []
+    complement = str.maketrans("ACGT", "TGCA")
+    valid_genomes = {seqid for seqid, sequence in genomes.items()
+                     if sequence and not set(sequence) - set("ACGT")}
+    for gene in genes:
+        if not isinstance(gene, dict):
+            continue
+        gid = gene.get("id")
+        try:
+            cds, observed, observed_offsets = decode_rna_context(gene)
+            rows = annotations.get(gid, [])
+            if not rows:
+                raise ValueError("no raw GFF CDS annotation")
+            seqid, _, _, strand = rows[0]
+            if strand not in ("+", "-") or any(row[0] != seqid or row[3] != strand for row in rows):
+                raise ValueError("inconsistent GFF replicon or strand")
+            if gene.get("seqid") != seqid or gene.get("strand") != strand:
+                raise ValueError("published replicon or strand differs from raw GFF")
+            genome = genomes.get(seqid, "")
+            if seqid not in valid_genomes:
+                raise ValueError("missing or ambiguous raw genomic sequence")
+            segments = sorted((row[1], row[2]) for row in rows)
+            if any(start < 1 or end < start or end - start + 1 > len(genome)
+                   for start, end in segments):
+                raise ValueError("invalid raw GFF CDS coordinates")
+            positions = [position % len(genome) for start, end in segments
+                         for position in range(start - 1, end)]
+            if strand == "-":
+                positions.reverse()
+            if len(set(positions)) != len(positions):
+                raise ValueError("raw CDS repeats a genomic position")
+            raw_cds = "".join(genome[position] for position in positions)
+            if strand == "-":
+                raw_cds = raw_cds.translate(complement)
+            if raw_cds != cds:
+                raise ValueError("packed CDS differs from raw GFF genomic segments")
+            # Use raw annotation coordinates, not the site's display coordinates:
+            # an origin-spanning gene's displayed min/max may span the replicon.
+            anchor = min(start for start, _ in segments) - 1 if strand == "+" else max(end for _, end in segments) - 1
+            direction = 1 if strand == "+" else -1
+            window_positions = [(anchor + direction * delta) % len(genome) for delta in range(-30, 60)]
+            expected = "".join(genome[position] for position in window_positions)
+            if strand == "-":
+                expected = expected.translate(complement)
+            if observed != expected:
+                raise ValueError("WT start window differs from raw genomic -30:+60")
+            offset_by_position = {position: offset for offset, position in enumerate(positions)}
+            expected_offsets = [offset_by_position.get(position, -1) for position in window_positions]
+            if observed_offsets != expected_offsets:
+                raise ValueError("CDS edit map differs from raw genomic positions")
+        except ValueError as error:
+            problems.append(f"{gid}: {error}")
+    report.check(not problems, label, f"{len(problems)} problems, e.g. {problems[:3]}")
+
+
 def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
                    spliced: set[str]) -> None:
     """Checks per-gene records for structure, ranges, and codon-string integrity."""
@@ -366,12 +502,17 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
     umap_problems: list[str] = []
     composition_problems: list[str] = []
     coordinate_problems: list[str] = []
+    rna_context_problems: list[str] = []
 
     for gene in genes:
         if not isinstance(gene, dict):
             report.fail("every gene record is an object")
             continue
         gid = gene.get("id", "<no id>")
+        try:
+            decode_rna_context(gene)
+        except ValueError as error:
+            rna_context_problems.append(f"{gid}: {error}")
 
         for field in REQUIRED_GENE_FIELDS:
             if field not in gene:
@@ -446,6 +587,8 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
     report.check(not missing_fields, "every gene has all contract fields",
                  "; ".join(f"{k} missing in {v}" for k, v in
                            list(missing_fields.items())[:5]))
+    report.check(not rna_context_problems, "RNA contexts have valid forms, bases and CDS offsets",
+                 f"{len(rna_context_problems)} problems, e.g. {rna_context_problems[:3]}")
     report.check(not range_problems, "all scalar metrics are finite and in range",
                  f"{len(range_problems)} problems, e.g. {range_problems[:3]}")
     report.check(not length_problems, "codon and nucleotide lengths are consistent",
@@ -804,6 +947,7 @@ def main() -> int:
         validate_genes(genes, meta, report, spliced)
         validate_distributions(genes, meta, report)
         cross_check_against_genome(genes, meta, args.raw_dir, report)
+        cross_check_rna_context(genes, args.raw_dir, report)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
     if excluded is not None and isinstance(genes, list):

@@ -57,6 +57,15 @@ schemes, and preserved terminal stops. Require absolute error **≤ 1e-5 kcal/mo
 for every WT and recoded energy. The whole-genome Python test also checks all
 2,715 serialized start windows against the existing published WT MFE.
 
+The independent standard-library release validator rejects mixed or malformed
+context forms, wrong lengths/bases, boolean or out-of-range offsets, duplicate
+mapped offsets, a missing start anchor, and mapped bases inconsistent with the
+complete CDS. When raw genomic FASTA and GFF files are available, it independently
+reconstructs the CDS, circular strand-oriented window, and exact edit map from
+GFF coordinates, including joined and origin-spanning annotations. Missing raw
+inputs are explicitly reported as a skipped genomic check; structural checks
+always run. Regression tests: `python -m pytest tests/test_rna_contract_validator.py`.
+
 For the browser, serve the repository root on an unused task-specific port:
 
 ```bash
