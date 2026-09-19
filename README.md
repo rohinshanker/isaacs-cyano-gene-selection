@@ -9,6 +9,10 @@ It is a static site with no application backend. Browsers still require it to be
 served over HTTP so ES modules, JSON, workers, and WebAssembly can load; a one-line
 local server command is shown below.
 
+For the remaining biological review, evidence/licensing decisions, release
+validation, and deployment record, use the
+[`Next steps and validation checklist`](docs/validation/manual-review-checklist.md).
+
 ## What you can do with it
 
 - **Find a gene by what it is**, not just by its identifier. Search matches locus tag,
@@ -223,15 +227,15 @@ python3 -m venv .venv
 ./.venv/bin/python scripts/build_features.py
 ```
 
-Then run the full gate. Every command must pass:
+Then run the core developer gate. Every command must pass; the complete release
+gate, including annotation, Git-integrity, and rendered-browser checks, is in the
+[`Next steps and validation checklist`](docs/validation/manual-review-checklist.md).
 
 ```sh
 ./.venv/bin/python tools/validate_contract.py --raw-dir data/raw  # 62 checks against the contract
 node tools/check_live_metrics.mjs                    # site's own code vs the real genome
 ./.venv/bin/python -m pytest -q                      # pipeline tests
-node tests/fixtures/make_fixture.mjs
-node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
-node --test "tests/js/*.test.mjs"                    # site tests
+npm test                                             # generates fixtures, then runs site tests
 ```
 
 Both fixture variants are required; the export and expression-basis suites load the

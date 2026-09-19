@@ -23,9 +23,19 @@ sticky on wide screens and follows logical source order on narrow screens.
 Tutorials explain maps, sharing, scheme semantics, panel selection, shortlist
 flow, and RNA folding without expanding the default page.
 
+The final audit also keeps in-page map navigation from erasing shared URL state,
+clears all numeric and categorical filter channels atomically, scopes native TSS
+provenance and coverage to TSS rather than PCC abundance, discovers sparse
+metrics independent of gene order, preserves saved panel-scheme selections
+through list changes, and retains the selected-detail shortcut until the sticky
+third column actually begins. Pairwise comparison now leads with the signed
+difference, generated panels mark changed settings without announcing the whole
+result to screen readers, inapplicable saved-scheme actions are disabled, and
+provenance counts use the same readable number formatting as the rest of the UI.
+
 Current merged verification passes:
 
-- 245 JavaScript tests;
+- 273 JavaScript tests;
 - 132 Python tests;
 - 62 contract checks with one declared spliced-CDS contiguity skip;
 - all live-genome metric/protein checks;

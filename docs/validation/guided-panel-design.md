@@ -24,6 +24,9 @@ start-window MFE, protein length, and upstream-neighbor distance. Each chosen
 scheme adds target fraction, maximum local target density, ΔCAI, and ΔtAI. A
 missing or constant field is dropped with an explanation. The feature registry is
 dynamic, so a changed published metric count is not assumed.
+Declared metric discovery is order-independent and scans until a finite value is
+found anywhere in the dataset; a sparse metric cannot disappear because its first
+value occurs after an arbitrary gene prefix.
 
 Every feature is replaced by its whole-genome percentile before distance is
 computed. Missing values remain missing. Two genes are compared on shared
@@ -37,6 +40,21 @@ until explicitly enabled. Enabling it adds one raw representative of that
 source to the default feature space (never both the raw value and its derived
 percentile), and it remains labelled as another-organism evidence. Native UTEX
 2973 TSS initiation stays available without that opt-in.
+
+A saved-scheme checkbox is keyed by the saved name plus the canonical scheme-map
+identifier, never by its position in the sorted list. Inserting or reordering
+schemes cannot retarget a selection; deleting the saved scheme clears it. Two
+differently named saved schemes remain independently selectable even when their
+maps match, while computation and export still deduplicate equivalent maps.
+
+A generated result is tied to the canonical configuration and scheme identities
+that produced it. If size, ranges, flags, seeds/exclusions, borrowed-expression
+policy, or selected schemes change, the existing result and its export remain
+internally reproducible but show **Settings changed** until **Regenerate panel**
+is selected. Never silently relabel an old result as if it used new controls.
+The complete result region is not live: the page announcer reports one concise
+design outcome, while only the stale notice and infeasible alert keep their own
+targeted status semantics.
 
 ## Export contract
 
@@ -58,6 +76,8 @@ constraint, fill more quantile bins than every baseline, retain greater closest-
 pair separation than the best random and naive panels, and never use borrowed
 expression unless requested.
 
-Run `node --test tests/js/panel-*.test.mjs` and render configuration, infeasible,
-result, manual-edit, multi-scheme, expanded-help, and export states at the
+Run `node --test tests/js/panel-*.test.mjs`; the selection cases are in
+`tests/js/panel-designer-selection.test.mjs`. Render configuration, infeasible,
+result, manual-edit, reordered and duplicate-map saved-scheme, multi-scheme,
+stale-result notice, expanded-help, and export states at the
 responsive-workspace viewports.

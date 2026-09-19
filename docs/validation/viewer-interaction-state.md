@@ -41,8 +41,17 @@ pin, comparison tab, and visibility modes all round-trip.
 Preset names populate the draft. Target/replacement changes retain it. **No
 scheme** is the explicit clear and removes both map and draft name.
 
+**Clear all filters** is atomic: it resets every numeric range, the activity
+threshold, the translational-exception mode, and measured-only mode together.
+No stale filter field may remain visible or encoded in the URL.
+
+Saved-scheme **Load** and **Delete** are enabled only for a selected scheme that
+still exists. With no saved schemes the selector is disabled; deleting the
+selection clears and disables both actions rather than leaving silent no-ops.
+
 Regression coverage is in `tests/js/scatter-navigation.test.mjs` and
-`tests/js/url-state.test.mjs`. Browser validation must include live hash changes,
+`tests/js/url-state.test.mjs`; the all-channel reset is covered in
+`tests/js/interface-copy.test.mjs`. Browser validation must include live hash changes,
 back/forward, seeded local storage plus explicit empty shortlist, unavailable-map
 controls, keyboard preview followed by search/pointer pinning, and explicit
 scheme clear.

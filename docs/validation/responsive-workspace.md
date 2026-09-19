@@ -12,6 +12,10 @@ Scheme and filter controls precede that column. Gene detail follows it. This DOM
 order is also the single-column mobile reading and focus order; CSS never moves a
 later element visually ahead of an earlier one.
 
+The visible **Jump to map** control and the keyboard skip control scroll to and
+focus the map canvas without replacing the versioned application hash. Navigation
+inside the page must not erase a scheme, filter, shortlist, or pinned gene.
+
 At 960 px the controls and analysis form two columns and detail remains below
 them. At 1240 px detail becomes the third column. A long desktop detail card is
 sticky and scrolls within the viewport; its landmark accepts arrow, Page Up,
@@ -34,7 +38,11 @@ an open designer with results; and a long selected-gene detail. Verify:
 - source order and focus order remain map → comparison → designer → shortlist →
   provenance → detail;
 - sticky detail is viewport-bounded and keyboard/touch scrollable;
-- the mobile detail shortcut appears only for a selection; and
+- the selected-detail shortcut appears only for a selection, remains available
+  through 1239 px, and disappears when the sticky side rail begins at 1240 px;
+- using either map jump, including while data is still loading, leaves
+  `window.location.hash` byte-for-byte unchanged;
+  and
 - `document.documentElement.scrollWidth <= innerWidth` in every state.
 
 The static source-order checks live in `tests/js/layout.test.mjs`.

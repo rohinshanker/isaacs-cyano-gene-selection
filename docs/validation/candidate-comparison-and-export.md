@@ -35,6 +35,12 @@ Chart, legend, accessible name, and table must agree. The table prints a dash an
 a screen-reader-only "no value"; if the picture disagrees with the table, the
 picture is wrong.
 
+The visible table guidance is a sibling of the horizontal `.table-scroll`
+container, not a child of it. It must wrap to the available card width and stay
+visible while a reader scrolls across the wide metric columns. Each table keeps
+a concise screen-reader caption and references the visible guidance with
+`aria-describedby`.
+
 ## 2. Ten candidates must stay distinguishable
 
 The lab's target panel is 6 to 10 genes, so 10 is the size that must work, not a
@@ -51,6 +57,11 @@ regression.
 
 A default axis with no spread is **dropped and explained**, not drawn flat. With
 no active scheme, target fraction is constant zero and says so.
+
+The pairwise table leads with **Metric**, **A − B**, and **Relative size** so the
+comparison's result is visible at the default desktop scroll position. Raw A and
+B values remain to the right for verification. Narrow screens may require the
+contained horizontal scroller, which the visible guidance must say explicitly.
 
 ## 3. Colour reads a value; it does not judge it
 
@@ -74,6 +85,12 @@ measured-only filter hides itself when no gene records a basis, because filterin
 on a field the dataset lacks would be a lie. Do not assume a single measured
 source: more than one may exist, so label by basis and source id rather than by
 assuming which dataset supplied a value.
+
+The gene-level `expressionBasis` describes only the primary PCC abundance field
+and its proxy fallback. Every other measured expression source derives its basis
+from that metric's own finite value. Native UTEX 2973 TSS is therefore measured
+when its TSS value exists and never inherits PCC `proxy` or `measured` status;
+its legend counts TSS coverage, not PCC abundance coverage.
 
 ## 5. An export must name the scheme that produced it
 

@@ -39,12 +39,21 @@ Offline calculation works when the engine is already loaded or HTTP-cached; an
 unavailable engine produces an explicit error and permits retry. No sequence is
 sent to an external service. A stalled worker times out after 30 seconds.
 
+## Oracle regeneration
+
+`tests/fixtures/rna-folding.json` is a tracked numerical oracle. Regenerate it
+only after an intentional, reviewed engine or folding-contract change, then
+inspect and commit the resulting diff. It is not a routine release-gate step.
+
+```bash
+python tools/rna_wasm/make_references.py
+```
+
 ## Regression commands
 
 Use the project's Python environment with ViennaRNA pinned to 2.7.2:
 
 ```bash
-python tools/rna_wasm/make_references.py
 python -m pytest tests/test_rna_context.py tests/test_feature_metrics.py -q
 node --test --experimental-test-coverage tests/js/folding.test.mjs
 node tests/fixtures/make_fixture.mjs
@@ -76,7 +85,9 @@ without trusting GFF row order or an ordinary numeric coordinate sort. Focused
 fixtures cover both strands, reversed row order, overlapping origin segments,
 and an ambiguous segment layout that must fail closed.
 
-For the browser, serve the repository root on an unused task-specific port:
+## Browser regression
+
+Serve the repository root on an unused task-specific port:
 
 ```bash
 python -m http.server 8863 --bind 127.0.0.1 --directory "$PWD"
@@ -96,8 +107,9 @@ Inspect the emitted whole-page and folding-region PNGs, the semantic snapshot,
 and the returned parity/responsiveness/diagnostic report. The check asserts
 32-case real-worker parity, ten-gene responsiveness, cache hits, loading,
 cancellation, offline error, per-gene partial failure, unsupported browser and
-empty states. It verifies no page overflow at the four required viewport sizes
-and around the app's layout breakpoints. Unexpected errors fail the check;
+empty states. It verifies no page overflow across the required viewport matrix,
+including both sides of the 960 px and 1240 px layout breakpoints. Unexpected
+errors fail the check;
 network failures are expected only in the intentional cancellation/offline cases.
 The responsiveness gate first loads the engine and hashes the dataset using a
 different gene, then measures ten uncached genes on that warm worker. It reports

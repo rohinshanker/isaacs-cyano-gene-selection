@@ -2,8 +2,9 @@
 
 Use this document as the single handoff checklist for reviewing a candidate
 panel and publishing the UTEX 2973 gene-selection site. Automated checks prove
-that the software and data contracts are reproducible; they do not decide
-whether a biological design is appropriate.
+that data and outputs reproduce in the tested environment; they do not decide
+whether a biological design is appropriate or replace a dependency/toolchain
+reproducibility policy.
 
 ## Current status
 
@@ -11,17 +12,19 @@ whether a biological design is appropriate.
 - [x] Candidate shortlist and **About this dataset** are in the center column.
 - [x] The guided panel designer, exact RNA folding, URL sharing, annotation
   evidence, tutorials, responsive layout, and release gates are integrated.
-- [x] The last local run passed 245 JavaScript tests, 132 Python tests, 18
+- [x] The last local run passed 273 JavaScript tests, 132 Python tests, 18
   annotation-readiness tests, 62 contract checks with one declared
-  discontinuous-CDS exemption, and all live-genome checks.
+  discontinuous-CDS exemption, all live-genome checks, and the complete
+  real-browser RNA-folding matrix with no uncovered UI lines or diagnostics.
 - [ ] The scientific choices below have been reviewed by the lab.
 - [ ] External evidence sources have each been acquired or explicitly waived.
 - [ ] The repository has been pushed and GitHub Pages has been enabled.
 - [ ] The deployed site has passed the smoke test below.
 
-The implementation is complete. The unchecked items require scientific
-judgment, licensing decisions, access credentials, or authorization to change
-the remote repository.
+The requested implementation is integrated locally. Automated local checks are
+marked separately from human interface acceptance. Scientific sign-off,
+evidence/licensing decisions, push/Pages authorization, and the deployed-site
+smoke test remain external or manual release requirements.
 
 ## Recommended order
 
@@ -59,7 +62,7 @@ Record the review environment:
 
 ### Layout and accessibility
 
-- [ ] At 375 px, 768 px, 959/960 px, 1239/1240 px, and 1440 px widths, the
+- [ ] At 375 px, 768 px, 959/960 px, 1239/1240 px, 1280×800, and 1440 px widths, the
   document has no horizontal scrollbar.
 - [ ] The center-column order is map, comparison, panel designer, candidate
   shortlist, and **About this dataset**, followed by gene detail in logical
@@ -69,6 +72,17 @@ Record the review environment:
 - [ ] At 1240 px and wider, the gene detail is a bounded, sticky third column.
 - [ ] Below 1240 px, gene detail returns to document flow and **Jump to selected
   gene detail** reaches it.
+- [ ] **Jump to map** and the keyboard skip control focus the map without changing
+  the URL hash or clearing a scheme, filter, shortlist, or pinned gene.
+- [ ] With 10 candidates, scroll the shared and pairwise comparison tables
+  horizontally. Their complete guidance stays wrapped and visible above the
+  columns, and the page itself never scrolls sideways.
+- [ ] In Pairwise delta at 1280×800, **A − B** and **Relative size** are visible
+  without scrolling; raw A/B values remain available to the right. At narrow
+  widths the guidance explicitly tells the reader to scroll.
+- [ ] With no saved scheme, the saved-scheme selector, **Load**, and **Delete**
+  are disabled. Selecting a real saved scheme enables the actions; deleting it
+  clears and disables them again.
 - [ ] Tab order follows the visible workflow. Focus is always visible.
 - [ ] The detail panel responds correctly to Arrow, Page Up, Page Down, Home,
   and End, and hands scrolling back to the page at its boundary.
@@ -87,6 +101,9 @@ Record the review environment:
 - [ ] Copy a shared URL, open it in a new tab, and confirm schemes, filters,
   shortlist, pins, and selection are restored.
 - [ ] Use browser Back and Forward and confirm live state follows the URL.
+- [ ] Activate numeric, activity, translational-exception, and measured-only
+  filters together; **Clear all filters** resets all of them and removes their
+  URL fields in one action.
 - [ ] Export the shortlist and manifest, then import the manifest and confirm the
   same ordered panel, scheme map, constraints, and source metadata return.
 
@@ -97,6 +114,12 @@ Record the review environment:
   honored, and a blank bound with **Require a value** still rejects unknowns.
 - [ ] Confirm each selected gene explains the feature-space contribution it
   makes and the reported eligible-gene count matches the actual pool.
+- [ ] After generating a panel, change its size, a range, and a selected scheme.
+  **Settings changed** must say that the visible result/export still uses the
+  last design; **Regenerate panel** must update the result and remove the notice.
+- [ ] Select a saved scheme in the designer, add another scheme that sorts
+  before it, and confirm the selection does not move. Same-map schemes with
+  different names remain independently selectable; deleting one clears it.
 - [ ] Enable borrowed expression and confirm PCC 7942 abundance is clearly
   labelled **measured elsewhere**, while native UTEX 2973 TSS is labelled
   **measured in this organism** and is not called abundance.
@@ -160,7 +183,7 @@ reviewer for every row.
 
 | Source or review | Current limitation | Allowed decision | Recorded decision |
 | --- | --- | --- | --- |
-| UniProt | No records currently returned for proteome `UP000031358` / taxid 1350461. | Recheck and import a pinned result, or waive. | |
+| UniProt | The 2026-09-18 check returned no records for proteome `UP000031358` / taxid 1350461. | Recheck and import a pinned result, or waive. | |
 | Rubin PCC 7942 essentiality | Redistribution terms for a checked-in derivative are not sufficiently explicit. | Obtain permission/license clarity, link without redistribution if appropriate, or waive. | |
 | KEGG | No release-pinned, licensed bulk artifact is established. | Acquire under acceptable terms, or waive. | |
 | CyanoOmicsDB | No release-pinned, licensed bulk artifact is established. | Acquire under acceptable terms, or waive. | |
@@ -186,19 +209,29 @@ Run from the repository root on the exact commit intended for publication. If
 the raw files are missing, first run `./tools/fetch_genome.sh data/raw` and
 `python3 tools/annotation_release.py fetch`.
 
+Complete the [README setup](../../README.md#rebuilding) first. CI's reference
+environment is Python 3.12 and Node 22. The browser procedure also requires
+`playwright-cli` on `PATH`; if it is unavailable, record browser validation as
+incomplete rather than treating the non-browser tests as a substitute.
+
 ```sh
 python3 tools/annotation_release.py verify
 python3 tools/annotation_release.py check
 python3 -m unittest discover -s tests/readiness -p 'test_*.py'
 python3 tools/validate_contract.py --data-dir site/data --raw-dir data/raw
 node tools/check_live_metrics.mjs
-node tests/fixtures/make_fixture.mjs
-node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
-node --test "tests/js/*.test.mjs"
+npm test
 ./.venv/bin/python -m pytest -q
+git fetch origin
 git diff --check
+git diff --check "$(git merge-base origin/main HEAD)" HEAD
 git status --short
 ```
+
+Also run the real-browser procedure in
+[`rna-folding.md`](rna-folding.md#browser-regression). It is intentionally a
+local release gate because the repository does not install a browser automation
+dependency in CI.
 
 Expected results for the current implementation:
 
@@ -209,9 +242,13 @@ Expected results for the current implementation:
   is the declared contiguity exemption for the three discontinuous CDSs.
 - [ ] Every live-genome check passes, including protein preservation and metric
   parity within `1e-6`.
-- [ ] 245 JavaScript tests pass.
+- [ ] 273 JavaScript tests pass, including static HTML/CSS, module, worker, and
+  required runtime-asset resolution.
 - [ ] 132 Python tests pass.
-- [ ] `git diff --check` prints nothing.
+- [ ] The RNA-folding browser check passes all 32 parity cases, lifecycle
+  states, UI source coverage, current breakpoint widths, and diagnostic checks.
+- [ ] Both working-tree and reviewed-commit-range `git diff --check` commands
+  print nothing.
 - [ ] `git status --short` prints nothing after any intentionally regenerated
   fixtures or artifacts are handled.
 
@@ -240,6 +277,9 @@ Validation record:
   manifest and exported files.
 - [ ] Confirm all external-source decisions above are recorded.
 - [ ] Confirm all required attributions and licenses are present.
+- [ ] Decide whether floating minimum Python dependency versions and major-tagged
+  GitHub Actions are an accepted maintenance risk, or separately adopt a tested
+  dependency lock and action-SHA policy before release.
 - [ ] Obtain explicit authorization to push `main` and enable GitHub Pages.
 
 The push and Pages setting are intentional external changes. They have not been
@@ -289,9 +329,10 @@ The work is fully resolved only when all of the following are true:
 - [ ] The full automated gate passes on the deployed commit.
 - [ ] The reviewed commit is pushed and Pages deployment succeeds.
 - [ ] The production smoke test passes and the release record is complete.
-- [ ] The two active tickets in `docs/notes/tickets/` are resolved according to
-  the repository ticket lifecycle: preserve only reusable runbook guidance,
-  remove their index rows, and delete the resolved ticket files.
+- [ ] `A_gene-diversity-site__20260918` and
+  `A_data-annotation-release-readiness__20260918` are resolved according to the
+  repository ticket lifecycle: preserve only reusable runbook guidance, remove
+  their index rows, and delete the resolved ticket files.
 
 ## Issues found during review
 

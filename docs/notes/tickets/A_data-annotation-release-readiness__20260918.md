@@ -44,14 +44,15 @@ Reusable procedures are in
 `docs/validation/annotation-release-readiness.md` and the other validation
 runbooks. Current local verification: 15 inputs, four generated artifacts, 18
 readiness tests, 62 contract checks with one declared spliced-CDS skip, 132
-Python tests, 245 JavaScript tests, and all live-genome checks pass.
+Python tests, 273 JavaScript tests, and all live-genome checks pass.
 
 ## Remaining External Decisions
 
 This ticket stays active because the following cannot be completed honestly from
 the available redistributable sources or without user authorization:
 
-- UniProt currently returns no records for proteome `UP000031358`/taxid 1350461.
+- The 2026-09-18 UniProt check returned no records for proteome
+  `UP000031358`/taxid 1350461.
 - Rubin PCC 7942 essentiality does not provide sufficiently explicit
   redistribution terms for a checked-in derivative.
 - No release-pinned, licensed KEGG or CyanoOmicsDB bulk artifact has been
