@@ -194,7 +194,7 @@
     },
     {
       "gene": {
-        "id": "+-short-overlap",
+        "id": "+-short",
         "start": 51,
         "end": 71,
         "strand": "+",
@@ -315,7 +315,7 @@
     },
     {
       "gene": {
-        "id": "+-short-overlap",
+        "id": "+-short",
         "start": 51,
         "end": 71,
         "strand": "+",
@@ -440,7 +440,7 @@
     },
     {
       "gene": {
-        "id": "+-short-overlap",
+        "id": "+-short",
         "start": 51,
         "end": 71,
         "strand": "+",
@@ -963,6 +963,170 @@
     },
     {
       "gene": {
+        "id": "+-overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "wildMfe": -30.799999237060547,
+          "recodedMfe": -30.799999237060547
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -36.29999923706055
+        }
+      },
+      "neighbor": {
+        "id": "+-upstream-neighbor",
+        "strand": "+",
+        "start": 28,
+        "end": 57,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
+        "id": "+-overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGU",
+          "wildMfe": -30.799999237060547,
+          "recodedMfe": -36.20000076293945
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -37.599998474121094
+        }
+      },
+      "neighbor": {
+        "id": "+-upstream-neighbor",
+        "strand": "+",
+        "start": 28,
+        "end": 57,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
+        "id": "+-overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCA",
+          "wildMfe": -30.799999237060547,
+          "recodedMfe": -35.70000076293945
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -45.70000076293945
+        }
+      },
+      "neighbor": {
+        "id": "+-upstream-neighbor",
+        "strand": "+",
+        "start": 28,
+        "end": 57,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
+        "id": "+-overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "+",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "GTATGATATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {
+        "CTA": "CTG",
+        "TCG": "AGC",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCA",
+          "wildMfe": -30.799999237060547,
+          "recodedMfe": -34.29999923706055
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGUAA",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -32.29999923706055
+        }
+      },
+      "neighbor": {
+        "id": "+-upstream-neighbor",
+        "strand": "+",
+        "start": 28,
+        "end": 57,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTGG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
         "id": "--ordinary",
         "start": 51,
         "end": 146,
@@ -1153,7 +1317,7 @@
     },
     {
       "gene": {
-        "id": "--short-overlap",
+        "id": "--short",
         "start": 51,
         "end": 71,
         "strand": "-",
@@ -1274,7 +1438,7 @@
     },
     {
       "gene": {
-        "id": "--short-overlap",
+        "id": "--short",
         "start": 51,
         "end": 71,
         "strand": "-",
@@ -1399,7 +1563,7 @@
     },
     {
       "gene": {
-        "id": "--short-overlap",
+        "id": "--short",
         "start": 51,
         "end": 71,
         "strand": "-",
@@ -1642,6 +1806,170 @@
           "wildMfe": -40.0,
           "recodedMfe": -54.70000076293945
         }
+      }
+    },
+    {
+      "gene": {
+        "id": "--overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CTCCGACATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {},
+      "windows": {
+        "start": {
+          "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "wildMfe": -32.599998474121094,
+          "recodedMfe": -32.599998474121094
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -36.29999923706055
+        }
+      },
+      "neighbor": {
+        "id": "--upstream-neighbor",
+        "strand": "-",
+        "start": 131,
+        "end": 160,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
+        "id": "--overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CTCCGACATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {
+        "TCG": "AGC",
+        "TCA": "AGT",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGU",
+          "wildMfe": -32.599998474121094,
+          "recodedMfe": -38.70000076293945
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -37.599998474121094
+        }
+      },
+      "neighbor": {
+        "id": "--upstream-neighbor",
+        "strand": "-",
+        "start": 131,
+        "end": 160,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
+        "id": "--overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CTCCGACATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {
+        "GTG": "GTC",
+        "TTG": "CTG",
+        "TAG": "TGA"
+      },
+      "windows": {
+        "start": {
+          "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCA",
+          "wildMfe": -32.599998474121094,
+          "recodedMfe": -37.5
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -45.70000076293945
+        }
+      },
+      "neighbor": {
+        "id": "--upstream-neighbor",
+        "strand": "-",
+        "start": 131,
+        "end": 160,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "sharedNt": 7
+      }
+    },
+    {
+      "gene": {
+        "id": "--overlap",
+        "start": 51,
+        "end": 137,
+        "strand": "-",
+        "cdsSegments": null,
+        "codons": "zS0HGzD3HGzD3HGzD3HGzD3HGzD3",
+        "terminalStop": "TAG",
+        "rnaContext": {
+          "upstream": "CTCCGACATGTCGTCGTCGTCGTCGTCGGC"
+        }
+      },
+      "map": {
+        "CTA": "CTG",
+        "TCG": "AGC",
+        "TAG": "TAA"
+      },
+      "windows": {
+        "start": {
+          "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
+          "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCA",
+          "wildMfe": -32.599998474121094,
+          "recodedMfe": -38.70000076293945
+        },
+        "first100": {
+          "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
+          "recoded": "GUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGUAA",
+          "wildMfe": -36.29999923706055,
+          "recodedMfe": -32.29999923706055
+        }
+      },
+      "neighbor": {
+        "id": "--upstream-neighbor",
+        "strand": "-",
+        "start": 131,
+        "end": 160,
+        "sequence": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTAG",
+        "afterSelectedGeneRecoding": "ATGTCGTCGTCGTCGTCGTCGGCGTGCTGG",
+        "sharedNt": 7
       }
     }
   ]

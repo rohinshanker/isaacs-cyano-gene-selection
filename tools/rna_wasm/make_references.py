@@ -19,8 +19,10 @@ def generate():
     assert RNA.__version__ == "2.7.2"
     cases = []
     for strand in ["+", "-"]:
-        for kind in ["ordinary", "boundary", "short-overlap", "joined"]:
-            dna = "GTG" + "TCGTCAGTGTTGGCG" * (1 if kind == "short-overlap" else 6) + "TAG"
+        for kind in ["ordinary", "boundary", "short", "joined", "overlap"]:
+            dna = "GTG" + "TCGTCAGTGTTGGCG" * (1 if kind == "short" else 6) + "TAG"
+            if kind == "overlap":
+                dna = "GTGCTAGCT" + "TCGTCAGTGTTGGCG" * 5 + "TAG"
             start = (270 if strand == "+" else 200) if kind == "boundary" else 51
             positions = list(range(start - 1, start - 1 + len(dna)))
             segments = None
@@ -34,11 +36,22 @@ def generate():
             genome = [rng.choice("ACGT") for _ in range(300)]
             for position, base in zip(positions, dna, strict=True):
                 genome[position % 300] = str(Seq(base).complement()) if strand == "-" else base
+            neighbor_positions = []
+            if kind == "overlap":
+                # A real second CDS: 23 upstream bases followed by seven shared
+                # bases. Its TAG stop overlaps the selected gene's CTA/GCT pair.
+                direction = 1 if strand == "+" else -1
+                neighbor_positions = [positions[0] + direction * offset for offset in range(-23, 7)]
+                neighbor_dna = "ATG" + "TCG" * 6 + "GC" + dna[:7]
+                assert neighbor_dna.endswith("TAG") and "*" not in str(Seq(neighbor_dna[:-3]).translate())
+                for position, base in zip(neighbor_positions[:23], neighbor_dna[:23], strict=True):
+                    genome[position % 300] = str(Seq(base).complement()) if strand == "-" else base
             genome = "".join(genome)
             annotation = {"id": f"{strand}-{kind}", "start": start, "end": end, "strand": strand, "cdsSegments": segments}
             gene = {**annotation, "codons": pack_codons(dna), "terminalStop": dna[-3:],
                     "rnaContext": folding_context(annotation, genome, dna)}
-            for scheme in SCHEMES:
+            schemes = SCHEMES + ([{"CTA": "CTG", "TCG": "AGC", "TAG": "TAA"}] if kind == "overlap" else [])
+            for scheme in schemes:
                 codons = [dna[i:i + 3] for i in range(0, len(dna), 3)]
                 recoded = "".join(codon if i == 0 else scheme.get(codon, codon) for i, codon in enumerate(codons))
                 # Independent oracle: edit the complete synthetic genome in place,
@@ -57,7 +70,18 @@ def generate():
                     for key in ["wild", "recoded"]:
                         value[key] = value[key].replace("T", "U")
                         value[key + "Mfe"] = RNA.fold(value[key])[1]
-                cases.append({"gene": gene, "map": scheme, "windows": values})
+                case = {"gene": gene, "map": scheme, "windows": values}
+                if neighbor_positions:
+                    neighbor_recoded = "".join(edited_genome[position % 300] for position in neighbor_positions)
+                    if strand == "-":
+                        neighbor_recoded = str(Seq(neighbor_recoded).complement())
+                    case["neighbor"] = {
+                        "id": f"{strand}-upstream-neighbor", "strand": strand,
+                        "start": min(neighbor_positions) + 1, "end": max(neighbor_positions) + 1,
+                        "sequence": neighbor_dna, "afterSelectedGeneRecoding": neighbor_recoded,
+                        "sharedNt": 7,
+                    }
+                cases.append(case)
     return {"engine": "ViennaRNA 2.7.2", "toleranceKcalMol": 0.00001, "cases": cases}
 
 

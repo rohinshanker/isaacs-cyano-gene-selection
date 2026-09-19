@@ -77,7 +77,9 @@ export class FoldingClient {
             const index = dataset.indexById.get(id);
             const windows = foldingSequences(dataset.genes[index], dataset.table, capturedMap);
             const values = await this.request(windows);
-            if (this.cancelled) break;
+            // Delivery resolves the request before its continuation runs. A
+            // cancellation in that gap must retain this completed result; the
+            // next loop iteration still stops before dispatching another gene.
             result = { id, windows: values, cached: false };
             this.cache.set(key, result);
             // Bound memory for long exploration sessions; oldest completed work goes first.

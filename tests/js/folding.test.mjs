@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { runInNewContext } from 'node:vm';
 import { standardTable, standardAlphabet } from './helpers.mjs';
 import { foldingSequences, foldingDatasetChecksum } from '../../site/js/core/folding-sequences.js';
 import { loadFoldingEngine } from '../../site/js/core/folding-engine.js';
@@ -13,7 +15,7 @@ const table = standardTable();
 const gene = references.cases[0].gene;
 const dataset = { table, genes: [gene], indexById: new Map([[gene.id, 0]]), meta: { codonAlphabet: standardAlphabet(), sourceChecksums: { genome: 'abc' } } };
 
-test('exact WASM agrees with independent Python for both strands, circular boundaries, overlaps, splice and short CDS, three schemes', async () => {
+test('exact WASM agrees with independent Python for both strands, circular boundaries, overlaps, splice and short CDS, multiple schemes', async () => {
   const fold = await loadFoldingEngine({ fetchImpl: fetchBinary });
   for (const sample of references.cases) {
     const windows = foldingSequences(sample.gene, table, sample.map);
@@ -31,6 +33,31 @@ test('exact WASM agrees with independent Python for both strands, circular bound
     }
   }
   for (const invalid of ['', 'ATG', 'A'.repeat(101), null]) assert.throws(() => fold(invalid), /RNA bases/);
+});
+
+test('browser gate releases coverage after navigation or assertion failure', async () => {
+  const source = await readFile(new URL('../../tools/rna_wasm/check_browser.js', import.meta.url), 'utf8');
+  for (const navigationFails of [true, false]) {
+    const cleanup = [];
+    const control = { waitFor: async () => {}, isDisabled: async () => true };
+    const page = {
+      evaluate: async () => ({ artifacts: '/ignored/test-artifacts', base: 'http://localhost/site/' }),
+      coverage: {
+        startJSCoverage: async () => cleanup.push('start'),
+        stopJSCoverage: async () => { cleanup.push('stop'); return []; },
+      },
+      on() {},
+      locator: () => control,
+      getByRole: () => control,
+      goto: async () => { if (navigationFails) throw new Error('injected navigation failure'); },
+      context: () => ({ setOffline: async (offline) => cleanup.push(['offline', offline]) }),
+      unroute: async (route) => cleanup.push(['unroute', route]),
+    };
+    await assert.rejects(runInNewContext(source)(page),
+      navigationFails ? /injected navigation failure/ : /fold action must be enabled/);
+    assert.deepEqual(cleanup, ['start', 'stop', ['offline', false],
+      ['unroute', '**/vienna.wasm'], ['unroute', '**/data/genes.json']]);
+  }
 });
 
 test('reject missing or corrupted sequence contracts and non-synonymous schemes', () => {
@@ -55,6 +82,29 @@ test('reject missing or corrupted sequence contracts and non-synonymous schemes'
   context.sequence = 'A'.repeat(90);
   check({ ...special, rnaContext: context }, /does not match/);
   assert.throws(() => foldingSequences(gene, table, { TCG: 'AAA' }), /protein/);
+});
+
+test('annotated overlapping neighbor retains its flanks but can lose its stop when shared bases change', () => {
+  const cases = references.cases.filter((sample) => sample.neighbor);
+  assert.equal(cases.length, 8);
+  for (const sample of cases) {
+    const { neighbor } = sample;
+    const windows = foldingSequences(sample.gene, table, sample.map);
+    assert.equal(neighbor.sharedNt, 7);
+    assert.equal(Math.min(neighbor.end, sample.gene.end) - Math.max(neighbor.start, sample.gene.start) + 1, 7);
+    assert.equal(neighbor.sequence.length, neighbor.end - neighbor.start + 1);
+    assert.equal(neighbor.sequence.slice(0, 3), 'ATG');
+    assert.equal(neighbor.sequence.slice(-3), 'TAG');
+    assert.equal(neighbor.afterSelectedGeneRecoding.slice(0, 23), neighbor.sequence.slice(0, 23));
+    assert.equal(windows.start.recoded.slice(7, 37), neighbor.afterSelectedGeneRecoding.replaceAll('T', 'U'));
+    assert.equal(windows.start.wild.slice(7, 37), neighbor.sequence.replaceAll('T', 'U'));
+    if (sample.map.CTA) {
+      assert.equal(neighbor.afterSelectedGeneRecoding.slice(-3), 'TGG');
+      assert.notEqual(neighbor.afterSelectedGeneRecoding, neighbor.sequence);
+    } else {
+      assert.equal(neighbor.afterSelectedGeneRecoding, neighbor.sequence);
+    }
+  }
 });
 
 test('content checksum changes when context, CDS or source changes', async () => {
@@ -103,6 +153,22 @@ function fakeClient({ mode = 'success', timeoutMs = 50, checksum = async () => '
   return { client: new FoldingClient({ workerFactory: factory, supported, checksum, timeoutMs }), workers };
 }
 const input = { dataset, ids: [gene.id], map: {} };
+
+test('both distributed engine assets match their pinned provenance hashes', async () => {
+  const provenance = await readFile(new URL('../../site/vendor/viennarna/PROVENANCE.md', import.meta.url), 'utf8');
+  for (const [name, expected] of [
+    ['vienna.js', '4ae452a284549f6b5d1fee6c8d54ac09918868d7736110c64b4141c57b95a09b'],
+    ['vienna.wasm', '5ebadc41700fc83237c1b1213ecb925c4ef852558e810ede0b174aabca7a3786'],
+  ]) {
+    const asset = await readFile(new URL(`../../site/vendor/viennarna/${name}`, import.meta.url));
+    const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
+    assert.equal(digest(asset), expected, `${name} integrity`);
+    assert.ok(provenance.includes(`| \`${name}\` | \`${expected}\` |`));
+    const corrupted = Buffer.from(asset);
+    corrupted[0] ^= 1;
+    assert.notEqual(digest(corrupted), expected, `${name} corruption must be detected`);
+  }
+});
 
 test('client progress, repeated cache hit, settings/scheme/dataset keys and partial failure', async () => {
   const { client, workers } = fakeClient({ checksum: foldingDatasetChecksum });
@@ -188,11 +254,20 @@ test('default browser support/factory and cancellation immediately after deliver
     globalThis.WebAssembly = oldWasm;
   }
   const { client, workers } = fakeClient({ mode: 'pending' });
-  const pending = client.run(input);
+  const progress = [];
+  const pending = client.run({ ...input, ids: [gene.id, 'never-dispatched'], onProgress: (event) => progress.push(event.completed) });
   await Promise.resolve();
   workers[0].onmessage({ data: { id: 1, result: {} } });
   client.cancel();
-  assert.equal((await pending).results.length, 0);
+  const cancelled = await pending;
+  assert.equal(cancelled.cancelled, true);
+  assert.equal(cancelled.results.length, 1);
+  assert.equal(cancelled.results[0].id, gene.id);
+  assert.deepEqual(progress, [0, 1]);
+  const retried = await client.run(input);
+  assert.equal(retried.results[0].cached, true);
+  assert.equal(workers.length, 1);
+  assert.equal(workers[0].calls, 1);
 });
 
 test('worker dispatch computes both windows, reuses engine, and isolates bad requests', async () => {

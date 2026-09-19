@@ -29,7 +29,10 @@ Changing only the scheme's display name does not invalidate equivalent work.
 Failures are never cached. Identical repeated requests do no native work.
 
 Cancellation terminates the worker, retaining completed results in cache. A
-changed shortlist or scheme cancels pending work and clears displayed results so
+successful worker response delivered before cancellation is retained even when
+the awaiting continuation has not run yet; undelivered work is cancelled, and no
+next gene is dispatched. The cancelled report includes those delivered results.
+A changed shortlist or scheme cancels pending work and clears displayed results so
 an old scheme is never labelled as current. Invalid context fails only that gene.
 Workers, WebAssembly and a secure context (HTTPS or localhost) are required.
 Offline calculation works when the engine is already loaded or HTTP-cached; an
@@ -84,11 +87,27 @@ playwright-cli -s=rna-folding-8863 run-code --filename=tools/rna_wasm/check_brow
 
 Inspect the emitted whole-page and folding-region PNGs, the semantic snapshot,
 and the returned parity/responsiveness/diagnostic report. The check asserts
-24-case real-worker parity, ten-gene responsiveness, cache hits, loading,
+32-case real-worker parity, ten-gene responsiveness, cache hits, loading,
 cancellation, offline error, per-gene partial failure, unsupported browser and
 empty states. It verifies no page overflow at the four required viewport sizes
 and around the app's layout breakpoints. Unexpected errors fail the check;
 network failures are expected only in the intentional cancellation/offline cases.
+The responsiveness gate first loads the engine and hashes the dataset using a
+different gene, then measures ten uncached genes on that warm worker. It reports
+fresh-worker startup and repeated-result-cache timings separately (the browser's
+HTTP/compile caches may already be warm), and allows a timer tick after the
+workload so synchronous blocking cannot hide its final gap. Coverage is
+stopped in `finally`, including on failed assertions.
+
+The overlap fixtures include an annotated upstream neighbor on each strand,
+sharing seven bases with the selected CDS. Its nonshared TCG-containing flank is
+unchanged. A CTA→CTG substitution in the selected gene changes the neighbor's
+overlapping TAG stop to TGG, explicitly demonstrating the neighbor-safety caveat.
+Short-CDS cases are separately labelled; they do not imply a neighboring CDS.
+
+The focused Node suite hashes both shipped `vienna.js` and `vienna.wasm`, compares
+them with literal pinned SHA-256 values and the provenance table, and checks that
+one-byte corruption changes each digest. The runtime also verifies the WASM hash.
 
 No new test dependency or screenshot baseline is needed. Artifacts are ignored
 and must not be copied into permanent docs. Broad layout changes still need the
