@@ -13,3 +13,4 @@ Reusable contracts and runbooks for this repository.
 | [responsive-workspace.md](responsive-workspace.md) | Center-column workflow, breakpoint behavior, bounded detail scrolling, and responsive checks |
 | [guided-panel-design.md](guided-panel-design.md) | Deterministic constrained panel objective, feature/missing-data policy, golden case, and export contract |
 | [viewer-interaction-state.md](viewer-interaction-state.md) | Keyboard/touch map behavior, URL version and precedence, live navigation, and draft clearing |
+| [manual-review-checklist.md](manual-review-checklist.md) | Biological, evidence/licensing, interface, and publication decisions that remain intentionally manual |
