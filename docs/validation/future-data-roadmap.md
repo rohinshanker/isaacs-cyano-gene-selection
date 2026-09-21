@@ -11,6 +11,33 @@ already included. Reprocessing its raw reads for genuine gene-body abundance
 would be a separate pipeline and must first verify that the library design
 supports that quantity; it is not an unclaimed processed-data download.
 
+## Native transcriptomics search gate
+
+Native, replicated, genome-wide *gene-body* expression is the highest-value
+missing assay, but no source checked on 2026-09-21 meets the admission contract:
+
+- [Ungerer et al. 2018](https://doi.org/10.1073/pnas.1814912115) includes
+  wild-type UTEX 2973 per-gene TPM in PNAS Dataset S1. The authors explicitly
+  describe their transcriptome survey as lacking replicates. Its supplement is
+  processed-only in the indexed article, a raw-read accession was not identified,
+  and dataset redistribution permission needs confirmation. It is an exploratory
+  comparison, not a quantitative default.
+- [Hassanien et al. 2025](https://doi.org/10.1007/s10123-025-00715-x) assays
+  native UTEX 2973 in control, iron, and produced-water conditions, but its
+  downloadable ESM4 workbook contains 122 selected gene rows, without a
+  genome-wide per-sample matrix or identified raw-read accession. Do not infer
+  genome-wide expression from this selected subset.
+- [Tan et al. 2018](https://doi.org/10.1186/s13068-018-1215-8) remains the
+  priority-1 native TSS source already shipped. It has two biological cultures
+  per condition, and its TSS initiation counts must not be relabelled as
+  gene-body abundance. The one pooled transcript-coverage library is not a
+  replicated expression baseline.
+
+If the Ungerer raw reads and reuse permission or a complete Hassanien sample
+matrix become available, verify their sample design and exact UTEX locus joins
+before reconsidering. Otherwise search for a newly deposited replicated
+wild-type UTEX 2973 RNA-seq matrix. Keep all assays separate in the UI.
+
 ## Admission contract
 
 Every new source needs a manifest entry with organism and strain, assay,

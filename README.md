@@ -121,7 +121,9 @@ correlates with the PCC 7942 table at only Spearman 0.313 across the 1,666 share
 
 The two are kept as separate filter axes and are never merged, averaged, or combined
 into one score. They disagree about which genes are busy, and that disagreement is
-information rather than noise. Sources are declared in `data/expression/sources.json`
+information rather than noise. The activity selector leads with native UTEX 2973
+TSS evidence; CAI/tAI are fallback proxies, while the borrowed PCC 7942
+abundance remains explicitly optional. Sources are declared in `data/expression/sources.json`
 with organism, assay, condition, units, checksum and licence; adding another is a
 manifest entry plus its table, and it becomes filterable with no code change. Full caveats:
 [`data/expression/PROVENANCE.md`](data/expression/PROVENANCE.md) and

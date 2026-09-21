@@ -35,9 +35,10 @@ Four independent reasons, any one of which would be enough:
 4. **Incomplete coverage.** About 6 percent of protein-coding genes have no value.
    A naive threshold silently hides them.
 
-The site therefore defaults its low-traffic threshold to CAI and tAI, which are
-computed directly from this genome, and offers this dataset as an explicitly
-labelled optional overlay.
+The site therefore never uses this borrowed PCC 7942 abundance as an implicit
+default. Native UTEX 2973 TSS initiation is offered first where measured;
+genome-derived CAI and tAI remain labelled fallback proxies, not expression
+measurements. This PCC 7942 dataset is an explicitly labelled optional overlay.
 
 ## Mapping, and what was dropped
 
@@ -107,11 +108,23 @@ unknown, never as zero, and must not be silently removed by a threshold.
 - This release does not include a verified, tidy, per-gene abundance table for
   UTEX 2973 itself. Tan et al. 2018 (PRJNA420395, Figshare 5712016, CC BY 4.0)
   publishes transcription-start-site and coverage data plus raw reads, not a
-  ready-to-use per-gene abundance matrix. Producing one requires validating the
-  library design, then running a pinned alignment and quantification pipeline.
+  ready-to-use per-gene abundance matrix. Its condition libraries enrich primary
+  5′ ends, while its transcript-coverage reference pools all 16 RNA samples into
+  one library. Neither should be relabelled as replicated gene-body abundance.
   Its processed Table S1 start-site counts and TSS-level DESeq2 comparisons are
   included separately as native UTEX evidence; see
   `TAN2018_TSS_PROVENANCE.md`. Those fields are not whole-gene RNA abundance.
+- Ungerer et al. 2018 (DOI 10.1073/pnas.1814912115) reports a native UTEX 2973
+  wild-type per-gene TPM table in supplementary Dataset S1, but explicitly notes
+  that its transcriptome survey lacks biological replicates. The PNAS record does
+  not provide a clear dataset redistribution licence or raw-read accession. Do
+  not admit it as the site's quantitative expression prior without resolving
+  those issues and verifying locus-level joins.
+- Hassanien et al. 2025 (DOI 10.1007/s10123-025-00715-x) profiles native UTEX
+  2973 under control, iron, and produced-water conditions. The accessible ESM4
+  table has 122 selected gene rows and no per-replicate expression matrix; the
+  article does not identify a reusable raw-read accession. That subset cannot
+  stand in for a genome-wide baseline.
 - The identifier mapping is fully verified, but that says nothing about whether PCC
   7942 abundance is a good proxy for UTEX 2973 abundance. It is not, for the four
   reasons listed above. Verified provenance and biological applicability are separate
@@ -120,7 +133,10 @@ unknown, never as zero, and must not be silently removed by a threshold.
 
 ## If you want a real UTEX 2973 expression axis
 
-Quantify PRJNA420395 against `GCF_000817325.1` and drop the resulting table here
-in the same three-column form. The site reads it generically, so no code changes
-are needed. Prefer the control condition (33 °C, 50 µmol photons m⁻² s⁻¹, 3% CO2)
-unless you specifically want the high-light or dark strata.
+Find a publicly downloadable, replicated *gene-body* RNA-seq matrix for wild-type
+UTEX 2973, with its sample conditions, accession, licence, units, and exact
+`M744_RS` joins verified. Preserve the assay and condition identity in the source
+manifest instead of blending it with TSS initiation or the PCC 7942 proxy. If
+reprocessing PRJNA420395, first establish whether its one pooled, rRNA-depleted
+reference library can support the intended use; the two-culture primary-library
+design does not itself make replicated whole-gene abundance.
