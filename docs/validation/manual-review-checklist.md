@@ -162,6 +162,7 @@ reviewer for every row.
 
 | Source or review | Current release disposition | Admission condition for a future release |
 | --- | --- | --- |
+| Tan 2018 Table S1 | Included as native UTEX 2973 gTSS raw counts and reported TSS-level DESeq2 comparisons (CC BY 4.0); two biological cultures per condition, not whole-gene abundance. See [`TSS provenance`](../../data/expression/TAN2018_TSS_PROVENANCE.md). | A gene-body abundance axis needs a separately validated raw-read alignment/quantification pipeline and explicit library-design suitability. |
 | UniProt | Waived; no UniProt assertions. Release `2026_03` returned zero records for proteome `UP000031358` and taxid 1350461 on 2026-09-19. | Nonempty dated export, checksum, and explicit RefSeq relationships. |
 | Rubin PCC 7942 essentiality | Waived; no calls or derivative table redistributed. | Recorded redistribution terms plus an ambiguity-preserving, visibly cross-strain join. |
 | KEGG | Waived; no KEGG relationships included. | Authorized access, pinned artifact, acceptable publication terms, and explicit identifier links. |
@@ -221,13 +222,13 @@ Expected results for the current implementation:
 - [ ] All 15 pinned annotation inputs verify.
 - [ ] All four generated annotation artifacts reproduce byte-for-byte.
 - [ ] 20 readiness, audit-integrity, and negative-fixture tests pass.
-- [ ] Contract validator reports `passed=62 failed=0 skipped=1`; the sole skip
+- [ ] Contract validator reports `passed=70 failed=0 skipped=1`; the sole skip
   is the declared contiguity exemption for the three discontinuous CDSs.
 - [ ] Every live-genome check passes, including protein preservation and metric
   parity within `1e-6`.
-- [ ] 277 JavaScript tests pass, including static HTML/CSS, module, worker, and
+- [ ] 282 JavaScript tests pass, including static HTML/CSS, module, worker, and
   required runtime-asset resolution.
-- [ ] 134 Python tests pass.
+- [ ] 150 Python tests pass.
 - [ ] The RNA-folding browser check passes all 32 parity cases, lifecycle
   states, UI source coverage, current breakpoint widths, and diagnostic checks.
 - [ ] Both working-tree and reviewed-commit-range `git diff --check` commands

@@ -219,3 +219,55 @@ test('CAI weights fall back to genome-wide usage when the reference set is absen
   assert.equal(dataset.provenance.caiReferenceFallback, true);
   assert.equal(dataset.provenance.caiReferenceGenes, 0);
 });
+
+test('TSS evidence is joined by exact locus and unknown genes get an empty list', async () => {
+  const meta = JSON.parse(await readFile(`${FIXTURE_DIR}/meta.json`, 'utf8'));
+  const genes = JSON.parse(await readFile(`${FIXTURE_DIR}/genes.json`, 'utf8'));
+  meta.tssEvidenceSource = { id: 'TAN2018_TABLE_S1' };
+  const tssRows = [{ id: 'gTSS+100', position: 100 }];
+  const evidence = { [genes[0].id]: tssRows };
+  const fetchImpl = async (url) => ({
+    ok: ['meta.json', 'genes.json', 'tss_evidence.json'].some((name) => url.endsWith(name)),
+    status: 200,
+    json: async () => url.endsWith('meta.json') ? meta
+      : url.endsWith('genes.json') ? genes : evidence,
+  });
+  const dataset = await loadDataset({ baseUrl: 'file:///fixture/', fetchImpl });
+  assert.deepEqual(dataset.genes[0].tssEvidence, tssRows);
+  assert.deepEqual(dataset.genes[1].tssEvidence, []);
+});
+
+test('declared TSS evidence must exist and have array rows', async () => {
+  const meta = JSON.parse(await readFile(`${FIXTURE_DIR}/meta.json`, 'utf8'));
+  const genes = JSON.parse(await readFile(`${FIXTURE_DIR}/genes.json`, 'utf8'));
+  meta.tssEvidenceSource = { id: 'TAN2018_TABLE_S1' };
+  const fetchImpl = async (url) => ({
+    ok: !url.endsWith('tss_evidence.json'),
+    status: 404,
+    json: async () => url.endsWith('meta.json') ? meta : genes,
+  });
+  await assert.rejects(
+    loadDataset({ baseUrl: 'file:///fixture/', fetchImpl }),
+    /tss_evidence.json is required/,
+  );
+  const malformed = async (url) => ({
+    ok: ['meta.json', 'genes.json', 'tss_evidence.json'].some((name) => url.endsWith(name)),
+    status: 200,
+    json: async () => url.endsWith('meta.json') ? meta
+      : url.endsWith('genes.json') ? genes : { [genes[0].id]: 'not an array' },
+  });
+  await assert.rejects(
+    loadDataset({ baseUrl: 'file:///fixture/', fetchImpl: malformed }),
+    /invalid rows/,
+  );
+  const arrayPayload = async (url) => ({
+    ok: ['meta.json', 'genes.json', 'tss_evidence.json'].some((name) => url.endsWith(name)),
+    status: 200,
+    json: async () => url.endsWith('meta.json') ? meta
+      : url.endsWith('genes.json') ? genes : [],
+  });
+  await assert.rejects(
+    loadDataset({ baseUrl: 'file:///fixture/', fetchImpl: arrayPayload }),
+    /tss_evidence.json is required/,
+  );
+});

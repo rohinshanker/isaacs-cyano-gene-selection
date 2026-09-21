@@ -16,7 +16,9 @@ script does not stop at the first one.
 from __future__ import annotations
 
 import argparse
+import csv
 import gzip
+import hashlib
 import json
 import math
 import os
@@ -960,6 +962,10 @@ def main() -> int:
     genes = load_json(os.path.join(args.data_dir, "genes.json"), report)
     pca = load_json(os.path.join(args.data_dir, "codon_pca.json"), report)
     excluded = load_json(os.path.join(args.data_dir, "excluded.json"), report)
+    tss_evidence = (
+        load_json(os.path.join(args.data_dir, "tss_evidence.json"), report)
+        if isinstance(meta, dict) and "tssEvidenceSource" in meta else None
+    )
 
     if meta is not None and isinstance(genes, list):
         # Prefer the data's own declaration over the raw genome. `cdsSegments` is
@@ -986,6 +992,160 @@ def main() -> int:
         validate_codon_pca(pca, meta, report)
     if excluded is not None and isinstance(genes, list):
         validate_excluded(excluded, len(genes), report)
+
+    if isinstance(meta, dict) and "tssEvidenceSource" in meta and isinstance(genes, list):
+        source = meta["tssEvidenceSource"]
+        report.check(
+            isinstance(source, dict)
+            and source.get("replicatesPerCondition") == 2
+            and source.get("isGeneBodyAbundance") is False,
+            "Tan TSS evidence declares two replicates and no gene-body abundance",
+        )
+        report.check(
+            isinstance(tss_evidence, dict),
+            "TSS evidence is an object keyed by current locus tag",
+        )
+        if isinstance(tss_evidence, dict) and isinstance(source, dict):
+            gene_ids = {gene["id"] for gene in genes if isinstance(gene, dict) and "id" in gene}
+            genes_by_id = {gene["id"]: gene for gene in genes
+                           if isinstance(gene, dict) and "id" in gene}
+            report.check(
+                set(tss_evidence) <= gene_ids,
+                "every TSS evidence key names a current gene",
+            )
+            rows = [row for entries in tss_evidence.values()
+                    if isinstance(entries, list) for row in entries]
+            summary = source.get("summary", {})
+            report.check(
+                isinstance(summary, dict)
+                and all(isinstance(entries, list) for entries in tss_evidence.values())
+                and len(rows) == summary.get("matchedRows") == 2432
+                and len(tss_evidence) == summary.get("matchedGenes") == 1789,
+                "TSS evidence cardinality matches the pinned Table S1 join",
+            )
+            seen = set()
+            valid = True
+            for row in rows:
+                if not isinstance(row, dict):
+                    valid = False
+                    continue
+                tss_id = row.get("id")
+                if (not isinstance(tss_id, str)
+                        or not re.fullmatch(r"gTSS[+-]\d+", tss_id)
+                        or tss_id in seen or row.get("type") != "gTSS"):
+                    valid = False
+                if isinstance(tss_id, str):
+                    seen.add(tss_id)
+                reads = row.get("rawReads")
+                differential = row.get("differential")
+                if not isinstance(reads, dict) or not isinstance(differential, dict):
+                    valid = False
+                    continue
+                for condition in ("control", "dark", "highLight", "highTemperature"):
+                    pair = reads.get(condition)
+                    if (not isinstance(pair, list) or len(pair) != 2
+                            or any(not isinstance(value, (int, float))
+                                   or not math.isfinite(value) or value < 0 for value in pair)):
+                        valid = False
+                for condition in ("dark", "highLight", "highTemperature"):
+                    comparison = differential.get(condition)
+                    if not isinstance(comparison, dict):
+                        valid = False
+                        continue
+                    fold_change = comparison.get("log2FoldChange")
+                    adjusted_p = comparison.get("padj")
+                    if (fold_change is None) != (adjusted_p is None):
+                        valid = False
+                    if fold_change is not None and (
+                        not isinstance(fold_change, (int, float))
+                        or not math.isfinite(fold_change)
+                    ):
+                        valid = False
+                    if adjusted_p is not None and (
+                        not isinstance(adjusted_p, (int, float))
+                        or not math.isfinite(adjusted_p)
+                        or not 0 <= adjusted_p <= 1
+                    ):
+                        valid = False
+            report.check(valid, "every TSS row preserves two raw counts and valid comparisons")
+            coordinate_consistent = all(
+                isinstance(entry, dict)
+                and entry.get("strand") == genes_by_id[locus].get("strand")
+                and entry.get("replicon")
+                == genes_by_id[locus].get("seqid", "").removeprefix("NZ_").split(".")[0]
+                for locus, entries in tss_evidence.items()
+                if locus in genes_by_id and isinstance(entries, list)
+                for entry in entries
+            )
+            report.check(
+                coordinate_consistent,
+                "every mapped TSS agrees with the current gene's replicon and strand",
+            )
+            source_path = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), "data/expression",
+                "tan2018_utex2973_tss_table_s1.tsv",
+            )
+            digest = None
+            if os.path.isfile(source_path):
+                with open(source_path, "rb") as handle:
+                    digest = hashlib.sha256(handle.read()).hexdigest()
+            report.check(
+                digest == source.get("derivedTableSha256"),
+                "Tan Table S1 derived artifact matches its pinned checksum",
+            )
+            matches_source = digest == source.get("derivedTableSha256")
+            if matches_source:
+                emitted = {
+                    entry["id"]: entry
+                    for entries in tss_evidence.values() if isinstance(entries, list)
+                    for entry in entries
+                    if isinstance(entry, dict) and isinstance(entry.get("id"), str)
+                }
+                expected_ids = set()
+                with open(source_path, encoding="utf-8", newline="") as handle:
+                    for source_row in csv.DictReader(handle, delimiter="\t"):
+                        if source_row["locus_tag"] not in gene_ids:
+                            continue
+                        tss_id = source_row["tss_id"]
+                        expected_ids.add(tss_id)
+                        expected = {
+                            "id": tss_id,
+                            "type": "gTSS",
+                            "replicon": source_row["replicon"],
+                            "strand": source_row["strand"],
+                            "position": int(source_row["position"]),
+                            "sourceStartDistanceNt": int(
+                                source_row["source_start_distance_nt"]
+                            ),
+                            "rawReads": {
+                                condition: [float(source_row[f"{prefix}_1"]),
+                                            float(source_row[f"{prefix}_2"])]
+                                for condition, prefix in (
+                                    ("control", "control"), ("dark", "dark"),
+                                    ("highLight", "high_light"),
+                                    ("highTemperature", "high_temperature"),
+                                )
+                            },
+                            "differential": {
+                                condition: {
+                                    "log2FoldChange": float(source_row[f"{prefix}_log2fc"])
+                                    if source_row[f"{prefix}_log2fc"] else None,
+                                    "padj": float(source_row[f"{prefix}_padj"])
+                                    if source_row[f"{prefix}_padj"] else None,
+                                }
+                                for condition, prefix in (
+                                    ("dark", "dark"), ("highLight", "high_light"),
+                                    ("highTemperature", "high_temperature"),
+                                )
+                            },
+                        }
+                        if emitted.get(tss_id) != expected:
+                            matches_source = False
+                matches_source = matches_source and expected_ids == set(emitted)
+            report.check(
+                matches_source,
+                "every published TSS JSON value matches the pinned Table S1 rows",
+            )
 
     if isinstance(genes, list):
         path = os.path.join(args.data_dir, "genes.json")

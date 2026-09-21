@@ -28,6 +28,7 @@ from sklearn.preprocessing import StandardScaler
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
 from rna_context import folding_context, restore_start_window  # noqa: E402
+from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
 
 
 ACCESSION = "GCF_000817325.1"
@@ -873,6 +874,10 @@ def build(
     )
 
     included_loci = {gene["id"] for gene in included}
+    tss_evidence, tss_summary = load_tss_evidence(
+        repository / "data/expression/tan2018_utex2973_tss_table_s1.tsv",
+        included_loci,
+    )
     if annotation_dir is None:
         annotation_dir = (
             repository
@@ -1118,6 +1123,28 @@ def build(
             }
             for source in expression_sources
         ],
+        "tssEvidenceSource": {
+            "id": "TAN2018_TABLE_S1",
+            "doi": "10.1186/s13068-018-1215-8",
+            "sourceArtifactUrl": "https://static-content.springer.com/esm/art%3A10.1186%2Fs13068-018-1215-8/MediaObjects/13068_2018_1215_MOESM1_ESM.xlsx",
+            "sourceSha256": "098ecbd204cd1042a6edee1d2a500eaeca4efe034c503e2ade3db1c605e79b00",
+            "derivedTableSha256": TABLE_SHA256,
+            "licence": "CC BY 4.0",
+            "retrieved": "2026-09-21",
+            "assay": "dRNA-seq transcription-start-site counts and DESeq2 comparisons",
+            "organism": "Synechococcus elongatus UTEX 2973",
+            "mappingMethod": "exact M744_RS locus tag; no gene-symbol or fuzzy join",
+            "replicatesPerCondition": 2,
+            "conditions": ["control", "dark", "highLight", "highTemperature"],
+            "comparisonReference": "control",
+            "differentialThreshold": {
+                "absoluteLog2FoldChangeAtLeast": 1,
+                "padjAtMost": 0.01,
+            },
+            "tssDiscoveryMinimumRawReadsInAnyLibrary": 300,
+            "isGeneBodyAbundance": False,
+            "summary": tss_summary,
+        },
         "expressionProxy": {
             "method": (
                 "tie-aware average rank of sqrt(CAI * tAI), scaled across all genes "
@@ -1172,13 +1199,16 @@ def build(
     output_dir.mkdir(parents=True, exist_ok=True)
     documents = {
         "genes.json": genes,
+        "tss_evidence.json": tss_evidence,
         "annotations.json": annotation_evidence,
         "excluded.json": excluded,
         "meta.json": meta,
         "codon_pca.json": codon_pca,
     }
     for name, document in documents.items():
-        content = json.dumps(round_floats(document), separators=(",", ":")) + "\n"
+        # Tiny published adjusted p-values must not round to zero.
+        serializable = document if name == "tss_evidence.json" else round_floats(document)
+        content = json.dumps(serializable, separators=(",", ":")) + "\n"
         (output_dir / name).write_text(content, encoding="utf-8")
     return genes, excluded, meta, codon_pca
 

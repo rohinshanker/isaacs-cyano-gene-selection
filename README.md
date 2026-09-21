@@ -43,6 +43,11 @@ panel experimentally, use the
   nearby non-coding RNAs, annotation methods/inferences, and evidence-coded GO
   relationships. Coordinate proximity is not presented as regulation, and GO rows are
   not converted into invented pathways or functional categories.
+- **Inspect native UTEX 2973 transcription starts.** Each mapped gene shows the
+  Tan et al. 2018 start-site positions, two raw replicate counts per condition,
+  and the reported dark/high-light/high-temperature DESeq2 comparisons against
+  control. Multiple promoters stay separate, and the small replicate count is
+  visible beside the evidence.
 - **Export a shortlist that stays interpretable.** Every export carries a manifest naming
   the dataset, the annotation release, checksums, the full scheme map, and the metric
   definitions, so two exports under two schemes can never be confused.
@@ -85,6 +90,11 @@ The full comparison is in [`docs/validation/genome-provenance.md`](docs/validati
 **This release does not include a verified per-gene RNA abundance table for UTEX
 2973.** Rather than hide that gap, the page labels each gene with the basis of its
 value, and you can filter to measured genes only.
+
+The Tan et al. 2018 native-strain TSS counts and differential-transcription
+results are available separately for 1,789 gene-linked loci. They measure
+transcription initiation, not whole-gene RNA abundance; the underlying study
+used only two biological replicate cultures per condition.
 
 | Basis | Genes | What it is |
 | --- | --- | --- |

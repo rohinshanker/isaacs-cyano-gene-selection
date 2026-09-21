@@ -349,6 +349,20 @@ assigner, mapping method, and ambiguity. The viewer keeps this material in a
 collapsed gene-detail disclosure and never derives a pathway, confidence score,
 regulatory interaction, or functional category from it.
 
+`tss_evidence.json` is a separate object keyed by exactly matched current locus
+tags. At load time each gene gets `tssEvidence`, an array (empty when no gTSS
+maps). Each entry retains the source `id`, `type: "gTSS"`, `replicon`, `strand`,
+`position`, `sourceStartDistanceNt` against the paper-era gene model, four pairs
+of `rawReads` (`control`, `dark`, `highLight`,
+`highTemperature`), and `differential` for each stressed condition with the
+authors' `log2FoldChange` and `padj` versus control. Missing differential pairs
+are `null`, never zero. This is promoter-level initiation evidence, not a metric
+for ranking whole-gene RNA abundance; do not combine multiple TSSs into one
+fold change. `meta.tssEvidenceSource` identifies the source, biological-replicate
+count (two per condition), threshold, and exact-join coverage. The source and
+derived-table hashes and reproduction steps are in
+`data/expression/TAN2018_TSS_PROVENANCE.md`.
+
 ## Expression, and why it is not the default
 
 `expression` is loaded from `data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv`,
@@ -434,7 +448,8 @@ link reproduces the exact view.
 ## Size budget
 
 The site must load in under three seconds on a normal connection. `genes.json`
-stays under 6 MB uncompressed; the relationship-heavy `annotations.json` is a
-separate payload joined by locus tag, and GitHub Pages serves both compressed.
+stays under 6 MB uncompressed; relationship-heavy `annotations.json` and
+`tss_evidence.json` are separate payloads joined by locus tag, and GitHub Pages
+serves them compressed.
 If the core file exceeds the budget, move `rscu` and `codons` into a separate
 lazily-fetched file rather than dropping precision.

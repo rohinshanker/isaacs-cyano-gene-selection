@@ -6,6 +6,11 @@ were checked against the linked primary records on 2026-09-19. The ranking and
 projected product value are architectural judgments; coverage after joining is
 unknown until each source passes the admission checks.
 
+Tan et al. 2018 Table S1 gTSS counts and differential-transcription results are
+already included. Reprocessing its raw reads for genuine gene-body abundance
+would be a separate pipeline and must first verify that the library design
+supports that quantity; it is not an unclaimed processed-data download.
+
 ## Admission contract
 
 Every new source needs a manifest entry with organism and strain, assay,
@@ -23,25 +28,7 @@ download over a live request from the static site.
 
 ## Ranked candidates
 
-### 1. Condition-resolved UTEX 2973 transcription starts
-
-- **Value:** split the current pooled TSS initiation score into control, dark,
-  high-light, and high-temperature evidence, preserving positions and regulatory
-  context. This is the smallest high-value extension because the source is
-  already admitted.
-- **Artifact:** Tan et al. 2018,
-  [Figshare 5712016 v1](https://doi.org/10.6084/m9.figshare.5712016.v1) and
-  [PRJNA420395](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA420395). The
-  processed Figshare artifact is CC BY 4.0.
-- **Join:** historical locus tag plus replicon, strand, and coordinate against the
-  frozen 2026 RefSeq annotation. Retain unresolved boundary changes.
-- **Mode and pin:** download the versioned processed archive and record file MD5s.
-  Preserve sample and condition columns rather than summing them. If raw reads
-  are later quantified, pin run accessions, reference, aligner, quantifier, and
-  normalization; first verify that the library design supports gene-body
-  abundance.
-
-### 2. Native global proteome
+### 1. Native global proteome
 
 - **Value:** add direct protein-detection and, where the deposited tables support
   it, abundance evidence for the target strain. This would separate proteins
@@ -57,7 +44,7 @@ download over a live request from the static site.
   checksum, search database, and processing version. Verify the deposit's
   artifact-level reuse terms before redistributing a derived table.
 
-### 3. *S. elongatus* pangenome, conservation, and curated metadata
+### 2. *S. elongatus* pangenome, conservation, and curated metadata
 
 - **Value:** expose whether a target is core or variable across close strains,
   add sequence-conservation context, and reuse the published gene metadata and
@@ -74,7 +61,7 @@ download over a live request from the static site.
   checksum, and sheet schema. Publish conservation and source-specific
   essentiality as separate evidence fields with strain and condition caveats.
 
-### 4. PCC 7942 iModulons and condition activities
+### 3. PCC 7942 iModulons and condition activities
 
 - **Value:** add interpretable co-regulated modules and condition activity instead
   of hundreds of opaque expression columns. Module membership would support
@@ -94,7 +81,7 @@ download over a live request from the static site.
   module weights, memberships, and a curated condition table. Record the commit,
   source-study accessions, thresholds, and transformation used by the authors.
 
-### 5. Protein families, domains, and sequence features
+### 4. Protein families, domains, and sequence features
 
 - **Value:** provide a controlled feature-diversity axis and flag conserved sites,
   transmembrane regions, signals, repeats, and disordered segments that a recoding
@@ -110,7 +97,7 @@ download over a live request from the static site.
   versions and licences, run once offline, and retain the raw result checksum.
   Label the output as computational annotation, not experimental function.
 
-### 6. UTEX 2973 metabolic models and measured fluxes
+### 5. UTEX 2973 metabolic models and measured fluxes
 
 - **Value:** add enzyme/reaction membership, metabolic subsystem coverage, and
   explicitly model-based reaction criticality. The 13C flux data can distinguish
@@ -132,7 +119,7 @@ download over a live request from the static site.
   flux, model membership, and simulated knockout effects as distinct evidence
   types.
 
-### 7. PCC 7942 transcription units and RNA 3′ ends
+### 6. PCC 7942 transcription units and RNA 3′ ends
 
 - **Value:** replace the site's proximity-only view with evidence for operon
   boundaries and termination architecture, which is directly relevant when
@@ -149,7 +136,7 @@ download over a live request from the static site.
   shipping derived transcription units. Label every mapped boundary as
   cross-strain evidence.
 
-### 8. UTEX 2973 nitrogen-response proteoforms
+### 7. UTEX 2973 nitrogen-response proteoforms
 
 - **Value:** add native condition-specific protein response and proteoform
   evidence, particularly for nitrogen starvation/recovery and phycobilisome

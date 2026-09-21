@@ -79,18 +79,24 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
   const url = (name) => new URL(name, base).href;
 
-  const [meta, genes, codonPca, excluded, annotations] = await Promise.all([
+  const [meta, genes, codonPca, excluded, annotations, tssEvidence] = await Promise.all([
     fetchJson(fetchImpl, url('meta.json')),
     fetchJson(fetchImpl, url('genes.json')),
     fetchJson(fetchImpl, url('codon_pca.json'), { optional: true }),
     fetchJson(fetchImpl, url('excluded.json'), { optional: true }),
     fetchJson(fetchImpl, url('annotations.json'), { optional: true }),
+    fetchJson(fetchImpl, url('tss_evidence.json'), { optional: true }),
   ]);
 
   requireArray(genes, 'genes.json');
   if (genes.length === 0) throw new Error('genes.json is empty');
   if (meta.annotationRelease && (!annotations || typeof annotations !== 'object')) {
     throw new Error('annotations.json is required by meta.annotationRelease');
+  }
+  if (meta.tssEvidenceSource && (
+    !tssEvidence || typeof tssEvidence !== 'object' || Array.isArray(tssEvidence)
+  )) {
+    throw new Error('tss_evidence.json is required by meta.tssEvidenceSource');
   }
   if (annotations) {
     for (const gene of genes) {
@@ -99,6 +105,15 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
         throw new Error(`annotations.json has no evidence for ${gene.id}`);
       }
       gene.annotationEvidence = evidence;
+    }
+  }
+  if (tssEvidence) {
+    for (const gene of genes) {
+      const rows = tssEvidence[gene.id] ?? [];
+      if (!Array.isArray(rows)) {
+        throw new Error(`tss_evidence.json has invalid rows for ${gene.id}`);
+      }
+      gene.tssEvidence = rows;
     }
   }
   const table = new CodonTable(meta.codonAlphabet);

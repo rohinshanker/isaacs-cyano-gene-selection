@@ -138,6 +138,48 @@ def test_generated_documents_follow_contract():
     ).statistic
     assert correlation == pytest.approx(0.313, abs=0.0005)
 
+    tss_source = meta["tssEvidenceSource"]
+    tss_rows = json.loads((DATA / "tss_evidence.json").read_text())
+    assert tss_source["replicatesPerCondition"] == 2
+    assert tss_source["isGeneBodyAbundance"] is False
+    assert tss_source["summary"] == {
+        "sourceRows": 2475,
+        "matchedRows": 2432,
+        "matchedGenes": 1789,
+        "unresolvedIdentifierRows": 10,
+        "absentCurrentLocusRows": 33,
+        "genesWithoutMappedTss": 926,
+    }
+    assert len(tss_rows) == 1789
+    assert sum(map(len, tss_rows.values())) == 2432
+    assert len(tss_rows["M744_RS01695"]) == 20
+    assert tss_rows["M744_RS02000"][0]["rawReads"]["control"] == [154, 195]
+    assert tss_rows["M744_RS02000"][0]["sourceStartDistanceNt"] == 6
+    assert tss_rows["M744_RS02000"][0]["differential"]["dark"][
+        "log2FoldChange"
+    ] == pytest.approx(4.991755, abs=1e-6)
+    assert tss_rows["M744_RS02000"][0]["differential"]["dark"][
+        "padj"
+    ] == pytest.approx(6.0420381406449e-98, rel=1e-12)
+    current_by_id = {gene["id"]: gene for gene in genes}
+    inside_current_cds = 0
+    changed_start_spacing = 0
+    for locus, rows in tss_rows.items():
+        gene = current_by_id[locus]
+        expected_replicon = gene["seqid"].removeprefix("NZ_").split(".")[0]
+        for row in rows:
+            assert row["replicon"] == expected_replicon
+            assert row["strand"] == gene["strand"]
+            current_distance = (
+                gene["start"] - row["position"]
+                if gene["strand"] == "+"
+                else row["position"] - gene["end"]
+            )
+            inside_current_cds += current_distance < 0
+            changed_start_spacing += current_distance != row["sourceStartDistanceNt"]
+    assert inside_current_cds == 15
+    assert changed_start_spacing == 236
+
     by_id = {gene["id"]: gene for gene in genes}
     assert by_id["M744_RS00920"]["translationalException"] == "ribosomal_slippage"
     assert all(

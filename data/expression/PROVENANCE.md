@@ -109,6 +109,9 @@ unknown, never as zero, and must not be silently removed by a threshold.
   publishes transcription-start-site and coverage data plus raw reads, not a
   ready-to-use per-gene abundance matrix. Producing one requires validating the
   library design, then running a pinned alignment and quantification pipeline.
+  Its processed Table S1 start-site counts and TSS-level DESeq2 comparisons are
+  included separately as native UTEX evidence; see
+  `TAN2018_TSS_PROVENANCE.md`. Those fields are not whole-gene RNA abundance.
 - The identifier mapping is fully verified, but that says nothing about whether PCC
   7942 abundance is a good proxy for UTEX 2973 abundance. It is not, for the four
   reasons listed above. Verified provenance and biological applicability are separate
