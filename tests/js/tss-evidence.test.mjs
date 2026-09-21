@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { tssEvidenceModel } from '../../site/js/core/tss-evidence.js';
+import { formatTssStatistic, tssEvidenceModel } from '../../site/js/core/tss-evidence.js';
 
 const completeEntry = {
   id: 'TSS_1', type: 'primary', replicon: 'chromosome', strand: '+', position: 123,
+  sourceStartDistanceNt: 22,
   rawReads: {
     control: [10, 20], dark: [30, 40], highLight: [50, 60], highTemperature: [70, 80],
   },
@@ -23,6 +24,7 @@ test('zero TSS entries stay explicit and do not invent evidence', () => {
 test('one TSS retains both biological cultures and each condition comparison', () => {
   const model = tssEvidenceModel({ tssEvidence: [completeEntry] });
   assert.equal(model.count, 1);
+  assert.equal(model.entries[0].sourceStartDistanceNt, 22);
   assert.deepEqual(model.entries[0].rawReads.map((row) => row.cultures), [
     [10, 20], [30, 40], [50, 60], [70, 80],
   ]);
@@ -60,10 +62,20 @@ test('missing and invalid measurements remain unknown rather than becoming zero'
   assert.ok(entry.differential.every((row) => row.log2FoldChange === null));
 });
 
+test('tiny adjusted p-values stay legible and nonzero', () => {
+  assert.equal(formatTssStatistic(6.0420381406449e-98), '6.042e-98');
+  assert.equal(formatTssStatistic(6.56e-11), '6.560e-11');
+  assert.equal(formatTssStatistic(0), '0');
+  assert.equal(formatTssStatistic(-2.3185), '-2.319');
+  assert.equal(formatTssStatistic(null), 'Unknown');
+});
+
 test('the detail panel labels missing TSS values as unknown and states the safe semantics', async () => {
   const source = await readFile(new URL('../../site/js/ui/side-panel.js', import.meta.url), 'utf8');
   assert.match(source, /: 'Unknown'/);
   assert.match(source, /Missing DESeq2 results are unknown, not zero/);
+  assert.match(source, /only two biological cultures per condition/);
+  assert.match(source, /site can fall inside the current CDS/);
   assert.match(source, /no gene-level.*fold-change aggregate is calculated/s);
   assert.match(source, /caption\.className = 'visually-hidden'/);
   assert.doesNotMatch(source, /high light[^'\n]*\b(?:min|hour|h)\b/i);

@@ -14,7 +14,7 @@ import {
   isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
 } from '../core/metric-registry.js';
 import { annotationEvidenceModel } from '../core/annotation-evidence.js';
-import { tssEvidenceModel } from '../core/tss-evidence.js';
+import { formatTssStatistic, tssEvidenceModel } from '../core/tss-evidence.js';
 
 /** Baseline context stays visible; scheme-only results open only when a scheme exists. */
 const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
@@ -97,11 +97,6 @@ function tssValue(value) {
   return Number.isFinite(value) ? value.toLocaleString('en-US') : 'Unknown';
 }
 
-function tssDecimal(value) {
-  return Number.isFinite(value)
-    ? value.toLocaleString('en-US', { maximumSignificantDigits: 4 }) : 'Unknown';
-}
-
 function tssTable(headers, rows, className, captionText) {
   const table = document.createElement('table');
   table.className = className;
@@ -137,22 +132,24 @@ function tssTable(headers, rows, className, captionText) {
   return table;
 }
 
-function tssEvidenceDisclosure(gene) {
+function tssEvidenceDisclosure(gene, meta) {
+  if (!meta?.tssEvidenceSource) return null;
   const model = tssEvidenceModel(gene);
   const details = document.createElement('details');
   details.className = 'metric-group tss-evidence';
   const summary = document.createElement('summary');
   summary.textContent = model.count === 0
-    ? 'TSS promoter initiation evidence — no mapped TSS evidence'
-    : `TSS promoter initiation evidence (${model.count} mapped `
+    ? 'TSS initiation evidence — no mapped TSS evidence'
+    : `TSS initiation evidence (${model.count} mapped `
       + `${model.count === 1 ? 'site' : 'sites'})`;
   details.append(summary);
 
   const caveat = document.createElement('p');
   caveat.className = 'panel-note tss-caveat';
-  caveat.textContent = 'Promoter initiation evidence, not gene-body RNA abundance. Each condition '
-    + 'has two biological cultures. Missing DESeq2 results are unknown, not zero; no gene-level '
-    + 'fold-change aggregate is calculated.';
+  caveat.textContent = 'Start-site initiation evidence, not gene-body RNA abundance. The study has '
+    + 'only two biological cultures per condition. Published gene links use 2018 start models, '
+    + 'so a site can fall inside the current CDS. Missing DESeq2 results are unknown, not zero; '
+    + 'no gene-level fold-change aggregate is calculated.';
   details.append(caveat);
 
   if (model.count === 0) {
@@ -171,7 +168,10 @@ function tssEvidenceDisclosure(gene) {
       const location = document.createElement('p');
       location.className = 'tss-location';
       location.textContent = `${entry.type} · ${entry.replicon} · ${entry.strand} strand · `
-        + `position ${tssValue(entry.position)}`;
+        + `position ${tssValue(entry.position)}`
+        + (Number.isFinite(entry.sourceStartDistanceNt)
+          ? ` · ${tssValue(entry.sourceStartDistanceNt)} nt before the 2018 start`
+          : '');
       const rawHeading = document.createElement('h5');
       rawHeading.textContent = 'Raw reads';
       const rawTable = tssTable(
@@ -189,7 +189,7 @@ function tssEvidenceDisclosure(gene) {
         ['Condition', 'log2FC', 'adjusted p'],
         entry.differential.map((row) => ({
           label: row.label,
-          values: [tssDecimal(row.log2FoldChange), tssDecimal(row.padj)],
+          values: [formatTssStatistic(row.log2FoldChange), formatTssStatistic(row.padj)],
         })),
         'tss-table tss-differential',
         `DESeq2 condition-versus-control results for ${entry.id}`,
@@ -304,7 +304,8 @@ export class SidePanel {
     const annotation = annotationDisclosure(gene, dataset.meta);
     if (annotation) this.host.append(annotation);
 
-    this.host.append(tssEvidenceDisclosure(gene));
+    const tssEvidence = tssEvidenceDisclosure(gene, dataset.meta);
+    if (tssEvidence) this.host.append(tssEvidence);
 
     if (state.schemeActive) {
       const section = document.createElement('section');

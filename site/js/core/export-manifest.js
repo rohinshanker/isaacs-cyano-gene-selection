@@ -153,6 +153,11 @@ function caveatsFor(dataset, manifest) {
       + `${meta.expressionSource.organismMeasured ?? 'an unstated organism'}`
       + `${meta.expressionSource.condition ? `, ${meta.expressionSource.condition}` : ''}.`);
   }
+  if (meta.tssEvidenceSource) {
+    caveats.push('Tan 2018 TSS counts and DESeq2 comparisons have only two biological '
+      + 'cultures per condition. They describe start-site initiation, not whole-gene '
+      + 'RNA abundance; a gene can have multiple separately regulated TSSs.');
+  }
   if (manifest.dataset.annotationRelease === null) {
     caveats.push('meta.json does not publish the annotation release, so it is recorded as null '
       + 'rather than inferred.');
@@ -237,6 +242,7 @@ export function buildExport({ dataset, registry, ids, schemes, generatedAt = new
       builtAt: meta.builtAt ?? null,
       genome: meta.genome ?? null,
       annotationRelease: annotationRelease(meta),
+      tssEvidenceSource: meta.tssEvidenceSource ?? null,
       sourceChecksums: meta.sourceChecksums ?? {},
       geneCount: meta.geneCount ?? genes.length,
       loadedGeneCount: genes.length,

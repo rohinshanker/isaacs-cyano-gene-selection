@@ -261,6 +261,22 @@ test('the manifest carries dataset identity, checksums, definitions, and caveats
   assert.equal(manifest.rowCount, 1);
 });
 
+test('a Tan TSS source is pinned in the export without calling it gene abundance', async () => {
+  const { dataset, registry } = await context();
+  const tssEvidenceSource = {
+    id: 'TAN2018_TABLE_S1', derivedTableSha256: 'abc', replicatesPerCondition: 2,
+    isGeneBodyAbundance: false,
+  };
+  const augmented = {
+    ...dataset,
+    meta: { ...dataset.meta, tssEvidenceSource },
+  };
+  const result = exportFor(augmented, registry, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(result.manifest.dataset.tssEvidenceSource, tssEvidenceSource);
+  assert.ok(result.manifest.caveats.some((line) => /two biological cultures/.test(line)));
+  assert.ok(result.manifest.caveats.some((line) => /not whole-gene RNA abundance/.test(line)));
+});
+
 test('the CSV parser handles the shapes the writer can emit', () => {
   const { header, rows } = parseCsv('a,b\n1,"x,y"\n2,"he said ""hi"""\n3,"line\nbreak"\n');
   assert.deepEqual(header, ['a', 'b']);

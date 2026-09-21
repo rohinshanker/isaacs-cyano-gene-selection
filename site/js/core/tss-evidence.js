@@ -24,6 +24,13 @@ function readsFor(entry, key) {
   return [finiteOrNull(values?.[0]), finiteOrNull(values?.[1])];
 }
 
+/** Keep tiny adjusted p-values legible without rounding them to zero. */
+export function formatTssStatistic(value) {
+  if (!Number.isFinite(value)) return 'Unknown';
+  if (value !== 0 && Math.abs(value) < 0.001) return value.toExponential(3);
+  return value.toLocaleString('en-US', { maximumSignificantDigits: 4 });
+}
+
 /** Return a display-ready model while preserving missing measurements as null. */
 export function tssEvidenceModel(gene) {
   const evidence = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence : [];
@@ -35,6 +42,7 @@ export function tssEvidenceModel(gene) {
       replicon: entry?.replicon ?? 'replicon not recorded',
       strand: entry?.strand ?? 'strand not recorded',
       position: finiteOrNull(entry?.position),
+      sourceStartDistanceNt: finiteOrNull(entry?.sourceStartDistanceNt),
       rawReads: CONDITIONS.map(({ key, label }) => ({
         key,
         label,

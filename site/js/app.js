@@ -94,8 +94,9 @@ function showLoadError(error) {
   detail.textContent = error.message;
   status.append(heading, detail);
   const hint = document.createElement('p');
-  hint.textContent = 'Check that the pipeline has written meta.json and genes.json into the '
-    + 'folder this page reads, and that the server can serve them.';
+  hint.textContent = 'Check that the pipeline wrote meta.json, genes.json, and the declared '
+    + 'annotation and TSS evidence files into this page’s data folder, and that the server '
+    + 'can serve them.';
   status.append(hint);
 }
 
