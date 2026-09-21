@@ -26,26 +26,31 @@ import { isBorrowedMetric } from '../core/panel-features.js';
 import { isExpressionMetric, isExpressionProxyMetric } from '../core/metric-registry.js';
 import { formatValue, formatCount, formatPercentile } from './format.js';
 
-/**
- * The metrics a bench scientist reaches for first, after this genome's own
- * measured evidence. Everything else the dataset publishes follows them, so a
- * pipeline that adds a metric offers it here with no change to this file.
- */
-const PREFERRED_CONSTRAINT_KEYS = [
-  'cai', 'tai', 'lengthCodons', 'gc3', 'rareFraction', 'mfeStart', 'enc',
-];
+/** This genome's own codon-adaptation proxies: real measurement outranks both. */
+const EXPRESSION_PROXY_KEYS = ['cai', 'tai'];
 
 /**
- * Every metric that can be a hard constraint, preferred ones first.
+ * The bench-scientist defaults after expression evidence and its proxies.
+ * Everything else the dataset publishes follows them, so a pipeline that
+ * adds a metric offers it here with no change to this file.
+ */
+const PREFERRED_CONSTRAINT_KEYS = ['lengthCodons', 'gc3', 'rareFraction', 'mfeStart', 'enc'];
+
+/**
+ * Every metric that can be a hard constraint, best evidence first.
  *
  * Only published metrics qualify. A live metric is whatever the active scheme
  * makes it, so constraining on one would mean something different as soon as the
  * scheme changed.
  *
  * A metric actually measured in this organism (native TSS initiation today,
- * any future native measurement without further change) is offered ahead of
- * `PREFERRED_CONSTRAINT_KEYS`'s codon-adaptation proxies, matching the same
- * priority the low-traffic threshold uses.
+ * any future native measurement without further change) leads. Any other
+ * real measurement of transcript abundance — borrowed from another strain,
+ * PCC 7942 today — comes next, still ahead of `EXPRESSION_PROXY_KEYS`'s
+ * codon-adaptation proxies: a measurement outranks a proxy regardless of
+ * organism, matching the same priority the low-traffic threshold uses. A
+ * borrowed metric is filtered back out by the caller unless the reader opts
+ * in; this only sets its rank once it is offered.
  */
 export function constrainableMetrics(registry) {
   const published = registry.metrics.filter((metric) => metric.source === 'pipeline');
@@ -53,15 +58,23 @@ export function constrainableMetrics(registry) {
     (metric) => isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
       && metric.provenance?.isTargetOrganism === true,
   );
+  const borrowedMeasured = published.filter(
+    (metric) => isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
+      && metric.provenance?.isTargetOrganism === false && !native.includes(metric),
+  );
+  const proxies = EXPRESSION_PROXY_KEYS
+    .map((key) => published.find((metric) => metric.key === key))
+    .filter(Boolean);
   const preferred = PREFERRED_CONSTRAINT_KEYS
     .map((key) => published.find((metric) => metric.key === key))
     .filter(Boolean);
+  const ranked = [...native, ...borrowedMeasured, ...proxies, ...preferred];
   const rest = published
-    .filter((metric) => !native.includes(metric) && !preferred.includes(metric))
+    .filter((metric) => !ranked.includes(metric))
     .sort((a, b) => (a.family === b.family
       ? a.label.localeCompare(b.label)
       : a.family.localeCompare(b.family)));
-  return [...native, ...preferred, ...rest];
+  return [...ranked, ...rest];
 }
 
 function element(tag, className, text) {

@@ -283,7 +283,28 @@ export function buildMetricRegistry(meta, genes, liveFields) {
   for (const metric of metrics) {
     if (!families.includes(metric.family)) families.push(metric.family);
   }
-  return { metrics, byKey, families, declaredButMissing };
+  return { metrics, byKey, families: orderMetricFamilies(families), declaredButMissing };
+}
+
+/**
+ * Family display order for every grouped selector (colour-by, the compare
+ * axis picker, the gene-detail metric groups): expression evidence groups
+ * ahead of the codon-adaptation proxies in "Translation", the same priority
+ * `orderTrafficCandidates` and `constrainableMetrics` give individual
+ * metrics. Every other family keeps the order it first appeared in the
+ * manifest, so this never reshuffles families the priority rule says nothing
+ * about.
+ */
+export function orderMetricFamilies(families) {
+  const expressionAt = families.indexOf('Expression');
+  const translationAt = families.indexOf('Translation');
+  if (expressionAt === -1 || translationAt === -1 || expressionAt < translationAt) {
+    return families;
+  }
+  const withoutExpression = families.filter((family) => family !== 'Expression');
+  const insertAt = withoutExpression.indexOf('Translation');
+  withoutExpression.splice(insertAt, 0, 'Expression');
+  return withoutExpression;
 }
 
 /** Rebind live metric readers after a scheme change, keeping labels and order. */

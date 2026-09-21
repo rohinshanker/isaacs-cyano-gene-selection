@@ -40,9 +40,10 @@ until explicitly enabled. Enabling it adds one raw representative of that
 source to the default feature space (never both the raw value and its derived
 percentile), and it remains labelled as another-organism evidence. Native UTEX
 2973 TSS initiation stays available without that opt-in, and the "Constrain a
-metric" list offers any such native measurement ahead of CAI/tAI, matching the
-low-traffic threshold's priority (see "Expression, and why it is not the
-default" in `data-contract.md`).
+metric" list offers native measurement first; once borrowed expression is
+switched on, that PCC 7942 measurement ranks next, still ahead of CAI/tAI —
+matching the low-traffic threshold's priority (see "Expression, and why it is
+not the default" in `data-contract.md`).
 
 The default baseline feature list itself is not reweighted to add TSS
 initiation: it covers 1,727 of 2,715 genes, is a promoter-initiation signal

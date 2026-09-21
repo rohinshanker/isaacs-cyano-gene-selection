@@ -377,14 +377,20 @@ caveats and the eight loci deliberately excluded for ambiguous mapping are in
 Consequences that both the pipeline and the site must honour:
 
 - The low-traffic threshold **defaults to a metric actually measured in this organism**
-  (native TSS initiation today) when one exists, **then to CAI and tAI**, which are
-  derived from this genome, before any other expression evidence. A borrowed
-  measurement such as this PCC 7942 abundance value is never the default axis; it
-  remains an opt-in overlay. The ranking follows each metric's own
-  `provenance.isTargetOrganism` flag, so a future native measurement (gene-body
-  transcriptomics, say) takes the same priority with no interface change — see
+  (native TSS initiation today) when one exists. **Any other real measurement of
+  transcript abundance ranks next** — this PCC 7942 abundance value and its
+  percentile included, borrowed-strain caveat still attached — **ahead of CAI and
+  tAI**, this genome's own codon-adaptation proxies: a measurement outranks a proxy
+  regardless of organism. A borrowed measurement is never the *default* axis, only
+  a higher-ranked option once offered; it remains an opt-in overlay wherever the
+  interface excludes it by default (see "Guided panel design"). The ranking follows
+  each metric's own `provenance.isTargetOrganism` flag, so a future native
+  measurement (gene-body transcriptomics, say) takes the top priority with no
+  interface change once it passes this project's replication bar — see
   `orderTrafficCandidates()` in `site/js/ui/filters.js` and the matching
-  `constrainableMetrics()` in `site/js/ui/panel-designer.js`.
+  `constrainableMetrics()` in `site/js/ui/panel-designer.js`. The same priority
+  orders the family groups every metric selector offers ("Expression" ahead of
+  "Translation") via `orderMetricFamilies()` in `site/js/core/metric-registry.js`.
 - Wherever expression is displayed or used to filter, the interface states the
   source organism in plain words. A user must not be able to threshold on it while
   believing it is UTEX 2973 data.

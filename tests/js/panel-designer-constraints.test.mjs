@@ -1,7 +1,8 @@
 /**
- * "Constrain a metric" ordering: native measured evidence must lead the list,
- * ahead of the bench-scientist defaults (CAI, tAI, and the rest), the same
- * priority the low-traffic threshold uses.
+ * "Constrain a metric" ordering: native measured evidence leads the list, any
+ * other real measurement (borrowed included) comes next, then CAI/tAI, then
+ * the rest of the bench-scientist defaults — the same priority the
+ * low-traffic threshold uses.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -36,7 +37,7 @@ test('native measured evidence leads the constraint list, ahead of CAI/tAI', () 
 
   const order = constrainableMetrics(registryOf([borrowed, gc3, cai, tai, tss]))
     .map((m) => m.key);
-  assert.deepEqual(order, ['tssInitiation', 'cai', 'tai', 'gc3', 'expression']);
+  assert.deepEqual(order, ['tssInitiation', 'expression', 'cai', 'tai', 'gc3']);
 });
 
 test('a live metric never appears, regardless of provenance', () => {

@@ -17,30 +17,41 @@ import { sortedFinite, quantileSorted } from '../core/stats.js';
 
 const HISTOGRAM_BINS = 44;
 
-/** This genome's own codon-adaptation proxies, preferred over any borrowed measurement. */
-const TRAFFIC_PREFERENCE = ['cai', 'tai'];
+/** This genome's own codon-adaptation proxies: real measurement outranks both. */
+const TRAFFIC_PROXY_PREFERENCE = ['cai', 'tai'];
 
 /**
  * Candidate axes for the low-traffic threshold, best first.
  *
- * A metric actually measured in this organism outranks a codon-adaptation
- * proxy derived from its genome, which in turn outranks any other expression
- * evidence (a borrowed measurement, or a percentile derived from one). The
- * ranking reads the registry's own `provenance.isTargetOrganism` flag rather
- * than a metric's name or key, so a future native measurement (gene-body
- * transcriptomics, say) is preferred with no change here; only its source
- * manifest needs to declare it.
+ * A metric actually measured in this organism leads. Next is any other real
+ * measurement of transcript abundance, even one borrowed from another strain
+ * (PCC 7942 today): a measurement outranks a proxy regardless of organism, as
+ * long as its borrowed-strain caveat stays attached wherever it is shown. This
+ * genome's own codon-adaptation proxies (CAI/tAI) come next, then any
+ * remaining expression evidence (a proxy rank derived from one of the above).
+ * The native/borrowed split reads the registry's own
+ * `provenance.isTargetOrganism` flag rather than a metric's name or key, so a
+ * future native measurement (gene-body transcriptomics, say) is preferred
+ * with no change here; only its source manifest needs to declare it and pass
+ * this project's replication bar.
  */
 export function orderTrafficCandidates(registry) {
   const expression = registry.metrics.filter(isExpressionMetric);
   const native = expression.filter(
     (metric) => !isExpressionProxyMetric(metric) && metric.provenance?.isTargetOrganism === true,
   );
-  const preferred = TRAFFIC_PREFERENCE
+  const borrowedMeasured = expression.filter(
+    (metric) => !isExpressionProxyMetric(metric) && metric.provenance?.isTargetOrganism === false
+      && !native.includes(metric),
+  );
+  const proxies = TRAFFIC_PROXY_PREFERENCE
     .map((key) => registry.byKey.get(key))
     .filter(Boolean);
-  const rest = expression.filter((metric) => !native.includes(metric));
-  return [...native, ...preferred, ...rest];
+  const rest = expression.filter(
+    (metric) => !native.includes(metric) && !borrowedMeasured.includes(metric)
+      && !proxies.includes(metric),
+  );
+  return [...native, ...borrowedMeasured, ...proxies, ...rest];
 }
 
 /** Reader-facing copy for a registry metric without destroying scientific capitalization. */

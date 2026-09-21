@@ -1,8 +1,9 @@
 /**
  * Low-traffic threshold ordering: a rule from the data contract, not a UI
- * accident. A metric actually measured in this organism must outrank this
- * genome's own codon-adaptation proxy, which must outrank any other
- * expression evidence, including a borrowed measurement.
+ * accident. A metric actually measured in this organism must outrank any
+ * other real measurement (a borrowed one included), which must in turn
+ * outrank this genome's own codon-adaptation proxy, which must outrank any
+ * remaining expression evidence (a proxy rank derived from one of the above).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -36,7 +37,24 @@ test('native measured evidence outranks this genome\'s own CAI/tAI proxies', () 
 
   const order = orderTrafficCandidates(registryOf([borrowed, proxy, cai, tai, tss]))
     .map((m) => m.key);
-  assert.deepEqual(order, ['tssInitiation', 'cai', 'tai', 'expression', 'expressionProxy']);
+  assert.deepEqual(order, ['tssInitiation', 'expression', 'cai', 'tai', 'expressionProxy']);
+});
+
+test('a borrowed real measurement outranks CAI/tAI even with no native evidence present', () => {
+  const cai = metric('cai', { family: 'Translation' });
+  const tai = metric('tai', { family: 'Translation' });
+  const borrowed = metric('expression', {
+    label: 'Expression (PCC 7942)', family: 'Expression',
+    provenance: { id: 'GSE205444', isTargetOrganism: false },
+  });
+  const percentile = metric('expressionPercentile', {
+    label: 'Expression percentile (PCC 7942)', family: 'Expression',
+    provenance: { id: 'GSE205444', isTargetOrganism: false },
+  });
+
+  const order = orderTrafficCandidates(registryOf([cai, tai, percentile, borrowed]))
+    .map((m) => m.key);
+  assert.deepEqual(order, ['expressionPercentile', 'expression', 'cai', 'tai']);
 });
 
 test('a future native measurement is preferred automatically, by provenance alone', () => {
