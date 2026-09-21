@@ -51,6 +51,13 @@ def test_sections_and_citations_are_complete():
         "yu-2015", "ncbi-utex-2973", "tan-2018", "simkovsky-2022",
         "ncbi-pcc-7942", "gene-ontology"
     } == {item["id"] for item in sections[0]["items"]}
+    assert {
+        "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
+        "coleman-codon-pairs", "deseq2", "umap", "scikit-learn",
+        "viennarna", "emscripten", "biopython", "ncbi-genetic-code",
+        "numpy", "scipy", "openpyxl", "pandas", "pytest",
+        "typesafe-jev",
+    } <= {item["id"] for item in sections[1]["items"]}
     assert all(not item["downloads"] for item in sections[1]["items"])
 
 

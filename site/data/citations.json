@@ -141,8 +141,29 @@
     {
       "id": "methods-and-tools",
       "title": "Methods, design, validation & software",
-      "description": "These works guided calculations, interpretation, validation, or software implementation. Their experimental measurements were not imported as gene-level data unless listed above.",
+      "description": "These works guided calculations, interpretation, validation, software implementation, or explicit source-admission decisions. Their experimental measurements were not imported as gene-level data unless listed above.",
       "items": [
+        {
+          "id": "ungerer-2018-assessed",
+          "citation": "Ungerer J, Wendt KE, Hendry JI, Maranas CD, Pakrasi HB. Comparative genomics reveals the molecular determinants of rapid growth of the cyanobacterium Synechococcus elongatus UTEX 2973. Proceedings of the National Academy of Sciences 115, E11761–E11770 (2018). doi:10.1073/pnas.1814912115.",
+          "url": "https://doi.org/10.1073/pnas.1814912115",
+          "contribution": "Reviewed as a possible native UTEX 2973 gene-body transcriptomics and allele/phenotype source. Its supplemental wild-type TPM survey lacks biological replicates, so no expression values or growth-effect labels from this paper are integrated in the current site.",
+          "downloads": []
+        },
+        {
+          "id": "hassanien-2025-assessed",
+          "citation": "Hassanien A et al. Gene expression analysis reveals genes related to heavy metals and produced water exposure in Synechococcus elongatus. International Microbiology 28, 2697–2708 (2025). doi:10.1007/s10123-025-00715-x.",
+          "url": "https://doi.org/10.1007/s10123-025-00715-x",
+          "contribution": "Assessed as another UTEX 2973 transcriptomics candidate. The accessible supplement provides selected genes, not a validated genome-wide, per-replicate baseline abundance matrix; no values from it are integrated.",
+          "downloads": []
+        },
+        {
+          "id": "rubin-2015-assessed",
+          "citation": "Rubin BE et al. The essential gene set of a photosynthetic organism. Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015). doi:10.1073/pnas.1519220112.",
+          "url": "https://doi.org/10.1073/pnas.1519220112",
+          "contribution": "Reviewed as a possible future essentiality evidence layer. Its transposon screen measured PCC 7942 under laboratory conditions; no essentiality label is currently transferred to UTEX 2973 or used to rank recoding targets.",
+          "downloads": []
+        },
         {
           "id": "sharp-li-cai",
           "citation": "Sharp PM, Li WH. The codon adaptation index—a measure of directional synonymous codon usage bias, and its potential applications. Nucleic Acids Research 15, 1281–1295 (1987). doi:10.1093/nar/15.3.1281.",
@@ -155,6 +176,13 @@
           "citation": "dos Reis M, Savva R, Wernisch L. Solving the riddle of codon usage preferences: a test for translational selection. Nucleic Acids Research 32, 5036–5044 (2004). doi:10.1093/nar/gkh834.",
           "url": "https://doi.org/10.1093/nar/gkh834",
           "contribution": "Source of the tRNA adaptation index convention, selective wobble constraints, and zero-weight substitution. The anticodon copy counts used here come from this UTEX annotation, not the paper’s organisms; tAI is a proxy, not measured expression.",
+          "downloads": []
+        },
+        {
+          "id": "soma-lysidine",
+          "citation": "Soma A et al. An RNA-modifying enzyme that governs both the codon and amino acid specificities of isoleucine tRNA. Molecular Cell 12, 689–698 (2003). doi:10.1016/S1097-2765(03)00346-0.",
+          "url": "https://doi.org/10.1016/S1097-2765(03)00346-0",
+          "contribution": "Supports the bacterial lysidine/TilS convention used to model the annotated Ile-CAT tRNA as decoding ATA rather than ATG. This is a biochemical rule from other bacteria, not direct measurement of UTEX 2973 tRNA modification or charging.",
           "downloads": []
         },
         {
@@ -201,7 +229,7 @@
         },
         {
           "id": "emscripten",
-          "citation": "Emscripten 4.0.15 and bundled runtime components (musl, compiler-rt, JSON library, and dlmalloc); upstream licenses retained with the ViennaRNA browser build.",
+          "citation": "Emscripten 4.0.15 and bundled runtime components: musl, LLVM compiler-rt, Joseph A. Adams’s JSON library, and Doug Lea’s dlmalloc; upstream licenses retained with the ViennaRNA browser build.",
           "url": "https://emscripten.org/",
           "contribution": "Emscripten compiled the ViennaRNA engine to WebAssembly and supplied its JavaScript/runtime glue. The component-specific notices and licenses are retained under site/vendor/viennarna/; this is software attribution, not a source of biological data.",
           "downloads": []
@@ -221,10 +249,17 @@
           "downloads": []
         },
         {
-          "id": "python-numerical",
-          "citation": "Harris CR et al. Array programming with NumPy. Nature 585, 357–362 (2020). doi:10.1038/s41586-020-2649-2; Virtanen P et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272 (2020). doi:10.1038/s41592-019-0686-2.",
+          "id": "numpy",
+          "citation": "Harris CR et al. Array programming with NumPy. Nature 585, 357–362 (2020). doi:10.1038/s41586-020-2649-2.",
           "url": "https://doi.org/10.1038/s41586-020-2649-2",
-          "contribution": "NumPy arrays support the build and independent checks; SciPy supports statistical integration checks and is a declared build-environment dependency. These packages provide computation, not external gene measurements.",
+          "contribution": "NumPy arrays support the feature build and independent consistency checks; this package provides computation, not external gene measurements.",
+          "downloads": []
+        },
+        {
+          "id": "scipy",
+          "citation": "Virtanen P et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272 (2020). doi:10.1038/s41592-019-0686-2.",
+          "url": "https://doi.org/10.1038/s41592-019-0686-2",
+          "contribution": "SciPy supports statistical integration checks and is a declared build-environment dependency; it contributes no biological measurements to the site.",
           "downloads": []
         },
         {
@@ -232,6 +267,20 @@
           "citation": "openpyxl, Python library for reading and writing Excel workbooks (project documentation).",
           "url": "https://openpyxl.readthedocs.io/en/stable/",
           "contribution": "Used to extract the published Tan 2018 Table S1 XLSX into the checked TSV without treating workbook formatting or recalculation as biological data.",
+          "downloads": []
+        },
+        {
+          "id": "pandas",
+          "citation": "McKinney W. Data Structures for Statistical Computing in Python. Proceedings of the 9th Python in Science Conference, 51–56 (2010); pandas library.",
+          "url": "https://conference.scipy.org.s3.amazonaws.com/proceedings/scipy2010/pdfs/mckinney.pdf",
+          "contribution": "pandas is a declared Python scientific-stack dependency in the build environment. The current core build does not directly import pandas or take biological observations from it; it remains credited as part of the declared software environment.",
+          "downloads": []
+        },
+        {
+          "id": "pytest",
+          "citation": "pytest development team. pytest: Python testing framework (project documentation).",
+          "url": "https://docs.pytest.org/en/stable/",
+          "contribution": "Runs the Python feature, integration, provenance, and source-ledger tests. It is a validation tool and supplies no biological data or browser runtime code.",
           "downloads": []
         },
         {
