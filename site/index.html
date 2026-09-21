@@ -198,59 +198,62 @@ if (window.location.protocol === 'file:') {
     <section class="map card" id="map-section" aria-label="Gene map">
       <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map"></div>
       <p class="panel-blurb" id="panel-blurb"></p>
-      <!-- Two rows, in DOM order so tab order follows the visual order. The search
-           box takes the rest of its own row because its result list needs the width. -->
-      <div class="map-toolbar">
-        <div class="map-toolbar-row">
-          <span class="field-row">
-            <label for="color-by">Colour by</label>
-            <select id="color-by"></select>
-          </span>
-          <span class="field-row field-row-grow">
-            <label for="gene-search">Find a gene</label>
-            <input id="gene-search" type="search" autocomplete="off"
-                   aria-describedby="gene-search-hint"
-                   placeholder="Locus tag, gene name, or what it does">
-          </span>
+      <div id="map-view">
+        <!-- Two rows, in DOM order so tab order follows the visual order. The search
+             box takes the rest of its own row because its result list needs the width. -->
+        <div class="map-toolbar">
+          <div class="map-toolbar-row">
+            <span class="field-row">
+              <label for="color-by">Colour by</label>
+              <select id="color-by"></select>
+            </span>
+            <span class="field-row field-row-grow">
+              <label for="gene-search">Find a gene</label>
+              <input id="gene-search" type="search" autocomplete="off"
+                     aria-describedby="gene-search-hint"
+                     placeholder="Locus tag, gene name, or what it does">
+            </span>
+          </div>
+          <div class="map-toolbar-row">
+            <button type="button" id="reset-view" class="chip-button">Reset view</button>
+            <button type="button" id="zoom-in" class="chip-button" aria-label="Zoom in">Zoom in (+)</button>
+            <button type="button" id="zoom-out" class="chip-button" aria-label="Zoom out">Zoom out (−)</button>
+            <span class="checkbox-row">
+              <input type="checkbox" id="show-hidden" checked>
+              <label for="show-hidden">Show filtered-out genes as grey dots</label>
+            </span>
+          </div>
         </div>
-        <div class="map-toolbar-row">
-          <button type="button" id="reset-view" class="chip-button">Reset view</button>
-          <button type="button" id="zoom-in" class="chip-button" aria-label="Zoom in">Zoom in (+)</button>
-          <button type="button" id="zoom-out" class="chip-button" aria-label="Zoom out">Zoom out (−)</button>
-          <span class="checkbox-row">
-            <input type="checkbox" id="show-hidden" checked>
-            <label for="show-hidden">Show filtered-out genes as grey dots</label>
-          </span>
+        <p class="visually-hidden" id="gene-search-hint">
+          Searches the locus tag, the gene name, and the product description. Common
+          nicknames such as rubisco are translated into the wording this genome uses.
+        </p>
+        <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
+        <p class="filter-banner" id="filter-banner" role="status"></p>
+        <div class="canvas-host">
+          <canvas id="map-canvas" tabindex="0" role="img" aria-describedby="map-instructions"
+                  aria-label="Scatter plot of genes. Use the arrow keys to move between genes."></canvas>
         </div>
+        <p class="hint" id="map-instructions">
+          Drag to pan, scroll or the Zoom in/out buttons to zoom, double-click or 0 to reset. With the
+          map focused: arrow keys move an active gene without pinning it and announce what it is,
+          Shift and an arrow pans, plus and minus zoom, Enter pins the active gene, S adds or removes
+          the active gene (or, with nothing active, the pinned gene) from the shortlist. The zoom
+          buttons also work by touch.
+        </p>
+        <div class="map-footer">
+          <div id="legend" class="legend"></div>
+          <div id="timing" class="timing"></div>
+        </div>
+        <details id="loadings-details">
+          <summary>What drives these axes</summary>
+          <div id="loadings" class="table-scroll"></div>
+        </details>
+        <button type="button" id="detail-jump" class="chip-button detail-jump" hidden>
+          Jump to selected gene detail
+        </button>
       </div>
-      <p class="visually-hidden" id="gene-search-hint">
-        Searches the locus tag, the gene name, and the product description. Common
-        nicknames such as rubisco are translated into the wording this genome uses.
-      </p>
-      <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
-      <p class="filter-banner" id="filter-banner" role="status"></p>
-      <div class="canvas-host">
-        <canvas id="map-canvas" tabindex="0" role="img" aria-describedby="map-instructions"
-                aria-label="Scatter plot of genes. Use the arrow keys to move between genes."></canvas>
-      </div>
-      <p class="hint" id="map-instructions">
-        Drag to pan, scroll or the Zoom in/out buttons to zoom, double-click or 0 to reset. With the
-        map focused: arrow keys move an active gene without pinning it and announce what it is,
-        Shift and an arrow pans, plus and minus zoom, Enter pins the active gene, S adds or removes
-        the active gene (or, with nothing active, the pinned gene) from the shortlist. The zoom
-        buttons also work by touch.
-      </p>
-      <div class="map-footer">
-        <div id="legend" class="legend"></div>
-        <div id="timing" class="timing"></div>
-      </div>
-      <details id="loadings-details">
-        <summary>What drives these axes</summary>
-        <div id="loadings" class="table-scroll"></div>
-      </details>
-      <button type="button" id="detail-jump" class="chip-button detail-jump" hidden>
-        Jump to selected gene detail
-      </button>
+      <div id="citations-view" hidden aria-label="Citations and sources"></div>
     </section>
 
     <section class="compare-section card" id="compare-section" hidden aria-label="Compare candidates">

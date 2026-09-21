@@ -17,6 +17,7 @@ import {
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection } from './ui/panels.js';
+import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citations.js';
 import { renderLoadings } from './ui/loadings.js';
 import { renderLegend } from './ui/legend.js';
 import { buildColorScale } from './ui/colors.js';
@@ -32,6 +33,9 @@ import { formatCount, formatExpressionSource } from './ui/format.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
+
+/** The shared tablist: the map's own four panels, then the citations ledger. */
+const ALL_TABS = [...PANELS, CITATIONS_TAB];
 
 const element = (id) => document.getElementById(id);
 
@@ -113,7 +117,10 @@ function jumpToMap() {
   }
   pendingMapJump = false;
   element('map-section').scrollIntoView({ block: 'start' });
-  element('map-canvas').focus({ preventScroll: true });
+  // The canvas is `[hidden]` while the citations tab is showing; focusing a
+  // hidden element is a no-op in every browser, but skip it explicitly so
+  // this stays correct if that ever changes.
+  if (!element('map-view').hidden) element('map-canvas').focus({ preventScroll: true });
 }
 
 function installMapJumps() {
@@ -258,6 +265,10 @@ let shortlistPanel = null;
 let searchResults = null;
 let comparePanel = null;
 let panelDesigner = null;
+let citationsPanel = null;
+// `undefined` while the manifest fetch is in flight, `null` once it resolves
+// to nothing usable, otherwise the sanitized `{sections: [...]}` document.
+let citationsManifest;
 let timingHandle = 0;
 
 function updateTiming() {
@@ -382,7 +393,7 @@ function renderDetail() {
 
 function renderAll({ schemeErrors = [] } = {}) {
   computeMask();
-  renderMap();
+  renderCurrentView();
   renderDetail();
   schemeEditor.update({
     map: state.schemeMap,
@@ -508,7 +519,7 @@ function toggleShortlist(index) {
 function buildPanelTabs() {
   const host = element('panel-tabs');
   host.replaceChildren();
-  const buttons = PANELS.map((panel, i) => {
+  const buttons = ALL_TABS.map((panel, i) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'tab';
@@ -518,7 +529,7 @@ function buildPanelTabs() {
     button.addEventListener('click', () => {
       state.panel = panel.id;
       updatePanelTabs();
-      renderMap();
+      renderCurrentView();
       persist();
       announce(`${panel.name}. ${panel.blurb}`);
     });
@@ -526,10 +537,10 @@ function buildPanelTabs() {
       const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
       if (offset === 0) return;
       event.preventDefault();
-      const next = PANELS[(i + offset + PANELS.length) % PANELS.length];
+      const next = ALL_TABS[(i + offset + ALL_TABS.length) % ALL_TABS.length];
       state.panel = next.id;
       updatePanelTabs();
-      renderMap();
+      renderCurrentView();
       persist();
       element(`panel-tab-${next.id}`).focus();
     });
@@ -540,13 +551,31 @@ function buildPanelTabs() {
 }
 
 function updatePanelTabs() {
-  PANELS.forEach((panel, i) => {
+  ALL_TABS.forEach((panel, i) => {
     const selected = panel.id === state.panel;
     const button = context.panelTabs[i];
     button.setAttribute('aria-selected', String(selected));
     button.tabIndex = selected ? 0 : -1;
     button.classList.toggle('active', selected);
   });
+}
+
+/**
+ * Switch between the map view and the citations ledger, hiding whichever one
+ * is not on screen. The tablist, the URL, and localStorage persistence are
+ * shared across both, so a link to a map panel or to the citations tab round-
+ * trips through the same `state.panel` field either way.
+ */
+function renderCurrentView() {
+  const citationsActive = state.panel === CITATIONS_TAB.id;
+  element('map-view').hidden = citationsActive;
+  element('citations-view').hidden = !citationsActive;
+  if (citationsActive) {
+    element('panel-blurb').textContent = CITATIONS_TAB.blurb;
+    citationsPanel.render(citationsManifest);
+    return;
+  }
+  renderMap();
 }
 
 function buildColorSelect() {
@@ -794,7 +823,7 @@ function normalizeAndApply(decoded) {
   // Drop any shortlisted or pinned gene that is not in this dataset, so a stale link degrades cleanly.
   state.shortlist = state.shortlist.filter((id) => context.dataset.indexById.has(id));
   if (state.pinnedId && !context.dataset.indexById.has(state.pinnedId)) state.pinnedId = null;
-  if (!PANELS.some((panel) => panel.id === state.panel)) state.panel = 'native';
+  if (!ALL_TABS.some((panel) => panel.id === state.panel)) state.panel = 'native';
   if (!context.basisCounts.recorded) state.expressionFilter = 'any';
 
   const schemeErrors = recomputeScheme();
@@ -836,6 +865,12 @@ function applyLiveHash() {
 }
 
 async function boot() {
+  // Started before the (required) gene dataset fetch so both requests are in
+  // flight together; a missing or broken manifest must never hold up the map.
+  const citationsLoaded = loadCitationsManifest({ baseUrl: resolveDataBase() })
+    .then((manifest) => { citationsManifest = manifest; })
+    .catch(() => { citationsManifest = null; });
+
   let dataset;
   try {
     dataset = await loadDataset({ baseUrl: resolveDataBase() });
@@ -1029,12 +1064,15 @@ async function boot() {
     },
   });
 
+  citationsPanel = new CitationsPanel(element('citations-view'));
+
   buildPanelTabs();
   updatePanelTabs();
   buildColorSelect();
   buildGeneSearch();
   renderMetricAgreement();
   renderProvenance();
+  await citationsLoaded;
 
   element('reset-view').addEventListener('click', () => {
     plot.resetFrameStats();
