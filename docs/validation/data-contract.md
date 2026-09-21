@@ -376,8 +376,15 @@ caveats and the eight loci deliberately excluded for ambiguous mapping are in
 
 Consequences that both the pipeline and the site must honour:
 
-- The low-traffic threshold **defaults to CAI and tAI**, which are derived from this
-  genome. Expression is an opt-in overlay, never the default axis.
+- The low-traffic threshold **defaults to a metric actually measured in this organism**
+  (native TSS initiation today) when one exists, **then to CAI and tAI**, which are
+  derived from this genome, before any other expression evidence. A borrowed
+  measurement such as this PCC 7942 abundance value is never the default axis; it
+  remains an opt-in overlay. The ranking follows each metric's own
+  `provenance.isTargetOrganism` flag, so a future native measurement (gene-body
+  transcriptomics, say) takes the same priority with no interface change — see
+  `orderTrafficCandidates()` in `site/js/ui/filters.js` and the matching
+  `constrainableMetrics()` in `site/js/ui/panel-designer.js`.
 - Wherever expression is displayed or used to filter, the interface states the
   source organism in plain words. A user must not be able to threshold on it while
   believing it is UTEX 2973 data.

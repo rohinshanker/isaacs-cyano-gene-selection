@@ -39,7 +39,18 @@ default. Borrowed PCC 7942 expression is absent from the space and constraints
 until explicitly enabled. Enabling it adds one raw representative of that
 source to the default feature space (never both the raw value and its derived
 percentile), and it remains labelled as another-organism evidence. Native UTEX
-2973 TSS initiation stays available without that opt-in.
+2973 TSS initiation stays available without that opt-in, and the "Constrain a
+metric" list offers any such native measurement ahead of CAI/tAI, matching the
+low-traffic threshold's priority (see "Expression, and why it is not the
+default" in `data-contract.md`).
+
+The default baseline feature list itself is not reweighted to add TSS
+initiation: it covers 1,727 of 2,715 genes, is a promoter-initiation signal
+rather than a whole-gene abundance measurement, and folding it into the same
+generic distance space as CAI/tAI would change every generated panel with no
+clear scientific justification. A reader who wants it in the distance
+computation can still add it as an explicit range constraint or, once
+borrowed evidence is enabled, compare it directly against expression.
 
 A saved-scheme checkbox is keyed by the saved name plus the canonical scheme-map
 identifier, never by its position in the sorted list. Inserting or reordering
