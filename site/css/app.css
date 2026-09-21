@@ -528,6 +528,32 @@ input[type="range"] { width: 100%; }
 .annotation-evidence-list dd { margin: 0.08rem 0 0; }
 .annotation-evidence-list ul { margin: 0; padding-left: 1.1rem; }
 .annotation-evidence-list li { margin-bottom: 0.12rem; }
+.tss-evidence { overflow-wrap: anywhere; }
+.tss-caveat { margin: 0.15rem 0 0.55rem; }
+.tss-empty { margin: 0.3rem 0 0.55rem; font-size: 0.8rem; color: var(--ink-muted); }
+.tss-site-list { display: grid; gap: 0.65rem; margin: 0.2rem 0 0.6rem; }
+.tss-site {
+  min-width: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+.tss-site h4 { margin: 0; font-family: var(--mono); font-size: 0.84rem; }
+.tss-site h5 { margin: 0.5rem 0 0.2rem; font-size: 0.76rem; }
+.tss-location { margin: 0.1rem 0 0.35rem; color: var(--ink-muted); font-size: 0.75rem; }
+.tss-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.74rem; }
+.tss-table th, .tss-table td {
+  min-width: 0;
+  padding: 0.2rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.tss-table th { text-align: left; }
+.tss-table thead th { color: var(--ink-muted); font-weight: 600; }
+.tss-table td.numeric { text-align: right; }
+.tss-source { margin: 0.4rem 0 0.55rem; }
 .metric-label { display: block; font-weight: 600; }
 .metric-desc { display: block; color: var(--ink-muted); font-weight: 400; font-size: 0.75rem; }
 .rank-cell { width: 6.5rem; }

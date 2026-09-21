@@ -14,6 +14,7 @@ import {
   isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
 } from '../core/metric-registry.js';
 import { annotationEvidenceModel } from '../core/annotation-evidence.js';
+import { tssEvidenceModel } from '../core/tss-evidence.js';
 
 /** Baseline context stays visible; scheme-only results open only when a scheme exists. */
 const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
@@ -89,6 +90,126 @@ function annotationDisclosure(gene, meta) {
       + `${model.attribution.source}`;
     details.append(source);
   }
+  return details;
+}
+
+function tssValue(value) {
+  return Number.isFinite(value) ? value.toLocaleString('en-US') : 'Unknown';
+}
+
+function tssDecimal(value) {
+  return Number.isFinite(value)
+    ? value.toLocaleString('en-US', { maximumSignificantDigits: 4 }) : 'Unknown';
+}
+
+function tssTable(headers, rows, className, captionText) {
+  const table = document.createElement('table');
+  table.className = className;
+  const caption = document.createElement('caption');
+  caption.className = 'visually-hidden';
+  caption.textContent = captionText;
+  table.append(caption);
+  const head = document.createElement('thead');
+  const headingRow = document.createElement('tr');
+  for (const header of headers) {
+    const th = document.createElement('th');
+    th.scope = 'col';
+    th.textContent = header;
+    headingRow.append(th);
+  }
+  head.append(headingRow);
+  const body = document.createElement('tbody');
+  for (const row of rows) {
+    const tr = document.createElement('tr');
+    const label = document.createElement('th');
+    label.scope = 'row';
+    label.textContent = row.label;
+    tr.append(label);
+    for (const value of row.values) {
+      const td = document.createElement('td');
+      td.className = 'numeric';
+      td.textContent = value;
+      tr.append(td);
+    }
+    body.append(tr);
+  }
+  table.append(head, body);
+  return table;
+}
+
+function tssEvidenceDisclosure(gene) {
+  const model = tssEvidenceModel(gene);
+  const details = document.createElement('details');
+  details.className = 'metric-group tss-evidence';
+  const summary = document.createElement('summary');
+  summary.textContent = model.count === 0
+    ? 'TSS promoter initiation evidence — no mapped TSS evidence'
+    : `TSS promoter initiation evidence (${model.count} mapped `
+      + `${model.count === 1 ? 'site' : 'sites'})`;
+  details.append(summary);
+
+  const caveat = document.createElement('p');
+  caveat.className = 'panel-note tss-caveat';
+  caveat.textContent = 'Promoter initiation evidence, not gene-body RNA abundance. Each condition '
+    + 'has two biological cultures. Missing DESeq2 results are unknown, not zero; no gene-level '
+    + 'fold-change aggregate is calculated.';
+  details.append(caveat);
+
+  if (model.count === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'tss-empty';
+    empty.textContent = 'No mapped TSS evidence. This does not mean there was no transcription.';
+    details.append(empty);
+  } else {
+    const list = document.createElement('div');
+    list.className = 'tss-site-list';
+    for (const entry of model.entries) {
+      const site = document.createElement('section');
+      site.className = 'tss-site';
+      const heading = document.createElement('h4');
+      heading.textContent = entry.id;
+      const location = document.createElement('p');
+      location.className = 'tss-location';
+      location.textContent = `${entry.type} · ${entry.replicon} · ${entry.strand} strand · `
+        + `position ${tssValue(entry.position)}`;
+      const rawHeading = document.createElement('h5');
+      rawHeading.textContent = 'Raw reads';
+      const rawTable = tssTable(
+        ['Condition', 'Culture 1', 'Culture 2'],
+        entry.rawReads.map((row) => ({
+          label: row.label,
+          values: row.cultures.map(tssValue),
+        })),
+        'tss-table tss-reads',
+        `Raw reads for ${entry.id}`,
+      );
+      const deHeading = document.createElement('h5');
+      deHeading.textContent = 'Condition versus control (DESeq2)';
+      const deTable = tssTable(
+        ['Condition', 'log2FC', 'adjusted p'],
+        entry.differential.map((row) => ({
+          label: row.label,
+          values: [tssDecimal(row.log2FoldChange), tssDecimal(row.padj)],
+        })),
+        'tss-table tss-differential',
+        `DESeq2 condition-versus-control results for ${entry.id}`,
+      );
+      site.append(heading, location, rawHeading, rawTable, deHeading, deTable);
+      list.append(site);
+    }
+    details.append(list);
+  }
+
+  const source = document.createElement('p');
+  source.className = 'panel-note tss-source';
+  source.append('Source: Tan et al. 2018, ');
+  const doi = document.createElement('a');
+  doi.href = 'https://doi.org/10.1186/s13068-018-1215-8';
+  doi.textContent = 'doi:10.1186/s13068-018-1215-8';
+  doi.target = '_blank';
+  doi.rel = 'noopener noreferrer';
+  source.append(doi, '.');
+  details.append(source);
   return details;
 }
 
@@ -182,6 +303,8 @@ export class SidePanel {
 
     const annotation = annotationDisclosure(gene, dataset.meta);
     if (annotation) this.host.append(annotation);
+
+    this.host.append(tssEvidenceDisclosure(gene));
 
     if (state.schemeActive) {
       const section = document.createElement('section');
