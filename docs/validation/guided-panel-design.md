@@ -49,9 +49,10 @@ The default baseline feature list itself is not reweighted to add TSS
 initiation: it covers 1,727 of 2,715 genes, is a promoter-initiation signal
 rather than a whole-gene abundance measurement, and folding it into the same
 generic distance space as CAI/tAI would change every generated panel with no
-clear scientific justification. A reader who wants it in the distance
-computation can still add it as an explicit range constraint or, once
-borrowed evidence is enabled, compare it directly against expression.
+clear scientific justification. An explicit TSS range constraint narrows
+eligible genes; it does not put TSS into the panel's distance calculation.
+Borrowed expression, when enabled, is a separate feature with its own
+provenance and units.
 
 A saved-scheme checkbox is keyed by the saved name plus the canonical scheme-map
 identifier, never by its position in the sorted list. Inserting or reordering

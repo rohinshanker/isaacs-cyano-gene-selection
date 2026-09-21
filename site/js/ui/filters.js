@@ -3,10 +3,11 @@
  *
  * Every filter is generated from the metric registry, so a metric added to
  * meta.json becomes filterable with no change here. Two rules from the data
- * contract shape the design: the low-traffic threshold defaults to a measure
- * derived from this genome rather than to borrowed expression data, and a gene
- * with no value for a metric is unknown rather than zero, so it is kept unless
- * the user says otherwise and the count is always visible.
+ * contract shape the design: the low-traffic threshold defaults to a native
+ * measurement, then a proxy derived from this genome, never implicitly to
+ * borrowed expression data; a gene with no value for a metric is unknown
+ * rather than zero, so it is kept unless the user says otherwise, and the
+ * count is always visible.
  */
 import {
   isExpressionMetric, isExpressionProxyMetric, metricValues,
@@ -52,6 +53,20 @@ export function orderTrafficCandidates(registry) {
       && !proxies.includes(metric),
   );
   return [...native, ...borrowedMeasured, ...proxies, ...rest];
+}
+
+/** A safe implicit choice is native evidence or a local proxy, never a borrowed assay. */
+export function defaultTrafficCandidate(candidates) {
+  const native = candidates.find(
+    (metric) => isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
+      && metric.provenance?.isTargetOrganism === true,
+  );
+  if (native) return native;
+  for (const key of TRAFFIC_PROXY_PREFERENCE) {
+    const proxy = candidates.find((metric) => metric.key === key);
+    if (proxy) return proxy;
+  }
+  return candidates.find(isExpressionProxyMetric) ?? null;
 }
 
 /** Reader-facing copy for a registry metric without destroying scientific capitalization. */
@@ -267,9 +282,8 @@ export class FilterPanel {
       return;
     }
     if (!this.trafficKey || !candidates.some((metric) => metric.key === this.trafficKey)) {
-      this.trafficKey = candidates[0].key;
+      this.trafficKey = defaultTrafficCandidate(candidates)?.key ?? null;
     }
-    const metric = this.registry.byKey.get(this.trafficKey);
 
     const heading = document.createElement('h3');
     heading.className = 'traffic-heading';
@@ -282,21 +296,37 @@ export class FilterPanel {
     chooserLabel.textContent = 'Judge activity by';
     const select = document.createElement('select');
     select.id = 'traffic-metric';
+    if (!this.trafficKey) {
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Choose a metric…';
+      select.append(placeholder);
+    }
     for (const candidate of candidates) {
       const option = document.createElement('option');
       option.value = candidate.key;
       option.textContent = `${candidate.label} (${expressionSourceScope(candidate)})`;
       select.append(option);
     }
-    select.value = this.trafficKey;
+    select.value = this.trafficKey ?? '';
     select.addEventListener('change', () => {
       const filters = { ...state.filters };
-      delete filters[this.trafficKey];
+      if (this.trafficKey) delete filters[this.trafficKey];
       this.trafficKey = select.value;
       this.handlers.onTrafficKeyChange(this.trafficKey, filters);
     });
     chooser.append(chooserLabel, select);
     this.trafficHost.append(heading, chooser);
+
+    if (!this.trafficKey) {
+      const note = document.createElement('p');
+      note.className = 'panel-note';
+      note.textContent = 'Only measurements from another organism are available. '
+        + 'Choose one explicitly to use it as a rough guide.';
+      this.trafficHost.append(note);
+      return;
+    }
+    const metric = this.registry.byKey.get(this.trafficKey);
 
     if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
       const notice = document.createElement('p');

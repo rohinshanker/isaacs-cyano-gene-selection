@@ -7,7 +7,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { orderTrafficCandidates, clearedFilterState } from '../../site/js/ui/filters.js';
+import {
+  orderTrafficCandidates, defaultTrafficCandidate, clearedFilterState,
+} from '../../site/js/ui/filters.js';
 
 function metric(key, overrides = {}) {
   return {
@@ -55,6 +57,40 @@ test('a borrowed real measurement outranks CAI/tAI even with no native evidence 
   const order = orderTrafficCandidates(registryOf([cai, tai, percentile, borrowed]))
     .map((m) => m.key);
   assert.deepEqual(order, ['expressionPercentile', 'expression', 'cai', 'tai']);
+});
+
+test('default choice remains a local proxy when only borrowed measurements lead the menu', () => {
+  const borrowed = metric('expression', {
+    family: 'Expression', provenance: { isTargetOrganism: false },
+  });
+  const cai = metric('cai', { family: 'Translation' });
+  const tai = metric('tai', { family: 'Translation' });
+  const candidates = orderTrafficCandidates(registryOf([borrowed, tai, cai]));
+  assert.equal(candidates[0].key, 'expression');
+  assert.equal(defaultTrafficCandidate(candidates)?.key, 'cai');
+});
+
+test('borrowed-only evidence requires an explicit selection', () => {
+  const borrowed = metric('expression', {
+    family: 'Expression', provenance: { isTargetOrganism: false },
+  });
+  assert.equal(defaultTrafficCandidate([borrowed]), null);
+});
+
+test('a genome-derived expression proxy is safe when CAI and tAI are absent', () => {
+  const borrowed = metric('expression', {
+    family: 'Expression', provenance: { isTargetOrganism: false },
+  });
+  const proxy = metric('expressionProxy', { label: 'Expression proxy rank' });
+  assert.equal(defaultTrafficCandidate([borrowed, proxy])?.key, 'expressionProxy');
+});
+
+test('native evidence defaults ahead of local proxies', () => {
+  const tss = metric('tssInitiation', {
+    family: 'Expression', provenance: { isTargetOrganism: true },
+  });
+  const cai = metric('cai', { family: 'Translation' });
+  assert.equal(defaultTrafficCandidate([tss, cai])?.key, 'tssInitiation');
 });
 
 test('a future native measurement is preferred automatically, by provenance alone', () => {
