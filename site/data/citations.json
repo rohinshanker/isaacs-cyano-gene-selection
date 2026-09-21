@@ -1,0 +1,247 @@
+{
+  "sections": [
+    {
+      "id": "primary-data",
+      "title": "Primary data",
+      "description": "These records supplied the sequences, annotations, and measured values used by this release. A download marked ‘project-derived’ is a processed table, not an unmodified publisher file. The full genome inputs fetched during the build are not committed to this repository.",
+      "items": [
+        {
+          "id": "yu-2015",
+          "citation": "Yu J, Liberton M, Cliften PF, Head RD, Jacobs JM, Smith RD, Koppenaal DW, Brand JJ, Pakrasi HB. Synechococcus elongatus UTEX 2973, a fast growing cyanobacterial chassis for biosynthesis using light and CO₂. Scientific Reports 5, 8132 (2015). doi:10.1038/srep08132.",
+          "url": "https://doi.org/10.1038/srep08132",
+          "contribution": "Original sequencing and characterization of UTEX 2973, the genome later obtained here through NCBI RefSeq. The site uses the current NCBI annotation of that assembly; it does not import this paper’s proteomics measurements or infer growth effects from its results.",
+          "downloads": []
+        },
+        {
+          "id": "ncbi-utex-2973",
+          "citation": "NCBI RefSeq. Synechococcus elongatus UTEX 2973 assembly GCF_000817325.1 (ASM81732v1); annotation release RS_2026_05_13.",
+          "url": "https://www.ncbi.nlm.nih.gov/assembly/242331",
+          "contribution": "Source of the UTEX 2973 genome, coding sequences, locus tags, gene products, tRNA annotations, coordinates, and release checks. The site derives its gene features and genomic tRNA-copy table from this pinned assembly and annotation; tRNA gene copies are not measured tRNA abundance or charging. NCBI does not state a dataset-specific redistribution license for these retained files; NCBI data-use policies apply.",
+          "downloads": [
+            {
+              "filename": "md5checksums.txt",
+              "repoPath": "data/raw/md5checksums.txt",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/raw/md5checksums.txt",
+              "kind": "NCBI source checksums"
+            },
+            {
+              "filename": "annotation_hashes.txt",
+              "repoPath": "data/annotation/source/annotation_hashes.txt",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/annotation_hashes.txt",
+              "kind": "NCBI source file"
+            },
+            {
+              "filename": "GCF_000817325.1_ASM81732v1_assembly_stats.txt",
+              "repoPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_assembly_stats.txt",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/GCF_000817325.1_ASM81732v1_assembly_stats.txt",
+              "kind": "NCBI source file"
+            },
+            {
+              "filename": "GCF_000817325.1_ASM81732v1_feature_count.txt",
+              "repoPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_feature_count.txt",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/GCF_000817325.1_ASM81732v1_feature_count.txt",
+              "kind": "NCBI source file"
+            },
+            {
+              "filename": "GCF_000817325.1_ASM81732v1_protein.gpff.gz",
+              "repoPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_protein.gpff.gz",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/GCF_000817325.1_ASM81732v1_protein.gpff.gz",
+              "kind": "NCBI source file"
+            },
+            {
+              "filename": "anticodon_gene_copies.tsv",
+              "repoPath": "data/trna/anticodon_gene_copies.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/trna/anticodon_gene_copies.tsv",
+              "kind": "Project-derived tRNA table"
+            },
+            {
+              "filename": "identifier-crosswalk-v1.tsv",
+              "repoPath": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/releases/GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv",
+              "kind": "Project-derived identifier crosswalk"
+            },
+            {
+              "filename": "annotation-evidence-v1.jsonl",
+              "repoPath": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13/annotation-evidence-v1.jsonl",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/releases/GCF_000817325.1-RS_2026_05_13/annotation-evidence-v1.jsonl",
+              "kind": "Project-derived annotation evidence"
+            }
+          ]
+        },
+        {
+          "id": "tan-2018",
+          "citation": "Tan X, Hou S, Song K, Georg J, Klähn S, Lu X, Hess WR. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnology for Biofuels 11, 218 (2018). doi:10.1186/s13068-018-1215-8.",
+          "url": "https://doi.org/10.1186/s13068-018-1215-8",
+          "contribution": "Primary UTEX 2973 dRNA-seq source for mapped transcription-start sites, per-site counts, and the authors’ condition-versus-control DESeq2 results. Table S1 supplies two biological culture replicates per condition (control, dark, high light, high temperature). The site also computes a separately labelled, pooled TSS-initiation score. These are initiation measurements, not replicated gene-body transcript abundance. Publisher processed data: Figshare 5712016 (CC BY 4.0). Both repository TSVs are project-derived extracts, not the original XLSX supplement.",
+          "downloads": [
+            {
+              "filename": "tan2018_utex2973_tss_table_s1.tsv",
+              "repoPath": "data/expression/tan2018_utex2973_tss_table_s1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_table_s1.tsv",
+              "kind": "Project-derived Table S1 extract"
+            },
+            {
+              "filename": "tan2018_utex2973_tss_initiation.tsv",
+              "repoPath": "data/expression/tan2018_utex2973_tss_initiation.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_initiation.tsv",
+              "kind": "Project-derived TSS score"
+            }
+          ]
+        },
+        {
+          "id": "simkovsky-2022",
+          "citation": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Frontiers in Microbiology 13, 899150 (2022). doi:10.3389/fmicb.2022.899150; GEO GSE205444.",
+          "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205444",
+          "contribution": "The optional RNA-abundance overlay averages the three wild-type, fresh-BG-11, day-one DESeq2-normalized count samples from GSE205444, then maps unambiguous shared protein IDs to UTEX 2973. The measured organism is PCC 7942, not UTEX 2973. The repository TSV is a project-derived mapped table; no dataset-specific GEO redistribution license was located.",
+          "downloads": [
+            {
+              "filename": "GSE205444_pcc7942_wt_bg11_day1.tsv",
+              "repoPath": "data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "ncbi-pcc-7942",
+          "citation": "NCBI RefSeq. Synechococcus elongatus PCC 7942 assembly GCF_000012525.1 (ASM1252v1).",
+          "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1/",
+          "contribution": "The pinned PCC 7942 GFF provides historical and current PCC locus tags and RefSeq protein accessions for the exact, ambiguity-preserving cross-strain mapping of GSE205444 values. It does not make the PCC expression data a UTEX measurement. NCBI data-use policies apply; no dataset-specific license was stated.",
+          "downloads": [
+            {
+              "filename": "GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+              "repoPath": "data/annotation/source/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+              "kind": "NCBI source file"
+            }
+          ]
+        },
+        {
+          "id": "gene-ontology",
+          "citation": "Gene Ontology Consortium. NCBI-hosted UTEX 2973 GO association file (GO version 2026-03-25); Ashburner M et al., Nature Genetics 25, 25–29 (2000), doi:10.1038/75556; Gene Ontology Consortium, The Gene Ontology knowledgebase in 2026, Nucleic Acids Research (2025), doi:10.1093/nar/gkaf1292.",
+          "url": "https://geneontology.org/docs/go-citation-policy/",
+          "contribution": "Evidence-coded Gene Ontology associations in gene details come from the NCBI-generated GAF, joined to this release’s UTEX loci; the derived table marks ambiguous protein-to-locus expansions. GO data and products: © 1999–2026 Gene Ontology Consortium, CC BY 4.0, provided AS-IS without warranty. The linked policy requests both cited GO papers and release identification; no GO enrichment analysis is claimed.",
+          "downloads": [
+            {
+              "filename": "GCF_000817325.1_ASM81732v1_gene_ontology.gaf.gz",
+              "repoPath": "data/annotation/source/GCF_000817325.1_ASM81732v1_gene_ontology.gaf.gz",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/GCF_000817325.1_ASM81732v1_gene_ontology.gaf.gz",
+              "kind": "NCBI-hosted GO source file"
+            },
+            {
+              "filename": "go-annotations-v1.tsv",
+              "repoPath": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13/go-annotations-v1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/releases/GCF_000817325.1-RS_2026_05_13/go-annotations-v1.tsv",
+              "kind": "Project-derived GO table"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "methods-and-tools",
+      "title": "Methods, design, validation & software",
+      "description": "These works guided calculations, interpretation, validation, or software implementation. Their experimental measurements were not imported as gene-level data unless listed above.",
+      "items": [
+        {
+          "id": "sharp-li-cai",
+          "citation": "Sharp PM, Li WH. The codon adaptation index—a measure of directional synonymous codon usage bias, and its potential applications. Nucleic Acids Research 15, 1281–1295 (1987). doi:10.1093/nar/15.3.1281.",
+          "url": "https://doi.org/10.1093/nar/15.3.1281",
+          "contribution": "Defines the CAI method used for genome-derived codon-adaptation values. This project chooses its own release-pinned 71-gene reference set; that set is a convention, not expression data from the paper.",
+          "downloads": []
+        },
+        {
+          "id": "dos-reis-tai",
+          "citation": "dos Reis M, Savva R, Wernisch L. Solving the riddle of codon usage preferences: a test for translational selection. Nucleic Acids Research 32, 5036–5044 (2004). doi:10.1093/nar/gkh834.",
+          "url": "https://doi.org/10.1093/nar/gkh834",
+          "contribution": "Source of the tRNA adaptation index convention, selective wobble constraints, and zero-weight substitution. The anticodon copy counts used here come from this UTEX annotation, not the paper’s organisms; tAI is a proxy, not measured expression.",
+          "downloads": []
+        },
+        {
+          "id": "wright-enc",
+          "citation": "Wright F. The ‘effective number of codons’ used in a gene. Gene 87, 23–29 (1990). doi:10.1016/0378-1119(90)90491-9.",
+          "url": "https://doi.org/10.1016/0378-1119(90)90491-9",
+          "contribution": "Defines the ENC synonymous-codon-bias metric and its GC3-based expected curve used by the site. Short-family substitutions and the difference-from-expectation are labelled as implementation conventions.",
+          "downloads": []
+        },
+        {
+          "id": "coleman-codon-pairs",
+          "citation": "Coleman JR et al. Virus attenuation by genome-scale changes in codon pair bias. Science 320, 1784–1787 (2008). doi:10.1126/science.1155761.",
+          "url": "https://doi.org/10.1126/science.1155761",
+          "contribution": "Motivates the codon-pair-bias / log-odds feature. This site estimates its own amino-acid-pair-conditioned scores from the UTEX genome; it does not import the paper’s viral measurements or infer attenuation outcomes.",
+          "downloads": []
+        },
+        {
+          "id": "deseq2",
+          "citation": "Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 15, 550 (2014). doi:10.1186/s13059-014-0550-8.",
+          "url": "https://doi.org/10.1186/s13059-014-0550-8",
+          "contribution": "Explains the DESeq2-normalized counts and reported differential-transcription statistics supplied by the two source studies. This site does not rerun DESeq2 or call gene-level differential expression from Tan’s TSS rows.",
+          "downloads": []
+        },
+        {
+          "id": "umap",
+          "citation": "McInnes L, Healy J, Saul N, Großberger L. UMAP: Uniform Manifold Approximation and Projection. Journal of Open Source Software 3, 861 (2018). doi:10.21105/joss.00861; umap-learn software.",
+          "url": "https://doi.org/10.21105/joss.00861",
+          "contribution": "The build pipeline uses umap-learn to place genes in the recoding-risk projection. Coordinates are a visualization of computed UTEX features, not evidence that nearby genes share biological function.",
+          "downloads": []
+        },
+        {
+          "id": "scikit-learn",
+          "citation": "Pedregosa F et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research 12, 2825–2830 (2011).",
+          "url": "https://jmlr.org/papers/v12/pedregosa11a.html",
+          "contribution": "The build pipeline uses StandardScaler and PCA for codon-usage coordinates and projection inputs. The in-browser two-axis projection also uses project code, not a copied scikit-learn model.",
+          "downloads": []
+        },
+        {
+          "id": "viennarna",
+          "citation": "Lorenz R et al. ViennaRNA Package 2.0. Algorithms for Molecular Biology 6, 26 (2011). doi:10.1186/1748-7188-6-26; ViennaRNA 2.7.2.",
+          "url": "https://doi.org/10.1186/1748-7188-6-26",
+          "contribution": "ViennaRNA computes local minimum-free-energy folds for selected wild-type and recoded RNA windows. The browser ships a locally compiled 2.7.2 engine; the project-specific wrapper does not change the algorithms or parameter tables. Credit to the ViennaRNA authors and the Institute for Theoretical Chemistry, University of Vienna. Its custom redistribution license and build record are retained at site/vendor/viennarna/PROVENANCE.md.",
+          "downloads": []
+        },
+        {
+          "id": "emscripten",
+          "citation": "Emscripten 4.0.15 and bundled runtime components (musl, compiler-rt, JSON library, and dlmalloc); upstream licenses retained with the ViennaRNA browser build.",
+          "url": "https://emscripten.org/",
+          "contribution": "Emscripten compiled the ViennaRNA engine to WebAssembly and supplied its JavaScript/runtime glue. The component-specific notices and licenses are retained under site/vendor/viennarna/; this is software attribution, not a source of biological data.",
+          "downloads": []
+        },
+        {
+          "id": "biopython",
+          "citation": "Cock PJA et al. Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics 25, 1422–1423 (2009). doi:10.1093/bioinformatics/btp163.",
+          "url": "https://doi.org/10.1093/bioinformatics/btp163",
+          "contribution": "The data-build and consistency checks use Biopython to parse biological sequence records, translate CDSs, and apply codon tables. No Biopython code is bundled with the site.",
+          "downloads": []
+        },
+        {
+          "id": "ncbi-genetic-code",
+          "citation": "NCBI. The Genetic Codes: The Bacterial, Archaeal and Plant Plastid Code (translation table 11).",
+          "url": "https://www.ncbi.nlm.nih.gov/datasets/docs/v2/data-processing/taxonomy-processing/genetic-codes/",
+          "contribution": "Defines the bacterial codon-to-amino-acid and alternative initiation assignments used to interpret UTEX coding sequences and validate synonymous recoding; the initiation position is handled separately from ordinary codons.",
+          "downloads": []
+        },
+        {
+          "id": "python-numerical",
+          "citation": "Harris CR et al. Array programming with NumPy. Nature 585, 357–362 (2020). doi:10.1038/s41586-020-2649-2; Virtanen P et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272 (2020). doi:10.1038/s41592-019-0686-2.",
+          "url": "https://doi.org/10.1038/s41586-020-2649-2",
+          "contribution": "NumPy arrays support the build and independent checks; SciPy supports statistical integration checks and is a declared build-environment dependency. These packages provide computation, not external gene measurements.",
+          "downloads": []
+        },
+        {
+          "id": "openpyxl",
+          "citation": "openpyxl, Python library for reading and writing Excel workbooks (project documentation).",
+          "url": "https://openpyxl.readthedocs.io/en/stable/",
+          "contribution": "Used to extract the published Tan 2018 Table S1 XLSX into the checked TSV without treating workbook formatting or recalculation as biological data.",
+          "downloads": []
+        },
+        {
+          "id": "typesafe-jev",
+          "citation": "TypeSafe, System One / Jev model (jev-1.13.0); project CAI reference-set semantic audit, 2026-09-19.",
+          "url": "https://www.typesafe.ai/",
+          "contribution": "Used only to independently classify RefSeq product names for validation of the 71-gene CAI reference-set rule. Disagreements were reviewed; the model did not automatically change published membership or supply biological ground truth.",
+          "downloads": []
+        }
+      ]
+    }
+  ]
+}
