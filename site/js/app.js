@@ -116,6 +116,12 @@ function jumpToMap() {
     return;
   }
   pendingMapJump = false;
+  if (state.panel === CITATIONS_TAB.id) {
+    state.panel = 'native';
+    updatePanelTabs();
+    renderCurrentView();
+    persist();
+  }
   element('map-section').scrollIntoView({ block: 'start' });
   // The canvas is `[hidden]` while the citations tab is showing; focusing a
   // hidden element is a no-op in every browser, but skip it explicitly so
@@ -558,6 +564,8 @@ function updatePanelTabs() {
     button.tabIndex = selected ? 0 : -1;
     button.classList.toggle('active', selected);
   });
+  const mapTab = ALL_TABS.find((panel) => panel.id === state.panel && panel.id !== CITATIONS_TAB.id);
+  element('map-view').setAttribute('aria-labelledby', `panel-tab-${mapTab?.id ?? 'native'}`);
 }
 
 /**
@@ -568,6 +576,7 @@ function updatePanelTabs() {
  */
 function renderCurrentView() {
   const citationsActive = state.panel === CITATIONS_TAB.id;
+  element('main').classList.toggle('citations-active', citationsActive);
   element('map-view').hidden = citationsActive;
   element('citations-view').hidden = !citationsActive;
   if (citationsActive) {
@@ -868,8 +877,14 @@ async function boot() {
   // Started before the (required) gene dataset fetch so both requests are in
   // flight together; a missing or broken manifest must never hold up the map.
   const citationsLoaded = loadCitationsManifest({ baseUrl: resolveDataBase() })
-    .then((manifest) => { citationsManifest = manifest; })
-    .catch(() => { citationsManifest = null; });
+    .then((manifest) => {
+      citationsManifest = manifest;
+      if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(manifest);
+    })
+    .catch(() => {
+      citationsManifest = null;
+      if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(null);
+    });
 
   let dataset;
   try {
@@ -1072,7 +1087,8 @@ async function boot() {
   buildGeneSearch();
   renderMetricAgreement();
   renderProvenance();
-  await citationsLoaded;
+  // The source-ledger fetch is optional; a slow response must not delay map boot.
+  void citationsLoaded;
 
   element('reset-view').addEventListener('click', () => {
     plot.resetFrameStats();

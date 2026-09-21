@@ -195,10 +195,10 @@ if (window.location.protocol === 'file:') {
   </aside>
 
   <div class="column analysis">
-    <section class="map card" id="map-section" aria-label="Gene map">
-      <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map"></div>
+    <section class="map card" id="map-section" aria-label="Gene maps and sources">
+      <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map views and sources"></div>
       <p class="panel-blurb" id="panel-blurb"></p>
-      <div id="map-view">
+      <div id="map-view" role="tabpanel">
         <!-- Two rows, in DOM order so tab order follows the visual order. The search
              box takes the rest of its own row because its result list needs the width. -->
         <div class="map-toolbar">
@@ -253,7 +253,7 @@ if (window.location.protocol === 'file:') {
           Jump to selected gene detail
         </button>
       </div>
-      <div id="citations-view" hidden aria-label="Citations and sources"></div>
+      <div id="citations-view" role="tabpanel" aria-labelledby="panel-tab-citations" hidden></div>
     </section>
 
     <section class="compare-section card" id="compare-section" hidden aria-label="Compare candidates">

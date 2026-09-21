@@ -1,12 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeCitationsManifest, loadCitationsManifest, CITATIONS_TAB } from '../../site/js/ui/citations.js';
+import {
+  normalizeCitationsManifest, loadCitationsManifest, fetchCitationBlob, CITATIONS_TAB,
+} from '../../site/js/ui/citations.js';
 
 /** An in-test fixture standing in for `data/citations.json`, per the contract:
  * `{sections: [{id, title, description, items: [{id, citation, url, contribution,
  * downloads: [{filename, repoPath, url, kind}]}]}]}`. The production manifest
- * is owned by the pipeline and may not exist in this checkout, so this module
- * is exercised entirely against a fixture built here, not a real file. */
+ * is validated separately against the checked-in source files, while this
+ * module exercises the renderer's data contract with an in-test fixture. */
 const FIXTURE = {
   sections: [
     {
@@ -20,7 +22,7 @@ const FIXTURE = {
           url: 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205444',
           contribution: 'Borrowed PCC 7942 expression values used as an expression proxy.',
           downloads: [
-            { filename: 'GSE205444_counts.csv', repoPath: 'data/raw/GSE205444_counts.csv', url: 'sources/GSE205444_counts.csv', kind: 'raw counts' },
+            { filename: 'GSE205444_counts.csv', repoPath: 'data/raw/GSE205444_counts.csv', url: 'https://example.test/sources/GSE205444_counts.csv', kind: 'raw counts' },
           ],
         },
       ],
@@ -109,8 +111,8 @@ test('a download missing a filename or a url is dropped rather than offered brok
         id: 'i',
         citation: 'C',
         downloads: [
-          { filename: 'good.csv', url: 'sources/good.csv' },
-          { url: 'sources/no-name.csv' },
+          { filename: 'good.csv', url: 'https://example.test/good.csv' },
+          { url: 'https://example.test/no-name.csv' },
           { filename: 'no-url.csv' },
           'not-an-object',
         ],
@@ -119,6 +121,35 @@ test('a download missing a filename or a url is dropped rather than offered brok
   });
   assert.equal(manifest.sections[0].items[0].downloads.length, 1);
   assert.equal(manifest.sections[0].items[0].downloads[0].filename, 'good.csv');
+});
+
+test('unsafe citation and download URLs are never offered as links', () => {
+  const manifest = normalizeCitationsManifest({ sections: [{
+    id: 's', title: 'S', items: [{
+      id: 'i', citation: 'C', url: 'javascript:alert(1)',
+      downloads: [{ filename: 'bad.tsv', url: 'javascript:alert(1)' }],
+    }],
+  }] });
+  assert.equal(manifest.sections[0].items[0].url, null);
+  assert.deepEqual(manifest.sections[0].items[0].downloads, []);
+});
+
+test('download fetch returns file bytes when the source responds successfully', async () => {
+  const payload = new Blob(['locus\tvalue\nA\t1\n']);
+  const download = { url: 'https://example.test/source.tsv' };
+  const result = await fetchCitationBlob(download, async () => ({
+    ok: true, blob: async () => payload,
+  }));
+  assert.equal(result, payload);
+});
+
+test('download fetch reports HTTP and network failures', async () => {
+  const download = { url: 'https://example.test/source.tsv' };
+  await assert.rejects(
+    fetchCitationBlob(download, async () => ({ ok: false, status: 404 })),
+    /HTTP 404/,
+  );
+  await assert.rejects(fetchCitationBlob(download, throwingFetch('offline')), /offline/);
 });
 
 test('optional item and download fields normalize missing values to null, not undefined', () => {
