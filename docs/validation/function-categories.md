@@ -18,14 +18,44 @@ silently adopted.
 
 ## Consumer rules
 
-- Only rows in `assignments` are reviewed rows. A CDS absent from that sparse
-  array resolves to `policy.defaultCategoryId`, `unknown-or-unclassified`.
-- One category ID displays that category. Two or more explicitly reviewed IDs
-  display the separate `multiple-functions` bucket. Raw GO row count never
-  creates multiple functions.
-- `IEA` GO relationships and product-name substrings must not create category
-  assignments. They may be presented elsewhere only with their own evidence
-  labels.
+Category colour can come from three annotation sources, each with its own
+evidence label. The viewer shows three checkboxes, **UTEX 2973**, **PCC
+7942**, and **GO IEA**, inside the legend directly above the category
+section, visible only when **Colour by** is Function category. They govern
+category colouring and the legend counts only; every other view always shows
+every source.
+
+- **UTEX 2973 (reviewed).** Only rows in `assignments` are reviewed rows. A
+  CDS absent from that sparse array has no UTEX category. One category ID
+  displays that category; two or more explicitly reviewed IDs display the
+  separate `multiple-functions` bucket. Raw GO row count never creates
+  multiple functions.
+- **PCC 7942 (derived).** A category judged from the joined PCC 7942 product
+  name (and PCC GO terms where a pinned PCC GAF is admitted) for CDSs with an
+  exact crosswalk join, built offline with TypeSafe Jev under a frozen blinded
+  rubric and pinned in a versioned `site/data` file with its probability.
+- **GO IEA (derived).** A category judged from the locus's evidence-coded GO
+  IEA terms, built and pinned the same way.
+- **Precedence.** With the enabled sources, a CDS takes the UTEX reviewed
+  category when one exists, otherwise the PCC-derived category, otherwise the
+  GO-derived category, otherwise unknown or unclassified. Derived categories
+  never enter the reviewed table, never change the reviewed rows, and never
+  display without their evidence label (`reviewed`, `pcc-7942-derived`,
+  `go-iea-derived`).
+- **Conflicts.** When enabled sources assign different categories to one CDS,
+  the CDS is coloured by the highest-priority enabled source and the gene
+  detail panel and export list every source's category with an explicit
+  conflict note. Conflicts never move a CDS into the multiple-functions
+  bucket; that bucket is reserved for a single source assigning two reviewed
+  categories.
+- **Counts.** Each legend row counts the CDSs resolved to that category under
+  the enabled sources, and the unknown row recounts accordingly, so UTEX alone
+  leaves most CDSs uncoloured, UTEX with PCC colours many more, and all three
+  colour the most. The legend title names the enabled sources.
+- Keyword or substring matching over product names or GO terms never creates
+  a category; the derived judgments are Jev outputs under a recorded rubric
+  with calibration and a blinded spot check, and the offline `--check`
+  verifies the pinned file without any API call.
 - The three `supportingEvidence` objects record tested UTEX 2973 alleles from
   Ungerer et al. 2018. Their scope is allele- and condition-specific; their
   presence does not claim that the category itself was established by a new
@@ -61,13 +91,16 @@ future palette change remains a lab decision.
 
 The source release manifest records NCBI data usage policies for RefSeq inputs.
 GO relationship data have separate Gene Ontology Consortium CC BY 4.0
-attribution; those computational annotations are searchable suggestions and
-never supply the reviewed colour. The category review itself applies only to
+attribution; they supply only the GO-derived colour under its own evidence
+label and never the reviewed colour. PCC-derived colour carries the
+Adomako/Rubin attribution and the cross-strain assumption. The category review itself applies only to
 UTEX 2973. A future organism deployment would need its own pinned genome,
 crosswalk, reviewed category table, and source checks. A generic accession
 viewer would leave unavailable functions clearly unavailable until those
 sources and joins exist.
 
-Any added or changed assignment requires a new explicit user review. When a
+Any added or changed reviewed assignment requires a new explicit user review;
+derived categories are accepted or rejected as a layer in
+`AAA-biological-decisions-to-review.md`. When a
 schema or vocabulary change is incompatible with this contract, publish a new
 versioned filename rather than changing version 1 semantics in place.
