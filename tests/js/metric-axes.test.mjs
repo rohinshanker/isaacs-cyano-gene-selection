@@ -2,8 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   DEFAULT_METRIC_AXES,
+  DEFAULT_AXIS_SCALES,
+  AXIS_SCALES,
   buildMetricAxesProjection,
   resolveDefaultMetricAxes,
+  log10Availability,
+  metricLog10Availability,
+  log10DisabledReason,
+  axisScaleName,
+  axisTitle,
 } from '../../site/js/core/metric-axes.js';
 
 function registryOf(metrics) {
@@ -166,4 +173,109 @@ test('an empty projection is typed, available, and has no finite pairs', () => {
   assert.equal(projection.y.values.length, 0);
   assert.equal(projection.finitePairCount, 0);
   assert.equal(projection.available, true);
+});
+
+test('linear stays the default scale and leaves values untouched', () => {
+  assert.deepEqual(DEFAULT_AXIS_SCALES, { x: 'linear', y: 'linear' });
+  assert.deepEqual(AXIS_SCALES, ['linear', 'log10', 'percentile']);
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [300, 600, 900]),
+    metric('cai', 'CAI', 'index', [0.4, 0.6, 0.8]),
+  ]);
+  const projection = buildMetricAxesProjection(registry, 3, { x: 'lengthNt', y: 'cai' });
+
+  assert.equal(projection.x.scale, 'linear');
+  assert.equal(projection.y.scale, 'linear');
+  assert.deepEqual([...projection.x.values], [300, 600, 900]);
+  assert.equal(axisTitle(projection.x), 'CDS length (nt)');
+});
+
+test('log10 transforms strictly positive values and names the scale in the title', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [10, 100, 1000]),
+  ]);
+  const projection = buildMetricAxesProjection(
+    registry, 3, { x: 'lengthNt', y: 'lengthNt' }, { x: 'log10', y: 'linear' },
+  );
+
+  assert.equal(projection.x.scale, 'log10');
+  assert.deepEqual([...projection.x.values], [1, 2, 3]);
+  assert.equal(axisTitle(projection.x), 'CDS length, log10');
+  assert.equal(axisScaleName('log10'), 'log10');
+});
+
+test('log10 is unavailable when a metric has a zero or negative finite value, and reports the count', () => {
+  const values = [10, 0, -5, 20, NaN];
+  const availability = log10Availability(values);
+  assert.equal(availability.available, false);
+  assert.equal(availability.finiteCount, 4);
+  assert.equal(availability.nonPositiveCount, 2);
+  assert.equal(
+    log10DisabledReason('GC skew', availability),
+    'log10 is unavailable for GC skew: 2 values are zero or negative.',
+  );
+
+  const registry = registryOf([
+    metric('gcSkew', 'GC skew', 'index', values),
+  ]);
+  assert.equal(
+    metricLog10Availability(registry.byKey.get('gcSkew'), values.length).available, false,
+  );
+  // A requested log10 axis on a metric that cannot take it falls back to
+  // linear instead of turning every gene into an unavailable NaN.
+  const projection = buildMetricAxesProjection(
+    registry, values.length, { x: 'gcSkew', y: 'gcSkew' }, { x: 'log10', y: 'linear' },
+  );
+  assert.equal(projection.x.scale, 'linear');
+  assert.equal(projection.x.requestedScale, 'log10');
+  assert.deepEqual([...projection.x.values], values.map((v) => (Number.isFinite(v) ? v : NaN)));
+});
+
+test('a metric with only positive finite values allows log10, and disabled reason is null', () => {
+  const availability = log10Availability([1, 2, NaN, 3]);
+  assert.equal(availability.available, true);
+  assert.equal(log10DisabledReason('CDS length', availability), null);
+});
+
+test('percentile ranks the visible cohort, not the whole dataset, and still ranks a hidden gene', () => {
+  const registry = registryOf([
+    metric('tss', 'TSS initiation', 'counts', [10, 20, 30, 40, 100]),
+  ]);
+  // Genes 0-3 are visible; gene 4 (value 100, the maximum) is filtered out but
+  // still gets a coordinate, ranked against the visible cohort only.
+  const mask = Uint8Array.from([1, 1, 1, 1, 0]);
+  const projection = buildMetricAxesProjection(
+    registry, 5, { x: 'tss', y: 'tss' }, { x: 'percentile', y: 'linear' }, mask,
+  );
+
+  const [p0, p1, p2, p3, p4] = projection.x.values;
+  assert.equal(p0, 12.5);
+  assert.equal(p1, 37.5);
+  assert.equal(p2, 62.5);
+  assert.equal(p3, 87.5);
+  // Ranked against [10, 20, 30, 40]: 100 is above every visible value.
+  assert.equal(p4, 100);
+  assert.equal(axisTitle(projection.x), 'TSS initiation, percentile');
+});
+
+test('percentile leaves missing values as NaN and drops out of the finite pair count', () => {
+  const registry = registryOf([
+    metric('tss', 'TSS initiation', 'counts', [10, NaN, 30]),
+  ]);
+  const projection = buildMetricAxesProjection(
+    registry, 3, { x: 'tss', y: 'tss' }, { x: 'percentile', y: 'percentile' }, null,
+  );
+  assert.ok(Number.isNaN(projection.x.values[1]));
+  assert.equal(projection.finitePairCount, 2);
+});
+
+test('an unmeasured axis stays unavailable under every scale', () => {
+  const registry = registryOf([metric('cai', 'CAI', 'index', [0.4, 0.6])]);
+  for (const scale of AXIS_SCALES) {
+    const projection = buildMetricAxesProjection(
+      registry, 2, { x: 'notShipped', y: 'cai' }, { x: scale, y: 'linear' },
+    );
+    assert.equal(projection.x.available, false);
+    assert.deepEqual([...projection.x.values], [NaN, NaN]);
+  }
 });
