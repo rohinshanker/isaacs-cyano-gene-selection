@@ -43,6 +43,8 @@ export const CATEGORY_UNKNOWN_COLOR = '#c6cdd5';
 export const SHORTLIST_COLOR = '#1b2733';
 export const PINNED_COLOR = '#b3261e';
 export const REVIEWED_MARKER_BORDER = '#314254';
+export const HOVER_FOCUS_COLOR = '#4a5568';
+export const ACTIVE_FOCUS_COLOR = '#2f6f8f';
 
 /** Categorical colours use the same bucket interface as numeric canvas scales. */
 export function buildCategoryColorScale(categoryCount) {

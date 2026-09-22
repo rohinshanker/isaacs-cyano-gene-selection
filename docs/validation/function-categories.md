@@ -50,6 +50,15 @@ entries. Category-label search ranks after direct locus/name/product
 matches and before GO suggestions. The export records the colour mode, the
 visible category bucket, review status, and every reviewed category label.
 
+Circles are the deliberate convention for included points in every colour
+mode; their area matches the square markers they replaced. Excluded points are
+smaller squares or dots, so shape distinguishes included from excluded points
+without relying on colour. The unknown grey (`#c6cdd5`) predates this marker
+change and is retained for canvas parity. Against white it remains below WCAG
+1.4.11's 3:1 contrast criterion for non-text graphics; legend-size unknown
+rings and excluded dots therefore use an approximately 1 px stroke, while a
+future palette change remains a lab decision.
+
 The source release manifest records NCBI data usage policies for RefSeq inputs.
 GO relationship data have separate Gene Ontology Consortium CC BY 4.0
 attribution; those computational annotations are searchable suggestions and

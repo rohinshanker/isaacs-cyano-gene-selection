@@ -3,17 +3,19 @@
  *
  * One canvas draws every gene. At a few thousand points a DOM node per gene is
  * far too slow to pan, so points are batched by quantized colour and drawn as
- * rectangles, and hit testing is a linear scan in screen space, which costs
+ * paths, and hit testing is a linear scan in screen space, which costs
  * microseconds at this size.
  */
 import {
-  CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR, MISSING_COLOR,
-  PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
+  ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR,
+  HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER,
+  SHORTLIST_COLOR,
 } from './colors.js';
 
 const PADDING = { left: 66, right: 18, top: 18, bottom: 46 };
 export const MIN_ZOOM = 0.4;
 export const MAX_ZOOM = 200;
+export const SQUARE_TO_CIRCLE_RADIUS = Math.sqrt(4 / Math.PI);
 
 /** Keep a zoom factor inside the range the plot can actually render. */
 export function clampZoom(zoom) {
@@ -699,7 +701,10 @@ export class ScatterPlot {
         }
       };
       if (scale.categorical) drawMissing();
-      const coloredRadius = scale.categorical ? radius + 1.5 : radius;
+      // Circles are the included-point convention in every colour mode. Scale
+      // the radius so each one has the same area as the square it replaced.
+      const squareHalfSize = scale.categorical ? radius + 1.5 : radius;
+      const coloredRadius = squareHalfSize * SQUARE_TO_CIRCLE_RADIUS;
       for (let bucket = 0; bucket < buckets.lists.length; bucket += 1) {
         const list = buckets.lists[bucket];
         if (list.length === 0) continue;
@@ -740,12 +745,12 @@ export class ScatterPlot {
     }
 
     if (this.hovered >= 0 && this.hovered !== this.pinned) {
-      this.drawFocus(this.hovered, '#4a5568', false);
+      this.drawFocus(this.hovered, HOVER_FOCUS_COLOR, false);
     }
     // The active ring is a distinct colour from both hover and pinned, and
     // never carries the "pinned" label: it is a preview, not a commitment.
     if (this.active >= 0 && this.active !== this.hovered && this.active !== this.pinned) {
-      this.drawFocus(this.active, '#2f6f8f', false);
+      this.drawFocus(this.active, ACTIVE_FOCUS_COLOR, false);
     }
     if (this.pinned >= 0) {
       this.drawFocus(this.pinned, PINNED_COLOR, true);

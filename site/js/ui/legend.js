@@ -8,37 +8,75 @@ import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-cate
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/** Pure inline-SVG description for a decorative canvas-marker swatch. */
+export function legendMarkerDescription(shape, color, fill = color) {
+  const marker = {
+    attributes: {
+      class: 'legend-marker', viewBox: '0 0 18 18',
+      'aria-hidden': 'true', focusable: 'false',
+    },
+    elements: [],
+  };
+  const element = (name, attributes) => marker.elements.push({ name, attributes });
+  if (shape === 'ghost-square') {
+    element('rect', {
+      x: 6, y: 6, width: 6, height: 6, fill, stroke: color, 'stroke-width': 1.4,
+    });
+  } else if (shape === 'filled-dot') {
+    element('circle', {
+      cx: 9, cy: 9, r: 2.5, fill, stroke: color, 'stroke-width': 1.4,
+    });
+  } else if (shape === 'diamond') {
+    element('path', {
+      d: 'M9 5 13 9 9 13 5 9Z', fill: 'none', stroke: color, 'stroke-width': 1.4,
+    });
+  } else if (shape === 'pin') {
+    element('circle', {
+      cx: 9, cy: 9, r: 3.5, fill: 'none', stroke: color, 'stroke-width': 1.4,
+    });
+    element('path', {
+      d: 'M2.5 9h3M12.5 9h3M9 2.5v3M9 12.5v3',
+      fill: 'none', stroke: color, 'stroke-width': 1.4,
+    });
+  } else if (shape === 'filled-circle' || shape === 'open-circle') {
+    element('circle', {
+      cx: 9, cy: 9, r: shape === 'filled-circle' ? 4.5 : 3.5,
+      fill: shape === 'filled-circle' ? fill : 'none',
+      stroke: color, 'stroke-width': shape === 'filled-circle' ? 0.8 : 1.4,
+    });
+  } else {
+    throw new Error(`unknown legend marker shape: ${shape}`);
+  }
+  return marker;
+}
+
 /** Decorative legend marker using the same geometry and colours as the canvas. */
 function makeSwatch(shape, color, fill = color) {
+  const description = legendMarkerDescription(shape, color, fill);
   const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.classList.add('legend-marker');
-  svg.setAttribute('viewBox', '0 0 18 18');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('focusable', 'false');
-  const element = (name, attributes) => {
+  for (const [key, value] of Object.entries(description.attributes)) svg.setAttribute(key, value);
+  for (const { name, attributes } of description.elements) {
     const node = document.createElementNS(SVG_NS, name);
     for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
     svg.append(node);
-  };
-  if (shape === 'ghost-square') {
-    element('rect', { x: 5, y: 5, width: 8, height: 8, fill, stroke: color, 'stroke-width': 1.4 });
-  } else if (shape === 'filled-dot') {
-    element('circle', { cx: 9, cy: 9, r: 3, fill });
-  } else if (shape === 'diamond') {
-    element('path', { d: 'M9 2.5 15.5 9 9 15.5 2.5 9Z', fill: 'none', stroke: color, 'stroke-width': 1.6 });
-  } else {
-    const radius = shape === 'pin' ? 4.5 : 4;
-    element('circle', {
-      cx: 9, cy: 9, r: radius, fill: shape === 'filled-circle' ? fill : 'none',
-      stroke: color, 'stroke-width': shape === 'filled-circle' ? 0.8 : 1.4,
-    });
-    if (shape === 'pin') {
-      element('path', {
-        d: 'M1 9h3M14 9h3M9 1v3M9 14v3', fill: 'none', stroke: color, 'stroke-width': 1.6,
-      });
-    }
   }
   return svg;
+}
+
+/** Excluded-marker rows that have visible members in the current category view. */
+export function categoryExcludedLegendRows(showHidden, hiddenReviewedCount, hiddenUnknownCount) {
+  if (!showHidden) return [];
+  return [
+    {
+      label: 'Excluded, reviewed category: grey outlined square',
+      shape: 'ghost-square', color: GHOST_BORDER, fill: GHOST_COLOR, count: hiddenReviewedCount,
+    },
+    {
+      label: 'Excluded, unknown: grey dot',
+      shape: 'filled-dot', color: CATEGORY_UNKNOWN_COLOR,
+      fill: CATEGORY_UNKNOWN_COLOR, count: hiddenUnknownCount,
+    },
+  ].filter(({ count }) => count > 0);
 }
 
 /**
@@ -113,11 +151,10 @@ export function renderCategoryLegend(host, {
   categoryRow(MULTIPLE_CATEGORY_ID, multipleLabel, scale.buckets[labels.length], multipleCount);
   categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, 'open-circle');
 
-  if (showHidden) {
-    staticRow('Excluded, reviewed category: grey outlined square', 'ghost-square',
-      GHOST_BORDER, hiddenReviewedCount, GHOST_COLOR);
-    staticRow('Excluded, unknown: grey dot', 'filled-dot',
-      CATEGORY_UNKNOWN_COLOR, hiddenUnknownCount);
+  for (const row of categoryExcludedLegendRows(
+    showHidden, hiddenReviewedCount, hiddenUnknownCount,
+  )) {
+    staticRow(row.label, row.shape, row.color, row.count, row.fill);
   }
   staticRow('Shortlisted: diamond outline', 'diamond', SHORTLIST_COLOR);
   staticRow('Pinned: ring with crosshairs', 'pin', PINNED_COLOR);
