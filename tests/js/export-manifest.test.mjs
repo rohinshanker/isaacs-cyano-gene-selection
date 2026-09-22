@@ -7,11 +7,13 @@ import assert from 'node:assert/strict';
 import { computeLiveMetrics } from '../../site/js/core/live-metrics.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
+import { loadDataset } from '../../site/js/core/dataset.js';
+import { toggleCategorySelection, passesCategoryFilter } from '../../site/js/core/function-categories.js';
 import {
   buildExport, parseCsv, schemeIdOf, canonicalJson, fnv1a64, recodedSequence,
   WILD_TYPE_SCHEME_ID, MANIFEST_VERSION,
 } from '../../site/js/core/export-manifest.js';
-import { expressionFixtureDataset } from './helpers.mjs';
+import { expressionFixtureDataset, fileFetch } from './helpers.mjs';
 
 const SYN61 = { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' };
 const AMBER = { TAG: 'TAA' };
@@ -58,6 +60,40 @@ test('exports preserve the current cohort filter and each shortlisted row pass s
     filterState, filterMask: mask,
   });
   assert.deepEqual(result.manifest.filterState, filterState);
+  assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters), ['true', 'false']);
+});
+
+test('category-filtered exports wire through the real reducer and dataset join, not a hand-'
+  + 'authored mask', async () => {
+  // The previous test hand-types `categoryFilter` and `mask` as literals. This one derives
+  // both the same way app.js's `toggleCategoryFilter` and `computeMask` do: the real
+  // production category join, the real `toggleCategorySelection` reducer, and the real
+  // `passesCategoryFilter` predicate, so drift in any of those three would fail this test.
+  const dataset = await loadDataset({
+    baseUrl: new URL('../../site/data/', import.meta.url).href, fetchImpl: fileFetch(),
+  });
+  const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
+  const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
+
+  // Signaling and circadian regulation is a lab-reviewed category; this locus is
+  // one of its 13 reviewed rows (tests/js/function-categories.test.mjs).
+  const inCategoryId = 'M744_RS10050';
+  const outOfCategoryId = 'M744_RS00005';
+  let categoryFilter = [];
+  categoryFilter = toggleCategorySelection(categoryFilter, 'signaling-and-circadian-regulation');
+
+  const categories = dataset.functionCategories;
+  const mask = new Uint8Array(dataset.genes.length);
+  for (let i = 0; i < dataset.genes.length; i += 1) {
+    mask[i] = passesCategoryFilter(categories, i, categoryFilter) ? 1 : 0;
+  }
+
+  const result = buildExport({
+    dataset, registry, ids: [inCategoryId, outOfCategoryId], schemes: [{ map: {} }],
+    filterState: { categoryFilter }, filterMask: mask,
+    generatedAt: new Date('2026-09-22T00:00:00Z'),
+  });
+  assert.deepEqual(result.manifest.filterState.categoryFilter, categoryFilter);
   assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters), ['true', 'false']);
 });
 
@@ -451,6 +487,50 @@ test('evidence tier, GO IEA context, and discrepancies survive CSV and manifest 
   assert.equal(without.rows[0].goIeaCoreProcessProbability, '');
   assert.equal(without.manifest.genes[0].essentialityEvidence, null);
   assert.equal(without.manifest.dataset.goIeaEssentiality, null);
+});
+
+test('a single-source export leaves the GO IEA tier, context, probability, discrepancies, and '
+  + 'gene-detail essentiality blank; All sources keeps them', async () => {
+  const { dataset, registry } = await context();
+  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
+  const note = 'GO IEA terms disagree with the UTEX 2973 RefSeq product.';
+  const goIeaEssentiality = {
+    datasetVersion: 'go-iea-essentiality-v1',
+    attribution: { creator: 'Gene Ontology Consortium', license: 'CC BY 4.0' },
+    judgment: { model: 'jev-1.13.0', rubricVersion: '2026-09-22.1' },
+    policy: { precedence: ['tested-utex-allele', 'admitted-pcc-call', 'go-iea-context', 'unknown'] },
+    counts: { byTier: { 'go-iea-context': 1 } },
+    byLocus: {
+      [coveredId]: {
+        tier: 'go-iea-context', pcc7942Status: 'unknown',
+        goContext: { label: 'core-cellular-process', pCore: 0.97 },
+        discrepancies: [{ kind: 'utex-product', probability: 0.9, note }],
+      },
+    },
+  };
+  const withEvidence = { ...scoped, goIeaEssentiality };
+
+  const allResult = buildExport({
+    dataset: withEvidence, registry, ids: [coveredId], schemes: [{ map: {} }],
+    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'all',
+  });
+  assert.equal(allResult.rows[0].essentialityEvidenceTier, 'go-iea-context');
+  assert.equal(allResult.rows[0].goIeaEssentialityContext, 'core-cellular-process');
+  assert.equal(allResult.rows[0].goIeaCoreProcessProbability, 0.97);
+  assert.equal(allResult.rows[0].annotationDiscrepancies, note);
+  assert.equal(allResult.manifest.genes[0].essentialityEvidence.tier, 'go-iea-context');
+
+  for (const annotationSource of ['utex-2973', 'pcc-7942', 'go-iea']) {
+    const result = buildExport({
+      dataset: withEvidence, registry, ids: [coveredId], schemes: [{ map: {} }],
+      generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource,
+    });
+    assert.equal(result.rows[0].essentialityEvidenceTier, '', annotationSource);
+    assert.equal(result.rows[0].goIeaEssentialityContext, '', annotationSource);
+    assert.equal(result.rows[0].goIeaCoreProcessProbability, '', annotationSource);
+    assert.equal(result.rows[0].annotationDiscrepancies, '', annotationSource);
+    assert.equal(result.manifest.genes[0].essentialityEvidence, null, annotationSource);
+  }
 });
 
 test('GO relationships export as evidence-coded suggestions with pinned names', async () => {
