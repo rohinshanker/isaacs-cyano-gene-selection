@@ -246,7 +246,7 @@ gate, including annotation, Git-integrity, and rendered-browser checks, is in th
 [`Validation and experimental-use checklist`](docs/validation/manual-review-checklist.md).
 
 ```sh
-./.venv/bin/python tools/validate_contract.py --raw-dir data/raw  # 62 checks against the contract
+./.venv/bin/python tools/validate_contract.py --raw-dir data/raw  # 77 checks against the contract
 node tools/check_live_metrics.mjs                    # site's own code vs the real genome
 ./.venv/bin/python -m pytest -q                      # pipeline tests
 npm test                                             # generates fixtures, then runs site tests

@@ -524,3 +524,25 @@ attribution, and the explicit cross-strain assumption. See
 [pcc-essentiality.md](pcc-essentiality.md) for the rebuild and interpretation
 rules. Candidate evidence and exports reuse these calls without treating them
 as a UTEX 2973 measurement.
+
+## GO IEA essentiality context
+
+`site/data/go-iea-essentiality-v1.json` is optional. When present, the browser
+requires `candidate_evidence.json` and refuses to load unless each record's
+`tier` equals the precedence re-derived from that file. `byLocus` has one sorted
+record for each of the 2,715 plotted CDSs:
+
+| Field | Contract |
+| --- | --- |
+| `tier` | `tested-utex-allele`, `admitted-pcc-call`, `go-iea-context`, or `unknown`, in that precedence. |
+| `pcc7942Status` | The PCC status copied from candidate evidence. `ambiguous`, `missing`, `not_analyzed`, and `unknown` are not determinate calls. |
+| `goContext` | `null` without GO terms. Otherwise `{label, pCore, mostLikely, termCount}`, with `label` one of `core-cellular-process`, `not-core`, or `uncertain`. |
+| `discrepancies` | An ordered list of `{kind, probability, note}`. `kind` is `utex-product`, `pcc7942-product`, `reviewed-category`, or `pcc7942-call`. |
+
+Top-level `attribution` carries the Gene Ontology Consortium CC BY 4.0 notice.
+`judgment` pins the TypeSafe model, the rubric, and the results hashes, while
+`policy` states the rules and thresholds and `counts` summarizes tiers. The GO
+tier is computational context, never a measured or borrowed call, and the panel
+objective never reads it. See
+[go-iea-essentiality-context.md](go-iea-essentiality-context.md). The contract
+validator re-derives every tier independently.

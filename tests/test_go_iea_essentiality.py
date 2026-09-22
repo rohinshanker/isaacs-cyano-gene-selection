@@ -623,3 +623,66 @@ def test_validate_payload_rejects_inconsistent_records(payload: dict) -> None:
         discrepancies=[{"kind": "other", "note": "x"}]), "invalid discrepancy")
     expect(lambda p: p["counts"].update(plottedLoci=1), "counts do not match")
     expect(lambda p: p.update(byLocus=dict(reversed(list(p["byLocus"].items())))), "sorted")
+
+
+# ------------------------------------------------------- contract validator
+
+
+def load_validator():
+    """Imports the standard-library contract validator."""
+    spec = importlib.util.spec_from_file_location(
+        "validate_contract_for_go", ROOT / "tools/validate_contract.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_contract_validator_rederives_tiers(payload: dict) -> None:
+    """The independent validator accepts the artifact and rejects drift."""
+    validator = load_validator()
+    genes = json.loads((ROOT / go.GENES_PATH).read_text(encoding="utf-8"))
+    candidate = json.loads((ROOT / go.CANDIDATE_PATH).read_text(encoding="utf-8"))
+
+    def failures(data) -> list[str]:
+        report = validator.Report()
+        validator.validate_go_iea_essentiality(data, genes, candidate, report)
+        return report.failures
+
+    assert failures(payload) == []
+    assert failures(None) == ["GO IEA essentiality is an object"]
+    for mutate, label in (
+        (lambda p: p["attribution"].update(license="none"), "attribution"),
+        (lambda p: p["policy"].update(precedence=[]), "precedence"),
+        (lambda p: p["byLocus"]["M744_RS08250"]["goContext"].update(pCore=2), "[0, 1]"),
+        (lambda p: p["byLocus"]["M744_RS00005"].update(tier="unknown"), "follows precedence"),
+        (lambda p: p["counts"]["byTier"].update(unknown=0), "tier counts"),
+        (lambda p: p["byLocus"].pop("M744_RS00005"), "covers every plotted CDS"),
+    ):
+        changed = copy.deepcopy(payload)
+        mutate(changed)
+        assert any(label in failure for failure in failures(changed)), label
+
+
+def test_main_offline_modes_in_process(monkeypatch, capsys) -> None:
+    """--check, the default build, and the sheet run in-process without the API."""
+    sheet = go.spot_check_sheet(ROOT)
+    assert sheet
+    assert all(set(row) == {"locusTag", "go_annotations", "annotations"} for row in sheet)
+    for flags in (["--check"], ["--spot-check-sheet"]):
+        monkeypatch.setattr(sys, "argv", ["tool", *flags])
+        assert go.main() == 0
+    output = capsys.readouterr().out
+    assert "OK: site/data/go-iea-essentiality-v1.json" in output
+    assert '"go_annotations"' in output
+
+
+def test_main_reports_tool_errors(tmp_path: Path, monkeypatch) -> None:
+    """A tool error exits with status 1 and a readable message."""
+    root = copy_inputs(tmp_path)
+    (root / go.OUTPUT_PATH).unlink()
+    monkeypatch.setattr(sys, "argv", ["tool", "--check", "--root", str(root)])
+    with pytest.raises(SystemExit) as raised:
+        go.main()
+    assert raised.value.code == 1

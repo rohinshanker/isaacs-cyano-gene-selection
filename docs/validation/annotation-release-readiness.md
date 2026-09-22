@@ -152,6 +152,21 @@ Do not collapse these rows into an unqualified functional category. A category
 layer needs an explicit controlled vocabulary, unknown state, evidence policy,
 and validation; the raw GO relationships do not supply those decisions.
 
+### Derived essentiality context and discrepancies
+
+`site/data/go-iea-essentiality-v1.json` derives two fields from these IEA rows:
+
+- a lower-tier essentiality context label for loci without a determinate PCC
+  7942 call; and
+- explicit notes where GO terms contradict the UTEX 2973 or PCC 7942 RefSeq
+  product, the reviewed category, or an admitted PCC call.
+
+TypeSafe Jev makes each semantic judgment against a frozen rubric. The GO rows
+themselves are not altered. The artifact carries the Gene Ontology Consortium
+CC BY 4.0 attribution and points to `data/annotation/PROVENANCE.md`. It does not
+create a functional category. See
+[go-iea-essentiality-context.md](go-iea-essentiality-context.md).
+
 ### EC and pathway coverage assessment
 
 The retained GenPept file carries 924 EC qualifiers on 893 distinct RefSeq

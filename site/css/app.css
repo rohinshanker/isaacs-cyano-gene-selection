@@ -659,6 +659,16 @@ input[type="range"] { width: 100%; }
 .candidate-tested-claim { margin: 0.4rem 0; font-weight: 600; }
 .candidate-borrowed-caution { margin: 0.55rem 0 0; padding: 0.4rem 0.5rem; border: 1px solid #e3c893; border-radius: var(--radius); background: #fdf3e2; font-size: 0.8rem; }
 .candidate-borrowed-caution strong { color: #6b4100; }
+.candidate-tier { margin: 0.35rem 0 0.2rem; font-size: 0.8rem; }
+.candidate-go-context { margin: 0.55rem 0 0; padding: 0.4rem 0.5rem; border: 1px dashed #9aa3b5; border-radius: var(--radius); background: #f4f6fa; font-size: 0.8rem; }
+.candidate-go-context p { margin: 0 0 0.3rem; }
+.candidate-go-context p:last-child { margin-bottom: 0; }
+.candidate-go-context strong { color: #33405a; }
+.candidate-discrepancies { margin: 0.55rem 0 0; padding: 0.4rem 0.5rem; border: 1px solid #d9a3a3; border-left-width: 4px; border-radius: var(--radius); background: #fcf1f1; font-size: 0.8rem; }
+.candidate-discrepancies strong { color: #7a1f1f; }
+.candidate-discrepancies ul { margin: 0.25rem 0; padding-left: 1.1rem; }
+.candidate-discrepancies li { margin-bottom: 0.15rem; }
+.candidate-discrepancies p { margin: 0.2rem 0 0; }
 .annotation-evidence > .panel-note { margin: 0.15rem 0 0.55rem; }
 .annotation-evidence-list { margin: 0 0 0.55rem; font-size: 0.78rem; }
 .annotation-evidence-list > div { margin-bottom: 0.45rem; }
