@@ -25,7 +25,7 @@ Reusable contracts and runbooks for this repository.
 | [source-ledger.md](source-ledger.md) | Public citation coverage, exact repository-file downloads, attribution boundaries, and release checks |
 | [current-design-answers.md](current-design-answers.md) | Lab-readable answers on the present CDS set, protein/tRNA evidence, CAI/tAI/rare codons, projections, identifiers, search, and selection controls |
 | [biological-decisions-to-review.md](biological-decisions-to-review.md) | Prioritized scientific questions, ticket outcomes and remaining gaps, and exact panel sign-off |
-| [rna-folding.md](rna-folding.md) | Exact local ViennaRNA build, strand-aware context, cancellation/cache semantics, numeric and rendered validation |
+| [rna-folding.md](rna-folding.md) | Exact local ViennaRNA build, strand-aware context, trRosettaRNA hand-off formats and provenance, cancellation/cache semantics, numeric and rendered validation |
 | [responsive-workspace.md](responsive-workspace.md) | Center-column workflow, breakpoint behavior, hash-preserving navigation, bounded detail scrolling, and responsive checks |
 | [guided-panel-design.md](guided-panel-design.md) | Deterministic constrained panel objective, feature/missing-data policy, stable saved-scheme identity, golden case, and export contract |
 | [viewer-interaction-state.md](viewer-interaction-state.md) | Keyboard/touch map behavior, reversible pinning and selection reset, URL version and precedence, live navigation, and draft clearing |

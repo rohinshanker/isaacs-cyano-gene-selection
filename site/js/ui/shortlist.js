@@ -210,6 +210,7 @@ export class ShortlistPanel {
       dataset, registry, ids, schemes: this.schemesToExport(), generatedAt,
       filterState, filterMask, annotationSource,
       viewState: typeof viewState === 'function' ? viewState() : viewState,
+      trRosettaRnaHandoffs: this.folding.handoffs(),
     });
   }
 

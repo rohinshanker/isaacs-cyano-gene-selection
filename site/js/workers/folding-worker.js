@@ -8,8 +8,11 @@ self.onmessage = async ({ data: { id, windows } }) => {
     const result = {};
     for (const [name, { wild, recoded }] of Object.entries(windows)) {
       const wildMfe = engine(wild);
+      const wildStructure = engine.lastStructure;
       const recodedMfe = wild === recoded ? wildMfe : engine(recoded);
-      result[name] = { wildMfe, recodedMfe, delta: recodedMfe - wildMfe, length: wild.length };
+      const recodedStructure = wild === recoded ? wildStructure : engine.lastStructure;
+      result[name] = { wildMfe, recodedMfe, wildStructure, recodedStructure,
+        delta: recodedMfe - wildMfe, length: wild.length };
     }
     self.postMessage({ id, result });
   } catch (error) {

@@ -123,6 +123,11 @@ gene is untraceable. Every export writes:
 A missing metric exports as an empty cell, never `0`. A gene without a measurement
 exports an empty expression cell and never the proxy value.
 
+Every trRosettaRNA copy or download is also retained in the next manifest under
+`trRosettaRnaHandoffs`: locus, wild-type or recoded form, scheme name, region,
+formats, SHA-256 of the exact RNA sequence, and the ViennaRNA version only when
+dot-bracket or CT was available from an exact completed fold.
+
 ## Checks
 
 Unit tests, which must stay green:

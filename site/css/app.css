@@ -1034,3 +1034,12 @@ input[type="range"] { width: 100%; }
 .folding-panel progress { max-width: 100%; width: 100%; }
 .folding-result { margin-block: .75rem; font-size: .8rem; overflow-wrap: anywhere; }
 .folding-result p { margin-block: .25rem; }
+.rosetta-handoff { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: .75rem; min-width: 0; }
+.rosetta-handoff h3 { margin-top: 0; }
+.rosetta-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .55rem; margin-bottom: .55rem; }
+.rosetta-controls label { display: grid; gap: .2rem; color: var(--ink-muted); font-size: .82rem; min-width: 0; }
+.rosetta-controls select { width: 100%; min-width: 0; }
+.rosetta-link { color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; }
+.rosetta-output { border: 1px solid var(--line); border-radius: var(--radius); padding: .55rem; margin-block: .55rem; min-width: 0; }
+.rosetta-output > strong { display: block; text-transform: uppercase; font-size: .78rem; margin-bottom: .35rem; }
+.rosetta-output pre { max-height: 12rem; white-space: pre-wrap; overflow-wrap: anywhere; }

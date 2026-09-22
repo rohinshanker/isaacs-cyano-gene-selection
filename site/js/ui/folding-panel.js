@@ -1,5 +1,6 @@
 import { FoldingClient } from '../core/folding-client.js';
 import { serializeSchemeMap } from '../core/scheme.js';
+import { RosettaHandoffPanel } from './rosetta-handoff-panel.js';
 
 /** A changed input only invalidates something after the user has actually started a fold. */
 export function foldInputsInvalidateResult(previousSignature, nextSignature, hasStarted) {
@@ -26,12 +27,19 @@ export class FoldingPanel {
     </details>
     <p class="panel-note" role="status" aria-live="polite" data-fold-status></p>
     <progress aria-label="RNA folding progress" hidden></progress>
-    <div data-fold-results></div>`;
+    <div data-fold-results></div>
+    <section data-rosetta-host></section>`;
     this.button = host.querySelector('#fold-button');
     this.cancelButton = host.querySelector('[data-fold-cancel]');
     this.status = host.querySelector('[data-fold-status]');
     this.progress = host.querySelector('progress');
     this.results = host.querySelector('[data-fold-results]');
+    this.handoffRecords = new Map();
+    this.rosetta = new RosettaHandoffPanel(host.querySelector('[data-rosetta-host]'), {
+      onRecord: (record) => this.handoffRecords.set(JSON.stringify([
+        record.locus, record.form, record.schemeName, record.region, record.sequenceHash,
+      ]), record),
+    });
     this.button.addEventListener('click', () => this.run());
     this.cancelButton.addEventListener('click', () => this.client.cancel());
   }
@@ -47,6 +55,7 @@ export class FoldingPanel {
     }
     this.signature = signature;
     this.state = state;
+    this.rosetta.update(state);
     this.button.disabled = this.client.running || state.ids.length === 0;
   }
 
@@ -79,7 +88,10 @@ export class FoldingPanel {
       }
       this.results.append(item);
     }
+    this.rosetta.setFoldResults(results);
   }
+
+  handoffs() { return [...this.handoffRecords.values()]; }
 
   async run() {
     if (this.client.running) return;

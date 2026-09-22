@@ -605,6 +605,7 @@ function renderAll({ schemeErrors = [] } = {}) {
   });
   shortlistPanel.update({
     ids: state.shortlist,
+    pinnedId: state.pinnedId,
     dataset: context.dataset,
     registry: context.registry,
     annotationSource: state.annotationSource,

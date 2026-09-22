@@ -42,3 +42,9 @@ Ungerer et al. 2018 applies at PCC-compatible light, not at the strains' differi
 optima or at Rubin's assay conditions.
 Retain the GO release/date, CC BY attribution and disclaimer, and ViennaRNA's
 custom license and bundled component notices.
+
+The trRosettaRNA hand-off cites the public submission server and its standalone
+download page. This repository prepares inputs only: no submitted sequence or
+returned model becomes project provenance automatically. Keep the external server
+terms and privacy setting separate from the standalone Apache-2.0 code and the
+separate PyRosetta licence.

@@ -19,7 +19,7 @@ emconfigure ./configure --host=wasm32-unknown-emscripten \
 emmake make -C src/ViennaRNA -j8
 emcc "$root/tools/rna_wasm/fold.c" -Isrc src/ViennaRNA/.libs/libRNA.a -O2 \
   -sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web,worker,node -sFILESYSTEM=0 \
-  -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_FUNCTIONS='["_fold_mfe"]' \
+  -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_FUNCTIONS='["_fold_mfe","_fold_structure"]' \
   -sEXPORTED_RUNTIME_METHODS='["ccall"]' -o "$root/site/vendor/viennarna/vienna.js"
 shasum -a 256 "$root/site/vendor/viennarna/vienna.js" "$root/site/vendor/viennarna/vienna.wasm"
 printf 'Auditable source and build retained at %s\n' "$build_dir"

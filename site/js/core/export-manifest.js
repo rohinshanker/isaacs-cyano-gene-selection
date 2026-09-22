@@ -227,7 +227,7 @@ function caveatsFor(dataset, manifest) {
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
   filterState = null, filterMask = null, viewState = null,
-  annotationSource = ALL_SOURCES,
+  annotationSource = ALL_SOURCES, trRosettaRnaHandoffs = [],
 }) {
   const source = isAnnotationSource(annotationSource) ? annotationSource : ALL_SOURCES;
   const { meta, genes, indexById, table } = dataset;
@@ -366,6 +366,15 @@ export function buildExport({
     // Records which annotation view produced this export, so a single-source
     // file cannot be mistaken for the combined view.
     annotationSource: { id: source, label: annotationSourceLabel(source) },
+    trRosettaRnaHandoffs: trRosettaRnaHandoffs.map((entry) => ({
+      locus: entry.locus,
+      form: entry.form,
+      schemeName: entry.schemeName ?? null,
+      region: entry.region,
+      formats: [...entry.formats],
+      sequenceHash: entry.sequenceHash,
+      viennaRnaVersion: entry.viennaRnaVersion ?? null,
+    })),
     schemes: schemeList,
     genes: ids
       .filter((id) => indexById.has(id))
