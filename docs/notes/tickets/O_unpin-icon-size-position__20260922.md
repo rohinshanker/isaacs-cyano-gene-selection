@@ -7,10 +7,19 @@
 
 ## Current State
 
-When a gene is pinned, the detail panel's status row (`site/js/ui/side-panel.js`,
-`.gene-status-row`) shows the text "Pinned" followed on its right by a 32 px
-icon button with an 18 px SVG (`.unpin-button` in `site/css/app.css`). The icon
-is visually larger than the 0.78 rem status text and sits after it.
+Implemented on branch `feat/unpin-icon`. `statusRow.prepend(unpinButton)` in
+`site/js/ui/side-panel.js` now places the unpin button before the "Pinned"
+text in DOM order. `.unpin-button` in `site/css/app.css` is sized `1em`/`1em`
+with `font-size: 0.78rem` (matching `.gene-status`) so the glyph reads at text
+size, with a `::before` pseudo-element providing a 24x24px hit area without
+enlarging the visible glyph or the button's own box (`padding: 0`, `border:
+none`, taken out of flow via `position: absolute`).
+
+Previously: when a gene is pinned, the detail panel's status row
+(`site/js/ui/side-panel.js`, `.gene-status-row`) showed the text "Pinned"
+followed on its right by a 32 px icon button with an 18 px SVG
+(`.unpin-button` in `site/css/app.css`). The icon was visually larger than the
+0.78 rem status text and sat after it.
 
 Change the control so that:
 
@@ -32,11 +41,14 @@ that contract says.
 
 ## Verification
 
-Pending: existing `tests/js` suites green (interface-copy, layout, and any test
-that queries `.unpin-button` or `data-detail-action="unpin"`); rendered
-inspection at desktop and about 390 px of a pinned gene showing the icon left of
-"Pinned" at text size, keyboard focus ring visible, click and Enter unpin, and
-focus landing per contract, per the `ui-render-inspect-repair` skill.
+Done: `npm test` (447/447), `pytest -q` (301 passed, 22 subtests), `node
+tools/check_live_metrics.mjs` (all PASS), `git diff --check` clean. Rendered
+inspection via `playwright-cli` at 1280x800 and 390x844 confirmed the icon
+left of "Pinned" at text size, a visible keyboard focus ring, both click and
+Enter unpinning, and focus landing on the "Gene detail" complementary
+landmark after unpin, matching `docs/validation/viewer-interaction-state.md`.
+Confirmed no horizontal overflow with the detail panel forced to 260 px
+width. Zero console errors throughout.
 
 ## Cleanup
 
