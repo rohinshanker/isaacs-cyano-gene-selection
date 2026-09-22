@@ -95,6 +95,25 @@ test('a six-figure axis tick is abbreviated so it clears the rotated axis title'
   assert.equal(formatTick(NaN), '');
 });
 
+test('no two neighbouring ticks can print the same label, however far the map is zoomed', () => {
+  // The regression: zoomed in, a 200-unit spacing used to round five
+  // neighbouring ticks to "162k".
+  const labelsFor = (first, step, count) => Array.from(
+    { length: count }, (_, i) => formatTick(first + i * step, step),
+  );
+  for (const [first, step] of [[161000, 1000], [161000, 200], [161000, 100],
+    [161000, 50], [161000, 20], [1_250_000, 50000], [2_000_000, 500000],
+    [0.1, 0.02], [5000, 1000]]) {
+    const labels = labelsFor(first, step, 6);
+    assert.equal(new Set(labels).size, labels.length,
+      `step ${step} repeated a label: ${labels.join(', ')}`);
+  }
+  assert.deepEqual(labelsFor(161000, 200, 3), ['161k', '161.2k', '161.4k']);
+  // An abbreviation that would need two decimals gives way to the plain number.
+  assert.deepEqual(labelsFor(161000, 50, 3), ['161000', '161050', '161100']);
+  assert.equal(formatTick(2_500_000, 500000), '2.5M');
+});
+
 test('a narrow axis asks for fewer ticks so its labels cannot run together', () => {
   // A 390 px phone leaves roughly 250 px of plot width.
   assert.equal(tickTarget(250, 74), 3);

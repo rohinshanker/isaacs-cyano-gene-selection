@@ -36,6 +36,24 @@ const SYN61 = { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' };
 const SEEDS = ['M744_RS00005', 'M744_RS05000'];
 
 const PANEL_SIZE = 10;
+
+/**
+ * The exact panel this configuration produced before CAI and tAI were moved to
+ * the end of the default feature list, pinned so a reordering can never pass as
+ * "still deterministic" while quietly choosing different genes. The feature
+ * space is percentile-scaled and weighted equally, so order is presentation;
+ * this is the assertion that says so.
+ */
+const PRE_PATCH_SELECTION = Object.freeze([
+  'M744_RS00005', 'M744_RS05000', 'M744_RS08940', 'M744_RS04425', 'M744_RS11260',
+  'M744_RS04990', 'M744_RS00880', 'M744_RS13875', 'M744_RS14230', 'M744_RS13830',
+]);
+
+/** The baseline feature order shipped before that change. */
+const PRE_PATCH_FEATURES = Object.freeze([
+  'cai', 'tai', 'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'lengthCodons',
+  'neighborUpstreamNt',
+]);
 const RANDOM_DRAWS = 400;
 const RANDOM_SEED = 20260918;
 
@@ -155,6 +173,23 @@ test('the golden panel expands the seed set to exactly ten genes', async () => {
     designPanel({ dataset, registry, space, config: { size: PANEL_SIZE, seeds: SEEDS } }).selected,
     design.selected,
   );
+  // Not merely repeatable: the same ten loci this configuration chose before the
+  // default feature list was reordered.
+  assert.deepEqual(design.selected, PRE_PATCH_SELECTION);
+});
+
+test('reordering the default features changes the listing, never the panel', async () => {
+  const { dataset, registry, schemes, schemeFields } = await realContext();
+  const config = { size: PANEL_SIZE, seeds: SEEDS };
+  const spaceFor = (baselineFeatures) => buildPanelSpace({
+    dataset, registry, schemes, schemeFields, baselineFeatures,
+  });
+
+  for (const features of [PRE_PATCH_FEATURES, [...PRE_PATCH_FEATURES].reverse()]) {
+    const design = designPanel({ dataset, registry, space: spaceFor(features), config });
+    assert.deepEqual(design.selected, PRE_PATCH_SELECTION,
+      `feature order ${features.join(',')} changed the panel`);
+  }
 });
 
 test('the panel objective ignores the GO IEA essentiality fallback', async () => {

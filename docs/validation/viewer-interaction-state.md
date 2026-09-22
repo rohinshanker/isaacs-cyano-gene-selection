@@ -43,7 +43,7 @@ after typing, as well as with keyboard activation.
 
 ## URL and local persistence
 
-The current encoder is `ver=2`. A viewer-generated hash is a complete shareable
+The current encoder is `ver=3`. A viewer-generated hash is a complete shareable
 snapshot and always includes `l=`, including for an explicitly empty shortlist.
 Hash and browser-history changes are applied live without reload.
 
@@ -53,6 +53,16 @@ Precedence is:
 2. local persistence only for fields an older or absent URL truly leaves
    unspecified; and
 3. defaults.
+
+A default that changes what an old snapshot means is versioned rather than
+applied to it. Versions 1 and 2 omitted `ax`/`ay` exactly when the axes were CDS
+length against CAI, so a hash declaring one of those versions decodes to that
+pair and keeps plotting the axes its author shared. Version 3 omits them when
+the axes are the measured fresh-view pair. A hash with no `ver` was not written
+by this encoder, so its axes stay unspecified under rule 2, and an explicit
+`ax`/`ay` wins in every version. `tests/js/url-state.test.mjs` covers the old
+snapshot, the explicit override, the unversioned fragment, and the current
+round trip.
 
 Before applying a decoded snapshot, all state fields reset to fresh defaults;
 omitted default-valued fields therefore cannot leak from the prior view. One

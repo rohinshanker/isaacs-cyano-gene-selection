@@ -22,6 +22,10 @@ identified as a diagonal. Missing or unknown axis keys from old/edited links
 fall back to available registry defaults. The URL `ax` and `ay` fields record
 nondefault choices, and `applyDecoded` writes them after the fresh-view
 defaults, so an encoded `ay=cai` still wins over the measured default. The
+measured default arrived with encoder version 3: a hash declaring version 1 or 2
+and no `ax`/`ay` decodes to the pair those versions defaulted to, CDS length
+against CAI, so a link shared before the change keeps plotting what its author
+saw. See [viewer-interaction-state.md](viewer-interaction-state.md). The
 candidate export manifest records the active panel, colour metric, and axis keys
 in `viewState`; numeric CSV rows remain unchanged.
 

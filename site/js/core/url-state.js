@@ -22,9 +22,22 @@ const KEYS = {
  * absence of a field (other than `ver` itself) means that field is genuinely
  * unset, not merely omitted by an older encoder. Bump this only when a change
  * to what gets encoded could make an older reader misinterpret a newer hash
- * (or vice versa) `l`'s explicit-empty behaviour below is why version 1 became 2.
+ * (or vice versa) `l`'s explicit-empty behaviour below is why version 1 became 2,
+ * and the fresh-view metric axes are why version 2 became 3.
  */
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
+
+/**
+ * The first encoder version whose omitted `ax`/`ay` mean today's measured
+ * fresh-view axes. Up to and including version 2 an omitted axis pair meant CDS
+ * length against CAI, so a link shared then must keep plotting that pair: the
+ * hash is the experiment someone recorded, and re-reading it as a different
+ * pair of metrics would silently change what a colleague was shown.
+ */
+export const MEASURED_AXES_VERSION = 3;
+
+/** What an omitted `ax`/`ay` meant in encoder versions 1 and 2. */
+export const LEGACY_METRIC_AXES = Object.freeze({ x: 'lengthNt', y: 'cai' });
 
 /** Values the expression-basis filter can take. */
 export const EXPRESSION_FILTERS = Object.freeze(['any', 'measured']);
@@ -210,5 +223,18 @@ export function decodeState(hash) {
   }
   if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
   if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);
+  // A snapshot this viewer wrote before the measured fresh-view axes omits
+  // `ax`/`ay` exactly when it plotted CDS length against CAI. Make that meaning
+  // explicit, so `applyDecoded` writes it over today's default and an already
+  // shared link keeps the axes its author saw. Only a declared older version
+  // migrates: `encodeState` always writes `ver`, so a hash without one was not
+  // produced here and leaves the axes genuinely unspecified, which precedence
+  // rule 2 fills from local persistence rather than from a guessed default. A
+  // fresh view opens on the measured axes, and an explicit `ax`/`ay` wins over
+  // both.
+  if (Number.isFinite(state.version) && state.version < MEASURED_AXES_VERSION) {
+    if (!values.has(KEYS.axisX)) state.axisX = LEGACY_METRIC_AXES.x;
+    if (!values.has(KEYS.axisY)) state.axisY = LEGACY_METRIC_AXES.y;
+  }
   return state;
 }

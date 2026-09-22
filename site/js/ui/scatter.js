@@ -103,19 +103,54 @@ function fitText(context, text, maxWidth) {
   return `${candidate}…`;
 }
 
+/** Decimal places that write `step` exactly, so no two ticks round together. */
+function decimalsForStep(step) {
+  if (!Number.isFinite(step) || step <= 0) return 0;
+  for (let decimals = 0; decimals < 6; decimals += 1) {
+    const scaled = step * 10 ** decimals;
+    if (Math.abs(scaled - Math.round(scaled)) < 1e-9 * Math.max(1, Math.abs(scaled))) {
+      return decimals;
+    }
+  }
+  return 6;
+}
+
+/** `value` with `decimals` places, trailing zeros trimmed. */
+function fixed(value, decimals) {
+  return String(Number(value.toFixed(Math.min(20, decimals))));
+}
+
 /**
- * Tick text that stays inside the axis gutter.
+ * Tick text that stays inside the axis gutter and still tells two ticks apart.
  *
  * A metric measured in raw counts reaches six figures, and "300000" beside the
- * rotated axis title collides with it. Thousands and millions are abbreviated
- * instead, keeping three significant digits, so a wide-range axis reads without
- * widening the plot or dropping ticks.
+ * rotated axis title collides with it, so thousands and millions are
+ * abbreviated. The abbreviation carries exactly the decimals the tick spacing
+ * needs: zoomed in far enough that ticks are 200 apart, labels read 161.2k and
+ * 161.4k rather than rounding several neighbours to the same 161k. When the
+ * spacing is finer than the abbreviation can show in one decimal, the plain
+ * number is used instead, because a label that repeats its neighbour is worse
+ * than a longer one.
+ *
+ * @param {number} value the tick value.
+ * @param {number} [step] spacing between neighbouring ticks; 0 when unknown.
  */
-export function formatTick(value) {
+export function formatTick(value, step = 0) {
   if (!Number.isFinite(value)) return '';
   const magnitude = Math.abs(value);
-  if (magnitude >= 1e6) return `${Number((value / 1e6).toPrecision(3))}M`;
-  if (magnitude >= 1e4) return `${Number((value / 1e3).toPrecision(3))}k`;
+  const spacing = Number.isFinite(step) && step > 0 ? step : 0;
+  for (const [unit, suffix, floor] of [[1e6, 'M', 1e6], [1e3, 'k', 1e4]]) {
+    if (magnitude < floor) continue;
+    const decimals = spacing > 0 ? decimalsForStep(spacing / unit) : 0;
+    // Two decimals in an abbreviation ("161.05k") is longer than the plain
+    // number and no clearer, so the next unit down, and finally the plain
+    // number, takes over.
+    if (spacing > 0 && decimals > 1) continue;
+    const scaled = spacing > 0 ? fixed(value / unit, decimals)
+      : String(Number((value / unit).toPrecision(3)));
+    return `${scaled}${suffix}`;
+  }
+  if (spacing > 0) return fixed(value, decimalsForStep(spacing));
   return String(Number(value.toPrecision(4)));
 }
 
@@ -723,25 +758,29 @@ export class ScatterPlot {
     context.textAlign = 'center';
     context.textBaseline = 'top';
 
-    for (const tick of niceTicks(range.minX, range.maxX, tickTarget(rect.width, 74))) {
+    const xTicks = niceTicks(range.minX, range.maxX, tickTarget(rect.width, 74));
+    const xStep = xTicks.length > 1 ? xTicks[1] - xTicks[0] : 0;
+    for (const tick of xTicks) {
       const { x } = this.toScreen(tick, 0);
       if (x < rect.left || x > rect.left + rect.width) continue;
       context.beginPath();
       context.moveTo(x, rect.top);
       context.lineTo(x, rect.top + rect.height);
       context.stroke();
-      context.fillText(formatTick(tick), x, rect.top + rect.height + 6);
+      context.fillText(formatTick(tick, xStep), x, rect.top + rect.height + 6);
     }
     context.textAlign = 'right';
     context.textBaseline = 'middle';
-    for (const tick of niceTicks(range.minY, range.maxY, tickTarget(rect.height, 34))) {
+    const yTicks = niceTicks(range.minY, range.maxY, tickTarget(rect.height, 34));
+    const yStep = yTicks.length > 1 ? yTicks[1] - yTicks[0] : 0;
+    for (const tick of yTicks) {
       const { y } = this.toScreen(0, tick);
       if (y < rect.top || y > rect.top + rect.height) continue;
       context.beginPath();
       context.moveTo(rect.left, y);
       context.lineTo(rect.left + rect.width, y);
       context.stroke();
-      context.fillText(formatTick(tick), rect.left - 8, y);
+      context.fillText(formatTick(tick, yStep), rect.left - 8, y);
     }
 
     context.strokeStyle = '#98a2b3';

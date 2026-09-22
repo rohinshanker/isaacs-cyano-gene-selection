@@ -118,6 +118,13 @@ export function metricsInDisplayOrder(registry) {
 }
 
 /**
+ * Unit strings a colour ramp can read end to end. Anything else — a count, a
+ * free energy, a length — may be heavy-tailed, and a linear ramp over one of
+ * those hides the values it is meant to show.
+ */
+const BOUNDED_RAMP_UNITS = /^(fraction|rank|percentile|index)$/i;
+
+/**
  * The fresh-view colour metric.
  *
  * Measured evidence leads the colour selector and opens the Metric X vs Y tab,
@@ -130,16 +137,21 @@ export function metricsInDisplayOrder(registry) {
  * complete, evenly spread, and not a codon-adaptation convention: CAI and tAI
  * are never the implicit choice.
  *
- * A future native measurement that is a fraction or a rank — a declared
- * percentile, say — is bounded and does colour the first paint.
+ * The promotion rule is narrow, and deliberately so. A later release takes the
+ * colour default with no code change only when its metric is one
+ * {@link isNativeMeasuredMetric} already recognises — declared expression
+ * evidence, with `provenance.isTargetOrganism` true — and its declared `unit`
+ * is exactly `fraction`, `rank`, `percentile`, or `index`. A native assay in
+ * any other unit, or one this registry does not read as expression evidence,
+ * needs this list widened; that is a deliberate check on a ramp, not an
+ * oversight.
  *
  * @param {{byKey: Map<string, object>, metrics: object[]}} registry
  * @returns {string} a key that exists in `registry`.
  */
 export function defaultColorMetricKey(registry) {
   const bounded = registry.metrics.find(
-    (metric) => isNativeMeasuredMetric(metric)
-      && /^(fraction|rank|percentile|index)$/i.test(metric.unit ?? ''),
+    (metric) => isNativeMeasuredMetric(metric) && BOUNDED_RAMP_UNITS.test(metric.unit ?? ''),
   );
   if (bounded) return bounded.key;
   return registry.byKey.has('gc3') ? 'gc3' : registry.metrics[0].key;

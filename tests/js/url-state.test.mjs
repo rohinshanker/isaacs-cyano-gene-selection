@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   encodeState, decodeState, applyDecoded, defaultState, clearSelections, STATE_VERSION,
+  LEGACY_METRIC_AXES, MEASURED_AXES_VERSION,
 } from '../../site/js/core/url-state.js';
 import { DEFAULT_METRIC_AXES } from '../../site/js/core/metric-axes.js';
 
@@ -110,6 +111,53 @@ test('explicit metric axes survive a shared link and reset to their defaults', (
     { x: state.axisX, y: state.axisY },
     { x: DEFAULT_METRIC_AXES.x, y: DEFAULT_METRIC_AXES.y },
   );
+});
+
+test('a link shared before the measured axes still plots the pair its author saw', () => {
+  // Exactly the hash the old encoder wrote for length against CAI: the axes are
+  // absent because they were the default then.
+  const shared = '#ver=2&p=axes&c=gc3&l=&t=radar';
+  const decoded = decodeState(shared);
+  assert.deepEqual({ x: decoded.axisX, y: decoded.axisY }, LEGACY_METRIC_AXES);
+
+  const target = defaultState();
+  applyDecoded(target, decoded);
+  assert.equal(target.panel, 'axes');
+  assert.equal(target.axisX, 'lengthNt');
+  assert.equal(target.axisY, 'cai');
+});
+
+test('an explicit axis in an old link still wins over both defaults', () => {
+  const decoded = decodeState('#ver=2&p=axes&ay=gc3&l=&t=radar');
+  assert.equal(decoded.axisY, 'gc3');
+  assert.equal(decoded.axisX, LEGACY_METRIC_AXES.x);
+  assert.equal(applyDecoded(defaultState(), decoded).axisY, 'gc3');
+});
+
+test('a fresh view, and a hash this encoder did not write, keep the measured default', () => {
+  // No hash at all, and a hand-written fragment with no version: neither is an
+  // old snapshot, so neither is migrated.
+  assert.equal(applyDecoded(defaultState(), decodeState('')).axisY, 'tssInitiation');
+  const handWritten = decodeState('#p=axes&c=gc3');
+  assert.ok(!Object.hasOwn(handWritten, 'axisY'));
+  assert.equal(applyDecoded(defaultState(), handWritten).axisY, 'tssInitiation');
+});
+
+test('this encoder writes the migrated version and round-trips its own snapshot', () => {
+  assert.equal(STATE_VERSION, MEASURED_AXES_VERSION);
+  const state = defaultState();
+  state.panel = 'axes';
+  const hash = encodeState(state);
+  assert.ok(hash.startsWith(`ver=${MEASURED_AXES_VERSION}`), hash);
+  const restored = applyDecoded(defaultState(), decodeState(hash));
+  assert.equal(restored.axisX, 'lengthNt');
+  assert.equal(restored.axisY, 'tssInitiation');
+
+  // A current snapshot that really wants CAI says so, and says so explicitly.
+  state.axisY = 'cai';
+  const explicit = encodeState(state);
+  assert.ok(explicit.includes('ay=cai'), explicit);
+  assert.equal(applyDecoded(defaultState(), decodeState(explicit)).axisY, 'cai');
 });
 
 test('the fresh-view axes are CDS length against measured evidence, never CAI or tAI', () => {

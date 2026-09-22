@@ -8,6 +8,8 @@
  */
 import { CATEGORICAL } from './colors.js';
 import { sortedFinite, medianSorted, quantileSorted } from '../core/stats.js';
+import { isMeasuredMetric } from '../core/metric-registry.js';
+import { metricHelp } from '../core/metric-help.js';
 
 /**
  * Metrics the comparison views prefer when the user has not chosen, measured
@@ -23,6 +25,35 @@ export const DEFAULT_AXES = [
   'tssInitiation', 'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'targetFraction',
   'cai', 'tai',
 ];
+
+/**
+ * One line of replicate depth, condition, and coverage for every measurement a
+ * comparison shows without the reader choosing it.
+ *
+ * A measurement leads these views by default, and a default must carry its own
+ * limits: the comparison is where a candidate is judged against its peers, and
+ * a thin measurement read as a deep one is exactly the mistake the ordering is
+ * meant to prevent. Each measured source is reported once, in the order given,
+ * so a raw measurement and the percentile derived from it do not repeat one
+ * study's limits; a metric whose source declares none contributes nothing.
+ *
+ * @param {object[]} metrics metrics on display, measured or not.
+ * @param {{meta: object, genes: object[]}} dataset
+ * @returns {string|null} null when nothing on display is a declared measurement.
+ */
+export function measurementLimitNote(metrics, dataset) {
+  const seen = new Set();
+  const lines = [];
+  for (const metric of metrics) {
+    if (!isMeasuredMetric(metric)) continue;
+    const source = metric.provenance?.id ?? metric.key;
+    if (seen.has(source)) continue;
+    seen.add(source);
+    const limits = metricHelp(metric, dataset)?.limits;
+    if (limits) lines.push(`${metric.label}: ${limits}.`);
+  }
+  return lines.length > 0 ? `Measurement limits — ${lines.join(' ')}` : null;
+}
 
 /** Fewest axes a comparison can be drawn with. */
 export const MIN_AXES = 3;
