@@ -28,6 +28,7 @@ test('activity threshold copy preserves metric capitalization and avoids calling
 test('clear all filters resets numeric and categorical channels together', () => {
   assert.deepEqual(clearedFilterState(), {
     filters: {},
+    categoryFilter: [],
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,

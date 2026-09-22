@@ -1,6 +1,7 @@
 /** Exact, human-reviewed function categories for the pinned UTEX 2973 release. */
 export const FUNCTION_COLOR_KEY = 'functionCategory';
 export const UNKNOWN_CATEGORY_ID = 'unknown-or-unclassified';
+export const MULTIPLE_CATEGORY_ID = 'multiple-functions';
 const REVIEWED_LOCUS_IDS = Object.freeze([
   'M744_RS00265', 'M744_RS00815', 'M744_RS13625', 'M744_RS10050',
   'M744_RS10055', 'M744_RS10060', 'M744_RS13070', 'M744_RS00700',
@@ -21,6 +22,33 @@ const REVIEWED_CATEGORY_LABELS = Object.freeze([
   'Transport and envelope', 'Signaling and circadian regulation',
   'Stress and repair', 'Other characterized', 'Unknown or unclassified',
 ]);
+
+/** Every category id a legend row or URL filter can name, classified first. */
+export const CATEGORY_FILTER_IDS = Object.freeze([
+  ...REVIEWED_CATEGORY_IDS.slice(0, -1), MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID,
+]);
+
+/** The filter bucket id a joined gene's `values` entry resolves to. */
+export function categoryBucketId(model, index) {
+  const value = model.values[index];
+  if (value >= 0 && value < model.categoryIds.length) return model.categoryIds[value];
+  if (value === model.categoryIds.length) return MULTIPLE_CATEGORY_ID;
+  return UNKNOWN_CATEGORY_ID;
+}
+
+/** OR semantics across every selected category; an empty selection excludes nothing. */
+export function passesCategoryFilter(model, index, selected) {
+  if (!model || !selected || selected.length === 0) return true;
+  return selected.includes(categoryBucketId(model, index));
+}
+
+/** Toggle one category id in a selection, returning a new deduped, sorted array. */
+export function toggleCategorySelection(selected, id) {
+  const set = new Set(selected);
+  if (set.has(id)) set.delete(id);
+  else set.add(id);
+  return [...set].sort();
+}
 
 /** The exact category names reviewed for a locus, excluding unreviewed defaults. */
 export function reviewedFunctionLabels(model, locusId) {
@@ -118,6 +146,7 @@ export function joinFunctionCategories(data, genes, releaseId) {
   return {
     source: data,
     labels: classified.map((entry) => entry.label),
+    categoryIds: classified.map((entry) => entry.id),
     multipleLabel: data.vocabulary.multipleFunctionsBucket.label,
     values,
     counts,

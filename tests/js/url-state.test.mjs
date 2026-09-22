@@ -63,6 +63,18 @@ test('length and protein-record choices survive a shared link', () => {
   assert.equal(decodeState('#pr=detected').proteinFilter, undefined);
 });
 
+test('selected legend categories survive a shared link, sorted and deduped', () => {
+  const state = { ...defaultState(), categoryFilter: ['unknown-or-unclassified', 'stress-and-repair'] };
+  const restored = decodeState(encodeState(state));
+  assert.deepEqual(restored.categoryFilter, ['stress-and-repair', 'unknown-or-unclassified']);
+  assert.ok(!/(^|&)cf=/.test(encodeState(defaultState())), 'an empty selection leaves no cf= field');
+});
+
+test('an unknown or malformed category id in the hash is dropped rather than trusted', () => {
+  const restored = decodeState('#cf=stress-and-repair,not-a-real-category,stress-and-repair');
+  assert.deepEqual(restored.categoryFilter, ['stress-and-repair']);
+});
+
 test('explicit metric axes survive a shared link and reset to their defaults', () => {
   const state = defaultState();
   state.panel = 'axes';

@@ -4,6 +4,8 @@ import test from 'node:test';
 
 import {
   functionCategoryLabel, joinFunctionCategories, reviewedFunctionLabels,
+  categoryBucketId, passesCategoryFilter, toggleCategorySelection,
+  CATEGORY_FILTER_IDS, MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID,
 } from '../../site/js/core/function-categories.js';
 
 const root = new URL('../../site/data/', import.meta.url);
@@ -63,4 +65,55 @@ test('two explicit reviewed labels use the separate multiple-functions bucket', 
   assert.equal(functionCategoryLabel(model, 'M744_RS00265'), 'Multiple functions');
   assert.deepEqual(reviewedFunctionLabels(model, 'M744_RS00265'),
     ['Photosynthetic light reactions', 'Carbon and nutrient metabolism']);
+});
+
+test('category filter ids cover every classified category plus multiple and unknown', () => {
+  assert.equal(CATEGORY_FILTER_IDS.length, 12);
+  assert.equal(CATEGORY_FILTER_IDS.at(-2), MULTIPLE_CATEGORY_ID);
+  assert.equal(CATEGORY_FILTER_IDS.at(-1), UNKNOWN_CATEGORY_ID);
+  assert.deepEqual(new Set(CATEGORY_FILTER_IDS).size, CATEGORY_FILTER_IDS.length);
+});
+
+test('categoryBucketId resolves classified, multiple, and unknown buckets', () => {
+  const rows = genes();
+  const model = joinFunctionCategories(source, rows, release);
+  const classifiedIndex = rows.findIndex((row) => row.id === 'M744_RS10050');
+  const explicitUnknownIndex = rows.findIndex((row) => row.id === 'M744_RS00030');
+  const unreviewedIndex = rows.findIndex((row) => row.id === 'M744_RS00005');
+  assert.equal(categoryBucketId(model, classifiedIndex), 'signaling-and-circadian-regulation');
+  assert.equal(categoryBucketId(model, explicitUnknownIndex), UNKNOWN_CATEGORY_ID);
+  assert.equal(categoryBucketId(model, unreviewedIndex), UNKNOWN_CATEGORY_ID);
+
+  const multi = structuredClone(source);
+  multi.assignments[0].categoryIds.push('carbon-and-nutrient-metabolism');
+  multi.coverage.multipleFunctionLoci = 1;
+  const multiModel = joinFunctionCategories(multi, rows, release);
+  const multipleIndex = rows.findIndex((row) => row.id === 'M744_RS00265');
+  assert.equal(categoryBucketId(multiModel, multipleIndex), MULTIPLE_CATEGORY_ID);
+});
+
+test('passesCategoryFilter is an empty-selection no-op and ORs across the rest', () => {
+  const rows = genes();
+  const model = joinFunctionCategories(source, rows, release);
+  const classifiedIndex = rows.findIndex((row) => row.id === 'M744_RS10050');
+  const otherClassifiedIndex = rows.findIndex((row) => row.id === 'M744_RS00815');
+  const unreviewedIndex = rows.findIndex((row) => row.id === 'M744_RS00005');
+
+  assert.equal(passesCategoryFilter(model, classifiedIndex, []), true);
+  assert.equal(passesCategoryFilter(model, classifiedIndex, ['signaling-and-circadian-regulation']), true);
+  assert.equal(passesCategoryFilter(model, otherClassifiedIndex, ['signaling-and-circadian-regulation']), false);
+  assert.equal(
+    passesCategoryFilter(model, unreviewedIndex, ['signaling-and-circadian-regulation', UNKNOWN_CATEGORY_ID]),
+    true,
+  );
+  assert.equal(passesCategoryFilter(null, classifiedIndex, ['signaling-and-circadian-regulation']), true);
+});
+
+test('toggleCategorySelection adds, removes, dedupes, and sorts', () => {
+  assert.deepEqual(toggleCategorySelection([], 'stress-and-repair'), ['stress-and-repair']);
+  assert.deepEqual(
+    toggleCategorySelection(['stress-and-repair'], 'other-characterized'),
+    ['other-characterized', 'stress-and-repair'],
+  );
+  assert.deepEqual(toggleCategorySelection(['stress-and-repair'], 'stress-and-repair'), []);
 });

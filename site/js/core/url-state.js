@@ -5,12 +5,14 @@
  * scheme, filters, shortlist, pinned gene, and comparison tab.
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
+import { CATEGORY_FILTER_IDS } from './function-categories.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
+  categoryFilter: 'cf',
 };
 
 /**
@@ -39,6 +41,7 @@ export function defaultState() {
     schemeName: '',
     highExpressed: false,
     filters: {},
+    categoryFilter: [],
     shortlist: [],
     pinnedId: null,
     compareTab: 'radar',
@@ -118,6 +121,7 @@ export function encodeState(state) {
   push(KEYS.schemeName, state.schemeName);
   if (state.highExpressed) push(KEYS.highExpressed, '1');
   push(KEYS.filters, encodeFilters(state.filters));
+  push(KEYS.categoryFilter, [...(state.categoryFilter ?? [])].sort().join(','));
   push(KEYS.trafficKey, state.trafficKey);
   if (state.lengthCohort !== 'annotated') push(KEYS.lengthCohort, state.lengthCohort);
   if (state.proteinFilter !== 'any') push(KEYS.proteinFilter, state.proteinFilter);
@@ -164,6 +168,11 @@ export function decodeState(hash) {
   if (values.has(KEYS.schemeName)) state.schemeName = values.get(KEYS.schemeName);
   if (values.has(KEYS.highExpressed)) state.highExpressed = values.get(KEYS.highExpressed) === '1';
   if (values.has(KEYS.filters)) state.filters = decodeFilters(values.get(KEYS.filters));
+  if (values.has(KEYS.categoryFilter)) {
+    const ids = values.get(KEYS.categoryFilter).split(',')
+      .filter((id) => CATEGORY_FILTER_IDS.includes(id));
+    state.categoryFilter = [...new Set(ids)].sort();
+  }
   if (values.has(KEYS.shortlist)) {
     state.shortlist = values.get(KEYS.shortlist).split(',').filter(Boolean);
   }

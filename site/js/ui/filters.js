@@ -84,6 +84,7 @@ export function trafficThresholdReadout(metric, value, kept, total) {
 export function clearedFilterState() {
   return {
     filters: {},
+    categoryFilter: [],
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,
@@ -271,7 +272,8 @@ export class FilterPanel {
       : `All ${formatCount(state.count)} genes pass. No filter is hiding anything.`;
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
       && (state.expressionFilter ?? 'any') === 'any'
-      && (state.proteinFilter ?? 'any') === 'any';
+      && (state.proteinFilter ?? 'any') === 'any'
+      && (state.categoryFilter ?? []).length === 0;
   }
 
   renderProteinFilter(state) {
