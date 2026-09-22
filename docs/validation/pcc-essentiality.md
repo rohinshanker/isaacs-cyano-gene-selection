@@ -10,13 +10,17 @@ Rubin used BG-11 at 30 °C, with solid and liquid outgrowths and several light
 levels; its final categories combine evidence across those regimes. “Beneficial”
 means insertions reduced PCC fitness, distinct from “essential.” The authors
 state that calls can change under other growth conditions.
+The four control outgrowths used solid BG-11 at 116, liquid BG-11 at 60 or 199,
+and a photobioreactor at 500 µmol photons m⁻² s⁻¹; these were not the growth
+comparison conditions in Ungerer et al. 2018.
 
 The release obtains per-gene calls from [Adomako et al. 2022 Data Set
 S1](https://doi.org/10.1128/mbio.00862-22), sheet `PG_metadata`, column
 `PCC 7942 essentiality`. That paper attributes the essentiality values to
 Rubin and publishes PCC 7942 and UTEX 2973 locus IDs in the same pangenome
-rows. Data Set S1 itself names Adomako et al. as copyright holders and states
-**CC BY 4.0**. The original Rubin Dataset S3 is not redistributed. The
+rows. The article's Data Set S1 legend names Adomako et al. as copyright
+holders and states **CC BY 4.0**; the spreadsheet does not include that notice.
+The original Rubin Dataset S3 is not redistributed. The
 unmodified Adomako workbook is pinned at
 `data/essentiality/source/mbio.00862-22-s0001.xlsx` (1,359,396 bytes,
 SHA-256 `b988b744c4c939ce6f47232eacfc30338907a9b911830999eb23414cbe6c331b`).
@@ -40,7 +44,8 @@ is essential in UTEX 2973.
 Join a current UTEX CDS only when Adomako's `UTEX 2973 NCBI` tag identifies
 it, that pangenome row supplies a PCC 7942 NCBI tag, and the pinned RefSeq
 crosswalk has exactly one `pcc7942_ortholog` for the UTEX locus matching that
-PCC tag. The crosswalk is based on an exact shared RefSeq protein accession.
+PCC tag, and no other plotted UTEX locus is admitted to the same PCC tag. The
+crosswalk is based on an exact shared RefSeq protein accession.
 Keep every unmatched, absent, conflicting, and multiply mapped row visibly
 unknown. A source `ambiguous`, `not_analyzed`, or blank call retains that state;
 none becomes `non-essential`. Exact identity is evidence for the join, not
@@ -62,8 +67,9 @@ as a fitness or viability prediction.
 
 Use the pinned workbook, `site/data/genes.json`, and the release-pinned
 `identifier-crosswalk-v1.tsv` as build inputs. Check the source SHA-256 and
-the exactness of the join before regenerating the site artifact. The CI
-readiness and browser tests check deterministic output and missingness, while
+the exactness of the join before regenerating the site artifact. The CI build
+check, Python tests, candidate-evidence check, and JavaScript unit tests check
+deterministic output and missingness, while
 the [manual review checklist](manual-review-checklist.md#2-review-the-actual-biological-panel)
 governs use of a borrowed call in an experimental panel. If the workbook,
 annotation release, or mapping policy changes, recheck all calls and source

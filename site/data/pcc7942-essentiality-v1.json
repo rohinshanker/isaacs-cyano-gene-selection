@@ -19046,7 +19046,7 @@
   },
   "datasetId": "pcc7942-essentiality-transfer-v1",
   "joinPolicy": {
-    "admissionRule": "Require one workbook row for the exact plotted UTEX 2973 current locus, a non-empty PCC 7942 current locus, and exactly one unambiguous pinned crosswalk relationship whose PCC locus equals the workbook PCC locus.",
+    "admissionRule": "Require one workbook row for the exact plotted UTEX 2973 current locus, a non-empty PCC 7942 current locus, and exactly one unambiguous pinned crosswalk relationship whose PCC locus equals the workbook PCC locus. An admitted PCC locus may map to only one plotted UTEX locus.",
     "crosswalkMethod": "exact shared RefSeq protein_id",
     "crosswalkNamespace": "PCC7942_RefSeq_locus_tag",
     "crosswalkRelationship": "pcc7942_ortholog",

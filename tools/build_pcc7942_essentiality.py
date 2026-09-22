@@ -269,7 +269,22 @@ def join_by_locus(
                 "mappingStatus": mapping_status,
                 "mappingReason": reason,
             }
+    require_unique_pcc_joins(by_locus)
     return by_locus
+
+
+def require_unique_pcc_joins(by_locus: dict[str, dict[str, Any]]) -> None:
+    """Rejects cross-strain transfers that reuse one PCC locus."""
+    utex_by_pcc: dict[str, str] = {}
+    for utex_locus, row in by_locus.items():
+        if row["mappingStatus"] != "accepted":
+            continue
+        pcc_locus = row["pccLocusTag"]
+        previous = utex_by_pcc.setdefault(pcc_locus, utex_locus)
+        if previous != utex_locus:
+            raise EssentialityDataError(
+                f"PCC locus {pcc_locus} maps to both {previous} and {utex_locus}"
+            )
 
 
 def _load_manifest(path: Path) -> dict[str, Any]:
@@ -389,6 +404,8 @@ def validate_payload(payload: dict[str, Any], gene_loci: Iterable[str]) -> None:
                 or not isinstance(row["pangenomeId"], int)
             ):
                 raise EssentialityDataError("admitted row lacks an integer PG_ID")
+
+    require_unique_pcc_joins(by_locus)
 
     counts = payload.get("counts", {})
     expected_by_status = {

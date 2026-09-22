@@ -33,7 +33,8 @@ filename. Check browser console errors. Preserve source-specific limitations:
 Tan et al. 2018 has two biological cultures per condition and measures TSS
 initiation, not gene-body abundance; GSE205444 measures PCC 7942, not UTEX
 2973; tRNA genomic copy counts and CAI/tAI are proxies, not abundance assays.
-Adomako 2022 Data Set S1 explicitly licenses its workbook CC BY 4.0 and
+The Adomako 2022 article's Data Set S1 legend specifies CC BY 4.0 for the
+workbook; the spreadsheet does not repeat the notice. The data set
 republishes Rubin 2015 PCC 7942 essentiality calls; cite both studies and label
 the exact-join UTEX presentation as a cross-strain assumption. The original
 Rubin Dataset S3 is not redistributed. The cited similar-growth observation in

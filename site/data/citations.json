@@ -106,7 +106,7 @@
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",
-          "contribution": "Data Set S1 provides PCC 7942 essentiality calls, explicit PCC and UTEX 2973 current locus IDs, and pangenome rows. The site joins only matching, unique PCC RefSeq protein cross-references to current UTEX CDSs. The calls remain PCC 7942 measurements under Rubin's assay conditions; applying them to a UTEX candidate is a labelled assumption, not native essentiality. Data Set S1 explicitly carries an Adomako et al. CC BY 4.0 notice.",
+          "contribution": "Data Set S1 provides PCC 7942 essentiality calls, explicit PCC and UTEX 2973 current locus IDs, and pangenome rows. The site joins only matching, unique PCC RefSeq protein cross-references to current UTEX CDSs. The calls remain PCC 7942 measurements under Rubin's assay conditions; applying them to a UTEX candidate is a labelled assumption, not native essentiality. The article's Data Set S1 legend specifies CC BY 4.0; the workbook does not repeat the notice.",
           "downloads": [
             {
               "filename": "mbio.00862-22-s0001.xlsx",

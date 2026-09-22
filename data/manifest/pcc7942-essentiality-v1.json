@@ -35,7 +35,7 @@
     "crosswalkRelationship": "pcc7942_ortholog",
     "crosswalkNamespace": "PCC7942_RefSeq_locus_tag",
     "crosswalkMethod": "exact shared RefSeq protein_id",
-    "admissionRule": "Require one workbook row for the exact plotted UTEX 2973 current locus, a non-empty PCC 7942 current locus, and exactly one unambiguous pinned crosswalk relationship whose PCC locus equals the workbook PCC locus.",
+    "admissionRule": "Require one workbook row for the exact plotted UTEX 2973 current locus, a non-empty PCC 7942 current locus, and exactly one unambiguous pinned crosswalk relationship whose PCC locus equals the workbook PCC locus. An admitted PCC locus may map to only one plotted UTEX locus.",
     "missingness": "Unmatched, conflicting, ambiguous, or multi-valued joins are status unknown with an explicit reason. An admitted row with a blank source call is status missing. Neither case is non-essential.",
     "statusVocabulary": [
       "essential",

@@ -202,6 +202,17 @@ def test_admitted_statuses_are_preserved_without_reclassification(status: str) -
     }
 
 
+def test_two_utex_loci_cannot_borrow_one_pcc_call() -> None:
+    """An apparently exact but many-to-one transfer fails closed."""
+    rows = [
+        source_row(utex="M744_RS00005", pg_id=1),
+        source_row(utex="M744_RS00010", pg_id=2),
+    ]
+    links = {locus: [link()] for locus in ("M744_RS00005", "M744_RS00010")}
+    with pytest.raises(essentiality.EssentialityDataError, match="maps to both"):
+        essentiality.join_by_locus(links, rows, links)
+
+
 def test_schema_rejects_unknown_imputation_and_count_drift() -> None:
     """Unknown joins cannot carry identifiers or silently become non-essential."""
     payload = load_payload()
@@ -226,6 +237,15 @@ def test_schema_rejects_unknown_imputation_and_count_drift() -> None:
     wrong_count["counts"]["byStatus"]["essential"] += 1
     with pytest.raises(essentiality.EssentialityDataError, match="byStatus"):
         essentiality.validate_payload(wrong_count, loci)
+
+    reused_pcc = copy.deepcopy(payload)
+    admitted = [
+        row for row in reused_pcc["byLocus"].values()
+        if row["mappingStatus"] == "accepted"
+    ]
+    admitted[1]["pccLocusTag"] = admitted[0]["pccLocusTag"]
+    with pytest.raises(essentiality.EssentialityDataError, match="maps to both"):
+        essentiality.validate_payload(reused_pcc, loci)
 
 
 def test_manifest_records_licence_assay_and_redistribution_boundaries() -> None:
