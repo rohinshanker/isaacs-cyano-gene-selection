@@ -1,8 +1,9 @@
 /**
  * Source-derived categories: the pinned file must validate against the real
- * release, colour resolution must follow reviewed-wins precedence and the
- * disagreement rule under every toggle combination, and the legend, canvas,
- * detail model, and export must all label derived colour as derived.
+ * release, colour resolution must follow UTEX > PCC > GO precedence under
+ * every toggle combination with conflicts named rather than bucketed, and the
+ * legend, canvas, detail model, and export must all label derived colour as
+ * derived.
  */
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -10,8 +11,8 @@ import test from 'node:test';
 
 import { loadDataset } from '../../site/js/core/dataset.js';
 import {
-  categoryResolutionFor, derivedCategoryIdFor, resolveCategoryBucket, resolveFunctionCategories,
-  validateSourceDerivedCategories, EVIDENCE_LABELS, THRESHOLDS,
+  categoryResolutionFor, conflictNote, derivedCategoryIdFor, resolveCategoryBucket,
+  resolveFunctionCategories, validateSourceDerivedCategories, EVIDENCE_LABELS, THRESHOLDS,
 } from '../../site/js/core/source-derived-categories.js';
 import { categoryBucketId, passesCategoryFilter } from '../../site/js/core/function-categories.js';
 import { buildMarkerBuckets, derivedDotRadius } from '../../site/js/ui/scatter.js';
@@ -30,7 +31,7 @@ const DATA = new URL('site/data/', ROOT);
 const ALL = ['utex-2973', 'pcc-7942', 'go-iea'];
 const REVIEWED_ID = 'M744_RS00265'; // psaC: reviewed, and both sources agree
 const DERIVED_ONLY_ID = 'M744_RS00560'; // petN: PCC product only, no GO terms
-const DISAGREE_ID = 'M744_RS01175'; // RbfA: PCC translation, GO rRNA processing
+const CONFLICT_ID = 'M744_RS01175'; // RbfA: PCC translation, GO rRNA processing
 const REVIEWED_UNKNOWN_ID = 'M744_RS00030'; // reviewed as unknown; PCC judged unknown
 
 let cached = null;
@@ -108,29 +109,31 @@ test('the assignment rule: unknown never assigns, and only the threshold admits 
   assert.equal(derivedCategoryIdFor({ mostLikely: 'stress-and-repair', probability: 'high' }), null);
 });
 
-test('reviewed wins when UTEX is on; derived sources fill in otherwise; disagreement is multiple', () => {
+test('UTEX > PCC > GO among the enabled sources; a lower source that differs is a named conflict', () => {
   const derived = { 'pcc-7942': 'stress-and-repair', 'go-iea': 'transport-and-envelope' };
-  assert.deepEqual(resolveCategoryBucket(['other-characterized'], derived, ALL),
-    { bucketId: 'other-characterized', evidence: ['reviewed'] });
-  assert.deepEqual(resolveCategoryBucket(['a', 'b'], derived, ALL),
-    { bucketId: 'multiple-functions', evidence: ['reviewed'] });
+  assert.deepEqual(resolveCategoryBucket(['other-characterized'], derived, ALL), {
+    bucketId: 'other-characterized', evidence: 'reviewed', source: 'utex-2973',
+    conflicts: [{ source: 'pcc-7942', categoryId: 'stress-and-repair' },
+      { source: 'go-iea', categoryId: 'transport-and-envelope' }],
+  });
+  // Two reviewed ids are the only route into the multiple-functions bucket.
+  assert.equal(resolveCategoryBucket(['a', 'b'], derived, ALL).bucketId, 'multiple-functions');
   // A reviewed unknown is still a reviewed decision and still wins.
-  assert.deepEqual(resolveCategoryBucket(['unknown-or-unclassified'], derived, ALL),
-    { bucketId: 'unknown-or-unclassified', evidence: ['reviewed'] });
-  assert.deepEqual(resolveCategoryBucket(null, derived, ALL),
-    { bucketId: 'multiple-functions', evidence: ['pcc-7942-derived', 'go-iea-derived'] });
-  assert.deepEqual(resolveCategoryBucket(['other-characterized'], derived, ['pcc-7942', 'go-iea']),
-    { bucketId: 'multiple-functions', evidence: ['pcc-7942-derived', 'go-iea-derived'] });
-  assert.deepEqual(resolveCategoryBucket(null, derived, ['pcc-7942']),
-    { bucketId: 'stress-and-repair', evidence: ['pcc-7942-derived'] });
-  assert.deepEqual(resolveCategoryBucket(null, derived, ['go-iea']),
-    { bucketId: 'transport-and-envelope', evidence: ['go-iea-derived'] });
-  assert.deepEqual(resolveCategoryBucket(null, { 'pcc-7942': 'stress-and-repair', 'go-iea': 'stress-and-repair' }, ALL),
-    { bucketId: 'stress-and-repair', evidence: ['pcc-7942-derived', 'go-iea-derived'] });
+  assert.equal(resolveCategoryBucket(['unknown-or-unclassified'], derived, ALL).bucketId, 'unknown-or-unclassified');
+  assert.equal(resolveCategoryBucket(['unknown-or-unclassified'], derived, ALL).evidence, 'reviewed');
+  assert.deepEqual(resolveCategoryBucket(null, derived, ALL), {
+    bucketId: 'stress-and-repair', evidence: 'pcc-7942-derived', source: 'pcc-7942',
+    conflicts: [{ source: 'go-iea', categoryId: 'transport-and-envelope' }],
+  });
+  assert.deepEqual(resolveCategoryBucket(['other-characterized'], derived, ['pcc-7942', 'go-iea']).bucketId,
+    'stress-and-repair');
+  assert.deepEqual(resolveCategoryBucket(null, derived, ['go-iea']), {
+    bucketId: 'transport-and-envelope', evidence: 'go-iea-derived', source: 'go-iea', conflicts: [],
+  });
+  assert.deepEqual(resolveCategoryBucket(null, { 'pcc-7942': 'stress-and-repair', 'go-iea': 'stress-and-repair' }, ALL).conflicts, []);
   assert.deepEqual(resolveCategoryBucket(null, { 'pcc-7942': null, 'go-iea': null }, ALL),
-    { bucketId: 'unknown-or-unclassified', evidence: [] });
-  assert.deepEqual(resolveCategoryBucket(['other-characterized'], derived, []),
-    { bucketId: 'unknown-or-unclassified', evidence: [] });
+    { bucketId: 'unknown-or-unclassified', evidence: null, source: null, conflicts: [] });
+  assert.equal(resolveCategoryBucket(['other-characterized'], derived, []).bucketId, 'unknown-or-unclassified');
 });
 
 const TOGGLE_SETS = [
@@ -161,43 +164,47 @@ test('legend counts under every toggle combination equal the build tool\'s indep
     });
     assert.equal(model.multipleCount, expected.multipleFunctions, sources.join('+'));
     assert.equal(model.unknownCount, expected.unknownOrUnclassified, sources.join('+'));
-    assert.equal(model.evidenceCounts.reviewed, expected.byEvidence.reviewed ?? 0, sources.join('+'));
-    assert.equal(model.evidenceCounts['both-derived'],
-      expected.byEvidence['pcc-7942-derived+go-iea-derived'] ?? 0, sources.join('+'));
+    assert.equal(model.colouredCount, expected.coloured, sources.join('+'));
+    assert.equal(model.conflictCount, expected.conflicts, sources.join('+'));
+    for (const label of ['reviewed', 'pcc-7942-derived', 'go-iea-derived', 'none']) {
+      assert.equal(model.evidenceCounts[label], expected.byEvidence[label] ?? 0, `${sources.join('+')} ${label}`);
+    }
   }
 });
 
-test('the UTEX-only toggle is exactly the reviewed table, and all sources keeps the 13 reviewed rows', async () => {
+test('UTEX alone colours few, UTEX with PCC many more, all three the most; conflicts never bucket', async () => {
   const dataset = await realDataset();
   const reviewed = dataset.functionCategories;
-  const utexOnly = resolveFunctionCategories({
-    reviewed, derived: dataset.sourceDerivedCategories, genes: dataset.genes, sources: ['utex-2973'],
+  const resolve = (sources) => resolveFunctionCategories({
+    reviewed, derived: dataset.sourceDerivedCategories, genes: dataset.genes, sources,
   });
+  const utexOnly = resolve(['utex-2973']);
   assert.deepEqual([...utexOnly.counts], [...reviewed.counts]);
   assert.deepEqual([...utexOnly.values], [...reviewed.values]);
   assert.equal(utexOnly.unknownCount, reviewed.unknownCount);
+  assert.equal(utexOnly.colouredCount, 12);
   assert.equal(utexOnly.derivedCount, 0);
   assert.ok(utexOnly.derived.every((flag) => flag === 0));
-  const all = resolveFunctionCategories({
-    reviewed, derived: dataset.sourceDerivedCategories, genes: dataset.genes, sources: ALL,
-  });
+  const withPcc = resolve(['utex-2973', 'pcc-7942']);
+  const all = resolve(ALL);
+  assert.ok(utexOnly.colouredCount < withPcc.colouredCount && withPcc.colouredCount < all.colouredCount);
   assert.equal(all.reviewedCount, 13);
+  assert.equal(all.multipleCount, 0, 'conflicts never enter the multiple-functions bucket');
+  assert.equal(all.conflictCount, 13);
   for (const [locus, row] of reviewed.assignmentsById) {
     const index = dataset.indexById.get(locus);
     assert.equal(all.derived[index], 0, `${locus} keeps its reviewed marker`);
     assert.equal(categoryBucketId(all, index),
       row.categoryIds.length > 1 ? 'multiple-functions' : row.categoryIds[0]);
   }
-  const disagreeIndex = dataset.indexById.get(DISAGREE_ID);
-  assert.equal(categoryBucketId(all, disagreeIndex), 'multiple-functions');
-  assert.equal(all.derived[disagreeIndex], 1);
-  assert.equal(passesCategoryFilter(all, disagreeIndex, ['multiple-functions']), true);
-  assert.equal(passesCategoryFilter(all, disagreeIndex, ['translation-and-protein-maintenance']), false);
-  const pccOnly = resolveFunctionCategories({
-    reviewed, derived: dataset.sourceDerivedCategories, genes: dataset.genes, sources: ['pcc-7942'],
-  });
-  assert.equal(categoryBucketId(pccOnly, disagreeIndex), 'translation-and-protein-maintenance');
-  assert.equal(pccOnly.reviewedCount, 0);
+  const conflictIndex = dataset.indexById.get(CONFLICT_ID);
+  assert.equal(categoryBucketId(all, conflictIndex), 'translation-and-protein-maintenance');
+  assert.equal(all.derived[conflictIndex], 1);
+  assert.equal(passesCategoryFilter(all, conflictIndex, ['translation-and-protein-maintenance']), true);
+  assert.equal(passesCategoryFilter(all, conflictIndex, ['dna-and-rna-processing']), false);
+  const goOnly = resolve(['go-iea']);
+  assert.equal(categoryBucketId(goOnly, conflictIndex), 'dna-and-rna-processing');
+  assert.equal(goOnly.reviewedCount, 0);
 });
 
 test('without a derived file the resolution is the reviewed table gated by the UTEX toggle', async () => {
@@ -210,42 +217,48 @@ test('without a derived file the resolution is the reviewed table gated by the U
   assert.equal(off.unknownCount, dataset.genes.length);
 });
 
-test('the detail model names the evidence and every enabled source\'s own category', async () => {
+test('the detail model names the winning source, every source\'s own category, and conflicts', async () => {
   const dataset = await realDataset();
   const resolve = (locusId, sources) => categoryResolutionFor({
     reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories, sources, locusId,
   });
   const reviewed = resolve(REVIEWED_ID, ALL);
   assert.equal(reviewed.label, 'Photosynthetic light reactions');
-  assert.deepEqual(reviewed.evidence, ['reviewed']);
+  assert.equal(reviewed.evidence, 'reviewed');
+  assert.equal(reviewed.source, 'utex-2973');
+  assert.deepEqual(reviewed.conflicts, []);
   assert.equal(reviewed.perSource['utex-2973'].reviewed, true);
   assert.equal(reviewed.perSource['pcc-7942'].label, 'Photosynthetic light reactions');
   assert.equal(reviewed.perSource['go-iea'].label, 'Photosynthetic light reactions');
 
   const derivedOnly = resolve(DERIVED_ONLY_ID, ALL);
-  assert.deepEqual(derivedOnly.evidence, ['pcc-7942-derived']);
+  assert.equal(derivedOnly.evidence, 'pcc-7942-derived');
   assert.equal(derivedOnly.perSource['utex-2973'].reviewed, false);
   assert.equal(derivedOnly.perSource['go-iea'].judged, false);
   assert.equal(derivedOnly.perSource['go-iea'].reason, 'no GO IEA terms');
   assert.equal(derivedOnly.perSource['pcc-7942'].pccLocusTag, 'SYNPCC7942_RS02420');
 
-  const disagree = resolve(DISAGREE_ID, ALL);
-  assert.equal(disagree.bucketId, 'multiple-functions');
-  assert.equal(disagree.disagreement, true);
-  assert.deepEqual(disagree.evidence, ['pcc-7942-derived', 'go-iea-derived']);
-  assert.equal(disagree.perSource['pcc-7942'].label, 'Translation and protein maintenance');
-  assert.equal(disagree.perSource['go-iea'].label, 'DNA and RNA processing');
+  const conflict = resolve(CONFLICT_ID, ALL);
+  assert.equal(conflict.bucketId, 'translation-and-protein-maintenance');
+  assert.equal(conflict.evidence, 'pcc-7942-derived');
+  assert.deepEqual(conflict.conflicts, [{
+    source: 'go-iea', categoryId: 'dna-and-rna-processing', label: 'DNA and RNA processing',
+  }]);
+  assert.equal(conflictNote(conflict), 'GO IEA derived: DNA and RNA processing');
+  assert.equal(conflictNote(reviewed), '');
 
   const reviewedUnknown = resolve(REVIEWED_UNKNOWN_ID, ALL);
   assert.equal(reviewedUnknown.bucketId, 'unknown-or-unclassified');
-  assert.deepEqual(reviewedUnknown.evidence, ['reviewed']);
+  assert.equal(reviewedUnknown.evidence, 'reviewed');
   assert.equal(reviewedUnknown.perSource['pcc-7942'].judged, true);
   assert.equal(reviewedUnknown.perSource['pcc-7942'].categoryId, null);
 
+  // A disabled source is still listed with its judgment, just not used for colour.
   const off = resolve(DERIVED_ONLY_ID, ['go-iea']);
   assert.equal(off.perSource['pcc-7942'].enabled, false);
-  assert.equal(off.anyJudged, false);
-  assert.deepEqual(off.evidence, []);
+  assert.equal(off.perSource['pcc-7942'].label, 'Photosynthetic light reactions');
+  assert.equal(off.evidence, null);
+  assert.equal(off.label, 'Unknown or unclassified');
   assert.equal(resolve(DERIVED_ONLY_ID, []).sources.length, 0);
 });
 
@@ -285,26 +298,31 @@ test('the legend has a derived swatch, names the counted sources, and summarises
   assert.equal(categoryEvidenceSummary(null, true), null);
   assert.equal(categoryEvidenceSummary({ reviewed: 1 }, false), null);
   assert.equal(categoryEvidenceSummary({
-    reviewed: 13, 'pcc-7942-derived': 332, 'go-iea-derived': 268, 'both-derived': 752, none: 1350,
-  }, true), '13 coloured by lab review, 1,352 by a derived source (332 PCC 7942 only, 268 GO IEA only, '
-    + '752 both), 1,350 by neither.');
+    reviewed: 13, 'pcc-7942-derived': 1084, 'go-iea-derived': 268, none: 1350,
+  }, true, 13), '13 coloured by lab review, 1,084 by PCC 7942, 268 by GO IEA, 1,350 by no enabled '
+    + 'source; 13 coloured by a higher-priority source over a conflicting one.');
+  assert.equal(categoryEvidenceSummary({
+    reviewed: 13, 'pcc-7942-derived': 0, 'go-iea-derived': 0, none: 2702,
+  }, true, 0), '13 coloured by lab review, 0 by PCC 7942, 0 by GO IEA, 2,702 by no enabled source.');
 });
 
-test('the export records enabled sources, the resolved category, its evidence, and every per-source category', async () => {
+test('the export records the colour sources, the resolved category, its evidence, conflicts, and every per-source category', async () => {
   const dataset = await realDataset();
   const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
-  const ids = [REVIEWED_ID, DERIVED_ONLY_ID, DISAGREE_ID];
+  const ids = [REVIEWED_ID, DERIVED_ONLY_ID, CONFLICT_ID];
   const all = buildExport({
     dataset, registry, ids, schemes: [{ map: {} }], generatedAt: new Date('2026-09-22T20:00:00Z'),
-    annotationSources: ALL,
+    colorSources: ALL,
   });
-  assert.deepEqual(all.manifest.annotationSource, { id: 'all', label: 'All sources', enabled: ALL });
+  assert.deepEqual(all.manifest.functionColourSources, { id: 'all', label: 'All sources', enabled: ALL });
   assert.equal(all.manifest.dataset.sourceDerivedCategories.datasetVersion, 'source-derived-categories-v1');
-  assert.ok(all.columns.includes('functionCategoryEvidence'));
-  const [reviewedRow, derivedRow, disagreeRow] = all.rows;
+  assert.ok(all.columns.includes('functionCategoryConflict'));
+  assert.ok(!all.columns.includes('annotationSource'));
+  const [reviewedRow, derivedRow, conflictRow] = all.rows;
   assert.equal(reviewedRow.functionCategory, 'Photosynthetic light reactions');
   assert.equal(reviewedRow.functionCategoryEvidence, 'reviewed');
+  assert.equal(reviewedRow.functionCategoryConflict, '');
   assert.equal(reviewedRow.functionReviewStatus, 'reviewed');
   assert.equal(reviewedRow.pcc7942DerivedCategory, 'Photosynthetic light reactions');
   assert.equal(reviewedRow.goIeaDerivedProbability, 1);
@@ -313,45 +331,41 @@ test('the export records enabled sources, the resolved category, its evidence, a
   assert.equal(derivedRow.functionReviewStatus, 'unreviewed');
   assert.equal(derivedRow.goIeaDerivedCategory, '');
   assert.equal(derivedRow.goIeaDerivedProbability, '');
-  assert.equal(disagreeRow.functionCategory, 'Multiple functions');
-  assert.equal(disagreeRow.functionCategoryEvidence, 'pcc-7942-derived; go-iea-derived');
-  assert.equal(disagreeRow.pcc7942DerivedCategory, 'Translation and protein maintenance');
-  assert.equal(disagreeRow.goIeaDerivedCategory, 'DNA and RNA processing');
-  assert.deepEqual(all.manifest.genes[2].functionCategoryEvidence, ['pcc-7942-derived', 'go-iea-derived']);
+  assert.equal(conflictRow.functionCategory, 'Translation and protein maintenance');
+  assert.equal(conflictRow.functionCategoryEvidence, 'pcc-7942-derived');
+  assert.equal(conflictRow.functionCategoryConflict, 'GO IEA derived: DNA and RNA processing');
+  assert.equal(conflictRow.pcc7942DerivedCategory, 'Translation and protein maintenance');
+  assert.equal(conflictRow.goIeaDerivedCategory, 'DNA and RNA processing');
+  assert.equal(all.manifest.genes[2].functionCategoryEvidence, 'pcc-7942-derived');
+  assert.equal(all.manifest.genes[2].functionCategoryConflicts[0].source, 'go-iea');
   assert.equal(all.manifest.genes[2].derivedFunctionCategories['go-iea'].mostLikely, 'dna-and-rna-processing');
   assert.equal(all.manifest.genes[1].reviewedFunctionAssignment, null);
   assert.ok(all.manifest.caveats.some((line) => /pcc7942DerivedCategory and goIeaDerivedCategory are computational/.test(line)));
 
-  const pccOnly = buildExport({
-    dataset, registry, ids, schemes: [{ map: {} }], generatedAt: new Date('2026-09-22T20:00:00Z'),
-    annotationSources: ['pcc-7942'],
-  });
-  assert.equal(pccOnly.rows[0].annotationSource, 'pcc-7942');
-  assert.equal(pccOnly.rows[0].functionCategory, 'Photosynthetic light reactions');
-  assert.equal(pccOnly.rows[0].functionCategoryEvidence, 'pcc-7942-derived');
-  assert.equal(pccOnly.rows[0].reviewedFunctionCategories, '');
-  assert.equal(pccOnly.rows[0].functionReviewStatus, '');
-  assert.equal(pccOnly.rows[0].goIeaDerivedCategory, '');
-  assert.equal(pccOnly.rows[2].functionCategory, 'Translation and protein maintenance');
-  assert.equal(pccOnly.manifest.genes[0].reviewedFunctionAssignment, null);
-  assert.equal(pccOnly.manifest.genes[0].derivedFunctionCategories['go-iea'], null);
-
+  // With GO IEA alone colouring, the conflict locus is coloured by GO and every
+  // source's judgment is still exported; nothing outside the colour is blanked.
   const goOnly = buildExport({
-    dataset, registry, ids, schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-22T20:00:00Z'), annotationSources: ['go-iea'],
+    dataset, registry, ids, schemes: [{ map: {} }], generatedAt: new Date('2026-09-22T20:00:00Z'),
+    colorSources: ['go-iea'],
   });
-  // petN has no GO terms, so GO alone says nothing: blank, never unknown-as-a-value.
-  assert.equal(goOnly.rows[1].functionCategory, '');
+  assert.deepEqual(goOnly.manifest.functionColourSources.enabled, ['go-iea']);
+  assert.equal(goOnly.rows[0].functionCategory, 'Photosynthetic light reactions');
+  assert.equal(goOnly.rows[0].functionCategoryEvidence, 'go-iea-derived');
+  assert.equal(goOnly.rows[0].reviewedFunctionCategories, 'Photosynthetic light reactions');
+  assert.equal(goOnly.rows[0].functionReviewStatus, 'reviewed');
+  assert.equal(goOnly.rows[1].functionCategory, 'Unknown or unclassified');
   assert.equal(goOnly.rows[1].functionCategoryEvidence, '');
+  assert.equal(goOnly.rows[1].pcc7942DerivedCategory, 'Photosynthetic light reactions');
   assert.equal(goOnly.rows[2].functionCategory, 'DNA and RNA processing');
+  assert.equal(goOnly.rows[2].functionCategoryConflict, '');
+  assert.equal(goOnly.manifest.genes[1].derivedFunctionCategories['pcc-7942'].enabledForColouring, false);
 
   const none = buildExport({
     dataset, registry, ids, schemes: [{ map: {} }], generatedAt: new Date('2026-09-22T20:00:00Z'),
-    annotationSources: [],
+    colorSources: [],
   });
-  assert.equal(none.manifest.annotationSource.id, 'none');
-  assert.deepEqual(none.manifest.annotationSource.enabled, []);
-  assert.equal(none.rows[0].functionCategory, '');
-  assert.equal(none.rows[0].product, '');
-  assert.ok(none.manifest.caveats.some((line) => /No annotation source is enabled/.test(line)));
+  assert.equal(none.manifest.functionColourSources.id, 'none');
+  assert.equal(none.rows[0].functionCategory, 'Unknown or unclassified');
+  assert.equal(none.rows[0].product, dataset.genes[dataset.indexById.get(REVIEWED_ID)].product);
+  assert.ok(none.manifest.caveats.some((line) => /enabled for colouring: No sources/.test(line)));
 });

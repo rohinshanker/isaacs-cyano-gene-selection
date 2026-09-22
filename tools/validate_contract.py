@@ -1081,17 +1081,18 @@ def derived_category_id(entry: Any) -> Any:
 
 
 def resolve_derived_bucket(reviewed: Any, derived_ids: dict[str, Any],
-                           enabled: tuple[str, ...]) -> tuple[str, list[str]]:
-    """Reviewed wins when UTEX 2973 is enabled; disagreeing derived sources are multiple."""
+                           enabled: tuple[str, ...]) -> tuple[str, Any, bool]:
+    """UTEX > PCC > GO: the highest-priority enabled source colours; others may conflict."""
+    ranked = []
     if "utex-2973" in enabled and reviewed:
-        return (MULTIPLE_CATEGORY_ID if len(reviewed) > 1 else reviewed[0]), ["reviewed"]
-    assigned = [(f"{source}-derived", derived_ids.get(source))
-                for source in DERIVED_SOURCES if source in enabled and derived_ids.get(source)]
-    if not assigned:
-        return UNKNOWN_CATEGORY_ID, []
-    categories = {category for _, category in assigned}
-    labels = [label for label, _ in assigned]
-    return (assigned[0][1] if len(categories) == 1 else MULTIPLE_CATEGORY_ID), labels
+        ranked.append(("reviewed", MULTIPLE_CATEGORY_ID if len(reviewed) > 1 else reviewed[0]))
+    for source in DERIVED_SOURCES:
+        if source in enabled and derived_ids.get(source):
+            ranked.append((f"{source}-derived", derived_ids[source]))
+    if not ranked:
+        return UNKNOWN_CATEGORY_ID, None, False
+    label, bucket = ranked[0]
+    return bucket, label, any(category != bucket for _, category in ranked[1:])
 
 
 def validate_source_derived_categories(data: Any, genes: list[dict[str, Any]], categories: Any,
@@ -1130,7 +1131,7 @@ def validate_source_derived_categories(data: Any, genes: list[dict[str, Any]], c
     calls = (pcc or {}).get("byLocus") or {}
     wrong_presence, wrong_label, bad_entry = [], [], []
     assigned: dict[str, dict[str, int]] = {source: {} for source in DERIVED_SOURCES}
-    both_loci = agree = disagree = 0
+    both_loci = agree = disagree = conflicts = 0
     legend: dict[str, int] = {}
     evidence_counts: dict[str, int] = {}
     for locus, row in rows.items():
@@ -1165,10 +1166,11 @@ def validate_source_derived_categories(data: Any, genes: list[dict[str, Any]], c
                 agree += 1
             else:
                 disagree += 1
-        bucket, labels = resolve_derived_bucket(reviewed.get(locus), ids, ("utex-2973",) + DERIVED_SOURCES)
+        bucket, label, conflicting = resolve_derived_bucket(
+            reviewed.get(locus), ids, ("utex-2973",) + DERIVED_SOURCES)
         legend[bucket] = legend.get(bucket, 0) + 1
-        key = "+".join(labels) if labels else "none"
-        evidence_counts[key] = evidence_counts.get(key, 0) + 1
+        evidence_counts[label or "none"] = evidence_counts.get(label or "none", 0) + 1
+        conflicts += conflicting
     report.check(not wrong_presence,
                  "each derived judgment is present exactly where its source annotates the locus",
                  f"{len(wrong_presence)} loci, e.g. {wrong_presence[:5]}")
@@ -1193,8 +1195,9 @@ def validate_source_derived_categories(data: Any, genes: list[dict[str, Any]], c
         published_legend.get("byCategory") == {category: legend.get(category, 0) for category in category_ids[:-1]}
         and published_legend.get("multipleFunctions") == legend.get(MULTIPLE_CATEGORY_ID, 0)
         and published_legend.get("unknownOrUnclassified") == legend.get(UNKNOWN_CATEGORY_ID, 0)
-        and published_legend.get("byEvidence") == evidence_counts,
-        "the all-sources legend counts follow reviewed-wins precedence and the disagreement rule",
+        and published_legend.get("byEvidence") == evidence_counts
+        and published_legend.get("conflicts") == conflicts,
+        "the all-sources legend counts follow UTEX > PCC > GO precedence and the conflict rule",
     )
     report.check(evidence_counts.get("reviewed") == len(reviewed),
                  "every reviewed row colours by review under all sources, never by a derived source")

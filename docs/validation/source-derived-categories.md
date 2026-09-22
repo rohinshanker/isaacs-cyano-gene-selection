@@ -24,27 +24,34 @@ records what to accept or reject.
 
 ## Colour resolution
 
-With the annotation-source toggles, a CDS's colour is resolved in this order:
+The three checkboxes in the legend govern colouring and the legend counts
+only; every other view always shows every source. Among the enabled sources
+a CDS's colour follows precedence **UTEX 2973 > PCC 7942 > GO IEA**:
 
 1. **Reviewed.** When UTEX 2973 is on and the locus has a lab-reviewed row,
    that row is the colour, including the one row reviewed as unknown. Two
-   reviewed ids use the multiple-functions bucket. Evidence label `reviewed`.
-2. **Derived.** Otherwise each enabled derived source contributes its assigned
-   category, if any. One source, or two that agree, colours the point with the
-   labels `pcc-7942-derived` and/or `go-iea-derived`.
-3. **Disagreement.** Two enabled derived sources that assign different
-   categories send the locus to the multiple-functions bucket; the detail panel
-   and export name each source's category.
+   reviewed ids use the multiple-functions bucket, the only route into it.
+   Evidence label `reviewed`.
+2. **PCC 7942 derived.** Otherwise, when PCC 7942 is on and assigned a
+   category, that category colours the point under `pcc-7942-derived`.
+3. **GO IEA derived.** Otherwise, when GO IEA is on and assigned a category,
+   under `go-iea-derived`.
 4. **Unknown.** No enabled source assigns anything.
 
-UTEX 2973 alone is exactly the previous reviewed-only view. Every toggle off
-leaves every CDS unknown and every annotation field blank.
+**Conflicts.** A lower-priority enabled source that assigned a different
+category never changes the colour. The detail panel and export list every
+source's category with an explicit conflict note, and the legend counts how
+many coloured points carry one.
+
+UTEX 2973 alone is exactly the previous reviewed-only view. Every checkbox
+off leaves every CDS unknown; nothing else in the viewer changes.
 
 Derived colour uses a hollow marker: a white disc with the category colour as
 ring and centre dot, at the same area as a reviewed filled circle. The legend
 carries one row per marker, counts each category under the enabled sources,
 states in its title which sources are counted, and summarises how many points
-are coloured by review, by each derived source, by both, or by neither.
+are coloured by review, by each derived source, or by no enabled source, and
+how many carry a conflict.
 
 ## Blinded judgments
 
@@ -141,16 +148,25 @@ on 13.
 | Signaling and circadian regulation | 96 | 87 | 118 |
 | Stress and repair | 47 | 39 | 56 |
 | Other characterized | 40 | 37 | 52 |
-| Multiple functions | 0 | 0 | 13 |
+| Multiple functions | 0 | 0 | 0 |
 | Unknown or unclassified | 1,449 | 556 | 1,351 |
 
-With all sources on, 13 loci are coloured by review, 332 by PCC 7942 alone,
-268 by GO IEA alone, 752 by both in agreement, 13 by disagreement, and 1,350
-by neither. Legend counts under every other toggle combination are pinned in
-`summary.json` under `legendByToggle`, and the browser test proves the
-page resolves the same numbers.
+| Enabled sources | Coloured | Unknown | Conflicts |
+| --- | --- | --- | --- |
+| UTEX 2973 | 12 | 2,703 | 0 |
+| UTEX 2973 + PCC 7942 | 1,096 | 1,619 | 0 |
+| UTEX 2973 + GO IEA | 1,032 | 1,683 | 0 |
+| PCC 7942 + GO IEA | 1,363 | 1,352 | 13 |
+| All three | 1,364 | 1,351 | 13 |
 
-The 13 disagreements are all rubric-boundary cases rather than nonsense, for
+With all three on, 13 loci are coloured by review, 1,084 by PCC 7942, 268 by
+GO IEA, and 1,350 by no source; the multiple-functions bucket is empty. The
+13 conflicts are loci where PCC 7942 colours and GO IEA assigned a different
+category. Legend counts under every combination are pinned in `summary.json`
+under `legendByToggle`, and the browser test proves the page resolves the
+same numbers.
+
+The 13 conflicts are all rubric-boundary cases rather than nonsense, for
 example RbfA (translation by product, rRNA processing by GO term), NdhS
 (respiration by product, photosynthetic electron transport by GO term), alanine
 racemase (amino acid metabolism by product, peptidoglycan biosynthesis by GO
@@ -204,9 +220,10 @@ metabolism where the reviewer saw no stated process.
 
 **Known failure mode.** A product name that reads as amino acid or sugar
 chemistry but sits on a cofactor or envelope pathway is classified by its
-chemistry. The GO source usually carries the pathway term and disagrees, which
-sends such loci to the multiple-functions bucket rather than a wrong single
-colour; with PCC 7942 alone they colour as carbon metabolism.
+chemistry. The GO source usually carries the pathway term and disagrees, so
+such loci show a conflict note in the detail panel and export, but under the
+precedence rule they still colour as PCC 7942 says (carbon metabolism) while
+PCC 7942 is enabled; turning it off lets the GO category colour them.
 
 This is software validation, not biological ground truth. A locus whose colour
 rests on a derived source needs lab review before anyone relies on it.
@@ -222,19 +239,23 @@ with its probability. A supplied category is never trusted. The validator
 also recomputes the all-sources legend counts with the resolution rules above
 and requires every reviewed row to colour by review.
 
-The detail panel shows the resolved category, its evidence labels, and one
-line per enabled source: the reviewed labels, or each derived source's
-category with its probability, the joined PCC locus, and, when nothing was
-assigned, the most likely category and why it was withheld. Disagreement is
-stated in words. The attribution and model are repeated beneath.
+The detail panel shows the resolved category, the evidence label of the
+source that coloured it, a conflict note when a lower-priority enabled source
+assigned something else, and one line per source whether or not it is
+enabled for colouring: the reviewed labels, or each derived source's category
+with its probability, the joined PCC locus, and, when nothing was assigned,
+the most likely category and why it was withheld. The attribution and model
+are repeated beneath.
 
-The CSV adds five columns: `functionCategoryEvidence`, `pcc7942DerivedCategory`,
+The CSV adds six columns: `functionCategoryEvidence`,
+`functionCategoryConflict`, `pcc7942DerivedCategory`,
 `pcc7942DerivedProbability`, `goIeaDerivedCategory`, and
-`goIeaDerivedProbability`. `functionCategory` is the resolved bucket under the
-enabled sources; with UTEX 2973 off it is blank unless an enabled derived
-source judged the locus. The manifest records the enabled sources in
-`annotationSource.enabled`, each gene's evidence labels and per-source
-judgments, and the dataset's attribution, judgment, policy, and counts.
+`goIeaDerivedProbability`. `functionCategory` is the colour bucket under the
+sources enabled for colouring; the per-source columns are data facts and are
+always filled where a source judged the locus. The manifest records the
+enabled sources in `functionColourSources`, each gene's evidence label,
+conflicts, and per-source judgments, and the dataset's attribution, judgment,
+policy, and counts.
 
 ## Attribution and change policy
 

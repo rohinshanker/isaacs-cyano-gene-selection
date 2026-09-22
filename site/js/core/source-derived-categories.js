@@ -5,10 +5,10 @@
  * the category TypeSafe Jev assigned from the joined PCC 7942 product name and
  * from the locus's GO IEA terms. These are computational judgments, never
  * reviewed assignments: they never enter the reviewed table, never change its
- * rows, and never colour a point without their evidence label. The reviewed
- * UTEX 2973 category always wins when that source is enabled; otherwise the
- * enabled derived sources colour the point, and two that disagree fall into
- * the multiple-functions bucket.
+ * rows, and never colour a point without their evidence label. Precedence is
+ * UTEX 2973 > PCC 7942 > GO IEA among the enabled sources; when a lower
+ * source assigns a different category the point keeps the higher source's
+ * colour and the conflict is named in the detail panel and export.
  */
 import {
   MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID,
@@ -27,6 +27,12 @@ export const EVIDENCE_LABEL_OF_SOURCE = Object.freeze({
   [GO_IEA_SOURCE]: 'go-iea-derived',
 });
 
+export const SOURCE_DISPLAY_NAMES = Object.freeze({
+  [UTEX_SOURCE]: 'UTEX 2973 reviewed',
+  [PCC_SOURCE]: 'PCC 7942 derived',
+  [GO_IEA_SOURCE]: 'GO IEA derived',
+});
+
 /**
  * Pinned in docs/validation/source-derived-categories.md. Held here so an
  * assigned category is re-derived from its probability instead of trusted.
@@ -43,28 +49,38 @@ export function derivedCategoryIdFor(entry) {
 }
 
 /**
- * Reviewed-wins precedence and the disagreement rule for one locus.
+ * UTEX > PCC > GO precedence for one locus.
  * @param {string[]|null} reviewedIds the reviewed row's category ids, or null
  * @param {{[source: string]: string|null}} derivedIds assigned id per derived source
  * @param {string[]} sources enabled sources
- * @returns {{bucketId: string, evidence: string[]}}
+ * @returns {{bucketId: string, evidence: string|null, source: string|null,
+ *   conflicts: Array<{source: string, categoryId: string}>}} the bucket, the
+ *   evidence label and id of the source that coloured it, and every enabled
+ *   lower-priority source whose assigned category differs from that colour.
  */
 export function resolveCategoryBucket(reviewedIds, derivedIds, sources) {
   const enabled = normalizeAnnotationSources(sources);
+  const ranked = [];
   if (enabled.includes(UTEX_SOURCE) && Array.isArray(reviewedIds) && reviewedIds.length > 0) {
-    return {
-      bucketId: reviewedIds.length > 1 ? MULTIPLE_CATEGORY_ID : reviewedIds[0],
-      evidence: ['reviewed'],
-    };
+    ranked.push({
+      source: UTEX_SOURCE,
+      categoryId: reviewedIds.length > 1 ? MULTIPLE_CATEGORY_ID : reviewedIds[0],
+    });
   }
-  const assigned = DERIVED_SOURCES
-    .filter((source) => enabled.includes(source) && derivedIds?.[source])
-    .map((source) => ({ label: EVIDENCE_LABEL_OF_SOURCE[source], id: derivedIds[source] }));
-  if (assigned.length === 0) return { bucketId: UNKNOWN_CATEGORY_ID, evidence: [] };
-  const distinct = new Set(assigned.map((entry) => entry.id));
+  for (const source of DERIVED_SOURCES) {
+    if (enabled.includes(source) && derivedIds?.[source]) {
+      ranked.push({ source, categoryId: derivedIds[source] });
+    }
+  }
+  if (ranked.length === 0) {
+    return { bucketId: UNKNOWN_CATEGORY_ID, evidence: null, source: null, conflicts: [] };
+  }
+  const [winner, ...rest] = ranked;
   return {
-    bucketId: distinct.size === 1 ? assigned[0].id : MULTIPLE_CATEGORY_ID,
-    evidence: assigned.map((entry) => entry.label),
+    bucketId: winner.categoryId,
+    evidence: EVIDENCE_LABEL_OF_SOURCE[winner.source],
+    source: winner.source,
+    conflicts: rest.filter((entry) => entry.categoryId !== winner.categoryId),
   };
 }
 
@@ -172,23 +188,20 @@ export function resolveFunctionCategories({ reviewed, derived, genes, sources })
   const values = new Int16Array(genes.length).fill(-1);
   const derivedMask = new Uint8Array(genes.length);
   const counts = new Int32Array(classified.length);
-  const evidenceCounts = {
-    reviewed: 0, 'pcc-7942-derived': 0, 'go-iea-derived': 0, 'both-derived': 0, none: 0,
-  };
+  const evidenceCounts = { reviewed: 0, 'pcc-7942-derived': 0, 'go-iea-derived': 0, none: 0 };
   let multiple = 0;
   let unknown = 0;
+  let conflictCount = 0;
   genes.forEach((gene, index) => {
     const reviewedRow = reviewed.assignmentsById.get(gene.id);
-    const { bucketId, evidence } = resolveCategoryBucket(
+    const { bucketId, evidence, conflicts } = resolveCategoryBucket(
       reviewedRow ? reviewedRow.categoryIds : null,
       derivedIdsFor(derived, gene.id),
       enabled,
     );
-    const isDerived = evidence.length > 0 && evidence[0] !== 'reviewed';
-    derivedMask[index] = isDerived ? 1 : 0;
-    if (evidence.length === 0) evidenceCounts.none += 1;
-    else if (evidence.length > 1) evidenceCounts['both-derived'] += 1;
-    else evidenceCounts[evidence[0]] += 1;
+    derivedMask[index] = evidence && evidence !== 'reviewed' ? 1 : 0;
+    evidenceCounts[evidence ?? 'none'] += 1;
+    if (conflicts.length > 0) conflictCount += 1;
     if (bucketId === UNKNOWN_CATEGORY_ID) {
       unknown += 1;
     } else if (bucketId === MULTIPLE_CATEGORY_ID) {
@@ -212,8 +225,9 @@ export function resolveFunctionCategories({ reviewed, derived, genes, sources })
     unknownCount: unknown,
     multipleCount: multiple,
     reviewedCount: evidenceCounts.reviewed,
-    derivedCount: evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
-      + evidenceCounts['both-derived'],
+    derivedCount: evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived'],
+    colouredCount: genes.length - unknown,
+    conflictCount,
     evidenceCounts,
     sources: enabled,
     hasDerivedData: Boolean(derived),
@@ -230,13 +244,12 @@ export function categoryLabelFor(reviewed, id) {
 }
 
 function perSourceEntry(reviewed, entry, enabledNow, absentReason) {
-  if (!enabledNow) return { enabled: false, judged: false, categoryId: null, label: null };
   if (!entry) {
-    return { enabled: true, judged: false, categoryId: null, label: null, reason: absentReason };
+    return { enabled: enabledNow, judged: false, categoryId: null, label: null, reason: absentReason };
   }
   const categoryId = entry.categoryId ?? null;
   return {
-    enabled: true,
+    enabled: enabledNow,
     judged: true,
     categoryId,
     label: categoryId ? categoryLabelFor(reviewed, categoryId) : null,
@@ -250,26 +263,25 @@ function perSourceEntry(reviewed, entry, enabledNow, absentReason) {
 
 /**
  * Everything the detail panel and export say about one locus's category:
- * the resolved bucket, its evidence labels, the reviewed labels, and each
- * source's own judgment (blank when that source is off).
+ * the resolved bucket, the source and evidence label that coloured it, every
+ * source's own judgment whether or not it is enabled for colouring, and the
+ * enabled sources whose category conflicts with the colour.
  */
 export function categoryResolutionFor({ reviewed, derived, sources, locusId }) {
   if (!reviewed) return null;
   const enabled = normalizeAnnotationSources(sources);
   const reviewedRow = reviewed.assignmentsById.get(locusId) ?? null;
   const derivedRow = derived?.byLocus?.[locusId] ?? null;
-  const { bucketId, evidence } = resolveCategoryBucket(
+  const { bucketId, evidence, source, conflicts } = resolveCategoryBucket(
     reviewedRow ? reviewedRow.categoryIds : null,
     derivedIdsFor(derived, locusId),
     enabled,
   );
-  const utexOn = enabled.includes(UTEX_SOURCE);
   const perSource = {
     [UTEX_SOURCE]: {
-      enabled: utexOn,
-      reviewed: utexOn && Boolean(reviewedRow),
-      labels: utexOn && reviewedRow
-        ? reviewedRow.categoryIds.map((id) => categoryLabelFor(reviewed, id)) : [],
+      enabled: enabled.includes(UTEX_SOURCE),
+      reviewed: Boolean(reviewedRow),
+      labels: reviewedRow ? reviewedRow.categoryIds.map((id) => categoryLabelFor(reviewed, id)) : [],
     },
     [PCC_SOURCE]: perSourceEntry(
       reviewed, derivedRow?.[PCC_SOURCE] ?? null, enabled.includes(PCC_SOURCE),
@@ -280,15 +292,25 @@ export function categoryResolutionFor({ reviewed, derived, sources, locusId }) {
       derived ? 'no GO IEA terms' : 'no derived-category file',
     ),
   };
-  const anyJudged = perSource[UTEX_SOURCE].reviewed
-    || perSource[PCC_SOURCE].judged || perSource[GO_IEA_SOURCE].judged;
   return {
     bucketId,
     label: categoryLabelFor(reviewed, bucketId),
     evidence,
-    disagreement: bucketId === MULTIPLE_CATEGORY_ID && evidence.length > 1,
-    anyJudged,
+    source,
     sources: enabled,
+    conflicts: conflicts.map((entry) => ({
+      source: entry.source,
+      categoryId: entry.categoryId,
+      label: categoryLabelFor(reviewed, entry.categoryId),
+    })),
     perSource,
   };
+}
+
+/** One sentence naming every conflicting enabled source, or an empty string. */
+export function conflictNote(resolution) {
+  if (!resolution || resolution.conflicts.length === 0) return '';
+  return resolution.conflicts
+    .map((entry) => `${SOURCE_DISPLAY_NAMES[entry.source]}: ${entry.label}`)
+    .join('; ');
 }

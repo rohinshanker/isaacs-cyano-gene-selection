@@ -49,7 +49,7 @@ import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
 import {
-  SOURCE_TOGGLES, annotationSourceLabel, isAllSources, normalizeAnnotationSources,
+  annotationSourceLabel, isAllSources, normalizeAnnotationSources,
 } from './core/annotation-source.js';
 import {
   resolveFunctionCategories, THRESHOLDS as DERIVED_THRESHOLDS,
@@ -190,9 +190,24 @@ function resolveCategoryModel() {
     reviewed,
     derived: context.dataset.sourceDerivedCategories,
     genes: context.dataset.genes,
-    sources: state.annotationSources,
+    sources: state.colorSources,
   }) : null;
   return context.categories;
+}
+
+/** Flip one colour-source checkbox: only colouring and the legend counts change. */
+function toggleColorSource(id, enabled) {
+  const next = new Set(state.colorSources);
+  if (enabled) next.add(id);
+  else next.delete(id);
+  state.colorSources = normalizeAnnotationSources([...next]);
+  renderAll();
+  announce(isAllSources(state.colorSources)
+    ? 'Category colour: every annotation source enabled.'
+    : state.colorSources.length === 0
+      ? 'Category colour: no source enabled; every CDS is unknown until a source is turned on.'
+      : `Category colour: ${annotationSourceLabel(state.colorSources)} enabled. Every other view `
+        + 'still shows every source.');
 }
 
 function computeMask() {
@@ -596,6 +611,7 @@ function renderMap() {
         ...categories,
         hasDerivedData: categories.hasDerivedData,
         derivedThreshold: DERIVED_THRESHOLDS.derivedProbabilityAtLeast,
+        onToggleSource: (id, enabled) => toggleColorSource(id, enabled),
         scale,
         hiddenReviewedCount,
         hiddenUnknownCount,
@@ -673,7 +689,7 @@ function renderDetail() {
     schemeActive: context.scheme.active,
     live: context.live,
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
-    annotationSources: state.annotationSources,
+    colorSources: state.colorSources,
   });
 }
 
@@ -714,7 +730,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     pinnedId: state.pinnedId,
     dataset: context.dataset,
     registry: context.registry,
-    annotationSources: state.annotationSources,
+    colorSources: state.colorSources,
     filterState: {
       ranges: state.filters,
       categoryFilter: state.categoryFilter,
@@ -740,7 +756,6 @@ function renderAll({ schemeErrors = [] } = {}) {
     dataset: context.dataset,
     registry: context.registry,
     tab: state.compareTab,
-    annotationSources: state.annotationSources,
   });
   if (panelDesigner) {
     panelDesigner.update({
@@ -748,7 +763,6 @@ function renderAll({ schemeErrors = [] } = {}) {
       registry: context.registry,
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
-      annotationSources: state.annotationSources,
       schemes: {
         active: { name: state.schemeName, map: state.schemeMap },
         saved: Object.entries(store.read(STORAGE_SCHEMES, {}))
@@ -1012,55 +1026,6 @@ function buildAxisScaleSelects() {
   }
 }
 
-/**
- * The annotation-source toggles: which of UTEX 2973, PCC 7942, and GO IEA the
- * detail panel, list/table views, search suggestions, category colour, and the
- * export read from. All three on is the combined view; one on is that source
- * alone.
- */
-function buildAnnotationSourceToggles() {
-  const host = element('annotation-sources');
-  host.querySelectorAll('.source-toggle').forEach((node) => node.remove());
-  const inputs = new Map();
-  for (const { id, label } of SOURCE_TOGGLES) {
-    const row = document.createElement('span');
-    row.className = 'checkbox-row source-toggle';
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.id = `annotation-source-${id}`;
-    input.value = id;
-    input.checked = state.annotationSources.includes(id);
-    const text = document.createElement('label');
-    text.htmlFor = input.id;
-    text.textContent = label;
-    row.append(input, text);
-    host.append(row);
-    inputs.set(id, input);
-  }
-  host.addEventListener('change', () => {
-    state.annotationSources = normalizeAnnotationSources(
-      [...inputs].filter(([, input]) => input.checked).map(([id]) => id),
-    );
-    if (searchResults) searchResults.setAnnotationSource(state.annotationSources);
-    renderAll();
-    announce(isAllSources(state.annotationSources)
-      ? 'Annotation sources: all sources combined.'
-      : state.annotationSources.length === 0
-        ? 'Annotation sources: none enabled. Every annotation field is blank and every CDS is '
-          + 'unknown until a source is turned on.'
-        : `Annotation sources: ${annotationSourceLabel(state.annotationSources)} only. Fields a `
-          + 'disabled source would have supplied are shown blank, never filled in from it.');
-  });
-}
-
-/** Keep the toggle boxes in step with state after a hash or history change. */
-function syncAnnotationSourceToggles() {
-  for (const { id } of SOURCE_TOGGLES) {
-    const input = element(`annotation-source-${id}`);
-    if (input) input.checked = state.annotationSources.includes(id);
-  }
-}
-
 function buildGeneSearch() {
   // No datalist: it could only complete a locus tag prefix, it put 2,715 option
   // elements in the document, and its native dropdown covered the result list
@@ -1073,7 +1038,6 @@ function buildGeneSearch() {
     isPinned: (id) => state.pinnedId === id,
   });
   searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms, context.dataset);
-  searchResults.setAnnotationSource(state.annotationSources);
 
   const input = element('gene-search');
   const run = () => {
@@ -1333,8 +1297,6 @@ function applyLiveHash() {
   element('axis-x-scale').value = state.axisXScale;
   element('axis-y-scale').value = state.axisYScale;
   element('show-hidden').checked = state.showHidden;
-  syncAnnotationSourceToggles();
-  if (searchResults) searchResults.setAnnotationSource(state.annotationSources);
   renderAll();
   announce('View updated from the address bar.');
 }
@@ -1598,7 +1560,6 @@ async function boot() {
   buildColorSelect();
   buildAxisSelects();
   buildAxisScaleSelects();
-  buildAnnotationSourceToggles();
   buildGeneSearch();
   renderMetricAgreement();
   renderProvenance();

@@ -572,26 +572,19 @@ the all-sources legend. The reviewed table is never changed. See
 [source-derived-categories.md](source-derived-categories.md); the contract
 validator re-derives every assignment and the legend independently.
 
-## Annotation-source views
+## Annotation sources for colouring
 
-The viewer has three independent source toggles. Each source has a fixed set
-of fields it can annotate: UTEX 2973 supplies the RefSeq name, product, and
-lab-reviewed function categories; PCC 7942 supplies the joined locus tag, the
-borrowed essentiality call, and the PCC-derived function category; GO IEA
-supplies the evidence-coded GO relationships and the GO-derived function
-category. A field that no enabled source annotates for a gene is **blank**:
-`null` or an empty list, never filled from a disabled source and never
-rendered as `unknown` as if that were the source's own value. All three
-toggles on is not a filtered view; consumers keep reading the gene and
-dataset fields directly, so its output is byte-identical to the behaviour
-before the toggles existed, apart from the derived colour that the new file
-adds. Exactly one toggle on is that source's single-source view; every toggle
-off leaves every field blank.
+The viewer has three checkboxes, UTEX 2973, PCC 7942, and GO IEA, inside the
+category legend. They govern function-category colouring and the legend
+counts only. There is no single-source view: the detail panel, shortlist and
+comparison tables, panel-designer list, search suggestions, and export always
+show every source's annotations, including the GO IEA essentiality tier and
+its discrepancy notes. Colour follows UTEX > PCC > GO among the enabled
+sources, as described in [function-categories.md](function-categories.md).
 
-The export manifest records `annotationSource` as `{ id, label, enabled }`,
-where `id` is `all`, `none`, a single source id, or the enabled ids joined
-with `+`, and every row carries the same `annotationSource` id, with a caveat
-naming the enabled sources and their evidence notes, so a narrower file
-cannot be mistaken for the combined view. The GO IEA essentiality tier,
-context, probability, and discrepancy fields are populated only for exports
-with every source enabled.
+The export manifest records `functionColourSources` as `{ id, label,
+enabled }`, where `id` is `all`, `none`, a single source id, or the enabled
+ids joined with `+`, and a caveat names those sources, so a file's colour
+buckets can be read against the toggles that produced them. Rows carry no
+per-row source field; `functionCategory`, `functionCategoryEvidence`, and
+`functionCategoryConflict` are the only columns that depend on the toggles.

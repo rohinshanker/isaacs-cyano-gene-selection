@@ -9,9 +9,6 @@ import { searchGenes, SEARCH_RESULT_LIMIT } from '../core/gene-search.js';
 import { formatCount } from './format.js';
 import { createLocusTag } from './locus-tag.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
-import {
-  annotationSourceView, isAllSources, normalizeAnnotationSources,
-} from '../core/annotation-source.js';
 
 /** A repeated blur/change event must not replace a result while it is being clicked. */
 export function shouldRenderSearch(currentQuery, nextQuery, currentResult) {
@@ -38,7 +35,6 @@ export class GeneSearchResults {
     this.genes = [];
     this.goTerms = null;
     this.dataset = null;
-    this.source = normalizeAnnotationSources();
     this.query = '';
     this.host.hidden = true;
   }
@@ -46,18 +42,12 @@ export class GeneSearchResults {
   /**
    * @param {Array<object>} genes the dataset's genes, searched in place.
    * @param {object|null} goTerms
-   * @param {object|null} dataset the full dataset, needed to resolve source-scoped
-   *   product/name/category text; omit to keep the previous dataset.
+   * @param {object|null} dataset the full dataset; omit to keep the previous dataset.
    */
   setGenes(genes, goTerms = null, dataset = this.dataset) {
     this.genes = genes;
     this.goTerms = goTerms;
     this.dataset = dataset;
-  }
-
-  /** Which enabled sources search suggestions and displayed text are scoped to. */
-  setAnnotationSource(source) {
-    this.source = normalizeAnnotationSources(source);
   }
 
   /** Run a query and render it. An empty query clears the list. */
@@ -147,9 +137,7 @@ export class GeneSearchResults {
 
   renderRow(hit) {
     const { gene, index } = hit;
-    const view = isAllSources(this.source)
-      ? gene : annotationSourceView(gene, this.dataset, this.source);
-    const geneName = geneIdentity(view);
+    const geneName = geneIdentity(gene);
     const item = document.createElement('li');
     item.className = 'search-result';
 

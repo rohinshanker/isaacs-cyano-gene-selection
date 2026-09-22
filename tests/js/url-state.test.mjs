@@ -77,48 +77,45 @@ test('an unknown or malformed category id in the hash is dropped rather than tru
   assert.deepEqual(restored.categoryFilter, ['stress-and-repair']);
 });
 
-test('a fresh view starts with every source on, and the field stays absent from that link', () => {
-  assert.deepEqual(defaultState().annotationSources, ['utex-2973', 'pcc-7942', 'go-iea']);
-  assert.ok(!/(^|&)as=/.test(encodeState(defaultState())), 'the default toggles leave no as= field');
-  assert.deepEqual(viewStateOf(defaultState()).annotationSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+test('a fresh view colours with every source on, and the field stays absent from that link', () => {
+  assert.deepEqual(defaultState().colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.ok(!/(^|&)cs=/.test(encodeState(defaultState())), 'the default toggles leave no cs= field');
+  assert.deepEqual(viewStateOf(defaultState()).colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
 });
 
-test('a single enabled source survives a shared link, in the old single-id form', () => {
+test('a narrower colour-source set survives a shared link in canonical order', () => {
   for (const source of ['utex-2973', 'pcc-7942', 'go-iea']) {
-    const state = { ...defaultState(), annotationSources: [source] };
-    const hash = encodeState(state);
-    assert.match(hash, new RegExp(`(^|&)as=${source}(&|$)`));
-    assert.deepEqual(decodeState(hash).annotationSources, [source]);
+    const hash = encodeState({ ...defaultState(), colorSources: [source] });
+    assert.match(hash, new RegExp(`(^|&)cs=${source}(&|$)`));
+    assert.deepEqual(decodeState(hash).colorSources, [source]);
   }
+  const hash = encodeState({ ...defaultState(), colorSources: ['go-iea', 'utex-2973'] });
+  assert.match(decodeURIComponent(hash), /(^|&)cs=utex-2973,go-iea(&|$)/);
+  assert.deepEqual(decodeState(hash).colorSources, ['utex-2973', 'go-iea']);
 });
 
-test('two enabled sources encode as a canonical comma list whatever order they were toggled', () => {
-  const state = { ...defaultState(), annotationSources: ['go-iea', 'utex-2973'] };
-  const hash = encodeState(state);
-  assert.match(decodeURIComponent(hash), /(^|&)as=utex-2973,go-iea(&|$)/);
-  assert.deepEqual(decodeState(hash).annotationSources, ['utex-2973', 'go-iea']);
+test('every colour source off encodes as an explicit none, never as the default', () => {
+  const hash = encodeState({ ...defaultState(), colorSources: [] });
+  assert.match(hash, /(^|&)cs=none(&|$)/);
+  assert.deepEqual(decodeState(hash).colorSources, []);
+  assert.deepEqual(applyDecoded({}, decodeState(hash)).colorSources, []);
 });
 
-test('every source off encodes as an explicit none, never as the default', () => {
-  const hash = encodeState({ ...defaultState(), annotationSources: [] });
-  assert.match(hash, /(^|&)as=none(&|$)/);
-  assert.deepEqual(decodeState(hash).annotationSources, []);
-  assert.deepEqual(applyDecoded({}, decodeState(hash)).annotationSources, []);
-});
-
-test('a version-3 link with one source id keeps meaning that source alone', () => {
+test('a version-3 link with the old single-source view field decodes without error and drops it', () => {
   const legacy = decodeState('#ver=3&p=native&c=gc3&as=pcc-7942&l=&t=radar');
-  assert.deepEqual(legacy.annotationSources, ['pcc-7942']);
-  assert.deepEqual(applyDecoded(defaultState(), legacy).annotationSources, ['pcc-7942']);
-  assert.deepEqual(decodeState('#as=all').annotationSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.equal(legacy.colorSources, undefined);
+  assert.ok(!Object.hasOwn(legacy, 'annotationSources'));
+  const applied = applyDecoded(defaultState(), legacy);
+  assert.deepEqual(applied.colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.equal(applied.colorBy, 'gc3');
+  assert.ok(!/(^|&)as=/.test(encodeState(applied)), 'the dropped field is never written back');
 });
 
-test('an unknown annotation source id in the hash is dropped rather than trusted', () => {
-  const restored = decodeState('#as=not-a-real-source');
-  assert.equal(restored.annotationSources, undefined);
-  const applied = applyDecoded({}, restored);
-  assert.deepEqual(applied.annotationSources, ['utex-2973', 'pcc-7942', 'go-iea']);
-  assert.deepEqual(decodeState('#as=go-iea,not-a-real-source').annotationSources, ['go-iea']);
+test('an unknown colour-source id in the hash is dropped rather than trusted', () => {
+  const restored = decodeState('#cs=not-a-real-source');
+  assert.equal(restored.colorSources, undefined);
+  assert.deepEqual(applyDecoded({}, restored).colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.deepEqual(decodeState('#cs=go-iea,not-a-real-source').colorSources, ['go-iea']);
 });
 
 test('explicit metric axes survive a shared link and reset to their defaults', () => {

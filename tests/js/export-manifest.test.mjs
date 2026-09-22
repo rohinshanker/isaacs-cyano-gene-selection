@@ -547,10 +547,9 @@ test('evidence tier, GO IEA context, and discrepancies survive CSV and manifest 
   assert.equal(without.manifest.dataset.goIeaEssentiality, null);
 });
 
-test('a single-source export leaves the GO IEA tier, context, probability, discrepancies, and '
-  + 'gene-detail essentiality blank; All sources keeps them', async () => {
+test('the GO IEA tier, context, probability, and discrepancies export whatever sources colour', async () => {
   const { dataset, registry } = await context();
-  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
+  const { dataset: scoped, coveredId } = colourSourceFixture(dataset);
   const note = 'GO IEA terms disagree with the UTEX 2973 RefSeq product.';
   const goIeaEssentiality = {
     datasetVersion: 'go-iea-essentiality-v1',
@@ -570,7 +569,7 @@ test('a single-source export leaves the GO IEA tier, context, probability, discr
 
   const allResult = buildExport({
     dataset: withEvidence, registry, ids: [coveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'all',
+    generatedAt: new Date('2026-09-18T20:00:00Z'),
   });
   assert.equal(allResult.rows[0].essentialityEvidenceTier, 'go-iea-context');
   assert.equal(allResult.rows[0].goIeaEssentialityContext, 'core-cellular-process');
@@ -578,17 +577,15 @@ test('a single-source export leaves the GO IEA tier, context, probability, discr
   assert.equal(allResult.rows[0].annotationDiscrepancies, note);
   assert.equal(allResult.manifest.genes[0].essentialityEvidence.tier, 'go-iea-context');
 
-  for (const annotationSource of ['utex-2973', 'pcc-7942', 'go-iea']) {
-    const result = buildExport({
-      dataset: withEvidence, registry, ids: [coveredId], schemes: [{ map: {} }],
-      generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource,
-    });
-    assert.equal(result.rows[0].essentialityEvidenceTier, '', annotationSource);
-    assert.equal(result.rows[0].goIeaEssentialityContext, '', annotationSource);
-    assert.equal(result.rows[0].goIeaCoreProcessProbability, '', annotationSource);
-    assert.equal(result.rows[0].annotationDiscrepancies, '', annotationSource);
-    assert.equal(result.manifest.genes[0].essentialityEvidence, null, annotationSource);
-  }
+  // Colour-source toggles never blank evidence: with only PCC 7942 enabled for
+  // colouring the GO IEA tier, context, and notes are still exported.
+  const pccOnly = buildExport({
+    dataset: withEvidence, registry, ids: [coveredId], schemes: [{ map: {} }],
+    generatedAt: new Date('2026-09-18T20:00:00Z'), colorSources: ['pcc-7942'],
+  });
+  assert.equal(pccOnly.rows[0].essentialityEvidenceTier, 'go-iea-context');
+  assert.equal(pccOnly.rows[0].annotationDiscrepancies, note);
+  assert.equal(pccOnly.manifest.genes[0].essentialityEvidence.tier, 'go-iea-context');
 });
 
 test('GO relationships export as evidence-coded suggestions with pinned names', async () => {
@@ -609,7 +606,7 @@ test('GO relationships export as evidence-coded suggestions with pinned names', 
   assert.ok(result.manifest.caveats.some((line) => /IEA computational suggestions/.test(line)));
 });
 
-function sourceScopedFixture(dataset) {
+function colourSourceFixture(dataset) {
   const coveredId = dataset.genes[0].id;
   const uncoveredId = dataset.genes[1].id;
   const genes = dataset.genes.map((gene, index) => (index === 0
@@ -618,8 +615,10 @@ function sourceScopedFixture(dataset) {
     : gene));
   const functionCategories = {
     assignmentsById: new Map([[coveredId, { categoryIds: ['stress-and-repair'] }]]),
+    categoryIds: ['stress-and-repair'],
     source: { vocabulary: {
-      categories: [{ id: 'stress-and-repair', label: 'Stress and repair' }],
+      categories: [{ id: 'stress-and-repair', label: 'Stress and repair' },
+        { id: 'unknown-or-unclassified', label: 'Unknown or unclassified' }],
       multipleFunctionsBucket: { id: 'multiple-functions', label: 'Multiple functions' },
     }, coverage: { reviewedRows: 1 }, provenance: { userReview: { date: '2026-09-22' } } },
   };
@@ -644,101 +643,39 @@ function sourceScopedFixture(dataset) {
   };
 }
 
-test('all sources is unaffected by the new parameter: identical with or without it', async () => {
+test('every row keeps every source whatever is enabled for colouring; only the colour changes', async () => {
   const { dataset, registry } = await context();
-  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
-  const withDefault = exportFor(scoped, registry, [coveredId], [{ map: {} }]);
-  const withExplicitAll = buildExport({
+  const { dataset: scoped, coveredId, uncoveredId } = colourSourceFixture(dataset);
+  const all = exportFor(scoped, registry, [coveredId, uncoveredId], [{ map: {} }]);
+  assert.deepEqual(all.manifest.functionColourSources,
+    { id: 'all', label: 'All sources', enabled: ['utex-2973', 'pcc-7942', 'go-iea'] });
+  assert.ok(!all.columns.includes('annotationSource'), 'no per-row source column');
+  assert.equal(all.rows[0].name, 'thrA');
+  assert.equal(all.rows[0].functionCategory, 'Stress and repair');
+  assert.equal(all.rows[0].functionCategoryEvidence, 'reviewed');
+  assert.equal(all.rows[0].pcc7942Essentiality, 'essential');
+  assert.equal(all.manifest.genes[0].goAnnotations[0].name, 'photosystem I');
+  assert.equal(all.rows[1].pcc7942Essentiality, 'unknown');
+  assert.equal(all.rows[1].functionCategory, 'Unknown or unclassified');
+
+  const pccOnly = buildExport({
     dataset: scoped, registry, ids: [coveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'all',
+    generatedAt: new Date('2026-09-18T20:00:00Z'), colorSources: ['pcc-7942'],
   });
-  assert.equal(withDefault.manifest.manifestId, withExplicitAll.manifest.manifestId);
-  assert.equal(withDefault.csv, withExplicitAll.csv);
-  assert.equal(withDefault.manifest.annotationSource.id, 'all');
-  assert.equal(withDefault.rows[0].annotationSource, 'all');
-});
-
-test('a single source records itself in the manifest so a file cannot be mistaken for "all"', async () => {
-  const { dataset, registry } = await context();
-  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
-  const result = buildExport({
-    dataset: scoped, registry, ids: [coveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'utex-2973',
-  });
-  assert.deepEqual(result.manifest.annotationSource,
-    { id: 'utex-2973', label: 'UTEX 2973', enabled: ['utex-2973'] });
-  assert.equal(result.rows[0].annotationSource, 'utex-2973');
-  assert.ok(result.manifest.caveats.some((line) => /annotationSource is "utex-2973"/.test(line)));
-});
-
-test('a UTEX-only export carries product, name, and category, blank PCC and GO', async () => {
-  const { dataset, registry } = await context();
-  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
-  const result = buildExport({
-    dataset: scoped, registry, ids: [coveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'utex-2973',
-  });
-  assert.equal(result.rows[0].name, 'thrA');
-  assert.equal(result.rows[0].functionCategory, 'Stress and repair');
-  assert.equal(result.rows[0].pcc7942Essentiality, '');
-  assert.equal(result.rows[0].pcc7942LocusTag, '');
-  assert.deepEqual(result.manifest.genes[0].goAnnotations, []);
-});
-
-test('a PCC-only export carries essentiality, blank product, name, category, and GO', async () => {
-  const { dataset, registry } = await context();
-  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
-  const result = buildExport({
-    dataset: scoped, registry, ids: [coveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'pcc-7942',
-  });
-  assert.equal(result.rows[0].pcc7942Essentiality, 'essential');
-  assert.equal(result.rows[0].pcc7942LocusTag, 'SYNPCC7942_RS00005');
-  assert.equal(result.rows[0].name, '');
-  assert.equal(result.rows[0].product, '');
-  assert.equal(result.rows[0].functionCategory, '');
-  assert.deepEqual(result.manifest.genes[0].goAnnotations, []);
-  assert.match(result.manifest.caveats.join(' '), /cross-strain assumption/);
-});
-
-test('a PCC-only export leaves an unjoined locus blank, never showing "unknown" as if it were a call', async () => {
-  const { dataset, registry } = await context();
-  const { dataset: scoped, uncoveredId } = sourceScopedFixture(dataset);
-  const result = buildExport({
-    dataset: scoped, registry, ids: [uncoveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'pcc-7942',
-  });
-  assert.equal(result.rows[0].pcc7942Essentiality, '');
-  assert.equal(result.rows[0].pcc7942LocusTag, '');
-  assert.equal(result.manifest.genes[0].pcc7942Essentiality, null);
-});
-
-test('a GO-IEA-only export carries GO relationships, blank product, name, category, and PCC', async () => {
-  const { dataset, registry } = await context();
-  const { dataset: scoped, coveredId } = sourceScopedFixture(dataset);
-  const result = buildExport({
-    dataset: scoped, registry, ids: [coveredId], schemes: [{ map: {} }],
-    generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'go-iea',
-  });
-  assert.equal(result.manifest.genes[0].goAnnotations[0].name, 'photosystem I');
-  assert.equal(result.rows[0].name, '');
-  assert.equal(result.rows[0].product, '');
-  assert.equal(result.rows[0].pcc7942Essentiality, '');
-  assert.match(result.manifest.caveats.join(' '), /Gene Ontology/);
-});
-
-test('a locus PCC and GO are both silent on exports blank for both of those sources', async () => {
-  const { dataset, registry } = await context();
-  const { dataset: scoped, uncoveredId } = sourceScopedFixture(dataset);
-  for (const annotationSource of ['pcc-7942', 'go-iea']) {
-    const result = buildExport({
-      dataset: scoped, registry, ids: [uncoveredId], schemes: [{ map: {} }],
-      generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource,
-    });
-    assert.equal(result.rows[0].product, '');
-    assert.equal(result.rows[0].pcc7942Essentiality, '');
-    assert.deepEqual(result.manifest.genes[0].goAnnotations, []);
-  }
+  assert.deepEqual(pccOnly.manifest.functionColourSources,
+    { id: 'pcc-7942', label: 'PCC 7942', enabled: ['pcc-7942'] });
+  // The reviewed row is off for colouring, so the colour bucket is unknown, but
+  // the reviewed labels, name, product, essentiality, and GO rows are all still there.
+  assert.equal(pccOnly.rows[0].functionCategory, 'Unknown or unclassified');
+  assert.equal(pccOnly.rows[0].functionCategoryEvidence, '');
+  assert.equal(pccOnly.rows[0].reviewedFunctionCategories, 'Stress and repair');
+  assert.equal(pccOnly.rows[0].functionReviewStatus, 'reviewed');
+  assert.equal(pccOnly.rows[0].name, 'thrA');
+  assert.equal(pccOnly.rows[0].pcc7942Essentiality, 'essential');
+  assert.equal(pccOnly.manifest.genes[0].goAnnotations.length, 1);
+  assert.equal(pccOnly.manifest.genes[0].reviewedFunctionAssignment.categoryIds[0], 'stress-and-repair');
+  assert.ok(pccOnly.manifest.caveats.some((line) => /enabled for colouring: PCC 7942/.test(line)));
+  assert.equal(pccOnly.manifest.viewState, null);
 });
 
 test('the CSV parser handles the shapes the writer can emit', () => {

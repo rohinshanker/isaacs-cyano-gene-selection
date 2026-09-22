@@ -82,35 +82,30 @@ sorted, deduplicated category ids; unknown ids are dropped on decode and a
 hash without `cf` decodes to no category filter. The export manifest records
 the committed selection in both its `filterState` and `viewState` fields.
 
-## Annotation sources
+## Annotation sources for colouring
 
-The **Annotation sources** control is three independent checkboxes, UTEX
-2973, PCC 7942, and GO IEA, all on in a fresh view. All three on is the
-combined view; exactly one on is that source's single-source view; every
-toggle off blanks every annotation field and leaves every CDS unknown. The
-enabled set is encoded in the URL field `as` only when it is not the default:
-a single id, a comma list of ids in canonical order, or `none`. Versions up to
-3 wrote `as` as one id, which still decodes to that source alone, so old links
-keep their meaning. Every view reads annotation fields through one accessor
-(`site/js/core/annotation-source.js`), so the detail panel, shortlist and
-comparison tables, panel-designer gene list, search suggestions, category
-colour, and export agree on what the enabled sources annotated; see the
-[data contract](data-contract.md#annotation-source-views) for the blank-value
-rule. Search still matches locus tags in every view because identity is not
-one source's annotation, while name and product suggestions come only from
-UTEX 2973 and GO suggestions only from GO IEA. The GO IEA evidence tier and
-its discrepancy notes belong to the combined view alone; PCC 7942 alone shows
-the borrowed call without them.
+Three checkboxes, UTEX 2973, PCC 7942, and GO IEA, sit inside the category
+legend directly above the category rows and appear only when **Colour by** is
+Function category. All three are on in a fresh view. They govern
+function-category colouring and the legend counts only; the detail panel,
+shortlist and comparison tables, panel-designer gene list, search
+suggestions, and export always show every source, including the GO IEA
+evidence tier and its discrepancy notes. The single-source views and their
+`as` URL field no longer exist: a version-3 hash carrying `as` decodes
+without error and the field is dropped.
 
-In Function category colour mode the toggles also decide the colour: a
-lab-reviewed UTEX 2973 assignment always wins when that source is on, an
-enabled PCC 7942 or GO IEA source otherwise supplies its derived category,
-and two derived sources that disagree fall into the multiple-functions
-bucket. Derived colour draws as a hollow ring with a centre dot, the legend
-title names the counted sources and its counts change live with each toggle,
-and hover, click, and multi-select filtering act on the resolved category;
-see [source-derived-categories.md](source-derived-categories.md). Toggles
-are re-synced from the URL on hash and history changes.
+The enabled set is encoded in the URL field `cs` only when it is not the
+default: a single id, a comma list of ids in canonical order, or `none`. In
+Function category colour mode the toggles decide the colour by precedence
+UTEX 2973 > PCC 7942 > GO IEA: a lab-reviewed assignment wins when that
+source is on, otherwise the PCC-derived category, otherwise the GO-derived
+category, otherwise unknown. A lower-priority enabled source that assigns a
+different category never changes the colour; the detail panel and export name
+the conflict. Derived colour draws as a hollow ring with a centre dot, the
+legend title names the counted sources and its counts change live with each
+checkbox, keyboard focus stays on the checkbox after the legend rebuilds, and
+hover, click, and multi-select filtering act on the resolved category; see
+[source-derived-categories.md](source-derived-categories.md).
 
 ## Pinned status row
 
@@ -139,12 +134,12 @@ pair and keeps plotting the axes its author shared. Version 3 omits them when
 the axes are the measured fresh-view pair. A hash with no `ver` was not written
 by this encoder, so its axes stay unspecified and fall to rule 3, the fresh
 default, because axes have no local persistence; an explicit
-`ax`/`ay` wins in every version. Version 4 changed the grammar of `as` from
-one source id to a comma list or `none`; a version-3 single id still means
-that source alone, and an older reader given a version-4 list falls back to
-every source. `tests/js/url-state.test.mjs` covers the old snapshot, the
-explicit override, the unversioned fragment, the `as` migration, and the
-current round trip.
+`ax`/`ay` wins in every version. Version 4 dropped the single-source view
+field `as` and added `cs` for the colour-source checkboxes as a comma list or
+`none`; a version-3 hash with `as` decodes without error and opens on every
+source. `tests/js/url-state.test.mjs` covers the old snapshot, the explicit
+override, the unversioned fragment, the dropped `as` field, and the current
+round trip.
 
 Before applying a decoded snapshot, all state fields reset to fresh defaults;
 omitted default-valued fields therefore cannot leak from the prior view. One

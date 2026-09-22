@@ -13,19 +13,29 @@ explicit evidence labels and records the calibration; you then accept or
 reject in `docs/validation/AAA-biological-decisions-to-review.md`. The 13
 reviewed assignments are never changed by this work.
 
+## Scope change (2026-09-22, owner)
+
+The annotation-source toggles govern **function-category colouring and the
+category legend counts only**. The detail panel, tables, panel-designer list,
+search suggestions, and export always show every source; the single-source
+blanking views and the `as` URL field are removed with a versioned migration.
+The toggles sit inside the legend directly above the reviewed-categories
+section, shown only when Colour by is Function category, and that section's
+title states what is counted under the enabled sources.
+
 ## Current State
 
-Implemented on branch `feat/source-derived-colour` (DEM-109) and awaiting the
-owner's decision in row 11 of
-`docs/validation/AAA-biological-decisions-to-review.md`. Per-source toggles
-replace the single choice (`as` migrated at encoder version 4);
-`site/data/source-derived-categories-v1.json` pins Jev-judged categories from
-PCC 7942 product names (1,093 of 2,542 assigned at P ≥ 0.8) and GO IEA terms
-(1,028 of 1,584); reviewed rows always win, disagreement goes to the
-multiple-functions bucket, derived colour is a hollow marker under
-`pcc-7942-derived` / `go-iea-derived` labels, legend counts follow the
-enabled sources, and the export carries evidence and per-source columns.
-Evidence, thresholds, calibration, and the spot check are in
+Implemented on branch `feat/source-derived-colour` (DEM-109) under the scope
+change above and the later precedence note (UTEX > PCC > GO, conflicts
+coloured by the highest-priority enabled source and named in the detail
+panel and export). Awaiting the owner's decision in row 12 of
+`docs/validation/AAA-biological-decisions-to-review.md`. Three checkboxes in
+the legend govern colouring and counts (URL field `cs`; the old `as` field is
+dropped on decode); `site/data/source-derived-categories-v1.json` pins
+Jev-judged categories from PCC 7942 product names (1,093 of 2,542 assigned
+at P ≥ 0.8) and GO IEA terms (1,028 of 1,584). UTEX alone colours 12 CDSs,
+UTEX with PCC 1,096, all three 1,364 with 13 conflicts. Evidence, threshold
+calibration, and the spot check are in
 `docs/validation/source-derived-categories.md`. The text below records the
 state this ticket started from.
 
@@ -42,8 +52,8 @@ Change this so the PCC 7942 and GO IEA datasets can also drive category
 colour when they are turned on, and so the legend counts reflect the datasets
 currently selected:
 
-- **Per-source toggles.** Replace the single-choice annotation source with
-  independent toggles for UTEX 2973, PCC 7942, and GO IEA. All three on is
+- **Per-source toggles.** Three checkboxes, UTEX 2973, PCC 7942, and GO IEA, inside the legend above
+  the category section, replace the single-choice annotation source. All three on is
   today's All sources view; exactly one on is today's single-source view, so
   the blank-field rule in `docs/validation/data-contract.md` still holds for
   each source. Migrate the URL field `as` under the existing versioned
@@ -62,14 +72,15 @@ currently selected:
   substring matching. The build never runs in the browser or in CI with the
   API key.
 - **Colour resolution.** With the sources that are on, a CDS takes the
-  lab-reviewed UTEX category when one exists (reviewed always wins), otherwise
-  the derived category from an enabled source; when enabled sources disagree
-  the CDS falls into the existing multiple-functions bucket and the detail
-  panel names each source's category. Derived colour is never shown as
-  reviewed: the legend, detail panel, and export label the evidence
-  (`reviewed`, `pcc-7942-derived`, `go-iea-derived`) and the derived layer
-  uses a visibly distinct marker treatment (for example an inner dot or
-  hollow variant) so reviewed and computational colour are never confused.
+  lab-reviewed UTEX category when one exists, otherwise the PCC-derived
+  category, otherwise the GO-derived category (UTEX > PCC > GO). When enabled
+  sources disagree, the CDS is coloured by the highest-priority enabled source
+  and the detail panel and export list each source's category with an
+  explicit conflict note; conflicts never use the multiple-functions bucket.
+  Derived colour is never shown as reviewed: the legend, detail panel, and
+  export label the evidence (`reviewed`, `pcc-7942-derived`,
+  `go-iea-derived`) and the derived layer uses a visibly distinct marker
+  treatment so reviewed and computational colour are never confused.
 - **Legend counts.** Each category row shows the number of CDSs resolved to
   that category under the currently enabled sources, and the unknown and
   multiple-functions rows recount accordingly; the title states which sources

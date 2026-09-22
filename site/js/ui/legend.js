@@ -5,6 +5,7 @@ import {
   PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
+import { SOURCE_TOGGLES } from '../core/annotation-source.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -95,16 +96,51 @@ export function categoryLegendTitle(sources, hasDerivedData) {
 }
 
 /** The evidence sentence under the counts, or null when nothing is derived. */
-export function categoryEvidenceSummary(evidenceCounts, hasDerivedData) {
+export function categoryEvidenceSummary(evidenceCounts, hasDerivedData, conflictCount = 0) {
   if (!hasDerivedData || !evidenceCounts) return null;
-  const derived = evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
-    + evidenceCounts['both-derived'];
   return `${formatCount(evidenceCounts.reviewed)} coloured by lab review, `
-    + `${formatCount(derived)} by a derived source `
-    + `(${formatCount(evidenceCounts['pcc-7942-derived'])} PCC 7942 only, `
-    + `${formatCount(evidenceCounts['go-iea-derived'])} GO IEA only, `
-    + `${formatCount(evidenceCounts['both-derived'])} both), `
-    + `${formatCount(evidenceCounts.none)} by neither.`;
+    + `${formatCount(evidenceCounts['pcc-7942-derived'])} by PCC 7942, `
+    + `${formatCount(evidenceCounts['go-iea-derived'])} by GO IEA, `
+    + `${formatCount(evidenceCounts.none)} by no enabled source`
+    + (conflictCount > 0
+      ? `; ${formatCount(conflictCount)} coloured by a higher-priority source over a conflicting one.`
+      : '.');
+}
+
+/**
+ * The three colour-source checkboxes, rendered inside the legend above the
+ * category rows. They govern colouring and these counts only.
+ */
+function renderSourceToggles(sources, onToggleSource) {
+  const group = document.createElement('fieldset');
+  group.className = 'source-toggles';
+  group.id = 'annotation-sources';
+  group.setAttribute('aria-describedby', 'annotation-source-hint');
+  const legend = document.createElement('legend');
+  legend.className = 'visually-hidden';
+  legend.textContent = 'Annotation sources for colouring';
+  const label = document.createElement('span');
+  label.className = 'source-toggles-label';
+  label.setAttribute('aria-hidden', 'true');
+  label.textContent = 'Colour by sources';
+  group.append(legend, label);
+  for (const { id, label: text } of SOURCE_TOGGLES) {
+    const row = document.createElement('span');
+    row.className = 'checkbox-row source-toggle';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = `annotation-source-${id}`;
+    input.value = id;
+    input.dataset.sourceId = id;
+    input.checked = sources.includes(id);
+    input.addEventListener('change', () => onToggleSource(id, input.checked));
+    const name = document.createElement('label');
+    name.htmlFor = input.id;
+    name.textContent = text;
+    row.append(input, name);
+    group.append(row);
+  }
+  return group;
 }
 
 /**
@@ -117,19 +153,23 @@ export function renderCategoryLegend(host, {
   labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
-  evidenceCounts = null, derivedThreshold = null,
+  evidenceCounts = null, derivedThreshold = null, conflictCount = 0,
   onHoverCategory = () => {}, onFocusCategory = () => {},
-  onToggleCategory = () => {}, onResetCategoryFilter = () => {},
+  onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
   // A row rerender (every toggle calls renderAll) replaces every list element,
   // which would otherwise drop keyboard focus to BODY and break repeated
-  // Enter/Space toggling on the same row. Remember which category id held
-  // focus and restore it once the new rows exist.
+  // Enter/Space toggling on the same row. Remember which category id or
+  // source checkbox held focus and restore it once the new rows exist.
   const focusedId = host.contains(document.activeElement)
     ? document.activeElement.dataset.categoryId ?? null
     : null;
+  const focusedSource = host.contains(document.activeElement)
+    ? document.activeElement.dataset.sourceId ?? null
+    : null;
   host.replaceChildren();
   host.classList.add('category-mode');
+  const toggles = renderSourceToggles(sources, onToggleSource);
   const title = document.createElement('p');
   title.className = 'legend-title';
   title.textContent = categoryLegendTitle(sources, hasDerivedData);
@@ -187,7 +227,6 @@ export function renderCategoryLegend(host, {
   if (hasDerivedData) {
     const derivedCount = evidenceCounts
       ? evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
-        + evidenceCounts['both-derived']
       : null;
     staticRow('Derived (computational) category: ring with centre dot', 'derived-circle',
       scale.buckets[0], derivedCount, DERIVED_MARKER_FILL);
@@ -211,16 +250,16 @@ export function renderCategoryLegend(host, {
   const note = document.createElement('p');
   note.className = 'legend-ramp-note';
   note.textContent = (hasDerivedData
-    ? 'A lab-reviewed UTEX 2973 assignment always wins. Otherwise an enabled PCC 7942 or GO '
-      + 'IEA source colours the point from a TypeSafe Jev judgment'
+    ? 'Precedence UTEX 2973 > PCC 7942 > GO IEA among the enabled sources: a lab-reviewed '
+      + 'assignment wins, then a PCC 7942 or GO IEA category from a TypeSafe Jev judgment'
       + `${derivedThreshold === null ? '' : ` at probability ${derivedThreshold.toFixed(2)} or above`}`
-      + ', labelled pcc-7942-derived or go-iea-derived; two derived sources that disagree fall '
-      + 'into Multiple functions. '
+      + ', labelled pcc-7942-derived or go-iea-derived. A lower source that disagrees never '
+      + 'changes the colour; the detail panel and export name the conflict. '
     : 'Only lab-reviewed locus assignments receive a category colour. '
       + 'GO IEA suggestions alone leave a gene unclassified. ')
     + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
-  host.append(title, list);
-  const summary = categoryEvidenceSummary(evidenceCounts, hasDerivedData);
+  host.append(toggles, title, list);
+  const summary = categoryEvidenceSummary(evidenceCounts, hasDerivedData, conflictCount);
   if (summary) {
     const evidence = document.createElement('p');
     evidence.className = 'legend-ramp-note legend-evidence';
@@ -234,6 +273,10 @@ export function renderCategoryLegend(host, {
   if (focusedId !== null) {
     const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
       .find((row) => row.dataset.categoryId === focusedId);
+    if (toFocus) toFocus.focus();
+  }
+  if (focusedSource !== null) {
+    const toFocus = toggles.querySelector(`input[data-source-id="${focusedSource}"]`);
     if (toFocus) toFocus.focus();
   }
 }

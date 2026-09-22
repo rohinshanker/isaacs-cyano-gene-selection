@@ -238,11 +238,6 @@ if (window.location.protocol === 'file:') {
               <label for="color-by">Colour by</label>
               <select id="color-by"></select>
             </span>
-            <fieldset class="field-row source-toggles" id="annotation-sources"
-                      aria-describedby="annotation-source-hint">
-              <legend class="visually-hidden">Annotation sources</legend>
-              <span class="source-toggles-label" aria-hidden="true">Annotation sources</span>
-            </fieldset>
             <span class="field-row field-row-grow">
               <label for="gene-search">Find a gene</label>
               <input id="gene-search" type="search" autocomplete="off"
@@ -273,14 +268,13 @@ if (window.location.protocol === 'file:') {
           such as rubisco are translated into the wording this genome uses.
         </p>
         <p class="visually-hidden" id="annotation-source-hint">
-          Each toggle enables one annotation source. All three on combines UTEX 2973,
-          PCC 7942, and GO IEA annotations, the same as before the toggles existed. With
-          fewer on, the detail panel, lists, search, category colour, and the export show
-          only what the enabled sources annotate for every gene; a gene an enabled source
-          has nothing to say about is shown blank, never filled in from a disabled source.
-          Function-category colour uses the lab-reviewed UTEX 2973 assignment when that
-          source is on, otherwise a category derived from the enabled PCC 7942 product name
-          or GO IEA terms, drawn as a hollow ring with a centre dot and labelled as derived.
+          Each checkbox enables one annotation source for function-category colouring and
+          the legend counts only; the detail panel, lists, search, and export always show
+          every source. Colour follows UTEX 2973, then PCC 7942, then GO IEA among the
+          enabled sources: a lab-reviewed assignment wins, otherwise a category derived
+          from the PCC 7942 product name or the GO IEA terms, drawn as a hollow ring with a
+          centre dot and labelled as derived. A lower source that disagrees never changes
+          the colour; the gene detail names the conflict.
         </p>
         <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
         <p class="filter-banner" id="filter-banner" role="status"></p>

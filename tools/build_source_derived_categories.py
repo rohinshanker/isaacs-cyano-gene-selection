@@ -123,13 +123,17 @@ POLICY = {
         "the source assigns nothing for the locus."
     ),
     "precedence": (
-        "When the UTEX 2973 source is enabled and the locus has a lab-reviewed row, the "
-        "reviewed category is the colour, including a reviewed unknown. Otherwise the "
-        "colour is the category assigned by an enabled derived source."
+        "UTEX 2973 > PCC 7942 > GO IEA. With the enabled sources, a locus takes the "
+        "lab-reviewed UTEX category when one exists (including a reviewed unknown), "
+        "otherwise the PCC-derived category, otherwise the GO-derived category, "
+        "otherwise unknown."
     ),
-    "disagreementRule": (
-        "When two enabled derived sources assign different categories, the locus takes "
-        "the multiple-functions bucket and the detail panel names each source's category."
+    "conflictRule": (
+        "When enabled sources assign different categories, the locus is coloured by the "
+        "highest-priority enabled source and the detail panel and export list every "
+        "source's category with an explicit conflict note. Conflicts never use the "
+        "multiple-functions bucket, which is reserved for a reviewed row with two "
+        "categories."
     ),
     "reviewedTable": (
         "Derived categories never enter site/data/function-categories-v1.json, never "
@@ -405,28 +409,25 @@ def derived_category(answer: dict[str, Any]) -> str | None:
 
 
 def resolve_bucket(reviewed: list[str] | None, derived: dict[str, str | None],
-                   enabled: tuple[str, ...]) -> tuple[str, list[str]]:
-    """Applies reviewed-wins precedence and the disagreement rule for one locus.
+                   enabled: tuple[str, ...]) -> tuple[str, str | None, list[str]]:
+    """Applies UTEX > PCC > GO precedence for one locus.
 
-    Returns the bucket id and the evidence labels behind it. `enabled` names the
+    Returns the bucket id, the evidence label of the source that coloured it
+    (None when nothing did), and the lower-priority enabled sources whose
+    assigned category conflicts with that colour. `enabled` names the
     toggled-on sources among utex-2973, pcc-7942, and go-iea.
     """
+    ranked: list[tuple[str, str]] = []
     if "utex-2973" in enabled and reviewed is not None:
-        if len(reviewed) > 1:
-            return MULTIPLE_ID, ["reviewed"]
-        return reviewed[0], ["reviewed"]
-    assigned = [
-        (f"{source}-derived", derived[source])
-        for source in SOURCES
-        if source in enabled and derived.get(source)
-    ]
-    if not assigned:
-        return UNKNOWN_ID, []
-    categories = {category for _, category in assigned}
-    labels = [label for label, _ in assigned]
-    if len(categories) == 1:
-        return assigned[0][1], labels
-    return MULTIPLE_ID, labels
+        ranked.append(("reviewed", MULTIPLE_ID if len(reviewed) > 1 else reviewed[0]))
+    for source in SOURCES:
+        if source in enabled and derived.get(source):
+            ranked.append((f"{source}-derived", derived[source]))
+    if not ranked:
+        return UNKNOWN_ID, None, []
+    label, bucket = ranked[0]
+    conflicts = [other for other, category in ranked[1:] if category != bucket]
+    return bucket, label, conflicts
 
 
 def locus_record(locus: str, inputs: Inputs, results: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -535,20 +536,24 @@ def resolved_counts(by_locus: dict[str, dict[str, Any]], inputs: Inputs,
     """Legend counts under one toggle combination, exactly as the browser resolves them."""
     buckets: Counter[str] = Counter()
     evidence: Counter[str] = Counter()
+    conflicts = 0
     for locus, row in by_locus.items():
-        bucket, labels = resolve_bucket(
+        bucket, label, conflicting = resolve_bucket(
             inputs.reviewed.get(locus),
             {source: (row[source] or {}).get("categoryId") for source in SOURCES},
             enabled,
         )
         buckets[bucket] += 1
-        evidence["+".join(labels) if labels else "none"] += 1
+        evidence[label or "none"] += 1
+        conflicts += bool(conflicting)
     return {
         "enabledSources": list(enabled),
         "byCategory": {category: buckets[category] for category in inputs.category_ids[:-1]},
         "multipleFunctions": buckets[MULTIPLE_ID],
         "unknownOrUnclassified": buckets[UNKNOWN_ID],
+        "coloured": sum(buckets.values()) - buckets[UNKNOWN_ID],
         "byEvidence": dict(sorted(evidence.items())),
+        "conflicts": conflicts,
     }
 
 
@@ -847,7 +852,7 @@ def generate(root: Path, check: bool) -> None:
         f"{'OK' if check else 'Wrote'}: {OUTPUT_PATH} "
         + ", ".join(f"{source} assigned={counts[source]['assigned']}/{counts[source]['judged']}"
                     for source in SOURCES)
-        + f"; {payload['counts']['bothSourcesAssigned']['disagree']} loci where the sources disagree"
+        + f"; {payload['counts']['bothSourcesAssigned']['disagree']} loci where the sources conflict"
     )
 
 

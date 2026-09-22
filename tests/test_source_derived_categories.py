@@ -192,23 +192,24 @@ def test_assignment_rule_thresholds_and_unknown() -> None:
     assert derived.derived_category(answer(UNKNOWN, 1.0)) is None
 
 
-def test_resolve_bucket_precedence_and_disagreement() -> None:
+def test_resolve_bucket_precedence_and_conflicts() -> None:
     both = {"pcc-7942": "stress-and-repair", "go-iea": "transport-and-envelope"}
     assert derived.resolve_bucket(["other-characterized"], both, ALL) == (
-        "other-characterized", ["reviewed"])
-    assert derived.resolve_bucket(["a", "b"], both, ALL) == (MULTIPLE, ["reviewed"])
-    assert derived.resolve_bucket([UNKNOWN], both, ALL) == (UNKNOWN, ["reviewed"])
+        "other-characterized", "reviewed", ["pcc-7942-derived", "go-iea-derived"])
+    assert derived.resolve_bucket(["a", "b"], both, ALL) == (
+        MULTIPLE, "reviewed", ["pcc-7942-derived", "go-iea-derived"])
+    assert derived.resolve_bucket([UNKNOWN], both, ALL) == (
+        UNKNOWN, "reviewed", ["pcc-7942-derived", "go-iea-derived"])
     assert derived.resolve_bucket(None, both, ALL) == (
-        MULTIPLE, ["pcc-7942-derived", "go-iea-derived"])
+        "stress-and-repair", "pcc-7942-derived", ["go-iea-derived"])
     assert derived.resolve_bucket(["other-characterized"], both, ("pcc-7942", "go-iea")) == (
-        MULTIPLE, ["pcc-7942-derived", "go-iea-derived"])
+        "stress-and-repair", "pcc-7942-derived", ["go-iea-derived"])
     assert derived.resolve_bucket(None, both, ("go-iea",)) == (
-        "transport-and-envelope", ["go-iea-derived"])
+        "transport-and-envelope", "go-iea-derived", [])
     agree = {"pcc-7942": "stress-and-repair", "go-iea": "stress-and-repair"}
-    assert derived.resolve_bucket(None, agree, ALL) == (
-        "stress-and-repair", ["pcc-7942-derived", "go-iea-derived"])
-    assert derived.resolve_bucket(None, {"pcc-7942": None, "go-iea": None}, ALL) == (UNKNOWN, [])
-    assert derived.resolve_bucket(["other-characterized"], both, ()) == (UNKNOWN, [])
+    assert derived.resolve_bucket(None, agree, ALL) == ("stress-and-repair", "pcc-7942-derived", [])
+    assert derived.resolve_bucket(None, {"pcc-7942": None, "go-iea": None}, ALL) == (UNKNOWN, None, [])
+    assert derived.resolve_bucket(["other-characterized"], both, ()) == (UNKNOWN, None, [])
 
 
 def test_published_categories_follow_their_probabilities(payload) -> None:
@@ -295,6 +296,7 @@ def test_judge_from_scratch_pins_every_request(tmp_path: Path) -> None:
     legend = payload["counts"]["allSourcesLegend"]
     assert legend["byEvidence"]["reviewed"] == 13
     assert legend["byCategory"]["photosynthetic-light-reactions"] == 3
+    assert legend["conflicts"] == 12
 
 
 def test_a_wrong_model_is_refused(tmp_path: Path) -> None:
@@ -340,3 +342,10 @@ def test_legend_counts_by_toggle_cover_every_locus(audit_summary, payload) -> No
     utex = audit_summary["legendByToggle"]["utex-2973"]
     assert utex["byEvidence"] == {"none": 2702, "reviewed": 13}
     assert utex["unknownOrUnclassified"] == 2703
+    assert utex["coloured"] == 12
+    # UTEX alone colours few; UTEX with PCC many more; all three the most.
+    with_pcc = audit_summary["legendByToggle"]["utex-2973+pcc-7942"]["coloured"]
+    everything = payload["counts"]["allSourcesLegend"]["coloured"]
+    assert 12 < with_pcc < everything
+    assert payload["counts"]["allSourcesLegend"]["conflicts"] == 13
+    assert payload["counts"]["allSourcesLegend"]["multipleFunctions"] == 0

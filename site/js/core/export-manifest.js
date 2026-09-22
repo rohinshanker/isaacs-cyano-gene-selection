@@ -17,11 +17,10 @@ import { metricHelp } from './metric-help.js';
 import { reviewedFunctionLabels } from './function-categories.js';
 import { discrepancyCell, essentialityEvidenceFor } from './go-iea-essentiality.js';
 import {
-  ALL_SOURCES, UTEX_SOURCE, PCC_SOURCE, GO_IEA_SOURCE, annotationSourceEvidenceNote,
-  annotationSourceId, annotationSourceLabel, annotationSourceView, isAllSources,
+  PCC_SOURCE, GO_IEA_SOURCE, annotationSourceId, annotationSourceLabel,
   normalizeAnnotationSources,
 } from './annotation-source.js';
-import { categoryResolutionFor } from './source-derived-categories.js';
+import { categoryResolutionFor, conflictNote } from './source-derived-categories.js';
 import { csvField } from '../ui/format.js';
 
 export const MANIFEST_VERSION = 2;
@@ -30,9 +29,10 @@ export const EXPORT_BASENAME = 'recoding-candidates';
 
 /** Columns that identify a row, before the metric columns. */
 export const IDENTITY_COLUMNS = Object.freeze([
-  'manifestId', 'schemeId', 'schemeName', 'annotationSource', 'id', 'name', 'product',
+  'manifestId', 'schemeId', 'schemeName', 'id', 'name', 'product',
   'functionCategory', 'reviewedFunctionCategories', 'functionReviewStatus',
-  'functionCategoryEvidence', 'pcc7942DerivedCategory', 'pcc7942DerivedProbability',
+  'functionCategoryEvidence', 'functionCategoryConflict',
+  'pcc7942DerivedCategory', 'pcc7942DerivedProbability',
   'goIeaDerivedCategory', 'goIeaDerivedProbability',
   'seqid', 'start', 'end',
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
@@ -153,15 +153,11 @@ export function exportFileBase(manifest) {
 function caveatsFor(dataset, manifest) {
   const { meta } = dataset;
   const caveats = [];
-  const sourceId = manifest.annotationSource?.id ?? ALL_SOURCES;
-  const enabled = manifest.annotationSource?.enabled ?? normalizeAnnotationSources(sourceId);
-  if (sourceId === ALL_SOURCES) {
-    caveats.push('annotationSource is "all": every row combines UTEX 2973, PCC 7942, and GO IEA '
-      + 'annotations, the same as the site’s combined view.');
-  } else {
-    caveats.push(`annotationSource is "${sourceId}" (${manifest.annotationSource.label}): every `
-      + 'annotation field outside the enabled sources is blank on every row, never filled from '
-      + `a disabled source. ${annotationSourceEvidenceNote(enabled)}`);
+  const colourSources = manifest.functionColourSources;
+  if (colourSources && dataset.functionCategories) {
+    caveats.push(`functionCategory was resolved with these sources enabled for colouring: `
+      + `${colourSources.label} (${colourSources.enabled.join(', ') || 'none'}). Every row still `
+      + 'carries every source’s annotations; the toggles govern colour and legend counts only.');
   }
   caveats.push(
     'Codon position zero is the initiation triplet and is never recoded; it is excluded from '
@@ -246,13 +242,10 @@ function caveatsFor(dataset, manifest) {
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
   filterState = null, filterMask = null, viewState = null,
-  annotationSources = undefined, annotationSource = undefined, trRosettaRnaHandoffs = [],
+  colorSources = undefined, trRosettaRnaHandoffs = [],
 }) {
-  // Either the enabled-source list or a legacy single id names the view.
-  const sources = normalizeAnnotationSources(annotationSources ?? annotationSource);
-  const source = annotationSourceId(sources);
-  const combined = isAllSources(sources);
-  const utexOn = sources.includes(UTEX_SOURCE);
+  // The sources enabled for category colouring; every other field is unscoped.
+  const sources = normalizeAnnotationSources(colorSources);
   const { meta, genes, indexById, table } = dataset;
   const schemeList = normaliseSchemes(schemes);
   const metrics = registry.metrics;
@@ -268,48 +261,37 @@ export function buildExport({
       const gene = genes[index];
       const sequence = recodedSequence(dataset, index, compiled);
       const basis = expressionBasisOf(gene);
-      // "All sources" keeps reading the gene/dataset fields exactly as before this
-      // feature existed, so that view stays byte-identical. A single source reads
-      // only through the source-scoped accessor, which leaves a field blank rather
-      // than filling it from another source.
-      const sourceView = combined ? null : annotationSourceView(gene, dataset, sources);
       const category = categoryResolutionFor({
         reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
         sources, locusId: id,
       });
+      // Every judged source's own category is a data fact and is always exported,
+      // whether or not that source is enabled for colouring.
       const derivedCell = (sourceId) => {
         const entry = category?.perSource[sourceId];
-        return entry?.enabled && entry.judged ? {
+        return entry?.judged ? {
           category: entry.label ?? '', probability: entry.categoryId ? entry.probability : '',
         } : { category: '', probability: '' };
       };
       const pccDerived = derivedCell(PCC_SOURCE);
       const goDerived = derivedCell(GO_IEA_SOURCE);
-      const pccCall = sourceView
-        ? { status: sourceView.essentialityStatus, pccLocusTag: sourceView.pccLocusTag,
-          mappingStatus: sourceView.pccMappingStatus }
-        : dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
-      // The GO IEA tier and its discrepancy notes belong to the All sources view
-      // only; a single-source row leaves them blank.
-      const evidence = sourceView ? null : essentialityEvidenceFor(dataset.goIeaEssentiality, id);
+      const pccCall = dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
+      const evidence = essentialityEvidenceFor(dataset.goIeaEssentiality, id);
       const row = {
         manifestId: '',
         schemeId: scheme.schemeId,
         schemeName: scheme.name ?? '',
-        annotationSource: source,
         id: gene.id,
-        name: (sourceView ? sourceView.name : gene.name) ?? '',
-        product: (sourceView ? sourceView.product : gene.product) ?? '',
-        // The colour bucket under the enabled sources. With UTEX 2973 on every
-        // locus has a value (unknown when unreviewed and underived); with it off
-        // the cell is blank unless an enabled derived source judged the locus.
-        functionCategory: category && (utexOn || category.anyJudged) ? category.label : '',
-        reviewedFunctionCategories: (utexOn
-          ? reviewedFunctionLabels(dataset.functionCategories, gene.id) : []).join('; '),
-        functionReviewStatus: utexOn && dataset.functionCategories
+        name: gene.name ?? '',
+        product: gene.product ?? '',
+        // The colour bucket under the sources enabled for colouring.
+        functionCategory: category?.label ?? '',
+        reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, gene.id).join('; '),
+        functionReviewStatus: dataset.functionCategories
           ? dataset.functionCategories.assignmentsById.has(gene.id) ? 'reviewed' : 'unreviewed'
           : '',
-        functionCategoryEvidence: (category?.evidence ?? []).join('; '),
+        functionCategoryEvidence: category?.evidence ?? '',
+        functionCategoryConflict: conflictNote(category),
         pcc7942DerivedCategory: pccDerived.category,
         pcc7942DerivedProbability: pccDerived.probability,
         goIeaDerivedCategory: goDerived.category,
@@ -407,9 +389,10 @@ export function buildExport({
     expressionSource: meta.expressionSource ?? null,
     filterState: filterState ?? null,
     viewState: viewState ?? null,
-    // Records which annotation view produced this export, so a single-source
-    // file cannot be mistaken for the combined view.
-    annotationSource: { id: source, label: annotationSourceLabel(sources), enabled: sources },
+    // Which sources were enabled for category colouring when this file was made.
+    functionColourSources: {
+      id: annotationSourceId(sources), label: annotationSourceLabel(sources), enabled: sources,
+    },
     trRosettaRnaHandoffs: trRosettaRnaHandoffs.map((entry) => ({
       locus: entry.locus,
       form: entry.form,
@@ -424,21 +407,20 @@ export function buildExport({
       .filter((id) => indexById.has(id))
       .map((id) => {
         const gene = genes[indexById.get(id)];
-        const sourceView = combined ? null : annotationSourceView(gene, dataset, sources);
         const category = categoryResolutionFor({
           reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
           sources, locusId: id,
         });
         const derivedEntry = (sourceId) => {
           const entry = category?.perSource[sourceId];
-          if (!entry?.enabled || !entry.judged) return null;
+          if (!entry?.judged) return null;
           return {
             categoryId: entry.categoryId, label: entry.label, mostLikely: entry.mostLikely,
             probability: entry.probability, pccLocusTag: entry.pccLocusTag,
+            enabledForColouring: entry.enabled,
           };
         };
-        const goAnnotations = (sourceView ? sourceView.goAnnotations
-          : gene.annotationEvidence?.goAnnotations ?? []).map((relation) => ({
+        const goAnnotations = (gene.annotationEvidence?.goAnnotations ?? []).map((relation) => ({
           ...relation,
           name: dataset.goTerms?.terms?.[relation.goId]?.name ?? null,
           isObsoleteInNameRelease: Boolean(
@@ -447,27 +429,20 @@ export function buildExport({
         }));
         return {
           id: gene.id,
-          name: (sourceView ? sourceView.name : gene.name) ?? null,
-          product: (sourceView ? sourceView.product : gene.product) ?? null,
+          name: gene.name ?? null,
+          product: gene.product ?? null,
           terminalStop: gene.terminalStop ?? null,
           translationalException: gene.translationalException ?? null,
           cdsSegments: gene.cdsSegments ?? null,
           expressionBasis: expressionBasisOf(gene).basis,
           testedAllele: dataset.candidateEvidence?.testedAlleles[id] ?? null,
-          essentialityEvidence: sourceView ? null : dataset.goIeaEssentiality?.byLocus?.[id] ?? null,
-          pcc7942Essentiality: sourceView
-            ? (sourceView.essentialityStatus === null ? null : {
-              status: sourceView.essentialityStatus,
-              pccLocusTag: sourceView.pccLocusTag,
-              mappingStatus: sourceView.pccMappingStatus,
-            })
-            : dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null,
-          functionCategory: category && (utexOn || category.anyJudged) ? category.label : null,
-          functionCategoryEvidence: category?.evidence ?? [],
-          reviewedFunctionCategories: utexOn
-            ? reviewedFunctionLabels(dataset.functionCategories, id) : [],
-          reviewedFunctionAssignment: utexOn
-            ? dataset.functionCategories?.assignmentsById.get(id) ?? null : null,
+          essentialityEvidence: dataset.goIeaEssentiality?.byLocus?.[id] ?? null,
+          pcc7942Essentiality: dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null,
+          functionCategory: category?.label ?? null,
+          functionCategoryEvidence: category?.evidence ?? null,
+          functionCategoryConflicts: category?.conflicts ?? [],
+          reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, id),
+          reviewedFunctionAssignment: dataset.functionCategories?.assignmentsById.get(id) ?? null,
           derivedFunctionCategories: {
             [PCC_SOURCE]: derivedEntry(PCC_SOURCE),
             [GO_IEA_SOURCE]: derivedEntry(GO_IEA_SOURCE),
