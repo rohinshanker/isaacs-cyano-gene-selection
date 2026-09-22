@@ -42,6 +42,8 @@ test('priority conventions and measured-source boundaries are explicit', () => {
   assert.match(help('minLocalTai').method, /arithmetic mean/);
   assert.match(help('expression').origin, /PCC 7942/);
   assert.match(help('tssInitiation').origin, /UTEX 2973/);
+  assert.match(help('tssInitiation').method, /separately pinned Figshare per-TSS feature set/);
+  assert.match(help('tssInitiation').method, /independent of the Table S1 site list/);
   assert.match(help('targetFraction').method, /stop edit/);
   assert.match(help('encExpected').method, /2 \+ s \+ 29/);
   assert.doesNotMatch(help('encExpected').summary, /20 to 61/);

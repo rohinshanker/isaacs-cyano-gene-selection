@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import csv
 import json
-import re
 from pathlib import Path
+
+from scripts.tss_evidence import load_tss_evidence
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,7 +14,6 @@ INITIATION = ROOT / "data/expression/tan2018_utex2973_tss_initiation.tsv"
 TABLE_S1 = ROOT / "data/expression/tan2018_utex2973_tss_table_s1.tsv"
 SITE_GENES = ROOT / "site/data/genes.json"
 SITE_EVIDENCE = ROOT / "site/data/tss_evidence.json"
-CURRENT_LOCUS = re.compile(r"M744_RS\d{5}\Z")
 
 
 def _tsv_rows(path: Path) -> list[dict[str, str]]:
@@ -26,12 +26,9 @@ def test_pinned_tss_layers_keep_the_explained_membership_mismatch() -> None:
     genes = json.loads(SITE_GENES.read_text(encoding="utf-8"))
     current_loci = {gene["id"] for gene in genes}
     initiation_loci = {row["locus_tag"] for row in _tsv_rows(INITIATION)}
-    table_s1_loci = {
-        row["locus_tag"]
-        for row in _tsv_rows(TABLE_S1)
-        if CURRENT_LOCUS.fullmatch(row["locus_tag"])
-        and row["locus_tag"] in current_loci
-    }
+    table_s1_evidence, summary = load_tss_evidence(TABLE_S1, current_loci)
+    table_s1_loci = set(table_s1_evidence)
+    assert summary["matchedRows"] == 2_432
 
     # The browser copies must express the same two pinned joins.
     site_values = {

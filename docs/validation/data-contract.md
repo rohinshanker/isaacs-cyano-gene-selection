@@ -379,8 +379,9 @@ authors' `log2FoldChange` and `padj` versus control. Missing differential pairs
 are `null`, never zero. This is promoter-level initiation evidence, not a metric
 for ranking whole-gene RNA abundance; do not combine multiple TSSs into one
 fold change. `meta.tssEvidenceSource` identifies the source, biological-replicate
-count (two per condition), threshold, and exact-join coverage. The source and
-derived-table hashes and reproduction steps are in
+count (two per condition), threshold, exact-join coverage, and the paired pooled
+metric's provenance id in `pooledScoreSourceId`. The source and derived-table
+hashes and reproduction steps are in
 `data/expression/TAN2018_TSS_PROVENANCE.md`.
 
 This site-row layer and the `tssInitiation` metric deliberately remain separate.
@@ -572,4 +573,7 @@ The export manifest records `annotationSource` as `{ id, label }` and every
 row carries the same `annotationSource` id, with a caveat naming the source
 and its evidence note, so a single-source file cannot be mistaken for the
 combined view. The GO IEA essentiality tier, context, probability, and
-discrepancy fields are populated only for All sources exports.
+discrepancy fields are populated only for All sources exports. Every export
+also names `tssInitiationBasis`, `tssInitiationBasisReason`, and
+`tssMappedSiteCount`; these remain blank unless both `meta.tssEvidenceSource`
+and its provenance-linked pooled-score metric are present.

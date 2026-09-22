@@ -11,27 +11,24 @@ Keep the layers independent, Option C, with the reason on every detail and
 export row; recorded in `AAA-biological-decisions-to-review.md` row 11 for lab
 review. No reconciliation or shared rebuild in this ticket.
 
-## Requires your validation
+## Lab review boundary
 
-An agent can reproduce the counts, record the join rule, and fix the wording,
-but the reconciliation choice is yours. When the implementer's report lands,
-decide one of: (a) one shared locus set for both layers; (b) each layer falls
-back on the other with a labelled basis; (c) the layers stay separate with
-the reason stated in every row. Record the decision in
-`docs/validation/AAA-biological-decisions-to-review.md`; the implementer must
-not merge the layers without it.
+The repository owner selected Option C: keep the layers independent and state
+the reason in every detail and export row. The biological-decision register
+retains all three quantified options for lab review; this ticket does not merge,
+backfill, or rebuild either pinned layer.
 
 ## Current State
 
 The implementation now reproduces the exact 472 site-only and 410 score-only
 loci, documents that the mismatch comes from two independent exact-locus source
 tables rather than a shared distance window, and labels both directions in gene
-detail and exports. The layers remain separate pending the owner's choice among
-the three quantified options in the biological-decision register.
+detail and exports. The layers remain separate under the owner's Option C
+decision, pending lab review of the biological-decision register.
 
 Two Tan 2018 derived layers disagree about which genes have TSS evidence.
-About 472 loci have Table S1 TSS site rows but no `tssInitiation` value, and
-about 410 loci have a `tssInitiation` value but no site rows. A gene can
+Exactly 472 loci have Table S1 TSS site rows but no `tssInitiation` value, and
+exactly 410 loci have a `tssInitiation` value but no site rows. A gene can
 therefore show "TSS initiation evidence (2 mapped sites)" beside a metric row
 that reads "no basis". This predates the CAI/tAI default changes and was
 surfaced while promoting measured evidence to the defaults. Sources:
@@ -61,10 +58,18 @@ Work required:
 
 ## Verification
 
-Pending: a reproducible count script or test that asserts the two mismatch
-counts against the pinned data and fails if they drift; unit tests for the
-new wording path; contract validator green; rendered inspection of a locus in
-each mismatch direction at desktop and about 390 px.
+- `tests/test_tss_layer_mismatch.py` calls the production
+  `load_tss_evidence` join and asserts 1,789 site loci, 1,727 score loci, a
+  1,317-locus intersection, 472 site-only loci, and 410 score-only loci.
+- JavaScript coverage verifies absent-layer exports, provenance-driven wording,
+  the one-shape manifest basis, the shipped mismatch examples, and the corrected
+  metric help.
+- `npm test`: 498 passed. Python: 302 passed and 22 subtests passed. Contract
+  validation: 82 passed, one declared spliced-CDS skip. Live metrics: passed.
+- The real site was inspected at 1440×900 and 390×844 with `M744_RS00030`
+  pinned: the Figshare/Table S1 wording and site-only basis wrapped without page
+  or help overflow. The no-Tan fixture exported blank TSS basis, reason, and site
+  count fields. Both final browser sessions had zero console messages.
 
 ## Cleanup
 

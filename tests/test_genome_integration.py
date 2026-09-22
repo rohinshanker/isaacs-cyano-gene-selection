@@ -140,6 +140,7 @@ def test_generated_documents_follow_contract():
 
     tss_source = meta["tssEvidenceSource"]
     tss_rows = json.loads((DATA / "tss_evidence.json").read_text())
+    assert tss_source["pooledScoreSourceId"] == "TAN2018_TSS"
     assert tss_source["replicatesPerCondition"] == 2
     assert tss_source["isGeneBodyAbundance"] is False
     assert tss_source["summary"] == {

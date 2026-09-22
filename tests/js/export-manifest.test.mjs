@@ -16,7 +16,7 @@ import {
   buildExport, parseCsv, schemeIdOf, canonicalJson, fnv1a64, recodedSequence,
   WILD_TYPE_SCHEME_ID, MANIFEST_VERSION,
 } from '../../site/js/core/export-manifest.js';
-import { expressionFixtureDataset, fileFetch } from './helpers.mjs';
+import { expressionFixtureDataset, fixtureDataset, fileFetch } from './helpers.mjs';
 
 const SYN61 = { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' };
 const AMBER = { TAG: 'TAA' };
@@ -30,6 +30,17 @@ async function context() {
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
   cached = { dataset, registry };
   return cached;
+}
+
+let cachedShipped = null;
+async function shippedContext() {
+  if (cachedShipped) return cachedShipped;
+  const dataset = await loadDataset({
+    baseUrl: new URL('../../site/data/', import.meta.url).href, fetchImpl: fileFetch(),
+  });
+  const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
+  cachedShipped = { dataset, registry: buildMetricRegistry(dataset.meta, dataset.genes, live) };
+  return cachedShipped;
 }
 
 function exportFor(dataset, registry, ids, schemes, generatedAt = new Date('2026-09-18T20:00:00Z')) {
@@ -466,23 +477,34 @@ test('a Tan TSS source is pinned in the export without calling it gene abundance
   assert.ok(result.manifest.caveats.some((line) => /not whole-gene RNA abundance/.test(line)));
 });
 
-test('export rows explain both TSS mismatch directions', async () => {
-  const { dataset: original, registry } = await context();
-  const genes = original.genes.map((gene) => ({ ...gene }));
-  genes[0].tssInitiation = null;
-  genes[0].tssEvidence = [{ id: 'gTSS+10' }, { id: 'gTSS+20' }];
-  genes[1].tssInitiation = 42;
-  genes[1].tssEvidence = [];
-  const dataset = { ...original, genes };
-  const result = exportFor(dataset, registry, [genes[0].id, genes[1].id], [{ map: {} }]);
+test('shipped-data export rows explain both TSS mismatch directions', async () => {
+  const { dataset, registry } = await shippedContext();
+  const result = exportFor(dataset, registry, ['M744_RS00030', 'M744_RS00010'], [{ map: {} }]);
 
-  assert.equal(result.rows[0].tssMappedSiteCount, 2);
-  assert.match(result.rows[0].tssInitiationBasis, /2 mapped sites; pooled score absent/);
+  assert.equal(result.rows[0].tssMappedSiteCount, 1);
+  assert.match(result.rows[0].tssInitiationBasis, /1 mapped site; pooled score absent/);
   assert.match(result.rows[0].tssInitiationBasisReason, /do not backfill/);
   assert.equal(result.rows[1].tssMappedSiteCount, 0);
   assert.match(result.rows[1].tssInitiationBasis, /pooled score; no exact Table S1 site/);
   assert.match(result.rows[1].tssInitiationBasisReason, /exact locus tag/);
-  assert.equal(result.manifest.genes[0].tssInitiationBasis.siteCount, 2);
+  assert.equal(result.manifest.genes[0].tssInitiationBasis,
+    result.rows[0].tssInitiationBasis);
+  assert.equal(result.manifest.genes[0].tssInitiationBasisDetail.mappedSiteCount, 1);
+});
+
+test('fixture exports leave TSS basis columns blank when both layers are absent', async () => {
+  const dataset = await fixtureDataset();
+  const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
+  const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
+  const result = exportFor(dataset, registry, [dataset.genes[0].id], [{ map: {} }]);
+  const row = result.rows[0];
+  assert.equal(row.tssInitiationBasis, '');
+  assert.equal(row.tssInitiationBasisReason, '');
+  assert.equal(row.tssMappedSiteCount, '');
+  assert.equal(result.manifest.genes[0].tssInitiationBasis, '');
+  assert.deepEqual(result.manifest.genes[0].tssInitiationBasisDetail, {
+    basis: 'unrecorded', reason: null, mappedSiteCount: null,
+  });
 });
 
 test('UTEX allele and borrowed PCC call retain separate provenance in CSV and manifest', async () => {
