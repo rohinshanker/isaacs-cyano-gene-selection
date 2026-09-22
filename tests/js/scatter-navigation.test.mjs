@@ -9,8 +9,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   findNeighbor, clampZoom, projectionCanZoom, enterTarget, togglePinTarget, shortlistTarget,
-  formatTick, tickTarget, MIN_ZOOM, MAX_ZOOM,
+  formatTick, tickTarget, fitAxisTitle, MIN_ZOOM, MAX_ZOOM,
 } from '../../site/js/ui/scatter.js';
+
+/** A deterministic stand-in for CanvasRenderingContext2D.measureText: fixed-width glyphs. */
+function fixedWidthContext(charWidth = 6) {
+  return { measureText: (text) => ({ width: text.length * charWidth }) };
+}
 
 // Four points around the origin: right, left, up, down, one screen unit apart.
 const projection = {
@@ -145,4 +150,45 @@ test('a narrow axis asks for fewer ticks so its labels cannot run together', () 
   assert.equal(tickTarget(20, 74), 2);
   assert.equal(tickTarget(NaN, 74), 6);
   assert.equal(tickTarget(250, 0), 6);
+});
+
+test('a title that already fits is left untouched', () => {
+  const context = fixedWidthContext();
+  const full = 'Downstream-neighbor distance, percentile';
+  assert.equal(fitAxisTitle(context, full, ', percentile', full.length * 6), full);
+});
+
+test('a narrow axis shortens the metric name but never the scale suffix', () => {
+  const context = fixedWidthContext();
+  const full = 'Downstream-neighbor distance, percentile';
+  const suffix = ', percentile';
+  // Narrow enough that the full title cannot fit, wide enough for a shortened name.
+  const shortened = fitAxisTitle(context, full, suffix, 30 * 6);
+  assert.ok(shortened.endsWith(suffix), `expected "${shortened}" to keep "${suffix}"`);
+  assert.ok(shortened.includes('…'), `expected "${shortened}" to be shortened`);
+  assert.ok(shortened.length < full.length);
+});
+
+test('a title with a unit suffix instead of a scale is shortened the same way', () => {
+  const context = fixedWidthContext();
+  const full = 'TSS initiation (UTEX 2973) (counts)';
+  const suffix = ' (counts)';
+  const shortened = fitAxisTitle(context, full, suffix, 20 * 6);
+  assert.ok(shortened.endsWith(suffix));
+  assert.ok(shortened.includes('…'));
+});
+
+test('no suffix falls back to shortening the whole title, unchanged from before', () => {
+  const context = fixedWidthContext();
+  const full = 'A very long metric label with no unit or scale suffix at all';
+  const shortened = fitAxisTitle(context, full, '', 20 * 6);
+  assert.ok(shortened.endsWith('…'));
+  assert.ok(shortened.length < full.length);
+});
+
+test('an impossibly narrow width still keeps the full scale suffix intact', () => {
+  const context = fixedWidthContext();
+  const full = 'Downstream-neighbor distance, percentile';
+  const shortened = fitAxisTitle(context, full, ', percentile', 1);
+  assert.equal(shortened, '…, percentile');
 });

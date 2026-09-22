@@ -15,7 +15,7 @@ import {
   orderMeasuredFirst, defaultColorMetricKey,
 } from './core/metric-registry.js';
 import {
-  encodeState, decodeState, defaultState, applyDecoded, clearSelections,
+  encodeState, decodeState, defaultState, applyDecoded, clearSelections, viewStateOf,
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection } from './ui/panels.js';
@@ -27,7 +27,8 @@ import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
 } from './core/function-categories.js';
 import {
-  buildMetricAxesProjection, resolveDefaultMetricAxes, axisTitle,
+  buildMetricAxesProjection, resolveDefaultMetricAxes, axisTitle, axisTitleSuffix,
+  isDiagonalAxisPair, axesUnavailableMessage,
   metricLog10Availability, log10DisabledReason, AXIS_SCALES, DEFAULT_AXIS_SCALE,
 } from './core/metric-axes.js';
 import { projectionHelp } from './core/projection-help.js';
@@ -326,14 +327,15 @@ function projectionFor(panelId) {
     }, { x: state.axisXScale, y: state.axisYScale }, context.mask);
     const projection = {
       available: axes.available && axes.finitePairCount > 0,
-      message: axes.available
-        ? 'No genes have values on both selected axes. Choose another pair of metrics.'
-        : 'A selected metric is unavailable in this dataset. Choose another axis.',
+      message: axesUnavailableMessage(axes),
       x: axes.x.values,
       y: axes.y.values,
       independentAxes: true,
       xLabel: axisTitle(axes.x),
       yLabel: axisTitle(axes.y),
+      xLabelSuffix: axisTitleSuffix(axes.x),
+      yLabelSuffix: axisTitleSuffix(axes.y),
+      isDiagonalPair: isDiagonalAxisPair(axes),
       labels: context.dataset.genes.map(geneMapLabel),
       loadings: [],
       loadingNote: 'These are direct metric axes, not PCA components. There are no loadings.',
@@ -490,7 +492,7 @@ function renderMap() {
     element('axis-y').value = state.axisY;
     const xLog = syncAxisScaleAvailability('x');
     const yLog = syncAxisScaleAvailability('y');
-    const pairs = state.axisX === state.axisY
+    const pairs = projection.isDiagonalPair
       ? `${formatCount(projection.finitePairCount)} genes have this metric. Identical axes place points on a diagonal.`
       : `${formatCount(projection.finitePairCount)} genes have values on both axes; missing pairs are not plotted.`;
     const scaleNotes = [...new Set([
@@ -667,16 +669,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       translationalException: state.exceptionFilter,
     },
     filterMask: context.mask,
-    viewState: () => ({
-      panel: state.panel,
-      colorBy: state.colorBy,
-      axisX: state.axisX,
-      axisY: state.axisY,
-      axisXScale: state.axisXScale,
-      axisYScale: state.axisYScale,
-      categoryFilter: state.categoryFilter,
-      annotationSource: state.annotationSource,
-    }),
+    viewState: () => viewStateOf(state),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
     schemeActive: Object.keys(state.schemeMap).length > 0,

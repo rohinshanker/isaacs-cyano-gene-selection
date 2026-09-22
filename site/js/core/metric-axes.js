@@ -106,13 +106,12 @@ function toLog10(values) {
 }
 
 /**
- * Percentile rank (0-100) of each value against the visible cohort's finite
- * values on this axis. `mask` selects the cohort, 1 per visible row; `null`
- * means every row is in the cohort. A row outside the cohort still receives a
- * rank against it, so a filtered-out gene keeps a map coordinate exactly like
- * every other axis scale does.
+ * The visible cohort's finite values on this axis, sorted ascending. `mask`
+ * selects the cohort, 1 per visible row; `null` means every row is in the
+ * cohort. An empty result means every filter-visible gene lacks this metric
+ * (or every gene is filtered out), so nothing can be ranked against it.
  */
-function toPercentile(values, mask) {
+function percentileCohort(values, mask) {
   const cohort = [];
   for (let index = 0; index < values.length; index += 1) {
     if (mask && !mask[index]) continue;
@@ -120,6 +119,17 @@ function toPercentile(values, mask) {
     if (Number.isFinite(value)) cohort.push(value);
   }
   cohort.sort((a, b) => a - b);
+  return cohort;
+}
+
+/**
+ * Percentile rank (0-100) of each value against `cohort`. A row outside the
+ * cohort still receives a rank against it, so a filtered-out gene keeps a map
+ * coordinate exactly like every other axis scale does. An empty cohort ranks
+ * every row NaN, including rows with a finite raw value: there is nothing to
+ * rank against, not a missing measurement.
+ */
+function toPercentile(values, cohort) {
   const out = new Float64Array(values.length);
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
@@ -136,15 +146,22 @@ export function axisScaleName(scale) {
 }
 
 /**
- * The axis title a plot draws: always names a nonlinear scale, per the
- * explicit-metric-axes contract. Percentile and log10 replace the metric's
- * native unit rather than appending to it, because the plotted numbers are no
- * longer in that unit.
+ * The part of an axis title after the metric name: a nonlinear scale always
+ * wins over the native unit, per the explicit-metric-axes contract, because
+ * the plotted numbers are no longer in that unit. Empty for a plain linear
+ * axis with no declared unit. Kept separate from `axisTitle` so a renderer
+ * that must shorten the title can shorten the metric name and never this
+ * suffix.
  */
-export function axisTitle(axis) {
+export function axisTitleSuffix(axis) {
   const scaleName = axisScaleName(axis.scale);
-  if (scaleName) return `${axis.label}, ${scaleName}`;
-  return axis.unit ? `${axis.label} (${axis.unit})` : axis.label;
+  if (scaleName) return `, ${scaleName}`;
+  return axis.unit ? ` (${axis.unit})` : '';
+}
+
+/** The axis title a plot draws: the metric name plus `axisTitleSuffix`. */
+export function axisTitle(axis) {
+  return `${axis.label}${axisTitleSuffix(axis)}`;
 }
 
 function buildAxis(registry, key, rowCount, requestedScale, mask) {
@@ -155,8 +172,9 @@ function buildAxis(registry, key, rowCount, requestedScale, mask) {
   // A stale or hand-edited link asking for log10 on a metric that cannot take
   // it falls back to linear rather than drawing every gene as unavailable.
   const effectiveScale = scale === 'log10' && !log10.available ? DEFAULT_AXIS_SCALE : scale;
+  const cohort = effectiveScale === 'percentile' ? percentileCohort(raw, mask) : null;
   const values = effectiveScale === 'log10' ? toLog10(raw)
-    : effectiveScale === 'percentile' ? toPercentile(raw, mask)
+    : effectiveScale === 'percentile' ? toPercentile(raw, cohort)
       : raw;
   return {
     key,
@@ -167,6 +185,9 @@ function buildAxis(registry, key, rowCount, requestedScale, mask) {
     scale: effectiveScale,
     requestedScale: scale,
     log10Availability: log10,
+    // Only meaningful when `scale === 'percentile'`: true means the ranking
+    // cohort itself was empty, so this axis's NaNs are unranked, not missing.
+    percentileCohortEmpty: cohort !== null && cohort.length === 0,
     rawValues: raw,
     values,
   };
@@ -209,4 +230,41 @@ export function buildMetricAxesProjection(
     finitePairCount,
     available: x.available && y.available,
   };
+}
+
+/**
+ * Whether the same registry key on both axes actually draws a diagonal: only
+ * true when both axes also share their effective scale. Matching keys under
+ * different scales (e.g. linear against percentile) trace a curve, not a
+ * line, because the two axes are no longer the same transform of the metric.
+ *
+ * @param {{x: object, y: object}} axes result of buildMetricAxesProjection.
+ */
+export function isDiagonalAxisPair(axes) {
+  return axes.x.key === axes.y.key && axes.x.scale === axes.y.scale;
+}
+
+/**
+ * The reason an axes projection has nothing to plot, distinguishing a
+ * genuinely unavailable metric from an empty percentile ranking cohort: the
+ * latter still has metric values, they are just unranked because no visible
+ * gene remains to rank them against. Returns null when the projection has
+ * finite pairs to plot.
+ *
+ * @param {{x: object, y: object, available: boolean, finitePairCount: number}} axes
+ * @returns {string|null}
+ */
+export function axesUnavailableMessage(axes) {
+  if (axes.finitePairCount > 0) return null;
+  if (!axes.available) {
+    return 'A selected metric is unavailable in this dataset. Choose another axis.';
+  }
+  const emptyCohortAxis = axes.x.percentileCohortEmpty ? axes.x
+    : axes.y.percentileCohortEmpty ? axes.y
+      : null;
+  if (emptyCohortAxis) {
+    return `No visible genes remain to rank ${emptyCohortAxis.label} by percentile. `
+      + 'Relax the filters to restore a ranking cohort.';
+  }
+  return 'No genes have values on both selected axes. Choose another pair of metrics.';
 }

@@ -10,6 +10,9 @@ import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { loadDataset } from '../../site/js/core/dataset.js';
 import { toggleCategorySelection, passesCategoryFilter } from '../../site/js/core/function-categories.js';
 import {
+  decodeState, applyDecoded, defaultState, viewStateOf,
+} from '../../site/js/core/url-state.js';
+import {
   buildExport, parseCsv, schemeIdOf, canonicalJson, fnv1a64, recodedSequence,
   WILD_TYPE_SCHEME_ID, MANIFEST_VERSION,
 } from '../../site/js/core/export-manifest.js';
@@ -129,6 +132,27 @@ test('an export records nondefault axis scales beside the axis keys, so a file c
   // The scale is metadata about the plot, not the metric: the raw numeric
   // value in the CSV is untouched by how the axis was displayed.
   assert.equal(result.rows[0].lengthNt, dataset.genes[0].lengthNt);
+});
+
+test('an axis-scale export wires through the real URL-state decode and app viewState builder, '
+  + 'not a hand-authored viewState object', async () => {
+  // The previous test hand-types `viewState` as a literal, so app.js forgetting to carry
+  // axisXScale/axisYScale into its own viewState() builder would not fail it. This one decodes
+  // a real shared-link hash with the production decoder and builds `viewState` with the same
+  // `viewStateOf` function app.js calls, so an app wiring omission in either place fails here.
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  const decoded = decodeState('ver=3&p=axes&ax=lengthNt&ay=tssInitiation&xs=log10&ys=percentile');
+  const state = applyDecoded(defaultState(), decoded);
+  assert.equal(state.axisXScale, 'log10');
+  assert.equal(state.axisYScale, 'percentile');
+
+  const viewState = viewStateOf(state);
+  const result = buildExport({ dataset, registry, ids: [id], schemes: [{ map: {} }], viewState });
+  assert.equal(result.manifest.viewState.axisXScale, 'log10');
+  assert.equal(result.manifest.viewState.axisYScale, 'percentile');
+  assert.equal(result.manifest.viewState.axisX, 'lengthNt');
+  assert.equal(result.manifest.viewState.axisY, 'tssInitiation');
 });
 
 test('single, multiple, and unreviewed categories survive CSV and manifest export', async () => {
