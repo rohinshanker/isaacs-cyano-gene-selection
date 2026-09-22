@@ -13,7 +13,7 @@ The published site is
 [rohinshanker.github.io/isaacs-cyano-gene-selection](https://rohinshanker.github.io/isaacs-cyano-gene-selection/).
 For release validation and the separate review required before using an exported
 panel experimentally, use the
-[`Validation and experimental-use checklist`](docs/validation/manual-review-checklist.md).
+[`Validation and experimental-use checklist`](docs/validation/AAA-manual-review-checklist.md).
 
 ## What you can do with it
 
@@ -243,7 +243,7 @@ python3 -m venv .venv
 
 Then run the core developer gate. Every command must pass; the complete release
 gate, including annotation, Git-integrity, and rendered-browser checks, is in the
-[`Validation and experimental-use checklist`](docs/validation/manual-review-checklist.md).
+[`Validation and experimental-use checklist`](docs/validation/AAA-manual-review-checklist.md).
 
 ```sh
 ./.venv/bin/python tools/validate_contract.py --raw-dir data/raw  # 77 checks against the contract

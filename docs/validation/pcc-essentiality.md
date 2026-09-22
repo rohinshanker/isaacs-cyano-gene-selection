@@ -86,7 +86,7 @@ Use the pinned workbook, `site/data/genes.json`, and the release-pinned
 the exactness of the join before regenerating the site artifact. The CI build
 check, Python tests, candidate-evidence check, and JavaScript unit tests check
 deterministic output and missingness, while
-the [manual review checklist](manual-review-checklist.md#2-review-the-actual-biological-panel)
+the [manual review checklist](AAA-manual-review-checklist.md#2-review-the-actual-biological-panel)
 governs use of a borrowed call in an experimental panel. If the workbook,
 annotation release, or mapping policy changes, recheck all calls and source
 conditions before publishing.

@@ -116,7 +116,7 @@ Record the review environment:
 
 Complete this section for the exact exported manifest that may become an
 experiment plan. Keep that manifest with the lab record. Use the
-[biological decisions list](biological-decisions-to-review.md) to decide which
+[biological decisions list](AAA-biological-decisions-to-review.md) to decide which
 assumptions need specialist review for this panel.
 
 | Item | Pass condition | Notes or evidence |

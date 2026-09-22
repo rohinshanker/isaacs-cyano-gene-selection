@@ -23,7 +23,7 @@ Work required:
   direction: which join, filter, or locus-mapping rule admits a site row but
   not a metric value, and the reverse. Record the rule, not a guess.
 - Decide, and record for lab review in
-  `docs/validation/biological-decisions-to-review.md` (or its renamed
+  `docs/validation/AAA-biological-decisions-to-review.md` (or its renamed
   successor), whether the two layers should share one locus set, whether one
   should fall back on the other with a labelled basis, or whether they stay
   separate with clearer wording. Do not merge them silently; the gTSS and
