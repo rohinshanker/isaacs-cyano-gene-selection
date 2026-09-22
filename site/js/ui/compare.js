@@ -17,7 +17,8 @@ import {
   orderMeasuredFirst, metricsInDisplayOrder,
 } from '../core/metric-registry.js';
 import {
-  robustScale, zScore, seriesStyle, defaultAxes, MIN_AXES, Z_LIMIT, presentRuns,
+  robustScale, zScore, seriesStyle, defaultAxes, measurementLimitNote,
+  MIN_AXES, Z_LIMIT, presentRuns,
   countMissing, missingRanks, wrapLabel, describeMissing, describeMissingSentence,
   describeDroppedAxes, pluralise, drawMarker, drawMissingGlyph,
 } from './compare-model.js';
@@ -154,6 +155,12 @@ export class ComparePanel {
     this.unavailableNote = document.createElement('p');
     this.unavailableNote.className = 'panel-note axis-unavailable-note';
 
+    // A measurement this view promotes must say how thin it is right here, not
+    // only in the map's colour disclosure: the comparison is where a candidate
+    // is read against its peers.
+    this.measurementNote = document.createElement('p');
+    this.measurementNote.className = 'panel-note measurement-limits';
+
     this.panel = document.createElement('div');
     this.panel.id = 'compare-panel';
     this.panel.setAttribute('role', 'tabpanel');
@@ -197,7 +204,8 @@ export class ComparePanel {
     this.tableHost.className = 'table-region';
 
     this.host.append(
-      this.tablist, this.axisPicker, this.unavailableNote, this.panel, this.tableHeading, this.tableHost,
+      this.tablist, this.axisPicker, this.unavailableNote, this.measurementNote,
+      this.panel, this.tableHeading, this.tableHost,
     );
 
     this.canvas.addEventListener('pointerdown', (event) => this.onBrushStart(event));
@@ -274,9 +282,26 @@ export class ComparePanel {
     this.deltaTableHost.hidden = !isDelta;
 
     this.renderAxisPicker();
+    this.renderMeasurementNote();
     this.renderTable();
     if (isDelta) this.renderDelta();
     else this.drawActive();
+  }
+
+  /**
+   * Replicate depth, condition, and coverage for every measurement this region
+   * shows without the reader choosing it: the radar and parallel axes, and the
+   * measured columns the shared table and the pairwise delta list first. A
+   * metric with no declared limits contributes nothing, so the line disappears
+   * when the comparison is all derived indices.
+   */
+  renderMeasurementNote() {
+    const shown = [];
+    if (this.tab !== 'delta') shown.push(...this.activeAxes());
+    if (this.state.ids.length > 0) shown.push(...metricsInDisplayOrder(this.registry));
+    const note = measurementLimitNote(shown, this.state.dataset);
+    this.measurementNote.hidden = note === null;
+    this.measurementNote.textContent = note ?? '';
   }
 
   renderAxisPicker() {

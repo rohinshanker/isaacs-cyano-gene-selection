@@ -118,18 +118,34 @@ function readingNote(metric, dataset, formatCount) {
 
 /**
  * The same limits in one short clause, for a control that has room for a line
- * rather than a paragraph — the axis note beside the Metric X vs Y selectors.
- * The full wording stays in the metric's own explanation disclosure.
+ * rather than a paragraph: the axis note beside the Metric X vs Y selectors and
+ * the comparison views, wherever a measurement is a default rather than a
+ * choice. The full wording stays in the metric's own explanation disclosure.
+ *
+ * Replicate depth comes from the release record when it declares a count, and
+ * otherwise from the source's own condition sentence, which is where a study
+ * such as the PCC 7942 transcriptome states its replication. Neither is
+ * invented, and the coverage count always follows, so a promoted measurement
+ * never appears without saying how thin it is.
  */
 function shortLimits(metric, dataset, formatCount) {
-  const replicates = metric.key === 'tssInitiation'
+  const declaredReplicates = metric.key === 'tssInitiation'
     ? dataset.meta?.tssEvidenceSource?.replicatesPerCondition : undefined;
   const clauses = [];
-  if (Number.isFinite(replicates)) {
-    clauses.push(`${replicates} ${replicates === 1 ? 'replicate' : 'replicates'} per condition`);
+  if (Number.isFinite(declaredReplicates)) {
+    const conditions = dataset.meta?.tssEvidenceSource?.conditions?.length;
+    clauses.push(`${declaredReplicates} `
+      + `${declaredReplicates === 1 ? 'replicate' : 'replicates'} per condition`
+      + (Number.isFinite(conditions) ? ` across ${conditions} conditions` : ''));
   }
-  const coverage = measurementLimitClauses(metric, formatCount)
-    .find((clause) => clause.includes('genes have a value'));
+  const all = measurementLimitClauses(metric, formatCount);
+  const coverage = all.find((clause) => clause.includes('genes have a value'));
+  if (clauses.length === 0) {
+    // No declared count: the condition sentence carries the study's own
+    // replication and conditions, so it is quoted rather than dropped.
+    const condition = all.find((clause) => clause.startsWith('condition: '));
+    if (condition) clauses.push(condition.replace(/^condition: /, ''));
+  }
   if (coverage) clauses.push(coverage);
   return clauses.length > 0 ? clauses.join('; ') : null;
 }

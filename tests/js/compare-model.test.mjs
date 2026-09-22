@@ -8,8 +8,12 @@ import {
   robustScale, zScore, seriesStyle, SERIES_STYLES, defaultAxes, axisUnavailableReason,
   presentRuns, countMissing, missingRanks, wrapLabel, describeMissing, pluralise,
   describeMissingSentence, describeDroppedAxes, Z_LIMIT, MIN_AXES, DEFAULT_AXES,
+  measurementLimitNote,
 } from '../../site/js/ui/compare-model.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
+import { readFileSync } from 'node:fs';
+import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
+import { LIVE_METRICS } from '../../site/js/core/live-metrics.js';
 
 test('a missing value has no z-score, so it cannot land on the median ring', () => {
   const scale = robustScale([1, 2, 3, 4, 5]);
@@ -185,4 +189,56 @@ test('dropped-axis guidance separates its lead-in without a double colon', () =>
       + 'You can still add these under Choose metrics.',
   );
   assert.doesNotMatch(copy, /axes: [^:]+:/);
+});
+
+const shippedFile = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
+const shippedMeta = shippedFile('../../site/data/meta.json');
+const shippedGenes = shippedFile('../../site/data/genes.json');
+const shippedRegistry = buildMetricRegistry(shippedMeta, shippedGenes, Object.fromEntries(
+  LIVE_METRICS.map((metric) => [metric.key, new Float64Array(shippedGenes.length)]),
+));
+const shippedDataset = { meta: shippedMeta, genes: shippedGenes };
+
+test('a promoted measurement states its replicate depth and coverage in the comparison', () => {
+  const tss = shippedRegistry.byKey.get('tssInitiation');
+  const note = measurementLimitNote([tss], shippedDataset);
+
+  assert.match(note, /^Measurement limits —/);
+  assert.match(note, /TSS initiation \(UTEX 2973\)/);
+  assert.match(note, /2 replicates per condition across 4 conditions/);
+  assert.match(note, /1,727 of 2,715 genes have a value/);
+});
+
+test('every measurement on display is covered once, and conventions add nothing', () => {
+  const metrics = ['tssInitiation', 'cai', 'tai', 'expression', 'tssInitiation']
+    .map((key) => shippedRegistry.byKey.get(key));
+  const note = measurementLimitNote(metrics, shippedDataset);
+
+  assert.equal(note.match(/TSS initiation \(UTEX 2973\):/g).length, 1, 'no repeats');
+  assert.match(note, /Expression \(PCC 7942\): WT, fresh BG-11, day 1, mean of 3 replicates/);
+  // A percentile derived from the same study does not repeat that study's limits.
+  const withPercentile = measurementLimitNote(
+    ['expression', 'expressionPercentile'].map((key) => shippedRegistry.byKey.get(key)),
+    shippedDataset,
+  );
+  assert.equal(withPercentile.match(/mean of 3 replicates/g).length, 1);
+  assert.doesNotMatch(withPercentile, /Expression percentile/);
+  assert.doesNotMatch(note, /CAI:/);
+  assert.doesNotMatch(note, /tAI:/);
+  // A comparison of derived indices alone has no measurement to qualify.
+  assert.equal(
+    measurementLimitNote(['cai', 'gc3'].map((key) => shippedRegistry.byKey.get(key)),
+      shippedDataset),
+    null,
+  );
+  assert.equal(measurementLimitNote([], shippedDataset), null);
+});
+
+test('the default comparison axes always come with a measurement note', () => {
+  const { axes } = defaultAxes(shippedRegistry, (metric) => {
+    const values = shippedGenes.map((gene) => gene[metric.key]);
+    return robustScale(values);
+  });
+  assert.equal(axes[0].key, 'tssInitiation');
+  assert.ok(measurementLimitNote(axes, shippedDataset));
 });
