@@ -5,6 +5,12 @@
 - Opened: 2026-09-22
 - Updated: 2026-09-22
 
+## Decision (2026-09-22, owner)
+
+Keep the layers independent, Option C, with the reason on every detail and
+export row; recorded in `AAA-biological-decisions-to-review.md` row 11 for lab
+review. No reconciliation or shared rebuild in this ticket.
+
 ## Requires your validation
 
 An agent can reproduce the counts, record the join rule, and fix the wording,
