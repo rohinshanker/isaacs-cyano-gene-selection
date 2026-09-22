@@ -8,7 +8,7 @@
  */
 import { CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR, MISSING_COLOR } from './colors.js';
 
-const PADDING = { left: 58, right: 18, top: 18, bottom: 46 };
+const PADDING = { left: 66, right: 18, top: 18, bottom: 46 };
 export const MIN_ZOOM = 0.4;
 export const MAX_ZOOM = 200;
 
@@ -101,6 +101,35 @@ function fitText(context, text, maxWidth) {
     candidate = candidate.slice(0, -1);
   }
   return `${candidate}…`;
+}
+
+/**
+ * Tick text that stays inside the axis gutter.
+ *
+ * A metric measured in raw counts reaches six figures, and "300000" beside the
+ * rotated axis title collides with it. Thousands and millions are abbreviated
+ * instead, keeping three significant digits, so a wide-range axis reads without
+ * widening the plot or dropping ticks.
+ */
+export function formatTick(value) {
+  if (!Number.isFinite(value)) return '';
+  const magnitude = Math.abs(value);
+  if (magnitude >= 1e6) return `${Number((value / 1e6).toPrecision(3))}M`;
+  if (magnitude >= 1e4) return `${Number((value / 1e3).toPrecision(3))}k`;
+  return String(Number(value.toPrecision(4)));
+}
+
+/**
+ * How many ticks an axis of this pixel length can label without its text
+ * running together. A phone-width plot gets a handful; a desktop plot gets the
+ * usual six.
+ *
+ * @param {number} pixels the axis length in CSS pixels.
+ * @param {number} perTick pixels one label needs to stay separate.
+ */
+export function tickTarget(pixels, perTick) {
+  if (!Number.isFinite(pixels) || !Number.isFinite(perTick) || perTick <= 0) return 6;
+  return Math.max(2, Math.min(6, Math.floor(pixels / perTick)));
 }
 
 /** Tick positions that land on readable numbers. */
@@ -694,25 +723,25 @@ export class ScatterPlot {
     context.textAlign = 'center';
     context.textBaseline = 'top';
 
-    for (const tick of niceTicks(range.minX, range.maxX)) {
+    for (const tick of niceTicks(range.minX, range.maxX, tickTarget(rect.width, 74))) {
       const { x } = this.toScreen(tick, 0);
       if (x < rect.left || x > rect.left + rect.width) continue;
       context.beginPath();
       context.moveTo(x, rect.top);
       context.lineTo(x, rect.top + rect.height);
       context.stroke();
-      context.fillText(String(Number(tick.toPrecision(4))), x, rect.top + rect.height + 6);
+      context.fillText(formatTick(tick), x, rect.top + rect.height + 6);
     }
     context.textAlign = 'right';
     context.textBaseline = 'middle';
-    for (const tick of niceTicks(range.minY, range.maxY)) {
+    for (const tick of niceTicks(range.minY, range.maxY, tickTarget(rect.height, 34))) {
       const { y } = this.toScreen(0, tick);
       if (y < rect.top || y > rect.top + rect.height) continue;
       context.beginPath();
       context.moveTo(rect.left, y);
       context.lineTo(rect.left + rect.width, y);
       context.stroke();
-      context.fillText(String(Number(tick.toPrecision(4))), rect.left - 8, y);
+      context.fillText(formatTick(tick), rect.left - 8, y);
     }
 
     context.strokeStyle = '#98a2b3';

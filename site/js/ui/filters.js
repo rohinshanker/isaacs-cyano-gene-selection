@@ -11,7 +11,7 @@
  */
 import {
   isExpressionMetric, isExpressionProxyMetric, metricValues,
-  expressionSourceScope,
+  expressionSourceScope, metricsInDisplayOrder,
 } from '../core/metric-registry.js';
 import { formatCount, formatExpressionSource, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
@@ -234,7 +234,9 @@ export class FilterPanel {
 
     const active = Object.keys(state.filters);
     const byFamily = new Map();
-    for (const metric of state.registry.metrics) {
+    // Grouped in the shared display order, so the "Add filter" list offers
+    // measured evidence before the codon-usage conventions.
+    for (const metric of metricsInDisplayOrder(state.registry)) {
       if (active.includes(metric.key)) continue;
       if (!byFamily.has(metric.family)) byFamily.set(metric.family, []);
       byFamily.get(metric.family).push(metric);

@@ -94,18 +94,54 @@ export function orderMeasuredFirst(metrics) {
 }
 
 /**
- * The fresh-view colour metric: this organism's own measurement when the
- * release publishes one, so a first paint shows measured UTEX 2973 evidence
- * with its coverage stated in the legend. CAI and tAI stay selectable
- * everywhere and are never the implicit choice; `gc3` remains the fallback for
- * a dataset that publishes no native measurement at all.
+ * Every metric in one default display order: families as
+ * {@link orderMetricFamilies} ranks them, and inside each family this
+ * organism's measurements first. Any table or list that shows the whole
+ * registry without the reader choosing an order uses this, so a
+ * convention-derived index never appears above a measurement by default.
+ *
+ * @param {{metrics: object[], families: string[]}} registry
+ * @returns {object[]} every registry metric exactly once.
+ */
+export function metricsInDisplayOrder(registry) {
+  const ordered = [];
+  for (const family of registry.families) {
+    ordered.push(...orderMeasuredFirst(
+      registry.metrics.filter((metric) => metric.family === family),
+    ));
+  }
+  // A metric whose family somehow escaped the family list still gets shown.
+  for (const metric of registry.metrics) {
+    if (!ordered.includes(metric)) ordered.push(metric);
+  }
+  return ordered;
+}
+
+/**
+ * The fresh-view colour metric.
+ *
+ * Measured evidence leads the colour selector and opens the Metric X vs Y tab,
+ * but it does not colour the first paint. This release's only native
+ * measurement, Tan 2018 TSS initiation, is a heavy-tailed count: its median is
+ * 828 against a maximum near 324,000, so a linear ramp gives about nine genes
+ * in ten the same dark bucket. Opening on it would hide the very measurement it
+ * is meant to show, and a ramp reads a value rather than a rank, so rescaling
+ * it here would misreport the numbers. GC3 stays the first colour because it is
+ * complete, evenly spread, and not a codon-adaptation convention: CAI and tAI
+ * are never the implicit choice.
+ *
+ * A future native measurement that is a fraction or a rank — a declared
+ * percentile, say — is bounded and does colour the first paint.
  *
  * @param {{byKey: Map<string, object>, metrics: object[]}} registry
  * @returns {string} a key that exists in `registry`.
  */
 export function defaultColorMetricKey(registry) {
-  const native = registry.metrics.find(isNativeMeasuredMetric);
-  if (native) return native.key;
+  const bounded = registry.metrics.find(
+    (metric) => isNativeMeasuredMetric(metric)
+      && /^(fraction|rank|percentile|index)$/i.test(metric.unit ?? ''),
+  );
+  if (bounded) return bounded.key;
   return registry.byKey.has('gc3') ? 'gc3' : registry.metrics[0].key;
 }
 

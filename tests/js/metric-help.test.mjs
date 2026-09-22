@@ -78,6 +78,18 @@ test('a measured default states its replicate count and its coverage limit', () 
 test('a metric with no measurement and no convention caveat carries no reading note', () => {
   assert.equal(metricHelp(registry.byKey.get('gc3'), dataset).reading, null);
   assert.equal(metricHelp(registry.byKey.get('lengthNt'), dataset).reading, null);
+  assert.equal(metricHelp(registry.byKey.get('gc3'), dataset).limits, null);
+});
+
+test('a measured metric also offers one short limit clause for the axis note', () => {
+  const tss = metricHelp(registry.byKey.get('tssInitiation'), dataset);
+  assert.equal(tss.limits, '2 replicates per condition; 1,727 of 2,715 genes have a value');
+  assert.ok(tss.limits.length < 80, 'the axis note must stay one line, not a paragraph');
+  assert.equal(
+    metricHelp(registry.byKey.get('expression'), dataset).limits,
+    '2,551 of 2,715 genes have a value',
+  );
+  assert.equal(metricHelp(registry.byKey.get('cai'), dataset).limits, null);
 });
 
 test('map help lists the actual distinct feature matrices', () => {

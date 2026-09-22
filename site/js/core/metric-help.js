@@ -116,6 +116,24 @@ function readingNote(metric, dataset, formatCount) {
   return [base, limitSentence].filter(Boolean).join(' ');
 }
 
+/**
+ * The same limits in one short clause, for a control that has room for a line
+ * rather than a paragraph — the axis note beside the Metric X vs Y selectors.
+ * The full wording stays in the metric's own explanation disclosure.
+ */
+function shortLimits(metric, dataset, formatCount) {
+  const replicates = metric.key === 'tssInitiation'
+    ? dataset.meta?.tssEvidenceSource?.replicatesPerCondition : undefined;
+  const clauses = [];
+  if (Number.isFinite(replicates)) {
+    clauses.push(`${replicates} ${replicates === 1 ? 'replicate' : 'replicates'} per condition`);
+  }
+  const coverage = measurementLimitClauses(metric, formatCount)
+    .find((clause) => clause.includes('genes have a value'));
+  if (coverage) clauses.push(coverage);
+  return clauses.length > 0 ? clauses.join('; ') : null;
+}
+
 /** Build an evidence-coded explanation from registry and release metadata. */
 export function metricHelp(metric, dataset) {
   if (!metric) return null;
@@ -140,6 +158,7 @@ export function metricHelp(metric, dataset) {
     origin,
     coverage: `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
     reading: readingNote(metric, dataset, formatCount),
+    limits: shortLimits(metric, dataset, formatCount),
     citations: [...(METHODS_CITATIONS[metric.key] ?? []),
       ...(expression ? [] : ['ncbi-utex-2973'])],
   };

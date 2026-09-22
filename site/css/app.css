@@ -714,11 +714,16 @@ input[type="range"] { width: 100%; }
 @media (max-width: 520px), (min-width: 1240px) {
   .metric-table tr {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
+    /* A measured metric's unit can be a phrase ("summed mean TSS counts"), and
+       an unbounded max-content column would hand it the rail and squeeze the
+       description back into a one-word ribbon. Cap the value column and let the
+       unit wrap inside it; the number itself still never breaks. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 8rem);
     align-items: start;
     column-gap: 0.65rem;
     border-bottom: 1px solid var(--line);
   }
+  .metric-table td.numeric .row-unit { white-space: normal; }
   .metric-table th,
   .metric-table td { min-width: 0; border-bottom: 0; }
   .metric-table td.numeric { grid-column: 2; }

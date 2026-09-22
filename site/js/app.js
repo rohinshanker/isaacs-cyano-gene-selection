@@ -421,13 +421,18 @@ function renderColorHelp() {
 }
 
 /**
- * Replicate and condition limits for the metrics now on the axes, one sentence
- * each, in axis order and never repeated for a diagonal.
+ * Replicate and coverage limits for the measurements now on the axes, one short
+ * clause each, in axis order and never repeated for a diagonal. The full
+ * wording lives in the metric's own explanation disclosure.
  */
 function axisLimitNotes() {
   const keys = state.axisX === state.axisY ? [state.axisX] : [state.axisX, state.axisY];
   return keys
-    .map((key) => metricHelp(context.registry.byKey.get(key), context.dataset)?.reading)
+    .map((key) => {
+      const metric = context.registry.byKey.get(key);
+      const limits = metricHelp(metric, context.dataset)?.limits;
+      return limits ? `${metric.label}: ${limits}.` : null;
+    })
     .filter(Boolean);
 }
 

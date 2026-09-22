@@ -251,14 +251,16 @@ function tssEvidenceDisclosure(gene, meta) {
   const model = tssEvidenceModel(gene);
   const details = document.createElement('details');
   details.className = 'metric-group tss-evidence';
-  // Measured UTEX 2973 evidence opens with the gene: its raw replicate counts
-  // and condition comparisons are the first thing a candidate is read on.
-  details.open = true;
   const summary = document.createElement('summary');
   summary.textContent = model.count === 0
     ? 'TSS initiation evidence — no mapped TSS evidence'
     : `TSS initiation evidence (${model.count} mapped `
       + `${model.count === 1 ? 'site' : 'sites'})`;
+  // Measured UTEX 2973 evidence opens with the gene: its raw replicate counts
+  // and condition comparisons are the first thing a candidate is read on. A
+  // gene with no mapped TSS says so in the summary and stays collapsed, so an
+  // explicit unknown does not take the room the evidence would.
+  details.open = model.count > 0;
   details.append(summary);
 
   const caveat = document.createElement('p');

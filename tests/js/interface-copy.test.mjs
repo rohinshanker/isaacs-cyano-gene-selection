@@ -102,12 +102,21 @@ test('panel results announce concise status instead of the entire generated resu
   assert.match(panelDesignerSource, /this\.handlers\.onAnnounce\(this\.design\.feasible/);
 });
 
+test('a long measured unit cannot squeeze the metric description into a ribbon', () => {
+  // The value column is capped and the unit wraps inside it, so a phrase unit
+  // such as "summed mean TSS counts" cannot take the detail rail.
+  assert.match(appCss, /grid-template-columns: minmax\(0, 1fr\) minmax\(0, 8rem\);/);
+  assert.match(appCss, /\.metric-table td\.numeric \.row-unit \{ white-space: normal; \}/);
+  // The number itself still never breaks across lines.
+  assert.match(appCss, /\.numeric \{[^}]*white-space: nowrap;/);
+});
+
 test('measured UTEX evidence opens with the gene detail, before the codon-usage indices', () => {
   // Tan 2018 initiation counts and DESeq2 comparisons are the first evidence a
   // candidate is read on, so their disclosure is not collapsed by default.
   assert.match(
     sidePanelSource,
-    /details\.className = 'metric-group tss-evidence';[\s\S]{0,240}?details\.open = true;/,
+    /details\.className = 'metric-group tss-evidence';[\s\S]{0,600}?details\.open = model\.count > 0;/,
   );
   // Both low-replicate caveats stay beside the evidence rather than replacing it.
   assert.match(sidePanelSource, /only two biological cultures per condition/);

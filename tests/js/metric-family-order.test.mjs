@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
   orderMetricFamilies, buildMetricRegistry, orderMeasuredFirst, defaultColorMetricKey,
-  measurementLimitClauses, isNativeMeasuredMetric,
+  measurementLimitClauses, isNativeMeasuredMetric, metricsInDisplayOrder,
 } from '../../site/js/core/metric-registry.js';
 import { loadDataset } from '../../site/js/core/dataset.js';
 import { fileFetch } from './helpers.mjs';
@@ -105,16 +105,22 @@ test('a measurement states its condition and coverage limits; a convention has n
   assert.deepEqual(measurementLimitClauses(null), []);
 });
 
-test('the fresh-view colour is a native measurement, or GC3 when none is published', () => {
-  const native = measurement('tssInitiation', true);
+test('the fresh-view colour is GC3, never a convention, and never an unbounded count', () => {
+  const counts = measurement('tssInitiation', true);
   const gc3 = { key: 'gc3', label: 'GC3', unit: 'fraction', family: 'Base composition' };
-  const withMeasurement = { metrics: [gc3, native], byKey: new Map([['gc3', gc3], ['tssInitiation', native]]) };
-  const withoutMeasurement = { metrics: [gc3, convention('cai')], byKey: new Map([['gc3', gc3]]) };
-  const conventionsOnly = { metrics: [convention('cai')], byKey: new Map([['cai', convention('cai')]]) };
+  const registry = (metrics) => ({
+    metrics, byKey: new Map(metrics.map((metric) => [metric.key, metric])),
+  });
 
-  assert.equal(defaultColorMetricKey(withMeasurement), 'tssInitiation');
-  assert.equal(defaultColorMetricKey(withoutMeasurement), 'gc3');
-  assert.equal(defaultColorMetricKey(conventionsOnly), 'cai');
+  // A heavy-tailed count would put nine genes in ten in one ramp bucket.
+  assert.equal(defaultColorMetricKey(registry([gc3, counts])), 'gc3');
+  assert.equal(defaultColorMetricKey(registry([gc3, convention('cai')])), 'gc3');
+  // A bounded native measurement is a usable ramp, so it does lead.
+  const rank = measurement('futureNativePercentile', true);
+  rank.unit = 'fraction';
+  assert.equal(defaultColorMetricKey(registry([gc3, rank])), 'futureNativePercentile');
+  // Only a dataset with nothing else falls back to whatever it publishes.
+  assert.equal(defaultColorMetricKey(registry([convention('cai')])), 'cai');
 });
 
 test('the production registry leads with measured UTEX evidence, before Translation', async () => {
@@ -127,5 +133,19 @@ test('the production registry leads with measured UTEX evidence, before Translat
     registry.metrics.filter((metric) => metric.family === 'Expression'),
   ).map((metric) => metric.key);
   assert.deepEqual(expression, ['tssInitiation', 'expression']);
-  assert.equal(defaultColorMetricKey(registry), 'tssInitiation');
+  assert.equal(defaultColorMetricKey(registry), 'gc3');
+});
+
+test('the whole-registry display order leads with measurements and keeps every metric', async () => {
+  const dataset = await loadDataset({ baseUrl: `file://${SITE_DATA_DIR}/`, fetchImpl: fileFetch() });
+  const registry = buildMetricRegistry(dataset.meta, dataset.genes, dataset.baseline);
+  const order = metricsInDisplayOrder(registry).map((metric) => metric.key);
+
+  assert.deepEqual(order.slice(0, 2), ['tssInitiation', 'expression']);
+  assert.ok(order.indexOf('tssInitiation') < order.indexOf('cai'));
+  assert.ok(order.indexOf('expression') < order.indexOf('tai'));
+  // Nothing is dropped or shown twice: this replaces `registry.metrics` in
+  // tables that list every metric.
+  assert.equal(order.length, registry.metrics.length);
+  assert.equal(new Set(order).size, registry.metrics.length);
 });
