@@ -16,6 +16,10 @@ import { expressionBasisOf } from './metric-registry.js';
 import { metricHelp } from './metric-help.js';
 import { functionCategoryLabel, reviewedFunctionLabels } from './function-categories.js';
 import { discrepancyCell, essentialityEvidenceFor } from './go-iea-essentiality.js';
+import {
+  ALL_SOURCES, UTEX_SOURCE, annotationSourceEvidenceNote, annotationSourceLabel,
+  annotationSourceView, isAnnotationSource,
+} from './annotation-source.js';
 import { csvField } from '../ui/format.js';
 
 export const MANIFEST_VERSION = 2;
@@ -24,7 +28,7 @@ export const EXPORT_BASENAME = 'recoding-candidates';
 
 /** Columns that identify a row, before the metric columns. */
 export const IDENTITY_COLUMNS = Object.freeze([
-  'manifestId', 'schemeId', 'schemeName', 'id', 'name', 'product',
+  'manifestId', 'schemeId', 'schemeName', 'annotationSource', 'id', 'name', 'product',
   'functionCategory', 'reviewedFunctionCategories', 'functionReviewStatus',
   'seqid', 'start', 'end',
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
@@ -144,7 +148,17 @@ export function exportFileBase(manifest) {
 
 function caveatsFor(dataset, manifest) {
   const { meta } = dataset;
-  const caveats = [
+  const caveats = [];
+  const sourceId = manifest.annotationSource?.id ?? ALL_SOURCES;
+  if (sourceId === ALL_SOURCES) {
+    caveats.push('annotationSource is "all": every row combines UTEX 2973, PCC 7942, and GO IEA '
+      + 'annotations, the same as the site’s combined view.');
+  } else {
+    caveats.push(`annotationSource is "${sourceId}" (${manifest.annotationSource.label}): every `
+      + 'annotation field outside this source is blank on every row, never filled from another '
+      + `source. ${annotationSourceEvidenceNote(sourceId)}`);
+  }
+  caveats.push(
     'Codon position zero is the initiation triplet and is never recoded; it is excluded from '
       + 'every target count.',
     'targetCount and targetFraction include a reassigned terminal stop; density windows, '
@@ -155,7 +169,7 @@ function caveatsFor(dataset, manifest) {
     'An empty metric cell is a missing value, never zero.',
     'expressionBasis is one of measured, proxy, none, or unrecorded. A proxy is a codon-adaptation '
       + 'rank from this genome and is never written into the expression column.',
-  ];
+  );
   if (meta.expressionSource?.caveat) {
     caveats.push(`Expression: ${meta.expressionSource.caveat} Measured in `
       + `${meta.expressionSource.organismMeasured ?? 'an unstated organism'}`
@@ -213,7 +227,9 @@ function caveatsFor(dataset, manifest) {
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
   filterState = null, filterMask = null, viewState = null,
+  annotationSource = ALL_SOURCES,
 }) {
+  const source = isAnnotationSource(annotationSource) ? annotationSource : ALL_SOURCES;
   const { meta, genes, indexById, table } = dataset;
   const schemeList = normaliseSchemes(schemes);
   const metrics = registry.metrics;
@@ -229,21 +245,38 @@ export function buildExport({
       const gene = genes[index];
       const sequence = recodedSequence(dataset, index, compiled);
       const basis = expressionBasisOf(gene);
-      const pccCall = dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
-      const evidence = essentialityEvidenceFor(dataset.goIeaEssentiality, id);
+      // "All sources" keeps reading the gene/dataset fields exactly as before this
+      // feature existed, so that view stays byte-identical. A single source reads
+      // only through the source-scoped accessor, which leaves a field blank rather
+      // than filling it from another source.
+      const sourceView = source !== ALL_SOURCES ? annotationSourceView(gene, dataset, source) : null;
+      const pccCall = sourceView
+        ? { status: sourceView.essentialityStatus, pccLocusTag: sourceView.pccLocusTag,
+          mappingStatus: sourceView.pccMappingStatus }
+        : dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
+      // The GO IEA tier and its discrepancy notes belong to the All sources view
+      // only; a single-source row leaves them blank.
+      const evidence = sourceView ? null : essentialityEvidenceFor(dataset.goIeaEssentiality, id);
       const row = {
         manifestId: '',
         schemeId: scheme.schemeId,
         schemeName: scheme.name ?? '',
+        annotationSource: source,
         id: gene.id,
-        name: gene.name ?? '',
-        product: gene.product ?? '',
-        functionCategory: functionCategoryLabel(dataset.functionCategories, gene.id) ?? '',
-        reviewedFunctionCategories:
-          reviewedFunctionLabels(dataset.functionCategories, gene.id).join('; '),
-        functionReviewStatus: dataset.functionCategories
-          ? dataset.functionCategories.assignmentsById.has(gene.id) ? 'reviewed' : 'unreviewed'
-          : '',
+        name: (sourceView ? sourceView.name : gene.name) ?? '',
+        product: (sourceView ? sourceView.product : gene.product) ?? '',
+        functionCategory: (sourceView
+          ? sourceView.functionCategoryLabel
+          : functionCategoryLabel(dataset.functionCategories, gene.id)) ?? '',
+        reviewedFunctionCategories: (sourceView
+          ? sourceView.reviewedFunctionCategories
+          : reviewedFunctionLabels(dataset.functionCategories, gene.id)).join('; '),
+        functionReviewStatus: sourceView
+          ? sourceView.functionCategoryLabel !== null || sourceView.reviewedFunctionCategories.length > 0
+            ? 'reviewed' : ''
+          : dataset.functionCategories
+            ? dataset.functionCategories.assignmentsById.has(gene.id) ? 'reviewed' : 'unreviewed'
+            : '',
         seqid: gene.seqid ?? '',
         start: gene.start,
         end: gene.end,
@@ -330,34 +363,50 @@ export function buildExport({
     expressionSource: meta.expressionSource ?? null,
     filterState: filterState ?? null,
     viewState: viewState ?? null,
+    // Records which annotation view produced this export, so a single-source
+    // file cannot be mistaken for the combined view.
+    annotationSource: { id: source, label: annotationSourceLabel(source) },
     schemes: schemeList,
     genes: ids
       .filter((id) => indexById.has(id))
       .map((id) => {
         const gene = genes[indexById.get(id)];
+        const sourceView = source !== ALL_SOURCES ? annotationSourceView(gene, dataset, source) : null;
+        const goAnnotations = (sourceView ? sourceView.goAnnotations
+          : gene.annotationEvidence?.goAnnotations ?? []).map((relation) => ({
+          ...relation,
+          name: dataset.goTerms?.terms?.[relation.goId]?.name ?? null,
+          isObsoleteInNameRelease: Boolean(
+            dataset.goTerms?.terms?.[relation.goId]?.isObsolete
+          ),
+        }));
         return {
           id: gene.id,
-          name: gene.name ?? null,
-          product: gene.product ?? null,
+          name: (sourceView ? sourceView.name : gene.name) ?? null,
+          product: (sourceView ? sourceView.product : gene.product) ?? null,
           terminalStop: gene.terminalStop ?? null,
           translationalException: gene.translationalException ?? null,
           cdsSegments: gene.cdsSegments ?? null,
           expressionBasis: expressionBasisOf(gene).basis,
           testedAllele: dataset.candidateEvidence?.testedAlleles[id] ?? null,
-          pcc7942Essentiality:
-            dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null,
-          essentialityEvidence: dataset.goIeaEssentiality?.byLocus?.[id] ?? null,
-          functionCategory: functionCategoryLabel(dataset.functionCategories, id),
-          reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, id),
-          reviewedFunctionAssignment:
-            dataset.functionCategories?.assignmentsById.get(id) ?? null,
-          goAnnotations: (gene.annotationEvidence?.goAnnotations ?? []).map((relation) => ({
-            ...relation,
-            name: dataset.goTerms?.terms?.[relation.goId]?.name ?? null,
-            isObsoleteInNameRelease: Boolean(
-              dataset.goTerms?.terms?.[relation.goId]?.isObsolete
-            ),
-          })),
+          essentialityEvidence: sourceView ? null : dataset.goIeaEssentiality?.byLocus?.[id] ?? null,
+          pcc7942Essentiality: sourceView
+            ? (sourceView.essentialityStatus === null ? null : {
+              status: sourceView.essentialityStatus,
+              pccLocusTag: sourceView.pccLocusTag,
+              mappingStatus: sourceView.pccMappingStatus,
+            })
+            : dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null,
+          functionCategory: sourceView
+            ? sourceView.functionCategoryLabel
+            : functionCategoryLabel(dataset.functionCategories, id),
+          reviewedFunctionCategories: sourceView
+            ? sourceView.reviewedFunctionCategories
+            : reviewedFunctionLabels(dataset.functionCategories, id),
+          reviewedFunctionAssignment: sourceView && source !== UTEX_SOURCE
+            ? null
+            : dataset.functionCategories?.assignmentsById.get(id) ?? null,
+          goAnnotations,
         };
       }),
     metrics: metrics.map((metric) => {

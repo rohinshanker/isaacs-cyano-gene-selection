@@ -215,6 +215,38 @@ test('reviewed category search finds only assigned loci and follows direct match
   assert.equal(result.shown[2].goMatch.evidenceCode, 'IEA');
 });
 
+test('a PCC 7942 or GO IEA source excludes name and product matches; locus tag still works', () => {
+  const genes = [{ id: 'M744_RS11720', name: 'rpsL', product: '30S ribosomal protein S12' }];
+  for (const source of ['pcc-7942', 'go-iea']) {
+    assert.equal(searchGenes(genes, 'rpsL', { source }).total, 0);
+    assert.equal(searchGenes(genes, 'ribosomal protein', { source }).total, 0);
+    assert.equal(searchGenes(genes, 'M744_RS11720', { source }).total, 1);
+  }
+  assert.equal(searchGenes(genes, 'rpsL', { source: 'utex-2973' }).total, 1);
+  assert.equal(searchGenes(genes, 'rpsL', { source: 'all' }).total, 1);
+});
+
+test('reviewed function category suggestions are a UTEX 2973 field: silent for other sources', () => {
+  const genes = [{ id: 'GENE_1', product: 'ferredoxin', reviewedFunctionLabels: ['Stress and repair'] }];
+  assert.equal(searchGenes(genes, 'stress and repair', { source: 'utex-2973' }).total, 1);
+  assert.equal(searchGenes(genes, 'stress and repair', { source: 'all' }).total, 1);
+  for (const source of ['pcc-7942', 'go-iea']) {
+    assert.equal(searchGenes(genes, 'stress and repair', { source }).total, 0);
+  }
+});
+
+test('GO ID and GO term name suggestions are silent outside all sources and GO IEA', () => {
+  const genes = [{ id: 'GENE_1', product: 'ferredoxin', annotationEvidence: {
+    goAnnotations: [{ goId: 'GO:0009773', evidenceCode: 'IEA' }],
+  } }];
+  const goTerms = { 'GO:0009773': { name: 'photosynthetic electron transport' } };
+  assert.equal(searchGenes(genes, 'GO:0009773', { goTerms, source: 'go-iea' }).total, 1);
+  assert.equal(searchGenes(genes, 'GO:0009773', { goTerms, source: 'all' }).total, 1);
+  for (const source of ['utex-2973', 'pcc-7942']) {
+    assert.equal(searchGenes(genes, 'GO:0009773', { goTerms, source }).total, 0);
+  }
+});
+
 test('every alias points at wording an annotation would plausibly use', () => {
   for (const [key, phrases] of Object.entries(GENE_ALIASES)) {
     assert.ok(Array.isArray(phrases) && phrases.length > 0, `${key} has no expansion`);

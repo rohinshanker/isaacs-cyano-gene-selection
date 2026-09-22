@@ -11,6 +11,7 @@ import { buildExport } from '../core/export-manifest.js';
 import { FoldingPanel } from './folding-panel.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
+import { ALL_SOURCES, annotationSourceView } from '../core/annotation-source.js';
 
 /**
  * Live metrics shown per row, in order, when a scheme is active. These are the two
@@ -119,6 +120,10 @@ export class ShortlistPanel {
   renderRow(id, state) {
     const index = state.dataset.indexById.get(id);
     const gene = index === undefined ? null : state.dataset.genes[index];
+    const source = state.annotationSource ?? ALL_SOURCES;
+    // "All sources" reads the gene directly, unchanged; a single source reads
+    // only what that source itself annotated, leaving the rest blank.
+    const view = gene && source !== ALL_SOURCES ? annotationSourceView(gene, state.dataset, source) : gene;
     const item = document.createElement('li');
     item.className = 'shortlist-row';
 
@@ -129,13 +134,13 @@ export class ShortlistPanel {
     select.className = 'shortlist-row-link';
     const tag = createLocusTag(gene ?? { id }, { focusable: false });
     select.append(tag);
-    const geneName = geneIdentity(gene);
+    const geneName = geneIdentity(view);
     if (geneName?.kind === 'Gene symbol') {
       const name = document.createElement('b');
       name.textContent = ` ${geneName.text}`;
       select.append(name);
     }
-    const description = gene ? geneIdentityDescription(gene) : 'Not in this dataset';
+    const description = gene ? geneIdentityDescription(view) : 'Not in this dataset';
     select.setAttribute('aria-label', `Show ${id} in the gene panel. ${description}`);
     select.title = description;
     select.addEventListener('click', () => this.handlers.onSelect(id));
@@ -143,9 +148,9 @@ export class ShortlistPanel {
     const product = document.createElement('p');
     product.className = 'shortlist-row-product';
     product.textContent = gene
-      ? truncate(gene.product, PRODUCT_LIMIT)
+      ? truncate(view.product, PRODUCT_LIMIT)
       : 'not in this dataset';
-    if (gene?.product) product.title = gene.product;
+    if (view?.product) product.title = view.product;
     text.append(select, product);
     if (index !== undefined && state.filterMask && !state.filterMask[index]) {
       const hidden = document.createElement('p');
@@ -200,10 +205,10 @@ export class ShortlistPanel {
 
   /** Build the export for the current shortlist without downloading it. */
   buildExport(generatedAt = new Date()) {
-    const { ids, dataset, registry, filterState, filterMask, viewState } = this.state;
+    const { ids, dataset, registry, filterState, filterMask, viewState, annotationSource } = this.state;
     return buildExport({
       dataset, registry, ids, schemes: this.schemesToExport(), generatedAt,
-      filterState, filterMask,
+      filterState, filterMask, annotationSource,
       viewState: typeof viewState === 'function' ? viewState() : viewState,
     });
   }

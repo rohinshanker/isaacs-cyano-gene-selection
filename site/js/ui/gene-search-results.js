@@ -9,6 +9,7 @@ import { searchGenes, SEARCH_RESULT_LIMIT } from '../core/gene-search.js';
 import { formatCount } from './format.js';
 import { createLocusTag } from './locus-tag.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
+import { ALL_SOURCES, annotationSourceView } from '../core/annotation-source.js';
 
 /** A repeated blur/change event must not replace a result while it is being clicked. */
 export function shouldRenderSearch(currentQuery, nextQuery, currentResult) {
@@ -34,14 +35,27 @@ export class GeneSearchResults {
     this.handlers = handlers;
     this.genes = [];
     this.goTerms = null;
+    this.dataset = null;
+    this.source = ALL_SOURCES;
     this.query = '';
     this.host.hidden = true;
   }
 
-  /** @param {Array<object>} genes the dataset's genes, searched in place. */
-  setGenes(genes, goTerms = null) {
+  /**
+   * @param {Array<object>} genes the dataset's genes, searched in place.
+   * @param {object|null} goTerms
+   * @param {object|null} dataset the full dataset, needed to resolve source-scoped
+   *   product/name/category text; omit to keep the previous dataset.
+   */
+  setGenes(genes, goTerms = null, dataset = this.dataset) {
     this.genes = genes;
     this.goTerms = goTerms;
+    this.dataset = dataset;
+  }
+
+  /** Which of the four sources search suggestions and displayed text are scoped to. */
+  setAnnotationSource(source) {
+    this.source = source ?? ALL_SOURCES;
   }
 
   /** Run a query and render it. An empty query clears the list. */
@@ -77,7 +91,7 @@ export class GeneSearchResults {
     }
     host.hidden = false;
     const result = searchGenes(this.genes, this.query, {
-      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms,
+      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms, source: this.source,
     });
     this.result = result;
 
@@ -131,7 +145,9 @@ export class GeneSearchResults {
 
   renderRow(hit) {
     const { gene, index } = hit;
-    const geneName = geneIdentity(gene);
+    const view = this.source !== ALL_SOURCES
+      ? annotationSourceView(gene, this.dataset, this.source) : gene;
+    const geneName = geneIdentity(view);
     const item = document.createElement('li');
     item.className = 'search-result';
 
@@ -156,7 +172,7 @@ export class GeneSearchResults {
     heading.append(matched);
     const product = document.createElement('p');
     product.className = 'search-result-product';
-    product.textContent = gene.product ?? 'no product description';
+    product.textContent = view.product ?? 'no product description';
     text.append(heading, product);
     if (hit.goMatch) {
       const go = document.createElement('p');
@@ -182,7 +198,7 @@ export class GeneSearchResults {
     const pinned = this.handlers.isPinned(gene.id);
     const shortlisted = this.handlers.isShortlisted(gene.id);
     const labels = searchActionState(pinned, shortlisted);
-    const identity = geneIdentityDescription(gene);
+    const identity = geneIdentityDescription(view);
     pin.className = pinned ? 'chip-button active' : 'chip-button';
     pin.dataset.geneId = gene.id;
     pin.dataset.searchAction = 'pin';
