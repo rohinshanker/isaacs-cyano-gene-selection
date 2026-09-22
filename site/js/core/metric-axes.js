@@ -4,9 +4,50 @@
  * This is deliberately separate from PCA: choosing axes only reads the metric
  * registry and never fits or transforms coordinates.
  */
-import { metricValues } from './metric-registry.js';
+import { metricValues, orderMeasuredFirst, isMeasuredMetric } from './metric-registry.js';
 
-export const DEFAULT_METRIC_AXES = Object.freeze({ x: 'lengthNt', y: 'cai' });
+/**
+ * The fresh-view axes: CDS length against the strongest measured evidence this
+ * release publishes for UTEX 2973 (Tan 2018 TSS initiation today).
+ *
+ * A codon-usage convention such as CAI or tAI is never a fresh-view axis. It
+ * stays selectable, and an encoded `ay=cai` link still wins over this default,
+ * because `applyDecoded` writes explicit URL fields after the defaults.
+ */
+export const DEFAULT_METRIC_AXES = Object.freeze({ x: 'lengthNt', y: 'tssInitiation' });
+
+/** Axis keys that must not open a fresh view, however available they are. */
+const NON_DEFAULT_AXIS_KEYS = Object.freeze(['cai', 'tai', 'expressionProxy']);
+
+/**
+ * The default axes this dataset can actually draw.
+ *
+ * X keeps CDS length when it is published. Y prefers the declared default,
+ * then any measurement this organism has, then a borrowed measurement with
+ * its caveat, then the first published metric that is not a codon-usage
+ * convention. Only a dataset publishing nothing else falls back to one of
+ * those conventions, and then only because the alternative is an empty plot.
+ *
+ * @param {{byKey: Map<string, object>, metrics: object[]}} registry
+ * @returns {{x: string, y: string}} keys that exist in `registry`.
+ */
+export function resolveDefaultMetricAxes(registry) {
+  const metrics = registry.metrics ?? [];
+  if (metrics.length === 0) return { ...DEFAULT_METRIC_AXES };
+  const first = metrics[0].key;
+  const x = registry.byKey.has(DEFAULT_METRIC_AXES.x) ? DEFAULT_METRIC_AXES.x : first;
+  const measured = orderMeasuredFirst(metrics.filter(isMeasuredMetric));
+  const preferred = [
+    DEFAULT_METRIC_AXES.y,
+    ...measured.map((metric) => metric.key),
+    ...metrics
+      .filter((metric) => !NON_DEFAULT_AXIS_KEYS.includes(metric.key) && metric.key !== x)
+      .map((metric) => metric.key),
+    first,
+  ];
+  const y = preferred.find((key) => registry.byKey.has(key)) ?? first;
+  return { x, y };
+}
 
 function unavailableValues(rowCount) {
   return new Float64Array(rowCount).fill(NaN);

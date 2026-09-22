@@ -90,9 +90,16 @@ test('an axis with no values at all is named as unavailable, not silently empty'
   assert.equal(axisUnavailableReason({ label: 'GC3' }, robustScale([1, 2, 3])), null);
 });
 
-test('the default axis list is the documented one', () => {
+test('the default axis list is the documented one, measured evidence first', () => {
   assert.ok(DEFAULT_AXES.includes('gc3'));
   assert.ok(DEFAULT_AXES.includes('targetFraction'));
+  assert.equal(DEFAULT_AXES[0], 'tssInitiation');
+  // CAI and tAI stay available, below every other default axis.
+  assert.deepEqual(DEFAULT_AXES.slice(-2), ['cai', 'tai']);
+  assert.ok(DEFAULT_AXES.indexOf('tssInitiation') < DEFAULT_AXES.indexOf('cai'));
+  // A borrowed measurement is never an implicit default axis.
+  assert.ok(!DEFAULT_AXES.includes('expression'));
+  assert.ok(!DEFAULT_AXES.includes('expressionPercentile'));
 });
 
 test('a gap in the data becomes a gap in the line', () => {

@@ -24,7 +24,9 @@ export const PANELS = Object.freeze([
     name: 'Metric X vs Y',
     source: 'Plotted directly from the selected metrics; no PCA is fitted.',
     blurb: 'Choose one gene metric for each axis to inspect their relationship directly. '
-      + 'The default compares CDS length with the codon adaptation index (CAI).',
+      + 'A fresh view compares CDS length with measured UTEX 2973 evidence, and the note '
+      + 'below the selectors states that measurement\u2019s replicate and condition limits. '
+      + 'CAI and tAI remain selectable on either axis.',
   },
   {
     id: 'risk',

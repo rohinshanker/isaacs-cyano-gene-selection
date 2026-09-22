@@ -3,34 +3,105 @@ import assert from 'node:assert/strict';
 import {
   DEFAULT_METRIC_AXES,
   buildMetricAxesProjection,
+  resolveDefaultMetricAxes,
 } from '../../site/js/core/metric-axes.js';
 
 function registryOf(metrics) {
-  return { byKey: new Map(metrics.map((metric) => [metric.key, metric])) };
+  return { metrics, byKey: new Map(metrics.map((metric) => [metric.key, metric])) };
 }
 
-function metric(key, label, unit, values) {
-  return { key, label, unit, read: (index) => values[index] };
+function metric(key, label, unit, values, extra = {}) {
+  return { key, label, unit, read: (index) => values[index], ...extra };
 }
 
-test('defaults to CDS length versus CAI and preserves registry units', () => {
+/** A metric declared as a measurement made in this organism. */
+function nativeMeasurement(key, label, values) {
+  return metric(key, label, 'counts', values, {
+    family: 'Expression',
+    provenance: { organism: 'Synechococcus elongatus UTEX 2973', isTargetOrganism: true },
+  });
+}
+
+/** A metric declared as a measurement made in another strain. */
+function borrowedMeasurement(key, label, values) {
+  return metric(key, label, 'counts', values, {
+    family: 'Expression',
+    provenance: { organism: 'Synechococcus elongatus PCC 7942', isTargetOrganism: false },
+  });
+}
+
+test('defaults to CDS length versus measured UTEX evidence and preserves registry units', () => {
   const registry = registryOf([
     metric('lengthNt', 'CDS length', 'nt', [300, 600]),
     metric('cai', 'CAI', 'index', [0.4, 0.8]),
+    nativeMeasurement('tssInitiation', 'TSS initiation (UTEX 2973)', [12, 40]),
   ]);
   const projection = buildMetricAxesProjection(registry, 2);
 
-  assert.deepEqual(DEFAULT_METRIC_AXES, { x: 'lengthNt', y: 'cai' });
+  assert.deepEqual(DEFAULT_METRIC_AXES, { x: 'lengthNt', y: 'tssInitiation' });
+  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'lengthNt', y: 'tssInitiation' });
   assert.equal(projection.x.key, 'lengthNt');
   assert.equal(projection.x.label, 'CDS length');
   assert.equal(projection.x.unit, 'nt');
-  assert.equal(projection.y.key, 'cai');
-  assert.equal(projection.y.label, 'CAI');
-  assert.equal(projection.y.unit, 'index');
+  assert.equal(projection.y.key, 'tssInitiation');
+  assert.equal(projection.y.label, 'TSS initiation (UTEX 2973)');
+  assert.equal(projection.y.unit, 'counts');
   assert.deepEqual([...projection.x.values], [300, 600]);
-  assert.deepEqual([...projection.y.values], [0.4, 0.8]);
+  assert.deepEqual([...projection.y.values], [12, 40]);
   assert.equal(projection.finitePairCount, 2);
   assert.equal(projection.available, true);
+});
+
+test('a requested CAI axis is still built exactly as asked', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [300, 600]),
+    metric('cai', 'CAI', 'index', [0.4, 0.8]),
+    nativeMeasurement('tssInitiation', 'TSS initiation (UTEX 2973)', [12, 40]),
+  ]);
+  const projection = buildMetricAxesProjection(registry, 2, { x: 'lengthNt', y: 'cai' });
+
+  assert.equal(projection.y.key, 'cai');
+  assert.deepEqual([...projection.y.values], [0.4, 0.8]);
+  assert.equal(projection.available, true);
+});
+
+test('a borrowed measurement is the default only when no native one is published', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [300, 600]),
+    metric('cai', 'CAI', 'index', [0.4, 0.8]),
+    borrowedMeasurement('expression', 'Expression (PCC 7942)', [5, 9]),
+  ]);
+
+  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'lengthNt', y: 'expression' });
+});
+
+test('a native measurement outranks a borrowed one whatever order they are declared in', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [300, 600]),
+    borrowedMeasurement('expression', 'Expression (PCC 7942)', [5, 9]),
+    nativeMeasurement('futureNativeAssay', 'Native assay (UTEX 2973)', [1, 2]),
+  ]);
+
+  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'lengthNt', y: 'futureNativeAssay' });
+});
+
+test('with no measurement published the default Y is still not a codon-usage convention', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [300, 600]),
+    metric('cai', 'CAI', 'index', [0.4, 0.8]),
+    metric('tai', 'tAI', 'index', [0.3, 0.5]),
+    metric('gc3', 'GC3', 'fraction', [0.5, 0.6]),
+  ]);
+
+  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'lengthNt', y: 'gc3' });
+});
+
+test('a dataset publishing only conventions falls back rather than drawing nothing', () => {
+  const registry = registryOf([metric('cai', 'CAI', 'index', [0.4, 0.8])]);
+
+  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'cai', y: 'cai' });
+  assert.deepEqual(resolveDefaultMetricAxes({ metrics: [], byKey: new Map() }),
+    { x: 'lengthNt', y: 'tssInitiation' });
 });
 
 test('keeps every row slot and counts only finite X/Y pairs', () => {
@@ -85,7 +156,7 @@ test('represents an unavailable metric as NaN rows instead of throwing', () => {
 test('an empty projection is typed, available, and has no finite pairs', () => {
   const registry = registryOf([
     metric('lengthNt', 'CDS length', 'nt', []),
-    metric('cai', 'CAI', 'index', []),
+    nativeMeasurement('tssInitiation', 'TSS initiation (UTEX 2973)', []),
   ]);
   const projection = buildMetricAxesProjection(registry, 0);
 

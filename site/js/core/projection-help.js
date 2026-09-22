@@ -1,6 +1,7 @@
 /** Explain the exact feature matrix behind each published map. */
 import { RISK_FEATURES, PERTURBATION_FEATURES } from '../ui/panels.js';
 import { metricHelp } from './metric-help.js';
+import { DEFAULT_METRIC_AXES } from './metric-axes.js';
 
 const DESCRIPTIONS = Object.freeze({
   native: {
@@ -21,7 +22,7 @@ const DESCRIPTIONS = Object.freeze({
   },
 });
 
-export function projectionHelp(panelId, dataset, registry, axes = { x: 'lengthNt', y: 'cai' }) {
+export function projectionHelp(panelId, dataset, registry, axes = DEFAULT_METRIC_AXES) {
   if (panelId === 'axes') {
     const selected = [['X', axes.x], ['Y', axes.y]]
       .map(([axis, key]) => ({ axis, key, metric: registry.byKey.get(key) }))

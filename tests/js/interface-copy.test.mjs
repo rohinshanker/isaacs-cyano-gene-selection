@@ -13,6 +13,9 @@ const compareSource = await readFile(new URL('../../site/js/ui/compare.js', impo
 const panelDesignerSource = await readFile(
   new URL('../../site/js/ui/panel-designer.js', import.meta.url), 'utf8',
 );
+const sidePanelSource = await readFile(
+  new URL('../../site/js/ui/side-panel.js', import.meta.url), 'utf8',
+);
 const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 const appHtml = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
 
@@ -44,6 +47,7 @@ test('folding inputs are not called stale before the first folding request', () 
 
 test('scheme-only metric families stay collapsed until a scheme is active', () => {
   assert.equal(metricFamilyStartsOpen('Size', false), true);
+  assert.equal(metricFamilyStartsOpen('Expression', false), true);
   assert.equal(metricFamilyStartsOpen('Translation', false), true);
   assert.equal(metricFamilyStartsOpen('Recoding load', false), false);
   assert.equal(metricFamilyStartsOpen('Change from wild type', false), false);
@@ -96,4 +100,18 @@ test('panel results announce concise status instead of the entire generated resu
   assert.match(panelDesignerSource, /stale\.setAttribute\('role', 'status'\)/);
   assert.match(panelDesignerSource, /alert\.setAttribute\('role', design\.feasible \? 'status' : 'alert'\)/);
   assert.match(panelDesignerSource, /this\.handlers\.onAnnounce\(this\.design\.feasible/);
+});
+
+test('measured UTEX evidence opens with the gene detail, before the codon-usage indices', () => {
+  // Tan 2018 initiation counts and DESeq2 comparisons are the first evidence a
+  // candidate is read on, so their disclosure is not collapsed by default.
+  assert.match(
+    sidePanelSource,
+    /details\.className = 'metric-group tss-evidence';[\s\S]{0,240}?details\.open = true;/,
+  );
+  // Both low-replicate caveats stay beside the evidence rather than replacing it.
+  assert.match(sidePanelSource, /only two biological cultures per condition/);
+  assert.match(sidePanelSource, /allele- and condition-specific/);
+  // Family groups are listed measured-evidence first, inside a family as well as across them.
+  assert.match(sidePanelSource, /orderMeasuredFirst\(\s*state\.registry\.metrics\.filter/);
 });

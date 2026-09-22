@@ -10,7 +10,7 @@ Reusable contracts and runbooks for this repository.
 | [metric-convention-parity.md](metric-convention-parity.md) | Keeping the browser's recomputed CAI, tAI, ENC, GC3 and codon-pair score equal to the pipeline's |
 | [metric-explanations.md](metric-explanations.md) | Exact map feature matrices, selected-colour calculation/source/citation disclosure, and export parity |
 | [pca-length-sensitivity.md](pca-length-sensitivity.md) | Fixed native RSCU PCA, length/sparsity audit, within-gene downsampling, and reproducible sensitivity checks |
-| [explicit-metric-axes.md](explicit-metric-axes.md) | Direct numeric X/Y plotting, independent canvas scales, missing pairs, URL, and export state |
+| [explicit-metric-axes.md](explicit-metric-axes.md) | Direct numeric X/Y plotting, measured-evidence fresh-view axes, independent canvas scales, missing pairs, URL, and export state |
 | [trna-annotation-validation.md](trna-annotation-validation.md) | Reproducing the pinned tRNAscan-SE comparison, 44-locus concordance, anticodon conventions, and computational-evidence limits |
 | [cai-reference-set.md](cai-reference-set.md) | Deterministic 71-locus CAI reference convention, blinded Jev audit, disagreement review, and change policy |
 | [candidate-comparison-and-export.md](candidate-comparison-and-export.md) | Missing-value integrity, ten distinguishable candidates, colour ramps, metric-scoped expression provenance, and reproducible exports |

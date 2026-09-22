@@ -18,12 +18,19 @@ import { isExpressionMetric, isExpressionProxyMetric } from './metric-registry.j
  * The curated default feature set: one representative per thing that makes a
  * gene a different experiment from another. Adding two fields that measure the
  * same property would count that property twice in every distance, so the list
- * is deliberately short and spans translation, composition, codon usage, rare
- * codons, codon pairs, start structure, size, and genomic context.
+ * is deliberately short and spans composition, codon usage, rare codons, codon
+ * pairs, start structure, size, genomic context, and translation.
+ *
+ * Every feature is percentile-scaled and weighted equally, so this order does
+ * not change which panel is generated; it sets the order features are listed
+ * in explanations and exports. CAI and tAI sit last, and a measured source
+ * enabled by the reader is placed ahead of them by
+ * {@link defaultBaselineFeatures}, so no default ordering shows a
+ * convention-derived index above a measurement.
  */
 export const DEFAULT_BASELINE_FEATURES = Object.freeze([
-  'cai', 'tai', 'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'lengthCodons',
-  'neighborUpstreamNt',
+  'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'lengthCodons',
+  'neighborUpstreamNt', 'cai', 'tai',
 ]);
 
 /**
@@ -75,6 +82,11 @@ export function isBorrowedMetric(metric) {
  * Curated default features plus one representative of each borrowed expression
  * source when the reader explicitly opts in. A raw measurement wins over a
  * percentile derived from the same values, so one source cannot count twice.
+ *
+ * An enabled measurement leads the list, ahead of the codon-usage conventions
+ * it outranks. Order does not change the generated panel, because every
+ * feature is percentile-scaled and weighted equally; it changes what a reader
+ * sees first in the feature list and the export.
  */
 export function defaultBaselineFeatures(registry, allowBorrowed = false) {
   const keys = [...DEFAULT_BASELINE_FEATURES];
@@ -91,10 +103,11 @@ export function defaultBaselineFeatures(registry, allowBorrowed = false) {
       representatives.set(group, { key: metric.key, isDerivedRank });
     }
   }
+  const measured = [];
   for (const { key } of representatives.values()) {
-    if (!keys.includes(key)) keys.push(key);
+    if (!keys.includes(key)) measured.push(key);
   }
-  return keys;
+  return [...measured, ...keys];
 }
 
 function columnPercentiles(read, count) {

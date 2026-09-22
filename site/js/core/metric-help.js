@@ -1,5 +1,8 @@
 /** One reusable explanation contract for every selectable colour metric. */
-import { describeExpressionSource, isExpressionMetric, isExpressionProxyMetric } from './metric-registry.js';
+import {
+  describeExpressionSource, isExpressionMetric, isExpressionProxyMetric,
+  measurementLimitClauses,
+} from './metric-registry.js';
 
 const METHODS = Object.freeze({
   gc: 'G or C bases divided by all bases in sense codons; terminal stop excluded.',
@@ -72,6 +75,47 @@ const METHODS_CITATIONS = Object.freeze({
   recodedEnc: ['wright-enc'], dEnc: ['wright-enc'],
 });
 
+/**
+ * How to weigh a metric when reading a candidate.
+ *
+ * CAI and tAI reproduce a convention: CAI scores against a frozen 71-locus
+ * product-name reference that is not measured high expression, and tAI counts
+ * annotated tRNA genes, which is not tRNA abundance, charging, or decoding.
+ * The expression proxy is built from both. They stay selectable everywhere and
+ * keep their citations; this line says what they are worth beside a
+ * measurement, so no one reads a convention as the primary evidence for a gene.
+ *
+ * A measured metric instead states the replicate count its release declares,
+ * so a thin measurement is read as thin rather than hidden.
+ */
+const READING = Object.freeze({
+  cai: () => 'A convention-derived index, not a measurement: read it as supporting context '
+    + 'for a candidate, behind measured UTEX 2973 evidence, never as the primary evidence.',
+  tai: () => 'A convention-derived index, not a measurement: read it as supporting context '
+    + 'for a candidate, behind measured UTEX 2973 evidence, never as the primary evidence.',
+  expressionProxy: () => 'A rank built from CAI and tAI, so it inherits both conventions: '
+    + 'read it as supporting context, behind measured UTEX 2973 evidence.',
+  tssInitiation: (meta) => {
+    const replicates = meta?.tssEvidenceSource?.replicatesPerCondition;
+    const conditions = meta?.tssEvidenceSource?.conditions?.length;
+    return 'Measured in this organism. '
+      + (Number.isFinite(replicates)
+        ? `The study has only ${replicates} biological ${replicates === 1 ? 'replicate' : 'replicates'} `
+          + `per condition${Number.isFinite(conditions) ? ` across ${conditions} conditions` : ''}, `
+          + 'and a thin measurement still outranks a codon-usage convention.'
+        : 'Replicate depth is not declared in this release, so read the coverage below with it.');
+  },
+});
+
+/** The reading note plus any declared condition and coverage limits. */
+function readingNote(metric, dataset, formatCount) {
+  const base = READING[metric.key]?.(dataset.meta) ?? null;
+  const limits = measurementLimitClauses(metric, formatCount);
+  if (!base && limits.length === 0) return null;
+  const limitSentence = limits.length > 0 ? `Measurement limits — ${limits.join('; ')}.` : '';
+  return [base, limitSentence].filter(Boolean).join(' ');
+}
+
 /** Build an evidence-coded explanation from registry and release metadata. */
 export function metricHelp(metric, dataset) {
   if (!metric) return null;
@@ -86,6 +130,7 @@ export function metricHelp(metric, dataset) {
       : metric.source === 'live'
         ? `Computed in this browser from the active scheme and UTEX 2973 release ${release}.`
         : `Derived from UTEX 2973 RefSeq release ${release}.`;
+  const formatCount = (value) => value.toLocaleString('en-US');
   return {
     key: metric.key,
     title: metric.label,
@@ -94,6 +139,7 @@ export function metricHelp(metric, dataset) {
     unit: metric.unit || 'unit not declared',
     origin,
     coverage: `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
+    reading: readingNote(metric, dataset, formatCount),
     citations: [...(METHODS_CITATIONS[metric.key] ?? []),
       ...(expression ? [] : ['ncbi-utex-2973'])],
   };

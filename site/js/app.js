@@ -12,6 +12,7 @@ import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues,
   expressionBasisOf, expressionBasisCounts, isExpressionMetric, isExpressionProxyMetric,
+  orderMeasuredFirst, defaultColorMetricKey,
 } from './core/metric-registry.js';
 import {
   encodeState, decodeState, defaultState, applyDecoded, clearSelections,
@@ -25,7 +26,9 @@ import { metricHelp } from './core/metric-help.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
 } from './core/function-categories.js';
-import { buildMetricAxesProjection, DEFAULT_METRIC_AXES } from './core/metric-axes.js';
+import {
+  buildMetricAxesProjection, resolveDefaultMetricAxes,
+} from './core/metric-axes.js';
 import { projectionHelp } from './core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
@@ -417,6 +420,17 @@ function renderColorHelp() {
     metricHelp(context.registry.byKey.get(state.colorBy), context.dataset), citationsManifest);
 }
 
+/**
+ * Replicate and condition limits for the metrics now on the axes, one sentence
+ * each, in axis order and never repeated for a diagonal.
+ */
+function axisLimitNotes() {
+  const keys = state.axisX === state.axisY ? [state.axisX] : [state.axisX, state.axisY];
+  return keys
+    .map((key) => metricHelp(context.registry.byKey.get(key), context.dataset)?.reading)
+    .filter(Boolean);
+}
+
 function renderMap() {
   const projection = projectionFor(state.panel);
   const panel = PANELS.find((entry) => entry.id === state.panel);
@@ -425,9 +439,12 @@ function renderMap() {
   if (state.panel === 'axes') {
     element('axis-x').value = state.axisX;
     element('axis-y').value = state.axisY;
-    element('axis-note').textContent = state.axisX === state.axisY
+    const pairs = state.axisX === state.axisY
       ? `${formatCount(projection.finitePairCount)} genes have this metric. Identical axes place points on a diagonal.`
       : `${formatCount(projection.finitePairCount)} genes have values on both axes; missing pairs are not plotted.`;
+    // A measured axis states its replicate and condition limits here, beside
+    // the plot, rather than leaving a thin measurement to look like a deep one.
+    element('axis-note').textContent = [pairs, ...axisLimitNotes()].join(' ');
   }
 
   plot.setProjection(projection, { keepView: plot.projectionId === state.panel });
@@ -787,6 +804,17 @@ function renderCurrentView() {
   renderMap();
 }
 
+/**
+ * One family's metrics for a grouped selector, this organism's measurements
+ * first. Family order already puts measured evidence ahead of the
+ * codon-adaptation indices; this keeps the same rule inside a family.
+ */
+function familyMetrics(family) {
+  return orderMeasuredFirst(
+    context.registry.metrics.filter((metric) => metric.family === family),
+  );
+}
+
 function buildColorSelect() {
   const select = element('color-by');
   select.replaceChildren();
@@ -802,7 +830,7 @@ function buildColorSelect() {
   for (const family of context.registry.families) {
     const group = document.createElement('optgroup');
     group.label = family;
-    for (const metric of context.registry.metrics.filter((entry) => entry.family === family)) {
+    for (const metric of familyMetrics(family)) {
       const option = document.createElement('option');
       option.value = metric.key;
       option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
@@ -825,7 +853,7 @@ function buildAxisSelects() {
     for (const family of context.registry.families) {
       const group = document.createElement('optgroup');
       group.label = family;
-      for (const metric of context.registry.metrics.filter((entry) => entry.family === family)) {
+      for (const metric of familyMetrics(family)) {
         const option = document.createElement('option');
         option.value = metric.key;
         option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
@@ -1084,17 +1112,13 @@ function normalizeAndApply(decoded) {
   }
   if (!state.colorBy || !(context.registry.byKey.has(state.colorBy)
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
-    state.colorBy = context.registry.byKey.has('gc3') ? 'gc3' : context.registry.metrics[0].key;
+    state.colorBy = defaultColorMetricKey(context.registry);
   }
-  if (!context.registry.byKey.has(state.axisX)) {
-    state.axisX = context.registry.byKey.has(DEFAULT_METRIC_AXES.x)
-      ? DEFAULT_METRIC_AXES.x : context.registry.metrics[0].key;
-  }
-  if (!context.registry.byKey.has(state.axisY)) {
-    state.axisY = context.registry.byKey.has(DEFAULT_METRIC_AXES.y)
-      ? DEFAULT_METRIC_AXES.y : context.registry.metrics[0].key;
-  }
+  const axes = resolveDefaultMetricAxes(context.registry);
+  if (!context.registry.byKey.has(state.axisX)) state.axisX = axes.x;
+  if (!context.registry.byKey.has(state.axisY)) state.axisY = axes.y;
 }
+
 
 /**
  * Apply a hash the address bar now carries, live: a shared link pasted or

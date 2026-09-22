@@ -50,6 +50,36 @@ test('priority conventions and measured-source boundaries are explicit', () => {
   assert.match(help('targetPerKb').method, /full CDS length in nt/);
 });
 
+test('CAI and tAI are explained as convention-derived supporting context', () => {
+  const help = (key) => metricHelp(registry.byKey.get(key), dataset);
+  for (const key of ['cai', 'tai', 'expressionProxy']) {
+    assert.match(help(key).reading, /convention/i, `${key} should be named a convention`);
+    assert.match(help(key).reading, /supporting context/i);
+    assert.doesNotMatch(help(key).reading, /measured in/i);
+  }
+  // The conventions keep their calculation, citations, and selectability.
+  assert.match(help('cai').method, /71-locus/);
+  assert.deepEqual(help('cai').citations, ['sharp-li-cai', 'ncbi-utex-2973']);
+});
+
+test('a measured default states its replicate count and its coverage limit', () => {
+  const tss = metricHelp(registry.byKey.get('tssInitiation'), dataset);
+  const replicates = meta.tssEvidenceSource.replicatesPerCondition;
+  assert.match(tss.reading, new RegExp(`only ${replicates} biological replicates per condition`));
+  assert.match(tss.reading, /Measurement limits —/);
+  assert.match(tss.reading, /1,727 of 2,715 genes have a value/);
+  assert.match(tss.reading, /outranks a codon-usage convention/);
+
+  const borrowed = metricHelp(registry.byKey.get('expression'), dataset);
+  assert.match(borrowed.reading, /Measurement limits —/);
+  assert.match(borrowed.reading, /mean of 3 replicates/);
+});
+
+test('a metric with no measurement and no convention caveat carries no reading note', () => {
+  assert.equal(metricHelp(registry.byKey.get('gc3'), dataset).reading, null);
+  assert.equal(metricHelp(registry.byKey.get('lengthNt'), dataset).reading, null);
+});
+
 test('map help lists the actual distinct feature matrices', () => {
   const lengths = Object.fromEntries(['native', 'risk', 'umap', 'perturbation']
     .map((panel) => [panel, projectionHelp(panel, dataset, registry).features.length]));
@@ -62,6 +92,13 @@ test('map help lists the actual distinct feature matrices', () => {
   for (const panel of ['risk', 'perturbation']) {
     assert.deepEqual(projectionHelp(panel, dataset, registry).citations, ['ncbi-utex-2973']);
   }
+});
+
+test('explicit-axis help defaults to the fresh-view measured axes', () => {
+  const help = projectionHelp('axes', dataset, registry);
+  assert.deepEqual(help.features.map((feature) => feature.key), ['lengthNt', 'tssInitiation']);
+  assert.match(help.features[1].label, /^Y: TSS initiation/);
+  assert.match(help.features[1].role, /UTEX 2973/);
 });
 
 test('explicit-axis help names both selected metric methods and their sources', () => {
@@ -102,6 +139,10 @@ test('help renderers preserve open disclosure and update selected content', () =
     assert.equal(details.open, true);
     assert.match(details.summary.textContent, /CAI explanation/);
     assert.equal(details.body.children.length, 2);
+    // Meaning, units, calculation, origin, missing values, and how to weigh it.
+    assert.equal(details.body.children[0].children.length, 6);
+    renderMetricHelp(details, metricHelp(registry.byKey.get('gc3'), dataset), citations);
+    assert.equal(details.body.children[0].children.length, 5);
     renderMetricHelp(details, metricHelp(registry.byKey.get('tai'), dataset), citations);
     assert.equal(details.open, true);
     assert.match(details.summary.textContent, /tAI explanation/);

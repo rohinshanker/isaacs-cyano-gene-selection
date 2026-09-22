@@ -71,6 +71,9 @@ export function renderMetricHelp(details, model, manifest) {
     definitionRow('Data origin', model.origin),
     definitionRow('Missing values', model.coverage),
   );
+  // Says what the number is worth beside a measurement, so a convention-derived
+  // index is never read as the primary evidence for a candidate.
+  if (model.reading) list.append(definitionRow('How to weigh it', model.reading));
   body.replaceChildren(list);
   appendCitations(body, model.citations, manifest);
 }

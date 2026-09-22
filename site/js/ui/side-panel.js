@@ -11,7 +11,7 @@ import {
   formatSpan, MISSING,
 } from './format.js';
 import {
-  isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
+  isExpressionMetric, isExpressionProxyMetric, expressionBasisOf, orderMeasuredFirst,
 } from '../core/metric-registry.js';
 import { annotationEvidenceModel } from '../core/annotation-evidence.js';
 import { formatTssStatistic, tssEvidenceModel } from '../core/tss-evidence.js';
@@ -19,8 +19,13 @@ import { geneIdentity } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
 
-/** Baseline context stays visible; scheme-only results open only when a scheme exists. */
-const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
+/**
+ * Baseline context stays visible; scheme-only results open only when a scheme
+ * exists. "Expression" holds this release's measured evidence and is listed
+ * first by the registry's family order, so a reader meets the measurement
+ * before the codon-usage indices in "Translation".
+ */
+const BASE_OPEN_FAMILIES = new Set(['Expression', 'Size', 'Translation']);
 const SCHEME_OPEN_FAMILIES = new Set(['Recoding load', 'Change from wild type']);
 
 /** A crossed pin marks the action that clears the committed selection. */
@@ -246,6 +251,9 @@ function tssEvidenceDisclosure(gene, meta) {
   const model = tssEvidenceModel(gene);
   const details = document.createElement('details');
   details.className = 'metric-group tss-evidence';
+  // Measured UTEX 2973 evidence opens with the gene: its raw replicate counts
+  // and condition comparisons are the first thing a candidate is read on.
+  details.open = true;
   const summary = document.createElement('summary');
   summary.textContent = model.count === 0
     ? 'TSS initiation evidence — no mapped TSS evidence'
@@ -505,7 +513,9 @@ export class SidePanel {
     }
 
     for (const family of state.registry.families) {
-      const metrics = state.registry.metrics.filter((metric) => metric.family === family);
+      const metrics = orderMeasuredFirst(
+        state.registry.metrics.filter((metric) => metric.family === family),
+      );
       if (metrics.length === 0) continue;
       const details = document.createElement('details');
       details.className = 'metric-group';

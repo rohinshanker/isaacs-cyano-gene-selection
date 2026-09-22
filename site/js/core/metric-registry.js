@@ -53,6 +53,88 @@ export function isExpressionProxyMetric(metric) {
   return isExpressionMetric(metric) && /proxy/i.test(`${metric.key} ${metric.label}`);
 }
 
+/**
+ * True for a real measurement of transcript evidence, borrowed or native: it is
+ * declared as expression evidence and is not a codon-adaptation proxy.
+ */
+export function isMeasuredMetric(metric) {
+  return isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
+}
+
+/**
+ * True for a measurement made in this page's own organism. The check reads the
+ * registry's declared provenance rather than a key or label, so a future native
+ * assay is recognised with no change here.
+ */
+export function isNativeMeasuredMetric(metric) {
+  return isMeasuredMetric(metric) && metric.provenance?.isTargetOrganism === true;
+}
+
+/**
+ * Measured evidence first, in every default ordering the interface shows.
+ *
+ * This genome's own measurements lead, then measurements borrowed from another
+ * strain with their caveat attached, then everything else in the order it was
+ * declared. A convention-derived index such as CAI or tAI is never promoted by
+ * this rule, so it can only ever rank below a measurement, however few
+ * replicates that measurement has.
+ *
+ * @param {object[]} metrics
+ * @returns {object[]} a new array; the input is not mutated.
+ */
+export function orderMeasuredFirst(metrics) {
+  const native = metrics.filter(isNativeMeasuredMetric);
+  const borrowed = metrics.filter(
+    (metric) => isMeasuredMetric(metric) && !isNativeMeasuredMetric(metric),
+  );
+  const rest = metrics.filter(
+    (metric) => !native.includes(metric) && !borrowed.includes(metric),
+  );
+  return [...native, ...borrowed, ...rest];
+}
+
+/**
+ * The fresh-view colour metric: this organism's own measurement when the
+ * release publishes one, so a first paint shows measured UTEX 2973 evidence
+ * with its coverage stated in the legend. CAI and tAI stay selectable
+ * everywhere and are never the implicit choice; `gc3` remains the fallback for
+ * a dataset that publishes no native measurement at all.
+ *
+ * @param {{byKey: Map<string, object>, metrics: object[]}} registry
+ * @returns {string} a key that exists in `registry`.
+ */
+export function defaultColorMetricKey(registry) {
+  const native = registry.metrics.find(isNativeMeasuredMetric);
+  if (native) return native.key;
+  return registry.byKey.has('gc3') ? 'gc3' : registry.metrics[0].key;
+}
+
+/**
+ * The condition and coverage limits a measurement declares, for display beside
+ * it wherever that measurement is a fresh-view default. A thin measurement is
+ * still measured biology, so its limit is stated rather than used as a reason
+ * to hide the value.
+ *
+ * Only the metric's own declared provenance is read, so a source that does not
+ * state a condition or a coverage count stays silent instead of borrowing a
+ * neighbouring source's numbers.
+ *
+ * @param {object|null} metric a registry metric.
+ * @param {(value: number) => string} [formatCount]
+ * @returns {string[]} zero or more limit clauses, in display order.
+ */
+export function measurementLimitClauses(metric, formatCount = String) {
+  if (!metric || !isMeasuredMetric(metric) || !metric.provenance) return [];
+  const source = normalizeExpressionSource(metric.provenance);
+  const clauses = [];
+  if (source.condition) clauses.push(`condition: ${source.condition}`);
+  if (source.coverage?.total) {
+    clauses.push(`${formatCount(source.coverage.withValue)} of `
+      + `${formatCount(source.coverage.total)} genes have a value`);
+  }
+  return clauses;
+}
+
 /** Short, honest source label for expression selectors. */
 export function expressionSourceScope(metric) {
   if (isExpressionProxyMetric(metric)) return 'proxy from this genome';
@@ -283,25 +365,45 @@ export function buildMetricRegistry(meta, genes, liveFields) {
   for (const metric of metrics) {
     if (!families.includes(metric.family)) families.push(metric.family);
   }
-  return { metrics, byKey, families: orderMetricFamilies(families), declaredButMissing };
+  const measuredFamilies = metrics
+    .filter(isNativeMeasuredMetric)
+    .map((metric) => metric.family);
+  return {
+    metrics,
+    byKey,
+    families: orderMetricFamilies(families, measuredFamilies),
+    declaredButMissing,
+  };
 }
 
 /**
- * Family display order for every grouped selector (colour-by, the compare
- * axis picker, the gene-detail metric groups): expression evidence groups
- * ahead of the codon-adaptation proxies in "Translation", the same priority
+ * Family display order for every grouped selector (colour-by, the axis
+ * pickers, the gene-detail metric groups).
+ *
+ * A family holding a measurement made in this organism leads the whole list,
+ * so a fresh view offers measured UTEX 2973 evidence before any
+ * convention-derived index, however few replicates that measurement has.
+ * Families named by `measuredFamilies` keep their order relative to each
+ * other. After that, expression evidence still groups ahead of the
+ * codon-adaptation proxies in "Translation", the same priority
  * `orderTrafficCandidates` and `constrainableMetrics` give individual
  * metrics. Every other family keeps the order it first appeared in the
  * manifest, so this never reshuffles families the priority rule says nothing
  * about.
+ *
+ * @param {string[]} families family names in manifest order.
+ * @param {string[]} [measuredFamilies] families holding a native measurement.
+ * @returns {string[]} a new array; the input is not mutated.
  */
-export function orderMetricFamilies(families) {
-  const expressionAt = families.indexOf('Expression');
-  const translationAt = families.indexOf('Translation');
+export function orderMetricFamilies(families, measuredFamilies = []) {
+  const promoted = families.filter((family) => measuredFamilies.includes(family));
+  const ordered = [...promoted, ...families.filter((family) => !promoted.includes(family))];
+  const expressionAt = ordered.indexOf('Expression');
+  const translationAt = ordered.indexOf('Translation');
   if (expressionAt === -1 || translationAt === -1 || expressionAt < translationAt) {
-    return families;
+    return ordered;
   }
-  const withoutExpression = families.filter((family) => family !== 'Expression');
+  const withoutExpression = ordered.filter((family) => family !== 'Expression');
   const insertAt = withoutExpression.indexOf('Translation');
   withoutExpression.splice(insertAt, 0, 'Expression');
   return withoutExpression;
