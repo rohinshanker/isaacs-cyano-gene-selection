@@ -70,6 +70,13 @@ test('an export records the displayed metric axes without changing the CSV value
   const result = buildExport({ dataset, registry, ids: [id], schemes: [{ map: {} }], viewState });
   assert.deepEqual(result.manifest.viewState, viewState);
   assert.equal(result.rows[0].lengthNt, dataset.genes[0].lengthNt);
+  // Deprioritized as a default, never dropped: a chosen CAI axis, both values,
+  // and both definitions still leave the page in the export.
+  assert.equal(result.rows[0].cai, dataset.genes[0].cai);
+  assert.equal(result.rows[0].tai, dataset.genes[0].tai);
+  for (const key of ['cai', 'tai']) {
+    assert.ok(result.manifest.metrics.some((entry) => entry.key === key), key);
+  }
 });
 
 test('single, multiple, and unreviewed categories survive CSV and manifest export', async () => {

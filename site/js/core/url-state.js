@@ -5,6 +5,7 @@
  * scheme, filters, shortlist, pinned gene, and comparison tab.
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
+import { DEFAULT_METRIC_AXES } from './metric-axes.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
 import { DEFAULT_ANNOTATION_SOURCE, isAnnotationSource } from './annotation-source.js';
 
@@ -53,8 +54,8 @@ export function defaultState() {
     trafficKey: null,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
-    axisX: 'lengthNt',
-    axisY: 'cai',
+    axisX: DEFAULT_METRIC_AXES.x,
+    axisY: DEFAULT_METRIC_AXES.y,
   };
 }
 
@@ -130,8 +131,11 @@ export function encodeState(state) {
   push(KEYS.trafficKey, state.trafficKey);
   if (state.lengthCohort !== 'annotated') push(KEYS.lengthCohort, state.lengthCohort);
   if (state.proteinFilter !== 'any') push(KEYS.proteinFilter, state.proteinFilter);
-  if (state.axisX !== 'lengthNt') push(KEYS.axisX, state.axisX);
-  if (state.axisY !== 'cai') push(KEYS.axisY, state.axisY);
+  // Only a nondefault axis is encoded, and a decoded one is applied after the
+  // defaults, so an explicit `ax`/`ay` in a link always wins over the
+  // fresh-view axes.
+  if (state.axisX !== DEFAULT_METRIC_AXES.x) push(KEYS.axisX, state.axisX);
+  if (state.axisY !== DEFAULT_METRIC_AXES.y) push(KEYS.axisY, state.axisY);
   // Always present, and never through `push`: an omitted shortlist means "the
   // hash does not speak to this," which is how a recipient's own localStorage
   // shortlist survives an old-style partial link. Every state this app

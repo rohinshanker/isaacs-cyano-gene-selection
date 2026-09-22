@@ -1,9 +1,10 @@
 # O_deprioritize-cai-tai-defaults__20260922 — Open
 
-- Scope: viewer defaults for axes, colour, sort order, detail-panel field order, and the guided panel objective; documentation of metric weight.
+- Scope: viewer defaults for axes, colour, sort order, detail-panel field
+  order, and the guided panel objective; documentation of metric weight.
 - Status: open
 - Opened: 2026-09-22
-- Updated: 2026-09-22
+- Updated: 2026-09-22 (implemented on feat/deprioritize-cai-tai)
 
 ## Current State
 
@@ -43,6 +44,28 @@ Changed defaults must keep URL precedence rules: an encoded nondefault axis
 or colour still wins over the new fresh-view default
 (`docs/validation/explicit-metric-axes.md`,
 `docs/validation/viewer-interaction-state.md`).
+
+Implemented on `feat/deprioritize-cai-tai` (commits 9fc4b8a, 90887f2):
+
+- `DEFAULT_METRIC_AXES` is CDS length against `tssInitiation`, resolved from
+  declared provenance, and the axis note states that measurement's replicate
+  count and coverage. `applyDecoded` still lets `ax`/`ay` and `c` win.
+- Registry family order, the colour and axis selectors, the gene-detail groups,
+  the comparison and pairwise-delta tables, the add-filter list, the default
+  comparison axes, and the guided panel's baseline feature list all put measured
+  evidence first and CAI/tAI last. Both stay selectable, exported, and cited.
+- Metric explanations gained a **How to weigh it** row: CAI, tAI, and the proxy
+  are named convention-derived supporting context; a measured metric states its
+  replicate count, condition, and coverage there.
+- Guided panel decision recorded in `docs/validation/guided-panel-design.md`:
+  keep CAI and tAI, unweighted, listed last; the objective is unchanged and
+  `panel-golden.test.mjs` passes as shipped.
+- One deliberate exception: the fresh-view **colour** stays GC3. Rendering
+  showed a linear ramp over the heavy-tailed TSS counts (median 828, maximum
+  near 324,000) colours about nine genes in ten identically, hiding the
+  measurement. Reason recorded in `current-design-answers.md`; a bounded native
+  measurement would take the default with no code change. This is the one
+  bullet a reviewer should accept or overturn.
 
 ## Verification
 

@@ -19,10 +19,11 @@ Plain maximin is intentionally not used: on the frozen real-data case it selects
 corners while leaving interior quantile slices empty. The stratification rule
 restores coverage while maximin preserves separation.
 
-Baseline features are CAI, tAI, GC3, ENC, rare-codon fraction, codon-pair score,
-start-window MFE, protein length, and upstream-neighbor distance. Each chosen
-scheme adds target fraction, maximum local target density, ΔCAI, and ΔtAI. A
-missing or constant field is dropped with an explanation. The feature registry is
+Baseline features are GC3, ENC, rare-codon fraction, codon-pair score,
+start-window MFE, protein length, upstream-neighbor distance, CAI, and tAI, in
+that order. Each chosen scheme adds target fraction, maximum local target
+density, ΔCAI, and ΔtAI. A missing or constant field is dropped with an
+explanation. The feature registry is
 dynamic, so a changed published metric count is not assumed.
 Declared metric discovery is order-independent and scans until a finite value is
 found anywhere in the dataset; a sparse metric cannot disappear because its first
@@ -45,7 +46,30 @@ switched on, that PCC 7942 measurement ranks next, still ahead of CAI/tAI —
 matching the low-traffic threshold's priority (see "Expression, and why it is
 not the default" in `data-contract.md`).
 
-The default baseline feature list itself is not reweighted to add TSS
+### CAI and tAI weight in the default baseline, reviewed 2026-09-22
+
+Reviewed under the deprioritization rule, the decision is to **keep both, keep
+them unweighted, and list them last**. Every feature is replaced by its
+whole-genome percentile and enters the distance on equal terms, so CAI and tAI
+are two of nine baseline features with no multiplier; nothing in the objective
+gives them extra weight. Dropping one of them would not remove a codon-usage
+convention from the space, because the per-scheme ΔCAI and ΔtAI features are
+the recoding decision the panel exists to spread across, and removing a
+baseline feature changes every generated panel and the frozen golden case for
+no scientific gain.
+
+What changed is order, not weight: CAI and tAI now sit at the end of
+`DEFAULT_BASELINE_FEATURES`, and an enabled borrowed measurement is placed
+ahead of them rather than appended after them, so no default ordering shows a
+convention above a measurement. Because the space is percentile-scaled and
+order-independent, this leaves the objective identical —
+`panel-golden.test.mjs` passes unchanged, which is the check that the
+objective did not move — and the
+saved-scheme identity rules below are untouched, since the default feature list
+is the same set of keys. `panel-features.test.mjs` asserts both the order and
+that a reversed feature list produces the same scaled space.
+
+The default baseline feature list itself is still not reweighted to add TSS
 initiation: it covers 1,727 of 2,715 genes, is a promoter-initiation signal
 rather than a whole-gene abundance measurement, and folding it into the same
 generic distance space as CAI/tAI would change every generated panel with no

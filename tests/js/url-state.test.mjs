@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   encodeState, decodeState, applyDecoded, defaultState, clearSelections, STATE_VERSION,
 } from '../../site/js/core/url-state.js';
+import { DEFAULT_METRIC_AXES } from '../../site/js/core/metric-axes.js';
 
 const full = {
   panel: 'risk',
@@ -105,8 +106,30 @@ test('explicit metric axes survive a shared link and reset to their defaults', (
   assert.equal(restored.axisX, 'gc3');
   assert.equal(restored.axisY, 'lengthNt');
   applyDecoded(state, decodeState(encodeState(defaultState())));
-  assert.equal(state.axisX, 'lengthNt');
-  assert.equal(state.axisY, 'cai');
+  assert.deepEqual(
+    { x: state.axisX, y: state.axisY },
+    { x: DEFAULT_METRIC_AXES.x, y: DEFAULT_METRIC_AXES.y },
+  );
+});
+
+test('the fresh-view axes are CDS length against measured evidence, never CAI or tAI', () => {
+  const state = defaultState();
+  assert.deepEqual({ x: state.axisX, y: state.axisY }, { x: 'lengthNt', y: 'tssInitiation' });
+  assert.ok(!['cai', 'tai'].includes(state.axisY));
+  // A plain view carries no axis fields at all.
+  const hash = encodeState(state);
+  assert.ok(!hash.includes('ax='), hash);
+  assert.ok(!hash.includes('ay='), hash);
+});
+
+test('an encoded CAI axis still wins over the new measured default', () => {
+  const shared = encodeState({ ...defaultState(), panel: 'axes', axisY: 'cai' });
+  assert.ok(shared.includes('ay=cai'), shared);
+  const target = defaultState();
+  target.axisY = 'gc3';
+  applyDecoded(target, decodeState(shared));
+  assert.equal(target.axisY, 'cai');
+  assert.equal(target.axisX, DEFAULT_METRIC_AXES.x);
 });
 
 test('defaults are left out of the hash so a plain view has a plain link', () => {

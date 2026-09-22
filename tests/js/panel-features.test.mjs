@@ -9,6 +9,7 @@ import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import {
   buildPanelSpace, featureDistance, distanceFromCentre, presentFeatureCount, coverageOf,
   binOf, schemeFeatureKey, parseSchemeFeatureKey, isBorrowedMetric, COVERAGE_BINS,
+  DEFAULT_BASELINE_FEATURES, defaultBaselineFeatures,
 } from '../../site/js/core/panel-features.js';
 import { expressionFixtureDataset } from './helpers.mjs';
 
@@ -171,6 +172,37 @@ test('the default space adds one borrowed-source representative only after opt-i
   assert.ok(allowed.keys.includes('expression'));
   assert.ok(!allowed.keys.includes('expressionPercentile'));
   assert.deepEqual(allowed.borrowed, ['expression']);
+});
+
+test('the baseline feature order puts the codon-usage conventions last', async () => {
+  const { registry } = await context();
+  assert.deepEqual(DEFAULT_BASELINE_FEATURES.slice(-2), ['cai', 'tai']);
+  assert.equal(defaultBaselineFeatures(registry).at(-1), 'tai');
+  // An opted-in measurement leads the list, ahead of both conventions.
+  const allowed = defaultBaselineFeatures(registry, true);
+  assert.equal(allowed[0], 'expression');
+  assert.ok(allowed.indexOf('expression') < allowed.indexOf('cai'));
+  assert.deepEqual([...allowed].sort(), [...DEFAULT_BASELINE_FEATURES, 'expression'].sort());
+});
+
+test('feature order does not change the space, only what is listed first', async () => {
+  const { dataset, registry } = await context();
+  const declared = buildPanelSpace({ dataset, registry });
+  const reversed = buildPanelSpace({
+    dataset, registry, baselineFeatures: [...DEFAULT_BASELINE_FEATURES].reverse(),
+  });
+
+  assert.deepEqual([...declared.keys].sort(), [...reversed.keys].sort());
+  assert.equal(declared.dims, reversed.dims);
+  for (const key of declared.keys) {
+    const here = declared.keys.indexOf(key);
+    const there = reversed.keys.indexOf(key);
+    for (let row = 0; row < declared.count; row += 1) {
+      const left = declared.scaled[row * declared.dims + here];
+      const right = reversed.scaled[row * reversed.dims + there];
+      assert.ok(Object.is(left, right), `${key} row ${row} changed with feature order`);
+    }
+  }
 });
 
 test('each selected scheme contributes its own per-scheme features', async () => {

@@ -14,6 +14,7 @@ import { formatValue, formatDelta, formatCount, MISSING } from './format.js';
 import { ALL_SOURCES, annotationSourceView } from '../core/annotation-source.js';
 import {
   metricValues, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
+  orderMeasuredFirst, metricsInDisplayOrder,
 } from '../core/metric-registry.js';
 import {
   robustScale, zScore, seriesStyle, defaultAxes, MIN_AXES, Z_LIMIT, presentRuns,
@@ -288,7 +289,10 @@ export class ComparePanel {
       const legend = document.createElement('legend');
       legend.textContent = family;
       group.append(legend);
-      for (const metric of this.registry.metrics.filter((entry) => entry.family === family)) {
+      const familyMetrics = orderMeasuredFirst(
+        this.registry.metrics.filter((entry) => entry.family === family),
+      );
+      for (const metric of familyMetrics) {
         const label = document.createElement('label');
         label.className = 'axis-option';
         const input = document.createElement('input');
@@ -925,7 +929,9 @@ export class ComparePanel {
     }
     head.append(headerRow);
     const body = document.createElement('tbody');
-    for (const metric of this.registry.metrics) {
+    // Measured evidence leads this table too, so a pairwise read starts on a
+    // measurement rather than on a codon-usage convention.
+    for (const metric of metricsInDisplayOrder(this.registry)) {
       const a = metric.read(indexA);
       const b = metric.read(indexB);
       const difference = Number.isFinite(a) && Number.isFinite(b) ? a - b : NaN;
@@ -988,7 +994,7 @@ export class ComparePanel {
       this.tableHost.append(empty);
       return;
     }
-    const metrics = this.registry.metrics;
+    const metrics = metricsInDisplayOrder(this.registry);
     const missing = countMissing(series, metrics, (metric, index) => metric.read(index));
     const table = document.createElement('table');
     table.className = 'data-table sortable';

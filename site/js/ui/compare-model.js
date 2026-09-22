@@ -9,9 +9,19 @@
 import { CATEGORICAL } from './colors.js';
 import { sortedFinite, medianSorted, quantileSorted } from '../core/stats.js';
 
-/** Metrics the comparison views prefer when the user has not chosen. */
+/**
+ * Metrics the comparison views prefer when the user has not chosen, measured
+ * evidence first.
+ *
+ * Native TSS initiation leads, so the default radar and table read a candidate
+ * on this organism's own measurement before any codon-usage convention. CAI
+ * and tAI keep their place in the list, at its end, and stay selectable. A
+ * borrowed PCC 7942 measurement is not an implicit default here, matching the
+ * rule the low-traffic threshold and the panel designer already follow.
+ */
 export const DEFAULT_AXES = [
-  'gc3', 'enc', 'cai', 'tai', 'rareFraction', 'cps', 'mfeStart', 'targetFraction',
+  'tssInitiation', 'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'targetFraction',
+  'cai', 'tai',
 ];
 
 /** Fewest axes a comparison can be drawn with. */

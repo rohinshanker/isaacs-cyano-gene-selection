@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   findNeighbor, clampZoom, projectionCanZoom, enterTarget, togglePinTarget, shortlistTarget,
-  MIN_ZOOM, MAX_ZOOM,
+  formatTick, tickTarget, MIN_ZOOM, MAX_ZOOM,
 } from '../../site/js/ui/scatter.js';
 
 // Four points around the origin: right, left, up, down, one screen unit apart.
@@ -82,4 +82,25 @@ test('S targets the active gene when there is one, else falls back to pinned', (
   assert.equal(shortlistTarget(3, 7), 3);
   assert.equal(shortlistTarget(-1, 7), 7);
   assert.equal(shortlistTarget(-1, -1), -1);
+});
+
+test('a six-figure axis tick is abbreviated so it clears the rotated axis title', () => {
+  assert.equal(formatTick(300000), '300k');
+  assert.equal(formatTick(12500), '12.5k');
+  assert.equal(formatTick(2_500_000), '2.5M');
+  // Below ten thousand the exact number still fits the gutter.
+  assert.equal(formatTick(5400), '5400');
+  assert.equal(formatTick(0.125), '0.125');
+  assert.equal(formatTick(-45000), '-45k');
+  assert.equal(formatTick(NaN), '');
+});
+
+test('a narrow axis asks for fewer ticks so its labels cannot run together', () => {
+  // A 390 px phone leaves roughly 250 px of plot width.
+  assert.equal(tickTarget(250, 74), 3);
+  assert.equal(tickTarget(960, 74), 6);
+  // Never fewer than two, whatever the geometry, and never a broken input.
+  assert.equal(tickTarget(20, 74), 2);
+  assert.equal(tickTarget(NaN, 74), 6);
+  assert.equal(tickTarget(250, 0), 6);
 });

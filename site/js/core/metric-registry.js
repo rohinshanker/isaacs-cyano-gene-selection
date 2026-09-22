@@ -53,6 +53,124 @@ export function isExpressionProxyMetric(metric) {
   return isExpressionMetric(metric) && /proxy/i.test(`${metric.key} ${metric.label}`);
 }
 
+/**
+ * True for a real measurement of transcript evidence, borrowed or native: it is
+ * declared as expression evidence and is not a codon-adaptation proxy.
+ */
+export function isMeasuredMetric(metric) {
+  return isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
+}
+
+/**
+ * True for a measurement made in this page's own organism. The check reads the
+ * registry's declared provenance rather than a key or label, so a future native
+ * assay is recognised with no change here.
+ */
+export function isNativeMeasuredMetric(metric) {
+  return isMeasuredMetric(metric) && metric.provenance?.isTargetOrganism === true;
+}
+
+/**
+ * Measured evidence first, in every default ordering the interface shows.
+ *
+ * This genome's own measurements lead, then measurements borrowed from another
+ * strain with their caveat attached, then everything else in the order it was
+ * declared. A convention-derived index such as CAI or tAI is never promoted by
+ * this rule, so it can only ever rank below a measurement, however few
+ * replicates that measurement has.
+ *
+ * @param {object[]} metrics
+ * @returns {object[]} a new array; the input is not mutated.
+ */
+export function orderMeasuredFirst(metrics) {
+  const native = metrics.filter(isNativeMeasuredMetric);
+  const borrowed = metrics.filter(
+    (metric) => isMeasuredMetric(metric) && !isNativeMeasuredMetric(metric),
+  );
+  const rest = metrics.filter(
+    (metric) => !native.includes(metric) && !borrowed.includes(metric),
+  );
+  return [...native, ...borrowed, ...rest];
+}
+
+/**
+ * Every metric in one default display order: families as
+ * {@link orderMetricFamilies} ranks them, and inside each family this
+ * organism's measurements first. Any table or list that shows the whole
+ * registry without the reader choosing an order uses this, so a
+ * convention-derived index never appears above a measurement by default.
+ *
+ * @param {{metrics: object[], families: string[]}} registry
+ * @returns {object[]} every registry metric exactly once.
+ */
+export function metricsInDisplayOrder(registry) {
+  const ordered = [];
+  for (const family of registry.families) {
+    ordered.push(...orderMeasuredFirst(
+      registry.metrics.filter((metric) => metric.family === family),
+    ));
+  }
+  // A metric whose family somehow escaped the family list still gets shown.
+  for (const metric of registry.metrics) {
+    if (!ordered.includes(metric)) ordered.push(metric);
+  }
+  return ordered;
+}
+
+/**
+ * The fresh-view colour metric.
+ *
+ * Measured evidence leads the colour selector and opens the Metric X vs Y tab,
+ * but it does not colour the first paint. This release's only native
+ * measurement, Tan 2018 TSS initiation, is a heavy-tailed count: its median is
+ * 828 against a maximum near 324,000, so a linear ramp gives about nine genes
+ * in ten the same dark bucket. Opening on it would hide the very measurement it
+ * is meant to show, and a ramp reads a value rather than a rank, so rescaling
+ * it here would misreport the numbers. GC3 stays the first colour because it is
+ * complete, evenly spread, and not a codon-adaptation convention: CAI and tAI
+ * are never the implicit choice.
+ *
+ * A future native measurement that is a fraction or a rank — a declared
+ * percentile, say — is bounded and does colour the first paint.
+ *
+ * @param {{byKey: Map<string, object>, metrics: object[]}} registry
+ * @returns {string} a key that exists in `registry`.
+ */
+export function defaultColorMetricKey(registry) {
+  const bounded = registry.metrics.find(
+    (metric) => isNativeMeasuredMetric(metric)
+      && /^(fraction|rank|percentile|index)$/i.test(metric.unit ?? ''),
+  );
+  if (bounded) return bounded.key;
+  return registry.byKey.has('gc3') ? 'gc3' : registry.metrics[0].key;
+}
+
+/**
+ * The condition and coverage limits a measurement declares, for display beside
+ * it wherever that measurement is a fresh-view default. A thin measurement is
+ * still measured biology, so its limit is stated rather than used as a reason
+ * to hide the value.
+ *
+ * Only the metric's own declared provenance is read, so a source that does not
+ * state a condition or a coverage count stays silent instead of borrowing a
+ * neighbouring source's numbers.
+ *
+ * @param {object|null} metric a registry metric.
+ * @param {(value: number) => string} [formatCount]
+ * @returns {string[]} zero or more limit clauses, in display order.
+ */
+export function measurementLimitClauses(metric, formatCount = String) {
+  if (!metric || !isMeasuredMetric(metric) || !metric.provenance) return [];
+  const source = normalizeExpressionSource(metric.provenance);
+  const clauses = [];
+  if (source.condition) clauses.push(`condition: ${source.condition}`);
+  if (source.coverage?.total) {
+    clauses.push(`${formatCount(source.coverage.withValue)} of `
+      + `${formatCount(source.coverage.total)} genes have a value`);
+  }
+  return clauses;
+}
+
 /** Short, honest source label for expression selectors. */
 export function expressionSourceScope(metric) {
   if (isExpressionProxyMetric(metric)) return 'proxy from this genome';
@@ -283,25 +401,45 @@ export function buildMetricRegistry(meta, genes, liveFields) {
   for (const metric of metrics) {
     if (!families.includes(metric.family)) families.push(metric.family);
   }
-  return { metrics, byKey, families: orderMetricFamilies(families), declaredButMissing };
+  const measuredFamilies = metrics
+    .filter(isNativeMeasuredMetric)
+    .map((metric) => metric.family);
+  return {
+    metrics,
+    byKey,
+    families: orderMetricFamilies(families, measuredFamilies),
+    declaredButMissing,
+  };
 }
 
 /**
- * Family display order for every grouped selector (colour-by, the compare
- * axis picker, the gene-detail metric groups): expression evidence groups
- * ahead of the codon-adaptation proxies in "Translation", the same priority
+ * Family display order for every grouped selector (colour-by, the axis
+ * pickers, the gene-detail metric groups).
+ *
+ * A family holding a measurement made in this organism leads the whole list,
+ * so a fresh view offers measured UTEX 2973 evidence before any
+ * convention-derived index, however few replicates that measurement has.
+ * Families named by `measuredFamilies` keep their order relative to each
+ * other. After that, expression evidence still groups ahead of the
+ * codon-adaptation proxies in "Translation", the same priority
  * `orderTrafficCandidates` and `constrainableMetrics` give individual
  * metrics. Every other family keeps the order it first appeared in the
  * manifest, so this never reshuffles families the priority rule says nothing
  * about.
+ *
+ * @param {string[]} families family names in manifest order.
+ * @param {string[]} [measuredFamilies] families holding a native measurement.
+ * @returns {string[]} a new array; the input is not mutated.
  */
-export function orderMetricFamilies(families) {
-  const expressionAt = families.indexOf('Expression');
-  const translationAt = families.indexOf('Translation');
+export function orderMetricFamilies(families, measuredFamilies = []) {
+  const promoted = families.filter((family) => measuredFamilies.includes(family));
+  const ordered = [...promoted, ...families.filter((family) => !promoted.includes(family))];
+  const expressionAt = ordered.indexOf('Expression');
+  const translationAt = ordered.indexOf('Translation');
   if (expressionAt === -1 || translationAt === -1 || expressionAt < translationAt) {
-    return families;
+    return ordered;
   }
-  const withoutExpression = families.filter((family) => family !== 'Expression');
+  const withoutExpression = ordered.filter((family) => family !== 'Expression');
   const insertAt = withoutExpression.indexOf('Translation');
   withoutExpression.splice(insertAt, 0, 'Expression');
   return withoutExpression;
