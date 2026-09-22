@@ -47,6 +47,7 @@ import { WorkspaceResizer } from './ui/workspace-resize.js';
 import { ComparePanel } from './ui/compare.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
+import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
 import { ANNOTATION_SOURCES, ALL_SOURCES } from './core/annotation-source.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
@@ -493,16 +494,15 @@ function renderMap() {
     element('axis-y').value = state.axisY;
     const xLog = syncAxisScaleAvailability('x');
     const yLog = syncAxisScaleAvailability('y');
-    const pairs = projection.isDiagonalPair
-      ? `${formatCount(projection.finitePairCount)} genes have this metric. Identical axes place points on a diagonal.`
-      : `${formatCount(projection.finitePairCount)} genes have values on both axes; missing pairs are not plotted.`;
+    const pairs = axisPairsNote(projection);
     const scaleNotes = [...new Set([
       log10DisabledReason(context.registry.byKey.get(state.axisX)?.label ?? state.axisX, xLog),
       log10DisabledReason(context.registry.byKey.get(state.axisY)?.label ?? state.axisY, yLog),
     ].filter(Boolean))];
     // A measured axis states its replicate and condition limits here, beside
     // the plot, rather than leaving a thin measurement to look like a deep one.
-    element('axis-note').textContent = [pairs, ...axisLimitNotes(), ...scaleNotes].join(' ');
+    element('axis-note').textContent = [pairs, axisTitlesNote(projection), ...axisLimitNotes(), ...scaleNotes]
+      .join(' ');
   }
 
   plot.setProjection(projection, { keepView: plot.projectionId === state.panel });
@@ -605,13 +605,15 @@ function renderMap() {
   const hidden = context.dataset.genes.length - context.passing;
   const banner = element('filter-banner');
   banner.classList.toggle('active', hidden > 0);
-  banner.textContent = hidden > 0
-    ? state.showHidden
-      ? `Filters exclude ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes `
-        + `from the active set; ${state.colorBy === FUNCTION_COLOR_KEY
-          ? 'grey dots and outlined squares' : 'grey outlined squares'} remain on the map.`
-      : `Filters hide ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes.`
-    : '';
+  banner.textContent = filterBannerText({
+    hidden,
+    total: context.dataset.genes.length,
+    showHidden: state.showHidden,
+    projectionAvailable: projection.available,
+    projectionMessage: projection.message,
+    colorBy: state.colorBy,
+    functionColorKey: FUNCTION_COLOR_KEY,
+  });
   scheduleTiming();
 }
 
