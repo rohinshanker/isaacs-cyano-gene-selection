@@ -6,6 +6,7 @@ data/raw/*.gz
 data/raw/*.txt
 !data/raw/md5checksums.txt
 data/interim/
+data/protein-evidence/source/
 .pytest_cache/
 .playwright-cli/
 .artifacts/rna-folding/

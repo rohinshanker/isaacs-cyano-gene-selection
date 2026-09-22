@@ -17,6 +17,24 @@
 Do not substitute another accession. `GCF_000817745.x` is *Aphanocapsa montana* and
 is not this organism.
 
+## Protein evidence is a separate, versioned release
+
+The site data does not currently expose a protein-evidence filter. The offline
+audit in `data/protein-evidence/releases/` deliberately keeps three nullable
+evidence concepts separate: a pinned RefSeq protein record, direct experimental
+detection, and characterized-homolog support. Experimentally tested variant
+evidence has its own field. Historical search-database observations live in a
+separate optional artifact, with an explicit source-integrity field; they cannot
+enter the admitted release merely because a local checksum is stable.
+The future cohort UI offers RefSeq record and direct detection separately; direct
+detection is shown as unavailable with an explanation while no accepted per-locus
+identification list exists.
+
+Unknown evidence is the literal string `unknown`, never false or absent-row
+imputation. Shared accessions produce one row per locus with
+`identity_ambiguity=shared_protein_id`. See
+[`protein-evidence.md`](protein-evidence.md) for the release and admission rules.
+
 ## Gene inclusion rule
 
 A CDS enters the analysis set only if all hold:
@@ -77,7 +95,8 @@ burden from `codons` alone would report zero for every gene, because no stop cod
 appears there. Always read `terminalStop` when the active scheme maps a stop codon.
 
 **Denominator rule, so numbers are comparable.** `lengthCodons` counts sense codons
-and excludes the stop. Target fraction and targets per kb use that denominator.
+and excludes the stop. Target fraction uses that denominator. Targets per kb
+uses full `lengthNt` in nucleotides, including the stop.
 A reassigned terminal stop contributes to `targetTotal` and to the edit count, but
 never to local-density windows or cluster statistics, which are defined over sense
 codons only. State the convention wherever a burden number is displayed.
@@ -363,6 +382,19 @@ count (two per condition), threshold, and exact-join coverage. The source and
 derived-table hashes and reproduction steps are in
 `data/expression/TAN2018_TSS_PROVENANCE.md`.
 
+`regulatory_tss.json` separately publishes the 2,333 non-gTSS Table S1 rows
+(antisense, internal, and orphan or novel). It preserves every feature's own
+coordinate, strand, source locus, raw cultures, and reported condition
+comparisons. Mapping to a plotted CDS is only an exact current locus-ID join;
+unassociated and unmapped rows remain searchable. The source and derived TSV
+hashes, mapping counts, and conditions are pinned in the JSON and provenance
+file. No per-gene abundance or regulation claim is calculated from these rows.
+Its `potentialTargets` array also preserves the 101 condition-specific
+Table S8 antisense-site/potential-target rows as explicitly labelled source
+hypotheses, with no inferred regulatory edge.
+Regenerate the browser copy with `python3 tools/regulatory_tss.py write` and
+verify it with `python3 tools/regulatory_tss.py check`.
+
 ## Expression, and why it is not the default
 
 `expression` is loaded from `data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv`,
@@ -468,3 +500,11 @@ stays under 6 MB uncompressed; relationship-heavy `annotations.json` and
 serves them compressed.
 If the core file exceeds the budget, move `rscu` and `codons` into a separate
 lazily-fetched file rather than dropping precision.
+
+## Length cohort inventory
+
+The optional `site/data/length_cohorts.json` is a pinned, checked derivation
+of the RefSeq GFF, plotted `genes.json`, and exact protein-identity table.
+See [length-cohorts.md](length-cohorts.md) for cohort definitions, separate
+gene-span and joined-CDS length fields, URL/filter behavior, and the
+unavailable direct-detection tier.

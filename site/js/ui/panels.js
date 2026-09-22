@@ -1,13 +1,14 @@
 /**
- * The four map panels and the projections behind them.
+ * The map panels and the projections behind them.
  *
- * Two are precomputed by the pipeline and two are computed here, live, from the
- * current recoding scheme. Each carries a plain sentence saying what it shows
- * and what being close together means.
+ * Two PCA/UMAP panels are precomputed by the pipeline, two PCA panels are
+ * computed live from the recoding scheme, and the explicit metric tab is
+ * assembled by app.js. Each carries a plain sentence explaining its axes.
  */
 import { pca } from '../core/pca.js';
 import { buildFeatureMatrix } from '../core/live-metrics.js';
 import { metricValues } from '../core/metric-registry.js';
+import { geneMapLabel } from '../core/gene-identity.js';
 
 export const PANELS = Object.freeze([
   {
@@ -15,7 +16,15 @@ export const PANELS = Object.freeze([
     name: 'Native codon space',
     source: 'Precomputed by the pipeline from codon usage (RSCU).',
     blurb: 'Each dot is a gene, placed by how it uses synonymous codons in the wild-type genome. '
-      + 'Two genes close together prefer the same codons, whatever they do in the cell.',
+      + 'Two genes close together prefer the same codons, whatever they do in the cell. '
+      + 'Short CDSs have more zero RSCU entries and can shift along PC2; length filters keep these coordinates fixed.',
+  },
+  {
+    id: 'axes',
+    name: 'Metric X vs Y',
+    source: 'Plotted directly from the selected metrics; no PCA is fitted.',
+    blurb: 'Choose one gene metric for each axis to inspect their relationship directly. '
+      + 'The default compares CDS length with the codon adaptation index (CAI).',
   },
   {
     id: 'risk',
@@ -42,18 +51,18 @@ export const PANELS = Object.freeze([
 ]);
 
 /** Feature keys the risk map prefers, in order. Missing ones are skipped. */
-const RISK_FEATURES = [
+export const RISK_FEATURES = Object.freeze([
   'lengthCodons', 'gc3', 'enc', 'cai', 'tai', 'rareFraction', 'longestRareRun',
   'minLocalTai', 'cps', 'underrepresentedPairFraction', 'mfeStart', 'mfeFirst100',
   'gc5prime', 'minLocalGc', 'targetFraction', 'targetPerKb', 'maxLocalTargetDensity',
   'targetClusters',
-];
+]);
 
 /** Feature keys the perturbation map uses. */
-const PERTURBATION_FEATURES = [
+export const PERTURBATION_FEATURES = Object.freeze([
   'dGc3', 'dCai', 'dTai', 'dEnc', 'dCps', 'targetFraction',
   'maxLocalTargetDensity', 'targetClusters', 'targetFirstRamp', 'maxClusterSpan',
-];
+]);
 
 function livePca(registry, keys, rows) {
   const columns = [];
@@ -86,7 +95,7 @@ function axisLabel(component, explained) {
 export function buildProjection(panelId, { dataset, registry, schemeActive }) {
   const genes = dataset.genes;
   const rows = genes.length;
-  const labels = genes.map((gene) => (gene.name ? `${gene.id} ${gene.name}` : gene.id));
+  const labels = genes.map(geneMapLabel);
 
   if (panelId === 'native') {
     const explained = dataset.codonPca?.explainedVariance ?? [];

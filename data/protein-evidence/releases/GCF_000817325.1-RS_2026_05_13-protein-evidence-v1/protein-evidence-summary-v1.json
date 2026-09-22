@@ -1,0 +1,116 @@
+{
+  "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+  "counts": {
+    "characterizedHomologKnownLoci": 0,
+    "characterizedHomologUnknownLoci": 2715,
+    "experimentallyDetectedKnownLoci": 0,
+    "experimentallyDetectedUnknownLoci": 2715,
+    "pass00399AdmittedSearchEvidenceLoci": 0,
+    "refseqAmbiguousLoci": 8,
+    "refseqMatchedLoci": 2715,
+    "refseqUnmatchedLoci": 0,
+    "sharedRefseqProteinIds": 4,
+    "siteLoci": 2715,
+    "testedVariantEvidenceLoci": 3,
+    "uniqueRefseqProteinIds": 2711
+  },
+  "inspected": {
+    "kaiA": {
+      "characterized_homolog": "unknown",
+      "computed_cds_translation": "exact",
+      "experimentally_detected": "unknown",
+      "gene_symbol": "",
+      "identity_ambiguity": "none",
+      "locus_tag": "M744_RS10050",
+      "protein_id": "WP_011377921.1",
+      "protein_id_locus_count": 1,
+      "protein_length_aa": 284,
+      "protein_sequence_sha256": "3f99636712784ac3f5ae3cf760ab3dfdb032e44ff1fe3004347629826b6e502e",
+      "refseq_protein_record": "present",
+      "refseq_protein_sequence": "exact",
+      "tested_variant_evidence": "unknown",
+      "tested_variant_growth_condition": "unknown"
+    },
+    "kaiB": {
+      "characterized_homolog": "unknown",
+      "computed_cds_translation": "exact",
+      "experimentally_detected": "unknown",
+      "gene_symbol": "kaiB",
+      "identity_ambiguity": "none",
+      "locus_tag": "M744_RS10055",
+      "protein_id": "WP_011242647.1",
+      "protein_id_locus_count": 1,
+      "protein_length_aa": 102,
+      "protein_sequence_sha256": "fd629dda2f91f60e163a4df19b29ef8c0c93ddaff4813d50c80f95b0b9a3d108",
+      "refseq_protein_record": "present",
+      "refseq_protein_sequence": "exact",
+      "tested_variant_evidence": "unknown",
+      "tested_variant_growth_condition": "unknown"
+    },
+    "kaiC": {
+      "characterized_homolog": "unknown",
+      "computed_cds_translation": "exact",
+      "experimentally_detected": "unknown",
+      "gene_symbol": "kaiC",
+      "identity_ambiguity": "none",
+      "locus_tag": "M744_RS10060",
+      "protein_id": "WP_011242648.1",
+      "protein_id_locus_count": 1,
+      "protein_length_aa": 519,
+      "protein_sequence_sha256": "867c9d2d9d3ef606ae78bbe6d0d5669bc4364c80173c3eb23e92f644e7f8ad37",
+      "refseq_protein_record": "present",
+      "refseq_protein_sequence": "exact",
+      "tested_variant_evidence": "unknown",
+      "tested_variant_growth_condition": "unknown"
+    },
+    "prfB": {
+      "characterized_homolog": "unknown",
+      "computed_cds_translation": "exact",
+      "experimentally_detected": "unknown",
+      "gene_symbol": "prfB",
+      "identity_ambiguity": "none",
+      "locus_tag": "M744_RS00920",
+      "protein_id": "WP_155813972.1",
+      "protein_id_locus_count": 1,
+      "protein_length_aa": 373,
+      "protein_sequence_sha256": "8de96f4e599d61b078e1343d3a1bbb671a5dfdf6aee4d2f7a1be3083e4df355c",
+      "refseq_protein_record": "present",
+      "refseq_protein_sequence": "exact",
+      "tested_variant_evidence": "unknown",
+      "tested_variant_growth_condition": "unknown"
+    }
+  },
+  "localFileDigests": {
+    "refseq-cds-nucleotide": "5927cc5ee2bb36ad8ab107c000ee5d7f62f1d0843b5d416de7a2f3e4b01b7729",
+    "refseq-genomic-gff": "7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f",
+    "refseq-protein-fasta": "06dc7a73471db720f2fabf80a4d37ca9242342d1e1bda2309e4fc7bf68cc249f",
+    "refseq-translated-cds": "f6af136ac3a05801d28d1b010fdae2246a12bcaa3fc6805505deceda2023834e"
+  },
+  "method": {
+    "detectionAdmission": "unknown: no accepted MSGF+ peptide/protein result table is deposited",
+    "homologAdmission": "unknown unless a sequence/accession-backed characterized source is admitted",
+    "identityJoin": "exact locus_tag -> protein_id plus exact amino-acid sequence",
+    "testedVariantCondition": "growth phenotype only; biochemical assays have separate in-vitro conditions",
+    "translation": "NCBI spliced CDS FASTA; bacterial table 11; alternative starts are methionine; one terminal stop removed"
+  },
+  "releaseId": "GCF_000817325.1-RS_2026_05_13-protein-evidence-v1",
+  "schemaVersion": 1,
+  "sharedProteinIds": {
+    "WP_011242480.1": [
+      "M744_RS09190",
+      "M744_RS11690"
+    ],
+    "WP_011242807.1": [
+      "M744_RS10890",
+      "M744_RS10915"
+    ],
+    "WP_011242808.1": [
+      "M744_RS10895",
+      "M744_RS10920"
+    ],
+    "WP_011243185.1": [
+      "M744_RS07945",
+      "M744_RS12910"
+    ]
+  }
+}

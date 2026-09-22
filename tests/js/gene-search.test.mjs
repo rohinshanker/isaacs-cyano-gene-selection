@@ -1,9 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { searchGenes, GENE_ALIASES } from '../../site/js/core/gene-search.js';
-import {
-  focusActionAfterRefresh, shouldRenderSearch,
-} from '../../site/js/ui/gene-search-results.js';
+import { searchActionState, shouldRenderSearch } from '../../site/js/ui/gene-search-results.js';
 
 /**
  * A miniature stand-in for the real annotation, carrying the case the lab hit:
@@ -29,10 +27,11 @@ test('a blur event for the rendered query preserves the result being clicked', (
   assert.equal(shouldRenderSearch('rubisco', 'rpsL', { total: 5 }), true);
 });
 
-test('a refreshed search row preserves focus or moves it to its remaining action', () => {
-  assert.equal(focusActionAfterRefresh('pin', false), 'pin');
-  assert.equal(focusActionAfterRefresh('shortlist', false), 'shortlist');
-  assert.equal(focusActionAfterRefresh('shortlist', true), 'pin');
+test('pin and shortlist search actions reverse independently', () => {
+  assert.deepEqual(searchActionState(false, false), { pin: 'Pin', shortlist: 'Shortlist' });
+  assert.deepEqual(searchActionState(true, false), { pin: 'Unpin', shortlist: 'Shortlist' });
+  assert.deepEqual(searchActionState(false, true), { pin: 'Pin', shortlist: 'Remove' });
+  assert.deepEqual(searchActionState(true, true), { pin: 'Unpin', shortlist: 'Remove' });
 });
 
 test('an exact locus tag is the first result', () => {
@@ -53,6 +52,15 @@ test('a gene name resolves, and reports that it matched the name', () => {
   assert.equal(result.shown[0].gene.id, 'M744_RS11720');
   assert.equal(result.shown[0].matchedOn, 'gene name');
   assert.equal(result.shown[0].alias, null);
+});
+
+test('a gene symbol does not match a longer ATPase word by substring', () => {
+  assert.deepEqual(ids(searchGenes(GENES, 'atpA')), []);
+  const genes = [
+    { id: 'GENE_1', name: 'atpA', product: 'ATP synthase subunit alpha' },
+    { id: 'GENE_2', name: null, product: 'ATPase subunit I' },
+  ];
+  assert.deepEqual(ids(searchGenes(genes, 'atpA')), ['GENE_1']);
 });
 
 test('product text is searchable, which it was not before', () => {
@@ -135,6 +143,76 @@ test('a gene with no name or product does not break the search', () => {
   const sparse = [{ id: 'GENE_0001', name: null, product: null }];
   assert.equal(searchGenes(sparse, 'GENE_0001').total, 1);
   assert.equal(searchGenes(sparse, 'anything').total, 0);
+});
+
+test('GO ID and pinned term name search return labelled IEA suggestions', () => {
+  const genes = [
+    { id: 'M744_RS00265', name: 'psaC', product: 'ferredoxin', annotationEvidence: {
+      goAnnotations: [{ goId: 'GO:0009773', evidenceCode: 'IEA', mappingAmbiguity: '' }],
+    } },
+    { id: 'M744_RS00030', name: null, product: 'hypothetical protein',
+      annotationEvidence: { goAnnotations: [] } },
+  ];
+  const goTerms = { 'GO:0009773': {
+    name: 'photosynthetic electron transport in photosystem I',
+    namespace: 'biological_process',
+  } };
+  const byId = searchGenes(genes, 'go:0009773', { goTerms });
+  assert.equal(byId.total, 1);
+  assert.equal(byId.shown[0].matchedOn, 'GO ID');
+  assert.deepEqual(byId.shown[0].goMatch, {
+    id: 'GO:0009773', name: goTerms['GO:0009773'].name,
+    evidenceCode: 'IEA', mappingAmbiguity: null, isObsolete: false,
+  });
+  const byName = searchGenes(genes, 'electron transport photosynthetic', { goTerms });
+  assert.equal(byName.total, 1);
+  assert.equal(byName.shown[0].matchedOn, 'GO term name');
+  assert.equal(searchGenes(genes, 'photosynthetic', { goTerms: null }).total, 0);
+});
+
+test('direct gene matches keep their rank ahead of GO suggestions', () => {
+  const genes = [
+    { id: 'GENE_1', product: 'electron transport protein' },
+    { id: 'GENE_2', product: 'ferredoxin', annotationEvidence: {
+      goAnnotations: [{ goId: 'GO:0009773', evidenceCode: 'IEA', mappingAmbiguity: 'shared protein ID' }],
+    } },
+  ];
+  const result = searchGenes(genes, 'electron transport', {
+    goTerms: { 'GO:0009773': { name: 'photosynthetic electron transport' } },
+  });
+  assert.deepEqual(ids(result), ['GENE_1', 'GENE_2']);
+  assert.equal(result.shown[0].goMatch, null);
+  assert.equal(result.shown[1].goMatch.mappingAmbiguity, 'shared protein ID');
+});
+
+test('obsolete GO IDs remain searchable and carry the source warning', () => {
+  const genes = [{ id: 'GENE_1', product: 'unrelated', annotationEvidence: {
+    goAnnotations: [{ goId: 'GO:0006082', evidenceCode: 'IEA', mappingAmbiguity: '' }],
+  } }];
+  const result = searchGenes(genes, 'GO:0006082', {
+    goTerms: { 'GO:0006082': { name: 'organic acid metabolic process', isObsolete: true } },
+  });
+  assert.equal(result.total, 1);
+  assert.equal(result.shown[0].goMatch.isObsolete, true);
+});
+
+test('reviewed category search finds only assigned loci and follows direct matches', () => {
+  const genes = [
+    { id: 'GENE_1', product: 'light reactions protein', reviewedFunctionLabels: [] },
+    { id: 'GENE_2', product: 'ferredoxin',
+      reviewedFunctionLabels: ['Photosynthetic light reactions'] },
+    { id: 'GENE_3', product: 'ferredoxin', annotationEvidence: {
+      goAnnotations: [{ goId: 'GO:1', evidenceCode: 'IEA' }],
+    } },
+  ];
+  const result = searchGenes(genes, 'light reactions', {
+    goTerms: { 'GO:1': { name: 'light reactions' } },
+  });
+  assert.deepEqual(ids(result), ['GENE_1', 'GENE_2', 'GENE_3']);
+  assert.equal(result.shown[1].matchedOn, 'reviewed function category');
+  assert.equal(result.shown[1].categoryMatch, 'Photosynthetic light reactions');
+  assert.equal(result.shown[2].categoryMatch, null);
+  assert.equal(result.shown[2].goMatch.evidenceCode, 'IEA');
 });
 
 test('every alias points at wording an annotation would plausibly use', () => {

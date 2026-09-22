@@ -1,0 +1,14 @@
+{
+  "admission": "local search database observation only; no protein detection admitted",
+  "counts": {
+    "admittedEvidenceLoci": 0,
+    "ambiguousLoci": 8,
+    "contaminantSearchRecords": 16,
+    "exactSequenceMatchedLoci": 2281,
+    "exactSequenceUnmatchedLoci": 434,
+    "targetSearchRecords": 2645
+  },
+  "integrity": "unverified transport; locally computed digests detect drift only",
+  "releaseId": "GCF_000817325.1-RS_2026_05_13-protein-evidence-v1",
+  "schemaVersion": 1
+}

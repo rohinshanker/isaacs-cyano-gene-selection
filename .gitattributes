@@ -1,3 +1,12 @@
 # Retained NCBI source artifacts must remain byte-identical to their manifest
 # checksums on every platform, including the upstream CRLF text files.
 data/annotation/source/** binary
+
+# Raw tRNAscan-SE 2.0 run output must stay byte-identical to what the tool
+# emitted (fixed-width columns with trailing spaces/tabs are part of its
+# format), so it is exempt from the text whitespace gate rather than
+# reformatted. The comparison.tsv/json this repository generates from that
+# output are ordinary text and stay subject to the gate.
+data/trna/independent_run/trnascan.out binary
+data/trna/independent_run/trnascan.stats binary
+data/trna/independent_run/trnascan.struct binary

@@ -45,12 +45,13 @@ function normalize(text) {
 }
 
 function words(text) {
-  return normalize(text).split(' ').filter(Boolean);
+  return normalize(text).match(/[\p{L}\p{N}_]+/gu) ?? [];
 }
 
 /** True when every word of `needle` appears somewhere in `haystack`. */
 function containsAllWords(haystack, needle) {
-  return words(needle).every((word) => haystack.includes(word));
+  const available = new Set(words(haystack));
+  return words(needle).every((word) => available.has(word));
 }
 
 /**
@@ -75,7 +76,10 @@ function buildNeedles(query) {
  * Rank tiers. Lower sorts first: an exact identifier beats a name, which beats a
  * mention buried in product text.
  */
-const TIER = { idExact: 0, nameExact: 1, idPartial: 2, name: 3, product: 4 };
+const TIER = {
+  idExact: 0, nameExact: 1, idPartial: 2, name: 3, product: 4,
+  reviewedCategory: 5, goId: 6, goName: 7,
+};
 
 const FIELD_LABEL = {
   [TIER.idExact]: 'locus tag',
@@ -84,6 +88,34 @@ const FIELD_LABEL = {
   [TIER.name]: 'gene name',
   [TIER.product]: 'product',
 };
+
+/** GO rows remain evidence-coded suggestions; matching a name does not establish function. */
+function scoreGo(gene, query, terms) {
+  let best = null;
+  for (const relation of gene.annotationEvidence?.goAnnotations ?? []) {
+    const id = relation.goId;
+    const name = terms?.[id]?.name ?? '';
+    const tier = normalize(id) === query ? TIER.goId
+      : name && containsAllWords(normalize(name), query) ? TIER.goName : null;
+    if (tier === null) continue;
+    if (!best || tier < best.tier || (tier === best.tier && name.length > best.length)) {
+      best = {
+        tier,
+        length: tier === TIER.goId ? id.length : name.length,
+        relation,
+        name,
+      };
+    }
+  }
+  return best;
+}
+
+/** Only labels assigned by the reviewed table can match this tier. */
+function scoreReviewedCategory(gene, query) {
+  const labels = gene.reviewedFunctionLabels ?? [];
+  const label = labels.find((entry) => containsAllWords(entry, query));
+  return label ? { tier: TIER.reviewedCategory, length: label.length, category: label } : null;
+}
 
 /** Best tier for one needle against one gene, or null when it does not match. */
 function scoreNeedle(gene, needle) {
@@ -94,7 +126,7 @@ function scoreNeedle(gene, needle) {
   if (!phrase) return null;
   if (id === phrase) return TIER.idExact;
   if (name && name === phrase) return TIER.nameExact;
-  if (containsAllWords(id, phrase)) return TIER.idPartial;
+  if (id.includes(phrase)) return TIER.idPartial;
   if (name && containsAllWords(name, phrase)) return TIER.name;
   if (product && containsAllWords(product, phrase)) return TIER.product;
   return null;
@@ -111,11 +143,11 @@ function scoreNeedle(gene, needle) {
  *
  * @param {Array<object>} genes
  * @param {string} query
- * @param {{limit?: number}} options
+ * @param {{limit?: number, goTerms?: object}} options
  * @returns {{query: string, total: number, shown: Array<object>, hiddenCount: number,
  *   aliasesUsed: string[]}} `shown` entries carry `{index, gene, matchedOn, alias}`.
  */
-export function searchGenes(genes, query, { limit = SEARCH_RESULT_LIMIT } = {}) {
+export function searchGenes(genes, query, { limit = SEARCH_RESULT_LIMIT, goTerms = null } = {}) {
   const normalized = normalize(query);
   if (!normalized) {
     return { query: normalized, total: 0, shown: [], hiddenCount: 0, aliasesUsed: [] };
@@ -136,15 +168,27 @@ export function searchGenes(genes, query, { limit = SEARCH_RESULT_LIMIT } = {}) 
         best = candidate;
       }
     }
+    if (best === null) best = scoreReviewedCategory(gene, normalized);
+    if (best === null) best = scoreGo(gene, normalized, goTerms);
     if (best === null) return;
     if (best.alias) aliasesUsed.add(best.alias);
+    const go = best.relation;
     hits.push({
       index,
       gene,
       tier: best.tier,
       matchLength: best.length,
-      matchedOn: FIELD_LABEL[best.tier],
-      alias: best.alias,
+      matchedOn: go ? (best.tier === TIER.goId ? 'GO ID' : 'GO term name')
+        : best.category ? 'reviewed function category' : FIELD_LABEL[best.tier],
+      alias: best.alias ?? null,
+      categoryMatch: best.category ?? null,
+      goMatch: go ? {
+        id: go.goId,
+        name: best.name || null,
+        evidenceCode: go.evidenceCode,
+        mappingAmbiguity: go.mappingAmbiguity || null,
+        isObsolete: Boolean(goTerms?.[go.goId]?.isObsolete),
+      } : null,
     });
   });
 

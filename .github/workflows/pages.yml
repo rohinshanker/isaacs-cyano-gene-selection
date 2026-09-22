@@ -44,6 +44,20 @@ jobs:
           python3 tools/annotation_release.py verify
           python3 tools/annotation_release.py check
 
+      # This audit uses only authenticated RefSeq inputs fetched above. The
+      # optional PASS00399 observations never gate or enter the admitted release.
+      - name: Verify protein identity evidence
+        run: |
+          python3 tools/protein_evidence.py verify
+          python3 tools/protein_evidence.py check
+          python3 tools/candidate_evidence.py check
+
+      - name: Verify length cohorts
+        run: python3 tools/length_cohorts.py check
+
+      - name: Verify Tan regulatory site publication
+        run: python3 tools/regulatory_tss.py check
+
       # Standard-library negative tests run before installing pipeline
       # dependencies, keeping checksum/release failures independent of pytest
       # or scientific-package resolution.

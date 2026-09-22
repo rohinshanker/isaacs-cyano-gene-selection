@@ -65,6 +65,21 @@ pass.
 `identifier-crosswalk-v1.tsv` has one row per relationship. Never pivot it into
 one assumed row per gene without defining a collision policy.
 
+The selected-gene heading and map label use the direct `gene` symbol when the
+pinned UTEX annotation supplies one. Otherwise they use the annotated product,
+explicitly labelled “Product” in the heading; they never turn product wording
+or a cross-strain relationship into a gene-symbol assertion. Locus tags expose
+that same symbol-or-product description on hover and keyboard focus. Search and
+shortlist rows retain their visible product and accessible description.
+
+For example, `M744_RS10050` has no `gene` qualifier or `gene_symbol` crosswalk
+row in `GCF_000817325.1-RS_2026_05_13`. Its GBFF CDS product is “circadian
+clock protein KaiA” and its protein ID is `WP_011377921.1`; the pinned PCC
+7942 record sharing that protein ID also has no `gene` qualifier. Display the
+product for this locus, but do not assert `kaiA` as a curated symbol. By
+contrast, the neighboring `M744_RS10055` and `M744_RS10060` have direct `kaiB`
+and `kaiC` gene-symbol rows.
+
 | Column | Contract |
 | --- | --- |
 | `subject_locus_tag` | Current UTEX RefSeq locus tag and stable subject key. |
@@ -172,13 +187,20 @@ documented gate or feature:
   `2026_03` on 2026-09-19. No UniProt-derived assertion is included. Reconsider
   only when a nonempty, dated export can be pinned and joined through explicit
   RefSeq cross-references without collapsing one-to-many relationships.
-- **Rubin et al. PCC 7942 essentiality: waived for this release.** Dataset S3 is
-  downloadable as `pnas.1519220112.sd03.xlsx`, but the inspected record does not
-  establish redistribution terms for a checked-in derivative. Fetching at build
-  time would not resolve the rights of the derivative published in the static
-  site. Any future import needs recorded terms, a pinned checksum, and the
-  ambiguity-preserving PCC 7942-to-UTEX crosswalk; values must remain visibly
-  condition-specific PCC 7942 evidence.
+- **[Rubin et al. PCC 7942 essentiality](https://doi.org/10.1073/pnas.1519220112): waived for this release.** The public
+  Dataset S3 endpoint returned a CAPTCHA page rather than the workbook. No
+  verified per-locus bytes, checksum, or redistribution terms were available.
+  Its source JGI IDs also need a complete ambiguity-preserving join to the
+  pinned PCC 7942 release before the existing PCC-to-UTEX crosswalk can be
+  used. The paper's aggregate category counts cannot supply a locus badge or
+  filter. A future per-locus import needs the actual workbook, terms, hash,
+  explicit joins, and visible PCC strain and assay conditions.
+- **[Ungerer et al. UTEX 2973 tested alleles](https://doi.org/10.1073/pnas.1814912115):** keep the three exact tested loci
+  (`atpA`, `ppnK`, `rpaA`) and the paper's compound `rpaA` coding/promoter
+  context as experiment-level evidence. The main paper describes four coding
+  substitutions and one upstream deletion, not five coding substitutions.
+  Supplement-derived numeric phenotypes are not admitted without verified
+  supplement bytes and assay conditions; homologs inherit no tested effect.
 - **CyanoOmicsDB: waived for this release.** No bulk artifact is imported. The
   resource advertises processed Figshare datasets, but their version, bytes,
   applicable data licence, and UTEX mapping must be verified before admission.

@@ -5,6 +5,7 @@
  * change, and keeps every panel looking at the same selection.
  */
 import { loadDataset } from './core/dataset.js';
+import { geneIdentity, geneMapLabel } from './core/gene-identity.js';
 import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillReplacement } from './core/scheme.js';
 import { computeLiveMetrics } from './core/live-metrics.js';
 import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
@@ -13,20 +14,28 @@ import {
   expressionBasisOf, expressionBasisCounts, isExpressionMetric, isExpressionProxyMetric,
 } from './core/metric-registry.js';
 import {
-  encodeState, decodeState, defaultState, applyDecoded,
+  encodeState, decodeState, defaultState, applyDecoded, clearSelections,
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection } from './ui/panels.js';
 import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citations.js';
+import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
+import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
+import { metricHelp } from './core/metric-help.js';
+import { FUNCTION_COLOR_KEY } from './core/function-categories.js';
+import { buildMetricAxesProjection, DEFAULT_METRIC_AXES } from './core/metric-axes.js';
+import { projectionHelp } from './core/projection-help.js';
+import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
-import { renderLegend } from './ui/legend.js';
-import { buildColorScale } from './ui/colors.js';
-import { ScatterPlot } from './ui/scatter.js';
+import { renderLegend, renderCategoryLegend } from './ui/legend.js';
+import { buildColorScale, buildCategoryColorScale } from './ui/colors.js';
+import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
 import { FilterPanel, clearedFilterState } from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
+import { WorkspaceResizer } from './ui/workspace-resize.js';
 import { ComparePanel } from './ui/compare.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -34,8 +43,8 @@ import { formatCount, formatExpressionSource } from './ui/format.js';
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
 
-/** The shared tablist: the map's own four panels, then the citations ledger. */
-const ALL_TABS = [...PANELS, CITATIONS_TAB];
+/** The shared tablist: map panels, then length, regulatory, and source views. */
+const ALL_TABS = [...PANELS, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB];
 
 const element = (id) => document.getElementById(id);
 
@@ -116,7 +125,7 @@ function jumpToMap() {
     return;
   }
   pendingMapJump = false;
-  if (state.panel === CITATIONS_TAB.id) {
+  if (!PANELS.some((panel) => panel.id === state.panel)) {
     state.panel = 'native';
     updatePanelTabs();
     renderCurrentView();
@@ -199,6 +208,11 @@ function computeMask() {
       if (expressionBasisOf(dataset.genes[i]).basis !== 'measured') mask[i] = 0;
     }
   }
+  if (state.proteinFilter === 'refseq') {
+    for (let i = 0; i < count; i += 1) {
+      if (mask[i] && !context.proteinRecordIds.has(dataset.genes[i].id)) mask[i] = 0;
+    }
+  }
 
   let passing = 0;
   for (let i = 0; i < count; i += 1) passing += mask[i];
@@ -226,12 +240,37 @@ function recomputeScheme() {
   context.schemeVersion += 1;
   context.projections.delete('risk');
   context.projections.delete('perturbation');
+  context.projections.delete('axes');
   return [];
 }
 
 function projectionFor(panelId) {
   const cached = context.projections.get(panelId);
   if (cached) return cached;
+  if (panelId === 'axes') {
+    const axes = buildMetricAxesProjection(context.registry, context.dataset.genes.length, {
+      x: state.axisX, y: state.axisY,
+    });
+    const label = (axis) => axis.unit ? `${axis.label} (${axis.unit})` : axis.label;
+    const projection = {
+      available: axes.available && axes.finitePairCount > 0,
+      message: axes.available
+        ? 'No genes have values on both selected axes. Choose another pair of metrics.'
+        : 'A selected metric is unavailable in this dataset. Choose another axis.',
+      x: axes.x.values,
+      y: axes.y.values,
+      independentAxes: true,
+      xLabel: label(axes.x),
+      yLabel: label(axes.y),
+      labels: context.dataset.genes.map(geneMapLabel),
+      loadings: [],
+      loadingNote: 'These are direct metric axes, not PCA components. There are no loadings.',
+      finitePairCount: axes.finitePairCount,
+    };
+    context.projections.set(panelId, projection);
+    context.timings.projection = NaN;
+    return projection;
+  }
   const projection = buildProjection(panelId, {
     dataset: context.dataset,
     registry: context.registry,
@@ -272,6 +311,9 @@ let searchResults = null;
 let comparePanel = null;
 let panelDesigner = null;
 let citationsPanel = null;
+let lengthExplorer = null;
+let regulatorySitesPanel = null;
+let workspaceResizer = null;
 // `undefined` while the manifest fetch is in flight, `null` once it resolves
 // to nothing usable, otherwise the sanitized `{sections: [...]}` document.
 let citationsManifest;
@@ -302,20 +344,63 @@ function scheduleTiming() {
   }, 250);
 }
 
+function renderColorHelp() {
+  const categories = context.dataset.functionCategories;
+  if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
+    renderMetricHelp(element('colour-help'), {
+      title: 'Reviewed function category',
+      summary: 'A broad cyanobacterial function assigned to an exact UTEX 2973 locus '
+        + 'after lab review. The same colour has the same category on every map tab.',
+      unit: 'category (not a numeric metric)',
+      method: `The lab approved ${formatCount(categories.reviewedCount)} exact locus decisions `
+        + `on ${categories.source.provenance.userReview.date}. A gene with `
+        + 'two or more reviewed categories uses the multiple-functions bucket. '
+        + 'GO IEA suggestions never assign a category colour by themselves.',
+      origin: `UTEX 2973 RefSeq ${categories.source.provenance.annotationRelease} `
+        + 'product records and the lab review table.',
+      coverage: `${formatCount(categories.reviewedCount)} reviewed rows; `
+        + `${formatCount(categories.unknownCount)} genes are unknown or unclassified, `
+        + `including ${formatCount(categories.explicitUnknownCount)} reviewed as unknown.`,
+      citations: ['ncbi-utex-2973'],
+    }, citationsManifest);
+    return;
+  }
+  renderMetricHelp(element('colour-help'),
+    metricHelp(context.registry.byKey.get(state.colorBy), context.dataset), citationsManifest);
+}
+
 function renderMap() {
   const projection = projectionFor(state.panel);
   const panel = PANELS.find((entry) => entry.id === state.panel);
   element('panel-blurb').textContent = `${panel.blurb} ${panel.source}`;
+  element('axis-chooser').hidden = state.panel !== 'axes';
+  if (state.panel === 'axes') {
+    element('axis-x').value = state.axisX;
+    element('axis-y').value = state.axisY;
+    element('axis-note').textContent = state.axisX === state.axisY
+      ? `${formatCount(projection.finitePairCount)} genes have this metric. Identical axes place points on a diagonal.`
+      : `${formatCount(projection.finitePairCount)} genes have values on both axes; missing pairs are not plotted.`;
+  }
 
   plot.setProjection(projection, { keepView: plot.projectionId === state.panel });
   plot.projectionId = state.panel;
 
-  const metric = context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
-  state.colorBy = metric.key;
-  const values = metricValues(metric, context.dataset.genes.length);
+  const categorical = state.colorBy === FUNCTION_COLOR_KEY
+    && Boolean(context.dataset.functionCategories);
+  const metric = categorical ? { label: 'Reviewed function category' }
+    : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
+  if (!categorical) state.colorBy = metric.key;
+  renderColorHelp();
+  renderProjectionHelp(element('features-used'),
+    projectionHelp(state.panel, context.dataset, context.registry,
+      { x: state.axisX, y: state.axisY }), citationsManifest);
+  const values = categorical ? context.dataset.functionCategories.values
+    : metricValues(metric, context.dataset.genes.length);
   // The ramp family is whatever the metric declares; undeclared is inferred and
   // the legend says so. `direction` is never read.
-  const scale = buildColorScale(values, { scale: metric.scale });
+  const scale = categorical
+    ? buildCategoryColorScale(context.dataset.functionCategories.labels.length)
+    : buildColorScale(values, { scale: metric.scale });
   plot.setColor({ values, scale });
   plot.setMask(context.mask);
   plot.setShowHidden(state.showHidden);
@@ -337,25 +422,36 @@ function renderMap() {
   element('zoom-in').disabled = !projection.available;
   element('zoom-out').disabled = !projection.available;
   if (projection.available) {
-    let missing = 0;
-    for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
-    // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
-    // primary PCC abundance field's, even though both share the same basis states.
-    const isMeasuredExpressionMetric = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
-    renderLegend(legendHost, {
-      metric,
-      scale,
-      missingCount: missing,
-      hiddenCount: context.dataset.genes.length - context.passing,
-      showHidden: state.showHidden,
-      provenanceNote: formatExpressionSource(metric.provenance),
-      basisCounts: isMeasuredExpressionMetric
-        ? expressionBasisCounts(context.dataset.genes, metric) : null,
-    });
+    if (categorical) {
+      renderCategoryLegend(legendHost, {
+        ...context.dataset.functionCategories,
+        scale,
+        hiddenCount: context.dataset.genes.length - context.passing,
+        showHidden: state.showHidden,
+      });
+    } else {
+      let missing = 0;
+      for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
+      // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
+      // primary PCC abundance field's, even though both share the same basis states.
+      const isMeasuredExpressionMetric = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
+      renderLegend(legendHost, {
+        metric,
+        scale,
+        missingCount: missing,
+        hiddenCount: context.dataset.genes.length - context.passing,
+        showHidden: state.showHidden,
+        provenanceNote: formatExpressionSource(metric.provenance),
+        basisCounts: isMeasuredExpressionMetric
+          ? expressionBasisCounts(context.dataset.genes, metric) : null,
+      });
+    }
   }
 
   const loadingsHost = element('loadings-details');
   loadingsHost.hidden = !projection.available;
+  loadingsHost.querySelector('summary').textContent = state.panel === 'axes'
+    ? 'About these axes' : 'What drives these axes';
   if (projection.available) renderLoadings(element('loadings'), projection);
 
   const canvas = element('map-canvas');
@@ -371,7 +467,9 @@ function renderMap() {
   const banner = element('filter-banner');
   banner.classList.toggle('active', hidden > 0);
   banner.textContent = hidden > 0
-    ? `Filters are hiding ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes.`
+    ? state.showHidden
+      ? `Filters exclude ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes from the active set; grey outlined squares remain on the map.`
+      : `Filters hide ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes.`
     : '';
   scheduleTiming();
 }
@@ -398,6 +496,7 @@ function renderDetail() {
 }
 
 function renderAll({ schemeErrors = [] } = {}) {
+  element('reset-selections').disabled = !state.pinnedId && state.shortlist.length === 0;
   computeMask();
   renderCurrentView();
   renderDetail();
@@ -421,11 +520,29 @@ function renderAll({ schemeErrors = [] } = {}) {
     expressionFilter: state.expressionFilter,
     basisCounts: context.basisCounts,
     trafficKey: state.trafficKey,
+    proteinFilter: state.proteinFilter,
+    proteinEvidence: context.dataset.lengthCohorts ? {
+      count: context.proteinRecordIds.size,
+      unavailableReason: context.dataset.lengthCohorts.directDetection.reason,
+    } : null,
   });
   shortlistPanel.update({
     ids: state.shortlist,
     dataset: context.dataset,
     registry: context.registry,
+    filterState: {
+      ranges: state.filters,
+      proteinEvidence: state.proteinFilter,
+      expression: state.expressionFilter,
+      translationalException: state.exceptionFilter,
+    },
+    filterMask: context.mask,
+    viewState: () => ({
+      panel: state.panel,
+      colorBy: state.colorBy,
+      axisX: state.axisX,
+      axisY: state.axisY,
+    }),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
     schemeActive: Object.keys(state.schemeMap).length > 0,
@@ -481,6 +598,7 @@ function setScheme(map, { name } = {}) {
 }
 
 function setPinned(index) {
+  const previousId = state.pinnedId;
   const gene = index >= 0 ? context.dataset.genes[index] : null;
   state.pinnedId = gene ? gene.id : null;
   context.hoveredIndex = -1;
@@ -490,7 +608,10 @@ function setPinned(index) {
   context.activeIndex = -1;
   renderAll();
   if (gene) {
-    announce(`Pinned ${gene.id}${gene.name ? ` ${gene.name}` : ''}. ${gene.product ?? ''}`);
+    const hasSymbol = geneIdentity(gene)?.kind === 'Gene symbol';
+    announce(`Pinned ${geneMapLabel(gene)}.${hasSymbol && gene.product ? ` ${gene.product}` : ''}`);
+  } else if (previousId) {
+    announce(`Unpinned ${previousId}.`);
   }
 }
 
@@ -506,7 +627,7 @@ function previewActive(index) {
   renderDetail();
   if (index < 0) return;
   const gene = context.dataset.genes[index];
-  announce(`${gene.id}${gene.name ? ` ${gene.name}` : ''} active. `
+  announce(`${geneMapLabel(gene)} active. `
     + 'Press Enter to pin, S to add or remove it from the shortlist.');
 }
 
@@ -564,7 +685,7 @@ function updatePanelTabs() {
     button.tabIndex = selected ? 0 : -1;
     button.classList.toggle('active', selected);
   });
-  const mapTab = ALL_TABS.find((panel) => panel.id === state.panel && panel.id !== CITATIONS_TAB.id);
+  const mapTab = PANELS.find((panel) => panel.id === state.panel);
   element('map-view').setAttribute('aria-labelledby', `panel-tab-${mapTab?.id ?? 'native'}`);
 }
 
@@ -576,12 +697,36 @@ function updatePanelTabs() {
  */
 function renderCurrentView() {
   const citationsActive = state.panel === CITATIONS_TAB.id;
+  const lengthsActive = state.panel === LENGTH_TAB.id;
+  const regulatoryActive = state.panel === REGULATORY_TAB.id;
+  element('features-used').hidden = citationsActive || lengthsActive || regulatoryActive;
   element('main').classList.toggle('citations-active', citationsActive);
-  element('map-view').hidden = citationsActive;
+  element('main').classList.toggle('lengths-active', lengthsActive);
+  element('main').classList.toggle('regulatory-active', regulatoryActive);
+  workspaceResizer?.update();
+  element('map-view').hidden = citationsActive || lengthsActive || regulatoryActive;
+  element('length-view').hidden = !lengthsActive;
+  element('regulatory-view').hidden = !regulatoryActive;
   element('citations-view').hidden = !citationsActive;
   if (citationsActive) {
     element('panel-blurb').textContent = CITATIONS_TAB.blurb;
     citationsPanel.render(citationsManifest);
+    return;
+  }
+  if (lengthsActive) {
+    element('panel-blurb').textContent = LENGTH_TAB.blurb;
+    lengthExplorer.update({
+      inventory: context.dataset.lengthCohorts,
+      cohortId: state.lengthCohort,
+      range: state.filters.lengthNt,
+      mapPassing: context.passing,
+      mapCount: context.dataset.genes.length,
+    });
+    return;
+  }
+  if (regulatoryActive) {
+    element('panel-blurb').textContent = REGULATORY_TAB.blurb;
+    regulatorySitesPanel.update(context.dataset.regulatoryTss);
     return;
   }
   renderMap();
@@ -601,6 +746,15 @@ function buildColorSelect() {
     }
     select.append(group);
   }
+  if (context.dataset.functionCategories) {
+    const group = document.createElement('optgroup');
+    group.label = 'Reviewed function';
+    const option = document.createElement('option');
+    option.value = FUNCTION_COLOR_KEY;
+    option.textContent = 'Function category';
+    group.append(option);
+    select.append(group);
+  }
   select.value = state.colorBy;
   select.addEventListener('change', () => {
     state.colorBy = select.value;
@@ -609,17 +763,46 @@ function buildColorSelect() {
   });
 }
 
+function buildAxisSelects() {
+  for (const [axis, key] of [['x', 'axisX'], ['y', 'axisY']]) {
+    const select = element(`axis-${axis}`);
+    select.replaceChildren();
+    for (const family of context.registry.families) {
+      const group = document.createElement('optgroup');
+      group.label = family;
+      for (const metric of context.registry.metrics.filter((entry) => entry.family === family)) {
+        const option = document.createElement('option');
+        option.value = metric.key;
+        option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
+        group.append(option);
+      }
+      select.append(group);
+    }
+    select.value = state[key];
+    select.addEventListener('change', () => {
+      state[key] = select.value;
+      context.projections.delete('axes');
+      plot.projectionId = null;
+      renderMap();
+      persist();
+      announce(`Metric plot: ${element('axis-x').selectedOptions[0].textContent} on X, `
+        + `${element('axis-y').selectedOptions[0].textContent} on Y.`);
+    });
+  }
+}
+
 function buildGeneSearch() {
   // No datalist: it could only complete a locus tag prefix, it put 2,715 option
   // elements in the document, and its native dropdown covered the result list
   // that replaced it.
   searchResults = new GeneSearchResults(element('gene-search-results'), {
-    onPin: (index) => setPinned(index),
+    onPin: (index) => setPinned(togglePinTarget(index, pinnedIndex())),
     // toggleShortlist re-renders, and that refreshes this list's buttons.
     onShortlist: (index) => toggleShortlist(index),
     isShortlisted: (id) => state.shortlist.includes(id),
+    isPinned: (id) => state.pinnedId === id,
   });
-  searchResults.setGenes(context.dataset.genes);
+  searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms);
 
   const input = element('gene-search');
   const run = () => {
@@ -833,6 +1016,7 @@ function normalizeAndApply(decoded) {
   state.shortlist = state.shortlist.filter((id) => context.dataset.indexById.has(id));
   if (state.pinnedId && !context.dataset.indexById.has(state.pinnedId)) state.pinnedId = null;
   if (!ALL_TABS.some((panel) => panel.id === state.panel)) state.panel = 'native';
+  if (!context.dataset.lengthCohorts) state.proteinFilter = 'any';
   if (!context.basisCounts.recorded) state.expressionFilter = 'any';
 
   const schemeErrors = recomputeScheme();
@@ -843,8 +1027,17 @@ function normalizeAndApply(decoded) {
   if (!context.registry) {
     context.registry = buildMetricRegistry(context.dataset.meta, context.dataset.genes, context.live);
   }
-  if (!state.colorBy || !context.registry.byKey.has(state.colorBy)) {
+  if (!state.colorBy || !(context.registry.byKey.has(state.colorBy)
+    || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
     state.colorBy = context.registry.byKey.has('gc3') ? 'gc3' : context.registry.metrics[0].key;
+  }
+  if (!context.registry.byKey.has(state.axisX)) {
+    state.axisX = context.registry.byKey.has(DEFAULT_METRIC_AXES.x)
+      ? DEFAULT_METRIC_AXES.x : context.registry.metrics[0].key;
+  }
+  if (!context.registry.byKey.has(state.axisY)) {
+    state.axisY = context.registry.byKey.has(DEFAULT_METRIC_AXES.y)
+      ? DEFAULT_METRIC_AXES.y : context.registry.metrics[0].key;
   }
 }
 
@@ -868,6 +1061,8 @@ function applyLiveHash() {
   plot.projectionId = null;
   updatePanelTabs();
   element('color-by').value = state.colorBy;
+  element('axis-x').value = state.axisX;
+  element('axis-y').value = state.axisY;
   element('show-hidden').checked = state.showHidden;
   renderAll();
   announce('View updated from the address bar.');
@@ -880,6 +1075,12 @@ async function boot() {
     .then((manifest) => {
       citationsManifest = manifest;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(manifest);
+      if (context.dataset && PANELS.some((panel) => panel.id === state.panel)) {
+        renderColorHelp();
+        renderProjectionHelp(element('features-used'),
+          projectionHelp(state.panel, context.dataset, context.registry,
+            { x: state.axisX, y: state.axisY }), manifest);
+      }
     })
     .catch(() => {
       citationsManifest = null;
@@ -894,6 +1095,8 @@ async function boot() {
     return;
   }
   context.dataset = dataset;
+  context.proteinRecordIds = new Set((dataset.lengthCohorts?.records ?? [])
+    .filter((record) => record.refseqProteinRecord).map((record) => record.id));
   context.exceptionCount = dataset.genes
     .filter((gene) => Boolean(gene.translationalException)).length;
   context.basisCounts = expressionBasisCounts(dataset.genes);
@@ -913,12 +1116,18 @@ async function boot() {
       plot.setMarks({ hovered: index });
       renderDetail();
     },
-    onSelect: (index) => setPinned(index),
+    onSelect: (index) => setPinned(togglePinTarget(index, pinnedIndex())),
     onPreview: (index) => previewActive(index),
     onEnterWithNothingActive: () => announce('Nothing is active yet. Use the arrow keys to move '
       + 'to a gene before pressing Enter to pin it.'),
     onShortlistToggle: (index) => toggleShortlist(index),
     onViewChange: scheduleTiming,
+  });
+  workspaceResizer = new WorkspaceResizer(element('main'), {
+    leftHandle: element('resize-controls'),
+    rightHandle: element('resize-detail'),
+    resetButton: element('reset-panel-widths'),
+    storage: store,
   });
 
   element('detail-jump').addEventListener('click', () => {
@@ -1031,10 +1240,42 @@ async function boot() {
       state.filters = filters;
       renderAll();
     },
+    onProteinFilterChange: (mode) => {
+      state.proteinFilter = mode;
+      renderAll();
+    },
+  });
+
+  lengthExplorer = new LengthExplorer(element('length-view'), {
+    onCohortChange: (cohort) => {
+      state.lengthCohort = cohort;
+      renderAll();
+    },
+    onRangeChange: (bound, value) => {
+      const current = state.filters.lengthNt ?? { min: null, max: null, includeMissing: true };
+      const next = { ...current, [bound]: value };
+      if (next.min !== null && next.max !== null && next.min > next.max) {
+        announce('Minimum length exceeds maximum length; no CDSs pass this range.');
+      }
+      if (next.min === null && next.max === null) delete state.filters.lengthNt;
+      else state.filters.lengthNt = next;
+      renderAll();
+    },
+  });
+
+  regulatorySitesPanel = new RegulatorySitesPanel(element('regulatory-view'), {
+    onShowGene: (id) => {
+      const index = context.dataset.indexById.get(id);
+      if (index === undefined) return;
+      setPinned(index);
+      jumpToMap();
+      announce(`${id} pinned and shown on the map.`);
+    },
   });
 
   sidePanel = new SidePanel(element('detail'), {
     onShortlistToggle: (index) => toggleShortlist(index),
+    onUnpin: () => setPinned(-1),
   });
 
   shortlistPanel = new ShortlistPanel(element('shortlist'), {
@@ -1084,6 +1325,7 @@ async function boot() {
   buildPanelTabs();
   updatePanelTabs();
   buildColorSelect();
+  buildAxisSelects();
   buildGeneSearch();
   renderMetricAgreement();
   renderProvenance();
@@ -1093,6 +1335,14 @@ async function boot() {
   element('reset-view').addEventListener('click', () => {
     plot.resetFrameStats();
     plot.resetView();
+  });
+  element('reset-selections').addEventListener('click', () => {
+    clearSelections(state);
+    context.hoveredIndex = -1;
+    context.activeIndex = -1;
+    renderAll();
+    element('reset-view').focus({ preventScroll: true });
+    announce('Selections reset. The pinned gene and candidate shortlist were cleared.');
   });
   element('zoom-in').addEventListener('click', () => plot.zoomStep(1.4));
   element('zoom-out').addEventListener('click', () => plot.zoomStep(1 / 1.4));

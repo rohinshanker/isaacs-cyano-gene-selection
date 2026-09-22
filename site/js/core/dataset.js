@@ -13,6 +13,10 @@ import {
 } from './conventions.js';
 import { compileScheme } from './scheme.js';
 import { computeLiveMetrics } from './live-metrics.js';
+import { validateLengthInventory } from './length-cohorts.js';
+import { validateRegulatoryTss } from './regulatory-tss.js';
+import { validateCandidateEvidence } from './candidate-evidence.js';
+import { joinFunctionCategories } from './function-categories.js';
 
 async function fetchJson(fetchImpl, url, { optional = false } = {}) {
   let response;
@@ -79,17 +83,34 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
   const url = (name) => new URL(name, base).href;
 
-  const [meta, genes, codonPca, excluded, annotations, tssEvidence] = await Promise.all([
+  const [meta, genes, codonPca, excluded, annotations, tssEvidence, lengthCohorts,
+    regulatoryTss, candidateEvidence, goTerms, functionCategoryData] = await Promise.all([
     fetchJson(fetchImpl, url('meta.json')),
     fetchJson(fetchImpl, url('genes.json')),
     fetchJson(fetchImpl, url('codon_pca.json'), { optional: true }),
     fetchJson(fetchImpl, url('excluded.json'), { optional: true }),
     fetchJson(fetchImpl, url('annotations.json'), { optional: true }),
     fetchJson(fetchImpl, url('tss_evidence.json'), { optional: true }),
+    fetchJson(fetchImpl, url('length_cohorts.json'), { optional: true }),
+    fetchJson(fetchImpl, url('regulatory_tss.json'), { optional: true }),
+    fetchJson(fetchImpl, url('candidate_evidence.json'), { optional: true }),
+    fetchJson(fetchImpl, url('go-term-names-v1.json'), { optional: true }),
+    fetchJson(fetchImpl, url('function-categories-v1.json'), { optional: true }),
   ]);
 
   requireArray(genes, 'genes.json');
   if (genes.length === 0) throw new Error('genes.json is empty');
+  if (lengthCohorts) {
+    validateLengthInventory(lengthCohorts, genes, meta.annotationRelease?.releaseId);
+  }
+  if (regulatoryTss) validateRegulatoryTss(regulatoryTss, genes);
+  if (candidateEvidence) {
+    validateCandidateEvidence(candidateEvidence, genes, meta.annotationRelease?.releaseId);
+  }
+  if (goTerms && (goTerms.schemaVersion !== 1 || !goTerms.terms
+    || typeof goTerms.terms !== 'object' || Array.isArray(goTerms.terms))) {
+    throw new Error('go-term-names-v1.json has an invalid lookup schema');
+  }
   if (meta.annotationRelease && (!annotations || typeof annotations !== 'object')) {
     throw new Error('annotations.json is required by meta.annotationRelease');
   }
@@ -107,6 +128,18 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
       gene.annotationEvidence = evidence;
     }
   }
+  if (goTerms && annotations) {
+    for (const gene of genes) {
+      for (const relation of gene.annotationEvidence.goAnnotations ?? []) {
+        if (!goTerms.terms[relation.goId]?.name) {
+          throw new Error(`go-term-names-v1.json has no name for ${relation.goId}`);
+        }
+      }
+    }
+  }
+  const functionCategories = functionCategoryData
+    ? joinFunctionCategories(functionCategoryData, genes, meta.annotationRelease?.releaseId)
+    : null;
   if (tssEvidence) {
     for (const gene of genes) {
       const rows = tssEvidence[gene.id] ?? [];
@@ -227,6 +260,11 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     genes,
     codonPca,
     excluded: excluded ?? [],
+    lengthCohorts,
+    regulatoryTss,
+    candidateEvidence,
+    goTerms,
+    functionCategories,
     table,
     conventions,
     packed,

@@ -43,6 +43,78 @@ test('canonical JSON and the digest ignore key order but not content', () => {
   assert.match(fnv1a64('a'), /^[0-9a-f]{16}$/);
 });
 
+test('exports preserve the current cohort filter and each shortlisted row pass state', async () => {
+  const { dataset, registry } = await context();
+  const ids = dataset.genes.slice(0, 2).map((gene) => gene.id);
+  const mask = new Uint8Array(dataset.genes.length);
+  mask[0] = 1;
+  const filterState = {
+    ranges: { lengthNt: { min: 201, max: 2001, includeMissing: true } },
+    proteinEvidence: 'refseq',
+  };
+  const result = buildExport({
+    dataset, registry, ids, schemes: [{ map: {} }],
+    filterState, filterMask: mask,
+  });
+  assert.deepEqual(result.manifest.filterState, filterState);
+  assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters), ['true', 'false']);
+});
+
+test('an export records the displayed metric axes without changing the CSV values', async () => {
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  const viewState = { panel: 'axes', colorBy: 'gc3', axisX: 'lengthNt', axisY: 'cai' };
+  const result = buildExport({ dataset, registry, ids: [id], schemes: [{ map: {} }], viewState });
+  assert.deepEqual(result.manifest.viewState, viewState);
+  assert.equal(result.rows[0].lengthNt, dataset.genes[0].lengthNt);
+});
+
+test('single, multiple, and unreviewed categories survive CSV and manifest export', async () => {
+  const { dataset: original, registry } = await context();
+  const [reviewed, multiple, unreviewed] = original.genes.slice(0, 3).map((gene) => gene.id);
+  const assignment = { locusTag: reviewed, categoryIds: ['photosynthetic-light-reactions'],
+    classificationBasis: 'explicit-user-review' };
+  const multipleAssignment = { locusTag: multiple,
+    categoryIds: ['photosynthetic-light-reactions', 'carbon-and-nutrient-metabolism'],
+    classificationBasis: 'explicit-user-review' };
+  const categoryData = {
+    datasetVersion: 'function-categories-v1', provenance: { userReview: { date: '2030-01-01' } },
+    policy: { assignmentMethod: 'explicit-user-review-only' },
+    vocabulary: {
+      categories: [
+        { id: 'photosynthetic-light-reactions', label: 'Photosynthetic light reactions' },
+        { id: 'carbon-and-nutrient-metabolism', label: 'Carbon and nutrient metabolism' },
+      ],
+      multipleFunctionsBucket: { id: 'multiple-functions', label: 'Multiple functions' },
+    },
+    coverage: { reviewedRows: 2 },
+  };
+  const dataset = { ...original, functionCategories: {
+    source: categoryData, assignmentsById: new Map([
+      [reviewed, assignment], [multiple, multipleAssignment],
+    ]),
+  } };
+  const result = buildExport({ dataset, registry, ids: [reviewed, multiple, unreviewed],
+    schemes: [{ map: {} }], viewState: { colorBy: 'functionCategory' } });
+  assert.deepEqual(result.rows.map((row) => row.functionCategory),
+    ['Photosynthetic light reactions', 'Multiple functions', 'Unknown or unclassified']);
+  assert.deepEqual(result.rows.map((row) => row.functionReviewStatus),
+    ['reviewed', 'reviewed', 'unreviewed']);
+  assert.deepEqual(result.rows.map((row) => row.reviewedFunctionCategories),
+    ['Photosynthetic light reactions',
+      'Photosynthetic light reactions; Carbon and nutrient metabolism', '']);
+  assert.equal(result.manifest.genes[0].reviewedFunctionAssignment.locusTag, reviewed);
+  assert.equal(result.manifest.genes[2].reviewedFunctionAssignment, null);
+  assert.deepEqual(result.manifest.genes[0].reviewedFunctionCategories,
+    ['Photosynthetic light reactions']);
+  assert.deepEqual(result.manifest.genes[1].reviewedFunctionCategories,
+    ['Photosynthetic light reactions', 'Carbon and nutrient metabolism']);
+  assert.equal(result.manifest.dataset.functionCategories.datasetVersion, 'function-categories-v1');
+  assert.equal(result.manifest.viewState.colorBy, 'functionCategory');
+  assert.match(result.manifest.caveats.join(' '), /2 exact UTEX 2973 locus decisions/);
+  assert.match(result.manifest.caveats.join(' '), /2030-01-01/);
+});
+
 test('every live metric in a row is reproducible from the manifest and the row', async () => {
   const { dataset, registry } = await context();
   const ids = dataset.genes.slice(0, 12).map((gene) => gene.id);
@@ -251,7 +323,10 @@ test('the manifest carries dataset identity, checksums, definitions, and caveats
     assert.ok(entry.label && entry.key);
     assert.ok(Object.hasOwn(entry, 'unit'));
     assert.ok(Object.hasOwn(entry, 'scale'));
+    assert.ok(entry.method && entry.origin && entry.coverage);
+    assert.ok(entry.citationIds.length > 0);
   }
+  assert.match(manifest.metrics.find((entry) => entry.key === 'cai').method, /71-locus/);
   assert.ok(manifest.caveats.some((line) => /never recoded/.test(line)));
   assert.ok(manifest.caveats.some((line) => /never zero/.test(line)));
   assert.ok(manifest.caveats.some((line) => /proxy/.test(line)));
@@ -275,6 +350,40 @@ test('a Tan TSS source is pinned in the export without calling it gene abundance
   assert.deepEqual(result.manifest.dataset.tssEvidenceSource, tssEvidenceSource);
   assert.ok(result.manifest.caveats.some((line) => /two biological cultures/.test(line)));
   assert.ok(result.manifest.caveats.some((line) => /not whole-gene RNA abundance/.test(line)));
+});
+
+test('admitted UTEX allele evidence precedes unavailable PCC essentiality in the manifest', async () => {
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  const candidateEvidence = {
+    manifestSha256: 'abc',
+    testedSource: { id: 'ungerer-2018', condition: 'source condition' },
+    testedAlleles: { [id]: { evidenceId: 'tested-allele', claim: 'Specific UTEX allele' } },
+    borrowedEssentiality: { status: 'unavailable', reason: 'No admitted PCC join' },
+  };
+  const result = exportFor({ ...dataset, candidateEvidence }, registry, [id], [{ map: {} }]);
+  assert.equal(result.manifest.genes[0].testedAllele.evidenceId, 'tested-allele');
+  assert.deepEqual(result.manifest.dataset.candidateEvidence.testedSource,
+    candidateEvidence.testedSource);
+  assert.ok(result.manifest.caveats.some((line) => /PCC 7942 essentiality is unavailable/.test(line)));
+});
+
+test('GO relationships export as evidence-coded suggestions with pinned names', async () => {
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  const gene = { ...dataset.genes[0], annotationEvidence: {
+    goAnnotations: [{ goId: 'GO:0009522', evidenceCode: 'IEA', qualifier: 'enables' }],
+  } };
+  const genes = [gene, ...dataset.genes.slice(1)];
+  const goTerms = {
+    source: { ontology: { releaseDate: '2026-05-19' } },
+    terms: { 'GO:0009522': { name: 'photosystem I', isObsolete: false } },
+  };
+  const result = exportFor({ ...dataset, genes, goTerms }, registry, [id], [{ map: {} }]);
+  assert.deepEqual(result.manifest.dataset.goTermNames, goTerms.source);
+  assert.equal(result.manifest.genes[0].goAnnotations[0].name, 'photosystem I');
+  assert.equal(result.manifest.genes[0].goAnnotations[0].evidenceCode, 'IEA');
+  assert.ok(result.manifest.caveats.some((line) => /IEA computational suggestions/.test(line)));
 });
 
 test('the CSV parser handles the shapes the writer can emit', () => {

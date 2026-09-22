@@ -9,6 +9,8 @@
 import { formatCount, formatValue } from './format.js';
 import { buildExport } from '../core/export-manifest.js';
 import { FoldingPanel } from './folding-panel.js';
+import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
+import { createLocusTag } from './locus-tag.js';
 
 /**
  * Live metrics shown per row, in order, when a scheme is active. These are the two
@@ -125,16 +127,17 @@ export class ShortlistPanel {
     const select = document.createElement('button');
     select.type = 'button';
     select.className = 'shortlist-row-link';
-    const tag = document.createElement('span');
-    tag.className = 'locus-tag';
-    tag.textContent = id;
+    const tag = createLocusTag(gene ?? { id }, { focusable: false });
     select.append(tag);
-    if (gene?.name) {
+    const geneName = geneIdentity(gene);
+    if (geneName?.kind === 'Gene symbol') {
       const name = document.createElement('b');
-      name.textContent = ` ${gene.name}`;
+      name.textContent = ` ${geneName.text}`;
       select.append(name);
     }
-    select.setAttribute('aria-label', `Show ${id} in the gene panel`);
+    const description = gene ? geneIdentityDescription(gene) : 'Not in this dataset';
+    select.setAttribute('aria-label', `Show ${id} in the gene panel. ${description}`);
+    select.title = description;
     select.addEventListener('click', () => this.handlers.onSelect(id));
 
     const product = document.createElement('p');
@@ -144,6 +147,12 @@ export class ShortlistPanel {
       : 'not in this dataset';
     if (gene?.product) product.title = gene.product;
     text.append(select, product);
+    if (index !== undefined && state.filterMask && !state.filterMask[index]) {
+      const hidden = document.createElement('p');
+      hidden.className = 'provenance-warning';
+      hidden.textContent = 'Outside the current map filters; retained in the shortlist and export.';
+      text.append(hidden);
+    }
 
     const metrics = this.describeMetrics(index, state);
     if (metrics) {
@@ -191,8 +200,12 @@ export class ShortlistPanel {
 
   /** Build the export for the current shortlist without downloading it. */
   buildExport(generatedAt = new Date()) {
-    const { ids, dataset, registry } = this.state;
-    return buildExport({ dataset, registry, ids, schemes: this.schemesToExport(), generatedAt });
+    const { ids, dataset, registry, filterState, filterMask, viewState } = this.state;
+    return buildExport({
+      dataset, registry, ids, schemes: this.schemesToExport(), generatedAt,
+      filterState, filterMask,
+      viewState: typeof viewState === 'function' ? viewState() : viewState,
+    });
   }
 
   exportCsv() {

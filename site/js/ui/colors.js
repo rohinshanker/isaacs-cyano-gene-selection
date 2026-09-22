@@ -35,6 +35,25 @@ export const CATEGORICAL = [
 export const MISSING_COLOR = '#9aa3ad';
 /** Colour for points hidden by a filter, drawn behind everything else. */
 export const GHOST_COLOR = '#d8dde3';
+export const GHOST_BORDER = '#687583';
+/** A separate bucket for loci with multiple reviewed functions. */
+export const MULTIPLE_FUNCTION_COLOR = '#7b3294';
+export const CATEGORY_UNKNOWN_COLOR = '#c6cdd5';
+
+/** Categorical colours use the same bucket interface as numeric canvas scales. */
+export function buildCategoryColorScale(categoryCount) {
+  if (!Number.isInteger(categoryCount) || categoryCount < 1 || categoryCount > CATEGORICAL.length) {
+    throw new Error('category count exceeds the reviewed colour palette');
+  }
+  const buckets = [...CATEGORICAL.slice(0, categoryCount), MULTIPLE_FUNCTION_COLOR];
+  return {
+    buckets,
+    categorical: true,
+    bucketOf(value) {
+      return Number.isInteger(value) && value >= 0 && value < buckets.length ? value : -1;
+    },
+  };
+}
 
 function interpolate(stops, t) {
   const clamped = Math.min(1, Math.max(0, t));

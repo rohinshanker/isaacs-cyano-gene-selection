@@ -15,10 +15,28 @@ import {
 } from '../core/metric-registry.js';
 import { annotationEvidenceModel } from '../core/annotation-evidence.js';
 import { formatTssStatistic, tssEvidenceModel } from '../core/tss-evidence.js';
+import { geneIdentity } from '../core/gene-identity.js';
+import { createLocusTag } from './locus-tag.js';
+import { candidateEvidenceFor } from '../core/candidate-evidence.js';
 
 /** Baseline context stays visible; scheme-only results open only when a scheme exists. */
 const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
 const SCHEME_OPEN_FAMILIES = new Set(['Recoding load', 'Change from wild type']);
+
+/** A crossed pin marks the action that clears the committed selection. */
+function unpinIcon() {
+  const namespace = 'http://www.w3.org/2000/svg';
+  const icon = document.createElementNS(namespace, 'svg');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('aria-hidden', 'true');
+  icon.setAttribute('focusable', 'false');
+  const pin = document.createElementNS(namespace, 'path');
+  pin.setAttribute('d', 'M8 3h8l-1 5 2 3v2H7v-2l2-3-1-5Zm4 10v8');
+  const slash = document.createElementNS(namespace, 'path');
+  slash.setAttribute('d', 'M4 4l16 16');
+  icon.append(pin, slash);
+  return icon;
+}
 
 export function metricFamilyStartsOpen(family, schemeActive) {
   return BASE_OPEN_FAMILIES.has(family)
@@ -60,8 +78,8 @@ function labelledList(label, values) {
   return row;
 }
 
-function annotationDisclosure(gene, meta) {
-  const model = annotationEvidenceModel(gene, meta);
+function annotationDisclosure(gene, meta, goTerms) {
+  const model = annotationEvidenceModel(gene, meta, goTerms);
   if (!model) return null;
   const details = document.createElement('details');
   details.className = 'metric-group annotation-evidence';
@@ -90,6 +108,47 @@ function annotationDisclosure(gene, meta) {
       + `${model.attribution.source}`;
     details.append(source);
   }
+  return details;
+}
+
+function candidateEvidenceDisclosure(gene, data) {
+  const model = candidateEvidenceFor(data, gene.id);
+  if (!model) return null;
+  const details = document.createElement('details');
+  details.className = 'metric-group candidate-evidence';
+  details.open = true;
+  const summary = document.createElement('summary');
+  summary.textContent = model.tested
+    ? 'Candidate evidence · tested UTEX allele'
+    : 'Candidate evidence · no admitted tested UTEX allele';
+  details.append(summary);
+
+  if (model.tested) {
+    const claim = document.createElement('p');
+    claim.className = 'candidate-tested-claim';
+    claim.textContent = model.tested.claim;
+    const identity = document.createElement('p');
+    identity.className = 'panel-note';
+    identity.textContent = `Tested allele ${model.tested.oldLocusTag}; current locus ${gene.id}; `
+      + `protein ${model.tested.proteinId}. The result is allele- and condition-specific.`;
+    const condition = document.createElement('p');
+    condition.className = 'panel-note';
+    condition.textContent = `Assay conditions: ${model.testedSource.condition}`;
+    const citation = document.createElement('a');
+    citation.href = `https://doi.org/${model.testedSource.doi}`;
+    citation.target = '_blank';
+    citation.rel = 'noopener noreferrer';
+    citation.textContent = 'Ungerer et al. 2018 study';
+    details.append(claim, identity, condition, citation);
+  }
+
+  const borrowed = document.createElement('p');
+  borrowed.className = 'candidate-borrowed-caution';
+  const badge = document.createElement('strong');
+  badge.textContent = 'PCC 7942 caution';
+  borrowed.append(badge, ` Essentiality unavailable for this UTEX locus. `
+    + model.borrowedEssentiality.reason);
+  details.append(borrowed);
   return details;
 }
 
@@ -216,7 +275,7 @@ function tssEvidenceDisclosure(gene, meta) {
 export class SidePanel {
   /**
    * @param {HTMLElement} host
-   * @param {{onShortlistToggle: (index: number) => void}} handlers
+   * @param {{onShortlistToggle: (index: number) => void, onUnpin: () => void}} handlers
    */
   constructor(host, handlers) {
     this.host = host;
@@ -230,6 +289,8 @@ export class SidePanel {
    */
   update(state) {
     const { index, dataset } = state;
+    const focusedAction = this.host.contains(document.activeElement)
+      ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();
     if (index < 0) {
       const empty = document.createElement('p');
@@ -237,24 +298,42 @@ export class SidePanel {
       empty.textContent = 'Hover a gene on the map to preview it here. Click, or press Enter while '
         + 'the map has keyboard focus, to pin it.';
       this.host.append(empty);
+      if (focusedAction) this.host.focus({ preventScroll: true });
       return;
     }
 
     const gene = dataset.genes[index];
+    const identity = geneIdentity(gene);
     const header = document.createElement('div');
     header.className = 'gene-header';
 
     const title = document.createElement('h3');
     title.className = 'gene-title';
-    title.textContent = gene.id;
+    const tag = createLocusTag(gene);
+    tag.dataset.detailAction = 'identity';
     const name = document.createElement('span');
     name.className = 'gene-name';
-    name.textContent = gene.name ?? MISSING;
-    title.append(' ', name);
+    name.textContent = identity
+      ? `${identity.kind === 'Product' ? 'Product: ' : ''}${identity.text}` : MISSING;
+    title.append(tag, ' ', name);
 
     const status = document.createElement('p');
     status.className = 'gene-status';
     status.textContent = state.isPinned ? 'Pinned' : 'Preview — click the dot to pin it';
+    const statusRow = document.createElement('div');
+    statusRow.className = 'gene-status-row';
+    statusRow.append(status);
+    if (state.isPinned) {
+      const unpinButton = document.createElement('button');
+      unpinButton.type = 'button';
+      unpinButton.className = 'icon-button unpin-button';
+      unpinButton.dataset.detailAction = 'unpin';
+      unpinButton.setAttribute('aria-label', `Unpin ${gene.id}`);
+      unpinButton.title = `Unpin ${gene.id}`;
+      unpinButton.append(unpinIcon());
+      unpinButton.addEventListener('click', () => this.handlers.onUnpin());
+      statusRow.append(unpinButton);
+    }
 
     const product = document.createElement('p');
     product.className = 'gene-product';
@@ -272,9 +351,12 @@ export class SidePanel {
     shortlistButton.textContent = state.inShortlist
       ? 'Remove from shortlist'
       : 'Add to shortlist';
+    shortlistButton.dataset.detailAction = 'shortlist';
     shortlistButton.addEventListener('click', () => this.handlers.onShortlistToggle(index));
 
-    header.append(title, status, product, location);
+    header.append(title, statusRow);
+    if (identity?.kind === 'Gene symbol') header.append(product);
+    header.append(location);
 
     if (gene.translationalException) {
       const flag = document.createElement('p');
@@ -298,10 +380,34 @@ export class SidePanel {
       header.append(spliced);
     }
 
-    header.append(shortlistButton);
+    const actions = document.createElement('div');
+    actions.className = 'gene-actions';
+    actions.append(shortlistButton);
+    header.append(actions);
     this.host.append(header);
+    if (focusedAction) {
+      const replacement = this.host.querySelector(`[data-detail-action="${focusedAction}"]`);
+      (replacement ?? this.host).focus({ preventScroll: true });
+    }
 
-    const annotation = annotationDisclosure(gene, dataset.meta);
+    const candidateEvidence = candidateEvidenceDisclosure(gene, dataset.candidateEvidence);
+    if (candidateEvidence) this.host.append(candidateEvidence);
+
+    if (dataset.functionCategories) {
+      const assignment = dataset.functionCategories.assignmentsById.get(gene.id);
+      const category = document.createElement('p');
+      category.className = 'gene-flag';
+      const heading = document.createElement('strong');
+      heading.textContent = 'Reviewed function category: ';
+      category.append(heading, assignment
+        ? `${gene.reviewedFunctionLabels.join('; ')} (lab review, `
+          + `${dataset.functionCategories.source.provenance.userReview.date}).`
+        : 'No reviewed assignment; this gene remains unknown or unclassified. '
+          + 'GO IEA suggestions do not assign a category colour.');
+      this.host.append(category);
+    }
+
+    const annotation = annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms);
     if (annotation) this.host.append(annotation);
 
     const tssEvidence = tssEvidenceDisclosure(gene, dataset.meta);

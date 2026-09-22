@@ -1,8 +1,8 @@
 /**
  * URL hash serialization.
  *
- * A link reproduces the exact view: panel, colour, recoding scheme, filters,
- * shortlist, pinned gene, and comparison tab.
+ * A link reproduces the exact view: panel, colour, metric axes, recoding
+ * scheme, filters, shortlist, pinned gene, and comparison tab.
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 
@@ -10,6 +10,7 @@ const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
+  lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
 };
 
 /**
@@ -45,7 +46,18 @@ export function defaultState() {
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,
+    lengthCohort: 'annotated',
+    proteinFilter: 'any',
+    axisX: 'lengthNt',
+    axisY: 'cai',
   };
+}
+
+/** Clear committed gene choices while preserving the analytical view. */
+export function clearSelections(state) {
+  state.pinnedId = null;
+  state.shortlist = [];
+  return state;
 }
 
 /**
@@ -107,6 +119,10 @@ export function encodeState(state) {
   if (state.highExpressed) push(KEYS.highExpressed, '1');
   push(KEYS.filters, encodeFilters(state.filters));
   push(KEYS.trafficKey, state.trafficKey);
+  if (state.lengthCohort !== 'annotated') push(KEYS.lengthCohort, state.lengthCohort);
+  if (state.proteinFilter !== 'any') push(KEYS.proteinFilter, state.proteinFilter);
+  if (state.axisX !== 'lengthNt') push(KEYS.axisX, state.axisX);
+  if (state.axisY !== 'cai') push(KEYS.axisY, state.axisY);
   // Always present, and never through `push`: an omitted shortlist means "the
   // hash does not speak to this," which is how a recipient's own localStorage
   // shortlist survives an old-style partial link. Every state this app
@@ -163,5 +179,14 @@ export function decodeState(hash) {
   }
   if (values.has(KEYS.showHidden)) state.showHidden = values.get(KEYS.showHidden) !== '0';
   if (values.has(KEYS.trafficKey)) state.trafficKey = values.get(KEYS.trafficKey);
+  if (values.has(KEYS.lengthCohort)) {
+    const cohort = values.get(KEYS.lengthCohort);
+    if (['annotated', 'coding', 'cds', 'refseq', 'rna', 'pseudogene'].includes(cohort)) {
+      state.lengthCohort = cohort;
+    }
+  }
+  if (values.get(KEYS.proteinFilter) === 'refseq') state.proteinFilter = 'refseq';
+  if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
+  if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);
   return state;
 }

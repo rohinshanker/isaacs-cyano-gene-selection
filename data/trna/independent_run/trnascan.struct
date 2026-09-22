@@ -1,0 +1,271 @@
+NZ_CP006471.1.trna1 (143354-143427)	Length: 74 bp
+Type: Arg	Anticodon: CCT at 35-37 (143388-143390)	Score: 71.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GGGGCTGTAGCTCAGCTGGAtAGAGCAAGCGCCTCCTAAGCGCTAGGcCGCGCGTTCAAATCGCGCCAGTCCCG
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna2 (280106-280178)	Length: 73 bp
+Type: Ala	Anticodon: CGC at 34-36 (280139-280141)	Score: 73.8
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GGGGCTATAGCTCAGTTGGTAGAGCGTACGGATCGCACCCGTAAGGcCAGGGGTTCGAATCCCCTTAGCTCCA
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna3 (480534-480605)	Length: 72 bp
+Type: Asn	Anticodon: GTT at 33-35 (480566-480568)	Score: 76.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: TCCTCAGTAGCTCAGTGGTAGAGCGGTCGGCTGTTAACCGATTGGtCGCAGGTTCGAATCCTGCCTGGGGAG
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna4 (587555-587627)	Length: 73 bp
+Type: Ile2	Anticodon: CAT at 34-36 (587588-587590)	Score: 51.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: CCAGGGTTGGCCGAGCGGAtTAGGCAGCGAACTCATAATTCGCTTTaGGCGGGTTCAACTCCTGCACCCTGGA
+Str: >>>>>>>..>>>..........<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna5 (597309-597395)	Length: 87 bp
+Type: Ser	Anticodon: GGA at 35-37 (597343-597345)	Score: 83.0
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    |    * 
+Seq: GGAGAGATGGCCGAGCGGTtgAAGGCGCAGCACTGGAAATGCTGTTTAGGGGTAACTCTAACGAGGGTTCGAATCCCTCTCTCTCCG
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<.>>>>>>....<<<<<<.>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna6 (605552-605625)	Length: 74 bp
+Type: Ile	Anticodon: GAT at 35-37 (605586-605588)	Score: 71.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GGGCTATTAGCTCAGGTGGTtAGAGCGCACCCCTGATAAGGGTGAGGtCCCTGGTTCAAGTCCAGGATGGCCCA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna7 (605659-605734)	Length: 76 bp
+Type: Ala	Anticodon: TGC at 34-36 (605692-605694)	Score: 87.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *
+Seq: GGGGGTTTAGCTCAGTTGGTAGAGCGCCTGCTTTGCAAGCAGGATGtCAGCGGTTCGAGTCCGCTAACCTCCACCA
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<....
+
+NZ_CP006471.1.trna8 (884945-885018)	Length: 74 bp
+Type: Arg	Anticodon: ACG at 35-37 (884979-884981)	Score: 75.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GGGTTTGTAGCTCAGTGGAttAGAGCATTTGACTACGGATCAAAGGGtCGGGGGTTCGAATCCCTCCAAACCCG
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna9 (954752-954823)	Length: 72 bp
+Type: Gly	Anticodon: GCC at 33-35 (954784-954786)	Score: 74.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCGGGTATAGCTCAGTGGTAGAGCGTCACCTTGCCAAGGTGAATGtCGCGCGTTCGAATCGCGTTACCCGCT
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna10 (983190-983278)	Length: 89 bp
+Type: Ser	Anticodon: GCT at 35-37 (983224-983226)	Score: 79.2
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    |    *   
+Seq: GGAGAGATGGCTGAGTGGTcgAAAGCAGCACATTGCTAATGTGCCGAGTCGTGTAcGCGGCTCCGAGGGTTCGAATCCCTCTCTCTCCG
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<.>>>>>>>....<<<<<<<.>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna11 (1178950-1179021)	Length: 72 bp
+Type: Thr	Anticodon: CGT at 33-35 (1178982-1178984)	Score: 80.2
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCCGATGTAGCTCAGTGGTAGAGCACTCGATTCGTAATCGAGCGGtCAGGGGTTCAAATCCCCTCATCGGCT
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna12 (1601886-1601957)	Length: 72 bp
+Type: Val	Anticodon: GAC at 33-35 (1601918-1601920)	Score: 70.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GGGCGATTAACTCAGGGGTAGAGTACCACCATGACAAGGTGGGAGcCACTGGTTCAAATCCAGTATCGCCCA
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna13 (1843147-1843228)	Length: 82 bp
+Type: Leu	Anticodon: GAG at 35-37 (1843181-1843183)	Score: 54.6
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCGGATGTGGTGGAATTGGTaGACACGCACGTTTGAGGGGCGTGTGGCTTACGCCATGCGAGTTCAAGTCTCGCCATCCGCA
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<.>>>....<<<..>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna14 (2015915-2015986)	Length: 72 bp
+Type: Val	Anticodon: CAC at 33-35 (2015947-2015949)	Score: 70.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GGGCGATTAGCACAGTGGTAGCGCACTTCCTTCACACGGAAGGGGtCACTGGTTCGAATCCAGTATCGCCCA
+Str: >>>>>>>..>>.>.......<.<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna15 (2093691-2093764)	Length: 74 bp
+Type: Pro	Anticodon: GGG at 35-37 (2093725-2093727)	Score: 66.2
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: CGGGGCGTAGCGCAGCTtGGTAGCGCACCACTTTGGGGTAGTGGGGGtCGTGGGTTCAAATCCCGCCGCTCCGA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna16 (2275064-2275124)	Length: 61 bp
+Type: Undet	Anticodon: NNN at 0-0 (0-0)	Score: 22.2
+Possible pseudogene
+         *    |    *    |    *    |    *    |    *    |    *    |
+Seq: CTGTGAACGAGCGGAAAGTTACtaGTCAAtGCGGaCAGCGGTTCGATTCCGCTCAGCTCCA
+Str: >>>..>>>.........<<<.>........<.....>>>>>.......<<<<<<<<.....
+
+NZ_CP006471.1.trna17 (2549064-2549147)	Length: 84 bp
+Type: Leu	Anticodon: CAG at 35-37 (2549098-2549100)	Score: 60.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GCGGAACTGGCGGAATTGGTaGACGCGCTAGATTCAGGTTCTAGTGGTTTCACGACTgTCCGGGTTCAAGTCCCGGGTTCCGCA
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<..>>>....<<<...>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna18 (2688516-2688443)	Length: 74 bp
+Type: Ile	Anticodon: GAT at 35-37 (2688482-2688480)	Score: 71.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GGGCTATTAGCTCAGGTGGTtAGAGCGCACCCCTGATAAGGGTGAGGtCCCTGGTTCAAGTCCAGGATGGCCCA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna19 (2688409-2688334)	Length: 76 bp
+Type: Ala	Anticodon: TGC at 34-36 (2688376-2688374)	Score: 87.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *
+Seq: GGGGGTTTAGCTCAGTTGGTAGAGCGCCTGCTTTGCAAGCAGGATGtCAGCGGTTCGAGTCCGCTAACCTCCACCA
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<....
+
+NZ_CP006471.1.trna20 (2671040-2670969)	Length: 72 bp
+Type: Met	Anticodon: CAT at 33-35 (2671008-2671006)	Score: 68.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GGCTCAGTAGCTCAGCGGTAGAGCAGGGGACTCATAAGCCCTTGGtCGCGTGTTCAAATCACGCCTGAGCCA
+Str: >>>>>>>..>>>>.......<<<<.>>>>.........<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna21 (2638384-2638313)	Length: 72 bp
+Type: Gln	Anticodon: TTG at 33-35 (2638352-2638350)	Score: 61.1
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: TGGGGCGTCGCCAAGCGGTAAGGCAGCGGATTTTGGTTCCGCCATtCCTAGGTTCGAATCCTAGCGCCCCAG
+Str: >>>>>>>..>>>.........<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna22 (2585315-2585244)	Length: 72 bp
+Type: Val	Anticodon: TAC at 33-35 (2585283-2585281)	Score: 75.4
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GGGCGCTTAACTCAGCGGTAGAGTGGCTGCCTTACAAGCAGTAAGtCACTGGTTCGAATCCAGTAGTGCCCA
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna23 (2547530-2547447)	Length: 84 bp
+Type: Leu	Anticodon: CAA at 35-37 (2547496-2547494)	Score: 73.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GGGCAAGTGGCGGAATTGGTaGACGCAGCAGACTCAAAATCTGCCGCTAGCGATAGTgTGTGGGTTCGAGTCCCACCTTGCCCA
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<..>>>....<<<...>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna24 (2356189-2356118)	Length: 72 bp
+Type: Thr	Anticodon: TGT at 33-35 (2356157-2356155)	Score: 71.2
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCCGGTGTAGCTCAGGGGTAGAGCAGCTGTTTTGTAAACAGCCGGtCGCAGGTTCGAATCCGGTCACCGGCT
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>.>>.......<<.<<<<<<<<<.
+
+NZ_CP006471.1.trna25 (2341313-2341232)	Length: 82 bp
+Type: Tyr	Anticodon: GTA at 35-37 (2341279-2341277)	Score: 63.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GGGTCGATGCCCGAGTGGTtaATGGGGGTGGACTGTAAATCCACTGGCTACGCCTaCGCTGGTTCGAATCCAGCTCGGCCCA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.>>>...<<<...>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna26 (2341221-2341150)	Length: 72 bp
+Type: Thr	Anticodon: GGT at 33-35 (2341189-2341187)	Score: 74.4
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCCCTTATAGCTCAGCGGTAGAGCACTCCCTTGGTAAGGGAGAGGtCACGAGTTCAAGTCTCGTTAAGGGCT
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna27 (2089497-2089424)	Length: 74 bp
+Type: Pro	Anticodon: TGG at 35-37 (2089463-2089461)	Score: 76.0
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: CGGGATGTAGCGCAGCTtGGTAGCGCGCCTGCTTTGGGAGCAGGATGcCGCAGGTTCAAATCCTGTCATCCCGA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna28 (1767562-1767491)	Length: 72 bp
+Type: Lys	Anticodon: TTT at 33-35 (1767530-1767528)	Score: 72.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GGGTCGCTAGCTCAGCGGTAGAGCACTCGGCTTTTAACCGATTGGtCCTGGGTTCGAATCCCAGGCGACCCA
+Str: >>>>>>>..>>>>.......<<<<..>>>>.......<<<<......>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna29 (1667509-1667438)	Length: 72 bp
+Type: Gly	Anticodon: CCC at 33-35 (1667477-1667475)	Score: 75.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCGGGCGTAATTCAGTGGTAGAATGTCAGCTTCCCAAGCTGAACGtCGTGGGTTCGAGTCCCATCGCCCGCT
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna30 (1239193-1239109)	Length: 85 bp
+Type: Ser	Anticodon: TGA at 35-37 (1239159-1239157)	Score: 77.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    |    
+Seq: GGAGAGGTGGCAGAGTGGTcgAATGCGAACGACTTGAAATCGTTTGAACCGCAAGGTTCCGTGGGTTCGAATCCCACCCTCTCCG
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<.>>>>>....<<<<<.>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna31 (1068395-1068323)	Length: 73 bp
+Type: Glu	Anticodon: TTC at 35-37 (1068361-1068359)	Score: 60.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GCCCCCATCGTCTAGAGGCctAGGACACCTCCCTTTCACGGAGGCGaCAGGGGTTCGAATCCCCTTGGGGGTA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna32 (946169-946097)	Length: 73 bp
+Type: Arg	Anticodon: CCG at 34-36 (946136-946134)	Score: 70.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GGGCATGTAGCTCAGTGGAtAGAGCATCAGATTCCGGTTCTGAGAGtCGGGGGTTCGAATCCCTCCATGCTCG
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna33 (920896-920824)	Length: 73 bp
+Type: Arg	Anticodon: TCT at 34-36 (920863-920861)	Score: 70.1
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GCCTCAGTAGCTCAGTGGAtAGAGCACCCGCCTTCTAAGCGGTCGGtCGTTGGTTCGATCCCAACCTGAGGCG
+Str: >>>>>>>..>>>>........<<<<..>>>>.......<<<<......>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna34 (830985-830913)	Length: 73 bp
+Type: His	Anticodon: GTG at 34-36 (830952-830950)	Score: 62.4
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GCGAGCGTAGCCAAGTGGTtAAGGCAGCGGATTGTGGTTCCGCCATtCGGGGGTTCGAGTCCCCTCGTTCGCC
+Str: >>>>>>>..>>>..........<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna35 (785965-785893)	Length: 73 bp
+Type: Phe	Anticodon: GAA at 34-36 (785932-785930)	Score: 72.8
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GCCGGGATAGCTCAGTTGGTAGAGCAGAGGACTGAAAATCCTCGTGtCACCGGTTCAAGTCCGGTTCCTGGCA
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna36 (750502-750421)	Length: 82 bp
+Type: Leu	Anticodon: TAG at 35-37 (750468-750466)	Score: 66.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    | 
+Seq: GCGGACGTGGCGGAATTGGCaGACGCGCCAGATTTAGGTTCTGGTACCGCAAGGTGTGAAGGTTCAAGTCCTTTCGTCCGCA
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<.>>>....<<<..>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna37 (725838-725752)	Length: 87 bp
+Type: Ser	Anticodon: CGA at 35-37 (725804-725802)	Score: 75.2
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    *    |    * 
+Seq: GGAGAGGTGGCAGAGTGGTcgAATGCGCCTCACTCGAAATGAGGTTCGGGGTAACAGCCGACGTGGGTTCGAATCCCACCCTCTCCG
+Str: >>>>>>>..>>>...........<<<.>>>>>.......<<<<<.>>>>........<<<<.>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna38 (667650-667578)	Length: 73 bp
+Type: Ala	Anticodon: GGC at 34-36 (667617-667615)	Score: 76.6
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GGGGCTATAGCTCAGTTGGTAGAGCACTTGCATGGCATGCAAGGGGtCACCGGTTCGAGTCCGGTTAGCTCCA
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna39 (641422-641350)	Length: 73 bp
+Type: Trp	Anticodon: CCA at 34-36 (641389-641387)	Score: 73.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |  
+Seq: GCGCTCTTAGTTCAGTTGGTAGAACGCAGGTCTCCAAAACCTGATGtCGGGGGTTCAAGTCCTCCAGGGCGCG
+Str: >>>>>>>..>>>>........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna40 (641143-641070)	Length: 74 bp
+Type: Asp	Anticodon: GTC at 35-37 (641109-641107)	Score: 72.3
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: GGGACTGTAGTTCAATCGGTtAGAGCACCGCCCTGTCACGGCGGAAGtTGCGGGTTCGAGCCCCGTCAGTCCCG
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna41 (447056-446986)	Length: 71 bp
+Type: Cys	Anticodon: GCA at 33-35 (447024-447022)	Score: 71.1
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |
+Seq: GGCGGCATAGCCAAGTGGTAAGGCAGAGGTCTGCAAAACCTTCAcCCCCGGTTCGAATCCGGGTGCCGCCT
+Str: >>>>>>>..>>>.........<<<.>>>>>.......<<<<<....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna42 (444398-444328)	Length: 71 bp
+Type: Cys	Anticodon: GCA at 33-35 (444366-444364)	Score: 49.7
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |
+Seq: GGCAGCATAACCAAGTGGTAAGGCAGAGGTCTGCAAAACCTTCGCCTCcGGTTCGAATCCGAGTGCCGCCT
+Str: >>>.>>>...>>.........<<..>>>>>.......<<<<<...>>>.>>.......<<<<<<<<.<<<.
+
+NZ_CP006471.1.trna43 (401806-401730)	Length: 77 bp
+Type: fMet	Anticodon: CAT at 35-37 (401772-401770)	Score: 76.1
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |    * 
+Seq: CGCGGGGTAGAGCAGCCtGGTAGCTCGTCGGGCTCATAACCCGAAGGtCAGAGGTTCAAATCCTCTCCCCGCCACCA
+Str: .>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<.....
+
+NZ_CP006471.1.trna44 (348411-348338)	Length: 74 bp
+Type: Pro	Anticodon: CGG at 35-37 (348377-348375)	Score: 76.5
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |   
+Seq: CGGGATGTAGCGCAGCTtGGTAGCGCACTTCGTTCGGGACGAAGGGGtCGCAGGTTCGAATCCTGTCATCCCGA
+Str: >>>>>>>..>>>>.........<<<<.>>>>>.......<<<<<.....>>>>>.......<<<<<<<<<<<<.
+
+NZ_CP006471.1.trna45 (13120-13050)	Length: 71 bp
+Type: Gly	Anticodon: TCC at 33-35 (13088-13086)	Score: 75.4
+         *    |    *    |    *    |    *    |    *    |    *    |    *    |
+Seq: GCGGGCTTAGTTTAGTGGTAAAACCTTAGCCTTCCAAGCTAATGaTGCGGGTTCGATTCCCGCAGCCCGCT
+Str: >>>>>>>..>>>>.......<<<<.>>>>>.......<<<<<....>>>>>.......<<<<<<<<<<<<.
+

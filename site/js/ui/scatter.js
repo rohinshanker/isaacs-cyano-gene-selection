@@ -6,7 +6,7 @@
  * rectangles, and hit testing is a linear scan in screen space, which costs
  * microseconds at this size.
  */
-import { GHOST_COLOR, MISSING_COLOR } from './colors.js';
+import { CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR, MISSING_COLOR } from './colors.js';
 
 const PADDING = { left: 58, right: 18, top: 18, bottom: 46 };
 export const MIN_ZOOM = 0.4;
@@ -32,6 +32,11 @@ export function enterTarget(active) {
   return active >= 0 ? active : -1;
 }
 
+/** Clicking an already pinned point clears its pin; another point becomes pinned. */
+export function togglePinTarget(clicked, pinned) {
+  return clicked === pinned ? -1 : clicked;
+}
+
 /**
  * Which gene S adds to or removes from the shortlist: the keyboard-active
  * gene if there is one, otherwise the pinned gene. This is "the documented
@@ -49,29 +54,32 @@ export function shortlistTarget(active, pinned) {
  * repeated presses walk across the map instead of circling.
  * @param {{x: Float64Array, y: Float64Array}} projection
  * @param {Uint8Array|null} mask
- * @param {{k: number, cx: number, cy: number, ox: number, oy: number}} transform
+ * @param {{k?: number, kx?: number, ky?: number, cx: number, cy: number,
+ *   ox: number, oy: number}} transform
  * @param {number} from
  * @param {'left'|'right'|'up'|'down'} direction
  */
 export function findNeighbor(projection, mask, transform, from, direction) {
   const { x, y } = projection;
-  const { k, cx, cy, ox, oy } = transform;
+  const { cx, cy, ox, oy } = transform;
+  const kx = transform.kx ?? transform.k;
+  const ky = transform.ky ?? transform.k;
   if (from < 0) {
     for (let i = 0; i < x.length; i += 1) {
       if ((!mask || mask[i]) && Number.isFinite(x[i])) return i;
     }
     return -1;
   }
-  const originX = ox + (x[from] - cx) * k;
-  const originY = oy - (y[from] - cy) * k;
+  const originX = ox + (x[from] - cx) * kx;
+  const originY = oy - (y[from] - cy) * ky;
   let best = -1;
   let bestScore = Infinity;
   for (let i = 0; i < x.length; i += 1) {
     if (i === from) continue;
     if (mask && !mask[i]) continue;
     if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
-    const dx = ox + (x[i] - cx) * k - originX;
-    const dy = oy - (y[i] - cy) * k - originY;
+    const dx = ox + (x[i] - cx) * kx - originX;
+    const dy = oy - (y[i] - cy) * ky - originY;
     const along = direction === 'right' ? dx : direction === 'left' ? -dx
       : direction === 'up' ? -dy : dy;
     if (along <= 0.5) continue;
@@ -275,8 +283,15 @@ export class ScatterPlot {
     const spanX = (maxX - minX) || 1;
     const spanY = (maxY - minY) || 1;
     const rect = this.plotRect;
-    const scale = Math.min(rect.width / (spanX * 1.08), rect.height / (spanY * 1.08));
-    this.fit = { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, scale };
+    const scaleX = rect.width / (spanX * 1.08);
+    const scaleY = rect.height / (spanY * 1.08);
+    const commonScale = Math.min(scaleX, scaleY);
+    this.fit = {
+      cx: (minX + maxX) / 2,
+      cy: (minY + maxY) / 2,
+      scaleX: this.projection.independentAxes ? scaleX : commonScale,
+      scaleY: this.projection.independentAxes ? scaleY : commonScale,
+    };
     return this.fit;
   }
 
@@ -288,9 +303,12 @@ export class ScatterPlot {
   transform() {
     const fit = this.computeFit();
     const rect = this.plotRect;
-    const k = fit.scale * this.zoom;
+    const kx = fit.scaleX * this.zoom;
+    const ky = fit.scaleY * this.zoom;
     return {
-      k,
+      k: kx,
+      kx,
+      ky,
       cx: fit.cx,
       cy: fit.cy,
       ox: rect.left + rect.width / 2 + this.panX,
@@ -299,17 +317,18 @@ export class ScatterPlot {
   }
 
   toScreen(dataX, dataY) {
-    const { k, cx, cy, ox, oy } = this.transform();
-    return { x: ox + (dataX - cx) * k, y: oy - (dataY - cy) * k };
+    const { kx, ky, cx, cy, ox, oy } = this.transform();
+    return { x: ox + (dataX - cx) * kx, y: oy - (dataY - cy) * ky };
   }
 
   toData(screenX, screenY) {
     const fit = this.computeFit();
     const rect = this.plotRect;
-    const k = fit.scale * this.zoom;
+    const kx = fit.scaleX * this.zoom;
+    const ky = fit.scaleY * this.zoom;
     return {
-      x: (screenX - rect.left - rect.width / 2 - this.panX) / k + fit.cx,
-      y: -(screenY - rect.top - rect.height / 2 - this.panY) / k + fit.cy,
+      x: (screenX - rect.left - rect.width / 2 - this.panX) / kx + fit.cx,
+      y: -(screenY - rect.top - rect.height / 2 - this.panY) / ky + fit.cy,
     };
   }
 
@@ -325,14 +344,14 @@ export class ScatterPlot {
   hitTest(screenX, screenY, limit = 14) {
     if (!this.projection?.available) return -1;
     const { x, y } = this.projection;
-    const { k, cx, cy, ox, oy } = this.transform();
+    const { kx, ky, cx, cy, ox, oy } = this.transform();
     let best = -1;
     let bestDistance = limit * limit;
     for (let i = 0; i < x.length; i += 1) {
       if (this.mask && !this.mask[i] && !this.showHidden) continue;
       if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
-      const dx = ox + (x[i] - cx) * k - screenX;
-      const dy = oy - (y[i] - cy) * k - screenY;
+      const dx = ox + (x[i] - cx) * kx - screenX;
+      const dy = oy - (y[i] - cy) * ky - screenY;
       const distance = dx * dx + dy * dy;
       // A visible gene wins ties against one hidden by a filter.
       const penalty = this.mask && !this.mask[i] ? 40 : 0;
@@ -523,7 +542,7 @@ export class ScatterPlot {
 
     const { x, y } = this.projection;
     const rect = this.plotRect;
-    const { k, cx, cy, ox, oy } = this.transform();
+    const { kx, ky, cx, cy, ox, oy } = this.transform();
     context.save();
     context.beginPath();
     context.rect(rect.left, rect.top, rect.width, rect.height);
@@ -536,15 +555,36 @@ export class ScatterPlot {
 
     if (this.showHidden) {
       context.fillStyle = GHOST_COLOR;
+      context.strokeStyle = GHOST_BORDER;
+      context.lineWidth = 1;
+      const ghostSize = Math.min(5, Math.max(3.5, size * 0.8));
       for (let n = 0; n < buckets.hidden.length; n += 1) {
         const i = buckets.hidden[n];
-        context.fillRect(
-          ox + (x[i] - cx) * k - 1.2, oy - (y[i] - cy) * k - 1.2, 2.4, 2.4,
-        );
+        const left = ox + (x[i] - cx) * kx - ghostSize / 2;
+        const top = oy - (y[i] - cy) * ky - ghostSize / 2;
+        context.fillRect(left, top, ghostSize, ghostSize);
+        context.strokeRect(left, top, ghostSize, ghostSize);
       }
     }
 
     if (scale) {
+      const drawMissing = () => {
+        // In category mode the many unknown rings sit behind the few reviewed
+        // coloured points; numeric missing markers keep their usual foreground.
+        context.strokeStyle = scale.categorical ? CATEGORY_UNKNOWN_COLOR : MISSING_COLOR;
+        context.lineWidth = scale.categorical ? 0.9 : 1.2;
+        for (let n = 0; n < buckets.missing.length; n += 1) {
+          const i = buckets.missing[n];
+          context.beginPath();
+          context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky,
+            scale.categorical ? Math.max(1.4, radius * 0.7) : radius + 0.4,
+            0, Math.PI * 2);
+          context.stroke();
+        }
+      };
+      if (scale.categorical) drawMissing();
+      const coloredRadius = scale.categorical ? radius + 1.5 : radius;
+      const coloredSize = coloredRadius * 2;
       for (let bucket = 0; bucket < buckets.lists.length; bucket += 1) {
         const list = buckets.lists[bucket];
         if (list.length === 0) continue;
@@ -552,28 +592,29 @@ export class ScatterPlot {
         for (let n = 0; n < list.length; n += 1) {
           const i = list[n];
           context.fillRect(
-            ox + (x[i] - cx) * k - radius, oy - (y[i] - cy) * k - radius, size, size,
+            ox + (x[i] - cx) * kx - coloredRadius,
+            oy - (y[i] - cy) * ky - coloredRadius, coloredSize, coloredSize,
           );
+          if (scale.categorical) {
+            context.strokeStyle = '#314254';
+            context.lineWidth = 0.8;
+            context.strokeRect(
+              ox + (x[i] - cx) * kx - coloredRadius,
+              oy - (y[i] - cy) * ky - coloredRadius, coloredSize, coloredSize,
+            );
+          }
         }
       }
-      // Genes with no value for this metric are drawn as open markers, so the
-      // difference does not depend on telling one grey from another.
-      context.strokeStyle = MISSING_COLOR;
-      context.lineWidth = 1.2;
-      for (let n = 0; n < buckets.missing.length; n += 1) {
-        const i = buckets.missing[n];
-        context.beginPath();
-        context.arc(ox + (x[i] - cx) * k, oy - (y[i] - cy) * k, radius + 0.4, 0, Math.PI * 2);
-        context.stroke();
-      }
+      // Numeric missing values remain open foreground markers.
+      if (!scale.categorical) drawMissing();
     }
 
     context.strokeStyle = '#1b2733';
     context.lineWidth = 1.6;
     for (const i of this.shortlist) {
       if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
-      const pointX = ox + (x[i] - cx) * k;
-      const pointY = oy - (y[i] - cy) * k;
+      const pointX = ox + (x[i] - cx) * kx;
+      const pointY = oy - (y[i] - cy) * ky;
       const r = radius + 3.4;
       context.beginPath();
       context.moveTo(pointX, pointY - r);

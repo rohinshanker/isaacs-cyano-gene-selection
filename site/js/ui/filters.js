@@ -87,6 +87,7 @@ export function clearedFilterState() {
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,
+    proteinFilter: 'any',
   };
 }
 
@@ -162,6 +163,7 @@ export class FilterPanel {
 
     this.basisHost = document.createElement('div');
     this.basisHost.className = 'basis-filter';
+    this.proteinHost = document.createElement('div');
 
     const addRow = document.createElement('div');
     addRow.className = 'field-row';
@@ -191,7 +193,7 @@ export class FilterPanel {
     this.clearButton.addEventListener('click', () => this.handlers.onClear());
 
     this.host.append(
-      this.trafficHost, this.basisHost, this.exceptionHost, addRow, this.list, this.summary,
+      this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost, addRow, this.list, this.summary,
       this.clearButton,
     );
   }
@@ -256,6 +258,7 @@ export class FilterPanel {
     if (selected && !active.includes(selected)) this.addSelect.value = selected;
 
     this.renderTraffic(state);
+    this.renderProteinFilter(state);
     this.renderBasisFilter(state);
     this.renderExceptionFilter(state);
     this.renderRows(state);
@@ -267,7 +270,45 @@ export class FilterPanel {
         + `${formatCount(hidden)} are hidden.`
       : `All ${formatCount(state.count)} genes pass. No filter is hiding anything.`;
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
-      && (state.expressionFilter ?? 'any') === 'any';
+      && (state.expressionFilter ?? 'any') === 'any'
+      && (state.proteinFilter ?? 'any') === 'any';
+  }
+
+  renderProteinFilter(state) {
+    this.proteinHost.replaceChildren();
+    if (!state.proteinEvidence) return;
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'flag-filter';
+    const legend = document.createElement('legend');
+    legend.textContent = 'Protein evidence';
+    fieldset.append(legend);
+    const options = [
+      ['any', 'All screened CDSs', false],
+      ['refseq', `RefSeq protein record (${formatCount(state.proteinEvidence.count)} loci)`, false],
+      ['detected', 'Direct UTEX 2973 proteomics detection', true],
+    ];
+    for (const [value, text, disabled] of options) {
+      const row = document.createElement('div');
+      row.className = 'checkbox-row';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'protein-filter';
+      input.id = `protein-filter-${value}`;
+      input.value = value;
+      input.disabled = disabled;
+      input.checked = state.proteinFilter === value;
+      input.addEventListener('change', () => this.handlers.onProteinFilterChange(value));
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+      label.textContent = text;
+      row.append(input, label);
+      fieldset.append(row);
+    }
+    const reason = document.createElement('p');
+    reason.className = 'panel-note';
+    reason.textContent = `Unavailable: ${state.proteinEvidence.unavailableReason}`;
+    fieldset.append(reason);
+    this.proteinHost.append(fieldset);
   }
 
   renderTraffic(state) {

@@ -242,7 +242,7 @@ test('declared TSS evidence must exist and have array rows', async () => {
   const genes = JSON.parse(await readFile(`${FIXTURE_DIR}/genes.json`, 'utf8'));
   meta.tssEvidenceSource = { id: 'TAN2018_TABLE_S1' };
   const fetchImpl = async (url) => ({
-    ok: !url.endsWith('tss_evidence.json'),
+    ok: ['meta.json', 'genes.json'].some((name) => url.endsWith(name)),
     status: 404,
     json: async () => url.endsWith('meta.json') ? meta : genes,
   });

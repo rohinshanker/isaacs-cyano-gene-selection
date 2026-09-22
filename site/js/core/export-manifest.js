@@ -13,6 +13,8 @@
 import { compileScheme, serializeSchemeMap } from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
 import { expressionBasisOf } from './metric-registry.js';
+import { metricHelp } from './metric-help.js';
+import { functionCategoryLabel, reviewedFunctionLabels } from './function-categories.js';
 import { csvField } from '../ui/format.js';
 
 export const MANIFEST_VERSION = 1;
@@ -21,10 +23,12 @@ export const EXPORT_BASENAME = 'recoding-candidates';
 
 /** Columns that identify a row, before the metric columns. */
 export const IDENTITY_COLUMNS = Object.freeze([
-  'manifestId', 'schemeId', 'schemeName', 'id', 'name', 'product', 'seqid', 'start', 'end',
+  'manifestId', 'schemeId', 'schemeName', 'id', 'name', 'product',
+  'functionCategory', 'reviewedFunctionCategories', 'functionReviewStatus',
+  'seqid', 'start', 'end',
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor', 'operonId',
-  'expressionBasis', 'expressionSourceId',
+  'expressionBasis', 'expressionSourceId', 'passesCurrentFilters',
 ]);
 
 /** Columns after the metrics: the sequences that let every live metric be recomputed. */
@@ -158,6 +162,22 @@ function caveatsFor(dataset, manifest) {
       + 'cultures per condition. They describe start-site initiation, not whole-gene '
       + 'RNA abundance; a gene can have multiple separately regulated TSSs.');
   }
+  if (manifest.dataset.candidateEvidence?.borrowedEssentiality?.status === 'unavailable') {
+    caveats.push('PCC 7942 essentiality is unavailable for this UTEX release; no '
+      + 'locus-level status is inferred from the unverified Rubin Dataset S3.');
+  }
+  if (dataset.goTerms) {
+    caveats.push('GO relationships are RefSeq IEA computational suggestions, not experimentally '
+      + 'tested UTEX 2973 functions. Obsolete GO IDs retain their historical names and are not remapped.');
+  }
+  if (dataset.functionCategories) {
+    const categorySource = dataset.functionCategories.source;
+    caveats.push(`Function colours use only the ${categorySource.coverage.reviewedRows} exact `
+      + 'UTEX 2973 locus decisions approved by the lab on '
+      + `${categorySource.provenance.userReview.date}. Every other CDS remains unknown or unclassified; `
+      + 'GO IEA relationships never assign a category. An unknown colour does not imply '
+      + 'that a function was experimentally ruled out.');
+  }
   if (manifest.dataset.annotationRelease === null) {
     caveats.push('meta.json does not publish the annotation release, so it is recorded as null '
       + 'rather than inferred.');
@@ -173,7 +193,10 @@ function caveatsFor(dataset, manifest) {
  * @returns {{manifest: object, csv: string, columns: string[], rows: object[],
  *   baseName: string, files: Array<{name: string, type: string, content: string}>}}
  */
-export function buildExport({ dataset, registry, ids, schemes, generatedAt = new Date() }) {
+export function buildExport({
+  dataset, registry, ids, schemes, generatedAt = new Date(),
+  filterState = null, filterMask = null, viewState = null,
+}) {
   const { meta, genes, indexById, table } = dataset;
   const schemeList = normaliseSchemes(schemes);
   const metrics = registry.metrics;
@@ -196,6 +219,12 @@ export function buildExport({ dataset, registry, ids, schemes, generatedAt = new
         id: gene.id,
         name: gene.name ?? '',
         product: gene.product ?? '',
+        functionCategory: functionCategoryLabel(dataset.functionCategories, gene.id) ?? '',
+        reviewedFunctionCategories:
+          reviewedFunctionLabels(dataset.functionCategories, gene.id).join('; '),
+        functionReviewStatus: dataset.functionCategories
+          ? dataset.functionCategories.assignmentsById.has(gene.id) ? 'reviewed' : 'unreviewed'
+          : '',
         seqid: gene.seqid ?? '',
         start: gene.start,
         end: gene.end,
@@ -212,6 +241,7 @@ export function buildExport({ dataset, registry, ids, schemes, generatedAt = new
         operonId: gene.operonId ?? '',
         expressionBasis: basis.basis,
         expressionSourceId: gene.expressionSourceId ?? '',
+        passesCurrentFilters: filterMask ? String(Boolean(filterMask[index])) : '',
         wildTypeCds: sequence.wildType,
         recodedCds: sequence.recoded,
       };
@@ -243,11 +273,26 @@ export function buildExport({ dataset, registry, ids, schemes, generatedAt = new
       genome: meta.genome ?? null,
       annotationRelease: annotationRelease(meta),
       tssEvidenceSource: meta.tssEvidenceSource ?? null,
+      candidateEvidence: dataset.candidateEvidence ? {
+        manifestSha256: dataset.candidateEvidence.manifestSha256,
+        testedSource: dataset.candidateEvidence.testedSource,
+        borrowedEssentiality: dataset.candidateEvidence.borrowedEssentiality,
+      } : null,
+      goTermNames: dataset.goTerms?.source ?? null,
+      functionCategories: dataset.functionCategories ? {
+        datasetVersion: dataset.functionCategories.source.datasetVersion,
+        provenance: dataset.functionCategories.source.provenance,
+        policy: dataset.functionCategories.source.policy,
+        vocabulary: dataset.functionCategories.source.vocabulary,
+        coverage: dataset.functionCategories.source.coverage,
+      } : null,
       sourceChecksums: meta.sourceChecksums ?? {},
       geneCount: meta.geneCount ?? genes.length,
       loadedGeneCount: genes.length,
     },
     expressionSource: meta.expressionSource ?? null,
+    filterState: filterState ?? null,
+    viewState: viewState ?? null,
     schemes: schemeList,
     genes: ids
       .filter((id) => indexById.has(id))
@@ -261,17 +306,36 @@ export function buildExport({ dataset, registry, ids, schemes, generatedAt = new
           translationalException: gene.translationalException ?? null,
           cdsSegments: gene.cdsSegments ?? null,
           expressionBasis: expressionBasisOf(gene).basis,
+          testedAllele: dataset.candidateEvidence?.testedAlleles[id] ?? null,
+          functionCategory: functionCategoryLabel(dataset.functionCategories, id),
+          reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, id),
+          reviewedFunctionAssignment:
+            dataset.functionCategories?.assignmentsById.get(id) ?? null,
+          goAnnotations: (gene.annotationEvidence?.goAnnotations ?? []).map((relation) => ({
+            ...relation,
+            name: dataset.goTerms?.terms?.[relation.goId]?.name ?? null,
+            isObsoleteInNameRelease: Boolean(
+              dataset.goTerms?.terms?.[relation.goId]?.isObsolete
+            ),
+          })),
         };
       }),
-    metrics: metrics.map((metric) => ({
-      key: metric.key,
-      label: metric.label,
-      unit: metric.unit ?? '',
-      desc: metric.desc ?? '',
-      family: metric.family,
-      source: metric.source,
-      scale: metric.scale ?? null,
-    })),
+    metrics: metrics.map((metric) => {
+      const help = metricHelp(metric, dataset);
+      return {
+        key: metric.key,
+        label: metric.label,
+        unit: metric.unit ?? '',
+        desc: metric.desc ?? '',
+        method: help.method,
+        origin: help.origin,
+        coverage: help.coverage,
+        citationIds: help.citations,
+        family: metric.family,
+        source: metric.source,
+        scale: metric.scale ?? null,
+      };
+    }),
     columns,
     rowCount: rows.length,
     contentDigest: fnv1a64(csvFor('')),

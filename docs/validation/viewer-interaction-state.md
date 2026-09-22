@@ -16,7 +16,21 @@ With the canvas focused:
 
 Unavailable projections disable all view buttons and canvas navigation/zoom is a
 defensive no-op. The canvas instructions are linked with `aria-describedby`.
-The legend names hidden grey dots only when those dots are actually rendered.
+The legend names filtered CDSs as grey outlined squares only when they are
+rendered. They retain their map coordinates and pointer access when that
+visibility option is enabled; noncoding Tan features have no PCA coordinates
+and remain in the separate regulatory search.
+
+A pinned gene exposes an icon Unpin button beside its Pinned status in the detail panel. Search rows show Pin/Unpin
+and Shortlist/Remove according to shared state; both actions stay enabled so
+they can be reversed in place. Search actions keep focus on the same row button
+after rerender. The detail shortlist button keeps focus when its label changes;
+unpinning from detail moves focus to the detail landmark. Unpin clears the URL
+pin without changing the shortlist. Clicking a pinned dot again also unpins it.
+Reset view changes only the map camera. Reset selections clears the pin and
+shortlist while retaining filters, the recoding scheme, and the map camera. It
+disables itself when both selections are empty and moves focus to Reset view
+after activation.
 
 ## Search result activation
 
@@ -61,7 +75,10 @@ selection clears and disables both actions rather than leaving silent no-ops.
 Regression coverage is in `tests/js/scatter-navigation.test.mjs` and
 `tests/js/url-state.test.mjs`; the all-channel reset is covered in
 `tests/js/interface-copy.test.mjs`, and idempotent search rendering is covered in
-`tests/js/gene-search.test.mjs`. Browser validation must include live hash
+`tests/js/gene-search.test.mjs`, including all search action states. Browser
+validation must include live hash
 changes, back/forward, seeded local storage plus explicit empty shortlist,
 unavailable-map controls, first-click and keyboard search activation, keyboard
-preview followed by search/pointer pinning, and explicit scheme clear.
+preview followed by search/pointer pinning, repeated map-point and search-result
+pinning, reversible selection in both panels, focus after rerender and reset,
+selections-only reset, and explicit scheme clear.

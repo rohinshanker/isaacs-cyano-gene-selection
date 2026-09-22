@@ -23,6 +23,7 @@
   </div>
   <div class="header-actions">
     <button type="button" class="chip-button header-link map-jump" aria-controls="map-section">Jump to map</button>
+    <button type="button" id="reset-panel-widths" class="chip-button" hidden>Reset panel widths</button>
     <button type="button" id="help-toggle" class="chip-button" aria-expanded="false" aria-controls="help">
       How to read this
     </button>
@@ -41,22 +42,22 @@
       </p>
       <h3>What “close together” means</h3>
       <p>
-        Each map takes many numbers per gene and squeezes them onto two axes, the way a shadow
-        squeezes a three-dimensional object onto a wall. Genes that land near each other are
-        similar in the numbers that map used. The axis numbers themselves have no units and no
-        meaning on their own; only relative position matters.
+        The four PCA and UMAP maps combine many gene measurements into two dimensions; nearby
+        genes are similar in the inputs to that map, and those axis numbers have no native units.
+        Metric X vs Y instead plots the two measurements you choose, in their own units.
       </p>
       <p>
-        Under each map, <b>What drives these axes</b> lists which measurements pull genes left,
-        right, up, or down. That list is how you find out what a region of the map actually means.
+        Under a PCA map, <b>What drives these axes</b> lists measurements that pull genes left,
+        right, up, or down. The metric plot names its two measurements directly.
       </p>
-      <h3>Why there are four maps</h3>
+      <h3>Why there are five maps</h3>
       <p>
         They answer different questions. <b>Native codon space</b> asks how a gene writes its
         codons today. <b>Recoding-risk space</b> asks how exposed a gene is to the scheme you set.
         <b>Baseline risk UMAP</b> is a grouping view: it clusters similar genes tightly, but the
         gaps between clusters mean nothing. <b>Perturbation space</b> asks how far recoding would
         move a gene from where it started, which is a different question from where it started.
+        <b>Metric X vs Y</b> shows a direct relationship, such as CDS length against CAI.
       </p>
     </div>
     <div>
@@ -180,7 +181,7 @@ if (window.location.protocol === 'file:') {
 <div id="metric-agreement" class="metric-alert" role="alert" hidden></div>
 
 <main class="layout" id="main" hidden>
-  <aside class="column controls" aria-label="Scheme and filters">
+  <aside class="column controls" id="controls-column" aria-label="Scheme and filters">
     <section class="card">
       <h2>Recoding scheme</h2>
       <p class="panel-note">
@@ -194,14 +195,33 @@ if (window.location.protocol === 'file:') {
     </section>
   </aside>
 
-  <div class="column analysis">
+  <div id="resize-controls" class="resize-handle resize-handle-left" role="separator"
+       tabindex="0" aria-orientation="vertical" aria-label="Resize controls and map"
+       aria-controls="controls-column analysis-column" hidden><span class="resize-grip" aria-hidden="true"></span></div>
+
+  <div class="column analysis" id="analysis-column">
     <section class="map card" id="map-section" aria-label="Gene maps and sources">
       <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map views and sources"></div>
       <p class="panel-blurb" id="panel-blurb"></p>
+      <details id="features-used" class="method-help" hidden>
+        <summary>Features used</summary>
+        <div class="help-content"></div>
+      </details>
       <div id="map-view" role="tabpanel">
-        <!-- Two rows, in DOM order so tab order follows the visual order. The search
-             box takes the rest of its own row because its result list needs the width. -->
+        <!-- Axis controls appear above the shared colour/search and view rows.
+             DOM order follows keyboard order, and search takes remaining width. -->
         <div class="map-toolbar">
+          <div class="map-toolbar-row axis-chooser" id="axis-chooser" hidden>
+            <span class="field-row">
+              <label for="axis-x">X axis</label>
+              <select id="axis-x" aria-describedby="axis-note"></select>
+            </span>
+            <span class="field-row">
+              <label for="axis-y">Y axis</label>
+              <select id="axis-y" aria-describedby="axis-note"></select>
+            </span>
+            <span id="axis-note" class="panel-note" role="status"></span>
+          </div>
           <div class="map-toolbar-row">
             <span class="field-row">
               <label for="color-by">Colour by</label>
@@ -211,22 +231,30 @@ if (window.location.protocol === 'file:') {
               <label for="gene-search">Find a gene</label>
               <input id="gene-search" type="search" autocomplete="off"
                      aria-describedby="gene-search-hint"
-                     placeholder="Locus tag, gene name, or what it does">
+                     placeholder="Locus, product, category, or GO term">
             </span>
           </div>
+          <details id="colour-help" class="method-help" hidden>
+            <summary>Colour metric explanation</summary>
+            <div class="help-content"></div>
+          </details>
           <div class="map-toolbar-row">
             <button type="button" id="reset-view" class="chip-button">Reset view</button>
+            <button type="button" id="reset-selections" class="chip-button danger"
+                    title="Clear the pinned gene and candidate shortlist">Reset selections</button>
             <button type="button" id="zoom-in" class="chip-button" aria-label="Zoom in">Zoom in (+)</button>
             <button type="button" id="zoom-out" class="chip-button" aria-label="Zoom out">Zoom out (−)</button>
             <span class="checkbox-row">
               <input type="checkbox" id="show-hidden" checked>
-              <label for="show-hidden">Show filtered-out genes as grey dots</label>
+              <label for="show-hidden">Show filtered-out genes as grey outlined squares</label>
             </span>
           </div>
         </div>
         <p class="visually-hidden" id="gene-search-hint">
-          Searches the locus tag, the gene name, and the product description. Common
-          nicknames such as rubisco are translated into the wording this genome uses.
+          Searches locus tags, gene names, product descriptions, reviewed function
+          categories, GO IDs and GO term names. GO annotations are computational
+          suggestions. Common nicknames
+          such as rubisco are translated into the wording this genome uses.
         </p>
         <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
         <p class="filter-banner" id="filter-banner" role="status"></p>
@@ -239,7 +267,7 @@ if (window.location.protocol === 'file:') {
           map focused: arrow keys move an active gene without pinning it and announce what it is,
           Shift and an arrow pans, plus and minus zoom, Enter pins the active gene, S adds or removes
           the active gene (or, with nothing active, the pinned gene) from the shortlist. The zoom
-          buttons also work by touch.
+          buttons also work by touch. Click a pinned dot again to unpin it.
         </p>
         <div class="map-footer">
           <div id="legend" class="legend"></div>
@@ -253,6 +281,8 @@ if (window.location.protocol === 'file:') {
           Jump to selected gene detail
         </button>
       </div>
+      <div id="length-view" role="tabpanel" aria-labelledby="panel-tab-lengths" hidden></div>
+      <div id="regulatory-view" role="tabpanel" aria-labelledby="panel-tab-regulatory" hidden></div>
       <div id="citations-view" role="tabpanel" aria-labelledby="panel-tab-citations" hidden></div>
     </section>
 
@@ -289,6 +319,10 @@ if (window.location.protocol === 'file:') {
       </details>
     </section>
   </div>
+
+  <div id="resize-detail" class="resize-handle resize-handle-right" role="separator"
+       tabindex="0" aria-orientation="vertical" aria-label="Resize map and gene detail"
+       aria-controls="analysis-column detail" hidden><span class="resize-grip" aria-hidden="true"></span></div>
 
   <aside class="column detail card" aria-label="Gene detail" id="detail" tabindex="0"
          aria-describedby="detail-scroll-hint"></aside>

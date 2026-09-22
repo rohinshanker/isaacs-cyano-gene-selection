@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  encodeState, decodeState, applyDecoded, defaultState, STATE_VERSION,
+  encodeState, decodeState, applyDecoded, defaultState, clearSelections, STATE_VERSION,
 } from '../../site/js/core/url-state.js';
 
 const full = {
@@ -47,6 +47,36 @@ test('dropping unmeasured genes survives a shared link', () => {
   assert.equal(decodeState(hash).filters.cai.includeMissing, false);
 });
 
+test('length and protein-record choices survive a shared link', () => {
+  const chosen = {
+    ...defaultState(),
+    panel: 'lengths',
+    lengthCohort: 'refseq',
+    proteinFilter: 'refseq',
+    filters: { lengthNt: { min: 201, max: 2001, includeMissing: true } },
+  };
+  const restored = decodeState(encodeState(chosen));
+  assert.equal(restored.panel, 'lengths');
+  assert.equal(restored.lengthCohort, 'refseq');
+  assert.equal(restored.proteinFilter, 'refseq');
+  assert.deepEqual(restored.filters.lengthNt, chosen.filters.lengthNt);
+  assert.equal(decodeState('#pr=detected').proteinFilter, undefined);
+});
+
+test('explicit metric axes survive a shared link and reset to their defaults', () => {
+  const state = defaultState();
+  state.panel = 'axes';
+  state.axisX = 'gc3';
+  state.axisY = 'lengthNt';
+  const restored = decodeState(encodeState(state));
+  assert.equal(restored.panel, 'axes');
+  assert.equal(restored.axisX, 'gc3');
+  assert.equal(restored.axisY, 'lengthNt');
+  applyDecoded(state, decodeState(encodeState(defaultState())));
+  assert.equal(state.axisX, 'lengthNt');
+  assert.equal(state.axisY, 'cai');
+});
+
 test('defaults are left out of the hash so a plain view has a plain link', () => {
   const hash = encodeState({
     panel: 'native', colorBy: 'gc3', schemeMap: {}, schemeName: '', highExpressed: false,
@@ -61,6 +91,20 @@ test('an explicitly empty shortlist round-trips as empty, not as absent', () => 
   const decoded = decodeState(hash);
   assert.ok('shortlist' in decoded, 'the shortlist key must survive even when the list is empty');
   assert.deepEqual(decoded.shortlist, []);
+});
+
+test('reset selections clears pin and shortlist without changing the analysis', () => {
+  const state = structuredClone(full);
+  clearSelections(state);
+  assert.equal(state.pinnedId, null);
+  assert.deepEqual(state.shortlist, []);
+  assert.deepEqual(state.schemeMap, full.schemeMap);
+  assert.deepEqual(state.filters, full.filters);
+  assert.equal(state.panel, full.panel);
+  assert.equal(state.colorBy, full.colorBy);
+  const hash = encodeState(state);
+  assert.match(hash, /(?:^|&)l=(?:&|$)/);
+  assert.ok(!hash.includes('&g='));
 });
 
 test('an empty or malformed hash decodes to an empty patch, with no shortlist key at all', () => {

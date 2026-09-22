@@ -1,0 +1,52 @@
+# Current design answers for the lab feedback
+
+- Purpose: Answer the lab's design questions from the current, cited code and release records.
+- Scope: The UTEX 2973 site as checked against this repository on 2026-09-22.
+- Last verified: 2026-09-22
+- Genome: *Synechococcus elongatus* UTEX 2973 RefSeq assembly `GCF_000817325.1`; annotation release `GCF_000817325.1-RS_2026_05_13`.
+
+## Which records are on the map, and do they lead to recorded proteins?
+
+The plotted set is **2,715 screened protein-coding CDSs**, not every annotated gene or RNA. The pipeline starts from 2,722 CDS sequences and excludes seven pseudogenes or invalid coding records using the rules in [the data contract](data-contract.md). The 2,715 CDSs correspond to **2,711 unique RefSeq protein FASTA records**, because four protein accessions each occur at two loci. The [protein identity audit](protein-evidence.md) verifies the CDS translations against those records. A protein accession is evidence of an annotation/sequence record; it is not proof of protein detection in a UTEX 2973 experiment. The deposited proteomics materials do not support an admitted per-locus detection list, so that evidence remains unknown. The length explorer offers RefSeq record evidence separately and shows direct UTEX 2973 detection as unavailable with the reason. [Genome provenance](genome-provenance.md) explains the counts, and the [annotation runbook](annotation-release-readiness.md) describes exact protein and PCC 7942 cross-references.
+
+The coding sequence is the sum of its CDS segments, including its terminal stop. A joined gene such as `prfB` is therefore shorter than the span from its first to last genomic coordinate. In the current plotted data, the shortest CDS is **75 nt** and one is exactly 75 nt; there are none below 75 nt. This observation does not validate every short annotation. The length view flags CDSs strictly below 75 nt for annotation review without excluding them.
+
+## Can I filter a length interval now?
+
+Yes. In **Filters → Add filter**, choose **Size → CDS length**, select **Add**, then set the inclusive minimum and maximum to, for example, **201** and **2001 nt**. This uses `lengthNt`, including the stop. Each numeric filter has a small histogram. The separate **Lengths** tab compares all 2,776 annotated gene/pseudogene features, the 2,715 plotted CDSs, and RefSeq protein-record loci. Direct proteomics detection appears as unavailable because an accepted per-locus list is missing. Switching the chart cohort does not change the map population or refit its coordinates. [Length cohort definitions](length-cohorts.md) distinguish gene span from joined CDS length.
+
+## What do “rare codon,” CAI, and tAI mean here?
+
+| Feature | Current convention | Important limit |
+| --- | --- | --- |
+| Rare codon | A sense codon whose frequency **within its amino-acid synonym family** across all included UTEX 2973 CDSs is below **0.1**. The pipeline counts its fraction, total, longest consecutive run, and count in the first 50 sense codons. | This is a genome-wide usage rule, not a measured translation-speed threshold. |
+| CAI | Sharp–Li relative adaptiveness from a fixed **71-locus** ribosomal/housekeeping product-name reference. A zero-count synonym gets a 0.5 count; the gene score is a geometric mean excluding Met and Trp. | The reference is a reproducible convention, **not measured high expression**. The 71-locus set is frozen for this release; a blinded semantic audit identified ten plausible additions for future biological review. |
+| tAI | dos Reis-style adaptiveness calculated from the annotated **genomic tRNA gene copies** and bacterial wobble penalties. The gene score is a geometric mean excluding Met. A codon with zero modeled supply receives the geometric mean of nonzero weights. The `Ile-CAT` lysidine and inosine conventions are explicit. | Copy count is **not tRNA abundance, expression, charging, or direct decoding measurement**. The zero-weight substitution is a model convention. |
+
+The calculations live in [feature_metrics.py](../../scripts/feature_metrics.py) and [build_features.py](../../scripts/build_features.py). [CAI reference audit](cai-reference-set.md) explains reference selection and its limitations; [metric parity](metric-convention-parity.md) records the browser and pipeline conventions. tRNA anticodons come from coordinates in the pinned RefSeq GFF and match both [the 44-gene table](../../data/trna/anticodon_gene_copies.tsv) and a [pinned tRNAscan-SE rerun](trna-annotation-validation.md). The rerun supports computational plausibility; it does not measure tRNA expression or charging. The selected-colour disclosure gives a short explanation, calculation details, source, and relevant method citations; it stays open as the colour changes. See [the metric explanation contract](metric-explanations.md).
+
+## How was native codon space projected, and could gene length affect it?
+
+Native space is PCA of **59 RSCU values per gene**, not percent of each codon among all codons. For each amino acid, RSCU is `count(codon) × number of synonyms / total count of that amino acid`; a completely absent amino-acid family contributes zeros. Met and Trp are omitted. Each RSCU column is standardized across the 2,715 genes before fitting six PCs; the map uses PC1 and PC2. See [rscu()](../../scripts/feature_metrics.py), [the PCA build](../../scripts/build_features.py), and [the projection reader](../../site/js/ui/panels.js).
+
+This normalization removes overall codon count as a direct input, but it does **not** remove sampling noise. A short CDS has fewer observations and is more likely to have zero counts, including absent amino-acid families. The [length-sensitivity audit](pca-length-sensitivity.md) finds a modest PC2 association with length and sparsity; within-gene downsampling explains part of the short-versus-long shift, not all of it. The published PCA stays fixed when filters change. The scheme-specific risk and perturbation maps use standardized feature matrices computed in the browser; the baseline risk UMAP uses a separate precomputed risk feature set. [Panel definitions](../../site/js/ui/panels.js) name their included fields. **Metric X vs Y** is a separate plot tab with CDS length versus CAI as its default axes, using [direct numeric coordinates](explicit-metric-axes.md).
+
+## Why does `kaiA` show a product instead of a gene symbol?
+
+The current record for `M744_RS10050` has `name: null` but `product: circadian clock protein KaiA`. The next two clock records have names `kaiB` and `kaiC`. The pipeline reads `gene` and `product` as separate fields from the pinned RefSeq GFF. The interface now shows the annotated product beside KaiA's locus tag and in descriptions on hover and keyboard focus in detail, search, shortlist, and plot views. A product mentioning KaiA does not establish a `gene=kaiA` qualifier in this release, so the UI labels it as a product rather than inventing a symbol. See [GFF parsing](../../scripts/build_features.py), [gene identity](../../site/js/core/gene-identity.js), and [identifier crosswalk rules](annotation-release-readiness.md).
+
+## What function evidence and search are already available?
+
+Search covers exact/partial locus tags, gene names, products, curated aliases, approved function-category labels, and GO terms clearly labelled as computational suggestions. The pinned NCBI GAF contains **3,898 GO relationships over 1,584 loci**; all current rows are `IEA` (electronic inference). They remain evidence-coded in a collapsed gene-detail section. **Function category** colour uses only the 13 exact locus-to-category rows the user approved; 2,703 CDSs remain unknown/unclassified. Multiple reviewed functions have a separate bucket, although none of the current approved rows has more than one. IEA GO does not assign category colour or assert pathway membership. See [the category contract](function-categories.md) and [annotation runbook](annotation-release-readiness.md). The current site is a pregenerated, static UTEX 2973 dataset; an arbitrary GenBank accession mode would need a separate acquisition and feature-availability design. [Search code](../../site/js/core/gene-search.js) documents the search scope.
+
+## How do Pin, Shortlist, and the two Reset actions work?
+
+Pinning selects one `pinnedId`; the map also has separate transient hover and keyboard previews. Clicking an already pinned map point unpins it. Search rows toggle Pin/Unpin and Shortlist/Remove, and the detail panel has an Unpin icon beside Pinned. **Reset view** resets canvas zoom and pan only. **Reset selections** clears the pin and candidate shortlist while retaining filters, the recoding scheme, and map camera. See [app wiring](../../site/js/app.js) and [interaction state](viewer-interaction-state.md).
+
+## What was drawn from the three cited papers?
+
+- [Ungerer et al. 2018](https://doi.org/10.1073/pnas.1814912115) compares UTEX 2973 and PCC 7942 and reports tested `atpA`, `ppnK`, and `rpaA` alleles with growth and biochemical phenotypes. The [protein evidence release](protein-evidence.md) records those three as tested-allele evidence; it does not generalize their effects to other loci or conditions.
+- [Rubin et al. 2015](https://doi.org/10.1073/pnas.1519220112) reports PCC 7942 transposon-screen essentiality, including 718 essential genes under its laboratory conditions. Import requires reuse-term review and a strain-labelled, ambiguity-preserving crosswalk. It cannot directly label UTEX 2973 recoding outcomes.
+- [Tan et al. 2018](https://doi.org/10.1186/s13068-018-1215-8) reports 4,808 UTEX 2973 TSSs across control, dark, high-light, and high-temperature conditions. Gene-linked Table S1 TSS counts and differential comparisons appear as transcription-initiation evidence. A separate regulatory-sites tab makes 2,333 non-gTSS rows searchable by site ID and coordinate, including antisense, internal, and orphan/novel sites; potential antisense targets retain source cautions. These features have no PCA coordinates. Filtered CDS points with map coordinates are dimmed and retain an outline. TSS signal is not gene-body RNA or protein abundance. See [Tan provenance](../../data/expression/TAN2018_TSS_PROVENANCE.md) and [interaction behavior](viewer-interaction-state.md).
+
+For scientific questions to discuss before an experiment, use [biological decisions for lab review](biological-decisions-to-review.md). For the exact panel and release gates, use the [manual review checklist](manual-review-checklist.md).

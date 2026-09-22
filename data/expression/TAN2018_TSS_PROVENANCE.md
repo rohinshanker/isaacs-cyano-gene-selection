@@ -106,6 +106,75 @@ the mapped gTSS rows end in `.5`. The site preserves these published fractional
 values rather than rounding them to whole reads; the publisher does not explain
 their origin in Table S1, so no allocation mechanism is assumed.
 
+## Non-gTSS regulatory evidence
+
+`tan2018_utex2973_regulatory_tss_table_s1.tsv` is a separate extraction of all
+2,333 non-gTSS rows in the same pinned Table S1 workbook: 1,380 antisense TSS
+(`aTSS`), 724 internal TSS (`iTSS`), and 229 orphan/novel TSS (`nTSS`). It does
+not duplicate any of the 2,475 gTSS rows. Each row retains the published
+coordinate, strand, type, source locus association, eight raw replicate counts,
+and the authors' three differential-statistic pairs. Blank source values and
+blank differential results remain blank; they are not imputed or converted to
+zero. The derived TSV has SHA-256
+`98a19729bf47940bf6832e3f08c3548fc4ddc7bb866176ab70e9c92c7c8d3dbe`.
+
+The mapping fields are an exact identifier join against the 2,715 CDS records in
+the current `site/data/genes.json`; gene symbols, descriptions, coordinates, and
+nearest-gene prose are never used to infer a match. All source rows remain in the
+table, including failures:
+
+| Mapping reason | Rows |
+| --- | ---: |
+| `exact_current_locus_id` | 2,068 |
+| `source_locus_missing` | 180 |
+| `source_locus_absent_from_current_cds` | 79 |
+| `source_locus_not_current_id` | 6 |
+
+Regenerate after obtaining the pinned workbook (the workbook itself remains
+untracked):
+
+```sh
+python3 scripts/prepare_tan2018_regulatory.py \
+  MOESM1.xlsx site/data/genes.json \
+  data/expression/tan2018_utex2973_regulatory_tss_table_s1.tsv
+python3 -m pytest tests/test_tan2018_regulatory.py
+```
+
+The browser's separate regulatory-sites view reads `site/data/regulatory_tss.json`.
+It is a lossless JSON copy of this TSV's string fields, with source conditions
+and checksums attached. Run `python3 tools/regulatory_tss.py write` after
+regenerating the TSV; CI runs the corresponding `check` mode.
+
+Table S8 in the same checked workbook lists 101 condition-specific antisense
+site/potential-target pairs (77 dark, 21 high light, 3 high temperature) across
+96 aTSS IDs. `tan2018_utex2973_asrna_potential_targets_table_s8.tsv` retains
+the source TSS and target identifiers, strand, coordinates, author-provided
+symbol/product, both reported log2 fold changes, and each comparison's
+selection threshold. Its SHA-256 is
+`0aa810d75f1e92200044ac445a7ba4ee90652a9d82d575040a803c9d66607a69`.
+Regenerate with
+`python3 scripts/prepare_tan2018_asrna_targets.py MOESM1.xlsx data/expression/tan2018_utex2973_regulatory_tss_table_s1.tsv data/expression/tan2018_utex2973_asrna_potential_targets_table_s8.tsv`.
+The browser labels each as a **potential** target selected from opposite
+transcript changes; no direct regulatory effect or current gene identity is
+inferred from the author-era symbol or product.
+Table S8 used opposite-sign aTSS and gTSS changes with magnitude at least
+1.5 log2FC for dark and high light, but at least 1.0 for high temperature.
+
+The source workbook contains a conflict at coordinate 320358. For
+`aTSS-320358` under dark versus control, Table S1 reports log2FC
+`8.61934317511037` while Table S8 reports `-4.78047469754605`; its Table S8
+potential-target claim depends on the latter. The Table S8 value also equals
+Table S1's value for opposite-strand `iTSS+320358`, whose raw counts rise from
+control (0, 9) to dark (420, 422) despite its reported negative log2FC. This
+pattern suggests an annotation or value swap, but that is an inference rather
+than a source correction. Both sites receive a warning; all published values
+remain intact and no gene-level effect is inferred. `tools/regulatory_tss.py`
+pins the exact cross-table disagreement and both source cautions.
+
+This is feature-level regulatory evidence, not a gene-level regulation call.
+Multiple features may associate with one locus, and an association does not
+justify collapsing counts or differential statistics across features.
+
 ## How it should be presented
 
 As its own labelled axis, named for what it is, alongside rather than merged with the

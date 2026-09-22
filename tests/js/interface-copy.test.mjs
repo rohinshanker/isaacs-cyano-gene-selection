@@ -31,6 +31,7 @@ test('clear all filters resets numeric and categorical channels together', () =>
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,
+    proteinFilter: 'any',
   });
 });
 

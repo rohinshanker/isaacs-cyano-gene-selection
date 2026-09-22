@@ -7,7 +7,7 @@ const app = await readFile(new URL('../../site/js/app.js', import.meta.url), 'ut
 const css = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 
 test('analysis panels keep a logical source order inside one center column', () => {
-  const analysisStart = html.indexOf('<div class="column analysis">');
+  const analysisStart = html.search(/<div\b[^>]*class="column analysis"[^>]*>/);
   const map = html.indexOf('id="map-section"', analysisStart);
   const comparison = html.indexOf('id="compare-section"', map);
   const designer = html.indexOf('id="panel-section"', comparison);

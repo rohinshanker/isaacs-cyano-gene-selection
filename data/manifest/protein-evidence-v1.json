@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "GCF_000817325.1-RS_2026_05_13-protein-evidence-v1",
+  "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+  "retrievedDate": "2026-09-21",
+  "sources": [
+    {
+      "id": "utex2973-refseq-proteins",
+      "source": "NCBI RefSeq",
+      "organism": "Synechococcus elongatus UTEX 2973",
+      "assemblyAccession": "GCF_000817325.1",
+      "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+      "method": "Exact protein_id join plus independent translation of the complete spliced CDS with bacterial translation table 11",
+      "criteria": "One terminal stop, no internal stop, and exact amino-acid equality among computed CDS translation, translated_cds.faa, and protein.faa",
+      "licence": "NCBI data usage policies; no dataset-specific licence asserted",
+      "ambiguity": "A protein_id may serve more than one locus; every locus is retained and marked shared_protein_id",
+      "missingness": "A missing protein record or discordant translation fails the build; absence is never imputed",
+      "files": [
+        {
+          "role": "refseq-cds-nucleotide",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_cds_from_genomic.fna.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_cds_from_genomic.fna.gz",
+          "byteSize": 872748,
+          "sha256": "5927cc5ee2bb36ad8ab107c000ee5d7f62f1d0843b5d416de7a2f3e4b01b7729",
+          "retention": "gitignored build input",
+          "redistribution": "not redistributed in git"
+        },
+        {
+          "role": "refseq-translated-cds",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_translated_cds.faa.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_translated_cds.faa.gz",
+          "byteSize": 616206,
+          "sha256": "f6af136ac3a05801d28d1b010fdae2246a12bcaa3fc6805505deceda2023834e",
+          "retention": "gitignored build input",
+          "redistribution": "not redistributed in git"
+        },
+        {
+          "role": "refseq-protein-fasta",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_protein.faa.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_protein.faa.gz",
+          "byteSize": 534154,
+          "sha256": "06dc7a73471db720f2fabf80a4d37ca9242342d1e1bda2309e4fc7bf68cc249f",
+          "retention": "gitignored build input",
+          "redistribution": "not redistributed in git"
+        },
+        {
+          "role": "refseq-genomic-gff",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+          "byteSize": 240383,
+          "sha256": "7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f",
+          "retention": "gitignored build input",
+          "redistribution": "not redistributed in git"
+        }
+      ]
+    },
+    {
+      "id": "pass00399",
+      "source": "PeptideAtlas PASS00399",
+      "officialUrl": "https://peptideatlas.org/PASS/PASS00399",
+      "publicReleaseDate": "2014-04-01",
+      "finalizedDate": "2014-09-15",
+      "organisms": [
+        "Synechococcus elongatus UTEX 2973",
+        "Synechococcus elongatus PCC 7942"
+      ],
+      "method": "24 high-pH fractions per strain measured by LC-MS/MS on a Thermo Scientific LTQ; the paper reports MSGF+ search and ~0.1% unique-peptide FDR",
+      "condition": "The deposit's growth and treatment fields are blank. The paper's general maintenance condition was BG11 at 38 C under continuous 70 micromol photons m^-2 s^-1 white light; it does not identify a more specific proteomics harvest condition.",
+      "criteria": "Per-locus direct detection requires an accepted peptide/protein identification table reproducing the paper's MSGF+ FDR gate and a sequence-unambiguous join",
+      "licence": "PeptideAtlas states public-download and citation policy but does not state an explicit data licence on the dataset or repository page",
+      "reuse": "Cite Yu et al. 2015 and acknowledge PeptideAtlas; source bytes are not redistributed by this repository",
+      "ambiguity": "The two strains are 99.8% identical; the paper says most detected peptides are indistinguishable between them. Four current RefSeq protein IDs also each serve two UTEX loci.",
+      "missingness": "The deposit exposes raw spectra, a historical search FASTA, raw unfiltered SEQUEST hit tables, job metadata, and sample metadata, but no accepted MSGF+ peptide/protein result table. Therefore experimentally_detected is unknown for every current locus.",
+      "integrity": "The public dataset page and file listing were reached over verified HTTPS, but the listed files were available only through FTPS with a certificate hostname mismatch. No upstream checksum was published. Locally computed SHA-256 values detect drift in the inspected copies but do not prove source authenticity.",
+      "admission": "Neither the inspected search-FASTA observations nor per-locus experimental detection are admitted because the source bytes lack a verified transport or upstream checksum and no accepted MSGF+ result table is deposited.",
+      "files": [
+        {
+          "role": "pass00399-description",
+          "localPath": "data/protein-evidence/source/pass00399/PASS00399_DESCRIPTION.txt",
+          "remotePath": "/PASS00399_DESCRIPTION.txt",
+          "byteSize": 643,
+          "sha256": "91cd9f12d4e4eadd5a3f925684aaf1cf04866f5e7a29cd9309e592dd88710ee2",
+          "checksumAuthority": "locally computed after unverified FTPS transport; drift check only",
+          "retention": "gitignored audit input",
+          "redistribution": "not redistributed; no explicit dataset licence found"
+        },
+        {
+          "role": "pass00399-job-metadata",
+          "localPath": "data/protein-evidence/source/pass00399/SEQUEST_Results_metadata.txt",
+          "remotePath": "/SEQUEST_Results/SEQUEST_Results_metadata.txt",
+          "byteSize": 24288,
+          "sha256": "2e45f336c6d207e8db5c9318b3fa0dbe4d52edb6aa3a457489994de0ce86e0d8",
+          "checksumAuthority": "locally computed after unverified FTPS transport; drift check only",
+          "retention": "gitignored audit input",
+          "redistribution": "not redistributed; no explicit dataset licence found"
+        },
+        {
+          "role": "pass00399-search-fasta",
+          "localPath": "data/protein-evidence/source/pass00399/Synechococcus_UTEX_2973_Yu_NCBI_2012-02-21_Tryp_Pig_Bov.fasta",
+          "remotePath": "/Organism_Database/Synechococcus_UTEX_2973_Yu_NCBI_2012-02-21_Tryp_Pig_Bov.fasta",
+          "byteSize": 1065638,
+          "sha256": "1fe88256d1793e98a5858139be96ad4796cc78dc01c4eee18d58b65dab5bb64f",
+          "checksumAuthority": "locally computed after unverified FTPS transport; drift check only",
+          "retention": "gitignored audit input",
+          "redistribution": "not redistributed; no explicit dataset licence found"
+        },
+        {
+          "role": "pass00399-sample-metadata",
+          "localPath": "data/protein-evidence/source/pass00399/UTEX2973_PCC7942_metadata.xlsx",
+          "remotePath": "/UTEX2973_PCC7942_metadata.xlsx",
+          "byteSize": 15498,
+          "sha256": "8ef69c66db5313998c13eedd54d3fbcc53a8d941d78f83db99b64c8cd037553c",
+          "checksumAuthority": "locally computed after unverified FTPS transport; drift check only",
+          "retention": "gitignored audit input",
+          "redistribution": "not redistributed; no explicit dataset licence found"
+        }
+      ]
+    },
+    {
+      "id": "ungerer-2018",
+      "source": "Ungerer et al. 2018 comparative genomics",
+      "doi": "10.1073/pnas.1814912115",
+      "pmid": "30409802",
+      "method": "Markerless conversion of individual UTEX 2973 variants to PCC 7942 alleles, reciprocal engineering of the supported UTEX alleles into PCC 7942, growth phenotyping, and biochemical characterization for AtpA and PpnK",
+      "condition": "Growth phenotyping only: BG11 at 38 C, 900 micromol photons m^-2 s^-1 and 5% CO2 after 24 h bioreactor adaptation. AtpA and PpnK activity measurements used separate in-vitro assays.",
+      "criteria": "Admit only old-locus-tag cross-references preserved by the pinned RefSeq GFF and only the three alleles experimentally supported by the paper",
+      "licence": "Publisher article and supplement terms; no source bytes redistributed here",
+      "ambiguity": "Evidence concerns specific UTEX 2973 alleles and growth conditions, not generic product-name transfer or all homologs",
+      "missingness": "All loci not explicitly tested remain unknown for tested-variant evidence; no general characterized-homolog field is inferred",
+      "admission": "Three sequence-addressed locus relationships are admitted as tested_variant_evidence; characterized_homolog remains unknown",
+      "files": [],
+      "testedVariants": [
+        {
+          "evidenceId": "ungerer2018-atpA-utex2973-allele",
+          "oldLocusTag": "M744_01335",
+          "currentLocusTag": "M744_RS01270",
+          "proteinId": "WP_011243489.1",
+          "gene": "atpA",
+          "claim": "The UTEX 2973 AtpA allele was linked to faster growth in the study's growth assay and higher ATP synthase specific activity in a separate membrane assay."
+        },
+        {
+          "evidenceId": "ungerer2018-rpaA-utex2973-allele",
+          "oldLocusTag": "M744_02605",
+          "currentLocusTag": "M744_RS02500",
+          "proteinId": "WP_039755507.1",
+          "gene": "rpaA",
+          "claim": "The paired coding variants plus promoter deletion in the UTEX 2973 rpaA allele were required together for the reported growth effect."
+        },
+        {
+          "evidenceId": "ungerer2018-ppnK-utex2973-allele",
+          "oldLocusTag": "M744_04780",
+          "currentLocusTag": "M744_RS04595",
+          "proteinId": "WP_011244107.1",
+          "gene": "ppnK",
+          "claim": "The UTEX 2973 PpnK allele was linked to faster growth in the study's growth assay and altered NAD(+)-kinase kinetics in a separate in-vitro assay."
+        }
+      ]
+    }
+  ]
+}

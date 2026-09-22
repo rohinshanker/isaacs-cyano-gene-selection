@@ -7,34 +7,41 @@
  */
 import { searchGenes, SEARCH_RESULT_LIMIT } from '../core/gene-search.js';
 import { formatCount } from './format.js';
+import { createLocusTag } from './locus-tag.js';
+import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
 
 /** A repeated blur/change event must not replace a result while it is being clicked. */
 export function shouldRenderSearch(currentQuery, nextQuery, currentResult) {
   return currentQuery !== nextQuery || currentResult === undefined;
 }
 
-/** Keep keyboard focus in the result row when the activated button becomes disabled. */
-export function focusActionAfterRefresh(action, actionDisabled) {
-  return actionDisabled ? 'pin' : action;
+/** Labels for the two independently reversible actions in a search result. */
+export function searchActionState(pinned, shortlisted) {
+  return {
+    pin: pinned ? 'Unpin' : 'Pin',
+    shortlist: shortlisted ? 'Remove' : 'Shortlist',
+  };
 }
 
 export class GeneSearchResults {
   /**
    * @param {HTMLElement} host
    * @param {{onPin: (index: number) => void, onShortlist: (index: number) => void,
-   *   isShortlisted: (id: string) => boolean}} handlers
+   *   isShortlisted: (id: string) => boolean, isPinned: (id: string) => boolean}} handlers
    */
   constructor(host, handlers) {
     this.host = host;
     this.handlers = handlers;
     this.genes = [];
+    this.goTerms = null;
     this.query = '';
     this.host.hidden = true;
   }
 
   /** @param {Array<object>} genes the dataset's genes, searched in place. */
-  setGenes(genes) {
+  setGenes(genes, goTerms = null) {
     this.genes = genes;
+    this.goTerms = goTerms;
   }
 
   /** Run a query and render it. An empty query clears the list. */
@@ -45,7 +52,7 @@ export class GeneSearchResults {
     return this.result;
   }
 
-  /** Re-render the current query, so shortlist buttons reflect the live state. */
+  /** Re-render the current query while keeping focus on the same row action. */
   refresh() {
     if (!this.query) return;
     const active = document.activeElement;
@@ -54,14 +61,9 @@ export class GeneSearchResults {
       : null;
     this.render();
     if (!focus?.geneId || !focus.action) return;
-    const sameAction = [...this.host.querySelectorAll('[data-search-action]')]
-      .find((button) => button.dataset.geneId === focus.geneId
-        && button.dataset.searchAction === focus.action);
-    const targetAction = focusActionAfterRefresh(focus.action, sameAction?.disabled ?? true);
     const target = [...this.host.querySelectorAll('[data-search-action]')]
       .find((button) => button.dataset.geneId === focus.geneId
-        && button.dataset.searchAction === targetAction
-        && !button.disabled);
+        && button.dataset.searchAction === focus.action);
     target?.focus();
   }
 
@@ -74,16 +76,18 @@ export class GeneSearchResults {
       return;
     }
     host.hidden = false;
-    const result = searchGenes(this.genes, this.query, { limit: SEARCH_RESULT_LIMIT });
+    const result = searchGenes(this.genes, this.query, {
+      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms,
+    });
     this.result = result;
 
     const status = document.createElement('p');
     status.className = 'search-status';
     if (result.total === 0) {
       // Never a silent empty state: say what was searched and what to try.
-      status.textContent = `Nothing matches “${this.query.trim()}”. Searching covers the locus `
-        + 'tag, the gene name, and the product description. Try a shorter word, or the '
-        + 'name the annotation uses.';
+      status.textContent = `Nothing matches “${this.query.trim()}”. Search covers locus `
+        + 'tags, gene names, product descriptions, reviewed categories, GO IDs and GO term names. Try a shorter '
+        + 'word or the name the annotation uses.';
       host.append(status);
       return;
     }
@@ -99,6 +103,13 @@ export class GeneSearchResults {
       note.className = 'search-alias-note';
       note.textContent = `Also searched for the wording this genome's annotation uses for `
         + `${result.aliasesUsed.join(', ')}.`;
+      host.append(note);
+    }
+    if (result.shown.some((hit) => hit.goMatch)) {
+      const note = document.createElement('p');
+      note.className = 'search-alias-note';
+      note.textContent = 'GO matches are RefSeq IEA computational suggestions, not tested '
+        + 'UTEX 2973 functions. Review their evidence before selecting a candidate.';
       host.append(note);
     }
 
@@ -120,6 +131,7 @@ export class GeneSearchResults {
 
   renderRow(hit) {
     const { gene, index } = hit;
+    const geneName = geneIdentity(gene);
     const item = document.createElement('li');
     item.className = 'search-result';
 
@@ -127,13 +139,13 @@ export class GeneSearchResults {
     text.className = 'search-result-text';
     const heading = document.createElement('p');
     heading.className = 'search-result-name';
-    const tag = document.createElement('span');
-    tag.className = 'locus-tag';
-    tag.textContent = gene.id;
+    const tag = createLocusTag(gene);
+    tag.dataset.geneId = gene.id;
+    tag.dataset.searchAction = 'identity';
     heading.append(tag);
-    if (gene.name) {
+    if (geneName?.kind === 'Gene symbol') {
       const name = document.createElement('b');
-      name.textContent = ` ${gene.name}`;
+      name.textContent = ` ${geneName.text}`;
       heading.append(name);
     }
     const matched = document.createElement('span');
@@ -146,29 +158,50 @@ export class GeneSearchResults {
     product.className = 'search-result-product';
     product.textContent = gene.product ?? 'no product description';
     text.append(heading, product);
+    if (hit.goMatch) {
+      const go = document.createElement('p');
+      go.className = 'search-result-product';
+      const term = hit.goMatch.name ? ` — ${hit.goMatch.name}` : '';
+      const ambiguity = hit.goMatch.mappingAmbiguity ? '; mapping ambiguous' : '';
+      const obsolete = hit.goMatch.isObsolete ? '; obsolete GO ID in the pinned name release' : '';
+      go.textContent = `${hit.goMatch.id}${term} (`
+        + `${hit.goMatch.evidenceCode} computational suggestion${ambiguity}${obsolete})`;
+      text.append(go);
+    }
+    if (hit.categoryMatch) {
+      const category = document.createElement('p');
+      category.className = 'search-result-product';
+      category.textContent = `Lab-reviewed category: ${hit.categoryMatch}`;
+      text.append(category);
+    }
 
     const actions = document.createElement('div');
     actions.className = 'search-result-actions';
     const pin = document.createElement('button');
     pin.type = 'button';
-    pin.className = 'chip-button';
+    const pinned = this.handlers.isPinned(gene.id);
+    const shortlisted = this.handlers.isShortlisted(gene.id);
+    const labels = searchActionState(pinned, shortlisted);
+    const identity = geneIdentityDescription(gene);
+    pin.className = pinned ? 'chip-button active' : 'chip-button';
     pin.dataset.geneId = gene.id;
     pin.dataset.searchAction = 'pin';
-    pin.textContent = 'Pin';
-    pin.setAttribute('aria-label', `Pin ${gene.id} in the gene panel`);
+    pin.textContent = labels.pin;
+    pin.setAttribute('aria-pressed', String(pinned));
+    pin.setAttribute('aria-label',
+      `${labels.pin} ${gene.id} ${pinned ? 'from' : 'in'} the gene panel. ${identity}`);
     pin.addEventListener('click', () => this.handlers.onPin(index));
 
-    const shortlisted = this.handlers.isShortlisted(gene.id);
     const add = document.createElement('button');
     add.type = 'button';
-    add.className = 'chip-button';
+    add.className = shortlisted ? 'chip-button active' : 'chip-button';
     add.dataset.geneId = gene.id;
     add.dataset.searchAction = 'shortlist';
-    add.textContent = shortlisted ? 'Shortlisted' : 'Shortlist';
-    add.disabled = shortlisted;
+    add.textContent = labels.shortlist;
+    add.setAttribute('aria-pressed', String(shortlisted));
     add.setAttribute('aria-label', shortlisted
-      ? `${gene.id} is already on the shortlist`
-      : `Add ${gene.id} to the shortlist`);
+      ? `Remove ${gene.id} from the shortlist. ${identity}`
+      : `Add ${gene.id} to the shortlist. ${identity}`);
     add.addEventListener('click', () => this.handlers.onShortlist(index));
 
     actions.append(pin, add);

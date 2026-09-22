@@ -8,7 +8,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  findNeighbor, clampZoom, projectionCanZoom, enterTarget, shortlistTarget, MIN_ZOOM, MAX_ZOOM,
+  findNeighbor, clampZoom, projectionCanZoom, enterTarget, togglePinTarget, shortlistTarget,
+  MIN_ZOOM, MAX_ZOOM,
 } from '../../site/js/ui/scatter.js';
 
 // Four points around the origin: right, left, up, down, one screen unit apart.
@@ -47,6 +48,12 @@ test('a point with a non-finite coordinate is never a neighbor', () => {
   assert.equal(findNeighbor(withGap, null, identity, 0, 'right'), 2);
 });
 
+test('keyboard navigation measures distance after independent axis scaling', () => {
+  const points = { x: Float64Array.from([0, 1, 0.2]), y: Float64Array.from([0, 0.1, 10]) };
+  const stretched = { kx: 100, ky: 100, cx: 0, cy: 0, ox: 0, oy: 0 };
+  assert.equal(findNeighbor(points, null, stretched, 0, 'right'), 1);
+});
+
 test('zoom is clamped to the range the plot can render', () => {
   assert.equal(clampZoom(MIN_ZOOM / 10), MIN_ZOOM);
   assert.equal(clampZoom(MAX_ZOOM * 10), MAX_ZOOM);
@@ -63,6 +70,12 @@ test('an unavailable projection cannot enter the zoom path', () => {
 test('Enter only ever pins the explicitly active gene, never the pinned one by default', () => {
   assert.equal(enterTarget(-1), -1);
   assert.equal(enterTarget(3), 3);
+});
+
+test('clicking the pinned point clears it while clicking another point moves the pin', () => {
+  assert.equal(togglePinTarget(3, -1), 3);
+  assert.equal(togglePinTarget(3, 3), -1);
+  assert.equal(togglePinTarget(4, 3), 4);
 });
 
 test('S targets the active gene when there is one, else falls back to pinned', () => {

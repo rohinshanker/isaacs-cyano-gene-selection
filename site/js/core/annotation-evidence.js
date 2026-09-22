@@ -13,7 +13,7 @@ const ASPECT_LABELS = Object.freeze({
 });
 
 /** Return a display-ready model, or null for an older dataset without evidence. */
-export function annotationEvidenceModel(gene, meta = {}) {
+export function annotationEvidenceModel(gene, meta = {}, goTerms = null) {
   const evidence = gene?.annotationEvidence;
   if (!evidence || typeof evidence !== 'object') return null;
   const overlaps = Array.isArray(evidence.overlappingCds) ? evidence.overlappingCds : [];
@@ -41,7 +41,10 @@ export function annotationEvidenceModel(gene, meta = {}) {
     go: go.map((entry) => ({
       ...entry,
       aspectLabel: ASPECT_LABELS[entry.aspect] ?? entry.aspect ?? 'aspect not recorded',
-      text: `${entry.goId} · ${entry.qualifier || 'relation not recorded'} · `
+      text: `${entry.goId}${goTerms?.[entry.goId]?.name
+        ? ` — ${goTerms[entry.goId].name}` : ''}`
+        + `${goTerms?.[entry.goId]?.isObsolete ? ' [obsolete ID in pinned GO name release]' : ''}`
+        + ` · ${entry.qualifier || 'relation not recorded'} · `
         + `${ASPECT_LABELS[entry.aspect] ?? entry.aspect ?? 'aspect not recorded'} · `
         + `${entry.evidenceCode || 'evidence not recorded'}`
         + `${entry.reference ? ` · ${entry.reference}` : ''}`

@@ -24,6 +24,16 @@ back to the document. Mouse-wheel and touch scrolling remain usable. On narrow
 screens detail returns to document flow, and a selection-only **Jump to selected
 gene detail** button makes the distant card reachable without changing state.
 
+On desktop, the light grey separator resizes the controls rail with a pointer,
+Arrow Left/Right (16 px), Shift+Arrow (48 px), Home, or End. At 1240 px a second
+separator resizes the detail rail. Each rail stays at least 260 px wide and the
+map column at least 400 px wide. Widths are saved in this browser under
+`cyano.panel-widths.v1`; **Reset panel widths** restores the defaults. The
+length view keeps the left separator only. Regulatory and citations views have
+no side rails or resize controls. Presentation widths stay out of URL and
+scientific exports. The scatter canvas observes its container size and redraws
+after resizing.
+
 The designer, shortlist help, and provenance use native disclosures so support
 content does not dominate the default page. Wide tables, including the opened
 axis-loadings table, scroll inside their own containers. The document itself
@@ -44,7 +54,8 @@ filenames; an open designer with results; and a long selected-gene detail. Verif
   through 1239 px, and disappears when the sticky side rail begins at 1240 px;
 - using either map jump, including while data is still loading, leaves
   `window.location.hash` byte-for-byte unchanged;
-  and
+- both handles respect rail/map minima after drag, keyboard End, reload and
+  viewport changes, and reset restores the default widths; and
 - `document.documentElement.scrollWidth <= innerWidth` in every state.
 
 The static source-order checks live in `tests/js/layout.test.mjs`.

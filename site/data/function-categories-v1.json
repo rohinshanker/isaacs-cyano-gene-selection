@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "function-categories-v1",
+  "organism": {
+    "name": "Synechococcus elongatus UTEX 2973",
+    "taxid": 1350461,
+    "assemblyAccession": "GCF_000817325.1",
+    "assemblyName": "ASM81732v1"
+  },
+  "provenance": {
+    "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+    "annotationDate": "2026-05-13",
+    "pgapVersion": "6.11",
+    "releaseManifest": "data/manifest/annotation-release-v1.json",
+    "releaseManifestRetrievedDate": "2026-09-18",
+    "sourceGenes": "site/data/genes.json",
+    "userReview": {
+      "date": "2026-09-22",
+      "scope": "Exact 13 UTEX 2973 locus-to-category rows and vocabulary"
+    }
+  },
+  "policy": {
+    "assignmentMethod": "explicit-user-review-only",
+    "defaultCategoryId": "unknown-or-unclassified",
+    "missingLocusBehavior": "Every CDS locus absent from assignments is unknown or unclassified.",
+    "prohibitedInference": [
+      "IEA Gene Ontology relationships",
+      "product-name substring matching"
+    ]
+  },
+  "vocabulary": {
+    "categories": [
+      {
+        "id": "photosynthetic-light-reactions",
+        "label": "Photosynthetic light reactions"
+      },
+      {
+        "id": "carbon-and-nutrient-metabolism",
+        "label": "Carbon and nutrient metabolism"
+      },
+      {
+        "id": "atp-production-and-respiration",
+        "label": "ATP production and respiration"
+      },
+      {
+        "id": "pigment-and-cofactor-biosynthesis",
+        "label": "Pigment and cofactor biosynthesis"
+      },
+      {
+        "id": "translation-and-protein-maintenance",
+        "label": "Translation and protein maintenance"
+      },
+      {
+        "id": "dna-and-rna-processing",
+        "label": "DNA and RNA processing"
+      },
+      {
+        "id": "transport-and-envelope",
+        "label": "Transport and envelope"
+      },
+      {
+        "id": "signaling-and-circadian-regulation",
+        "label": "Signaling and circadian regulation"
+      },
+      {
+        "id": "stress-and-repair",
+        "label": "Stress and repair"
+      },
+      {
+        "id": "other-characterized",
+        "label": "Other characterized"
+      },
+      {
+        "id": "unknown-or-unclassified",
+        "label": "Unknown or unclassified"
+      }
+    ],
+    "multipleFunctionsBucket": {
+      "id": "multiple-functions",
+      "label": "Multiple functions",
+      "rule": "Use when an explicitly reviewed locus has two or more categoryIds."
+    }
+  },
+  "coverage": {
+    "totalCdsLoci": 2715,
+    "reviewedRows": 13,
+    "classifiedLoci": 12,
+    "explicitUnknownLoci": 1,
+    "runtimeUnknownLoci": 2703,
+    "multipleFunctionLoci": 0
+  },
+  "assignments": [
+    {
+      "locusTag": "M744_RS00265",
+      "releaseProduct": "photosystem I iron-sulfur center protein PsaC",
+      "releaseSymbol": "psaC",
+      "categoryIds": [
+        "photosynthetic-light-reactions"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS00815",
+      "releaseProduct": "photosystem II q(b) protein",
+      "releaseSymbol": "psbA",
+      "categoryIds": [
+        "photosynthetic-light-reactions"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS13625",
+      "releaseProduct": "photosystem II reaction center protein K",
+      "releaseSymbol": null,
+      "categoryIds": [
+        "photosynthetic-light-reactions"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS10050",
+      "releaseProduct": "circadian clock protein KaiA",
+      "releaseSymbol": null,
+      "categoryIds": [
+        "signaling-and-circadian-regulation"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS10055",
+      "releaseProduct": "circadian clock protein KaiB",
+      "releaseSymbol": "kaiB",
+      "categoryIds": [
+        "signaling-and-circadian-regulation"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS10060",
+      "releaseProduct": "circadian clock protein KaiC",
+      "releaseSymbol": "kaiC",
+      "categoryIds": [
+        "signaling-and-circadian-regulation"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS13070",
+      "releaseProduct": "circadian clock protein LdpA",
+      "releaseSymbol": "ldpA",
+      "categoryIds": [
+        "signaling-and-circadian-regulation"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS00700",
+      "releaseProduct": "30S ribosomal protein S14",
+      "releaseSymbol": "rpsN",
+      "categoryIds": [
+        "translation-and-protein-maintenance"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS01270",
+      "releaseProduct": "F0F1 ATP synthase subunit alpha",
+      "releaseSymbol": "atpA",
+      "categoryIds": [
+        "atp-production-and-respiration"
+      ],
+      "classificationBasis": "explicit-user-review",
+      "supportingEvidence": {
+        "kind": "tested-utex-2973-allele",
+        "sourceId": "ungerer-2018",
+        "doi": "10.1073/pnas.1814912115",
+        "evidenceId": "ungerer2018-atpA-utex2973-allele",
+        "studyGeneSymbol": "atpA",
+        "scope": "Allele- and condition-specific supporting evidence; not a functional-category assay or a transferable category assignment."
+      }
+    },
+    {
+      "locusTag": "M744_RS00020",
+      "releaseProduct": "magnesium chelatase ATPase subunit I",
+      "releaseSymbol": "bchI",
+      "categoryIds": [
+        "pigment-and-cofactor-biosynthesis"
+      ],
+      "classificationBasis": "explicit-user-review"
+    },
+    {
+      "locusTag": "M744_RS04595",
+      "releaseProduct": "NAD(+) kinase",
+      "releaseSymbol": null,
+      "categoryIds": [
+        "pigment-and-cofactor-biosynthesis"
+      ],
+      "classificationBasis": "explicit-user-review",
+      "supportingEvidence": {
+        "kind": "tested-utex-2973-allele",
+        "sourceId": "ungerer-2018",
+        "doi": "10.1073/pnas.1814912115",
+        "evidenceId": "ungerer2018-ppnK-utex2973-allele",
+        "studyGeneSymbol": "ppnK",
+        "scope": "Allele- and condition-specific supporting evidence; not a functional-category assay or a transferable category assignment."
+      }
+    },
+    {
+      "locusTag": "M744_RS02500",
+      "releaseProduct": "response regulator transcription factor",
+      "releaseSymbol": null,
+      "categoryIds": [
+        "signaling-and-circadian-regulation"
+      ],
+      "classificationBasis": "explicit-user-review",
+      "supportingEvidence": {
+        "kind": "tested-utex-2973-allele",
+        "sourceId": "ungerer-2018",
+        "doi": "10.1073/pnas.1814912115",
+        "evidenceId": "ungerer2018-rpaA-utex2973-allele",
+        "studyGeneSymbol": "rpaA",
+        "scope": "Allele- and condition-specific supporting evidence; not a functional-category assay or a transferable category assignment."
+      }
+    },
+    {
+      "locusTag": "M744_RS00030",
+      "releaseProduct": "hypothetical protein",
+      "releaseSymbol": null,
+      "categoryIds": [
+        "unknown-or-unclassified"
+      ],
+      "classificationBasis": "explicit-user-review"
+    }
+  ]
+}
