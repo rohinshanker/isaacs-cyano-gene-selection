@@ -6,7 +6,10 @@
  * rectangles, and hit testing is a linear scan in screen space, which costs
  * microseconds at this size.
  */
-import { CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR, MISSING_COLOR } from './colors.js';
+import {
+  CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR, MISSING_COLOR,
+  PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
+} from './colors.js';
 
 const PADDING = { left: 66, right: 18, top: 18, bottom: 46 };
 export const MIN_ZOOM = 0.4;
@@ -167,6 +170,37 @@ export function tickTarget(pixels, perTick) {
   return Math.max(2, Math.min(6, Math.floor(pixels / perTick)));
 }
 
+/**
+ * Group finite plotted points by marker treatment. In category mode, an
+ * excluded unknown stays distinct from an excluded reviewed category so the
+ * canvas and legend can use different ghost shapes without changing category
+ * filtering or export semantics.
+ */
+export function buildMarkerBuckets(x, y, mask, scale, values) {
+  const lists = scale ? scale.buckets.map(() => []) : [];
+  const missing = [];
+  const hidden = [];
+  const hiddenMissing = [];
+  for (let i = 0; i < x.length; i += 1) {
+    if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
+    const bucket = scale && values ? scale.bucketOf(values[i]) : -1;
+    if (mask && !mask[i]) {
+      if (scale?.categorical && bucket < 0) hiddenMissing.push(i);
+      else hidden.push(i);
+      continue;
+    }
+    if (!scale || !values) continue;
+    if (bucket < 0) missing.push(i);
+    else lists[bucket].push(i);
+  }
+  return {
+    lists: lists.map((list) => Int32Array.from(list)),
+    missing: Int32Array.from(missing),
+    hidden: Int32Array.from(hidden),
+    hiddenMissing: Int32Array.from(hiddenMissing),
+  };
+}
+
 /** Tick positions that land on readable numbers. */
 function niceTicks(low, high, target = 6) {
   if (!Number.isFinite(low) || !Number.isFinite(high) || low === high) return [];
@@ -267,25 +301,7 @@ export class ScatterPlot {
     const { x, y } = this.projection;
     const scale = this.colors?.scale;
     const values = this.colors?.values;
-    const lists = scale ? scale.buckets.map(() => []) : [];
-    const missing = [];
-    const hidden = [];
-    for (let i = 0; i < x.length; i += 1) {
-      if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
-      if (this.mask && !this.mask[i]) {
-        hidden.push(i);
-        continue;
-      }
-      if (!scale || !values) continue;
-      const bucket = scale.bucketOf(values[i]);
-      if (bucket < 0) missing.push(i);
-      else lists[bucket].push(i);
-    }
-    this.buckets = {
-      lists: lists.map((list) => Int32Array.from(list)),
-      missing: Int32Array.from(missing),
-      hidden: Int32Array.from(hidden),
-    };
+    this.buckets = buildMarkerBuckets(x, y, this.mask, scale, values);
     return this.buckets;
   }
 
@@ -618,10 +634,19 @@ export class ScatterPlot {
     const scale = this.colors?.scale;
 
     if (this.showHidden) {
+      const ghostSize = Math.min(5, Math.max(3.5, size * 0.8));
+      context.fillStyle = CATEGORY_UNKNOWN_COLOR;
+      for (let n = 0; n < buckets.hiddenMissing.length; n += 1) {
+        const i = buckets.hiddenMissing[n];
+        context.beginPath();
+        context.arc(
+          ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, ghostSize / 2, 0, Math.PI * 2,
+        );
+        context.fill();
+      }
       context.fillStyle = GHOST_COLOR;
       context.strokeStyle = GHOST_BORDER;
       context.lineWidth = 1;
-      const ghostSize = Math.min(5, Math.max(3.5, size * 0.8));
       for (let n = 0; n < buckets.hidden.length; n += 1) {
         const i = buckets.hidden[n];
         const left = ox + (x[i] - cx) * kx - ghostSize / 2;
@@ -648,32 +673,30 @@ export class ScatterPlot {
       };
       if (scale.categorical) drawMissing();
       const coloredRadius = scale.categorical ? radius + 1.5 : radius;
-      const coloredSize = coloredRadius * 2;
       for (let bucket = 0; bucket < buckets.lists.length; bucket += 1) {
         const list = buckets.lists[bucket];
         if (list.length === 0) continue;
         context.fillStyle = scale.buckets[bucket];
+        context.beginPath();
         for (let n = 0; n < list.length; n += 1) {
           const i = list[n];
-          context.fillRect(
-            ox + (x[i] - cx) * kx - coloredRadius,
-            oy - (y[i] - cy) * ky - coloredRadius, coloredSize, coloredSize,
+          context.moveTo(ox + (x[i] - cx) * kx + coloredRadius, oy - (y[i] - cy) * ky);
+          context.arc(
+            ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, coloredRadius, 0, Math.PI * 2,
           );
-          if (scale.categorical) {
-            context.strokeStyle = '#314254';
-            context.lineWidth = 0.8;
-            context.strokeRect(
-              ox + (x[i] - cx) * kx - coloredRadius,
-              oy - (y[i] - cy) * ky - coloredRadius, coloredSize, coloredSize,
-            );
-          }
+        }
+        context.fill();
+        if (scale.categorical) {
+          context.strokeStyle = REVIEWED_MARKER_BORDER;
+          context.lineWidth = 0.8;
+          context.stroke();
         }
       }
       // Numeric missing values remain open foreground markers.
       if (!scale.categorical) drawMissing();
     }
 
-    context.strokeStyle = '#1b2733';
+    context.strokeStyle = SHORTLIST_COLOR;
     context.lineWidth = 1.6;
     for (const i of this.shortlist) {
       if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
@@ -698,7 +721,7 @@ export class ScatterPlot {
       this.drawFocus(this.active, '#2f6f8f', false);
     }
     if (this.pinned >= 0) {
-      this.drawFocus(this.pinned, '#b3261e', true);
+      this.drawFocus(this.pinned, PINNED_COLOR, true);
     }
     context.restore();
 

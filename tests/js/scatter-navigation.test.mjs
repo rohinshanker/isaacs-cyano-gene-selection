@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   findNeighbor, clampZoom, projectionCanZoom, enterTarget, togglePinTarget, shortlistTarget,
-  formatTick, tickTarget, MIN_ZOOM, MAX_ZOOM,
+  buildMarkerBuckets, formatTick, tickTarget, MIN_ZOOM, MAX_ZOOM,
 } from '../../site/js/ui/scatter.js';
 
 // Four points around the origin: right, left, up, down, one screen unit apart.
@@ -26,6 +26,35 @@ test('with nothing active yet, neighbor finds the first unmasked point', () => {
 test('a mask excludes hidden points from becoming a neighbor', () => {
   const mask = Uint8Array.from([0, 1, 1, 1]);
   assert.equal(findNeighbor(projection, mask, identity, -1, 'right'), 1);
+});
+
+test('category marker buckets split excluded unknowns from excluded reviewed genes', () => {
+  const scale = {
+    categorical: true,
+    buckets: ['#123456'],
+    bucketOf: (value) => value,
+  };
+  const buckets = buildMarkerBuckets(
+    Float64Array.from([1, 2, 3, 4]),
+    Float64Array.from([1, 2, 3, 4]),
+    Uint8Array.from([0, 0, 1, 1]),
+    scale,
+    Int16Array.from([-1, 0, -1, 0]),
+  );
+  assert.deepEqual([...buckets.hiddenMissing], [0]);
+  assert.deepEqual([...buckets.hidden], [1]);
+  assert.deepEqual([...buckets.missing], [2]);
+  assert.deepEqual([...buckets.lists[0]], [3]);
+});
+
+test('numeric marker buckets keep every excluded point in the outlined-square bucket', () => {
+  const scale = { categorical: false, buckets: ['#123456'], bucketOf: () => -1 };
+  const buckets = buildMarkerBuckets(
+    Float64Array.from([1]), Float64Array.from([1]), Uint8Array.from([0]),
+    scale, Float64Array.from([NaN]),
+  );
+  assert.deepEqual([...buckets.hidden], [0]);
+  assert.deepEqual([...buckets.hiddenMissing], []);
 });
 
 test('moving right from the origin-adjacent point lands on the point to its right', () => {

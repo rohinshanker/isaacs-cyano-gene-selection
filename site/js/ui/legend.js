@@ -1,7 +1,45 @@
 /** Colour legend for the active map: scale, units, and what an open marker means. */
 import { formatValue, formatCount } from './format.js';
-import { CATEGORY_UNKNOWN_COLOR, MISSING_COLOR, GHOST_BORDER, GHOST_COLOR } from './colors.js';
+import {
+  CATEGORY_UNKNOWN_COLOR, MISSING_COLOR, GHOST_BORDER, GHOST_COLOR,
+  PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
+} from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Decorative legend marker using the same geometry and colours as the canvas. */
+function makeSwatch(shape, color, fill = color) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.classList.add('legend-marker');
+  svg.setAttribute('viewBox', '0 0 18 18');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const element = (name, attributes) => {
+    const node = document.createElementNS(SVG_NS, name);
+    for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+    svg.append(node);
+  };
+  if (shape === 'ghost-square') {
+    element('rect', { x: 5, y: 5, width: 8, height: 8, fill, stroke: color, 'stroke-width': 1.4 });
+  } else if (shape === 'filled-dot') {
+    element('circle', { cx: 9, cy: 9, r: 3, fill });
+  } else if (shape === 'diamond') {
+    element('path', { d: 'M9 2.5 15.5 9 9 15.5 2.5 9Z', fill: 'none', stroke: color, 'stroke-width': 1.6 });
+  } else {
+    const radius = shape === 'pin' ? 4.5 : 4;
+    element('circle', {
+      cx: 9, cy: 9, r: radius, fill: shape === 'filled-circle' ? fill : 'none',
+      stroke: color, 'stroke-width': shape === 'filled-circle' ? 0.8 : 1.4,
+    });
+    if (shape === 'pin') {
+      element('path', {
+        d: 'M1 9h3M14 9h3M9 1v3M9 14v3', fill: 'none', stroke: color, 'stroke-width': 1.6,
+      });
+    }
+  }
+  return svg;
+}
 
 /**
  * A key for human-reviewed category assignments, including empty categories.
@@ -10,7 +48,7 @@ import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-cate
  */
 export function renderCategoryLegend(host, {
   labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
-  hiddenCount, showHidden, selected = [],
+  hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {},
 }) {
@@ -29,24 +67,16 @@ export function renderCategoryLegend(host, {
   const list = document.createElement('ul');
   list.className = 'legend-notes category-legend';
 
-  const makeSwatch = (color, open, shape, fill) => {
-    const swatch = document.createElement('span');
-    swatch.className = `legend-swatch-box${open ? ' open' : ''}${shape ? ` ${shape}` : ''}`;
-    swatch.style.borderColor = color;
-    if (!open) swatch.style.background = fill;
-    return swatch;
-  };
-
-  const staticRow = (label, color, count = null, open = false, fill = color, shape = '') => {
+  const staticRow = (label, shape, color, count = null, fill = color) => {
     const item = document.createElement('li');
-    item.append(makeSwatch(color, open, shape, fill), document.createTextNode(
+    item.append(makeSwatch(shape, color, fill), document.createTextNode(
       count === null ? label : `${label} (${formatCount(count)})`,
     ));
     list.append(item);
   };
 
   /** A focusable, clickable row for one selectable category bucket. */
-  const categoryRow = (id, label, color, count, open = false) => {
+  const categoryRow = (id, label, color, count, shape = 'filled-circle') => {
     const item = document.createElement('li');
     const button = document.createElement('div');
     button.className = 'category-legend-row';
@@ -56,7 +86,7 @@ export function renderCategoryLegend(host, {
     button.setAttribute('aria-checked', String(isSelected));
     button.classList.toggle('selected', isSelected);
     button.dataset.categoryId = id;
-    button.append(makeSwatch(color, open, '', color), document.createTextNode(
+    button.append(makeSwatch(shape, shape === 'filled-circle' ? REVIEWED_MARKER_BORDER : color, color), document.createTextNode(
       ` ${label} (${formatCount(count)})`,
     ));
     // Hover (mouse) and focus (keyboard) are separate preview channels: with a
@@ -81,14 +111,16 @@ export function renderCategoryLegend(host, {
     categoryIds[index], label, scale.buckets[index], counts[index],
   ));
   categoryRow(MULTIPLE_CATEGORY_ID, multipleLabel, scale.buckets[labels.length], multipleCount);
-  categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, true);
+  categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, 'open-circle');
 
   if (showHidden) {
-    staticRow('Excluded by filters: grey outlined squares', GHOST_BORDER, hiddenCount,
-      false, GHOST_COLOR);
+    staticRow('Excluded, reviewed category: grey outlined square', 'ghost-square',
+      GHOST_BORDER, hiddenReviewedCount, GHOST_COLOR);
+    staticRow('Excluded, unknown: grey dot', 'filled-dot',
+      CATEGORY_UNKNOWN_COLOR, hiddenUnknownCount);
   }
-  staticRow('Shortlisted: diamond outline', '#1b2733', null, true, '', 'diamond');
-  staticRow('Pinned: ring with crosshairs', '#b3261e', null, true, '', 'pin');
+  staticRow('Shortlisted: diamond outline', 'diamond', SHORTLIST_COLOR);
+  staticRow('Pinned: ring with crosshairs', 'pin', PINNED_COLOR);
 
   const resetButton = document.createElement('button');
   resetButton.type = 'button';
@@ -187,30 +219,26 @@ export function renderLegend(host, state) {
 
   const notes = document.createElement('ul');
   notes.className = 'legend-notes';
-  const addNote = (swatchClass, color, text, shape, fill = color) => {
+  const addNote = (shape, color, text, fill = color) => {
     const item = document.createElement('li');
-    const swatch = document.createElement('span');
-    swatch.className = `legend-swatch-box ${swatchClass}`;
-    swatch.style.borderColor = color;
-    if (shape !== 'open') swatch.style.background = fill;
-    item.append(swatch, document.createTextNode(` ${text}`));
+    item.append(makeSwatch(shape, color, fill), document.createTextNode(` ${text}`));
     notes.append(item);
   };
   addNote(
-    'open', MISSING_COLOR,
-    `${formatCount(state.missingCount)} genes have no value: open circles`, 'open',
+    'open-circle', MISSING_COLOR,
+    `${formatCount(state.missingCount)} genes have no value: open circles`,
   );
   // Only true when those grey dots are actually drawn: with "Show filtered-out
   // genes" unchecked, the map has nothing this note could be describing.
   if (state.showHidden) {
     addNote(
-      'ghost', GHOST_BORDER,
+      'ghost-square', GHOST_BORDER,
       `${formatCount(state.hiddenCount)} excluded by filters: grey outlined squares`,
-      'filled', GHOST_COLOR,
+      GHOST_COLOR,
     );
   }
-  addNote('diamond', '#1b2733', 'Shortlisted: diamond outline', 'open');
-  addNote('pin', '#b3261e', 'Pinned: ring with crosshairs', 'open');
+  addNote('diamond', SHORTLIST_COLOR, 'Shortlisted: diamond outline');
+  addNote('pin', PINNED_COLOR, 'Pinned: ring with crosshairs');
 
   const ramp = document.createElement('p');
   ramp.className = 'legend-ramp-note';

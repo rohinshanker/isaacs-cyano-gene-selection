@@ -140,17 +140,24 @@ test('single, multiple, and unreviewed categories survive CSV and manifest expor
       [reviewed, assignment], [multiple, multipleAssignment],
     ]),
   } };
+  const filterMask = new Uint8Array(original.genes.length).fill(1);
+  filterMask[original.indexById.get(reviewed)] = 0;
+  filterMask[original.indexById.get(unreviewed)] = 0;
   const result = buildExport({ dataset, registry, ids: [reviewed, multiple, unreviewed],
-    schemes: [{ map: {} }], viewState: { colorBy: 'functionCategory' } });
+    schemes: [{ map: {} }], viewState: { colorBy: 'functionCategory' }, filterMask });
   assert.deepEqual(result.rows.map((row) => row.functionCategory),
     ['Photosynthetic light reactions', 'Multiple functions', 'Unknown or unclassified']);
   assert.deepEqual(result.rows.map((row) => row.functionReviewStatus),
     ['reviewed', 'reviewed', 'unreviewed']);
+  assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters),
+    ['false', 'true', 'false']);
   assert.deepEqual(result.rows.map((row) => row.reviewedFunctionCategories),
     ['Photosynthetic light reactions',
       'Photosynthetic light reactions; Carbon and nutrient metabolism', '']);
   assert.equal(result.manifest.genes[0].reviewedFunctionAssignment.locusTag, reviewed);
   assert.equal(result.manifest.genes[2].reviewedFunctionAssignment, null);
+  assert.deepEqual(result.manifest.genes.map((gene) => gene.functionCategory),
+    ['Photosynthetic light reactions', 'Multiple functions', 'Unknown or unclassified']);
   assert.deepEqual(result.manifest.genes[0].reviewedFunctionCategories,
     ['Photosynthetic light reactions']);
   assert.deepEqual(result.manifest.genes[1].reviewedFunctionCategories,

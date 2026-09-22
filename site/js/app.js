@@ -25,6 +25,7 @@ import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { metricHelp } from './core/metric-help.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
+  UNKNOWN_CATEGORY_ID,
 } from './core/function-categories.js';
 import {
   buildMetricAxesProjection, resolveDefaultMetricAxes,
@@ -514,10 +515,21 @@ function renderMap() {
   element('zoom-out').disabled = !projection.available;
   if (projection.available) {
     if (categorical) {
+      let hiddenReviewedCount = 0;
+      let hiddenUnknownCount = 0;
+      for (let i = 0; i < context.mask.length; i += 1) {
+        if (context.mask[i]) continue;
+        if (categoryBucketId(context.dataset.functionCategories, i) === UNKNOWN_CATEGORY_ID) {
+          hiddenUnknownCount += 1;
+        } else {
+          hiddenReviewedCount += 1;
+        }
+      }
       renderCategoryLegend(legendHost, {
         ...context.dataset.functionCategories,
         scale,
-        hiddenCount: context.dataset.genes.length - context.passing,
+        hiddenReviewedCount,
+        hiddenUnknownCount,
         showHidden: state.showHidden,
         selected: state.categoryFilter,
         onHoverCategory: (id) => hoverCategory(id),
@@ -564,7 +576,9 @@ function renderMap() {
   banner.classList.toggle('active', hidden > 0);
   banner.textContent = hidden > 0
     ? state.showHidden
-      ? `Filters exclude ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes from the active set; grey outlined squares remain on the map.`
+      ? `Filters exclude ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes `
+        + `from the active set; ${state.colorBy === FUNCTION_COLOR_KEY
+          ? 'grey dots and outlined squares' : 'grey outlined squares'} remain on the map.`
       : `Filters hide ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes.`
     : '';
   scheduleTiming();
