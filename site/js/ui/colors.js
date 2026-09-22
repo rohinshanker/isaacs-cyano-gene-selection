@@ -39,6 +39,10 @@ export const GHOST_BORDER = '#687583';
 /** A separate bucket for loci with multiple reviewed functions. */
 export const MULTIPLE_FUNCTION_COLOR = '#7b3294';
 export const CATEGORY_UNKNOWN_COLOR = '#c6cdd5';
+/** Selection-marker colours shared by the canvas and its inline-SVG legend. */
+export const SHORTLIST_COLOR = '#1b2733';
+export const PINNED_COLOR = '#b3261e';
+export const REVIEWED_MARKER_BORDER = '#314254';
 
 /** Categorical colours use the same bucket interface as numeric canvas scales. */
 export function buildCategoryColorScale(categoryCount) {

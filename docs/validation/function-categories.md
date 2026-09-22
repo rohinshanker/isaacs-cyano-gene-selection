@@ -42,8 +42,11 @@ The viewer offers **Function category** under **Colour by** on every CDS map.
 It is the first selector choice, while GC3 remains the fresh-view default.
 Unreviewed and explicitly reviewed unknown loci share the pale open-circle
 bucket; the detail panel and export distinguish their review status. Reviewed
-coloured points draw above unknown rings. Filtered CDSs retain the grey outlined
-square marker. Category-label search ranks after direct locus/name/product
+coloured circles draw above unknown rings. When filtered CDSs remain visible,
+reviewed categories use a grey outlined square while unknown or unclassified
+CDSs use a smaller filled grey dot with no outline. These treatments do not
+change the visible category bucket recorded in CSV rows and manifest gene
+entries. Category-label search ranks after direct locus/name/product
 matches and before GO suggestions. The export records the colour mode, the
 visible category bucket, review status, and every reviewed category label.
 

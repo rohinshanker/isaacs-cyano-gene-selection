@@ -60,3 +60,8 @@ test('the selected-detail shortcut remains until detail becomes a sticky side ra
   assert.doesNotMatch(css.slice(tabletStart, wideStart), /\.detail-jump\s*\{[^}]*display:\s*none/);
   assert.match(css.slice(wideStart), /\.detail-jump\s*\{[^}]*display:\s*none/);
 });
+
+test('legend marker SVGs scale with their text without CSS shape substitutions', () => {
+  assert.match(css, /\.legend-marker \{ width: 1\.1em; height: 1\.1em;/);
+  assert.doesNotMatch(css, /\.legend-swatch-box/);
+});

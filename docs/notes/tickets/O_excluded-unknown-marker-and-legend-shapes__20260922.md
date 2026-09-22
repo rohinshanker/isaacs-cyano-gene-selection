@@ -1,11 +1,18 @@
-# O_excluded-unknown-marker-and-legend-shapes__20260922 — Open
+# O_excluded-unknown-marker-and-legend-shapes__20260922 — Active
 
 - Scope: map marker for CDSs that are both excluded by filters and unknown or unclassified; legend swatches that must depict the real marker shapes.
-- Status: open
+- Status: active
 - Opened: 2026-09-22
 - Updated: 2026-09-22
 
 ## Current State
+
+Implementation and validation are complete on `feat/marker-legend-shapes`:
+excluded unknown CDSs have their own filled-dot canvas bucket and counted
+legend row, marker conventions share inline-SVG swatches, and visible export
+category buckets have regression coverage.
+
+## Original State
 
 In `site/js/ui/scatter.js`, every CDS excluded by filters draws as a grey
 outlined square (`GHOST_COLOR` fill, `GHOST_BORDER` stroke) when **Show
@@ -48,14 +55,13 @@ conventions and export bucket fields) before changing draw order or wording.
 
 ## Verification
 
-Pending: unit tests for the marker classification of excluded-and-unknown
-versus excluded-and-reviewed CDSs and for the export bucket fields; existing
-`tests/js` suites green, including `interface-copy` and any test that reads
-legend text; rendered inspection at desktop and about 390 px with Show
-filtered-out on in category mode showing the grey dot for excluded unknown
-CDSs and the outlined square for excluded reviewed CDSs, plus the legend
-swatches visibly matching a shortlisted diamond and a pinned crosshair ring
-on the canvas, per the `ui-render-inspect-repair` skill.
+`npm test` passes 457 tests; Python passes 301 tests plus 22 subtests; the data
+contract, live-metric check, and `git diff --check` pass. Rendered inspection at
+1280×800 and 390×844 shows 1,768 excluded unknown dots and seven excluded
+reviewed squares under a CDS-length filter, with shortlisted and pinned marker
+overlays matching the inline-SVG legend. Numeric legend notes use the same SVG
+geometry. Both widths have no horizontal overflow and no console warnings or
+errors.
 
 ## Cleanup
 

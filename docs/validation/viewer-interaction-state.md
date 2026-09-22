@@ -16,10 +16,13 @@ With the canvas focused:
 
 Unavailable projections disable all view buttons and canvas navigation/zoom is a
 defensive no-op. The canvas instructions are linked with `aria-describedby`.
-The legend names filtered CDSs as grey outlined squares only when they are
-rendered. They retain their map coordinates and pointer access when that
-visibility option is enabled; noncoding Tan features have no PCA coordinates
-and remain in the separate regulatory search.
+The legend names filtered CDSs only when they are rendered. In Function
+category colour mode, excluded reviewed CDSs are grey outlined squares and
+excluded unknown or unclassified CDSs are smaller filled grey dots with no
+outline; every other colour mode keeps the grey outlined square. They retain
+their map coordinates and pointer access when that visibility option is
+enabled; noncoding Tan features have no PCA coordinates and remain in the
+separate regulatory search.
 
 A pinned gene exposes an icon Unpin button beside its Pinned status in the detail panel. Search rows show Pin/Unpin
 and Shortlist/Remove according to shared state; both actions stay enabled so
@@ -54,10 +57,15 @@ committed selection. A preview never changes filter or URL state.
 Click, Enter, or Space toggles the row into the committed category filter.
 Selected categories combine with OR semantics; an empty selection excludes
 nothing. The selection composes with the numeric, activity, expression,
-protein, and exception filters and keeps the grey outlined square convention
-for excluded CDSs. After a toggle the legend is rebuilt and keyboard focus is
-restored to the same row, so repeated Enter or Space keeps working and the
-focus ring stays visible.
+protein, and exception filters. Excluded reviewed CDSs use the grey outlined
+square while excluded unknown CDSs use the filled grey dot. After a toggle the
+legend is rebuilt and keyboard focus is restored to the same row, so repeated
+Enter or Space keeps working and the focus ring stays visible.
+
+Marker-convention legend swatches are decorative inline SVGs that reproduce
+the canvas geometry: filled coloured circle, open unknown ring, excluded
+reviewed square, excluded unknown dot, shortlist diamond, and pinned ring with
+four crosshair ticks. The same SVG shapes are used in numeric legend notes.
 
 **Clear category selection** below the legend clears only the category filter
 and disables itself when nothing is selected. **Clear all filters** clears it
