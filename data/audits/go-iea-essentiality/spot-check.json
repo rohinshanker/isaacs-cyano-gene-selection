@@ -1,0 +1,216 @@
+{
+  "reviewedOn": "2026-09-22",
+  "reviewer": "claude-specialist agent (not an independent biologist)",
+  "protocol": "A seeded sample of 12 GO-fallback loci, up to 12 annotation-discrepancy loci, and 16 other GO-annotated loci was shuffled and printed with --spot-check-sheet, which shows only the request state: GO terms and annotations, with no Jev answer, probability, tier, or PCC status. Each row was labelled against the frozen rubric before joining. Disclosure: the reviewer had already seen the 25 highest product-contradiction probabilities while choosing thresholds, so rows 4, 6, 7, 18, and 29 were not blind to their ranking.",
+  "sample": {
+    "seed": 20260922,
+    "coreThreshold": 0.8,
+    "discrepancyThreshold": 0.8
+  },
+  "labels": [
+    {
+      "locusTag": "M744_RS03775",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "S-adenosylmethionine biosynthesis is essential-cofactor biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS03575",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Sulfate assimilation is not on the rubric's core list."
+    },
+    {
+      "locusTag": "M744_RS01785",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "cAMP binding is a ligand term."
+    },
+    {
+      "locusTag": "M744_RS04665",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Kdo transfer builds the lipid A-Kdo core; treated as lipid A biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS08520",
+      "reviewerCore": false,
+      "reviewerContradiction": true,
+      "note": "Borderline: GO asserts a voltage-gated channel while the product is an H+/Cl- exchanger."
+    },
+    {
+      "locusTag": "M744_RS05655",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "O-antigen and dTDP-rhamnose synthesis are not core."
+    },
+    {
+      "locusTag": "M744_RS08930",
+      "reviewerCore": true,
+      "reviewerContradiction": true,
+      "note": "Cobalamin biosynthesis is core cofactor synthesis; threonine-phosphate decarboxylase is CobD activity, not CbiB."
+    },
+    {
+      "locusTag": "M744_RS00595",
+      "reviewerCore": false,
+      "reviewerContradiction": true,
+      "note": "Sialic acid transport contradicts a Sec translocase subunit."
+    },
+    {
+      "locusTag": "M744_RS06995",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "ATP binding and hydrolysis are generic."
+    },
+    {
+      "locusTag": "M744_RS00015",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Pentose-phosphate shunt is not named as the Calvin cycle."
+    },
+    {
+      "locusTag": "M744_RS07035",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Phospholipid biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS11415",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Generic ABC transporter terms."
+    },
+    {
+      "locusTag": "M744_RS13955",
+      "reviewerCore": true,
+      "reviewerContradiction": true,
+      "note": "Heme biosynthesis is core; the PCC 7942 product names a chlorophyll a/b-binding protein."
+    },
+    {
+      "locusTag": "M744_RS03210",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Generic ABC transporter terms."
+    },
+    {
+      "locusTag": "M744_RS09650",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Signalling."
+    },
+    {
+      "locusTag": "M744_RS09435",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Autoinducer transport."
+    },
+    {
+      "locusTag": "M744_RS12075",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Generic ABC transporter terms."
+    },
+    {
+      "locusTag": "M744_RS09745",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Ribosomal structural protein."
+    },
+    {
+      "locusTag": "M744_RS04120",
+      "reviewerCore": true,
+      "reviewerContradiction": true,
+      "note": "rRNA processing is core; it disagrees with a Holliday junction resolvase product name."
+    },
+    {
+      "locusTag": "M744_RS13395",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Cysteine biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS01995",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "DNA replication."
+    },
+    {
+      "locusTag": "M744_RS10885",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Broad photosynthesis term with a lyase activity; phycobilin attachment is not on the core list."
+    },
+    {
+      "locusTag": "M744_RS01950",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Riboflavin biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS13830",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Photosystem II component."
+    },
+    {
+      "locusTag": "M744_RS09190",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Photosystem II reaction center."
+    },
+    {
+      "locusTag": "M744_RS06920",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Amino acid biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS11895",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "De novo IMP biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS06635",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Generic methyltransferase terms."
+    },
+    {
+      "locusTag": "M744_RS00815",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Photosystem II reaction center; consistent with the reviewed category."
+    },
+    {
+      "locusTag": "M744_RS05510",
+      "reviewerCore": false,
+      "reviewerContradiction": true,
+      "note": "Sensor kinase terms contradict NblA."
+    },
+    {
+      "locusTag": "M744_RS10315",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Borderline: the generic 'nucleotide biosynthetic process' term literally matches nucleotide biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS05235",
+      "reviewerCore": false,
+      "reviewerContradiction": false,
+      "note": "Plasma membrane location only."
+    },
+    {
+      "locusTag": "M744_RS01095",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "Transsulfuration is part of methionine biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS11765",
+      "reviewerCore": true,
+      "reviewerContradiction": false,
+      "note": "rRNA and tRNA processing."
+    }
+  ]
+}
