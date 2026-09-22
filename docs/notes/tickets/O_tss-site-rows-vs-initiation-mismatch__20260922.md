@@ -5,6 +5,16 @@
 - Opened: 2026-09-22
 - Updated: 2026-09-22
 
+## Requires your validation
+
+An agent can reproduce the counts, record the join rule, and fix the wording,
+but the reconciliation choice is yours. When the implementer's report lands,
+decide one of: (a) one shared locus set for both layers; (b) each layer falls
+back on the other with a labelled basis; (c) the layers stay separate with
+the reason stated in every row. Record the decision in
+`docs/validation/AAA-biological-decisions-to-review.md`; the implementer must
+not merge the layers without it.
+
 ## Current State
 
 Two Tan 2018 derived layers disagree about which genes have TSS evidence.

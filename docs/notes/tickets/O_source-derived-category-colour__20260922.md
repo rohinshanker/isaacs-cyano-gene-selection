@@ -5,6 +5,14 @@
 - Opened: 2026-09-22
 - Updated: 2026-09-22
 
+## Requires your validation
+
+The derived layer, its Jev rubric, and its thresholds need your acceptance
+before the lab relies on the colours. The implementer builds it under
+explicit evidence labels and records the calibration; you then accept or
+reject in `docs/validation/AAA-biological-decisions-to-review.md`. The 13
+reviewed assignments are never changed by this work.
+
 ## Current State
 
 **Colour by → Function category** colours only the 13 lab-reviewed UTEX 2973
