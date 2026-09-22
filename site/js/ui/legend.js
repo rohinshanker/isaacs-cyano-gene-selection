@@ -1,10 +1,17 @@
 /** Colour legend for the active map: scale, units, and what an open marker means. */
 import { formatValue, formatCount } from './format.js';
 import { CATEGORY_UNKNOWN_COLOR, MISSING_COLOR, GHOST_BORDER, GHOST_COLOR } from './colors.js';
+import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
 
-/** A key for human-reviewed category assignments, including empty categories. */
+/**
+ * A key for human-reviewed category assignments, including empty categories.
+ * Category rows are interactive: hover/focus previews, click/Enter/Space toggles
+ * a filter selection, and a scoped reset clears it.
+ */
 export function renderCategoryLegend(host, {
-  labels, multipleLabel, scale, counts, unknownCount, multipleCount, hiddenCount, showHidden,
+  labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
+  hiddenCount, showHidden, selected = [],
+  onHoverCategory = () => {}, onToggleCategory = () => {}, onResetCategoryFilter = () => {},
 }) {
   host.replaceChildren();
   host.classList.add('category-mode');
@@ -13,31 +20,76 @@ export function renderCategoryLegend(host, {
   title.textContent = 'Reviewed function categories (whole CDS set)';
   const list = document.createElement('ul');
   list.className = 'legend-notes category-legend';
-  const row = (label, color, count = null, open = false, fill = color, shape = '') => {
-    const item = document.createElement('li');
+
+  const makeSwatch = (color, open, shape, fill) => {
     const swatch = document.createElement('span');
     swatch.className = `legend-swatch-box${open ? ' open' : ''}${shape ? ` ${shape}` : ''}`;
     swatch.style.borderColor = color;
     if (!open) swatch.style.background = fill;
-    item.append(swatch, document.createTextNode(
+    return swatch;
+  };
+
+  const staticRow = (label, color, count = null, open = false, fill = color, shape = '') => {
+    const item = document.createElement('li');
+    item.append(makeSwatch(color, open, shape, fill), document.createTextNode(
       count === null ? label : `${label} (${formatCount(count)})`,
     ));
     list.append(item);
   };
-  labels.forEach((label, index) => row(label, scale.buckets[index], counts[index]));
-  row(multipleLabel, scale.buckets[labels.length], multipleCount);
-  row('Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, true);
+
+  /** A focusable, clickable row for one selectable category bucket. */
+  const categoryRow = (id, label, color, count, open = false) => {
+    const item = document.createElement('li');
+    const button = document.createElement('div');
+    button.className = 'category-legend-row';
+    button.setAttribute('role', 'checkbox');
+    button.tabIndex = 0;
+    const isSelected = selected.includes(id);
+    button.setAttribute('aria-checked', String(isSelected));
+    button.classList.toggle('selected', isSelected);
+    button.append(makeSwatch(color, open, '', color), document.createTextNode(
+      ` ${label} (${formatCount(count)})`,
+    ));
+    button.addEventListener('mouseenter', () => onHoverCategory(id));
+    button.addEventListener('mouseleave', () => onHoverCategory(null));
+    button.addEventListener('focus', () => onHoverCategory(id));
+    button.addEventListener('blur', () => onHoverCategory(null));
+    button.addEventListener('click', () => onToggleCategory(id));
+    button.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+      event.preventDefault();
+      onToggleCategory(id);
+    });
+    item.append(button);
+    list.append(item);
+  };
+
+  labels.forEach((label, index) => categoryRow(
+    categoryIds[index], label, scale.buckets[index], counts[index],
+  ));
+  categoryRow(MULTIPLE_CATEGORY_ID, multipleLabel, scale.buckets[labels.length], multipleCount);
+  categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, true);
+
   if (showHidden) {
-    row('Excluded by filters: grey outlined squares', GHOST_BORDER, hiddenCount,
+    staticRow('Excluded by filters: grey outlined squares', GHOST_BORDER, hiddenCount,
       false, GHOST_COLOR);
   }
-  row('Shortlisted: diamond outline', '#1b2733', null, true, '', 'diamond');
-  row('Pinned: ring with crosshairs', '#b3261e', null, true, '', 'pin');
+  staticRow('Shortlisted: diamond outline', '#1b2733', null, true, '', 'diamond');
+  staticRow('Pinned: ring with crosshairs', '#b3261e', null, true, '', 'pin');
+
+  const resetButton = document.createElement('button');
+  resetButton.type = 'button';
+  resetButton.className = 'chip-button category-legend-reset';
+  resetButton.textContent = 'Clear category selection';
+  resetButton.disabled = selected.length === 0;
+  resetButton.addEventListener('click', () => onResetCategoryFilter());
+
   const note = document.createElement('p');
   note.className = 'legend-ramp-note';
   note.textContent = 'Only lab-reviewed locus assignments receive a category colour. '
-    + 'GO IEA suggestions alone leave a gene unclassified.';
-  host.append(title, list, note);
+    + 'GO IEA suggestions alone leave a gene unclassified. Hover or focus a category to '
+    + 'preview it; click, Enter, or Space toggles it as a filter.';
+  host.append(title, list, resetButton, note);
 }
 
 /** One sentence naming the ramp family and where the choice came from. */

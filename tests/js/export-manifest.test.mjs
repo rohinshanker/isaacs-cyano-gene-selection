@@ -50,6 +50,7 @@ test('exports preserve the current cohort filter and each shortlisted row pass s
   mask[0] = 1;
   const filterState = {
     ranges: { lengthNt: { min: 201, max: 2001, includeMissing: true } },
+    categoryFilter: ['photosynthetic-light-reactions', 'unknown-or-unclassified'],
     proteinEvidence: 'refseq',
   };
   const result = buildExport({
@@ -63,7 +64,9 @@ test('exports preserve the current cohort filter and each shortlisted row pass s
 test('an export records the displayed metric axes without changing the CSV values', async () => {
   const { dataset, registry } = await context();
   const id = dataset.genes[0].id;
-  const viewState = { panel: 'axes', colorBy: 'gc3', axisX: 'lengthNt', axisY: 'cai' };
+  const viewState = {
+    panel: 'axes', colorBy: 'gc3', axisX: 'lengthNt', axisY: 'cai', categoryFilter: [],
+  };
   const result = buildExport({ dataset, registry, ids: [id], schemes: [{ map: {} }], viewState });
   assert.deepEqual(result.manifest.viewState, viewState);
   assert.equal(result.rows[0].lengthNt, dataset.genes[0].lengthNt);

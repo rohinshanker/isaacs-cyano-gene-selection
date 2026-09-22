@@ -22,7 +22,9 @@ import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citat
 import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { metricHelp } from './core/metric-help.js';
-import { FUNCTION_COLOR_KEY } from './core/function-categories.js';
+import {
+  FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
+} from './core/function-categories.js';
 import { buildMetricAxesProjection, DEFAULT_METRIC_AXES } from './core/metric-axes.js';
 import { projectionHelp } from './core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
@@ -214,11 +216,57 @@ function computeMask() {
     }
   }
 
+  // Kept separate from the category-filtered mask below: a legend hover
+  // preview narrows this base mask to one category without ever touching
+  // `state.categoryFilter`, so numeric/exception/expression/protein filters
+  // still apply during a preview but the current category selection does not.
+  context.baseMask = mask;
+
+  let finalMask = mask;
+  const categories = dataset.functionCategories;
+  if (state.categoryFilter.length > 0 && categories) {
+    finalMask = new Uint8Array(count);
+    for (let i = 0; i < count; i += 1) {
+      finalMask[i] = mask[i] && passesCategoryFilter(categories, i, state.categoryFilter) ? 1 : 0;
+    }
+  }
+
   let passing = 0;
-  for (let i = 0; i < count; i += 1) passing += mask[i];
-  context.mask = mask;
+  for (let i = 0; i < count; i += 1) passing += finalMask[i];
+  context.mask = finalMask;
   context.passing = passing;
   context.missingHidden = missingHidden;
+}
+
+/** Hover/focus preview: one category's genes, still bound by every other filter. */
+function previewCategory(id) {
+  if (!id) {
+    plot.setMask(context.mask);
+    return;
+  }
+  const categories = context.dataset.functionCategories;
+  if (!categories) return;
+  const base = context.baseMask;
+  const preview = new Uint8Array(base.length);
+  for (let i = 0; i < base.length; i += 1) {
+    preview[i] = base[i] && categoryBucketId(categories, i) === id ? 1 : 0;
+  }
+  plot.setMask(preview);
+}
+
+function toggleCategoryFilter(id) {
+  state.categoryFilter = toggleCategorySelection(state.categoryFilter, id);
+  renderAll();
+  announce(state.categoryFilter.length === 0
+    ? 'Category filter cleared.'
+    : `Category filter: ${state.categoryFilter.length} selected.`);
+}
+
+function clearCategoryFilter() {
+  if (state.categoryFilter.length === 0) return;
+  state.categoryFilter = [];
+  renderAll();
+  announce('Category filter cleared.');
 }
 
 function recomputeScheme() {
@@ -428,6 +476,10 @@ function renderMap() {
         scale,
         hiddenCount: context.dataset.genes.length - context.passing,
         showHidden: state.showHidden,
+        selected: state.categoryFilter,
+        onHoverCategory: (id) => previewCategory(id),
+        onToggleCategory: (id) => toggleCategoryFilter(id),
+        onResetCategoryFilter: () => clearCategoryFilter(),
       });
     } else {
       let missing = 0;
@@ -512,6 +564,7 @@ function renderAll({ schemeErrors = [] } = {}) {
   filterPanel.update({
     registry: context.registry,
     filters: state.filters,
+    categoryFilter: state.categoryFilter,
     count: context.dataset.genes.length,
     passing: context.passing,
     missingHidden: context.missingHidden,
@@ -532,6 +585,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     registry: context.registry,
     filterState: {
       ranges: state.filters,
+      categoryFilter: state.categoryFilter,
       proteinEvidence: state.proteinFilter,
       expression: state.expressionFilter,
       translationalException: state.exceptionFilter,
@@ -542,6 +596,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       colorBy: state.colorBy,
       axisX: state.axisX,
       axisY: state.axisY,
+      categoryFilter: state.categoryFilter,
     }),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.

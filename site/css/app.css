@@ -514,6 +514,14 @@ input[type="range"] { width: 100%; }
 .legend-swatch-box.diamond { transform: rotate(45deg); }
 .legend-swatch-box.pin { border-radius: 50%; }
 .legend-ramp-note { font-size: 0.76rem; color: var(--ink-muted); margin: 0.35rem 0 0; max-width: 38ch; }
+.category-legend-row {
+  display: inline-flex; align-items: flex-start; gap: 0.35rem; cursor: pointer;
+  border-radius: 3px; padding: 0.05rem 0.2rem; margin: -0.05rem -0.2rem;
+}
+.category-legend-row:hover { background: var(--surface-sunken); }
+.category-legend-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.category-legend-row.selected { background: var(--accent-soft); font-weight: 600; }
+.category-legend-reset { margin-top: 0.5rem; }
 
 .timing { font-size: 0.76rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; max-width: 46ch; }
 
