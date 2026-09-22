@@ -297,8 +297,10 @@ export class ComparePanel {
    */
   renderMeasurementNote() {
     const shown = [];
-    if (this.tab !== 'delta') shown.push(...this.activeAxes());
-    if (this.state.ids.length > 0) shown.push(...metricsInDisplayOrder(this.registry));
+    if (this.state.ids.length > 0) {
+      if (this.tab !== 'delta') shown.push(...this.activeAxes());
+      shown.push(...metricsInDisplayOrder(this.registry));
+    }
     const note = measurementLimitNote(shown, this.state.dataset);
     this.measurementNote.hidden = note === null;
     this.measurementNote.textContent = note ?? '';

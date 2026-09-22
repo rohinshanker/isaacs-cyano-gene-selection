@@ -228,10 +228,10 @@ export function decodeState(hash) {
   // explicit, so `applyDecoded` writes it over today's default and an already
   // shared link keeps the axes its author saw. Only a declared older version
   // migrates: `encodeState` always writes `ver`, so a hash without one was not
-  // produced here and leaves the axes genuinely unspecified, which precedence
-  // rule 2 fills from local persistence rather than from a guessed default. A
-  // fresh view opens on the measured axes, and an explicit `ax`/`ay` wins over
-  // both.
+  // produced here and leaves the axes genuinely unspecified; axes have no
+  // local persistence, so precedence rule 3 supplies the fresh-view default
+  // rather than a guessed legacy pair. A fresh view opens on the measured
+  // axes, and an explicit `ax`/`ay` wins over both.
   if (Number.isFinite(state.version) && state.version < MEASURED_AXES_VERSION) {
     if (!values.has(KEYS.axisX)) state.axisX = LEGACY_METRIC_AXES.x;
     if (!values.has(KEYS.axisY)) state.axisY = LEGACY_METRIC_AXES.y;

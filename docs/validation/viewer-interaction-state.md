@@ -59,7 +59,8 @@ applied to it. Versions 1 and 2 omitted `ax`/`ay` exactly when the axes were CDS
 length against CAI, so a hash declaring one of those versions decodes to that
 pair and keeps plotting the axes its author shared. Version 3 omits them when
 the axes are the measured fresh-view pair. A hash with no `ver` was not written
-by this encoder, so its axes stay unspecified under rule 2, and an explicit
+by this encoder, so its axes stay unspecified and fall to rule 3, the fresh
+default, because axes have no local persistence; an explicit
 `ax`/`ay` wins in every version. `tests/js/url-state.test.mjs` covers the old
 snapshot, the explicit override, the unversioned fragment, and the current
 round trip.
