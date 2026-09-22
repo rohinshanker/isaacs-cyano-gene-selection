@@ -131,3 +131,24 @@ one-byte corruption changes each digest. The runtime also verifies the WASM hash
 No new test dependency or screenshot baseline is needed. Artifacts are ignored
 and must not be copied into permanent docs. Broad layout changes still need the
 main site's independent render checks.
+
+## trRosettaRNA hand-off
+
+The shortlist panel can prepare a pinned or shortlisted locus as wild type or under
+the current recoding scheme. It uses the same strand-oriented sequence constructor
+as folding. Regions are the exact `[-30,60)` start window, the full CDS including
+its stop, or an inclusive transcript-coordinate range inside `[-30,59]`. The range
+validator fails closed because `rnaContext` supplies no other genomic flank.
+
+Plain RNA, FASTA, single-sequence A3M/A2M, and Stockholm always carry the same
+`ACGU` sequence. Dot bracket and CT are added only when a completed ViennaRNA 2.7.2
+result has the identical sequence and active scheme. CT base pairs are generated
+from that dot bracket and tested by round trip. Copying or downloading records the
+locus, form, scheme, region, formats, SHA-256 sequence hash, and ViennaRNA version
+in the next candidate export manifest.
+
+The external server form was inspected on 2026-09-22. It documents no URL query
+prefill and test query values did not populate the form, so the site opens the plain
+submission page. It never submits sequence itself. Warn for lengths outside the
+30–200 nt training range, recoded sequence homology limits, external privacy and
+terms, Apache-2.0 standalone code, and separate PyRosetta licensing.

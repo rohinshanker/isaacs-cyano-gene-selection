@@ -7,6 +7,8 @@
 #include <ViennaRNA/model.h>
 #include <ViennaRNA/params/io.h>
 
+static char last_structure[101];
+
 float fold_mfe(const char *sequence) {
   size_t length = strlen(sequence);
   if (!length || length > 100 || strspn(sequence, "ACGU") != length) return NAN;
@@ -24,7 +26,11 @@ float fold_mfe(const char *sequence) {
   vrna_params_load_RNA_Turner2004();
   vrna_fold_compound_t *compound = vrna_fold_compound(sequence, &model, VRNA_OPTION_MFE);
   if (!compound) return NAN;
-  float energy = vrna_mfe(compound, NULL);
+  float energy = vrna_mfe(compound, last_structure);
   vrna_fold_compound_free(compound);
   return energy;
+}
+
+const char *fold_structure(void) {
+  return last_structure;
 }

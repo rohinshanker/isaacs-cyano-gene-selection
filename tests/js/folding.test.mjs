@@ -7,6 +7,7 @@ import { standardTable, standardAlphabet } from './helpers.mjs';
 import { foldingSequences, foldingDatasetChecksum } from '../../site/js/core/folding-sequences.js';
 import { loadFoldingEngine } from '../../site/js/core/folding-engine.js';
 import { FoldingClient } from '../../site/js/core/folding-client.js';
+import { parseCt, writeHandoffFormats } from '../../site/js/core/rosetta-handoff.js';
 
 const references = JSON.parse(await readFile(new URL('../fixtures/rna-folding.json', import.meta.url)));
 const binary = await readFile(new URL('../../site/vendor/viennarna/vienna.wasm', import.meta.url));
@@ -23,6 +24,10 @@ test('exact WASM agrees with independent Python for both strands, circular bound
       for (const key of ['wild', 'recoded']) {
         assert.equal(values[key], sample.windows[name][key]);
         assert.ok(Math.abs(fold(values[key]) - sample.windows[name][`${key}Mfe`]) < references.toleranceKcalMol);
+        const structure = fold.lastStructure;
+        assert.match(structure, /^[().]+$/);
+        assert.deepEqual(parseCt(writeHandoffFormats({ sequence: values[key], header: 'fold', structure }).ct),
+          { sequence: values[key], structure });
       }
     }
     assert.equal(windows.first100.wild.slice(0, 3), 'GUG');
@@ -157,8 +162,8 @@ const input = { dataset, ids: [gene.id], map: {} };
 test('both distributed engine assets match their pinned provenance hashes', async () => {
   const provenance = await readFile(new URL('../../site/vendor/viennarna/PROVENANCE.md', import.meta.url), 'utf8');
   for (const [name, expected] of [
-    ['vienna.js', '4ae452a284549f6b5d1fee6c8d54ac09918868d7736110c64b4141c57b95a09b'],
-    ['vienna.wasm', '5ebadc41700fc83237c1b1213ecb925c4ef852558e810ede0b174aabca7a3786'],
+    ['vienna.js', '2ba74d6306000416397521ab69852c7b1c4f467dba19588ce40611aedcb00226'],
+    ['vienna.wasm', '365645bd49d0798169cb1750b85eb5f273d0cd1d7162dadd49678b1e7251851c'],
   ]) {
     const asset = await readFile(new URL(`../../site/vendor/viennarna/${name}`, import.meta.url));
     const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');

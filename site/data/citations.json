@@ -316,6 +316,20 @@
           "url": "https://www.typesafe.ai/",
           "contribution": "Used only to independently classify RefSeq product names for validation of the 71-gene CAI reference-set rule. Disagreements were reviewed; the model did not automatically change published membership or supply biological ground truth.",
           "downloads": []
+        },
+        {
+          "id": "trrosettarna-server",
+          "citation": "Wang et al. The trRosettaRNA server for RNA structure prediction. Nature Protocols (2026).",
+          "url": "https://yanglab.qd.sdu.edu.cn/trRosettaRNA/",
+          "contribution": "External form opened by the hand-off. This site prepares files but does not submit sequences or capture returned models.",
+          "downloads": []
+        },
+        {
+          "id": "trrosettarna-standalone",
+          "citation": "Yang Lab. trRosettaRNA standalone packages and custom-secondary-structure input documentation.",
+          "url": "https://yanglab.qd.sdu.edu.cn/trRosettaRNA/download/",
+          "contribution": "Documents standalone A3M and custom dot-bracket/CT inputs. Its Apache-2.0 code and the separate PyRosetta licence remain external terms.",
+          "downloads": []
         }
       ]
     }

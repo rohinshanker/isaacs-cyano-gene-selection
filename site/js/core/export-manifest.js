@@ -200,7 +200,7 @@ function caveatsFor(dataset, manifest) {
  */
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
-  filterState = null, filterMask = null, viewState = null,
+  filterState = null, filterMask = null, viewState = null, trRosettaRnaHandoffs = [],
 }) {
   const { meta, genes, indexById, table } = dataset;
   const schemeList = normaliseSchemes(schemes);
@@ -306,6 +306,15 @@ export function buildExport({
     expressionSource: meta.expressionSource ?? null,
     filterState: filterState ?? null,
     viewState: viewState ?? null,
+    trRosettaRnaHandoffs: trRosettaRnaHandoffs.map((entry) => ({
+      locus: entry.locus,
+      form: entry.form,
+      schemeName: entry.schemeName ?? null,
+      region: entry.region,
+      formats: [...entry.formats],
+      sequenceHash: entry.sequenceHash,
+      viennaRnaVersion: entry.viennaRnaVersion ?? null,
+    })),
     schemes: schemeList,
     genes: ids
       .filter((id) => indexById.has(id))

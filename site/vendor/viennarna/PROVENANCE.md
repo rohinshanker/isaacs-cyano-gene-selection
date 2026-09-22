@@ -24,8 +24,8 @@ C source is [`tools/rna_wasm/fold.c`](../../../tools/rna_wasm/fold.c).
 
 | Asset | SHA-256 |
 | --- | --- |
-| `vienna.js` | `4ae452a284549f6b5d1fee6c8d54ac09918868d7736110c64b4141c57b95a09b` |
-| `vienna.wasm` | `5ebadc41700fc83237c1b1213ecb925c4ef852558e810ede0b174aabca7a3786` |
+| `vienna.js` | `2ba74d6306000416397521ab69852c7b1c4f467dba19588ce40611aedcb00226` |
+| `vienna.wasm` | `365645bd49d0798169cb1750b85eb5f273d0cd1d7162dadd49678b1e7251851c` |
 
 The worker verifies the WASM hash before instantiation.
 `node --test tests/js/folding.test.mjs` independently verifies
@@ -51,7 +51,8 @@ offline depends on the browser's HTTP cache; first use offline reports an error.
 
 Optional ViennaRNA applications, SIMD, OpenMP, pthreads, MPFR, GSL, libsvm,
 RNAforester, RNAxplorer, scripting bindings, and the separately licensed Naview
-layout are disabled. The linked executable exports only `fold_mfe`; Emscripten
+layout are disabled. The linked executable exports only `fold_mfe` and the
+matching `fold_structure` result buffer; Emscripten
 dead-strips unreachable library code. It has no filesystem or network imports.
 
 ## Numerical model
