@@ -5,7 +5,7 @@
  * scheme, filters, shortlist, pinned gene, and comparison tab.
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
-import { DEFAULT_METRIC_AXES } from './metric-axes.js';
+import { DEFAULT_METRIC_AXES, DEFAULT_AXIS_SCALE, AXIS_SCALES } from './metric-axes.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
 import { DEFAULT_ANNOTATION_SOURCE, isAnnotationSource } from './annotation-source.js';
 
@@ -14,7 +14,7 @@ const KEYS = {
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
-  categoryFilter: 'cf', annotationSource: 'as',
+  categoryFilter: 'cf', annotationSource: 'as', axisXScale: 'xs', axisYScale: 'ys',
 };
 
 /**
@@ -69,6 +69,8 @@ export function defaultState() {
     proteinFilter: 'any',
     axisX: DEFAULT_METRIC_AXES.x,
     axisY: DEFAULT_METRIC_AXES.y,
+    axisXScale: DEFAULT_AXIS_SCALE,
+    axisYScale: DEFAULT_AXIS_SCALE,
   };
 }
 
@@ -149,6 +151,14 @@ export function encodeState(state) {
   // fresh-view axes.
   if (state.axisX !== DEFAULT_METRIC_AXES.x) push(KEYS.axisX, state.axisX);
   if (state.axisY !== DEFAULT_METRIC_AXES.y) push(KEYS.axisY, state.axisY);
+  // A per-axis scale is a wholly new field with no legacy meaning to preserve,
+  // so unlike `ax`/`ay` it is simply omitted when linear, the fresh default.
+  if (state.axisXScale && state.axisXScale !== DEFAULT_AXIS_SCALE) {
+    push(KEYS.axisXScale, state.axisXScale);
+  }
+  if (state.axisYScale && state.axisYScale !== DEFAULT_AXIS_SCALE) {
+    push(KEYS.axisYScale, state.axisYScale);
+  }
   // Always present, and never through `push`: an omitted shortlist means "the
   // hash does not speak to this," which is how a recipient's own localStorage
   // shortlist survives an old-style partial link. Every state this app
@@ -223,6 +233,14 @@ export function decodeState(hash) {
   }
   if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
   if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);
+  if (values.has(KEYS.axisXScale)) {
+    const scale = values.get(KEYS.axisXScale);
+    if (AXIS_SCALES.includes(scale)) state.axisXScale = scale;
+  }
+  if (values.has(KEYS.axisYScale)) {
+    const scale = values.get(KEYS.axisYScale);
+    if (AXIS_SCALES.includes(scale)) state.axisYScale = scale;
+  }
   // A snapshot this viewer wrote before the measured fresh-view axes omits
   // `ax`/`ay` exactly when it plotted CDS length against CAI. Make that meaning
   // explicit, so `applyDecoded` writes it over today's default and an already

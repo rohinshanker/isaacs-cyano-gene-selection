@@ -114,6 +114,29 @@ test('no two neighbouring ticks can print the same label, however far the map is
   assert.equal(formatTick(2_500_000, 500000), '2.5M');
 });
 
+test('log10 and percentile axes keep neighbouring ticks distinct at every zoom level too', () => {
+  // formatTick has no notion of "scale": a log10 or percentile axis just feeds
+  // it already-transformed numbers, so the same distinctness contract as a
+  // raw linear metric must hold over their typical ranges.
+  const labelsFor = (first, step, count) => Array.from(
+    { length: count }, (_, i) => formatTick(first + i * step, step),
+  );
+  // A log10(TSS initiation) axis spans roughly [-1, 5.5] across the dataset;
+  // zoomed in, spacing gets far finer than one decade.
+  for (const [first, step] of [[-1, 0.5], [0, 0.25], [2, 0.1], [3.2, 0.01], [-0.5, 0.001]]) {
+    const labels = labelsFor(first, step, 6);
+    assert.equal(new Set(labels).size, labels.length,
+      `log10 step ${step} repeated a label: ${labels.join(', ')}`);
+  }
+  // A percentile axis is always [0, 100]; check the same at coarse and
+  // zoomed-in spacing, including a spacing finer than one point.
+  for (const [first, step] of [[0, 20], [40, 5], [50, 1], [50, 0.1], [50, 0.01]]) {
+    const labels = labelsFor(first, step, 6);
+    assert.equal(new Set(labels).size, labels.length,
+      `percentile step ${step} repeated a label: ${labels.join(', ')}`);
+  }
+});
+
 test('a narrow axis asks for fewer ticks so its labels cannot run together', () => {
   // A 390 px phone leaves roughly 250 px of plot width.
   assert.equal(tickTarget(250, 74), 3);

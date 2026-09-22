@@ -113,6 +113,46 @@ test('explicit metric axes survive a shared link and reset to their defaults', (
   );
 });
 
+test('a nondefault axis scale survives a shared link, and linear stays out of the hash', () => {
+  const state = defaultState();
+  state.panel = 'axes';
+  state.axisX = 'gc3';
+  state.axisXScale = 'log10';
+  state.axisYScale = 'percentile';
+  const hash = encodeState(state);
+  assert.match(hash, /xs=log10/);
+  assert.match(hash, /ys=percentile/);
+  const restored = decodeState(`#${hash}`);
+  assert.equal(restored.axisXScale, 'log10');
+  assert.equal(restored.axisYScale, 'percentile');
+
+  // A fresh view (both axes linear) never encodes the scale fields.
+  const fresh = encodeState(defaultState());
+  assert.doesNotMatch(fresh, /xs=/);
+  assert.doesNotMatch(fresh, /ys=/);
+});
+
+test('an unknown or malformed axis scale in the hash is dropped rather than trusted', () => {
+  const decoded = decodeState('#ver=3&p=axes&xs=exponential&ys=&l=');
+  assert.equal('axisXScale' in decoded, false);
+  assert.equal('axisYScale' in decoded, false);
+  const target = defaultState();
+  applyDecoded(target, decoded);
+  assert.equal(target.axisXScale, 'linear');
+  assert.equal(target.axisYScale, 'linear');
+});
+
+test('an old hash with no scale fields decodes to linear, unchanged from before the feature existed', () => {
+  const legacy = '#ver=2&p=axes&c=gc3&l=&t=radar';
+  const decoded = decodeState(legacy);
+  assert.equal('axisXScale' in decoded, false);
+  assert.equal('axisYScale' in decoded, false);
+  const target = defaultState();
+  applyDecoded(target, decoded);
+  assert.equal(target.axisXScale, 'linear');
+  assert.equal(target.axisYScale, 'linear');
+});
+
 test('a link shared before the measured axes still plots the pair its author saw', () => {
   // Exactly the hash the old encoder wrote for length against CAI: the axes are
   // absent because they were the default then.

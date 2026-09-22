@@ -115,6 +115,22 @@ test('an export records the displayed metric axes without changing the CSV value
   }
 });
 
+test('an export records nondefault axis scales beside the axis keys, so a file cannot be mistaken for a linear plot', async () => {
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  const viewState = {
+    panel: 'axes', colorBy: 'gc3', axisX: 'lengthNt', axisY: 'tssInitiation',
+    axisXScale: 'log10', axisYScale: 'percentile', categoryFilter: [],
+  };
+  const result = buildExport({ dataset, registry, ids: [id], schemes: [{ map: {} }], viewState });
+  assert.deepEqual(result.manifest.viewState, viewState);
+  assert.equal(result.manifest.viewState.axisXScale, 'log10');
+  assert.equal(result.manifest.viewState.axisYScale, 'percentile');
+  // The scale is metadata about the plot, not the metric: the raw numeric
+  // value in the CSV is untouched by how the axis was displayed.
+  assert.equal(result.rows[0].lengthNt, dataset.genes[0].lengthNt);
+});
+
 test('single, multiple, and unreviewed categories survive CSV and manifest export', async () => {
   const { dataset: original, registry } = await context();
   const [reviewed, multiple, unreviewed] = original.genes.slice(0, 3).map((gene) => gene.id);

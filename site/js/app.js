@@ -27,7 +27,8 @@ import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
 } from './core/function-categories.js';
 import {
-  buildMetricAxesProjection, resolveDefaultMetricAxes,
+  buildMetricAxesProjection, resolveDefaultMetricAxes, axisTitle,
+  metricLog10Availability, log10DisabledReason, AXIS_SCALES, DEFAULT_AXIS_SCALE,
 } from './core/metric-axes.js';
 import { projectionHelp } from './core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
@@ -317,13 +318,12 @@ function recomputeScheme() {
 }
 
 function projectionFor(panelId) {
-  const cached = context.projections.get(panelId);
-  if (cached) return cached;
   if (panelId === 'axes') {
+    // Never cached: percentile ranks the visible cohort, so a filter change
+    // must be able to move every point on this axis, not just show/hide them.
     const axes = buildMetricAxesProjection(context.registry, context.dataset.genes.length, {
       x: state.axisX, y: state.axisY,
-    });
-    const label = (axis) => axis.unit ? `${axis.label} (${axis.unit})` : axis.label;
+    }, { x: state.axisXScale, y: state.axisYScale }, context.mask);
     const projection = {
       available: axes.available && axes.finitePairCount > 0,
       message: axes.available
@@ -332,17 +332,18 @@ function projectionFor(panelId) {
       x: axes.x.values,
       y: axes.y.values,
       independentAxes: true,
-      xLabel: label(axes.x),
-      yLabel: label(axes.y),
+      xLabel: axisTitle(axes.x),
+      yLabel: axisTitle(axes.y),
       labels: context.dataset.genes.map(geneMapLabel),
       loadings: [],
       loadingNote: 'These are direct metric axes, not PCA components. There are no loadings.',
       finitePairCount: axes.finitePairCount,
     };
-    context.projections.set(panelId, projection);
     context.timings.projection = NaN;
     return projection;
   }
+  const cached = context.projections.get(panelId);
+  if (cached) return cached;
   const projection = buildProjection(panelId, {
     dataset: context.dataset,
     registry: context.registry,
@@ -457,6 +458,28 @@ function axisLimitNotes() {
     .filter(Boolean);
 }
 
+/**
+ * Disable an axis's Log10 option when its current metric has a zero or
+ * negative finite value, and fall the requested scale back to linear rather
+ * than let the select claim a scale the projection cannot actually draw.
+ */
+function syncAxisScaleAvailability(axis) {
+  const metricKey = axis === 'x' ? 'axisX' : 'axisY';
+  const scaleKey = axis === 'x' ? 'axisXScale' : 'axisYScale';
+  const select = element(`axis-${axis}-scale`);
+  const metric = context.registry.byKey.get(state[metricKey]);
+  const availability = metricLog10Availability(metric, context.dataset.genes.length);
+  const logOption = [...select.options].find((option) => option.value === 'log10');
+  if (logOption) {
+    logOption.disabled = !availability.available;
+    logOption.title = availability.available ? ''
+      : log10DisabledReason(metric?.label ?? state[metricKey], availability) ?? '';
+  }
+  if (state[scaleKey] === 'log10' && !availability.available) state[scaleKey] = DEFAULT_AXIS_SCALE;
+  select.value = state[scaleKey];
+  return availability;
+}
+
 function renderMap() {
   const projection = projectionFor(state.panel);
   const panel = PANELS.find((entry) => entry.id === state.panel);
@@ -465,12 +488,18 @@ function renderMap() {
   if (state.panel === 'axes') {
     element('axis-x').value = state.axisX;
     element('axis-y').value = state.axisY;
+    const xLog = syncAxisScaleAvailability('x');
+    const yLog = syncAxisScaleAvailability('y');
     const pairs = state.axisX === state.axisY
       ? `${formatCount(projection.finitePairCount)} genes have this metric. Identical axes place points on a diagonal.`
       : `${formatCount(projection.finitePairCount)} genes have values on both axes; missing pairs are not plotted.`;
+    const scaleNotes = [...new Set([
+      log10DisabledReason(context.registry.byKey.get(state.axisX)?.label ?? state.axisX, xLog),
+      log10DisabledReason(context.registry.byKey.get(state.axisY)?.label ?? state.axisY, yLog),
+    ].filter(Boolean))];
     // A measured axis states its replicate and condition limits here, beside
     // the plot, rather than leaving a thin measurement to look like a deep one.
-    element('axis-note').textContent = [pairs, ...axisLimitNotes()].join(' ');
+    element('axis-note').textContent = [pairs, ...axisLimitNotes(), ...scaleNotes].join(' ');
   }
 
   plot.setProjection(projection, { keepView: plot.projectionId === state.panel });
@@ -643,6 +672,8 @@ function renderAll({ schemeErrors = [] } = {}) {
       colorBy: state.colorBy,
       axisX: state.axisX,
       axisY: state.axisY,
+      axisXScale: state.axisXScale,
+      axisYScale: state.axisYScale,
       categoryFilter: state.categoryFilter,
       annotationSource: state.annotationSource,
     }),
@@ -897,12 +928,39 @@ function buildAxisSelects() {
     select.value = state[key];
     select.addEventListener('change', () => {
       state[key] = select.value;
-      context.projections.delete('axes');
       plot.projectionId = null;
       renderMap();
       persist();
       announce(`Metric plot: ${element('axis-x').selectedOptions[0].textContent} on X, `
         + `${element('axis-y').selectedOptions[0].textContent} on Y.`);
+    });
+  }
+}
+
+const AXIS_SCALE_OPTION_LABELS = Object.freeze({
+  linear: 'Linear', log10: 'Log10', percentile: 'Percentile',
+});
+
+/** Build the per-axis scale selectors once; their availability is kept in
+ * sync with the current metric by {@link syncAxisScaleAvailability}. */
+function buildAxisScaleSelects() {
+  for (const axis of ['x', 'y']) {
+    const scaleKey = axis === 'x' ? 'axisXScale' : 'axisYScale';
+    const select = element(`axis-${axis}-scale`);
+    select.replaceChildren();
+    for (const scale of AXIS_SCALES) {
+      const option = document.createElement('option');
+      option.value = scale;
+      option.textContent = AXIS_SCALE_OPTION_LABELS[scale];
+      select.append(option);
+    }
+    select.value = state[scaleKey];
+    select.addEventListener('change', () => {
+      state[scaleKey] = select.value;
+      renderMap();
+      persist();
+      announce(`Metric plot: ${axis.toUpperCase()} axis scale set to `
+        + `${select.selectedOptions[0].textContent}.`);
     });
   }
 }
@@ -1202,6 +1260,8 @@ function applyLiveHash() {
   element('color-by').value = state.colorBy;
   element('axis-x').value = state.axisX;
   element('axis-y').value = state.axisY;
+  element('axis-x-scale').value = state.axisXScale;
+  element('axis-y-scale').value = state.axisYScale;
   element('show-hidden').checked = state.showHidden;
   renderAll();
   announce('View updated from the address bar.');
@@ -1465,6 +1525,7 @@ async function boot() {
   updatePanelTabs();
   buildColorSelect();
   buildAxisSelects();
+  buildAxisScaleSelects();
   buildAnnotationSourceSelect();
   buildGeneSearch();
   renderMetricAgreement();
