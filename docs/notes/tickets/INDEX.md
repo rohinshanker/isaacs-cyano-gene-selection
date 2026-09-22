@@ -10,3 +10,4 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_annotation-source-view__20260922](O_annotation-source-view__20260922.md) | Add a UTEX / PCC / GO IEA annotation-source selector that shows one dataset's annotations, leaving genes blank where that source is silent. |
 | [O_deprioritize-cai-tai-defaults__20260922](O_deprioritize-cai-tai-defaults__20260922.md) | Keep CAI and tAI available but remove them from fresh-view defaults in favour of measured UTEX biology, even with low replicates. |
 | [O_trrosettarna-handoff__20260922](O_trrosettarna-handoff__20260922.md) | Hand off a selected gene, wild type or recoded, to trRosettaRNA in every accepted input format via clipboard, download, and link. |
+| [O_unpin-icon-size-position__20260922](O_unpin-icon-size-position__20260922.md) | Shrink the detail-panel unpin icon to text size and place it left of the "Pinned" label, keeping the hit area and focus contract. |
