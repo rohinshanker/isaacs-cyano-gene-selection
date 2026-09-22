@@ -39,6 +39,7 @@ multiple categories. At runtime 2,703 loci therefore resolve to unknown or
 unclassified, and zero resolve to the multiple-functions bucket.
 
 The viewer offers **Function category** under **Colour by** on every CDS map.
+It is the first selector choice, while GC3 remains the fresh-view default.
 Unreviewed and explicitly reviewed unknown loci share the pale open-circle
 bucket; the detail panel and export distinguish their review status. Reviewed
 coloured points draw above unknown rings. Filtered CDSs retain the grey outlined

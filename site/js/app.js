@@ -735,6 +735,15 @@ function renderCurrentView() {
 function buildColorSelect() {
   const select = element('color-by');
   select.replaceChildren();
+  if (context.dataset.functionCategories) {
+    const group = document.createElement('optgroup');
+    group.label = 'Reviewed function';
+    const option = document.createElement('option');
+    option.value = FUNCTION_COLOR_KEY;
+    option.textContent = 'Function category';
+    group.append(option);
+    select.append(group);
+  }
   for (const family of context.registry.families) {
     const group = document.createElement('optgroup');
     group.label = family;
@@ -744,15 +753,6 @@ function buildColorSelect() {
       option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
       group.append(option);
     }
-    select.append(group);
-  }
-  if (context.dataset.functionCategories) {
-    const group = document.createElement('optgroup');
-    group.label = 'Reviewed function';
-    const option = document.createElement('option');
-    option.value = FUNCTION_COLOR_KEY;
-    option.textContent = 'Function category';
-    group.append(option);
     select.append(group);
   }
   select.value = state.colorBy;
