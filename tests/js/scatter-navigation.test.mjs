@@ -215,9 +215,20 @@ test('no suffix falls back to shortening the whole title, unchanged from before'
   assert.ok(shortened.length < full.length);
 });
 
-test('an impossibly narrow width still keeps the full scale suffix intact', () => {
+test('a width too narrow for "…, suffix" falls back to the bare suffix', () => {
   const context = fixedWidthContext();
   const full = 'Downstream-neighbor distance, percentile';
-  const shortened = fitAxisTitle(context, full, ', percentile', 1);
-  assert.equal(shortened, '…, percentile');
+  const suffix = ', percentile';
+  // '…, percentile' is 13 chars (78px, fixedWidthContext default charWidth 6);
+  // the bare suffix ', percentile' is 12 chars (72px). 75px fits only the latter.
+  const shortened = fitAxisTitle(context, full, suffix, 75);
+  assert.equal(shortened, suffix);
+});
+
+test('a width too narrow even for the bare suffix draws nothing, not a clipped claim', () => {
+  const context = fixedWidthContext();
+  const full = 'Downstream-neighbor distance, percentile';
+  const suffix = ', percentile';
+  const shortened = fitAxisTitle(context, full, suffix, 10);
+  assert.equal(shortened, '');
 });

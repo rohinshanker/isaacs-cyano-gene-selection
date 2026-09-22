@@ -111,6 +111,13 @@ function fitText(context, text, maxWidth) {
  * ", percentile" / " (unit)" tail): a title that loses its scale suffix
  * misstates what the plotted numbers are. `fullText` is `name + suffix`;
  * only `name` is ever shortened. `suffix` empty falls back to plain `fitText`.
+ *
+ * Three tiers, each narrower than the last: the name shortened down to
+ * `…, suffix`; when even that does not fit, the bare suffix with no ellipsis;
+ * when the suffix alone does not fit either, an empty string, so the canvas
+ * draws nothing rather than clip a scale claim into a false one. A caller
+ * that draws an empty title must still state the scale elsewhere (the axis
+ * note), since this function only ever chooses what the canvas can hold.
  */
 export function fitAxisTitle(context, fullText, suffix, maxWidth) {
   if (context.measureText(fullText).width <= maxWidth) return fullText;
@@ -120,7 +127,10 @@ export function fitAxisTitle(context, fullText, suffix, maxWidth) {
   while (candidate.length > 0 && context.measureText(`${candidate}…${suffix}`).width > maxWidth) {
     candidate = candidate.slice(0, -1);
   }
-  return `${candidate}…${suffix}`;
+  const shortest = `${candidate}…${suffix}`;
+  if (context.measureText(shortest).width <= maxWidth) return shortest;
+  if (context.measureText(suffix).width <= maxWidth) return suffix;
+  return '';
 }
 
 /** Decimal places that write `step` exactly, so no two ticks round together. */
