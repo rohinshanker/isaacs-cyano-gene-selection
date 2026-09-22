@@ -503,7 +503,7 @@ export class SidePanel {
       unpinButton.title = `Unpin ${gene.id}`;
       unpinButton.append(unpinIcon());
       unpinButton.addEventListener('click', () => this.handlers.onUnpin());
-      statusRow.append(unpinButton);
+      statusRow.prepend(unpinButton);
     }
 
     const product = document.createElement('p');

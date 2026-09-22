@@ -640,8 +640,9 @@ input[type="range"] { width: 100%; }
 .gene-status { font-size: 0.78rem; color: var(--ink-muted); margin: 0.1rem 0 0.3rem; }
 .gene-status-row { display: flex; align-items: center; gap: 0.3rem; margin: 0.1rem 0 0.3rem; }
 .gene-status-row .gene-status { margin: 0; }
-.unpin-button { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 32px; }
-.unpin-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.unpin-button { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; padding: 0; border: none; font-size: 0.78rem; flex: none; }
+.unpin-button::before { content: ''; position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; transform: translate(-50%, -50%); }
+.unpin-button svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .gene-product { margin: 0 0 0.3rem; overflow-wrap: anywhere; }
 .gene-location { font-size: 0.8rem; color: var(--ink-muted); margin: 0 0 0.5rem; overflow-wrap: anywhere; }
 .gene-actions { display: flex; flex-wrap: wrap; gap: 0.3rem; }
