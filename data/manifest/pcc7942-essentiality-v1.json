@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "datasetId": "pcc7942-essentiality-transfer-v1",
+  "source": {
+    "sourceStudy": {
+      "citation": "Adomako et al. 2022",
+      "doi": "10.1128/mbio.00862-22",
+      "workbook": {
+        "worksheet": "PG_metadata",
+        "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9239245/supplementaryFiles",
+        "localPath": "data/essentiality/source/mbio.00862-22-s0001.xlsx",
+        "byteSize": 1359396,
+        "sha256": "b988b744c4c939ce6f47232eacfc30338907a9b911830999eb23414cbe6c331b"
+      },
+      "attribution": "Data Set S1 is redistributed under the article's CC BY 4.0 licence. Cite Adomako et al. 2022."
+    },
+    "essentialityCalls": {
+      "attributedStudy": "Rubin et al. 2015",
+      "doi": "10.1073/pnas.1519220112",
+      "representation": "These are the PCC 7942 calls redistributed by Adomako et al. Data Set S1 and attributed there to Rubin et al.; this dataset does not claim to reproduce Rubin et al. original Dataset S3.",
+      "assayContext": "PCC 7942 RB-TnSeq study conditions: 30 C in BG-11 under multiple light regimes; consult Rubin et al. 2015 for the individual regime definitions."
+    },
+    "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+    "crosswalkPath": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv",
+    "plottedGenesPath": "site/data/genes.json",
+    "crossStrainAssumption": "A PCC 7942 call is associated with a UTEX 2973 plotted CDS only when the workbook's exact current-locus pair agrees with one unambiguous pcc7942_ortholog relationship in the pinned crosswalk. Shared-protein orthology does not establish identical essentiality across strains: every admitted value remains PCC 7942 evidence under the source study conditions, not a measured UTEX 2973 phenotype."
+  },
+  "joinPolicy": {
+    "sourceColumns": [
+      "PG_ID",
+      "UTEX 2973 NCBI",
+      "PCC 7942 NCBI",
+      "PCC 7942 essentiality"
+    ],
+    "crosswalkRelationship": "pcc7942_ortholog",
+    "crosswalkNamespace": "PCC7942_RefSeq_locus_tag",
+    "crosswalkMethod": "exact shared RefSeq protein_id",
+    "admissionRule": "Require one workbook row for the exact plotted UTEX 2973 current locus, a non-empty PCC 7942 current locus, and exactly one unambiguous pinned crosswalk relationship whose PCC locus equals the workbook PCC locus.",
+    "missingness": "Unmatched, conflicting, ambiguous, or multi-valued joins are status unknown with an explicit reason. An admitted row with a blank source call is status missing. Neither case is non-essential.",
+    "statusVocabulary": [
+      "essential",
+      "beneficial",
+      "non-essential",
+      "ambiguous",
+      "not_analyzed",
+      "missing",
+      "unknown"
+    ],
+    "interpretation": "beneficial is a distinct source status and is never promoted to essential"
+  },
+  "build": {
+    "command": "python3 tools/build_pcc7942_essentiality.py",
+    "checkCommand": "python3 tools/build_pcc7942_essentiality.py --check",
+    "outputPath": "site/data/pcc7942-essentiality-v1.json"
+  }
+}

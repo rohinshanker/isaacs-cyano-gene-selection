@@ -10,3 +10,6 @@ data/annotation/source/** binary
 data/trna/independent_run/trnascan.out binary
 data/trna/independent_run/trnascan.stats binary
 data/trna/independent_run/trnascan.struct binary
+
+# The redistributed Adomako et al. workbook is checksum-pinned source data.
+data/essentiality/source/*.xlsx binary
