@@ -209,10 +209,13 @@ pre {
 .checkbox-row { display: flex; align-items: flex-start; gap: 0.4rem; flex-wrap: nowrap; }
 .checkbox-row input { margin-top: 0.3rem; flex: none; }
 .checkbox-row label { color: var(--ink); }
-/* The group asks for its one-line width so the toolbar row moves it whole onto the
-   next line; only when a line is narrower than that do the toggles wrap inside it. */
-.source-toggles { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; width: max-content; max-width: 100%; gap: 0.15rem 0.6rem; align-items: center; }
-.source-toggles legend { float: left; color: var(--ink-muted); font-size: 0.85rem; padding: 0; margin-right: 0.35rem; }
+/* The group asks for one line's worth of width, so a toolbar row that cannot fit it
+   beside the colour select moves it whole onto the next line; only a line narrower
+   than the group itself wraps the toggles inside it. */
+.source-toggles { border: 0; padding: 0; margin: 0; display: flex; flex: 0 0 auto; max-width: 100%; flex-wrap: wrap; gap: 0.15rem 0.6rem; align-items: center; }
+/* A fieldset's legend is laid out outside the flex row by browsers, so the visible
+   label is a plain flex item and the real legend stays for assistive technology. */
+.source-toggles-label { color: var(--ink-muted); font-size: 0.85rem; }
 .source-toggles .source-toggle { align-items: center; font-size: 0.85rem; white-space: nowrap; }
 .source-toggles .source-toggle input { margin-top: 0; }
 
@@ -488,6 +491,10 @@ input[type="range"] { width: 100%; }
    takes the remaining width. They still wrap at a narrow viewport, which is
    intended. */
 .map-toolbar-row > .field-row { flex: 1 1 11rem; min-width: 0; }
+/* The toggle group keeps its one-line width: a row that cannot fit it beside the
+   colour select moves it whole onto the next line, and only a line narrower than the
+   group itself wraps the toggles inside it. */
+.map-toolbar-row > .source-toggles { flex: 0 0 auto; max-width: 100%; }
 .map-toolbar .field-row-grow { flex: 3 1 14rem; }
 .map-toolbar .field-row-grow > input[type="search"] { flex: 1 1 12rem; }
 
