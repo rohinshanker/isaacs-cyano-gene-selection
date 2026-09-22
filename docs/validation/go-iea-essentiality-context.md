@@ -7,6 +7,8 @@ is not a knockout result, an essentiality call, or a UTEX 2973 measurement.
 
 ```sh
 python3 tools/build_go_iea_essentiality.py --check   # offline; CI runs this
+python3 tools/build_go_iea_essentiality.py --spot-check-replay   # the reviewed sheet, exactly
+python3 tools/build_go_iea_essentiality.py --spot-check-sheet --seed N   # a fresh draw
 python3 -m pytest -q tests/test_go_iea_essentiality.py
 node --test tests/js/go-iea-essentiality.test.mjs tests/js/export-manifest.test.mjs \
   tests/js/panel-golden.test.mjs
@@ -73,9 +75,12 @@ is later compared with.
 
 **Discrepancy request.** The state adds the UTEX 2973 RefSeq product and gene
 symbol. It also adds the PCC 7942 RefSeq product when the joined PCC locus has
-a different product text, which is 105 of the 2,542 joins. Where the lab
-reviewed a category other than Unknown, that category is added too. One Noul is
-asked per present field. The UTEX question is:
+a different product text, which is 105 of the 2,542 joins. When the joined
+product text is identical, no separate question is asked: the UTEX-product
+answer is the judgment for both sources, and a flagged locus receives a
+PCC-product note that names the PCC locus and says the judgment is shared.
+Where the lab reviewed a category other than Unknown, that category is added
+too. One Noul is asked per present field. The UTEX question is:
 
 > Do the GO terms in `go_annotations` contradict the UTEX 2973 RefSeq product
 > name in `annotations.utex_2973_refseq_product`?
@@ -139,8 +144,11 @@ disagreement between sources:
 The 0.6–0.8 band was reviewed by hand and is mostly compatible pairs. Examples
 are signal peptidase II with aspartic endopeptidase, and RNase PH with tRNA
 nucleotidyltransferase. A lower threshold would publish false disagreements.
-The single PCC-product flag is `M744_RS13955`. Its ferrochelatase GO terms
-contradict PCC 7942's older product name, “chlorophyll a/b-binding protein”.
+All five UTEX-product flags have an accepted PCC join whose product text is
+identical, so each also carries a PCC-product note at the same probability.
+The one PCC-product flag from its own question is `M744_RS13955`. Its
+ferrochelatase GO terms contradict PCC 7942's older product name,
+“chlorophyll a/b-binding protein”.
 
 ## Published counts
 
@@ -156,10 +164,13 @@ Of 281 fallback-eligible loci, 112 have GO terms.
 | Discrepancy | Loci |
 | --- | --- |
 | UTEX product | 5 |
-| PCC 7942 product | 1 |
+| PCC 7942 product | 6 |
 | Reviewed category | 0 |
 | PCC call | 104 |
 | Any | 109 |
+
+Five of the six PCC-product notes reuse the UTEX-product judgment for identical
+text; the sixth is judged on its own differing text.
 
 ## Evaluation and blinded spot check
 
@@ -184,10 +195,15 @@ certify agreement.
 
 The spot check drew a seeded, stratified sample of 34 loci: 12 fallback, 6
 contradiction, and 16 other. The sample and its draw thresholds are pinned in
-`spot-check.json`. The sheet from `--spot-check-sheet` shows GO terms and
-annotations only. The reviewer was the implementing agent, not an independent
-biologist. The reviewer had already seen the top-ranked contradiction list when
-choosing thresholds, so five contradiction rows were not blind to their rank.
+`spot-check.json`. Both sheets show GO terms and annotations only.
+`--spot-check-replay` reproduces the reviewed locus list exactly from the
+recorded seed and thresholds and fails if it cannot; `--spot-check-sheet` draws
+a fresh sample at the current thresholds, and `--seed` gives it a new seed.
+Because the core threshold moved from 0.8 to 0.9 after the review, a fresh
+draw at the default seed is not the reviewed sample. The reviewer was the
+implementing agent, not an independent biologist. The reviewer had already
+seen the top-ranked contradiction list when choosing thresholds, so five
+contradiction rows were not blind to their rank.
 
 | Spot check at published thresholds | Agreement |
 | --- | --- |
@@ -207,7 +223,14 @@ relies on the GO tier still needs lab review.
 The candidate detail panel states the tier and its rank among the four. For a
 GO-tier or unknown locus it adds the GO wording, which is dashed and set apart
 from the PCC badge. Every discrepancy is listed as its own note, and the panel
-states that neither source is preferred.
+states that neither source is preferred. The GO tier and its notes render and
+export only in the All sources view; single-source views leave them blank.
+
+The browser loader and `tools/validate_contract.py` each hold the thresholds
+above as their own constants. Both refuse a file whose policy thresholds
+differ, whose context label disagrees with its probability, whose judged
+discrepancy falls below the threshold, or whose PCC-call note is present or
+absent against the rule. A supplied label is never trusted.
 
 The CSV adds four columns: `essentialityEvidenceTier`, `goIeaEssentialityContext`,
 `goIeaCoreProcessProbability`, and `annotationDiscrepancies`, which joins notes

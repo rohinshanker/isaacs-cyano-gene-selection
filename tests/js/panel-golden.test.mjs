@@ -43,6 +43,12 @@ let cached = null;
 async function realContext() {
   if (cached) return cached;
   const dataset = await loadDataset({ baseUrl: `file://${DATA_DIR}/`, fetchImpl: fileFetch() });
+  cached = contextFor(dataset);
+  return cached;
+}
+
+/** The registry and feature space built from one dataset, exactly as the app does. */
+function contextFor(dataset) {
   const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
   const schemes = describeSchemes([{ name: 'Syn61-style', map: SYN61 }]);
@@ -53,8 +59,7 @@ async function realContext() {
     ).fields,
   ]));
   const space = buildPanelSpace({ dataset, registry, schemes, schemeFields });
-  cached = { dataset, registry, space, schemes, schemeFields };
-  return cached;
+  return { dataset, registry, space, schemes, schemeFields };
 }
 
 /** A small deterministic generator, so the random baseline is the same every run. */
@@ -168,8 +173,10 @@ test('the panel objective ignores the GO IEA essentiality fallback', async () =>
     row.goContext = { label: 'core-cellular-process', pCore: 1 };
   }
   for (const variant of [null, everyLocusGo]) {
-    const changed = { ...dataset, goIeaEssentiality: variant };
-    assert.deepEqual(designPanel({ dataset: changed, registry, space, config }).selected, baseline);
+    // Rebuild the registry and feature space from the variant, so a GO-aware
+    // metric or feature could not slip past a space built from the real file.
+    const changed = contextFor({ ...dataset, goIeaEssentiality: variant });
+    assert.deepEqual(designPanel({ ...changed, config }).selected, baseline);
   }
 });
 

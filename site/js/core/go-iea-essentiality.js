@@ -18,11 +18,18 @@ export const TIER_LABELS = Object.freeze({
   unknown: 'Unknown',
 });
 
+/**
+ * Pinned in docs/validation/go-iea-essentiality-context.md. Held here so a
+ * label is re-derived from its probability instead of trusted.
+ */
+export const THRESHOLDS = Object.freeze({
+  coreProbabilityAtLeast: 0.9,
+  notCoreProbabilityAtMost: 0.2,
+  discrepancyProbabilityAtLeast: 0.8,
+});
+
 const DETERMINATE_PCC = new Set(['essential', 'beneficial', 'non-essential']);
-const CONTEXT_LABELS = new Set(['core-cellular-process', 'not-core', 'uncertain']);
-const DISCREPANCY_KINDS = new Set([
-  'utex-product', 'pcc7942-product', 'reviewed-category', 'pcc7942-call',
-]);
+const JUDGED_DISCREPANCIES = new Set(['utex-product', 'pcc7942-product', 'reviewed-category']);
 
 /** Apply the published precedence to one locus. */
 export function resolveEssentialityTier({ tested, pccStatus, goLabel }) {
@@ -30,6 +37,24 @@ export function resolveEssentialityTier({ tested, pccStatus, goLabel }) {
   if (DETERMINATE_PCC.has(pccStatus)) return 'admitted-pcc-call';
   if (goLabel === 'core-cellular-process') return 'go-iea-context';
   return 'unknown';
+}
+
+/** Apply the pinned core-process thresholds to one probability. */
+export function contextLabelFor(pCore) {
+  if (pCore >= THRESHOLDS.coreProbabilityAtLeast) return 'core-cellular-process';
+  if (pCore <= THRESHOLDS.notCoreProbabilityAtMost) return 'not-core';
+  return 'uncertain';
+}
+
+/** True when one discrepancy entry meets the pinned threshold or PCC-call rule. */
+function discrepancyIsValid(entry, context, pccStatus) {
+  if (!entry || !context || typeof entry.note !== 'string' || !entry.note) return false;
+  if (entry.kind === 'pcc7942-call') {
+    return entry.probability === null && context.label === 'core-cellular-process'
+      && pccStatus === 'non-essential';
+  }
+  return JUDGED_DISCREPANCIES.has(entry.kind) && Number.isFinite(entry.probability)
+    && entry.probability >= THRESHOLDS.discrepancyProbabilityAtLeast;
 }
 
 /** Validate the pinned file against the plotted genes and candidate evidence. */
@@ -45,6 +70,10 @@ export function validateGoIeaEssentiality(data, genes, candidateEvidence, releas
   if (JSON.stringify(data.policy?.precedence) !== JSON.stringify(EVIDENCE_TIERS)) {
     throw new Error('GO IEA essentiality precedence differs from the site contract');
   }
+  const thresholds = data.policy?.thresholds ?? {};
+  if (Object.keys(THRESHOLDS).some((key) => thresholds[key] !== THRESHOLDS[key])) {
+    throw new Error('GO IEA essentiality thresholds differ from the site contract');
+  }
   const calls = candidateEvidence?.borrowedEssentiality?.byLocus;
   if (!calls) throw new Error('GO IEA essentiality requires candidate evidence');
   const rows = data.byLocus ?? {};
@@ -54,9 +83,12 @@ export function validateGoIeaEssentiality(data, genes, candidateEvidence, releas
   for (const { id } of genes) {
     const row = rows[id];
     const context = row?.goContext;
-    if (!row || (context !== null && (!CONTEXT_LABELS.has(context?.label)
-      || !Number.isFinite(context.pCore)))) {
+    if (!row || (context !== null && (!Number.isFinite(context?.pCore)
+      || context.pCore < 0 || context.pCore > 1))) {
       throw new Error(`Invalid GO IEA essentiality record ${id}`);
+    }
+    if (context !== null && context.label !== contextLabelFor(context.pCore)) {
+      throw new Error(`GO IEA context label for ${id} disagrees with its probability`);
     }
     const expected = resolveEssentialityTier({
       tested: Boolean(candidateEvidence.testedAlleles?.[id]),
@@ -66,9 +98,13 @@ export function validateGoIeaEssentiality(data, genes, candidateEvidence, releas
     if (row.tier !== expected || row.pcc7942Status !== calls[id]?.status) {
       throw new Error(`GO IEA essentiality tier for ${id} disagrees with candidate evidence`);
     }
-    if (!Array.isArray(row.discrepancies) || row.discrepancies.some((entry) => (
-      !DISCREPANCY_KINDS.has(entry?.kind) || typeof entry.note !== 'string' || !entry.note))) {
+    if (!Array.isArray(row.discrepancies)
+      || row.discrepancies.some((entry) => !discrepancyIsValid(entry, context, calls[id]?.status))) {
       throw new Error(`Invalid GO IEA discrepancy for ${id}`);
+    }
+    if (context?.label === 'core-cellular-process' && calls[id]?.status === 'non-essential'
+      && !row.discrepancies.some((entry) => entry.kind === 'pcc7942-call')) {
+      throw new Error(`GO IEA essentiality for ${id} omits its PCC-call disagreement`);
     }
   }
   return data;
