@@ -565,4 +565,3 @@ row carries the same `annotationSource` id, with a caveat naming the source
 and its evidence note, so a single-source file cannot be mistaken for the
 combined view. The GO IEA essentiality tier, context, probability, and
 discrepancy fields are populated only for All sources exports.
-
