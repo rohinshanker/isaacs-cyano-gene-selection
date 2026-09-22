@@ -106,6 +106,23 @@ function fitText(context, text, maxWidth) {
   return `${candidate}…`;
 }
 
+/**
+ * Shorten an axis title without ever truncating `suffix` (the ", log10" /
+ * ", percentile" / " (unit)" tail): a title that loses its scale suffix
+ * misstates what the plotted numbers are. `fullText` is `name + suffix`;
+ * only `name` is ever shortened. `suffix` empty falls back to plain `fitText`.
+ */
+export function fitAxisTitle(context, fullText, suffix, maxWidth) {
+  if (context.measureText(fullText).width <= maxWidth) return fullText;
+  if (!suffix) return fitText(context, fullText, maxWidth);
+  const name = fullText.slice(0, fullText.length - suffix.length);
+  let candidate = name;
+  while (candidate.length > 0 && context.measureText(`${candidate}…${suffix}`).width > maxWidth) {
+    candidate = candidate.slice(0, -1);
+  }
+  return `${candidate}…${suffix}`;
+}
+
 /** Decimal places that write `step` exactly, so no two ticks round together. */
 function decimalsForStep(step) {
   if (!Number.isFinite(step) || step <= 0) return 0;
@@ -814,7 +831,7 @@ export class ScatterPlot {
     context.textAlign = 'center';
     context.textBaseline = 'bottom';
     context.fillText(
-      fitText(context, this.projection.xLabel ?? '', rect.width),
+      fitAxisTitle(context, this.projection.xLabel ?? '', this.projection.xLabelSuffix ?? '', rect.width),
       rect.left + rect.width / 2,
       this.height - 4,
     );
@@ -822,7 +839,11 @@ export class ScatterPlot {
     context.translate(12, rect.top + rect.height / 2);
     context.rotate(-Math.PI / 2);
     context.textBaseline = 'top';
-    context.fillText(fitText(context, this.projection.yLabel ?? '', rect.height), 0, 0);
+    context.fillText(
+      fitAxisTitle(context, this.projection.yLabel ?? '', this.projection.yLabelSuffix ?? '', rect.height),
+      0,
+      0,
+    );
     context.restore();
     context.restore();
   }

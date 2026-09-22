@@ -11,6 +11,9 @@ import {
   log10DisabledReason,
   axisScaleName,
   axisTitle,
+  axisTitleSuffix,
+  isDiagonalAxisPair,
+  axesUnavailableMessage,
 } from '../../site/js/core/metric-axes.js';
 
 function registryOf(metrics) {
@@ -278,4 +281,98 @@ test('an unmeasured axis stays unavailable under every scale', () => {
     assert.equal(projection.x.available, false);
     assert.deepEqual([...projection.x.values], [NaN, NaN]);
   }
+});
+
+test('axisTitleSuffix isolates the scale/unit tail so a renderer can shorten only the name', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [10, 100, 1000]),
+  ]);
+  const linear = buildMetricAxesProjection(registry, 3, { x: 'lengthNt', y: 'lengthNt' });
+  assert.equal(axisTitleSuffix(linear.x), ' (nt)');
+  assert.equal(axisTitle(linear.x), `CDS length${axisTitleSuffix(linear.x)}`);
+
+  const log = buildMetricAxesProjection(
+    registry, 3, { x: 'lengthNt', y: 'lengthNt' }, { x: 'log10', y: 'linear' },
+  );
+  assert.equal(axisTitleSuffix(log.x), ', log10');
+  assert.equal(axisTitle(log.x), `CDS length${axisTitleSuffix(log.x)}`);
+});
+
+test('an empty percentile cohort is a distinct, explicit axis state, not a missing measurement', () => {
+  const registry = registryOf([
+    metric('lengthNt', 'CDS length', 'nt', [100, 200, 300]),
+  ]);
+  // Every row is filtered out: the reference cohort to rank against is empty,
+  // even though every gene has a finite raw length.
+  const mask = Uint8Array.from([0, 0, 0]);
+  const projection = buildMetricAxesProjection(
+    registry, 3, { x: 'lengthNt', y: 'lengthNt' }, { x: 'percentile', y: 'linear' }, mask,
+  );
+
+  assert.equal(projection.x.percentileCohortEmpty, true);
+  assert.deepEqual([...projection.x.values], [NaN, NaN, NaN]);
+  // The other axis has a real cohort (percentile ranking is per-axis, not
+  // shared), so it must not be flagged empty just because its sibling is.
+  assert.equal(projection.y.percentileCohortEmpty, false);
+
+  assert.equal(
+    axesUnavailableMessage(projection),
+    'No visible genes remain to rank CDS length by percentile. Relax the filters to restore a ranking cohort.',
+  );
+});
+
+test('a non-empty cohort is never reported as an empty one, and a real gap keeps the generic message', () => {
+  const registry = registryOf([
+    metric('tss', 'TSS initiation', 'counts', [10, 20, 30]),
+  ]);
+  const nonEmpty = buildMetricAxesProjection(
+    registry, 3, { x: 'tss', y: 'tss' }, { x: 'percentile', y: 'linear' },
+  );
+  assert.equal(nonEmpty.x.percentileCohortEmpty, false);
+  assert.equal(axesUnavailableMessage(nonEmpty), null);
+
+  const registryTwo = registryOf([
+    metric('a', 'Metric A', 'nt', [1, NaN]),
+    metric('b', 'Metric B', 'nt', [NaN, 1]),
+  ]);
+  const disjoint = buildMetricAxesProjection(registryTwo, 2, { x: 'a', y: 'b' });
+  assert.equal(disjoint.finitePairCount, 0);
+  assert.equal(
+    axesUnavailableMessage(disjoint),
+    'No genes have values on both selected axes. Choose another pair of metrics.',
+  );
+});
+
+test('an unavailable metric reports its own message ahead of any cohort or pairing reason', () => {
+  const registry = registryOf([metric('cai', 'CAI', 'index', [0.4, 0.6])]);
+  const projection = buildMetricAxesProjection(registry, 2, { x: 'notShipped', y: 'cai' });
+  assert.equal(
+    axesUnavailableMessage(projection),
+    'A selected metric is unavailable in this dataset. Choose another axis.',
+  );
+});
+
+test('identical axis keys are a diagonal only when both axes also share their effective scale', () => {
+  const registry = registryOf([
+    metric('tss', 'TSS initiation', 'counts', [10, 20, 30, 40]),
+  ]);
+  const sameScale = buildMetricAxesProjection(
+    registry, 4, { x: 'tss', y: 'tss' }, { x: 'linear', y: 'linear' },
+  );
+  assert.equal(isDiagonalAxisPair(sameScale), true);
+
+  const differentScale = buildMetricAxesProjection(
+    registry, 4, { x: 'tss', y: 'tss' }, { x: 'percentile', y: 'linear' },
+  );
+  assert.equal(isDiagonalAxisPair(differentScale), false);
+
+  const differentKeys = buildMetricAxesProjection(
+    registryOf([
+      metric('tss', 'TSS initiation', 'counts', [10, 20, 30, 40]),
+      metric('lengthNt', 'CDS length', 'nt', [1, 2, 3, 4]),
+    ]),
+    4,
+    { x: 'tss', y: 'lengthNt' },
+  );
+  assert.equal(isDiagonalAxisPair(differentKeys), false);
 });

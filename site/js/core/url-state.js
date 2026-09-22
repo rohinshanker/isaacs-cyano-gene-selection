@@ -99,6 +99,26 @@ export function applyDecoded(target, decoded) {
   return target;
 }
 
+/**
+ * The subset of application state an export manifest records as `viewState`:
+ * the panel and axis choices that change how the plotted numbers read,
+ * without the filter or shortlist fields exported separately. Kept here, next
+ * to the fields' URL encoding, so a field added to one is added to the other
+ * in the same place rather than drifting apart across two hand-kept lists.
+ */
+export function viewStateOf(state) {
+  return {
+    panel: state.panel,
+    colorBy: state.colorBy,
+    axisX: state.axisX,
+    axisY: state.axisY,
+    axisXScale: state.axisXScale,
+    axisYScale: state.axisYScale,
+    categoryFilter: state.categoryFilter,
+    annotationSource: state.annotationSource,
+  };
+}
+
 function encodeFilters(filters) {
   return Object.entries(filters)
     .map(([key, range]) => {
