@@ -1,0 +1,215 @@
+{
+  "reviewedOn": "2026-09-22",
+  "reviewer": "claude-specialist agent (not an independent biologist)",
+  "protocol": "A seeded sample of up to 10 loci where both sources assign different categories, 8 where they agree, 8 with exactly one assigning source, and 8 judged loci with no assignment was drawn at the published threshold, shuffled, and printed with --spot-check-sheet, which shows only the request states: the PCC 7942 product name and the GO terms, with no Jev answer, probability, or category. Each row was labelled per source against the frozen rubric before joining. Disclosure: the threshold was chosen from the cross-source calibration before this draw, and while reading that calibration the reviewer had printed 25 disagreeing loci with their answers; rows 8, 20, 23, 26, 28, and 33 (M744_RS02385, M744_RS01175, M744_RS05120, M744_RS04205, M744_RS04120, M744_RS06745) were in that list, and row 30 (M744_RS13955) is a known discrepancy from the GO IEA essentiality audit, so those seven rows were not blind to the model's answer.",
+  "sample": {
+    "seed": 20260922,
+    "threshold": 0.8
+  },
+  "labels": [
+    {
+      "locusTag": "M744_RS08690",
+      "reviewerPcc": "atp-production-and-respiration",
+      "reviewerGo": "atp-production-and-respiration",
+      "note": "Proton-translocating transhydrogenase is energy metabolism; nearest listed category is respiration."
+    },
+    {
+      "locusTag": "M744_RS03815",
+      "reviewerPcc": "unknown-or-unclassified",
+      "reviewerGo": null,
+      "note": "DUF domain name states no function."
+    },
+    {
+      "locusTag": "M744_RS12430",
+      "reviewerPcc": "other-characterized",
+      "reviewerGo": "other-characterized",
+      "note": "Phage baseplate assembly."
+    },
+    {
+      "locusTag": "M744_RS12695",
+      "reviewerPcc": "signaling-and-circadian-regulation",
+      "reviewerGo": "signaling-and-circadian-regulation",
+      "note": "Transcriptional regulator."
+    },
+    {
+      "locusTag": "M744_RS13690",
+      "reviewerPcc": "atp-production-and-respiration",
+      "reviewerGo": "photosynthetic-light-reactions",
+      "note": "NDH-1 subunit is listed under respiration by product; the GO term names photosynthetic electron transport. Genuine rubric disagreement."
+    },
+    {
+      "locusTag": "M744_RS06500",
+      "reviewerPcc": "pigment-and-cofactor-biosynthesis",
+      "reviewerGo": "unknown-or-unclassified",
+      "note": "Cysteine desulfurase supplies sulfur for Fe-S cluster assembly; GO has only PLP binding."
+    },
+    {
+      "locusTag": "M744_RS12230",
+      "reviewerPcc": "carbon-and-nutrient-metabolism",
+      "reviewerGo": "carbon-and-nutrient-metabolism",
+      "note": "Histidine biosynthesis is amino acid biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS02385",
+      "reviewerPcc": "translation-and-protein-maintenance",
+      "reviewerGo": "unknown-or-unclassified",
+      "note": "GatB completes tRNA aminoacylation; the GO term is an enzyme class with no process."
+    },
+    {
+      "locusTag": "M744_RS05845",
+      "reviewerPcc": "unknown-or-unclassified",
+      "reviewerGo": "unknown-or-unclassified",
+      "note": "Family name with no stated function; PLP binding only."
+    },
+    {
+      "locusTag": "M744_RS10865",
+      "reviewerPcc": "pigment-and-cofactor-biosynthesis",
+      "reviewerGo": "pigment-and-cofactor-biosynthesis",
+      "note": "Thiamine biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS02440",
+      "reviewerPcc": "pigment-and-cofactor-biosynthesis",
+      "reviewerGo": null,
+      "note": "NAD biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS12750",
+      "reviewerPcc": "translation-and-protein-maintenance",
+      "reviewerGo": "translation-and-protein-maintenance",
+      "note": "General chaperone."
+    },
+    {
+      "locusTag": "M744_RS05205",
+      "reviewerPcc": "unknown-or-unclassified",
+      "reviewerGo": null,
+      "note": "Enzyme class without a named process."
+    },
+    {
+      "locusTag": "M744_RS06995",
+      "reviewerPcc": "unknown-or-unclassified",
+      "reviewerGo": "unknown-or-unclassified",
+      "note": "ParA family names an ATPase family with diverse roles; ATP binding only."
+    },
+    {
+      "locusTag": "M744_RS12075",
+      "reviewerPcc": "transport-and-envelope",
+      "reviewerGo": "transport-and-envelope",
+      "note": "ABC transporter."
+    },
+    {
+      "locusTag": "M744_RS05540",
+      "reviewerPcc": "unknown-or-unclassified",
+      "reviewerGo": "signaling-and-circadian-regulation",
+      "note": "STAS domain name states no function; GO names anti-sigma factor antagonist and transcription regulation."
+    },
+    {
+      "locusTag": "M744_RS12670",
+      "reviewerPcc": "stress-and-repair",
+      "reviewerGo": "unknown-or-unclassified",
+      "note": "Universal stress protein; GO has only protein binding."
+    },
+    {
+      "locusTag": "M744_RS01115",
+      "reviewerPcc": "transport-and-envelope",
+      "reviewerGo": "transport-and-envelope",
+      "note": "Sulfate transporter."
+    },
+    {
+      "locusTag": "M744_RS08330",
+      "reviewerPcc": "photosynthetic-light-reactions",
+      "reviewerGo": null,
+      "note": "Flavodoxin substitutes for photosynthetic ferredoxin as an electron carrier."
+    },
+    {
+      "locusTag": "M744_RS01175",
+      "reviewerPcc": "translation-and-protein-maintenance",
+      "reviewerGo": "dna-and-rna-processing",
+      "note": "Ribosome-binding factor by product; rRNA processing by GO term."
+    },
+    {
+      "locusTag": "M744_RS13915",
+      "reviewerPcc": "translation-and-protein-maintenance",
+      "reviewerGo": "dna-and-rna-processing",
+      "note": "Ribosome maturation factor by product; rRNA processing by GO term."
+    },
+    {
+      "locusTag": "M744_RS03770",
+      "reviewerPcc": "carbon-and-nutrient-metabolism",
+      "reviewerGo": null,
+      "note": "Amino-sugar metabolism."
+    },
+    {
+      "locusTag": "M744_RS05120",
+      "reviewerPcc": "carbon-and-nutrient-metabolism",
+      "reviewerGo": "transport-and-envelope",
+      "note": "Alanine racemase is amino acid metabolism by name; the GO term names peptidoglycan biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS01190",
+      "reviewerPcc": "stress-and-repair",
+      "reviewerGo": "stress-and-repair",
+      "note": "Methionine sulfoxide repair after oxidative damage."
+    },
+    {
+      "locusTag": "M744_RS12775",
+      "reviewerPcc": "carbon-and-nutrient-metabolism",
+      "reviewerGo": "carbon-and-nutrient-metabolism",
+      "note": "Sterol desaturase is lipid metabolism; GO names lipid biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS04205",
+      "reviewerPcc": "pigment-and-cofactor-biosynthesis",
+      "reviewerGo": "pigment-and-cofactor-biosynthesis",
+      "note": "PanB, pantothenate (coenzyme A) biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS02295",
+      "reviewerPcc": "unknown-or-unclassified",
+      "reviewerGo": "unknown-or-unclassified",
+      "note": "Broad methyltransferase class with no substrate or process."
+    },
+    {
+      "locusTag": "M744_RS04120",
+      "reviewerPcc": "stress-and-repair",
+      "reviewerGo": "dna-and-rna-processing",
+      "note": "Holliday junction resolution is recombination, listed under repair by product; the GO term names rRNA processing."
+    },
+    {
+      "locusTag": "M744_RS07645",
+      "reviewerPcc": "transport-and-envelope",
+      "reviewerGo": "transport-and-envelope",
+      "note": "Efflux transporter."
+    },
+    {
+      "locusTag": "M744_RS13955",
+      "reviewerPcc": "photosynthetic-light-reactions",
+      "reviewerGo": "pigment-and-cofactor-biosynthesis",
+      "note": "Chlorophyll a/b-binding protein is light harvesting by product; the GO terms name heme biosynthesis. Known discrepancy from the GO IEA essentiality audit."
+    },
+    {
+      "locusTag": "M744_RS08240",
+      "reviewerPcc": "translation-and-protein-maintenance",
+      "reviewerGo": "translation-and-protein-maintenance",
+      "note": "Ribosomal protein."
+    },
+    {
+      "locusTag": "M744_RS08745",
+      "reviewerPcc": "translation-and-protein-maintenance",
+      "reviewerGo": null,
+      "note": "Peptidase family names a protease."
+    },
+    {
+      "locusTag": "M744_RS06745",
+      "reviewerPcc": "pigment-and-cofactor-biosynthesis",
+      "reviewerGo": "pigment-and-cofactor-biosynthesis",
+      "note": "L-aspartate oxidase is the first step of NAD biosynthesis."
+    },
+    {
+      "locusTag": "M744_RS10075",
+      "reviewerPcc": "other-characterized",
+      "reviewerGo": "dna-and-rna-processing",
+      "note": "Toxin-antitoxin system by product; the GO term names an RNA nuclease activity."
+    }
+  ]
+}
