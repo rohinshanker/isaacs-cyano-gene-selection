@@ -229,6 +229,15 @@ button, select, input[type="text"], input[type="number"], input[type="search"] {
 .chip-button.danger { border-color: #d2a19d; color: var(--danger); }
 .chip-button.danger:hover:not(:disabled) { background: #fbeceb; }
 
+.help-toggle-caret {
+  width: 0.65em;
+  height: 0.65em;
+  margin-left: 0.35em;
+  vertical-align: -0.05em;
+  transition: transform 0.15s ease;
+}
+#help-toggle[aria-expanded="true"] .help-toggle-caret { transform: rotate(180deg); }
+
 .icon-button {
   background: none;
   border: 1px solid transparent;
