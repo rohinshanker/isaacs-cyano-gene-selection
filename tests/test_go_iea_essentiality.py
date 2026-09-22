@@ -116,6 +116,54 @@ def test_cli_spot_check_sheet_hides_answers() -> None:
     assert "pCore" not in result.stdout and "noul" not in result.stdout
 
 
+def pinned_spot_check_loci() -> list[str]:
+    """The locus order the blinded reviewer labelled."""
+    review = json.loads((ROOT / go.SPOT_CHECK_PATH).read_text(encoding="utf-8"))
+    return [row["locusTag"] for row in review["labels"]]
+
+
+def test_spot_check_replay_reproduces_the_pinned_sample_exactly() -> None:
+    """--spot-check-replay prints the reviewed loci byte-for-byte; a fresh draw differs."""
+    pinned = pinned_spot_check_loci()
+    replay = go.spot_check_replay(ROOT)
+    assert [row["locusTag"] for row in replay] == pinned
+    result = subprocess.run([sys.executable, str(MODULE_PATH), "--spot-check-replay"],
+                            capture_output=True, text=True, check=True)
+    assert result.stdout == go.render_json(replay)
+    assert "pCore" not in result.stdout and "noul" not in result.stdout
+    fresh = [row["locusTag"] for row in go.spot_check_sheet(ROOT)]
+    assert len(fresh) == len(pinned) and fresh != pinned
+    reseeded = [row["locusTag"] for row in go.spot_check_sheet(ROOT, {
+        "seed": 1, "coreThreshold": go.CORE_THRESHOLD,
+        "discrepancyThreshold": go.DISCREPANCY_THRESHOLD,
+    })]
+    assert reseeded != fresh
+
+
+def test_spot_check_replay_fails_when_the_pinned_draw_is_changed(tmp_path: Path) -> None:
+    """A different recorded seed cannot silently pass as the reviewed sample."""
+    root = copy_inputs(tmp_path)
+    spot = root / go.SPOT_CHECK_PATH
+    review = json.loads(spot.read_text(encoding="utf-8"))
+    review["sample"]["seed"] = 1
+    spot.write_text(json.dumps(review), encoding="utf-8")
+    with pytest.raises(go.GoEssentialityError, match="differs from the pinned labels"):
+        go.spot_check_replay(root)
+
+
+def test_cli_seed_applies_only_to_a_fresh_sheet(monkeypatch, capsys) -> None:
+    """--seed changes a fresh draw and is rejected with any other mode."""
+    monkeypatch.setattr(sys, "argv", ["tool", "--spot-check-sheet", "--seed", "1"])
+    assert go.main() == 0
+    reseeded = [row["locusTag"] for row in json.loads(capsys.readouterr().out)]
+    assert reseeded != pinned_spot_check_loci()
+    monkeypatch.setattr(sys, "argv", ["tool", "--spot-check-replay", "--seed", "1"])
+    with pytest.raises(SystemExit) as raised:
+        go.main()
+    assert raised.value.code == 2
+    assert "--seed applies only to --spot-check-sheet" in capsys.readouterr().err
+
+
 def test_pinned_counts_and_attribution(payload: dict) -> None:
     """Tier counts, discrepancies, and GO attribution stay pinned."""
     assert payload["counts"] == {
@@ -127,7 +175,7 @@ def test_pinned_counts_and_attribution(payload: dict) -> None:
                              "uncertain": 197},
         "fallbackEligible": 281,
         "fallbackEligibleWithGoTerms": 112,
-        "discrepanciesByKind": {"utex-product": 5, "pcc7942-product": 1,
+        "discrepanciesByKind": {"utex-product": 5, "pcc7942-product": 6,
                                 "reviewed-category": 0, "pcc7942-call": 104},
         "lociWithDiscrepancy": 109,
     }
@@ -151,11 +199,31 @@ def test_real_examples_of_each_tier_and_discrepancy(payload: dict) -> None:
     assert rows["M744_RS03575"]["tier"] == "unknown"
     assert rows["M744_RS03575"]["goContext"]["label"] == "uncertain"
     nbla = rows["M744_RS05510"]["discrepancies"]
-    assert [entry["kind"] for entry in nbla] == ["utex-product"]
+    assert [entry["kind"] for entry in nbla] == ["utex-product", "pcc7942-product"]
     assert "phycobilisome degradation protein NblA" in nbla[0]["note"]
+    assert "SYNPCC7942_RS10785" in nbla[1]["note"]
+    assert "identical to the UTEX 2973 product" in nbla[1]["note"]
+    assert nbla[1]["probability"] == nbla[0]["probability"] == 0.91
     hemh = rows["M744_RS13955"]["discrepancies"]
     assert [entry["kind"] for entry in hemh] == ["pcc7942-product", "pcc7942-call"]
     assert "chlorophyll a/b-binding protein" in hemh[0]["note"]
+
+
+def test_every_identical_product_join_shares_the_utex_judgment(payload: dict, inputs) -> None:
+    """Each UTEX-product flag with an identical PCC product carries both notes."""
+    shared = 0
+    for locus, row in payload["byLocus"].items():
+        kinds = [entry["kind"] for entry in row["discrepancies"]]
+        join = go.pcc_join_for(locus, inputs)
+        if "utex-product" in kinds and join is not None and join.identical:
+            shared += 1
+            utex, pcc = row["discrepancies"][:2]
+            assert (utex["kind"], pcc["kind"]) == ("utex-product", "pcc7942-product")
+            assert pcc["probability"] == utex["probability"]
+            assert join.locus in pcc["note"] and join.product in pcc["note"]
+        elif "pcc7942-product" in kinds:
+            assert join is not None and not join.identical
+    assert shared == 5
 
 
 def test_audit_summary_records_evaluation_and_spot_check() -> None:
@@ -224,8 +292,8 @@ def test_context_thresholds(p_core: float, label: str) -> None:
 def discrepancies(**overrides) -> list[dict]:
     """Calls the detector with neutral defaults."""
     arguments = {
-        "noul": {}, "utex_product": "ferrochelatase", "pcc_locus": "SYNPCC7942_RS1",
-        "pcc_product": None, "category": None, "go_label": None, "pcc_status": "unknown",
+        "noul": {}, "utex_product": "ferrochelatase", "pcc_join": None,
+        "category": None, "go_label": None, "pcc_status": "unknown",
     }
     arguments.update(overrides)
     return go.find_discrepancies(**arguments)
@@ -246,7 +314,7 @@ def test_each_discrepancy_kind_is_reported_in_order() -> None:
     found = discrepancies(
         noul={"utex_product": go.DISCREPANCY_THRESHOLD, "pcc_7942_product": 0.9,
               "reviewed_category": 0.95},
-        pcc_product="chlorophyll a/b-binding protein",
+        pcc_join=go.PccJoin("SYNPCC7942_RS1", "chlorophyll a/b-binding protein", False),
         category="Photosynthetic light reactions",
         go_label="core-cellular-process", pcc_status="non-essential",
     )
@@ -254,9 +322,25 @@ def test_each_discrepancy_kind_is_reported_in_order() -> None:
     assert found[0]["probability"] == go.DISCREPANCY_THRESHOLD
     assert "ferrochelatase" in found[0]["note"]
     assert "SYNPCC7942_RS1" in found[1]["note"]
+    assert "identical" not in found[1]["note"]
     assert "Photosynthetic light reactions" in found[2]["note"]
     assert found[3]["probability"] is None
     assert "non-essential" in found[3]["note"]
+
+
+def test_identical_pcc_product_reuses_the_utex_judgment() -> None:
+    """An identical joined product is flagged from the UTEX answer, naming both sources."""
+    identical = go.PccJoin("SYNPCC7942_RS1", "ferrochelatase", True)
+    found = discrepancies(noul={"utex_product": 0.91}, pcc_join=identical)
+    assert [entry["kind"] for entry in found] == ["utex-product", "pcc7942-product"]
+    assert found[1]["probability"] == 0.91
+    assert "SYNPCC7942_RS1" in found[1]["note"] and "ferrochelatase" in found[1]["note"]
+    assert "identical to the UTEX 2973 product" in found[1]["note"]
+    assert discrepancies(noul={"utex_product": go.DISCREPANCY_THRESHOLD - 0.01},
+                         pcc_join=identical) == []
+    # A stray PCC-product answer never counts for identical text.
+    assert discrepancies(noul={"utex_product": 0.1, "pcc_7942_product": 0.99},
+                         pcc_join=identical) == []
 
 
 def test_pcc_product_question_only_when_text_differs(inputs) -> None:
@@ -264,6 +348,11 @@ def test_pcc_product_question_only_when_text_differs(inputs) -> None:
     assert go.pcc_product_for("M744_RS00005", inputs) is None
     assert go.pcc_product_for("M744_RS13955", inputs) == "chlorophyll a/b-binding protein"
     assert go.pcc_product_for("M744_RS00015", inputs) is None
+    assert go.pcc_join_for("M744_RS00005", inputs).identical is True
+    assert go.pcc_join_for("M744_RS13955", inputs) == go.PccJoin(
+        "SYNPCC7942_RS14060", "chlorophyll a/b-binding protein", False
+    )
+    assert go.pcc_join_for("M744_RS00015", inputs) is None
 
 
 def test_pcc_product_missing_from_gff_fails(inputs) -> None:
@@ -652,11 +741,23 @@ def test_contract_validator_rederives_tiers(payload: dict) -> None:
 
     assert failures(payload) == []
     assert failures(None) == ["GO IEA essentiality is an object"]
+    assert validator.GO_IEA_THRESHOLDS == go.POLICY["thresholds"]
     for mutate, label in (
         (lambda p: p["attribution"].update(license="none"), "attribution"),
         (lambda p: p["policy"].update(precedence=[]), "precedence"),
+        (lambda p: p["policy"]["thresholds"].update(coreProbabilityAtLeast=0.8),
+         "thresholds match"),
         (lambda p: p["byLocus"]["M744_RS08250"]["goContext"].update(pCore=2), "[0, 1]"),
+        (lambda p: p["byLocus"]["M744_RS08250"]["goContext"].update(label="uncertain"),
+         "label follows its probability"),
         (lambda p: p["byLocus"]["M744_RS00005"].update(tier="unknown"), "follows precedence"),
+        (lambda p: p["byLocus"]["M744_RS05510"]["discrepancies"][0].update(probability=0.79),
+         "pinned threshold"),
+        (lambda p: p["byLocus"]["M744_RS05510"]["discrepancies"][0].update(note=""),
+         "pinned threshold"),
+        (lambda p: p["byLocus"]["M744_RS00010"].update(discrepancies=[
+            {"kind": "pcc7942-call", "probability": None, "note": "x"}]), "pinned threshold"),
+        (lambda p: p["byLocus"]["M744_RS13955"]["discrepancies"].pop(), "PCC-call note"),
         (lambda p: p["counts"]["byTier"].update(unknown=0), "tier counts"),
         (lambda p: p["byLocus"].pop("M744_RS00005"), "covers every plotted CDS"),
     ):
@@ -670,7 +771,7 @@ def test_main_offline_modes_in_process(monkeypatch, capsys) -> None:
     sheet = go.spot_check_sheet(ROOT)
     assert sheet
     assert all(set(row) == {"locusTag", "go_annotations", "annotations"} for row in sheet)
-    for flags in (["--check"], ["--spot-check-sheet"]):
+    for flags in (["--check"], ["--spot-check-sheet"], ["--spot-check-replay"]):
         monkeypatch.setattr(sys, "argv", ["tool", *flags])
         assert go.main() == 0
     output = capsys.readouterr().out

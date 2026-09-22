@@ -76,7 +76,7 @@
     },
     "discrepanciesByKind": {
       "pcc7942-call": 104,
-      "pcc7942-product": 1,
+      "pcc7942-product": 6,
       "reviewed-category": 0,
       "utex-product": 5
     },
@@ -417,7 +417,7 @@
     "spot-check.json": "b053b986df2b94d49d0825b29cf8f953c7cc8a5c8d17ceace83546e039adf385"
   },
   "model": "jev-1.13.0",
-  "outputSha256": "a3886ba60916e9c0a502ca12ad612062245c15eb7238cd18f38f82290004fcd9",
+  "outputSha256": "e3eda7c1d9df7988387851cea17642da899da8aaf8976734bcbcc734f8534e13",
   "rubricVersion": "2026-09-22.1",
   "spotCheck": {
     "contradictionAgreement": 34,

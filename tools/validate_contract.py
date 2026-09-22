@@ -951,6 +951,37 @@ def cross_check_against_genome(
 
 
 GO_IEA_TIERS = ("tested-utex-allele", "admitted-pcc-call", "go-iea-context", "unknown")
+# Pinned in docs/validation/go-iea-essentiality-context.md; held here so a
+# label is re-derived from its probability instead of trusted.
+GO_IEA_THRESHOLDS = {
+    "coreProbabilityAtLeast": 0.9,
+    "notCoreProbabilityAtMost": 0.2,
+    "discrepancyProbabilityAtLeast": 0.8,
+}
+GO_IEA_JUDGED_DISCREPANCIES = ("utex-product", "pcc7942-product", "reviewed-category")
+
+
+def go_iea_context_label(p_core: float) -> str:
+    """Applies the pinned core-process thresholds to one probability."""
+    if p_core >= GO_IEA_THRESHOLDS["coreProbabilityAtLeast"]:
+        return "core-cellular-process"
+    if p_core <= GO_IEA_THRESHOLDS["notCoreProbabilityAtMost"]:
+        return "not-core"
+    return "uncertain"
+
+
+def go_iea_discrepancy_ok(entry: Any, context: Any, status: Any) -> bool:
+    """Checks one discrepancy entry against the pinned rules."""
+    if not isinstance(entry, dict) or context is None or not entry.get("note"):
+        return False
+    kind = entry.get("kind")
+    probability = entry.get("probability")
+    if kind == "pcc7942-call":
+        return (probability is None and context.get("label") == "core-cellular-process"
+                and status == "non-essential")
+    return (kind in GO_IEA_JUDGED_DISCREPANCIES
+            and isinstance(probability, (int, float))
+            and probability >= GO_IEA_THRESHOLDS["discrepancyProbabilityAtLeast"])
 
 
 def validate_go_iea_essentiality(data: Any, genes: list[dict[str, Any]],
@@ -969,6 +1000,10 @@ def validate_go_iea_essentiality(data: Any, genes: list[dict[str, Any]],
         (data.get("policy") or {}).get("precedence") == list(GO_IEA_TIERS),
         "GO IEA essentiality precedence is tested > PCC > GO IEA > unknown",
     )
+    report.check(
+        (data.get("policy") or {}).get("thresholds") == GO_IEA_THRESHOLDS,
+        "GO IEA essentiality thresholds match the pinned contract",
+    )
     rows = data.get("byLocus")
     gene_ids = [gene.get("id") for gene in genes if isinstance(gene, dict)]
     if not report.check(isinstance(rows, dict) and sorted(rows) == sorted(gene_ids),
@@ -977,13 +1012,25 @@ def validate_go_iea_essentiality(data: Any, genes: list[dict[str, Any]],
     calls = ((candidate or {}).get("borrowedEssentiality") or {}).get("byLocus") or {}
     tested = (candidate or {}).get("testedAlleles") or {}
     wrong_tier, bad_context, tiers = [], [], {tier: 0 for tier in GO_IEA_TIERS}
+    wrong_label, bad_discrepancy, missing_call_note = [], [], []
     for locus, row in rows.items():
         context = row.get("goContext")
         if context is not None and not (
             isinstance(context.get("pCore"), (int, float)) and 0 <= context["pCore"] <= 1
         ):
             bad_context.append(locus)
+        elif context is not None and context.get("label") != go_iea_context_label(context["pCore"]):
+            wrong_label.append(locus)
         status = (calls.get(locus) or {}).get("status")
+        discrepancies = row.get("discrepancies")
+        if not isinstance(discrepancies, list) or any(
+            not go_iea_discrepancy_ok(entry, context, status) for entry in discrepancies
+        ):
+            bad_discrepancy.append(locus)
+        elif (context is not None and context.get("label") == "core-cellular-process"
+              and status == "non-essential"
+              and not any(entry.get("kind") == "pcc7942-call" for entry in discrepancies)):
+            missing_call_note.append(locus)
         if locus in tested:
             expected = "tested-utex-allele"
         elif status in ("essential", "beneficial", "non-essential"):
@@ -997,6 +1044,15 @@ def validate_go_iea_essentiality(data: Any, genes: list[dict[str, Any]],
         tiers[row.get("tier")] = tiers.get(row.get("tier"), 0) + 1
     report.check(not bad_context, "GO IEA core-process probabilities lie in [0, 1]",
                  f"{bad_context[:5]}")
+    report.check(not wrong_label,
+                 "every GO IEA context label follows its probability at the pinned thresholds",
+                 f"{len(wrong_label)} loci, e.g. {wrong_label[:5]}")
+    report.check(not bad_discrepancy,
+                 "every GO IEA discrepancy meets the pinned threshold or PCC-call rule",
+                 f"{len(bad_discrepancy)} loci, e.g. {bad_discrepancy[:5]}")
+    report.check(not missing_call_note,
+                 "every core-process locus with a non-essential PCC call carries a PCC-call note",
+                 f"{len(missing_call_note)} loci, e.g. {missing_call_note[:5]}")
     report.check(not wrong_tier,
                  "every GO IEA essentiality tier follows precedence over candidate evidence",
                  f"{len(wrong_tier)} loci, e.g. {wrong_tier[:5]}")

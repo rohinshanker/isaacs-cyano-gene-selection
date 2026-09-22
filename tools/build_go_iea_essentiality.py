@@ -6,7 +6,8 @@ Usage:
     python3 tools/build_go_iea_essentiality.py --check    # verify; never calls the API
     python3 tools/build_go_iea_essentiality.py --judge    # Jev inference; needs TYPESAFE_API_KEY
     python3 tools/build_go_iea_essentiality.py --evaluate # predeclared evaluation set
-    python3 tools/build_go_iea_essentiality.py --spot-check-sheet  # blinded review sheet
+    python3 tools/build_go_iea_essentiality.py --spot-check-sheet [--seed N]  # fresh blinded sheet
+    python3 tools/build_go_iea_essentiality.py --spot-check-replay  # the pinned reviewed sheet
 
 Jev answers two bounded questions per GO-annotated locus: whether its GO
 terms give essentiality-relevant context, and whether they contradict the
@@ -118,8 +119,10 @@ POLICY = {
     "discrepancyRule": (
         "A product-name or reviewed-category discrepancy is reported when Jev's "
         "probability that the GO terms contradict that annotation reaches the "
-        "discrepancy threshold. A PCC-call discrepancy is reported when GO context "
-        "is core-cellular-process and the admitted PCC 7942 call is non-essential. "
+        "discrepancy threshold. When the joined PCC 7942 product text is identical "
+        "to the UTEX 2973 product, the UTEX-product judgment is reported for both "
+        "sources. A PCC-call discrepancy is reported when GO context is "
+        "core-cellular-process and the admitted PCC 7942 call is non-essential. "
         "Neither source is preferred."
     ),
     "panelObjective": "Excluded. The guided panel objective never reads this dataset.",
@@ -313,15 +316,35 @@ class Request:
     question_ids: tuple[str, ...]
 
 
-def pcc_product_for(locus: str, inputs: Inputs) -> str | None:
-    """Returns a joined PCC product only when its text differs from UTEX's."""
+@dataclass(frozen=True)
+class PccJoin:
+    """An accepted PCC 7942 join: its locus, product, and whether UTEX's text matches."""
+
+    locus: str
+    product: str
+    identical: bool
+
+
+def pcc_join_for(locus: str, inputs: Inputs) -> PccJoin | None:
+    """Returns the accepted PCC 7942 join for a locus, or None when it has none."""
     call = inputs.pcc[locus]
     if call["mappingStatus"] != "accepted":
         return None
     product = inputs.pcc_products.get(call["pccLocusTag"])
     if product is None:
         raise GoEssentialityError(f"no PCC 7942 product for {call['pccLocusTag']}")
-    return None if product == inputs.genes[locus].get("product") else product
+    return PccJoin(call["pccLocusTag"], product,
+                   product == inputs.genes[locus].get("product"))
+
+
+def pcc_product_for(locus: str, inputs: Inputs) -> str | None:
+    """Returns a joined PCC product only when its text differs from UTEX's.
+
+    Identical text is never asked as its own question; `find_discrepancies`
+    reuses the UTEX-product judgment for it instead.
+    """
+    join = pcc_join_for(locus, inputs)
+    return None if join is None or join.identical else join.product
 
 
 def discrepancy_state(
@@ -602,15 +625,19 @@ def resolve_tier(tested: bool, pcc_status: str, go_label: str | None) -> str:
 def find_discrepancies(
     noul: dict[str, float],
     utex_product: str,
-    pcc_locus: str | None,
-    pcc_product: str | None,
+    pcc_join: PccJoin | None,
     category: str | None,
     go_label: str | None,
     pcc_status: str,
 ) -> list[dict[str, Any]]:
-    """Returns every GO disagreement that meets the recorded rule, in fixed order."""
+    """Returns every GO disagreement that meets the recorded rule, in fixed order.
+
+    A joined PCC product with text identical to UTEX's was never asked as its
+    own question, so its note reuses the UTEX-product judgment and says so.
+    """
     found: list[dict[str, Any]] = []
-    if noul.get("utex_product", 0) >= DISCREPANCY_THRESHOLD:
+    utex_flagged = noul.get("utex_product", 0) >= DISCREPANCY_THRESHOLD
+    if utex_flagged:
         found.append({
             "kind": "utex-product",
             "probability": noul["utex_product"],
@@ -619,13 +646,25 @@ def find_discrepancies(
                 f"“{utex_product}”."
             ),
         })
-    if pcc_product is not None and noul.get("pcc_7942_product", 0) >= DISCREPANCY_THRESHOLD:
+    if pcc_join is not None and pcc_join.identical and utex_flagged:
+        found.append({
+            "kind": "pcc7942-product",
+            "probability": noul["utex_product"],
+            "note": (
+                "GO IEA terms disagree with the PCC 7942 RefSeq product "
+                f"“{pcc_join.product}” of joined locus {pcc_join.locus}, whose text "
+                "is identical to the UTEX 2973 product; the UTEX-product judgment "
+                "applies to both sources."
+            ),
+        })
+    elif (pcc_join is not None and not pcc_join.identical
+          and noul.get("pcc_7942_product", 0) >= DISCREPANCY_THRESHOLD):
         found.append({
             "kind": "pcc7942-product",
             "probability": noul["pcc_7942_product"],
             "note": (
-                f"GO IEA terms disagree with the PCC 7942 RefSeq product "
-                f"“{pcc_product}” of joined locus {pcc_locus}."
+                "GO IEA terms disagree with the PCC 7942 RefSeq product "
+                f"“{pcc_join.product}” of joined locus {pcc_join.locus}."
             ),
         })
     if category is not None and noul.get("reviewed_category", 0) >= DISCREPANCY_THRESHOLD:
@@ -670,8 +709,7 @@ def locus_record(locus: str, inputs: Inputs, results: dict[str, dict[str, Any]])
         discrepancies = find_discrepancies(
             noul,
             inputs.genes[locus].get("product") or "",
-            call["pccLocusTag"],
-            pcc_product_for(locus, inputs),
+            pcc_join_for(locus, inputs),
             inputs.categories.get(locus),
             go_context["label"],
             call["status"],
@@ -910,15 +948,24 @@ def spot_check_sample(payload: dict[str, Any], contradiction: dict[str, float],
     return chosen
 
 
-def spot_check_sheet(root: Path) -> list[dict[str, Any]]:
-    """Returns the review sheet: states only, with no answers or tiers."""
+def spot_check_sheet(root: Path, draw: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Returns the review sheet: states only, with no answers or tiers.
+
+    Without `draw`, a fresh sample is drawn at the current thresholds and the
+    default seed. With a recorded draw (seed and thresholds, as pinned in
+    spot-check.json), the sheet lists exactly the loci that draw produced.
+    """
+    if draw is None:
+        draw = {"seed": SPOT_CHECK_SEED, "coreThreshold": CORE_THRESHOLD,
+                "discrepancyThreshold": DISCREPANCY_THRESHOLD}
     inputs = load_inputs(root)
     payload = build_payload(root)
     rubric = load_json(root / RUBRIC_PATH)
     results = pinned_results(root, rubric, build_requests(inputs))
     sheet = []
     sample = spot_check_sample(payload, max_contradiction(results),
-                               CORE_THRESHOLD, DISCREPANCY_THRESHOLD)
+                               draw["coreThreshold"], draw["discrepancyThreshold"],
+                               draw["seed"])
     for locus in sample:
         gene = inputs.genes[locus]
         state, _ = discrepancy_state(
@@ -926,6 +973,15 @@ def spot_check_sheet(root: Path) -> list[dict[str, Any]]:
             pcc_product_for(locus, inputs), inputs.categories.get(locus),
         )
         sheet.append({"locusTag": locus, **state})
+    return sheet
+
+
+def spot_check_replay(root: Path) -> list[dict[str, Any]]:
+    """Reproduces the pinned review sheet from its recorded seed and thresholds."""
+    review = load_json(root / SPOT_CHECK_PATH)
+    sheet = spot_check_sheet(root, review["sample"])
+    if [row["locusTag"] for row in sheet] != [row["locusTag"] for row in review["labels"]]:
+        raise GoEssentialityError("replayed spot-check sample differs from the pinned labels")
     return sheet
 
 
@@ -1025,11 +1081,17 @@ def main() -> int:
     mode.add_argument("--judge", action="store_true", help="run Jev on unpinned requests")
     mode.add_argument("--evaluate", action="store_true", help="run the evaluation set")
     mode.add_argument("--spot-check-sheet", action="store_true",
-                      help="print the blinded spot-check sheet")
+                      help="print a fresh blinded spot-check sheet at the current thresholds")
+    mode.add_argument("--spot-check-replay", action="store_true",
+                      help="print the pinned spot-check sheet from its recorded seed and thresholds")
+    parser.add_argument("--seed", type=int, default=SPOT_CHECK_SEED,
+                        help="seed for a fresh --spot-check-sheet draw")
     parser.add_argument("--workers", type=int, default=8, help=argparse.SUPPRESS)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1],
                         help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.seed != SPOT_CHECK_SEED and not args.spot_check_sheet:
+        parser.error("--seed applies only to --spot-check-sheet")
     root = args.root.resolve()
     try:
         if args.judge:
@@ -1039,7 +1101,11 @@ def main() -> int:
             transport = TypeSafeTransport(os.environ.get("TYPESAFE_API_KEY", ""))
             print(f"evaluated {evaluate(root, transport, args.workers)} cases")
         elif args.spot_check_sheet:
-            print(render_json(spot_check_sheet(root)), end="")
+            draw = {"seed": args.seed, "coreThreshold": CORE_THRESHOLD,
+                    "discrepancyThreshold": DISCREPANCY_THRESHOLD}
+            print(render_json(spot_check_sheet(root, draw)), end="")
+        elif args.spot_check_replay:
+            print(render_json(spot_check_replay(root)), end="")
         else:
             generate(root, args.check)
     except GoEssentialityError as error:

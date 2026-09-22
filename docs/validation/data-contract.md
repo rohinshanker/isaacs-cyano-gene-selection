@@ -537,7 +537,7 @@ record for each of the 2,715 plotted CDSs:
 | `tier` | `tested-utex-allele`, `admitted-pcc-call`, `go-iea-context`, or `unknown`, in that precedence. |
 | `pcc7942Status` | The PCC status copied from candidate evidence. `ambiguous`, `missing`, `not_analyzed`, and `unknown` are not determinate calls. |
 | `goContext` | `null` without GO terms. Otherwise `{label, pCore, mostLikely, termCount}`, with `label` one of `core-cellular-process`, `not-core`, or `uncertain`. |
-| `discrepancies` | An ordered list of `{kind, probability, note}`. `kind` is `utex-product`, `pcc7942-product`, `reviewed-category`, or `pcc7942-call`. |
+| `discrepancies` | An ordered list of `{kind, probability, note}`. `kind` is `utex-product`, `pcc7942-product`, `reviewed-category`, or `pcc7942-call`. Judged kinds carry a probability at or above the policy's discrepancy threshold; `pcc7942-call` carries `null` and appears exactly when the label is `core-cellular-process` and the PCC status is `non-essential`. |
 
 Top-level `attribution` carries the Gene Ontology Consortium CC BY 4.0 notice.
 `judgment` pins the TypeSafe model, the rubric, and the results hashes, while
