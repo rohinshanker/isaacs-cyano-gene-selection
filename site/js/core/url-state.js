@@ -6,13 +6,14 @@
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
+import { DEFAULT_ANNOTATION_SOURCE, isAnnotationSource } from './annotation-source.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
-  categoryFilter: 'cf',
+  categoryFilter: 'cf', annotationSource: 'as',
 };
 
 /**
@@ -42,6 +43,7 @@ export function defaultState() {
     highExpressed: false,
     filters: {},
     categoryFilter: [],
+    annotationSource: DEFAULT_ANNOTATION_SOURCE,
     shortlist: [],
     pinnedId: null,
     compareTab: 'radar',
@@ -122,6 +124,9 @@ export function encodeState(state) {
   if (state.highExpressed) push(KEYS.highExpressed, '1');
   push(KEYS.filters, encodeFilters(state.filters));
   push(KEYS.categoryFilter, [...(state.categoryFilter ?? [])].sort().join(','));
+  if (state.annotationSource && state.annotationSource !== DEFAULT_ANNOTATION_SOURCE) {
+    push(KEYS.annotationSource, state.annotationSource);
+  }
   push(KEYS.trafficKey, state.trafficKey);
   if (state.lengthCohort !== 'annotated') push(KEYS.lengthCohort, state.lengthCohort);
   if (state.proteinFilter !== 'any') push(KEYS.proteinFilter, state.proteinFilter);
@@ -195,6 +200,10 @@ export function decodeState(hash) {
     }
   }
   if (values.get(KEYS.proteinFilter) === 'refseq') state.proteinFilter = 'refseq';
+  if (values.has(KEYS.annotationSource)) {
+    const source = values.get(KEYS.annotationSource);
+    if (isAnnotationSource(source)) state.annotationSource = source;
+  }
   if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
   if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);
   return state;

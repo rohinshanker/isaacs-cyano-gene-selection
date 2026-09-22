@@ -11,6 +11,7 @@
  */
 import { divergingColor } from './colors.js';
 import { formatValue, formatDelta, formatCount, MISSING } from './format.js';
+import { ALL_SOURCES, annotationSourceView } from '../core/annotation-source.js';
 import {
   metricValues, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
 } from '../core/metric-registry.js';
@@ -71,7 +72,8 @@ function fitCanvas(canvas) {
 }
 
 function seriesLabel(entry) {
-  return entry.gene.name ? `${entry.id} ${entry.gene.name}` : entry.id;
+  const name = (entry.displayGene ?? entry.gene).name;
+  return name ? `${entry.id} ${name}` : entry.id;
 }
 
 /** A visually hidden span, for text a screen reader needs and a sighted reader does not. */
@@ -318,11 +320,19 @@ export class ComparePanel {
   }
 
   seriesFor() {
-    const { ids, dataset } = this.state;
+    const { ids, dataset, annotationSource } = this.state;
+    const source = annotationSource ?? ALL_SOURCES;
     return ids
       .map((id, order) => ({ id, index: dataset.indexById.get(id), order }))
       .filter((entry) => entry.index !== undefined)
-      .map((entry) => ({ ...entry, gene: dataset.genes[entry.index], ...seriesStyle(entry.order) }));
+      .map((entry) => {
+        const gene = dataset.genes[entry.index];
+        // The "Gene" and "Product" columns are a UTEX 2973 field; every other
+        // column stays scheme- and dataset-derived, not annotation-sourced, so
+        // only `displayGene` (never `gene`) is swapped for a single source.
+        const displayGene = source !== ALL_SOURCES ? annotationSourceView(gene, dataset, source) : gene;
+        return { ...entry, gene, displayGene, ...seriesStyle(entry.order) };
+      });
   }
 
   /** Series in drawing order: the focused candidate last, so it sits on top. */
@@ -1002,8 +1012,9 @@ export class ComparePanel {
 
     const columns = [
       { key: 'id', label: 'Locus tag', unit: '', read: (entry) => entry.id },
-      { key: 'name', label: 'Gene', unit: '', read: (entry) => entry.gene.name ?? '' },
-      { key: 'product', label: 'Product', unit: '', read: (entry) => entry.gene.product ?? '' },
+      { key: 'name', label: 'Gene', unit: '', read: (entry) => (entry.displayGene ?? entry.gene).name ?? '' },
+      { key: 'product', label: 'Product', unit: '',
+        read: (entry) => (entry.displayGene ?? entry.gene).product ?? '' },
       ...metrics.map((metric) => ({
         key: metric.key,
         label: metric.label,
@@ -1083,8 +1094,9 @@ export class ComparePanel {
       link.addEventListener('click', () => this.handlers.onSelect(entry.id));
       first.append(focus, ' ', link);
       tr.append(first);
-      tr.append(Object.assign(document.createElement('td'), { textContent: entry.gene.name ?? MISSING }));
-      tr.append(Object.assign(document.createElement('td'), { textContent: entry.gene.product ?? MISSING }));
+      const displayGene = entry.displayGene ?? entry.gene;
+      tr.append(Object.assign(document.createElement('td'), { textContent: displayGene.name ?? MISSING }));
+      tr.append(Object.assign(document.createElement('td'), { textContent: displayGene.product ?? MISSING }));
       for (const metric of metrics) {
         tr.append(this.valueCell(metric, metric.read(entry.index), entry.gene));
       }

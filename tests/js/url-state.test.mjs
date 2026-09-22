@@ -75,6 +75,26 @@ test('an unknown or malformed category id in the hash is dropped rather than tru
   assert.deepEqual(restored.categoryFilter, ['stress-and-repair']);
 });
 
+test('a fresh view starts on all sources, and the field stays absent from that link', () => {
+  assert.equal(defaultState().annotationSource, 'all');
+  assert.ok(!/(^|&)as=/.test(encodeState(defaultState())), 'the default source leaves no as= field');
+});
+
+test('a chosen single annotation source survives a shared link', () => {
+  for (const source of ['utex-2973', 'pcc-7942', 'go-iea']) {
+    const state = { ...defaultState(), annotationSource: source };
+    const restored = decodeState(encodeState(state));
+    assert.equal(restored.annotationSource, source);
+  }
+});
+
+test('an unknown annotation source id in the hash is dropped rather than trusted', () => {
+  const restored = decodeState('#as=not-a-real-source');
+  assert.equal(restored.annotationSource, undefined);
+  const applied = applyDecoded({}, restored);
+  assert.equal(applied.annotationSource, 'all');
+});
+
 test('explicit metric axes survive a shared link and reset to their defaults', () => {
   const state = defaultState();
   state.panel = 'axes';

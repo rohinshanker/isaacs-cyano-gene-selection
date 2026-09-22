@@ -18,6 +18,10 @@ import { formatTssStatistic, tssEvidenceModel } from '../core/tss-evidence.js';
 import { geneIdentity } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
+import {
+  ALL_SOURCES, PCC_SOURCE, UTEX_SOURCE, GO_IEA_SOURCE,
+  annotationSourceEvidenceNote, annotationSourceLabel, annotationSourceView,
+} from '../core/annotation-source.js';
 
 /** Baseline context stays visible; scheme-only results open only when a scheme exists. */
 const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
@@ -78,35 +82,53 @@ function labelledList(label, values) {
   return row;
 }
 
-function annotationDisclosure(gene, meta, goTerms) {
+/**
+ * The RefSeq annotation-method/inference/coordinate rows are UTEX 2973 release
+ * content; the GO relationships inside the same bundle are the GO IEA source.
+ * A single source shows only its own rows here, blanking the rest; PCC 7942
+ * contributes nothing to this bundle at all, so the disclosure does not exist
+ * in that view.
+ */
+function annotationDisclosure(gene, meta, goTerms, source = ALL_SOURCES) {
+  if (source === PCC_SOURCE) return null;
   const model = annotationEvidenceModel(gene, meta, goTerms);
   if (!model) return null;
+  const showUtex = source === ALL_SOURCES || source === UTEX_SOURCE;
+  const showGo = source === ALL_SOURCES || source === GO_IEA_SOURCE;
   const details = document.createElement('details');
   details.className = 'metric-group annotation-evidence';
   const summary = document.createElement('summary');
-  summary.textContent = 'Annotation evidence and recoding context';
+  summary.textContent = source === ALL_SOURCES
+    ? 'Annotation evidence and recoding context'
+    : `Annotation evidence and recoding context — ${annotationSourceLabel(source)} only`;
   const intro = document.createElement('p');
   intro.className = 'panel-note';
-  intro.textContent = `Pinned RefSeq release ${model.releaseId}. Overlap and nearby-RNA rows are `
-    + 'coordinate evidence, not proof of regulation. GO rows retain their evidence codes and are '
-    + 'not collapsed into pathway or functional-category claims.';
+  intro.textContent = source === ALL_SOURCES
+    ? `Pinned RefSeq release ${model.releaseId}. Overlap and nearby-RNA rows are `
+      + 'coordinate evidence, not proof of regulation. GO rows retain their evidence codes and are '
+      + 'not collapsed into pathway or functional-category claims.'
+    : annotationSourceEvidenceNote(source);
   const list = document.createElement('dl');
   list.className = 'annotation-evidence-list';
-  list.append(
-    labelledList('Replicon', [model.replicon]),
-    labelledList('Annotation method', model.methods),
-    labelledList('Inference', model.inferences),
-    labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
-    labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
-    labelledList('GO relationships', model.go.map((entry) => entry.text)),
-  );
+  if (showUtex) {
+    list.append(
+      labelledList('Replicon', [model.replicon]),
+      labelledList('Annotation method', model.methods),
+      labelledList('Inference', model.inferences),
+      labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
+      labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
+    );
+  }
+  if (showGo) {
+    list.append(labelledList('GO relationships', model.go.map((entry) => entry.text)));
+  }
   details.append(summary, intro, list);
-  if (model.attribution) {
-    const source = document.createElement('p');
-    source.className = 'panel-note';
-    source.textContent = `GO: ${model.attribution.creator}; ${model.attribution.license}; `
+  if (showGo && model.attribution) {
+    const attribution = document.createElement('p');
+    attribution.className = 'panel-note';
+    attribution.textContent = `GO: ${model.attribution.creator}; ${model.attribution.license}; `
       + `${model.attribution.source}`;
-    details.append(source);
+    details.append(attribution);
   }
   return details;
 }
@@ -339,6 +361,7 @@ export class SidePanel {
    */
   update(state) {
     const { index, dataset } = state;
+    const source = state.annotationSource ?? ALL_SOURCES;
     const focusedAction = this.host.contains(document.activeElement)
       ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();
@@ -353,9 +376,20 @@ export class SidePanel {
     }
 
     const gene = dataset.genes[index];
-    const identity = geneIdentity(gene);
+    // "All sources" reads the gene directly, unchanged; a single source reads
+    // only what that source itself annotated, leaving the rest blank.
+    const view = source !== ALL_SOURCES ? annotationSourceView(gene, dataset, source) : gene;
+    const identity = geneIdentity(view);
     const header = document.createElement('div');
     header.className = 'gene-header';
+
+    if (source !== ALL_SOURCES) {
+      const sourceNote = document.createElement('p');
+      sourceNote.className = 'panel-note annotation-source-note';
+      sourceNote.textContent = `Showing ${annotationSourceLabel(source)} annotations only. `
+        + `${annotationSourceEvidenceNote(source)}`;
+      header.append(sourceNote);
+    }
 
     const title = document.createElement('h3');
     title.className = 'gene-title';
@@ -387,7 +421,7 @@ export class SidePanel {
 
     const product = document.createElement('p');
     product.className = 'gene-product';
-    product.textContent = gene.product ?? MISSING;
+    product.textContent = view.product ?? MISSING;
 
     const location = document.createElement('p');
     location.className = 'gene-location';
@@ -440,10 +474,12 @@ export class SidePanel {
       (replacement ?? this.host).focus({ preventScroll: true });
     }
 
-    const candidateEvidence = candidateEvidenceDisclosure(gene, dataset.candidateEvidence);
-    if (candidateEvidence) this.host.append(candidateEvidence);
+    if (source === ALL_SOURCES || source === PCC_SOURCE) {
+      const candidateEvidence = candidateEvidenceDisclosure(gene, dataset.candidateEvidence);
+      if (candidateEvidence) this.host.append(candidateEvidence);
+    }
 
-    if (dataset.functionCategories) {
+    if (dataset.functionCategories && (source === ALL_SOURCES || source === UTEX_SOURCE)) {
       const assignment = dataset.functionCategories.assignmentsById.get(gene.id);
       const category = document.createElement('p');
       category.className = 'gene-flag';
@@ -457,7 +493,7 @@ export class SidePanel {
       this.host.append(category);
     }
 
-    const annotation = annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms);
+    const annotation = annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms, source);
     if (annotation) this.host.append(annotation);
 
     const tssEvidence = tssEvidenceDisclosure(gene, dataset.meta);

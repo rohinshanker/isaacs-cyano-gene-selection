@@ -41,6 +41,7 @@ import { WorkspaceResizer } from './ui/workspace-resize.js';
 import { ComparePanel } from './ui/compare.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
+import { ANNOTATION_SOURCES, ALL_SOURCES } from './core/annotation-source.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
@@ -544,6 +545,7 @@ function renderDetail() {
     schemeActive: context.scheme.active,
     live: context.live,
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
+    annotationSource: state.annotationSource,
   });
 }
 
@@ -583,6 +585,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     ids: state.shortlist,
     dataset: context.dataset,
     registry: context.registry,
+    annotationSource: state.annotationSource,
     filterState: {
       ranges: state.filters,
       categoryFilter: state.categoryFilter,
@@ -597,6 +600,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       axisX: state.axisX,
       axisY: state.axisY,
       categoryFilter: state.categoryFilter,
+      annotationSource: state.annotationSource,
     }),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
@@ -614,6 +618,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     dataset: context.dataset,
     registry: context.registry,
     tab: state.compareTab,
+    annotationSource: state.annotationSource,
   });
   if (panelDesigner) {
     panelDesigner.update({
@@ -846,6 +851,32 @@ function buildAxisSelects() {
   }
 }
 
+/**
+ * The annotation-source selector: which of UTEX 2973, PCC 7942, GO IEA, or the
+ * combined "All sources" view the detail panel, list/table views, search
+ * suggestions, and the export all read from.
+ */
+function buildAnnotationSourceSelect() {
+  const select = element('annotation-source');
+  select.replaceChildren();
+  for (const { id, label } of ANNOTATION_SOURCES) {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = label;
+    select.append(option);
+  }
+  select.value = state.annotationSource;
+  select.addEventListener('change', () => {
+    state.annotationSource = select.value;
+    if (searchResults) searchResults.setAnnotationSource(state.annotationSource);
+    renderAll();
+    announce(state.annotationSource === ALL_SOURCES
+      ? 'Annotation source: all sources combined.'
+      : `Annotation source: ${select.selectedOptions[0].textContent} only. Fields another source `
+        + 'would have supplied are shown blank, never filled in from another source.');
+  });
+}
+
 function buildGeneSearch() {
   // No datalist: it could only complete a locus tag prefix, it put 2,715 option
   // elements in the document, and its native dropdown covered the result list
@@ -857,7 +888,8 @@ function buildGeneSearch() {
     isShortlisted: (id) => state.shortlist.includes(id),
     isPinned: (id) => state.pinnedId === id,
   });
-  searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms);
+  searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms, context.dataset);
+  searchResults.setAnnotationSource(state.annotationSource);
 
   const input = element('gene-search');
   const run = () => {
@@ -1381,6 +1413,7 @@ async function boot() {
   updatePanelTabs();
   buildColorSelect();
   buildAxisSelects();
+  buildAnnotationSourceSelect();
   buildGeneSearch();
   renderMetricAgreement();
   renderProvenance();
