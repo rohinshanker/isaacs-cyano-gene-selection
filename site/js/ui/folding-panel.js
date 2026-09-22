@@ -37,7 +37,7 @@ export class FoldingPanel {
     this.handoffRecords = new Map();
     this.rosetta = new RosettaHandoffPanel(host.querySelector('[data-rosetta-host]'), {
       onRecord: (record) => this.handoffRecords.set(JSON.stringify([
-        record.locus, record.form, record.schemeName, record.region, record.sequenceHash,
+        record.locus, record.form, record.schemeName, record.region, record.sequenceHash, record.formats,
       ]), record),
     });
     this.button.addEventListener('click', () => this.run());
@@ -50,6 +50,7 @@ export class FoldingPanel {
       this.client.cancel();
       this.generation += 1;
       this.results.replaceChildren();
+      this.rosetta.clearFoldResults();
       this.status.textContent = 'Shortlist or scheme changed. Fold again for the current inputs.';
       this.setBusy(false);
     }

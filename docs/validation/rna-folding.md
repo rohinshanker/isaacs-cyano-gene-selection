@@ -137,15 +137,25 @@ main site's independent render checks.
 The shortlist panel can prepare a pinned or shortlisted locus as wild type or under
 the current recoding scheme. It uses the same strand-oriented sequence constructor
 as folding. Regions are the exact `[-30,60)` start window, the full CDS including
-its stop, or an inclusive transcript-coordinate range inside `[-30,59]`. The range
-validator fails closed because `rnaContext` supplies no other genomic flank.
+its stop, or an inclusive coordinate range inside `[-30,59]`. For ordinary upstream
+context those are strand-oriented positions around the start. For the alternate
+`{sequence, cdsOffsets}` genomic context, a requested nonnegative transcript span is
+returned only when every mapped base is present in adjacent genomic-window positions;
+the panel refuses spans that cross an intron or exceed the highest supplied CDS offset
+and names the applicable limit. The range validator fails closed rather than labelling
+intron or downstream genomic bases as transcript sequence.
 
 Plain RNA, FASTA, single-sequence A3M/A2M, and Stockholm always carry the same
 `ACGU` sequence. Dot bracket and CT are added only when a completed ViennaRNA 2.7.2
-result has the identical sequence and active scheme. CT base pairs are generated
-from that dot bracket and tested by round trip. Copying or downloading records the
-locus, form, scheme, region, formats, SHA-256 sequence hash, and ViennaRNA version
-in the next candidate export manifest.
+result reports the identical folded sequence and active scheme. CT base pairs are
+generated from that dot bracket with the matching MFE in the standard
+`<length> ENERGY = <mfe> <name>` header and tested by round trip. The standalone
+trRosettaRNA2 package documents CT as a supported custom-secondary-structure input.
+Each successful copy or download records the locus, form, scheme, region, only the
+format actually taken, SHA-256 sequence hash, and (for dot bracket or CT only) the
+ViennaRNA version in the next candidate export manifest. A blocked clipboard write
+uses the browser copy-command fallback and reports an error without recording an
+action if both paths fail.
 
 The external server form was inspected on 2026-09-22. It documents no URL query
 prefill and test query values did not populate the form, so the site opens the plain

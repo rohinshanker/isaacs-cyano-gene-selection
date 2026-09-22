@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { standardTable } from './helpers.mjs';
+import { parseCt, standardTable } from './helpers.mjs';
 import {
-  dotBracketToCt, handoffHeader, handoffSequence, parseCt, writeHandoffFormats,
+  copyTextWithFallback, dotBracketToCt, handoffHeader, handoffSequence, writeHandoffFormats,
 } from '../../site/js/core/rosetta-handoff.js';
+import { matchingFoldStructure } from '../../site/js/ui/rosetta-handoff-panel.js';
 
 const references = JSON.parse(await readFile(new URL('../fixtures/rna-folding.json', import.meta.url)));
 const table = standardTable();
@@ -33,6 +34,38 @@ test('full CDS and inclusive context ranges return only supplied strand-oriented
   assert.throws(() => handoffSequence({ gene: sample.gene, table, region: 'range', start: 3, end: 2 }), /must not exceed/);
 });
 
+test('recoded ranges use the active map and mapped genomic context fails closed at gaps and limits', () => {
+  const recodedSample = references.cases.find((entry) => entry.gene.rnaContext.upstream
+    && entry.windows.start.wild !== entry.windows.start.recoded);
+  const recoded = handoffSequence({ gene: recodedSample.gene, table, map: recodedSample.map,
+    form: 'recoded', region: 'range', start: 0, end: 14 });
+  assert.equal(recoded.sequence, recodedSample.windows.start.recoded.slice(30, 45));
+  assert.notEqual(recoded.sequence, recodedSample.windows.start.wild.slice(30, 45));
+
+  const joined = references.cases.find((entry) => entry.gene.id === '+-joined');
+  assert.throws(() => handoffSequence({ gene: joined.gene, table, form: 'wild-type',
+    region: 'range', start: 0, end: 14 }), /contiguous only through transcript coordinate 11.*crosses an intron/);
+  const short = references.cases.find((entry) => entry.gene.id === '+-short');
+  assert.throws(() => handoffSequence({ gene: short.gene, table, form: 'wild-type',
+    region: 'range', start: 0, end: 59 }), /maps transcript coordinates 0 through 20; requested 0 through 59/);
+});
+
+test('blank, null, whitespace, and non-numeric range values are refused', () => {
+  for (const value of ['', '  ', null, 'not-a-number']) {
+    assert.throws(() => handoffSequence({ gene: sample.gene, table, region: 'range',
+      start: value, end: 5 }), /Range start must be an integer/);
+    assert.throws(() => handoffSequence({ gene: sample.gene, table, region: 'range',
+      start: 0, end: value }), /Range end must be an integer/);
+  }
+});
+
+test('full CDS does not require RNA context and still requires a terminal stop', () => {
+  const withoutContext = { ...sample.gene, rnaContext: null };
+  assert.match(handoffSequence({ gene: withoutContext, table, region: 'cds' }).sequence, /^[ACGU]+$/);
+  assert.throws(() => handoffSequence({ gene: { ...withoutContext, terminalStop: 'AAA' },
+    table, region: 'cds' }), /terminal stop/);
+});
+
 test('all alignment formats round-trip the exact RNA sequence', () => {
   const sequence = 'AUGCGUACGU';
   const header = handoffHeader({ locus: 'M744_RS00001', strain: 'UTEX-2973', form: 'wild-type',
@@ -40,16 +73,45 @@ test('all alignment formats round-trip the exact RNA sequence', () => {
   const files = writeHandoffFormats({ sequence, header });
   assert.equal(files.sequence.trim(), sequence);
   for (const format of ['fasta', 'a3m', 'a2m']) assert.equal(files[format].trim().split('\n')[1], sequence);
-  assert.equal(files.stockholm.trim().split('\n')[1].split(/\s+/)[1], sequence);
+  const stockholm = files.stockholm.trim().split('\n');
+  assert.equal(stockholm[0], '# STOCKHOLM 1.0');
+  assert.equal(stockholm[1].split(/\s+/)[1], sequence);
+  assert.equal(stockholm.at(-1), '//');
 });
 
 test('dot bracket and CT agree with each other and the exact fold sequence', () => {
   const sequence = 'AUGCGUACGU';
   const structure = '(((....)))';
-  const files = writeHandoffFormats({ sequence, header: 'test', structure });
+  const files = writeHandoffFormats({ sequence, header: 'test', structure, mfe: -3.4 });
   const parsed = parseCt(files.ct);
   assert.deepEqual(parsed, { sequence, structure });
+  assert.equal(files.ct.split('\n')[0], '10 ENERGY = -3.4 test');
   assert.match(files.dotBracket, new RegExp(`${sequence}\\n\\(\\(\\(\\.\\.\\.\\.\\)\\)\\)`));
-  assert.throws(() => dotBracketToCt(sequence, '((.....))'), /match/);
-  assert.throws(() => dotBracketToCt(sequence, '(((.....))'), /unbalanced/);
+  assert.throws(() => dotBracketToCt(sequence, '((.....))', 'test', -1), /match/);
+  assert.throws(() => dotBracketToCt(sequence, '(((.....))', 'test', -1), /unbalanced/);
+  assert.throws(() => dotBracketToCt(sequence, structure, 'test'), /MFE/);
+});
+
+test('a structure is returned only for the exact sequence captured by the worker', () => {
+  const result = { windows: { start: { wildSequence: 'ACGU', wildStructure: '(())', wildMfe: -1.2 } } };
+  assert.deepEqual(matchingFoldStructure(result, 'ACGU', 'wild-type', 'start'),
+    { structure: '(())', mfe: -1.2 });
+  assert.equal(matchingFoldStructure(result, 'AGGU', 'wild-type', 'start'), null);
+  assert.equal(matchingFoldStructure(result, 'ACGU', 'recoded', 'start'), null);
+});
+
+test('clipboard fallback records success and reports total refusal', async () => {
+  let removed = false;
+  const textarea = { style: {}, setAttribute() {}, select() {}, remove() { removed = true; } };
+  const documentRef = { body: { append(node) { assert.equal(node, textarea); } },
+    createElement: () => textarea, execCommand: () => true };
+  await copyTextWithFallback('ACGU', {
+    clipboard: { writeText: async () => { throw new Error('blocked'); } }, documentRef,
+  });
+  assert.equal(textarea.value, 'ACGU');
+  assert.equal(removed, true);
+  await assert.rejects(copyTextWithFallback('ACGU', {
+    clipboard: { writeText: async () => { throw new Error('blocked'); } },
+    documentRef: { ...documentRef, execCommand: () => false },
+  }), /Could not copy.*refused/);
 });

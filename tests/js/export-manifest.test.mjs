@@ -382,14 +382,25 @@ test('the manifest carries dataset identity, checksums, definitions, and caveats
   assert.equal(manifest.rowCount, 1);
 });
 
-test('the manifest records exact trRosettaRNA hand-offs and structure provenance', async () => {
+test('the manifest selects exact trRosettaRNA fields and applies provenance defaults', async () => {
   const { dataset, registry } = await context();
-  const handoff = { locus: dataset.genes[0].id, form: 'recoded', schemeName: 'Syn61',
-    region: 'start_-30_59', formats: ['sequence', 'fasta', 'dotBracket', 'ct'],
-    sequenceHash: 'a'.repeat(64), viennaRnaVersion: '2.7.2' };
+  const handoffs = [
+    { locus: dataset.genes[0].id, form: 'wild-type', region: 'range_0_14',
+      formats: ['sequence'], sequenceHash: 'a'.repeat(64), ignored: 'not exported' },
+    { locus: dataset.genes[0].id, form: 'recoded', schemeName: 'Syn61',
+      region: 'start_-30_59', formats: ['ct'], sequenceHash: 'b'.repeat(64),
+      viennaRnaVersion: '2.7.2', ignored: 'not exported' },
+  ];
   const result = buildExport({ dataset, registry, ids: [dataset.genes[0].id],
-    schemes: [{ name: 'Syn61', map: SYN61 }], trRosettaRnaHandoffs: [handoff] });
-  assert.deepEqual(result.manifest.trRosettaRnaHandoffs, [handoff]);
+    schemes: [{ name: 'Syn61', map: SYN61 }], trRosettaRnaHandoffs: handoffs });
+  assert.deepEqual(result.manifest.trRosettaRnaHandoffs, [
+    { locus: dataset.genes[0].id, form: 'wild-type', schemeName: null,
+      region: 'range_0_14', formats: ['sequence'], sequenceHash: 'a'.repeat(64),
+      viennaRnaVersion: null },
+    { locus: dataset.genes[0].id, form: 'recoded', schemeName: 'Syn61',
+      region: 'start_-30_59', formats: ['ct'], sequenceHash: 'b'.repeat(64),
+      viennaRnaVersion: '2.7.2' },
+  ]);
 });
 
 test('a Tan TSS source is pinned in the export without calling it gene abundance', async () => {

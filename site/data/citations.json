@@ -319,16 +319,16 @@
         },
         {
           "id": "trrosettarna-server",
-          "citation": "Wang et al. The trRosettaRNA server for RNA structure prediction. Nature Protocols (2026).",
-          "url": "https://yanglab.qd.sdu.edu.cn/trRosettaRNA/",
+          "citation": "Wang W, Liu X, Peng Z, Yang J. The trRosettaRNA server for RNA structure prediction. Nature Protocols 21 (2026). doi:10.1038/s41596-026-01356-8.",
+          "url": "https://doi.org/10.1038/s41596-026-01356-8",
           "contribution": "External form opened by the hand-off. This site prepares files but does not submit sequences or capture returned models.",
           "downloads": []
         },
         {
           "id": "trrosettarna-standalone",
-          "citation": "Yang Lab. trRosettaRNA standalone packages and custom-secondary-structure input documentation.",
-          "url": "https://yanglab.qd.sdu.edu.cn/trRosettaRNA/download/",
-          "contribution": "Documents standalone A3M and custom dot-bracket/CT inputs. Its Apache-2.0 code and the separate PyRosetta licence remain external terms.",
+          "citation": "Wang W, Feng C, Han R, Wang Z, Ye L, Du Z, Wei H, Zhang F, Peng Z, Yang J. trRosettaRNA: automated prediction of RNA 3D structure with transformer network. Nature Communications 14, 7266 (2023). doi:10.1038/s41467-023-42528-4.",
+          "url": "https://doi.org/10.1038/s41467-023-42528-4",
+          "contribution": "Method paper for trRosettaRNA. The official standalone package documents A3M and custom dot-bracket/CT inputs; its Apache-2.0 code and the separate PyRosetta licence remain external terms.",
           "downloads": []
         }
       ]

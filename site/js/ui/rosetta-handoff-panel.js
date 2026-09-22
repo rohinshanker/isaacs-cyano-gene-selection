@@ -1,7 +1,7 @@
 import {
-  TRROSETTA_URL, handoffHeader, handoffSequence, sha256, writeHandoffFormats,
+  TRROSETTA_URL, copyTextWithFallback, handoffHeader, handoffSequence, sha256, writeHandoffFormats,
 } from '../core/rosetta-handoff.js';
-import { FOLD_SETTINGS, foldingSequences } from '../core/folding-sequences.js';
+import { FOLD_SETTINGS } from '../core/folding-sequences.js';
 
 const EXTENSIONS = {
   sequence: 'txt', fasta: 'fasta', a3m: 'a3m', a2m: 'a2m', stockholm: 'sto',
@@ -17,6 +17,17 @@ function option(value, label) {
 
 function slug(value) {
   return String(value).replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+/** Return a fold only when its captured input is byte-identical to the hand-off. */
+export function matchingFoldStructure(result, sequence, form, region) {
+  if (!result || !['start', 'cds'].includes(region)) return null;
+  const window = region === 'start' ? result.windows?.start : result.windows?.first100;
+  const which = form === 'recoded' ? 'recoded' : 'wild';
+  if (window?.[`${which}Sequence`] !== sequence) return null;
+  const structure = window[`${which}Structure`];
+  const mfe = window[`${which}Mfe`];
+  return typeof structure === 'string' && Number.isFinite(mfe) ? { structure, mfe } : null;
 }
 
 export class RosettaHandoffPanel {
@@ -56,7 +67,10 @@ export class RosettaHandoffPanel {
     this.warning = host.querySelector('[data-rosetta-warning]');
     this.outputs = host.querySelector('[data-rosetta-outputs]');
     this.region.addEventListener('change', () => { this.range.hidden = this.region.value !== 'range'; });
-    for (const control of [this.locus, this.form, this.region, this.start, this.end]) {
+    for (const control of [this.locus, this.form]) {
+      control.addEventListener('change', () => this.clearFoldResults('Gene or sequence form changed. Fold again before preparing structure files.'));
+    }
+    for (const control of [this.region, this.start, this.end]) {
       control.addEventListener('change', () => this.clearPrepared());
     }
     host.querySelector('[data-rosetta-build]').addEventListener('click', () => this.prepare());
@@ -64,7 +78,9 @@ export class RosettaHandoffPanel {
 
   update(state) {
     const signature = JSON.stringify([state.pinnedId, state.ids, state.schemes?.active]);
-    if (this.stateSignature !== undefined && signature !== this.stateSignature) this.clearPrepared();
+    if (this.stateSignature !== undefined && signature !== this.stateSignature) {
+      this.clearFoldResults('Gene selection or scheme changed. Fold again before preparing structure files.');
+    }
     this.stateSignature = signature;
     this.state = state;
     const current = this.locus.value;
@@ -80,6 +96,11 @@ export class RosettaHandoffPanel {
     this.clearPrepared('Fold results changed. Prepare files again to include an exact matching structure.');
   }
 
+  clearFoldResults(message = '') {
+    this.foldResults = [];
+    this.clearPrepared(message);
+  }
+
   clearPrepared(message = '') {
     this.outputs.replaceChildren();
     this.warning.replaceChildren();
@@ -88,16 +109,7 @@ export class RosettaHandoffPanel {
 
   matchingStructure(gene, sequence, form, region) {
     const result = this.foldResults.find((entry) => entry.id === gene.id);
-    if (!result) return null;
-    const windows = foldingSequences(gene, this.state.dataset.table, this.state.schemes.active.map);
-    const which = form === 'recoded' ? 'recoded' : 'wild';
-    if (region === 'start' && windows.start[which] === sequence) {
-      return result.windows.start?.[`${which}Structure`] ?? null;
-    }
-    if (region === 'cds' && windows.first100[which] === sequence) {
-      return result.windows.first100?.[`${which}Structure`] ?? null;
-    }
-    return null;
+    return matchingFoldStructure(result, sequence, form, region);
   }
 
   async prepare() {
@@ -111,13 +123,14 @@ export class RosettaHandoffPanel {
       const schemeName = this.state.schemes.active.name || 'active-scheme';
       const header = handoffHeader({ locus: id, strain: 'Synechococcus-elongatus-UTEX-2973',
         form, schemeName, region: selected.label, siteVersion: this.state.dataset.meta.builtAt ?? 'unversioned' });
-      const structure = this.matchingStructure(gene, selected.sequence, form, region);
-      const files = writeHandoffFormats({ sequence: selected.sequence, header, structure });
+      const fold = this.matchingStructure(gene, selected.sequence, form, region);
+      const files = writeHandoffFormats({ sequence: selected.sequence, header,
+        structure: fold?.structure ?? null, mfe: fold?.mfe ?? null });
       const hash = await sha256(selected.sequence);
       const formats = Object.keys(files);
-      this.renderWarnings(selected.sequence.length, form, Boolean(structure));
+      this.renderWarnings(selected.sequence.length, form, Boolean(fold));
       this.renderFiles({ id, form, region: selected.label, sequence: selected.sequence, hash, files, formats,
-        schemeName, structureIncluded: Boolean(structure) });
+        schemeName, structureIncluded: Boolean(fold) });
       this.status.textContent = `Prepared ${formats.length} formats for ${id}; SHA-256 ${hash.slice(0, 12)}….`;
     } catch (error) {
       this.clearPrepared();
@@ -152,19 +165,23 @@ export class RosettaHandoffPanel {
       const copy = document.createElement('button');
       copy.type = 'button'; copy.className = 'chip-button'; copy.textContent = `Copy ${title.textContent}`;
       copy.addEventListener('click', async () => {
-        await navigator.clipboard.writeText(content);
-        this.status.textContent = `Copied ${title.textContent}.`;
-        this.record(record);
+        try {
+          await copyTextWithFallback(content);
+          this.status.textContent = `Copied ${title.textContent}.`;
+          this.record(record, format);
+        } catch (error) {
+          this.status.textContent = error.message;
+        }
       });
       const download = document.createElement('button');
       download.type = 'button'; download.className = 'chip-button'; download.textContent = `Download .${EXTENSIONS[format]}`;
       download.addEventListener('click', () => {
         const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
         const link = document.createElement('a');
-        link.href = url; link.download = `${slug(record.id)}_${slug(record.form)}_${slug(record.region)}.${EXTENSIONS[format]}`;
+        link.href = url; link.download = `${slug(record.id)}_${slug(record.form)}_${slug(record.schemeName)}_${slug(record.region)}_${slug(format)}.${EXTENSIONS[format]}`;
         document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url);
         this.status.textContent = `Downloaded ${link.download}.`;
-        this.record(record);
+        this.record(record, format);
       });
       actions.append(copy, download);
       item.append(title, actions, preview);
@@ -172,10 +189,10 @@ export class RosettaHandoffPanel {
     }
   }
 
-  record(record) {
+  record(record, format) {
     this.onRecord({ locus: record.id, form: record.form,
       schemeName: record.form === 'recoded' ? record.schemeName : null, region: record.region,
-      formats: record.formats, sequenceHash: record.hash,
-      viennaRnaVersion: record.structureIncluded ? FOLD_SETTINGS.version : null });
+      formats: [format], sequenceHash: record.hash,
+      viennaRnaVersion: ['dotBracket', 'ct'].includes(format) ? FOLD_SETTINGS.version : null });
   }
 }
