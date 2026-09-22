@@ -2,6 +2,7 @@ import {
   TRROSETTA_URL, copyTextWithFallback, handoffHeader, handoffSequence, sha256, writeHandoffFormats,
 } from '../core/rosetta-handoff.js';
 import { FOLD_SETTINGS } from '../core/folding-sequences.js';
+import { serializeSchemeMap } from '../core/scheme.js';
 
 const EXTENSIONS = {
   sequence: 'txt', fasta: 'fasta', a3m: 'a3m', a2m: 'a2m', stockholm: 'sto',
@@ -67,9 +68,6 @@ export class RosettaHandoffPanel {
     this.warning = host.querySelector('[data-rosetta-warning]');
     this.outputs = host.querySelector('[data-rosetta-outputs]');
     this.region.addEventListener('change', () => { this.range.hidden = this.region.value !== 'range'; });
-    for (const control of [this.locus, this.form]) {
-      control.addEventListener('change', () => this.clearFoldResults('Gene or sequence form changed. Fold again before preparing structure files.'));
-    }
     for (const control of [this.region, this.start, this.end]) {
       control.addEventListener('change', () => this.clearPrepared());
     }
@@ -77,7 +75,7 @@ export class RosettaHandoffPanel {
   }
 
   update(state) {
-    const signature = JSON.stringify([state.pinnedId, state.ids, state.schemes?.active]);
+    const signature = JSON.stringify([state.ids, serializeSchemeMap(state.schemes?.active?.map)]);
     if (this.stateSignature !== undefined && signature !== this.stateSignature) {
       this.clearFoldResults('Gene selection or scheme changed. Fold again before preparing structure files.');
     }

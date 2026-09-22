@@ -139,11 +139,13 @@ the current recoding scheme. It uses the same strand-oriented sequence construct
 as folding. Regions are the exact `[-30,60)` start window, the full CDS including
 its stop, or an inclusive coordinate range inside `[-30,59]`. For ordinary upstream
 context those are strand-oriented positions around the start. For the alternate
-`{sequence, cdsOffsets}` genomic context, a requested nonnegative transcript span is
-returned only when every mapped base is present in adjacent genomic-window positions;
-the panel refuses spans that cross an intron or exceed the highest supplied CDS offset
-and names the applicable limit. The range validator fails closed rather than labelling
-intron or downstream genomic bases as transcript sequence.
+`{sequence, cdsOffsets}` genomic context, negative coordinates map to the contiguous
+unmapped upstream run at window indices 0 through 29, immediately before transcript
+coordinate 0 at index 30. A requested nonnegative transcript span is returned only
+when every mapped base is present in adjacent genomic-window positions. The panel
+refuses malformed upstream runs, spans that cross an intron, or spans that exceed the
+highest supplied CDS offset and names the applicable limit. The range validator fails
+closed rather than labelling intron or downstream genomic bases as transcript sequence.
 
 Plain RNA, FASTA, single-sequence A3M/A2M, and Stockholm always carry the same
 `ACGU` sequence. Dot bracket and CT are added only when a completed ViennaRNA 2.7.2

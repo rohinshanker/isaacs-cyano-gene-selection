@@ -1,4 +1,5 @@
 import { foldingSequences } from './folding-sequences.js';
+import { validateSchemeMap } from './scheme.js';
 
 export const TRROSETTA_URL = 'https://yanglab.qd.sdu.edu.cn/trRosettaRNA/';
 
@@ -13,6 +14,10 @@ function requireInteger(value, label) {
 }
 
 function cdsRna(gene, table, map, form) {
+  if (form === 'recoded') {
+    const validation = validateSchemeMap(map, table);
+    if (!validation.ok) throw new Error(validation.errors.join(' '));
+  }
   if (!gene?.codons?.length) throw new Error('Gene has no coding sequence.');
   const codons = [...gene.codons].map((symbol) => {
     const index = table.symbolToIndex[symbol.charCodeAt(0)];
@@ -32,16 +37,18 @@ function rangeFromMappedContext(context, startWindow, from, to) {
   const offsets = context.cdsOffsets;
   const mapped = offsets.filter((offset) => offset >= 0);
   if (!mapped.length) throw new Error('The supplied genomic context contains no transcript coordinates.');
-  const lower = Math.min(...mapped);
   const upper = Math.max(...mapped);
-  if (from < lower || to > upper) {
-    throw new Error(`The supplied genomic context maps transcript coordinates ${lower} through ${upper}; requested ${from} through ${to}.`);
+  if (to > upper) {
+    throw new Error(`The supplied genomic context maps transcript coordinates 0 through ${upper}; requested ${from} through ${to}.`);
+  }
+  if (from < 0 && (offsets[30] !== 0 || offsets.slice(0, 30).some((offset) => offset !== -1))) {
+    throw new Error('The supplied genomic context does not contain the contiguous unmapped upstream coordinates −30 through −1.');
   }
   const indices = [];
   for (let coordinate = from; coordinate <= to; coordinate += 1) {
-    const index = offsets.indexOf(coordinate);
+    const index = coordinate < 0 ? coordinate + 30 : offsets.indexOf(coordinate);
     if (index < 0) {
-      throw new Error(`The supplied genomic context stops at transcript coordinate ${coordinate - 1}; requested through ${to}.`);
+      throw new Error(`The supplied genomic context does not map transcript coordinate ${coordinate}.`);
     }
     indices.push(index);
   }
@@ -55,8 +62,7 @@ function rangeFromMappedContext(context, startWindow, from, to) {
 /** Exact strand-oriented RNA used by the folding path, with explicit context limits. */
 export function handoffSequence({ gene, table, map = {}, form = 'wild-type', region = 'start', start, end }) {
   if (!['wild-type', 'recoded'].includes(form)) throw new Error('Choose wild type or recoded RNA.');
-  const cds = cdsRna(gene, table, map, form);
-  if (region === 'cds') return { sequence: cds, label: 'full_cds' };
+  if (region === 'cds') return { sequence: cdsRna(gene, table, map, form), label: 'full_cds' };
   if (!['start', 'range'].includes(region)) throw new Error('Choose a supported RNA region.');
   const windows = foldingSequences(gene, table, map);
   if (region === 'start') return { sequence: windows.start[form === 'recoded' ? 'recoded' : 'wild'], label: 'start_-30_59' };

@@ -43,11 +43,29 @@ test('recoded ranges use the active map and mapped genomic context fails closed 
   assert.notEqual(recoded.sequence, recodedSample.windows.start.wild.slice(30, 45));
 
   const joined = references.cases.find((entry) => entry.gene.id === '+-joined');
+  for (const fixture of [joined, references.cases.find((entry) => entry.gene.id === '+-short')]) {
+    const upstream = handoffSequence({ gene: fixture.gene, table, form: 'wild-type',
+      region: 'range', start: -30, end: -1 });
+    const acrossStart = handoffSequence({ gene: fixture.gene, table, form: 'wild-type',
+      region: 'range', start: -5, end: 5 });
+    assert.equal(upstream.sequence, fixture.windows.start.wild.slice(0, 30));
+    assert.equal(acrossStart.sequence, fixture.windows.start.wild.slice(25, 36));
+  }
   assert.throws(() => handoffSequence({ gene: joined.gene, table, form: 'wild-type',
     region: 'range', start: 0, end: 14 }), /contiguous only through transcript coordinate 11.*crosses an intron/);
   const short = references.cases.find((entry) => entry.gene.id === '+-short');
   assert.throws(() => handoffSequence({ gene: short.gene, table, form: 'wild-type',
     region: 'range', start: 0, end: 59 }), /maps transcript coordinates 0 through 20; requested 0 through 59/);
+  const malformed = structuredClone(joined.gene);
+  const malformedBase = malformed.rnaContext.sequence[28];
+  malformed.rnaContext.cdsOffsets[28] = [...joined.windows.first100.wild.replaceAll('U', 'T')]
+    .findIndex((base) => base === malformedBase);
+  assert.throws(() => handoffSequence({ gene: malformed, table, form: 'wild-type',
+    region: 'range', start: -2, end: -1 }), /does not contain the contiguous unmapped upstream coordinates/);
+  const missing = structuredClone(joined.gene);
+  missing.rnaContext.cdsOffsets[31] = -1;
+  assert.throws(() => handoffSequence({ gene: missing, table, form: 'wild-type',
+    region: 'range', start: 1, end: 1 }), /does not map transcript coordinate 1/);
 });
 
 test('blank, null, whitespace, and non-numeric range values are refused', () => {
@@ -64,6 +82,17 @@ test('full CDS does not require RNA context and still requires a terminal stop',
   assert.match(handoffSequence({ gene: withoutContext, table, region: 'cds' }).sequence, /^[ACGU]+$/);
   assert.throws(() => handoffSequence({ gene: { ...withoutContext, terminalStop: 'AAA' },
     table, region: 'cds' }), /terminal stop/);
+});
+
+test('full CDS validates recoded maps and unsupported regions fail before CDS construction', () => {
+  const invalidMap = { TCG: 'AAA' };
+  const proteinChange = { message: 'TCG encodes S but AAA encodes K; that would change the protein.' };
+  assert.throws(() => handoffSequence({ gene: sample.gene, table, map: invalidMap,
+    form: 'recoded', region: 'start' }), proteinChange);
+  assert.throws(() => handoffSequence({ gene: sample.gene, table, map: invalidMap,
+    form: 'recoded', region: 'cds' }), proteinChange);
+  assert.throws(() => handoffSequence({ gene: {}, table, region: 'unsupported' }),
+    /Choose a supported RNA region/);
 });
 
 test('all alignment formats round-trip the exact RNA sequence', () => {
