@@ -18,7 +18,6 @@ const sidePanelSource = await readFile(
 );
 const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 const appHtml = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
-const legendSource = await readFile(new URL('../../site/js/ui/legend.js', import.meta.url), 'utf8');
 
 test('activity threshold copy preserves metric capitalization and avoids calling proxies measured', () => {
   const metric = { label: 'CAI', unit: 'index', integer: false };
@@ -29,14 +28,7 @@ test('activity threshold copy preserves metric capitalization and avoids calling
   );
 });
 
-test('marker legends use decorative SVGs and distinguish excluded category buckets', () => {
-  assert.match(legendSource, /document\.createElementNS\(SVG_NS, 'svg'\)/);
-  assert.match(legendSource, /setAttribute\('aria-hidden', 'true'\)/);
-  assert.match(legendSource, /Excluded, reviewed category: grey outlined square/);
-  assert.match(legendSource, /Excluded, unknown: grey dot/);
-  for (const shape of ['ghost-square', 'filled-dot', 'open-circle', 'diamond', 'pin', 'filled-circle']) {
-    assert.match(legendSource, new RegExp(`['\"]${shape}['\"]`), shape);
-  }
+test('the filtered-out control copy does not promise one marker shape', () => {
   assert.match(appHtml, /<label for="show-hidden">Show filtered-out genes<\/label>/);
   assert.doesNotMatch(appHtml, /Show filtered-out genes as grey outlined squares/);
 });

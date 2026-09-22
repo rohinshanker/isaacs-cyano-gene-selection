@@ -24,6 +24,11 @@ their map coordinates and pointer access when that visibility option is
 enabled; noncoding Tan features have no PCA coordinates and remain in the
 separate regulatory search.
 
+Included points are circles in every colour mode. Their radius is scaled by
+`sqrt(4 / pi)` from the half-size of the former square, preserving marker area
+and the density of crowded regions. Excluded points remain smaller squares or
+dots, so shape alone separates included from excluded points in every mode.
+
 A pinned gene exposes an icon Unpin button beside its Pinned status in the detail panel. Search rows show Pin/Unpin
 and Shortlist/Remove according to shared state; both actions stay enabled so
 they can be reversed in place. Search actions keep focus on the same row button
@@ -65,7 +70,8 @@ Enter or Space keeps working and the focus ring stays visible.
 Marker-convention legend swatches are decorative inline SVGs that reproduce
 the canvas geometry: filled coloured circle, open unknown ring, excluded
 reviewed square, excluded unknown dot, shortlist diamond, and pinned ring with
-four crosshair ticks. The same SVG shapes are used in numeric legend notes.
+four crosshair ticks. The same SVG shapes are used in numeric legend notes;
+excluded rows with a zero count are omitted.
 
 **Clear category selection** below the legend clears only the category filter
 and disables itself when nothing is selected. **Clear all filters** clears it

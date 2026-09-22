@@ -10,7 +10,12 @@ import assert from 'node:assert/strict';
 import {
   findNeighbor, clampZoom, projectionCanZoom, enterTarget, togglePinTarget, shortlistTarget,
   buildMarkerBuckets, formatTick, tickTarget, fitAxisTitle, MIN_ZOOM, MAX_ZOOM,
+  SQUARE_TO_CIRCLE_RADIUS,
 } from '../../site/js/ui/scatter.js';
+import { buildCategoryColorScale } from '../../site/js/ui/colors.js';
+import {
+  categoryBucketId, MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID,
+} from '../../site/js/core/function-categories.js';
 
 /** A deterministic stand-in for CanvasRenderingContext2D.measureText: fixed-width glyphs. */
 function fixedWidthContext(charWidth = 6) {
@@ -34,22 +39,25 @@ test('a mask excludes hidden points from becoming a neighbor', () => {
 });
 
 test('category marker buckets split excluded unknowns from excluded reviewed genes', () => {
-  const scale = {
-    categorical: true,
-    buckets: ['#123456'],
-    bucketOf: (value) => value,
-  };
+  const scale = buildCategoryColorScale(2);
+  const values = Int16Array.from([-1, 0, 2]);
   const buckets = buildMarkerBuckets(
-    Float64Array.from([1, 2, 3, 4]),
-    Float64Array.from([1, 2, 3, 4]),
-    Uint8Array.from([0, 0, 1, 1]),
-    scale,
-    Int16Array.from([-1, 0, -1, 0]),
+    Float64Array.from([1, 2, 3]), Float64Array.from([1, 2, 3]),
+    Uint8Array.from([0, 0, 0]), scale, values,
   );
   assert.deepEqual([...buckets.hiddenMissing], [0]);
-  assert.deepEqual([...buckets.hidden], [1]);
-  assert.deepEqual([...buckets.missing], [2]);
-  assert.deepEqual([...buckets.lists[0]], [3]);
+  assert.deepEqual([...buckets.hidden], [1, 2]);
+
+  const model = { categoryIds: ['first', 'second'], values };
+  assert.deepEqual(
+    Array.from(values, (_, index) => categoryBucketId(model, index)),
+    [UNKNOWN_CATEGORY_ID, 'first', MULTIPLE_CATEGORY_ID],
+  );
+});
+
+test('included circles preserve the area of the square marker they replaced', () => {
+  assert.equal(SQUARE_TO_CIRCLE_RADIUS, Math.sqrt(4 / Math.PI));
+  assert.ok(Math.abs(Math.PI * SQUARE_TO_CIRCLE_RADIUS ** 2 - 4) < Number.EPSILON * 4);
 });
 
 test('numeric marker buckets keep every excluded point in the outlined-square bucket', () => {

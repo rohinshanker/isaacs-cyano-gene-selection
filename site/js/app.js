@@ -608,7 +608,7 @@ function renderMap() {
   banner.textContent = hidden > 0
     ? state.showHidden
       ? `Filters exclude ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes `
-        + `from the active set; ${state.colorBy === FUNCTION_COLOR_KEY
+        + `from the active set; ${categorical
           ? 'grey dots and outlined squares' : 'grey outlined squares'} remain on the map.`
       : `Filters hide ${formatCount(hidden)} of ${formatCount(context.dataset.genes.length)} genes.`
     : '';
