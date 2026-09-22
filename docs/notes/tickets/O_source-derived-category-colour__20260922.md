@@ -13,6 +13,16 @@ explicit evidence labels and records the calibration; you then accept or
 reject in `docs/validation/AAA-biological-decisions-to-review.md`. The 13
 reviewed assignments are never changed by this work.
 
+## Scope change (2026-09-22, owner)
+
+The annotation-source toggles govern **function-category colouring and the
+category legend counts only**. The detail panel, tables, panel-designer list,
+search suggestions, and export always show every source; the single-source
+blanking views and the `as` URL field are removed with a versioned migration.
+The toggles sit inside the legend directly above the reviewed-categories
+section, shown only when Colour by is Function category, and that section's
+title states what is counted under the enabled sources.
+
 ## Current State
 
 **Colour by → Function category** colours only the 13 lab-reviewed UTEX 2973
