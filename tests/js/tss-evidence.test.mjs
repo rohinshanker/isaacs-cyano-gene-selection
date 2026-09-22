@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { formatTssStatistic, tssEvidenceModel } from '../../site/js/core/tss-evidence.js';
+import {
+  formatTssStatistic, tssEvidenceModel, tssInitiationBasis,
+} from '../../site/js/core/tss-evidence.js';
 
 const completeEntry = {
   id: 'TSS_1', type: 'primary', replicon: 'chromosome', strand: '+', position: 123,
@@ -19,6 +21,21 @@ const completeEntry = {
 test('zero TSS entries stay explicit and do not invent evidence', () => {
   assert.deepEqual(tssEvidenceModel({ tssEvidence: [] }), { count: 0, entries: [] });
   assert.deepEqual(tssEvidenceModel({}), { count: 0, entries: [] });
+});
+
+test('initiation basis explains both mismatch directions without filling either layer', () => {
+  const siteOnly = tssInitiationBasis({ tssInitiation: null, tssEvidence: [completeEntry] });
+  assert.equal(siteOnly.basis, 'none');
+  assert.equal(siteOnly.siteCount, 1);
+  assert.match(siteOnly.short, /1 mapped site; pooled score absent/);
+  assert.match(siteOnly.text, /exact locus tag/);
+  assert.match(siteOnly.text, /do not backfill/);
+
+  const scoreOnly = tssInitiationBasis({ tssInitiation: 12.5, tssEvidence: [] });
+  assert.equal(scoreOnly.basis, 'measured');
+  assert.equal(scoreOnly.siteCount, 0);
+  assert.match(scoreOnly.short, /pooled score; no exact Table S1 site/);
+  assert.match(scoreOnly.text, /exact locus tag/);
 });
 
 test('one TSS retains both biological cultures and each condition comparison', () => {

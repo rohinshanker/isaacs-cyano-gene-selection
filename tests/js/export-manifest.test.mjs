@@ -466,6 +466,25 @@ test('a Tan TSS source is pinned in the export without calling it gene abundance
   assert.ok(result.manifest.caveats.some((line) => /not whole-gene RNA abundance/.test(line)));
 });
 
+test('export rows explain both TSS mismatch directions', async () => {
+  const { dataset: original, registry } = await context();
+  const genes = original.genes.map((gene) => ({ ...gene }));
+  genes[0].tssInitiation = null;
+  genes[0].tssEvidence = [{ id: 'gTSS+10' }, { id: 'gTSS+20' }];
+  genes[1].tssInitiation = 42;
+  genes[1].tssEvidence = [];
+  const dataset = { ...original, genes };
+  const result = exportFor(dataset, registry, [genes[0].id, genes[1].id], [{ map: {} }]);
+
+  assert.equal(result.rows[0].tssMappedSiteCount, 2);
+  assert.match(result.rows[0].tssInitiationBasis, /2 mapped sites; pooled score absent/);
+  assert.match(result.rows[0].tssInitiationBasisReason, /do not backfill/);
+  assert.equal(result.rows[1].tssMappedSiteCount, 0);
+  assert.match(result.rows[1].tssInitiationBasis, /pooled score; no exact Table S1 site/);
+  assert.match(result.rows[1].tssInitiationBasisReason, /exact locus tag/);
+  assert.equal(result.manifest.genes[0].tssInitiationBasis.siteCount, 2);
+});
+
 test('UTEX allele and borrowed PCC call retain separate provenance in CSV and manifest', async () => {
   const { dataset, registry } = await context();
   const id = dataset.genes[0].id;

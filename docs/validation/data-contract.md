@@ -383,6 +383,14 @@ count (two per condition), threshold, and exact-join coverage. The source and
 derived-table hashes and reproduction steps are in
 `data/expression/TAN2018_TSS_PROVENANCE.md`.
 
+This site-row layer and the `tssInitiation` metric deliberately remain separate.
+The former has 1,789 exact-locus genes and the latter 1,727; their intersection is
+1,317, leaving 472 site-only and 410 score-only loci. No start-distance cutoff is
+applied to the site join, and neither layer backfills the other. Detail rows and
+exports must state `mapped site(s); pooled score absent` for the first direction
+and `pooled score; no exact Table S1 site` for the reverse. The exact join audit
+and stable examples are in `data/expression/TAN2018_TSS_PROVENANCE.md`.
+
 `regulatory_tss.json` separately publishes the 2,333 non-gTSS Table S1 rows
 (antisense, internal, and orphan or novel). It preserves every feature's own
 coordinate, strand, source locus, raw cultures, and reported condition

@@ -31,6 +31,49 @@ export function formatTssStatistic(value) {
   return value.toLocaleString('en-US', { maximumSignificantDigits: 4 });
 }
 
+/**
+ * Explain whether the separate pooled initiation score and Table S1 site layer
+ * agree for one gene. Neither artifact is allowed to fill the other.
+ */
+export function tssInitiationBasis(gene, value = gene?.tssInitiation) {
+  const siteCount = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence.length : 0;
+  if (Number.isFinite(value)) {
+    if (siteCount === 0) {
+      return {
+        basis: 'measured',
+        short: 'pooled score; no exact Table S1 site',
+        text: 'The separate TAN2018_TSS pooled initiation table has a value, but Table S1 has no gTSS row '
+          + 'that maps to this current locus by exact locus tag.',
+        siteCount,
+      };
+    }
+    return {
+      basis: 'measured',
+      short: 'measured',
+      text: 'The separate TAN2018_TSS pooled initiation table has a value; mapped Table S1 sites remain '
+        + 'independent promoter-level evidence.',
+      siteCount,
+    };
+  }
+  if (siteCount > 0) {
+    return {
+      basis: 'none',
+      short: `${siteCount} mapped ${siteCount === 1 ? 'site' : 'sites'}; pooled score absent`,
+      text: `Table S1 maps ${siteCount} ${siteCount === 1 ? 'gTSS row' : 'gTSS rows'} to this `
+        + 'current locus by exact locus tag, but the separate pooled initiation table has no '
+        + 'row for it. Site counts do not backfill that metric.',
+      siteCount,
+    };
+  }
+  return {
+    basis: 'none',
+    short: 'no pooled score or mapped site',
+    text: 'Neither the separate pooled initiation table nor the exact-locus Table S1 join has '
+      + 'evidence for this current locus.',
+    siteCount,
+  };
+}
+
 /** Return a display-ready model while preserving missing measurements as null. */
 export function tssEvidenceModel(gene) {
   const evidence = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence : [];
