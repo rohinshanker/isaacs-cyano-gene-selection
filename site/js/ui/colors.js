@@ -43,6 +43,11 @@ export const CATEGORY_UNKNOWN_COLOR = '#c6cdd5';
 export const SHORTLIST_COLOR = '#1b2733';
 export const PINNED_COLOR = '#b3261e';
 export const REVIEWED_MARKER_BORDER = '#314254';
+/**
+ * Derived (computational) category markers are hollow: a white disc with the
+ * category colour as ring and centre dot, so they never read as reviewed.
+ */
+export const DERIVED_MARKER_FILL = '#ffffff';
 export const HOVER_FOCUS_COLOR = '#4a5568';
 export const ACTIVE_FOCUS_COLOR = '#2f6f8f';
 

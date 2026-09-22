@@ -62,15 +62,17 @@ committed selection. A preview never changes filter or URL state.
 Click, Enter, or Space toggles the row into the committed category filter.
 Selected categories combine with OR semantics; an empty selection excludes
 nothing. The selection composes with the numeric, activity, expression,
-protein, and exception filters. Excluded reviewed CDSs use the grey outlined
-square while excluded unknown CDSs use the filled grey dot. After a toggle the
+protein, and exception filters, and applies to the category resolved under
+the enabled annotation sources. Excluded categorised CDSs, reviewed or
+derived, use the grey outlined square while excluded unknown CDSs use the
+filled grey dot. After a toggle the
 legend is rebuilt and keyboard focus is restored to the same row, so repeated
 Enter or Space keeps working and the focus ring stays visible.
 
 Marker-convention legend swatches are decorative inline SVGs that reproduce
-the canvas geometry: filled coloured circle, open unknown ring, excluded
-reviewed square, excluded unknown dot, shortlist diamond, and pinned ring with
-four crosshair ticks. The same SVG shapes are used in numeric legend notes;
+the canvas geometry: filled coloured circle, hollow derived circle with a
+centre dot, open unknown ring, excluded categorised square, excluded unknown
+dot, shortlist diamond, and pinned ring with four crosshair ticks. The same SVG shapes are used in numeric legend notes;
 excluded rows with a zero count are omitted.
 
 **Clear category selection** below the legend clears only the category filter
@@ -80,20 +82,35 @@ sorted, deduplicated category ids; unknown ids are dropped on decode and a
 hash without `cf` decodes to no category filter. The export manifest records
 the committed selection in both its `filterState` and `viewState` fields.
 
-## Annotation source
+## Annotation sources
 
-The **Annotation source** selector offers All sources (the fresh-view
-default), UTEX 2973, PCC 7942, and GO IEA. The selection is encoded in the URL
-field `as` only when it is not the default. A single-source view reads every
-annotation field through one accessor
+The **Annotation sources** control is three independent checkboxes, UTEX
+2973, PCC 7942, and GO IEA, all on in a fresh view. All three on is the
+combined view; exactly one on is that source's single-source view; every
+toggle off blanks every annotation field and leaves every CDS unknown. The
+enabled set is encoded in the URL field `as` only when it is not the default:
+a single id, a comma list of ids in canonical order, or `none`. Versions up to
+3 wrote `as` as one id, which still decodes to that source alone, so old links
+keep their meaning. Every view reads annotation fields through one accessor
 (`site/js/core/annotation-source.js`), so the detail panel, shortlist and
-comparison tables, panel-designer gene list, search suggestions, and export
-agree on what that source annotated; see the
+comparison tables, panel-designer gene list, search suggestions, category
+colour, and export agree on what the enabled sources annotated; see the
 [data contract](data-contract.md#annotation-source-views) for the blank-value
 rule. Search still matches locus tags in every view because identity is not
-one source's annotation, while name and product suggestions come only from the
-selected source. The GO IEA evidence tier and its discrepancy notes belong to
-All sources alone; the PCC 7942 view shows the borrowed call without them.
+one source's annotation, while name and product suggestions come only from
+UTEX 2973 and GO suggestions only from GO IEA. The GO IEA evidence tier and
+its discrepancy notes belong to the combined view alone; PCC 7942 alone shows
+the borrowed call without them.
+
+In Function category colour mode the toggles also decide the colour: a
+lab-reviewed UTEX 2973 assignment always wins when that source is on, an
+enabled PCC 7942 or GO IEA source otherwise supplies its derived category,
+and two derived sources that disagree fall into the multiple-functions
+bucket. Derived colour draws as a hollow ring with a centre dot, the legend
+title names the counted sources and its counts change live with each toggle,
+and hover, click, and multi-select filtering act on the resolved category;
+see [source-derived-categories.md](source-derived-categories.md). Toggles
+are re-synced from the URL on hash and history changes.
 
 ## Pinned status row
 
@@ -104,7 +121,7 @@ the reversible-pinning rules above say.
 
 ## URL and local persistence
 
-The current encoder is `ver=3`. A viewer-generated hash is a complete shareable
+The current encoder is `ver=4`. A viewer-generated hash is a complete shareable
 snapshot and always includes `l=`, including for an explicitly empty shortlist.
 Hash and browser-history changes are applied live without reload.
 
@@ -122,9 +139,12 @@ pair and keeps plotting the axes its author shared. Version 3 omits them when
 the axes are the measured fresh-view pair. A hash with no `ver` was not written
 by this encoder, so its axes stay unspecified and fall to rule 3, the fresh
 default, because axes have no local persistence; an explicit
-`ax`/`ay` wins in every version. `tests/js/url-state.test.mjs` covers the old
-snapshot, the explicit override, the unversioned fragment, and the current
-round trip.
+`ax`/`ay` wins in every version. Version 4 changed the grammar of `as` from
+one source id to a comma list or `none`; a version-3 single id still means
+that source alone, and an older reader given a version-4 list falls back to
+every source. `tests/js/url-state.test.mjs` covers the old snapshot, the
+explicit override, the unversioned fragment, the `as` migration, and the
+current round trip.
 
 Before applying a decoded snapshot, all state fields reset to fresh defaults;
 omitted default-valued fields therefore cannot leak from the prior view. One

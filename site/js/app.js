@@ -48,7 +48,12 @@ import { ComparePanel } from './ui/compare.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
-import { ANNOTATION_SOURCES, ALL_SOURCES } from './core/annotation-source.js';
+import {
+  SOURCE_TOGGLES, annotationSourceLabel, isAllSources, normalizeAnnotationSources,
+} from './core/annotation-source.js';
+import {
+  resolveFunctionCategories, THRESHOLDS as DERIVED_THRESHOLDS,
+} from './core/source-derived-categories.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
@@ -173,7 +178,25 @@ function clearLivePercentiles() {
   }
 }
 
+/**
+ * Resolve every gene's category bucket under the enabled annotation sources:
+ * reviewed UTEX 2973 rows win, then enabled derived sources, disagreement to
+ * the multiple-functions bucket. Recomputed whenever the toggles change; the
+ * legend, filter, preview, and canvas all read this one model.
+ */
+function resolveCategoryModel() {
+  const reviewed = context.dataset.functionCategories;
+  context.categories = reviewed ? resolveFunctionCategories({
+    reviewed,
+    derived: context.dataset.sourceDerivedCategories,
+    genes: context.dataset.genes,
+    sources: state.annotationSources,
+  }) : null;
+  return context.categories;
+}
+
 function computeMask() {
+  resolveCategoryModel();
   const { dataset, registry } = context;
   const count = dataset.genes.length;
   const mask = new Uint8Array(count).fill(1);
@@ -231,7 +254,7 @@ function computeMask() {
   context.baseMask = mask;
 
   let finalMask = mask;
-  const categories = dataset.functionCategories;
+  const categories = context.categories;
   if (state.categoryFilter.length > 0 && categories) {
     finalMask = new Uint8Array(count);
     for (let i = 0; i < count; i += 1) {
@@ -252,7 +275,7 @@ function previewCategory(id) {
     plot.setMask(context.mask);
     return;
   }
-  const categories = context.dataset.functionCategories;
+  const categories = context.categories;
   if (!categories) return;
   const base = context.baseMask;
   const preview = new Uint8Array(base.length);
@@ -422,22 +445,35 @@ function scheduleTiming() {
 }
 
 function renderColorHelp() {
-  const categories = context.dataset.functionCategories;
+  const categories = context.categories ?? resolveCategoryModel();
   if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
+    const reviewed = context.dataset.functionCategories;
+    const derived = context.dataset.sourceDerivedCategories;
     renderMetricHelp(element('colour-help'), {
-      title: 'Reviewed function category',
-      summary: 'A broad cyanobacterial function assigned to an exact UTEX 2973 locus '
-        + 'after lab review. The same colour has the same category on every map tab.',
+      title: 'Function category',
+      summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '
+        + 'sources: the lab-reviewed UTEX 2973 assignment when one exists, otherwise a '
+        + 'category derived from the PCC 7942 product name or the GO IEA terms. The same '
+        + 'colour has the same category on every map tab.',
       unit: 'category (not a numeric metric)',
-      method: `The lab approved ${formatCount(categories.reviewedCount)} exact locus decisions `
-        + `on ${categories.source.provenance.userReview.date}. A gene with `
-        + 'two or more reviewed categories uses the multiple-functions bucket. '
-        + 'GO IEA suggestions never assign a category colour by themselves.',
-      origin: `UTEX 2973 RefSeq ${categories.source.provenance.annotationRelease} `
-        + 'product records and the lab review table.',
-      coverage: `${formatCount(categories.reviewedCount)} reviewed rows; `
-        + `${formatCount(categories.unknownCount)} genes are unknown or unclassified, `
-        + `including ${formatCount(categories.explicitUnknownCount)} reviewed as unknown.`,
+      method: `The lab approved ${formatCount(reviewed.reviewedCount)} exact locus decisions `
+        + `on ${reviewed.source.provenance.userReview.date}; a reviewed row always wins. `
+        + (derived
+          ? `Derived categories are TypeSafe ${derived.judgment.model} judgments over each `
+            + 'enabled source, assigned only at probability '
+            + `${DERIVED_THRESHOLDS.derivedProbabilityAtLeast.toFixed(2)} or above, drawn as a `
+            + 'hollow ring with a centre dot, and labelled pcc-7942-derived or go-iea-derived. '
+            + 'Two derived sources that disagree use the multiple-functions bucket.'
+          : 'GO IEA suggestions never assign a category colour by themselves.'),
+      origin: `UTEX 2973 RefSeq ${reviewed.source.provenance.annotationRelease} product records `
+        + 'and the lab review table'
+        + (derived ? '; PCC 7942 RefSeq product names at admitted joins (Adomako et al. 2022, '
+          + 'CC BY 4.0); Gene Ontology IEA relationships (CC BY 4.0).' : '.'),
+      coverage: `Under ${annotationSourceLabel(categories.sources)}: `
+        + `${formatCount(categories.reviewedCount)} coloured by lab review, `
+        + `${formatCount(categories.derivedCount)} by a derived source, `
+        + `${formatCount(categories.multipleCount)} in multiple functions, and `
+        + `${formatCount(categories.unknownCount)} unknown or unclassified.`,
       citations: ['ncbi-utex-2973'],
     }, citationsManifest);
     return;
@@ -508,23 +544,23 @@ function renderMap() {
   plot.setProjection(projection, { keepView: plot.projectionId === state.panel });
   plot.projectionId = state.panel;
 
-  const categorical = state.colorBy === FUNCTION_COLOR_KEY
-    && Boolean(context.dataset.functionCategories);
-  const metric = categorical ? { label: 'Reviewed function category' }
+  const categories = context.categories ?? resolveCategoryModel();
+  const categorical = state.colorBy === FUNCTION_COLOR_KEY && Boolean(categories);
+  const metric = categorical ? { label: 'Function category' }
     : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
   if (!categorical) state.colorBy = metric.key;
   renderColorHelp();
   renderProjectionHelp(element('features-used'),
     projectionHelp(state.panel, context.dataset, context.registry,
       { x: state.axisX, y: state.axisY }), citationsManifest);
-  const values = categorical ? context.dataset.functionCategories.values
+  const values = categorical ? categories.values
     : metricValues(metric, context.dataset.genes.length);
   // The ramp family is whatever the metric declares; undeclared is inferred and
   // the legend says so. `direction` is never read.
   const scale = categorical
-    ? buildCategoryColorScale(context.dataset.functionCategories.labels.length)
+    ? buildCategoryColorScale(categories.labels.length)
     : buildColorScale(values, { scale: metric.scale });
-  plot.setColor({ values, scale });
+  plot.setColor({ values, scale, derived: categorical ? categories.derived : null });
   plot.setMask(context.mask);
   plot.setShowHidden(state.showHidden);
   plot.setMarks({
@@ -550,14 +586,16 @@ function renderMap() {
       let hiddenUnknownCount = 0;
       for (let i = 0; i < context.mask.length; i += 1) {
         if (context.mask[i]) continue;
-        if (categoryBucketId(context.dataset.functionCategories, i) === UNKNOWN_CATEGORY_ID) {
+        if (categoryBucketId(categories, i) === UNKNOWN_CATEGORY_ID) {
           hiddenUnknownCount += 1;
         } else {
           hiddenReviewedCount += 1;
         }
       }
       renderCategoryLegend(legendHost, {
-        ...context.dataset.functionCategories,
+        ...categories,
+        hasDerivedData: categories.hasDerivedData,
+        derivedThreshold: DERIVED_THRESHOLDS.derivedProbabilityAtLeast,
         scale,
         hiddenReviewedCount,
         hiddenUnknownCount,
@@ -635,7 +673,7 @@ function renderDetail() {
     schemeActive: context.scheme.active,
     live: context.live,
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
-    annotationSource: state.annotationSource,
+    annotationSources: state.annotationSources,
   });
 }
 
@@ -676,7 +714,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     pinnedId: state.pinnedId,
     dataset: context.dataset,
     registry: context.registry,
-    annotationSource: state.annotationSource,
+    annotationSources: state.annotationSources,
     filterState: {
       ranges: state.filters,
       categoryFilter: state.categoryFilter,
@@ -702,7 +740,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     dataset: context.dataset,
     registry: context.registry,
     tab: state.compareTab,
-    annotationSource: state.annotationSource,
+    annotationSources: state.annotationSources,
   });
   if (panelDesigner) {
     panelDesigner.update({
@@ -710,7 +748,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       registry: context.registry,
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
-      annotationSource: state.annotationSource,
+      annotationSources: state.annotationSources,
       schemes: {
         active: { name: state.schemeName, map: state.schemeMap },
         saved: Object.entries(store.read(STORAGE_SCHEMES, {}))
@@ -975,29 +1013,52 @@ function buildAxisScaleSelects() {
 }
 
 /**
- * The annotation-source selector: which of UTEX 2973, PCC 7942, GO IEA, or the
- * combined "All sources" view the detail panel, list/table views, search
- * suggestions, and the export all read from.
+ * The annotation-source toggles: which of UTEX 2973, PCC 7942, and GO IEA the
+ * detail panel, list/table views, search suggestions, category colour, and the
+ * export read from. All three on is the combined view; one on is that source
+ * alone.
  */
-function buildAnnotationSourceSelect() {
-  const select = element('annotation-source');
-  select.replaceChildren();
-  for (const { id, label } of ANNOTATION_SOURCES) {
-    const option = document.createElement('option');
-    option.value = id;
-    option.textContent = label;
-    select.append(option);
+function buildAnnotationSourceToggles() {
+  const host = element('annotation-sources');
+  host.querySelectorAll('.source-toggle').forEach((node) => node.remove());
+  const inputs = new Map();
+  for (const { id, label } of SOURCE_TOGGLES) {
+    const row = document.createElement('span');
+    row.className = 'checkbox-row source-toggle';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = `annotation-source-${id}`;
+    input.value = id;
+    input.checked = state.annotationSources.includes(id);
+    const text = document.createElement('label');
+    text.htmlFor = input.id;
+    text.textContent = label;
+    row.append(input, text);
+    host.append(row);
+    inputs.set(id, input);
   }
-  select.value = state.annotationSource;
-  select.addEventListener('change', () => {
-    state.annotationSource = select.value;
-    if (searchResults) searchResults.setAnnotationSource(state.annotationSource);
+  host.addEventListener('change', () => {
+    state.annotationSources = normalizeAnnotationSources(
+      [...inputs].filter(([, input]) => input.checked).map(([id]) => id),
+    );
+    if (searchResults) searchResults.setAnnotationSource(state.annotationSources);
     renderAll();
-    announce(state.annotationSource === ALL_SOURCES
-      ? 'Annotation source: all sources combined.'
-      : `Annotation source: ${select.selectedOptions[0].textContent} only. Fields another source `
-        + 'would have supplied are shown blank, never filled in from another source.');
+    announce(isAllSources(state.annotationSources)
+      ? 'Annotation sources: all sources combined.'
+      : state.annotationSources.length === 0
+        ? 'Annotation sources: none enabled. Every annotation field is blank and every CDS is '
+          + 'unknown until a source is turned on.'
+        : `Annotation sources: ${annotationSourceLabel(state.annotationSources)} only. Fields a `
+          + 'disabled source would have supplied are shown blank, never filled in from it.');
   });
+}
+
+/** Keep the toggle boxes in step with state after a hash or history change. */
+function syncAnnotationSourceToggles() {
+  for (const { id } of SOURCE_TOGGLES) {
+    const input = element(`annotation-source-${id}`);
+    if (input) input.checked = state.annotationSources.includes(id);
+  }
 }
 
 function buildGeneSearch() {
@@ -1012,7 +1073,7 @@ function buildGeneSearch() {
     isPinned: (id) => state.pinnedId === id,
   });
   searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms, context.dataset);
-  searchResults.setAnnotationSource(state.annotationSource);
+  searchResults.setAnnotationSource(state.annotationSources);
 
   const input = element('gene-search');
   const run = () => {
@@ -1272,6 +1333,8 @@ function applyLiveHash() {
   element('axis-x-scale').value = state.axisXScale;
   element('axis-y-scale').value = state.axisYScale;
   element('show-hidden').checked = state.showHidden;
+  syncAnnotationSourceToggles();
+  if (searchResults) searchResults.setAnnotationSource(state.annotationSources);
   renderAll();
   announce('View updated from the address bar.');
 }
@@ -1535,7 +1598,7 @@ async function boot() {
   buildColorSelect();
   buildAxisSelects();
   buildAxisScaleSelects();
-  buildAnnotationSourceSelect();
+  buildAnnotationSourceToggles();
   buildGeneSearch();
   renderMetricAgreement();
   renderProvenance();

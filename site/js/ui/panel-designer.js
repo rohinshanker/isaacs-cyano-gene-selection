@@ -18,7 +18,7 @@ import {
   designPanel, normaliseConfig, FLAG_CONSTRAINTS, MIN_PANEL_SIZE, MAX_PANEL_SIZE,
   DEFAULT_PANEL_SIZE, SELECTION_ORDER,
 } from '../core/panel-design.js';
-import { annotationSourceView, DEFAULT_ANNOTATION_SOURCE } from '../core/annotation-source.js';
+import { annotationSourceView } from '../core/annotation-source.js';
 import {
   buildPanelExport, buildSchemeMatrix, describeSchemes,
 } from '../core/panel-export.js';
@@ -232,7 +232,7 @@ export class PanelDesigner {
   /**
    * @param {{dataset: object, registry: object,
    *   schemes: {active: {name: string, map: object}, saved: Array<{name: string, map: object}>},
-   *   shortlist: string[], pinnedId: string|null, annotationSource?: string}} state
+   *   shortlist: string[], pinnedId: string|null, annotationSources?: string[]}} state
    */
   update(state) {
     this.state = state;
@@ -831,9 +831,9 @@ export class PanelDesigner {
     // the combined dataset; run it back through the selected annotation
     // source so a single-source view blanks the product like every other
     // gene view does when that source is silent for the locus.
-    const { dataset, annotationSource = DEFAULT_ANNOTATION_SOURCE } = this.state;
+    const { dataset, annotationSources } = this.state;
     const rawGene = dataset.genes[gene.index];
-    const product = annotationSourceView(rawGene, dataset, annotationSource).product;
+    const product = annotationSourceView(rawGene, dataset, annotationSources).product;
     if (product) item.append(element('p', 'panel-gene-product', product));
 
     if (gene.nearestId) {

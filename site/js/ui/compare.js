@@ -11,7 +11,7 @@
  */
 import { divergingColor } from './colors.js';
 import { formatValue, formatDelta, formatCount, MISSING } from './format.js';
-import { ALL_SOURCES, annotationSourceView } from '../core/annotation-source.js';
+import { annotationSourceView, isAllSources } from '../core/annotation-source.js';
 import {
   metricValues, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
   orderMeasuredFirst, metricsInDisplayOrder,
@@ -351,8 +351,7 @@ export class ComparePanel {
   }
 
   seriesFor() {
-    const { ids, dataset, annotationSource } = this.state;
-    const source = annotationSource ?? ALL_SOURCES;
+    const { ids, dataset, annotationSources } = this.state;
     return ids
       .map((id, order) => ({ id, index: dataset.indexById.get(id), order }))
       .filter((entry) => entry.index !== undefined)
@@ -361,7 +360,8 @@ export class ComparePanel {
         // The "Gene" and "Product" columns are a UTEX 2973 field; every other
         // column stays scheme- and dataset-derived, not annotation-sourced, so
         // only `displayGene` (never `gene`) is swapped for a single source.
-        const displayGene = source !== ALL_SOURCES ? annotationSourceView(gene, dataset, source) : gene;
+        const displayGene = isAllSources(annotationSources)
+          ? gene : annotationSourceView(gene, dataset, annotationSources);
         return { ...entry, gene, displayGene, ...seriesStyle(entry.order) };
       });
   }

@@ -84,6 +84,7 @@ test('required publication and runtime assets are present', async () => {
     'data/go-term-names-v1.json',
     'data/function-categories-v1.json',
     'data/go-iea-essentiality-v1.json',
+    'data/source-derived-categories-v1.json',
     'vendor/viennarna/vienna.js',
     'vendor/viennarna/vienna.wasm',
     'vendor/viennarna/PROVENANCE.md',

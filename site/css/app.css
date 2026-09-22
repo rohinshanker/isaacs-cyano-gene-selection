@@ -209,6 +209,12 @@ pre {
 .checkbox-row { display: flex; align-items: flex-start; gap: 0.4rem; flex-wrap: nowrap; }
 .checkbox-row input { margin-top: 0.3rem; flex: none; }
 .checkbox-row label { color: var(--ink); }
+/* The group asks for its one-line width so the toolbar row moves it whole onto the
+   next line; only when a line is narrower than that do the toggles wrap inside it. */
+.source-toggles { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; width: max-content; max-width: 100%; gap: 0.15rem 0.6rem; align-items: center; }
+.source-toggles legend { float: left; color: var(--ink-muted); font-size: 0.85rem; padding: 0; margin-right: 0.35rem; }
+.source-toggles .source-toggle { align-items: center; font-size: 0.85rem; white-space: nowrap; }
+.source-toggles .source-toggle input { margin-top: 0; }
 
 button, select, input[type="text"], input[type="number"], input[type="search"] {
   font: inherit;
@@ -528,6 +534,10 @@ input[type="range"] { width: 100%; }
 .category-legend-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .category-legend-row.selected { background: var(--accent-soft); font-weight: 600; }
 .category-legend-reset { margin-top: 0.5rem; }
+.legend-evidence { max-width: 60ch; }
+.function-category-sources { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+.function-category-sources li { margin: 0.15rem 0; }
+.function-category-block p { margin: 0; }
 
 .timing { font-size: 0.76rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; max-width: 46ch; }
 

@@ -17,6 +17,7 @@ import { validateLengthInventory } from './length-cohorts.js';
 import { validateRegulatoryTss } from './regulatory-tss.js';
 import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
+import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
 
 async function fetchJson(fetchImpl, url, { optional = false } = {}) {
@@ -86,7 +87,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
 
   const [meta, genes, codonPca, excluded, annotations, tssEvidence, lengthCohorts,
     regulatoryTss, candidateEvidence, goTerms, functionCategoryData,
-    goIeaEssentiality] = await Promise.all([
+    goIeaEssentiality, sourceDerivedCategoryData] = await Promise.all([
     fetchJson(fetchImpl, url('meta.json')),
     fetchJson(fetchImpl, url('genes.json')),
     fetchJson(fetchImpl, url('codon_pca.json'), { optional: true }),
@@ -99,6 +100,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     fetchJson(fetchImpl, url('go-term-names-v1.json'), { optional: true }),
     fetchJson(fetchImpl, url('function-categories-v1.json'), { optional: true }),
     fetchJson(fetchImpl, url('go-iea-essentiality-v1.json'), { optional: true }),
+    fetchJson(fetchImpl, url('source-derived-categories-v1.json'), { optional: true }),
   ]);
 
   requireArray(genes, 'genes.json');
@@ -147,6 +149,15 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   }
   const functionCategories = functionCategoryData
     ? joinFunctionCategories(functionCategoryData, genes, meta.annotationRelease?.releaseId)
+    : null;
+  // Derived categories are checked against the reviewed table, the PCC joins,
+  // and each gene's GO terms, and every assignment is re-derived from its
+  // probability, so a stale or hand-edited category cannot load.
+  const sourceDerivedCategories = sourceDerivedCategoryData
+    ? validateSourceDerivedCategories(
+      sourceDerivedCategoryData, genes, functionCategories, candidateEvidence,
+      meta.annotationRelease?.releaseId,
+    )
     : null;
   if (tssEvidence) {
     for (const gene of genes) {
@@ -274,6 +285,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     goIeaEssentiality: goIeaEssentiality ?? null,
     goTerms,
     functionCategories,
+    sourceDerivedCategories,
     table,
     conventions,
     packed,

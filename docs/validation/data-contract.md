@@ -547,21 +547,51 @@ objective never reads it. See
 [go-iea-essentiality-context.md](go-iea-essentiality-context.md). The contract
 validator re-derives every tier independently.
 
+## Source-derived function categories
+
+`site/data/source-derived-categories-v1.json` is optional. When present, the
+browser requires the reviewed function-category table and
+`candidate_evidence.json`, and refuses to load unless the file's vocabulary
+equals the reviewed vocabulary and every assignment re-derives from its
+probability. `byLocus` has one sorted record for each of the 2,715 plotted
+CDSs with two entries:
+
+| Field | Contract |
+| --- | --- |
+| `pcc-7942` | `null` without an accepted PCC 7942 join. Otherwise `{pccLocusTag, mostLikely, probability, categoryId}` judged from the joined RefSeq product name alone. |
+| `go-iea` | `null` without GO IEA terms. Otherwise `{termCount, mostLikely, probability, categoryId}` judged from the GO terms alone. |
+
+`mostLikely` is one of the eleven vocabulary ids; `categoryId` equals
+`mostLikely` when it is not `unknown-or-unclassified` and `probability` is at
+least `policy.thresholds.derivedProbabilityAtLeast` (0.8), and is `null`
+otherwise. Top-level `attribution` carries the Gene Ontology CC BY 4.0 notice
+and the Adomako/Rubin PCC 7942 attribution, `judgment` pins the TypeSafe
+model, rubric, and result hashes, `policy` states the evidence labels,
+precedence, and disagreement rule, and `counts` summarises each source and
+the all-sources legend. The reviewed table is never changed. See
+[source-derived-categories.md](source-derived-categories.md); the contract
+validator re-derives every assignment and the legend independently.
+
 ## Annotation-source views
 
-The viewer can show one annotation source at a time. Each source has a fixed
-set of fields it can annotate: UTEX 2973 supplies the RefSeq name, product,
-and lab-reviewed function categories; PCC 7942 supplies the joined locus tag
-and the borrowed essentiality call; GO IEA supplies the evidence-coded GO
-relationships. In a single-source view a field that source does not annotate
-for a gene is **blank**: `null` or an empty list, never filled from another
-source and never rendered as `unknown` as if that were the source's own value.
-All sources is not a filtered view; consumers keep reading the gene and
+The viewer has three independent source toggles. Each source has a fixed set
+of fields it can annotate: UTEX 2973 supplies the RefSeq name, product, and
+lab-reviewed function categories; PCC 7942 supplies the joined locus tag, the
+borrowed essentiality call, and the PCC-derived function category; GO IEA
+supplies the evidence-coded GO relationships and the GO-derived function
+category. A field that no enabled source annotates for a gene is **blank**:
+`null` or an empty list, never filled from a disabled source and never
+rendered as `unknown` as if that were the source's own value. All three
+toggles on is not a filtered view; consumers keep reading the gene and
 dataset fields directly, so its output is byte-identical to the behaviour
-before the selector existed.
+before the toggles existed, apart from the derived colour that the new file
+adds. Exactly one toggle on is that source's single-source view; every toggle
+off leaves every field blank.
 
-The export manifest records `annotationSource` as `{ id, label }` and every
-row carries the same `annotationSource` id, with a caveat naming the source
-and its evidence note, so a single-source file cannot be mistaken for the
-combined view. The GO IEA essentiality tier, context, probability, and
-discrepancy fields are populated only for All sources exports.
+The export manifest records `annotationSource` as `{ id, label, enabled }`,
+where `id` is `all`, `none`, a single source id, or the enabled ids joined
+with `+`, and every row carries the same `annotationSource` id, with a caveat
+naming the enabled sources and their evidence notes, so a narrower file
+cannot be mistaken for the combined view. The GO IEA essentiality tier,
+context, probability, and discrepancy fields are populated only for exports
+with every source enabled.

@@ -113,6 +113,10 @@ jobs:
       - name: Verify GO IEA essentiality context
         run: python3 tools/build_go_iea_essentiality.py --check
 
+      # Rebuilds the derived category layer from pinned Jev judgments; offline.
+      - name: Verify source-derived function categories
+        run: python3 tools/build_source_derived_categories.py --check
+
       - name: Run pipeline tests
         run: python -m pytest -q
 

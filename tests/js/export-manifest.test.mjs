@@ -665,7 +665,8 @@ test('a single source records itself in the manifest so a file cannot be mistake
     dataset: scoped, registry, ids: [coveredId], schemes: [{ map: {} }],
     generatedAt: new Date('2026-09-18T20:00:00Z'), annotationSource: 'utex-2973',
   });
-  assert.deepEqual(result.manifest.annotationSource, { id: 'utex-2973', label: 'UTEX 2973' });
+  assert.deepEqual(result.manifest.annotationSource,
+    { id: 'utex-2973', label: 'UTEX 2973', enabled: ['utex-2973'] });
   assert.equal(result.rows[0].annotationSource, 'utex-2973');
   assert.ok(result.manifest.caveats.some((line) => /annotationSource is "utex-2973"/.test(line)));
 });

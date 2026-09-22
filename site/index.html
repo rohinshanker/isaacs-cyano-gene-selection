@@ -238,10 +238,10 @@ if (window.location.protocol === 'file:') {
               <label for="color-by">Colour by</label>
               <select id="color-by"></select>
             </span>
-            <span class="field-row">
-              <label for="annotation-source">Annotation source</label>
-              <select id="annotation-source" aria-describedby="annotation-source-hint"></select>
-            </span>
+            <fieldset class="field-row source-toggles" id="annotation-sources"
+                      aria-describedby="annotation-source-hint">
+              <legend>Annotation sources</legend>
+            </fieldset>
             <span class="field-row field-row-grow">
               <label for="gene-search">Find a gene</label>
               <input id="gene-search" type="search" autocomplete="off"
@@ -272,11 +272,14 @@ if (window.location.protocol === 'file:') {
           such as rubisco are translated into the wording this genome uses.
         </p>
         <p class="visually-hidden" id="annotation-source-hint">
-          All sources combines UTEX 2973, PCC 7942, and GO IEA annotations, the same as
-          before this control existed. A single source shows only that dataset's
-          annotations for every gene, in the detail panel, lists, search, and the
-          export; a gene the source has nothing to say about is shown blank, never
-          filled in from another source.
+          Each toggle enables one annotation source. All three on combines UTEX 2973,
+          PCC 7942, and GO IEA annotations, the same as before the toggles existed. With
+          fewer on, the detail panel, lists, search, category colour, and the export show
+          only what the enabled sources annotate for every gene; a gene an enabled source
+          has nothing to say about is shown blank, never filled in from a disabled source.
+          Function-category colour uses the lab-reviewed UTEX 2973 assignment when that
+          source is on, otherwise a category derived from the enabled PCC 7942 product name
+          or GO IEA terms, drawn as a hollow ring with a centre dot and labelled as derived.
         </p>
         <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
         <p class="filter-banner" id="filter-banner" role="status"></p>

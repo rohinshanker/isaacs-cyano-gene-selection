@@ -14,7 +14,9 @@
  * something to approximate with a scoring heuristic.
  */
 
-import { ALL_SOURCES, UTEX_SOURCE, GO_IEA_SOURCE } from './annotation-source.js';
+import {
+  ALL_SOURCES, UTEX_SOURCE, GO_IEA_SOURCE, hasSource,
+} from './annotation-source.js';
 
 /**
  * Nicknames a lab types, mapped to the phrasing the annotation actually uses.
@@ -93,7 +95,7 @@ const FIELD_LABEL = {
 
 /** GO rows remain evidence-coded suggestions; matching a name does not establish function. */
 function scoreGo(gene, query, terms, source = ALL_SOURCES) {
-  if (source !== ALL_SOURCES && source !== GO_IEA_SOURCE) return null;
+  if (!hasSource(source, GO_IEA_SOURCE)) return null;
   let best = null;
   for (const relation of gene.annotationEvidence?.goAnnotations ?? []) {
     const id = relation.goId;
@@ -115,7 +117,7 @@ function scoreGo(gene, query, terms, source = ALL_SOURCES) {
 
 /** Only labels assigned by the reviewed table can match this tier; a UTEX 2973 field. */
 function scoreReviewedCategory(gene, query, source = ALL_SOURCES) {
-  if (source !== ALL_SOURCES && source !== UTEX_SOURCE) return null;
+  if (!hasSource(source, UTEX_SOURCE)) return null;
   const labels = gene.reviewedFunctionLabels ?? [];
   const label = labels.find((entry) => containsAllWords(entry, query));
   return label ? { tier: TIER.reviewedCategory, length: label.length, category: label } : null;
@@ -134,7 +136,7 @@ function scoreNeedle(gene, needle, source = ALL_SOURCES) {
   const { phrase } = needle;
   if (!phrase) return null;
   if (id === phrase) return TIER.idExact;
-  const utexAllowed = source === ALL_SOURCES || source === UTEX_SOURCE;
+  const utexAllowed = hasSource(source, UTEX_SOURCE);
   const name = utexAllowed ? normalize(gene.name) : '';
   const product = utexAllowed ? normalize(gene.product) : '';
   if (name && name === phrase) return TIER.nameExact;
@@ -155,7 +157,8 @@ function scoreNeedle(gene, needle, source = ALL_SOURCES) {
  *
  * @param {Array<object>} genes
  * @param {string} query
- * @param {{limit?: number, goTerms?: object, source?: string}} options
+ * @param {{limit?: number, goTerms?: object, source?: string|string[]}} options
+ *   `source` is a single source id, "all", or the enabled-source list.
  * @returns {{query: string, total: number, shown: Array<object>, hiddenCount: number,
  *   aliasesUsed: string[]}} `shown` entries carry `{index, gene, matchedOn, alias}`.
  */

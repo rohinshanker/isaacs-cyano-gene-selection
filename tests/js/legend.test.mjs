@@ -66,7 +66,7 @@ test('excluded category legend rows omit zero counts independently', () => {
   assert.deepEqual(categoryExcludedLegendRows(false, 3, 4), []);
   assert.deepEqual(categoryExcludedLegendRows(true, 0, 0), []);
   assert.deepEqual(categoryExcludedLegendRows(true, 2, 0), [{
-    label: 'Excluded, reviewed category: grey outlined square',
+    label: 'Excluded, categorised (reviewed or derived): grey outlined square',
     shape: 'ghost-square', color: GHOST_BORDER, fill: GHOST_COLOR, count: 2,
   }]);
   assert.deepEqual(categoryExcludedLegendRows(true, 0, 5), [{

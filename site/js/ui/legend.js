@@ -1,7 +1,7 @@
 /** Colour legend for the active map: scale, units, and what an open marker means. */
 import { formatValue, formatCount } from './format.js';
 import {
-  CATEGORY_UNKNOWN_COLOR, MISSING_COLOR, GHOST_BORDER, GHOST_COLOR,
+  CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, MISSING_COLOR, GHOST_BORDER, GHOST_COLOR,
   PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
@@ -38,6 +38,11 @@ export function legendMarkerDescription(shape, color, fill = color) {
       d: 'M2.5 9h3M12.5 9h3M9 2.5v3M9 12.5v3',
       fill: 'none', stroke: color, 'stroke-width': 1.4,
     });
+  } else if (shape === 'derived-circle') {
+    element('circle', {
+      cx: 9, cy: 9, r: 4.5, fill, stroke: color, 'stroke-width': 1.3,
+    });
+    element('circle', { cx: 9, cy: 9, r: 1.9, fill: color, stroke: 'none' });
   } else if (shape === 'filled-circle' || shape === 'open-circle') {
     element('circle', {
       cx: 9, cy: 9, r: shape === 'filled-circle' ? 4.5 : 3.5,
@@ -68,7 +73,7 @@ export function categoryExcludedLegendRows(showHidden, hiddenReviewedCount, hidd
   if (!showHidden) return [];
   return [
     {
-      label: 'Excluded, reviewed category: grey outlined square',
+      label: 'Excluded, categorised (reviewed or derived): grey outlined square',
       shape: 'ghost-square', color: GHOST_BORDER, fill: GHOST_COLOR, count: hiddenReviewedCount,
     },
     {
@@ -79,14 +84,40 @@ export function categoryExcludedLegendRows(showHidden, hiddenReviewedCount, hidd
   ].filter(({ count }) => count > 0);
 }
 
+/** The legend title names exactly the sources the counts are taken under. */
+export function categoryLegendTitle(sources, hasDerivedData) {
+  const parts = [];
+  if (sources.includes('utex-2973')) parts.push('UTEX 2973 reviewed');
+  if (hasDerivedData && sources.includes('pcc-7942')) parts.push('PCC 7942 derived');
+  if (hasDerivedData && sources.includes('go-iea')) parts.push('GO IEA derived');
+  if (parts.length === 0) return 'Function categories (no source enabled: every CDS unknown)';
+  return `Function categories, counted under ${parts.join(' + ')} (whole CDS set)`;
+}
+
+/** The evidence sentence under the counts, or null when nothing is derived. */
+export function categoryEvidenceSummary(evidenceCounts, hasDerivedData) {
+  if (!hasDerivedData || !evidenceCounts) return null;
+  const derived = evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
+    + evidenceCounts['both-derived'];
+  return `${formatCount(evidenceCounts.reviewed)} coloured by lab review, `
+    + `${formatCount(derived)} by a derived source `
+    + `(${formatCount(evidenceCounts['pcc-7942-derived'])} PCC 7942 only, `
+    + `${formatCount(evidenceCounts['go-iea-derived'])} GO IEA only, `
+    + `${formatCount(evidenceCounts['both-derived'])} both), `
+    + `${formatCount(evidenceCounts.none)} by neither.`;
+}
+
 /**
- * A key for human-reviewed category assignments, including empty categories.
- * Category rows are interactive: hover/focus previews, click/Enter/Space toggles
- * a filter selection, and a scoped reset clears it.
+ * A key for the resolved category colour under the enabled sources: reviewed
+ * assignments always win, then source-derived categories with their distinct
+ * hollow marker. Category rows are interactive: hover/focus previews,
+ * click/Enter/Space toggles a filter selection, and a scoped reset clears it.
  */
 export function renderCategoryLegend(host, {
   labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
+  sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
+  evidenceCounts = null, derivedThreshold = null,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {},
 }) {
@@ -101,7 +132,7 @@ export function renderCategoryLegend(host, {
   host.classList.add('category-mode');
   const title = document.createElement('p');
   title.className = 'legend-title';
-  title.textContent = 'Reviewed function categories (whole CDS set)';
+  title.textContent = categoryLegendTitle(sources, hasDerivedData);
   const list = document.createElement('ul');
   list.className = 'legend-notes category-legend';
 
@@ -151,6 +182,17 @@ export function renderCategoryLegend(host, {
   categoryRow(MULTIPLE_CATEGORY_ID, multipleLabel, scale.buckets[labels.length], multipleCount);
   categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, 'open-circle');
 
+  staticRow('Reviewed (lab) category: filled circle', 'filled-circle', REVIEWED_MARKER_BORDER,
+    evidenceCounts ? evidenceCounts.reviewed : null, scale.buckets[0]);
+  if (hasDerivedData) {
+    const derivedCount = evidenceCounts
+      ? evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
+        + evidenceCounts['both-derived']
+      : null;
+    staticRow('Derived (computational) category: ring with centre dot', 'derived-circle',
+      scale.buckets[0], derivedCount, DERIVED_MARKER_FILL);
+  }
+
   for (const row of categoryExcludedLegendRows(
     showHidden, hiddenReviewedCount, hiddenUnknownCount,
   )) {
@@ -168,10 +210,24 @@ export function renderCategoryLegend(host, {
 
   const note = document.createElement('p');
   note.className = 'legend-ramp-note';
-  note.textContent = 'Only lab-reviewed locus assignments receive a category colour. '
-    + 'GO IEA suggestions alone leave a gene unclassified. Hover or focus a category to '
-    + 'preview it; click, Enter, or Space toggles it as a filter.';
-  host.append(title, list, resetButton, note);
+  note.textContent = (hasDerivedData
+    ? 'A lab-reviewed UTEX 2973 assignment always wins. Otherwise an enabled PCC 7942 or GO '
+      + 'IEA source colours the point from a TypeSafe Jev judgment'
+      + `${derivedThreshold === null ? '' : ` at probability ${derivedThreshold.toFixed(2)} or above`}`
+      + ', labelled pcc-7942-derived or go-iea-derived; two derived sources that disagree fall '
+      + 'into Multiple functions. '
+    : 'Only lab-reviewed locus assignments receive a category colour. '
+      + 'GO IEA suggestions alone leave a gene unclassified. ')
+    + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
+  host.append(title, list);
+  const summary = categoryEvidenceSummary(evidenceCounts, hasDerivedData);
+  if (summary) {
+    const evidence = document.createElement('p');
+    evidence.className = 'legend-ramp-note legend-evidence';
+    evidence.textContent = summary;
+    host.append(evidence);
+  }
+  host.append(resetButton, note);
 
   // Restore focus only once the new row is actually attached to the document:
   // `.focus()` on a still-detached element is a silent no-op.

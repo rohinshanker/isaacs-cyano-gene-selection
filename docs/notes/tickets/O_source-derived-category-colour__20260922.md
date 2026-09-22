@@ -1,7 +1,7 @@
 # O_source-derived-category-colour__20260922 — Open
 
 - Scope: Function category colour layer; annotation-source toggles; category legend counts; build-time category derivation from PCC 7942 and GO IEA data; function-category contract change.
-- Status: open
+- Status: open (implemented on `feat/source-derived-colour`; awaiting the owner's accept/reject decision)
 - Opened: 2026-09-22
 - Updated: 2026-09-22
 
@@ -14,6 +14,20 @@ reject in `docs/validation/AAA-biological-decisions-to-review.md`. The 13
 reviewed assignments are never changed by this work.
 
 ## Current State
+
+Implemented on branch `feat/source-derived-colour` (DEM-109) and awaiting the
+owner's decision in row 11 of
+`docs/validation/AAA-biological-decisions-to-review.md`. Per-source toggles
+replace the single choice (`as` migrated at encoder version 4);
+`site/data/source-derived-categories-v1.json` pins Jev-judged categories from
+PCC 7942 product names (1,093 of 2,542 assigned at P ≥ 0.8) and GO IEA terms
+(1,028 of 1,584); reviewed rows always win, disagreement goes to the
+multiple-functions bucket, derived colour is a hollow marker under
+`pcc-7942-derived` / `go-iea-derived` labels, legend counts follow the
+enabled sources, and the export carries evidence and per-source columns.
+Evidence, thresholds, calibration, and the spot check are in
+`docs/validation/source-derived-categories.md`. The text below records the
+state this ticket started from.
 
 **Colour by → Function category** colours only the 13 lab-reviewed UTEX 2973
 assignments in `site/data/function-categories-v1.json`; the other 2,703 CDSs

@@ -19,13 +19,23 @@ silently adopted.
 ## Consumer rules
 
 - Only rows in `assignments` are reviewed rows. A CDS absent from that sparse
-  array resolves to `policy.defaultCategoryId`, `unknown-or-unclassified`.
+  array has no reviewed category and resolves to `policy.defaultCategoryId`,
+  `unknown-or-unclassified`, unless an enabled derived source colours it under
+  the rules below.
 - One category ID displays that category. Two or more explicitly reviewed IDs
   display the separate `multiple-functions` bucket. Raw GO row count never
   creates multiple functions.
-- `IEA` GO relationships and product-name substrings must not create category
-  assignments. They may be presented elsewhere only with their own evidence
-  labels.
+- `IEA` GO relationships and product-name substrings must not create reviewed
+  assignments. Source-derived colour is permitted only through
+  `site/data/source-derived-categories-v1.json`, built by blinded TypeSafe Jev
+  judgments, never by keyword or substring matching, and only under the
+  evidence labels `pcc-7942-derived` and `go-iea-derived`; see
+  [source-derived-categories.md](source-derived-categories.md).
+- A derived category never enters this table, never changes a reviewed row,
+  and never displays without its source label. When UTEX 2973 is enabled a
+  reviewed row always wins, including a row reviewed as unknown. Two enabled
+  derived sources that disagree use the multiple-functions bucket with each
+  source named.
 - The three `supportingEvidence` objects record tested UTEX 2973 alleles from
   Ungerer et al. 2018. Their scope is allele- and condition-specific; their
   presence does not claim that the category itself was established by a new
@@ -42,13 +52,17 @@ The viewer offers **Function category** under **Colour by** on every CDS map.
 It is the first selector choice, while GC3 remains the fresh-view default.
 Unreviewed and explicitly reviewed unknown loci share the pale open-circle
 bucket; the detail panel and export distinguish their review status. Reviewed
-coloured circles draw above unknown rings. When filtered CDSs remain visible,
-reviewed categories use a grey outlined square while unknown or unclassified
-CDSs use a smaller filled grey dot with no outline. These treatments do not
-change the visible category bucket recorded in CSV rows and manifest gene
-entries. Category-label search ranks after direct locus/name/product
-matches and before GO suggestions. The export records the colour mode, the
-visible category bucket, review status, and every reviewed category label.
+coloured circles draw above unknown rings. Derived colour draws as a white
+disc with the category colour as ring and centre dot, so reviewed and
+computational colour are never confused. When filtered CDSs remain visible,
+categorised CDSs, reviewed or derived, use a grey outlined square while
+unknown or unclassified CDSs use a smaller filled grey dot with no outline.
+These treatments do not change the visible category bucket recorded in CSV
+rows and manifest gene entries. Category-label search ranks after direct
+locus/name/product matches and before GO suggestions. The export records the
+colour mode, the enabled sources, the visible category bucket, its evidence
+labels, review status, every reviewed category label, and every per-source
+derived category.
 
 Circles are the deliberate convention for included points in every colour
 mode; their area matches the square markers they replaced. Excluded points are
@@ -62,7 +76,8 @@ future palette change remains a lab decision.
 The source release manifest records NCBI data usage policies for RefSeq inputs.
 GO relationship data have separate Gene Ontology Consortium CC BY 4.0
 attribution; those computational annotations are searchable suggestions and
-never supply the reviewed colour. The category review itself applies only to
+never supply the reviewed colour. They and the PCC 7942 product names may
+supply a derived colour only through the labelled derived layer above. The category review itself applies only to
 UTEX 2973. A future organism deployment would need its own pinned genome,
 crosswalk, reviewed category table, and source checks. A generic accession
 viewer would leave unavailable functions clearly unavailable until those

@@ -1060,6 +1060,146 @@ def validate_go_iea_essentiality(data: Any, genes: list[dict[str, Any]],
                  "GO IEA essentiality tier counts match its records")
 
 
+DERIVED_SOURCES = ("pcc-7942", "go-iea")
+DERIVED_EVIDENCE_LABELS = ["reviewed", "pcc-7942-derived", "go-iea-derived"]
+# Pinned in docs/validation/source-derived-categories.md; held here so an
+# assigned category is re-derived from its probability instead of trusted.
+DERIVED_THRESHOLDS = {"derivedProbabilityAtLeast": 0.8}
+UNKNOWN_CATEGORY_ID = "unknown-or-unclassified"
+MULTIPLE_CATEGORY_ID = "multiple-functions"
+
+
+def derived_category_id(entry: Any) -> Any:
+    """Applies the pinned assignment rule to one per-source judgment."""
+    if not isinstance(entry, dict):
+        return None
+    most_likely = entry.get("mostLikely")
+    probability = entry.get("probability")
+    if most_likely == UNKNOWN_CATEGORY_ID or not isinstance(probability, (int, float)):
+        return None
+    return most_likely if probability >= DERIVED_THRESHOLDS["derivedProbabilityAtLeast"] else None
+
+
+def resolve_derived_bucket(reviewed: Any, derived_ids: dict[str, Any],
+                           enabled: tuple[str, ...]) -> tuple[str, list[str]]:
+    """Reviewed wins when UTEX 2973 is enabled; disagreeing derived sources are multiple."""
+    if "utex-2973" in enabled and reviewed:
+        return (MULTIPLE_CATEGORY_ID if len(reviewed) > 1 else reviewed[0]), ["reviewed"]
+    assigned = [(f"{source}-derived", derived_ids.get(source))
+                for source in DERIVED_SOURCES if source in enabled and derived_ids.get(source)]
+    if not assigned:
+        return UNKNOWN_CATEGORY_ID, []
+    categories = {category for _, category in assigned}
+    labels = [label for label, _ in assigned]
+    return (assigned[0][1] if len(categories) == 1 else MULTIPLE_CATEGORY_ID), labels
+
+
+def validate_source_derived_categories(data: Any, genes: list[dict[str, Any]], categories: Any,
+                                       pcc: Any, annotations: Any, report: Report) -> None:
+    """Re-derives every derived category and the all-sources legend independently."""
+    if not report.check(isinstance(data, dict), "source-derived categories is an object"):
+        return
+    attribution = data.get("attribution") or {}
+    report.check(
+        (attribution.get("goIea") or {}).get("creator") == "Gene Ontology Consortium"
+        and (attribution.get("goIea") or {}).get("license") == "CC BY 4.0",
+        "source-derived categories carry Gene Ontology CC BY 4.0 attribution",
+    )
+    pcc_attribution = attribution.get("pcc7942") or {}
+    report.check(
+        pcc_attribution.get("license") == "CC BY 4.0"
+        and set(pcc_attribution.get("attributedStudies") or []) >= {"Adomako et al. 2022", "Rubin et al. 2015"},
+        "source-derived categories carry Adomako/Rubin PCC 7942 attribution",
+    )
+    policy = data.get("policy") or {}
+    report.check(policy.get("evidenceLabels") == DERIVED_EVIDENCE_LABELS,
+                 "source-derived evidence labels match the site contract")
+    report.check(policy.get("thresholds") == DERIVED_THRESHOLDS,
+                 "source-derived category threshold matches the pinned contract")
+    vocabulary = (categories or {}).get("vocabulary")
+    report.check(vocabulary is not None and data.get("vocabulary") == vocabulary,
+                 "source-derived vocabulary equals the reviewed function-category vocabulary")
+    category_ids = [entry.get("id") for entry in (vocabulary or {}).get("categories") or []]
+    reviewed = {row.get("locusTag"): list(row.get("categoryIds") or [])
+                for row in (categories or {}).get("assignments") or []}
+    rows = data.get("byLocus")
+    gene_ids = [gene.get("id") for gene in genes if isinstance(gene, dict)]
+    if not report.check(isinstance(rows, dict) and sorted(rows) == sorted(gene_ids),
+                        "source-derived categories cover every plotted CDS exactly"):
+        return
+    calls = (pcc or {}).get("byLocus") or {}
+    wrong_presence, wrong_label, bad_entry = [], [], []
+    assigned: dict[str, dict[str, int]] = {source: {} for source in DERIVED_SOURCES}
+    both_loci = agree = disagree = 0
+    legend: dict[str, int] = {}
+    evidence_counts: dict[str, int] = {}
+    for locus, row in rows.items():
+        call = calls.get(locus) or {}
+        joined = call.get("mappingStatus") == "accepted"
+        has_go = bool(((annotations or {}).get(locus) or {}).get("goAnnotations"))
+        pcc_entry = row.get("pcc-7942") if isinstance(row, dict) else None
+        go_entry = row.get("go-iea") if isinstance(row, dict) else None
+        if (pcc_entry is not None) != joined or (go_entry is not None) != has_go or (
+            joined and pcc_entry.get("pccLocusTag") != call.get("pccLocusTag")
+        ):
+            wrong_presence.append(locus)
+        ids: dict[str, Any] = {}
+        for source, entry in (("pcc-7942", pcc_entry), ("go-iea", go_entry)):
+            if entry is None:
+                continue
+            probability = entry.get("probability")
+            if entry.get("mostLikely") not in category_ids or not isinstance(
+                probability, (int, float)
+            ) or not 0 <= probability <= 1:
+                bad_entry.append(locus)
+                continue
+            expected = derived_category_id(entry)
+            if entry.get("categoryId") != expected:
+                wrong_label.append(locus)
+            ids[source] = expected
+            if expected:
+                assigned[source][expected] = assigned[source].get(expected, 0) + 1
+        if ids.get("pcc-7942") and ids.get("go-iea"):
+            both_loci += 1
+            if ids["pcc-7942"] == ids["go-iea"]:
+                agree += 1
+            else:
+                disagree += 1
+        bucket, labels = resolve_derived_bucket(reviewed.get(locus), ids, ("utex-2973",) + DERIVED_SOURCES)
+        legend[bucket] = legend.get(bucket, 0) + 1
+        key = "+".join(labels) if labels else "none"
+        evidence_counts[key] = evidence_counts.get(key, 0) + 1
+    report.check(not wrong_presence,
+                 "each derived judgment is present exactly where its source annotates the locus",
+                 f"{len(wrong_presence)} loci, e.g. {wrong_presence[:5]}")
+    report.check(not bad_entry, "every derived judgment names a vocabulary category with a probability in [0, 1]",
+                 f"{bad_entry[:5]}")
+    report.check(not wrong_label,
+                 "every derived category follows its probability at the pinned threshold",
+                 f"{len(wrong_label)} loci, e.g. {wrong_label[:5]}")
+    counts = data.get("counts") or {}
+    by_source = counts.get("bySource") or {}
+    report.check(
+        all((by_source.get(source) or {}).get("byCategory") == {
+            category: assigned[source].get(category, 0) for category in category_ids[:-1]
+        } and (by_source.get(source) or {}).get("assigned") == sum(assigned[source].values())
+            for source in DERIVED_SOURCES),
+        "per-source assigned category counts match the derived records",
+    )
+    report.check(counts.get("bothSourcesAssigned") == {"loci": both_loci, "agree": agree, "disagree": disagree},
+                 "cross-source agreement counts match the derived records")
+    published_legend = counts.get("allSourcesLegend") or {}
+    report.check(
+        published_legend.get("byCategory") == {category: legend.get(category, 0) for category in category_ids[:-1]}
+        and published_legend.get("multipleFunctions") == legend.get(MULTIPLE_CATEGORY_ID, 0)
+        and published_legend.get("unknownOrUnclassified") == legend.get(UNKNOWN_CATEGORY_ID, 0)
+        and published_legend.get("byEvidence") == evidence_counts,
+        "the all-sources legend counts follow reviewed-wins precedence and the disagreement rule",
+    )
+    report.check(evidence_counts.get("reviewed") == len(reviewed),
+                 "every reviewed row colours by review under all sources, never by a derived source")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", default="site/data")
@@ -1262,6 +1402,15 @@ def main() -> int:
         validate_go_iea_essentiality(
             load_json(go_iea_path, report), genes,
             load_json(os.path.join(args.data_dir, "candidate_evidence.json"), report), report,
+        )
+
+    derived_path = os.path.join(args.data_dir, "source-derived-categories-v1.json")
+    if os.path.exists(derived_path) and isinstance(genes, list):
+        validate_source_derived_categories(
+            load_json(derived_path, report), genes,
+            load_json(os.path.join(args.data_dir, "function-categories-v1.json"), report),
+            load_json(os.path.join(args.data_dir, "pcc7942-essentiality-v1.json"), report),
+            load_json(os.path.join(args.data_dir, "annotations.json"), report), report,
         )
 
     if isinstance(genes, list):
