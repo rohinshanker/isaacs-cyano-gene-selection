@@ -950,6 +950,60 @@ def cross_check_against_genome(
                  f"found {len(duplicated)}: {sorted(duplicated)[:6]}")
 
 
+GO_IEA_TIERS = ("tested-utex-allele", "admitted-pcc-call", "go-iea-context", "unknown")
+
+
+def validate_go_iea_essentiality(data: Any, genes: list[dict[str, Any]],
+                                 candidate: Any, report: Report) -> None:
+    """Re-derives the essentiality evidence tier independently of its builder."""
+    if not report.check(isinstance(data, dict), "GO IEA essentiality is an object"):
+        return
+    attribution = data.get("attribution") or {}
+    report.check(
+        attribution.get("creator") == "Gene Ontology Consortium"
+        and attribution.get("license") == "CC BY 4.0"
+        and attribution.get("notice") == "data/annotation/PROVENANCE.md",
+        "GO IEA essentiality carries Gene Ontology CC BY 4.0 attribution",
+    )
+    report.check(
+        (data.get("policy") or {}).get("precedence") == list(GO_IEA_TIERS),
+        "GO IEA essentiality precedence is tested > PCC > GO IEA > unknown",
+    )
+    rows = data.get("byLocus")
+    gene_ids = [gene.get("id") for gene in genes if isinstance(gene, dict)]
+    if not report.check(isinstance(rows, dict) and sorted(rows) == sorted(gene_ids),
+                        "GO IEA essentiality covers every plotted CDS exactly"):
+        return
+    calls = ((candidate or {}).get("borrowedEssentiality") or {}).get("byLocus") or {}
+    tested = (candidate or {}).get("testedAlleles") or {}
+    wrong_tier, bad_context, tiers = [], [], {tier: 0 for tier in GO_IEA_TIERS}
+    for locus, row in rows.items():
+        context = row.get("goContext")
+        if context is not None and not (
+            isinstance(context.get("pCore"), (int, float)) and 0 <= context["pCore"] <= 1
+        ):
+            bad_context.append(locus)
+        status = (calls.get(locus) or {}).get("status")
+        if locus in tested:
+            expected = "tested-utex-allele"
+        elif status in ("essential", "beneficial", "non-essential"):
+            expected = "admitted-pcc-call"
+        elif context is not None and context.get("label") == "core-cellular-process":
+            expected = "go-iea-context"
+        else:
+            expected = "unknown"
+        if row.get("tier") != expected:
+            wrong_tier.append(locus)
+        tiers[row.get("tier")] = tiers.get(row.get("tier"), 0) + 1
+    report.check(not bad_context, "GO IEA core-process probabilities lie in [0, 1]",
+                 f"{bad_context[:5]}")
+    report.check(not wrong_tier,
+                 "every GO IEA essentiality tier follows precedence over candidate evidence",
+                 f"{len(wrong_tier)} loci, e.g. {wrong_tier[:5]}")
+    report.check((data.get("counts") or {}).get("byTier") == tiers,
+                 "GO IEA essentiality tier counts match its records")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", default="site/data")
@@ -1146,6 +1200,13 @@ def main() -> int:
                 matches_source,
                 "every published TSS JSON value matches the pinned Table S1 rows",
             )
+
+    go_iea_path = os.path.join(args.data_dir, "go-iea-essentiality-v1.json")
+    if os.path.exists(go_iea_path) and isinstance(genes, list):
+        validate_go_iea_essentiality(
+            load_json(go_iea_path, report), genes,
+            load_json(os.path.join(args.data_dir, "candidate_evidence.json"), report), report,
+        )
 
     if isinstance(genes, list):
         path = os.path.join(args.data_dir, "genes.json")

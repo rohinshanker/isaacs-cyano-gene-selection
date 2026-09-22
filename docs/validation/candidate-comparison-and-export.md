@@ -112,6 +112,10 @@ gene is untraceable. Every export writes:
   source conditions, and the cross-strain assumption; an absent or ambiguous
   call stays unknown and never becomes nonessential. See
   [the PCC essentiality policy](pcc-essentiality.md).
+- The essentiality evidence tier, the GO IEA context label and probability, and
+  every annotation discrepancy note. The manifest repeats the full per-gene
+  record, the GO attribution, and the rules. See
+  [the GO IEA essentiality contract](go-iea-essentiality-context.md).
 - A **collision-resistant filename** carrying scheme, timestamp, and part of the
   manifest digest. Two exports must be distinguishable **without** reading
   filenames.

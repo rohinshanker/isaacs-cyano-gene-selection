@@ -63,6 +63,22 @@ assay context, citations, and export fields retain source strain and
 assumption wording. The panel objective does not use borrowed essentiality
 as a fitness or viability prediction.
 
+## Precedence and GO IEA fallback
+
+Candidate evidence uses one precedence: tested UTEX allele, then admitted PCC
+7942 call, then GO IEA context, then unknown. Only `essential`, `beneficial`,
+and `non-essential` count as an admitted call. A locus whose PCC state is
+`ambiguous`, `missing`, `not_analyzed`, or unjoined `unknown` may show GO IEA
+context. That happens only when TypeSafe Jev judges its IEA terms to place the
+protein in a core cellular process. It is labelled computational inference, not
+a knockout result, and it never reaches the panel objective. It also never
+changes the PCC status, which stays visible.
+
+Where GO context is core but the admitted PCC call is `non-essential`, the
+panel and export state the disagreement. Neither source is preferred. The rule,
+thresholds, calibration, and blinded spot check are in
+[go-iea-essentiality-context.md](go-iea-essentiality-context.md).
+
 ## Rebuild and review
 
 Use the pinned workbook, `site/data/genes.json`, and the release-pinned

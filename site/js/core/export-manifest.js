@@ -15,6 +15,7 @@ import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
 import { expressionBasisOf } from './metric-registry.js';
 import { metricHelp } from './metric-help.js';
 import { functionCategoryLabel, reviewedFunctionLabels } from './function-categories.js';
+import { discrepancyCell, essentialityEvidenceFor } from './go-iea-essentiality.js';
 import { csvField } from '../ui/format.js';
 
 export const MANIFEST_VERSION = 2;
@@ -30,6 +31,8 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor', 'operonId',
   'expressionBasis', 'expressionSourceId', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus',
+  'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
+  'annotationDiscrepancies',
 ]);
 
 /** Columns after the metrics: the sequences that let every live metric be recomputed. */
@@ -171,6 +174,15 @@ function caveatsFor(dataset, manifest) {
       + 'Ungerer et al. 2018 reported similar growth at PCC-compatible light, but the strains '
       + 'have different growth optima and Rubin used different conditions.');
   }
+  if (dataset.goIeaEssentiality) {
+    caveats.push('essentialityEvidenceTier follows tested UTEX allele > PCC 7942 call > GO IEA '
+      + 'context > unknown. GO IEA context is computational inference from automated Gene '
+      + 'Ontology annotations, judged by TypeSafe '
+      + `${dataset.goIeaEssentiality.judgment.model}; it is not a knockout result or a UTEX `
+      + 'measurement and never enters the panel objective. annotationDiscrepancies lists every '
+      + 'disagreement between GO IEA terms and the product names, reviewed category, or PCC '
+      + 'call; neither source is preferred. GO data: Gene Ontology Consortium, CC BY 4.0.');
+  }
   if (dataset.goTerms) {
     caveats.push('GO relationships are RefSeq IEA computational suggestions, not experimentally '
       + 'tested UTEX 2973 functions. Obsolete GO IDs retain their historical names and are not remapped.');
@@ -218,6 +230,7 @@ export function buildExport({
       const sequence = recodedSequence(dataset, index, compiled);
       const basis = expressionBasisOf(gene);
       const pccCall = dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
+      const evidence = essentialityEvidenceFor(dataset.goIeaEssentiality, id);
       const row = {
         manifestId: '',
         schemeId: scheme.schemeId,
@@ -251,6 +264,10 @@ export function buildExport({
         pcc7942Essentiality: pccCall?.status ?? '',
         pcc7942LocusTag: pccCall?.pccLocusTag ?? '',
         pcc7942MappingStatus: pccCall?.mappingStatus ?? '',
+        essentialityEvidenceTier: evidence?.tier ?? '',
+        goIeaEssentialityContext: evidence?.goContext?.label ?? '',
+        goIeaCoreProcessProbability: evidence?.goContext?.pCore ?? '',
+        annotationDiscrepancies: discrepancyCell(evidence),
         wildTypeCds: sequence.wildType,
         recodedCds: sequence.recoded,
       };
@@ -291,6 +308,13 @@ export function buildExport({
           summary: dataset.candidateEvidence.borrowedEssentiality.summary,
         } : null,
       } : null,
+      goIeaEssentiality: dataset.goIeaEssentiality ? {
+        datasetVersion: dataset.goIeaEssentiality.datasetVersion,
+        attribution: dataset.goIeaEssentiality.attribution,
+        judgment: dataset.goIeaEssentiality.judgment,
+        policy: dataset.goIeaEssentiality.policy,
+        counts: dataset.goIeaEssentiality.counts,
+      } : null,
       goTermNames: dataset.goTerms?.source ?? null,
       functionCategories: dataset.functionCategories ? {
         datasetVersion: dataset.functionCategories.source.datasetVersion,
@@ -322,6 +346,7 @@ export function buildExport({
           testedAllele: dataset.candidateEvidence?.testedAlleles[id] ?? null,
           pcc7942Essentiality:
             dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null,
+          essentialityEvidence: dataset.goIeaEssentiality?.byLocus?.[id] ?? null,
           functionCategory: functionCategoryLabel(dataset.functionCategories, id),
           reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, id),
           reviewedFunctionAssignment:

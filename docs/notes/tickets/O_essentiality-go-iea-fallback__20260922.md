@@ -42,6 +42,22 @@ that contradicts the GO inference, or a PCC call that contradicts the GO-based
 context), the discrepancy must be mentioned explicitly in the candidate detail
 panel and carried into the export. Do not silently prefer one source.
 
+### Implementation on `feat/go-iea-fallback` (DEM-84, claude-specialist)
+
+Implemented and awaiting coordinator review.
+
+- `tools/build_go_iea_essentiality.py` pins 3,168 blinded `jev-1.13.0`
+  judgments for the 1,584 GO-annotated loci. Their audit bundle is in
+  `data/audits/go-iea-essentiality/`.
+- The build writes `site/data/go-iea-essentiality-v1.json`. The tiers are 3
+  tested alleles, 2,431 PCC calls, 31 GO IEA context loci, and 250 unknown.
+- 109 loci carry an explicit discrepancy note.
+- The detail panel shows the tier, the GO wording, and every discrepancy. The
+  CSV and manifest carry them too.
+- The panel objective ignores the fallback.
+- The rule, thresholds, calibration, evaluation, and blinded spot check are in
+  `docs/validation/go-iea-essentiality-context.md`.
+
 ## Verification
 
 Pending: build check for the derived fallback field with counts by evidence

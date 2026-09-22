@@ -18,6 +18,7 @@ import { formatTssStatistic, tssEvidenceModel } from '../core/tss-evidence.js';
 import { geneIdentity } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
+import { essentialityEvidenceFor } from '../core/go-iea-essentiality.js';
 
 /** Baseline context stays visible; scheme-only results open only when a scheme exists. */
 const BASE_OPEN_FAMILIES = new Set(['Size', 'Translation']);
@@ -111,19 +112,91 @@ function annotationDisclosure(gene, meta, goTerms) {
   return details;
 }
 
-function candidateEvidenceDisclosure(gene, data) {
+const TIER_SUMMARIES = Object.freeze({
+  'tested-utex-allele': 'Candidate evidence · tested UTEX allele',
+  'admitted-pcc-call': 'Candidate evidence · borrowed PCC 7942 call',
+  'go-iea-context': 'Candidate evidence · GO IEA context only',
+  unknown: 'Candidate evidence · no determinate call',
+});
+
+/** The GO IEA fallback wording, shown only where it can decide the tier. */
+function goContextBlock(evidence, source) {
+  const block = document.createElement('div');
+  block.className = 'candidate-go-context';
+  const text = document.createElement('p');
+  const badge = document.createElement('strong');
+  badge.textContent = evidence.tier === 'go-iea-context'
+    ? 'GO IEA context · computational inference, not a knockout result'
+    : evidence.goContext ? 'GO IEA context · not essentiality-relevant' : 'No GO IEA context';
+  text.append(badge, ` ${evidence.goContextText}`);
+  block.append(text);
+  if (evidence.tier === 'go-iea-context') {
+    const rank = document.createElement('p');
+    rank.className = 'panel-note';
+    rank.textContent = 'This tier ranks below tested UTEX alleles and PCC 7942 calls and '
+      + 'never enters the panel objective.';
+    block.append(rank);
+  }
+  if (evidence.goContext) block.append(goAttribution(source));
+  return block;
+}
+
+/** Explicit notes wherever GO IEA terms disagree with another annotation. */
+function discrepancyBlock(evidence, source) {
+  const block = document.createElement('div');
+  block.className = 'candidate-discrepancies';
+  block.setAttribute('role', 'note');
+  const heading = document.createElement('strong');
+  heading.textContent = `Annotation disagreement (${evidence.discrepancies.length})`;
+  const list = document.createElement('ul');
+  for (const entry of evidence.discrepancies) {
+    const item = document.createElement('li');
+    item.textContent = entry.note;
+    list.append(item);
+  }
+  const advice = document.createElement('p');
+  advice.className = 'panel-note';
+  advice.textContent = 'Neither source is preferred. Review the locus before relying on either.';
+  block.append(heading, list, advice, goAttribution(source));
+  return block;
+}
+
+function goAttribution(source) {
+  const note = document.createElement('p');
+  note.className = 'panel-note';
+  const license = document.createElement('a');
+  license.href = source.attribution.licenseUrl;
+  license.target = '_blank';
+  license.rel = 'noopener noreferrer';
+  license.textContent = source.attribution.license;
+  note.append(`GO IEA: ${source.attribution.creator}, `, license,
+    `. Judged by TypeSafe ${source.judgment.model}, rubric ${source.judgment.rubricVersion}.`);
+  return note;
+}
+
+function candidateEvidenceDisclosure(gene, data, goData) {
   const model = candidateEvidenceFor(data, gene.id);
   if (!model) return null;
+  const evidence = essentialityEvidenceFor(goData, gene.id);
   const details = document.createElement('details');
   details.className = 'metric-group candidate-evidence';
   details.open = true;
   const summary = document.createElement('summary');
-  summary.textContent = model.tested
+  summary.textContent = evidence ? TIER_SUMMARIES[evidence.tier] : model.tested
     ? 'Candidate evidence · tested UTEX allele'
     : ['unknown', 'missing', 'ambiguous', 'not_analyzed'].includes(model.pccCall?.status)
       ? 'Candidate evidence · no determinate PCC 7942 call'
       : 'Candidate evidence · borrowed PCC 7942 call';
   details.append(summary);
+  if (evidence) {
+    const tier = document.createElement('p');
+    tier.className = 'candidate-tier';
+    const label = document.createElement('strong');
+    label.textContent = `Evidence tier ${evidence.tierRank} of 4: ${evidence.tierLabel}.`;
+    tier.append(label, ' Precedence: tested UTEX allele > PCC 7942 call > GO IEA context '
+      + '> unknown.');
+    details.append(tier);
+  }
 
   if (model.tested) {
     const claim = document.createElement('p');
@@ -172,6 +245,10 @@ function candidateEvidenceDisclosure(gene, data) {
     reason.textContent = `Missing call: ${call.mappingReason}`;
     details.append(reason);
   }
+  if (evidence && ['go-iea-context', 'unknown'].includes(evidence.tier)) {
+    details.append(goContextBlock(evidence, goData));
+  }
+  if (evidence?.discrepancies.length) details.append(discrepancyBlock(evidence, goData));
   const source = model.borrowedEssentiality.source;
   const condition = document.createElement('p');
   condition.className = 'panel-note';
@@ -440,7 +517,9 @@ export class SidePanel {
       (replacement ?? this.host).focus({ preventScroll: true });
     }
 
-    const candidateEvidence = candidateEvidenceDisclosure(gene, dataset.candidateEvidence);
+    const candidateEvidence = candidateEvidenceDisclosure(
+      gene, dataset.candidateEvidence, dataset.goIeaEssentiality,
+    );
     if (candidateEvidence) this.host.append(candidateEvidence);
 
     if (dataset.functionCategories) {

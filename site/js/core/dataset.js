@@ -17,6 +17,7 @@ import { validateLengthInventory } from './length-cohorts.js';
 import { validateRegulatoryTss } from './regulatory-tss.js';
 import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
+import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
 
 async function fetchJson(fetchImpl, url, { optional = false } = {}) {
   let response;
@@ -84,7 +85,8 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   const url = (name) => new URL(name, base).href;
 
   const [meta, genes, codonPca, excluded, annotations, tssEvidence, lengthCohorts,
-    regulatoryTss, candidateEvidence, goTerms, functionCategoryData] = await Promise.all([
+    regulatoryTss, candidateEvidence, goTerms, functionCategoryData,
+    goIeaEssentiality] = await Promise.all([
     fetchJson(fetchImpl, url('meta.json')),
     fetchJson(fetchImpl, url('genes.json')),
     fetchJson(fetchImpl, url('codon_pca.json'), { optional: true }),
@@ -96,6 +98,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     fetchJson(fetchImpl, url('candidate_evidence.json'), { optional: true }),
     fetchJson(fetchImpl, url('go-term-names-v1.json'), { optional: true }),
     fetchJson(fetchImpl, url('function-categories-v1.json'), { optional: true }),
+    fetchJson(fetchImpl, url('go-iea-essentiality-v1.json'), { optional: true }),
   ]);
 
   requireArray(genes, 'genes.json');
@@ -106,6 +109,11 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   if (regulatoryTss) validateRegulatoryTss(regulatoryTss, genes);
   if (candidateEvidence) {
     validateCandidateEvidence(candidateEvidence, genes, meta.annotationRelease?.releaseId);
+  }
+  if (goIeaEssentiality) {
+    validateGoIeaEssentiality(
+      goIeaEssentiality, genes, candidateEvidence, meta.annotationRelease?.releaseId,
+    );
   }
   if (goTerms && (goTerms.schemaVersion !== 1 || !goTerms.terms
     || typeof goTerms.terms !== 'object' || Array.isArray(goTerms.terms))) {
@@ -263,6 +271,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     lengthCohorts,
     regulatoryTss,
     candidateEvidence,
+    goIeaEssentiality: goIeaEssentiality ?? null,
     goTerms,
     functionCategories,
     table,

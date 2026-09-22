@@ -157,6 +157,22 @@ test('the golden panel expands the seed set to exactly ten genes', async () => {
   );
 });
 
+test('the panel objective ignores the GO IEA essentiality fallback', async () => {
+  const { dataset, registry, space } = await realContext();
+  assert.ok(dataset.goIeaEssentiality, 'the real dataset loads the GO IEA tiers');
+  const config = { size: PANEL_SIZE, seeds: SEEDS };
+  const baseline = designPanel({ dataset, registry, space, config }).selected;
+  const everyLocusGo = structuredClone(dataset.goIeaEssentiality);
+  for (const row of Object.values(everyLocusGo.byLocus)) {
+    row.tier = 'go-iea-context';
+    row.goContext = { label: 'core-cellular-process', pCore: 1 };
+  }
+  for (const variant of [null, everyLocusGo]) {
+    const changed = { ...dataset, goIeaEssentiality: variant };
+    assert.deepEqual(designPanel({ dataset: changed, registry, space, config }).selected, baseline);
+  }
+});
+
 test('the golden panel violates no constraint', async () => {
   const { dataset, registry, space } = await realContext();
   const config = normaliseConfig({

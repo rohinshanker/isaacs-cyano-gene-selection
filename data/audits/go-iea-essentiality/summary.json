@@ -1,0 +1,465 @@
+{
+  "calibrationAgainstPcc7942": [
+    {
+      "admittedPccCalls": 849,
+      "beneficial": 62,
+      "essential": 117,
+      "essentialFraction": 0.138,
+      "nonEssential": 670,
+      "pCoreRange": [
+        0.0,
+        0.2
+      ]
+    },
+    {
+      "admittedPccCalls": 78,
+      "beneficial": 5,
+      "essential": 20,
+      "essentialFraction": 0.256,
+      "nonEssential": 53,
+      "pCoreRange": [
+        0.2,
+        0.5
+      ]
+    },
+    {
+      "admittedPccCalls": 70,
+      "beneficial": 5,
+      "essential": 28,
+      "essentialFraction": 0.4,
+      "nonEssential": 37,
+      "pCoreRange": [
+        0.5,
+        0.8
+      ]
+    },
+    {
+      "admittedPccCalls": 35,
+      "beneficial": 2,
+      "essential": 18,
+      "essentialFraction": 0.514,
+      "nonEssential": 15,
+      "pCoreRange": [
+        0.8,
+        0.9
+      ]
+    },
+    {
+      "admittedPccCalls": 28,
+      "beneficial": 0,
+      "essential": 14,
+      "essentialFraction": 0.5,
+      "nonEssential": 14,
+      "pCoreRange": [
+        0.9,
+        0.95
+      ]
+    },
+    {
+      "admittedPccCalls": 410,
+      "beneficial": 21,
+      "essential": 299,
+      "essentialFraction": 0.729,
+      "nonEssential": 90,
+      "pCoreRange": [
+        0.95,
+        1.0
+      ]
+    }
+  ],
+  "counts": {
+    "byTier": {
+      "admitted-pcc-call": 2431,
+      "go-iea-context": 31,
+      "tested-utex-allele": 3,
+      "unknown": 250
+    },
+    "discrepanciesByKind": {
+      "pcc7942-call": 104,
+      "pcc7942-product": 1,
+      "reviewed-category": 0,
+      "utex-product": 5
+    },
+    "fallbackEligible": 281,
+    "fallbackEligibleWithGoTerms": 112,
+    "goContextByLabel": {
+      "core-cellular-process": 470,
+      "not-core": 917,
+      "uncertain": 197
+    },
+    "lociWithDiscrepancy": 109,
+    "lociWithGoTerms": 1584,
+    "plottedLoci": 2715
+  },
+  "evaluation": {
+    "contextCases": 27,
+    "contextExactChoice": 27,
+    "contextRows": [
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS04620",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS06545",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS08250",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS11895",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS06925",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS05730",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS02660",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS11505",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS05850",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS03725",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS08030",
+        "pCore": 1.0
+      },
+      {
+        "choice": "core_cellular_process",
+        "expected": "core_cellular_process",
+        "label": "core-cellular-process",
+        "locusTag": "M744_RS05120",
+        "pCore": 1.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS00990",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS00695",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS11070",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS07790",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS12425",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS10700",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS00485",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS03805",
+        "pCore": 0.0
+      },
+      {
+        "choice": "peripheral_or_conditional_process",
+        "expected": "peripheral_or_conditional_process",
+        "label": "not-core",
+        "locusTag": "M744_RS13110",
+        "pCore": 0.01
+      },
+      {
+        "choice": "too_generic",
+        "expected": "too_generic",
+        "label": "not-core",
+        "locusTag": "M744_RS00075",
+        "pCore": 0.0
+      },
+      {
+        "choice": "too_generic",
+        "expected": "too_generic",
+        "label": "not-core",
+        "locusTag": "M744_RS00830",
+        "pCore": 0.0
+      },
+      {
+        "choice": "too_generic",
+        "expected": "too_generic",
+        "label": "not-core",
+        "locusTag": "M744_RS04395",
+        "pCore": 0.0
+      },
+      {
+        "choice": "too_generic",
+        "expected": "too_generic",
+        "label": "not-core",
+        "locusTag": "M744_RS02980",
+        "pCore": 0.0
+      },
+      {
+        "choice": "too_generic",
+        "expected": "too_generic",
+        "label": "not-core",
+        "locusTag": "M744_RS09630",
+        "pCore": 0.01
+      },
+      {
+        "choice": "too_generic",
+        "expected": "too_generic",
+        "label": "not-core",
+        "locusTag": "M744_RS12680",
+        "pCore": 0.01
+      }
+    ],
+    "coreCases": 12,
+    "coreCasesLabelledCore": 12,
+    "discrepancyCases": 19,
+    "discrepancyCorrectAtThreshold": 17,
+    "discrepancyRows": [
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "real-rpsO",
+        "noul": 0.04
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "real-leuS",
+        "noul": 0.03
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "real-hemH",
+        "noul": 0.03
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "real-carB-generic",
+        "noul": 0.06
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "real-duf-membrane",
+        "noul": 0.05
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "real-hnh",
+        "noul": 0.06
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "real-nblA",
+        "noul": 0.91
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "swap-rpsO-chrA",
+        "noul": 0.91
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "swap-leuS-kdpA",
+        "noul": 0.95
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "swap-psbZ-dapA",
+        "noul": 0.94
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "swap-rpoB-ribE",
+        "noul": 0.94
+      },
+      {
+        "expected": true,
+        "flagged": false,
+        "id": "swap-chlG-cheW",
+        "noul": 0.47
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "pcc-hypothetical",
+        "noul": 0.08
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "pcc-swap-kinase",
+        "noul": 0.91
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "category-atpA",
+        "noul": 0.03
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "category-psaC",
+        "noul": 0.03
+      },
+      {
+        "expected": false,
+        "flagged": false,
+        "id": "category-rpaA",
+        "noul": 0.06
+      },
+      {
+        "expected": true,
+        "flagged": true,
+        "id": "category-swap-rpsO",
+        "noul": 0.8
+      },
+      {
+        "expected": true,
+        "flagged": false,
+        "id": "category-swap-chrA",
+        "noul": 0.67
+      }
+    ],
+    "nonCoreCases": 15,
+    "nonCoreCasesLabelledCore": 0
+  },
+  "fileSha256": {
+    "evaluation-results.jsonl": "f37f39c0ec4d9231610313bd018d90df3334612401bd6421bb23a9d45af75ad2",
+    "evaluation-set.json": "c7501db34f40b687371f91b8b026480738e4bbcd16cbfb1736abc52bac8439bd",
+    "results.jsonl": "ed8b885bd3e6916abeea993568b01346062e13e2a1bb670931c85c918315b96e",
+    "rubric.json": "e78dbf9749db8f6e396dbd97a08c76de763a22922d16b6d4e6a8c14f61024e22",
+    "run-log.json": "4945f974434d284aa3c7da7a86f59b990df6f9b0adc4c8c6a42bdf3979757889",
+    "spot-check.json": "b053b986df2b94d49d0825b29cf8f953c7cc8a5c8d17ceace83546e039adf385"
+  },
+  "model": "jev-1.13.0",
+  "outputSha256": "a3886ba60916e9c0a502ca12ad612062245c15eb7238cd18f38f82290004fcd9",
+  "rubricVersion": "2026-09-22.1",
+  "spotCheck": {
+    "contradictionAgreement": 34,
+    "coreAgreement": 32,
+    "disagreements": [
+      {
+        "locusTag": "M744_RS03775",
+        "published": {
+          "contradiction": false,
+          "core": false,
+          "pCore": 0.87
+        },
+        "reviewer": {
+          "contradiction": false,
+          "core": true
+        },
+        "reviewerNote": "S-adenosylmethionine biosynthesis is essential-cofactor biosynthesis."
+      },
+      {
+        "locusTag": "M744_RS01095",
+        "published": {
+          "contradiction": false,
+          "core": false,
+          "pCore": 0.76
+        },
+        "reviewer": {
+          "contradiction": false,
+          "core": true
+        },
+        "reviewerNote": "Transsulfuration is part of methionine biosynthesis."
+      }
+    ],
+    "loci": 34,
+    "sampleDrawnAt": {
+      "coreThreshold": 0.8,
+      "discrepancyThreshold": 0.8,
+      "seed": 20260922
+    }
+  },
+  "thresholds": {
+    "coreProbabilityAtLeast": 0.9,
+    "discrepancyProbabilityAtLeast": 0.8,
+    "notCoreProbabilityAtMost": 0.2
+  }
+}

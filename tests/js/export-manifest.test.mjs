@@ -388,6 +388,54 @@ test('UTEX allele and borrowed PCC call retain separate provenance in CSV and ma
   assert.match(result.manifest.caveats.join(' '), /cross-strain assumption/);
 });
 
+test('evidence tier, GO IEA context, and discrepancies survive CSV and manifest export', async () => {
+  const { dataset, registry } = await context();
+  const [fallbackId, plainId] = dataset.genes.slice(0, 2).map((gene) => gene.id);
+  const note = 'GO IEA terms disagree with the UTEX 2973 RefSeq product \u201cx\u201d.';
+  const goIeaEssentiality = {
+    datasetVersion: 'go-iea-essentiality-v1',
+    attribution: { creator: 'Gene Ontology Consortium', license: 'CC BY 4.0' },
+    judgment: { model: 'jev-1.13.0', rubricVersion: '2026-09-22.1' },
+    policy: { precedence: ['tested-utex-allele', 'admitted-pcc-call', 'go-iea-context', 'unknown'] },
+    counts: { byTier: { 'go-iea-context': 1 } },
+    byLocus: {
+      [fallbackId]: {
+        tier: 'go-iea-context', pcc7942Status: 'unknown',
+        goContext: { label: 'core-cellular-process', pCore: 0.97 },
+        discrepancies: [
+          { kind: 'utex-product', probability: 0.9, note },
+          { kind: 'pcc7942-call', probability: null, note: 'second note' },
+        ],
+      },
+      [plainId]: { tier: 'unknown', pcc7942Status: 'unknown', goContext: null, discrepancies: [] },
+    },
+  };
+  const result = exportFor({ ...dataset, goIeaEssentiality }, registry,
+    [fallbackId, plainId], [{ map: {} }]);
+  const { rows } = parseCsv(result.csv);
+  assert.equal(rows[0].essentialityEvidenceTier, 'go-iea-context');
+  assert.equal(rows[0].goIeaEssentialityContext, 'core-cellular-process');
+  assert.equal(rows[0].goIeaCoreProcessProbability, '0.97');
+  assert.equal(rows[0].annotationDiscrepancies, `${note} | second note`);
+  assert.equal(rows[1].essentialityEvidenceTier, 'unknown');
+  assert.equal(rows[1].goIeaEssentialityContext, '');
+  assert.equal(rows[1].annotationDiscrepancies, '');
+  assert.equal(result.manifest.genes[0].essentialityEvidence.discrepancies.length, 2);
+  assert.equal(result.manifest.dataset.goIeaEssentiality.attribution.license, 'CC BY 4.0');
+  assert.equal(result.manifest.dataset.goIeaEssentiality.byLocus, undefined);
+  const caveats = result.manifest.caveats.join(' ');
+  assert.match(caveats, /tested UTEX allele > PCC 7942 call > GO IEA context > unknown/);
+  assert.match(caveats, /not a knockout result/);
+  assert.match(caveats, /never enters the panel objective/);
+  assert.match(caveats, /Gene Ontology Consortium, CC BY 4.0/);
+
+  const without = exportFor(dataset, registry, [fallbackId], [{ map: {} }]);
+  assert.equal(without.rows[0].essentialityEvidenceTier, '');
+  assert.equal(without.rows[0].goIeaCoreProcessProbability, '');
+  assert.equal(without.manifest.genes[0].essentialityEvidence, null);
+  assert.equal(without.manifest.dataset.goIeaEssentiality, null);
+});
+
 test('GO relationships export as evidence-coded suggestions with pinned names', async () => {
   const { dataset, registry } = await context();
   const id = dataset.genes[0].id;

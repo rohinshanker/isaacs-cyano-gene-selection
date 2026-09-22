@@ -18,6 +18,7 @@ Reusable contracts and runbooks for this repository.
 | [go-term-names.md](go-term-names.md) | Pinned GO name lookup, obsolete source IDs, rebuild checks, and attribution |
 | [function-categories.md](function-categories.md) | Exact lab-reviewed UTEX 2973 function categories, sparse assignments, unknowns, and reproducible build checks |
 | [protein-evidence.md](protein-evidence.md) | Pinned CDS-to-protein reconciliation, PASS00399 admission limits, tested-allele joins, and distinct evidence tiers |
+| [go-iea-essentiality-context.md](go-iea-essentiality-context.md) | GO IEA fallback tier and precedence, Jev question wording, thresholds, calibration, blinded spot check, and discrepancy contract |
 | [pcc-essentiality.md](pcc-essentiality.md) | Licensed Adomako/Rubin PCC 7942 calls, exact UTEX cross-strain joins, growth-context citation, missingness, and assumption boundary |
 | [length-cohorts.md](length-cohorts.md) | Annotated-locus and joined-CDS denominators, inclusive length filtering, short-CDS review flag, and protein filter evidence boundary |
 | [future-data-roadmap.md](future-data-roadmap.md) | Ranked remaining downloadable evidence after Tan 2018 integration, joins, licence gates, version pins, and admission rules |

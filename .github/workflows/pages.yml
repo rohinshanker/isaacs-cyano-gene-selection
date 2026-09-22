@@ -108,6 +108,11 @@ jobs:
       - name: Verify pinned PCC essentiality joins
         run: python3 tools/build_pcc7942_essentiality.py --check
 
+      # Rebuilds the GO IEA fallback from pinned Jev judgments. It never calls
+      # the TypeSafe API, so CI needs no key.
+      - name: Verify GO IEA essentiality context
+        run: python3 tools/build_go_iea_essentiality.py --check
+
       - name: Run pipeline tests
         run: python -m pytest -q
 

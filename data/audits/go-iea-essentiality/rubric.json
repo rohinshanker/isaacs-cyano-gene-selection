@@ -1,0 +1,81 @@
+{
+  "rubricVersion": "2026-09-22.1",
+  "requestedModel": "jev-1.13.0",
+  "purpose": "Bounded semantic judgments over computational (IEA) Gene Ontology relationships for UTEX 2973 CDS loci: whether they give essentiality-relevant context, and whether they contradict the locus's other annotations.",
+  "blinding": "Request states never contain a locus tag, PCC 7942 essentiality status, tested-allele status, or any derived tier. The context request contains only GO terms, so its answer cannot depend on the product name it is later compared with.",
+  "contextRequest": {
+    "stateShape": "{\"go_annotations\": [{\"aspect\", \"relation\", \"term\"}]}",
+    "question": {
+      "type": "choice",
+      "instructions": {
+        "task": "Using only the Gene Ontology terms in `go_annotations`, decide what kind of cellular role they assign to this protein from a photosynthetic cyanobacterium.",
+        "evidence_policy": [
+          "Judge only the listed terms with their aspect (molecular function, biological process, or cellular component) and relation. Do not guess which gene this is and do not use knowledge about a particular gene.",
+          "A term counts only when it names a specific process, activity, or complex. Binding a common ligand, belonging to a broad enzyme class, or being located in a membrane or the cytoplasm is not specific.",
+          "Choose core_cellular_process when any single specific term places the protein directly in one of the listed core processes, even if other terms are generic.",
+          "These are automated annotations, so answer about the role the terms state, not about how likely the protein is to be required."
+        ]
+      },
+      "criteria": {
+        "core_cellular_process": {
+          "definition": "At least one specific term places the protein directly in a core process that a growing photoautotrophic bacterium depends on.",
+          "includes": [
+            "ribosome structure, translation, translation factors, or aminoacyl-tRNA synthesis",
+            "transcription by the core DNA-directed RNA polymerase",
+            "chromosome replication or cell division",
+            "ATP synthase",
+            "photosystem I or II, cytochrome b6f, or photosynthetic electron transport",
+            "carbon dioxide fixation by the Calvin cycle or carboxysome",
+            "biosynthesis of amino acids, nucleotides, essential cofactors or vitamins, chlorophyll, carotenoids, fatty acids, membrane lipids, lipid A, or peptidoglycan",
+            "protein translocation across or insertion into the membrane by Sec, Tat, SRP, or YidC",
+            "maturation or processing of rRNA or tRNA"
+          ],
+          "excludes": [
+            "regulators, sigma factors, sensors, and signalling proteins",
+            "DNA repair, recombination, restriction, and modification",
+            "stress responses and chaperones outside the listed processes"
+          ]
+        },
+        "peripheral_or_conditional_process": {
+          "definition": "The terms name a specific role, but it is not one of the listed core processes.",
+          "examples": [
+            "transport of a particular substrate or ion",
+            "regulation of transcription, signal transduction, chemotaxis, or circadian rhythm",
+            "DNA repair, recombination, competence, restriction, or mobile elements and phage",
+            "responses to stress, heat, oxidants, or metals",
+            "degradation, detoxification, secondary metabolism, or storage compounds",
+            "proteolysis or protein modification not tied to a listed core process"
+          ]
+        },
+        "too_generic": {
+          "definition": "Every term is generic: binding a common ligand or ion, a broad activity class without a named substrate or process, a generic metabolic process, or a location such as membrane or cytoplasm."
+        }
+      }
+    }
+  },
+  "discrepancyRequest": {
+    "stateShape": "{\"go_annotations\": [{\"aspect\", \"relation\", \"term\"}], \"annotations\": {\"utex_2973_refseq_product\", \"utex_2973_gene_symbol\"?, \"pcc_7942_refseq_product\"?, \"lab_reviewed_function_category\"?}}",
+    "questionsAskedOnlyWhenFieldPresent": {
+      "pcc_7942_product": "asked only when a PCC 7942 locus is admitted for the UTEX locus and its RefSeq product text differs from the UTEX product text",
+      "reviewed_category": "asked only for a lab-reviewed category other than Unknown or unclassified"
+    },
+    "sharedCriteria": {
+      "true": "At least one specific GO term assigns an activity, process, or complex that is incompatible with what the named annotation says the protein is, such as a different enzyme activity or an unrelated process.",
+      "false": "The GO terms agree with the annotation, are broader or narrower versions of it, are generic, or the annotation is uninformative (hypothetical protein, domain or family name that states no function), so nothing is contradicted."
+    },
+    "questions": {
+      "utex_product": {
+        "type": "noul",
+        "instructions": "Do the GO terms in `go_annotations` contradict the UTEX 2973 RefSeq product name in `annotations.utex_2973_refseq_product`?"
+      },
+      "pcc_7942_product": {
+        "type": "noul",
+        "instructions": "Do the GO terms in `go_annotations` contradict the PCC 7942 RefSeq product name in `annotations.pcc_7942_refseq_product`?"
+      },
+      "reviewed_category": {
+        "type": "noul",
+        "instructions": "Do the GO terms in `go_annotations` contradict the lab-reviewed function category in `annotations.lab_reviewed_function_category`?"
+      }
+    }
+  }
+}
