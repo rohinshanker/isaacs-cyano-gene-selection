@@ -39,7 +39,7 @@ const METHODS = Object.freeze({
   operonPosition: 'One-based order within a predicted same-strand group of CDSs separated by at most 100 nt; singleton position is unknown.',
   operonSize: 'Number of CDSs in that predicted same-strand, at-most-100-nt group, including singletons.',
   expression: 'DESeq2 normalized transcript counts from the mapped PCC 7942 study; no value is imputed for an unmatched UTEX locus.',
-  tssInitiation: 'Sum across mapped gene-linked TSSs of the mean of eight raw start-site count fields from Tan 2018. This is initiation, not gene-body abundance.',
+  tssInitiation: 'Per locus, sum across the separately pinned Figshare per-TSS feature set of the mean of eight raw start-site count fields. This pooled score is independent of the Table S1 site list and is initiation, not gene-body abundance.',
   targetCount: 'Sense-codon target count plus one when the active scheme reassigns this gene’s terminal stop; the start codon is never edited.',
   targetStopEdit: 'One if the active scheme reassigns this gene’s terminal stop, otherwise zero.',
   targetFraction: 'Target count, including a possible stop edit, divided by sense-codon count; the start codon is not a target.',

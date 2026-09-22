@@ -13,7 +13,7 @@ score for 1,727 of the 2,715 UTEX 2973 protein-coding genes, or 63.6 percent.
 | **Organism measured** | ***S. elongatus* UTEX 2973 — the target strain** |
 | Assay | dRNA-seq, transcription start site mapping |
 | Conditions | Control 33 °C, 50 µmol photons m⁻² s⁻¹ continuous light, 3% CO2; plus high light 1,000 µmol (duration conflicts between Results and Methods); high temperature 45 °C for 30 min; dark for 2 h |
-| Derivation | Per locus, the sum over its TSS features of the arithmetic mean of the eight per-TSS sample count fields |
+| Derivation | Per locus, the sum over its separately pinned Figshare TSS feature set of the arithmetic mean of the eight per-TSS sample count fields; this is not a sum over the Table S1 site list (see [Exact layer mismatch](#exact-layer-mismatch)) |
 | Retrieved | 2026-09-18 |
 
 The site also carries `tan2018_utex2973_tss_table_s1.tsv`, an exact-column

@@ -73,6 +73,7 @@ test('a native TSS metric is measured by its own finite value, never by the PCC 
   const tss = {
     key: 'tssInitiation', label: 'TSS initiation (UTEX 2973)',
     provenance: { id: 'TAN2018_TSS', isTargetOrganism: true },
+    tssEvidenceSource: { pooledScoreSourceId: 'TAN2018_TSS' },
   };
   // A PCC-proxy gene (no PCC measurement) that does carry a native TSS value
   // must show that TSS value as measured, not inherit the PCC "proxy only" tag.
@@ -98,8 +99,31 @@ test('a native TSS metric is measured by its own finite value, never by the PCC 
   assert.equal(pccBasis.basis, 'proxy');
 });
 
+test('TSS mismatch wording follows provenance when the metric key or source id is renamed', () => {
+  for (const { key, sourceId } of [
+    { key: 'renamedTssScore', sourceId: 'TAN2018_TSS' },
+    { key: 'tssInitiation', sourceId: 'RENAMED_TSS_SOURCE' },
+  ]) {
+    const genes = [{ [key]: 12.5, tssEvidence: [] }];
+    const meta = {
+      metrics: { [key]: { label: 'Renamed TSS score', family: 'Expression' } },
+      expressionSources: [{ id: sourceId, metricKey: key, isTargetOrganism: true }],
+      tssEvidenceSource: { pooledScoreSourceId: sourceId },
+    };
+    const metric = buildMetricRegistry(meta, genes, {}).byKey.get(key);
+    const basis = expressionBasisOf(genes[0], metric, metric.read(0));
+    assert.match(basis.short, /pooled score; no exact Table S1 site/);
+    assert.match(basis.text, new RegExp(sourceId));
+  }
+});
+
 test('a TSS legend counts TSS coverage, not the PCC field it happens to sit beside', () => {
-  const tss = { key: 'tssInitiation', label: 'TSS initiation', read: (i) => genes[i].tssInitiation };
+  const tss = {
+    key: 'tssInitiation', label: 'TSS initiation',
+    provenance: { id: 'TAN2018_TSS' },
+    tssEvidenceSource: { pooledScoreSourceId: 'TAN2018_TSS' },
+    read: (i) => genes[i].tssInitiation,
+  };
   const genes = [
     { expressionBasis: 'measured', tssInitiation: 1 },
     { expressionBasis: 'proxy', tssInitiation: 2 },

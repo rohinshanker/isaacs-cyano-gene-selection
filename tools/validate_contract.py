@@ -1111,6 +1111,14 @@ def main() -> int:
             and source.get("isGeneBodyAbundance") is False,
             "Tan TSS evidence declares two replicates and no gene-body abundance",
         )
+        expression_sources = meta.get("expressionSources", [])
+        pooled_source_id = source.get("pooledScoreSourceId") if isinstance(source, dict) else None
+        report.check(
+            isinstance(pooled_source_id, str)
+            and sum(item.get("id") == pooled_source_id for item in expression_sources
+                    if isinstance(item, dict)) == 1,
+            "TSS site evidence names exactly one pooled-score provenance source",
+        )
         report.check(
             isinstance(tss_evidence, dict),
             "TSS evidence is an object keyed by current locus tag",

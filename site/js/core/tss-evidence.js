@@ -33,16 +33,26 @@ export function formatTssStatistic(value) {
 
 /**
  * Explain whether the separate pooled initiation score and Table S1 site layer
- * agree for one gene. Neither artifact is allowed to fill the other.
+ * agree for one gene. Neither artifact is allowed to fill the other. A dataset
+ * must declare both layers and their source-id link before an empty value can be
+ * described as an evidence absence rather than an unrecorded field.
  */
-export function tssInitiationBasis(gene, value = gene?.tssInitiation) {
+export function tssInitiationBasis(gene, {
+  metric = null, siteSource = null, value = undefined,
+} = {}) {
+  const pooledSourceId = metric?.provenance?.id;
+  if (!pooledSourceId || siteSource?.pooledScoreSourceId !== pooledSourceId) {
+    return {
+      basis: 'unrecorded', short: '', text: '', siteCount: null,
+    };
+  }
   const siteCount = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence.length : 0;
   if (Number.isFinite(value)) {
     if (siteCount === 0) {
       return {
         basis: 'measured',
         short: 'pooled score; no exact Table S1 site',
-        text: 'The separate TAN2018_TSS pooled initiation table has a value, but Table S1 has no gTSS row '
+        text: `The separate ${pooledSourceId} pooled initiation table has a value, but Table S1 has no gTSS row `
           + 'that maps to this current locus by exact locus tag.',
         siteCount,
       };
@@ -50,7 +60,7 @@ export function tssInitiationBasis(gene, value = gene?.tssInitiation) {
     return {
       basis: 'measured',
       short: 'measured',
-      text: 'The separate TAN2018_TSS pooled initiation table has a value; mapped Table S1 sites remain '
+      text: `The separate ${pooledSourceId} pooled initiation table has a value; mapped Table S1 sites remain `
         + 'independent promoter-level evidence.',
       siteCount,
     };

@@ -207,7 +207,11 @@ function isPrimaryAbundanceMetric(metric) {
  * for it or it does not. Never inherits the primary metric's proxy state.
  */
 function metricScopedExpressionBasis(gene, metric, value) {
-  if (metric.key === 'tssInitiation') return tssInitiationBasis(gene, value);
+  if (metric.tssEvidenceSource) {
+    return tssInitiationBasis(gene, {
+      metric, siteSource: metric.tssEvidenceSource, value,
+    });
+  }
   if (Number.isFinite(value)) {
     const source = metric.provenance?.id ? ` in ${metric.provenance.id}` : '';
     return { basis: 'measured', short: 'measured', text: `Measured value for ${metric.label}${source}.` };
@@ -395,6 +399,10 @@ export function buildMetricRegistry(meta, genes, liveFields) {
         ?? expressionSources.get(rawKey)
         ?? (rawKey === 'expression' ? meta.expressionSource : null)
         ?? null;
+      if (metric.provenance?.id
+        && metric.provenance.id === meta.tssEvidenceSource?.pooledScoreSourceId) {
+        metric.tssEvidenceSource = meta.tssEvidenceSource;
+      }
     }
     metrics.push(metric);
   }

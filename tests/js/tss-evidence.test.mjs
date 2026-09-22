@@ -18,24 +18,43 @@ const completeEntry = {
   },
 };
 
+const metric = { provenance: { id: 'POOLED_TSS' } };
+const siteSource = { pooledScoreSourceId: 'POOLED_TSS' };
+
 test('zero TSS entries stay explicit and do not invent evidence', () => {
   assert.deepEqual(tssEvidenceModel({ tssEvidence: [] }), { count: 0, entries: [] });
   assert.deepEqual(tssEvidenceModel({}), { count: 0, entries: [] });
 });
 
 test('initiation basis explains both mismatch directions without filling either layer', () => {
-  const siteOnly = tssInitiationBasis({ tssInitiation: null, tssEvidence: [completeEntry] });
+  const siteOnly = tssInitiationBasis({ tssEvidence: [completeEntry] }, {
+    metric, siteSource, value: null,
+  });
   assert.equal(siteOnly.basis, 'none');
   assert.equal(siteOnly.siteCount, 1);
   assert.match(siteOnly.short, /1 mapped site; pooled score absent/);
   assert.match(siteOnly.text, /exact locus tag/);
   assert.match(siteOnly.text, /do not backfill/);
 
-  const scoreOnly = tssInitiationBasis({ tssInitiation: 12.5, tssEvidence: [] });
+  const scoreOnly = tssInitiationBasis({ tssEvidence: [] }, {
+    metric, siteSource, value: 12.5,
+  });
   assert.equal(scoreOnly.basis, 'measured');
   assert.equal(scoreOnly.siteCount, 0);
   assert.match(scoreOnly.short, /pooled score; no exact Table S1 site/);
   assert.match(scoreOnly.text, /exact locus tag/);
+});
+
+test('an absent pooled-score or site layer is unrecorded and has blank export fields', () => {
+  const gene = { tssEvidence: [completeEntry] };
+  for (const options of [
+    { metric: null, siteSource, value: null },
+    { metric, siteSource: null, value: 12.5 },
+  ]) {
+    assert.deepEqual(tssInitiationBasis(gene, options), {
+      basis: 'unrecorded', short: '', text: '', siteCount: null,
+    });
+  }
 });
 
 test('one TSS retains both biological cultures and each condition comparison', () => {

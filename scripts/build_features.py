@@ -1125,6 +1125,7 @@ def build(
         ],
         "tssEvidenceSource": {
             "id": "TAN2018_TABLE_S1",
+            "pooledScoreSourceId": "TAN2018_TSS",
             "doi": "10.1186/s13068-018-1215-8",
             "sourceArtifactUrl": "https://static-content.springer.com/esm/art%3A10.1186%2Fs13068-018-1215-8/MediaObjects/13068_2018_1215_MOESM1_ESM.xlsx",
             "sourceSha256": "098ecbd204cd1042a6edee1d2a500eaeca4efe034c503e2ade3db1c605e79b00",
