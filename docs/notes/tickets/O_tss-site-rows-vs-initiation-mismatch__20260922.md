@@ -17,6 +17,12 @@ not merge the layers without it.
 
 ## Current State
 
+The implementation now reproduces the exact 472 site-only and 410 score-only
+loci, documents that the mismatch comes from two independent exact-locus source
+tables rather than a shared distance window, and labels both directions in gene
+detail and exports. The layers remain separate pending the owner's choice among
+the three quantified options in the biological-decision register.
+
 Two Tan 2018 derived layers disagree about which genes have TSS evidence.
 About 472 loci have Table S1 TSS site rows but no `tssInitiation` value, and
 about 410 loci have a `tssInitiation` value but no site rows. A gene can

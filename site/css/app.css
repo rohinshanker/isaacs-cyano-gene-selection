@@ -843,9 +843,10 @@ input[type="range"] { width: 100%; }
   border: 1px solid var(--line-strong);
   color: var(--ink-muted);
   background: var(--surface-sunken);
-  white-space: nowrap;
   vertical-align: middle;
 }
+.basis-tag { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.panel-role-tag { white-space: nowrap; }
 .basis-tag.basis-measured { border-color: #7fb1c6; color: #1f5f7d; background: var(--accent-soft); }
 .basis-tag.basis-proxy { border-color: #e3c893; color: #6b4100; background: #fdf3e2; }
 .basis-tag.basis-none, .basis-tag.basis-unrecorded { border-style: dashed; }

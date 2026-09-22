@@ -83,10 +83,13 @@ test('a native TSS metric is measured by its own finite value, never by the PCC 
 
   // A gene with a real PCC measurement but no TSS score must not borrow the
   // PCC "measured" state either: TSS is absent for it, plainly.
-  const measuredGeneNoTss = { expressionBasis: 'measured', expressionSourceId: 'GSE205444' };
+  const measuredGeneNoTss = {
+    expressionBasis: 'measured', expressionSourceId: 'GSE205444', tssEvidence: [],
+  };
   const tssAbsent = expressionBasisOf(measuredGeneNoTss, tss, NaN);
   assert.equal(tssAbsent.basis, 'none');
   assert.notEqual(tssAbsent.basis, 'proxy');
+  assert.match(tssAbsent.short, /no pooled score or mapped site/);
 
   // The primary PCC metric itself is unaffected: it still reads its own
   // gene-level basis and never the metric-scoped logic.

@@ -7,6 +7,7 @@
  * the pipeline, expression included, needs no change here.
  */
 import { LIVE_METRICS, isCountMetric } from './live-metrics.js';
+import { tssInitiationBasis } from './tss-evidence.js';
 
 /** Fallback grouping when `meta.metrics` does not declare a family. */
 const FAMILY_BY_KEY = new Map(Object.entries({
@@ -205,7 +206,8 @@ function isPrimaryAbundanceMetric(metric) {
  * abundance field: it carries no proxy, so a gene either has a finite value
  * for it or it does not. Never inherits the primary metric's proxy state.
  */
-function metricScopedExpressionBasis(metric, value) {
+function metricScopedExpressionBasis(gene, metric, value) {
+  if (metric.key === 'tssInitiation') return tssInitiationBasis(gene, value);
   if (Number.isFinite(value)) {
     const source = metric.provenance?.id ? ` in ${metric.provenance.id}` : '';
     return { basis: 'measured', short: 'measured', text: `Measured value for ${metric.label}${source}.` };
@@ -238,7 +240,7 @@ function metricScopedExpressionBasis(metric, value) {
  */
 export function expressionBasisOf(gene, metric = null, value = undefined) {
   if (metric && !isPrimaryAbundanceMetric(metric)) {
-    return metricScopedExpressionBasis(metric, value);
+    return metricScopedExpressionBasis(gene, metric, value);
   }
   if (!gene || !Object.hasOwn(gene, 'expressionBasis')) {
     return {

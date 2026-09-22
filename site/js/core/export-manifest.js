@@ -13,6 +13,7 @@
 import { compileScheme, serializeSchemeMap } from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
 import { expressionBasisOf } from './metric-registry.js';
+import { tssInitiationBasis } from './tss-evidence.js';
 import { metricHelp } from './metric-help.js';
 import { functionCategoryLabel, reviewedFunctionLabels } from './function-categories.js';
 import { discrepancyCell, essentialityEvidenceFor } from './go-iea-essentiality.js';
@@ -33,7 +34,8 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'seqid', 'start', 'end',
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor', 'operonId',
-  'expressionBasis', 'expressionSourceId', 'passesCurrentFilters',
+  'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
+  'tssInitiationBasisReason', 'tssMappedSiteCount', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus',
   'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
   'annotationDiscrepancies',
@@ -245,6 +247,7 @@ export function buildExport({
       const gene = genes[index];
       const sequence = recodedSequence(dataset, index, compiled);
       const basis = expressionBasisOf(gene);
+      const tssBasis = tssInitiationBasis(gene);
       // "All sources" keeps reading the gene/dataset fields exactly as before this
       // feature existed, so that view stays byte-identical. A single source reads
       // only through the source-scoped accessor, which leaves a field blank rather
@@ -293,6 +296,9 @@ export function buildExport({
         operonId: gene.operonId ?? '',
         expressionBasis: basis.basis,
         expressionSourceId: gene.expressionSourceId ?? '',
+        tssInitiationBasis: tssBasis.short,
+        tssInitiationBasisReason: tssBasis.text,
+        tssMappedSiteCount: tssBasis.siteCount,
         passesCurrentFilters: filterMask ? String(Boolean(filterMask[index])) : '',
         pcc7942Essentiality: pccCall?.status ?? '',
         pcc7942LocusTag: pccCall?.pccLocusTag ?? '',
@@ -397,6 +403,7 @@ export function buildExport({
           translationalException: gene.translationalException ?? null,
           cdsSegments: gene.cdsSegments ?? null,
           expressionBasis: expressionBasisOf(gene).basis,
+          tssInitiationBasis: tssInitiationBasis(gene),
           testedAllele: dataset.candidateEvidence?.testedAlleles[id] ?? null,
           essentialityEvidence: sourceView ? null : dataset.goIeaEssentiality?.byLocus?.[id] ?? null,
           pcc7942Essentiality: sourceView

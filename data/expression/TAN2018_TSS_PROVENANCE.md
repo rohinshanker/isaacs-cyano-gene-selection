@@ -101,6 +101,34 @@ selection and mapping rules, so their coverage differs (1,727 versus 1,789 genes
 The site does not fill a missing pooled score from Table S1 or infer a score by
 averaging raw counts across conditions.
 
+### Exact layer mismatch
+
+The two browser layers use independent, exact membership rules; there is no
+TSS-to-start distance window in either current join:
+
+- `tssInitiation` is present only when the separately pinned pooled-score TSV has
+  that current `M744_RS` locus tag. It contains 1,727 loci. The build performs an
+  exact locus-tag lookup and does not create a value from Table S1.
+- Mapped site evidence is present only when a gTSS row in the pinned Table S1
+  extract names a syntactically valid current `M744_RS` locus tag that occurs in
+  the 2,715-CDS site dataset. All such rows are retained, regardless of the
+  published `source_start_distance_nt`; 2,432 rows map to 1,789 loci. No symbol,
+  coordinate-nearest, or fuzzy join is used.
+
+The overlap is 1,317 loci. Consequently, **472 loci have one or more exact-locus
+Table S1 site rows but no pooled score**, while **410 have a pooled score but no
+exact-locus Table S1 site row**. `M744_RS00030` is a site-only example: Table S1
+maps `gTSS+5332` to it at a published start distance of 25 nt, but the pooled-score
+TSV has no row. `M744_RS00010` is a score-only example: its pooled score is
+164.375 (`Tan2018_dRNAseq_TSS_count_sum_1TSS`), but no Table S1 gTSS row maps to
+that exact current locus tag. These examples demonstrate that the mismatch is not
+explained by a shared distance cutoff. Until the lab chooses a reconciliation,
+the site keeps the layers separate and labels the missing side explicitly.
+
+`tests/test_tss_layer_mismatch.py` recomputes these sets from both pinned TSVs and
+the committed browser data, asserts all five membership counts, and fails if the
+joins or copies drift.
+
 The workbook labels its eight sample fields `RawReads`, but 26 count values among
 the mapped gTSS rows end in `.5`. The site preserves these published fractional
 values rather than rounding them to whole reads; the publisher does not explain
