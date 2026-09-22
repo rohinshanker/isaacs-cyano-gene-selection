@@ -546,3 +546,23 @@ tier is computational context, never a measured or borrowed call, and the panel
 objective never reads it. See
 [go-iea-essentiality-context.md](go-iea-essentiality-context.md). The contract
 validator re-derives every tier independently.
+
+## Annotation-source views
+
+The viewer can show one annotation source at a time. Each source has a fixed
+set of fields it can annotate: UTEX 2973 supplies the RefSeq name, product,
+and lab-reviewed function categories; PCC 7942 supplies the joined locus tag
+and the borrowed essentiality call; GO IEA supplies the evidence-coded GO
+relationships. In a single-source view a field that source does not annotate
+for a gene is **blank**: `null` or an empty list, never filled from another
+source and never rendered as `unknown` as if that were the source's own value.
+All sources is not a filtered view; consumers keep reading the gene and
+dataset fields directly, so its output is byte-identical to the behaviour
+before the selector existed.
+
+The export manifest records `annotationSource` as `{ id, label }` and every
+row carries the same `annotationSource` id, with a caveat naming the source
+and its evidence note, so a single-source file cannot be mistaken for the
+combined view. The GO IEA essentiality tier, context, probability, and
+discrepancy fields are populated only for All sources exports.
+

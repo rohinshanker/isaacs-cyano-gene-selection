@@ -41,6 +41,53 @@ the first Pin or Shortlist activation. Repeated searches for the already rendere
 query are therefore idempotent. Validate both actions with one click immediately
 after typing, as well as with keyboard activation.
 
+## Function-category legend filter
+
+When **Colour by** is Function category, every legend row is a control with
+`role="checkbox"`, including the multiple-functions and unknown-or-unclassified
+buckets. Hover or keyboard focus previews only that category on the map;
+other CDSs take the filtered-out treatment for the duration and the map returns
+to the committed state on leave or blur. Hover and focus are tracked as
+separate channels, so leaving one restores the other's preview rather than the
+committed selection. A preview never changes filter or URL state.
+
+Click, Enter, or Space toggles the row into the committed category filter.
+Selected categories combine with OR semantics; an empty selection excludes
+nothing. The selection composes with the numeric, activity, expression,
+protein, and exception filters and keeps the grey outlined square convention
+for excluded CDSs. After a toggle the legend is rebuilt and keyboard focus is
+restored to the same row, so repeated Enter or Space keeps working and the
+focus ring stays visible.
+
+**Clear category selection** below the legend clears only the category filter
+and disables itself when nothing is selected. **Clear all filters** clears it
+too, so no stale `cf` field remains in the URL. The URL field `cf` carries the
+sorted, deduplicated category ids; unknown ids are dropped on decode and a
+hash without `cf` decodes to no category filter. The export manifest records
+the committed selection in both its `filterState` and `viewState` fields.
+
+## Annotation source
+
+The **Annotation source** selector offers All sources (the fresh-view
+default), UTEX 2973, PCC 7942, and GO IEA. The selection is encoded in the URL
+field `as` only when it is not the default. A single-source view reads every
+annotation field through one accessor
+(`site/js/core/annotation-source.js`), so the detail panel, shortlist and
+comparison tables, panel-designer gene list, search suggestions, and export
+agree on what that source annotated; see the
+[data contract](data-contract.md#annotation-source-views) for the blank-value
+rule. Search still matches locus tags in every view because identity is not
+one source's annotation, while name and product suggestions come only from the
+selected source. The GO IEA evidence tier and its discrepancy notes belong to
+All sources alone; the PCC 7942 view shows the borrowed call without them.
+
+## Pinned status row
+
+When a gene is pinned, the unpin control sits to the left of the "Pinned"
+label at the status text's size, keeps a 24 px hit area, its `aria-label`,
+title, and `data-detail-action="unpin"` hook, and focus after unpin lands where
+the reversible-pinning rules above say.
+
 ## URL and local persistence
 
 The current encoder is `ver=3`. A viewer-generated hash is a complete shareable
