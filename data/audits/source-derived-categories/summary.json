@@ -2,30 +2,31 @@
   "counts": {
     "allSourcesLegend": {
       "byCategory": {
-        "atp-production-and-respiration": 56,
-        "carbon-and-nutrient-metabolism": 282,
-        "dna-and-rna-processing": 122,
-        "other-characterized": 52,
-        "photosynthetic-light-reactions": 88,
+        "atp-production-and-respiration": 57,
+        "carbon-and-nutrient-metabolism": 286,
+        "dna-and-rna-processing": 124,
+        "other-characterized": 53,
+        "photosynthetic-light-reactions": 89,
         "pigment-and-cofactor-biosynthesis": 133,
         "signaling-and-circadian-regulation": 118,
-        "stress-and-repair": 56,
-        "translation-and-protein-maintenance": 168,
+        "stress-and-repair": 57,
+        "translation-and-protein-maintenance": 171,
         "transport-and-envelope": 276
       },
       "byEvidence": {
         "go-iea-derived": 268,
         "none": 1350,
-        "pcc-7942-derived": 332,
-        "pcc-7942-derived+go-iea-derived": 752,
+        "pcc-7942-derived": 1084,
         "reviewed": 13
       },
+      "coloured": 1364,
+      "conflicts": 13,
       "enabledSources": [
         "utex-2973",
         "pcc-7942",
         "go-iea"
       ],
-      "multipleFunctions": 13,
+      "multipleFunctions": 0,
       "unknownOrUnclassified": 1351
     },
     "bothSourcesAssigned": {
@@ -860,6 +861,8 @@
         "go-iea-derived": 1028,
         "none": 1687
       },
+      "coloured": 1028,
+      "conflicts": 0,
       "enabledSources": [
         "go-iea"
       ],
@@ -883,6 +886,8 @@
         "none": 1622,
         "pcc-7942-derived": 1093
       },
+      "coloured": 1093,
+      "conflicts": 0,
       "enabledSources": [
         "pcc-7942"
       ],
@@ -891,28 +896,29 @@
     },
     "pcc-7942+go-iea": {
       "byCategory": {
-        "atp-production-and-respiration": 56,
-        "carbon-and-nutrient-metabolism": 282,
-        "dna-and-rna-processing": 122,
-        "other-characterized": 52,
-        "photosynthetic-light-reactions": 88,
+        "atp-production-and-respiration": 57,
+        "carbon-and-nutrient-metabolism": 286,
+        "dna-and-rna-processing": 124,
+        "other-characterized": 53,
+        "photosynthetic-light-reactions": 89,
         "pigment-and-cofactor-biosynthesis": 132,
         "signaling-and-circadian-regulation": 118,
-        "stress-and-repair": 56,
-        "translation-and-protein-maintenance": 168,
+        "stress-and-repair": 57,
+        "translation-and-protein-maintenance": 171,
         "transport-and-envelope": 276
       },
       "byEvidence": {
         "go-iea-derived": 270,
         "none": 1352,
-        "pcc-7942-derived": 335,
-        "pcc-7942-derived+go-iea-derived": 758
+        "pcc-7942-derived": 1093
       },
+      "coloured": 1363,
+      "conflicts": 13,
       "enabledSources": [
         "pcc-7942",
         "go-iea"
       ],
-      "multipleFunctions": 13,
+      "multipleFunctions": 0,
       "unknownOrUnclassified": 1352
     },
     "utex-2973": {
@@ -932,6 +938,8 @@
         "none": 2702,
         "reviewed": 13
       },
+      "coloured": 12,
+      "conflicts": 0,
       "enabledSources": [
         "utex-2973"
       ],
@@ -956,6 +964,8 @@
         "none": 1682,
         "reviewed": 13
       },
+      "coloured": 1032,
+      "conflicts": 0,
       "enabledSources": [
         "utex-2973",
         "go-iea"
@@ -981,6 +991,8 @@
         "pcc-7942-derived": 1084,
         "reviewed": 13
       },
+      "coloured": 1096,
+      "conflicts": 0,
       "enabledSources": [
         "utex-2973",
         "pcc-7942"
@@ -990,7 +1002,7 @@
     }
   },
   "model": "jev-1.13.0",
-  "outputSha256": "161ded04be3c4dbd914091f3893ec61c54580946b49547c748feb39e3851080d",
+  "outputSha256": "f52cb2715c762761ffdf6adbd8736f294b807a8401d306d36142ebc6d0359c0e",
   "reviewedComparison": [
     {
       "go-iea": {

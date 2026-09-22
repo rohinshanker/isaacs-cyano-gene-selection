@@ -138,16 +138,16 @@ on 13.
 
 | Category | PCC 7942 | GO IEA | All sources on |
 | --- | --- | --- | --- |
-| Photosynthetic light reactions | 80 | 51 | 88 |
-| Carbon and nutrient metabolism | 211 | 210 | 282 |
-| ATP production and respiration | 51 | 19 | 56 |
+| Photosynthetic light reactions | 80 | 51 | 89 |
+| Carbon and nutrient metabolism | 211 | 210 | 286 |
+| ATP production and respiration | 51 | 19 | 57 |
 | Pigment and cofactor biosynthesis | 109 | 111 | 133 |
-| Translation and protein maintenance | 144 | 140 | 168 |
-| DNA and RNA processing | 101 | 107 | 122 |
+| Translation and protein maintenance | 144 | 140 | 171 |
+| DNA and RNA processing | 101 | 107 | 124 |
 | Transport and envelope | 214 | 227 | 276 |
 | Signaling and circadian regulation | 96 | 87 | 118 |
-| Stress and repair | 47 | 39 | 56 |
-| Other characterized | 40 | 37 | 52 |
+| Stress and repair | 47 | 39 | 57 |
+| Other characterized | 40 | 37 | 53 |
 | Multiple functions | 0 | 0 | 0 |
 | Unknown or unclassified | 1,449 | 556 | 1,351 |
 
