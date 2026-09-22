@@ -125,8 +125,9 @@ exports an empty expression cell and never the proxy value.
 
 Every trRosettaRNA copy or download is also retained in the next manifest under
 `trRosettaRnaHandoffs`: locus, wild-type or recoded form, scheme name, region,
-formats, SHA-256 of the exact RNA sequence, and the ViennaRNA version only when
-dot-bracket or CT was available from an exact completed fold.
+the one format actually copied or downloaded, SHA-256 of the exact RNA sequence,
+and the ViennaRNA version only when that action took a dot-bracket or CT file from
+an exact completed fold. Preparing other formats does not claim that they were used.
 
 ## Checks
 

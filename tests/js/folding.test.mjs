@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
-import { standardTable, standardAlphabet } from './helpers.mjs';
+import { parseCt, standardTable, standardAlphabet } from './helpers.mjs';
 import { foldingSequences, foldingDatasetChecksum } from '../../site/js/core/folding-sequences.js';
 import { loadFoldingEngine } from '../../site/js/core/folding-engine.js';
 import { FoldingClient } from '../../site/js/core/folding-client.js';
-import { parseCt, writeHandoffFormats } from '../../site/js/core/rosetta-handoff.js';
+import { writeHandoffFormats } from '../../site/js/core/rosetta-handoff.js';
 
 const references = JSON.parse(await readFile(new URL('../fixtures/rna-folding.json', import.meta.url)));
 const binary = await readFile(new URL('../../site/vendor/viennarna/vienna.wasm', import.meta.url));
@@ -23,10 +23,11 @@ test('exact WASM agrees with independent Python for both strands, circular bound
     for (const [name, values] of Object.entries(windows)) {
       for (const key of ['wild', 'recoded']) {
         assert.equal(values[key], sample.windows[name][key]);
-        assert.ok(Math.abs(fold(values[key]) - sample.windows[name][`${key}Mfe`]) < references.toleranceKcalMol);
+        const mfe = fold(values[key]);
+        assert.ok(Math.abs(mfe - sample.windows[name][`${key}Mfe`]) < references.toleranceKcalMol);
         const structure = fold.lastStructure;
         assert.match(structure, /^[().]+$/);
-        assert.deepEqual(parseCt(writeHandoffFormats({ sequence: values[key], header: 'fold', structure }).ct),
+        assert.deepEqual(parseCt(writeHandoffFormats({ sequence: values[key], header: 'fold', structure, mfe }).ct),
           { sequence: values[key], structure });
       }
     }
@@ -286,6 +287,8 @@ test('worker dispatch computes both windows, reuses engine, and isolates bad req
     const windows = foldingSequences(gene, table, {});
     await self.onmessage({ data: { id: 1, windows } });
     assert.equal(messages[0].result.start.delta, 0);
+    assert.equal(messages[0].result.start.wildSequence, windows.start.wild);
+    assert.equal(messages[0].result.start.recodedSequence, windows.start.recoded);
     await self.onmessage({ data: { id: 2, windows: foldingSequences(gene, table, { TCG: 'AGC' }) } });
     assert.ok(Number.isFinite(messages[1].result.first100.recodedMfe));
     await self.onmessage({ data: { id: 3, windows: { bad: { wild: 'invalid', recoded: 'ACGU' } } } });

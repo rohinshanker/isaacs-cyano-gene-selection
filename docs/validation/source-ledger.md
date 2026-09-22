@@ -43,8 +43,10 @@ optima or at Rubin's assay conditions.
 Retain the GO release/date, CC BY attribution and disclaimer, and ViennaRNA's
 custom license and bundled component notices.
 
-The trRosettaRNA hand-off cites the public submission server and its standalone
-download page. This repository prepares inputs only: no submitted sequence or
-returned model becomes project provenance automatically. Keep the external server
-terms and privacy setting separate from the standalone Apache-2.0 code and the
-separate PyRosetta licence.
+The trRosettaRNA hand-off cites the 2026 Nature Protocols server protocol and the
+2023 Nature Communications method paper with complete authorship and DOI metadata.
+The public server and official standalone package document the submission and custom
+secondary-structure formats. This repository prepares inputs only: no submitted
+sequence or returned model becomes project provenance automatically. Keep the
+external server terms and privacy setting separate from the standalone Apache-2.0
+code and the separate PyRosetta licence.

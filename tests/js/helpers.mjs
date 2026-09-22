@@ -21,6 +21,23 @@ export function standardTable() {
   return new CodonTable(standardAlphabet());
 }
 
+/** Test-only CT reader used to verify the generated connectivity table. */
+export function parseCt(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const length = Number(lines.shift()?.trim().split(/\s+/)[0]);
+  if (!Number.isInteger(length) || lines.length !== length) throw new Error('Invalid CT file.');
+  const sequence = [];
+  const pairs = Array(length).fill(0);
+  for (const line of lines) {
+    const fields = line.trim().split(/\s+/);
+    const index = Number(fields[0]);
+    sequence[index - 1] = fields[1];
+    pairs[index - 1] = Number(fields[4]);
+  }
+  return { sequence: sequence.join(''),
+    structure: pairs.map((mate, index) => mate === 0 ? '.' : mate > index + 1 ? '(' : ')').join('') };
+}
+
 /** A `fetch` that reads the fixture directory, so dataset loading is testable. */
 export function fileFetch() {
   return async (url) => {

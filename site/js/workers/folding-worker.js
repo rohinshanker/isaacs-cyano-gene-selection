@@ -12,6 +12,7 @@ self.onmessage = async ({ data: { id, windows } }) => {
       const recodedMfe = wild === recoded ? wildMfe : engine(recoded);
       const recodedStructure = wild === recoded ? wildStructure : engine.lastStructure;
       result[name] = { wildMfe, recodedMfe, wildStructure, recodedStructure,
+        wildSequence: wild, recodedSequence: recoded,
         delta: recodedMfe - wildMfe, length: wild.length };
     }
     self.postMessage({ id, result });
