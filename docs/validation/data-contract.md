@@ -19,15 +19,16 @@ is not this organism.
 
 ## Protein evidence is a separate, versioned release
 
-The site data does not currently expose a protein-evidence filter. The offline
-audit in `data/protein-evidence/releases/` deliberately keeps three nullable
+The site offers a RefSeq protein-record filter and displays direct UTEX 2973
+proteomics detection as unavailable with a reason. The offline audit in
+`data/protein-evidence/releases/` deliberately keeps three nullable
 evidence concepts separate: a pinned RefSeq protein record, direct experimental
 detection, and characterized-homolog support. Experimentally tested variant
 evidence has its own field. Historical search-database observations live in a
 separate optional artifact, with an explicit source-integrity field; they cannot
 enter the admitted release merely because a local checksum is stable.
-The future cohort UI offers RefSeq record and direct detection separately; direct
-detection is shown as unavailable with an explanation while no accepted per-locus
+The length chart includes a RefSeq protein-record CDS cohort; the separate protein
+filter lists direct detection as unavailable while no accepted per-locus
 identification list exists.
 
 Unknown evidence is the literal string `unknown`, never false or absent-row

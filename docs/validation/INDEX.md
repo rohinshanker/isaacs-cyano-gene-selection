@@ -22,7 +22,7 @@ Reusable contracts and runbooks for this repository.
 | [future-data-roadmap.md](future-data-roadmap.md) | Ranked remaining downloadable evidence after Tan 2018 integration, joins, licence gates, version pins, and admission rules |
 | [source-ledger.md](source-ledger.md) | Public citation coverage, exact repository-file downloads, attribution boundaries, and release checks |
 | [current-design-answers.md](current-design-answers.md) | Lab-readable answers on the present CDS set, protein/tRNA evidence, CAI/tAI/rare codons, projections, identifiers, search, and selection controls |
-| [biological-decisions-to-review.md](biological-decisions-to-review.md) | Prioritized scientific questions for collaborators, current evidence boundaries, and exact panel sign-off |
+| [biological-decisions-to-review.md](biological-decisions-to-review.md) | Prioritized scientific questions, ticket outcomes and remaining gaps, and exact panel sign-off |
 | [rna-folding.md](rna-folding.md) | Exact local ViennaRNA build, strand-aware context, cancellation/cache semantics, numeric and rendered validation |
 | [responsive-workspace.md](responsive-workspace.md) | Center-column workflow, breakpoint behavior, hash-preserving navigation, bounded detail scrolling, and responsive checks |
 | [guided-panel-design.md](guided-panel-design.md) | Deterministic constrained panel objective, feature/missing-data policy, stable saved-scheme identity, golden case, and export contract |

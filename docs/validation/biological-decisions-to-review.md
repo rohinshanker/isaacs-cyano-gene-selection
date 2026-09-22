@@ -20,6 +20,49 @@ evidence in the experiment record before acting on a changed assumption.
 | 9 | Does a short gene's native PCA position reflect meaningful codon use for the proposed experiment? | The PCA remains fixed when filters change. Short CDSs have more zero RSCU values and PC2 has measured length/sparsity sensitivity; downsampling explains part, not all, of the shift. Use the direct metric plot and inspect length before interpreting an outlier. The below-75-nt flag is a fixed annotation review trigger; none of the current CDSs fall below it. | Quantitative-genomics reviewer; [PCA audit](pca-length-sensitivity.md), [length cohorts](length-cohorts.md). |
 | 10 | Are the rare-codon and local-folding conventions useful for the planned perturbation? | Rare means within-synonym frequency below 0.1 in this genome, not measured slow translation. On-demand MFE and delta-MFE are model outputs, not expression, fitness, or viability evidence. Assess start-window context and any proposed change with gene-specific experiments. | Translation and RNA-structure reviewers; [metric conventions](current-design-answers.md#what-do-rare-codon-cai-and-tai-mean-here), [folding contract](rna-folding.md). |
 
+## Opened site tickets: delivered work and remaining gaps
+
+This covers the site's feature and data tickets from the September 18 queue and
+the September 21–22 follow-on work. Resolved ticket files were removed under the
+repository's cleanup policy, so links point to the lasting contracts. Agent
+scouting and patch-review jobs are excluded. “No known implementation gap” means
+the requested behavior was checked; it does not approve an experimental panel.
+
+### Original queue (September 18)
+
+| Ticket topic | Implemented | Remaining gap or review |
+| --- | --- | --- |
+| [Gene-diversity site](data-contract.md) | Built the pinned UTEX 2973 dataset and interactive 2,715-CDS recoding map. | The site is scoped to UTEX 2973; a new organism needs its own pinned build. |
+| [Annotation release readiness](annotation-release-readiness.md) | Pinned RefSeq/PGAP inputs, exact identifier crosswalk, annotation evidence, and GO relationships. | External sources still need their own admission checks; shared IDs and proximity do not prove function. |
+| [Candidate comparison integrity](candidate-comparison-and-export.md) | Kept missing values visibly unknown and made up to ten candidates distinguishable across comparison views. | No known implementation gap; interpretation of a candidate remains a lab decision. |
+| [Desktop analysis layout](responsive-workspace.md) | Kept map and comparison in the analysis column with a bounded detail panel. | No known implementation gap. |
+| [Guided gene-panel design](guided-panel-design.md) | Added reproducible, constrained 6–10-gene selection across recoding schemes. | The objective measures feature coverage, not fitness; review the exact exported panel. |
+| [Map input accessibility](viewer-interaction-state.md) | Added keyboard and touch navigation, preview, pinning, zoom, and focus behavior. | No known implementation gap. |
+| [Metric semantics and risk framing](metric-convention-parity.md) | Defined metric units, provenance, colour scale, and codon/terminal-stop burden conventions. | CAI, tAI, and rare-codon measures remain models or usage conventions, not direct translation-rate assays. |
+| [Recoded RNA folding](rna-folding.md) | Added local WT/recoded ViennaRNA calculations with exact windows, cancellation, and cache checks. | Predicted MFE changes need experimental validation. |
+| [Research export manifest](candidate-comparison-and-export.md) | Made shortlist and multi-scheme CSV/manifest exports reproducible and importable. | Keep an approved manifest with each experimental record. |
+| [Shareable state and scheme drafts](viewer-interaction-state.md) | Restored URLs, browser history, selection, filters, schemes, and draft names consistently. | Saved schemes remain local to the browser unless shared through an export or URL. |
+
+### Follow-on tickets (September 21–22)
+
+| Ticket topic | Implemented | Remaining gap or review |
+| --- | --- | --- |
+| [Native expression evidence](../../data/expression/TAN2018_TSS_PROVENANCE.md) | Added Tan 2018 UTEX TSS measurements and prioritized native evidence while keeping PCC 7942 abundance opt-in. | Native gene-body abundance is still unavailable; TSS initiation is a different measurement. |
+| [Citations and source ledger](source-ledger.md) | Added an attributed sources tab with traceable repository downloads and source limitations. | Waived third-party datasets still require source/version/licence review before admission. |
+| [Reversible selection](viewer-interaction-state.md) | Added Unpin in search/detail, repeat-click unpin on map points, and Reset selections separate from Reset view. | No known implementation gap. |
+| [Gene identity](annotation-release-readiness.md#identifier-crosswalk-contract) | Shows KaiA's annotated product when the release lacks a gene symbol, including focus/hover descriptions. | A product name is not a curated `kaiA` symbol. |
+| [Protein identity and detection](protein-evidence.md) | Matched all 2,715 CDS translations to RefSeq protein records and separated record evidence from direct detection. | Direct UTEX detection stays unavailable until an accepted, source-verified per-locus proteomics list exists. |
+| [tRNA annotation validation](trna-annotation-validation.md) | Rechecked all 44 RefSeq tRNA loci against tRNAscan-SE and kept published tAI unchanged. | The extra low-confidence pseudo call, expression/charging, and a genuinely different calling method remain unverified. |
+| [Gene-universe length explorer](length-cohorts.md) | Added all annotated genes, CDSs, and protein-record cohorts, fixed-PCA length filtering, and the below-75-nt flag. | Direct proteomics detection cannot form a cohort yet; the map still represents screened CDSs. |
+| [Cited-study evidence](protein-evidence.md#ungerer-cross-reference) | Put tested UTEX `atpA`/`ppnK`/`rpaA` alleles first, kept Rubin PCC essentiality unavailable, and exposed Tan regulatory sites separately. | Rubin redistribution/join review and gene-specific regulatory validation remain open; regulatory search has not had a separate screen-reader audit. |
+| [Metric explanations](metric-explanations.md) | Added short meanings, calculation details, source and method citations, and stable disclosure state. | Explanations do not remove the biological limits of the underlying metrics. |
+| [GO term-name lookup](go-term-names.md) | Pinned names and namespaces for all 1,120 source GO IDs, retaining obsolete flags without guessing replacements. | Ontology labels are newer than the source GAF and remain lookup text, not curated function evidence. |
+| [Functional categories and search](function-categories.md) | Added the 13 approved locus mappings, category colour, and labelled IEA GO search suggestions. | The other 2,703 CDSs remain unknown/unclassified until more mappings are reviewed. |
+| [Explicit axes and PCA length audit](pca-length-sensitivity.md) | Added a separate metric X-versus-Y plot and measured length sensitivity while keeping published PCA coordinates fixed. | Short-CDS PCA positions still require length/sparsity context before biological interpretation. |
+| [Resizable desktop panels](responsive-workspace.md) | Added two persistent resize handles with 260 px side-panel and 400 px map minima. | No known implementation gap. |
+| [Function-colour selector order](function-categories.md) | Moved Function category to the first Colour by option while keeping GC3 selected on a fresh view. | No known implementation gap. |
+| [Biological review list](biological-decisions-to-review.md) | Collected scientific decisions, current evidence boundaries, and suggested reviewers in this document. | The lab still needs to sign off the exact panel and any future evidence admission. |
+
 The [current design answers](current-design-answers.md) explain what the site
 currently shows. The [manual review checklist](manual-review-checklist.md)
 contains the exact panel sign-off record and site-release gate. A future change
