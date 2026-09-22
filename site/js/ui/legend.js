@@ -11,8 +11,16 @@ import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-cate
 export function renderCategoryLegend(host, {
   labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
   hiddenCount, showHidden, selected = [],
-  onHoverCategory = () => {}, onToggleCategory = () => {}, onResetCategoryFilter = () => {},
+  onHoverCategory = () => {}, onFocusCategory = () => {},
+  onToggleCategory = () => {}, onResetCategoryFilter = () => {},
 }) {
+  // A row rerender (every toggle calls renderAll) replaces every list element,
+  // which would otherwise drop keyboard focus to BODY and break repeated
+  // Enter/Space toggling on the same row. Remember which category id held
+  // focus and restore it once the new rows exist.
+  const focusedId = host.contains(document.activeElement)
+    ? document.activeElement.dataset.categoryId ?? null
+    : null;
   host.replaceChildren();
   host.classList.add('category-mode');
   const title = document.createElement('p');
@@ -47,13 +55,18 @@ export function renderCategoryLegend(host, {
     const isSelected = selected.includes(id);
     button.setAttribute('aria-checked', String(isSelected));
     button.classList.toggle('selected', isSelected);
+    button.dataset.categoryId = id;
     button.append(makeSwatch(color, open, '', color), document.createTextNode(
       ` ${label} (${formatCount(count)})`,
     ));
+    // Hover (mouse) and focus (keyboard) are separate preview channels: with a
+    // category committed and a different row focused, hovering a third row and
+    // leaving it must restore the focused row's preview, not the committed
+    // selection. Each channel only ever reports its own state.
     button.addEventListener('mouseenter', () => onHoverCategory(id));
     button.addEventListener('mouseleave', () => onHoverCategory(null));
-    button.addEventListener('focus', () => onHoverCategory(id));
-    button.addEventListener('blur', () => onHoverCategory(null));
+    button.addEventListener('focus', () => onFocusCategory(id));
+    button.addEventListener('blur', () => onFocusCategory(null));
     button.addEventListener('click', () => onToggleCategory(id));
     button.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
@@ -90,6 +103,14 @@ export function renderCategoryLegend(host, {
     + 'GO IEA suggestions alone leave a gene unclassified. Hover or focus a category to '
     + 'preview it; click, Enter, or Space toggles it as a filter.';
   host.append(title, list, resetButton, note);
+
+  // Restore focus only once the new row is actually attached to the document:
+  // `.focus()` on a still-detached element is a silent no-op.
+  if (focusedId !== null) {
+    const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
+      .find((row) => row.dataset.categoryId === focusedId);
+    if (toFocus) toFocus.focus();
+  }
 }
 
 /** One sentence naming the ramp family and where the choice came from. */

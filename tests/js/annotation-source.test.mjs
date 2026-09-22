@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   ANNOTATION_SOURCES, DEFAULT_ANNOTATION_SOURCE, ALL_SOURCES, UTEX_SOURCE, PCC_SOURCE,
   GO_IEA_SOURCE, isAnnotationSource, annotationSourceLabel, annotationSourceEvidenceNote,
-  annotationSourceView, registerAllSourcesAugmenter,
+  annotationSourceView,
 } from '../../site/js/core/annotation-source.js';
 
 test('exposes exactly the four required sources, defaulting to all', () => {
@@ -120,17 +120,4 @@ test('an unknown or unrecognised source id falls back to all', () => {
   const view = annotationSourceView(gene, dataset, 'not-a-source');
   assert.equal(view.source, ALL_SOURCES);
   assert.equal(view.product, gene.product);
-});
-
-test('the all-sources augmenter hook lets a later branch extend only the all view', (t) => {
-  t.after(() => registerAllSourcesAugmenter(null));
-  const dataset = fixtureDataset();
-  const gene = fixtureGene();
-  registerAllSourcesAugmenter((view) => ({ ...view, fallbackNote: 'go-iea fallback applied' }));
-  const all = annotationSourceView(gene, dataset, ALL_SOURCES);
-  assert.equal(all.fallbackNote, 'go-iea fallback applied');
-  const utex = annotationSourceView(gene, dataset, UTEX_SOURCE);
-  assert.equal(utex.fallbackNote, undefined);
-  const pcc = annotationSourceView(gene, dataset, PCC_SOURCE);
-  assert.equal(pcc.fallbackNote, undefined);
 });

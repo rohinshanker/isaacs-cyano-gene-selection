@@ -58,21 +58,6 @@ export function annotationSourceEvidenceNote(sourceId) {
   return EVIDENCE_NOTES[sourceId] ?? null;
 }
 
-/**
- * Extension point for the parallel GO-IEA-fallback work (essentiality context
- * drawn from GO IEA annotations, with discrepancy notes against UTEX/PCC).
- * That behaviour belongs only to the "All sources" view; a single-source view
- * must keep showing only its own source's values. Register a function here
- * `(view, gene, dataset) => view` that augments the "all" view in place (or
- * returns a replacement); by default nothing is registered and "all" stays
- * exactly the union of the three sources below.
- */
-let allSourcesAugmenter = null;
-
-export function registerAllSourcesAugmenter(fn) {
-  allSourcesAugmenter = typeof fn === 'function' ? fn : null;
-}
-
 function utexFields(gene, dataset) {
   return {
     product: gene?.product ?? null,
@@ -130,12 +115,11 @@ export function annotationSourceView(gene, dataset, sourceId) {
     return { source, ...BLANK_UTEX, ...BLANK_PCC, ...goFields(gene),
       evidenceNote: annotationSourceEvidenceNote(source) };
   }
-  const view = {
+  return {
     source: ALL_SOURCES,
     ...utexFields(gene, dataset),
     ...pccFields(gene, dataset),
     ...goFields(gene),
     evidenceNote: null,
   };
-  return allSourcesAugmenter ? allSourcesAugmenter(view, gene, dataset) ?? view : view;
 }

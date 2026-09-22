@@ -116,4 +116,11 @@ test('toggleCategorySelection adds, removes, dedupes, and sorts', () => {
     ['other-characterized', 'stress-and-repair'],
   );
   assert.deepEqual(toggleCategorySelection(['stress-and-repair'], 'stress-and-repair'), []);
+  // Malformed/duplicate input collapses through the Set rather than surviving
+  // into the returned selection or being counted twice.
+  assert.deepEqual(
+    toggleCategorySelection(['stress-and-repair', 'stress-and-repair'], 'other-characterized'),
+    ['other-characterized', 'stress-and-repair'],
+  );
+  assert.deepEqual(toggleCategorySelection(['stress-and-repair', 'stress-and-repair'], 'stress-and-repair'), []);
 });

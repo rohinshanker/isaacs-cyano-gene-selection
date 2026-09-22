@@ -255,6 +255,26 @@ function previewCategory(id) {
   plot.setMask(preview);
 }
 
+// Hover (mouse) and keyboard focus are independent preview channels. Losing
+// one (mouse leaves the legend, or a row blurs) must fall back to whichever
+// other channel is still active, not straight to the committed selection.
+let hoverCategoryId = null;
+let focusCategoryId = null;
+
+function updateCategoryPreview() {
+  previewCategory(hoverCategoryId ?? focusCategoryId ?? null);
+}
+
+function hoverCategory(id) {
+  hoverCategoryId = id;
+  updateCategoryPreview();
+}
+
+function focusCategory(id) {
+  focusCategoryId = id;
+  updateCategoryPreview();
+}
+
 function toggleCategoryFilter(id) {
   state.categoryFilter = toggleCategorySelection(state.categoryFilter, id);
   renderAll();
@@ -478,7 +498,8 @@ function renderMap() {
         hiddenCount: context.dataset.genes.length - context.passing,
         showHidden: state.showHidden,
         selected: state.categoryFilter,
-        onHoverCategory: (id) => previewCategory(id),
+        onHoverCategory: (id) => hoverCategory(id),
+        onFocusCategory: (id) => focusCategory(id),
         onToggleCategory: (id) => toggleCategoryFilter(id),
         onResetCategoryFilter: () => clearCategoryFilter(),
       });
@@ -626,6 +647,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       registry: context.registry,
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
+      annotationSource: state.annotationSource,
       schemes: {
         active: { name: state.schemeName, map: state.schemeMap },
         saved: Object.entries(store.read(STORAGE_SCHEMES, {}))
