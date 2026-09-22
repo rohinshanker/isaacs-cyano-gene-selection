@@ -1,0 +1,138 @@
+{
+  "rubricVersion": "2026-09-22.1",
+  "requestedModel": "jev-1.13.0",
+  "purpose": "One bounded semantic judgment per source for each UTEX 2973 CDS locus: which of the lab's eleven broad function categories a computational annotation source places the protein in. The GO IEA source is judged from the locus's IEA Gene Ontology terms alone; the PCC 7942 source is judged from the joined PCC 7942 RefSeq product name alone. Neither judgment ever becomes a reviewed assignment.",
+  "blinding": "Request states never contain a locus tag, gene symbol, the UTEX 2973 product, the lab-reviewed category, the other source's annotation, or any essentiality status. The GO request holds only GO terms; the PCC request holds only the PCC 7942 product text, so each source's category is independent of the other and of the reviewed table it is later compared with.",
+  "sharedInstructions": {
+    "evidence_policy": [
+      "Judge only the text in the state. Do not guess which gene this is and do not use knowledge about a particular gene beyond what the text states.",
+      "Choose the single category whose definition best matches the specific function the text states. When the text names one specific activity, process, or complex, choose the category that lists it.",
+      "Choose unknown-or-unclassified when the text is a hypothetical protein, a domain, family, repeat, or DUF name with no stated function, or only generic terms such as binding a common ligand, a broad enzyme class without a named substrate or process, or a location such as membrane or cytoplasm.",
+      "Choose other-characterized only when the text states a specific function that none of the nine specific categories lists.",
+      "These are automated annotations, so answer about the role the text states, not about whether the protein is important."
+    ]
+  },
+  "goRequest": {
+    "stateShape": "{\"go_annotations\": [{\"aspect\", \"relation\", \"term\"}]}",
+    "instructions": {
+      "task": "Using only the Gene Ontology terms in `go_annotations`, choose the one broad function category that best describes this protein from a photosynthetic cyanobacterium.",
+      "term_policy": "A term counts only when it names a specific process, activity, or complex. Binding a common ligand, ion, ATP, DNA, or protein, belonging to a broad enzyme class, or being located in a membrane, the cytoplasm, or the thylakoid is not specific on its own; such terms never decide the category and, when they are the only terms, the answer is unknown-or-unclassified."
+    }
+  },
+  "pccRequest": {
+    "stateShape": "{\"pcc_7942_refseq_product\": \"...\"}",
+    "instructions": {
+      "task": "Using only the RefSeq product name in `pcc_7942_refseq_product`, choose the one broad function category that best describes this protein from a photosynthetic cyanobacterium.",
+      "name_policy": "A product name counts only when it names a specific enzyme, complex subunit, transporter, regulator, or process. A name that is only a family, domain, repeat, DUF, or hypothetical designation states no function and the answer is unknown-or-unclassified."
+    }
+  },
+  "criteria": {
+    "photosynthetic-light-reactions": {
+      "label": "Photosynthetic light reactions",
+      "definition": "Light capture and photosynthetic electron transport.",
+      "includes": [
+        "photosystem I or photosystem II subunits, reaction-center proteins, and their assembly, stabilizing, or repair factors",
+        "phycobilisome proteins: phycocyanin, allophycocyanin, phycoerythrin, linker polypeptides, and phycobiliprotein lyases",
+        "cytochrome b6f complex, plastocyanin, cytochrome c6, photosynthetic ferredoxin, ferredoxin-NADP+ reductase",
+        "photosynthetic electron transport, light harvesting, and photosystem-bound photoprotection"
+      ]
+    },
+    "carbon-and-nutrient-metabolism": {
+      "label": "Carbon and nutrient metabolism",
+      "definition": "Carbon fixation, central and intermediary metabolism, and nutrient assimilation.",
+      "includes": [
+        "RuBisCO and its activase, carboxysome shell and carbonic anhydrase, Calvin cycle, carbon fixation, inorganic carbon concentration",
+        "glycolysis, gluconeogenesis, pentose phosphate pathway, TCA cycle enzymes, glycogen and carbohydrate metabolism",
+        "nitrogen, sulfur, and phosphorus assimilation: nitrate and nitrite reductases, glutamine synthetase, sulfate reduction, polyphosphate",
+        "amino acid, nucleotide, fatty acid, and lipid biosynthesis or degradation"
+      ]
+    },
+    "atp-production-and-respiration": {
+      "label": "ATP production and respiration",
+      "definition": "ATP synthase and respiratory electron transport.",
+      "includes": [
+        "F0F1 ATP synthase subunits",
+        "respiratory chain: NAD(P)H dehydrogenase (NDH-1 and NDH-2) subunits, succinate dehydrogenase, cytochrome c oxidase, quinol and alternative terminal oxidases, aerobic respiration",
+        "hydrogenases and their maturation"
+      ]
+    },
+    "pigment-and-cofactor-biosynthesis": {
+      "label": "Pigment and cofactor biosynthesis",
+      "definition": "Synthesis, salvage, or modification of pigments, cofactors, and vitamins.",
+      "includes": [
+        "chlorophyll, carotenoid, phycobilin, heme, porphyrin, and tetrapyrrole biosynthesis, magnesium chelatase, ferrochelatase",
+        "cofactor and vitamin biosynthesis or modification: NAD and NAD+ kinase, riboflavin/FAD, coenzyme A, folate, thiamine, cobalamin, biotin, lipoate, quinones, molybdopterin, pyridoxal phosphate",
+        "iron-sulfur cluster assembly"
+      ]
+    },
+    "translation-and-protein-maintenance": {
+      "label": "Translation and protein maintenance",
+      "definition": "Protein synthesis, folding, and turnover.",
+      "includes": [
+        "ribosomal proteins, ribosome structure, translation initiation, elongation, and termination factors",
+        "aminoacyl-tRNA synthetases (tRNA ligases) and tRNA aminoacylation",
+        "general chaperones and folding factors: DnaK, DnaJ, GroEL/GroES, HslO, trigger factor, peptidyl-prolyl isomerases",
+        "protein quality control: Clp, Lon, FtsH, and other proteases, protein degradation"
+      ]
+    },
+    "dna-and-rna-processing": {
+      "label": "DNA and RNA processing",
+      "definition": "Replication, transcription machinery, and nucleic-acid processing.",
+      "includes": [
+        "DNA replication: DNA polymerases, primase, helicases, ligases, single-stranded DNA-binding protein, topoisomerases and gyrase, chromosome partitioning",
+        "core RNA polymerase subunits, transcription elongation, termination, and antitermination factors",
+        "RNA processing, degradation, and modification: ribonucleases, rRNA and tRNA maturation and modification, RNA helicases",
+        "DNA restriction, methylation, and modification"
+      ]
+    },
+    "transport-and-envelope": {
+      "label": "Transport and envelope",
+      "definition": "Membrane transport, protein secretion, and cell-envelope synthesis.",
+      "includes": [
+        "transporters, channels, porins, ABC systems, antiporters, symporters, efflux pumps, and their substrate-binding, permease, or ATP-binding subunits",
+        "protein translocation and secretion: Sec, Tat, SRP, YidC, type II/IV secretion systems, lipoproteins",
+        "cell wall and outer membrane synthesis: peptidoglycan, penicillin-binding proteins, lipopolysaccharide and lipid A, lipid A export, capsule and exopolysaccharide",
+        "pili and flagella assembly"
+      ]
+    },
+    "signaling-and-circadian-regulation": {
+      "label": "Signaling and circadian regulation",
+      "definition": "Sensing, signal transduction, and transcriptional or circadian regulation.",
+      "includes": [
+        "two-component sensor histidine kinases and response regulators, phosphorelay",
+        "DNA-binding transcriptional regulators and transcription factors, RNA polymerase sigma factors",
+        "serine/threonine protein kinases and phosphatases, second-messenger synthesis or hydrolysis (cAMP, c-di-GMP, c-di-AMP), GGDEF and EAL proteins",
+        "circadian clock proteins KaiA, KaiB, KaiC, LdpA, CikA, SasA, RpaA, light sensing, chemotaxis"
+      ]
+    },
+    "stress-and-repair": {
+      "label": "Stress and repair",
+      "definition": "Defence against and recovery from damage or stress.",
+      "includes": [
+        "oxidative stress defence: peroxiredoxin, catalase, superoxide dismutase, thioredoxin, glutaredoxin, oxidant detoxification",
+        "DNA repair and recombination for repair: RecA, UvrABC, MutS/MutL, photolyase, SOS response",
+        "heat, cold, osmotic, light, and metal stress proteins whose name states a stress role: Hsp20/alpha-crystallin, cold-shock protein, universal stress protein, compatible-solute synthesis, orange carotenoid protein",
+        "metal sequestration and detoxification"
+      ]
+    },
+    "other-characterized": {
+      "label": "Other characterized",
+      "definition": "A specific, stated function that fits none of the nine categories above.",
+      "includes": [
+        "cell division and cell shape: FtsZ, FtsQ, Min proteins, septum formation, cytokinesis",
+        "mobile genetic elements and phage: transposase, integrase, phage proteins, DNA integration",
+        "toxin-antitoxin systems, natural competence, twitching motility",
+        "secondary metabolism and any other named function outside the nine categories"
+      ]
+    },
+    "unknown-or-unclassified": {
+      "label": "Unknown or unclassified",
+      "definition": "No specific function is stated.",
+      "includes": [
+        "hypothetical protein",
+        "a domain, family, repeat, or DUF name with no stated function (for example FHA domain-containing protein, HEAT repeat protein, DUF3598 family protein)",
+        "only generic terms: binding a common ligand, ion, ATP, DNA, or protein; catalytic activity, transferase or hydrolase without a named substrate; membrane or cytoplasm location"
+      ]
+    }
+  }
+}
