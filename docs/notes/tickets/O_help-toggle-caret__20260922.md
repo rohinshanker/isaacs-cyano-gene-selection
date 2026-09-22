@@ -7,6 +7,15 @@
 
 ## Current State
 
+Implemented on `feat/help-toggle-caret` (commit `2740732`): an inline SVG
+caret was added after the label in `site/index.html`, `aria-hidden` and
+`focusable="false"`, sized with `width`/`height` in `em` and stroked with
+`currentColor`. CSS in `site/css/app.css` rotates it 180deg when
+`#help-toggle[aria-expanded="true"]`, transitioning under the repo's existing
+global `prefers-reduced-motion: reduce { * { transition: none } }` rule — no
+new rule was needed. The click handler in `site/js/app.js` (~line 1498) was
+unchanged; it already drives `aria-expanded`, which the CSS reads.
+
 The header button `#help-toggle` (`site/index.html`, `.chip-button`) toggles
 the `#help` section and already flips `aria-expanded` in `site/js/app.js`
 around line 1498. Nothing visual tells the reader that the button expands or
@@ -28,11 +37,13 @@ Add a caret to the button:
 
 ## Verification
 
-Pending: existing `tests/js` suites green, including `interface-copy` and
-`layout` tests that inspect header markup; rendered inspection at desktop and
-about 390 px showing the down caret when collapsed and the up caret when
-expanded, via mouse and keyboard, with the focus ring visible and no header
-overflow, per the `ui-render-inspect-repair` skill.
+Done: `npm test` (452/452 pass), pytest (301 passed, 22 subtests), and
+`node tools/check_live_metrics.mjs` (failed=0) all pass; `git diff --check`
+clean. Rendered inspection via `playwright-cli` at 1280x800 and 390x844
+confirmed the down caret when collapsed, the up caret after both a mouse
+click and a keyboard Enter activation, a visible focus ring throughout, an
+unchanged accessible name ("How to read this"), no header-actions overflow
+or wrap at 390 px, and zero console messages.
 
 ## Cleanup
 
