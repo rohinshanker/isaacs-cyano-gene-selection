@@ -71,12 +71,12 @@ download over a live request from the static site.
   checksum, search database, and processing version. Verify the deposit's
   artifact-level reuse terms before redistributing a derived table.
 
-### 2. *S. elongatus* pangenome, conservation, and curated metadata
+### 2. Remaining *S. elongatus* pangenome and conservation metadata
 
-- **Value:** expose whether a target is core or variable across close strains,
-  add sequence-conservation context, and reuse the published gene metadata and
-  PCC 7942 essentiality annotations without pretending they are native UTEX
-  measurements.
+- **Value:** expose whether a target is core or variable across close strains
+  and add sequence-conservation context. The PCC 7942 essentiality column is
+  already admitted separately as borrowed, condition-specific evidence under
+  the [PCC essentiality policy](pcc-essentiality.md).
 - **Artifact:** Adomako et al. 2022
   [Data Set S1](https://pmc.ncbi.nlm.nih.gov/articles/PMC9239245/), a 1.3 MB XLSX
   covering a 3,079-gene pangenome with 2,632 core genes. The article and
@@ -84,9 +84,9 @@ download over a live request from the static site.
 - **Join:** supplied pangenome/legacy IDs and ortholog groups, confirmed with exact
   sequence or the current ambiguity-preserving protein crosswalk. Never join on
   product text alone.
-- **Mode and pin:** download the supplemental workbook, record DOI, filename,
-  checksum, and sheet schema. Publish conservation and source-specific
-  essentiality as separate evidence fields with strain and condition caveats.
+- **Mode and pin:** reuse the pinned supplemental workbook and its recorded DOI,
+  filename, checksum, and sheet schema. Publish conservation separately from
+  the already admitted, strain-labelled essentiality calls.
 
 ### 3. PCC 7942 iModulons and condition activities
 
@@ -183,9 +183,9 @@ download over a live request from the static site.
 
 ## Deferred source families
 
-Rubin PCC 7942 Dataset S3 remains valuable, but should stay link-only until the
-rights for a redistributed derivative are recorded; the CC BY pangenome workbook
-above may supply a safer attributable route to its curated calls. KEGG and
+Rubin PCC 7942 Dataset S3 stays link-only because its redistribution terms
+remain unverified; Adomako Data Set S1 now supplies the attributable CC BY 4.0
+route to the per-locus calls. KEGG and
 CyanoOmicsDB remain excluded until a pinned artifact and applicable redistribution
 terms are verified. Rhea's CC BY 4.0 release archives are a useful later option
 for deterministic EC-to-reaction candidates, but those mappings would still not

@@ -11,7 +11,7 @@ import pytest
 from openpyxl import Workbook
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "tools/build_pcc7942_essentiality.py"
 SPEC = importlib.util.spec_from_file_location("build_pcc7942_essentiality", MODULE_PATH)
 assert SPEC and SPEC.loader

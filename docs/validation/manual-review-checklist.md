@@ -134,6 +134,7 @@ assumptions need specialist review for this panel.
 | Missing data | **Require a value** is enabled wherever an unknown measurement is unacceptable. | |
 | Diversity rationale | Each selected gene adds a useful, understandable distinction rather than only improving an opaque score. | |
 | Expression | Borrowed PCC 7942 abundance is off unless cross-strain evidence is deliberately wanted. | |
+| Essentiality | Any PCC 7942 call is labelled as borrowed and checked against its exact locus join and Rubin assay conditions; no call is described as a UTEX 2973 observation. | |
 | Native TSS | UTEX 2973 TSS is interpreted as initiation evidence, not transcript abundance. | |
 | Folding | MFE and structure changes are treated as hypotheses for follow-up, not proof of expression, fitness, or viability. | |
 | Reproducibility | Re-importing the saved manifest recreates the same ordered panel and settings. | |
@@ -166,7 +167,7 @@ reviewer for every row.
 | --- | --- | --- |
 | Tan 2018 Table S1 | Included as native UTEX 2973 gTSS raw counts and reported TSS-level DESeq2 comparisons (CC BY 4.0); two biological cultures per condition, not whole-gene abundance. See [`TSS provenance`](../../data/expression/TAN2018_TSS_PROVENANCE.md). | A gene-body abundance axis needs a separately validated raw-read alignment/quantification pipeline and explicit library-design suitability. |
 | UniProt | Waived; no UniProt assertions. Release `2026_03` returned zero records for proteome `UP000031358` and taxid 1350461 on 2026-09-19. | Nonempty dated export, checksum, and explicit RefSeq relationships. |
-| Rubin PCC 7942 essentiality | Waived; no calls or derivative table redistributed. | Recorded redistribution terms plus an ambiguity-preserving, visibly cross-strain join. |
+| PCC 7942 essentiality | Borrowed per-locus calls from Adomako 2022 Data Set S1, attributed to Rubin 2015, are shown only for exact unique shared-protein joins. The original Rubin Dataset S3 is not redistributed. | Review the PCC call, assay conditions, join, and explicit UTEX transfer assumption for every proposed target; obtain native evidence before calling a UTEX gene essential. |
 | KEGG | Waived; no KEGG relationships included. | Authorized access, pinned artifact, acceptable publication terms, and explicit identifier links. |
 | CyanoOmicsDB | Waived; no bulk data imported. | Verify the exact artifact version, bytes, data licence, and UTEX mapping. |
 | CAI reference-set audit | The published set remains a reproducible reference convention, not measured high expression. See [`cai-reference-set.md`](cai-reference-set.md). | Independently reviewed labels and a validated change policy before changing membership. |

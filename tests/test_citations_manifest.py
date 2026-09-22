@@ -49,7 +49,7 @@ def test_sections_and_citations_are_complete():
     assert len(ids) == len(set(ids))
     assert {
         "yu-2015", "ncbi-utex-2973", "tan-2018", "simkovsky-2022",
-        "ncbi-pcc-7942", "gene-ontology"
+        "ncbi-pcc-7942", "gene-ontology", "adomako-2022-essentiality"
     } == {item["id"] for item in sections[0]["items"]}
     assert {
         "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
@@ -115,5 +115,7 @@ def test_every_retained_external_data_source_is_attributed():
         "GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv",
         "data/annotation/releases/"
         "GCF_000817325.1-RS_2026_05_13/annotation-evidence-v1.jsonl",
+        "data/essentiality/source/mbio.00862-22-s0001.xlsx",
+        "site/data/pcc7942-essentiality-v1.json",
     })
     assert required <= download_paths()

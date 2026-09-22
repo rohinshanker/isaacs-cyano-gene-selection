@@ -80,6 +80,7 @@ test('required publication and runtime assets are present', async () => {
     'data/excluded.json',
     'data/annotations.json',
     'data/candidate_evidence.json',
+    'data/pcc7942-essentiality-v1.json',
     'data/go-term-names-v1.json',
     'data/function-categories-v1.json',
     'vendor/viennarna/vienna.js',

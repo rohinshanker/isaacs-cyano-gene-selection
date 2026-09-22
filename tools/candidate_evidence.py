@@ -1,4 +1,4 @@
-"""Publish admitted tested-allele evidence for the static candidate view."""
+"""Publish tested UTEX alleles and separately sourced PCC candidate evidence."""
 
 import argparse
 import csv
@@ -11,6 +11,55 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "data/manifest/protein-evidence-v1.json"
 IDENTITY = ROOT / "data/protein-evidence/releases/GCF_000817325.1-RS_2026_05_13-protein-evidence-v1/protein-identity-v1.tsv"
 OUTPUT = ROOT / "site/data/candidate_evidence.json"
+PCC_ESSENTIALITY = ROOT / "site/data/pcc7942-essentiality-v1.json"
+
+UNKNOWN_REASONS = {
+    "source_unmatched": "No current UTEX locus appears in the source workbook.",
+    "source_multivalued": "The source workbook maps this UTEX locus more than once.",
+    "source_pcc_missing": "The source workbook has no PCC locus for this UTEX locus.",
+    "crosswalk_unmatched": "No exact shared-protein PCC crosswalk exists for this UTEX locus.",
+    "crosswalk_multivalued": "The shared-protein PCC crosswalk points to multiple loci.",
+    "crosswalk_ambiguous": "The shared-protein PCC crosswalk is marked ambiguous.",
+    "crosswalk_conflict": "The source PCC locus conflicts with the pinned RefSeq crosswalk.",
+}
+
+
+def borrowed_essentiality(annotation_release: str) -> dict:
+    """Retain PCC calls only as labelled cross-strain candidate context."""
+    data = json.loads(PCC_ESSENTIALITY.read_text())
+    provenance = data["source"]
+    if data["schemaVersion"] != 1 or provenance["annotationRelease"] != annotation_release:
+        raise ValueError("PCC essentiality does not match the annotation release")
+    by_locus = {}
+    for locus, row in data["byLocus"].items():
+        reason = row["mappingReason"]
+        if row["status"] == "unknown" and reason not in UNKNOWN_REASONS:
+            raise ValueError(f"Unknown PCC mapping reason for {locus}: {reason}")
+        by_locus[locus] = {
+            "status": row["status"],
+            "pccLocusTag": row["pccLocusTag"],
+            "pangenomeId": row["pangenomeId"],
+            "mappingStatus": row["mappingStatus"],
+            "mappingReasonCode": reason,
+            "mappingReason": UNKNOWN_REASONS[reason] if row["status"] == "unknown" else None,
+        }
+    if len(by_locus) != data["counts"]["plottedUtex2973Loci"]:
+        raise ValueError("PCC essentiality does not cover the plotted CDS set")
+    return {
+        "status": "available",
+        "source": {
+            "datasetId": data["datasetId"],
+            "adomakoDoi": provenance["sourceStudy"]["doi"],
+            "rubinDoi": provenance["essentialityCalls"]["doi"],
+            "growthDoi": "10.1128/mBio.02327-17",
+            "rubinCondition": provenance["essentialityCalls"]["assayContext"],
+            "license": "CC BY 4.0 (Adomako et al. 2022 Data Set S1)",
+            "workbookSha256": provenance["sourceStudy"]["workbook"]["sha256"],
+            "assumption": provenance["crossStrainAssumption"],
+        },
+        "summary": data["counts"],
+        "byLocus": dict(sorted(by_locus.items())),
+    }
 
 
 def build() -> dict:
@@ -50,12 +99,7 @@ def build() -> dict:
             "scope": source["ambiguity"],
         },
         "testedAlleles": dict(sorted(alleles.items())),
-        "borrowedEssentiality": {
-            "organism": "Synechococcus elongatus PCC 7942",
-            "doi": "10.1073/pnas.1519220112",
-            "status": "unavailable",
-            "reason": "Rubin 2015 Dataset S3 was not acquired as verifiable workbook bytes; no locus-level PCC 7942 essentiality claim has been admitted or transferred to UTEX 2973.",
-        },
+        "borrowedEssentiality": borrowed_essentiality(manifest["annotationRelease"]),
     }
 
 
@@ -68,7 +112,7 @@ def main() -> None:
         OUTPUT.write_text(expected)
     elif not OUTPUT.exists() or OUTPUT.read_text() != expected:
         raise SystemExit(f"{OUTPUT} differs from admitted source evidence")
-    print(f"{args.action}: three admitted UTEX tested alleles")
+    print(f"{args.action}: three tested UTEX alleles and labelled PCC essentiality")
 
 
 if __name__ == "__main__":

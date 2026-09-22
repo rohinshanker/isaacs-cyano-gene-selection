@@ -107,6 +107,11 @@ gene is untraceable. Every export writes:
 - Enough to recompute every live metric offline: both coding sequences, the
   terminal stop before and after recoding, exception and segment flags, and the
   expression basis.
+- For each shortlisted gene, a separate PCC 7942 essentiality call, PCC locus,
+  and join status when available. The manifest names the Adomako/Rubin sources,
+  source conditions, and the cross-strain assumption; an absent or ambiguous
+  call stays unknown and never becomes nonessential. See
+  [the PCC essentiality policy](pcc-essentiality.md).
 - A **collision-resistant filename** carrying scheme, timestamp, and part of the
   manifest digest. Two exports must be distinguishable **without** reading
   filenames.

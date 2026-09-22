@@ -25,7 +25,12 @@ def test_published_candidate_evidence_matches_pinned_manifest():
     assert published["manifestSha256"] == hashlib.sha256(
         MODULE.MANIFEST.read_bytes()
     ).hexdigest()
-    assert published["borrowedEssentiality"]["status"] == "unavailable"
+    borrowed = published["borrowedEssentiality"]
+    assert borrowed["status"] == "available"
+    assert len(borrowed["byLocus"]) == 2715
+    assert borrowed["byLocus"]["M744_RS00005"]["status"] == "non-essential"
+    assert borrowed["byLocus"]["M744_RS01270"]["status"] == "unknown"
+    assert borrowed["source"]["rubinDoi"] == "10.1073/pnas.1519220112"
 
 
 def test_missing_or_mismatched_tested_allele_fails(tmp_path, monkeypatch):
@@ -44,3 +49,28 @@ def test_missing_or_mismatched_tested_allele_fails(tmp_path, monkeypatch):
     altered.write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="three distinct"):
         MODULE.build()
+
+
+def test_borrowed_source_requires_matching_release_and_known_reasons(tmp_path, monkeypatch):
+    """A stale or unexplained PCC row cannot enter candidate evidence."""
+    original = json.loads(MODULE.PCC_ESSENTIALITY.read_text())
+    altered = tmp_path / "pcc.json"
+    monkeypatch.setattr(MODULE, "PCC_ESSENTIALITY", altered)
+
+    wrong_release = json.loads(json.dumps(original))
+    wrong_release["source"]["annotationRelease"] = "other"
+    altered.write_text(json.dumps(wrong_release))
+    with pytest.raises(ValueError, match="annotation release"):
+        MODULE.borrowed_essentiality(original["source"]["annotationRelease"])
+
+    missing = json.loads(json.dumps(original))
+    del missing["byLocus"]["M744_RS00005"]
+    altered.write_text(json.dumps(missing))
+    with pytest.raises(ValueError, match="does not cover"):
+        MODULE.borrowed_essentiality(original["source"]["annotationRelease"])
+
+    unexplained = json.loads(json.dumps(original))
+    unexplained["byLocus"]["M744_RS01270"]["mappingReason"] = "invented_reason"
+    altered.write_text(json.dumps(unexplained))
+    with pytest.raises(ValueError, match="Unknown PCC mapping reason"):
+        MODULE.borrowed_essentiality(original["source"]["annotationRelease"])

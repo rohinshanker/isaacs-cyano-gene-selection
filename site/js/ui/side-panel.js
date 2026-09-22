@@ -120,7 +120,9 @@ function candidateEvidenceDisclosure(gene, data) {
   const summary = document.createElement('summary');
   summary.textContent = model.tested
     ? 'Candidate evidence · tested UTEX allele'
-    : 'Candidate evidence · no admitted tested UTEX allele';
+    : ['unknown', 'missing', 'ambiguous', 'not_analyzed'].includes(model.pccCall?.status)
+      ? 'Candidate evidence · no determinate PCC 7942 call'
+      : 'Candidate evidence · borrowed PCC 7942 call';
   details.append(summary);
 
   if (model.tested) {
@@ -145,10 +147,58 @@ function candidateEvidenceDisclosure(gene, data) {
   const borrowed = document.createElement('p');
   borrowed.className = 'candidate-borrowed-caution';
   const badge = document.createElement('strong');
-  badge.textContent = 'PCC 7942 caution';
-  borrowed.append(badge, ` Essentiality unavailable for this UTEX locus. `
-    + model.borrowedEssentiality.reason);
+  const call = model.pccCall;
+  badge.textContent = call?.status === 'unknown'
+    ? 'PCC 7942 call unavailable'
+    : ['missing', 'ambiguous', 'not_analyzed'].includes(call?.status)
+      ? 'PCC 7942 call indeterminate'
+      : 'PCC 7942 evidence · cross-strain assumption';
+  const statusLabel = {
+    essential: 'essential', beneficial: 'beneficial for growth',
+    'non-essential': 'non-essential under the tested conditions',
+    ambiguous: 'ambiguous', not_analyzed: 'not analysed', missing: 'missing in source',
+    unknown: 'unknown',
+  }[call?.status] ?? 'unknown';
+  const callText = call?.pccLocusTag
+    ? ` PCC locus ${call.pccLocusTag}: ${statusLabel}.`
+    : ` No supported PCC call for this UTEX locus: ${statusLabel}.`;
+  borrowed.append(badge, callText,
+    ' Treating PCC 7942 essentiality as UTEX 2973 essentiality is an assumption, '
+      + 'not a UTEX measurement or recoding outcome.');
   details.append(borrowed);
+  if (call?.status === 'unknown' && call.mappingReason) {
+    const reason = document.createElement('p');
+    reason.className = 'panel-note';
+    reason.textContent = `Missing call: ${call.mappingReason}`;
+    details.append(reason);
+  }
+  const source = model.borrowedEssentiality.source;
+  const condition = document.createElement('p');
+  condition.className = 'panel-note';
+  condition.textContent = `PCC assay: ${source.rubinCondition}`;
+  details.append(condition);
+  const growth = document.createElement('p');
+  growth.className = 'panel-note';
+  growth.textContent = 'Growth context: the strains grew at similar rates at PCC-compatible '
+    + '400 µmol photons m⁻² s⁻¹ in Ungerer et al. 2018, but have different growth '
+    + 'optima. That comparison did not reproduce the Rubin screen conditions.';
+  details.append(growth);
+  const citation = document.createElement('p');
+  citation.className = 'panel-note';
+  for (const [label, doi] of [
+    ['Adomako 2022 data', source.adomakoDoi],
+    ['Rubin 2015 assay', source.rubinDoi],
+    ['Ungerer 2018 growth comparison', source.growthDoi],
+  ]) {
+    if (citation.childNodes.length) citation.append(' · ');
+    const link = document.createElement('a');
+    link.href = `https://doi.org/${doi}`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = label;
+    citation.append(link);
+  }
+  details.append(citation);
   return details;
 }
 

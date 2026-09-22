@@ -105,9 +105,13 @@ The remaining screened variants, product-name similarities, and all untested loc
 remain unknown. No function is transferred from a name or from strain similarity.
 The static candidate view is derived with `python3 tools/candidate_evidence.py build`.
 It places these three tested UTEX alleles first, states the paper's growth
-condition and separate in-vitro assays, and shows a PCC 7942 caution badge.
-Rubin 2015 essentiality remains unavailable because Dataset S3 was not admitted;
-no absent label is interpreted as nonessential.
+condition and separate in-vitro assays, then shows the independently sourced
+PCC 7942 essentiality call where an exact cross-strain join supports it.
+Adomako et al. 2022 Data Set S1 republishes Rubin 2015 calls under CC BY 4.0;
+the original Rubin Dataset S3 is not redistributed. The [PCC essentiality
+runbook](pcc-essentiality.md) documents this separate evidence tier. Every
+candidate disclosure labels applying a PCC call to UTEX 2973 as an assumption;
+unknown and ambiguous calls are never rendered as nonessential.
 
 ## Reproduction
 

@@ -509,3 +509,18 @@ of the RefSeq GFF, plotted `genes.json`, and exact protein-identity table.
 See [length-cohorts.md](length-cohorts.md) for cohort definitions, separate
 gene-span and joined-CDS length fields, URL/filter behavior, and the
 unavailable direct-detection tier.
+
+## Borrowed PCC 7942 essentiality
+
+`site/data/pcc7942-essentiality-v1.json` is a checked derivation of Adomako
+2022 Data Set S1 and the pinned RefSeq crosswalk. Its `byLocus` map has one
+entry for each of the 2,715 plotted UTEX CDSs. Each entry holds the **source
+PCC 7942 status**, PCC locus and pangenome ID where an exact, unique
+shared-protein join is admitted, plus a `mappingStatus` and reason. `unknown`
+marks an unjoined locus; `missing`, `not_analyzed`, and `ambiguous` preserve
+distinct source states. None is converted to `non-essential`. The `source`
+object retains Adomako/Rubin provenance, source conditions, CC BY 4.0
+attribution, and the explicit cross-strain assumption. See
+[pcc-essentiality.md](pcc-essentiality.md) for the rebuild and interpretation
+rules. Candidate evidence and exports reuse these calls without treating them
+as a UTEX 2973 measurement.

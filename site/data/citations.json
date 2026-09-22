@@ -103,6 +103,26 @@
           ]
         },
         {
+          "id": "adomako-2022-essentiality",
+          "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
+          "url": "https://doi.org/10.1128/mbio.00862-22",
+          "contribution": "Data Set S1 provides PCC 7942 essentiality calls, explicit PCC and UTEX 2973 current locus IDs, and pangenome rows. The site joins only matching, unique PCC RefSeq protein cross-references to current UTEX CDSs. The calls remain PCC 7942 measurements under Rubin's assay conditions; applying them to a UTEX candidate is a labelled assumption, not native essentiality. Data Set S1 explicitly carries an Adomako et al. CC BY 4.0 notice.",
+          "downloads": [
+            {
+              "filename": "mbio.00862-22-s0001.xlsx",
+              "repoPath": "data/essentiality/source/mbio.00862-22-s0001.xlsx",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/essentiality/source/mbio.00862-22-s0001.xlsx",
+              "kind": "Original Adomako Data Set S1 workbook, CC BY 4.0"
+            },
+            {
+              "filename": "pcc7942-essentiality-v1.json",
+              "repoPath": "site/data/pcc7942-essentiality-v1.json",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/site/data/pcc7942-essentiality-v1.json",
+              "kind": "Project-derived, strain-labelled essentiality join"
+            }
+          ]
+        },
+        {
           "id": "ncbi-pcc-7942",
           "citation": "NCBI RefSeq. Synechococcus elongatus PCC 7942 assembly GCF_000012525.1 (ASM1252v1).",
           "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1/",
@@ -161,7 +181,14 @@
           "id": "rubin-2015-assessed",
           "citation": "Rubin BE et al. The essential gene set of a photosynthetic organism. Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015). doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1073/pnas.1519220112",
-          "contribution": "Reviewed as a possible future essentiality evidence layer. Its transposon screen measured PCC 7942 under laboratory conditions; no essentiality label is currently transferred to UTEX 2973 or used to rank recoding targets.",
+          "contribution": "Original PCC 7942 transposon-screen evidence behind the calls republished in Adomako 2022 Data Set S1. The assay used BG-11 at 30 C with multiple light and culture regimes. The original Rubin Dataset S3 is not redistributed here. Its calls are shown as PCC observations and an explicit cross-strain assumption for UTEX candidates; they do not establish UTEX essentiality or recoding outcomes.",
+          "downloads": []
+        },
+        {
+          "id": "ungerer-2018-mbio-growth",
+          "citation": "Ungerer J, Lin PC, Chen HY, Pakrasi HB. Adjustments to Photosystem Stoichiometry and Electron Transfer Proteins Are Key to the Remarkably Fast Growth of the Cyanobacterium Synechococcus elongatus UTEX 2973. mBio 9, e02327-17 (2018). doi:10.1128/mBio.02327-17.",
+          "url": "https://doi.org/10.1128/mBio.02327-17",
+          "contribution": "Reports similar growth rates at a PCC-7942-compatible 400 micromol photons m^-2 s^-1 light intensity, while documenting substantially different growth optima. This condition-specific observation motivates review of, but does not validate, transferring PCC gene-essentiality calls to UTEX 2973.",
           "downloads": []
         },
         {

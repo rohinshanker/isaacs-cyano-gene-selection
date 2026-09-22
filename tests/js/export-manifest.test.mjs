@@ -352,20 +352,37 @@ test('a Tan TSS source is pinned in the export without calling it gene abundance
   assert.ok(result.manifest.caveats.some((line) => /not whole-gene RNA abundance/.test(line)));
 });
 
-test('admitted UTEX allele evidence precedes unavailable PCC essentiality in the manifest', async () => {
+test('UTEX allele and borrowed PCC call retain separate provenance in CSV and manifest', async () => {
   const { dataset, registry } = await context();
   const id = dataset.genes[0].id;
+  const unknownId = dataset.genes[1].id;
   const candidateEvidence = {
     manifestSha256: 'abc',
     testedSource: { id: 'ungerer-2018', condition: 'source condition' },
     testedAlleles: { [id]: { evidenceId: 'tested-allele', claim: 'Specific UTEX allele' } },
-    borrowedEssentiality: { status: 'unavailable', reason: 'No admitted PCC join' },
+    borrowedEssentiality: {
+      status: 'available', source: { adomakoDoi: '10.1128/mbio.00862-22',
+        rubinDoi: '10.1073/pnas.1519220112' },
+      summary: { exactJoined: 1 },
+      byLocus: { [id]: { status: 'essential', pccLocusTag: 'SYNPCC7942_RS00005',
+        mappingStatus: 'accepted' },
+      [unknownId]: { status: 'unknown', pccLocusTag: null,
+        mappingStatus: 'unmatched', mappingReason: 'No exact join' } },
+    },
   };
-  const result = exportFor({ ...dataset, candidateEvidence }, registry, [id], [{ map: {} }]);
+  const result = exportFor({ ...dataset, candidateEvidence }, registry,
+    [id, unknownId], [{ map: {} }]);
   assert.equal(result.manifest.genes[0].testedAllele.evidenceId, 'tested-allele');
   assert.deepEqual(result.manifest.dataset.candidateEvidence.testedSource,
     candidateEvidence.testedSource);
-  assert.ok(result.manifest.caveats.some((line) => /PCC 7942 essentiality is unavailable/.test(line)));
+  assert.equal(result.rows[0].pcc7942Essentiality, 'essential');
+  assert.equal(result.rows[0].pcc7942LocusTag, 'SYNPCC7942_RS00005');
+  assert.equal(result.manifest.genes[0].pcc7942Essentiality.status, 'essential');
+  assert.equal(result.rows[1].pcc7942Essentiality, 'unknown');
+  assert.equal(result.rows[1].pcc7942LocusTag, '');
+  assert.equal(result.manifest.genes[1].pcc7942Essentiality.status, 'unknown');
+  assert.equal(result.manifest.dataset.candidateEvidence.borrowedEssentiality.byLocus, undefined);
+  assert.match(result.manifest.caveats.join(' '), /cross-strain assumption/);
 });
 
 test('GO relationships export as evidence-coded suggestions with pinned names', async () => {

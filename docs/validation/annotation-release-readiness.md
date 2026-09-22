@@ -187,14 +187,7 @@ documented gate or feature:
   `2026_03` on 2026-09-19. No UniProt-derived assertion is included. Reconsider
   only when a nonempty, dated export can be pinned and joined through explicit
   RefSeq cross-references without collapsing one-to-many relationships.
-- **[Rubin et al. PCC 7942 essentiality](https://doi.org/10.1073/pnas.1519220112): waived for this release.** The public
-  Dataset S3 endpoint returned a CAPTCHA page rather than the workbook. No
-  verified per-locus bytes, checksum, or redistribution terms were available.
-  Its source JGI IDs also need a complete ambiguity-preserving join to the
-  pinned PCC 7942 release before the existing PCC-to-UTEX crosswalk can be
-  used. The paper's aggregate category counts cannot supply a locus badge or
-  filter. A future per-locus import needs the actual workbook, terms, hash,
-  explicit joins, and visible PCC strain and assay conditions.
+- **[Rubin et al. PCC 7942 essentiality](https://doi.org/10.1073/pnas.1519220112): admitted only through [Adomako et al. 2022 Data Set S1](https://doi.org/10.1128/mbio.00862-22).** The original Rubin Dataset S3 is not redistributed. Adomako's CC BY 4.0 workbook carries the PCC calls with both strains' current locus IDs. The release admits only exact, unique shared-protein crosswalk agreements; other UTEX loci remain unknown. These are PCC observations and a visibly labelled cross-strain assumption, not measured UTEX essentiality. See [the admission runbook](pcc-essentiality.md).
 - **[Ungerer et al. UTEX 2973 tested alleles](https://doi.org/10.1073/pnas.1814912115):** keep the three exact tested loci
   (`atpA`, `ppnK`, `rpaA`) and the paper's compound `rpaA` coding/promoter
   context as experiment-level evidence. The main paper describes four coding
@@ -208,7 +201,7 @@ documented gate or feature:
   included. Future use requires authorized access, a pinned artifact, acceptable
   publication and redistribution terms, and explicit identifier relationships.
 
-These are explicit absence states. No essentiality, UniProt, KEGG, pathway, or
+These are explicit absence states. No native UTEX essentiality, UniProt, KEGG, pathway, or
 heuristic functional-category assertion is present in the generated artifacts.
 The ranked acquisition candidates and their admission gates are in
 [`future-data-roadmap.md`](future-data-roadmap.md).

@@ -17,7 +17,7 @@ import { metricHelp } from './metric-help.js';
 import { functionCategoryLabel, reviewedFunctionLabels } from './function-categories.js';
 import { csvField } from '../ui/format.js';
 
-export const MANIFEST_VERSION = 1;
+export const MANIFEST_VERSION = 2;
 export const WILD_TYPE_SCHEME_ID = 'wild-type';
 export const EXPORT_BASENAME = 'recoding-candidates';
 
@@ -29,6 +29,7 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor', 'operonId',
   'expressionBasis', 'expressionSourceId', 'passesCurrentFilters',
+  'pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus',
 ]);
 
 /** Columns after the metrics: the sequences that let every live metric be recomputed. */
@@ -162,9 +163,13 @@ function caveatsFor(dataset, manifest) {
       + 'cultures per condition. They describe start-site initiation, not whole-gene '
       + 'RNA abundance; a gene can have multiple separately regulated TSSs.');
   }
-  if (manifest.dataset.candidateEvidence?.borrowedEssentiality?.status === 'unavailable') {
-    caveats.push('PCC 7942 essentiality is unavailable for this UTEX release; no '
-      + 'locus-level status is inferred from the unverified Rubin Dataset S3.');
+  if (manifest.dataset.candidateEvidence?.borrowedEssentiality?.status === 'available') {
+    caveats.push('PCC 7942 essentiality was measured by Rubin et al. 2015 under its laboratory '
+      + 'conditions and republished in Adomako et al. 2022 Data Set S1. Applying each mapped '
+      + 'call to a UTEX 2973 candidate is a cross-strain assumption, not a UTEX measurement '
+      + 'or a recoding outcome. Unknown or ambiguous calls never mean non-essential. '
+      + 'Ungerer et al. 2018 reported similar growth at PCC-compatible light, but the strains '
+      + 'have different growth optima and Rubin used different conditions.');
   }
   if (dataset.goTerms) {
     caveats.push('GO relationships are RefSeq IEA computational suggestions, not experimentally '
@@ -212,6 +217,7 @@ export function buildExport({
       const gene = genes[index];
       const sequence = recodedSequence(dataset, index, compiled);
       const basis = expressionBasisOf(gene);
+      const pccCall = dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
       const row = {
         manifestId: '',
         schemeId: scheme.schemeId,
@@ -242,6 +248,9 @@ export function buildExport({
         expressionBasis: basis.basis,
         expressionSourceId: gene.expressionSourceId ?? '',
         passesCurrentFilters: filterMask ? String(Boolean(filterMask[index])) : '',
+        pcc7942Essentiality: pccCall?.status ?? '',
+        pcc7942LocusTag: pccCall?.pccLocusTag ?? '',
+        pcc7942MappingStatus: pccCall?.mappingStatus ?? '',
         wildTypeCds: sequence.wildType,
         recodedCds: sequence.recoded,
       };
@@ -276,7 +285,11 @@ export function buildExport({
       candidateEvidence: dataset.candidateEvidence ? {
         manifestSha256: dataset.candidateEvidence.manifestSha256,
         testedSource: dataset.candidateEvidence.testedSource,
-        borrowedEssentiality: dataset.candidateEvidence.borrowedEssentiality,
+        borrowedEssentiality: dataset.candidateEvidence.borrowedEssentiality ? {
+          status: dataset.candidateEvidence.borrowedEssentiality.status,
+          source: dataset.candidateEvidence.borrowedEssentiality.source,
+          summary: dataset.candidateEvidence.borrowedEssentiality.summary,
+        } : null,
       } : null,
       goTermNames: dataset.goTerms?.source ?? null,
       functionCategories: dataset.functionCategories ? {
@@ -307,6 +320,8 @@ export function buildExport({
           cdsSegments: gene.cdsSegments ?? null,
           expressionBasis: expressionBasisOf(gene).basis,
           testedAllele: dataset.candidateEvidence?.testedAlleles[id] ?? null,
+          pcc7942Essentiality:
+            dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null,
           functionCategory: functionCategoryLabel(dataset.functionCategories, id),
           reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, id),
           reviewedFunctionAssignment:
