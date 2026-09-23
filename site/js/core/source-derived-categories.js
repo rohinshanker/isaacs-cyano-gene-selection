@@ -192,6 +192,9 @@ export function resolveFunctionCategories({ reviewed, derived, genes, sources })
   let multiple = 0;
   let unknown = 0;
   let conflictCount = 0;
+  // Reviewed rows that draw a filled marker: a row reviewed as unknown is
+  // resolved by review but shares the open unknown circle.
+  let reviewedColoured = 0;
   genes.forEach((gene, index) => {
     const reviewedRow = reviewed.assignmentsById.get(gene.id);
     const { bucketId, evidence, conflicts } = resolveCategoryBucket(
@@ -204,7 +207,10 @@ export function resolveFunctionCategories({ reviewed, derived, genes, sources })
     if (conflicts.length > 0) conflictCount += 1;
     if (bucketId === UNKNOWN_CATEGORY_ID) {
       unknown += 1;
-    } else if (bucketId === MULTIPLE_CATEGORY_ID) {
+      return;
+    }
+    if (evidence === 'reviewed') reviewedColoured += 1;
+    if (bucketId === MULTIPLE_CATEGORY_ID) {
       values[index] = classified.length;
       multiple += 1;
     } else {
@@ -225,6 +231,7 @@ export function resolveFunctionCategories({ reviewed, derived, genes, sources })
     unknownCount: unknown,
     multipleCount: multiple,
     reviewedCount: evidenceCounts.reviewed,
+    reviewedColouredCount: reviewedColoured,
     derivedCount: evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived'],
     colouredCount: genes.length - unknown,
     conflictCount,

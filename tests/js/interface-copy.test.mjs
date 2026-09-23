@@ -16,6 +16,7 @@ const panelDesignerSource = await readFile(
 const sidePanelSource = await readFile(
   new URL('../../site/js/ui/side-panel.js', import.meta.url), 'utf8',
 );
+const appSource = await readFile(new URL('../../site/js/app.js', import.meta.url), 'utf8');
 const appCss = await readFile(new URL('../../site/css/app.css', import.meta.url), 'utf8');
 const appHtml = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
 
@@ -137,4 +138,11 @@ test('measured UTEX evidence opens with the gene detail, before the codon-usage 
   assert.match(sidePanelSource, /allele- and condition-specific/);
   // Family groups are listed measured-evidence first, inside a family as well as across them.
   assert.match(sidePanelSource, /orderMeasuredFirst\(\s*state\.registry\.metrics\.filter/);
+});
+
+test('the panel designer receives the enabled colour sources and forwards them to its export', () => {
+  const designerUpdate = /panelDesigner\.update\(\{[^}]*colorSources: state\.colorSources/s;
+  assert.match(appSource, designerUpdate);
+  const exportCall = /exportPanel\(\) \{\s*const \{ dataset, registry, colorSources \} = this\.state;[\s\S]*?buildPanelExport\(\{[^}]*colorSources,/;
+  assert.match(panelDesignerSource, exportCall);
 });

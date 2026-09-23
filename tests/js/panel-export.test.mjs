@@ -13,7 +13,8 @@ import {
   buildPanelExport, readPanelDesign, describeSchemes, buildSchemeMatrix,
   PANEL_COLUMNS, PANEL_DESIGN_VERSION,
 } from '../../site/js/core/panel-export.js';
-import { expressionFixtureDataset } from './helpers.mjs';
+import { expressionFixtureDataset, fileFetch } from './helpers.mjs';
+import { loadDataset } from '../../site/js/core/dataset.js';
 
 const SYN61 = { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' };
 const AMBER = { TAG: 'TAA' };
@@ -201,4 +202,68 @@ test('the gene-by-scheme matrix has one cell per gene and scheme', async () => {
   const totals = matrix.schemes.map((scheme, column) => matrix.rows
     .reduce((sum, row) => sum + row.cells[column].values[0], 0));
   assert.ok(totals[0] > totals[1]);
+});
+
+/** petN: PCC 7942 assigns photosynthesis, no GO terms, not lab reviewed. */
+const DERIVED_ONLY_ID = 'M744_RS00560';
+
+let cachedReal = null;
+/** The published dataset, so the derived layer and its toggles are the real ones. */
+async function realContext() {
+  if (!cachedReal) {
+    const dataset = await loadDataset({
+      baseUrl: new URL('../../site/data/', import.meta.url), fetchImpl: fileFetch(),
+    });
+    const live = computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields;
+    const registry = buildMetricRegistry(dataset.meta, dataset.genes, live);
+    const schemes = describeSchemes([]);
+    const schemeFields = new Map(schemes.map((scheme) => [
+      scheme.schemeId,
+      computeLiveMetrics(dataset, compileScheme(scheme.map, dataset.table), { baseline: dataset.baseline }).fields,
+    ]));
+    const space = buildPanelSpace({ dataset, registry, schemes, schemeFields });
+    cachedReal = { dataset, registry, schemes, space };
+  }
+  return cachedReal;
+}
+
+test('a panel export carries the colour sources it was made under, not a default', async () => {
+  const { dataset, registry, schemes, space } = await realContext();
+  const design = designPanel({
+    dataset, registry, space, config: { size: 6, seeds: [DERIVED_ONLY_ID] },
+  });
+  assert.ok(design.selected.includes(DERIVED_ONLY_ID));
+  const rowFor = (result) => result.rows.find((row) => row.id === DERIVED_ONLY_ID);
+
+  // Every source unchecked: the colour bucket is unknown and the manifest says so,
+  // while the per-source judgment is still a data fact on the row.
+  const none = buildPanelExport({
+    dataset, registry, design, space, schemes, generatedAt: WHEN, colorSources: [],
+  });
+  assert.deepEqual(none.manifest.functionColourSources, { id: 'none', label: 'No sources', enabled: [] });
+  assert.equal(rowFor(none).functionCategory, 'Unknown or unclassified');
+  assert.equal(rowFor(none).functionCategoryEvidence, '');
+  assert.equal(rowFor(none).pcc7942DerivedCategory, 'Photosynthetic light reactions');
+  assert.ok(none.manifest.caveats.some((line) => /enabled for colouring: No sources \(none\)/.test(line)));
+  const { rows: csvRows } = parseCsv(none.csv);
+  assert.equal(csvRows.find((row) => row.id === DERIVED_ONLY_ID).functionCategory, 'Unknown or unclassified');
+  assert.equal(none.manifest.genes.find((gene) => gene.id === DERIVED_ONLY_ID)
+    .derivedFunctionCategories['pcc-7942'].enabledForColouring, false);
+
+  const pccOnly = buildPanelExport({
+    dataset, registry, design, space, schemes, generatedAt: WHEN, colorSources: ['pcc-7942'],
+  });
+  assert.deepEqual(pccOnly.manifest.functionColourSources.enabled, ['pcc-7942']);
+  assert.equal(rowFor(pccOnly).functionCategory, 'Photosynthetic light reactions');
+  assert.equal(rowFor(pccOnly).functionCategoryEvidence, 'pcc-7942-derived');
+
+  // Omitting the sources still means every source, as before.
+  const all = buildPanelExport({ dataset, registry, design, space, schemes, generatedAt: WHEN });
+  assert.equal(all.manifest.functionColourSources.id, 'all');
+  assert.equal(rowFor(all).functionCategoryEvidence, 'pcc-7942-derived');
+
+  // Different colour sources are different files, so neither can pass for the other.
+  assert.notEqual(none.manifest.manifestId, all.manifest.manifestId);
+  assert.notEqual(none.manifest.contentDigest, all.manifest.contentDigest);
+  assert.deepEqual(readPanelDesign(none.manifest).selected, design.selected);
 });

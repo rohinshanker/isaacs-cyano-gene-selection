@@ -94,13 +94,19 @@ A source assigns its most likely category when that category is not
 
 The threshold was drafted at 0.6 in the predeclared evaluation set and raised
 to 0.8 from the cross-source calibration below, before the spot check was
-drawn, so the spot check is an independent estimate at the published value.
+drawn. The spot check is a sample diagnostic at the published value, not a
+population error estimate: seven of its rows had been seen with their answers
+while the threshold was chosen, and the draw deliberately oversamples
+disagreements. The value 0.8 is therefore a provisional agreement/coverage
+tradeoff pending a fresh blinded holdout, not a validated accuracy threshold.
 
 **Cross-source calibration.** Both sources were judged blind to each other, so
-where both name a specific category their agreement is real signal about a
-probability band. The table relates each source's P(most likely) to agreement
-with the other source's assignment at 0.8, over the 1,514 loci with both
-judgments.
+where both name a specific category their agreement says something about a
+probability band. It is not ground truth: both judgments read annotation
+wording for the same protein, so a shared misreading agrees just as well as a
+shared correct one. The table relates each source's P(most likely) to
+agreement with the other source's assignment at 0.8, over the 1,514 loci with
+both judgments.
 
 | P(most likely) | PCC 7942 loci | Agree with GO | GO IEA loci | Agree with PCC |
 | --- | --- | --- | --- | --- |
@@ -124,7 +130,9 @@ hypothetical protein, was judged unknown by PCC 7942 at 1.00.
 and in the export; a missed one leaves the locus unknown, which is today's
 state. The hollow marker and evidence label limit the first harm, so the
 threshold was set where cross-source agreement first exceeds 0.9 rather than
-at the 0.95 band, which would drop a further 205 assignments.
+at the 0.95 band, which would drop a further 205 assignments. That is a
+coverage choice against an agreement proxy; only a blinded holdout measures
+the error rate it buys.
 
 ## Published counts
 
@@ -217,6 +225,17 @@ one at 0.79, one flavodoxin at 0.60). Three are real category errors at
 L-aspartate oxidase, were read as carbon metabolism rather than cofactor
 biosynthesis, and `class II glutamine amidotransferase` was read as carbon
 metabolism where the reviewer saw no stated process.
+
+**Recomputed against the reviewer's own labels.** Counting only the sampled
+loci where a source assigned a category at 0.8, PCC 7942 has 3 errors in 22
+assigned cases, all three among the 8 assigned in the [0.8, 0.9) band; GO IEA
+has 1 error in 22, the one among its 4 assigned in that band. With seven
+previously seen rows and conflicts oversampled, these are diagnostics of this
+sample, not population error rates, and they establish no alternative
+threshold. Before 0.8 is treated as validated, the lab should draw a fresh
+holdout with `--spot-check-sheet --seed N`, label it without sight of any Jev
+answer, and count errors per probability band, with the [0.8, 0.9) band
+reported on its own.
 
 **Known failure mode.** A product name that reads as amino acid or sugar
 chemistry but sits on a cofactor or envelope pathway is classified by its

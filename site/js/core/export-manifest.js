@@ -227,9 +227,10 @@ function caveatsFor(dataset, manifest) {
       + `TypeSafe ${derived.judgment.model} (rubric ${derived.judgment.rubricVersion}) over the `
       + 'joined PCC 7942 RefSeq product name and the locus’s GO IEA terms, assigned only at '
       + `probability ${derived.policy.thresholds.derivedProbabilityAtLeast} or above. They are `
-      + 'not lab review, never enter the reviewed table, and a reviewed UTEX 2973 category always '
-      + 'wins when that source is enabled; two enabled derived sources that disagree are exported '
-      + 'as Multiple functions. GO data: Gene Ontology Consortium, CC BY 4.0. PCC 7942 product '
+      + 'not lab review and never enter the reviewed table. Among the enabled sources colour '
+      + 'follows UTEX 2973 > PCC 7942 > GO IEA; when enabled sources disagree, the '
+      + 'highest-priority one sets functionCategory and functionCategoryConflict names the '
+      + 'other, never the Multiple functions bucket. GO data: Gene Ontology Consortium, CC BY 4.0. PCC 7942 product '
       + 'names: NCBI RefSeq GCF_000012525.1; joins: Adomako et al. 2022 (CC BY 4.0), '
       + 'republishing Rubin et al. 2015.');
   }
