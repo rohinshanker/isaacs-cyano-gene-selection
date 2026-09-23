@@ -31,11 +31,15 @@ every source.
   separate `multiple-functions` bucket. Raw GO row count never creates
   multiple functions.
 - **PCC 7942 (derived).** A category judged from the joined PCC 7942 product
-  name (and PCC GO terms where a pinned PCC GAF is admitted) for CDSs with an
-  exact crosswalk join, built offline with TypeSafe Jev under a frozen blinded
-  rubric and pinned in a versioned `site/data` file with its probability.
+  name (and PCC GO terms where a pinned PCC GAF is admitted; none is today)
+  for CDSs with an exact crosswalk join, built offline with TypeSafe Jev under
+  a frozen blinded rubric and pinned in
+  `site/data/source-derived-categories-v1.json` with its probability.
 - **GO IEA (derived).** A category judged from the locus's evidence-coded GO
-  IEA terms, built and pinned the same way.
+  IEA terms, built and pinned the same way in the same file. Both derived
+  sources assign only at probability 0.8 or above; the rubric, threshold
+  calibration, blinded spot check, and rebuild checks are in
+  [source-derived-categories.md](source-derived-categories.md).
 - **Precedence.** With the enabled sources, a CDS takes the UTEX reviewed
   category when one exists, otherwise the PCC-derived category, otherwise the
   GO-derived category, otherwise unknown or unclassified. Derived categories
@@ -72,13 +76,17 @@ The viewer offers **Function category** under **Colour by** on every CDS map.
 It is the first selector choice, while GC3 remains the fresh-view default.
 Unreviewed and explicitly reviewed unknown loci share the pale open-circle
 bucket; the detail panel and export distinguish their review status. Reviewed
-coloured circles draw above unknown rings. When filtered CDSs remain visible,
-reviewed categories use a grey outlined square while unknown or unclassified
-CDSs use a smaller filled grey dot with no outline. These treatments do not
-change the visible category bucket recorded in CSV rows and manifest gene
-entries. Category-label search ranks after direct locus/name/product
-matches and before GO suggestions. The export records the colour mode, the
-visible category bucket, review status, and every reviewed category label.
+coloured circles draw above unknown rings. Derived colour draws as a white
+disc with the category colour as ring and centre dot, so reviewed and
+computational colour are never confused. When filtered CDSs remain visible,
+categorised CDSs, reviewed or derived, use a grey outlined square while
+unknown or unclassified CDSs use a smaller filled grey dot with no outline.
+These treatments do not change the visible category bucket recorded in CSV
+rows and manifest gene entries. Category-label search ranks after direct
+locus/name/product matches and before GO suggestions. The export records the
+colour mode, the sources enabled for colouring, the visible category bucket,
+its evidence label, any conflict, review status, every reviewed category
+label, and every per-source derived category.
 
 Circles are the deliberate convention for included points in every colour
 mode; their area matches the square markers they replaced. Excluded points are

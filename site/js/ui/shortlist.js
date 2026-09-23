@@ -11,7 +11,6 @@ import { buildExport } from '../core/export-manifest.js';
 import { FoldingPanel } from './folding-panel.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
-import { ALL_SOURCES, annotationSourceView } from '../core/annotation-source.js';
 
 /**
  * Live metrics shown per row, in order, when a scheme is active. These are the two
@@ -120,10 +119,7 @@ export class ShortlistPanel {
   renderRow(id, state) {
     const index = state.dataset.indexById.get(id);
     const gene = index === undefined ? null : state.dataset.genes[index];
-    const source = state.annotationSource ?? ALL_SOURCES;
-    // "All sources" reads the gene directly, unchanged; a single source reads
-    // only what that source itself annotated, leaving the rest blank.
-    const view = gene && source !== ALL_SOURCES ? annotationSourceView(gene, state.dataset, source) : gene;
+    const view = gene;
     const item = document.createElement('li');
     item.className = 'shortlist-row';
 
@@ -205,10 +201,10 @@ export class ShortlistPanel {
 
   /** Build the export for the current shortlist without downloading it. */
   buildExport(generatedAt = new Date()) {
-    const { ids, dataset, registry, filterState, filterMask, viewState, annotationSource } = this.state;
+    const { ids, dataset, registry, filterState, filterMask, viewState, colorSources } = this.state;
     return buildExport({
       dataset, registry, ids, schemes: this.schemesToExport(), generatedAt,
-      filterState, filterMask, annotationSource,
+      filterState, filterMask, colorSources,
       viewState: typeof viewState === 'function' ? viewState() : viewState,
       trRosettaRnaHandoffs: this.folding.handoffs(),
     });

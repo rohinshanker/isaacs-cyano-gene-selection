@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   encodeState, decodeState, applyDecoded, defaultState, clearSelections, STATE_VERSION,
-  LEGACY_METRIC_AXES, MEASURED_AXES_VERSION,
+  LEGACY_METRIC_AXES, MEASURED_AXES_VERSION, viewStateOf,
 } from '../../site/js/core/url-state.js';
 import { DEFAULT_METRIC_AXES } from '../../site/js/core/metric-axes.js';
 
@@ -77,24 +77,45 @@ test('an unknown or malformed category id in the hash is dropped rather than tru
   assert.deepEqual(restored.categoryFilter, ['stress-and-repair']);
 });
 
-test('a fresh view starts on all sources, and the field stays absent from that link', () => {
-  assert.equal(defaultState().annotationSource, 'all');
-  assert.ok(!/(^|&)as=/.test(encodeState(defaultState())), 'the default source leaves no as= field');
+test('a fresh view colours with every source on, and the field stays absent from that link', () => {
+  assert.deepEqual(defaultState().colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.ok(!/(^|&)cs=/.test(encodeState(defaultState())), 'the default toggles leave no cs= field');
+  assert.deepEqual(viewStateOf(defaultState()).colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
 });
 
-test('a chosen single annotation source survives a shared link', () => {
+test('a narrower colour-source set survives a shared link in canonical order', () => {
   for (const source of ['utex-2973', 'pcc-7942', 'go-iea']) {
-    const state = { ...defaultState(), annotationSource: source };
-    const restored = decodeState(encodeState(state));
-    assert.equal(restored.annotationSource, source);
+    const hash = encodeState({ ...defaultState(), colorSources: [source] });
+    assert.match(hash, new RegExp(`(^|&)cs=${source}(&|$)`));
+    assert.deepEqual(decodeState(hash).colorSources, [source]);
   }
+  const hash = encodeState({ ...defaultState(), colorSources: ['go-iea', 'utex-2973'] });
+  assert.match(decodeURIComponent(hash), /(^|&)cs=utex-2973,go-iea(&|$)/);
+  assert.deepEqual(decodeState(hash).colorSources, ['utex-2973', 'go-iea']);
 });
 
-test('an unknown annotation source id in the hash is dropped rather than trusted', () => {
-  const restored = decodeState('#as=not-a-real-source');
-  assert.equal(restored.annotationSource, undefined);
-  const applied = applyDecoded({}, restored);
-  assert.equal(applied.annotationSource, 'all');
+test('every colour source off encodes as an explicit none, never as the default', () => {
+  const hash = encodeState({ ...defaultState(), colorSources: [] });
+  assert.match(hash, /(^|&)cs=none(&|$)/);
+  assert.deepEqual(decodeState(hash).colorSources, []);
+  assert.deepEqual(applyDecoded({}, decodeState(hash)).colorSources, []);
+});
+
+test('a version-3 link with the old single-source view field decodes without error and drops it', () => {
+  const legacy = decodeState('#ver=3&p=native&c=gc3&as=pcc-7942&l=&t=radar');
+  assert.equal(legacy.colorSources, undefined);
+  assert.ok(!Object.hasOwn(legacy, 'annotationSources'));
+  const applied = applyDecoded(defaultState(), legacy);
+  assert.deepEqual(applied.colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.equal(applied.colorBy, 'gc3');
+  assert.ok(!/(^|&)as=/.test(encodeState(applied)), 'the dropped field is never written back');
+});
+
+test('an unknown colour-source id in the hash is dropped rather than trusted', () => {
+  const restored = decodeState('#cs=not-a-real-source');
+  assert.equal(restored.colorSources, undefined);
+  assert.deepEqual(applyDecoded({}, restored).colorSources, ['utex-2973', 'pcc-7942', 'go-iea']);
+  assert.deepEqual(decodeState('#cs=go-iea,not-a-real-source').colorSources, ['go-iea']);
 });
 
 test('explicit metric axes survive a shared link and reset to their defaults', () => {
@@ -184,11 +205,12 @@ test('a fresh view, and a hash this encoder did not write, keep the measured def
 });
 
 test('this encoder writes the migrated version and round-trips its own snapshot', () => {
-  assert.equal(STATE_VERSION, MEASURED_AXES_VERSION);
+  assert.equal(STATE_VERSION, 4);
+  assert.ok(STATE_VERSION >= MEASURED_AXES_VERSION);
   const state = defaultState();
   state.panel = 'axes';
   const hash = encodeState(state);
-  assert.ok(hash.startsWith(`ver=${MEASURED_AXES_VERSION}`), hash);
+  assert.ok(hash.startsWith(`ver=${STATE_VERSION}`), hash);
   const restored = applyDecoded(defaultState(), decodeState(hash));
   assert.equal(restored.axisX, 'lengthNt');
   assert.equal(restored.axisY, 'tssInitiation');

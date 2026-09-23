@@ -19,10 +19,11 @@ import { geneIdentity } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
 import { essentialityEvidenceFor } from '../core/go-iea-essentiality.js';
+import { PCC_SOURCE, UTEX_SOURCE, GO_IEA_SOURCE } from '../core/annotation-source.js';
 import {
-  ALL_SOURCES, PCC_SOURCE, UTEX_SOURCE, GO_IEA_SOURCE,
-  annotationSourceEvidenceNote, annotationSourceLabel, annotationSourceView,
-} from '../core/annotation-source.js';
+  categoryResolutionFor, conflictNote, SOURCE_DISPLAY_NAMES,
+  THRESHOLDS as DERIVED_THRESHOLDS,
+} from '../core/source-derived-categories.js';
 
 /**
  * Baseline context stays visible; scheme-only results open only when a scheme
@@ -95,41 +96,30 @@ function labelledList(label, values) {
  * contributes nothing to this bundle at all, so the disclosure does not exist
  * in that view.
  */
-function annotationDisclosure(gene, meta, goTerms, source = ALL_SOURCES) {
-  if (source === PCC_SOURCE) return null;
+function annotationDisclosure(gene, meta, goTerms) {
   const model = annotationEvidenceModel(gene, meta, goTerms);
   if (!model) return null;
-  const showUtex = source === ALL_SOURCES || source === UTEX_SOURCE;
-  const showGo = source === ALL_SOURCES || source === GO_IEA_SOURCE;
   const details = document.createElement('details');
   details.className = 'metric-group annotation-evidence';
   const summary = document.createElement('summary');
-  summary.textContent = source === ALL_SOURCES
-    ? 'Annotation evidence and recoding context'
-    : `Annotation evidence and recoding context — ${annotationSourceLabel(source)} only`;
+  summary.textContent = 'Annotation evidence and recoding context';
   const intro = document.createElement('p');
   intro.className = 'panel-note';
-  intro.textContent = source === ALL_SOURCES
-    ? `Pinned RefSeq release ${model.releaseId}. Overlap and nearby-RNA rows are `
-      + 'coordinate evidence, not proof of regulation. GO rows retain their evidence codes and are '
-      + 'not collapsed into pathway or functional-category claims.'
-    : annotationSourceEvidenceNote(source);
+  intro.textContent = `Pinned RefSeq release ${model.releaseId}. Overlap and nearby-RNA rows are `
+    + 'coordinate evidence, not proof of regulation. GO rows retain their evidence codes and are '
+    + 'not collapsed into pathway or functional-category claims.';
   const list = document.createElement('dl');
   list.className = 'annotation-evidence-list';
-  if (showUtex) {
-    list.append(
-      labelledList('Replicon', [model.replicon]),
-      labelledList('Annotation method', model.methods),
-      labelledList('Inference', model.inferences),
-      labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
-      labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
-    );
-  }
-  if (showGo) {
-    list.append(labelledList('GO relationships', model.go.map((entry) => entry.text)));
-  }
+  list.append(
+    labelledList('Replicon', [model.replicon]),
+    labelledList('Annotation method', model.methods),
+    labelledList('Inference', model.inferences),
+    labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
+    labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
+    labelledList('GO relationships', model.go.map((entry) => entry.text)),
+  );
   details.append(summary, intro, list);
-  if (showGo && model.attribution) {
+  if (model.attribution) {
     const attribution = document.createElement('p');
     attribution.className = 'panel-note';
     attribution.textContent = `GO: ${model.attribution.creator}; ${model.attribution.license}; `
@@ -199,6 +189,107 @@ function goAttribution(source) {
   note.append(`GO IEA: ${source.attribution.creator}, `, license,
     `. Judged by TypeSafe ${source.judgment.model}, rubric ${source.judgment.rubricVersion}.`);
   return note;
+}
+
+/** The suffix on a source line whose toggle is off: it is shown, not coloured by. */
+function colouringSuffix(entry) {
+  return entry.enabled ? '' : ' Not enabled for colouring.';
+}
+
+/** One source's own category line for the detail panel. */
+function derivedSourceLine(sourceId, entry, derivedData) {
+  const item = document.createElement('li');
+  const label = document.createElement('strong');
+  label.textContent = `${SOURCE_DISPLAY_NAMES[sourceId]}: `;
+  item.append(label);
+  if (!entry.judged) {
+    item.append(`not judged (${entry.reason}).${colouringSuffix(entry)}`);
+    return item;
+  }
+  const probability = entry.probability.toFixed(2);
+  const provenance = sourceId === PCC_SOURCE && entry.pccLocusTag
+    ? ` from the product name of joined PCC locus ${entry.pccLocusTag}` : '';
+  if (entry.categoryId) {
+    item.append(`${entry.label} (TypeSafe Jev probability ${probability}${provenance}).`
+      + colouringSuffix(entry));
+  } else if (entry.mostLikely === 'unknown-or-unclassified') {
+    item.append(`no category; the ${sourceId === PCC_SOURCE ? 'product name states' : 'GO terms state'} `
+      + `no specific function (probability ${probability}${provenance}).${colouringSuffix(entry)}`);
+  } else {
+    item.append(`no category; most likely ${entry.mostLikelyLabel} at ${probability}, below the `
+      + `${DERIVED_THRESHOLDS.derivedProbabilityAtLeast.toFixed(2)} threshold${provenance}.`
+      + colouringSuffix(entry));
+  }
+  if (derivedData?.judgment) item.dataset.model = derivedData.judgment.model;
+  return item;
+}
+
+/**
+ * The colour category under the sources enabled for colouring, the source and
+ * evidence label behind it, every source's own judgment, and an explicit
+ * conflict note, so a computational colour is never read as a reviewed one.
+ */
+function functionCategoryBlock(gene, dataset, sources) {
+  const resolution = categoryResolutionFor({
+    reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
+    sources, locusId: gene.id,
+  });
+  if (!resolution) return null;
+  const block = document.createElement('div');
+  block.className = 'gene-flag function-category-block';
+  block.dataset.categoryEvidence = resolution.evidence ?? 'none';
+  const headline = document.createElement('p');
+  const heading = document.createElement('strong');
+  heading.textContent = 'Function category (colour): ';
+  const evidenceText = resolution.evidence === null
+    ? (resolution.sources.length === 0
+      ? 'no source is enabled for colouring'
+      : 'no enabled source assigns one')
+    : `evidence ${resolution.evidence}`;
+  headline.append(heading, `${resolution.label} — ${evidenceText}.`);
+  block.append(headline);
+  const conflicts = conflictNote(resolution);
+  if (conflicts) {
+    const note = document.createElement('p');
+    note.className = 'panel-note function-category-conflict';
+    note.setAttribute('role', 'note');
+    note.textContent = `Conflict: ${conflicts}. The colour follows the highest-priority `
+      + 'enabled source (UTEX 2973 > PCC 7942 > GO IEA); no source is preferred as truth.';
+    block.append(note);
+  }
+  const list = document.createElement('ul');
+  list.className = 'function-category-sources';
+  const utex = resolution.perSource[UTEX_SOURCE];
+  const utexItem = document.createElement('li');
+  const utexLabel = document.createElement('strong');
+  utexLabel.textContent = `${SOURCE_DISPLAY_NAMES[UTEX_SOURCE]}: `;
+  utexItem.append(utexLabel, (utex.reviewed
+    ? `${utex.labels.join('; ')} (lab review, `
+      + `${dataset.functionCategories.source.provenance.userReview.date}).`
+    : 'no reviewed assignment.') + colouringSuffix(utex));
+  list.append(utexItem);
+  for (const sourceId of [PCC_SOURCE, GO_IEA_SOURCE]) {
+    list.append(derivedSourceLine(sourceId, resolution.perSource[sourceId], dataset.sourceDerivedCategories));
+  }
+  block.append(list);
+  const derivedData = dataset.sourceDerivedCategories;
+  if (derivedData) {
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    const goLicense = document.createElement('a');
+    goLicense.href = derivedData.attribution.goIea.licenseUrl;
+    goLicense.target = '_blank';
+    goLicense.rel = 'noopener noreferrer';
+    goLicense.textContent = derivedData.attribution.goIea.license;
+    note.append('Derived categories are computational judgments by TypeSafe '
+      + `${derivedData.judgment.model} (rubric ${derivedData.judgment.rubricVersion}) over `
+      + 'automated annotations. They never change the reviewed table and are not lab review. '
+      + `GO IEA: ${derivedData.attribution.goIea.creator}, `, goLicense,
+      '. PCC 7942 product names: NCBI RefSeq GCF_000012525.1; joins: Adomako et al. 2022 '
+      + '(CC BY 4.0), republishing Rubin et al. 2015.');
+    block.append(note);
+  }
+  return block;
 }
 
 function candidateEvidenceDisclosure(gene, data, goData) {
@@ -448,7 +539,6 @@ export class SidePanel {
    */
   update(state) {
     const { index, dataset } = state;
-    const source = state.annotationSource ?? ALL_SOURCES;
     const focusedAction = this.host.contains(document.activeElement)
       ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();
@@ -465,18 +555,10 @@ export class SidePanel {
     const gene = dataset.genes[index];
     // "All sources" reads the gene directly, unchanged; a single source reads
     // only what that source itself annotated, leaving the rest blank.
-    const view = source !== ALL_SOURCES ? annotationSourceView(gene, dataset, source) : gene;
+    const view = gene;
     const identity = geneIdentity(view);
     const header = document.createElement('div');
     header.className = 'gene-header';
-
-    if (source !== ALL_SOURCES) {
-      const sourceNote = document.createElement('p');
-      sourceNote.className = 'panel-note annotation-source-note';
-      sourceNote.textContent = `Showing ${annotationSourceLabel(source)} annotations only. `
-        + `${annotationSourceEvidenceNote(source)}`;
-      header.append(sourceNote);
-    }
 
     const title = document.createElement('h3');
     title.className = 'gene-title';
@@ -561,29 +643,15 @@ export class SidePanel {
       (replacement ?? this.host).focus({ preventScroll: true });
     }
 
-    if (source === ALL_SOURCES || source === PCC_SOURCE) {
-      // The GO IEA tier and discrepancy notes are shown only when every source is combined.
-      const candidateEvidence = candidateEvidenceDisclosure(
-        gene, dataset.candidateEvidence, source === ALL_SOURCES ? dataset.goIeaEssentiality : null,
-      );
-      if (candidateEvidence) this.host.append(candidateEvidence);
-    }
+    const candidateEvidence = candidateEvidenceDisclosure(
+      gene, dataset.candidateEvidence, dataset.goIeaEssentiality,
+    );
+    if (candidateEvidence) this.host.append(candidateEvidence);
 
-    if (dataset.functionCategories && (source === ALL_SOURCES || source === UTEX_SOURCE)) {
-      const assignment = dataset.functionCategories.assignmentsById.get(gene.id);
-      const category = document.createElement('p');
-      category.className = 'gene-flag';
-      const heading = document.createElement('strong');
-      heading.textContent = 'Reviewed function category: ';
-      category.append(heading, assignment
-        ? `${gene.reviewedFunctionLabels.join('; ')} (lab review, `
-          + `${dataset.functionCategories.source.provenance.userReview.date}).`
-        : 'No reviewed assignment; this gene remains unknown or unclassified. '
-          + 'GO IEA suggestions do not assign a category colour.');
-      this.host.append(category);
-    }
+    const category = functionCategoryBlock(gene, dataset, state.colorSources);
+    if (category) this.host.append(category);
 
-    const annotation = annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms, source);
+    const annotation = annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms);
     if (annotation) this.host.append(annotation);
 
     const tssEvidence = tssEvidenceDisclosure(gene, dataset.meta);

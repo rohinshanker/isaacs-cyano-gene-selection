@@ -7,14 +7,17 @@
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 import { DEFAULT_METRIC_AXES, DEFAULT_AXIS_SCALE, AXIS_SCALES } from './metric-axes.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
-import { DEFAULT_ANNOTATION_SOURCE, isAnnotationSource } from './annotation-source.js';
+import {
+  DEFAULT_COLOR_SOURCES, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
+  NO_SOURCES,
+} from './annotation-source.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
-  categoryFilter: 'cf', annotationSource: 'as', axisXScale: 'xs', axisYScale: 'ys',
+  categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
 };
 
 /**
@@ -23,9 +26,11 @@ const KEYS = {
  * unset, not merely omitted by an older encoder. Bump this only when a change
  * to what gets encoded could make an older reader misinterpret a newer hash
  * (or vice versa) `l`'s explicit-empty behaviour below is why version 1 became 2,
- * and the fresh-view metric axes are why version 2 became 3.
+ * the fresh-view metric axes are why version 2 became 3, and dropping the
+ * single-source view field `as` for the colour-source toggles `cs` is why
+ * version 3 became 4.
  */
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 /**
  * The first encoder version whose omitted `ax`/`ay` mean today's measured
@@ -57,7 +62,7 @@ export function defaultState() {
     highExpressed: false,
     filters: {},
     categoryFilter: [],
-    annotationSource: DEFAULT_ANNOTATION_SOURCE,
+    colorSources: [...DEFAULT_COLOR_SOURCES],
     shortlist: [],
     pinnedId: null,
     compareTab: 'radar',
@@ -115,7 +120,7 @@ export function viewStateOf(state) {
     axisXScale: state.axisXScale,
     axisYScale: state.axisYScale,
     categoryFilter: state.categoryFilter,
-    annotationSource: state.annotationSource,
+    colorSources: normalizeAnnotationSources(state.colorSources),
   };
 }
 
@@ -160,8 +165,12 @@ export function encodeState(state) {
   if (state.highExpressed) push(KEYS.highExpressed, '1');
   push(KEYS.filters, encodeFilters(state.filters));
   push(KEYS.categoryFilter, [...(state.categoryFilter ?? [])].sort().join(','));
-  if (state.annotationSource && state.annotationSource !== DEFAULT_ANNOTATION_SOURCE) {
-    push(KEYS.annotationSource, state.annotationSource);
+  // Every colour source on is the fresh default and leaves no field. Otherwise
+  // the enabled toggles are listed, or `none` when every toggle is off: an
+  // empty value would be dropped by `push` and read back as the default.
+  if (!isAllSources(state.colorSources)) {
+    const enabled = normalizeAnnotationSources(state.colorSources);
+    push(KEYS.colorSources, enabled.length === 0 ? NO_SOURCES : enabled.join(','));
   }
   push(KEYS.trafficKey, state.trafficKey);
   if (state.lengthCohort !== 'annotated') push(KEYS.lengthCohort, state.lengthCohort);
@@ -247,9 +256,13 @@ export function decodeState(hash) {
     }
   }
   if (values.get(KEYS.proteinFilter) === 'refseq') state.proteinFilter = 'refseq';
-  if (values.has(KEYS.annotationSource)) {
-    const source = values.get(KEYS.annotationSource);
-    if (isAnnotationSource(source)) state.annotationSource = source;
+  // Versions up to 3 wrote `as` for the single-source annotation view, which
+  // no longer exists: that field is read past without error and dropped, so an
+  // old link opens on the combined view. Version 4 writes `cs` for the
+  // colour-source toggles as a comma list or `none`.
+  if (values.has(KEYS.colorSources)) {
+    const sources = parseAnnotationSources(values.get(KEYS.colorSources));
+    if (sources !== null) state.colorSources = sources;
   }
   if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
   if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);

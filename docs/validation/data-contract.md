@@ -556,24 +556,47 @@ objective never reads it. See
 [go-iea-essentiality-context.md](go-iea-essentiality-context.md). The contract
 validator re-derives every tier independently.
 
-## Annotation-source views
+## Source-derived function categories
 
-The viewer can show one annotation source at a time. Each source has a fixed
-set of fields it can annotate: UTEX 2973 supplies the RefSeq name, product,
-and lab-reviewed function categories; PCC 7942 supplies the joined locus tag
-and the borrowed essentiality call; GO IEA supplies the evidence-coded GO
-relationships. In a single-source view a field that source does not annotate
-for a gene is **blank**: `null` or an empty list, never filled from another
-source and never rendered as `unknown` as if that were the source's own value.
-All sources is not a filtered view; consumers keep reading the gene and
-dataset fields directly, so its output is byte-identical to the behaviour
-before the selector existed.
+`site/data/source-derived-categories-v1.json` is optional. When present, the
+browser requires the reviewed function-category table and
+`candidate_evidence.json`, and refuses to load unless the file's vocabulary
+equals the reviewed vocabulary and every assignment re-derives from its
+probability. `byLocus` has one sorted record for each of the 2,715 plotted
+CDSs with two entries:
 
-The export manifest records `annotationSource` as `{ id, label }` and every
-row carries the same `annotationSource` id, with a caveat naming the source
-and its evidence note, so a single-source file cannot be mistaken for the
-combined view. The GO IEA essentiality tier, context, probability, and
-discrepancy fields are populated only for All sources exports. Every export
-also names `tssInitiationBasis`, `tssInitiationBasisReason`, and
+| Field | Contract |
+| --- | --- |
+| `pcc-7942` | `null` without an accepted PCC 7942 join. Otherwise `{pccLocusTag, mostLikely, probability, categoryId}` judged from the joined RefSeq product name alone. |
+| `go-iea` | `null` without GO IEA terms. Otherwise `{termCount, mostLikely, probability, categoryId}` judged from the GO terms alone. |
+
+`mostLikely` is one of the eleven vocabulary ids; `categoryId` equals
+`mostLikely` when it is not `unknown-or-unclassified` and `probability` is at
+least `policy.thresholds.derivedProbabilityAtLeast` (0.8), and is `null`
+otherwise. Top-level `attribution` carries the Gene Ontology CC BY 4.0 notice
+and the Adomako/Rubin PCC 7942 attribution, `judgment` pins the TypeSafe
+model, rubric, and result hashes, `policy` states the evidence labels,
+precedence, and disagreement rule, and `counts` summarises each source and
+the all-sources legend. The reviewed table is never changed. See
+[source-derived-categories.md](source-derived-categories.md); the contract
+validator re-derives every assignment and the legend independently.
+
+## Annotation sources for colouring
+
+The viewer has three checkboxes, UTEX 2973, PCC 7942, and GO IEA, inside the
+category legend. They govern function-category colouring and the legend
+counts only. There is no single-source view: the detail panel, shortlist and
+comparison tables, panel-designer list, search suggestions, and export always
+show every source's annotations, including the GO IEA essentiality tier and
+its discrepancy notes. Colour follows UTEX > PCC > GO among the enabled
+sources, as described in [function-categories.md](function-categories.md).
+
+The export manifest records `functionColourSources` as `{ id, label,
+enabled }`, where `id` is `all`, `none`, a single source id, or the enabled
+ids joined with `+`, and a caveat names those sources, so a file's colour
+buckets can be read against the toggles that produced them. Rows carry no
+per-row source field; `functionCategory`, `functionCategoryEvidence`, and
+`functionCategoryConflict` are the only columns that depend on the toggles.
+Every export also names `tssInitiationBasis`, `tssInitiationBasisReason`, and
 `tssMappedSiteCount`; these remain blank unless both `meta.tssEvidenceSource`
 and its provenance-linked pooled-score metric are present.

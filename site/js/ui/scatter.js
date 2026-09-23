@@ -7,7 +7,7 @@
  * microseconds at this size.
  */
 import {
-  ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR,
+  ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, GHOST_BORDER, GHOST_COLOR,
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER,
   SHORTLIST_COLOR,
 } from './colors.js';
@@ -201,12 +201,15 @@ export function tickTarget(pixels, perTick) {
 
 /**
  * Group finite plotted points by marker treatment. In category mode, an
- * excluded unknown stays distinct from an excluded reviewed category so the
+ * excluded unknown stays distinct from an excluded classified category so the
  * canvas and legend can use different ghost shapes without changing category
- * filtering or export semantics.
+ * filtering or export semantics, and a point whose colour is source-derived
+ * (`derived[i]` set) is grouped apart from a reviewed one so it draws with
+ * the hollow derived treatment in the same colour.
  */
-export function buildMarkerBuckets(x, y, mask, scale, values) {
+export function buildMarkerBuckets(x, y, mask, scale, values, derived = null) {
   const lists = scale ? scale.buckets.map(() => []) : [];
+  const derivedLists = scale ? scale.buckets.map(() => []) : [];
   const missing = [];
   const hidden = [];
   const hiddenMissing = [];
@@ -220,14 +223,21 @@ export function buildMarkerBuckets(x, y, mask, scale, values) {
     }
     if (!scale || !values) continue;
     if (bucket < 0) missing.push(i);
+    else if (derived && derived[i]) derivedLists[bucket].push(i);
     else lists[bucket].push(i);
   }
   return {
     lists: lists.map((list) => Int32Array.from(list)),
+    derivedLists: derivedLists.map((list) => Int32Array.from(list)),
     missing: Int32Array.from(missing),
     hidden: Int32Array.from(hidden),
     hiddenMissing: Int32Array.from(hiddenMissing),
   };
+}
+
+/** Radius of the centre dot inside a hollow derived marker of radius `radius`. */
+export function derivedDotRadius(radius) {
+  return Math.max(0.9, radius * 0.42);
 }
 
 /** Tick positions that land on readable numbers. */
@@ -308,7 +318,11 @@ export class ScatterPlot {
     else this.draw();
   }
 
-  /** @param {{values: Float64Array, scale: object}|null} colors */
+  /**
+   * @param {{values: Float64Array|Int16Array, scale: object,
+   *   derived?: Uint8Array|null}|null} colors `derived` marks category-mode
+   *   points whose colour is source-derived rather than reviewed.
+   */
   setColor(colors) {
     this.colors = colors;
     this.buckets = null;
@@ -330,7 +344,7 @@ export class ScatterPlot {
     const { x, y } = this.projection;
     const scale = this.colors?.scale;
     const values = this.colors?.values;
-    this.buckets = buildMarkerBuckets(x, y, this.mask, scale, values);
+    this.buckets = buildMarkerBuckets(x, y, this.mask, scale, values, this.colors?.derived ?? null);
     return this.buckets;
   }
 
@@ -723,6 +737,35 @@ export class ScatterPlot {
           context.lineWidth = 0.8;
           context.stroke();
         }
+      }
+      // Derived category colours draw hollow: white disc, category-colour
+      // ring, and a centre dot in the same colour. Same area as a reviewed
+      // circle, visibly different fill, never mistaken for lab review.
+      const dotRadius = derivedDotRadius(coloredRadius);
+      for (let bucket = 0; bucket < buckets.derivedLists.length; bucket += 1) {
+        const list = buckets.derivedLists[bucket];
+        if (list.length === 0) continue;
+        context.fillStyle = DERIVED_MARKER_FILL;
+        context.strokeStyle = scale.buckets[bucket];
+        context.lineWidth = 1.3;
+        context.beginPath();
+        for (let n = 0; n < list.length; n += 1) {
+          const i = list[n];
+          context.moveTo(ox + (x[i] - cx) * kx + coloredRadius, oy - (y[i] - cy) * ky);
+          context.arc(
+            ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, coloredRadius, 0, Math.PI * 2,
+          );
+        }
+        context.fill();
+        context.stroke();
+        context.fillStyle = scale.buckets[bucket];
+        context.beginPath();
+        for (let n = 0; n < list.length; n += 1) {
+          const i = list[n];
+          context.moveTo(ox + (x[i] - cx) * kx + dotRadius, oy - (y[i] - cy) * ky);
+          context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, dotRadius, 0, Math.PI * 2);
+        }
+        context.fill();
       }
       // Numeric missing values remain open foreground markers.
       if (!scale.categorical) drawMissing();

@@ -14,7 +14,6 @@
  * something to approximate with a scoring heuristic.
  */
 
-import { ALL_SOURCES, UTEX_SOURCE, GO_IEA_SOURCE } from './annotation-source.js';
 
 /**
  * Nicknames a lab types, mapped to the phrasing the annotation actually uses.
@@ -92,8 +91,7 @@ const FIELD_LABEL = {
 };
 
 /** GO rows remain evidence-coded suggestions; matching a name does not establish function. */
-function scoreGo(gene, query, terms, source = ALL_SOURCES) {
-  if (source !== ALL_SOURCES && source !== GO_IEA_SOURCE) return null;
+function scoreGo(gene, query, terms) {
   let best = null;
   for (const relation of gene.annotationEvidence?.goAnnotations ?? []) {
     const id = relation.goId;
@@ -113,30 +111,21 @@ function scoreGo(gene, query, terms, source = ALL_SOURCES) {
   return best;
 }
 
-/** Only labels assigned by the reviewed table can match this tier; a UTEX 2973 field. */
-function scoreReviewedCategory(gene, query, source = ALL_SOURCES) {
-  if (source !== ALL_SOURCES && source !== UTEX_SOURCE) return null;
+/** Only labels assigned by the reviewed table can match this tier. */
+function scoreReviewedCategory(gene, query) {
   const labels = gene.reviewedFunctionLabels ?? [];
   const label = labels.find((entry) => containsAllWords(entry, query));
   return label ? { tier: TIER.reviewedCategory, length: label.length, category: label } : null;
 }
 
-/**
- * Best tier for one needle against one gene, or null when it does not match.
- *
- * Locus tag identity is not any one source's annotation, so it always matches
- * regardless of the selected source. Name and product come only from the
- * UTEX 2973 release, so a PCC 7942- or GO IEA-only view must not surface a
- * gene by a name or product it does not itself carry.
- */
-function scoreNeedle(gene, needle, source = ALL_SOURCES) {
+/** Best tier for one needle against one gene, or null when it does not match. */
+function scoreNeedle(gene, needle) {
   const id = normalize(gene.id);
   const { phrase } = needle;
   if (!phrase) return null;
   if (id === phrase) return TIER.idExact;
-  const utexAllowed = source === ALL_SOURCES || source === UTEX_SOURCE;
-  const name = utexAllowed ? normalize(gene.name) : '';
-  const product = utexAllowed ? normalize(gene.product) : '';
+  const name = normalize(gene.name);
+  const product = normalize(gene.product);
   if (name && name === phrase) return TIER.nameExact;
   if (id.includes(phrase)) return TIER.idPartial;
   if (name && containsAllWords(name, phrase)) return TIER.name;
@@ -155,13 +144,11 @@ function scoreNeedle(gene, needle, source = ALL_SOURCES) {
  *
  * @param {Array<object>} genes
  * @param {string} query
- * @param {{limit?: number, goTerms?: object, source?: string}} options
+ * @param {{limit?: number, goTerms?: object}} options
  * @returns {{query: string, total: number, shown: Array<object>, hiddenCount: number,
  *   aliasesUsed: string[]}} `shown` entries carry `{index, gene, matchedOn, alias}`.
  */
-export function searchGenes(genes, query, {
-  limit = SEARCH_RESULT_LIMIT, goTerms = null, source = ALL_SOURCES,
-} = {}) {
+export function searchGenes(genes, query, { limit = SEARCH_RESULT_LIMIT, goTerms = null } = {}) {
   const normalized = normalize(query);
   if (!normalized) {
     return { query: normalized, total: 0, shown: [], hiddenCount: 0, aliasesUsed: [] };
@@ -173,7 +160,7 @@ export function searchGenes(genes, query, {
   genes.forEach((gene, index) => {
     let best = null;
     for (const needle of needles) {
-      const tier = scoreNeedle(gene, needle, source);
+      const tier = scoreNeedle(gene, needle);
       if (tier === null) continue;
       const candidate = { tier, length: needle.phrase.length, alias: needle.alias };
       if (best === null
@@ -182,8 +169,8 @@ export function searchGenes(genes, query, {
         best = candidate;
       }
     }
-    if (best === null) best = scoreReviewedCategory(gene, normalized, source);
-    if (best === null) best = scoreGo(gene, normalized, goTerms, source);
+    if (best === null) best = scoreReviewedCategory(gene, normalized);
+    if (best === null) best = scoreGo(gene, normalized, goTerms);
     if (best === null) return;
     if (best.alias) aliasesUsed.add(best.alias);
     const go = best.relation;

@@ -19,6 +19,7 @@ Reusable contracts and runbooks for this repository.
 | [function-categories.md](function-categories.md) | Exact lab-reviewed UTEX 2973 function categories, sparse assignments, unknowns, and reproducible build checks |
 | [protein-evidence.md](protein-evidence.md) | Pinned CDS-to-protein reconciliation, PASS00399 admission limits, tested-allele joins, and distinct evidence tiers |
 | [go-iea-essentiality-context.md](go-iea-essentiality-context.md) | GO IEA fallback tier and precedence, Jev question wording, thresholds, calibration, blinded spot check, and discrepancy contract |
+| [source-derived-categories.md](source-derived-categories.md) | Jev-derived PCC 7942 and GO IEA function categories under evidence labels, reviewed-wins resolution, toggle legend counts, threshold calibration, blinded spot check, and export contract |
 | [pcc-essentiality.md](pcc-essentiality.md) | Licensed Adomako/Rubin PCC 7942 calls, exact UTEX cross-strain joins, growth-context citation, missingness, and assumption boundary |
 | [length-cohorts.md](length-cohorts.md) | Annotated-locus and joined-CDS denominators, inclusive length filtering, short-CDS review flag, and protein filter evidence boundary |
 | [future-data-roadmap.md](future-data-roadmap.md) | Ranked remaining downloadable evidence after Tan 2018 integration, joins, licence gates, version pins, and admission rules |
@@ -28,5 +29,5 @@ Reusable contracts and runbooks for this repository.
 | [rna-folding.md](rna-folding.md) | Exact local ViennaRNA build, strand-aware context, trRosettaRNA hand-off formats and provenance, cancellation/cache semantics, numeric and rendered validation |
 | [responsive-workspace.md](responsive-workspace.md) | Center-column workflow, breakpoint behavior, hash-preserving navigation, bounded detail scrolling, and responsive checks |
 | [guided-panel-design.md](guided-panel-design.md) | Deterministic constrained panel objective, feature/missing-data policy, stable saved-scheme identity, golden case, and export contract |
-| [viewer-interaction-state.md](viewer-interaction-state.md) | Keyboard/touch map behavior, reversible pinning and selection reset, category legend preview and filter, annotation-source selector, URL version and precedence, live navigation, and draft clearing |
+| [viewer-interaction-state.md](viewer-interaction-state.md) | Keyboard/touch map behavior, reversible pinning and selection reset, category legend preview and filter, annotation-source toggles, URL version and precedence, live navigation, and draft clearing |
 | [AAA-manual-review-checklist.md](AAA-manual-review-checklist.md) | Ordered local review, biological sign-off, evidence/licensing decisions, automated gates, deployment, and production smoke test |

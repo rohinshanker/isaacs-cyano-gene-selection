@@ -1,0 +1,1357 @@
+{
+  "counts": {
+    "allSourcesLegend": {
+      "byCategory": {
+        "atp-production-and-respiration": 57,
+        "carbon-and-nutrient-metabolism": 286,
+        "dna-and-rna-processing": 124,
+        "other-characterized": 53,
+        "photosynthetic-light-reactions": 89,
+        "pigment-and-cofactor-biosynthesis": 133,
+        "signaling-and-circadian-regulation": 118,
+        "stress-and-repair": 57,
+        "translation-and-protein-maintenance": 171,
+        "transport-and-envelope": 276
+      },
+      "byEvidence": {
+        "go-iea-derived": 268,
+        "none": 1350,
+        "pcc-7942-derived": 1084,
+        "reviewed": 13
+      },
+      "coloured": 1364,
+      "conflicts": 13,
+      "enabledSources": [
+        "utex-2973",
+        "pcc-7942",
+        "go-iea"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 1351
+    },
+    "bothSourcesAssigned": {
+      "agree": 745,
+      "disagree": 13,
+      "loci": 758
+    },
+    "bySource": {
+      "go-iea": {
+        "assigned": 1028,
+        "belowThreshold": 193,
+        "byCategory": {
+          "atp-production-and-respiration": 19,
+          "carbon-and-nutrient-metabolism": 210,
+          "dna-and-rna-processing": 107,
+          "other-characterized": 37,
+          "photosynthetic-light-reactions": 51,
+          "pigment-and-cofactor-biosynthesis": 111,
+          "signaling-and-circadian-regulation": 87,
+          "stress-and-repair": 39,
+          "translation-and-protein-maintenance": 140,
+          "transport-and-envelope": 227
+        },
+        "judged": 1584,
+        "mostLikelyUnknown": 363
+      },
+      "pcc-7942": {
+        "assigned": 1093,
+        "belowThreshold": 223,
+        "byCategory": {
+          "atp-production-and-respiration": 51,
+          "carbon-and-nutrient-metabolism": 211,
+          "dna-and-rna-processing": 101,
+          "other-characterized": 40,
+          "photosynthetic-light-reactions": 80,
+          "pigment-and-cofactor-biosynthesis": 109,
+          "signaling-and-circadian-regulation": 96,
+          "stress-and-repair": 47,
+          "translation-and-protein-maintenance": 144,
+          "transport-and-envelope": 214
+        },
+        "judged": 2542,
+        "mostLikelyUnknown": 1226
+      }
+    },
+    "plottedLoci": 2715
+  },
+  "crossSourceCalibration": {
+    "go-iea": [
+      {
+        "agreeWithOtherSource": 2,
+        "agreementFraction": 0.5,
+        "loci": 4,
+        "probabilityRange": [
+          0.0,
+          0.4
+        ]
+      },
+      {
+        "agreeWithOtherSource": 10,
+        "agreementFraction": 0.588,
+        "loci": 17,
+        "probabilityRange": [
+          0.4,
+          0.6
+        ]
+      },
+      {
+        "agreeWithOtherSource": 28,
+        "agreementFraction": 0.757,
+        "loci": 37,
+        "probabilityRange": [
+          0.6,
+          0.8
+        ]
+      },
+      {
+        "agreeWithOtherSource": 36,
+        "agreementFraction": 0.947,
+        "loci": 38,
+        "probabilityRange": [
+          0.8,
+          0.9
+        ]
+      },
+      {
+        "agreeWithOtherSource": 42,
+        "agreementFraction": 0.933,
+        "loci": 45,
+        "probabilityRange": [
+          0.9,
+          0.95
+        ]
+      },
+      {
+        "agreeWithOtherSource": 667,
+        "agreementFraction": 0.988,
+        "loci": 675,
+        "probabilityRange": [
+          0.95,
+          1.0
+        ]
+      }
+    ],
+    "pcc-7942": [
+      {
+        "agreeWithOtherSource": 1,
+        "agreementFraction": 1.0,
+        "loci": 1,
+        "probabilityRange": [
+          0.0,
+          0.4
+        ]
+      },
+      {
+        "agreeWithOtherSource": 19,
+        "agreementFraction": 0.679,
+        "loci": 28,
+        "probabilityRange": [
+          0.4,
+          0.6
+        ]
+      },
+      {
+        "agreeWithOtherSource": 49,
+        "agreementFraction": 0.803,
+        "loci": 61,
+        "probabilityRange": [
+          0.6,
+          0.8
+        ]
+      },
+      {
+        "agreeWithOtherSource": 58,
+        "agreementFraction": 0.935,
+        "loci": 62,
+        "probabilityRange": [
+          0.8,
+          0.9
+        ]
+      },
+      {
+        "agreeWithOtherSource": 77,
+        "agreementFraction": 0.963,
+        "loci": 80,
+        "probabilityRange": [
+          0.9,
+          0.95
+        ]
+      },
+      {
+        "agreeWithOtherSource": 610,
+        "agreementFraction": 0.99,
+        "loci": 616,
+        "probabilityRange": [
+          0.95,
+          1.0
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "go-iea": {
+      "assignedAsExpected": 29,
+      "cases": 31,
+      "exactChoice": 31,
+      "wrongCategoryAssigned": 0
+    },
+    "pcc-7942": {
+      "assignedAsExpected": 30,
+      "cases": 32,
+      "exactChoice": 31,
+      "wrongCategoryAssigned": 0
+    },
+    "rows": [
+      {
+        "assigned": "photosynthetic-light-reactions",
+        "assignedAsExpected": true,
+        "choice": "photosynthetic-light-reactions",
+        "exactChoice": true,
+        "expected": "photosynthetic-light-reactions",
+        "locusTag": "M744_RS00265",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "photosynthetic-light-reactions",
+        "assignedAsExpected": true,
+        "choice": "photosynthetic-light-reactions",
+        "exactChoice": true,
+        "expected": "photosynthetic-light-reactions",
+        "locusTag": "M744_RS01320",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "photosynthetic-light-reactions",
+        "assignedAsExpected": true,
+        "choice": "photosynthetic-light-reactions",
+        "exactChoice": true,
+        "expected": "photosynthetic-light-reactions",
+        "locusTag": "M744_RS01765",
+        "probability": 0.98,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "carbon-and-nutrient-metabolism",
+        "assignedAsExpected": true,
+        "choice": "carbon-and-nutrient-metabolism",
+        "exactChoice": true,
+        "expected": "carbon-and-nutrient-metabolism",
+        "locusTag": "M744_RS00340",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "carbon-and-nutrient-metabolism",
+        "assignedAsExpected": true,
+        "choice": "carbon-and-nutrient-metabolism",
+        "exactChoice": true,
+        "expected": "carbon-and-nutrient-metabolism",
+        "locusTag": "M744_RS02120",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "carbon-and-nutrient-metabolism",
+        "assignedAsExpected": true,
+        "choice": "carbon-and-nutrient-metabolism",
+        "exactChoice": true,
+        "expected": "carbon-and-nutrient-metabolism",
+        "locusTag": "M744_RS00250",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "atp-production-and-respiration",
+        "assignedAsExpected": true,
+        "choice": "atp-production-and-respiration",
+        "exactChoice": true,
+        "expected": "atp-production-and-respiration",
+        "locusTag": "M744_RS01265",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "atp-production-and-respiration",
+        "assignedAsExpected": true,
+        "choice": "atp-production-and-respiration",
+        "exactChoice": true,
+        "expected": "atp-production-and-respiration",
+        "locusTag": "M744_RS01955",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "pigment-and-cofactor-biosynthesis",
+        "assignedAsExpected": true,
+        "choice": "pigment-and-cofactor-biosynthesis",
+        "exactChoice": true,
+        "expected": "pigment-and-cofactor-biosynthesis",
+        "locusTag": "M744_RS02285",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "pigment-and-cofactor-biosynthesis",
+        "assignedAsExpected": true,
+        "choice": "pigment-and-cofactor-biosynthesis",
+        "exactChoice": true,
+        "expected": "pigment-and-cofactor-biosynthesis",
+        "locusTag": "M744_RS00840",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "pigment-and-cofactor-biosynthesis",
+        "assignedAsExpected": true,
+        "choice": "pigment-and-cofactor-biosynthesis",
+        "exactChoice": true,
+        "expected": "pigment-and-cofactor-biosynthesis",
+        "locusTag": "M744_RS00225",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "translation-and-protein-maintenance",
+        "assignedAsExpected": true,
+        "choice": "translation-and-protein-maintenance",
+        "exactChoice": true,
+        "expected": "translation-and-protein-maintenance",
+        "locusTag": "M744_RS00700",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "translation-and-protein-maintenance",
+        "assignedAsExpected": true,
+        "choice": "translation-and-protein-maintenance",
+        "exactChoice": true,
+        "expected": "translation-and-protein-maintenance",
+        "locusTag": "M744_RS03015",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "translation-and-protein-maintenance",
+        "assignedAsExpected": true,
+        "choice": "translation-and-protein-maintenance",
+        "exactChoice": true,
+        "expected": "translation-and-protein-maintenance",
+        "locusTag": "M744_RS00140",
+        "probability": 0.96,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "dna-and-rna-processing",
+        "assignedAsExpected": true,
+        "choice": "dna-and-rna-processing",
+        "exactChoice": true,
+        "expected": "dna-and-rna-processing",
+        "locusTag": "M744_RS01995",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "dna-and-rna-processing",
+        "assignedAsExpected": true,
+        "choice": "dna-and-rna-processing",
+        "exactChoice": true,
+        "expected": "dna-and-rna-processing",
+        "locusTag": "M744_RS01685",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "transport-and-envelope",
+        "assignedAsExpected": true,
+        "choice": "transport-and-envelope",
+        "exactChoice": true,
+        "expected": "transport-and-envelope",
+        "locusTag": "M744_RS00375",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "transport-and-envelope",
+        "assignedAsExpected": true,
+        "choice": "transport-and-envelope",
+        "exactChoice": true,
+        "expected": "transport-and-envelope",
+        "locusTag": "M744_RS00205",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "transport-and-envelope",
+        "assignedAsExpected": true,
+        "choice": "transport-and-envelope",
+        "exactChoice": true,
+        "expected": "transport-and-envelope",
+        "locusTag": "M744_RS00035",
+        "probability": 0.99,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS00155",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS10060",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS02360",
+        "probability": 0.98,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "stress-and-repair",
+        "assignedAsExpected": true,
+        "choice": "stress-and-repair",
+        "exactChoice": true,
+        "expected": "stress-and-repair",
+        "locusTag": "M744_RS03860",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "stress-and-repair",
+        "assignedAsExpected": true,
+        "choice": "stress-and-repair",
+        "exactChoice": true,
+        "expected": "stress-and-repair",
+        "locusTag": "M744_RS00120",
+        "probability": 0.99,
+        "source": "go-iea"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": false,
+        "choice": "stress-and-repair",
+        "exactChoice": true,
+        "expected": "stress-and-repair",
+        "locusTag": "M744_RS01210",
+        "probability": 0.63,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "other-characterized",
+        "assignedAsExpected": true,
+        "choice": "other-characterized",
+        "exactChoice": true,
+        "expected": "other-characterized",
+        "locusTag": "M744_RS04220",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "other-characterized",
+        "assignedAsExpected": true,
+        "choice": "other-characterized",
+        "exactChoice": true,
+        "expected": "other-characterized",
+        "locusTag": "M744_RS01420",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": false,
+        "choice": "other-characterized",
+        "exactChoice": true,
+        "expected": "other-characterized",
+        "locusTag": "M744_RS04370",
+        "probability": 0.64,
+        "source": "go-iea"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": true,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": true,
+        "expected": "unknown-or-unclassified",
+        "locusTag": "M744_RS00110",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": true,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": true,
+        "expected": "unknown-or-unclassified",
+        "locusTag": "M744_RS00075",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": true,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": true,
+        "expected": "unknown-or-unclassified",
+        "locusTag": "M744_RS00830",
+        "probability": 1.0,
+        "source": "go-iea"
+      },
+      {
+        "assigned": "photosynthetic-light-reactions",
+        "assignedAsExpected": true,
+        "choice": "photosynthetic-light-reactions",
+        "exactChoice": true,
+        "expected": "photosynthetic-light-reactions",
+        "locusTag": "M744_RS00560",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "photosynthetic-light-reactions",
+        "assignedAsExpected": true,
+        "choice": "photosynthetic-light-reactions",
+        "exactChoice": true,
+        "expected": "photosynthetic-light-reactions",
+        "locusTag": "M744_RS01315",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "photosynthetic-light-reactions",
+        "assignedAsExpected": true,
+        "choice": "photosynthetic-light-reactions",
+        "exactChoice": true,
+        "expected": "photosynthetic-light-reactions",
+        "locusTag": "M744_RS01480",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "carbon-and-nutrient-metabolism",
+        "assignedAsExpected": true,
+        "choice": "carbon-and-nutrient-metabolism",
+        "exactChoice": true,
+        "expected": "carbon-and-nutrient-metabolism",
+        "locusTag": "M744_RS09005",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "carbon-and-nutrient-metabolism",
+        "assignedAsExpected": true,
+        "choice": "carbon-and-nutrient-metabolism",
+        "exactChoice": true,
+        "expected": "carbon-and-nutrient-metabolism",
+        "locusTag": "M744_RS03505",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "carbon-and-nutrient-metabolism",
+        "assignedAsExpected": true,
+        "choice": "carbon-and-nutrient-metabolism",
+        "exactChoice": true,
+        "expected": "carbon-and-nutrient-metabolism",
+        "locusTag": "M744_RS04630",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "atp-production-and-respiration",
+        "assignedAsExpected": true,
+        "choice": "atp-production-and-respiration",
+        "exactChoice": true,
+        "expected": "atp-production-and-respiration",
+        "locusTag": "M744_RS01280",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "atp-production-and-respiration",
+        "assignedAsExpected": true,
+        "choice": "atp-production-and-respiration",
+        "exactChoice": true,
+        "expected": "atp-production-and-respiration",
+        "locusTag": "M744_RS01960",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "pigment-and-cofactor-biosynthesis",
+        "assignedAsExpected": true,
+        "choice": "pigment-and-cofactor-biosynthesis",
+        "exactChoice": true,
+        "expected": "pigment-and-cofactor-biosynthesis",
+        "locusTag": "M744_RS02180",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "pigment-and-cofactor-biosynthesis",
+        "assignedAsExpected": true,
+        "choice": "pigment-and-cofactor-biosynthesis",
+        "exactChoice": true,
+        "expected": "pigment-and-cofactor-biosynthesis",
+        "locusTag": "M744_RS01595",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "pigment-and-cofactor-biosynthesis",
+        "assignedAsExpected": true,
+        "choice": "pigment-and-cofactor-biosynthesis",
+        "exactChoice": true,
+        "expected": "pigment-and-cofactor-biosynthesis",
+        "locusTag": "M744_RS02825",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "translation-and-protein-maintenance",
+        "assignedAsExpected": true,
+        "choice": "translation-and-protein-maintenance",
+        "exactChoice": true,
+        "expected": "translation-and-protein-maintenance",
+        "locusTag": "M744_RS03155",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "translation-and-protein-maintenance",
+        "assignedAsExpected": true,
+        "choice": "translation-and-protein-maintenance",
+        "exactChoice": true,
+        "expected": "translation-and-protein-maintenance",
+        "locusTag": "M744_RS02770",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "translation-and-protein-maintenance",
+        "assignedAsExpected": true,
+        "choice": "translation-and-protein-maintenance",
+        "exactChoice": true,
+        "expected": "translation-and-protein-maintenance",
+        "locusTag": "M744_RS02885",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "dna-and-rna-processing",
+        "assignedAsExpected": true,
+        "choice": "dna-and-rna-processing",
+        "exactChoice": true,
+        "expected": "dna-and-rna-processing",
+        "locusTag": "M744_RS01445",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "dna-and-rna-processing",
+        "assignedAsExpected": true,
+        "choice": "dna-and-rna-processing",
+        "exactChoice": true,
+        "expected": "dna-and-rna-processing",
+        "locusTag": "M744_RS02505",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "transport-and-envelope",
+        "assignedAsExpected": true,
+        "choice": "transport-and-envelope",
+        "exactChoice": true,
+        "expected": "transport-and-envelope",
+        "locusTag": "M744_RS00310",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "transport-and-envelope",
+        "assignedAsExpected": true,
+        "choice": "transport-and-envelope",
+        "exactChoice": true,
+        "expected": "transport-and-envelope",
+        "locusTag": "M744_RS00170",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": false,
+        "choice": "transport-and-envelope",
+        "exactChoice": true,
+        "expected": "transport-and-envelope",
+        "locusTag": "M744_RS00525",
+        "probability": 0.76,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS00090",
+        "probability": 0.8,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS00535",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS03125",
+        "probability": 0.84,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "signaling-and-circadian-regulation",
+        "assignedAsExpected": true,
+        "choice": "signaling-and-circadian-regulation",
+        "exactChoice": true,
+        "expected": "signaling-and-circadian-regulation",
+        "locusTag": "M744_RS10055",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "stress-and-repair",
+        "assignedAsExpected": true,
+        "choice": "stress-and-repair",
+        "exactChoice": true,
+        "expected": "stress-and-repair",
+        "locusTag": "M744_RS01690",
+        "probability": 0.86,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "stress-and-repair",
+        "assignedAsExpected": true,
+        "choice": "stress-and-repair",
+        "exactChoice": true,
+        "expected": "stress-and-repair",
+        "locusTag": "M744_RS04495",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "stress-and-repair",
+        "assignedAsExpected": true,
+        "choice": "stress-and-repair",
+        "exactChoice": true,
+        "expected": "stress-and-repair",
+        "locusTag": "M744_RS06420",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": false,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": false,
+        "expected": "other-characterized",
+        "locusTag": "M744_RS00890",
+        "probability": 0.55,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "other-characterized",
+        "assignedAsExpected": true,
+        "choice": "other-characterized",
+        "exactChoice": true,
+        "expected": "other-characterized",
+        "locusTag": "M744_RS04225",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": "other-characterized",
+        "assignedAsExpected": true,
+        "choice": "other-characterized",
+        "exactChoice": true,
+        "expected": "other-characterized",
+        "locusTag": "M744_RS02290",
+        "probability": 0.99,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": true,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": true,
+        "expected": "unknown-or-unclassified",
+        "locusTag": "M744_RS00030",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": true,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": true,
+        "expected": "unknown-or-unclassified",
+        "locusTag": "M744_RS00060",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      },
+      {
+        "assigned": null,
+        "assignedAsExpected": true,
+        "choice": "unknown-or-unclassified",
+        "exactChoice": true,
+        "expected": "unknown-or-unclassified",
+        "locusTag": "M744_RS00340",
+        "probability": 1.0,
+        "source": "pcc-7942"
+      }
+    ],
+    "threshold": 0.8
+  },
+  "fileSha256": {
+    "evaluation-results.jsonl": "2c9cfd677e7e0d354a73fda6557a369a0e2da29589452389d615d279cc11b666",
+    "evaluation-set.json": "37baaf0ba074bd50bc587d3e2ee8210d06836a6c416233b2b01af26675a160f0",
+    "results.jsonl": "5fda6a69c75527c65861adca2af9f7b03957e28529f14e9183124f880f3bc38e",
+    "rubric.json": "bb642cb045da1972998c1d54ac7b249d009226c7453bdd48259ced4159808457",
+    "run-log.json": "b65d7505b7de3abfaa6ef279760f93bba505a6cf471c83fb6a273fdf9b4a5b57",
+    "spot-check.json": "07c68dfc0795724a17d93700a0fc41287993e9d14f064ac35f1c7c530b69ba8c"
+  },
+  "legendByToggle": {
+    "go-iea": {
+      "byCategory": {
+        "atp-production-and-respiration": 19,
+        "carbon-and-nutrient-metabolism": 210,
+        "dna-and-rna-processing": 107,
+        "other-characterized": 37,
+        "photosynthetic-light-reactions": 51,
+        "pigment-and-cofactor-biosynthesis": 111,
+        "signaling-and-circadian-regulation": 87,
+        "stress-and-repair": 39,
+        "translation-and-protein-maintenance": 140,
+        "transport-and-envelope": 227
+      },
+      "byEvidence": {
+        "go-iea-derived": 1028,
+        "none": 1687
+      },
+      "coloured": 1028,
+      "conflicts": 0,
+      "enabledSources": [
+        "go-iea"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 1687
+    },
+    "pcc-7942": {
+      "byCategory": {
+        "atp-production-and-respiration": 51,
+        "carbon-and-nutrient-metabolism": 211,
+        "dna-and-rna-processing": 101,
+        "other-characterized": 40,
+        "photosynthetic-light-reactions": 80,
+        "pigment-and-cofactor-biosynthesis": 109,
+        "signaling-and-circadian-regulation": 96,
+        "stress-and-repair": 47,
+        "translation-and-protein-maintenance": 144,
+        "transport-and-envelope": 214
+      },
+      "byEvidence": {
+        "none": 1622,
+        "pcc-7942-derived": 1093
+      },
+      "coloured": 1093,
+      "conflicts": 0,
+      "enabledSources": [
+        "pcc-7942"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 1622
+    },
+    "pcc-7942+go-iea": {
+      "byCategory": {
+        "atp-production-and-respiration": 57,
+        "carbon-and-nutrient-metabolism": 286,
+        "dna-and-rna-processing": 124,
+        "other-characterized": 53,
+        "photosynthetic-light-reactions": 89,
+        "pigment-and-cofactor-biosynthesis": 132,
+        "signaling-and-circadian-regulation": 118,
+        "stress-and-repair": 57,
+        "translation-and-protein-maintenance": 171,
+        "transport-and-envelope": 276
+      },
+      "byEvidence": {
+        "go-iea-derived": 270,
+        "none": 1352,
+        "pcc-7942-derived": 1093
+      },
+      "coloured": 1363,
+      "conflicts": 13,
+      "enabledSources": [
+        "pcc-7942",
+        "go-iea"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 1352
+    },
+    "utex-2973": {
+      "byCategory": {
+        "atp-production-and-respiration": 1,
+        "carbon-and-nutrient-metabolism": 0,
+        "dna-and-rna-processing": 0,
+        "other-characterized": 0,
+        "photosynthetic-light-reactions": 3,
+        "pigment-and-cofactor-biosynthesis": 2,
+        "signaling-and-circadian-regulation": 5,
+        "stress-and-repair": 0,
+        "translation-and-protein-maintenance": 1,
+        "transport-and-envelope": 0
+      },
+      "byEvidence": {
+        "none": 2702,
+        "reviewed": 13
+      },
+      "coloured": 12,
+      "conflicts": 0,
+      "enabledSources": [
+        "utex-2973"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 2703
+    },
+    "utex-2973+go-iea": {
+      "byCategory": {
+        "atp-production-and-respiration": 19,
+        "carbon-and-nutrient-metabolism": 210,
+        "dna-and-rna-processing": 107,
+        "other-characterized": 37,
+        "photosynthetic-light-reactions": 52,
+        "pigment-and-cofactor-biosynthesis": 112,
+        "signaling-and-circadian-regulation": 89,
+        "stress-and-repair": 39,
+        "translation-and-protein-maintenance": 140,
+        "transport-and-envelope": 227
+      },
+      "byEvidence": {
+        "go-iea-derived": 1020,
+        "none": 1682,
+        "reviewed": 13
+      },
+      "coloured": 1032,
+      "conflicts": 0,
+      "enabledSources": [
+        "utex-2973",
+        "go-iea"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 1683
+    },
+    "utex-2973+pcc-7942": {
+      "byCategory": {
+        "atp-production-and-respiration": 52,
+        "carbon-and-nutrient-metabolism": 211,
+        "dna-and-rna-processing": 101,
+        "other-characterized": 40,
+        "photosynthetic-light-reactions": 80,
+        "pigment-and-cofactor-biosynthesis": 110,
+        "signaling-and-circadian-regulation": 97,
+        "stress-and-repair": 47,
+        "translation-and-protein-maintenance": 144,
+        "transport-and-envelope": 214
+      },
+      "byEvidence": {
+        "none": 1618,
+        "pcc-7942-derived": 1084,
+        "reviewed": 13
+      },
+      "coloured": 1096,
+      "conflicts": 0,
+      "enabledSources": [
+        "utex-2973",
+        "pcc-7942"
+      ],
+      "multipleFunctions": 0,
+      "unknownOrUnclassified": 1619
+    }
+  },
+  "model": "jev-1.13.0",
+  "outputSha256": "f52cb2715c762761ffdf6adbd8736f294b807a8401d306d36142ebc6d0359c0e",
+  "reviewedComparison": [
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "pigment-and-cofactor-biosynthesis",
+        "mostLikely": "pigment-and-cofactor-biosynthesis",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS00020",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "pigment-and-cofactor-biosynthesis",
+        "mostLikely": "pigment-and-cofactor-biosynthesis",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "pigment-and-cofactor-biosynthesis"
+      ]
+    },
+    {
+      "go-iea": null,
+      "locusTag": "M744_RS00030",
+      "pcc-7942": {
+        "agreesWithReviewed": false,
+        "categoryId": null,
+        "mostLikely": "unknown-or-unclassified",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "unknown-or-unclassified"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "photosynthetic-light-reactions",
+        "mostLikely": "photosynthetic-light-reactions",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS00265",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "photosynthetic-light-reactions",
+        "mostLikely": "photosynthetic-light-reactions",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "photosynthetic-light-reactions"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "translation-and-protein-maintenance",
+        "mostLikely": "translation-and-protein-maintenance",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS00700",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "translation-and-protein-maintenance",
+        "mostLikely": "translation-and-protein-maintenance",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "translation-and-protein-maintenance"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "photosynthetic-light-reactions",
+        "mostLikely": "photosynthetic-light-reactions",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS00815",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "photosynthetic-light-reactions",
+        "mostLikely": "photosynthetic-light-reactions",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "photosynthetic-light-reactions"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "atp-production-and-respiration",
+        "mostLikely": "atp-production-and-respiration",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS01270",
+      "pcc-7942": null,
+      "reviewed": [
+        "atp-production-and-respiration"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS02500",
+      "pcc-7942": null,
+      "reviewed": [
+        "signaling-and-circadian-regulation"
+      ]
+    },
+    {
+      "go-iea": null,
+      "locusTag": "M744_RS04595",
+      "pcc-7942": null,
+      "reviewed": [
+        "pigment-and-cofactor-biosynthesis"
+      ]
+    },
+    {
+      "go-iea": null,
+      "locusTag": "M744_RS10050",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "signaling-and-circadian-regulation"
+      ]
+    },
+    {
+      "go-iea": null,
+      "locusTag": "M744_RS10055",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "signaling-and-circadian-regulation"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 1.0
+      },
+      "locusTag": "M744_RS10060",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "signaling-and-circadian-regulation"
+      ]
+    },
+    {
+      "go-iea": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 0.95
+      },
+      "locusTag": "M744_RS13070",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "signaling-and-circadian-regulation",
+        "mostLikely": "signaling-and-circadian-regulation",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "signaling-and-circadian-regulation"
+      ]
+    },
+    {
+      "go-iea": null,
+      "locusTag": "M744_RS13625",
+      "pcc-7942": {
+        "agreesWithReviewed": true,
+        "categoryId": "photosynthetic-light-reactions",
+        "mostLikely": "photosynthetic-light-reactions",
+        "probability": 1.0
+      },
+      "reviewed": [
+        "photosynthetic-light-reactions"
+      ]
+    }
+  ],
+  "rubricVersion": "2026-09-22.1",
+  "spotCheck": {
+    "disagreements": [
+      {
+        "locusTag": "M744_RS08690",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "atp-production-and-respiration",
+          "probability": 0.47
+        },
+        "reviewer": "atp-production-and-respiration",
+        "reviewerNote": "Proton-translocating transhydrogenase is energy metabolism; nearest listed category is respiration.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS12430",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "other-characterized",
+          "probability": 0.41
+        },
+        "reviewer": "other-characterized",
+        "reviewerNote": "Phage baseplate assembly.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS06500",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "unknown-or-unclassified",
+          "probability": 0.63
+        },
+        "reviewer": "pigment-and-cofactor-biosynthesis",
+        "reviewerNote": "Cysteine desulfurase supplies sulfur for Fe-S cluster assembly; GO has only PLP binding.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS12230",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "carbon-and-nutrient-metabolism",
+          "probability": 0.79
+        },
+        "reviewer": "carbon-and-nutrient-metabolism",
+        "reviewerNote": "Histidine biosynthesis is amino acid biosynthesis.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS05205",
+        "published": {
+          "categoryId": "carbon-and-nutrient-metabolism",
+          "mostLikely": "carbon-and-nutrient-metabolism",
+          "probability": 0.84
+        },
+        "reviewer": "unknown-or-unclassified",
+        "reviewerNote": "Enzyme class without a named process.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS08330",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "photosynthetic-light-reactions",
+          "probability": 0.6
+        },
+        "reviewer": "photosynthetic-light-reactions",
+        "reviewerNote": "Flavodoxin substitutes for photosynthetic ferredoxin as an electron carrier.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS12775",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "unknown-or-unclassified",
+          "probability": 0.62
+        },
+        "reviewer": "carbon-and-nutrient-metabolism",
+        "reviewerNote": "Sterol desaturase is lipid metabolism; GO names lipid biosynthesis.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS04205",
+        "published": {
+          "categoryId": "carbon-and-nutrient-metabolism",
+          "mostLikely": "carbon-and-nutrient-metabolism",
+          "probability": 0.8
+        },
+        "reviewer": "pigment-and-cofactor-biosynthesis",
+        "reviewerNote": "PanB, pantothenate (coenzyme A) biosynthesis.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS08745",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "unknown-or-unclassified",
+          "probability": 0.85
+        },
+        "reviewer": "translation-and-protein-maintenance",
+        "reviewerNote": "Peptidase family names a protease.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS06745",
+        "published": {
+          "categoryId": "carbon-and-nutrient-metabolism",
+          "mostLikely": "carbon-and-nutrient-metabolism",
+          "probability": 0.83
+        },
+        "reviewer": "pigment-and-cofactor-biosynthesis",
+        "reviewerNote": "L-aspartate oxidase is the first step of NAD biosynthesis.",
+        "source": "pcc-7942"
+      },
+      {
+        "locusTag": "M744_RS08690",
+        "published": {
+          "categoryId": null,
+          "mostLikely": "photosynthetic-light-reactions",
+          "probability": 0.33
+        },
+        "reviewer": "atp-production-and-respiration",
+        "reviewerNote": "Proton-translocating transhydrogenase is energy metabolism; nearest listed category is respiration.",
+        "source": "go-iea"
+      },
+      {
+        "locusTag": "M744_RS02385",
+        "published": {
+          "categoryId": "carbon-and-nutrient-metabolism",
+          "mostLikely": "carbon-and-nutrient-metabolism",
+          "probability": 0.88
+        },
+        "reviewer": "unknown-or-unclassified",
+        "reviewerNote": "GatB completes tRNA aminoacylation; the GO term is an enzyme class with no process.",
+        "source": "go-iea"
+      }
+    ],
+    "go-iea": {
+      "assignmentAgreement": 26,
+      "compared": 28,
+      "mostLikelyAgreement": 26
+    },
+    "loci": 34,
+    "pcc-7942": {
+      "assignmentAgreement": 24,
+      "compared": 34,
+      "mostLikelyAgreement": 28
+    },
+    "sampleDrawnAt": {
+      "seed": 20260922,
+      "threshold": 0.8
+    }
+  },
+  "thresholds": {
+    "derivedProbabilityAtLeast": 0.8
+  }
+}
