@@ -6,6 +6,7 @@ import {
 } from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
 import { SOURCE_TOGGLES } from '../core/annotation-source.js';
+import { describeReviewed } from '../core/source-derived-categories.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -96,9 +97,11 @@ export function categoryLegendTitle(sources, hasDerivedData) {
 }
 
 /** The evidence sentence under the counts, or null when nothing is derived. */
-export function categoryEvidenceSummary(evidenceCounts, hasDerivedData, conflictCount = 0) {
+export function categoryEvidenceSummary(
+  evidenceCounts, hasDerivedData, conflictCount = 0, reviewedColouredCount = null,
+) {
   if (!hasDerivedData || !evidenceCounts) return null;
-  return `${formatCount(evidenceCounts.reviewed)} coloured by lab review, `
+  return `${describeReviewed(evidenceCounts.reviewed, reviewedColouredCount)}, `
     + `${formatCount(evidenceCounts['pcc-7942-derived'])} by PCC 7942, `
     + `${formatCount(evidenceCounts['go-iea-derived'])} by GO IEA, `
     + `${formatCount(evidenceCounts.none)} by no enabled source`
@@ -261,7 +264,9 @@ export function renderCategoryLegend(host, {
       + 'GO IEA suggestions alone leave a gene unclassified. ')
     + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
   host.append(toggles, title, list);
-  const summary = categoryEvidenceSummary(evidenceCounts, hasDerivedData, conflictCount);
+  const summary = categoryEvidenceSummary(
+    evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount,
+  );
   if (summary) {
     const evidence = document.createElement('p');
     evidence.className = 'legend-ramp-note legend-evidence';

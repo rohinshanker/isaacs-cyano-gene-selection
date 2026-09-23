@@ -167,8 +167,9 @@ on 13.
 | PCC 7942 + GO IEA | 1,363 | 1,352 | 13 |
 | All three | 1,364 | 1,351 | 13 |
 
-With all three on, 13 loci are coloured by review, 1,084 by PCC 7942, 268 by
-GO IEA, and 1,350 by no source; the multiple-functions bucket is empty. The
+With all three on, the 13 lab review decisions give 12 category-coloured loci
+and one reviewed unknown; 1,084 loci are coloured by PCC 7942, 268 by GO IEA,
+and 1,350 by no source (1,351 unknown including the reviewed one); the multiple-functions bucket is empty. The
 13 conflicts are loci where PCC 7942 colours and GO IEA assigned a different
 category. Legend counts under every combination are pinned in `summary.json`
 under `legendByToggle`, and the browser test proves the page resolves the

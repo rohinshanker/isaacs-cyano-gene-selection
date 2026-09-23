@@ -1,4 +1,5 @@
 /** One reusable explanation contract for every selectable colour metric. */
+import { describeReviewed } from './source-derived-categories.js';
 import {
   describeExpressionSource, isExpressionMetric, isExpressionProxyMetric,
   measurementLimitClauses,
@@ -225,7 +226,7 @@ export function functionCategoryHelp({ reviewed, derived, categories }) {
       + (derived ? '; PCC 7942 RefSeq product names at admitted joins (Adomako et al. 2022, '
         + 'CC BY 4.0); Gene Ontology IEA relationships (CC BY 4.0).' : '.'),
     coverage: `Under ${annotationSourceLabel(categories.sources)}: `
-      + `${formatCount(categories.reviewedCount)} coloured by lab review, `
+      + `${describeReviewed(categories.reviewedCount, categories.reviewedColouredCount)}, `
       + `${formatCount(categories.derivedCount)} by a derived source, `
       + `${formatCount(categories.multipleCount)} in multiple functions, and `
       + `${formatCount(categories.unknownCount)} unknown or unclassified.`,

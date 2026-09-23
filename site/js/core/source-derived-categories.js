@@ -10,6 +10,7 @@
  * source assigns a different category the point keeps the higher source's
  * colour and the conflict is named in the detail panel and export.
  */
+import { formatCount } from '../ui/format.js';
 import {
   MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID,
 } from './function-categories.js';
@@ -320,4 +321,16 @@ export function conflictNote(resolution) {
   return resolution.conflicts
     .map((entry) => `${SOURCE_DISPLAY_NAMES[entry.source]}: ${entry.label}`)
     .join('; ');
+}
+
+/**
+ * Review decisions are not all colours: one reviewed row is an explicit
+ * unknown. Name both numbers so the sentence totals the CDS set exactly.
+ */
+export function describeReviewed(reviewed, coloured = null) {
+  if (coloured === null || coloured === undefined || reviewed === 0) {
+    return `${formatCount(reviewed)} by lab review`;
+  }
+  return `${formatCount(reviewed)} lab review decisions (${formatCount(coloured)} category-coloured, `
+    + `${formatCount(reviewed - coloured)} reviewed unknown)`;
 }

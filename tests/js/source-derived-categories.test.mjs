@@ -303,11 +303,11 @@ test('the legend has a derived swatch, names the counted sources, and summarises
   assert.equal(categoryEvidenceSummary({ reviewed: 1 }, false), null);
   assert.equal(categoryEvidenceSummary({
     reviewed: 13, 'pcc-7942-derived': 1084, 'go-iea-derived': 268, none: 1350,
-  }, true, 13), '13 coloured by lab review, 1,084 by PCC 7942, 268 by GO IEA, 1,350 by no enabled '
+  }, true, 13, 12), '13 lab review decisions (12 category-coloured, 1 reviewed unknown), 1,084 by PCC 7942, 268 by GO IEA, 1,350 by no enabled '
     + 'source; 13 coloured by a higher-priority source over a conflicting one.');
   assert.equal(categoryEvidenceSummary({
     reviewed: 13, 'pcc-7942-derived': 0, 'go-iea-derived': 0, none: 2702,
-  }, true, 0), '13 coloured by lab review, 0 by PCC 7942, 0 by GO IEA, 2,702 by no enabled source.');
+  }, true, 0, 12), '13 lab review decisions (12 category-coloured, 1 reviewed unknown), 0 by PCC 7942, 0 by GO IEA, 2,702 by no enabled source.');
 });
 
 test('the export records the colour sources, the resolved category, its evidence, conflicts, and every per-source category', async () => {
@@ -405,7 +405,7 @@ test('the filled-circle legend count excludes the row reviewed as unknown', asyn
     const rows = host.querySelectorAll('li').map((item) => item.textContent);
     assert.ok(rows.includes('Reviewed (lab) category: filled circle (12)'), rows.join(' | '));
     assert.ok(rows.includes('Derived (computational) category: ring with centre dot (1,352)'));
-    assert.match(host.querySelector('.legend-evidence').textContent, /^13 coloured by lab review, 1,084 by PCC 7942/);
+    assert.match(host.querySelector('.legend-evidence').textContent, /^13 lab review decisions \(12 category-coloured, 1 reviewed unknown\), 1,084 by PCC 7942/);
   });
 });
 
@@ -425,14 +425,14 @@ test('the colour explanation states the enabled-source precedence and the confli
   assert.doesNotMatch(help.method, /always wins/);
   assert.doesNotMatch(help.method, /Two derived sources that disagree/);
   assert.match(help.origin, /PCC 7942 RefSeq product names .* Gene Ontology IEA relationships/);
-  assert.equal(help.coverage, 'Under All sources: 13 coloured by lab review, 1,352 by a derived '
+  assert.equal(help.coverage, 'Under All sources: 13 lab review decisions (12 category-coloured, 1 reviewed unknown), 1,352 by a derived '
     + 'source, 0 in multiple functions, and 1,351 unknown or unclassified.');
   assert.deepEqual(help.citations, ['ncbi-utex-2973']);
 
   const pccAndGo = functionCategoryHelp({
     reviewed, derived, categories: resolvedUnder(dataset, ['pcc-7942', 'go-iea']),
   });
-  assert.equal(pccAndGo.coverage, 'Under PCC 7942 + GO IEA: 0 coloured by lab review, 1,363 by a '
+  assert.equal(pccAndGo.coverage, 'Under PCC 7942 + GO IEA: 0 by lab review, 1,363 by a '
     + 'derived source, 0 in multiple functions, and 1,352 unknown or unclassified.');
 
   // Without a derived file the reviewed rule still reads correctly and GO stays passive.
