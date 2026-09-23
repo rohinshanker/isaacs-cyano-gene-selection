@@ -22,7 +22,7 @@ import { PANELS, buildProjection } from './ui/panels.js';
 import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
-import { metricHelp } from './core/metric-help.js';
+import { metricHelp, functionCategoryHelp } from './core/metric-help.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
   UNKNOWN_CATEGORY_ID,
@@ -180,9 +180,10 @@ function clearLivePercentiles() {
 
 /**
  * Resolve every gene's category bucket under the enabled annotation sources:
- * reviewed UTEX 2973 rows win, then enabled derived sources, disagreement to
- * the multiple-functions bucket. Recomputed whenever the toggles change; the
- * legend, filter, preview, and canvas all read this one model.
+ * UTEX 2973 reviewed rows first, then PCC 7942, then GO IEA, each only while
+ * enabled; a disagreement keeps the highest-priority colour and is named, never
+ * bucketed. Recomputed whenever the toggles change; the legend, filter,
+ * preview, and canvas all read this one model.
  */
 function resolveCategoryModel() {
   const reviewed = context.dataset.functionCategories;
@@ -462,35 +463,11 @@ function scheduleTiming() {
 function renderColorHelp() {
   const categories = context.categories ?? resolveCategoryModel();
   if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
-    const reviewed = context.dataset.functionCategories;
-    const derived = context.dataset.sourceDerivedCategories;
-    renderMetricHelp(element('colour-help'), {
-      title: 'Function category',
-      summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '
-        + 'sources: the lab-reviewed UTEX 2973 assignment when one exists, otherwise a '
-        + 'category derived from the PCC 7942 product name or the GO IEA terms. The same '
-        + 'colour has the same category on every map tab.',
-      unit: 'category (not a numeric metric)',
-      method: `The lab approved ${formatCount(reviewed.reviewedCount)} exact locus decisions `
-        + `on ${reviewed.source.provenance.userReview.date}; a reviewed row always wins. `
-        + (derived
-          ? `Derived categories are TypeSafe ${derived.judgment.model} judgments over each `
-            + 'enabled source, assigned only at probability '
-            + `${DERIVED_THRESHOLDS.derivedProbabilityAtLeast.toFixed(2)} or above, drawn as a `
-            + 'hollow ring with a centre dot, and labelled pcc-7942-derived or go-iea-derived. '
-            + 'Two derived sources that disagree use the multiple-functions bucket.'
-          : 'GO IEA suggestions never assign a category colour by themselves.'),
-      origin: `UTEX 2973 RefSeq ${reviewed.source.provenance.annotationRelease} product records `
-        + 'and the lab review table'
-        + (derived ? '; PCC 7942 RefSeq product names at admitted joins (Adomako et al. 2022, '
-          + 'CC BY 4.0); Gene Ontology IEA relationships (CC BY 4.0).' : '.'),
-      coverage: `Under ${annotationSourceLabel(categories.sources)}: `
-        + `${formatCount(categories.reviewedCount)} coloured by lab review, `
-        + `${formatCount(categories.derivedCount)} by a derived source, `
-        + `${formatCount(categories.multipleCount)} in multiple functions, and `
-        + `${formatCount(categories.unknownCount)} unknown or unclassified.`,
-      citations: ['ncbi-utex-2973'],
-    }, citationsManifest);
+    renderMetricHelp(element('colour-help'), functionCategoryHelp({
+      reviewed: context.dataset.functionCategories,
+      derived: context.dataset.sourceDerivedCategories,
+      categories,
+    }), citationsManifest);
     return;
   }
   renderMetricHelp(element('colour-help'),
@@ -763,6 +740,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       registry: context.registry,
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
+      colorSources: state.colorSources,
       schemes: {
         active: { name: state.schemeName, map: state.schemeMap },
         saved: Object.entries(store.read(STORAGE_SCHEMES, {}))

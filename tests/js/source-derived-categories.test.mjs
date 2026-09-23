@@ -24,7 +24,11 @@ import { computeLiveMetrics } from '../../site/js/core/live-metrics.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { buildExport } from '../../site/js/core/export-manifest.js';
+import { functionCategoryHelp } from '../../site/js/core/metric-help.js';
+import { renderMetricHelp } from '../../site/js/ui/metric-help.js';
+import { renderCategoryLegend } from '../../site/js/ui/legend.js';
 import { fileFetch } from './helpers.mjs';
+import { withFakeDocument } from './fake-dom.mjs';
 
 const ROOT = new URL('../../', import.meta.url);
 const DATA = new URL('site/data/', ROOT);
@@ -368,4 +372,93 @@ test('the export records the colour sources, the resolved category, its evidence
   assert.equal(none.rows[0].functionCategory, 'Unknown or unclassified');
   assert.equal(none.rows[0].product, dataset.genes[dataset.indexById.get(REVIEWED_ID)].product);
   assert.ok(none.manifest.caveats.some((line) => /enabled for colouring: No sources/.test(line)));
+});
+
+function resolvedUnder(dataset, sources) {
+  return resolveFunctionCategories({
+    reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
+    genes: dataset.genes, sources,
+  });
+}
+
+test('the filled-circle legend count excludes the row reviewed as unknown', async () => {
+  const dataset = await realDataset();
+  const all = resolvedUnder(dataset, ALL);
+  // Thirteen rows are resolved by review, but the one reviewed as unknown
+  // draws the open unknown circle, so only twelve carry a filled marker.
+  assert.equal(all.evidenceCounts.reviewed, 13);
+  assert.equal(all.reviewedColouredCount, 12);
+  assert.equal(resolvedUnder(dataset, ['utex-2973']).reviewedColouredCount, 12);
+  assert.equal(resolvedUnder(dataset, ['pcc-7942', 'go-iea']).reviewedColouredCount, 0);
+  assert.equal(resolvedUnder(dataset, []).reviewedColouredCount, 0);
+
+  await withFakeDocument((document) => {
+    const host = document.createElement('div');
+    renderCategoryLegend(host, {
+      ...all,
+      scale: buildCategoryColorScale(all.labels.length),
+      hiddenReviewedCount: 0,
+      hiddenUnknownCount: 0,
+      showHidden: false,
+      derivedThreshold: THRESHOLDS.derivedProbabilityAtLeast,
+    });
+    const rows = host.querySelectorAll('li').map((item) => item.textContent);
+    assert.ok(rows.includes('Reviewed (lab) category: filled circle (12)'), rows.join(' | '));
+    assert.ok(rows.includes('Derived (computational) category: ring with centre dot (1,352)'));
+    assert.match(host.querySelector('.legend-evidence').textContent, /^13 coloured by lab review, 1,084 by PCC 7942/);
+  });
+});
+
+test('the colour explanation states the enabled-source precedence and the conflict rule', async () => {
+  const dataset = await realDataset();
+  const reviewed = dataset.functionCategories;
+  const derived = dataset.sourceDerivedCategories;
+  const help = functionCategoryHelp({ reviewed, derived, categories: resolvedUnder(dataset, ALL) });
+  assert.equal(help.title, 'Function category');
+  assert.match(help.summary, /when that source is enabled and a reviewed row exists/);
+  assert.match(help.method, /^The lab approved 13 exact locus decisions on 2026-09-22\./);
+  assert.match(help.method, /UTEX 2973 > PCC 7942 > GO IEA/);
+  assert.match(help.method, /colours its CDS only while UTEX 2973 is enabled/);
+  assert.match(help.method, /TypeSafe jev-1\.13\.0 judgments .* at probability 0\.80 or above/);
+  assert.match(help.method, /highest-priority enabled source colours the CDS and the detail panel and export name the conflict/);
+  assert.match(help.method, /never use the multiple-functions bucket, which only two reviewed labels reach/);
+  assert.doesNotMatch(help.method, /always wins/);
+  assert.doesNotMatch(help.method, /Two derived sources that disagree/);
+  assert.match(help.origin, /PCC 7942 RefSeq product names .* Gene Ontology IEA relationships/);
+  assert.equal(help.coverage, 'Under All sources: 13 coloured by lab review, 1,352 by a derived '
+    + 'source, 0 in multiple functions, and 1,351 unknown or unclassified.');
+  assert.deepEqual(help.citations, ['ncbi-utex-2973']);
+
+  const pccAndGo = functionCategoryHelp({
+    reviewed, derived, categories: resolvedUnder(dataset, ['pcc-7942', 'go-iea']),
+  });
+  assert.equal(pccAndGo.coverage, 'Under PCC 7942 + GO IEA: 0 coloured by lab review, 1,363 by a '
+    + 'derived source, 0 in multiple functions, and 1,352 unknown or unclassified.');
+
+  // Without a derived file the reviewed rule still reads correctly and GO stays passive.
+  const reviewedOnly = functionCategoryHelp({
+    reviewed, derived: null, categories: resolvedUnder({ ...dataset, sourceDerivedCategories: null }, ALL),
+  });
+  assert.match(reviewedOnly.method, /GO IEA suggestions never assign a category colour by themselves\.$/);
+  assert.doesNotMatch(reviewedOnly.method, /TypeSafe/);
+  assert.match(reviewedOnly.origin, /lab review table\.$/);
+
+  // The rendered disclosure carries the same text, row by row.
+  await withFakeDocument((document) => {
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    const body = document.createElement('div');
+    body.className = 'help-content';
+    details.append(summary, body);
+    renderMetricHelp(details, help, null);
+    assert.equal(details.hidden, false);
+    assert.equal(summary.textContent, 'Function category explanation');
+    const rendered = Object.fromEntries(body.querySelector('dl').children
+      .map((row) => [row.querySelector('dt').textContent, row.querySelector('dd').textContent]));
+    assert.equal(rendered.Calculation, help.method);
+    assert.equal(rendered.Meaning, help.summary);
+    assert.equal(rendered['Missing values'], help.coverage);
+    assert.match(rendered.Calculation, /only while UTEX 2973 is enabled/);
+    assert.doesNotMatch(rendered.Calculation, /always wins|multiple-functions bucket\.$/);
+  });
 });

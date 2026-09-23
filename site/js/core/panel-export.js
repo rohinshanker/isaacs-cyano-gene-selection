@@ -161,15 +161,17 @@ export function panelFileBase(manifest) {
  * Build the panel's manifest and CSV.
  *
  * @param {{dataset: object, registry: object, design: object, space: object,
- *   schemes: Array<{name?: string|null, map: object}>, generatedAt?: Date}} options
+ *   schemes: Array<{name?: string|null, map: object}>, generatedAt?: Date,
+ *   colorSources?: string[]}} options `colorSources` is the set enabled for
+ *   category colouring when the panel was exported; omitted means every source.
  * @returns {{manifest: object, csv: string, columns: string[], rows: object[],
  *   baseName: string, files: Array<{name: string, type: string, content: string}>}}
  */
 export function buildPanelExport({
-  dataset, registry, design, space, schemes, generatedAt = new Date(),
+  dataset, registry, design, space, schemes, generatedAt = new Date(), colorSources = undefined,
 }) {
   const base = buildExport({
-    dataset, registry, ids: design.selected, schemes, generatedAt,
+    dataset, registry, ids: design.selected, schemes, generatedAt, colorSources,
   });
   const byId = new Map(design.genes.map((gene) => [gene.id, gene]));
   const columns = [...base.columns, ...PANEL_COLUMNS];

@@ -23,6 +23,50 @@ export function searchActionState(pinned, shortlisted) {
   };
 }
 
+/** The one-line GO suggestion under a row that matched a GO ID or term name. */
+function goMatchLine(goMatch) {
+  const term = goMatch.name ? ` — ${goMatch.name}` : '';
+  const ambiguity = goMatch.mappingAmbiguity ? '; mapping ambiguous' : '';
+  const obsolete = goMatch.isObsolete ? '; obsolete GO ID in the pinned name release' : '';
+  return `${goMatch.id}${term} (${goMatch.evidenceCode} computational suggestion${ambiguity}${obsolete})`;
+}
+
+/**
+ * Everything a result row shows, assembled without the DOM so the suite fails
+ * on a missing binding before the page does.
+ *
+ * @param {{gene: object, index: number, matchedOn: string, alias?: string|null,
+ *   goMatch?: object|null, categoryMatch?: string|null}} hit one entry of
+ *   `searchGenes(...).shown`.
+ * @param {{isPinned: (id: string) => boolean, isShortlisted: (id: string) => boolean}} handlers
+ */
+export function searchRowModel(hit, handlers) {
+  const { gene, index } = hit;
+  const geneName = geneIdentity(gene);
+  const pinned = handlers.isPinned(gene.id);
+  const shortlisted = handlers.isShortlisted(gene.id);
+  const labels = searchActionState(pinned, shortlisted);
+  const identity = geneIdentityDescription(gene);
+  return {
+    geneId: gene.id,
+    index,
+    symbol: geneName?.kind === 'Gene symbol' ? geneName.text : null,
+    matched: hit.alias
+      ? ` matched ${hit.matchedOn} via ${hit.alias}`
+      : ` matched ${hit.matchedOn}`,
+    product: gene.product ?? 'no product description',
+    goLine: hit.goMatch ? goMatchLine(hit.goMatch) : null,
+    categoryLine: hit.categoryMatch ? `Lab-reviewed category: ${hit.categoryMatch}` : null,
+    pinned,
+    shortlisted,
+    labels,
+    pinDescription: `${labels.pin} ${gene.id} ${pinned ? 'from' : 'in'} the gene panel. ${identity}`,
+    shortlistDescription: shortlisted
+      ? `Remove ${gene.id} from the shortlist. ${identity}`
+      : `Add ${gene.id} to the shortlist. ${identity}`,
+  };
+}
+
 export class GeneSearchResults {
   /**
    * @param {HTMLElement} host
@@ -83,7 +127,7 @@ export class GeneSearchResults {
     }
     host.hidden = false;
     const result = searchGenes(this.genes, this.query, {
-      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms, source: this.source,
+      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms,
     });
     this.result = result;
 
@@ -136,8 +180,8 @@ export class GeneSearchResults {
   }
 
   renderRow(hit) {
-    const { gene, index } = hit;
-    const geneName = geneIdentity(gene);
+    const { gene } = hit;
+    const row = searchRowModel(hit, this.handlers);
     const item = document.createElement('li');
     item.className = 'search-result';
 
@@ -146,69 +190,51 @@ export class GeneSearchResults {
     const heading = document.createElement('p');
     heading.className = 'search-result-name';
     const tag = createLocusTag(gene);
-    tag.dataset.geneId = gene.id;
+    tag.dataset.geneId = row.geneId;
     tag.dataset.searchAction = 'identity';
     heading.append(tag);
-    if (geneName?.kind === 'Gene symbol') {
+    if (row.symbol) {
       const name = document.createElement('b');
-      name.textContent = ` ${geneName.text}`;
+      name.textContent = ` ${row.symbol}`;
       heading.append(name);
     }
     const matched = document.createElement('span');
     matched.className = 'search-result-field';
-    matched.textContent = hit.alias
-      ? ` matched ${hit.matchedOn} via ${hit.alias}`
-      : ` matched ${hit.matchedOn}`;
+    matched.textContent = row.matched;
     heading.append(matched);
     const product = document.createElement('p');
     product.className = 'search-result-product';
-    product.textContent = view.product ?? 'no product description';
+    product.textContent = row.product;
     text.append(heading, product);
-    if (hit.goMatch) {
-      const go = document.createElement('p');
-      go.className = 'search-result-product';
-      const term = hit.goMatch.name ? ` — ${hit.goMatch.name}` : '';
-      const ambiguity = hit.goMatch.mappingAmbiguity ? '; mapping ambiguous' : '';
-      const obsolete = hit.goMatch.isObsolete ? '; obsolete GO ID in the pinned name release' : '';
-      go.textContent = `${hit.goMatch.id}${term} (`
-        + `${hit.goMatch.evidenceCode} computational suggestion${ambiguity}${obsolete})`;
-      text.append(go);
-    }
-    if (hit.categoryMatch) {
-      const category = document.createElement('p');
-      category.className = 'search-result-product';
-      category.textContent = `Lab-reviewed category: ${hit.categoryMatch}`;
-      text.append(category);
+    for (const line of [row.goLine, row.categoryLine]) {
+      if (!line) continue;
+      const note = document.createElement('p');
+      note.className = 'search-result-product';
+      note.textContent = line;
+      text.append(note);
     }
 
     const actions = document.createElement('div');
     actions.className = 'search-result-actions';
     const pin = document.createElement('button');
     pin.type = 'button';
-    const pinned = this.handlers.isPinned(gene.id);
-    const shortlisted = this.handlers.isShortlisted(gene.id);
-    const labels = searchActionState(pinned, shortlisted);
-    const identity = geneIdentityDescription(view);
-    pin.className = pinned ? 'chip-button active' : 'chip-button';
-    pin.dataset.geneId = gene.id;
+    pin.className = row.pinned ? 'chip-button active' : 'chip-button';
+    pin.dataset.geneId = row.geneId;
     pin.dataset.searchAction = 'pin';
-    pin.textContent = labels.pin;
-    pin.setAttribute('aria-pressed', String(pinned));
-    pin.setAttribute('aria-label',
-      `${labels.pin} ${gene.id} ${pinned ? 'from' : 'in'} the gene panel. ${identity}`);
-    pin.addEventListener('click', () => this.handlers.onPin(index));
+    pin.textContent = row.labels.pin;
+    pin.setAttribute('aria-pressed', String(row.pinned));
+    pin.setAttribute('aria-label', row.pinDescription);
+    pin.addEventListener('click', () => this.handlers.onPin(row.index));
 
     const add = document.createElement('button');
     add.type = 'button';
-    add.className = shortlisted ? 'chip-button active' : 'chip-button';
-    add.dataset.geneId = gene.id;
+    add.className = row.shortlisted ? 'chip-button active' : 'chip-button';
+    add.dataset.geneId = row.geneId;
     add.dataset.searchAction = 'shortlist';
-    add.textContent = labels.shortlist;
-    add.setAttribute('aria-pressed', String(shortlisted));
-    add.setAttribute('aria-label', shortlisted
-      ? `Remove ${gene.id} from the shortlist. ${identity}`
-      : `Add ${gene.id} to the shortlist. ${identity}`);
-    add.addEventListener('click', () => this.handlers.onShortlist(index));
+    add.textContent = row.labels.shortlist;
+    add.setAttribute('aria-pressed', String(row.shortlisted));
+    add.setAttribute('aria-label', row.shortlistDescription);
+    add.addEventListener('click', () => this.handlers.onShortlist(row.index));
 
     actions.append(pin, add);
     item.append(text, actions);

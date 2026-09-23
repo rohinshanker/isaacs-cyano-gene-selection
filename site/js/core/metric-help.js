@@ -3,6 +3,9 @@ import {
   describeExpressionSource, isExpressionMetric, isExpressionProxyMetric,
   measurementLimitClauses,
 } from './metric-registry.js';
+import { annotationSourceLabel } from './annotation-source.js';
+import { THRESHOLDS as DERIVED_THRESHOLDS } from './source-derived-categories.js';
+import { formatCount } from '../ui/format.js';
 
 const METHODS = Object.freeze({
   gc: 'G or C bases divided by all bases in sense codons; terminal stop excluded.',
@@ -182,4 +185,50 @@ export function metricHelp(metric, dataset) {
 
 export function methodKeys() {
   return Object.keys(METHODS);
+}
+
+/**
+ * The explanation shown when the colour is Function category. It states the
+ * implemented rule: among the enabled sources, UTEX 2973 > PCC 7942 > GO IEA,
+ * so a reviewed row colours only while UTEX 2973 is enabled, and a
+ * disagreement is coloured by the highest-priority enabled source and named,
+ * never sent to the multiple-functions bucket.
+ *
+ * @param {{reviewed: object, derived: object|null, categories: object}} options
+ *   `reviewed` is `dataset.functionCategories`, `derived` is
+ *   `dataset.sourceDerivedCategories` or null, and `categories` is the model
+ *   from `resolveFunctionCategories` under the enabled sources.
+ */
+export function functionCategoryHelp({ reviewed, derived, categories }) {
+  const threshold = DERIVED_THRESHOLDS.derivedProbabilityAtLeast.toFixed(2);
+  return {
+    title: 'Function category',
+    summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '
+      + 'sources: the lab-reviewed UTEX 2973 assignment when that source is enabled and a '
+      + 'reviewed row exists, otherwise a category derived from the PCC 7942 product name or '
+      + 'the GO IEA terms. The same colour has the same category on every map tab.',
+    unit: 'category (not a numeric metric)',
+    method: `The lab approved ${formatCount(reviewed.reviewedCount)} exact locus decisions `
+      + `on ${reviewed.source.provenance.userReview.date}. Among the enabled sources, colour `
+      + 'follows UTEX 2973 > PCC 7942 > GO IEA: a reviewed row colours its CDS only while '
+      + 'UTEX 2973 is enabled, otherwise the PCC 7942 category, otherwise the GO IEA category. '
+      + (derived
+        ? `Derived categories are TypeSafe ${derived.judgment.model} judgments over each `
+          + `enabled source, assigned only at probability ${threshold} or above, drawn as a `
+          + 'hollow ring with a centre dot, and labelled pcc-7942-derived or go-iea-derived. '
+          + 'When enabled sources disagree, the highest-priority enabled source colours the CDS '
+          + 'and the detail panel and export name the conflict; disagreements never use the '
+          + 'multiple-functions bucket, which only two reviewed labels reach.'
+        : 'GO IEA suggestions never assign a category colour by themselves.'),
+    origin: `UTEX 2973 RefSeq ${reviewed.source.provenance.annotationRelease} product records `
+      + 'and the lab review table'
+      + (derived ? '; PCC 7942 RefSeq product names at admitted joins (Adomako et al. 2022, '
+        + 'CC BY 4.0); Gene Ontology IEA relationships (CC BY 4.0).' : '.'),
+    coverage: `Under ${annotationSourceLabel(categories.sources)}: `
+      + `${formatCount(categories.reviewedCount)} coloured by lab review, `
+      + `${formatCount(categories.derivedCount)} by a derived source, `
+      + `${formatCount(categories.multipleCount)} in multiple functions, and `
+      + `${formatCount(categories.unknownCount)} unknown or unclassified.`,
+    citations: ['ncbi-utex-2973'],
+  };
 }

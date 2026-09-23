@@ -145,15 +145,15 @@ function renderSourceToggles(sources, onToggleSource) {
 
 /**
  * A key for the resolved category colour under the enabled sources: reviewed
- * assignments always win, then source-derived categories with their distinct
- * hollow marker. Category rows are interactive: hover/focus previews,
+ * assignments win while UTEX 2973 is enabled, then source-derived categories
+ * with their distinct hollow marker. Category rows are interactive: hover/focus previews,
  * click/Enter/Space toggles a filter selection, and a scoped reset clears it.
  */
 export function renderCategoryLegend(host, {
   labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
-  evidenceCounts = null, derivedThreshold = null, conflictCount = 0,
+  evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
@@ -222,8 +222,10 @@ export function renderCategoryLegend(host, {
   categoryRow(MULTIPLE_CATEGORY_ID, multipleLabel, scale.buckets[labels.length], multipleCount);
   categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, 'open-circle');
 
+  // Only reviewed rows with a category draw filled; a row reviewed as unknown
+  // is still resolved by review but shares the open unknown circle.
   staticRow('Reviewed (lab) category: filled circle', 'filled-circle', REVIEWED_MARKER_BORDER,
-    evidenceCounts ? evidenceCounts.reviewed : null, scale.buckets[0]);
+    evidenceCounts ? reviewedColouredCount : null, scale.buckets[0]);
   if (hasDerivedData) {
     const derivedCount = evidenceCounts
       ? evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']

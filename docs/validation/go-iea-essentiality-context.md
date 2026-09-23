@@ -224,7 +224,8 @@ The candidate detail panel states the tier and its rank among the four. For a
 GO-tier or unknown locus it adds the GO wording, which is dashed and set apart
 from the PCC badge. Every discrepancy is listed as its own note, and the panel
 states that neither source is preferred. The GO tier and its notes render and
-export only in the All sources view; single-source views leave them blank.
+export in every view: the legend's colour-source checkboxes govern function
+category colour and legend counts only and never blank evidence.
 
 The browser loader and `tools/validate_contract.py` each hold the thresholds
 above as their own constants. Both refuse a file whose policy thresholds

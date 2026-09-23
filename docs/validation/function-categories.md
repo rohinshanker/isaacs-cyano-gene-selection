@@ -69,8 +69,13 @@ every source.
 
 The source contains 2,715 CDS loci. Thirteen rows were reviewed: 12 have a
 characterized category and one is explicitly unknown. No reviewed row has
-multiple categories. At runtime 2,703 loci therefore resolve to unknown or
-unclassified, and zero resolve to the multiple-functions bucket.
+multiple categories. With only the UTEX 2973 checkbox enabled, 2,703 loci
+therefore resolve to unknown or unclassified, 12 draw a filled reviewed
+marker, and zero resolve to the multiple-functions bucket. With PCC 7942 and
+GO IEA enabled as well, source-derived categories colour a further 1,352 loci
+under their own evidence labels and hollow marker, leaving 1,351 unknown; the
+reviewed rows are unchanged either way. Those counts and the resolution rule
+are in [source-derived-categories.md](source-derived-categories.md).
 
 The viewer offers **Function category** under **Colour by** on every CDS map.
 It is the first selector choice, while GC3 remains the fresh-view default.

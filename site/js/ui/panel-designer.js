@@ -231,7 +231,9 @@ export class PanelDesigner {
   /**
    * @param {{dataset: object, registry: object,
    *   schemes: {active: {name: string, map: object}, saved: Array<{name: string, map: object}>},
-   *   shortlist: string[], pinnedId: string|null}} state
+   *   shortlist: string[], pinnedId: string|null, colorSources?: string[]}} state
+   *   `colorSources` is the set enabled for category colouring; the export
+   *   records it so a panel file cannot be mistaken for a different view.
    */
   update(state) {
     this.state = state;
@@ -966,13 +968,14 @@ export class PanelDesigner {
   }
 
   exportPanel() {
-    const { dataset, registry } = this.state;
+    const { dataset, registry, colorSources } = this.state;
     const result = buildPanelExport({
       dataset,
       registry,
       design: this.design,
       space: this.space,
       schemes: this.schemes,
+      colorSources,
     });
     for (const file of result.files) {
       const blob = new Blob([file.content], { type: file.type });
