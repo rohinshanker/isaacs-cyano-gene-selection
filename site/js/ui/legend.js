@@ -157,6 +157,7 @@ export function renderCategoryLegend(host, {
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
   evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
+  markerConventions = true,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
@@ -226,24 +227,27 @@ export function renderCategoryLegend(host, {
   categoryRow(UNKNOWN_CATEGORY_ID, 'Unknown or unclassified', CATEGORY_UNKNOWN_COLOR, unknownCount, 'open-circle');
 
   // Only reviewed rows with a category draw filled; a row reviewed as unknown
-  // is still resolved by review but shares the open unknown circle.
-  staticRow('Reviewed (lab) category: filled circle', 'filled-circle', REVIEWED_MARKER_BORDER,
-    evidenceCounts ? reviewedColouredCount : null, scale.buckets[0]);
-  if (hasDerivedData) {
-    const derivedCount = evidenceCounts
-      ? evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
-      : null;
-    staticRow('Derived (computational) category: ring with centre dot', 'derived-circle',
-      scale.buckets[0], derivedCount, DERIVED_MARKER_FILL);
+  // is still resolved by review but shares the open unknown circle. These rows
+  // name the scatter map's point shapes, so a view that draws the same states
+  // as something else asks for `markerConventions: false` and says its own.
+  if (markerConventions) {
+    staticRow('Reviewed (lab) category: filled circle', 'filled-circle', REVIEWED_MARKER_BORDER,
+      evidenceCounts ? reviewedColouredCount : null, scale.buckets[0]);
+    if (hasDerivedData) {
+      const derivedCount = evidenceCounts
+        ? evidenceCounts['pcc-7942-derived'] + evidenceCounts['go-iea-derived']
+        : null;
+      staticRow('Derived (computational) category: ring with centre dot', 'derived-circle',
+        scale.buckets[0], derivedCount, DERIVED_MARKER_FILL);
+    }
+    for (const row of categoryExcludedLegendRows(
+      showHidden, hiddenReviewedCount, hiddenUnknownCount,
+    )) {
+      staticRow(row.label, row.shape, row.color, row.count, row.fill);
+    }
+    staticRow('Shortlisted: diamond outline', 'diamond', SHORTLIST_COLOR);
+    staticRow('Pinned: ring with crosshairs', 'pin', PINNED_COLOR);
   }
-
-  for (const row of categoryExcludedLegendRows(
-    showHidden, hiddenReviewedCount, hiddenUnknownCount,
-  )) {
-    staticRow(row.label, row.shape, row.color, row.count, row.fill);
-  }
-  staticRow('Shortlisted: diamond outline', 'diamond', SHORTLIST_COLOR);
-  staticRow('Pinned: ring with crosshairs', 'pin', PINNED_COLOR);
 
   const resetButton = document.createElement('button');
   resetButton.type = 'button';
@@ -313,8 +317,11 @@ export function describeBasisCounts(basisCounts) {
 /**
  * @param {HTMLElement} host
  * @param {{metric: object, scale: object, missingCount: number, hiddenCount: number,
- *   showHidden: boolean, provenanceNote: string|null,
+ *   showHidden: boolean, provenanceNote: string|null, markerConventions?: boolean,
  *   basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
+ *   `markerConventions` false omits the rows naming the scatter map's point
+ *   shapes, for a view that draws the same evidence states as something else.
+ *   That caller states its own conventions; the colour key is what it shares.
  */
 export function renderLegend(host, state) {
   host.replaceChildren();
@@ -367,21 +374,23 @@ export function renderLegend(host, state) {
     item.append(makeSwatch(shape, color, fill), document.createTextNode(` ${text}`));
     notes.append(item);
   };
-  addNote(
-    'open-circle', MISSING_COLOR,
-    `${formatCount(state.missingCount)} genes have no value: open circles`,
-  );
-  // Only true when those grey dots are actually drawn: with "Show filtered-out
-  // genes" unchecked, the map has nothing this note could be describing.
-  if (state.showHidden) {
+  if (state.markerConventions !== false) {
     addNote(
-      'ghost-square', GHOST_BORDER,
-      `${formatCount(state.hiddenCount)} excluded by filters: grey outlined squares`,
-      GHOST_COLOR,
+      'open-circle', MISSING_COLOR,
+      `${formatCount(state.missingCount)} genes have no value: open circles`,
     );
+    // Only true when those grey dots are actually drawn: with "Show filtered-out
+    // genes" unchecked, the map has nothing this note could be describing.
+    if (state.showHidden) {
+      addNote(
+        'ghost-square', GHOST_BORDER,
+        `${formatCount(state.hiddenCount)} excluded by filters: grey outlined squares`,
+        GHOST_COLOR,
+      );
+    }
+    addNote('diamond', SHORTLIST_COLOR, 'Shortlisted: diamond outline');
+    addNote('pin', PINNED_COLOR, 'Pinned: ring with crosshairs');
   }
-  addNote('diamond', SHORTLIST_COLOR, 'Shortlisted: diamond outline');
-  addNote('pin', PINNED_COLOR, 'Pinned: ring with crosshairs');
 
   const ramp = document.createElement('p');
   ramp.className = 'legend-ramp-note';

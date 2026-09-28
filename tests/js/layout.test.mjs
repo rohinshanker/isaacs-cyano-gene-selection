@@ -26,6 +26,18 @@ test('analysis panels keep a logical source order inside one center column', () 
     'the mobile selected-detail shortcut stays with the map that creates the selection');
 });
 
+test('the chromosome tab is a registered tab with its own tabpanel container', () => {
+  assert.match(app, /const ALL_TABS = \[\.\.\.PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB\];/,
+    'the chromosome view is a selectable tab in the shared tablist');
+  assert.match(html,
+    /<div id="chromosome-view" role="tabpanel" aria-labelledby="panel-tab-chromosome" hidden><\/div>/);
+  assert.equal((html.match(/id="chromosome-view"/g) ?? []).length, 1);
+  // The map tabpanel and this one are never both on screen.
+  assert.match(app, /element\('chromosome-view'\)\.hidden = !chromosomeActive;/);
+  assert.match(app, /element\('map-view'\)\.hidden = !mapActive;/);
+  assert.match(app, /classList\.toggle\('chromosome-active', chromosomeActive\)/);
+});
+
 test('relocated support panels use compact native disclosures', () => {
   assert.match(html, /<details class="workflow-help">/);
   assert.match(html, /<details class="panel-workflow">/);

@@ -15,6 +15,19 @@ test('desktop breakpoints and single-column views expose only relevant handles',
   assert.equal(workspaceColumns(1440, classes('regulatory-active')), 0);
 });
 
+test('the chromosome view keeps both rails, because selection hands off to them', () => {
+  // A deliberate decision, recorded in docs/validation/chromosome-view.md: this
+  // view is a whole-genome map of the same genes, and selecting a CDS on the
+  // track is how the reader opens it in the gene visualizer on the left and the
+  // gene detail card on the right. It therefore takes no layout class that
+  // changes the column count, unlike the lengths, regulatory, and citations
+  // views, which have no per-gene selection to hand off.
+  assert.equal(workspaceColumns(1440, classes('chromosome-active')), 3);
+  assert.equal(workspaceColumns(1240, classes('chromosome-active')), 3);
+  assert.equal(workspaceColumns(1239, classes('chromosome-active')), 2);
+  assert.equal(workspaceColumns(959, classes('chromosome-active')), 0);
+});
+
 test('defaults leave a visible gap and a map at least 400 pixels wide', () => {
   const two = clampPanelWidths(null, 920, 2);
   const three = clampPanelWidths(null, 1200, 3);

@@ -23,6 +23,8 @@ import { PANELS, buildProjection } from './ui/panels.js';
 import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
+import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
+import { repliconTracks } from './core/chromosome-model.js';
 import { metricHelp, functionCategoryHelp } from './core/metric-help.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
@@ -72,8 +74,11 @@ const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
  */
 const STORAGE_COMPARE_AXES = 'cyano.compare-axes.v1';
 
-/** The shared tablist: map panels, then length, regulatory, and source views. */
-const ALL_TABS = [...PANELS, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB];
+/**
+ * The shared tablist: map panels, then the chromosome, length, regulatory, and
+ * source views. A tab's id is the permanent `p` token in the URL hash.
+ */
+const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB];
 
 const element = (id) => document.getElementById(id);
 
@@ -154,7 +159,11 @@ function jumpToMap() {
     return;
   }
   pendingMapJump = false;
-  if (!PANELS.some((panel) => panel.id === state.panel)) {
+  // The chromosome view is a map of the same genes, so a jump lands on it
+  // rather than switching the reader off the tab they chose.
+  const onAMap = PANELS.some((panel) => panel.id === state.panel)
+    || state.panel === CHROMOSOME_TAB.id;
+  if (!onAMap) {
     state.panel = 'native';
     updatePanelTabs();
     renderCurrentView();
@@ -164,7 +173,8 @@ function jumpToMap() {
   // The canvas is `[hidden]` while the citations tab is showing; focusing a
   // hidden element is a no-op in every browser, but skip it explicitly so
   // this stays correct if that ever changes.
-  if (!element('map-view').hidden) element('map-canvas').focus({ preventScroll: true });
+  if (state.panel === CHROMOSOME_TAB.id) chromosomeView?.focusCanvas();
+  else if (!element('map-view').hidden) element('map-canvas').focus({ preventScroll: true });
 }
 
 function installMapJumps() {
@@ -174,6 +184,13 @@ function installMapJumps() {
       jumpToMap();
     });
   }
+}
+
+/** Reach the selected gene's detail card without replacing application state. */
+function jumpToDetail() {
+  const detail = element('detail');
+  detail.scrollIntoView({ block: 'start' });
+  detail.focus({ preventScroll: true });
 }
 
 function percentileOf(key, value) {
@@ -299,10 +316,23 @@ function computeMask() {
   context.missingHidden = missingHidden;
 }
 
-/** Hover/focus preview: one category's genes, still bound by every other filter. */
+/**
+ * Hover/focus preview: one category's genes, still bound by every other filter.
+ * A preview is a camera-level change, never filter or URL state, so it is
+ * pushed straight at whichever view is on screen.
+ */
 function previewCategory(id) {
+  const apply = (mask) => {
+    if (state.panel === CHROMOSOME_TAB.id) {
+      if (!chromosomeView?.model?.verified) return;
+      chromosomeView.model.mask = mask;
+      chromosomeView.draw();
+      return;
+    }
+    plot.setMask(mask);
+  };
   if (!id) {
-    plot.setMask(context.mask);
+    apply(context.mask);
     return;
   }
   const categories = context.categories;
@@ -312,7 +342,7 @@ function previewCategory(id) {
   for (let i = 0; i < base.length; i += 1) {
     preview[i] = base[i] && categoryBucketId(categories, i) === id ? 1 : 0;
   }
-  plot.setMask(preview);
+  apply(preview);
 }
 
 // Hover (mouse) and keyboard focus are independent preview channels. Losing
@@ -443,6 +473,7 @@ let panelDesigner = null;
 let citationsPanel = null;
 let lengthExplorer = null;
 let regulatorySitesPanel = null;
+let chromosomeView = null;
 let workspaceResizer = null;
 let leftPanels = null;
 /** Chosen comparison metrics for this browser, or null for the defaults. */
@@ -477,17 +508,121 @@ function scheduleTiming() {
   }, 250);
 }
 
-function renderColorHelp() {
+/**
+ * The colour channel every view shares: the resolved category model or the
+ * selected metric, its values, and the ramp built over them. The scatter map
+ * and the chromosome view read this one model, so a gene is the same colour in
+ * both and neither can drift into its own colour rules.
+ */
+function colorModel() {
+  const categories = context.categories ?? resolveCategoryModel();
+  const categorical = state.colorBy === FUNCTION_COLOR_KEY && Boolean(categories);
+  const metric = categorical ? { label: 'Function category' }
+    : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
+  if (!categorical) state.colorBy = metric.key;
+  const values = categorical ? categories.values
+    : metricValues(metric, context.dataset.genes.length);
+  // The ramp family is whatever the metric declares; undeclared is inferred and
+  // the legend says so. `direction` is never read.
+  const scale = categorical
+    ? buildCategoryColorScale(categories.labels.length)
+    : buildColorScale(values, { scale: metric.scale });
+  return {
+    categories,
+    categorical,
+    metric,
+    values,
+    scale,
+    derived: categorical ? categories.derived : null,
+    label: metric.label,
+  };
+}
+
+/**
+ * The colour key for one view's legend host, in whichever colour mode is on.
+ *
+ * `markerConventions` false leaves out the rows naming the scatter map's point
+ * shapes, for a view that draws the same evidence states differently and states
+ * its own conventions beside the key.
+ */
+function renderColorLegend(host, colors, { markerConventions = true } = {}) {
+  const { categorical, categories, metric, values, scale } = colors;
+  if (categorical) {
+    let hiddenReviewedCount = 0;
+    let hiddenUnknownCount = 0;
+    for (let i = 0; i < context.mask.length; i += 1) {
+      if (context.mask[i]) continue;
+      if (categoryBucketId(categories, i) === UNKNOWN_CATEGORY_ID) {
+        hiddenUnknownCount += 1;
+      } else {
+        hiddenReviewedCount += 1;
+      }
+    }
+    renderCategoryLegend(host, {
+      ...categories,
+      hasDerivedData: categories.hasDerivedData,
+      derivedThreshold: DERIVED_THRESHOLDS.derivedProbabilityAtLeast,
+      onToggleSource: (id, enabled) => toggleColorSource(id, enabled),
+      scale,
+      hiddenReviewedCount,
+      hiddenUnknownCount,
+      showHidden: state.showHidden,
+      selected: state.categoryFilter,
+      onHoverCategory: (id) => hoverCategory(id),
+      onFocusCategory: (id) => focusCategory(id),
+      onToggleCategory: (id) => toggleCategoryFilter(id),
+      onResetCategoryFilter: () => clearCategoryFilter(),
+      markerConventions,
+    });
+    return;
+  }
+  let missing = 0;
+  for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
+  // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
+  // primary PCC abundance field's, even though both share the same basis states.
+  const isMeasuredExpressionMetric = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
+  renderLegend(host, {
+    metric,
+    scale,
+    missingCount: missing,
+    hiddenCount: context.dataset.genes.length - context.passing,
+    showHidden: state.showHidden,
+    provenanceNote: formatExpressionSource(metric.provenance),
+    basisCounts: isMeasuredExpressionMetric
+      ? expressionBasisCounts(context.dataset.genes, metric) : null,
+    markerConventions,
+  });
+}
+
+/** Grouped options for a Colour by selector, in the registry's own order. */
+function colorSelectOptions() {
+  const options = [];
+  if (context.dataset.functionCategories) {
+    options.push({ group: 'Reviewed function', value: FUNCTION_COLOR_KEY, label: 'Function category' });
+  }
+  for (const family of context.registry.families) {
+    for (const metric of familyMetrics(family)) {
+      options.push({
+        group: family,
+        value: metric.key,
+        label: metric.unit ? `${metric.label} (${metric.unit})` : metric.label,
+      });
+    }
+  }
+  return options;
+}
+
+function renderColorHelp(host) {
   const categories = context.categories ?? resolveCategoryModel();
   if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
-    renderMetricHelp(element('colour-help'), functionCategoryHelp({
+    renderMetricHelp(host, functionCategoryHelp({
       reviewed: context.dataset.functionCategories,
       derived: context.dataset.sourceDerivedCategories,
       categories,
     }), citationsManifest);
     return;
   }
-  renderMetricHelp(element('colour-help'),
+  renderMetricHelp(host,
     metricHelp(context.registry.byKey.get(state.colorBy), context.dataset), citationsManifest);
 }
 
@@ -553,23 +688,13 @@ function renderMap() {
   plot.setProjection(projection, { keepView: plot.projectionId === state.panel });
   plot.projectionId = state.panel;
 
-  const categories = context.categories ?? resolveCategoryModel();
-  const categorical = state.colorBy === FUNCTION_COLOR_KEY && Boolean(categories);
-  const metric = categorical ? { label: 'Function category' }
-    : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
-  if (!categorical) state.colorBy = metric.key;
-  renderColorHelp();
+  const colors = colorModel();
+  const { categories, categorical, metric, values, scale } = colors;
+  renderColorHelp(element('colour-help'));
   renderProjectionHelp(element('features-used'),
     projectionHelp(state.panel, context.dataset, context.registry,
       { x: state.axisX, y: state.axisY }), citationsManifest);
-  const values = categorical ? categories.values
-    : metricValues(metric, context.dataset.genes.length);
-  // The ramp family is whatever the metric declares; undeclared is inferred and
-  // the legend says so. `direction` is never read.
-  const scale = categorical
-    ? buildCategoryColorScale(categories.labels.length)
-    : buildColorScale(values, { scale: metric.scale });
-  plot.setColor({ values, scale, derived: categorical ? categories.derived : null });
+  plot.setColor({ values, scale, derived: colors.derived });
   plot.setMask(context.mask);
   plot.setShowHidden(state.showHidden);
   plot.setMarks({
@@ -589,51 +714,7 @@ function renderMap() {
   element('reset-view').disabled = !projection.available;
   element('zoom-in').disabled = !projection.available;
   element('zoom-out').disabled = !projection.available;
-  if (projection.available) {
-    if (categorical) {
-      let hiddenReviewedCount = 0;
-      let hiddenUnknownCount = 0;
-      for (let i = 0; i < context.mask.length; i += 1) {
-        if (context.mask[i]) continue;
-        if (categoryBucketId(categories, i) === UNKNOWN_CATEGORY_ID) {
-          hiddenUnknownCount += 1;
-        } else {
-          hiddenReviewedCount += 1;
-        }
-      }
-      renderCategoryLegend(legendHost, {
-        ...categories,
-        hasDerivedData: categories.hasDerivedData,
-        derivedThreshold: DERIVED_THRESHOLDS.derivedProbabilityAtLeast,
-        onToggleSource: (id, enabled) => toggleColorSource(id, enabled),
-        scale,
-        hiddenReviewedCount,
-        hiddenUnknownCount,
-        showHidden: state.showHidden,
-        selected: state.categoryFilter,
-        onHoverCategory: (id) => hoverCategory(id),
-        onFocusCategory: (id) => focusCategory(id),
-        onToggleCategory: (id) => toggleCategoryFilter(id),
-        onResetCategoryFilter: () => clearCategoryFilter(),
-      });
-    } else {
-      let missing = 0;
-      for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
-      // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
-      // primary PCC abundance field's, even though both share the same basis states.
-      const isMeasuredExpressionMetric = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
-      renderLegend(legendHost, {
-        metric,
-        scale,
-        missingCount: missing,
-        hiddenCount: context.dataset.genes.length - context.passing,
-        showHidden: state.showHidden,
-        provenanceNote: formatExpressionSource(metric.provenance),
-        basisCounts: isMeasuredExpressionMetric
-          ? expressionBasisCounts(context.dataset.genes, metric) : null,
-      });
-    }
-  }
+  if (projection.available) renderColorLegend(legendHost, colors);
 
   const loadingsHost = element('loadings-details');
   loadingsHost.hidden = !projection.available;
@@ -663,6 +744,48 @@ function renderMap() {
     functionColorKey: FUNCTION_COLOR_KEY,
   });
   scheduleTiming();
+}
+
+/**
+ * The chromosome tab.
+ *
+ * Every gene, colour, filter, pin, and shortlist entry is the one the rest of
+ * the workspace is looking at; this view adds only its own camera. The replicon
+ * tracks are resolved on each render because the filter mask they report
+ * against changes with the filters.
+ */
+function renderChromosomeView() {
+  const { tracks, problems, verified } = repliconTracks(context.dataset.genes, context.dataset.meta);
+  const colors = colorModel();
+  chromosomeView.update({
+    tracks,
+    problems,
+    verified,
+    genes: context.dataset.genes,
+    mask: context.mask,
+    showHidden: state.showHidden,
+    colors,
+    colorLabel: colors.label,
+    colorOptions: colorSelectOptions(),
+    colorKey: state.colorBy,
+    pinned: pinnedIndex(),
+    hovered: context.hoveredIndex,
+    active: context.activeIndex,
+    shortlist: new Set(
+      state.shortlist
+        .map((id) => context.dataset.indexById.get(id))
+        .filter((index) => index !== undefined),
+    ),
+    passing: context.passing,
+    total: context.dataset.genes.length,
+    categoryFilterCount: state.categoryFilter.length,
+    hasSelection: pinnedIndex() >= 0 || context.activeIndex >= 0 || context.hoveredIndex >= 0,
+  });
+  // After `update`, which is what builds this view's own hosts on first use.
+  renderColorHelp(chromosomeView.colourHelpElement());
+  if (verified) {
+    renderColorLegend(chromosomeView.legendElement(), colors, { markerConventions: false });
+  }
 }
 
 function renderDetail() {
@@ -830,14 +953,19 @@ function setPinned(index) {
  * drives the same detail panel a pointer hover would, so a keyboard user gets
  * the same information a mouse user does.
  */
-function previewActive(index) {
-  context.activeIndex = index;
-  plot.setMarks({ active: index });
-  renderDetail();
+/** What a keyboard preview says, wherever the preview came from. */
+function announceActive(index) {
   if (index < 0) return;
   const gene = context.dataset.genes[index];
   announce(`${geneMapLabel(gene)} active. `
     + 'Press Enter to pin, S to add or remove it from the shortlist.');
+}
+
+function previewActive(index) {
+  context.activeIndex = index;
+  plot.setMarks({ active: index });
+  renderDetail();
+  announceActive(index);
 }
 
 function toggleShortlist(index) {
@@ -908,15 +1036,24 @@ function renderCurrentView() {
   const citationsActive = state.panel === CITATIONS_TAB.id;
   const lengthsActive = state.panel === LENGTH_TAB.id;
   const regulatoryActive = state.panel === REGULATORY_TAB.id;
-  element('features-used').hidden = citationsActive || lengthsActive || regulatoryActive;
+  const chromosomeActive = state.panel === CHROMOSOME_TAB.id;
+  const mapActive = !citationsActive && !lengthsActive && !regulatoryActive && !chromosomeActive;
+  element('features-used').hidden = !mapActive;
   element('main').classList.toggle('citations-active', citationsActive);
   element('main').classList.toggle('lengths-active', lengthsActive);
   element('main').classList.toggle('regulatory-active', regulatoryActive);
+  element('main').classList.toggle('chromosome-active', chromosomeActive);
   workspaceResizer?.update();
-  element('map-view').hidden = citationsActive || lengthsActive || regulatoryActive;
+  element('map-view').hidden = !mapActive;
+  element('chromosome-view').hidden = !chromosomeActive;
   element('length-view').hidden = !lengthsActive;
   element('regulatory-view').hidden = !regulatoryActive;
   element('citations-view').hidden = !citationsActive;
+  if (chromosomeActive) {
+    element('panel-blurb').textContent = `${CHROMOSOME_TAB.blurb} ${CHROMOSOME_TAB.source}`;
+    renderChromosomeView();
+    return;
+  }
   if (citationsActive) {
     element('panel-blurb').textContent = CITATIONS_TAB.blurb;
     citationsPanel.render(citationsManifest);
@@ -955,25 +1092,19 @@ function familyMetrics(family) {
 function buildColorSelect() {
   const select = element('color-by');
   select.replaceChildren();
-  if (context.dataset.functionCategories) {
-    const group = document.createElement('optgroup');
-    group.label = 'Reviewed function';
-    const option = document.createElement('option');
-    option.value = FUNCTION_COLOR_KEY;
-    option.textContent = 'Function category';
-    group.append(option);
-    select.append(group);
-  }
-  for (const family of context.registry.families) {
-    const group = document.createElement('optgroup');
-    group.label = family;
-    for (const metric of familyMetrics(family)) {
-      const option = document.createElement('option');
-      option.value = metric.key;
-      option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
-      group.append(option);
+  let group = null;
+  let groupName = null;
+  for (const option of colorSelectOptions()) {
+    if (option.group !== groupName) {
+      groupName = option.group;
+      group = document.createElement('optgroup');
+      group.label = groupName;
+      select.append(group);
     }
-    select.append(group);
+    const node = document.createElement('option');
+    node.value = option.value;
+    node.textContent = option.label;
+    group.append(node);
   }
   select.value = state.colorBy;
   select.addEventListener('change', () => {
@@ -1302,6 +1433,9 @@ function applyLiveHash() {
   // encodes at a known scale rather than whatever view the old panel was
   // left at.
   plot.projectionId = null;
+  // The same rule for the chromosome camera: a pasted link shows the whole
+  // genome, not whatever window the previous view was left at.
+  chromosomeView?.resetView({ announce: false });
   updatePanelTabs();
   element('color-by').value = state.colorBy;
   element('axis-x').value = state.axisX;
@@ -1325,10 +1459,13 @@ async function boot() {
       citationsManifest = manifest;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(manifest);
       if (context.dataset && PANELS.some((panel) => panel.id === state.panel)) {
-        renderColorHelp();
+        renderColorHelp(element('colour-help'));
         renderProjectionHelp(element('features-used'),
           projectionHelp(state.panel, context.dataset, context.registry,
             { x: state.axisX, y: state.axisY }), manifest);
+      }
+      if (context.dataset && chromosomeView && state.panel === CHROMOSOME_TAB.id) {
+        renderColorHelp(chromosomeView.colourHelpElement());
       }
     })
     .catch(() => {
@@ -1399,11 +1536,7 @@ async function boot() {
   });
   leftPanels.apply({ order: state.panelOrder, collapsed: state.panelCollapsed });
 
-  element('detail-jump').addEventListener('click', () => {
-    const detail = element('detail');
-    detail.scrollIntoView({ block: 'start' });
-    detail.focus({ preventScroll: true });
-  });
+  element('detail-jump').addEventListener('click', () => jumpToDetail());
 
   // Chromium does not consistently route paging keys into a focused overflow
   // landmark. Handle them only on the landmark itself, leaving controls inside
@@ -1530,6 +1663,34 @@ async function boot() {
       else state.filters.lengthNt = next;
       renderAll();
     },
+  });
+
+  chromosomeView = new ChromosomeView(element('chromosome-view'), {
+    onHover: (index) => {
+      if (context.hoveredIndex === index) return;
+      context.hoveredIndex = index;
+      renderChromosomeView();
+      renderDetail();
+    },
+    onPreview: (index) => {
+      context.activeIndex = index;
+      renderChromosomeView();
+      renderDetail();
+      announceActive(index);
+    },
+    onSelect: (index) => setPinned(togglePinTarget(index, pinnedIndex())),
+    onShortlistToggle: (index) => toggleShortlist(index),
+    onColorChange: (key) => {
+      state.colorBy = key;
+      renderCurrentView();
+      persist();
+    },
+    onShowHiddenChange: (value) => {
+      state.showHidden = value;
+      renderAll();
+    },
+    onDetailJump: () => jumpToDetail(),
+    onAnnounce: announce,
   });
 
   regulatorySitesPanel = new RegulatorySitesPanel(element('regulatory-view'), {
