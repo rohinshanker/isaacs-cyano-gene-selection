@@ -275,6 +275,33 @@ A package failing any check is returned with the failing rows named. The "Before
 dispatch" confirmations are recorded in this ticket with their date before the
 first package is sent.
 
+### Package A intake, 2026-09-28
+
+Checked in this repository against
+[`cyano_package_A_candidates_20260928.tsv`](../handoff/cyano_package_A_candidates_20260928.tsv),
+SHA-256 `d6f456174fd10cb4cd265a342134de5e5de0d6580ebc0c93fc1d8b149073001f`, 74 rows.
+
+| Check | Result |
+| --- | --- |
+| Identifiers resolve | All 74 distinct accessions resolved directly: 49 GSE via GEO's text endpoint, 15 PXD via the PRIDE v2 API, 9 GCF via NCBI Datasets, PRJNA420395 and SRP125902 via the ENA portal. None missing. |
+| Checksums | No row carries one; the package retrieved no files, which is inside its scope. Nothing to recompute. |
+| Quotations and conditions | Six candidate series sampled: GSE254350, GSE106824, GSE45762, GSE103606, GSE103463, GSE50908. Every claimed condition key and sample count matches the GEO sample characteristics; GSE50908's reference-pool keys come from its second array channel, which is consistent. |
+| Required cells | `status`, `source`, `mapping_route`, and `artifact` present on every row. `mapping_route` names the exact shared-protein crosswalk, the PCC 6311/7943 crosswalk target, native UTEX tags, or `none`; no per-locus mapping asserted. |
+| Rejected and already-known rows | 16 rejected rows with reasons: 12 ChIP-seq, GSE205444 and PRJNA420395 marked as shipped, GSE309256 as already ranked, GCF_000817325.1 as the genome of record. |
+| Boundaries | No licence permission, no join, no comparability verdict; every `licence` cell is labelled a recommendation. |
+
+**Returned for correction, one row.** GSE106824 is listed as a `transcriptomics
+(RNA-seq)` candidate, but all 12 of its samples carry `library_strategy =
+ChIP-Seq`. It belongs with the twelve rejected ChIP-seq rows. Until the package
+corrects it, it is treated as rejected here and is not appended to the roadmap.
+
+**Note for package B.** GSE103606 is a mixed series: 94 RNA-seq samples and 12
+ChIP-seq samples. Condition extraction must cover the RNA-seq samples only.
+
+Accepted for the next step: the remaining 57 candidate rows, to be appended to the
+ranked table in [future-data-roadmap.md](../../validation/future-data-roadmap.md#ranked-candidates)
+with the 16 rejected rows and their reasons recorded in the scan ticket.
+
 ## Cleanup
 
 On resolution, fold the return-format table and any capability answer that changed
