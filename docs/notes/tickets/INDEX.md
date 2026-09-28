@@ -17,10 +17,6 @@ Items the owner takes to the next Claude Science session, per
 row when they add a claim or a dispatchable package and remove it when the result
 is pasted into the ticket and intake passes.
 
-**Coordinator handoff, 2026-09-28.** In-flight and next actions are in
-[`docs/notes/handoff/HANDOFF_coordinator__20260928.md`](../handoff/HANDOFF_coordinator__20260928.md);
-read it before touching the chromosome-tab branch.
-
 **A session returned 2026-09-28.** Its manifest, findings, and the ordered list of
 what to pick up next are in
 [`docs/notes/handoff/RET_claude-science-session__20260928.md`](../handoff/RET_claude-science-session__20260928.md).
