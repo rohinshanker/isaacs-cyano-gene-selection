@@ -64,6 +64,15 @@ deliberately do not share code with the pipeline.
 
 ### 1. Build the PCC 6311 and PCC 7943 crosswalk
 
+**Dispatched 2026-09-28 as Multica DEM-147 (codex-implementer).** Releases to pin,
+identified by Claude Science and to be re-verified against NCBI before pinning:
+PCC 6311 `GCF_022984265.1`, release `GCF_022984265.1-RS_2025_12_2`; PCC 7943
+`GCF_022984345.1`, release `GCF_022984345.1-RS_2025_12_2`. Both are
+Chromosome-level assemblies, not Complete Genome, so an unmatched locus may be
+assembly incompleteness rather than absence; the audit records that. The sweep
+below found no functional-genomics deposit for either strain, so this crosswalk
+unlocks nothing currently available: it is forward-looking infrastructure.
+
 Approved. The pangenome workbook gives these two strains pangenome IDs, coordinates,
 and strand but no NCBI locus column, so no source keyed by their own RefSeq tags can
 join until this exists.
@@ -95,6 +104,38 @@ Deliverable: a ranked candidate table appended to
 [future-data-roadmap.md](../../validation/future-data-roadmap.md), following its
 existing admission contract. Do not download anything whose reuse terms are
 unverified.
+
+#### Result, 2026-09-28
+
+Package A returned and passed intake (recorded in the offload ticket). The 57
+accepted candidates are in the
+[package A candidate register](../../validation/future-data-roadmap.md#package-a-candidate-register-2026-09-28);
+promotion to a ranked entry waits on packages B and C. Three findings change the
+plan: ribosome occupancy, TIS, TSS, and TTS returned zero new candidates across all
+six strains; PCC 6311, PCC 7943, and UTEX 3055 have no functional-genomics deposits
+and contribute annotation only; UTEX 2973 has exactly one public deposit, Tan 2018,
+already shipped. Every rejected row, kept so a later sweep does not re-raise it:
+
+| Artifact | Assay | Reason |
+| --- | --- | --- |
+| GEO GSE104202; PMID 29239721 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE106824; PMID 29241543 | transcriptomics (RNA-seq) | listed as an RNA-seq candidate, but all 12 samples are `library_strategy = ChIP-Seq`; treated as rejected pending the package correction |
+| GEO GSE114693 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE14225; PMID 19666549 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE205444; PMID 35814646 | transcriptomics (RNA-seq) | shipped: PCC 7942 abundance table - recognised, not new |
+| GEO GSE22468; PMID 21896749 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE28430 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE29264; PMID 21612627 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE309256; PMID 41292882,42148773 | TTS (Term-seq/Rend-seq) | already ranked in future-data-roadmap |
+| GEO GSE343576 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE42542; PMID 23913328 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE47015 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE48901; PMID 24244001 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE51093; PMID 24315105 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| GEO GSE55637; PMID 26058805 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
+| ENA PRJNA420395 / SRP125902; DOI 10.1186/s13068-018-1215-8 | TSS (dRNA-seq) + RNA-seq, prima… | already shipped as TAN2018_TSS - recognised, not new |
+| RefSeq GCF_000817325.1 | annotation (RefSeq PGAP) | genome of record, already pinned |
+
 
 ### 3. Decide how datasets combine
 
@@ -132,7 +173,11 @@ model, the splice and translational-exception flags, and a sentence-level access
 description. Verified against the spliced `M744_RS00920` and the multi-site
 `M744_RS08615`.
 
-Still to build, each gated on the data arriving through this ticket:
+Still to build. The 2026-09-28 sweep found no ribosome-occupancy, TIS, TSS, or
+TTS deposit for any admitted strain, so the first two items below are gated on data
+that does not currently exist, not on this ticket's progress. Decision recorded
+2026-09-28: the viewer states that absence explicitly in its evidence caveats rather
+than leaving an empty track, and the overlay code is not built ahead of a source.
 
 - sister-strain TSS, TIS, and TTS overlays, drawn as offsets against a named UTEX
   locus and labelled with strain, study, and condition, visibly transferred;
@@ -193,7 +238,8 @@ Because it is a tab rather than a replacement, shipping it does **not** by itsel
 retire the native codon-space PCA. That remains open question 4 and stays a
 separate, explicit decision.
 
-Design decisions, pending the owner's confirmation:
+Design decisions, confirmed by the owner 2026-09-28 and **dispatched as Multica
+DEM-148 (claude-implementer)** with rendered validation at three widths required:
 
 - **Linear, not circular.** A 2.69 Mb chromosome cannot share one circle or one scale
   legibly with a 46 kb and a 7.8 kb plasmid, and a linear track zooms and shares its

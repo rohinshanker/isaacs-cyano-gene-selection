@@ -209,6 +209,85 @@ offline download over a live request from the static site.
   timepoint, and processing version. Start with a small attributable presence
   overlay before considering a new quantitative pipeline.
 
+### Package A candidate register, 2026-09-28
+
+The 57 candidates below passed intake from the Claude Science package A sweep
+across the six admitted strains and seven admitted data types (intake recorded in
+the offload ticket while it is open; source table
+`docs/notes/handoff/cyano_package_A_candidates_20260928.tsv`, SHA-256
+`d6f456174fd10cb4cd265a342134de5e5de0d6580ebc0c93fc1d8b149073001f`). They are
+candidates, not admitted sources: none has a licence decision, a checksum, or
+paper-level condition metadata yet. Those arrive through offload packages B and C,
+and a candidate is promoted to a numbered ranked entry above only after both, under
+the admission contract. Conditions are quoted from repository metadata only; a
+value not stated there is not estimated.
+
+What the sweep established, and the register cannot show: ribosome occupancy,
+TIS, TSS, and TTS returned zero new candidates across all six strains (the one TTS
+hit, GSE309256, is entry 6 above). PCC 6311, PCC 7943, and UTEX 3055 have no
+functional-genomics deposits at all and contribute annotation only. UTEX 2973 has
+exactly one public deposit, Tan 2018, already shipped.
+
+| # | Strain | Assay | Artifact | Per-gene table | Mapping route | Conditions as recorded in repository metadata |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | PCC 7942 | transcriptomics (array) | GEO GSE102914; PMID 31161548 | none found (raw only: GSE102914_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | incubation medium=EPA Very Soft Water (pH 6.4± 0.3)/EPA Very Soft Water (pH 6.4± 0.3) + 5 mg/L Z-COTE/EPA Very Soft Wat… |
+| 2 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE103462; PMID 29241543 | GSE103462_Expression.xls.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype=rel-/wild type; time point=subjective dawn (CT=0)/subjective dusk (CT=12h) |
+| 3 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE103463; PMID 29241543 | GSE103463_Expression.xls.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype=rel- + relA+/rel- + relAE335Q; time point=subjective dawn (CT=0)/subjective dusk (CT=12h) |
+| 4 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE103606; PMID 29241543 | none found | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype=rel-/rel- + relA+/rel- + relAE335Q/rel- relA+; time point=0 (pre-induction)/1 h/30 min/combined; strain=PCC 79… |
+| 5 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE103644; PMID 29241543 | GSE103644_Expression.xls.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=PCC 7942; genotype=wild type + relA+/wild type + relAE335Q; time point=0 (pre-induction)/1 h/30 min |
+| 6 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE103704; PMID 29241543 | GSE103704_Expression.xls.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype=rel- replicate 1/rel- replicate 2/wild type replicate 1/wild type replicate 2; time point=darkness, 1 h/darkne… |
+| 7 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE104203; PMID 29239721 | none found (raw only: GSE104203_Natural_light_RNAseq_proces… | PCC 7942 RefSeq locus tags -> existing exact sh… | hours since light onset (dawn)=0.5/10/12/2; perturbation=15 minutes in High Light pulse/15 minutes in Shade pulse/15 mi… |
+| 8 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE104204; PMID 29239721 | none found | PCC 7942 RefSeq locus tags -> existing exact sh… | hours since light onset (dawn)=0.5/10/12/2; perturbation=15 minutes in High Light pulse/15 minutes in Shade pulse/15 mi… |
+| 9 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE105774; PMID 29241543 | GSE105774_Expression.xls.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype=rel- relA+/rel- relAE335Q; time point=darkness, 1 h/darkness, 12 h/darkness, 15 min/darkness, 2 h |
+| 10 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE122841; PMID 30619416 | none found (raw only: GSE122841_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=PCC 7942; sample type=Cyanobacterial cell; genotype/variation=OsTPX-expressing/wild type; growth condition=norma… |
+| 11 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE140121 | none found (raw only: GSE140121_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=PCC 7942; genotype/variation=transgenic microalgae (TA)/wild type; treatment=normal/stressed; 2.5 mM H2O2 at 7 d… |
+| 12 | PCC 7942 | transcriptomics (array) | GEO GSE18902; PMID 20018699 | none found (raw only: GSE18902_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | experiment=1/2; strain=AMC 408; reference=average of samples in experiment 1/average of samples in experiment 2 |
+| 13 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE205443; PMID 35814646 | GSE205443_Counts.txt.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=Cyanobacterial cell; strain=PCC 7942; genotype=RB-TnSeq Library 1.0/RB-TnSeq Library 2.0; growth vessel=bubbl… |
+| 14 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE205445; PMID 35814646 | none found (raw only: GSE205445_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=Cyanobacterial cell; strain=PCC 7942; genotype=RB-TnSeq Library 1.0/RB-TnSeq Library 2.0/Wild Type/pilB::Tn5;… |
+| 15 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE222067; PMID 36819058 | GSE222067_counts.xlsx | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=bacterial cell; genotype=Synpcc7942_0808 locus knocked into ectABC/WT; treatment=0 mM NaCl/300 mM NaCl |
+| 16 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE225426 | none found (raw only: GSE225426_Processed_data_A.xlsx, GSE2… | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=bacterial cell; genotype=WT; stress=0.4 M NaCl stress for 1 day/0.4 M NaCl stress for 3 day/50 mg/L streptomy… |
+| 17 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE237858; PMID 38739791 | GSE237858_transcript_count_matrix.csv.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=cyanobacteria; time=collected after 12h in LL (with one 12h dark pulse before); genotype=kaiA over-expression… |
+| 18 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE252562; PMID 39236161 | GSE252562_transcript_count_matrix.csv.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=bacterial cells; time=collected 1h before midday of their respective photoperiod; genotype=kaiABC knock-out/w… |
+| 19 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE254350; PMID 39188729 | GSE254350_normalized_counts.xlsx | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=bacterial cell; genotype=pilB-mutant/sigF1-mutant/sigF2-mutant/wild-type |
+| 20 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE311172 | GSE311172_rna_seq_counts.csv.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=axenic; genotype=cscB-sps; treatment=AD1 biofilm high light 445% O2 air saturation/AD1 high light 0% O2 air s… |
+| 21 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE327989 | GSE327989_TPM_values_260414.csv.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=PcyX over expression/PebA-PebB over expression/PebS over expression/WT (control) |
+| 22 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE335065; PMID 39455633 | GSE335065_rna_seq_counts_092726.csv.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | cell type=axenic/co-culture; genotype=cscB+ delta-sps/cscB+ delta-sps, WT; treatment=S.e + R.t co-culture day 4/S.e + R… |
+| 23 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE45762; PMID 23919451 | GSE45762_Processed_Counts.xlsx.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=7942/SE01/SE02; genotype=delta-aas/delta-aas, 'tesA/wild type; ffa production=No/Yes |
+| 24 | PCC 7942 | transcriptomics (array) | GEO GSE50908; PMID 24315105 | none found (raw only: GSE50908_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=rpaA::KmR (EOC 66); time in ll=24 h/28 h/32 h/36 h; reference pool composition=pool of samples 24 h through 72 h… |
+| 25 | PCC 7942 | transcriptomics (array) | GEO GSE50919; PMID 24315105 | none found (raw only: GSE50919_RAW.tar, GSE50919_log2_rpaA-… | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=AMC408/rpaA::KmR (EOC 66); time=20-h pool (T = 24, 28, 32, 36, 40, 44 h) |
+| 26 | PCC 7942 | transcriptomics (array) | GEO GSE50920; PMID 24315105 | none found (raw only: GSE50920_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=kaiBC::CmR Ptrc::kaiBC (EOC72)/rpaA::CmR kaiBC::GmR Ptrc::kaiBC (EOC101); time=24 h/28 h/32 h/36 h |
+| 27 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE50922; PMID 24315105 | none found (raw only: GSE50922_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=AMC408/EOC113/EOC339/EOC346; time in ll=24 h/28 h/32 h/36 h; reference pool composition=pool of samples 24 h thr… |
+| 28 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE51112; PMID 24315105 | none found (raw only: GSE51112_RNAseq_ProcessedData.txt.gz) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=EOC113/EOC339/EOC346; time in ll (zt)=24 hours/28 hours/32 hours/36 hours; time since iptg addition=0 hours/0.5 … |
+| 29 | PCC 7942 | transcriptomics (array) | GEO GSE52486; PMID 24315105 | none found (raw only: GSE52486_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=wild-type (AMC 408); time in ll=36 h/40 h/44 h/48 h; time=pool of samples 36 h through 64 h; pool construction=E… |
+| 30 | PCC 7942 | transcriptomics (array) | GEO GSE59112; PMID 25127221 | none found (raw only: GSE59112_RAW.tar) | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype/variation=WT/cikA null; time point=12h Light/16h Light/20h Light/24h Light |
+| 31 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE79726; PMID 27488818 | none found (raw only: GSE79726_Se7942-N-starv2016.txt.gz) | PCC 7942 RefSeq locus tags -> existing exact sh… | strain=PCC 7942; treatment=Control/N-minus/N-plus; time=24h/48h |
+| 32 | PCC 7942 | transcriptomics (RNA-seq) | GEO GSE89999; PMID 28430105 | GSE89999_Expression_timecourse.xls.gz | PCC 7942 RefSeq locus tags -> existing exact sh… | genotype="clock rescue"/rpaA- "clock rescue"; time point=darknes 11 h 50 min/darkness 1 h/darkness 15 min/darkness 2h |
+| 33 | Synechococcus elongatus | transcriptomics (RNA-seq) | GEO GSE227397; PMID 37349485 | none found (raw only: GSE227397_RAW.tar) | none | strain=PCC 7942; genotype=WT/del(xpk); treatment=Dark 12hr/Dark 1hr/Light 12 hr/Light 1hr |
+| 34 | Synechococcus elongatus | transcriptomics (RNA-seq) | GEO GSE288532; PMID 40055679 | GSE288532_rna_seq_counts.csv.gz | none | cell line=strain PCC 7942 (FACHB-805); genotype=cscB-sps; treatment=day induced sucrose production 0h circadian time 4h… |
+| 35 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD000510 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 36 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD005105 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 37 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD005851 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 38 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD010000 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 39 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD019731 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 40 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD023591 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 41 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD027430 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 42 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD030282 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 43 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD036717 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 44 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD044412 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 45 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD062851 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 46 | PCC 7942 | proteomics (LC-MS/MS); | PRIDE PXD074299 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 47 | Synechococcus elongatus | proteomics (LC-MS/MS); | PRIDE PXD011485 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 48 | Synechococcus elongatus | proteomics (LC-MS/MS); | PRIDE PXD014590 | not determined - PRIDE per-project protein listing is not s… | UniProt accession -> exact shared-protein cross… | not reported in PRIDE project metadata; requires paper-level extraction (package B) |
+| 49 | PCC 6301 | annotation (RefSeq PGAP) | RefSeq GCF_000010065.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 50 | PCC 6301 | annotation (RefSeq PGAP) | RefSeq GCF_000817325.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 51 | PCC 6301 | annotation (RefSeq PGAP) | RefSeq GCF_022984195.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 52 | PCC 6311 | annotation (RefSeq PGAP) | RefSeq GCF_022984265.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 53 | PCC 7942 | annotation (RefSeq PGAP) | RefSeq GCF_000012525.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 54 | PCC 7942 | annotation (RefSeq PGAP) | RefSeq GCF_014698905.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 55 | PCC 7942 | annotation (RefSeq PGAP) | RefSeq GCF_030544905.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 56 | PCC 7943 | annotation (RefSeq PGAP) | RefSeq GCF_022984345.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+| 57 | UTEX 3055 | annotation (RefSeq PGAP) | RefSeq GCF_003957805.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+
 ## Deferred source families
 
 Rubin PCC 7942 Dataset S3 stays link-only because its redistribution terms
