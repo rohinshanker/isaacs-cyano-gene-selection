@@ -102,6 +102,22 @@ Record the review environment:
 - [ ] Enable borrowed expression and confirm PCC 7942 abundance is clearly
   labelled **measured elsewhere**, while native UTEX 2973 TSS is labelled
   **measured in this organism** and is not called abundance.
+- [ ] Collapse and reorder the controls column, then reload the resulting link
+  and confirm the column comes back arranged the same way. Drag a panel by its
+  grip and confirm the order is saved and no card stays in a dragging state.
+- [ ] Open every reset and confirm it asks first, with a red confirming button
+  carrying that reset's verb, Cancel holding focus, Escape changing nothing, and
+  focus returning to the control that asked.
+- [ ] Choose comparison metrics, reload the link, and confirm the same metrics
+  return. Reset them and confirm the control disables itself.
+- [ ] Scroll down, open How to read this, and confirm its button stays visible.
+- [ ] Inspect the gene visualizer for a spliced gene and a gene with several Tan
+  2018 start sites. Confirm the splice gap, the terminal stop mark, and that the
+  start-site caveat names the paper-era gene model.
+- [ ] If the release adds any cross-organism or ancestral estimate, confirm the
+  source organism, evidence basis, locus mapping, conditions, confidence or
+  interval, and conflicts appear anywhere it affects filtering, colour, ranking,
+  panel selection, comparison, and export. Confirm direct-source nulls remain null.
 - [ ] Fold a shortlisted gene under the active scheme. Inspect wild-type and
   recoded structures, MFE, and delta-MFE for both windows.
 - [ ] Cancel a fold, repeat it to exercise the cache, and test an offline/error
@@ -121,7 +137,10 @@ assumptions need specialist review for this panel.
 
 | Item | Pass condition | Notes or evidence |
 | --- | --- | --- |
-| Strain | Every sequence and measurement is identified as UTEX 2973 or clearly labelled as cross-strain evidence. | |
+| Organism and basis | Every sequence, annotation, measurement, transferred value, and inferred estimate identifies its organism and evidence basis; none is presented as direct UTEX 2973 evidence unless it is. An admitted sister-strain value names its strain and stays `transferred`. | |
+| Sister-strain scope | Any PCC 6301/6311/7942/7943 or UTEX 3055 value is in an admitted data type, carries no transferred coordinate, and states the light, temperature, CO₂, medium, and growth phase behind it. | |
+| Condition comparability | Datasets sharing one layer or combined estimate pass every axis of the comparability thresholds; a failing pair is shown as separate selectable layers, and an uncertain pair appears in the biological-decisions list. | |
+| UTEX 3055 coverage | A missing UTEX 3055 value is not rendered as zero or as a negative result, since 134 UTEX 2973 CDSs have no counterpart in that strain. | |
 | Locus identity | Every required, excluded, and selected locus tag matches the current strain inventory. | |
 | Gene model | Coordinates and starts are checked against `GCF_000817325.1-RS_2026_05_13`, especially if an older 2017 design is being reused. | |
 | Product | Product descriptions and annotation evidence support the intended interpretation. | |
@@ -133,7 +152,7 @@ assumptions need specialist review for this panel.
 | Hard constraints | Required/excluded genes, metric bounds, and missing-value policy match the design intent. | |
 | Missing data | **Require a value** is enabled wherever an unknown measurement is unacceptable. | |
 | Diversity rationale | Each selected gene adds a useful, understandable distinction rather than only improving an opaque score. | |
-| Expression | Borrowed PCC 7942 abundance is off unless cross-strain evidence is deliberately wanted. | |
+| Expression | Every non-native or inferred expression value has a reviewed mapping, common-scale transformation, condition caveat, and uncertainty; direct-only mode is used when the decision requires native evidence. | |
 | Essentiality | Any PCC 7942 call is labelled as borrowed and checked against its exact locus join and Rubin assay conditions; no call is described as a UTEX 2973 observation. | |
 | Native TSS | UTEX 2973 TSS is interpreted as initiation evidence, not transcript abundance. | |
 | Folding | MFE and structure changes are treated as hypotheses for follow-up, not proof of expression, fitness, or viability. | |
@@ -149,7 +168,7 @@ Panel record:
 | Recoding scheme name | |
 | Required loci | |
 | Excluded loci | |
-| Borrowed PCC 7942 expression used? | Yes / No |
+| Transferred/inferred evidence used (sources and bases) | |
 | Scientific reviewer and date | |
 | Approved for experimental planning? | Yes / No |
 

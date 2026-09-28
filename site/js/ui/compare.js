@@ -10,6 +10,7 @@
  * It is never placed at the median, so the picture and the table agree.
  */
 import { divergingColor } from './colors.js';
+import { confirmedReset } from './confirm-dialog.js';
 import { formatValue, formatDelta, formatCount, MISSING } from './format.js';
 import {
   metricValues, isExpressionMetric, isExpressionProxyMetric, expressionBasisOf,
@@ -149,7 +150,25 @@ export class ComparePanel {
     summary.textContent = 'Choose metrics to compare';
     this.axisOptions = document.createElement('div');
     this.axisOptions.className = 'axis-options';
-    this.axisPicker.append(summary, this.axisOptions);
+    // Reset returns the comparison to the metrics it opened on. It is disabled
+    // while nothing has been chosen, so the control also reports whether this
+    // view is on its defaults.
+    this.axisReset = document.createElement('button');
+    this.axisReset.type = 'button';
+    this.axisReset.className = 'chip-button axis-reset';
+    this.axisReset.textContent = 'Reset metrics';
+    this.axisReset.title = 'Return the comparison to its default metrics';
+    confirmedReset(this.axisReset, {
+      title: 'Reset comparison metrics?',
+      body: 'The radar and parallel-coordinate axes return to the default metrics, '
+        + 'discarding the set you chose.',
+      confirmLabel: 'Reset metrics',
+      action: () => this.setAxisKeys(null),
+    });
+    const resetRow = document.createElement('div');
+    resetRow.className = 'axis-reset-row';
+    resetRow.append(this.axisReset);
+    this.axisPicker.append(summary, this.axisOptions, resetRow);
 
     this.unavailableNote = document.createElement('p');
     this.unavailableNote.className = 'panel-note axis-unavailable-note';
@@ -212,6 +231,18 @@ export class ComparePanel {
     this.canvas.addEventListener('pointerup', (event) => this.onBrushEnd(event));
   }
 
+  /**
+   * Record a chosen metric set, or null for the defaults, and tell the caller.
+   * Every path that changes the axes goes through here, so none can change
+   * them without the URL following.
+   */
+  setAxisKeys(keys) {
+    this.axisKeys = Array.isArray(keys) && keys.length > 0 ? [...keys] : null;
+    this.brushes.clear();
+    this.handlers.onAxesChange?.(this.axisKeys ? [...this.axisKeys] : null);
+    this.render();
+  }
+
   setTab(tab) {
     this.tab = tab;
     this.handlers.onTabChange?.(tab);
@@ -244,6 +275,14 @@ export class ComparePanel {
     this.state = state;
     this.registry = state.registry;
     if (state.tab && state.tab !== this.tab) this.tab = state.tab;
+    // A link carries the chosen metrics, so the caller owns them and hands
+    // them back on every update. `undefined` means the caller is not managing
+    // them, which keeps this component usable on its own.
+    if (state.axisKeys !== undefined) {
+      this.axisKeys = Array.isArray(state.axisKeys) && state.axisKeys.length > 0
+        ? [...state.axisKeys]
+        : null;
+    }
     if (this.focusId && !state.ids.includes(this.focusId)) this.focusId = null;
     this.scales = new Map();
     this.render();
@@ -328,11 +367,9 @@ export class ComparePanel {
           const next = new Set(this.activeAxes().map((entry) => entry.key));
           if (input.checked) next.add(metric.key);
           else next.delete(metric.key);
-          this.axisKeys = this.registry.metrics
+          this.setAxisKeys(this.registry.metrics
             .filter((entry) => next.has(entry.key))
-            .map((entry) => entry.key);
-          this.brushes.clear();
-          this.render();
+            .map((entry) => entry.key));
         });
         label.append(input, document.createTextNode(` ${metric.label}`));
         if (dropped.has(metric.key)) {
@@ -345,6 +382,7 @@ export class ComparePanel {
       }
       this.axisOptions.append(group);
     }
+    this.axisReset.disabled = this.axisKeys === null;
     this.unavailableNote.textContent = describeDroppedAxes(this.droppedAxes);
     this.unavailableNote.hidden = this.tab === 'delta' || this.droppedAxes.length === 0;
   }

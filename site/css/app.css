@@ -1062,3 +1062,202 @@ input[type="range"] { width: 100%; }
 .rosetta-output { border: 1px solid var(--line); border-radius: var(--radius); padding: .55rem; margin-block: .55rem; min-width: 0; }
 .rosetta-output > strong { display: block; text-transform: uppercase; font-size: .78rem; margin-bottom: .35rem; }
 .rosetta-output pre { max-height: 12rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Controls-column panels: collapse and reorder -------------------------- */
+
+.panel-card { padding-top: 0.5rem; }
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.panel-toggle {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.25rem 0.2rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: inherit;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.panel-toggle:hover { background: var(--surface-sunken); }
+.panel-title { overflow-wrap: anywhere; }
+
+.panel-caret {
+  flex: none;
+  width: 0.7em;
+  height: 0.7em;
+  color: var(--ink-muted);
+  transition: transform 0.15s ease;
+}
+
+/* Down when open, pointing at the content; right when closed. */
+.panel-toggle[aria-expanded="false"] .panel-caret { transform: rotate(-90deg); }
+
+.panel-controls {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.panel-move {
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--ink-muted);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.panel-move:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent); }
+.panel-move:disabled { color: var(--line-strong); cursor: not-allowed; }
+
+.panel-grip {
+  width: 0.9rem;
+  height: 1.1rem;
+  margin-right: 0.1rem;
+  cursor: grab;
+  touch-action: none;
+  background-image: radial-gradient(circle, var(--line-strong) 1px, transparent 1px);
+  background-size: 4px 4px;
+  background-position: center;
+}
+
+.panel-dragging { opacity: 0.75; box-shadow: 0 0 0 2px var(--accent); }
+.panel-dragging .panel-grip { cursor: grabbing; }
+.panel-collapsed { padding-bottom: 0.5rem; }
+.panel-collapsed .panel-head { margin-bottom: 0; }
+
+/* Reset confirmation ---------------------------------------------------- */
+
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(27, 39, 51, 0.45);
+}
+
+.confirm-dialog {
+  width: min(28rem, 100%);
+  padding: 1rem 1.15rem 1.15rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(27, 39, 51, 0.28);
+}
+
+.confirm-title { font-size: 1.05rem; margin: 0 0 0.4rem; }
+.confirm-body { margin: 0 0 1rem; color: var(--ink-muted); }
+
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* The destructive answer is the only red control on screen while it is open. */
+.confirm-reset {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+.confirm-reset:hover:not(:disabled) { background: #8f1e17; border-color: #8f1e17; }
+
+.axis-reset-row { margin-top: 0.6rem; }
+
+/* Gene visualizer ------------------------------------------------------- */
+
+.gene-view-heading { margin-bottom: 0.4rem; }
+.gene-view-product { color: var(--ink-muted); font-size: 0.85rem; }
+
+.gene-view-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 8rem;
+  margin-bottom: 0.4rem;
+  overflow: visible;
+}
+
+.gene-view-ruler line { stroke: var(--line-strong); stroke-width: 1; }
+.gene-view-ruler text { fill: var(--ink-muted); font-size: 8px; font-family: var(--font); }
+.gene-view-cds { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; }
+.gene-view-join { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+.gene-view-codon-start { fill: var(--accent); }
+.gene-view-codon-stop { fill: var(--danger); }
+.gene-view-arrow { fill: var(--accent); }
+.gene-view-zero { stroke: var(--ink-muted); stroke-width: 1; stroke-dasharray: 2 2; }
+.gene-view-tss line { stroke: #6b4f9e; stroke-width: 1.4; }
+.gene-view-tss circle { fill: #6b4f9e; }
+
+.gene-view-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.75rem;
+  margin: 0 0 0.4rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.gene-view-key {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  vertical-align: -0.05em;
+}
+
+.gene-view-key-cds { background: var(--accent-soft); border: 1px solid var(--accent); }
+.gene-view-key-start { background: var(--accent); }
+.gene-view-key-stop { background: var(--danger); }
+.gene-view-key-tss { background: #6b4f9e; border-radius: 50%; }
+.gene-view-key-join { background: repeating-linear-gradient(90deg, var(--line-strong) 0 3px, transparent 3px 6px); }
+
+.gene-view-scale { font-size: 0.78rem; }
+
+.gene-view-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.1rem 0.6rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+}
+
+.gene-view-facts dt { color: var(--ink-muted); }
+.gene-view-facts dd { margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-caret { transition: none; }
+}
+
+/* A finger needs more than a pointer does; the move controls grow on touch. */
+@media (pointer: coarse) {
+  .panel-move { width: 2.4rem; height: 2.4rem; }
+  .panel-grip { width: 1.3rem; height: 1.8rem; }
+}

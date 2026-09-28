@@ -5,3 +5,5 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_cross-strain-data-scan__20260927](O_cross-strain-data-scan__20260927.md) | Build the PCC 6311/7943 crosswalk; scan literature and repositories for sister-strain annotation, transcriptomics, proteomics, ribosome-occupancy, TIS, TSS, and TTS data; apply the condition-comparability thresholds; extend the shipped gene viewer; design the chromosome visualizer and dataset selectors |
+| [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Decide which cross-strain scan work is handed to Claude Science; fix the handoff specification, per-candidate return format, and the evidence-not-admission boundary; confirm its interface, literature access, and file retrieval before dispatch |

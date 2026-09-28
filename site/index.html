@@ -24,6 +24,8 @@
   <div class="header-actions">
     <button type="button" class="chip-button header-link map-jump" aria-controls="map-section">Jump to map</button>
     <button type="button" id="reset-panel-widths" class="chip-button" hidden>Reset panel widths</button>
+    <button type="button" id="reset-panel-layout" class="chip-button"
+            title="Restore the controls column to its original order, with the gene visualizer collapsed">Reset panel layout</button>
     <button type="button" id="help-toggle" class="chip-button" aria-expanded="false" aria-controls="help">
       How to read this
       <svg class="help-toggle-caret" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
@@ -184,17 +186,30 @@ if (window.location.protocol === 'file:') {
 <div id="metric-agreement" class="metric-alert" role="alert" hidden></div>
 
 <main class="layout" id="main" hidden>
-  <aside class="column controls" id="controls-column" aria-label="Scheme and filters">
-    <section class="card">
-      <h2>Recoding scheme</h2>
-      <p class="panel-note">
-        Choose the codons to remove. Each gets a synonymous replacement you can change.
-      </p>
-      <div id="scheme-editor"></div>
+  <!-- Each panel carries its own id so the controls column can be reordered and
+       collapsed from a shared link. The head, caret, and move buttons are added
+       by ui/left-panels.js, which needs only the id, the heading, and the body. -->
+  <aside class="column controls" id="controls-column" aria-label="Gene visualizer, scheme and filters">
+    <section class="card panel-card" data-panel-id="gene-viewer">
+      <h2>Gene visualizer</h2>
+      <div class="panel-body" id="panel-body-gene-viewer" data-panel-body>
+        <div id="gene-viewer-controls"></div>
+      </div>
     </section>
-    <section class="card">
+    <section class="card panel-card" data-panel-id="scheme">
+      <h2>Recoding scheme</h2>
+      <div class="panel-body" id="panel-body-scheme" data-panel-body>
+        <p class="panel-note">
+          Choose the codons to remove. Each gets a synonymous replacement you can change.
+        </p>
+        <div id="scheme-editor"></div>
+      </div>
+    </section>
+    <section class="card panel-card" data-panel-id="filters">
       <h2>Filters</h2>
-      <div id="filters"></div>
+      <div class="panel-body" id="panel-body-filters" data-panel-body>
+        <div id="filters"></div>
+      </div>
     </section>
   </aside>
 

@@ -16,6 +16,7 @@ import {
 } from './core/metric-registry.js';
 import {
   encodeState, decodeState, defaultState, applyDecoded, clearSelections, viewStateOf,
+  resetPanelLayout, resetCompareAxes,
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection } from './ui/panels.js';
@@ -45,6 +46,9 @@ import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
 import { WorkspaceResizer } from './ui/workspace-resize.js';
 import { ComparePanel } from './ui/compare.js';
+import { LeftPanels } from './ui/left-panels.js';
+import { renderGeneViewer } from './ui/gene-viewer.js';
+import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
@@ -430,6 +434,7 @@ let citationsPanel = null;
 let lengthExplorer = null;
 let regulatorySitesPanel = null;
 let workspaceResizer = null;
+let leftPanels = null;
 // `undefined` while the manifest fetch is in flight, `null` once it resolves
 // to nothing usable, otherwise the sanitized `{sections: [...]}` document.
 let citationsManifest;
@@ -668,6 +673,22 @@ function renderDetail() {
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
     colorSources: state.colorSources,
   });
+  renderControlsGeneViewer(index);
+}
+
+/**
+ * Draw the controls-column copy of the gene visualizer.
+ *
+ * Skipped while that panel is collapsed: this runs on every hover, and drawing
+ * into a hidden subtree would cost the same as drawing a visible one for
+ * nothing. Expanding the panel re-renders through the layout change.
+ */
+function renderControlsGeneViewer(index) {
+  const body = leftPanels?.bodyFor('gene-viewer');
+  if (!body || body.hidden) return;
+  const host = body.querySelector('#gene-viewer-controls');
+  if (!host) return;
+  renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null);
 }
 
 function renderAll({ schemeErrors = [] } = {}) {
@@ -733,6 +754,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     dataset: context.dataset,
     registry: context.registry,
     tab: state.compareTab,
+    axisKeys: state.compareAxes,
   });
   if (panelDesigner) {
     panelDesigner.update({
@@ -1275,6 +1297,10 @@ function applyLiveHash() {
   element('axis-x-scale').value = state.axisXScale;
   element('axis-y-scale').value = state.axisYScale;
   element('show-hidden').checked = state.showHidden;
+  // The controls column is view state like any other, so a pasted link or a
+  // Back button rearranges it too. Without this the address bar would describe
+  // one layout while the page kept the previous one.
+  leftPanels?.apply({ order: state.panelOrder, collapsed: state.panelCollapsed });
   renderAll();
   announce('View updated from the address bar.');
 }
@@ -1339,7 +1365,27 @@ async function boot() {
     rightHandle: element('resize-detail'),
     resetButton: element('reset-panel-widths'),
     storage: store,
+    confirm: () => confirmReset({
+      title: 'Reset panel widths?',
+      body: 'The controls and gene-detail columns return to their default widths. '
+        + 'Any width you dragged or set with the keyboard is discarded.',
+      confirmLabel: 'Reset widths',
+      opener: element('reset-panel-widths'),
+    }),
   });
+
+  leftPanels = new LeftPanels(element('controls-column'), {
+    onChange: ({ order, collapsed }) => {
+      state.panelOrder = order;
+      state.panelCollapsed = collapsed;
+      // The visualizer is not drawn while collapsed, so expanding it has to
+      // ask for the current gene rather than waiting for the next hover.
+      renderDetail();
+      persist();
+    },
+    announce,
+  });
+  leftPanels.apply({ order: state.panelOrder, collapsed: state.panelCollapsed });
 
   element('detail-jump').addEventListener('click', () => {
     const detail = element('detail');
@@ -1514,6 +1560,13 @@ async function boot() {
       state.compareTab = tab;
       persist();
     },
+    // A chosen metric set is part of the view a link reproduces: the point of
+    // choosing axes is usually to show someone the comparison you are looking
+    // at. A null set means the view is back on its own defaults.
+    onAxesChange: (keys) => {
+      state.compareAxes = keys;
+      persist();
+    },
   });
 
   panelDesigner = new PanelDesigner(element('panel-designer'), {
@@ -1544,17 +1597,45 @@ async function boot() {
   // The source-ledger fetch is optional; a slow response must not delay map boot.
   void citationsLoaded;
 
-  element('reset-view').addEventListener('click', () => {
-    plot.resetFrameStats();
-    plot.resetView();
+  // Every reset asks first. Each one discards something the page cannot give
+  // back: a framing, a shortlist, an arrangement, a set of chosen metrics.
+  confirmedReset(element('reset-view'), {
+    title: 'Reset the map view?',
+    body: 'The map returns to its default zoom and position. Your pinned gene, shortlist, '
+      + 'filters, and recoding scheme are not affected.',
+    confirmLabel: 'Reset view',
+    action: () => {
+      plot.resetFrameStats();
+      plot.resetView();
+      announce('Map view reset.');
+    },
   });
-  element('reset-selections').addEventListener('click', () => {
-    clearSelections(state);
-    context.hoveredIndex = -1;
-    context.activeIndex = -1;
-    renderAll();
-    element('reset-view').focus({ preventScroll: true });
-    announce('Selections reset. The pinned gene and candidate shortlist were cleared.');
+  confirmedReset(element('reset-selections'), {
+    title: 'Reset selections?',
+    body: 'This clears the pinned gene and every gene on the candidate shortlist. '
+      + 'The shortlist cannot be recovered afterwards.',
+    confirmLabel: 'Reset selections',
+    action: () => {
+      clearSelections(state);
+      context.hoveredIndex = -1;
+      context.activeIndex = -1;
+      renderAll();
+      element('reset-view').focus({ preventScroll: true });
+      announce('Selections reset. The pinned gene and candidate shortlist were cleared.');
+    },
+  });
+  confirmedReset(element('reset-panel-layout'), {
+    title: 'Reset panel layout?',
+    body: 'The controls column returns to its original order, with the gene visualizer '
+      + 'collapsed and the other panels open.',
+    confirmLabel: 'Reset layout',
+    action: () => {
+      resetPanelLayout(state);
+      leftPanels.apply({ order: state.panelOrder, collapsed: state.panelCollapsed });
+      renderDetail();
+      persist();
+      announce('Panel layout reset.');
+    },
   });
   element('zoom-in').addEventListener('click', () => plot.zoomStep(1.4));
   element('zoom-out').addEventListener('click', () => plot.zoomStep(1 / 1.4));
@@ -1572,7 +1653,14 @@ async function boot() {
     const open = element('help').hidden;
     element('help').hidden = !open;
     helpToggle.setAttribute('aria-expanded', String(open));
-    if (open) element('help').scrollIntoView({ block: 'nearest' });
+    // Scroll the header, not the help section. The help section is taller than
+    // the viewport, so bringing *it* into view pushed this button off the top
+    // of the screen: the control that opened the panel disappeared, and the
+    // one that closes it could not be found. Anchoring on the header keeps the
+    // toggle visible with the panel opening below it.
+    if (open) {
+      document.querySelector('.site-header').scrollIntoView({ block: 'start' });
+    }
   });
 
   window.addEventListener('hashchange', applyLiveHash);

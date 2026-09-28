@@ -11,6 +11,7 @@
  * once per selected scheme, and a panel that changed under the reader's hands
  * would be impossible to reason about.
  */
+import { confirmedReset } from './confirm-dialog.js';
 import { compileScheme } from '../core/scheme.js';
 import { computeLiveMetrics } from '../core/live-metrics.js';
 import { buildPanelSpace } from '../core/panel-features.js';
@@ -316,14 +317,20 @@ export class PanelDesigner {
     design.addEventListener('click', () => this.run());
     const reset = element('button', 'chip-button', 'Reset settings');
     reset.type = 'button';
-    reset.addEventListener('click', () => {
-      this.config = normaliseConfig({ size: DEFAULT_PANEL_SIZE });
-      this.selectedSchemeKeys = new Set(['active']);
-      this.design = null;
-      this.designInputKey = '';
-      this.renderForm();
-      this.renderResult();
-      this.handlers.onAnnounce('Panel settings reset.');
+    confirmedReset(reset, {
+      title: 'Reset panel settings?',
+      body: 'Every constraint, feature choice, and scheme selection returns to its default, '
+        + 'and any panel already generated is cleared.',
+      confirmLabel: 'Reset settings',
+      action: () => {
+        this.config = normaliseConfig({ size: DEFAULT_PANEL_SIZE });
+        this.selectedSchemeKeys = new Set(['active']);
+        this.design = null;
+        this.designInputKey = '';
+        this.renderForm();
+        this.renderResult();
+        this.handlers.onAnnounce('Panel settings reset.');
+      },
     });
     actions.append(design, reset);
     this.form.append(actions);

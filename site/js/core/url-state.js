@@ -11,6 +11,10 @@ import {
   DEFAULT_COLOR_SOURCES, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
   NO_SOURCES,
 } from './annotation-source.js';
+import {
+  DEFAULT_PANEL_ORDER, DEFAULT_PANEL_COLLAPSED, NO_PANELS_COLLAPSED,
+  normalizePanelOrder, normalizeCollapsed, isDefaultPanelOrder, isDefaultCollapsed,
+} from './left-panels.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
@@ -18,6 +22,7 @@ const KEYS = {
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
   categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
+  panelOrder: 'po', panelCollapsed: 'pc', compareAxes: 'cm',
 };
 
 /**
@@ -26,11 +31,12 @@ const KEYS = {
  * unset, not merely omitted by an older encoder. Bump this only when a change
  * to what gets encoded could make an older reader misinterpret a newer hash
  * (or vice versa) `l`'s explicit-empty behaviour below is why version 1 became 2,
- * the fresh-view metric axes are why version 2 became 3, and dropping the
+ * the fresh-view metric axes are why version 2 became 3, dropping the
  * single-source view field `as` for the colour-source toggles `cs` is why
- * version 3 became 4.
+ * version 3 became 4, and the controls-column layout (`po`, `pc`) with the
+ * chosen comparison metrics (`cm`) is why version 4 became 5.
  */
-export const STATE_VERSION = 4;
+export const STATE_VERSION = 5;
 
 /**
  * The first encoder version whose omitted `ax`/`ay` mean today's measured
@@ -76,7 +82,23 @@ export function defaultState() {
     axisY: DEFAULT_METRIC_AXES.y,
     axisXScale: DEFAULT_AXIS_SCALE,
     axisYScale: DEFAULT_AXIS_SCALE,
+    panelOrder: [...DEFAULT_PANEL_ORDER],
+    panelCollapsed: [...DEFAULT_PANEL_COLLAPSED],
+    compareAxes: null,
   };
+}
+
+/** Restore the controls column to its fresh order and collapsed set. */
+export function resetPanelLayout(state) {
+  state.panelOrder = [...DEFAULT_PANEL_ORDER];
+  state.panelCollapsed = [...DEFAULT_PANEL_COLLAPSED];
+  return state;
+}
+
+/** Drop a chosen comparison-metric set, returning the view to its defaults. */
+export function resetCompareAxes(state) {
+  state.compareAxes = null;
+  return state;
 }
 
 /** Clear committed gene choices while preserving the analytical view. */
@@ -203,6 +225,28 @@ export function encodeState(state) {
     push(KEYS.expressionFilter, state.expressionFilter);
   }
   if (!state.showHidden) push(KEYS.showHidden, '0');
+  // The controls-column layout encodes only when it differs from the fresh
+  // view, so an ordinary link stays short. `pc` needs the explicit `none`
+  // sentinel because "nothing is collapsed" is a deliberate arrangement, not
+  // the default, and an empty value would be dropped by `push` and read back
+  // as the gene visualizer being collapsed again.
+  // Both fields are encoded only when the caller actually supplies them. A
+  // state object that omits the layout entirely is not asserting an empty
+  // collapsed set, and writing `pc=none` for it would turn silence into a
+  // claim that every panel is open.
+  if (Array.isArray(state.panelOrder) && !isDefaultPanelOrder(state.panelOrder)) {
+    push(KEYS.panelOrder, normalizePanelOrder(state.panelOrder).join(','));
+  }
+  if (Array.isArray(state.panelCollapsed) && !isDefaultCollapsed(state.panelCollapsed)) {
+    const collapsed = normalizeCollapsed(state.panelCollapsed);
+    push(KEYS.panelCollapsed, collapsed.length === 0 ? NO_PANELS_COLLAPSED : collapsed.join(','));
+  }
+  // A null `compareAxes` means the comparison is on its own defaults, which
+  // already adapt to the dataset, so it is left unsaid rather than frozen into
+  // a link as whatever those defaults resolved to today.
+  if (Array.isArray(state.compareAxes) && state.compareAxes.length > 0) {
+    push(KEYS.compareAxes, state.compareAxes.join(','));
+  }
   return parts.join('&');
 }
 
@@ -283,6 +327,21 @@ export function decodeState(hash) {
   // local persistence, so precedence rule 3 supplies the fresh-view default
   // rather than a guessed legacy pair. A fresh view opens on the measured
   // axes, and an explicit `ax`/`ay` wins over both.
+  if (values.has(KEYS.panelOrder)) {
+    state.panelOrder = normalizePanelOrder(values.get(KEYS.panelOrder).split(','));
+  }
+  if (values.has(KEYS.panelCollapsed)) {
+    const raw = values.get(KEYS.panelCollapsed);
+    state.panelCollapsed = raw === NO_PANELS_COLLAPSED ? [] : normalizeCollapsed(raw.split(','));
+  }
+  if (values.has(KEYS.compareAxes)) {
+    // Metric keys are validated against the live registry by the comparison
+    // itself, which is the only place that knows which metrics this dataset
+    // carries. Empty means "say nothing", not "choose no metrics", because a
+    // comparison with no axes cannot be drawn.
+    const keys = values.get(KEYS.compareAxes).split(',').filter(Boolean);
+    if (keys.length > 0) state.compareAxes = [...new Set(keys)];
+  }
   if (Number.isFinite(state.version) && state.version < MEASURED_AXES_VERSION) {
     if (!values.has(KEYS.axisX)) state.axisX = LEGACY_METRIC_AXES.x;
     if (!values.has(KEYS.axisY)) state.axisY = LEGACY_METRIC_AXES.y;

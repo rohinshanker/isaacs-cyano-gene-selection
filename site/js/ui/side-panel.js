@@ -18,6 +18,7 @@ import { formatTssStatistic, tssEvidenceModel } from '../core/tss-evidence.js';
 import { geneIdentity } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
+import { renderGeneViewer } from './gene-viewer.js';
 import { essentialityEvidenceFor } from '../core/go-iea-essentiality.js';
 import { PCC_SOURCE, UTEX_SOURCE, GO_IEA_SOURCE } from '../core/annotation-source.js';
 import {
@@ -642,6 +643,20 @@ export class SidePanel {
       const replacement = this.host.querySelector(`[data-detail-action="${focusedAction}"]`);
       (replacement ?? this.host).focus({ preventScroll: true });
     }
+
+    // The picture of the gene leads the detail column. It answers "what am I
+    // looking at" from coordinates and the release's own measurements, before
+    // any section that interprets the gene. Open by default here, unlike the
+    // controls column, because this column exists to describe one gene.
+    const viewer = document.createElement('details');
+    viewer.className = 'metric-group gene-view-group';
+    viewer.open = true;
+    const viewerSummary = document.createElement('summary');
+    viewerSummary.textContent = 'Gene visualizer';
+    const viewerBody = document.createElement('div');
+    renderGeneViewer(viewerBody, gene);
+    viewer.append(viewerSummary, viewerBody);
+    this.host.append(viewer);
 
     const candidateEvidence = candidateEvidenceDisclosure(
       gene, dataset.candidateEvidence, dataset.goIeaEssentiality,

@@ -32,7 +32,7 @@ export function workspaceColumns(width, classList) {
 
 export class WorkspaceResizer {
   /** @param {HTMLElement} layout @param {object} controls DOM and storage adapter. */
-  constructor(layout, { leftHandle, rightHandle, resetButton, storage }) {
+  constructor(layout, { leftHandle, rightHandle, resetButton, storage, confirm = null }) {
     this.layout = layout;
     this.leftHandle = leftHandle;
     this.rightHandle = rightHandle;
@@ -48,7 +48,14 @@ export class WorkspaceResizer {
     this.observer.observe(layout);
     this.installHandle(leftHandle, 'left');
     this.installHandle(rightHandle, 'right');
-    resetButton.addEventListener('click', () => this.reset());
+    // Resetting throws away a width the user dragged into place, so it asks
+    // first when the caller supplies a confirmation. Without one it resets
+    // directly, which is what the unit tests exercise.
+    this.confirm = confirm;
+    resetButton.addEventListener('click', async () => {
+      if (this.confirm && !(await this.confirm())) return;
+      this.reset();
+    });
     this.update();
   }
 

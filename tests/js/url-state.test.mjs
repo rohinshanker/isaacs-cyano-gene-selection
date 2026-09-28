@@ -205,7 +205,7 @@ test('a fresh view, and a hash this encoder did not write, keep the measured def
 });
 
 test('this encoder writes the migrated version and round-trips its own snapshot', () => {
-  assert.equal(STATE_VERSION, 4);
+  assert.equal(STATE_VERSION, 5);
   assert.ok(STATE_VERSION >= MEASURED_AXES_VERSION);
   const state = defaultState();
   state.panel = 'axes';
@@ -344,4 +344,33 @@ test('defaultState returns an independent object every call, so mutating one sho
   a.shortlist.push('M744_RS00005');
   const b = defaultState();
   assert.deepEqual(b.shortlist, []);
+});
+
+test('chosen comparison metrics travel in the link, and the defaults do not', () => {
+  // The defaults adapt to the dataset, dropping any metric with no spread, so
+  // freezing whatever they resolved to today into a link would misrepresent a
+  // view the reader never chose.
+  const state = defaultState();
+  assert.equal(state.compareAxes, null);
+  assert.ok(!encodeState(state).includes('cm='));
+
+  state.compareAxes = ['gc3', 'cai', 'tai'];
+  const hash = encodeState(state);
+  assert.ok(hash.includes('cm=gc3%2Ccai%2Ctai'), hash);
+  const restored = applyDecoded(defaultState(), decodeState(hash));
+  assert.deepEqual(restored.compareAxes, ['gc3', 'cai', 'tai']);
+});
+
+test('an empty comparison metric list is read as silence, not as no axes', () => {
+  // A comparison with no axes cannot be drawn, so an empty `cm` must fall back
+  // to the defaults rather than producing an undrawable view.
+  assert.equal(applyDecoded(defaultState(), decodeState('#ver=5&cm=')).compareAxes, null);
+  const state = defaultState();
+  state.compareAxes = [];
+  assert.ok(!encodeState(state).includes('cm='));
+});
+
+test('a repeated metric key is kept once', () => {
+  const decoded = decodeState('#ver=5&cm=gc3,gc3,cai');
+  assert.deepEqual(decoded.compareAxes, ['gc3', 'cai']);
 });

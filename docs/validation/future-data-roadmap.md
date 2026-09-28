@@ -11,10 +11,32 @@ already included. Reprocessing its raw reads for genuine gene-body abundance
 would be a separate pipeline and must first verify that the library design
 supports that quantity; it is not an unclaimed processed-data download.
 
-## Native transcriptomics search gate
+The search is no longer gated on finding UTEX 2973-only data. Native data remain
+the strongest match, but the project should actively admit useful annotations and
+rough quantitative estimates from other *S. elongatus* strains, other
+cyanobacteria, and—for sufficiently conserved biology—organisms such as *E. coli*
+or explicit ancestral reconstructions. Coverage is valuable when provenance,
+mapping, biological distance, and uncertainty remain visible. See the
+[cross-organism evidence contract](data-contract.md#evidence-coverage-and-cross-organism-transfer).
+
+PCC 6301, PCC 6311, PCC 7942, PCC 7943, and UTEX 3055 are now admitted sister
+strains for annotations, transcriptomics, proteomics, ribosome occupancy, TIS, TSS,
+and TTS, under
+[the sister-strain rules](data-contract.md#sister-strains-admitted-for-utex-2973-data).
+A source in one of those strains and data types is a first-class candidate for this
+roadmap rather than a deferred cross-strain overlay. Coordinates still do not
+transfer, and each pair of datasets must pass the
+[condition-comparability thresholds](data-contract.md#condition-comparability)
+before sharing a layer. PCC 6311 and PCC 7943 additionally need the approved RefSeq
+crosswalk before a source keyed by their own locus tags can join, and UTEX 3055 has
+real gene-content differences that a missing value must not hide.
+
+## Native transcriptomics priority, not gate
 
 Native, replicated, genome-wide *gene-body* expression is the highest-value
-missing assay, but no source checked on 2026-09-21 meets the admission contract:
+missing assay, but it is not a prerequisite for adding a best-available expression
+layer. No native source checked on 2026-09-21 meets the direct-measurement admission
+contract:
 
 - [Ungerer et al. 2018](https://doi.org/10.1073/pnas.1814912115) includes
   wild-type UTEX 2973 per-gene TPM in PNAS Dataset S1. The authors explicitly
@@ -35,23 +57,29 @@ missing assay, but no source checked on 2026-09-21 meets the admission contract:
 
 If the Ungerer raw reads and reuse permission or a complete Hassanien sample
 matrix become available, verify their sample design and exact UTEX locus joins
-before reconsidering. Otherwise search for a newly deposited replicated
-wild-type UTEX 2973 RNA-seq matrix. Keep all assays separate in the UI.
+before reconsidering. Continue searching for a newly deposited replicated
+wild-type UTEX 2973 RNA-seq matrix while also evaluating transferable expression
+datasets in progressively broader taxa. Preserve every raw assay as a separate UI
+layer; publish any cross-source estimate separately on a documented common scale.
 
 ## Admission contract
 
 Every new source needs a manifest entry with organism and strain, assay,
 conditions, units, licence, retrieval date, immutable artifact identifier,
-checksum, mapping method, ambiguity, and missingness. Exact accessions, sequence
-hashes, coordinates, and cardinality stay deterministic. Cross-strain evidence
-must remain visibly borrowed. A model may help review bounded descriptions, but
+checksum, mapping method, orthology relationship, sequence identity/coverage when
+applicable, ambiguity, and missingness. Exact accessions, sequence hashes,
+coordinates, and cardinality stay deterministic. Cross-organism evidence must
+remain visibly transferred; an ancestral reconstruction remains visibly inferred.
+A model may help review bounded descriptions or produce a calibrated estimate, but
 must not decide licence permission, invent joins, or turn a prediction into a
 measurement.
 
 Before publishing a source, report matched, unmatched, and ambiguous rows; inspect
 representative joins; preserve one-to-many relationships; add contract and UI
-tests; and verify that unknown values remain unknown. Prefer a versioned offline
-download over a live request from the static site.
+tests; and verify that direct-source nulls remain null. A separate inferred layer
+may reduce unknown coverage only when it records its inputs, normalization,
+confidence or interval, conflicts, and fallback behavior. Prefer a versioned
+offline download over a live request from the static site.
 
 ## Ranked candidates
 

@@ -17,6 +17,212 @@
 Do not substitute another accession. `GCF_000817745.x` is *Aphanocapsa montana* and
 is not this organism.
 
+## Evidence coverage and cross-organism transfer
+
+UTEX 2973 remains the genome, coordinate system, and experimental target of every
+published row. It is **not**, however, the only organism from which the project may
+draw evidence. Native UTEX 2973 data are too sparse to make "native or unknown" a
+useful general policy. For annotations, expression/activity estimates,
+essentiality, regulation, protein evidence, and related biological context, the
+project prefers the best defensible estimate to an empty field.
+
+Evidence may therefore come from, in decreasing default preference when source
+quality and biological relevance are otherwise comparable:
+
+1. a direct UTEX 2973 measurement or reviewed annotation;
+2. an admitted sister strain, for the data types named in "Sister strains admitted
+   for UTEX 2973 data" below, then any other *S. elongatus*
+   strain or close cyanobacterial ortholog;
+3. a more distant cyanobacterium with a supported orthology or homology mapping;
+4. a conserved bacterial model such as *E. coli*, another phylogenetically
+   informative organism, or an explicitly reconstructed ancestral state; and
+5. a sequence-, structure-, or genome-derived proxy for UTEX 2973.
+
+This order is a starting prior, not a licence to prefer any nearby organism over a
+better experiment. Assay quality, condition match, orthology type, sequence
+identity and coverage, domain conservation, paralogy, and the biological quantity
+being transferred all affect fitness for use. An *E. coli* result can support a
+conserved bacterial function; it does not by itself establish cyanobacteria-specific
+regulation, condition-specific expression, or UTEX 2973 essentiality. An ancestral
+state is a model reconstruction, not a measurement from an extant organism.
+
+Every non-native value must remain distinguishable from a native value. Use one of
+these evidence bases wherever a best-available value is published:
+
+| Basis | Meaning |
+| --- | --- |
+| `direct` | Measured or manually reviewed in UTEX 2973. |
+| `transferred` | Observed or annotated in another organism and mapped to a UTEX 2973 locus. An admitted sister strain also sets `sisterStrain: true` and names the strain. |
+| `inferred` | Produced by an explicit model or consensus over one or more evidence sources. |
+| `proxy` | Computed from the UTEX 2973 sequence or genome without measuring the requested phenotype. |
+| `unknown` | No defensible mapping or estimate is available. |
+
+`unknown` is the last honest outcome, not the preferred outcome. A low-confidence
+estimate may be shown and used for exploratory ranking when its basis and uncertainty
+are visible; it must not be promoted to a direct measurement or silently substituted
+into a direct-source field.
+
+### Sister strains admitted for UTEX 2973 data
+
+Lab decision, recorded 2026-09-27. Five other *S. elongatus* strains are treated as
+near enough to UTEX 2973 that, for the data types listed below only, a measurement or
+annotation in one of them may supply a UTEX 2973 value. They are not equally close,
+so they sit in two tiers:
+
+| Strain | Tier | Role |
+| --- | --- | --- |
+| UTEX 2973 | target | Every published row keeps this genome and these coordinates. |
+| PCC 6301 | close cluster | Admitted for the listed data types. |
+| PCC 6311 | close cluster | Admitted for the listed data types. |
+| PCC 7942 | close cluster | Admitted for the listed data types. |
+| PCC 7943 | close cluster | Admitted for the listed data types. |
+| UTEX 3055 | admitted, more divergent | Admitted for the listed data types, with the coverage caveat below. |
+
+The close cluster aligns with UTEX 2973 gene for gene across almost the whole CDS
+set. UTEX 3055 does not: it carries 303 pangenome CDS rows absent from all five
+cluster strains, and 134 UTEX 2973 CDSs have no UTEX 3055 counterpart. Absence of a
+UTEX 3055 value at a locus is therefore often a real gene-content difference rather
+than a failed measurement, and must never be rendered as a zero or a negative
+result. Where a close-cluster value and a UTEX 3055 value both exist and disagree,
+prefer neither silently: keep both and record the conflict.
+
+Admitted data types, and nothing else:
+
+- gene annotations, including symbols, products, functional categories, and
+  ortholog-level functional assignment;
+- transcriptomics, meaning gene-body transcript abundance;
+- proteomics, meaning protein detection and abundance;
+- ribosome occupancy, including ribosome profiling density and derived
+  translation-efficiency estimates;
+- translation initiation sites (TIS);
+- transcription start sites (TSS); and
+- transcription termination sites (TTS).
+
+Everything else keeps the rules it already has. Genome sequence, coordinates,
+codon content, GC, CAI, tAI, folding windows, and every other sequence-derived
+metric stay UTEX 2973 only, because they are computed from this assembly. PCC 7942
+essentiality stays a borrowed, condition-specific call under
+[pcc-essentiality.md](pcc-essentiality.md); this section does not promote it. A
+value from any strain outside this table remains ordinary cross-organism evidence
+under the rules above.
+
+**A sister-strain value is still `transferred`, never `direct`.** It carries the
+full provenance and mapping record that the next section requires, plus
+`sisterStrain: true` and its source strain. What this section changes is the gate,
+not the label: a sister-strain value in an admitted data type may populate a
+best-available view and rank ahead of `unknown` without being an opt-in overlay,
+and the interface must still name the strain wherever the value is shown, filtered,
+coloured, ranked, or exported, and must still offer a direct-UTEX-only view.
+
+Two limits are not negotiable for these strains:
+
+1. **Coordinates never transfer.** UTEX 2973 differs from the PCC 7942 lineage by a
+   large chromosomal inversion and an indel, so a positional feature (TSS, TTS, TIS)
+   transfers as a gene-relative offset against a named locus, never as an absolute
+   genomic position. Publishing a sister-strain coordinate as a UTEX 2973 coordinate
+   is a contract violation. The gene visualizer and the planned chromosome
+   visualizer consume these offsets; see
+   [the scan ticket](../notes/tickets/O_cross-strain-data-scan__20260927.md).
+2. **Condition match still governs quantitative transfer.** The documented
+   phenotypic difference between UTEX 2973 and PCC 7942 is growth rate under high
+   light and high temperature, which is exactly where transcript and protein
+   abundance diverge. Sequence-level similarity licenses the join; it does not
+   license comparing a 38 °C high-light UTEX culture against a 30 °C PCC culture and
+   calling the difference biology. Record each source's light, temperature, CO₂,
+   medium, and growth phase, and keep values from different conditions in different
+   layers. The starting tolerances are in "Condition comparability" below.
+
+### Condition comparability
+
+These thresholds decide whether two datasets may share one displayed layer or a
+combined estimate. They are a starting rule derived from the divergence this
+repository already documents, not a literature-established equivalence bound, and
+they are pending lab sign-off in
+[AAA-biological-decisions-to-review.md](AAA-biological-decisions-to-review.md).
+Two datasets are comparable only when **every** axis the assay responds to agrees.
+
+| Axis | Comparable when | Why this boundary |
+| --- | --- | --- |
+| Temperature | Within 2 °C, and both inside one regime: standard 28–32 °C or elevated 36–40 °C. | Ungerer et al. 2018 compared the strains at 38 °C, while the Rubin PCC 7942 screen ran at 30 °C. A 30 °C and a 38 °C dataset are not one layer. |
+| Light intensity | Within ±25% of the same photon flux, and both at or below 400 µmol photons m⁻² s⁻¹, or both above it. | Ungerer et al. 2018 report similar growth for UTEX 2973 and PCC 7942 at 400 µmol photons m⁻² s⁻¹ and diverging growth above it. Two datasets both labelled "high light" are not comparable when they straddle that flux. |
+| Light regime | Same spectrum class, and continuous matched to continuous or diel matched to diel at the same photoperiod. | A diel dataset carries circadian structure a continuous dataset does not, which no normalization removes. |
+| CO₂ | Same regime, ambient near 0.04% or elevated at 1% or more, and within a factor of two inside the elevated regime. | Elevated CO₂ changes carbon-concentrating and photosynthetic gene expression directly. |
+| Medium | BG-11 on both sides, same nitrogen source, no added organic carbon. Conditioned or spent medium is never comparable to fresh medium. | GSE205444 is a biofilm and conditioned-media experiment, which is why its caveat is recorded separately. |
+| Culture format and phase | Both planktonic or both biofilm, and both exponential with overlapping OD₇₅₀, or both stationary. | A day-1 biofilm sample and an exponential planktonic culture measure different physiology. |
+
+A pair failing any axis may still be published, as separate selectable layers with
+their conditions stated. What it may not do is enter one combined estimate or one
+colour scale as though the difference were biological. Record every rejected pair
+and its failing axis, and add a pair whose comparability is genuinely uncertain to
+the biological-decisions list rather than resolving it silently.
+
+The join runs through the pinned Adomako 2022 pangenome workbook
+(`data/essentiality/source/mbio.00862-22-s0001.xlsx`, sheet `PG_metadata`), which
+aligns all six strains gene by gene over 3,113 rows, 3,028 of them CDS. Its
+per-strain CDS coverage is:
+
+| Strain | CDS rows in `PG_metadata` | NCBI locus column |
+| --- | --- | --- |
+| PCC 7942 | 2,722 | `PCC 7942 NCBI` (`SYNPCC7942_RS…`) |
+| PCC 6301 | 2,722 | `PCC 6301 NCBI` (`SYC_RS…`) |
+| PCC 6311 | 2,721 | none |
+| PCC 7943 | 2,721 | none |
+| UTEX 2973 | 2,717 | `UTEX 2973 NCBI` (`M744_RS…`) |
+| UTEX 3055 | 2,893 | `UTEX 3055 NCBI` (`UTEX3055_RS…`), 2,858 populated |
+
+2,712 CDS rows carry a pangenome locus in all five close-cluster strains, and 2,580
+carry one in all six.
+
+PCC 6311 and PCC 7943 have pangenome IDs, coordinates, and strand but **no NCBI
+locus column**. The lab has approved building a pinned RefSeq crosswalk for them.
+Until that crosswalk exists and is recorded, a source keyed by their own RefSeq tags
+cannot join, because the pangenome ID alone is not a crosswalk. When it is built it
+follows the existing
+[identifier-crosswalk contract](annotation-release-readiness.md#identifier-crosswalk-contract):
+exact shared protein sequence or accession, one admitted mapping per locus,
+ambiguity preserved rather than resolved, and a pinned source annotation release with
+its checksum.
+
+Join routes, in order: the existing exact shared-protein crosswalk where one covers
+the strain, then the new per-strain crosswalk once pinned, then the pangenome row.
+Record which route each value used. Rows that are absent, ambiguous, or multiply
+mapped stay `unknown`, exactly as under the essentiality policy. Where two admitted
+strains disagree on the same locus and data type, keep both source values and publish
+any resolution as a separate `inferred` field naming its rule.
+
+### Admission and presentation rules
+
+Every transferred or inferred layer must:
+
+- pin the source organism and strain, source artifact, licence, retrieval date,
+  checksum or immutable version, assay or annotation method, conditions, and units;
+- record the complete mapping path to each UTEX 2973 locus, including source gene or
+  protein identifiers, orthology/homology method, relationship type, sequence
+  identity and coverage where applicable, and mapping ambiguity;
+- expose a per-value confidence, probability, interval, or controlled qualitative
+  grade whose meaning and calibration are documented; source distance alone is not
+  a confidence score;
+- preserve one-to-many and many-to-one relationships instead of choosing a paralog
+  silently, and state any deterministic aggregation rule;
+- keep original source-specific values intact and publish any cross-source consensus
+  or best-available estimate as a separate derived field with its method and inputs;
+- label the organism, evidence basis, conditions, and material caveat anywhere the
+  value affects colour, filtering, ranking, panel selection, comparison, or export;
+  and
+- retain `null`/`unknown` when the mapping or estimate is not defensible. Neither is
+  ever converted to zero, false, a median, or a confident annotation.
+
+For quantitative expression or activity, raw counts from different assays or
+organisms are not commensurate. Transfer uses a documented common scale such as a
+within-source percentile, rank, or controlled qualitative band unless a validated
+cross-study model supports stronger calibration. The published estimate records the
+transformation and uncertainty. For qualitative annotation, a transferred label
+records the ortholog or conserved feature that supports it and never erases a
+conflicting UTEX 2973 annotation.
+
+These rules broaden admissible evidence; they do not weaken source integrity,
+identifier, or experimental-use gates elsewhere in this contract.
+
 ## Protein evidence is a separate, versioned release
 
 The site offers a RefSeq protein-record filter and displays direct UTEX 2973
@@ -267,10 +473,13 @@ own `meta.metrics` entry**, which is what makes it appear in the filters and the
 colour-by menu with no site change. `meta.expressionSources` echoes the manifest so the
 page can show provenance.
 
-**Sources are never merged, averaged, or ranked together.** TSS initiation and
+Raw source fields are never merged, averaged, or overwritten. TSS initiation and
 transcript abundance correlate at Spearman 0.313 on this genome; they answer different
-questions and a combined score would hide that. A gene absent from a source is `null`
-for that source, never zero and never filled from another source.
+questions and a combined score presented as either measurement would hide that. A gene
+absent from a source is `null` for that source, never zero and never filled inside that
+source field. A later best-available or consensus layer may use multiple admitted
+sources only as a separately named `inferred` field that records its inputs,
+normalization, model, uncertainty, and conflicts under the cross-organism policy above.
 
 Adding a source is a manifest entry plus its table. Nothing downstream is hardcoded to a
 particular source, and the existing `cai`, `tai`, `expressionProxy` and every other
@@ -291,6 +500,17 @@ The site must show, per gene, which basis a displayed value came from, and must 
 able to filter to measured-only. A measured abundance and a proxy rank are different
 quantities in different units, so the interface must never present a mixed column as
 though it were one measurement.
+
+The four fields above describe the current release's compatibility view. Future
+coverage may add transferred or inferred expression/activity estimates from other
+cyanobacteria, *E. coli*, or another supported organism. Such a value gets its own
+metric key and provenance; it does not populate `expression`. If a unified
+best-available view is added, each row must carry a separate `bestAvailableBasis`
+of `direct`, `transferred`, `inferred`, `proxy`, or `unknown`, plus its
+source-organism and confidence metadata. A rough transferred estimate may then rank
+or display ahead of `unknown`, while a user can still restrict the view to direct
+UTEX 2973 measurements. The legacy `expressionBasis` field remains limited to
+`measured`, `proxy`, or `null`.
 
 ### `genes.json`
 
@@ -422,12 +642,17 @@ Consequences that both the pipeline and the site must honour:
   (native TSS initiation today) when one exists. **Any other real measurement of
   transcript abundance ranks next** — this PCC 7942 abundance value and its
   percentile included, borrowed-strain caveat still attached — **ahead of CAI and
-  tAI**, this genome's own codon-adaptation proxies: a measurement outranks a proxy
-  regardless of organism. If native measured evidence is absent, the implicit
+  tAI**, this genome's own codon-adaptation proxies. This is a decision about the
+  admitted PCC 7942 assay, not a rule that every distant measurement outranks every
+  UTEX-derived proxy; future ordering must apply the transfer-fitness rules above.
+  If native measured evidence is absent, the current implicit
   selection falls back to CAI, then tAI, then the genome-derived expression
-  proxy; borrowed evidence requires an explicit choice even if it appears above
-  those proxies in the menu. It remains an opt-in overlay wherever the
-  interface excludes it by default (see "Guided panel design"). The ranking follows
+  proxy. In the current release, borrowed evidence remains an explicit choice and an
+  opt-in overlay wherever the interface excludes it by default (see "Guided panel
+  design"). A future best-available layer may select admitted transferred or inferred
+  evidence automatically when direct evidence is absent, provided the basis, source,
+  confidence, and restriction to direct-only values remain immediately available.
+  The current ranking follows
   each metric's own `provenance.isTargetOrganism` flag, so a future native
   measurement (gene-body transcriptomics, say) takes the top priority with no
   interface change once it passes this project's replication bar — see

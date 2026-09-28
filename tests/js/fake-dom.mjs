@@ -69,7 +69,14 @@ export class FakeElement {
   getAttribute(name) { return this.attributes[name] ?? null; }
   addEventListener(type, listener) { (this.listeners[type] ??= []).push(listener); }
   dispatch(type, event = {}) { for (const listener of this.listeners[type] ?? []) listener(event); }
-  focus() { this.focused = true; }
+  focus() {
+    this.focused = true;
+    // A modal's whole contract is where focus goes, so the fake tracks the
+    // active element rather than discarding the call.
+    if (globalThis.document && 'activeElement' in globalThis.document) {
+      globalThis.document.activeElement = this;
+    }
+  }
 
   contains(node) {
     if (!node) return false;
@@ -107,12 +114,16 @@ export class FakeElement {
 
 /** A `document` for `globalThis`; install it for the duration of a test. */
 export function fakeDocument() {
-  return {
+  const document = {
     activeElement: null,
+    body: new FakeElement('body'),
     createElement: (tag) => new FakeElement(tag),
     createElementNS: (namespace, tag) => new FakeElement(tag, namespace),
     createTextNode: (text) => new FakeNode(String(text)),
+    querySelector: (selector) => document.body.querySelector(selector),
+    querySelectorAll: (selector) => document.body.querySelectorAll(selector),
   };
+  return document;
 }
 
 /** Run `body` with a fake document installed, restoring whatever was there. */

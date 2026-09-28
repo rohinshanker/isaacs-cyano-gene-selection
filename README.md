@@ -129,14 +129,32 @@ manifest entry plus its table, and it becomes filterable with no code change. Fu
 [`data/expression/PROVENANCE.md`](data/expression/PROVENANCE.md) and
 [`TAN2018_TSS_PROVENANCE.md`](data/expression/TAN2018_TSS_PROVENANCE.md).
 
-### 2b. Missing means missing, everywhere
+### 2b. Estimates are labelled; missing never means zero
 
-A gene with no measurement is rendered as unknown in the charts, the legend, and the
-table alike. It is never placed on the median ring, never mapped to zero, and never
-imputed. Where several genes are missing the same metric, their markers are staggered so
-that five unknowns read as five rather than one. Charts report how many values are
-absent, and an axis with no usable spread is dropped from the defaults with the reason
-stated.
+A source with no measurement for a gene remains `null` in that source field. The
+project may publish a separate, explicitly labelled best-available estimate transferred
+from another cyanobacterium, a conserved bacterial model such as *E. coli*, an
+ancestral reconstruction, or a documented computational proxy. The estimate must show
+its organism, mapping, basis, and uncertainty; it is never presented as a UTEX 2973
+measurement. If no defensible estimate exists, the gene is rendered as unknown in the
+charts, legend, and table alike. Unknown is never mapped to zero or a median. Charts
+report absent values, and an axis with no usable spread is dropped from the defaults
+with the reason stated. The full evidence hierarchy and admission rules are in the
+[data contract](docs/validation/data-contract.md#evidence-coverage-and-cross-organism-transfer).
+
+### 2c. A gene is drawn from its own start, and the column is yours to arrange
+
+The gene visualizer draws one gene in transcription orientation, so a minus-strand
+gene reads the same way as a plus-strand one. It shows the coding span with any
+splice gap, the initiation triplet, the terminal stop, and native Tan 2018 start
+sites at the distances that study published against its own gene model, never
+remeasured against this release. It appears at the top of the gene-detail column and
+again in the controls column, where it starts collapsed.
+
+The controls column can be collapsed and reordered, and that arrangement travels in
+the link along with the rest of the view. Every reset asks before discarding
+anything. Both contracts, and the rendered checks behind them, are in
+[controls-column-and-resets.md](docs/validation/controls-column-and-resets.md).
 
 ### 3. Never recode position zero
 
