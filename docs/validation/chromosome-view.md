@@ -116,6 +116,13 @@ on the bar at each end of the axis. The chevron sits **inside** the track: a
 glyph hanging off the end of the axis reads as an axis terminator rather than as
 this gene continuing. No span beyond the replicon length is ever drawn.
 
+Each chevron is clipped to the piece it annotates, never drawn beside it.
+`M744_RS13620` opens with 13 bp of a 7,842 bp plasmid, about one pixel at full
+extent, so a marker at its full 5 px would cover empty track next to that bar
+and read as a free-floating arrowhead pointing at nothing. Both the bar and its
+marker are placed on the one rectangle `pieceRect` computes, which is what makes
+that impossible rather than merely unlikely.
+
 `anchorBp` is the CDS's first transcribed base, which for a wrapping CDS is the
 piece before the origin on the plus strand and the high end on the minus strand.
 Keyboard navigation and the announcement use it.
@@ -143,7 +150,11 @@ pointer coordinate against the canvas. Sizing the bitmap from the host stretches
 it across a narrower element, and the mark under the cursor drifts from the mark
 the hit test finds — invisibly at the origin and by a whole gene at the far end
 of the chromosome. The unit check gives the fake host and canvas *different*
-widths for this reason; equal widths cannot see the defect.
+widths for this reason; equal widths cannot see the defect. The backing store is
+also asserted to equal the canvas's CSS width at 375, 768, 960, 1280 and 1440 px
+and at both device pixel ratios: slack there does not only drift the hit test,
+it makes the browser resample the bitmap horizontally, which softens every
+one-pixel bar the device-column snapping below exists to keep sharp.
 
 A sub-pixel CDS is snapped to a whole device column. At whole-genome zoom a
 1 kb gene is a third of a pixel, and drawn at a fractional edge it anti-aliases
@@ -235,6 +246,12 @@ range, each secondary track with its length and plotted CDS count, the strand
 convention, the two origin-crossing CDSs, any committed category filter, the
 selected CDS, and the per-genome-copy limit. A picture with no text equivalent
 would leave this view unreadable to anyone not looking at it.
+
+A category filter is **named**, not counted: "1 function category is selected"
+does not say which one, and this sentence is all a reader who is not looking at
+the legend has. `app.js` resolves the names through `categoryLabelFor`, the same
+lookup the legend and the detail panel use, and they are separated by semicolons
+because most category names contain "and".
 
 ## Checks
 

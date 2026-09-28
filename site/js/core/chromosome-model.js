@@ -527,7 +527,7 @@ export function tssPositions(track, genes) {
  * anyone not looking at it.
  */
 export function describeChromosomeView({
-  tracks, window, colorLabel, passing, total, selected = null, categoryFilterCount = 0,
+  tracks, window, colorLabel, passing, total, selected = null, categoryFilterLabels = [],
 }) {
   if (!Array.isArray(tracks) || tracks.length === 0) {
     return 'The chromosome view has no verified replicon to draw.';
@@ -553,8 +553,13 @@ export function describeChromosomeView({
     parts.push(`${wrapping.map((mark) => mark.id).join(' and ')} cross the circular origin and are `
       + 'drawn as their two annotated segments with a wrap marker at each end.');
   }
-  if (categoryFilterCount > 0) {
-    parts.push(`${categoryFilterCount} function categor${categoryFilterCount === 1 ? 'y is' : 'ies are'} selected.`);
+  // Named, not counted. This sentence is the whole view for a reader who is not
+  // looking at it, and "1 function category is selected" does not say which one.
+  // Semicolons separate the names because most of them contain "and".
+  const filters = Array.isArray(categoryFilterLabels) ? categoryFilterLabels : [];
+  if (filters.length > 0) {
+    parts.push(`${filters.length} function categor${filters.length === 1 ? 'y is' : 'ies are'} `
+      + `selected: ${filters.join('; ')}.`);
   }
   parts.push(selected
     ? `${selected} is selected and open in the gene visualizer.`

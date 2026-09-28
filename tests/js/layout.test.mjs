@@ -65,6 +65,23 @@ test('the chromosome toolbar writes colour and visibility through the shared con
   assert.match(live, /syncSharedControls\(\);/);
 });
 
+/**
+ * The chromosome view's accessible description is the whole view for anyone not
+ * looking at it, so it has to name the categories the filter is restricted to.
+ * `app.js` boots on import, so the wiring is checked in the source here; the
+ * sentence itself is tested against `describeChromosomeView`.
+ */
+test('the chromosome view is handed the selected category names, not a count', () => {
+  assert.match(app, /function selectedCategoryLabels\(\) \{[\s\S]*?state\.categoryFilter\.map\(\(id\) => categoryLabelFor\(categories, id\)\)/,
+    'the names come from the same label lookup the legend and detail panel use');
+  const render = app.slice(app.indexOf('function renderChromosomeView()'));
+  assert.match(render.slice(0, render.indexOf('renderColorHelp(')),
+    /categoryFilterLabels: selectedCategoryLabels\(\),/,
+    'and the chromosome render hands them to the view');
+  assert.equal((app.match(/categoryFilterCount/g) ?? []).length, 0,
+    'nothing still passes a bare count');
+});
+
 test('relocated support panels use compact native disclosures', () => {
   assert.match(html, /<details class="workflow-help">/);
   assert.match(html, /<details class="panel-workflow">/);

@@ -59,7 +59,7 @@ import {
   annotationSourceLabel, isAllSources, normalizeAnnotationSources,
 } from './core/annotation-source.js';
 import {
-  resolveFunctionCategories, THRESHOLDS as DERIVED_THRESHOLDS,
+  resolveFunctionCategories, categoryLabelFor, THRESHOLDS as DERIVED_THRESHOLDS,
 } from './core/source-derived-categories.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
@@ -747,6 +747,20 @@ function renderMap() {
 }
 
 /**
+ * The names of the function categories the filter is currently restricted to.
+ *
+ * A count alone cannot be read: a description saying one category is selected
+ * leaves a reader who is not looking at the legend without the one fact that
+ * changed. Empty when no reviewed category model is loaded, which is also when
+ * the filter cannot apply.
+ */
+function selectedCategoryLabels() {
+  const categories = context.categories;
+  if (!categories) return [];
+  return state.categoryFilter.map((id) => categoryLabelFor(categories, id));
+}
+
+/**
  * The chromosome tab.
  *
  * Every gene, colour, filter, pin, and shortlist entry is the one the rest of
@@ -778,7 +792,7 @@ function renderChromosomeView() {
     ),
     passing: context.passing,
     total: context.dataset.genes.length,
-    categoryFilterCount: state.categoryFilter.length,
+    categoryFilterLabels: selectedCategoryLabels(),
     hasSelection: pinnedIndex() >= 0 || context.activeIndex >= 0 || context.hoveredIndex >= 0,
   });
   // After `update`, which is what builds this view's own hosts on first use.

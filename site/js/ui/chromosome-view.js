@@ -147,6 +147,25 @@ export function fitTickLabels(ticks, { measure, x, left, right, gap = 8 }) {
   return placed;
 }
 
+/**
+ * The rectangle one annotated piece of a CDS draws into, in drawing units.
+ *
+ * A sub-pixel CDS is snapped to a whole device column and given a whole pixel
+ * of width. At whole-genome zoom a 1 kb gene is a third of a pixel, and drawn
+ * at a fractional edge it anti-aliases into a pale smear that loses its colour
+ * entirely. Every glyph that belongs to a piece is placed on this rectangle, so
+ * a marker can never land beside the bar it annotates.
+ *
+ * @param {{bpToX: (bp: number) => number}} scale
+ * @param {{from: number, to: number}} piece
+ * @return {{left: number, width: number}}
+ */
+export function pieceRect(scale, piece) {
+  const x0 = scale.bpToX(piece.from);
+  const exact = scale.bpToX(piece.to + 1) - x0;
+  return { left: exact < 1.5 ? Math.round(x0) : x0, width: Math.max(1, exact) };
+}
+
 export class ChromosomeView {
   /**
    * @param {HTMLElement} host the tab panel, emptied and rebuilt on first use.
@@ -176,7 +195,7 @@ export class ChromosomeView {
    *   mask: Uint8Array|null, showHidden: boolean, colors: object, colorLabel: string,
    *   colorOptions: {value: string, label: string, group: string}[], colorKey: string,
    *   pinned: number, hovered: number, active: number, shortlist: Set<number>,
-   *   passing: number, total: number, categoryFilterCount: number,
+   *   passing: number, total: number, categoryFilterLabels: string[],
    *   hasSelection: boolean}} model
    */
   update(model) {
@@ -561,7 +580,7 @@ export class ChromosomeView {
       passing: this.model.passing,
       total: this.model.total,
       selected: this.selectedId(),
-      categoryFilterCount: this.model.categoryFilterCount,
+      categoryFilterLabels: this.model.categoryFilterLabels,
     }));
   }
 
@@ -689,15 +708,8 @@ export class ChromosomeView {
     ctx.strokeStyle = stroke;
     ctx.lineWidth = 1;
     for (const piece of mark.pieces) {
-      const x0 = scale.bpToX(piece.from);
-      const x1 = scale.bpToX(piece.to + 1);
-      if (x1 < band.left || x0 > band.left + band.width) continue;
-      const exact = x1 - x0;
-      const width = Math.max(1, exact);
-      // A sub-pixel CDS is snapped to a whole device column. At whole-genome
-      // zoom a 1 kb gene is a third of a pixel, and drawn at a fractional edge
-      // it anti-aliases into a pale smear that loses its colour entirely.
-      const left = exact < 1.5 ? Math.round(x0) : x0;
+      const { left, width } = pieceRect(scale, piece);
+      if (left + width < band.left || left > band.left + band.width) continue;
       if (fill) ctx.fillRect(left, top, width, height);
       if (!fill || width >= 3) {
         ctx.strokeRect(left + 0.5, top + 0.5, Math.max(1, width - 1), height - 1);
@@ -714,23 +726,31 @@ export class ChromosomeView {
    * glyph hanging off the axis reads as an axis terminator rather than as this
    * gene continuing. It says the two drawn pieces are one CDS crossing the
    * coordinate boundary, without drawing a span the replicon does not have.
+   *
+   * Each chevron is clipped to its own piece. `M744_RS13620` opens with 13 bp
+   * on a 7,842 bp plasmid — about a pixel at full extent — and a marker drawn
+   * at its full width would cover empty track beside that bar and read as a
+   * free-floating arrowhead pointing at nothing.
    */
   paintWrapMarker(ctx, band, mark) {
     const { layout, scale } = band;
     const top = this.laneTop(layout, mark);
     const mid = top + layout.laneHeight / 2;
     const reach = Math.min(WRAP_MARKER_PX, layout.laneHeight / 2 - 1);
-    const ends = [
-      { tip: scale.bpToX(1), direction: 1 },
-      { tip: scale.bpToX(band.track.lengthBp + 1), direction: -1 },
-    ];
+    const opening = mark.pieces.find((piece) => piece.from === 1);
+    const closing = mark.pieces.find((piece) => piece.to === band.track.lengthBp);
+    const ends = [];
+    if (opening) ends.push({ rect: pieceRect(scale, opening), direction: 1 });
+    if (closing) ends.push({ rect: pieceRect(scale, closing), direction: -1 });
     ctx.fillStyle = WRAP_MARKER_FILL;
     ctx.strokeStyle = WRAP_MARKER_STROKE;
     ctx.lineWidth = 1;
-    for (const end of ends) {
-      const base = end.tip + end.direction * WRAP_MARKER_PX;
+    for (const { rect, direction } of ends) {
+      if (rect.left + rect.width < band.left || rect.left > band.left + band.width) continue;
+      const tip = direction === 1 ? rect.left : rect.left + rect.width;
+      const base = tip + direction * Math.min(WRAP_MARKER_PX, rect.width);
       ctx.beginPath();
-      ctx.moveTo(end.tip, mid);
+      ctx.moveTo(tip, mid);
       ctx.lineTo(base, mid - reach);
       ctx.lineTo(base, mid + reach);
       ctx.closePath();

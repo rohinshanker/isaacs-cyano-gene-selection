@@ -461,14 +461,17 @@ test('the accessible description names the tracks, the wrap, and the dosage limi
     passing: 3,
     total: 3,
     selected: 'M744_RS00005',
-    categoryFilterCount: 2,
+    categoryFilterLabels: ['Stress and repair', 'Transport and envelope'],
   });
   assert.match(sentence, /coloured by CAI/);
   assert.match(sentence, /2\.69 Mb chromosome/);
   assert.match(sentence, /own scale and never concatenated/);
   assert.match(sentence, /Plus-strand CDSs sit above each axis/);
   assert.match(sentence, /M744_RS13290 and M744_RS13620 cross the circular origin/);
-  assert.match(sentence, /2 function categories are selected/);
+  // Named, not counted: a count leaves a reader who cannot see the legend
+  // without the one fact the filter changed.
+  assert.match(sentence,
+    /2 function categories are selected: Stress and repair; Transport and envelope\./);
   assert.match(sentence, /M744_RS00005 is selected/);
   assert.match(sentence, /per genome copy/);
   assert.match(sentence, /no source in this release records that copy number/);
@@ -480,6 +483,20 @@ test('the accessible description names the tracks, the wrap, and the dosage limi
   );
   assert.match(describeChromosomeView({ tracks: [], window: fullWindow(1), colorLabel: 'x', passing: 0, total: 0 }),
     /no verified replicon/);
+  const one = describeChromosomeView({
+    tracks,
+    window: fullWindow(CHROMOSOME_BP),
+    colorLabel: 'CAI',
+    passing: 3,
+    total: 3,
+    categoryFilterLabels: ['Photosynthetic light reactions'],
+  });
+  assert.match(one, /1 function category is selected: Photosynthetic light reactions\./);
+  const none = describeChromosomeView({
+    tracks, window: fullWindow(CHROMOSOME_BP), colorLabel: 'CAI', passing: 3, total: 3,
+  });
+  assert.doesNotMatch(none, /function categor/,
+    'an unfiltered view says nothing about categories at all');
 });
 
 test('the shipped release places all 2,715 plotted CDSs on its three replicons', async () => {

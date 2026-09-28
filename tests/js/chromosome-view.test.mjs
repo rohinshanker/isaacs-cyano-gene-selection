@@ -21,6 +21,13 @@ const CANVAS_WIDTH = 900;
  */
 const HOST_CHROME = 10;
 const DEVICE_PIXEL_RATIO = 2;
+/**
+ * The viewport the fake DOM currently reports. The canvas's own CSS width is
+ * what every pointer coordinate is measured against and what the backing store
+ * has to match, so tests that vary it are what hold that agreement at more than
+ * one width.
+ */
+const stage = { canvasWidth: CANVAS_WIDTH, devicePixelRatio: DEVICE_PIXEL_RATIO };
 
 /**
  * A DOM and canvas context just wide enough for this view, recording every draw
@@ -62,7 +69,7 @@ class FakeElement {
   releasePointerCapture() {}
   getBoundingClientRect() {
     const width = this.className === 'chromosome-canvas-host'
-      ? CANVAS_WIDTH + HOST_CHROME : CANVAS_WIDTH;
+      ? stage.canvasWidth + HOST_CHROME : stage.canvasWidth;
     // The view sets the canvas's CSS height itself, so that box always matches
     // the drawing. Only the width comes from the layout.
     return { left: 0, top: 0, width, height: Number.parseFloat(this.style.height) || 400 };
@@ -111,7 +118,9 @@ class FakeElement {
   }
 }
 
-function install() {
+function install({ canvasWidth = CANVAS_WIDTH, devicePixelRatio = DEVICE_PIXEL_RATIO } = {}) {
+  stage.canvasWidth = canvasWidth;
+  stage.devicePixelRatio = devicePixelRatio;
   const previous = {
     document: globalThis.document,
     window: globalThis.window,
@@ -133,7 +142,7 @@ function install() {
   // browser does; running it inline would leave the view's pending-frame handle
   // set forever and silently suppress every later redraw.
   globalThis.window = {
-    devicePixelRatio: DEVICE_PIXEL_RATIO,
+    devicePixelRatio,
     requestAnimationFrame: (callback) => {
       frames.push(callback);
       frameId += 1;
@@ -149,6 +158,8 @@ function install() {
     document,
     restore: () => {
       resetConfirmDialogForTests();
+      stage.canvasWidth = CANVAS_WIDTH;
+      stage.devicePixelRatio = DEVICE_PIXEL_RATIO;
       Object.assign(globalThis, previous);
     },
     frames,
@@ -166,7 +177,7 @@ function install() {
  * reader's click actually goes through.
  */
 function onScreenX(canvas, x) {
-  const drawn = canvas.width / DEVICE_PIXEL_RATIO;
+  const drawn = canvas.width / stage.devicePixelRatio;
   return (x * canvas.getBoundingClientRect().width) / drawn;
 }
 
@@ -239,8 +250,11 @@ function colorModel(genes) {
   };
 }
 
-function mount({ genes = GENES, meta = META, mask = null, showHidden = true, handlers = {} } = {}) {
-  const fake = install();
+function mount({
+  genes = GENES, meta = META, mask = null, showHidden = true, handlers = {},
+  viewport = undefined, categoryFilterLabels = [],
+} = {}) {
+  const fake = install(viewport);
   const { restore, frames } = fake;
   const host = new FakeElement('div');
   const view = new ChromosomeView(host, handlers);
@@ -272,7 +286,7 @@ function mount({ genes = GENES, meta = META, mask = null, showHidden = true, han
     shortlist: new Set(),
     passing: genes.length,
     total: genes.length,
-    categoryFilterCount: 0,
+    categoryFilterLabels,
     hasSelection: false,
   });
   const ops = flush();
@@ -422,6 +436,60 @@ test('an origin-crossing CDS draws its two segments inside the replicon, with a 
     }
     // Two ends each, for the one wrapping CDS on each of the two plasmids.
     assert.equal(view.canvas.ops.filter((op) => op.op === 'closePath').length, 4);
+  } finally {
+    restore();
+  }
+});
+
+/**
+ * `M744_RS13620` opens with 13 bp of a 7,842 bp plasmid, about a pixel at full
+ * extent. A chevron drawn at its own full width would cover empty track beside
+ * that bar and read as a free-floating arrowhead pointing at nothing, so it is
+ * clipped to the piece it annotates.
+ */
+test('a wrap chevron on a sub-pixel segment is clipped to that segment', () => {
+  const { view, restore } = mount();
+  try {
+    const plasmid = view.bands()[2];
+    assert.equal(plasmid.track.accession, PLASMID_C);
+    const laneTop = plasmid.layout.laneAboveTop;
+    const mid = laneTop + plasmid.layout.laneHeight / 2;
+    const reach = Math.min(5, plasmid.layout.laneHeight / 2 - 1);
+    const bars = view.canvas.ops.filter((op) => op.op === 'fillRect'
+      && op.y >= laneTop && op.y < plasmid.layout.axisY);
+    assert.equal(bars.length, 2, 'both annotated segments are drawn');
+    const closing = bars.reduce((a, b) => (a.x > b.x ? a : b));
+    assert.ok(closing.w < 5, 'the 13 bp segment really is narrower than a full-width marker');
+
+    const tips = view.canvas.ops.filter((op) => op.op === 'moveTo' && Math.abs(op.y - mid) < 0.001);
+    const bases = view.canvas.ops.filter((op) => op.op === 'lineTo'
+      && Math.abs(Math.abs(op.y - mid) - reach) < 0.001);
+    assert.equal(tips.length, 2, 'one chevron at each end of the replicon');
+    assert.equal(bases.length, 4);
+    const outer = Math.max(...tips.map((tip) => tip.x));
+    assert.ok(Math.abs(outer - (closing.x + closing.w)) < 0.001,
+      'the outer chevron tips at the bar’s own outer edge');
+    // Every point of that chevron is on the bar. Drawn at its full width it
+    // would reach about four pixels left of the bar, over empty track.
+    const outerHalf = plasmid.left + plasmid.width / 2;
+    for (const point of [...tips, ...bases].filter((point) => point.x > outerHalf)) {
+      assert.ok(point.x >= closing.x - 0.001 && point.x <= closing.x + closing.w + 0.001,
+        'no part of the chevron is drawn beside its segment');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('the accessible description names the selected function categories', () => {
+  const { view, restore } = mount({
+    categoryFilterLabels: ['Stress and repair', 'Transport and envelope'],
+  });
+  try {
+    // A screen-reader user has this sentence and nothing else, so a count of
+    // selected categories would leave out the only thing the filter changed.
+    assert.match(view.canvas.getAttribute('aria-label'),
+      /2 function categories are selected: Stress and repair; Transport and envelope\./);
   } finally {
     restore();
   }
@@ -859,6 +927,36 @@ test('the drawing is measured on the canvas, not on the wider box around it', ()
     assert.equal(band.left + band.width, CANVAS_WIDTH - band.left);
   } finally {
     restore();
+  }
+});
+
+/**
+ * The widths the rendered inspection measured. Ten device pixels of slack
+ * between the backing store and the canvas's CSS box does two things at once:
+ * it drifts the hit test by up to ten pixels at the right edge, and it makes
+ * the browser resample the bitmap horizontally, which softens every one-pixel
+ * bar the device-column snapping exists to keep sharp.
+ */
+const VIEWPORT_WIDTHS = [375, 768, 960, 1280, 1440];
+
+test('the backing store is exactly the canvas CSS width at every viewport', () => {
+  for (const canvasWidth of VIEWPORT_WIDTHS) {
+    for (const devicePixelRatio of [1, 2]) {
+      const { view, restore } = mount({ viewport: { canvasWidth, devicePixelRatio } });
+      try {
+        const where = `${canvasWidth} css px at dpr ${devicePixelRatio}`;
+        assert.equal(view.canvasHost.getBoundingClientRect().width, canvasWidth + HOST_CHROME,
+          `the host stays wider than its canvas at ${where}`);
+        assert.equal(view.canvas.getBoundingClientRect().width, canvasWidth);
+        assert.equal(view.canvas.width, canvasWidth * devicePixelRatio,
+          `the backing store is one device pixel per css pixel at ${where}`);
+        assert.equal(view.canvas.width / devicePixelRatio, canvasWidth,
+          `no resampling at ${where}: a device column is a drawing unit`);
+        assert.equal(view.width, canvasWidth);
+      } finally {
+        restore();
+      }
+    }
   }
 });
 
