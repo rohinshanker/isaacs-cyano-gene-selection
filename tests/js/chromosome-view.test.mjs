@@ -29,6 +29,33 @@ const DEVICE_PIXEL_RATIO = 2;
  */
 const stage = { canvasWidth: CANVAS_WIDTH, devicePixelRatio: DEVICE_PIXEL_RATIO };
 
+/** No clip in effect: every paint call starts able to reach the whole canvas. */
+const UNCLIPPED = {
+  left: -Infinity, top: -Infinity, right: Infinity, bottom: Infinity,
+};
+
+/** The box a path covers, grown on every side by a stroke's own allowance. */
+function pathBox(path, grow) {
+  if (path.length === 0) return { left: 0, top: 0, right: 0, bottom: 0 };
+  const xs = path.map((point) => point.x);
+  const ys = path.map((point) => point.y);
+  return {
+    left: Math.min(...xs) - grow,
+    top: Math.min(...ys) - grow,
+    right: Math.max(...xs) + grow,
+    bottom: Math.max(...ys) + grow,
+  };
+}
+
+function intersectBoxes(a, b) {
+  return {
+    left: Math.max(a.left, b.left),
+    top: Math.max(a.top, b.top),
+    right: Math.min(a.right, b.right),
+    bottom: Math.min(a.bottom, b.bottom),
+  };
+}
+
 /**
  * A DOM and canvas context just wide enough for this view, recording every draw
  * call so the geometry can be asserted. Anything the view touches that is not
@@ -79,18 +106,47 @@ class FakeElement {
     if (this.tagName !== 'canvas') throw new Error(`getContext on <${this.tagName}>`);
     this.ops = [];
     const record = (op) => this.ops.push(op);
+    // The current path, the clip stack, and the region each paint call can
+    // actually put pixels in. Vertices alone do not say what a canvas paints:
+    // `stroke()` centres the line on the path and a miter runs past its vertex
+    // by up to `miterLimit` line widths, so the painted region is the path box
+    // grown by that allowance and then cut to the clip. A test that wants "no
+    // pixel outside this rectangle" has to assert on that region.
+    let path = [];
+    const clips = [UNCLIPPED];
+    const clip = () => clips[clips.length - 1];
     const context = {
       fillStyle: '', strokeStyle: '', lineWidth: 1, font: '', textAlign: '', textBaseline: '',
+      miterLimit: 10,
       clearRect: () => record({ op: 'clear' }),
       fillRect: (x, y, w, h) => record({ op: 'fillRect', x, y, w, h, fill: context.fillStyle }),
       strokeRect: (x, y, w, h) => record({ op: 'strokeRect', x, y, w, h, stroke: context.strokeStyle }),
       fillText: (text, x, y) => record({ op: 'text', text, x, y }),
-      beginPath: () => record({ op: 'beginPath' }),
+      beginPath: () => { path = []; record({ op: 'beginPath' }); },
       closePath: () => record({ op: 'closePath' }),
-      moveTo: (x, y) => record({ op: 'moveTo', x, y }),
-      lineTo: (x, y) => record({ op: 'lineTo', x, y }),
-      stroke: () => record({ op: 'stroke', stroke: context.strokeStyle }),
-      fill: () => record({ op: 'fill', fill: context.fillStyle }),
+      moveTo: (x, y) => { path.push({ x, y }); record({ op: 'moveTo', x, y }); },
+      lineTo: (x, y) => { path.push({ x, y }); record({ op: 'lineTo', x, y }); },
+      rect: (x, y, w, h) => {
+        path.push({ x, y }, { x: x + w, y: y + h });
+        record({ op: 'rect', x, y, w, h });
+      },
+      save: () => { clips.push(clip()); record({ op: 'save' }); },
+      restore: () => { clips.pop(); record({ op: 'restore' }); },
+      clip: () => {
+        clips[clips.length - 1] = intersectBoxes(clip(), pathBox(path, 0));
+        record({ op: 'clip', box: clip() });
+      },
+      stroke: () => record({
+        op: 'stroke',
+        stroke: context.strokeStyle,
+        bounds: intersectBoxes(clip(),
+          pathBox(path, (context.lineWidth / 2) * Math.max(1, context.miterLimit))),
+      }),
+      fill: () => record({
+        op: 'fill',
+        fill: context.fillStyle,
+        bounds: intersectBoxes(clip(), pathBox(path, 0)),
+      }),
       setTransform: () => record({ op: 'setTransform' }),
       // A stand-in metric: canvas text measurement is not available in Node, and
       // the layout only needs a width that grows with the string.
@@ -420,13 +476,15 @@ test('an origin-crossing CDS draws its two segments inside the replicon, with a 
     const widths = rects.map((rect) => rect.w).sort((a, b) => a - b);
     assert.ok(widths[1] < plasmid.width * 0.9);
     // A clipped-edge chevron on the bar at each end, inside the track: a glyph
-    // hanging off the axis would read as an axis terminator instead.
-    const mid = plasmid.layout.laneBelowTop + plasmid.layout.laneHeight / 2;
+    // hanging off the axis would read as an axis terminator instead. Its rows
+    // come from the bar the view actually drew, so the chevron is checked
+    // against that rectangle rather than against a second copy of the formula.
+    const mid = rects[0].y + rects[0].h / 2;
     const tips = view.canvas.ops.filter((op) => op.op === 'moveTo' && Math.abs(op.y - mid) < 0.001);
     assert.equal(tips.length, 2, 'one chevron at each end of the replicon');
     assert.ok(Math.abs(tips[0].x - plasmid.left) < 0.001);
     assert.ok(Math.abs(tips[1].x - right) < 0.001);
-    const reach = Math.min(5, plasmid.layout.laneHeight / 2 - 1);
+    const reach = Math.min(5, rects[0].h / 2 - 0.5);
     const chevronPoints = view.canvas.ops.filter((op) => op.op === 'lineTo'
       && Math.abs(Math.abs(op.y - mid) - reach) < 0.001);
     assert.equal(chevronPoints.length, 4);
@@ -453,13 +511,13 @@ test('a wrap chevron on a sub-pixel segment is clipped to that segment', () => {
     const plasmid = view.bands()[2];
     assert.equal(plasmid.track.accession, PLASMID_C);
     const laneTop = plasmid.layout.laneAboveTop;
-    const mid = laneTop + plasmid.layout.laneHeight / 2;
-    const reach = Math.min(5, plasmid.layout.laneHeight / 2 - 1);
     const bars = view.canvas.ops.filter((op) => op.op === 'fillRect'
       && op.y >= laneTop && op.y < plasmid.layout.axisY);
     assert.equal(bars.length, 2, 'both annotated segments are drawn');
     const closing = bars.reduce((a, b) => (a.x > b.x ? a : b));
     assert.ok(closing.w < 5, 'the 13 bp segment really is narrower than a full-width marker');
+    const mid = closing.y + closing.h / 2;
+    const reach = Math.min(5, closing.h / 2 - 0.5);
 
     const tips = view.canvas.ops.filter((op) => op.op === 'moveTo' && Math.abs(op.y - mid) < 0.001);
     const bases = view.canvas.ops.filter((op) => op.op === 'lineTo'
@@ -476,6 +534,31 @@ test('a wrap chevron on a sub-pixel segment is clipped to that segment', () => {
       assert.ok(point.x >= closing.x - 0.001 && point.x <= closing.x + closing.w + 0.001,
         'no part of the chevron is drawn beside its segment');
     }
+
+    // Bounding the vertices is not bounding the paint. `ctx.stroke()` centres
+    // its line on the path and a miter overshoots its vertex, so on a bar this
+    // narrow the tip's join alone spikes a column to the left and several rows
+    // above and below. These are the regions the fake reports as reachable —
+    // path box plus the stroke's own allowance, cut to the clip in force — and
+    // they have to sit inside the bar's own rectangle.
+    // Located by the chevron's own tip, not by the clip, so that a clip which is
+    // present but too generous fails on the bounds below rather than hiding.
+    const ops = view.canvas.ops;
+    const tip = ops.findIndex((op) => op.op === 'moveTo'
+      && Math.abs(op.x - outer) < 0.001 && Math.abs(op.y - mid) < 0.001);
+    assert.ok(tip > 0, 'the outer chevron is drawn');
+    const end = ops.findIndex((op, i) => i > tip && op.op === 'restore');
+    const block = ops.slice(ops.slice(0, tip).map((op) => op.op).lastIndexOf('save'), end);
+    const painted = block.filter((op) => op.op === 'fill' || op.op === 'stroke');
+    assert.equal(painted.length, 2, 'the outer chevron is filled and outlined');
+    for (const op of painted) {
+      assert.ok(op.bounds.left >= closing.x - 0.001 && op.bounds.right <= closing.x + closing.w + 0.001,
+        `${op.op} reaches x ${op.bounds.left}–${op.bounds.right}, outside the bar`);
+      assert.ok(op.bounds.top >= closing.y - 0.001 && op.bounds.bottom <= closing.y + closing.h + 0.001,
+        `${op.op} reaches y ${op.bounds.top}–${op.bounds.bottom}, outside the bar`);
+    }
+    assert.ok(block.some((op) => op.op === 'clip'),
+      'and it is a clip that bounds them, not a coincidence of the vertices');
   } finally {
     restore();
   }

@@ -153,8 +153,9 @@ export function fitTickLabels(ticks, { measure, x, left, right, gap = 8 }) {
  * A sub-pixel CDS is snapped to a whole device column and given a whole pixel
  * of width. At whole-genome zoom a 1 kb gene is a third of a pixel, and drawn
  * at a fractional edge it anti-aliases into a pale smear that loses its colour
- * entirely. Every glyph that belongs to a piece is placed on this rectangle, so
- * a marker can never land beside the bar it annotates.
+ * entirely. This is the horizontal extent only; `ChromosomeView.barRect` adds
+ * the lane rows and is what every glyph on the piece is placed on and clipped
+ * to.
  *
  * @param {{bpToX: (bp: number) => number}} scale
  * @param {{from: number, to: number}} piece
@@ -701,14 +702,11 @@ export class ChromosomeView {
    * the origin get their wrap marker rather than a bar spanning the replicon.
    */
   paintMark(ctx, band, mark, fill, stroke) {
-    const { layout, scale } = band;
-    const top = this.laneTop(layout, mark) + (mark.lane === 'below' ? 1 : 2);
-    const height = layout.laneHeight - 3;
     ctx.fillStyle = fill ?? 'transparent';
     ctx.strokeStyle = stroke;
     ctx.lineWidth = 1;
     for (const piece of mark.pieces) {
-      const { left, width } = pieceRect(scale, piece);
+      const { left, top, width, height } = this.barRect(band, mark, piece);
       if (left + width < band.left || left > band.left + band.width) continue;
       if (fill) ctx.fillRect(left, top, width, height);
       if (!fill || width >= 3) {
@@ -716,6 +714,28 @@ export class ChromosomeView {
       }
     }
     if (mark.wraps) this.paintWrapMarker(ctx, band, mark);
+  }
+
+  /**
+   * The whole rectangle one annotated piece of a CDS owns: `pieceRect`'s snapped
+   * column, and the lane rows its bar fills.
+   *
+   * Every glyph belonging to the piece is placed on this rectangle *and clipped
+   * to it*. Bounding a marker's path vertices is not enough on its own, because
+   * `ctx.stroke()` centres a line on the path and extends a mitered join well
+   * past the vertex it joins: on a bar about a pixel wide the chevron's tip
+   * miter alone reaches a column to its left and its base miters a few rows
+   * above and below. The clip is what makes "on the bar" true of the painted
+   * pixels rather than only of the coordinates.
+   */
+  barRect(band, mark, piece) {
+    const { left, width } = pieceRect(band.scale, piece);
+    return {
+      left,
+      width,
+      top: this.laneTop(band.layout, mark) + (mark.lane === 'below' ? 1 : 2),
+      height: band.layout.laneHeight - 3,
+    };
   }
 
   /**
@@ -727,28 +747,36 @@ export class ChromosomeView {
    * gene continuing. It says the two drawn pieces are one CDS crossing the
    * coordinate boundary, without drawing a span the replicon does not have.
    *
-   * Each chevron is clipped to its own piece. `M744_RS13620` opens with 13 bp
-   * on a 7,842 bp plasmid — about a pixel at full extent — and a marker drawn
-   * at its full width would cover empty track beside that bar and read as a
-   * free-floating arrowhead pointing at nothing.
+   * Each chevron is clipped to `barRect`, the rectangle of the piece it
+   * annotates. `M744_RS13620` opens with 13 bp on a 7,842 bp plasmid — about a
+   * pixel at full extent — and a marker drawn at its full width would cover
+   * empty track beside that bar and read as a free-floating arrowhead pointing
+   * at nothing. The clip covers the fill, the outline and the outline's miters,
+   * which the vertices alone do not: at that width the tip's miter is the
+   * sharpest join on the canvas and spikes furthest past its vertex.
    */
   paintWrapMarker(ctx, band, mark) {
-    const { layout, scale } = band;
-    const top = this.laneTop(layout, mark);
-    const mid = top + layout.laneHeight / 2;
-    const reach = Math.min(WRAP_MARKER_PX, layout.laneHeight / 2 - 1);
     const opening = mark.pieces.find((piece) => piece.from === 1);
     const closing = mark.pieces.find((piece) => piece.to === band.track.lengthBp);
     const ends = [];
-    if (opening) ends.push({ rect: pieceRect(scale, opening), direction: 1 });
-    if (closing) ends.push({ rect: pieceRect(scale, closing), direction: -1 });
+    if (opening) ends.push({ rect: this.barRect(band, mark, opening), direction: 1 });
+    if (closing) ends.push({ rect: this.barRect(band, mark, closing), direction: -1 });
     ctx.fillStyle = WRAP_MARKER_FILL;
     ctx.strokeStyle = WRAP_MARKER_STROKE;
     ctx.lineWidth = 1;
     for (const { rect, direction } of ends) {
       if (rect.left + rect.width < band.left || rect.left > band.left + band.width) continue;
+      // Centred on the bar, reaching at most to its rows. The half-pixel inset
+      // is the one `paintMark`'s `strokeRect` uses, so a 1 px outline lands on
+      // whole rows instead of straddling two.
+      const mid = rect.top + rect.height / 2;
+      const reach = Math.min(WRAP_MARKER_PX, rect.height / 2 - 0.5);
       const tip = direction === 1 ? rect.left : rect.left + rect.width;
       const base = tip + direction * Math.min(WRAP_MARKER_PX, rect.width);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rect.left, rect.top, rect.width, rect.height);
+      ctx.clip();
       ctx.beginPath();
       ctx.moveTo(tip, mid);
       ctx.lineTo(base, mid - reach);
@@ -756,6 +784,7 @@ export class ChromosomeView {
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+      ctx.restore();
     }
   }
 

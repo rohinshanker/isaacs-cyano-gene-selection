@@ -119,9 +119,19 @@ this gene continuing. No span beyond the replicon length is ever drawn.
 Each chevron is clipped to the piece it annotates, never drawn beside it.
 `M744_RS13620` opens with 13 bp of a 7,842 bp plasmid, about one pixel at full
 extent, so a marker at its full 5 px would cover empty track next to that bar
-and read as a free-floating arrowhead pointing at nothing. Both the bar and its
-marker are placed on the one rectangle `pieceRect` computes, which is what makes
-that impossible rather than merely unlikely.
+and read as a free-floating arrowhead pointing at nothing. `barRect` computes
+that one rectangle — the snapped column from `pieceRect` and the lane rows the
+bar fills — and the marker is both placed on it and `ctx.clip()`ped to it.
+
+The clip is the part that matters, and bounding the chevron's vertices is not a
+substitute for it. A canvas centres a 1 px stroke on the path, and a miter join
+overshoots its vertex by up to `miterLimit` line widths: on a bar about one
+pixel wide the chevron is the sharpest join on the canvas, and its outline
+spiked a column left of the bar and about five rows above and below it while
+every vertex sat inside. "On the bar" has to be true of the pixels, so the fill,
+the outline and the outline's joins are all drawn inside one clip. The chevron
+is also centred on that rectangle and reaches at most to its rows, so the clip
+bounds the stroke rather than cutting the shape.
 
 `anchorBp` is the CDS's first transcribed base, which for a wrapping CDS is the
 piece before the origin on the plus strand and the high end on the minus strand.
