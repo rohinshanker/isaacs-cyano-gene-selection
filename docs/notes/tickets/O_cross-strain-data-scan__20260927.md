@@ -246,8 +246,14 @@ Because it is a tab rather than a replacement, shipping it does **not** by itsel
 retire the native codon-space PCA. That remains open question 4 and stays a
 separate, explicit decision.
 
-Design decisions, confirmed by the owner 2026-09-28 and **dispatched as Multica
-DEM-148 (claude-implementer)** with rendered validation at three widths required:
+**Built and merged 2026-09-28** (DEM-148, claude-implementer; reviewed by DEM-150,
+codex-reviewer, and independently rendered by DEM-151, claude-ui-inspector;
+accepted after one fix round; on `main` as `c211149` and `77434f7`). The contract
+is [chromosome-view.md](../../validation/chromosome-view.md). Two low inspection
+items (wrap chevron on a piece narrower than the chevron; naming the filtering
+category in the accessible name) were in a follow-up implementer run when the
+coordinator stopped; see the coordinator handoff. The design decisions below were
+confirmed by the owner on 2026-09-28 and are what shipped:
 
 - **Linear, not circular.** A 2.69 Mb chromosome cannot share one circle or one scale
   legibly with a 46 kb and a 7.8 kb plasmid, and a linear track zooms and shares its
