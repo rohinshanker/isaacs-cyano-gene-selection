@@ -39,6 +39,7 @@ STRAINS = (
         "label": "PCC 6311",
         "slug": "pcc6311",
         "role": "pcc6311-crosswalk-gff",
+        "assembly_report_role": "pcc6311-assembly-report",
         "namespace": "PCC6311",
     },
     {
@@ -46,6 +47,7 @@ STRAINS = (
         "label": "PCC 7943",
         "slug": "pcc7943",
         "role": "pcc7943-crosswalk-gff",
+        "assembly_report_role": "pcc7943-assembly-report",
         "namespace": "PCC7943",
     },
 )
@@ -53,7 +55,6 @@ EXPECTED_SOURCES = {
     "utex2973-refseq": (
         "GCF_000817325.1",
         "ASM81732v1",
-        "Complete Genome",
         "GCF_000817325.1-RS_2026_05_13",
         "2026-05-13",
         "6.11",
@@ -61,7 +62,6 @@ EXPECTED_SOURCES = {
     "pcc6311-refseq-crosswalk": (
         "GCF_022984265.1",
         "ASM2298426v1",
-        "Chromosome",
         "GCF_022984265.1-RS_2025_12_23",
         "2025-12-23",
         "6.10",
@@ -69,7 +69,6 @@ EXPECTED_SOURCES = {
     "pcc7943-refseq-crosswalk": (
         "GCF_022984345.1",
         "ASM2298434v1",
-        "Chromosome",
         "GCF_022984345.1-RS_2025_12_23",
         "2025-12-23",
         "6.10",
@@ -84,6 +83,15 @@ def _source_by_id(manifest: dict[str, Any], source_id: str) -> dict[str, Any]:
         raise release.ReleaseError(f"manifest has no {source_id} source") from error
 
 
+def _assembly_level(path: Path) -> str:
+    """Reads the assembly level from a pinned NCBI assembly report."""
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            if line.startswith("# Assembly level:"):
+                return line.partition(":")[2].strip()
+    raise release.ReleaseError(f"assembly report has no Assembly level: {path}")
+
+
 def verify_release_metadata(manifest: dict[str, Any], root: Path) -> None:
     """Checks the pinned release identifiers against the downloaded GFF headers."""
     if manifest["releaseId"] != "sister-strain-crosswalk-v1":
@@ -94,7 +102,6 @@ def verify_release_metadata(manifest: dict[str, Any], root: Path) -> None:
         actual = (
             source["assemblyAccession"],
             source["assemblyName"],
-            source.get("assemblyLevel"),
             source["annotationRelease"],
             source["annotationDate"],
             source["pgapVersion"],
@@ -118,6 +125,14 @@ def verify_release_metadata(manifest: dict[str, Any], root: Path) -> None:
         ):
             raise release.ReleaseError(f"{source_id} GFF annotation release mismatch")
 
+    for strain in STRAINS:
+        source = _source_by_id(manifest, strain["id"])
+        report = root / entries[strain["assembly_report_role"]]["localPath"]
+        if _assembly_level(report) != source.get("assemblyLevel"):
+            raise release.ReleaseError(
+                f"{strain['id']} assembly level differs from its assembly report"
+            )
+
 
 def _protein_loci(features: Iterable[release.Feature]) -> dict[str, list[str]]:
     loci: dict[str, set[str]] = defaultdict(set)
@@ -140,6 +155,18 @@ def _genes(features: Iterable[release.Feature]) -> dict[str, release.Feature]:
     }
 
 
+def _require_gene_features(
+    protein_loci: dict[str, list[str]],
+    genes: dict[str, release.Feature],
+) -> None:
+    """Rejects protein-bearing CDS loci without a gene or pseudogene feature."""
+    loci = {locus for protein_locus in protein_loci.values() for locus in protein_locus}
+    for locus in sorted(loci - genes.keys()):
+        raise release.ReleaseError(
+            f"protein-bearing CDS locus {locus} has no gene/pseudogene feature"
+        )
+
+
 def build_rows(
     target_features: list[release.Feature],
     sister_features: list[release.Feature],
@@ -150,25 +177,45 @@ def build_rows(
     sister_proteins = _protein_loci(sister_features)
     target_genes = _genes(target_features)
     sister_genes = _genes(sister_features)
+    _require_gene_features(target_proteins, target_genes)
+    _require_gene_features(sister_proteins, sister_genes)
+
+    shared_proteins = sorted(set(target_proteins) & set(sister_proteins))
+    target_relationships: dict[str, set[str]] = defaultdict(set)
+    sister_relationships: dict[str, set[str]] = defaultdict(set)
+    for protein in shared_proteins:
+        protein_target_loci = target_proteins[protein]
+        protein_sister_loci = sister_proteins[protein]
+        for target_locus in protein_target_loci:
+            target_relationships[target_locus].update(protein_sister_loci)
+        for sister_locus in protein_sister_loci:
+            sister_relationships[sister_locus].update(protein_target_loci)
+
     matched_target: set[str] = set()
     matched_sister: set[str] = set()
     ambiguous_target: set[str] = set()
     ambiguous_sister: set[str] = set()
     rows: list[dict[str, Any]] = []
 
-    for protein in sorted(set(target_proteins) & set(sister_proteins)):
-        target_loci = target_proteins[protein]
-        sister_loci = sister_proteins[protein]
-        ambiguous = len(target_loci) != 1 or len(sister_loci) != 1
-        matched_target.update(target_loci)
-        matched_sister.update(sister_loci)
-        if ambiguous:
-            ambiguous_target.update(target_loci)
-            ambiguous_sister.update(sister_loci)
-        for target_locus in target_loci:
+    for protein in shared_proteins:
+        protein_target_loci = target_proteins[protein]
+        protein_sister_loci = sister_proteins[protein]
+        protein_is_ambiguous = (
+            len(protein_target_loci) != 1 or len(protein_sister_loci) != 1
+        )
+        matched_target.update(protein_target_loci)
+        matched_sister.update(protein_sister_loci)
+        for target_locus in protein_target_loci:
             target_gene = target_genes[target_locus]
-            for sister_locus in sister_loci:
+            for sister_locus in protein_sister_loci:
                 sister_gene = sister_genes[sister_locus]
+                relationship_is_ambiguous = (
+                    len(target_relationships[target_locus]) > 1
+                    or len(sister_relationships[sister_locus]) > 1
+                )
+                if relationship_is_ambiguous:
+                    ambiguous_target.add(target_locus)
+                    ambiguous_sister.add(sister_locus)
                 common = {
                     "subject_locus_tag": target_locus,
                     "seqid": target_gene.seqid,
@@ -176,9 +223,13 @@ def build_rows(
                     "end": target_gene.end,
                     "strand": target_gene.strand,
                     "mapping_ambiguity": (
-                        "shared-protein-many-to-many" if ambiguous else ""
+                        "shared-protein-many-to-many"
+                        if protein_is_ambiguous
+                        else "multiple-exact-protein-locus-mappings"
+                        if relationship_is_ambiguous
+                        else ""
                     ),
-                    "source": f"UTEX 2973 and {strain['label']} RefSeq GFF3",
+                    "source": f"{strain['label']} and UTEX RefSeq GFF3",
                     "evidence": protein,
                     "mapping_method": "exact shared RefSeq protein_id",
                 }
@@ -202,18 +253,18 @@ def build_rows(
                         "object_id": old_tag,
                     })
 
-    target_loci = {locus for loci in target_proteins.values() for locus in loci}
-    sister_loci = {locus for loci in sister_proteins.values() for locus in loci}
+    all_target_loci = {locus for loci in target_proteins.values() for locus in loci}
+    all_sister_loci = {locus for loci in sister_proteins.values() for locus in loci}
     current_relationship = f"{strain['slug']}_ortholog"
     current_rows = [row for row in rows if row["relationship"] == current_relationship]
     counts = {
-        "utexProteinLociTotal": len(target_loci),
+        "utexProteinLociTotal": len(all_target_loci),
         "matchedUtexLoci": len(matched_target),
-        "unmatchedUtexLoci": len(target_loci - matched_target),
+        "unmatchedUtexLoci": len(all_target_loci - matched_target),
         "ambiguousUtexLoci": len(ambiguous_target),
-        "sisterProteinLociTotal": len(sister_loci),
+        "sisterProteinLociTotal": len(all_sister_loci),
         "matchedSisterLoci": len(matched_sister),
-        "unmatchedSisterLoci": len(sister_loci - matched_sister),
+        "unmatchedSisterLoci": len(all_sister_loci - matched_sister),
         "ambiguousSisterLoci": len(ambiguous_sister),
         "currentRelationships": len(current_rows),
         "ambiguousCurrentRelationships": sum(

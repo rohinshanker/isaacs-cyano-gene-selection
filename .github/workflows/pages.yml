@@ -46,7 +46,7 @@ jobs:
 
       - name: Verify sister-strain crosswalk
         run: |
-          python3 tools/sister_strain_crosswalk.py --fetch
+          python3 tools/sister_strain_crosswalk.py --verify
           python3 tools/sister_strain_crosswalk.py --check
 
       # This audit uses only authenticated RefSeq inputs fetched above. The

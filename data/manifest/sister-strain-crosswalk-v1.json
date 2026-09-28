@@ -40,12 +40,21 @@
       "files": [
         {
           "role": "pcc6311-crosswalk-gff",
-          "localPath": "data/raw/GCF_022984265.1_ASM2298426v1_genomic.gff.gz",
+          "localPath": "data/annotation/source/GCF_022984265.1_ASM2298426v1_genomic.gff.gz",
           "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/265/GCF_022984265.1_ASM2298426v1/GCF_022984265.1_ASM2298426v1_genomic.gff.gz",
           "byteSize": 238990,
           "md5": "9bad74f154650042bf050bd14055acea",
-          "retention": "downloaded-at-build",
-          "redistribution": "NCBI data usage policies; not redistributed in git"
+          "retention": "tracked-derived-feature-input",
+          "redistribution": "NCBI data usage policies; source bytes retained to reproduce PCC 6311 identifier relationships"
+        },
+        {
+          "role": "pcc6311-assembly-report",
+          "localPath": "data/annotation/source/GCF_022984265.1_ASM2298426v1_assembly_report.txt",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/265/GCF_022984265.1_ASM2298426v1/GCF_022984265.1_ASM2298426v1_assembly_report.txt",
+          "byteSize": 1503,
+          "md5": "056647ca7d826206d7e14dd914ff8bec",
+          "retention": "tracked-release-gate",
+          "redistribution": "NCBI data usage policies; source bytes retained for assembly-level and replicon-length validation"
         }
       ]
     },
@@ -63,12 +72,21 @@
       "files": [
         {
           "role": "pcc7943-crosswalk-gff",
-          "localPath": "data/raw/GCF_022984345.1_ASM2298434v1_genomic.gff.gz",
+          "localPath": "data/annotation/source/GCF_022984345.1_ASM2298434v1_genomic.gff.gz",
           "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/345/GCF_022984345.1_ASM2298434v1/GCF_022984345.1_ASM2298434v1_genomic.gff.gz",
           "byteSize": 239087,
           "md5": "0376748ac226277a84f027cacca2f0cc",
-          "retention": "downloaded-at-build",
-          "redistribution": "NCBI data usage policies; not redistributed in git"
+          "retention": "tracked-derived-feature-input",
+          "redistribution": "NCBI data usage policies; source bytes retained to reproduce PCC 7943 identifier relationships"
+        },
+        {
+          "role": "pcc7943-assembly-report",
+          "localPath": "data/annotation/source/GCF_022984345.1_ASM2298434v1_assembly_report.txt",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/345/GCF_022984345.1_ASM2298434v1/GCF_022984345.1_ASM2298434v1_assembly_report.txt",
+          "byteSize": 1502,
+          "md5": "37a522828b8396d96f218b0a86fcfdfb",
+          "retention": "tracked-release-gate",
+          "redistribution": "NCBI data usage policies; source bytes retained for assembly-level and replicon-length validation"
         }
       ]
     }

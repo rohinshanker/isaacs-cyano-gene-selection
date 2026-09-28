@@ -7,8 +7,10 @@
 ## Pinned inputs
 
 The manifest `data/manifest/sister-strain-crosswalk-v1.json` pins the three RefSeq
-GFF3 inputs. Source files are downloaded at build time and are not redistributed in
-git.
+GFF3 inputs. The two sister-strain GFF3 files and their small NCBI assembly reports
+are tracked under `data/annotation/source/`, following the existing PCC 7942
+crosswalk precedent, so the derived relationships rebuild from repository bytes.
+The UTEX GFF3 remains a checksum-pinned, downloaded-at-build input.
 
 | Strain | Assembly | Assembly name | Annotation release | Level | GFF3 MD5 | Bytes |
 | --- | --- | --- | --- | --- | --- | ---: |
@@ -18,7 +20,10 @@ git.
 
 The direct URLs, retrieval date 2026-09-28, byte sizes, and checksums are fixed in
 the manifest. The tool verifies each file and checks the assembly and annotation
-release identifiers in its GFF3 headers before building.
+release identifiers in its GFF3 headers before building. It reads each sister
+strain's `Assembly level` directly from its pinned NCBI assembly report; the reports
+are 1,503 bytes / MD5 `056647ca7d826206d7e14dd914ff8bec` for PCC 6311 and
+1,502 bytes / MD5 `37a522828b8396d96f218b0a86fcfdfb` for PCC 7943.
 
 ## Join and ambiguity contract
 
@@ -37,7 +42,8 @@ relationships are `pcc6311_ortholog` and `pcc7943_ortholog`; source GFF
 ## Coverage
 
 Matched, unmatched, and ambiguous values below count unique protein-bearing loci.
-Relationship counts count TSV rows before legacy-tag expansion.
+Relationship counts count TSV rows before legacy-tag expansion. Ambiguous loci are
+a subset of matched loci, not a third coverage bucket.
 
 | Strain | Side | Total loci | Matched | Unmatched | Ambiguous | Current relationships | Ambiguous relationships | Legacy relationships |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -46,10 +52,22 @@ Relationship counts count TSV rows before legacy-tag expansion.
 | PCC 7943 | UTEX 2973 | 2,715 | 2,636 | 79 | 8 | 2,642 | 14 | 2,602 |
 | PCC 7943 | Sister | 2,715 | 2,635 | 80 | 7 | — | — | — |
 
-Both sister assemblies are Chromosome-level, not Complete Genome. An unmatched
-locus may therefore reflect assembly incompleteness rather than genuine biological
-absence. This crosswalk does not distinguish those cases and must not turn an
-unmatched locus into an absence claim.
+Both sister assemblies are Chromosome-level, not Complete Genome. Their pinned
+assembly reports show that the plasmids have the same lengths as UTEX 2973 and the
+main chromosomes differ by less than 1 kb:
+
+| Replicon | UTEX 2973 | PCC 6311 | PCC 7943 |
+| --- | ---: | ---: | ---: |
+| Main chromosome | 2,690,418 | 2,689,791 | 2,689,559 |
+| pANL | 46,366 | 46,366 | 46,366 |
+| pANS | 7,842 | 7,842 | 7,842 |
+
+Moreover, 49 of 52 UTEX loci unmatched to PCC 6311 and 75 of 79 unmatched to PCC
+7943 sit on the fully assembled main chromosome. Assembly incompleteness is thus the
+weaker explanation for the unmatched set. The caveat remains deliberately
+conservative: an unmatched locus may reflect incompleteness rather than genuine
+biological absence, the crosswalk does not distinguish those cases, and it must not
+turn an unmatched locus into an absence claim.
 
 ## Reproduction
 
@@ -57,10 +75,12 @@ Run from the repository root:
 
 ```sh
 python3 tools/sister_strain_crosswalk.py --fetch
+python3 tools/sister_strain_crosswalk.py --verify
 python3 tools/sister_strain_crosswalk.py
 python3 tools/sister_strain_crosswalk.py --check
 ```
 
-`--fetch` downloads and authenticates the manifest inputs, the default mode rebuilds
-the TSV, and `--check` independently rebuilds it in a temporary directory and fails
-on byte drift.
+`--fetch` downloads a missing UTEX input and authenticates every manifest input;
+`--verify` checks the pinned repository inputs without network access, the default
+mode rebuilds the TSV, and `--check` independently rebuilds it in a temporary
+directory and fails on byte drift.

@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -76,19 +77,31 @@ class ManifestTest(unittest.TestCase):
     def setUp(self) -> None:
         self.manifest = release.load_manifest(MANIFEST_PATH)
 
-    def test_manifest_pins_all_three_gffs(self) -> None:
+    def test_manifest_pins_gffs_and_sister_assembly_reports(self) -> None:
         entries = release.entries_by_role(self.manifest)
         self.assertEqual(
             {
                 "utex2973-crosswalk-gff",
                 "pcc6311-crosswalk-gff",
                 "pcc7943-crosswalk-gff",
+                "pcc6311-assembly-report",
+                "pcc7943-assembly-report",
             },
             set(entries),
         )
-        self.assertTrue(all(
-            entry["retention"] == "downloaded-at-build" for entry in entries.values()
-        ))
+        self.assertEqual(
+            "downloaded-at-build",
+            entries["utex2973-crosswalk-gff"]["retention"],
+        )
+        for strain in ("pcc6311", "pcc7943"):
+            self.assertEqual(
+                "tracked-derived-feature-input",
+                entries[f"{strain}-crosswalk-gff"]["retention"],
+            )
+            self.assertEqual(
+                "tracked-release-gate",
+                entries[f"{strain}-assembly-report"]["retention"],
+            )
         release.verify_files(self.manifest, ROOT)
         crosswalk.verify_release_metadata(self.manifest, ROOT)
 
@@ -97,6 +110,13 @@ class ManifestTest(unittest.TestCase):
         changed["sources"][1]["annotationRelease"] = "truncated"
         with self.assertRaisesRegex(release.ReleaseError, "differs"):
             crosswalk.verify_release_metadata(changed, ROOT)
+
+    def test_release_metadata_reads_assembly_level_from_report(self) -> None:
+        with mock.patch.object(
+            crosswalk, "_assembly_level", return_value="Complete Genome"
+        ):
+            with self.assertRaisesRegex(release.ReleaseError, "assembly report"):
+                crosswalk.verify_release_metadata(self.manifest, ROOT)
 
 
 class MappingTest(unittest.TestCase):
@@ -126,6 +146,44 @@ class MappingTest(unittest.TestCase):
         self.assertEqual(2, counts["ambiguousUtexLoci"])
         self.assertEqual(2, counts["ambiguousSisterLoci"])
 
+    def test_two_proteins_on_one_locus_are_ambiguous(self) -> None:
+        target = [
+            feature("gene", "UTEX_A"),
+            feature("CDS", "UTEX_A", "WP_ONE.1"),
+            feature("CDS", "UTEX_A", "WP_TWO.1"),
+        ]
+        sister = [
+            feature("gene", "PCC_A"), feature("CDS", "PCC_A", "WP_ONE.1"),
+            feature("gene", "PCC_B"), feature("CDS", "PCC_B", "WP_TWO.1"),
+        ]
+        rows, counts = crosswalk.build_rows(target, sister, crosswalk.STRAINS[0])
+        current = [row for row in rows if row["relationship"] == "pcc6311_ortholog"]
+        self.assertEqual(2, len(current))
+        self.assertTrue(all(
+            row["mapping_ambiguity"] == "multiple-exact-protein-locus-mappings"
+            for row in current
+        ))
+        self.assertEqual(1, counts["ambiguousUtexLoci"])
+        self.assertEqual(2, counts["ambiguousSisterLoci"])
+
+    def test_protein_bearing_cds_requires_gene_feature(self) -> None:
+        complete_target = [
+            feature("gene", "UTEX_A"), feature("CDS", "UTEX_A", "WP_ONE.1"),
+        ]
+        complete_sister = [
+            feature("gene", "PCC_A"), feature("CDS", "PCC_A", "WP_ONE.1"),
+        ]
+        cases = (
+            ([feature("CDS", "UTEX_MISSING", "WP_ONE.1")], complete_sister,
+             "UTEX_MISSING"),
+            (complete_target, [feature("CDS", "PCC_MISSING", "WP_ONE.1")],
+             "PCC_MISSING"),
+        )
+        for target, sister, missing_locus in cases:
+            with self.subTest(missing_locus=missing_locus):
+                with self.assertRaisesRegex(release.ReleaseError, missing_locus):
+                    crosswalk.build_rows(target, sister, crosswalk.STRAINS[0])
+
 
 class GeneratedArtifactTest(unittest.TestCase):
     """Re-derives the tracked TSV and fixes its audited coverage counts."""
@@ -154,6 +212,33 @@ class GeneratedArtifactTest(unittest.TestCase):
         self.assertEqual(
             {"WP_011243185.1", "WP_011242480.1", "WP_011242807.1", "WP_011242808.1"},
             {row["evidence"] for row in current if row["mapping_ambiguity"]},
+        )
+        for relationship in ("pcc6311_ortholog", "pcc7943_ortholog"):
+            relationship_rows = [
+                row for row in current if row["relationship"] == relationship
+            ]
+            objects_by_subject: dict[str, set[str]] = {}
+            subjects_by_object: dict[str, set[str]] = {}
+            for row in relationship_rows:
+                objects_by_subject.setdefault(row["subject_locus_tag"], set()).add(
+                    row["object_id"]
+                )
+                subjects_by_object.setdefault(row["object_id"], set()).add(
+                    row["subject_locus_tag"]
+                )
+            self.assertTrue(all(
+                row["mapping_ambiguity"]
+                for row in relationship_rows
+                if len(objects_by_subject[row["subject_locus_tag"]]) > 1
+            ))
+            self.assertTrue(all(
+                row["mapping_ambiguity"]
+                for row in relationship_rows
+                if len(subjects_by_object[row["object_id"]]) > 1
+            ))
+        self.assertEqual(
+            {"PCC 6311 and UTEX RefSeq GFF3", "PCC 7943 and UTEX RefSeq GFF3"},
+            {row["source"] for row in rows},
         )
         self.assertTrue(all(
             row["mapping_method"] == "exact shared RefSeq protein_id"
