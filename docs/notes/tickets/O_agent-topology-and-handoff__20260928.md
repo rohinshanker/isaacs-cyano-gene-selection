@@ -76,6 +76,58 @@ are derived from this repository's own contracts but have not been ratified. Con
 extend, or cut them, then delete this step. Until ratified, an agent that is unsure
 writes a claim row rather than guessing, which is the conservative failure.
 
+## Agent-team review, 2026-09-28
+
+Answers from the coordinating session to the three questions in the session
+return note, with the evidence each rests on. They are recommendations; the owner
+ratifies by creating or not creating the profiles and by leaving or reverting the
+contract amendment below.
+
+**1. The verifier is not worth a separate profile.** A crosswalk is rebuilt only
+when a RefSeq annotation release is re-pinned or a strain is added. The UTEX
+release has been pinned once (`RS_2026_05_13`), the PCC 7942 join once, and the
+sister-strain build is one dispatch (DEM-147). That is a few events a year. Run
+the second check as a work package against the scout with a read-only mount and
+a scope line that forbids reading `tools/`; the guarantee that it cannot wander
+comes from the package boundary and from intake, not from the loadout. The first
+such package is the DEM-147 result, and it goes in the queue when that run lands.
+Do not create `CYANO_CROSSWALK_VERIFIER` again if it is deleted; keep it only if
+it already costs nothing to leave in place.
+
+**2. Curate the scout.** Package A touched seven connectors: GEO, ENA, PRIDE,
+PubMed, Europe PMC, NCBI Datasets, and taxonomy. Packages B and C need Europe PMC
+full text and supplementary files, PubMed, and OpenAlex; package D computes over
+B and needs none. That set is stable and is exactly the archive list the contract
+already fixes under "What Claude Science is". A sweep that meets an archive
+outside the loadout returns the row narrowed with the reason, which is what the
+contract prescribes anyway; silently reaching for an unlisted host is the failure
+the curated form prevents. So: curate `CYANO_EVIDENCE_SCOUT` to the contract's
+archive list plus OpenAlex, and create `CYANO_DATA_AUDITOR` curated the same way
+plus a read-only mount, since its literature reach is the same and it must not
+write.
+
+**3. Six triggers become four, two narrowed, one moved.** Checked against the
+work that actually landed on 2026-09-28:
+
+| Trigger | Verdict | Reason |
+| --- | --- | --- |
+| 1, admitting a new source | keep | Fired correctly: package A rows went to a register, not to a ranked entry, pending B and C. |
+| 2, any cross-strain claim | keep, reworded | Building a crosswalk from two pinned RefSeq releases is in-repo work under the contract's own split; the trigger is any *value* transferred over it, and any coordinate placed on this axis. |
+| 3, changing what a displayed value means | keep | This is the audit's core defect class and no gate catches it. |
+| 4, denominator, normalization, percentile population, or ramp | narrow: drop "ramp" | A ramp's visual encoding changes in routine UI work and the gates decide it. The population and the normalization are the evidence questions. |
+| 5, any prose characterising what a number supports | narrow to strengthening | The scan-ticket and roadmap edits landed today reworded prose and would all have fired. Prose that *raises* the support claimed for an external source or *removes* a caveat is the trigger; adding a caveat or weakening a claim lands freely. |
+| 6, deleting a user-facing view | move | It is an owner decision, as the trigger itself says. It does not belong on a Claude Science list; it stays in the scan ticket's open question 4. |
+
+The contract's list is amended to match, marked as pending the owner's
+ratification.
+
+**Open question 1, `multica` topology, answered.** The interactive coordinator
+owns the claims blocks and the index queue and writes results blocks on intake.
+Implementers run the gates in their own worktrees and never touch `docs/notes/`.
+The docs steward may run the ticket lifecycle on resolution. No managed agent
+adds a claim row on its own; it reports the dependency and the coordinator writes
+the row.
+
 ## Open questions for the owner
 
 1. **`multica` topology.** The contract specifies what the in-repo side must satisfy,

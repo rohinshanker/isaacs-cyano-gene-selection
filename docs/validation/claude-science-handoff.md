@@ -82,31 +82,33 @@ testing can perform.
 
 ### What must not land without a Claude Science claim or package
 
-Derived from this repository's own contracts. Each is a claim row, or an escalation
-to the lab where a ticket reserves it:
+Derived from this repository's own contracts. Each is a claim row, or an
+escalation to the lab where a ticket reserves it:
 
-1. Admitting any new source — licence evidence, checksum, condition metadata, and
+1. Admitting any new source. Licence evidence, checksum, condition metadata, and
    mapping route all rest on an upstream record no agent here can reach.
-2. Any cross-strain claim, including placing a sister-strain coordinate on this
-   genome's axis, which the data contract forbids outright.
-3. Changing what a displayed value *means* — its basis label, caveat, units, or the
-   sentence beside it. Meaning is fixed by the source, and reading the source is the
-   other side of the line.
-4. Changing a denominator, normalization, percentile population, or ramp on a metric
-   derived from an external source.
-5. Any prose characterising what a number supports — README, `meta.json`
-   descriptions, map blurbs, legends, accessible descriptions. Prose overstatement is
-   the defect class no validator catches.
-6. Deleting a user-facing view or its audit trail. The native codon-space PCA
-   retirement goes to the **owner**, not to Claude Science: it is a product decision,
-   not an evidence question.
+2. Transferring any value across strains, and placing any sister-strain
+   coordinate on this genome's axis, which the data contract forbids outright.
+   Building a crosswalk from pinned RefSeq releases is in-repo work; what crosses
+   it is the claim.
+3. Changing what a displayed value *means*: its basis label, caveat, units, or
+   the sentence beside it. Meaning is fixed by the source, and reading the source
+   is the other side of the line.
+4. Changing the denominator, normalization, or percentile population of a metric
+   derived from an external source. A ramp's visual encoding is UI work.
+5. Prose that raises the support claimed for an external source or removes a
+   caveat: README, `meta.json` descriptions, map blurbs, legends, accessible
+   descriptions. Adding a caveat or weakening a claim lands freely.
+
+Deleting a user-facing view or its audit trail is an owner decision, not a
+Claude Science question, and is tracked where the view's ticket records it.
 
 Everything else lands here on the agents' own judgment: refactors, layout, tests,
 fixture generation, performance, accessibility markup, build and deploy, and any
 change whose correctness the gates fully decide.
 
-This list is a process rule the owner has not yet ratified; six triggers is a
-considered guess, not a measured number.
+Amended 2026-09-28 after the agent-team review recorded in the topology ticket;
+the owner has not yet ratified the list.
 
 ## The rule: claims gate work, not tickets
 
