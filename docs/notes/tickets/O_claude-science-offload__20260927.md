@@ -23,12 +23,13 @@ comparability scoring. That is bounded research with a fixed return shape, which
 the part worth offloading. The crosswalk build, the gene viewer, the chromosome
 visualizer, the selectors, and every admission decision stay in this repository.
 
-Nothing has been dispatched. This session has no verified knowledge of Claude
-Science's current interface, its access to paywalled literature, whether it can
-retrieve supplementary files or repository deposits, or the formats it returns. The
-work packages and return contract below are written so that they hold whatever the
-answers turn out to be, and the open item in "Before dispatch" records what must be
-confirmed first.
+Nothing has been dispatched. The capability questions that gated dispatch were
+confirmed empirically on 2026-09-28 and are recorded under "Before dispatch" below,
+with the probe behind each answer. The work packages and return contract were
+written to hold whatever the answers turned out to be, and they do, with two
+narrowings: publisher-hosted supplement legends and three proteomics archives are
+unreachable without a per-domain network grant, so package C is narrowed and the
+proteomics half of package A covers PRIDE only until those grants exist.
 
 ## Work
 
@@ -41,6 +42,110 @@ MassIVE), and in what format it returns tables. A package whose acceptance crite
 depend on a capability that has not been confirmed is not sent until it has been.
 Where a capability is absent, the package is narrowed to what it can do and the
 remainder stays in this session.
+
+#### Confirmed 2026-09-28
+
+Every answer below was produced by running the call named beside it from a Claude
+Science session with this repository mounted, not from documentation. Counts are the
+values those calls returned on that date and will drift as the archives grow.
+
+**Interface, and what "dispatch" means.** Claude Science is an agent session, not an
+API endpoint. It cannot be called from an external orchestrator, and no base URL or
+key is issued for one, so a work package is dispatched by opening a Claude Science
+session and giving it the package text plus, optionally, read or read-write access to
+a local path. Confirmed by mounting this branch read-write and recomputing both
+`data/expression/sources.json` checksums in place: `GSE205444` and `TAN2018_TSS` both
+matched their manifest SHA-256. A package that needs the repository can therefore be
+given the repository.
+
+**Return format.** Tables come back as saved artifacts with stable version
+identifiers — CSV, TSV, JSON, or Markdown — and can be written directly into a
+mounted working tree. The one-row-per-candidate table specified below is satisfiable
+as a committed TSV plus a Markdown rendering; no format in the return contract
+needs changing.
+
+**Literature beyond open access.** Retrieval is by deposit, not by subscription.
+`fetch_article_fulltext` tries Unpaywall, then Semantic Scholar, then PMC, then a
+publisher route. Probed on `10.1073/pnas.1814912115` — the subscription PNAS 2018
+comparative-genomics paper — Unpaywall reported no OA location and the full text came
+back from the PMC deposit (`oa_status: green`). So a paywalled article **with** a PMC
+or repository deposit is readable, and one **without** a deposit is not. This is not
+paywall circumvention and no package should be written as though it were.
+
+PubMed is reachable as a connector: E-utilities-syntax search, metadata with
+PMID/PMCID/DOI, identifier conversion, related-article links, PMC full text, and
+copyright status. Probes: `"UTEX 2973"` returned 68 records;
+`"UTEX 2973" AND (transcriptome OR "transcription start")` returned 4, including
+Tan 2018 at PMID 30127850 / PMC6091082 / `10.1186/s13068-018-1215-8`.
+
+**Licence evidence is article-level, and that matters for package C.**
+`get_copyright_status` returns the licence type, its URL, an open-access flag, and
+which source the determination came from. Probed: PMID 30127850 → CC BY 4.0, sourced
+from PMC; PMID 30409802 → no licence metadata at all, source `not_available`. It does
+**not** read a supplement legend or a per-file notice. The Adomako 2022 Data Set S1
+case that package C is built around therefore cannot be answered by this tool, and
+the publisher host that serves that legend is blocked — see the grant list below.
+
+**Repository deposits and supplementary files.** Reachable and probed:
+
+| Archive | Route | Probe result |
+| --- | --- | --- |
+| GEO | connector series search + per-series metadata | `"Synechococcus elongatus"[Organism] AND gse[ETYP]` → 49 series; `GSE205444` → 21 samples with characteristics as tag/value pairs, library strategy, instrument, and 5 series supplementary file URLs |
+| GEO supplement files | direct HTTPS from `ftp.ncbi.nlm.nih.gov` | 4 of 5 series tables downloaded and SHA-256 computed, e.g. `GSE205444_DESeq2_Normalized_Counts.txt.gz`, 319,795 bytes, `0ec1f4ea…`. The `checksum` column is satisfiable for anything in GEO |
+| SRA | NCBI E-utilities | reachable |
+| ENA | portal API | reachable |
+| ArrayExpress / BioStudies | connector + BioStudies API | reachable; organism facet `Synechococcus elongatus` returned 0 experiments. Whether that is genuine absence or a facet-string mismatch is **not** confirmed, so the scan must re-check by free text before recording "none found" |
+| PRIDE | connector project search + v3 web service + `ftp.ebi.ac.uk` | keyword `Synechococcus elongatus` → 14 projects |
+
+**bioRxiv has no keyword search.** The connector filters by date range, recent-days,
+category, and server, and rejects a free-text query parameter outright. Preprint
+discovery in package A must run through OpenAlex or PubMed, not through the bioRxiv
+connector. An OpenAlex key is present in the session.
+
+**Network grants, requested and resolved 2026-09-28.** A Claude Science session runs
+behind a host allowlist; seven hosts needed for these packages were initially refused
+at the proxy and were granted on request. Re-probed after the grant:
+
+| Host | Needed for | After grant |
+| --- | --- | --- |
+| `proteomecentral.proteomexchange.org` | ProteomeXchange sweep | HTTP 200, PROXI API serves JSON |
+| `massive.ucsd.edu` | MassIVE sweep | HTTP 200 |
+| `peptideatlas.org` | PeptideAtlas sweep | HTTP 200 |
+| `static-content.springer.com` | BMC/Springer supplements | HTTP 200, `octet-stream` (Tan 2018 ESM fetched) |
+| `zenodo.org` | dataset deposits | HTTP 200, API serves JSON |
+| `api.figshare.com` | dataset deposits | HTTP 200, API serves JSON |
+| `journals.asm.org` | Adomako 2022 legend | **HTTP 403 from ASM itself** — server-side bot refusal, not the allowlist. Not circumvented; no User-Agent spoofing |
+
+**The ASM refusal does not block package C, because the legend is in Europe PMC.**
+Probed and confirmed on the exact case the package is built around. For `PMC9239245`
+(Adomako 2022, `10.1128/mbio.00862-22`):
+
+- `…/europepmc/webservices/rest/PMC9239245/supplementaryFiles` returned an 8.7 MB zip
+  of 25 publisher-deposited files. `mbio.00862-22-s0001.xlsx` is 1,359,396 bytes with
+  SHA-256 `b988b744c4c939ce6f47232eacfc30338907a9b911830999eb23414cbe6c331b` —
+  **byte-identical** to the copy this release already pins at
+  `data/essentiality/source/mbio.00862-22-s0001.xlsx`, and obtained by the same route
+  [pcc-essentiality.md](../../validation/pcc-essentiality.md) already documents.
+- `…/rest/PMC9239245/fullTextXML` carries the per-file legend in its
+  `<supplementary-material>` blocks, 20 of them, including for Data Set S1 the
+  statement that copyright is held by Adomako et al. 2022 and the content is
+  distributed under the Creative Commons Attribution 4.0 International license —
+  which is exactly the article-legend-versus-workbook split package C cites, quotable
+  with its location.
+
+So the per-artifact licence evidence package C requires is obtainable for any article
+with a PMC deposit, through `www.ebi.ac.uk`, with no publisher host involved. Note the
+PMC OA service (`oa.fcgi`) returned 404 for this record — Europe PMC is the working
+route, not the NCBI OA packager.
+
+**Consequently.** All four packages are dispatchable. A, B, and D run against GEO,
+SRA, ENA, BioStudies, ArrayExpress, PubMed, PRIDE, ProteomeXchange, PeptideAtlas, and
+MassIVE. C runs on the Europe PMC route for PMC-deposited articles and on the
+repository record for deposits; its one genuine gap is an article that is **neither**
+PMC-deposited **nor** repository-hosted, where the governing per-file text is
+unreadable and the row must return that fact rather than a guess. Nothing above
+changes the hard boundaries below: licence terms still come back as quotation plus
+recommendation, never as permission.
 
 ### Work packages
 
@@ -172,7 +277,10 @@ first package is sent.
 
 ## Cleanup
 
-On resolution, distil the handoff specification, the return-format table, and the
-boundary list into a research-agent handoff contract in `docs/validation/`, update
-`validation/INDEX.md`, then delete this ticket and its index row. Accepted candidate
+On resolution, fold the return-format table and any capability answer that changed
+into [claude-science-handoff.md](../../validation/claude-science-handoff.md), which
+already holds the interface confirmations, the boundary list, and the claim and
+package workflow; update `validation/INDEX.md` if its row changes; remove this
+ticket's rows from the Pending Claude Science queue; then delete this ticket and its
+index row. Accepted candidate
 rows live on in the roadmap and the source ledger, not here.

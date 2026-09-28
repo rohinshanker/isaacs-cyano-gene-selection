@@ -43,6 +43,25 @@ and see what every study measured about it.
 
 ## Work
 
+### Who does which step
+
+Fixed 2026-09-28 in
+[claude-science-handoff.md](../../validation/claude-science-handoff.md), which also
+fixes the claims mechanism every gated step uses. In short: steps **2 and 3** are Claude
+Science's, because their truth lives outside this repository and it has the archive
+and literature reach to establish it — the four packages are specified in
+[the offload ticket](O_claude-science-offload__20260927.md#work-packages). Steps
+**1, 4, 5, and 6** are the in-repo coding agents', and none of them waits on the scan:
+the crosswalk build is a pipeline job against pinned RefSeq releases, and the
+chromosome tab and the selectors are UI work whose design decisions are already
+recorded below. Sister-strain overlay *data* waits on step 2; the tab that will draw
+it does not.
+
+The crosswalk is the one step that gets a second pair of eyes: once built, Claude
+Science re-derives the matched, unmatched, and ambiguous counts from the pinned
+releases independently, in the same spirit as the two existing checkers that
+deliberately do not share code with the pipeline.
+
 ### 1. Build the PCC 6311 and PCC 7943 crosswalk
 
 Approved. The pangenome workbook gives these two strains pangenome IDs, coordinates,

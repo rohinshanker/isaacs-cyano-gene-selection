@@ -29,13 +29,35 @@ The [offload ticket](O_claude-science-offload__20260927.md) covers finding *new*
 data. This one covers the data already here. The two must not be merged: one looks
 outward and returns candidates, this one looks inward and returns findings.
 
+Findings are pasted back into this ticket as a results block and are triaged and
+fixed by the in-repo agents, never by the audit itself. The block shape, the intake
+checks, and the rule that a return carries no patch are fixed in
+[claude-science-handoff.md](../../validation/claude-science-handoff.md); this audit is
+a work package under that contract, not a claim row.
+
 ## Before dispatch
 
-The same unresolved item as the offload ticket applies, and is recorded there:
-Claude Science's interface, its access to the primary literature behind these
-datasets, and whether it can be given this repository's contents are unconfirmed.
-Confirm them, and confirm how findings come back, before scoping the packages
-below to what it can actually do. Nothing here assumes an answer.
+Resolved 2026-09-28. The confirmations live in the offload ticket under
+[Before dispatch](O_claude-science-offload__20260927.md#confirmed-2026-09-28) and are
+not duplicated here. What they mean for this audit:
+
+- **It can be given this repository.** The branch was mounted read-write and both
+  `data/expression/sources.json` checksums recomputed and matched, so the audit can
+  be handed the pinned release and `docs/validation/` together, which is what the
+  paragraph below asks for.
+- **It can read the primary literature behind the shipped datasets.** Tan 2018 is
+  CC BY 4.0 in PMC and its record resolves; the PNAS 2018 comparative-genomics paper
+  is subscription-only but readable from its PMC deposit. Retrieval is by deposit,
+  not by subscription, so a source paper with no deposit would have to be supplied by
+  the lab — none of the currently shipped sources is in that position.
+- **Findings come back** as a saved artifact, one row per finding in the format below
+  as TSV plus a Markdown rendering, optionally written into the working tree. No
+  fix is applied, per the hard boundaries.
+- **One narrowing.** Per-file licence legends on publisher hosts are unreachable
+  without a network grant, so a finding that turns on the exact wording of a
+  supplement legend is reported as uncheckable with the reason, not guessed. This
+  audit reads shipped data and contracts rather than licences, so the effect is
+  small; it is recorded because the coverage report has to be honest about it.
 
 If the audit can be given repository contents, give it the pinned release and the
 validation documents together, because a finding is only useful when it names both
