@@ -45,8 +45,10 @@ Both strains have current RefSeq assemblies with annotation releases to pin:
 
 | Strain | Assembly | Annotation release | Level |
 | --- | --- | --- | --- |
-| PCC 6311 | `GCF_022984265.1` | `GCF_022984265.1-RS_2025_12_2` | Chromosome |
-| PCC 7943 | `GCF_022984345.1` | `GCF_022984345.1-RS_2025_12_2` | Chromosome |
+| PCC 6311 | `GCF_022984265.1` | `GCF_022984265.1-RS_2025_12_23` | Chromosome |
+| PCC 7943 | `GCF_022984345.1` | `GCF_022984345.1-RS_2025_12_23` | Chromosome |
+
+Corrected at intake 2026-09-28: the session wrote both releases as `RS_2025_12_2`; NCBI Datasets serves `RS_2025_12_23` (released 2025-12-23) for both, verified by the coordinator and independently by the DEM-147 run, which stopped on the mismatch as instructed.
 
 Both are **Chromosome**-level, not Complete Genome, unlike UTEX 2973 and PCC 7942.
 Record that in the crosswalk audit: an unmatched locus may reflect assembly

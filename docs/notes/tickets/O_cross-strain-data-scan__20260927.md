@@ -66,8 +66,8 @@ deliberately do not share code with the pipeline.
 
 **Dispatched 2026-09-28 as Multica DEM-147 (codex-implementer).** Releases to pin,
 identified by Claude Science and to be re-verified against NCBI before pinning:
-PCC 6311 `GCF_022984265.1`, release `GCF_022984265.1-RS_2025_12_2`; PCC 7943
-`GCF_022984345.1`, release `GCF_022984345.1-RS_2025_12_2`. Both are
+PCC 6311 `GCF_022984265.1`, release `GCF_022984265.1-RS_2025_12_23`; PCC 7943
+`GCF_022984345.1`, release `GCF_022984345.1-RS_2025_12_23`. Both are
 Chromosome-level assemblies, not Complete Genome, so an unmatched locus may be
 assembly incompleteness rather than absence; the audit records that. The sweep
 below found no functional-genomics deposit for either strain, so this crosswalk
