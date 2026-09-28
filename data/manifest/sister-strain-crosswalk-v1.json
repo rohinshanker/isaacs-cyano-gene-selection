@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "sister-strain-crosswalk-v1",
+  "retrievedDate": "2026-09-28",
+  "sources": [
+    {
+      "id": "utex2973-refseq",
+      "organism": "Synechococcus elongatus UTEX 2973",
+      "taxid": 1350461,
+      "assemblyAccession": "GCF_000817325.1",
+      "assemblyName": "ASM81732v1",
+      "assemblyLevel": "Complete Genome",
+      "annotationRelease": "GCF_000817325.1-RS_2026_05_13",
+      "annotationDate": "2026-05-13",
+      "pgapVersion": "6.11",
+      "baseUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1",
+      "files": [
+        {
+          "role": "utex2973-crosswalk-gff",
+          "localPath": "data/raw/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+          "byteSize": 240383,
+          "md5": "61d1557c71a39db3f0cbf3a82ad341a5",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        }
+      ]
+    },
+    {
+      "id": "pcc6311-refseq-crosswalk",
+      "organism": "Synechococcus elongatus PCC 6311",
+      "taxid": 2883261,
+      "assemblyAccession": "GCF_022984265.1",
+      "assemblyName": "ASM2298426v1",
+      "assemblyLevel": "Chromosome",
+      "annotationRelease": "GCF_022984265.1-RS_2025_12_23",
+      "annotationDate": "2025-12-23",
+      "pgapVersion": "6.10",
+      "baseUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/265/GCF_022984265.1_ASM2298426v1",
+      "files": [
+        {
+          "role": "pcc6311-crosswalk-gff",
+          "localPath": "data/raw/GCF_022984265.1_ASM2298426v1_genomic.gff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/265/GCF_022984265.1_ASM2298426v1/GCF_022984265.1_ASM2298426v1_genomic.gff.gz",
+          "byteSize": 238990,
+          "md5": "9bad74f154650042bf050bd14055acea",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        }
+      ]
+    },
+    {
+      "id": "pcc7943-refseq-crosswalk",
+      "organism": "Synechococcus elongatus PCC 7943",
+      "taxid": 115747,
+      "assemblyAccession": "GCF_022984345.1",
+      "assemblyName": "ASM2298434v1",
+      "assemblyLevel": "Chromosome",
+      "annotationRelease": "GCF_022984345.1-RS_2025_12_23",
+      "annotationDate": "2025-12-23",
+      "pgapVersion": "6.10",
+      "baseUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/345/GCF_022984345.1_ASM2298434v1",
+      "files": [
+        {
+          "role": "pcc7943-crosswalk-gff",
+          "localPath": "data/raw/GCF_022984345.1_ASM2298434v1_genomic.gff.gz",
+          "directUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/984/345/GCF_022984345.1_ASM2298434v1/GCF_022984345.1_ASM2298434v1_genomic.gff.gz",
+          "byteSize": 239087,
+          "md5": "0376748ac226277a84f027cacca2f0cc",
+          "retention": "downloaded-at-build",
+          "redistribution": "NCBI data usage policies; not redistributed in git"
+        }
+      ]
+    }
+  ]
+}

@@ -15,6 +15,7 @@ Reusable contracts and runbooks for this repository.
 | [cai-reference-set.md](cai-reference-set.md) | Deterministic 71-locus CAI reference convention, blinded Jev audit, disagreement review, and change policy |
 | [candidate-comparison-and-export.md](candidate-comparison-and-export.md) | Missing-value integrity, ten distinguishable candidates, colour ramps, metric-scoped expression provenance, and reproducible exports |
 | [annotation-release-readiness.md](annotation-release-readiness.md) | Release manifest, companion-input gates, ambiguity-preserving crosswalk, annotation evidence, identifier display, GO evidence, and external-source boundaries |
+| [sister-strain-crosswalk.md](sister-strain-crosswalk.md) | Pinned PCC 6311 and PCC 7943 RefSeq releases, exact shared-protein joins, ambiguity preservation, coverage counts, and Chromosome-level unmatched-locus caveat |
 | [go-term-names.md](go-term-names.md) | Pinned GO name lookup, obsolete source IDs, rebuild checks, and attribution |
 | [function-categories.md](function-categories.md) | Exact lab-reviewed UTEX 2973 function categories, sparse assignments, unknowns, and reproducible build checks |
 | [protein-evidence.md](protein-evidence.md) | Pinned CDS-to-protein reconciliation, PASS00399 admission limits, tested-allele joins, and distinct evidence tiers |

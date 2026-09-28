@@ -44,6 +44,11 @@ jobs:
           python3 tools/annotation_release.py verify
           python3 tools/annotation_release.py check
 
+      - name: Verify sister-strain crosswalk
+        run: |
+          python3 tools/sister_strain_crosswalk.py --fetch
+          python3 tools/sister_strain_crosswalk.py --check
+
       # This audit uses only authenticated RefSeq inputs fetched above. The
       # optional PASS00399 observations never gate or enter the admitted release.
       - name: Verify protein identity evidence
