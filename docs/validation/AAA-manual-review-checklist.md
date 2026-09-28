@@ -102,14 +102,17 @@ Record the review environment:
 - [ ] Enable borrowed expression and confirm PCC 7942 abundance is clearly
   labelled **measured elsewhere**, while native UTEX 2973 TSS is labelled
   **measured in this organism** and is not called abundance.
-- [ ] Collapse and reorder the controls column, then reload the resulting link
-  and confirm the column comes back arranged the same way. Drag a panel by its
-  grip and confirm the order is saved and no card stays in a dragging state.
+- [ ] Collapse and reorder the controls column with the panel arrows, then
+  reload the resulting link and confirm the column comes back arranged the same
+  way, with the end buttons disabled at each end.
 - [ ] Open every reset and confirm it asks first, with a red confirming button
   carrying that reset's verb, Cancel holding focus, Escape changing nothing, and
   focus returning to the control that asked.
-- [ ] Choose comparison metrics, reload the link, and confirm the same metrics
-  return. Reset them and confirm the control disables itself.
+- [ ] Open a gene-detail section, pin another gene, and confirm the section is
+  still open.
+- [ ] Choose comparison metrics, reload the page, and confirm they return from
+  this browser while the link stays free of them. Reset them and confirm the
+  control disables itself.
 - [ ] Scroll down, open How to read this, and confirm its button stays visible.
 - [ ] Inspect the gene visualizer for a spliced gene and a gene with several Tan
   2018 start sites. Confirm the splice gap, the terminal stop mark, and that the

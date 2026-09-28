@@ -9,6 +9,7 @@ import {
   presentRuns, countMissing, missingRanks, wrapLabel, describeMissing, pluralise,
   describeMissingSentence, describeDroppedAxes, Z_LIMIT, MIN_AXES, DEFAULT_AXES,
   measurementLimitNote,
+  normalizeCompareAxes,
 } from '../../site/js/ui/compare-model.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
 import { readFileSync } from 'node:fs';
@@ -241,4 +242,20 @@ test('the default comparison axes always come with a measurement note', () => {
   });
   assert.equal(axes[0].key, 'tssInitiation');
   assert.ok(measurementLimitNote(axes, shippedDataset));
+});
+
+test('a stored comparison metric set survives whatever localStorage returns', () => {
+  // Null means the dataset-aware defaults. So does an empty list, because a
+  // comparison with no axes cannot be drawn, and so does anything that is not
+  // a list of keys: this value can be written by an older build or edited by
+  // hand, and a bad one must fall back rather than break the view.
+  assert.equal(normalizeCompareAxes(null), null);
+  assert.equal(normalizeCompareAxes(undefined), null);
+  assert.equal(normalizeCompareAxes([]), null);
+  assert.equal(normalizeCompareAxes('gc3,cai'), null);
+  assert.equal(normalizeCompareAxes({ gc3: true }), null);
+  assert.equal(normalizeCompareAxes([null, 42, '']), null);
+  assert.deepEqual(normalizeCompareAxes(['gc3', 'cai']), ['gc3', 'cai']);
+  assert.deepEqual(normalizeCompareAxes(['gc3', 'gc3', 'cai']), ['gc3', 'cai']);
+  assert.deepEqual(normalizeCompareAxes(['gc3', 7, 'cai']), ['gc3', 'cai']);
 });

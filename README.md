@@ -151,10 +151,11 @@ sites at the distances that study published against its own gene model, never
 remeasured against this release. It appears at the top of the gene-detail column and
 again in the controls column, where it starts collapsed.
 
-The controls column can be collapsed and reordered, and that arrangement travels in
-the link along with the rest of the view. Every reset asks before discarding
-anything. Both contracts, and the rendered checks behind them, are in
-[controls-column-and-resets.md](docs/validation/controls-column-and-resets.md).
+The controls column can be collapsed, and reordered with each panel's arrows, and
+that arrangement travels in the link along with the rest of the view. The gene
+detail column remembers which sections you opened as you move between genes. Every
+reset asks before discarding anything. All of it, and the rendered checks behind it,
+is in [controls-column-and-resets.md](docs/validation/controls-column-and-resets.md).
 
 ### 3. Never recode position zero
 

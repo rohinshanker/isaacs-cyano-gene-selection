@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   LEFT_PANEL_IDS, DEFAULT_PANEL_ORDER, DEFAULT_PANEL_COLLAPSED,
   normalizePanelOrder, normalizeCollapsed, isDefaultPanelOrder, isDefaultCollapsed,
-  movePanel, reorderPanel, toggleCollapsed, panelTitle,
+  movePanel, toggleCollapsed, panelTitle,
 } from '../../site/js/core/left-panels.js';
 import {
   encodeState, decodeState, applyDecoded, defaultState, resetPanelLayout,
@@ -44,13 +44,6 @@ test('moving a panel clamps at both ends instead of wrapping', () => {
   assert.deepEqual(movePanel(order, 'filters', -2), ['filters', 'gene-viewer', 'scheme']);
   assert.deepEqual(movePanel(order, 'filters', -9), ['filters', 'gene-viewer', 'scheme']);
   assert.deepEqual(order, ['gene-viewer', 'scheme', 'filters'], 'the input is not mutated');
-});
-
-test('a drag places a panel at an index', () => {
-  const order = ['gene-viewer', 'scheme', 'filters'];
-  assert.deepEqual(reorderPanel(order, 'gene-viewer', 2), ['scheme', 'filters', 'gene-viewer']);
-  assert.deepEqual(reorderPanel(order, 'filters', 0), ['filters', 'gene-viewer', 'scheme']);
-  assert.deepEqual(reorderPanel(order, 'ghost', 0), order);
 });
 
 test('collapsing toggles one panel and leaves the rest alone', () => {

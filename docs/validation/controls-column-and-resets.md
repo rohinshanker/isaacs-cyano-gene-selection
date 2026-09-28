@@ -41,19 +41,17 @@ that, the address bar would describe one column while the page kept another.
 
 ### Reordering
 
-Two mechanisms, both required:
+Move up and move down buttons on every panel head, and nothing else. They clamp
+at the ends rather than wrapping, so pressing up on the top panel does nothing
+instead of sending it to the bottom. Focus stays on the pressed control, moving
+to its partner when the pressed one becomes disabled at an end, and each move
+announces the panel's new position.
 
-- **Move up and move down buttons** on every panel head. They clamp at the ends
-  rather than wrapping, and focus stays on the pressed control, moving to its
-  partner when the pressed one becomes disabled at an end. Each move announces
-  the panel's new position.
-- **A pointer drag** from the grip.
-
-The drag's `pointermove`, `pointerup` and `pointercancel` listeners are on the
-window, not on the grip. Reordering re-appends the dragged card, and moving an
-element in the DOM drops its pointer capture, so grip-bound listeners never
-receive the release: the drag hangs with the card still marked and the new order
-never saved. This was observed in a rendered drag, not predicted.
+A drag handle was built and then removed by owner decision. Anything reintroducing
+one should know why the first attempt was subtle: reordering re-appends the
+dragged card, and moving an element in the DOM drops its pointer capture, so
+listeners bound to the handle never receive the release and the drag hangs with
+the order unsaved. Window-level listeners were the fix.
 
 ## Every reset asks first
 
@@ -85,18 +83,40 @@ category legend's **Clear category selection** is deliberately not gated: it
 clears a filter that is restored by clicking the categories again, so a modal
 would be noise rather than protection.
 
-## Comparison metrics travel in the link
+## Comparison metrics stay in this browser
 
-The chosen comparison metric set encodes as `cm`.
+The chosen comparison metric set lives in `localStorage` under
+`cyano.compare-axes.v1`, not in the link. It is a reading preference, and putting
+it in the URL added a long list of metric keys to every share for no benefit to
+the recipient, who is better served by the comparison's dataset-aware defaults.
 
-- `null` means the comparison is on its own defaults, and writes no field. The
-  defaults adapt to the dataset, dropping any metric with no spread, so freezing
-  whatever they resolved to today into a link would misrepresent a view the
-  reader never chose.
-- An empty `cm` is read as silence, not as "no axes". A comparison with no axes
-  cannot be drawn.
+- `null` means the comparison is on its own defaults, and clears the stored
+  value rather than saving an empty one. The defaults drop any metric with no
+  spread, so freezing whatever they resolved to today would misrepresent a view
+  the reader never chose.
+- `normalizeCompareAxes` in `site/js/ui/compare-model.js` coerces whatever
+  storage returns. An empty list means the defaults, not "no axes", because a
+  comparison with no axes cannot be drawn, and so does any value that is not a
+  list of key strings: this one can be written by an older build or edited by
+  hand.
 - **Reset metrics** is disabled while the set is `null`, so the control also
   reports whether the view is on its defaults.
+
+Encoder version 5 wrote these as `cm` in the hash. Version 6 reads that field
+past and drops it, exactly as version 4 dropped the version 3 single-source
+field `as`, so an older link opens on the defaults.
+
+## The gene detail column remembers which sections are open
+
+The detail column is rebuilt from scratch for every gene, so each disclosure
+snapped back to its default the moment the pin moved, and a reader comparing one
+section across several genes had to reopen it every time. Each disclosure now
+carries a stable key in `data-disclosure` and records what the reader chose.
+
+Only sections the reader actually toggled are recorded. The rest keep following
+their own defaults, which for a metric family depends on whether a recoding
+scheme is active. The memory is per session and deliberately not in the link: it
+is how one person is reading right now, not part of the view a link reproduces.
 
 ## The gene visualizer
 
@@ -156,8 +176,8 @@ Rendered checks, which source inspection does not replace:
   overflow, and the gene visualizer SVG inside its column.
 - Collapse a panel and move another; confirm the hash gains `pc` and `po`, and
   that pasting that hash into a fresh load reproduces the column.
-- Drag a panel by its grip past another panel and release; confirm the order
-  changes, the hash records it, and no card keeps the dragging state.
+- Move a panel with its arrows to each end of the column and confirm the end
+  buttons disable, focus follows, and the hash records the order.
 - Open each reset; confirm the title, the red button's verb, that Cancel holds
   focus, that Escape cancels without changing anything, and that focus returns
   to the opener.
@@ -167,4 +187,8 @@ Rendered checks, which source inspection does not replace:
   gap, the ribosomal-slippage flag, and the terminal stop mark.
 - Select a gene with several start sites, `M744_RS08615`, and confirm one mark
   per published site with the paper-era caveat.
+- Open a section in the gene detail column, pin a different gene, and confirm
+  the section is still open. Close one and confirm it stays closed.
+- Choose comparison metrics, reload the page, and confirm they return while the
+  link stays free of them.
 - Read the browser console: zero errors and zero warnings.

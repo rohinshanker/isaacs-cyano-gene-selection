@@ -103,14 +103,6 @@ export function movePanel(order, id, delta) {
   return next;
 }
 
-/** Place `id` at index `to`, for a completed drag. */
-export function reorderPanel(order, id, to) {
-  const normalized = normalizePanelOrder(order);
-  const from = normalized.indexOf(id);
-  if (from < 0) return normalized;
-  return movePanel(normalized, id, to - from);
-}
-
 /** Toggle one panel's collapsed state, returning a new normalized set. */
 export function toggleCollapsed(collapsed, id, shouldCollapse) {
   const set = new Set(normalizeCollapsed(collapsed));

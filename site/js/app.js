@@ -16,7 +16,7 @@ import {
 } from './core/metric-registry.js';
 import {
   encodeState, decodeState, defaultState, applyDecoded, clearSelections, viewStateOf,
-  resetPanelLayout, resetCompareAxes,
+  resetPanelLayout,
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection } from './ui/panels.js';
@@ -46,6 +46,7 @@ import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
 import { WorkspaceResizer } from './ui/workspace-resize.js';
 import { ComparePanel } from './ui/compare.js';
+import { normalizeCompareAxes } from './ui/compare-model.js';
 import { LeftPanels } from './ui/left-panels.js';
 import { renderGeneViewer } from './ui/gene-viewer.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
@@ -61,6 +62,15 @@ import {
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
+/**
+ * The comparison's chosen metrics.
+ *
+ * Kept in this browser rather than in the link: it is a reading preference
+ * that would otherwise add a long list of metric keys to every shared URL,
+ * and a colleague opening that link is better served by the comparison's own
+ * dataset-aware defaults.
+ */
+const STORAGE_COMPARE_AXES = 'cyano.compare-axes.v1';
 
 /** The shared tablist: map panels, then length, regulatory, and source views. */
 const ALL_TABS = [...PANELS, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB];
@@ -435,6 +445,8 @@ let lengthExplorer = null;
 let regulatorySitesPanel = null;
 let workspaceResizer = null;
 let leftPanels = null;
+/** Chosen comparison metrics for this browser, or null for the defaults. */
+let compareAxes = null;
 // `undefined` while the manifest fetch is in flight, `null` once it resolves
 // to nothing usable, otherwise the sanitized `{sections: [...]}` document.
 let citationsManifest;
@@ -754,7 +766,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     dataset: context.dataset,
     registry: context.registry,
     tab: state.compareTab,
-    axisKeys: state.compareAxes,
+    axisKeys: compareAxes,
   });
   if (panelDesigner) {
     panelDesigner.update({
@@ -1551,6 +1563,10 @@ async function boot() {
     },
   });
 
+  // A reading preference, restored once at boot. It is not part of the hash,
+  // so a live hash change must not disturb it.
+  compareAxes = normalizeCompareAxes(store.read(STORAGE_COMPARE_AXES, null));
+
   comparePanel = new ComparePanel(element('compare'), {
     onSelect: (id) => {
       const index = context.dataset.indexById.get(id);
@@ -1560,12 +1576,12 @@ async function boot() {
       state.compareTab = tab;
       persist();
     },
-    // A chosen metric set is part of the view a link reproduces: the point of
-    // choosing axes is usually to show someone the comparison you are looking
-    // at. A null set means the view is back on its own defaults.
+    // A chosen metric set is this browser's reading preference. A null set
+    // means the comparison is back on its own defaults, and clears the stored
+    // value rather than saving an empty one.
     onAxesChange: (keys) => {
-      state.compareAxes = keys;
-      persist();
+      compareAxes = normalizeCompareAxes(keys);
+      store.write(STORAGE_COMPARE_AXES, compareAxes);
     },
   });
 

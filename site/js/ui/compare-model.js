@@ -55,6 +55,22 @@ export function measurementLimitNote(metrics, dataset) {
   return lines.length > 0 ? `Measurement limits — ${lines.join(' ')}` : null;
 }
 
+/**
+ * Coerce a stored or supplied metric-key list into a chosen set, or null.
+ *
+ * Null means "use the defaults", which adapt to the dataset. An empty list
+ * means the same thing rather than "no axes", because a comparison with no
+ * axes cannot be drawn. Keys are validated against the live registry by the
+ * comparison itself, which is the only place that knows which metrics this
+ * dataset carries; this only has to survive whatever `localStorage` returns,
+ * including a value written by a different build or edited by hand.
+ */
+export function normalizeCompareAxes(value) {
+  if (!Array.isArray(value)) return null;
+  const keys = [...new Set(value.filter((key) => typeof key === 'string' && key !== ''))];
+  return keys.length > 0 ? keys : null;
+}
+
 /** Fewest axes a comparison can be drawn with. */
 export const MIN_AXES = 3;
 

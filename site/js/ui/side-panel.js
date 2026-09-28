@@ -531,6 +531,33 @@ export class SidePanel {
   constructor(host, handlers) {
     this.host = host;
     this.handlers = handlers;
+    // Which disclosures the reader has opened or closed, by stable key.
+    //
+    // This panel is rebuilt from scratch for every gene, so without a memory
+    // each section snapped back to its default the moment the pin moved. A
+    // reader comparing the same section across several genes had to reopen it
+    // every time. Only sections the reader actually toggled are recorded; the
+    // rest keep following their own defaults, which depend on whether a
+    // recoding scheme is active.
+    //
+    // Deliberately in memory and not in the link: it is how one person is
+    // reading right now, not part of the view a link reproduces.
+    this.disclosureState = new Map();
+  }
+
+  /**
+   * Give one disclosure a stable identity and restore what the reader chose.
+   * Returns the element, so it can wrap a builder's result inline.
+   */
+  rememberDisclosure(details, key) {
+    if (!details) return details;
+    details.dataset.disclosure = key;
+    const remembered = this.disclosureState.get(key);
+    if (remembered !== undefined) details.open = remembered;
+    details.addEventListener('toggle', () => {
+      this.disclosureState.set(key, details.open);
+    });
+    return details;
   }
 
   /**
@@ -651,6 +678,7 @@ export class SidePanel {
     const viewer = document.createElement('details');
     viewer.className = 'metric-group gene-view-group';
     viewer.open = true;
+    this.rememberDisclosure(viewer, 'gene-viewer');
     const viewerSummary = document.createElement('summary');
     viewerSummary.textContent = 'Gene visualizer';
     const viewerBody = document.createElement('div');
@@ -658,18 +686,24 @@ export class SidePanel {
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
 
-    const candidateEvidence = candidateEvidenceDisclosure(
+    const candidateEvidence = this.rememberDisclosure(candidateEvidenceDisclosure(
       gene, dataset.candidateEvidence, dataset.goIeaEssentiality,
-    );
+    ), 'candidate-evidence');
     if (candidateEvidence) this.host.append(candidateEvidence);
 
-    const category = functionCategoryBlock(gene, dataset, state.colorSources);
+    const category = this.rememberDisclosure(
+      functionCategoryBlock(gene, dataset, state.colorSources), 'function-category',
+    );
     if (category) this.host.append(category);
 
-    const annotation = annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms);
+    const annotation = this.rememberDisclosure(
+      annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms), 'annotation',
+    );
     if (annotation) this.host.append(annotation);
 
-    const tssEvidence = tssEvidenceDisclosure(gene, dataset.meta);
+    const tssEvidence = this.rememberDisclosure(
+      tssEvidenceDisclosure(gene, dataset.meta), 'tss-evidence',
+    );
     if (tssEvidence) this.host.append(tssEvidence);
 
     if (state.schemeActive) {
@@ -721,6 +755,7 @@ export class SidePanel {
       const details = document.createElement('details');
       details.className = 'metric-group';
       details.open = metricFamilyStartsOpen(family, state.schemeActive);
+      this.rememberDisclosure(details, `metric:${family}`);
       const summary = document.createElement('summary');
       summary.textContent = `${family} (${metrics.length})`;
       const table = document.createElement('table');

@@ -1129,19 +1129,6 @@ input[type="range"] { width: 100%; }
 .panel-move:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent); }
 .panel-move:disabled { color: var(--line-strong); cursor: not-allowed; }
 
-.panel-grip {
-  width: 0.9rem;
-  height: 1.1rem;
-  margin-right: 0.1rem;
-  cursor: grab;
-  touch-action: none;
-  background-image: radial-gradient(circle, var(--line-strong) 1px, transparent 1px);
-  background-size: 4px 4px;
-  background-position: center;
-}
-
-.panel-dragging { opacity: 0.75; box-shadow: 0 0 0 2px var(--accent); }
-.panel-dragging .panel-grip { cursor: grabbing; }
 .panel-collapsed { padding-bottom: 0.5rem; }
 .panel-collapsed .panel-head { margin-bottom: 0; }
 
@@ -1259,5 +1246,4 @@ input[type="range"] { width: 100%; }
 /* A finger needs more than a pointer does; the move controls grow on touch. */
 @media (pointer: coarse) {
   .panel-move { width: 2.4rem; height: 2.4rem; }
-  .panel-grip { width: 1.3rem; height: 1.8rem; }
 }

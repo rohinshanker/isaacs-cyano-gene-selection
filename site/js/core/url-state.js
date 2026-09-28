@@ -22,7 +22,7 @@ const KEYS = {
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
   categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
-  panelOrder: 'po', panelCollapsed: 'pc', compareAxes: 'cm',
+  panelOrder: 'po', panelCollapsed: 'pc',
 };
 
 /**
@@ -33,10 +33,11 @@ const KEYS = {
  * (or vice versa) `l`'s explicit-empty behaviour below is why version 1 became 2,
  * the fresh-view metric axes are why version 2 became 3, dropping the
  * single-source view field `as` for the colour-source toggles `cs` is why
- * version 3 became 4, and the controls-column layout (`po`, `pc`) with the
- * chosen comparison metrics (`cm`) is why version 4 became 5.
+ * version 3 became 4, the controls-column layout (`po`, `pc`) with the chosen
+ * comparison metrics (`cm`) is why version 4 became 5, and moving those chosen
+ * metrics out of the link into browser storage is why version 5 became 6.
  */
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 
 /**
  * The first encoder version whose omitted `ax`/`ay` mean today's measured
@@ -84,7 +85,6 @@ export function defaultState() {
     axisYScale: DEFAULT_AXIS_SCALE,
     panelOrder: [...DEFAULT_PANEL_ORDER],
     panelCollapsed: [...DEFAULT_PANEL_COLLAPSED],
-    compareAxes: null,
   };
 }
 
@@ -95,11 +95,6 @@ export function resetPanelLayout(state) {
   return state;
 }
 
-/** Drop a chosen comparison-metric set, returning the view to its defaults. */
-export function resetCompareAxes(state) {
-  state.compareAxes = null;
-  return state;
-}
 
 /** Clear committed gene choices while preserving the analytical view. */
 export function clearSelections(state) {
@@ -241,12 +236,6 @@ export function encodeState(state) {
     const collapsed = normalizeCollapsed(state.panelCollapsed);
     push(KEYS.panelCollapsed, collapsed.length === 0 ? NO_PANELS_COLLAPSED : collapsed.join(','));
   }
-  // A null `compareAxes` means the comparison is on its own defaults, which
-  // already adapt to the dataset, so it is left unsaid rather than frozen into
-  // a link as whatever those defaults resolved to today.
-  if (Array.isArray(state.compareAxes) && state.compareAxes.length > 0) {
-    push(KEYS.compareAxes, state.compareAxes.join(','));
-  }
   return parts.join('&');
 }
 
@@ -334,14 +323,10 @@ export function decodeState(hash) {
     const raw = values.get(KEYS.panelCollapsed);
     state.panelCollapsed = raw === NO_PANELS_COLLAPSED ? [] : normalizeCollapsed(raw.split(','));
   }
-  if (values.has(KEYS.compareAxes)) {
-    // Metric keys are validated against the live registry by the comparison
-    // itself, which is the only place that knows which metrics this dataset
-    // carries. Empty means "say nothing", not "choose no metrics", because a
-    // comparison with no axes cannot be drawn.
-    const keys = values.get(KEYS.compareAxes).split(',').filter(Boolean);
-    if (keys.length > 0) state.compareAxes = [...new Set(keys)];
-  }
+  // Version 5 wrote `cm` for the chosen comparison metrics. Those now live in
+  // browser storage instead, to keep a shared link readable, so a version 5
+  // hash carrying `cm` is read past and dropped exactly as `as` was at
+  // version 4: the recipient sees the comparison's own defaults.
   if (Number.isFinite(state.version) && state.version < MEASURED_AXES_VERSION) {
     if (!values.has(KEYS.axisX)) state.axisX = LEGACY_METRIC_AXES.x;
     if (!values.has(KEYS.axisY)) state.axisY = LEGACY_METRIC_AXES.y;
