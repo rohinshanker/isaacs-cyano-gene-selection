@@ -8,7 +8,7 @@
   `site/`.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-09-27
+- **Updated:** 2026-09-28
 
 ## Current state
 
@@ -142,6 +142,38 @@ rows the separate `pgB` and `pgC` locus series (`UTEX2973_pgB001`,
 `UTEX2973_pgC001`), so plasmid loci join by the same per-locus routes as
 chromosomal ones.
 
+### It is its own tab
+
+Owner decision, recorded 2026-09-28. The chromosome view is a **separate
+selectable tab in the existing tablist**, exactly as Native codon space, Metric X
+vs Y, Lengths, Regulatory sites, and Citations & sources already are. It is not a
+mode of the scatter map and not a panel in a side column.
+
+The tablist is built from `ALL_TABS` in `site/js/app.js`, which is `PANELS` from
+`site/js/ui/panels.js` followed by the standalone tabs. A tab that is not a
+scatter projection follows the pattern the Lengths, Regulatory sites, and
+Citations tabs already use, so this view is built the same way:
+
+- export a frozen descriptor from its own module, with `id`, `name`, `blurb`, and
+  `source`, as `LENGTH_TAB` in `site/js/ui/length-explorer.js` does;
+- add it to `ALL_TABS`, and give it its own `role="tabpanel"` container in
+  `site/index.html` beside `length-view`, `regulatory-view`, and `citations-view`;
+- follow the active-tab branch in `renderCurrentView`, which sets the blurb from
+  the descriptor and shows one panel at a time;
+- take a layout class on the layout element if it needs a different column count,
+  as `lengths-active` and `regulatory-active` do in `workspaceColumns` in
+  `site/js/ui/workspace-resize.js`. Decide deliberately whether the gene detail
+  column stays open beside it.
+
+The tab id is what `p` in the URL hash carries, so a link opens straight onto this
+view. Choosing an id means choosing that permanent URL token; `chromosome` is the
+obvious one. Adding a tab needs no change to the encoder, because `p` already
+accepts any id in `ALL_TABS` and falls back to `native` for an unknown one.
+
+Because it is a tab rather than a replacement, shipping it does **not** by itself
+retire the native codon-space PCA. That remains open question 4 and stays a
+separate, explicit decision.
+
 Design decisions, pending the owner's confirmation:
 
 - **Linear, not circular.** A 2.69 Mb chromosome cannot share one circle or one scale
@@ -177,9 +209,10 @@ Design decisions, pending the owner's confirmation:
   missing sister-strain value, especially from UTEX 3055, renders as absent, never as
   zero.
 
-This view replaces the native codon-space PCA, whose scores are `codonPca` in
-`genes.json` and whose loadings are `codon_pca.json` behind the "What drives these
-axes" table. Retiring it is a user-facing removal, so confirm the intent before
+Retiring the native codon-space PCA, whose scores are `codonPca` in `genes.json`
+and whose loadings are `codon_pca.json` behind the "What drives these axes" table,
+is a separate step now that this view is its own tab. It is a user-facing removal,
+so confirm the intent before
 deleting the view, its loadings table, the audit documentation
 ([pca-length-sensitivity.md](../../validation/pca-length-sensitivity.md)) and its
 script `tools/audit_pca_length.py`, the validation index row, and the reference in
@@ -213,10 +246,11 @@ one selected dataset. Follow
 3. **Scope of the reference.** Is the audience the recoding-panel workflow this site
    was built for, or general *S. elongatus* lookup? The second implies genes and
    features outside the 2,715 screened CDSs, which is a schema change.
-4. **PCA retirement.** Confirm the chromosome visualizer replaces the native
-   codon-space PCA rather than joining it, since that removes a view and its audit
-   trail, and state whether the live recoding-risk and perturbation PCA maps are
-   also retired or stay.
+4. **PCA retirement.** The chromosome view ships as its own tab, so retiring the
+   native codon-space PCA is now a separate decision rather than a consequence of
+   building it. Confirm whether that PCA is removed once the chromosome tab exists,
+   since that deletes a view and its audit trail, and state whether the live
+   recoding-risk and perturbation PCA maps are also retired or stay.
 
 ## Verification
 

@@ -8,9 +8,14 @@
   returned package is accepted, after which the scan ticket owns the data work.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-09-27
+- **Updated:** 2026-09-28
 
 ## Current state
+
+This ticket is the outward-looking half. Its counterpart,
+[O_claude-science-data-use-audit__20260928](O_claude-science-data-use-audit__20260928.md),
+audits the data already shipped here. Keep them separate: this one returns
+candidate sources, that one returns findings about existing use.
 
 The scan ticket's steps 2 and 3 are a wide literature and repository sweep across six
 strains and seven data types, followed by condition-metadata extraction and pairwise
