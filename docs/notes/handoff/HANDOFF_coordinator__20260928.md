@@ -100,4 +100,22 @@ All in the "Pending Claude Science" table of [tickets/INDEX.md](../tickets/INDEX
 
 ## Update at stop
 
-_(filled in when the coordinating session stops)_
+Interim, 18:25 UTC. Branch `agent/claude-implementer/dem-148` now carries the
+build commit `6d8c524` and the fix commit `aed46b0` (items 1 to 6: pointer
+scaling, shared-control sync, reveal and cursor on incoming selection, confirmed
+reset, missing strand as a named problem). Coordinator reran the gates at
+`aed46b0`: npm 602, pytest 332, validate 96, all green. Two things were still
+running:
+
+- **DEM-150 confirmation** of `aed46b0` by `codex-reviewer` (second run on that
+  issue). If it returned accept, integrate per the numbered steps above,
+  cherry-picking `6d8c524` and `aed46b0` (and the addendum commit below if it
+  exists and was confirmed). If it returned defects, send them to DEM-148 as a
+  comment, which queues a new implementer run.
+- **DEM-148 addendum run** for the two low inspection items (wrap chevron on a
+  piece narrower than the chevron; naming the filtering category in the
+  accessible name). Its commit, if any, is unreviewed until DEM-150 confirms it;
+  a short confirmation comment on DEM-150 naming that commit is enough.
+
+The Multica-created snapshot commits on the branch (`chore(agent): ...`) are
+baselines of the canonical directory and are never cherry-picked.
