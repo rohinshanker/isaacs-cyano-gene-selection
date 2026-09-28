@@ -64,7 +64,15 @@ deliberately do not share code with the pipeline.
 
 ### 1. Build the PCC 6311 and PCC 7943 crosswalk
 
-**Dispatched 2026-09-28 as Multica DEM-147 (codex-implementer).** Releases to pin,
+**Built and merged 2026-09-28** (DEM-147, codex-implementer; reviewed by DEM-149,
+claude-reviewer, accepted after one fix round; on `main` at `3c54dd2`). The
+artifact is `sister-strain-crosswalk-v1.tsv` beside the UTEX release, 10,538 rows,
+with its manifest, tool, tests, and
+[sister-strain-crosswalk.md](../../validation/sister-strain-crosswalk.md). Counts:
+PCC 6311 matched 2,663 of 2,715 UTEX loci, 52 unmatched, 8 ambiguous; PCC 7943
+matched 2,636, 79 unmatched, 8 ambiguous. The independent Claude Science
+re-derivation is queued in the ticket index; until it returns, both strains'
+sources stay unadmitted, as this step requires. Releases pinned,
 identified by Claude Science and to be re-verified against NCBI before pinning:
 PCC 6311 `GCF_022984265.1`, release `GCF_022984265.1-RS_2025_12_23`; PCC 7943
 `GCF_022984345.1`, release `GCF_022984345.1-RS_2025_12_23`. Both are
