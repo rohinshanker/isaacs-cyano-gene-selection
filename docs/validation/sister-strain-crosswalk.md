@@ -31,7 +31,11 @@ The only join key is an exact RefSeq `protein_id` present in both GFF3 files.
 Product text and coordinates are never join keys. Each unique UTEX locus/sister
 locus relationship is emitted once. A protein attached to multiple loci on either
 side produces every relationship row, labelled
-`shared-protein-many-to-many`; the build never chooses one locus silently.
+`shared-protein-many-to-many`; the build never chooses one locus silently. A locus
+that reaches more than one counterpart through *distinct* proteins, which no locus
+in the three pinned GFF3 files does today, is labelled
+`multiple-exact-protein-locus-mappings` on every one of its rows. Those are the
+only two `mapping_ambiguity` values; an empty value means a one-to-one join.
 
 The artifact uses the same columns as `identifier-crosswalk-v1.tsv`. Current locus
 relationships are `pcc6311_ortholog` and `pcc7943_ortholog`; source GFF
