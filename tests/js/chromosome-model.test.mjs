@@ -129,12 +129,33 @@ test('a CDS starting at base 1 without reaching the end is not a wrap', () => {
     'a single piece covering the replicon is not two pieces joined across the origin');
 });
 
-test('strand decides the side of the axis, and unknown strands read as plus', () => {
+test('strand decides the side of the axis, and a record with none has no lane', () => {
   assert.equal(strandLane('+'), 'above');
   assert.equal(strandLane('-'), 'below');
-  assert.equal(strandLane(null), 'above');
   assert.equal(cdsMark(gene({ strand: '-' }), 0, CHROMOSOME_BP).lane, 'below');
   assert.equal(cdsMark(gene({ strand: '+' }), 0, CHROMOSOME_BP).lane, 'above');
+  // No default: drawing a strandless record above the axis would assert a
+  // transcription direction the annotation never reported.
+  for (const strand of [null, undefined, '', '.', '?']) {
+    assert.equal(strandLane(strand), null, `strandLane(${JSON.stringify(strand)})`);
+    assert.equal(cdsMark(gene({ strand }), 0, CHROMOSOME_BP), null);
+  }
+});
+
+test('a CDS with no strand is a named verification problem, not a silent plus', () => {
+  const { tracks, verified, problems, plottedCount } = repliconTracks(
+    [gene({ id: 'A' }), gene({ id: 'NOSTRAND', start: 900, end: 1500, strand: null })],
+    META,
+  );
+  assert.ok(!verified);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /NOSTRAND/);
+  assert.match(problems[0], /no strand/);
+  assert.match(problems[0], new RegExp(CHROMOSOME));
+  // The stranded records still resolve, so the problem list says which row is
+  // at fault rather than only that the view cannot be drawn.
+  assert.equal(plottedCount, 1);
+  assert.deepEqual(tracks[0].marks.map((mark) => mark.id), ['A']);
 });
 
 test('every CDS lands on its own replicon track, with the plotted counts split', () => {

@@ -6,12 +6,21 @@ import {
 } from '../../site/js/ui/chromosome-view.js';
 import { repliconTracks } from '../../site/js/core/chromosome-model.js';
 import { buildColorScale } from '../../site/js/ui/colors.js';
+import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
 
 const CHROMOSOME = 'NZ_CP006471.1';
 const PLASMID_B = 'NZ_CP006472.1';
 const PLASMID_C = 'NZ_CP006473.1';
 const META = { genome: { accession: 'GCF_000817325.1', taxid: 1350461, totalLength: 2744626 } };
 const CANVAS_WIDTH = 900;
+/**
+ * What the host's 1px border and 0.25rem padding add on each side, per the
+ * stylesheet. The host is therefore wider than the canvas inside it, and a
+ * fake that gave the two boxes the same width could not tell a drawing sized
+ * from the right element from one sized from the wrong one.
+ */
+const HOST_CHROME = 10;
+const DEVICE_PIXEL_RATIO = 2;
 
 /**
  * A DOM and canvas context just wide enough for this view, recording every draw
@@ -51,7 +60,13 @@ class FakeElement {
   focus() { this.focused = true; }
   setPointerCapture() {}
   releasePointerCapture() {}
-  getBoundingClientRect() { return { left: 0, top: 0, width: CANVAS_WIDTH, height: 400 }; }
+  getBoundingClientRect() {
+    const width = this.className === 'chromosome-canvas-host'
+      ? CANVAS_WIDTH + HOST_CHROME : CANVAS_WIDTH;
+    // The view sets the canvas's CSS height itself, so that box always matches
+    // the drawing. Only the width comes from the layout.
+    return { left: 0, top: 0, width, height: Number.parseFloat(this.style.height) || 400 };
+  }
 
   getContext() {
     if (this.tagName !== 'canvas') throw new Error(`getContext on <${this.tagName}>`);
@@ -104,15 +119,21 @@ function install() {
   };
   const frames = [];
   let frameId = 0;
-  globalThis.document = {
+  const document = {
+    activeElement: null,
+    body: new FakeElement('body'),
     createElement: (name) => new FakeElement(name),
     createElementNS: (_ns, name) => new FakeElement(name),
   };
+  globalThis.document = document;
+  // The reset confirmation builds one dialog and keeps it; a dialog built
+  // against a document a previous test threw away must not be reused here.
+  resetConfirmDialogForTests();
   // `requestAnimationFrame` must return its id *before* the callback runs, as a
   // browser does; running it inline would leave the view's pending-frame handle
   // set forever and silently suppress every later redraw.
   globalThis.window = {
-    devicePixelRatio: 2,
+    devicePixelRatio: DEVICE_PIXEL_RATIO,
     requestAnimationFrame: (callback) => {
       frames.push(callback);
       frameId += 1;
@@ -125,10 +146,40 @@ function install() {
     disconnect() {}
   };
   return {
-    restore: () => Object.assign(globalThis, previous),
+    document,
+    restore: () => {
+      resetConfirmDialogForTests();
+      Object.assign(globalThis, previous);
+    },
     frames,
   };
 }
+
+/**
+ * Where a drawing-space x lands on screen, in the coordinates a pointer event
+ * reports.
+ *
+ * The canvas holds a bitmap `canvas.width / devicePixelRatio` drawing units
+ * wide and the stylesheet stretches it across the element's own width, so the
+ * two only agree when the drawing was measured on the canvas. A pointer always
+ * reports the element's coordinates, which is why this conversion is what the
+ * reader's click actually goes through.
+ */
+function onScreenX(canvas, x) {
+  const drawn = canvas.width / DEVICE_PIXEL_RATIO;
+  return (x * canvas.getBoundingClientRect().width) / drawn;
+}
+
+/** The open reset confirmation's backdrop and its two buttons. */
+function confirmParts(document) {
+  const backdrop = document.body.children.find((node) => node.className === 'confirm-backdrop');
+  if (!backdrop) return null;
+  const [cancel, confirm] = backdrop.find((node) => node.tagName === 'button');
+  return { backdrop, cancel, confirm };
+}
+
+/** Let the awaited confirmation settle before asserting on what it did. */
+const settled = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
 function gene(overrides) {
   return {
@@ -189,7 +240,8 @@ function colorModel(genes) {
 }
 
 function mount({ genes = GENES, meta = META, mask = null, showHidden = true, handlers = {} } = {}) {
-  const { restore, frames } = install();
+  const fake = install();
+  const { restore, frames } = fake;
   const host = new FakeElement('div');
   const view = new ChromosomeView(host, handlers);
   const { tracks, problems, verified } = repliconTracks(genes, meta);
@@ -224,7 +276,7 @@ function mount({ genes = GENES, meta = META, mask = null, showHidden = true, han
     hasSelection: false,
   });
   const ops = flush();
-  return { host, view, tracks, restore, flush, ops };
+  return { host, view, tracks, restore, flush, ops, document: fake.document };
 }
 
 test('the tab descriptor is frozen and carries the permanent chromosome id', () => {
@@ -774,6 +826,150 @@ test('a gene reached from another view is brought into the window', () => {
     const unchanged = view.windowFor(band.track);
     view.revealIndex(3);
     assert.deepEqual(view.windowFor(band.track), unchanged);
+  } finally {
+    restore();
+  }
+});
+
+/**
+ * Two plus-strand CDSs near the far end of the chromosome, about 32 kb apart.
+ * At whole-genome zoom that is roughly ten pixels, which is what the host's
+ * border and padding add, so a drawing measured on the wrong box puts the
+ * pointer on the wrong one of the pair — exactly the far-right case where the
+ * error has grown past the hit tolerance.
+ */
+const NEAR_END = [
+  gene({ id: 'END_A', start: 2650000, end: 2651000, cai: 0.3 }),
+  gene({ id: 'END_B', start: 2682000, end: 2683000, cai: 0.8 }),
+];
+
+test('the drawing is measured on the canvas, not on the wider box around it', () => {
+  const { view, restore } = mount();
+  try {
+    assert.equal(view.canvasHost.getBoundingClientRect().width, CANVAS_WIDTH + HOST_CHROME,
+      'the fake reproduces a host wider than its canvas, as the stylesheet makes it');
+    assert.equal(view.canvas.getBoundingClientRect().width, CANVAS_WIDTH);
+    assert.equal(view.width, CANVAS_WIDTH);
+    assert.equal(view.canvas.width, CANVAS_WIDTH * DEVICE_PIXEL_RATIO);
+    // The axis ends as far inside the canvas's right edge as it starts inside
+    // its left one. Sized from the host, it would run past that margin and
+    // every mark would be drawn wider of its coordinate the further right it
+    // sits, while the pointer kept reporting the canvas.
+    const band = view.bands()[0];
+    assert.equal(band.left + band.width, CANVAS_WIDTH - band.left);
+  } finally {
+    restore();
+  }
+});
+
+test('clicking the centre of a CDS near the far end pins that CDS', () => {
+  const selected = [];
+  const hovered = [];
+  const { view, restore } = mount({
+    genes: NEAR_END,
+    handlers: { onSelect: (index) => selected.push(index), onHover: (index) => hovered.push(index) },
+  });
+  try {
+    const band = view.bands()[0];
+    // Where the reader sees END_B: the view paints it here, and the browser
+    // scales the bitmap onto the element the pointer is measured against.
+    const x = onScreenX(view.canvas, band.scale.bpToX(2682500));
+    const y = band.layout.laneAboveTop + 4;
+    view.canvas.dispatch('pointermove', { clientX: x, clientY: y });
+    view.canvas.dispatch('pointerdown', { clientX: x, clientY: y, pointerId: 11 });
+    view.canvas.dispatch('pointerup', { clientX: x, clientY: y, pointerId: 11 });
+    assert.deepEqual(selected, [1], 'the CDS under the cursor is the one that gets pinned');
+    assert.deepEqual(hovered, [1], 'and the one the hover reports on the way in');
+  } finally {
+    restore();
+  }
+});
+
+test('a selection arriving from another view is brought into a zoomed window', () => {
+  const { view, restore } = mount({ handlers: { onAnnounce: () => {} } });
+  try {
+    const band = view.bands()[0];
+    view.zoomBand(band, 400, 100000);
+    const before = view.windowFor(band.track);
+    assert.ok(before.to < 400000, 'OP1 is off screen before the pin arrives');
+
+    // What the application does on any render: hand the view the workspace's
+    // selection. Nothing here calls the camera helper itself.
+    view.update({ ...view.model, pinned: 3, hasSelection: true });
+
+    const after = view.windowFor(band.track);
+    assert.ok(after.from <= 400000 && after.to >= 400000, 'the pinned CDS is in the window');
+    assert.equal(after.to - after.from, before.to - before.from, 'the zoom level is preserved');
+
+    // A render that repeats the same selection leaves the camera where the
+    // reader has since panned it.
+    view.zoomBand(view.bands()[0], 1, 100000);
+    const panned = panAway(view);
+    view.update({ ...view.model, pinned: 3, hasSelection: true });
+    assert.deepEqual(view.windowFor(band.track), panned);
+  } finally {
+    restore();
+  }
+});
+
+/** Pan the chromosome away from wherever it is, and report the new window. */
+function panAway(view) {
+  const band = view.bands()[0];
+  const span = band.window.to - band.window.from + 1;
+  view.windows.set(band.track.accession, { from: 1, to: span });
+  return view.windowFor(band.track);
+}
+
+test('a pin made elsewhere replaces the keyboard cursor, not just an empty one', () => {
+  const previewed = [];
+  const { view, restore } = mount({
+    handlers: { onPreview: (index) => previewed.push(index), onAnnounce: () => {} },
+  });
+  const key = (name) => view.canvas.dispatch('keydown', { key: name, preventDefault: () => {} });
+  try {
+    // Arrow onto OP2, so the cursor holds a gene of its own.
+    key('ArrowRight');
+    key('ArrowRight');
+    key('ArrowRight');
+    key('ArrowRight');
+    assert.deepEqual(previewed, [0, 2, 3, 4]);
+
+    // Then a pin arrives from a search in another tab: no active preview, a
+    // different gene. Clearing the shared active index does not reach this
+    // view's own copy of it, so `update` has to reconcile the cursor.
+    view.update({ ...view.model, active: -1, pinned: 0, hasSelection: true });
+    previewed.length = 0;
+    key('ArrowRight');
+    assert.deepEqual(previewed, [2], 'the arrow continues from the pinned CDS, not the old one');
+  } finally {
+    restore();
+  }
+});
+
+test('Reset view asks first, as every reset control does', async () => {
+  const { view, document, restore } = mount({ handlers: { onAnnounce: () => {} } });
+  try {
+    const band = view.bands()[0];
+    view.zoomBand(band, 400, 100000);
+    const zoomed = view.windowFor(band.track);
+
+    view.resetButton.dispatch('click');
+    await settled();
+    const asked = confirmParts(document);
+    assert.ok(asked, 'the reset control opens the shared confirmation');
+    assert.equal(asked.backdrop.hidden, false);
+    assert.equal(asked.confirm.textContent, 'Reset view');
+    assert.deepEqual(view.windowFor(band.track), zoomed, 'nothing is discarded before the answer');
+
+    asked.cancel.dispatch('click');
+    await settled();
+    assert.deepEqual(view.windowFor(band.track), zoomed, 'Cancel keeps the windows');
+
+    view.resetButton.dispatch('click');
+    await settled();
+    confirmParts(document).confirm.dispatch('click');
+    await settled();
+    assert.deepEqual(view.windowFor(band.track), { from: 1, to: band.track.lengthBp });
   } finally {
     restore();
   }

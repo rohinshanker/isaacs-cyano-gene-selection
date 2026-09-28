@@ -788,6 +788,21 @@ function renderChromosomeView() {
   }
 }
 
+/**
+ * Point the controls that two views share at the state they describe.
+ *
+ * Colour and Show filtered-out genes are one piece of state with two sets of
+ * controls: the map's, in the controls column, and the chromosome view's own
+ * copies in its toolbar. The chromosome view resyncs its pair on every render,
+ * so this is the other direction — whoever writes the state from the
+ * chromosome toolbar, or from a link the address bar just changed, calls this
+ * so the map's controls cannot be left describing the previous analysis.
+ */
+function syncSharedControls() {
+  element('color-by').value = state.colorBy;
+  element('show-hidden').checked = state.showHidden;
+}
+
 function renderDetail() {
   // Pointer hover wins over keyboard preview, which wins over the pinned gene:
   // whichever one the user is actively looking at now is the one this panel
@@ -1437,12 +1452,11 @@ function applyLiveHash() {
   // genome, not whatever window the previous view was left at.
   chromosomeView?.resetView({ announce: false });
   updatePanelTabs();
-  element('color-by').value = state.colorBy;
+  syncSharedControls();
   element('axis-x').value = state.axisX;
   element('axis-y').value = state.axisY;
   element('axis-x-scale').value = state.axisXScale;
   element('axis-y-scale').value = state.axisYScale;
-  element('show-hidden').checked = state.showHidden;
   // The controls column is view state like any other, so a pasted link or a
   // Back button rearranges it too. Without this the address bar would describe
   // one layout while the page kept the previous one.
@@ -1682,11 +1696,13 @@ async function boot() {
     onShortlistToggle: (index) => toggleShortlist(index),
     onColorChange: (key) => {
       state.colorBy = key;
+      syncSharedControls();
       renderCurrentView();
       persist();
     },
     onShowHiddenChange: (value) => {
       state.showHidden = value;
+      syncSharedControls();
       renderAll();
     },
     onDetailJump: () => jumpToDetail(),

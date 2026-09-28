@@ -78,10 +78,14 @@ The contract:
   stacking two modals.
 
 Controls currently gated: Reset view, Reset selections, Reset panel widths, Reset
-panel layout, Reset metrics, and the panel designer's Reset settings. The
-category legend's **Clear category selection** is deliberately not gated: it
-clears a filter that is restored by clicking the categories again, so a modal
-would be noise rather than protection.
+panel layout, Reset metrics, the chromosome view's own Reset view, and the panel
+designer's Reset settings. A pointer or key shortcut that resets a camera —
+double-click and `0` on the scatter map and on the chromosome track — is
+deliberately not gated: the control is the gate, and a modal on a gesture would
+be noise. The category legend's **Clear category selection** is deliberately not
+gated for the same kind of reason: it clears a filter that is restored by
+clicking the categories again, so a modal would be noise rather than
+protection.
 
 ## Comparison metrics stay in this browser
 

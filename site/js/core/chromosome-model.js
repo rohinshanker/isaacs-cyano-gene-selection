@@ -110,9 +110,20 @@ export function wrapsOrigin(pieces, lengthBp) {
   return pieces.some((piece) => piece.from === 1) && pieces.some((piece) => piece.to === lengthBp);
 }
 
-/** Which side of the axis a strand draws on. Plus above, minus below. */
+/**
+ * Which side of the axis a strand draws on: plus above, minus below, and
+ * `null` for a record that names neither.
+ *
+ * There is no third lane and no default. Every CDS in this release is
+ * stranded, so a record without one is a defect in the dataset rather than a
+ * case to draw, and putting it above the axis would assert a transcription
+ * direction the annotation never reported. `repliconTracks` reports it as a
+ * verification problem, alongside an unknown `seqid` and an out-of-range span.
+ */
 export function strandLane(strand) {
-  return strand === '-' ? 'below' : 'above';
+  if (strand === '+') return 'above';
+  if (strand === '-') return 'below';
+  return null;
 }
 
 /**
@@ -126,12 +137,14 @@ export function strandLane(strand) {
 export function cdsMark(gene, index, lengthBp) {
   const pieces = cdsPieces(gene);
   if (pieces.length === 0) return null;
+  const lane = strandLane(gene.strand);
+  if (lane === null) return null;
   const wraps = wrapsOrigin(pieces, lengthBp);
   return {
     index,
     id: gene.id,
-    strand: gene.strand === '-' ? '-' : '+',
-    lane: strandLane(gene.strand),
+    strand: gene.strand,
+    lane,
     pieces,
     wraps,
     // The coordinate a wrapping CDS is navigated and announced by: its first
@@ -176,6 +189,11 @@ export function repliconTracks(genes, meta) {
     for (let index = 0; index < rows.length; index += 1) {
       const gene = rows[index];
       if (!sameReplicon(gene?.seqid, replicon.accession)) continue;
+      if (strandLane(gene?.strand) === null) {
+        problems.push(`${gene?.id ?? 'An unnamed CDS'} on ${replicon.accession} reports no `
+          + 'strand, so it has no lane on this axis.');
+        continue;
+      }
       const mark = cdsMark(gene, index, replicon.lengthBp);
       if (!mark) continue;
       const beyond = mark.pieces.find((piece) => piece.to > replicon.lengthBp || piece.from < 1);

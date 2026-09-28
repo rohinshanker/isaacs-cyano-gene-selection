@@ -55,9 +55,9 @@ breakpoint rule hides it once the sticky side rail begins. See
    they disagree. The view renders those problems instead of a picture. An axis
    drawn from an unverified length would misplace every mark on it.
 
-   It fails the same way for a CDS whose coordinates run past its replicon, and
-   for a CDS on a `seqid` the genome of record does not have: both are named,
-   never silently dropped.
+   It fails the same way for a CDS whose coordinates run past its replicon, for
+   a CDS on a `seqid` the genome of record does not have, and for a CDS that
+   reports no strand and so has no lane: each is named, never silently dropped.
 
 2. **Native Tan 2018 gene-linked start sites, at their published positions.**
    These were measured on this assembly, so `tssPositions` places them at their
@@ -95,7 +95,11 @@ mapped onto the chromosome axis, and neither plasmid track is ever hidden: their
 one leaves the others where they were, and each reports its own visible range.
 
 **Strand decides the lane.** Plus-strand CDSs draw above the axis, minus-strand
-below it (`strandLane`). A record with no strand reads as plus.
+below it (`strandLane`). There is no third lane and no default: a record that
+names neither strand is a named verification problem, like an unknown `seqid`
+and an out-of-range span, and the view refuses to draw rather than assert a
+transcription direction the annotation never reported. Every CDS in this
+release is stranded, so the case is a defect in the data, not a shape.
 
 **One bar per annotated segment.** `cdsPieces` reads `cdsSegments` whenever it is
 present and falls back to `[start, end]` only when it is absent. The gap in a
@@ -132,6 +136,15 @@ a smaller tick count instead works through round 1/2/5 steps and drops a narrow
 axis from five labels straight to one. All ticks on one axis share a unit
 (`axisUnit`), so a ruler never reads "500.0 kb" beside "1.00 Mb".
 
+**The drawing is measured on the canvas.** `resize` reads the canvas's own
+box, never the host's. The host carries a border and padding the canvas does
+not, so its border box is about 10 px wider, and `pointerPosition` reads every
+pointer coordinate against the canvas. Sizing the bitmap from the host stretches
+it across a narrower element, and the mark under the cursor drifts from the mark
+the hit test finds — invisibly at the origin and by a whole gene at the far end
+of the chromosome. The unit check gives the fake host and canvas *different*
+widths for this reason; equal widths cannot see the defect.
+
 A sub-pixel CDS is snapped to a whole device column. At whole-genome zoom a
 1 kb gene is a third of a pixel, and drawn at a fractional edge it anti-aliases
 into a pale smear that loses its colour. In category mode the CDSs with no
@@ -154,6 +167,22 @@ come from `app.js` on each render, under
   camera-level change and never touches filter or URL state.
 - Selecting a CDS pins it, which opens it in the gene visualizer; see
   [controls-column-and-resets.md](controls-column-and-resets.md).
+- Colour and **Show filtered-out genes** are one piece of state with two sets of
+  controls: the map's, in the controls column, and this view's own copies in its
+  toolbar. This view resyncs its pair on every render; `syncSharedControls` in
+  `app.js` is the other direction, and the chromosome toolbar's handlers and a
+  live hash change both go through it. Without that, choosing CAI here left the
+  map's selector reading GC3 while the plot, the legend, and the hash all said
+  CAI.
+- A selection that arrives from anywhere else is reconciled in `update`, not
+  only when the view happens to be idle: the camera reveals it (`revealIndex`)
+  and the keyboard cursor adopts it. The cursor is this view's own copy of a
+  selection the workspace owns, so clearing the shared active index does not
+  clear it, and a stale one sends the next arrow key off from a gene the reader
+  left behind.
+- **Reset view** goes through `confirmedReset`, as every reset control does. The
+  double-click and `0` shortcuts stay direct, as the scatter map's do: the
+  control is the gate, and a modal on a pointer gesture would be noise.
 - The camera — each replicon's window — is **not** shareable state. It carries
   no URL field, and applying a hash live resets every track to its full extent,
   for the same reason the scatter map resets pan and zoom: a pasted link should
@@ -182,7 +211,9 @@ Pointer, keyboard, and touch follow the existing map conventions:
 - `Enter` pins only an explicitly active CDS; `S` toggles the active CDS, or the
   pinned one when none is active;
 - a CDS reached from another view is brought into the window at the current zoom
-  level (`revealIndex`).
+  level (`revealIndex`), on any incoming selection and not only on arrow
+  navigation;
+- **Reset view** asks first; double-click and `0` do not.
 
 `touch-action: none` on the canvas lets the drag handler own the gesture.
 
@@ -228,6 +259,17 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
 - Function category colour, including a legend hover preview;
 - a zoomed chromosome window, where operon brackets and start sites appear;
 - a plasmid zoomed independently, leaving the chromosome window unchanged;
+- at 1440 px, click the centre of a CDS at the far right of the chromosome at
+  whole-genome zoom and confirm the gene detail names that CDS, not its
+  neighbour;
+- choose a colour and uncheck **Show filtered-out genes** here, then open a
+  scatter tab and confirm its selector and checkbox report the same state as the
+  plot, the legend, and the hash;
+- zoom the chromosome in hard, pin a distant gene from another tab's search,
+  return, and confirm the window moves to it and the next arrow key steps from
+  it;
+- press **Reset view** and confirm the question, that Cancel keeps the windows,
+  and that confirming returns every track to its full length;
 - `document.documentElement.scrollWidth <= innerWidth` in every state;
 - a clean browser console.
 

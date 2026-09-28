@@ -20,6 +20,7 @@ import {
   ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, GHOST_BORDER, GHOST_COLOR,
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
+import { confirmedReset } from './confirm-dialog.js';
 import { formatCount } from './format.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
@@ -162,6 +163,10 @@ export class ChromosomeView {
     this.windows = new Map();
     this.lanes = [];
     this.cursor = null;
+    // The shared selection this view last reconciled its camera and its
+    // keyboard cursor against. -1 is "nothing", which is also what an empty
+    // selection reports, so the first non-empty one is always a change.
+    this.reconciledSelection = -1;
     this.dragging = null;
     this.pendingFrame = 0;
   }
@@ -195,15 +200,25 @@ export class ChromosomeView {
         this.windows.set(track.accession, fullWindow(track.lengthBp));
       }
     }
-    // The cursor is a keyboard preview, not state: a pinned gene that arrived
-    // from another view becomes the cursor so arrow keys continue from it.
-    if (model.active >= 0) this.cursor = locateIndex(this.lanes, model.active);
-    else if (this.cursor === null && model.pinned >= 0) {
-      this.cursor = locateIndex(this.lanes, model.pinned);
+    // The cursor is a keyboard preview, not state, and it is a local copy of a
+    // selection the rest of the workspace owns. So it is reconciled whenever
+    // that selection changes — a pin made in another tab, a search result, a
+    // live hash — and not only when it happens to be unset: a stale cursor
+    // would send the next arrow key off from a gene the reader left behind.
+    const selected = model.active >= 0 ? model.active : model.pinned;
+    const incoming = selected >= 0 && selected !== this.reconciledSelection;
+    this.reconciledSelection = selected;
+    if (incoming) this.cursor = locateIndex(this.lanes, selected);
+    else if (this.cursor === null && selected >= 0) {
+      this.cursor = locateIndex(this.lanes, selected);
     }
     this.syncControls();
     this.renderSummaries();
     this.resize();
+    // A selection that arrived from elsewhere has to be brought into the
+    // window, or a zoomed track answers a search by showing the reader a
+    // stretch of genome the gene they asked for is not on.
+    if (incoming) this.revealIndex(selected);
     this.draw();
   }
 
@@ -265,7 +280,17 @@ export class ChromosomeView {
 
     this.zoomIn = this.chip('Zoom in (+)', 'Zoom in', () => this.zoomByCentre(1.6));
     this.zoomOut = this.chip('Zoom out (−)', 'Zoom out', () => this.zoomByCentre(1 / 1.6));
-    this.resetButton = this.chip('Reset view', 'Reset the chromosome view', () => this.resetView());
+    // Every reset asks first; see docs/validation/controls-column-and-resets.md.
+    // The double-click and `0` shortcuts stay direct, as the scatter map's do:
+    // a modal on a pointer gesture is noise, and the control is the gate.
+    this.resetButton = this.chip('Reset view', 'Reset the chromosome view');
+    confirmedReset(this.resetButton, {
+      title: 'Reset the chromosome view?',
+      body: 'Every track returns to its full length, discarding the windows you zoomed and '
+        + 'panned to. Your pinned gene, shortlist, filters, and colour are not affected.',
+      confirmLabel: 'Reset view',
+      action: () => this.resetView(),
+    });
 
     const showHiddenRow = document.createElement('span');
     showHiddenRow.className = 'checkbox-row';
@@ -355,13 +380,14 @@ export class ChromosomeView {
     this.built = true;
   }
 
-  chip(text, ariaLabel, action) {
+  /** A toolbar chip. A chip whose click is wired elsewhere passes no action. */
+  chip(text, ariaLabel, action = null) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'chip-button';
     button.textContent = text;
     button.setAttribute('aria-label', ariaLabel);
-    button.addEventListener('click', action);
+    if (action) button.addEventListener('click', action);
     return button;
   }
 
@@ -479,7 +505,12 @@ export class ChromosomeView {
   resize() {
     if (!this.model?.verified) return;
     const ratio = window.devicePixelRatio || 1;
-    const rect = this.canvasHost.getBoundingClientRect();
+    // The canvas, not its host: the host's border box also covers a border and
+    // padding the canvas does not, and `pointerPosition` reads every pointer
+    // coordinate against the canvas. Sizing the drawing from the wider box
+    // stretches it past the element a click is measured on, so the mark under
+    // the cursor and the mark the hit test finds drift apart across the track.
+    const rect = this.canvas.getBoundingClientRect();
     const width = rect.width || this.width || 0;
     if (width === 0) return;
     const height = canvasHeightFor(this.model.tracks);

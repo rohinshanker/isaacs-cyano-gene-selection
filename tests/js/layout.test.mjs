@@ -38,6 +38,33 @@ test('the chromosome tab is a registered tab with its own tabpanel container', (
   assert.match(app, /classList\.toggle\('chromosome-active', chromosomeActive\)/);
 });
 
+/**
+ * Colour and Show filtered-out genes are one piece of state behind two sets of
+ * controls, the map's and the chromosome view's, and only one of the two is on
+ * screen at a time. `app.js` boots on import, so this checks the wiring in the
+ * source, as the other app-level wiring checks here do; the cross-tab
+ * behaviour itself is a rendered check in chromosome-view.md.
+ */
+test('the chromosome toolbar writes colour and visibility through the shared control sync', () => {
+  assert.match(app, /function syncSharedControls\(\) \{\s*element\('color-by'\)\.value = state\.colorBy;\s*element\('show-hidden'\)\.checked = state\.showHidden;\s*\}/,
+    'one function points both shared controls at the state they describe');
+  // Nowhere else writes either control, so neither can be left behind.
+  assert.equal((app.match(/element\('color-by'\)\.value =/g) ?? []).length, 1);
+  assert.equal((app.match(/element\('show-hidden'\)\.checked =/g) ?? []).length, 1);
+
+  const toolbar = app.slice(app.indexOf('chromosomeView = new ChromosomeView('));
+  const colorChange = toolbar.slice(toolbar.indexOf('onColorChange:'), toolbar.indexOf('onShowHiddenChange:'));
+  const showHiddenChange = toolbar.slice(toolbar.indexOf('onShowHiddenChange:'), toolbar.indexOf('onDetailJump:'));
+  assert.match(colorChange, /state\.colorBy = key;\s*syncSharedControls\(\);/,
+    'choosing a colour on the chromosome tab moves the map selector with it');
+  assert.match(showHiddenChange, /state\.showHidden = value;\s*syncSharedControls\(\);/,
+    'and so does unchecking Show filtered-out genes');
+
+  // A link pasted into the address bar changes the same state behind both.
+  const live = app.slice(app.indexOf('function applyLiveHash()'), app.indexOf('async function boot()'));
+  assert.match(live, /syncSharedControls\(\);/);
+});
+
 test('relocated support panels use compact native disclosures', () => {
   assert.match(html, /<details class="workflow-help">/);
   assert.match(html, /<details class="panel-workflow">/);
