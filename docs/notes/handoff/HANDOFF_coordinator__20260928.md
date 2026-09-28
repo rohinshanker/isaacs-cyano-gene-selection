@@ -100,28 +100,38 @@ All in the "Pending Claude Science" table of [tickets/INDEX.md](../tickets/INDEX
 
 ## Update at stop
 
-18:36 UTC. **The chromosome tab is integrated.** `codex-reviewer` accepted the
-fix commit `aed46b0` on DEM-150 after replaying every repro; the build and fix
-commits are on `main` as `c211149` and `77434f7`, gates green (npm 602, pytest
-332, validate 96), and the coordinator served `main` and opened `p=chromosome`
-at 1440×900: tab selected, canvas backing width equals its CSS width, no page
-overflow, zero console messages.
+Final, 18:50 UTC. **The chromosome tab is integrated on `main`** as `c211149`
+(build) and `77434f7` (fix round, accepted by `codex-reviewer` on DEM-150).
+Gates green on `main`: npm 602, pytest 332, validate 96. The coordinator served
+`main` and opened `p=chromosome` at 1440×900: tab selected, canvas backing width
+equals CSS width, no overflow, zero console messages.
 
-**Still open on the branch:** the DEM-148 addendum run (Multica run `01a0e92e`)
-for the two low inspection items. When it lands:
+**One commit remains on the branch, not integrated:** `14a70da` on
+`agent/claude-implementer/dem-148` (the two low inspection items plus a
+backing-store viewport-sweep test). DEM-150 confirmed item 8 (category names in
+the accessible name), the hardening test, and that no other bar's drawing
+changed, but returned one P3 on item 7: the wrap chevron's *stroke* still
+spills one column left of, and a few rows above and below, the 13 bp piece of
+`M744_RS13620` at full extent, because vertex bounding does not bound
+`ctx.stroke()`. The fix instruction was posted to DEM-148 at 18:48 UTC, which
+queues a new implementer run (it will stall without connectivity).
 
-1. Read its comment on DEM-148 for the commit hash; `git show` it. It should
-   touch only `site/js/ui/chromosome-view.js`, `site/js/core/chromosome-model.js`,
-   their tests, and `docs/validation/chromosome-view.md`.
-2. Ask `codex-reviewer` on DEM-150 to confirm that commit alone (comment naming
-   it, then `issue update --status in_progress`).
-3. On accept, `git cherry-pick -x <commit>` onto `main`, rerun the three gates,
-   open the tab once, mark DEM-148 and DEM-150 done. Never cherry-pick the
-   `chore(agent)` snapshot commits.
+Next coordinator, in order:
 
-If the run failed or stalled without connectivity, inspect `issue runs` first;
-re-trigger by commenting on DEM-148 only after confirming no run is active.
+1. `multica --profile desktop-api.multica.ai issue runs 01a0e8da-5078-79bd-90db-6b026727b175`
+   (newest first). If the P3 run completed, read its comment for the new commit
+   hash; it should touch only `site/js/ui/chromosome-view.js`,
+   `tests/js/chromosome-view.test.mjs`, and possibly
+   `docs/validation/chromosome-view.md`. If it failed or never started, comment
+   on DEM-148 again only after confirming no run is active.
+2. Comment on DEM-150 (`01a0e916-3951-752e-838a-4e99d9dde62a`) asking
+   `codex-reviewer` to confirm `14a70da` plus the new commit together, then
+   `issue update --status in_progress`.
+3. On accept: `git cherry-pick -x 14a70da <new commit>` onto `main`, rerun the
+   three gates, open the tab once, mark DEM-148 and DEM-150 done. Never
+   cherry-pick the `chore(agent)` snapshot commits.
 
-Scan ticket step 5 records the merge. Steps 1 and 5 of that ticket are now
-done; steps 2 and 3 wait on Claude Science packages B, C, and D; step 4's
-overlays wait on data that does not exist; step 6 is undesigned and can wait.
+Multica issue states at stop: DEM-147 done, DEM-149 done, DEM-151 done,
+DEM-148 in_progress (P3 run queued), DEM-150 in_review (awaiting the next
+confirmation request). Coordinator worktrees under the session scratchpad were
+removed; every commit named here is on a branch in this repository.
