@@ -13,3 +13,8 @@ data/trna/independent_run/trnascan.struct binary
 
 # The redistributed Adomako et al. workbook is checksum-pinned source data.
 data/essentiality/source/*.xlsx binary
+
+# Tables returned by a Claude Science session are evidence whose SHA-256 is
+# recorded at intake, so they stay byte-identical to what was returned and are
+# exempt from the whitespace gate rather than reformatted. They remain text.
+docs/notes/handoff/*.tsv -whitespace
