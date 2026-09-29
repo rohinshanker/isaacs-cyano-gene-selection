@@ -115,16 +115,17 @@ not decided in this ticket. Each is built only once approved here by name.
 | D1 | At sub-pixel width, draw a **derived** category in its full category colour instead of the pale hollow style | The hollow marker is how the site keeps computational colour from being read as reviewed colour. Dropping it at small sizes is what makes the colour visible, and also removes that signal at exactly the zoom where most of the picture is derived | Approve, with two conditions: the legend and the accessible description state that at this zoom derived and reviewed colour draw alike, with the counts of each; and the hollow style returns as soon as a bar is wide enough to show it |
 | D2 | When two *different* categories share a column, which one shows | Any rule hides one of them | Reviewed over derived, then the category with more genes in that column, then locus order. State the rule in the view's description |
 | D3 | Whether highest-value-on-top applies to **every** metric or only to heavy-tailed ones | For a metric where low is the interesting end, such as a rare-codon fraction someone is minimising, "high on top" hides what they are looking for | Apply it to every metric by default and add a small "Draw on top: highest / lowest" control, remembered in the URL, so the choice is explicit and shareable |
-| D4 | Whether to add a second visual channel for standouts, such as a taller bar or a halo above a percentile | It makes standouts far easier to see than order alone. It also adds an encoding the legend must explain | Defer. Ship ordering first and look at the render before adding a channel |
+| D4 | Whether to add a second visual channel for standouts, such as a taller bar or a halo above a percentile | It makes standouts far easier to see than order alone. It also adds an encoding the legend must explain | Defer. Ship the scale ticket and ordering first and look at the render before adding a channel |
 
 ## Constraints that are not negotiable
 
-- **The colour scale does not change.** A ramp reads the value, not its rank. No
-  log scale, no percentile rescale, no clipping to make standouts visible; that
-  rule is recorded in
-  [current-design-answers.md](../../validation/current-design-answers.md) and is
-  why this ticket works through paint order instead. A different scale is a
-  separate proposal.
+- **This ticket does not change the colour scale.** It works through paint order
+  only. The scale itself is
+  [O_colour-scale-and-map-toolbar__20260929](O_colour-scale-and-map-toolbar__20260929.md),
+  opened the same day by owner decision, which adds a selectable scale and
+  defaults the most skewed metrics to logarithmic. That ticket goes first: a
+  logarithmic default changes which genes read as standouts, so this ticket's
+  acceptance checks are run under whatever scale is the default once it lands.
 - **Missing stays absent.** A gene with no value is never given a colour, at any
   zoom, under [data-contract.md](../../validation/data-contract.md) and
   [chromosome-view.md](../../validation/chromosome-view.md). The neutral tick for
