@@ -9,6 +9,7 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Decide which cross-strain scan work is handed to Claude Science; fix the handoff specification, per-candidate return format, and the evidence-not-admission boundary; confirm its interface, literature access, and file retrieval before dispatch |
 | [O_claude-science-data-use-audit__20260928](O_claude-science-data-use-audit__20260928.md) | Commission a Claude Science audit of how the shipped data is already used, derived, and interpolated: meaning drift against each source, disallowed fills, denominator and scale errors, prose overstatement, and drift between the code and the validation documents |
 | [O_agent-topology-and-handoff__20260928](O_agent-topology-and-handoff__20260928.md) | Owner-side half of the Claude Science topology: which agent profiles to create in that account and their loadouts, and ratification of the mandatory-validation trigger list. The mechanism lives in [claude-science-handoff.md](../../validation/claude-science-handoff.md) |
+| [O_progressive-site-loading__20260929](O_progressive-site-loading__20260929.md) | Replace the blank loading page with a shell present from first paint, a determinate loading-bar overlay, and data fetched in priority tiers; eight further suggestions await the owner's approval. **Not started by owner instruction** |
 
 ## Pending Claude Science
 
