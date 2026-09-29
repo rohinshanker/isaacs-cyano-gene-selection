@@ -2,9 +2,10 @@
  * A minimal document for rendering UI modules under Node.
  *
  * It models only what the renderers under test touch: element creation,
- * children, text, classes, data attributes, attributes, listeners, and a small
- * query subset (tag, `.class`, `tag.class`, and `tag[data-x="y"]`). Anything
- * else throws, so a renderer that grows a new DOM dependency fails loudly.
+ * children, text, classes, data attributes, attributes, listeners, inline
+ * styles, a recording 2-D canvas context, and a small query subset (tag,
+ * `.class`, `tag.class`, and `tag[data-x="y"]`). Anything else throws, so a
+ * renderer that grows a new DOM dependency fails loudly.
  */
 export class FakeNode {
   constructor(text) {
@@ -23,6 +24,7 @@ export class FakeElement {
     this.listeners = {};
     this.parent = null;
     this.className = '';
+    this.style = {};
     this.classList = {
       add: (...names) => { for (const name of names) if (!this.hasClass(name)) this.className = `${this.className} ${name}`.trim(); },
       remove: (...names) => { this.className = this.classes().filter((name) => !names.includes(name)).join(' '); },
@@ -57,6 +59,25 @@ export class FakeElement {
   replaceChildren(...nodes) {
     this.children = [];
     this.append(...nodes);
+  }
+
+  /**
+   * A 2-D context that records its fills, so a caller drawing a ramp can be
+   * checked against the buckets it was given. Any other element, or any other
+   * context kind, throws: a renderer that starts drawing somewhere new fails.
+   */
+  getContext(kind) {
+    if (this.tagName !== 'canvas') throw new Error(`getContext on <${this.tagName}>`);
+    if (kind !== '2d') throw new Error(`fake-dom has no ${kind} context`);
+    const fills = [];
+    this.fills = fills;
+    let fillStyle = '';
+    return {
+      setTransform: () => {},
+      get fillStyle() { return fillStyle; },
+      set fillStyle(value) { fillStyle = value; },
+      fillRect: (x, y, width, height) => fills.push({ x, y, width, height, fill: fillStyle }),
+    };
   }
 
   remove() {
@@ -126,14 +147,22 @@ export function fakeDocument() {
   return document;
 }
 
-/** Run `body` with a fake document installed, restoring whatever was there. */
-export async function withFakeDocument(body) {
-  const previous = globalThis.document;
+/**
+ * Run `body` with a fake `document` and `window` installed, restoring whatever
+ * was there. The window carries only `devicePixelRatio`, which is what a
+ * renderer sizing a canvas backing store reads; `devicePixelRatio: 2` is the
+ * interesting case, because a backing store that ignored it would still look
+ * right at 1.
+ */
+export async function withFakeDocument(body, { devicePixelRatio = 1 } = {}) {
+  const previous = { document: globalThis.document, window: globalThis.window };
   const document = fakeDocument();
   globalThis.document = document;
+  globalThis.window = { devicePixelRatio };
   try {
     return await body(document);
   } finally {
-    globalThis.document = previous;
+    globalThis.document = previous.document;
+    globalThis.window = previous.window;
   }
 }

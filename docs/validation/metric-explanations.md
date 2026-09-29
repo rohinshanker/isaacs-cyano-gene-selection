@@ -38,9 +38,27 @@ start-site evidence, not gene-body abundance. Recoded metrics use the active
 scheme. The colour disclosure remains open and updates in place when selection
 changes or a URL-restored metric is loaded.
 
+**Colour scale and axis scale are one mechanism, described once.** Both come from
+`site/js/core/value-scales.js`: the same names, the same availability test, the
+same disabled-option wording, the same transforms. The colour ramp offers Linear,
+Logarithmic, Percentile, Square root and Symmetric log; a Metric X vs Y axis
+offers the first three, and [explicit-metric-axes.md](explicit-metric-axes.md)
+says why. Neither scale touches a metric's stored values, so nothing in this
+explanation contract changes with the scale: a metric's calculation, units,
+coverage count, citation IDs, and **How to weigh it** row describe the stored
+measurement and never the ramp it is drawn on. A metric explanation must not be
+rewritten to claim more than it did because its colours became easier to read;
+that would cross into
+[claude-science-handoff.md](claude-science-handoff.md)'s claim territory. The
+scale itself is contracted in
+[current-design-answers.md](current-design-answers.md#the-colour-scale), and the
+legend states which scale is in effect beside the ramp.
+
 Verify with `node --test tests/js/metric-help.test.mjs
-tests/js/export-manifest.test.mjs tests/js/metric-family-order.test.mjs`, then
+tests/js/export-manifest.test.mjs tests/js/metric-family-order.test.mjs
+tests/js/value-scales.test.mjs tests/js/color-scale.test.mjs`, then
 render native/risk/UMAP/perturbation maps at narrow and wide viewports, switch
 colour while the disclosure is open, read the **How to weigh it** row for CAI
-and for the default measured metric, follow its citation links, and restore a
-colour selection from the URL.
+and for the default measured metric, follow its citation links, restore a
+colour selection from the URL, and switch the scale while the disclosure is open
+to confirm the explanation and every shown value are unchanged by it.

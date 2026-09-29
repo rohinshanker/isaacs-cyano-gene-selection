@@ -5,6 +5,7 @@ import {
   PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
+import { VALUE_SCALE_LABELS } from '../core/value-scales.js';
 import { SOURCE_TOGGLES } from '../core/annotation-source.js';
 import { describeReviewed } from '../core/source-derived-categories.js';
 
@@ -292,6 +293,80 @@ export function renderCategoryLegend(host, {
   }
 }
 
+/** The scale's own name, for a legend, a control, or a spoken description. */
+export function rampScaleLabel(scale) {
+  return VALUE_SCALE_LABELS[scale.scaleName] ?? VALUE_SCALE_LABELS.linear;
+}
+
+/** How close to an end the middle tick may sit before its label crowds that end's. */
+const MID_TICK_MARGIN = 0.25;
+
+/**
+ * How many decades a logarithmic ramp must span before its middle tick is worth
+ * snapping to a power of ten.
+ *
+ * The snap moves the label to the decade nearest the ramp's midpoint, so it can
+ * move it by up to half a decade — which on a narrow ramp is most of the ramp's
+ * width, and the label then sits on top of an end label. Two decades bounds that
+ * move to a quarter of the ramp, and below two decades there is at most one
+ * decade inside the domain anyway, so nothing is lost by labelling the true
+ * midpoint instead.
+ */
+const MIN_SNAP_DECADES = 2;
+
+/**
+ * The ramp's tick labels: one at each end and one inside, each carrying the
+ * ramp position it belongs at rather than an assumed even spacing.
+ *
+ * Every label is a value of the metric, read back through the scale, so a reader
+ * never has to guess whether a colour difference is tenfold or ten units. A
+ * diverging ramp always labels its centre zero, because that is what its centre
+ * means. A logarithmic ramp spanning at least {@link MIN_SNAP_DECADES} decades
+ * snaps its middle label to the power of ten nearest the true midpoint, which
+ * reads as a decade rather than as an arbitrary number, and keeps the untidy
+ * midpoint when that decade would sit close enough to an end to crowd its
+ * label.
+ *
+ * @param {{min: number, max: number, mid: number, diverging: boolean,
+ *   scaleName: string, valueAt: (position: number) => number,
+ *   normalize: (value: number) => number}} scale
+ * @returns {{value: number, position: number}[]} in ramp order.
+ */
+export function rampTicks(scale) {
+  const middle = () => {
+    if (scale.diverging) return { value: 0, position: 0.5 };
+    const exact = scale.valueAt(0.5);
+    const midpoint = { value: exact, position: 0.5 };
+    if (scale.scaleName !== 'log10' || !(exact > 0) || !(scale.min > 0)) return midpoint;
+    if (Math.log10(scale.max / scale.min) < MIN_SNAP_DECADES) return midpoint;
+    const decade = 10 ** Math.round(Math.log10(exact));
+    const position = scale.normalize(decade);
+    return position > MID_TICK_MARGIN && position < 1 - MID_TICK_MARGIN
+      ? { value: decade, position } : midpoint;
+  };
+  return [{ value: scale.min, position: 0 }, middle(), { value: scale.max, position: 1 }];
+}
+
+/**
+ * One sentence naming the value scale the ramp is drawn under, and whatever
+ * that scale needs the reader to know to read a colour correctly: a symmetric
+ * log's linear threshold, or the cohort a percentile ranks against.
+ */
+export function describeValueScale(metric, scale) {
+  const parts = [`Scale: ${rampScaleLabel(scale)}. The tick labels read ${metric.label} in its `
+    + 'own units, at the positions this scale puts them; no stored value changes.'];
+  if (scale.scaleName === 'symlog') {
+    const unit = metric.unit ? ` ${metric.unit}` : '';
+    parts.push(`Values within ±${formatValue(metric, scale.scaleThreshold)}${unit} of zero `
+      + 'read linearly, and the scale is logarithmic beyond that in both directions.');
+  }
+  if (scale.scaleName === 'percentile') {
+    parts.push('Colour is a rank against every gene that has a value, so it shows order rather '
+      + 'than magnitude: two genes a thousandfold apart can take adjacent colours.');
+  }
+  return parts.join(' ');
+}
+
 /** One sentence naming the ramp family and where the choice came from. */
 export function describeRamp(metric, scale) {
   const family = scale.diverging ? 'diverging, centred on zero' : 'sequential';
@@ -341,8 +416,8 @@ export function renderLegend(host, state) {
   canvas.setAttribute('role', 'img');
   canvas.setAttribute(
     'aria-label',
-    `Colour scale from ${formatValue(metric, scale.min)} to ${formatValue(metric, scale.max)} `
-      + `${metric.unit ?? ''}`.trim(),
+    `${rampScaleLabel(scale)} colour scale from ${formatValue(metric, scale.min)} to `
+      + `${formatValue(metric, scale.max)} ${metric.unit ?? ''}`.trim(),
   );
   const ratio = window.devicePixelRatio || 1;
   const width = 196;
@@ -359,12 +434,27 @@ export function renderLegend(host, state) {
     context.fillRect(x, 0, 1, height);
   }
 
+  // The scale's name sits beside the ramp, not only in the note below it: a
+  // reader glancing at a colour has to be able to see what the colour means.
+  const rampRow = document.createElement('div');
+  rampRow.className = 'legend-ramp-row';
+  const scaleName = document.createElement('span');
+  scaleName.className = 'legend-scale-name';
+  scaleName.textContent = rampScaleLabel(scale);
+  rampRow.append(canvas, scaleName);
+
+  // Absolute placement, not even spacing: a tick is only honest where the scale
+  // actually puts its value. `at-start`/`at-end` keep the two end labels inside
+  // the ramp's width instead of centred on its edges.
   const ticks = document.createElement('div');
   ticks.className = 'legend-ticks';
-  for (const value of [scale.min, scale.mid, scale.max]) {
-    const tick = document.createElement('span');
-    tick.textContent = formatValue(metric, value);
-    ticks.append(tick);
+  for (const tick of rampTicks(scale)) {
+    const label = document.createElement('span');
+    label.textContent = formatValue(metric, tick.value);
+    label.style.left = `${(Math.min(1, Math.max(0, tick.position)) * 100).toFixed(2)}%`;
+    if (tick.position <= 0) label.classList.add('at-start');
+    else if (tick.position >= 1) label.classList.add('at-end');
+    ticks.append(label);
   }
 
   const notes = document.createElement('ul');
@@ -396,7 +486,11 @@ export function renderLegend(host, state) {
   ramp.className = 'legend-ramp-note';
   ramp.textContent = describeRamp(metric, scale);
 
-  host.append(title, canvas, ticks, notes, ramp);
+  const scaleNote = document.createElement('p');
+  scaleNote.className = 'legend-ramp-note legend-scale-note';
+  scaleNote.textContent = describeValueScale(metric, scale);
+
+  host.append(title, rampRow, ticks, notes, scaleNote, ramp);
   const basis = describeBasisCounts(state.basisCounts);
   if (basis) {
     const note = document.createElement('p');

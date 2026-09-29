@@ -26,6 +26,73 @@ test('analysis panels keep a logical source order inside one center column', () 
     'the mobile selected-detail shortcut stays with the map that creates the selection');
 });
 
+/**
+ * Owner decision, 2026-09-29: Colour by shares a row with Scale, the colour
+ * explanation is directly beneath that row, and Find a gene has the row after it
+ * to itself. DOM order is keyboard order, so this order is the tab order.
+ */
+test('the map toolbar puts colour with its scale, then its explanation, then gene search alone', () => {
+  const toolbar = html.slice(html.indexOf('<div class="map-toolbar">'), html.indexOf('id="gene-search-hint"'));
+  const at = (needle) => {
+    const index = toolbar.indexOf(needle);
+    assert.notEqual(index, -1, `${needle} is missing from the map toolbar`);
+    return index;
+  };
+  const axisRow = at('id="axis-chooser"');
+  const colourBy = at('id="color-by"');
+  const colourScale = at('id="color-scale"');
+  const explanation = at('id="colour-help"');
+  const search = at('id="gene-search"');
+  const buttons = at('id="reset-view"');
+
+  assert.ok(axisRow < colourBy, 'the axis chooser stays above the colour row');
+  assert.ok(colourBy < colourScale, 'Scale follows Colour by on the same row');
+  assert.ok(colourScale < explanation, 'the colour explanation is beneath that row');
+  assert.ok(explanation < search, 'Find a gene follows the explanation');
+  assert.ok(search < buttons, 'and the view buttons come last');
+
+  // Colour by and Scale share one row, and Find a gene is alone on the next.
+  const rows = toolbar.split('<div class="map-toolbar-row');
+  const colourRow = rows.find((row) => row.includes('id="color-by"'));
+  assert.ok(colourRow.includes('id="color-scale"'), 'Colour by and Scale share a row');
+  assert.equal(colourRow.includes('id="gene-search"'), false);
+  const searchRow = rows.find((row) => row.includes('id="gene-search"'));
+  assert.equal((searchRow.match(/<select|<input/g) ?? []).length, 1,
+    'Find a gene is the only control on its row');
+  assert.match(searchRow, /class="field-row field-row-grow"/,
+    'and it grows into the whole width at every breakpoint');
+  assert.match(css, /\.map-toolbar \.field-row-grow \{ flex: 3 1 14rem; \}/);
+
+  // The Scale control explains itself where a screen reader will find it.
+  assert.match(html, /<select id="color-scale" aria-describedby="color-scale-hint"><\/select>/);
+  assert.match(html, /id="color-scale-hint"/);
+});
+
+/**
+ * The scale is one value. Both toolbars and the legend read it, and the two
+ * accessible descriptions state it, so nothing on screen can claim a scale that
+ * is not the one being drawn.
+ */
+test('the colour scale is resolved once and named in both accessible descriptions', () => {
+  assert.equal((app.match(/function resolveColorScale\(\)/g) ?? []).length, 1,
+    'one function resolves the scale in effect');
+  assert.equal((app.match(/state\.colorScale = scale;/g) ?? []).length, 2,
+    'it is written by that resolver and by the map toolbar handler');
+  const model = app.slice(app.indexOf('function colorModel()'), app.indexOf('function colorScaleClause('));
+  assert.match(model, /const resolved = resolveColorScale\(\);/,
+    'the colour model reads the resolved scale rather than resolving its own');
+  assert.match(model, /transform: valueScaleTransform\(resolved\.scale, values\),/);
+
+  // The scatter canvas names the scale beside the metric it scales.
+  const map = app.slice(app.indexOf('function renderMap()'), app.indexOf('function selectedCategoryLabels()'));
+  assert.match(map, /const scaleClause = colorScaleClause\(colors\);/);
+  assert.match(map, /coloured by `\s*\+ `\$\{metric\.label\}\$\{scaleClause \? ` \$\{scaleClause\}` : ''\}\./);
+  // And the chromosome canvas is handed the same clause.
+  const chromosome = app.slice(app.indexOf('function renderChromosomeView()'));
+  assert.match(chromosome.slice(0, chromosome.indexOf('renderColorHelp(')),
+    /colorScaleClause: colorScaleClause\(colors\),/);
+});
+
 test('the chromosome tab is a registered tab with its own tabpanel container', () => {
   assert.match(app, /const ALL_TABS = \[\.\.\.PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB\];/,
     'the chromosome view is a selectable tab in the shared tablist');
@@ -46,17 +113,26 @@ test('the chromosome tab is a registered tab with its own tabpanel container', (
  * behaviour itself is a rendered check in chromosome-view.md.
  */
 test('the chromosome toolbar writes colour and visibility through the shared control sync', () => {
-  assert.match(app, /function syncSharedControls\(\) \{\s*element\('color-by'\)\.value = state\.colorBy;\s*element\('show-hidden'\)\.checked = state\.showHidden;\s*\}/,
-    'one function points both shared controls at the state they describe');
-  // Nowhere else writes either control, so neither can be left behind.
+  assert.match(app, /function syncSharedControls\(\) \{\s*element\('color-by'\)\.value = state\.colorBy;\s*syncColorScaleControl\(colorModel\(\)\);\s*element\('show-hidden'\)\.checked = state\.showHidden;\s*\}/,
+    'one function points all three shared controls at the state they describe');
+  // Nowhere else writes either control, so neither can be left behind. The
+  // colour scale goes through one function for the same reason, and that
+  // function is the only place the map's Scale selector is written.
   assert.equal((app.match(/element\('color-by'\)\.value =/g) ?? []).length, 1);
   assert.equal((app.match(/element\('show-hidden'\)\.checked =/g) ?? []).length, 1);
+  assert.equal((app.match(/function syncColorScaleControl\(/g) ?? []).length, 1);
+  assert.equal((app.match(/element\('color-scale'\)/g) ?? []).length, 2,
+    'the Scale selector is read once to wire it and once to point it at the state');
 
   const toolbar = app.slice(app.indexOf('chromosomeView = new ChromosomeView('));
-  const colorChange = toolbar.slice(toolbar.indexOf('onColorChange:'), toolbar.indexOf('onShowHiddenChange:'));
+  const colorChange = toolbar.slice(toolbar.indexOf('onColorChange:'), toolbar.indexOf('onColorScaleChange:'));
   const showHiddenChange = toolbar.slice(toolbar.indexOf('onShowHiddenChange:'), toolbar.indexOf('onDetailJump:'));
-  assert.match(colorChange, /state\.colorBy = key;\s*syncSharedControls\(\);/,
-    'choosing a colour on the chromosome tab moves the map selector with it');
+  assert.match(colorChange, /state\.colorBy = key;[\s\S]*?state\.colorScale = null;\s*syncSharedControls\(\);/,
+    'choosing a colour on the chromosome tab moves the map selector with it, and opens '
+      + "the new metric on its own default scale");
+  const scaleChange = toolbar.slice(toolbar.indexOf('onColorScaleChange:'), toolbar.indexOf('onShowHiddenChange:'));
+  assert.match(scaleChange, /state\.colorScale = scale;\s*syncSharedControls\(\);/,
+    'and choosing a scale there moves the map selector with it too');
   assert.match(showHiddenChange, /state\.showHidden = value;\s*syncSharedControls\(\);/,
     'and so does unchecking Show filtered-out genes');
 

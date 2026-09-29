@@ -1,7 +1,37 @@
-# Controls column, reset confirmations, and the gene visualizer
+# Controls column, map toolbar, reset confirmations, and the gene visualizer
 
-Reusable contracts for the viewer's controls column, the confirmation every
-reset goes through, and the gene track drawn in both side columns.
+Reusable contracts for the viewer's controls column, the map toolbar's order, the
+confirmation every reset goes through, and the gene track drawn in both side
+columns.
+
+## The map toolbar's order
+
+Owner decision, 2026-09-29. Top to bottom on every scatter tab, in `#map-toolbar`
+in `site/index.html`:
+
+```
+[ X axis ] [ X scale ] [ Y axis ] [ Y scale ]   (Metric X vs Y tab only)
+[ Colour by ]  [ Scale ]
+> colour metric explanation  (#colour-help)
+[ Find a gene ....................................... ]
+[ Reset view ] [ Reset selections ] [ Zoom in ] [ Zoom out ] [ ] Show filtered-out genes
+```
+
+Three rules hold it together. **DOM order is keyboard order**, so the list above
+is also the tab order and nothing is styled into a position it does not occupy.
+**The colour explanation sits directly beneath the row whose metric it explains**,
+not below the search box, because it is read while choosing a colour. **Find a
+gene is alone on its row and full width at every breakpoint**
+(`.field-row-grow`, `flex: 3 1 14rem`), so a long locus or product query is not
+competing with a select for width; the scale field keeps a compact basis beside
+Colour by, which takes the row's spare width because its option text is the
+longest in the toolbar.
+
+The chromosome tab's own toolbar carries Colour by and Scale, then its own colour
+explanation directly beneath, so the two tabs are learned once; see
+[chromosome-view.md](chromosome-view.md). What the Scale control means is
+contracted in
+[current-design-answers.md](current-design-answers.md#the-colour-scale).
 
 ## The controls column is view state
 
@@ -178,6 +208,10 @@ Rendered checks, which source inspection does not replace:
 
 - At 375, 768, 1280 and 1440 wide: no horizontal page overflow, no panel-head
   overflow, and the gene visualizer SVG inside its column.
+- At the same four widths: Colour by and Scale share the first toolbar row, the
+  colour explanation is directly beneath it, and Find a gene is alone on the next
+  row and full width, with no horizontal overflow. Tab through the toolbar and
+  confirm focus follows that visual order.
 - Collapse a panel and move another; confirm the hash gains `pc` and `po`, and
   that pasting that hash into a fresh load reproduces the column.
 - Move a panel with its arrows to each end of the column and confirm the end

@@ -21,6 +21,7 @@ import {
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
 import { confirmedReset } from './confirm-dialog.js';
+import { syncScaleSelect } from './scale-select.js';
 import { formatCount } from './format.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
@@ -172,7 +173,8 @@ export class ChromosomeView {
    * @param {HTMLElement} host the tab panel, emptied and rebuilt on first use.
    * @param {{onHover: (index: number) => void, onPreview: (index: number) => void,
    *   onSelect: (index: number) => void, onShortlistToggle: (index: number) => void,
-   *   onColorChange: (key: string) => void, onShowHiddenChange: (value: boolean) => void,
+   *   onColorChange: (key: string) => void, onColorScaleChange: (scale: string) => void,
+   *   onShowHiddenChange: (value: boolean) => void,
    *   onDetailJump: () => void, onAnnounce: (message: string) => void}} handlers
    */
   constructor(host, handlers = {}) {
@@ -195,6 +197,8 @@ export class ChromosomeView {
    * @param {{tracks: object[], problems: string[], verified: boolean, genes: object[],
    *   mask: Uint8Array|null, showHidden: boolean, colors: object, colorLabel: string,
    *   colorOptions: {value: string, label: string, group: string}[], colorKey: string,
+   *   colorScaleOptions: {value: string, label: string, disabled: boolean,
+   *     reason: string|null}[], colorScale: string, colorScaleClause: string,
    *   pinned: number, hovered: number, active: number, shortlist: Set<number>,
    *   passing: number, total: number, categoryFilterLabels: string[],
    *   hasSelection: boolean}} model
@@ -287,7 +291,7 @@ export class ChromosomeView {
     toolbar.className = 'chromosome-toolbar';
 
     const colorField = document.createElement('span');
-    colorField.className = 'field-row';
+    colorField.className = 'field-row field-row-colour';
     const colorLabel = document.createElement('label');
     colorLabel.htmlFor = 'chromosome-color-by';
     colorLabel.textContent = 'Colour by';
@@ -297,6 +301,21 @@ export class ChromosomeView {
       this.handlers.onColorChange?.(this.colorSelect.value);
     });
     colorField.append(colorLabel, this.colorSelect);
+
+    // Scale sits beside Colour by, reading the one shared value the scatter map
+    // and the legend read, and the colour explanation stays directly beneath the
+    // toolbar as this tab's own copy of the map's order.
+    const scaleField = document.createElement('span');
+    scaleField.className = 'field-row field-row-scale';
+    const scaleLabel = document.createElement('label');
+    scaleLabel.htmlFor = 'chromosome-color-scale';
+    scaleLabel.textContent = 'Scale';
+    this.colorScaleSelect = document.createElement('select');
+    this.colorScaleSelect.id = 'chromosome-color-scale';
+    this.colorScaleSelect.addEventListener('change', () => {
+      this.handlers.onColorScaleChange?.(this.colorScaleSelect.value);
+    });
+    scaleField.append(scaleLabel, this.colorScaleSelect);
 
     this.zoomIn = this.chip('Zoom in (+)', 'Zoom in', () => this.zoomByCentre(1.6));
     this.zoomOut = this.chip('Zoom out (−)', 'Zoom out', () => this.zoomByCentre(1 / 1.6));
@@ -325,7 +344,8 @@ export class ChromosomeView {
     showHiddenLabel.textContent = 'Show filtered-out genes';
     showHiddenRow.append(this.showHidden, showHiddenLabel);
 
-    toolbar.append(colorField, this.zoomIn, this.zoomOut, this.resetButton, showHiddenRow);
+    toolbar.append(colorField, scaleField, this.zoomIn, this.zoomOut, this.resetButton,
+      showHiddenRow);
 
     this.colourHelp = document.createElement('details');
     this.colourHelp.className = 'method-help';
@@ -443,6 +463,7 @@ export class ChromosomeView {
       }
     }
     this.colorSelect.value = colorKey;
+    syncScaleSelect(this.colorScaleSelect, this.model.colorScaleOptions, this.model.colorScale);
     this.showHidden.checked = showHidden;
     this.detailJump.hidden = !this.model.hasSelection;
   }
@@ -578,6 +599,7 @@ export class ChromosomeView {
       tracks: this.model.tracks,
       window: this.windowFor(this.primaryTrack()),
       colorLabel: this.model.colorLabel,
+      colorScaleClause: this.model.colorScaleClause,
       passing: this.model.passing,
       total: this.model.total,
       selected: this.selectedId(),

@@ -188,13 +188,21 @@ come from `app.js` on each render, under
   camera-level change and never touches filter or URL state.
 - Selecting a CDS pins it, which opens it in the gene visualizer; see
   [controls-column-and-resets.md](controls-column-and-resets.md).
-- Colour and **Show filtered-out genes** are one piece of state with two sets of
-  controls: the map's, in the controls column, and this view's own copies in its
-  toolbar. This view resyncs its pair on every render; `syncSharedControls` in
-  `app.js` is the other direction, and the chromosome toolbar's handlers and a
-  live hash change both go through it. Without that, choosing CAI here left the
-  map's selector reading GC3 while the plot, the legend, and the hash all said
-  CAI.
+- Colour, the colour **Scale**, and **Show filtered-out genes** are one piece of
+  state with two sets of controls: the map's, in the map toolbar, and this view's
+  own copies in its own toolbar. This view resyncs all three on every render;
+  `syncSharedControls` in `app.js` is the other direction, and the chromosome
+  toolbar's handlers and a live hash change both go through it. Without that,
+  choosing CAI here left the map's selector reading GC3 while the plot, the
+  legend, and the hash all said CAI.
+- This view's toolbar reads **Colour by**, then **Scale**, then its own colour
+  explanation directly beneath the toolbar — the map toolbar's order, so the two
+  tabs are learned once. The scale options, which of them are disabled, and the
+  reason each disabled one carries come from `app.js` through the model, and both
+  toolbars point their selector at them with the one `syncScaleSelect`, so they
+  cannot offer different scales or give different reasons. The colour scale
+  itself is contracted in
+  [current-design-answers.md](current-design-answers.md#the-colour-scale).
 - A selection that arrives from anywhere else is reconciled in `update`, not
   only when the view happens to be idle: the camera reveals it (`revealIndex`)
   and the keyboard cursor adopts it. The cursor is this view's own copy of a
@@ -250,8 +258,9 @@ not a second coordinate system, and adds nothing to draw.
 ## Accessible description
 
 `describeChromosomeView` returns one sentence-level description, rebuilt on
-every paint and set as the canvas's `aria-label`. It names the colour channel,
-the passing and total counts, the primary track with its length and visible
+every paint and set as the canvas's `aria-label`. It names the colour channel
+and the value scale that channel is read under, the passing and total counts,
+the primary track with its length and visible
 range, each secondary track with its length and plotted CDS count, the strand
 convention, the two origin-crossing CDSs, any committed category filter, the
 selected CDS, and the per-genome-copy limit. A picture with no text equivalent

@@ -116,7 +116,7 @@ the reversible-pinning rules above say.
 
 ## URL and local persistence
 
-The current encoder is `ver=4`. A viewer-generated hash is a complete shareable
+The current encoder is `ver=6`. A viewer-generated hash is a complete shareable
 snapshot and always includes `l=`, including for an explicitly empty shortlist.
 Hash and browser-history changes are applied live without reload.
 
@@ -137,9 +137,26 @@ default, because axes have no local persistence; an explicit
 `ax`/`ay` wins in every version. Version 4 dropped the single-source view
 field `as` and added `cs` for the colour-source checkboxes as a comma list or
 `none`; a version-3 hash with `as` decodes without error and opens on every
-source. `tests/js/url-state.test.mjs` covers the old snapshot, the explicit
+source. Version 5 added the controls-column layout `po`/`pc` and the chosen
+comparison metrics `cm`, and version 6 moved those metrics out of the link into
+browser storage, so a version-5 hash carrying `cm` is read past and dropped
+exactly as `as` was. `tests/js/url-state.test.mjs` covers the old snapshot, the explicit
 override, the unversioned fragment, the dropped `as` field, and the current
 round trip.
+
+Not every new field needs a version. A version number earns its place only where
+the **absence** of a field has to mean two different things to two readers, as an
+omitted `ax`/`ay` does. The per-axis scales `xs`/`ys` and the colour scale `csc`
+are both absent-means-the-default fields, so neither bumped the encoder: an
+omitted `xs`/`ys` has only ever meant linear, and an omitted `csc` means the
+colour metric's own default scale, which is exactly what a fresh view shows. That
+last point is an owner decision of 2026-09-29 and is what makes an already shared
+link to TSS initiation agree with a fresh view rather than stay pixel-identical to
+what it once drew. `csc` is written whenever a scale is in effect, so a link
+records which scale its author saw; a function-category colour has no scale and
+writes no field. A `csc` naming a scale the metric cannot take resolves to that
+metric's default, and the visible control and the URL correct themselves to
+match — the same self-healing rule `xs`/`ys` follow.
 
 Before applying a decoded snapshot, all state fields reset to fresh defaults;
 omitted default-valued fields therefore cannot leak from the prior view. One

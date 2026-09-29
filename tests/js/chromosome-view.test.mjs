@@ -6,6 +6,7 @@ import {
 } from '../../site/js/ui/chromosome-view.js';
 import { repliconTracks } from '../../site/js/core/chromosome-model.js';
 import { buildColorScale } from '../../site/js/ui/colors.js';
+import { valueScaleTransform } from '../../site/js/core/value-scales.js';
 import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
 
 const CHROMOSOME = 'NZ_CP006471.1';
@@ -299,12 +300,26 @@ function colorModel(genes) {
   const values = Float64Array.from(genes.map((row) => (row.cai === null ? NaN : row.cai)));
   return {
     values,
-    scale: buildColorScale(values, { scale: 'sequential' }),
+    scale: buildColorScale(values, {
+      scale: 'sequential', transform: valueScaleTransform('log10', values),
+    }),
     derived: null,
     label: 'CAI',
     categorical: false,
   };
 }
+
+/** The scale options app.js hands this view, with one of them unavailable. */
+const SCALE_OPTIONS = [
+  { value: 'linear', label: 'Linear', disabled: false, reason: null },
+  { value: 'log10', label: 'Logarithmic', disabled: false, reason: null },
+  { value: 'percentile', label: 'Percentile', disabled: false, reason: null },
+  {
+    value: 'sqrt', label: 'Square root', disabled: true,
+    reason: 'Square root is unavailable for CAI: 1 value is negative.',
+  },
+  { value: 'symlog', label: 'Symmetric log', disabled: false, reason: null },
+];
 
 function mount({
   genes = GENES, meta = META, mask = null, showHidden = true, handlers = {},
@@ -336,6 +351,9 @@ function mount({
       { group: 'Codon adaptation', value: 'cai', label: 'CAI' },
     ],
     colorKey: 'cai',
+    colorScaleOptions: SCALE_OPTIONS,
+    colorScale: 'log10',
+    colorScaleClause: 'on a logarithmic scale',
     pinned: -1,
     hovered: -1,
     active: -1,
@@ -656,6 +674,16 @@ test('the view states its own marker conventions, since the shared key omits the
   }
 });
 
+test('the accessible description states the scale the colours are read under', () => {
+  const { view, restore } = mount();
+  try {
+    assert.match(view.canvas.getAttribute('aria-label'),
+      /coloured by CAI on a logarithmic scale\./);
+  } finally {
+    restore();
+  }
+});
+
 test('the canvas label is the sentence-level description, rebuilt on each paint', () => {
   const { view, restore } = mount();
   try {
@@ -892,11 +920,12 @@ test('a filtered-out CDS is drawn behind the passing ones, and only when shown',
   }
 });
 
-test('the toolbar mirrors the shared colour and visibility state', () => {
+test('the toolbar mirrors the shared colour, scale, and visibility state', () => {
   const changes = [];
   const { view, restore } = mount({
     handlers: {
       onColorChange: (key) => changes.push(['colour', key]),
+      onColorScaleChange: (scale) => changes.push(['scale', scale]),
       onShowHiddenChange: (value) => changes.push(['showHidden', value]),
     },
   });
@@ -906,9 +935,44 @@ test('the toolbar mirrors the shared colour and visibility state', () => {
       ['Reviewed function', 'Codon adaptation']);
     view.colorSelect.value = 'functionCategory';
     view.colorSelect.dispatch('change');
+    view.colorScaleSelect.value = 'percentile';
+    view.colorScaleSelect.dispatch('change');
     view.showHidden.checked = false;
     view.showHidden.dispatch('change');
-    assert.deepEqual(changes, [['colour', 'functionCategory'], ['showHidden', false]]);
+    assert.deepEqual(changes, [
+      ['colour', 'functionCategory'], ['scale', 'percentile'], ['showHidden', false],
+    ]);
+  } finally {
+    restore();
+  }
+});
+
+test('Scale sits beside Colour by, offers every scale, and disables the ones with a reason', () => {
+  const { view, restore } = mount();
+  try {
+    // Second field in the toolbar, immediately after Colour by, so the keyboard
+    // order is the visual order.
+    const toolbar = view.figure.children[0];
+    assert.equal(toolbar.className, 'chromosome-toolbar');
+    const [colourField, scaleField] = toolbar.children;
+    assert.equal(colourField.children[1], view.colorSelect);
+    assert.equal(scaleField.children[0].textContent, 'Scale');
+    assert.equal(scaleField.children[1], view.colorScaleSelect);
+    // The colour explanation is the next thing after the toolbar, as on the map.
+    assert.equal(view.figure.children[1].id, 'chromosome-colour-help');
+
+    assert.equal(view.colorScaleSelect.value, 'log10');
+    assert.deepEqual(view.colorScaleSelect.children.map((option) => option.textContent),
+      ['Linear', 'Logarithmic', 'Percentile', 'Square root', 'Symmetric log']);
+    // A scale the metric cannot take is listed and disabled with its reason, so
+    // the reader learns something rather than watching an option disappear.
+    const disabled = view.colorScaleSelect.children.filter((option) => option.disabled);
+    assert.deepEqual(disabled.map((option) => option.value), ['sqrt']);
+    assert.equal(disabled[0].title,
+      'Square root is unavailable for CAI: 1 value is negative.');
+    for (const option of view.colorScaleSelect.children.filter((each) => !each.disabled)) {
+      assert.equal(option.title, '');
+    }
   } finally {
     restore();
   }

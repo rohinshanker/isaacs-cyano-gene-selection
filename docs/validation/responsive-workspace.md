@@ -34,6 +34,13 @@ no side rails or resize controls. Presentation widths stay out of URL and
 scientific exports. The scatter canvas observes its container size and redraws
 after resizing.
 
+The map toolbar stacks rather than compressing. Colour by and Scale share its
+first row, the colour explanation is directly beneath that row, and **Find a gene
+is alone on its row and full width at every breakpoint** — the row grows into the
+whole column instead of competing with a select for it. The order is fixed in
+[controls-column-and-resets.md](controls-column-and-resets.md), and DOM order is
+keyboard order, so the visual order is the tab order at every width.
+
 The designer, shortlist help, and provenance use native disclosures so support
 content does not dominate the default page. Wide tables, including the opened
 axis-loadings table, scroll inside their own containers. The document itself
@@ -47,6 +54,9 @@ an opened axis-loadings table; completed shortlist and panel exports with their 
 filenames; an open designer with results; and a long selected-gene detail. Verify:
 
 - comparison begins immediately after the map rather than after a sidebar;
+- in the map toolbar, Colour by and Scale share the first row, the colour
+  explanation is directly beneath it, and Find a gene is alone on the next row at
+  full width, with the tab order following that;
 - source order and focus order remain map → comparison → designer → shortlist →
   provenance → detail;
 - sticky detail is viewport-bounded and keyboard/touch scrollable;

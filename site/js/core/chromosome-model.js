@@ -528,6 +528,7 @@ export function tssPositions(track, genes) {
  */
 export function describeChromosomeView({
   tracks, window, colorLabel, passing, total, selected = null, categoryFilterLabels = [],
+  colorScaleClause = null,
 }) {
   if (!Array.isArray(tracks) || tracks.length === 0) {
     return 'The chromosome view has no verified replicon to draw.';
@@ -535,9 +536,11 @@ export function describeChromosomeView({
   const primary = tracks.find((track) => track.primary) ?? tracks[0];
   const secondary = tracks.filter((track) => track !== primary);
   const parts = [];
+  // The scale belongs in this sentence, not only in the legend: which colour a
+  // value takes depends on it, so a reader who cannot see the ramp still needs it.
   parts.push(`Linear map of ${total.toLocaleString('en-US')} plotted CDSs, `
     + `${passing.toLocaleString('en-US')} of them passing the current filters, coloured by `
-    + `${colorLabel}.`);
+    + `${colorLabel}${colorScaleClause ? ` ${colorScaleClause}` : ''}.`);
   parts.push(`${primary.accession}, the ${formatBasePairs(primary.lengthBp)} chromosome, carries `
     + `${primary.cdsCount.toLocaleString('en-US')} of them and is the primary track, with base 1 `
     + `at its origin; the view spans ${formatCoordinate(window.from)} to `

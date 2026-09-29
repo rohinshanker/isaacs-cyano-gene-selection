@@ -166,6 +166,25 @@ test('an axis-scale export wires through the real URL-state decode and app viewS
   assert.equal(result.manifest.viewState.axisY, 'tssInitiation');
 });
 
+test('the manifest records the colour scale in effect, and the exported values stay unscaled', async () => {
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  // A real shared link, decoded by the production decoder and turned into a
+  // viewState by the same `viewStateOf` app.js calls, so an app wiring omission
+  // fails here rather than passing against a hand-typed literal.
+  const state = applyDecoded(defaultState(),
+    decodeState('ver=6&p=native&c=lengthNt&csc=log10&l='));
+  assert.equal(state.colorScale, 'log10');
+  const result = buildExport({
+    dataset, registry, ids: [id], schemes: [{ map: {} }], viewState: viewStateOf(state),
+  });
+  assert.equal(result.manifest.viewState.colorBy, 'lengthNt');
+  assert.equal(result.manifest.viewState.colorScale, 'log10');
+  // The scale is metadata about the colours, not about the numbers: the exported
+  // value is the stored one, never a logarithm of it.
+  assert.equal(result.rows[0].lengthNt, dataset.genes[0].lengthNt);
+});
+
 test('single, multiple, and unreviewed categories survive CSV and manifest export', async () => {
   const { dataset: original, registry } = await context();
   const [reviewed, multiple, unreviewed] = original.genes.slice(0, 3).map((gene) => gene.id);

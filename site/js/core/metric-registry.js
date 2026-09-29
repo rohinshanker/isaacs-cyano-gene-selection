@@ -134,11 +134,19 @@ const BOUNDED_RAMP_UNITS = /^(fraction|rank|percentile|index)$/i;
  * but it does not colour the first paint. This release's only native
  * measurement, Tan 2018 TSS initiation, is a heavy-tailed count: its median is
  * 828 against a maximum near 324,000, so a linear ramp gives about nine genes
- * in ten the same dark bucket. Opening on it would hide the very measurement it
- * is meant to show, and a ramp reads a value rather than a rank, so rescaling
- * it here would misreport the numbers. GC3 stays the first colour because it is
+ * in ten the same dark bucket. GC3 stays the first colour because it is
  * complete, evenly spread, and not a codon-adaptation convention: CAI and tAI
  * are never the implicit choice.
+ *
+ * The reason once given here — that a ramp reads a value rather than a rank and
+ * so is never rescaled — was reversed by owner decision on 2026-09-29. The ramp
+ * now carries a reader-chosen, clearly labelled scale, and a metric as skewed as
+ * TSS initiation opens on a logarithmic one; see `./value-scales.js` and
+ * docs/validation/current-design-answers.md. That decision deliberately did not
+ * move this fallback: which metric a fresh view opens on is a separate question
+ * from how that metric's values are spread across a ramp, and the owner's answer
+ * on 2026-09-29 was that the metric fallback stays GC3. Nothing here reads the
+ * colour scale.
  *
  * The promotion rule is narrow, and deliberately so. A later release takes the
  * colour default with no code change only when its metric is one
@@ -146,8 +154,8 @@ const BOUNDED_RAMP_UNITS = /^(fraction|rank|percentile|index)$/i;
  * evidence, with `provenance.isTargetOrganism` true — and its declared `unit`
  * is exactly `fraction`, `rank`, `percentile`, or `index`. A native assay in
  * any other unit, or one this registry does not read as expression evidence,
- * needs this list widened; that is a deliberate check on a ramp, not an
- * oversight.
+ * needs this list widened; that is a deliberate check on which measurement
+ * leads, not an oversight.
  *
  * @param {{byKey: Map<string, object>, metrics: object[]}} registry
  * @returns {string} a key that exists in `registry`.

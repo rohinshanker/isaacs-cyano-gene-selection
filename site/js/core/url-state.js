@@ -6,6 +6,7 @@
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 import { DEFAULT_METRIC_AXES, DEFAULT_AXIS_SCALE, AXIS_SCALES } from './metric-axes.js';
+import { VALUE_SCALES } from './value-scales.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
 import {
   DEFAULT_COLOR_SOURCES, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
@@ -22,7 +23,7 @@ const KEYS = {
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
   categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
-  panelOrder: 'po', panelCollapsed: 'pc',
+  panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc',
 };
 
 /**
@@ -36,6 +37,17 @@ const KEYS = {
  * version 3 became 4, the controls-column layout (`po`, `pc`) with the chosen
  * comparison metrics (`cm`) is why version 4 became 5, and moving those chosen
  * metrics out of the link into browser storage is why version 5 became 6.
+ *
+ * The colour scale `csc` deliberately did not bump it. A version number is only
+ * useful where the absence of a field has to mean two different things to two
+ * readers, and here it never does: a hash with no `csc` means "the colour
+ * metric's own default scale", which is exactly what a fresh view shows, so a
+ * link shared before the field existed and one shared after it agree. That is
+ * the owner's decision of 2026-09-29, recorded in
+ * docs/validation/current-design-answers.md, and it is why no migration branch
+ * reads this number for the colour scale. An older deployed reader shown a newer
+ * hash ignores `csc` and draws linear, which no version number here could
+ * change. The per-axis `xs`/`ys` scales were added on the same reasoning.
  */
 export const STATE_VERSION = 6;
 
@@ -64,6 +76,11 @@ export function defaultState() {
   return {
     panel: 'native',
     colorBy: null,
+    // null means "whatever the colour metric's own default scale is", which is
+    // resolved once the dataset is loaded and the metric is known. Keeping it
+    // null until then is what lets a hash carrying no `csc` be told apart from
+    // one that explicitly asks for a linear ramp.
+    colorScale: null,
     schemeMap: {},
     schemeName: '',
     highExpressed: false,
@@ -132,6 +149,9 @@ export function viewStateOf(state) {
   return {
     panel: state.panel,
     colorBy: state.colorBy,
+    // The scale in effect, so an exported view can be reproduced. It is resolved
+    // by the time a manifest is built, so this is never the unresolved null.
+    colorScale: state.colorScale,
     axisX: state.axisX,
     axisY: state.axisY,
     axisXScale: state.axisXScale,
@@ -189,6 +209,10 @@ export function encodeState(state) {
     const enabled = normalizeAnnotationSources(state.colorSources);
     push(KEYS.colorSources, enabled.length === 0 ? NO_SOURCES : enabled.join(','));
   }
+  // Written whenever it is resolved, unlike the axis scales: the colour scale's
+  // default depends on the metric's own values, so "omitted" cannot mean linear
+  // here, and a link that records which scale its author saw is the point.
+  if (VALUE_SCALES.includes(state.colorScale)) push(KEYS.colorScale, state.colorScale);
   push(KEYS.trafficKey, state.trafficKey);
   if (state.lengthCohort !== 'annotated') push(KEYS.lengthCohort, state.lengthCohort);
   if (state.proteinFilter !== 'any') push(KEYS.proteinFilter, state.proteinFilter);
@@ -296,6 +320,12 @@ export function decodeState(hash) {
   if (values.has(KEYS.colorSources)) {
     const sources = parseAnnotationSources(values.get(KEYS.colorSources));
     if (sources !== null) state.colorSources = sources;
+  }
+  // An unknown or absent value leaves `colorScale` unset, so `applyDecoded`
+  // restores the null default and the metric's own default scale is resolved.
+  if (values.has(KEYS.colorScale)) {
+    const scale = values.get(KEYS.colorScale);
+    if (VALUE_SCALES.includes(scale)) state.colorScale = scale;
   }
   if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
   if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);

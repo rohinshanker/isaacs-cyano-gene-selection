@@ -174,6 +174,41 @@ test('an old hash with no scale fields decodes to linear, unchanged from before 
   assert.equal(target.axisYScale, 'linear');
 });
 
+/**
+ * The colour scale is a new field whose default depends on the metric's own
+ * values, so a link cannot carry "linear by omission" the way the axis scales
+ * can. Owner decision, 2026-09-29: a hash naming a colour but no scale opens on
+ * that metric's default scale, which is what a fresh view shows, so an already
+ * shared link and a fresh view agree.
+ */
+test('the colour scale round-trips, and a hash with a colour but no scale leaves it unresolved', () => {
+  const target = defaultState();
+  assert.equal(target.colorScale, null, 'a fresh state has not resolved a scale yet');
+
+  const hash = encodeState({ ...target, colorBy: 'tssInitiation', colorScale: 'log10' });
+  assert.match(hash, /(^|&)csc=log10(&|$)/);
+  assert.equal(applyDecoded(defaultState(), decodeState(hash)).colorScale, 'log10');
+  for (const scale of ['linear', 'percentile', 'sqrt', 'symlog']) {
+    const round = applyDecoded(defaultState(), decodeState(
+      encodeState({ ...target, colorBy: 'gc3', colorScale: scale }),
+    ));
+    assert.equal(round.colorScale, scale);
+  }
+
+  // A link shared before the field existed: the colour survives and the scale
+  // stays unresolved, so the app can supply the metric's own default.
+  const older = decodeState('#ver=6&p=native&c=tssInitiation&l=&t=radar');
+  assert.equal(older.colorBy, 'tssInitiation');
+  assert.equal('colorScale' in older, false);
+  assert.equal(applyDecoded(defaultState(), older).colorScale, null);
+
+  // An unresolved scale writes no field, so a function-category colour, which
+  // has no scale at all, leaves nothing behind in the link.
+  assert.equal(encodeState({ ...target, colorBy: 'gc3', colorScale: null }).includes('csc='), false);
+  // And a hand-edited value this encoder never writes is ignored, not trusted.
+  assert.equal('colorScale' in decodeState('#ver=6&csc=rainbow'), false);
+});
+
 test('a link shared before the measured axes still plots the pair its author saw', () => {
   // Exactly the hash the old encoder wrote for length against CAI: the axes are
   // absent because they were the default then.
@@ -240,6 +275,17 @@ test('an encoded CAI axis still wins over the new measured default', () => {
   applyDecoded(target, decodeState(shared));
   assert.equal(target.axisY, 'cai');
   assert.equal(target.axisX, DEFAULT_METRIC_AXES.x);
+});
+
+test('the export view state carries the scale in effect beside the colour it scales', () => {
+  const state = applyDecoded(defaultState(),
+    decodeState('#ver=6&p=native&c=expression&csc=log10&l=&t=radar'));
+  const viewState = viewStateOf(state);
+  assert.equal(viewState.colorBy, 'expression');
+  assert.equal(viewState.colorScale, 'log10');
+  // A categorical colour has no scale in effect, and the manifest says so rather
+  // than naming one nothing is drawing.
+  assert.equal(viewStateOf({ ...state, colorScale: null }).colorScale, null);
 });
 
 test('defaults are left out of the hash so a plain view has a plain link', () => {

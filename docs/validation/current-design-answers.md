@@ -23,9 +23,107 @@ Yes. In **Filters → Add filter**, choose **Size → CDS length**, select **Add
 | CAI | Sharp–Li relative adaptiveness from a fixed **71-locus** ribosomal/housekeeping product-name reference. A zero-count synonym gets a 0.5 count; the gene score is a geometric mean excluding Met and Trp. | The reference is a reproducible convention, **not measured high expression**. The 71-locus set is frozen for this release; a blinded semantic audit identified ten plausible additions for future biological review. |
 | tAI | dos Reis-style adaptiveness calculated from the annotated **genomic tRNA gene copies** and bacterial wobble penalties. The gene score is a geometric mean excluding Met. A codon with zero modeled supply receives the geometric mean of nonzero weights. The `Ile-CAT` lysidine and inosine conventions are explicit. | Copy count is **not tRNA abundance, expression, charging, or direct decoding measurement**. The zero-weight substitution is a model convention. |
 
-Because both are conventions rather than measurements, neither is a fresh-view default. The default axes, the colour and axis selector order, the default detail-panel field order, the default comparison axes, and the guided panel's default feature order all place measured UTEX 2973 evidence first: Tan 2018 TSS initiation counts and their condition comparisons, tested Ungerer 2018 alleles, and admitted PCC 7942 essentiality with its cross-strain wording. A measurement with few replicates still outranks a codon-usage convention, and wherever a thin measurement is a default the interface states its replicate count, condition, and coverage beside it. The one deliberate exception is the colour of the first paint. Owner decision, 2026-09-28: a fresh view opens coloured by the reviewed **function category**, because a categorical colour answers what a gene is before any metric answers how much. When a dataset ships no category table the colour falls back to GC3, not to a measurement: TSS initiation is a heavy-tailed count with a median of 828 against a maximum near 324,000, so a linear ramp would give about nine genes in ten the same bucket and hide the measurement instead of showing it. A ramp reads a value rather than a rank, so it is not rescaled to disguise that. The measurement leads the colour list and opens the **Metric X vs Y** tab, where its spread is visible and can be zoomed. A later release changes that metric fallback with no code change only within a narrow rule: the metric must be one the registry already reads as expression evidence measured in this organism, and its declared unit must be exactly `fraction`, `rank`, `percentile`, or `index`. A native assay published in any other unit needs that list widened deliberately, because a linear ramp over an unbounded quantity is what hid this measurement in the first place. CAI and tAI stay in the datasets, the metric registry, the filters, every selector, and the export, with their explanations and citations; their explanation now adds one line saying they are convention-derived indices to read as supporting context. An encoded nondefault axis or colour in a shared link still wins over these defaults.
+Because both are conventions rather than measurements, neither is a fresh-view default. The default axes, the colour and axis selector order, the default detail-panel field order, the default comparison axes, and the guided panel's default feature order all place measured UTEX 2973 evidence first: Tan 2018 TSS initiation counts and their condition comparisons, tested Ungerer 2018 alleles, and admitted PCC 7942 essentiality with its cross-strain wording. A measurement with few replicates still outranks a codon-usage convention, and wherever a thin measurement is a default the interface states its replicate count, condition, and coverage beside it. The one deliberate exception is the colour of the first paint. Owner decision, 2026-09-28: a fresh view opens coloured by the reviewed **function category**, because a categorical colour answers what a gene is before any metric answers how much. When a dataset ships no category table the colour falls back to GC3, not to a measurement; owner decision, 2026-09-29, confirmed that this metric fallback stays GC3, so no measurement is promoted into a default position by the colour scale below. **The rule that a ramp is never rescaled was reversed by owner decision on 2026-09-29**: the ramp now carries a reader-chosen, clearly labelled scale, and a heavily skewed metric opens on a logarithmic one, because a labelled nonlinear ramp serves the reader better than a linear ramp that paints nearly every gene one colour. See [The colour scale](#the-colour-scale). The measurement leads the colour list and opens the **Metric X vs Y** tab, where its spread is visible and can be zoomed. A later release changes that metric fallback with no code change only within a narrow rule: the metric must be one the registry already reads as expression evidence measured in this organism, and its declared unit must be exactly `fraction`, `rank`, `percentile`, or `index`. A native assay published in any other unit needs that list widened deliberately. That rule was written because a linear ramp over an unbounded quantity is what hid this measurement in the first place; the selectable scale answers the ramp half of that problem, and the narrow promotion rule is kept anyway, because which metric a fresh view opens on is a separate decision from how its values are spread across a ramp. CAI and tAI stay in the datasets, the metric registry, the filters, every selector, and the export, with their explanations and citations; their explanation now adds one line saying they are convention-derived indices to read as supporting context. An encoded nondefault axis or colour in a shared link still wins over these defaults.
 
 The calculations live in [feature_metrics.py](../../scripts/feature_metrics.py) and [build_features.py](../../scripts/build_features.py). [CAI reference audit](cai-reference-set.md) explains reference selection and its limitations; [metric parity](metric-convention-parity.md) records the browser and pipeline conventions. tRNA anticodons come from coordinates in the pinned RefSeq GFF and match both [the 44-gene table](../../data/trna/anticodon_gene_copies.tsv) and a [pinned tRNAscan-SE rerun](trna-annotation-validation.md). The rerun supports computational plausibility; it does not measure tRNA expression or charging. The selected-colour disclosure gives a short explanation, calculation details, source, and relevant method citations; it stays open as the colour changes. See [the metric explanation contract](metric-explanations.md).
+
+## The colour scale
+
+Owner decision, 2026-09-29. The colour ramp carries a reader-chosen **Scale**,
+beside Colour by on every scatter tab and on the chromosome tab. It offers
+exactly five: **Linear**, **Logarithmic**, **Percentile**, **Square root**, and
+**Symmetric log**. Clipped linear was considered and not offered. The scale
+changes only which colour a value takes. Every number on screen or in a file —
+the detail cards, the tooltips, the filters and their thresholds, the sorting,
+the candidate comparison, the CSV export — is the stored value, and a gene with
+no value stays uncoloured under every scale.
+
+**One module, shared with the axes.** `site/js/core/value-scales.js` holds the
+names, the availability tests, the disabled wording, the transforms and their
+inverses. The Metric X vs Y axes import the same module and offer the first three
+of the five; [explicit-metric-axes.md](explicit-metric-axes.md) says why the axes
+offer the smaller set.
+
+**Availability is stated, never silent.** A scale a metric cannot support is
+listed and disabled with its reason, never hidden and never quietly swapped for
+another. Logarithmic requires every finite value strictly positive. Square root
+requires every finite value non-negative. A logarithm has no value at zero, so it
+is also refused for a metric whose ramp is centred on zero. **No offset is ever
+added to make a logarithm work**; a metric with a zero offers Square root or
+Symmetric log instead. Scale is disabled entirely when Colour by is Function
+category, which has no ramp over values to scale.
+
+**The default is a rule, not a list.** A metric opens **Logarithmic** when every
+finite value is strictly positive and at least `SKEWED_DEFAULT_SHARE` (0.9) of its
+valued genes fall in the lowest tenth of its linear range. A metric that meets
+that skew test but carries a zero or a negative value opens **Symmetric log**.
+Everything else opens **Linear**. A column with no measurable range — nothing
+finite, or one value repeated — has no skew to correct and opens Linear. On the
+release measured at `main` `0ee1885` the rule selects Logarithmic for
+`tssInitiation` and `expression`, Symmetric log for `neighborDownstreamNt` and
+`neighborUpstreamNt`, and Linear for every other metric, `rareCount` (76%)
+included. That selection is pinned in
+[tests/js/color-scale.test.mjs](../../tests/js/color-scale.test.mjs), so a change
+in the data that moves a metric across the 0.9 line is seen in review rather than
+discovered in the picture. **Do not move the threshold to make a metric land
+where it is wanted**: the threshold is the rule, and a metric that crosses it is
+a fact about the data.
+
+**Symmetric log's linear threshold** is one deterministic value per metric: the
+median of the non-zero absolute finite values, rounded down to a power of ten.
+Roughly half the valued genes then fall inside the linear region, where small
+signed differences near zero read as they are, while the long tail outside it is
+compressed logarithmically. Rounding to a decade keeps the legend legible ("±10
+nt", not "±53 nt") and keeps the threshold from moving on an ordinary data
+refresh. Both neighbour distances get 10 nt on this release. The legend states
+the threshold.
+
+**The legend states the scale and reads in real values.** The scale's name sits
+beside the ramp; the ramp's tick labels are the metric's own values placed at the
+positions the scale actually puts them, not spaced evenly; a logarithmic ramp
+labels its middle tick with the nearest power of ten, at that decade's real
+position. A reader never has to guess whether a colour difference is tenfold or
+ten units. The accessible description of the scatter canvas and of the chromosome
+canvas both name the scale.
+
+**A diverging metric keeps its centre.** A metric the legend draws as diverging
+around zero has its ramp centred where the scale puts zero, with the same reach
+on each arm, under every scale offered for it. Grey therefore means zero and the
+sign of a colour is the sign of the value.
+
+**Percentile ranks against every gene with a value**, not against the
+filter-visible cohort, so a filter change does not repaint the map. That is a
+deliberate difference from the percentile *axis*, which ranks the visible cohort
+because a plot's coordinates are about the cohort on screen. The legend note says
+which it is.
+
+**Shared state.** The scale is one value, read by both views and the legend, and
+it lives in the URL under `csc`. It round-trips, follows a live hash change, and
+survives a tab change. **A hash that names a colour but no scale opens on that
+metric's default scale** (owner decision, 2026-09-29), so an existing link to TSS
+initiation renders logarithmically from now on and agrees with a fresh view.
+Changing Colour by resets Scale to the new metric's default unless the hash says
+otherwise. A hash asking for a scale the metric cannot take resolves to the
+metric's default and the visible control and the URL correct themselves to match.
+`STATE_VERSION` was **not** bumped for `csc`, and the reasoning is recorded in
+`site/js/core/url-state.js`: a version number is only useful where the absence of
+a field must mean two different things to two readers, and an absent `csc` means
+the metric's default scale to every reader, which is exactly what a fresh view
+shows. The per-axis `xs`/`ys` scales were added on the same reasoning.
+
+**The export manifest records the scale in effect** in `viewState.colorScale`,
+so an exported view can be reproduced; a categorical colour records `null`,
+because no scale is in effect. The exported values are the stored values,
+unscaled.
+
+**The toolbar order** this decision fixed, top to bottom on every scatter tab:
+the axis chooser row (Metric X vs Y only, unchanged); a row holding Colour by and
+Scale; the colour explanation directly beneath that row; a row holding Find a
+gene alone, full width at every breakpoint; then the existing view buttons. DOM
+order is keyboard order, so that is also the tab order. The chromosome tab's
+toolbar gains Scale beside its Colour by and keeps its own explanation directly
+beneath. See [controls-column-and-resets.md](controls-column-and-resets.md) and
+[responsive-workspace.md](responsive-workspace.md).
 
 ## How was native codon space projected, and could gene length affect it?
 

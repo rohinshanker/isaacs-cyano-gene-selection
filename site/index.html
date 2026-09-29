@@ -226,8 +226,9 @@ if (window.location.protocol === 'file:') {
         <div class="help-content"></div>
       </details>
       <div id="map-view" role="tabpanel">
-        <!-- Axis controls appear above the shared colour/search and view rows.
-             DOM order follows keyboard order, and search takes remaining width. -->
+        <!-- Axis controls appear above the shared colour and view rows. DOM order
+             follows keyboard order: Colour by, Scale, the colour explanation,
+             Find a gene alone on its row, then the view buttons. -->
         <div class="map-toolbar">
           <div class="map-toolbar-row axis-chooser" id="axis-chooser" hidden>
             <span class="field-row">
@@ -249,10 +250,20 @@ if (window.location.protocol === 'file:') {
             <span id="axis-note" class="panel-note" role="status"></span>
           </div>
           <div class="map-toolbar-row">
-            <span class="field-row">
+            <span class="field-row field-row-colour">
               <label for="color-by">Colour by</label>
               <select id="color-by"></select>
             </span>
+            <span class="field-row field-row-scale">
+              <label for="color-scale">Scale</label>
+              <select id="color-scale" aria-describedby="color-scale-hint"></select>
+            </span>
+          </div>
+          <details id="colour-help" class="method-help" hidden>
+            <summary>Colour metric explanation</summary>
+            <div class="help-content"></div>
+          </details>
+          <div class="map-toolbar-row">
             <span class="field-row field-row-grow">
               <label for="gene-search">Find a gene</label>
               <input id="gene-search" type="search" autocomplete="off"
@@ -260,10 +271,6 @@ if (window.location.protocol === 'file:') {
                      placeholder="Locus, product, category, or GO term">
             </span>
           </div>
-          <details id="colour-help" class="method-help" hidden>
-            <summary>Colour metric explanation</summary>
-            <div class="help-content"></div>
-          </details>
           <div class="map-toolbar-row">
             <button type="button" id="reset-view" class="chip-button">Reset view</button>
             <button type="button" id="reset-selections" class="chip-button danger"
@@ -276,6 +283,15 @@ if (window.location.protocol === 'file:') {
             </span>
           </div>
         </div>
+        <p class="visually-hidden" id="color-scale-hint">
+          Chooses how the colour ramp spreads this metric's values across the ramp. It
+          changes colour only: every value shown in the gene detail, the tooltips, the
+          filters, the comparison, and the export stays the stored value, and a gene with
+          no value stays uncoloured under every scale. A scale a metric cannot take is
+          listed but disabled, with the reason; no offset is ever added to make a
+          logarithm work. The legend names the scale in effect and labels the ramp in this
+          metric's own units. The chromosome tab reads the same choice.
+        </p>
         <p class="visually-hidden" id="gene-search-hint">
           Searches locus tags, gene names, product descriptions, reviewed function
           categories, GO IDs and GO term names. GO annotations are computational

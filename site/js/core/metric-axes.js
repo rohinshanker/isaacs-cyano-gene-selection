@@ -5,7 +5,18 @@
  * registry and never fits or transforms coordinates.
  */
 import { metricValues, orderMeasuredFirst, isMeasuredMetric } from './metric-registry.js';
-import { percentileRank } from './stats.js';
+import {
+  AXIS_SCALES, DEFAULT_VALUE_SCALE, VALUE_SCALE_LABELS,
+  log10Availability, log10DisabledReason, valueScaleTransform,
+} from './value-scales.js';
+
+// The axis scales are a subset of the one scale set in
+// `./value-scales.js`, and these are the names axis callers have always
+// imported from here. Re-exported rather than redefined so a scale is declared
+// in exactly one place.
+export {
+  AXIS_SCALES, VALUE_SCALE_LABELS, log10Availability, log10DisabledReason,
+};
 
 /**
  * The fresh-view axes: CDS length against the strongest measured evidence this
@@ -54,55 +65,14 @@ function unavailableValues(rowCount) {
   return new Float64Array(rowCount).fill(NaN);
 }
 
-/** The three ways an axis can present a metric's numbers. Linear is the fresh default. */
-export const AXIS_SCALES = Object.freeze(['linear', 'log10', 'percentile']);
-export const DEFAULT_AXIS_SCALE = 'linear';
+/** Linear is the fresh default on both axes; {@link AXIS_SCALES} lists the rest. */
+export const DEFAULT_AXIS_SCALE = DEFAULT_VALUE_SCALE;
 export const DEFAULT_AXIS_SCALES = Object.freeze({ x: DEFAULT_AXIS_SCALE, y: DEFAULT_AXIS_SCALE });
-
-/**
- * Whether a column of raw metric reads can be shown on a log10 axis: every
- * finite value must be strictly positive, because log10 of zero or a negative
- * number is undefined. Reports the count so the option can explain itself
- * instead of quietly dropping genes.
- *
- * @param {Float64Array} values
- * @returns {{available: boolean, finiteCount: number, nonPositiveCount: number}}
- */
-export function log10Availability(values) {
-  let finiteCount = 0;
-  let nonPositiveCount = 0;
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index];
-    if (!Number.isFinite(value)) continue;
-    finiteCount += 1;
-    if (value <= 0) nonPositiveCount += 1;
-  }
-  return { available: finiteCount > 0 && nonPositiveCount === 0, finiteCount, nonPositiveCount };
-}
 
 /** Convenience wrapper for a single registry metric, used by axis-scale controls. */
 export function metricLog10Availability(metric, rowCount) {
   if (!metric) return { available: false, finiteCount: 0, nonPositiveCount: 0 };
   return log10Availability(metricValues(metric, rowCount));
-}
-
-/** A short, human sentence explaining why log10 is disabled for `label`. */
-export function log10DisabledReason(label, availability) {
-  if (availability.available) return null;
-  if (availability.finiteCount === 0) return `${label} has no finite values on this axis.`;
-  const count = availability.nonPositiveCount;
-  return `log10 is unavailable for ${label}: ${count} value${count === 1 ? '' : 's'} `
-    + `${count === 1 ? 'is' : 'are'} zero or negative.`;
-}
-
-/** log10 of strictly positive values; non-positive and non-finite values become NaN. */
-function toLog10(values) {
-  const out = new Float64Array(values.length);
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index];
-    out[index] = Number.isFinite(value) && value > 0 ? Math.log10(value) : NaN;
-  }
-  return out;
 }
 
 /**
@@ -123,18 +93,18 @@ function percentileCohort(values, mask) {
 }
 
 /**
- * Percentile rank (0-100) of each value against `cohort`. A row outside the
- * cohort still receives a rank against it, so a filtered-out gene keeps a map
- * coordinate exactly like every other axis scale does. An empty cohort ranks
- * every row NaN, including rows with a finite raw value: there is nothing to
- * rank against, not a missing measurement.
+ * Every row's value under a scale's `apply`, in its original row slot.
+ *
+ * Row order is what makes a projection drawable, so a row the scale cannot
+ * place stays NaN in place rather than being dropped. A row outside a
+ * percentile cohort still receives a rank against that cohort and keeps a map
+ * coordinate, exactly as it does under every other scale; an empty cohort ranks
+ * every row NaN, including rows with a finite raw value, because there is
+ * nothing to rank against — which is not the same as a missing measurement.
  */
-function toPercentile(values, cohort) {
+function mapValues(values, apply) {
   const out = new Float64Array(values.length);
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index];
-    out[index] = Number.isFinite(value) ? percentileRank(cohort, value) * 100 : NaN;
-  }
+  for (let index = 0; index < values.length; index += 1) out[index] = apply(values[index]);
   return out;
 }
 
@@ -173,9 +143,8 @@ function buildAxis(registry, key, rowCount, requestedScale, mask) {
   // it falls back to linear rather than drawing every gene as unavailable.
   const effectiveScale = scale === 'log10' && !log10.available ? DEFAULT_AXIS_SCALE : scale;
   const cohort = effectiveScale === 'percentile' ? percentileCohort(raw, mask) : null;
-  const values = effectiveScale === 'log10' ? toLog10(raw)
-    : effectiveScale === 'percentile' ? toPercentile(raw, cohort)
-      : raw;
+  const values = effectiveScale === DEFAULT_AXIS_SCALE ? raw
+    : mapValues(raw, valueScaleTransform(effectiveScale, raw, cohort ? { cohort } : {}).apply);
   return {
     key,
     metric,

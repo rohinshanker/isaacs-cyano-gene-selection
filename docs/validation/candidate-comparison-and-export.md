@@ -72,6 +72,16 @@ represent values legibly. When no scale is declared, the family is inferred from
 the sign of the data and the legend states that it was inferred. Keep every ramp
 colour-blind safe, and never encode meaning in colour alone.
 
+The **value scale** the ramp is drawn under is the reader's choice, contracted in
+[current-design-answers.md](current-design-answers.md#the-colour-scale). It
+changes which colour a value takes and nothing else: **the CSV rows and every
+manifest field carry the stored value, never a transformed one**, and a gene with
+no value stays absent under every scale. The manifest records the scale in effect
+as `viewState.colorScale`, beside the `colorBy` it scales, so an exported view can
+be reproduced; a categorical colour records `null`, because no scale is in effect.
+A ramp family declared `diverging` stays centred on zero under every scale the
+metric is offered.
+
 ## 4. Expression basis is per gene, and a proxy is never a measurement
 
 `expressionBasis` is `measured`, `proxy`, or `null`. The site adds a fourth state,

@@ -35,11 +35,16 @@ import {
   isDiagonalAxisPair, axesUnavailableMessage,
   metricLog10Availability, log10DisabledReason, AXIS_SCALES, DEFAULT_AXIS_SCALE,
 } from './core/metric-axes.js';
+import {
+  VALUE_SCALES, VALUE_SCALE_LABELS, DEFAULT_VALUE_SCALE, defaultValueScale,
+  valueScaleAvailability, valueScaleClause, valueScaleTransform,
+} from './core/value-scales.js';
 import { projectionHelp } from './core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
 import { renderLegend, renderCategoryLegend } from './ui/legend.js';
-import { buildColorScale, buildCategoryColorScale } from './ui/colors.js';
+import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/colors.js';
+import { syncScaleSelect } from './ui/scale-select.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
 import { FilterPanel, clearedFilterState } from './ui/filters.js';
@@ -514,28 +519,112 @@ function scheduleTiming() {
  * and the chromosome view read this one model, so a gene is the same colour in
  * both and neither can drift into its own colour rules.
  */
-function colorModel() {
+/** Why a function-category colour has no value scale to choose. */
+const CATEGORICAL_SCALE_REASON = 'Function category has no numeric scale: its colours are a set '
+  + 'of named categories, not a ramp over values.';
+
+/**
+ * The colour scale in effect, and the availability of every scale the current
+ * Colour by could take.
+ *
+ * One resolution, read by the ramp, both toolbars, the legend, the accessible
+ * descriptions and the export manifest, so none of them can describe a scale
+ * another one is not drawing. `state.colorScale` is written back here: a null
+ * value — a fresh view, a hash that names a colour but no scale, or a Colour by
+ * the reader just changed — resolves to the metric's own default, and a scale
+ * the metric cannot take (a hand-edited link) resolves the same way rather than
+ * drawing a ramp the data does not support.
+ *
+ * @returns {{categorical: boolean, metric: object|null, values: Float64Array|number[],
+ *   scale: string|null, availability: Map<string, object>|null}}
+ */
+function resolveColorScale() {
   const categories = context.categories ?? resolveCategoryModel();
-  const categorical = state.colorBy === FUNCTION_COLOR_KEY && Boolean(categories);
-  const metric = categorical ? { label: 'Function category' }
-    : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
-  if (!categorical) state.colorBy = metric.key;
-  const values = categorical ? categories.values
-    : metricValues(metric, context.dataset.genes.length);
+  if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
+    // No scale is in effect, so the link and the export manifest say so rather
+    // than carrying a scale that nothing is drawing.
+    state.colorScale = null;
+    return {
+      categorical: true, metric: null, values: categories.values, scale: null, availability: null,
+    };
+  }
+  const metric = context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
+  state.colorBy = metric.key;
+  const values = metricValues(metric, context.dataset.genes.length);
+  const options = {
+    label: metric.label,
+    centred: isDivergingRamp(values, metric.scale),
+  };
+  const availability = valueScaleAvailability(values, options);
+  const requested = state.colorScale;
+  const scale = VALUE_SCALES.includes(requested) && availability.get(requested).available
+    ? requested : defaultValueScale(values, options);
+  state.colorScale = scale;
+  return { categorical: false, metric, values, scale, availability };
+}
+
+/** Every scale a selector lists, with the blocked ones disabled and explained. */
+function colorScaleOptions(availability) {
+  return VALUE_SCALES.map((scale) => {
+    const entry = availability?.get(scale) ?? { available: true, reason: null };
+    return {
+      value: scale,
+      label: VALUE_SCALE_LABELS[scale],
+      disabled: !entry.available,
+      reason: entry.reason,
+    };
+  });
+}
+
+/**
+ * The colour channel every view shares: the resolved category model or the
+ * selected metric, its values, the scale the reader chose, and the ramp built
+ * over them. The scatter map and the chromosome view read this one model, so a
+ * gene is the same colour in both and neither can drift into its own colour
+ * rules.
+ */
+function colorModel() {
+  const resolved = resolveColorScale();
+  const categories = context.categories ?? resolveCategoryModel();
+  const metric = resolved.categorical ? { label: 'Function category' } : resolved.metric;
+  const { values } = resolved;
   // The ramp family is whatever the metric declares; undeclared is inferred and
-  // the legend says so. `direction` is never read.
-  const scale = categorical
+  // the legend says so. `direction` is never read. The scale only changes which
+  // ramp position a value takes; the value itself is untouched.
+  const scale = resolved.categorical
     ? buildCategoryColorScale(categories.labels.length)
-    : buildColorScale(values, { scale: metric.scale });
+    : buildColorScale(values, {
+      scale: metric.scale,
+      transform: valueScaleTransform(resolved.scale, values),
+    });
   return {
     categories,
-    categorical,
+    categorical: resolved.categorical,
     metric,
     values,
     scale,
-    derived: categorical ? categories.derived : null,
+    valueScale: resolved.scale,
+    scaleOptions: colorScaleOptions(resolved.availability),
+    derived: resolved.categorical ? categories.derived : null,
     label: metric.label,
   };
+}
+
+/**
+ * Point the map toolbar's Scale selector at the scale in effect and the options
+ * the current metric can take. The chromosome view's own copy is pointed at the
+ * same values through its model, so the two toolbars cannot disagree.
+ */
+function syncColorScaleControl(colors) {
+  const select = element('color-scale');
+  syncScaleSelect(select, colors.scaleOptions, colors.valueScale ?? DEFAULT_VALUE_SCALE);
+  select.disabled = colors.categorical;
+  select.title = colors.categorical ? CATEGORICAL_SCALE_REASON : '';
+}
+
+/** The clause an accessible description adds for the scale in effect, if any. */
+function colorScaleClause(colors) {
+  return colors.categorical ? null : valueScaleClause(colors.valueScale);
 }
 
 /**
@@ -690,6 +779,7 @@ function renderMap() {
 
   const colors = colorModel();
   const { categories, categorical, metric, values, scale } = colors;
+  syncColorScaleControl(colors);
   renderColorHelp(element('colour-help'));
   renderProjectionHelp(element('features-used'),
     projectionHelp(state.panel, context.dataset, context.registry,
@@ -723,11 +813,15 @@ function renderMap() {
   if (projection.available) renderLoadings(element('loadings'), projection);
 
   const canvas = element('map-canvas');
+  // The scale belongs in this sentence: which colour a value takes depends on
+  // it, so a reader who cannot see the ramp has no other way to learn it.
+  const scaleClause = colorScaleClause(colors);
   canvas.setAttribute(
     'aria-label',
     projection.available
       ? `${panel.name}: ${formatCount(context.passing)} of `
-        + `${formatCount(context.dataset.genes.length)} genes shown, coloured by ${metric.label}.`
+        + `${formatCount(context.dataset.genes.length)} genes shown, coloured by `
+        + `${metric.label}${scaleClause ? ` ${scaleClause}` : ''}.`
       : `${panel.name}: ${projection.message}`,
   );
 
@@ -782,6 +876,9 @@ function renderChromosomeView() {
     colorLabel: colors.label,
     colorOptions: colorSelectOptions(),
     colorKey: state.colorBy,
+    colorScaleOptions: colors.scaleOptions,
+    colorScale: colors.valueScale ?? DEFAULT_VALUE_SCALE,
+    colorScaleClause: colorScaleClause(colors),
     pinned: pinnedIndex(),
     hovered: context.hoveredIndex,
     active: context.activeIndex,
@@ -814,6 +911,7 @@ function renderChromosomeView() {
  */
 function syncSharedControls() {
   element('color-by').value = state.colorBy;
+  syncColorScaleControl(colorModel());
   element('show-hidden').checked = state.showHidden;
 }
 
@@ -1138,9 +1236,38 @@ function buildColorSelect() {
   select.value = state.colorBy;
   select.addEventListener('change', () => {
     state.colorBy = select.value;
+    // A new metric has its own default scale, and the previous metric's choice
+    // says nothing about this one. Only a hash naming `csc` overrides that, and
+    // it does so by writing `state.colorScale` after this handler has run.
+    state.colorScale = null;
     renderMap();
     persist();
+    announceColorScale();
   });
+}
+
+/**
+ * The map toolbar's Scale selector. It writes the one shared value both views
+ * and the legend read; {@link syncColorScaleControl} keeps its options and its
+ * disabled state pointed at whatever Colour by now holds.
+ */
+function buildColorScaleSelect() {
+  const select = element('color-scale');
+  select.addEventListener('change', () => {
+    state.colorScale = select.value;
+    renderMap();
+    persist();
+    announceColorScale();
+  });
+  syncColorScaleControl(colorModel());
+}
+
+/** Say which metric and scale the colours now read, for a screen reader. */
+function announceColorScale() {
+  const colors = colorModel();
+  announce(colors.categorical
+    ? `Colouring by ${colors.label}. ${CATEGORICAL_SCALE_REASON}`
+    : `Colouring by ${colors.label} ${valueScaleClause(colors.valueScale)}.`);
 }
 
 function buildAxisSelects() {
@@ -1170,12 +1297,10 @@ function buildAxisSelects() {
   }
 }
 
-const AXIS_SCALE_OPTION_LABELS = Object.freeze({
-  linear: 'Linear', log10: 'Log10', percentile: 'Percentile',
-});
-
 /** Build the per-axis scale selectors once; their availability is kept in
- * sync with the current metric by {@link syncAxisScaleAvailability}. */
+ * sync with the current metric by {@link syncAxisScaleAvailability}. The option
+ * names come from the shared scale set, so the axis and colour controls call the
+ * same scale by the same name. */
 function buildAxisScaleSelects() {
   for (const axis of ['x', 'y']) {
     const scaleKey = axis === 'x' ? 'axisXScale' : 'axisYScale';
@@ -1184,7 +1309,7 @@ function buildAxisScaleSelects() {
     for (const scale of AXIS_SCALES) {
       const option = document.createElement('option');
       option.value = scale;
-      option.textContent = AXIS_SCALE_OPTION_LABELS[scale];
+      option.textContent = VALUE_SCALE_LABELS[scale];
       select.append(option);
     }
     select.value = state[scaleKey];
@@ -1438,6 +1563,11 @@ function normalizeAndApply(decoded) {
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
     state.colorBy = freshViewColorKey(context.registry, context.dataset.functionCategories);
   }
+  // Colour by is settled, so the scale can be: a hash naming `csc` keeps it, and
+  // anything else — a fresh view, an older link, a scale this metric cannot take
+  // — becomes the metric's own default. Resolved here rather than at first paint
+  // so a link written before any view renders already records the real scale.
+  resolveColorScale();
   const axes = resolveDefaultMetricAxes(context.registry);
   if (!context.registry.byKey.has(state.axisX)) state.axisX = axes.x;
   if (!context.registry.byKey.has(state.axisY)) state.axisY = axes.y;
@@ -1710,9 +1840,18 @@ async function boot() {
     onShortlistToggle: (index) => toggleShortlist(index),
     onColorChange: (key) => {
       state.colorBy = key;
+      // As on the map: the new metric opens on its own default scale.
+      state.colorScale = null;
       syncSharedControls();
       renderCurrentView();
       persist();
+    },
+    onColorScaleChange: (scale) => {
+      state.colorScale = scale;
+      syncSharedControls();
+      renderCurrentView();
+      persist();
+      announceColorScale();
     },
     onShowHiddenChange: (value) => {
       state.showHidden = value;
@@ -1796,6 +1935,7 @@ async function boot() {
   buildPanelTabs();
   updatePanelTabs();
   buildColorSelect();
+  buildColorScaleSelect();
   buildAxisSelects();
   buildAxisScaleSelects();
   buildGeneSearch();
