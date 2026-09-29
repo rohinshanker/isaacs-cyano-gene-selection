@@ -121,7 +121,7 @@ not decided in this ticket. Each is built only once approved here by name.
 
 - **This ticket does not change the colour scale.** It works through paint order
   only. The scale itself is
-  [O_colour-scale-and-map-toolbar__20260929](O_colour-scale-and-map-toolbar__20260929.md),
+  [A_colour-scale-and-map-toolbar__20260929](A_colour-scale-and-map-toolbar__20260929.md),
   opened the same day by owner decision, which adds a selectable scale and
   defaults the most skewed metrics to logarithmic. That ticket goes first: a
   logarithmic default changes which genes read as standouts, so this ticket's

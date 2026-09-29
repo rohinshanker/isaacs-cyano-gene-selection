@@ -1,4 +1,4 @@
-# O_colour-scale-and-map-toolbar__20260929 — Open
+# A_colour-scale-and-map-toolbar__20260929 — Active
 
 - **Scope:** Give the colour ramp a selectable scale, default heavily skewed
   metrics to a logarithmic one, and rearrange the map toolbar so colour, its
@@ -9,13 +9,32 @@
   for the shared scale logic, `site/js/core/url-state.js`, the export manifest,
   their tests, and the validation documents that state the ramp rule. No change
   to any stored value or to `site/data/*.json`.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-09-29
 - **Updated:** 2026-09-29
 
 ## Current state
 
-Nothing has been built. The owner asked for this ticket on 2026-09-29.
+Active since 2026-09-29. The owner answered the three questions below the same
+day, and the implementation is dispatched; see "Owner decisions" and
+"Verification".
+
+## Owner decisions, 2026-09-29
+
+1. **Scales offered:** Linear, Logarithmic, Percentile, Square root, and
+   Symmetric log. Clipped linear is not offered.
+2. **A shared link without a scale key opens on the metric's default scale.** An
+   existing link to TSS initiation therefore renders logarithmically from now on
+   and agrees with a fresh view.
+3. **The fresh-view metric fallback stays GC3.** No measurement is promoted into
+   a default position by this ticket.
+4. **Push to `main` after the cross-provider review accepts** and the gates pass.
+
+Coordinator reading of requirement 1, "any other data with a similar bias", now
+that Symmetric log is available: a metric that meets the 90% skew test but
+carries zeros or negatives defaults to **Symmetric log** instead of staying
+linear. On the current release that adds the two neighbour distances to TSS
+initiation and expression. Rare codon count, at 76%, stays linear by default.
 
 **The ramp is linear for every metric, by a documented rule this ticket
 reverses.** [current-design-answers.md](../../validation/current-design-answers.md)
@@ -126,7 +145,7 @@ To be put to the owner when the ticket becomes active. Choose up to three.
 Recommendation to bring to that conversation: Percentile and Square root, and
 Symmetric log only if the neighbour distances are wanted in colour.
 
-## Questions for the owner, asked when the ticket becomes active
+## Questions for the owner, answered 2026-09-29 under "Owner decisions"
 
 1. Which of the four candidate scales to include, up to three.
 2. Whether a shared link that names a colour but no scale should open on the
