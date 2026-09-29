@@ -12,7 +12,7 @@ import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues,
   expressionBasisOf, expressionBasisCounts, isExpressionMetric, isExpressionProxyMetric,
-  orderMeasuredFirst, defaultColorMetricKey,
+  orderMeasuredFirst, freshViewColorKey,
 } from './core/metric-registry.js';
 import {
   encodeState, decodeState, defaultState, applyDecoded, clearSelections, viewStateOf,
@@ -1436,7 +1436,7 @@ function normalizeAndApply(decoded) {
   }
   if (!state.colorBy || !(context.registry.byKey.has(state.colorBy)
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
-    state.colorBy = defaultColorMetricKey(context.registry);
+    state.colorBy = freshViewColorKey(context.registry, context.dataset.functionCategories);
   }
   const axes = resolveDefaultMetricAxes(context.registry);
   if (!context.registry.byKey.has(state.axisX)) state.axisX = axes.x;

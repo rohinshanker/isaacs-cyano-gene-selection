@@ -8,6 +8,7 @@
  */
 import { LIVE_METRICS, isCountMetric } from './live-metrics.js';
 import { tssInitiationBasis } from './tss-evidence.js';
+import { FUNCTION_COLOR_KEY } from './function-categories.js';
 
 /** Fallback grouping when `meta.metrics` does not declare a family. */
 const FAMILY_BY_KEY = new Map(Object.entries({
@@ -126,7 +127,8 @@ export function metricsInDisplayOrder(registry) {
 const BOUNDED_RAMP_UNITS = /^(fraction|rank|percentile|index)$/i;
 
 /**
- * The fresh-view colour metric.
+ * The fresh-view colour metric, used when a dataset ships no function
+ * categories; see {@link freshViewColorKey}.
  *
  * Measured evidence leads the colour selector and opens the Metric X vs Y tab,
  * but it does not colour the first paint. This release's only native
@@ -156,6 +158,22 @@ export function defaultColorMetricKey(registry) {
   );
   if (bounded) return bounded.key;
   return registry.byKey.has('gc3') ? 'gc3' : registry.metrics[0].key;
+}
+
+/**
+ * The colour a fresh view opens with. Owner decision, 2026-09-28: the reviewed
+ * function category leads whenever the dataset ships one, because a categorical
+ * colour answers "what is this gene" before any metric answers "how much". A
+ * dataset without categories falls back to {@link defaultColorMetricKey}. An
+ * encoded colour in a shared link still wins over this default.
+ *
+ * @param {{byKey: Map<string, object>, metrics: object[]}} registry
+ * @param {object|null|undefined} functionCategories the joined category model, or null.
+ * @returns {string} `FUNCTION_COLOR_KEY`, or a key that exists in `registry`.
+ */
+export function freshViewColorKey(registry, functionCategories) {
+  if (functionCategories) return FUNCTION_COLOR_KEY;
+  return defaultColorMetricKey(registry);
 }
 
 /**

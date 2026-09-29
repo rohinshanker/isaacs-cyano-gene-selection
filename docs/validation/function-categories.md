@@ -78,7 +78,8 @@ reviewed rows are unchanged either way. Those counts and the resolution rule
 are in [source-derived-categories.md](source-derived-categories.md).
 
 The viewer offers **Function category** under **Colour by** on every CDS map.
-It is the first selector choice, while GC3 remains the fresh-view default.
+It is the first selector choice and, by owner decision on 2026-09-28, the fresh-view
+default whenever the category table ships; GC3 is the fallback without one.
 Unreviewed and explicitly reviewed unknown loci share the pale open-circle
 bucket; the detail panel and export distinguish their review status. Reviewed
 coloured circles draw above unknown rings. Derived colour draws as a white

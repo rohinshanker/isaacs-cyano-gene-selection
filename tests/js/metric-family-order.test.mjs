@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
   orderMetricFamilies, buildMetricRegistry, orderMeasuredFirst, defaultColorMetricKey,
+  freshViewColorKey,
   measurementLimitClauses, isNativeMeasuredMetric, metricsInDisplayOrder,
 } from '../../site/js/core/metric-registry.js';
 import { loadDataset } from '../../site/js/core/dataset.js';
@@ -105,7 +106,16 @@ test('a measurement states its condition and coverage limits; a convention has n
   assert.deepEqual(measurementLimitClauses(null), []);
 });
 
-test('the fresh-view colour is GC3, never a convention, and never an unbounded count', () => {
+test('a fresh view colours by function category whenever the dataset ships one', () => {
+  const gc3 = { key: 'gc3', label: 'GC3', unit: 'fraction', family: 'Base composition' };
+  const registry = { metrics: [gc3], byKey: new Map([['gc3', gc3]]) };
+  assert.equal(freshViewColorKey(registry, { categoryIds: [] }), 'functionCategory');
+  // Without categories the metric fallback applies, never a convention.
+  assert.equal(freshViewColorKey(registry, null), 'gc3');
+  assert.equal(freshViewColorKey(registry, undefined), 'gc3');
+});
+
+test('the fresh-view metric fallback is GC3, never a convention, and never an unbounded count', () => {
   const counts = measurement('tssInitiation', true);
   const gc3 = { key: 'gc3', label: 'GC3', unit: 'fraction', family: 'Base composition' };
   const registry = (metrics) => ({
@@ -134,6 +144,7 @@ test('the production registry leads with measured UTEX evidence, before Translat
   ).map((metric) => metric.key);
   assert.deepEqual(expression, ['tssInitiation', 'expression']);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
+  assert.equal(freshViewColorKey(registry, dataset.functionCategories), 'functionCategory');
 });
 
 test('the whole-registry display order leads with measurements and keeps every metric', async () => {
