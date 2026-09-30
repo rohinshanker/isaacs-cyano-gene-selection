@@ -24,9 +24,23 @@ at `34bb240`, which already carries the selectable colour scale.
   harness that repeats the same measurements on the patch. The findings below
   replace the code reading this ticket was opened with, which had the cause of
   the white gaps and the state of the scatter maps wrong.
-- **Implementation** is dispatched to one implementer as DEM-171; review by the
-  other provider and an independent rendered inspection follow on the exact
-  commit.
+- **Implemented** by DEM-171 (`claude-implementer`) as `b6e21e9` on
+  `agent/claude-implementer/dem-171`: one priority rule in
+  `site/js/core/paint-priority.js`, D1 and D2 on the chromosome view, no-value
+  markers under valued points on the scatter maps, and the draw-direction
+  control at the foot of the colour explanation disclosure, URL key `dt`. The
+  sub-pixel tick was not built: no column reads white once D1 lands.
+- **Reviewed** on that exact commit by DEM-172 (`codex-reviewer`), returned for
+  fixes, and **inspected** by DEM-173 (`claude-ui-inspector`). Acceptance
+  criteria 1 to 6 and 8 are met by pixel readback at all four widths; criterion
+  7 is partly met. Findings: a 1 px bar's 2 px hit target lets a neighbour take
+  the click on 166 of 787 shared columns at 1440 px; the locus tie-break is the
+  reverse of what is disclosed; D2's majority is scored in a CDS's first column
+  only; the D1 count misses partly solid CDSs; the crowding figure counts
+  off-screen columns; scatter picking ignores the painted order; the scatter map
+  does not call the shared rule; two count sentences misread at zero and one.
+- **Repair** is dispatched as DEM-174 on branch `fix/dem-171-review` from
+  `b6e21e9`. The same reviewer confirms the fix commit before integration.
 
 ## Measured baseline, `main` at `34bb240`
 
@@ -227,21 +241,23 @@ not decided in this ticket. Each is built only once approved here by name.
 
 ## Verification
 
-Not started. This is visible UI work: render the real site over HTTP and inspect
-both views at whole-genome zoom and at two intermediate zooms, in function
-category, TSS initiation, and expression colour, at mobile, tablet, and desktop
-widths. Use canvas pixel readback for the column checks, as the chromosome tab's
-review did. Capture before and after at the same zoom and colour so the
-difference is visible. Then the three gates:
+On `b6e21e9`, before the repair round:
 
-```sh
-npm test
-.venv/bin/python -m pytest -q
-.venv/bin/python tools/validate_contract.py
-```
+- Gates, run by the coordinator on the exact commit: `npm test` 716 pass;
+  `pytest` 332 passed, 1 skipped; `validate_contract.py` passed=96 failed=0.
+- Pixel readback, DEM-173, at 375, 768, 1280 and 1440 px: columns with a
+  categorised gene reading white 932 to 1,644 before, 0 after; the ten highest
+  TSS initiation genes owning their colour 1 to 5 before, 9 to 10 after, every
+  shortfall sharing a column with a higher one; scatter centres reading the
+  missing-value grey 83 to 366 per tab before, 0 after; frame time median 0.5 ms
+  on both trees.
+- The control adds no box with its surface closed. The legend gains one line in
+  Expression and Function category colour from the ordering clause.
 
-Review by the other provider's reviewer on the exact commit, with an independent
-rendered inspection.
+Still owed: the repair commit, its confirmation by the same reviewer, the three
+gates on the final commit, and a rendered check of the repaired hit testing.
+The harness that takes these measurements was written for this ticket and
+lives outside the repository; distil what is reusable at cleanup.
 
 ## Claude Science claims
 

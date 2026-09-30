@@ -1,0 +1,106 @@
+# O_recoding-regulatory-site-change__20260930 — Open
+
+- **Scope:** Plan a future coloring metric showing whether the selected recoding
+  scheme changes regulatory sites on DNA sequences. Establish the relevant site
+  types and evidence requirements before choosing or implementing the metric.
+- **Status:** open
+- **Opened:** 2026-09-30
+- **Updated:** 2026-09-30
+
+## Current State
+
+The owner intends to add this metric once enough data has been collected. This
+ticket records the idea and questions for a later discussion; it does not
+authorize implementation or a research dispatch now. The metric's definition,
+site inventory, coverage threshold, and display unit remain undecided.
+
+The desired outcome is a coloring option that responds to the selected recoding
+scheme and indicates changes to regulatory-site DNA. Sequence change and a
+functional regulatory effect must be defined separately; neither is established
+by this ticket.
+
+## Dependencies
+
+| Id | Prerequisite | Dependent step | Completion condition |
+| --- | --- | --- | --- |
+| D1 | Better information on the relevant regulatory-site types | Decide which features the metric covers | Owner approves the site taxonomy and evidence standards after a sourced review |
+| D2 | Sufficient admitted data for the approved types | Compute and expose the metric | Owner defines “enough data”; sources pass the existing admission, coordinate, provenance, and licence contracts |
+| D3 | Exact changes produced by each supported recoding scheme | Compare original and recoded site sequences | A tested sequence/coordinate contract identifies edited bases and their overlap with admitted sites |
+| D4 | Metric and coloring decisions below | Implement aggregation and UI | Owner resolves the blocking design questions and approves a concrete definition |
+
+Related work:
+[cross-strain data scan](O_cross-strain-data-scan__20260927.md) may supply relevant
+inputs. Its TSS, TTS, and annotation work is an input dependency where applicable,
+not a substitute for D1 or permission to admit additional data types. Its whole
+ticket need not finish before this metric can proceed. Research routing follows
+[Claude Science handoff](../../validation/claude-science-handoff.md).
+
+## Clarifying questions for later
+
+1. Which regulatory-site types should be considered first? Candidate categories
+   to investigate include promoters, transcription-factor binding sites,
+   terminators, ribosome-binding sites, and regulatory RNA elements; these are
+   scope suggestions, not an approved taxonomy or evidence of available data.
+2. Does “changed” mean any edited base within an annotated site, a changed motif
+   or predicted score, or evidence of altered regulatory function? Should these
+   appear as separate metrics?
+3. What qualifies as “enough data”: specified site types, a minimum coverage of
+   genes or regions, a confidence threshold, or a combination?
+4. Which strains and evidence sources are acceptable? Should measured native
+   sites, sister-strain evidence, and predictions be kept as separate layers?
+5. What receives the color: a gene, a regulatory site, a chromosome interval,
+   or more than one of these? How should a site shared by several genes be handled?
+6. Should the value be binary, a changed-site count, a fraction of covered sites,
+   or a graded score? If several site types contribute, how are they combined?
+7. How should absent annotations, incomplete coverage, and uncertain mappings
+   appear so that “no detected change” cannot be mistaken for “no data”?
+8. Should both disruption of existing sites and creation of new candidate sites
+   be considered? What evidence would permit either interpretation?
+9. Must the option compare multiple recoding schemes, or only show the active
+   scheme against the original sequence? Which recoding controls does it follow?
+
+## Claude Science claims
+
+No scientific claim is asserted or verified here. D1 requires a bounded research
+package once the owner chooses the initial scope. That package is not yet
+dispatchable and is not queued in Pending Claude Science.
+
+Its proposed return format is one row per site type: definition, biological
+context, assay or annotation basis, strain and genome build, coordinate and strand
+convention, candidate datasets, coverage and uncertainty, resolvable sources, and
+limits on interpreting a sequence edit as a functional effect. Record unsupported
+or unavailable evidence explicitly. Returned evidence does not itself admit data
+or settle owner decisions. Add ticket-local falsifiable claim rows and queue them
+when a concrete scientific assumption gates a step.
+
+## Acceptance criteria
+
+- D1–D4 have explicit outcomes before implementation is authorized.
+- The approved definition distinguishes sequence edits from any claimed
+  functional effect and states its denominator and evidence coverage.
+- The coloring option updates with the supported recoding controls, explains its
+  value and evidence, and distinguishes missing data from an unchanged site.
+- Future implementation tests cover edited and unchanged sites, strand and
+  boundary cases, shared sites, missing evidence, and every supported metric path.
+
+## Verification
+
+Ticket creation verified 2026-09-30: dependency links, required fields, unanswered
+questions, and the live index entry checked; `git diff --check` passed. Repository
+gates passed: `npm test` (659 tests), `.venv/bin/python -m pytest -q` (332 passed,
+1 skipped, 24 subtests passed), and `.venv/bin/python tools/validate_contract.py`
+(96 passed, 0 failed, 1 declared skip). No code, data, or visible UI change was
+made in this pass.
+
+Future implementation: run `npm test`, `.venv/bin/python -m pytest -q`, and
+`.venv/bin/python tools/validate_contract.py`; use the UI render/inspect/repair
+skill to inspect the actual coloring option at mobile, tablet, and desktop widths
+and across supported recoding and missing-data states.
+
+## Cleanup
+
+Keep this ticket open until its requested work is resolved or explicitly
+withdrawn. On completion, rename it and its H1 to resolved, record final
+validation, distill reusable metric/evidence and validation contracts into
+`docs/validation/`, update `validation/INDEX.md`, then delete the resolved ticket
+and remove its live index row. Do not retain a task history.
