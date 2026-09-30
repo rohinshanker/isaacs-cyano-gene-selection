@@ -19,47 +19,58 @@ Active since 2026-09-30. The owner answered the four display decisions and the
 scatter-scope assumption that day; see "Owner decisions". Work starts from `main`
 at `34bb240`, which already carries the selectable colour scale.
 
-- **Baseline measurement** of the unchanged site is dispatched as DEM-169
-  (`claude-ui-inspector`, read-only): genes per device column, the hollow-marker
-  hypothesis below, white columns, the ten highest-valued genes per replicon,
-  scatter overpainting, and scatter frame time, with a harness that repeats the
-  same measurements on the patch.
-- **Implementation** is dispatched to one implementer once this file is
-  committed; review by the other provider and an independent rendered inspection
-  follow on the exact commit.
+- **Baseline measured** on the unchanged site by DEM-169 (`claude-ui-inspector`,
+  read-only), by canvas pixel readback at 375, 768, 1280, and 1440 px. It left a
+  harness that repeats the same measurements on the patch. The findings below
+  replace the code reading this ticket was opened with, which had the cause of
+  the white gaps and the state of the scatter maps wrong.
+- **Implementation** is dispatched to one implementer as DEM-171; review by the
+  other provider and an independent rendered inspection follow on the exact
+  commit.
 
-What the views did when the ticket was written, read from `main` at `b500aad`.
-Paint order has not changed since:
+## Measured baseline, `main` at `34bb240`
 
-**Chromosome view, function category.** At whole-genome zoom a 1 kb gene is
-about a third of a pixel, so each CDS is snapped to a whole device column and
-several genes land on the same column. `paintTrack` already paints in three
-passes: filtered-out genes, then genes with no category as empty outlines, then
-genes with a category. So a categorised gene is not buried by an *overlapping*
-uncategorised one. Two things still make the track read as grey and gappy:
+**The white gaps are the derived categories, not the uncategorised genes.**
+`paintMark` strokes a filled bar only at 3 px or wider. A derived bar has a
+white fill, so below 3 px its category-coloured outline is never drawn and the
+column is pure white. At whole-genome zoom 0 of the 916 to 1,634 derived-only
+columns keep a category colour, at every width and at both device pixel ratios;
+the share recovers only to 2.9% at about 4x zoom and 14.2% at about 16x. Of the
+columns holding a categorised gene, 4 to 14 read as a category colour and the
+rest read white: 72% to 92% of all occupied columns. Reviewed-only columns all
+keep their colour. Uncategorised-only columns read the uncategorised grey
+`#c6cdd5`, never white.
 
-- An uncategorised gene in a column of its own still draws as an empty outline,
-  which is white inside. With 1,351 of 2,715 CDSs uncategorised under all three
-  sources, those columns read as white gaps even in regions dense with
-  annotated genes.
-- A source-derived category, which is most of the coloured loci, draws as an
-  outlined bar over a *pale* fill, under the hollow-marker rule in
-  [source-derived-categories.md](../../validation/source-derived-categories.md).
-  At one device column wide the outline and the pale fill collapse together and
-  the category colour is largely lost. This is a hypothesis from reading the
-  code; the first step of the work is to confirm it in a render.
-- Among categorised genes sharing a column, the one painted last wins, and that
-  is data order, not a chosen priority.
+**Columns are shared almost everywhere.** 69% to 96% of occupied columns hold
+more than one CDS, with a median of 2 to 5 and a maximum of 9 to 16. The winner
+is the mark with the highest start coordinate, since marks are sorted by first
+drawn base and then index; 268 plus-strand and 247 minus-strand columns at
+1440 px hold two or more different categories.
 
-**Chromosome view, metric colour.** Valued genes are painted in data order. For
-TSS initiation, whose median is 828 against a maximum near 324,000, and for
-expression, nearly every column shows a low value, and a standout gene is
-overpainted by whichever low-value neighbour happens to come later in the file.
+**Standout values are buried on the chromosome view.** At whole-genome zoom
+only 1 to 5 of the ten highest TSS initiation genes and 2 to 6 of the ten
+highest expression genes own their column's colour; it is 7 to 10 at about 4x
+and all ten at about 16x. The genome-wide TSS maximum, `M744_RS11625` at
+323,996, is overpainted by a neighbour 62 times lower.
 
-**Scatter maps.** Points are batched by quantized colour and drawn bucket by
-bucket. In category mode the unknown rings already sit behind the coloured
-points. In metric mode nothing orders the buckets by value, so in the dense core
-of a projection a high-value point can sit under low-value ones.
+**The scatter maps already put high values on top.** `bucketOf` is monotonic
+and buckets draw in ascending order: 0 of 163 top-percentile points are
+overpainted by a lower-valued point, and unknown rings never win at a coloured
+centre in category mode. The real scatter defect is that in metric colour the
+open markers for genes with no value draw after the coloured points, so a
+valueless ring can cross a top-valued point: on Baseline risk UMAP the
+second-highest TSS value reads back at its centre as the missing-value grey.
+Perturbation space is gated on an active recoding scheme and was not measured.
+
+**Scatter frame time:** median 0.5 ms, 95th percentile 0.6 ms over 241 frames at
+2,715 points, 1440 by 900 at device pixel ratio 2.
+
+**What this changes in the design below.** Owner decision D1 is what removes
+the white columns. The sub-pixel tick for uncategorised genes does not remove
+any, so it is built only if the rendered result shows grey still crowding out
+colour, and justified by a before and after. On the scatter maps the ordering
+work is the missing-value markers and the "lowest" direction of D3, not the
+bucket order.
 
 ## Owner decisions, 2026-09-30
 
@@ -129,12 +140,17 @@ it disappears as soon as genes separate.
 
 ### Chromosome view: uncategorised genes at sub-pixel width
 
+Conditional since the baseline; see "What this changes in the design below".
+
 A gene with no category keeps its empty outline wherever it is wide enough to
 read as an outline. Below that width it is drawn as a thin neutral tick on the
 axis rather than a white box, so it still marks that a gene is there without
 reading as a gap. The width threshold is one constant, tested.
 
 ### Scatter maps
+
+The baseline found the bucket order already ascending by value; the change is
+to the missing-value markers and the reversed direction.
 
 Order the colour buckets, and the points within a bucket, by the same priority
 before drawing. The batching by quantized colour that keeps panning fast is
