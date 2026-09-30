@@ -360,6 +360,73 @@ test('percentile labels no longer name a value the colour beside them is not', a
   assert.equal(initiation.scale.max, highest.value);
 });
 
+/**
+ * The end ticks are the metric's own extremes, because the extreme genes take the
+ * end colours. Under Percentile they were neither: `invert` interpolated between
+ * two ranks, so the lowest label was a value between the two smallest genes and
+ * the highest a value between the two largest — TSS initiation read 79.0 and
+ * 221,305 against a true 77.375 and 323,995.75, and rare codons read 149 against
+ * a true 169. An inverse that returns the cohort's own value at a rank cannot do
+ * that, and this sweeps every metric a ramp does not pad rather than the three
+ * that were measured.
+ */
+test('the end ticks are the column\'s own minimum and maximum under every scale', async () => {
+  const { dataset, registry } = await shipped();
+  let checked = 0;
+  for (const metric of metricsInDisplayOrder(registry)) {
+    const values = metricValues(metric, dataset.genes.length);
+    // A diverging ramp pads the shorter of its arms to keep zero at the centre,
+    // so its extreme values are labelled where they truly fall rather than at
+    // the ramp's ends; that case is pinned above, on the downstream distance.
+    if (isDivergingRamp(values, metric.scale)) continue;
+    let low = Infinity;
+    let high = -Infinity;
+    for (let index = 0; index < values.length; index += 1) {
+      const value = values[index];
+      if (!Number.isFinite(value)) continue;
+      if (value < low) low = value;
+      if (value > high) high = value;
+    }
+    if (!Number.isFinite(low) || low === high) continue;
+    const availability = valueScaleAvailability(values, { label: metric.label });
+    for (const name of VALUE_SCALES) {
+      if (!availability.get(name).available) continue;
+      const scale = buildColorScale(values, {
+        scale: metric.scale, transform: valueScaleTransform(name, values),
+      });
+      const ticks = rampTicks(scale, metric);
+      // A transform and its inverse are exact in the reals and not in binary
+      // floating point — 10 ** Math.log10(77.375) is 77.37499999999999 — so the
+      // claim here is that the end tick's value is the extreme to well within a
+      // last bit. That the label is that value's own formatting is the sweep
+      // above, which asserts `text === formatValue(metric, value)` for every
+      // tick; the two together are what a reader reads at the end of the ramp.
+      const same = (tick, extreme) => {
+        assert.ok(Math.abs(tick.value - extreme) <= 1e-9 * Math.max(1, Math.abs(extreme)),
+          `${metric.key} ${name}: ${tick.value} is not the extreme ${extreme}`);
+      };
+      same(ticks[0], low);
+      same(ticks.at(-1), high);
+      // And at the ramp's ends, to the same dust: `rampTicks` pins a label
+      // inside the ramp within 1e-6 of an end rather than assuming 0 or 1.
+      assert.ok(Math.abs(ticks[0].position) < 1e-6, String(ticks[0].position));
+      assert.ok(Math.abs(ticks.at(-1).position - 1) < 1e-6, String(ticks.at(-1).position));
+      checked += 1;
+    }
+  }
+  assert.ok(checked > 40, `only ${checked} metric-scale pairs checked`);
+
+  // The two readings the rendered inspection measured, as values.
+  const initiation = await rampOf('tssInitiation', 'percentile');
+  const ends = rampTicks(initiation.scale, initiation.metric);
+  assert.ok(Math.abs(ends[0].value - 77.375) < 1e-6, String(ends[0].value));
+  assert.ok(Math.abs(ends.at(-1).value - 323995.75) < 1e-6, String(ends.at(-1).value));
+  const rare = await rampOf('rareCount', 'percentile');
+  const rareEnds = rampTicks(rare.scale, rare.metric);
+  assert.deepEqual(rareEnds.map((tick) => tick.value).filter((_, index, all) => index === 0
+    || index === all.length - 1), [0, 169]);
+});
+
 test('the legend note names the scale, and states what each scale needs explaining', async () => {
   const symmetric = await rampOf('neighborDownstreamNt', 'symlog');
   const note = describeValueScale(symmetric.metric, symmetric.scale);

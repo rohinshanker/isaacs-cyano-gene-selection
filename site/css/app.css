@@ -482,16 +482,59 @@ input[type="range"] { width: 100%; }
 .axis-chooser > .field-row { flex: 1 1 11rem; }
 .axis-chooser > .panel-note { flex: 2 1 16rem; margin: 0; font-size: 0.8rem; }
 .map-toolbar .field-row { margin-bottom: 0; }
-/* Colour by and Scale share the first line; the colour explanation is the next
-   line, and Find a gene has the line after that to itself, per
-   docs/validation/controls-column-and-resets.md. A native select is as wide as
-   its longest option, and "Expected ENC − observed (codons)" is long enough to
-   claim the whole row on its own, so the colour wrapper takes the spare width
-   from a shrinkable basis while Scale keeps a compact one beside it. They still
-   wrap at a narrow viewport, which is intended. */
 .map-toolbar-row > .field-row { flex: 1 1 11rem; min-width: 0; }
-.map-toolbar .field-row-colour { flex: 3 1 12rem; }
-.map-toolbar .field-row-scale { flex: 1 1 9rem; }
+
+/* Colour by and Scale are one row of two columns at every width down to 360 px,
+   the single exception to the toolbar's stack-rather-than-compress rule
+   (docs/validation/responsive-workspace.md): the owner asked for the two on one
+   line. A grid rather than a wrapping flex row, so the pair cannot split, and
+   the two fields always take the same label placement as each other — never one
+   inline and the other stacked, which is what left them 13 px out of line.
+
+   Below 560 px both labels sit above their controls. Inline, the two labels and
+   their gaps eat 134 of a 274 px row, which leaves the selects nothing: a
+   content-sized Scale column reduced Colour by to 30 px of dropdown arrow with
+   no text in it at all. Stacked, each select gets its whole column and both read
+   at 360 px. From 560 px up there is room for the labels beside their controls,
+   so both go back inline, Scale's column is sized to its own longest option, and
+   Colour by takes every remaining pixel — it has the toolbar's longest option
+   text, and it is the field that truncates when a row is short, which costs
+   little because the full metric label heads the explanation directly beneath
+   and the legend names the scale in full.
+
+   Both toolbars use this one rule, so the selector names both hosts and beats
+   their generic row rule wherever it sits. */
+.map-toolbar .colour-scale-row,
+.chromosome-toolbar .colour-scale-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+.colour-scale-row > .field-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.15rem;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.colour-scale-row > .field-row > label { white-space: nowrap; }
+/* A column flex basis would be read as a height, so the stacked select sizes
+   itself from the column it is in. */
+.colour-scale-row > .field-row > select { flex: none; width: 100%; }
+@media (min-width: 560px) {
+  .map-toolbar .colour-scale-row,
+  .chromosome-toolbar .colour-scale-row { grid-template-columns: minmax(0, 1fr) minmax(0, auto); }
+  .colour-scale-row > .field-row {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .colour-scale-row > .field-row > select { flex: 1 1 9rem; width: auto; }
+}
+/* The reasons beneath that row: muted, tight against it, and gone when empty. */
+.scale-notice { margin: 0; }
 /* Alone on its row at every breakpoint, so it grows into the whole width. */
 .map-toolbar .field-row-grow { flex: 3 1 14rem; }
 .map-toolbar .field-row-grow > input[type="search"] { flex: 1 1 12rem; }
@@ -621,15 +664,13 @@ input[type="range"] { width: 100%; }
    controls rail and the gene detail rail, because selecting a CDS on the track
    is how a reader opens it in the gene visualizer beside it. */
 #chromosome-view { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
-.chromosome-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-/* Colour by and Scale lead this toolbar, as they lead the map's. A native select
-   is as wide as its longest option, so each field takes a shrinkable basis and
-   keeps its label beside its control instead of wrapping under it; the row still
-   wraps as a whole at a narrow viewport, which is intended. */
-.chromosome-toolbar .field-row { flex-wrap: nowrap; min-width: 0; margin-bottom: 0; }
-.chromosome-toolbar .field-row-colour { flex: 2 1 13rem; }
-.chromosome-toolbar .field-row-scale { flex: 0 1 10rem; }
-.chromosome-toolbar .field-row > select { flex: 1 1 6rem; min-width: 0; }
+/* This toolbar has the map toolbar's structure: a stack of rows, Colour by and
+   Scale on the first of them under the shared `.colour-scale-row` rule above,
+   the scale note and the colour explanation directly beneath that row, and the
+   view buttons on their own row last. One flat wrapping row left `Zoom in (+)`
+   beside Scale at 375 px with Colour by stranded above it. */
+.chromosome-toolbar { display: flex; flex-direction: column; gap: 0.5rem; }
+.chromosome-toolbar-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .chromosome-window {
   margin: 0;
   font-size: 0.8rem;

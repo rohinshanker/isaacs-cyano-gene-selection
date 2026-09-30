@@ -589,12 +589,13 @@ function colorModel() {
 }
 
 /**
- * Point the map toolbar's Scale selector at the one control state the colour
- * model resolved. The chromosome tab's own selector is handed the same object
- * through its model, so the two cannot disagree about an option or a reason.
+ * Point the map toolbar's Scale selector, and the note beneath its row, at the
+ * one control state the colour model resolved. The chromosome tab's own selector
+ * and note are handed the same object through its model, so the two cannot
+ * disagree about an option, a reason, or which reasons a reader can see.
  */
 function syncColorScaleControl(colors) {
-  syncScaleSelect(element('color-scale'), colors.scaleControl);
+  syncScaleSelect(element('color-scale'), colors.scaleControl, element('color-scale-notice'));
 }
 
 /** The clause an accessible description adds for the scale in effect, if any. */

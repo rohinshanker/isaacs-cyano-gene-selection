@@ -195,9 +195,17 @@ come from `app.js` on each render, under
   toolbar's handlers and a live hash change both go through it. Without that,
   choosing CAI here left the map's selector reading GC3 while the plot, the
   legend, and the hash all said CAI.
-- This view's toolbar reads **Colour by**, then **Scale**, then its own colour
-  explanation directly beneath the toolbar — the map toolbar's order, so the two
-  tabs are learned once. The Scale control's whole state is **one object**:
+- This view's toolbar has the **map toolbar's structure**, so the two tabs are
+  learned once: **Colour by** and **Scale** alone on the first row, then the note
+  naming any scale this metric cannot take, then its own colour explanation, then
+  **Zoom in**, **Zoom out**, **Reset view** and **Show filtered-out genes** on a
+  row of their own. One flat wrapping row is what once let `Zoom in (+)` wrap up
+  beside Scale at 375 px with Colour by stranded above it; the colour row and the
+  button row are now separate elements, and the colour row is the shared
+  `.colour-scale-row` the map toolbar uses, so the two fields are two columns of
+  one line at every width (see
+  [responsive-workspace.md](responsive-workspace.md)). The Scale control's whole
+  state is **one object**:
   `scaleControlState` in `site/js/ui/scale-select.js` decides the options, which of
   them are disabled and why, the scale in effect, and whether the control itself
   is disabled with its own reason; `app.js` builds it once per render and hands the
@@ -206,7 +214,12 @@ come from `app.js` on each render, under
   what once left this toolbar's selector **enabled under a Function category
   colour**, offering five scales that snapped silently back to Linear; a state
   that travels with the options cannot be applied to one toolbar and not the
-  other. The colour scale itself is contracted in
+  other. `syncScaleSelect` writes the selector **and** the visible note beneath
+  it (`#chromosome-color-scale-notice`, which the selector names in
+  `aria-describedby`) from that one object, because a `title` needs a pointer to
+  reach and a select disabled as a whole cannot even be focused: without the note
+  a keyboard or screen-reader reader on this tab has no way to learn why a scale
+  is missing. The colour scale itself is contracted in
   [current-design-answers.md](current-design-answers.md#the-colour-scale).
 - A selection that arrives from anywhere else is reconciled in `update`, not
   only when the view happens to be idle: the camera reveals it (`revealIndex`)
@@ -292,6 +305,12 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
 375×812, 768×1024, 1280×800, and 1440×900, and at 959/960 px and 1239/1240 px:
 
 - all three tracks present, each labelled, with the chromosome first;
+- at 375 px, Colour by and Scale as two columns of the toolbar's first row with
+  no view button beside them, both fields with the same label placement, and the
+  scale note and then the colour explanation beneath that row;
+- a metric a scale cannot take (`#p=chromosome&c=rareCount`) and one every scale
+  can (`#c=tssInitiation`), confirming the note carries the reasons and then
+  occupies nothing at all;
 - the track captions and the tick labels inside the canvas at the narrowest
   width, with no clipped text;
 - a gene selected, and the selection visible in the gene detail card;

@@ -353,24 +353,18 @@ const NEGATIVE_CAI_GENES = GENES.map(
   (row, index) => (index === 0 ? { ...row, cai: -0.1 } : row),
 );
 
-function mount({
-  genes = GENES, meta = META, mask = null, showHidden = true, handlers = {},
-  viewport = undefined, categoryFilterLabels = [], colorScale = 'log10', categorical = false,
+/**
+ * The whole model `app.js` hands `update`, so a test that re-points the view at
+ * another colour passes the same shape the application passes and not a partial
+ * one patched over the last render.
+ */
+function viewModel({
+  genes = GENES, meta = META, mask = null, showHidden = true,
+  categoryFilterLabels = [], colorScale = 'log10', categorical = false,
 } = {}) {
   const colorMode = { colorScale, categorical };
-  const fake = install(viewport);
-  const { restore, frames } = fake;
-  const host = new FakeElement('div');
-  const view = new ChromosomeView(host, handlers);
   const { tracks, problems, verified } = repliconTracks(genes, meta);
-  /** Run the queued frames and return only the draw calls they made. */
-  const flush = () => {
-    if (view.canvas?.ops) view.canvas.ops.length = 0;
-    const queued = frames.splice(0, frames.length);
-    for (const frame of queued) frame();
-    return view.canvas?.ops ?? [];
-  };
-  view.update({
+  return {
     tracks,
     problems,
     verified,
@@ -394,9 +388,25 @@ function mount({
     total: genes.length,
     categoryFilterLabels,
     hasSelection: false,
-  });
+  };
+}
+
+function mount({ handlers = {}, viewport = undefined, ...modelOptions } = {}) {
+  const fake = install(viewport);
+  const { restore, frames } = fake;
+  const host = new FakeElement('div');
+  const view = new ChromosomeView(host, handlers);
+  const model = viewModel(modelOptions);
+  /** Run the queued frames and return only the draw calls they made. */
+  const flush = () => {
+    if (view.canvas?.ops) view.canvas.ops.length = 0;
+    const queued = frames.splice(0, frames.length);
+    for (const frame of queued) frame();
+    return view.canvas?.ops ?? [];
+  };
+  view.update(model);
   const ops = flush();
-  return { host, view, tracks, restore, flush, ops, document: fake.document };
+  return { host, view, tracks: model.tracks, restore, flush, ops, document: fake.document };
 }
 
 test('the tab descriptor is frozen and carries the permanent chromosome id', () => {
@@ -982,16 +992,29 @@ test('the toolbar mirrors the shared colour, scale, and visibility state', () =>
 test('Scale sits beside Colour by, offers every scale, and disables the ones with a reason', () => {
   const { view, restore } = mount();
   try {
-    // Second field in the toolbar, immediately after Colour by, so the keyboard
-    // order is the visual order.
+    // The map toolbar's structure: Colour by and Scale alone on the first row,
+    // the scale note and the colour explanation beneath it, and the view buttons
+    // on their own row last. DOM order is keyboard order, so this is the visual
+    // order too. Flat, this toolbar wrapped a zoom button up beside Scale.
     const toolbar = view.figure.children[0];
     assert.equal(toolbar.className, 'chromosome-toolbar');
-    const [colourField, scaleField] = toolbar.children;
+    const [fieldsRow, notice, help, viewRow] = toolbar.children;
+    assert.equal(fieldsRow.className, 'chromosome-toolbar-row colour-scale-row');
+    const [colourField, scaleField] = fieldsRow.children;
+    assert.equal(fieldsRow.children.length, 2, 'nothing else shares the colour row');
     assert.equal(colourField.children[1], view.colorSelect);
     assert.equal(scaleField.children[0].textContent, 'Scale');
     assert.equal(scaleField.children[1], view.colorScaleSelect);
-    // The colour explanation is the next thing after the toolbar, as on the map.
-    assert.equal(view.figure.children[1].id, 'chromosome-colour-help');
+    assert.equal(notice, view.scaleNotice);
+    assert.equal(help.id, 'chromosome-colour-help');
+    assert.equal(viewRow.className, 'chromosome-toolbar-row');
+    assert.deepEqual(viewRow.children.slice(0, 3).map((child) => child.textContent),
+      ['Zoom in (+)', 'Zoom out (−)', 'Reset view']);
+    assert.equal(viewRow.children[3].children[0], view.showHidden);
+    assert.equal(viewRow.children.length, 4, 'and no field shares the button row');
+    // The figure itself no longer carries the explanation: it lives in the
+    // toolbar, directly beneath the row whose metric it explains.
+    assert.equal(view.figure.children[1], view.windowReadout);
 
     assert.equal(view.colorScaleSelect.value, 'log10');
     assert.equal(view.colorScaleSelect.disabled, false);
@@ -1023,6 +1046,39 @@ test('a scale the column cannot take is listed and disabled with the reason the 
     for (const option of view.colorScaleSelect.children.filter((each) => !each.disabled)) {
       assert.equal(option.title, '');
     }
+    // And both reasons are visible beneath the row, because a title needs a
+    // pointer and this select's disabled options cannot be reached without one.
+    assert.equal(view.scaleNotice.hidden, false);
+    assert.equal(view.scaleNotice.textContent,
+      'Logarithmic is unavailable for CAI: 1 value is zero or negative. '
+        + 'Square root is unavailable for CAI: 1 value is negative.');
+    assert.equal(view.colorScaleSelect.getAttribute('aria-describedby'), view.scaleNotice.id);
+  } finally {
+    restore();
+  }
+});
+
+/**
+ * The note follows the metric, through `update` — the entry point `app.js` calls
+ * on every render. A stale reason under a live selector is the same defect as a
+ * stale title on it.
+ */
+test('the visible scale note follows the colour, and is gone when every scale is available', () => {
+  const { view, restore } = mount({ genes: NEGATIVE_CAI_GENES, colorScale: 'linear' });
+  try {
+    assert.match(view.scaleNotice.textContent, /^Logarithmic is unavailable for CAI/);
+
+    // The same view re-pointed at a column with nothing wrong with it: the note
+    // empties and stops occupying space rather than keeping the old sentences.
+    view.update(viewModel({ colorScale: 'log10' }));
+    assert.equal(view.scaleNotice.textContent, '');
+    assert.equal(view.scaleNotice.hidden, true);
+
+    // And a function category, where no scale is in effect at all, shows the one
+    // reason the whole control is disabled.
+    view.update(viewModel({ categorical: true }));
+    assert.equal(view.scaleNotice.hidden, false);
+    assert.equal(view.scaleNotice.textContent, CATEGORICAL_SCALE_REASON);
   } finally {
     restore();
   }

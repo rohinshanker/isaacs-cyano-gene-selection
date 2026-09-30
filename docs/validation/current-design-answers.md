@@ -53,6 +53,21 @@ added to make a logarithm work**; a metric with a zero offers Square root or
 Symmetric log instead. Scale is disabled entirely when Colour by is Function
 category, which has no ramp over values to scale.
 
+**Every reason is visible text, not only a tooltip.** A disabled option's `title`
+needs a pointer to reach, and a select disabled as a whole cannot be focused at
+all, so a reason carried only there does not exist for a keyboard or screen-reader
+reader. The reasons therefore also appear in a short note directly beneath the
+Colour by and Scale row — one per unavailable scale, or the single Function
+category reason — which the Scale select names in `aria-describedby`. The
+sentences are the ones `scaleControlState` already produces, verbatim, so the note
+and the titles cannot describe the metric differently. The note is empty and
+hidden, occupying nothing, when every scale the metric can take is available.
+`syncScaleSelect` writes the selector and the note in one call, from one control
+state, for the same reason that state travels with the options: a caller cannot
+update one and leave the other stale. Both toolbars have their own note
+(`#color-scale-notice`, `#chromosome-color-scale-notice`) and receive the same
+state.
+
 **The default is a rule, not a list.** A metric opens **Logarithmic** when every
 finite value is strictly positive and at least `SKEWED_DEFAULT_SHARE` (0.9) of its
 valued genes fall in the lowest tenth of its linear range. A metric that meets
@@ -105,7 +120,12 @@ middle of the ramp — that is the truth about a rank scale, not a bug. Where a
 the padded end stands for no measurement, so the extreme value is labelled where
 it truly falls rather than at the edge of the ramp. A crowded label is never
 nudged along the ramp; it drops to a second row at its own position, and a
-duplicate value is one tick. The invariant is swept over every shipped metric and
+duplicate value is one tick. **The end ticks are the column's own minimum and
+maximum**, on every scale and every metric a ramp does not pad, because those two
+genes are the ones that take the end colours: a rank scale's inverse returns the
+cohort's own value at a rank rather than interpolating between two of them, which
+is what once labelled TSS initiation's percentile ramp 79.0 to 221,305 in place
+of 77.375 to 323,995.75. The invariant is swept over every shipped metric and
 every available scale in
 [tests/js/color-scale.test.mjs](../../tests/js/color-scale.test.mjs).
 

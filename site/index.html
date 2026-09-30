@@ -227,8 +227,9 @@ if (window.location.protocol === 'file:') {
       </details>
       <div id="map-view" role="tabpanel">
         <!-- Axis controls appear above the shared colour and view rows. DOM order
-             follows keyboard order: Colour by, Scale, the colour explanation,
-             Find a gene alone on its row, then the view buttons. -->
+             follows keyboard order: Colour by, Scale, the note naming any scale
+             this metric cannot take, the colour explanation, Find a gene alone on
+             its row, then the view buttons. -->
         <div class="map-toolbar">
           <div class="map-toolbar-row axis-chooser" id="axis-chooser" hidden>
             <span class="field-row">
@@ -249,16 +250,22 @@ if (window.location.protocol === 'file:') {
             </span>
             <span id="axis-note" class="panel-note" role="status"></span>
           </div>
-          <div class="map-toolbar-row">
-            <span class="field-row field-row-colour">
+          <div class="map-toolbar-row colour-scale-row">
+            <span class="field-row">
               <label for="color-by">Colour by</label>
               <select id="color-by"></select>
             </span>
-            <span class="field-row field-row-scale">
+            <span class="field-row">
               <label for="color-scale">Scale</label>
-              <select id="color-scale" aria-describedby="color-scale-hint"></select>
+              <select id="color-scale"
+                      aria-describedby="color-scale-notice color-scale-hint"></select>
             </span>
           </div>
+          <!-- Every reason a scale is unavailable, in visible text: the option and
+               control titles are unreachable by keyboard or screen reader, because a
+               disabled select takes no focus. Hidden, so it takes no space, exactly
+               when every scale this metric can take is available. -->
+          <p class="panel-note scale-notice" id="color-scale-notice" hidden></p>
           <details id="colour-help" class="method-help" hidden>
             <summary>Colour metric explanation</summary>
             <div class="help-content"></div>
@@ -288,9 +295,10 @@ if (window.location.protocol === 'file:') {
           changes colour only: every value shown in the gene detail, the tooltips, the
           filters, the comparison, and the export stays the stored value, and a gene with
           no value stays uncoloured under every scale. A scale a metric cannot take is
-          listed but disabled, with the reason; no offset is ever added to make a
-          logarithm work. When Colour by is Function category the whole control is
-          disabled, because a set of named categories is not a ramp over values. The
+          listed but disabled, and the note directly beneath this row gives the reason in
+          visible text; no offset is ever added to make a logarithm work. When Colour by
+          is Function category the whole control is disabled, and that note says why,
+          because a set of named categories is not a ramp over values. The
           legend names the scale in effect and labels the ramp in this metric's own units,
           at the positions the scale puts them. The chromosome tab reads the same choice
           and disables its own control with it.

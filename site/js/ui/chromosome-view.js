@@ -288,11 +288,19 @@ export class ChromosomeView {
     this.figure = document.createElement('div');
     this.figure.className = 'chromosome-figure';
 
+    // The map toolbar's structure: Colour by and Scale on a row of their own,
+    // the scale note and the colour explanation directly beneath it, and the view
+    // buttons last on their own row. Flat, the row wrapped `Zoom in (+)` up
+    // beside Scale at 375 px and left Colour by alone above it.
     const toolbar = document.createElement('div');
     toolbar.className = 'chromosome-toolbar';
+    const fieldsRow = document.createElement('div');
+    fieldsRow.className = 'chromosome-toolbar-row colour-scale-row';
+    const viewRow = document.createElement('div');
+    viewRow.className = 'chromosome-toolbar-row';
 
     const colorField = document.createElement('span');
-    colorField.className = 'field-row field-row-colour';
+    colorField.className = 'field-row';
     const colorLabel = document.createElement('label');
     colorLabel.htmlFor = 'chromosome-color-by';
     colorLabel.textContent = 'Colour by';
@@ -303,20 +311,30 @@ export class ChromosomeView {
     });
     colorField.append(colorLabel, this.colorSelect);
 
-    // Scale sits beside Colour by, reading the one shared value the scatter map
-    // and the legend read, and the colour explanation stays directly beneath the
-    // toolbar as this tab's own copy of the map's order.
+    // Scale sits beside Colour by on their own row, reading the one shared value
+    // the scatter map and the legend read.
     const scaleField = document.createElement('span');
-    scaleField.className = 'field-row field-row-scale';
+    scaleField.className = 'field-row';
     const scaleLabel = document.createElement('label');
     scaleLabel.htmlFor = 'chromosome-color-scale';
     scaleLabel.textContent = 'Scale';
     this.colorScaleSelect = document.createElement('select');
     this.colorScaleSelect.id = 'chromosome-color-scale';
+    this.colorScaleSelect.setAttribute('aria-describedby', 'chromosome-color-scale-notice');
     this.colorScaleSelect.addEventListener('change', () => {
       this.handlers.onColorScaleChange?.(this.colorScaleSelect.value);
     });
     scaleField.append(scaleLabel, this.colorScaleSelect);
+    fieldsRow.append(colorField, scaleField);
+
+    // Every reason a scale is unavailable, in visible text, because the titles
+    // this view's selectors carry are unreachable without a pointer and a
+    // disabled select takes no focus. `syncScaleSelect` writes it with the
+    // selector, from the one control state both toolbars are handed.
+    this.scaleNotice = document.createElement('p');
+    this.scaleNotice.className = 'panel-note scale-notice';
+    this.scaleNotice.id = 'chromosome-color-scale-notice';
+    this.scaleNotice.hidden = true;
 
     this.zoomIn = this.chip('Zoom in (+)', 'Zoom in', () => this.zoomByCentre(1.6));
     this.zoomOut = this.chip('Zoom out (−)', 'Zoom out', () => this.zoomByCentre(1 / 1.6));
@@ -345,8 +363,7 @@ export class ChromosomeView {
     showHiddenLabel.textContent = 'Show filtered-out genes';
     showHiddenRow.append(this.showHidden, showHiddenLabel);
 
-    toolbar.append(colorField, scaleField, this.zoomIn, this.zoomOut, this.resetButton,
-      showHiddenRow);
+    viewRow.append(this.zoomIn, this.zoomOut, this.resetButton, showHiddenRow);
 
     this.colourHelp = document.createElement('details');
     this.colourHelp.className = 'method-help';
@@ -357,6 +374,8 @@ export class ChromosomeView {
     const colourHelpContent = document.createElement('div');
     colourHelpContent.className = 'help-content';
     this.colourHelp.append(colourHelpSummary, colourHelpContent);
+
+    toolbar.append(fieldsRow, this.scaleNotice, this.colourHelp, viewRow);
 
     this.windowReadout = document.createElement('p');
     this.windowReadout.className = 'chromosome-window';
@@ -407,7 +426,7 @@ export class ChromosomeView {
       + 'an offset against a named UTEX locus, in the gene visualizer. A value a source does not '
       + 'report is absent here, never zero.';
 
-    this.figure.append(toolbar, this.colourHelp, this.windowReadout, this.canvasHost,
+    this.figure.append(toolbar, this.windowReadout, this.canvasHost,
       this.instructions, this.detailJump, this.legendHost, this.markerNote, this.trackSummaries,
       this.evidenceNote);
     this.host.append(copyNumber, this.unavailable, this.figure);
@@ -464,7 +483,7 @@ export class ChromosomeView {
       }
     }
     this.colorSelect.value = colorKey;
-    syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl);
+    syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl, this.scaleNotice);
     this.showHidden.checked = showHidden;
     this.detailJump.hidden = !this.model.hasSelection;
   }

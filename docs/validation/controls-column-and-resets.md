@@ -12,23 +12,29 @@ in `site/index.html`:
 ```
 [ X axis ] [ X scale ] [ Y axis ] [ Y scale ]   (Metric X vs Y tab only)
 [ Colour by ]  [ Scale ]
+  any unavailable scale, with its reason  (#color-scale-notice, hidden when empty)
 > colour metric explanation  (#colour-help)
 [ Find a gene ....................................... ]
 [ Reset view ] [ Reset selections ] [ Zoom in ] [ Zoom out ] [ ] Show filtered-out genes
 ```
 
-Three rules hold it together. **DOM order is keyboard order**, so the list above
+Four rules hold it together. **DOM order is keyboard order**, so the list above
 is also the tab order and nothing is styled into a position it does not occupy.
 **The colour explanation sits directly beneath the row whose metric it explains**,
-not below the search box, because it is read while choosing a colour. **Find a
-gene is alone on its row and full width at every breakpoint**
-(`.field-row-grow`, `flex: 3 1 14rem`), so a long locus or product query is not
-competing with a select for width; the scale field keeps a compact basis beside
-Colour by, which takes the row's spare width because its option text is the
-longest in the toolbar.
+not below the search box, because it is read while choosing a colour; the scale
+note comes between them because it belongs to the Scale control, which names it
+in `aria-describedby`, and it is hidden and occupies nothing whenever every scale
+is available. **Find a gene is alone on its row and full width at every
+breakpoint** (`.field-row-grow`, `flex: 3 1 14rem`), so a long locus or product
+query is not competing with a select for width. **Colour by and Scale stay two
+columns of one row down to 360 px**, the toolbar's one exception to stacking,
+under `.colour-scale-row`; which field truncates, and why both take the same
+label placement at any given width, is contracted in
+[responsive-workspace.md](responsive-workspace.md).
 
-The chromosome tab's own toolbar carries Colour by and Scale, then its own colour
-explanation directly beneath, so the two tabs are learned once; see
+The chromosome tab's own toolbar has the same structure — Colour by and Scale on
+a row of their own, then its scale note, then its colour explanation, then its
+view buttons — so the two tabs are learned once; see
 [chromosome-view.md](chromosome-view.md). What the Scale control means is
 contracted in
 [current-design-answers.md](current-design-answers.md#the-colour-scale).
@@ -208,9 +214,11 @@ Rendered checks, which source inspection does not replace:
 
 - At 375, 768, 1280 and 1440 wide: no horizontal page overflow, no panel-head
   overflow, and the gene visualizer SVG inside its column.
-- At the same four widths: Colour by and Scale share the first toolbar row, the
-  colour explanation is directly beneath it, and Find a gene is alone on the next
-  row and full width, with no horizontal overflow. Tab through the toolbar and
+- At the same four widths, and at 360 px: Colour by and Scale share the first
+  toolbar row as two columns with one label placement between them, the scale
+  note and then the colour explanation are beneath it, and Find a gene is alone
+  on the next row and full width, with no horizontal overflow. Tab through the
+  toolbar and
   confirm focus follows that visual order.
 - Collapse a panel and move another; confirm the hash gains `pc` and `po`, and
   that pasting that hash into a fresh load reproduces the column.

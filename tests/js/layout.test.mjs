@@ -29,7 +29,9 @@ test('analysis panels keep a logical source order inside one center column', () 
 /**
  * Owner decision, 2026-09-29: Colour by shares a row with Scale, the colour
  * explanation is directly beneath that row, and Find a gene has the row after it
- * to itself. DOM order is keyboard order, so this order is the tab order.
+ * to itself. DOM order is keyboard order, so this order is the tab order. The
+ * note naming any scale this metric cannot take belongs to the colour row, so it
+ * comes between the row and the explanation.
  */
 test('the map toolbar puts colour with its scale, then its explanation, then gene search alone', () => {
   const toolbar = html.slice(html.indexOf('<div class="map-toolbar">'), html.indexOf('id="gene-search-hint"'));
@@ -41,13 +43,15 @@ test('the map toolbar puts colour with its scale, then its explanation, then gen
   const axisRow = at('id="axis-chooser"');
   const colourBy = at('id="color-by"');
   const colourScale = at('id="color-scale"');
+  const notice = at('id="color-scale-notice"');
   const explanation = at('id="colour-help"');
   const search = at('id="gene-search"');
   const buttons = at('id="reset-view"');
 
   assert.ok(axisRow < colourBy, 'the axis chooser stays above the colour row');
   assert.ok(colourBy < colourScale, 'Scale follows Colour by on the same row');
-  assert.ok(colourScale < explanation, 'the colour explanation is beneath that row');
+  assert.ok(colourScale < notice, 'the unavailable-scale reasons are beneath that row');
+  assert.ok(notice < explanation, 'and the colour explanation follows them');
   assert.ok(explanation < search, 'Find a gene follows the explanation');
   assert.ok(search < buttons, 'and the view buttons come last');
 
@@ -63,9 +67,34 @@ test('the map toolbar puts colour with its scale, then its explanation, then gen
     'and it grows into the whole width at every breakpoint');
   assert.match(css, /\.map-toolbar \.field-row-grow \{ flex: 3 1 14rem; \}/);
 
-  // The Scale control explains itself where a screen reader will find it.
-  assert.match(html, /<select id="color-scale" aria-describedby="color-scale-hint"><\/select>/);
+  // That row is two columns of one row at every width, the toolbar's one
+  // exception to stacking, and the two fields cannot take different label
+  // placements because neither is allowed to wrap.
+  assert.match(colourRow, /^ colour-scale-row">/,
+    'the colour row carries the shared two-column rule');
+  const grid = css.slice(css.indexOf('.map-toolbar .colour-scale-row,'));
+  assert.match(grid, /^\.map-toolbar \.colour-scale-row,\n\.chromosome-toolbar \.colour-scale-row \{\n  display: grid;/,
+    'one rule lays out both toolbars\' colour row');
+  assert.match(grid, /grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/,
+    'an even split where there is no spare width to give');
+  assert.match(grid, /@media \(min-width: 560px\) \{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) minmax\(0, auto\);/,
+    'and from 560 px up Scale is sized to its own longest option');
+  // One label placement per width, and it is the same for both fields, because
+  // one rule sets it for both: stacked while the row is narrow, inline from the
+  // same breakpoint the columns change at.
+  assert.match(grid, /\.colour-scale-row > \.field-row \{\n  flex-direction: column;/);
+  assert.match(grid, /@media \(min-width: 560px\) \{[\s\S]*?\.colour-scale-row > \.field-row \{\n    flex-direction: row;\n    flex-wrap: nowrap;/);
+  assert.equal((css.match(/\.colour-scale-row > \.field-row \{/g) ?? []).length, 2,
+    'nothing else can give the two fields different label placements');
+  assert.match(css, /\.colour-scale-row > \.field-row > label \{ white-space: nowrap; \}/);
+
+  // The Scale control explains itself where a screen reader will find it: the
+  // visible reasons first, then the long standing description of the control.
+  assert.match(html, /<select id="color-scale"\s+aria-describedby="color-scale-notice color-scale-hint"><\/select>/);
   assert.match(html, /id="color-scale-hint"/);
+  assert.match(html, /<p class="panel-note scale-notice" id="color-scale-notice" hidden><\/p>/,
+    'and it starts empty and hidden, so it occupies nothing until it says something');
+  assert.match(css, /\.scale-notice \{ margin: 0; \}/);
 });
 
 /**
@@ -134,6 +163,10 @@ test('the chromosome toolbar writes colour and visibility through the shared con
   assert.equal((app.match(/function syncColorScaleControl\(/g) ?? []).length, 1);
   assert.equal((app.match(/element\('color-scale'\)/g) ?? []).length, 2,
     'the Scale selector is read once to wire it and once to point it at the state');
+  assert.match(app, /syncScaleSelect\(element\('color-scale'\), colors\.scaleControl, element\('color-scale-notice'\)\);/,
+    'and the visible reasons beneath it are written by that same call');
+  assert.equal((app.match(/element\('color-scale-notice'\)/g) ?? []).length, 1,
+    'nothing else writes the note, so it cannot fall out of step with the selector');
 
   const toolbar = app.slice(app.indexOf('chromosomeView = new ChromosomeView('));
   const colorChange = toolbar.slice(toolbar.indexOf('onColorChange:'), toolbar.indexOf('onColorScaleChange:'));
