@@ -1,4 +1,4 @@
-# O_zoomed-out-visual-priority__20260929 — Open
+# A_zoomed-out-visual-priority__20260929 — Active
 
 - **Scope:** Decide which gene is *seen* when many genes share the same pixels.
   On the chromosome view at zoomed-out scales, and on the scatter maps when
@@ -9,15 +9,27 @@
   `site/js/ui/scatter.js`, the legend and accessible descriptions, their tests,
   and the validation documents that state the drawing rules. No change to any
   value, to the colour scale, or to `site/data/*.json`.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-09-29
-- **Updated:** 2026-09-29
+- **Updated:** 2026-09-30
 
 ## Current state
 
-Nothing has been built. The owner asked for this ticket on 2026-09-29.
+Active since 2026-09-30. The owner answered the four display decisions and the
+scatter-scope assumption that day; see "Owner decisions". Work starts from `main`
+at `34bb240`, which already carries the selectable colour scale.
 
-What the views do today, read from `main` at `b500aad`:
+- **Baseline measurement** of the unchanged site is dispatched as DEM-169
+  (`claude-ui-inspector`, read-only): genes per device column, the hollow-marker
+  hypothesis below, white columns, the ten highest-valued genes per replicon,
+  scatter overpainting, and scatter frame time, with a harness that repeats the
+  same measurements on the patch.
+- **Implementation** is dispatched to one implementer once this file is
+  committed; review by the other provider and an independent rendered inspection
+  follow on the exact commit.
+
+What the views did when the ticket was written, read from `main` at `b500aad`.
+Paint order has not changed since:
 
 **Chromosome view, function category.** At whole-genome zoom a 1 kb gene is
 about a third of a pixel, so each CDS is snapped to a whole device column and
@@ -49,6 +61,29 @@ bucket. In category mode the unknown rings already sit behind the coloured
 points. In metric mode nothing orders the buckets by value, so in the dense core
 of a projection a high-value point can sit under low-value ones.
 
+## Owner decisions, 2026-09-30
+
+1. **D1, approved with both conditions.** Below the width at which the hollow
+   style can be read, a derived category draws in its full category colour. The
+   legend and the accessible description state that derived and reviewed colour
+   draw alike at this zoom, with the counts of each, and the hollow style returns
+   as soon as a bar is wide enough to show it.
+2. **D2, reviewed then majority.** When different categories share a device
+   column the column shows reviewed over derived, then the category with more
+   genes in that column, then locus order. The view's description states the rule.
+3. **D3, every metric, with a control.** Highest value on top is the default for
+   every metric. A "Draw on top: highest / lowest" control, remembered in the
+   URL, reverses it.
+4. **D4, deferred.** No second visual channel for standouts is built under this
+   ticket. It was not put to the owner again; the ticket's own recommendation
+   stands until the ordering has been looked at in a render.
+5. **Scatter scope: every scatter map.** "The PCR" is the PCA, and the ordering
+   applies to Native codon space, Metric X vs Y, Recoding-risk space, Baseline
+   risk UMAP, and Perturbation space alike.
+
+Pushing to `main` has not been approved for this ticket. The coordinator asks
+before any push.
+
 ## Requirements from the owner
 
 1. **Chromosome view, function category, zoomed out:** prioritise the coloured
@@ -60,7 +95,7 @@ of a projection a high-value point can sit under low-value ones.
 3. **Extend the same rule to the scatter maps**, so the informative dots are
    placed above the others, most of all when zoomed out.
 
-**Assumption to confirm.** The request names "the PCR". This ticket reads that as
+**Assumption, confirmed 2026-09-30 under "Owner decisions".** The request names "the PCR". This ticket reads that as
 the PCA, meaning the Native codon space map and, by the same mechanism, every
 scatter projection (Metric X vs Y, Recoding-risk space, Baseline risk UMAP,
 Perturbation space), since they share one drawing routine. If only the native
@@ -105,7 +140,7 @@ Order the colour buckets, and the points within a bucket, by the same priority
 before drawing. The batching by quantized colour that keeps panning fast is
 kept; only the order in which batches are issued changes.
 
-## Decisions for the owner
+## Decisions for the owner, answered 2026-09-30 under "Owner decisions"
 
 These change a documented display rule, so they are the owner's to make and are
 not decided in this ticket. Each is built only once approved here by name.
@@ -165,7 +200,8 @@ not decided in this ticket. Each is built only once approved here by name.
 - Zooming in until bars separate returns every gene to its ordinary drawing,
   including the hollow style for derived categories.
 - Clicking a shared column selects the gene it shows.
-- Scatter frame time does not regress against `main` at `b500aad`, measured.
+- Scatter frame time does not regress against `main` at `34bb240`, the commit the
+  work starts from, measured on the same machine with the DEM-169 harness.
 
 ## Verification
 
