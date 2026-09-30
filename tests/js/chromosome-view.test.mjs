@@ -5,8 +5,9 @@ import {
   trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
 import { repliconTracks } from '../../site/js/core/chromosome-model.js';
-import { buildColorScale } from '../../site/js/ui/colors.js';
-import { valueScaleTransform } from '../../site/js/core/value-scales.js';
+import { buildCategoryColorScale, buildColorScale } from '../../site/js/ui/colors.js';
+import { valueScaleAvailability, valueScaleTransform } from '../../site/js/core/value-scales.js';
+import { CATEGORICAL_SCALE_REASON, scaleControlState } from '../../site/js/ui/scale-select.js';
 import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
 
 const CHROMOSOME = 'NZ_CP006471.1';
@@ -296,12 +297,32 @@ const GENES = [
   }),
 ];
 
-function colorModel(genes) {
-  const values = Float64Array.from(genes.map((row) => (row.cai === null ? NaN : row.cai)));
+/** The CAI column, as app.js reads one out of the dataset. */
+function colorValues(genes) {
+  return Float64Array.from(genes.map((row) => (row.cai === null ? NaN : row.cai)));
+}
+
+/**
+ * The colour channel app.js hands this view, built the way app.js builds it: the
+ * ramp and the Scale control are derived from one column and one chosen scale,
+ * so a fixture cannot describe a state the application could not produce.
+ */
+function colorModel(genes, { colorScale, categorical }) {
+  const values = colorValues(genes);
+  if (categorical) {
+    return {
+      values: Float64Array.from(genes.map((_, index) => index % 2),
+      ),
+      scale: buildCategoryColorScale(2),
+      derived: new Map(),
+      label: 'Function category',
+      categorical: true,
+    };
+  }
   return {
     values,
     scale: buildColorScale(values, {
-      scale: 'sequential', transform: valueScaleTransform('log10', values),
+      scale: 'sequential', transform: valueScaleTransform(colorScale, values),
     }),
     derived: null,
     label: 'CAI',
@@ -309,22 +330,34 @@ function colorModel(genes) {
   };
 }
 
-/** The scale options app.js hands this view, with one of them unavailable. */
-const SCALE_OPTIONS = [
-  { value: 'linear', label: 'Linear', disabled: false, reason: null },
-  { value: 'log10', label: 'Logarithmic', disabled: false, reason: null },
-  { value: 'percentile', label: 'Percentile', disabled: false, reason: null },
-  {
-    value: 'sqrt', label: 'Square root', disabled: true,
-    reason: 'Square root is unavailable for CAI: 1 value is negative.',
-  },
-  { value: 'symlog', label: 'Symmetric log', disabled: false, reason: null },
-];
+/**
+ * The Scale control state app.js hands this view: `scaleControlState` itself,
+ * over the availability of the very column the ramp above was built from. The
+ * map toolbar is pointed at the same call, so what this fixture asserts is the
+ * application's own decision and not a restatement of it.
+ */
+function scaleControl(genes, { colorScale, categorical }) {
+  if (categorical) {
+    return scaleControlState({ categorical: true, scale: null, availability: null });
+  }
+  const values = colorValues(genes);
+  return scaleControlState({
+    categorical: false,
+    scale: colorScale,
+    availability: valueScaleAvailability(values, { label: 'CAI' }),
+  });
+}
+
+/** The same genes with one negative CAI, which is what blocks a square root. */
+const NEGATIVE_CAI_GENES = GENES.map(
+  (row, index) => (index === 0 ? { ...row, cai: -0.1 } : row),
+);
 
 function mount({
   genes = GENES, meta = META, mask = null, showHidden = true, handlers = {},
-  viewport = undefined, categoryFilterLabels = [],
+  viewport = undefined, categoryFilterLabels = [], colorScale = 'log10', categorical = false,
 } = {}) {
+  const colorMode = { colorScale, categorical };
   const fake = install(viewport);
   const { restore, frames } = fake;
   const host = new FakeElement('div');
@@ -344,16 +377,15 @@ function mount({
     genes,
     mask,
     showHidden,
-    colors: colorModel(genes),
-    colorLabel: 'CAI',
+    colors: colorModel(genes, colorMode),
+    colorLabel: categorical ? 'Function category' : 'CAI',
     colorOptions: [
       { group: 'Reviewed function', value: 'functionCategory', label: 'Function category' },
       { group: 'Codon adaptation', value: 'cai', label: 'CAI' },
     ],
-    colorKey: 'cai',
-    colorScaleOptions: SCALE_OPTIONS,
-    colorScale: 'log10',
-    colorScaleClause: 'on a logarithmic scale',
+    colorKey: categorical ? 'functionCategory' : 'cai',
+    colorScaleControl: scaleControl(genes, colorMode),
+    colorScaleClause: categorical ? null : 'on a logarithmic scale',
     pinned: -1,
     hovered: -1,
     active: -1,
@@ -962,17 +994,67 @@ test('Scale sits beside Colour by, offers every scale, and disables the ones wit
     assert.equal(view.figure.children[1].id, 'chromosome-colour-help');
 
     assert.equal(view.colorScaleSelect.value, 'log10');
+    assert.equal(view.colorScaleSelect.disabled, false);
+    assert.equal(view.colorScaleSelect.title, '');
     assert.deepEqual(view.colorScaleSelect.children.map((option) => option.textContent),
       ['Linear', 'Logarithmic', 'Percentile', 'Square root', 'Symmetric log']);
-    // A scale the metric cannot take is listed and disabled with its reason, so
-    // the reader learns something rather than watching an option disappear.
+    // Every CAI in this fixture is positive, so every scale is available.
+    assert.deepEqual(view.colorScaleSelect.children.filter((option) => option.disabled), []);
+    for (const option of view.colorScaleSelect.children) assert.equal(option.title, '');
+  } finally {
+    restore();
+  }
+});
+
+test('a scale the column cannot take is listed and disabled with the reason the data gives', () => {
+  // One negative CAI is what blocks a square root and a logarithm, and the
+  // reasons come from the availability test over that very column rather than
+  // from a hand-written fixture.
+  const { view, restore } = mount({ genes: NEGATIVE_CAI_GENES, colorScale: 'linear' });
+  try {
     const disabled = view.colorScaleSelect.children.filter((option) => option.disabled);
-    assert.deepEqual(disabled.map((option) => option.value), ['sqrt']);
+    assert.deepEqual(disabled.map((option) => option.value), ['log10', 'sqrt']);
     assert.equal(disabled[0].title,
+      'Logarithmic is unavailable for CAI: 1 value is zero or negative.');
+    assert.equal(disabled[1].title,
       'Square root is unavailable for CAI: 1 value is negative.');
+    // Nothing is hidden: the reader still sees all five options.
+    assert.equal(view.colorScaleSelect.children.length, 5);
     for (const option of view.colorScaleSelect.children.filter((each) => !each.disabled)) {
       assert.equal(option.title, '');
     }
+  } finally {
+    restore();
+  }
+});
+
+/**
+ * The defect this pins: the chromosome toolbar's Scale selector was left enabled
+ * under a Function category colour, so all five options could be chosen and the
+ * choice then snapped silently back. The check runs through `update`, with the
+ * control state `app.js` itself builds, because a source assertion is what let
+ * the two toolbars disagree in the first place.
+ */
+test('Function category disables the chromosome Scale selector, with its reason', () => {
+  const changes = [];
+  const { view, restore } = mount({
+    categorical: true,
+    handlers: { onColorScaleChange: (scale) => changes.push(scale) },
+  });
+  try {
+    assert.equal(view.colorSelect.value, 'functionCategory');
+    assert.equal(view.colorScaleSelect.disabled, true);
+    assert.equal(view.colorScaleSelect.title, CATEGORICAL_SCALE_REASON);
+    assert.match(view.colorScaleSelect.title, /no numeric scale/);
+    // A disabled control cannot be the source of a change, so nothing can be
+    // chosen here and silently snapped back to Linear.
+    assert.deepEqual(changes, []);
+    // The scatter map's selector is pointed at this same object, so the two
+    // toolbars are disabled together or not at all.
+    assert.deepEqual(
+      scaleControl(GENES, { categorical: true }),
+      scaleControlState({ categorical: true, scale: null, availability: null }),
+    );
   } finally {
     restore();
   }

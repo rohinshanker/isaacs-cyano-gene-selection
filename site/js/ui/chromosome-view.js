@@ -197,8 +197,9 @@ export class ChromosomeView {
    * @param {{tracks: object[], problems: string[], verified: boolean, genes: object[],
    *   mask: Uint8Array|null, showHidden: boolean, colors: object, colorLabel: string,
    *   colorOptions: {value: string, label: string, group: string}[], colorKey: string,
-   *   colorScaleOptions: {value: string, label: string, disabled: boolean,
-   *     reason: string|null}[], colorScale: string, colorScaleClause: string,
+   *   colorScaleControl: {options: {value: string, label: string, disabled: boolean,
+   *     reason: string|null}[], value: string, disabled: boolean, reason: string|null},
+   *   colorScaleClause: string,
    *   pinned: number, hovered: number, active: number, shortlist: Set<number>,
    *   passing: number, total: number, categoryFilterLabels: string[],
    *   hasSelection: boolean}} model
@@ -463,7 +464,7 @@ export class ChromosomeView {
       }
     }
     this.colorSelect.value = colorKey;
-    syncScaleSelect(this.colorScaleSelect, this.model.colorScaleOptions, this.model.colorScale);
+    syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl);
     this.showHidden.checked = showHidden;
     this.detailJump.hidden = !this.model.hasSelection;
   }

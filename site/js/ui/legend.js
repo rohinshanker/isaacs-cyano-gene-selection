@@ -302,6 +302,17 @@ export function rampScaleLabel(scale) {
 const MID_TICK_MARGIN = 0.25;
 
 /**
+ * How far from a ramp end a tick may sit and still have its label pinned inside
+ * the ramp's width rather than centred on its position.
+ *
+ * A tick's position comes out of the scale rather than being assumed, so an end
+ * tick lands on 0 or 1 to within floating-point dust rather than exactly on it.
+ * The tolerance is far below anything a real tick position could be, so it only
+ * ever catches that dust.
+ */
+const EDGE_TOLERANCE = 1e-6;
+
+/**
  * How many decades a logarithmic ramp must span before its middle tick is worth
  * snapping to a power of ten.
  *
@@ -315,54 +326,128 @@ const MID_TICK_MARGIN = 0.25;
 const MIN_SNAP_DECADES = 2;
 
 /**
- * The ramp's tick labels: one at each end and one inside, each carrying the
- * ramp position it belongs at rather than an assumed even spacing.
+ * The ramp in CSS pixels, from `.legend-ticks` in app.css, and a conservative
+ * width for one character of a tick label at the 0.75rem that rule sets.
+ *
+ * A tick label is digits, a sign, group separators and a decimal point; every
+ * one of those is narrower than this in the interface's font, so counting
+ * characters over-estimates a label's box, which is the safe direction for
+ * deciding whether two labels collide. The gutter is the clear space two
+ * neighbouring labels must keep to still read as two numbers.
+ */
+const RAMP_WIDTH_PX = 196;
+const TICK_CHAR_PX = 7;
+const TICK_GUTTER_PX = 4;
+
+/**
+ * One candidate tick: where the scale puts the value, the text that will be
+ * drawn, and the horizontal box that text will occupy.
+ *
+ * The box follows app.css exactly — a label at either end of the ramp is pinned
+ * inside it, and any other label is centred on its own position — so the
+ * crowding test below is a test of the picture and not of an approximation of
+ * it.
+ */
+function rampTickBox(scale, metric, value) {
+  const position = scale.normalize(value);
+  const text = formatValue(metric, value);
+  const width = text.length * TICK_CHAR_PX;
+  const anchor = Math.min(1, Math.max(0, position)) * RAMP_WIDTH_PX;
+  let from = anchor - width / 2;
+  if (position <= EDGE_TOLERANCE) from = anchor;
+  else if (position >= 1 - EDGE_TOLERANCE) from = anchor - width;
+  return { value, position, text, from, to: from + width };
+}
+
+/** Whether two tick labels would sit closer than the gutter, or overlap. */
+function tickLabelsCollide(one, other) {
+  return one.from < other.to + TICK_GUTTER_PX && other.from < one.to + TICK_GUTTER_PX;
+}
+
+/**
+ * The ramp's tick labels: a value near each end of the ramp and one inside, each
+ * placed where the scale actually puts that value.
+ *
+ * Every position is `scale.normalize(value)` and never an assumed 0, 0.5 or 1,
+ * so a tick label cannot disagree with the colour beside it under any scale.
+ * Two cases make that more than a formality. A percentile ramp is a step
+ * function over ranks, so its tick values are measurements the cohort really
+ * holds and each sits at the rank it really has; and a diverging ramp pads the
+ * shorter of its two arms to keep zero at the centre, so the padded end stands
+ * for no measurement at all and the extreme value is labelled where it truly
+ * falls rather than at the edge.
  *
  * Every label is a value of the metric, read back through the scale, so a reader
  * never has to guess whether a colour difference is tenfold or ten units. A
- * diverging ramp always labels its centre zero, because that is what its centre
- * means. A logarithmic ramp spanning at least {@link MIN_SNAP_DECADES} decades
- * snaps its middle label to the power of ten nearest the true midpoint, which
- * reads as a decade rather than as an arbitrary number, and keeps the untidy
- * midpoint when that decade would sit close enough to an end to crowd its
- * label.
+ * diverging ramp labels its centre zero, because that is what its centre means.
+ * A logarithmic ramp spanning at least {@link MIN_SNAP_DECADES} decades snaps
+ * its middle label to the power of ten nearest the true midpoint, which reads as
+ * a decade rather than as an arbitrary number, and keeps the untidy midpoint
+ * when that decade would sit close enough to an end to crowd its label.
+ *
+ * Two ticks carrying the same value are one tick: `normalize` is a function of
+ * the value, so equal values always share a position. A tick whose label would
+ * collide with one already placed is never moved sideways — moving it is exactly
+ * the lie this function exists to prevent — so it drops to a second row at the
+ * same position instead, and `row` says which row it belongs on. The two ends
+ * take the first row first, because they are what lets a reader turn any colour
+ * on the ramp into a value; the inside tick is the one that hangs below. Only a
+ * ramp with a padded arm ever needs the second row at all: an ordinary ramp has
+ * its three ticks a third of its width apart.
  *
  * @param {{min: number, max: number, mid: number, diverging: boolean,
- *   scaleName: string, valueAt: (position: number) => number,
- *   normalize: (value: number) => number}} scale
- * @returns {{value: number, position: number}[]} in ramp order.
+ *   scaleName: string, normalize: (value: number) => number}} scale
+ * @param {{label: string, unit?: string|null, decimals?: number}} metric the
+ *   metric being drawn, for formatting a value into the label it will carry.
+ * @returns {{value: number, position: number, text: string, row: number}[]} in
+ *   ramp order.
  */
-export function rampTicks(scale) {
-  const middle = () => {
-    if (scale.diverging) return { value: 0, position: 0.5 };
-    const exact = scale.valueAt(0.5);
-    const midpoint = { value: exact, position: 0.5 };
-    if (scale.scaleName !== 'log10' || !(exact > 0) || !(scale.min > 0)) return midpoint;
-    if (Math.log10(scale.max / scale.min) < MIN_SNAP_DECADES) return midpoint;
+export function rampTicks(scale, metric) {
+  const middleValue = () => {
+    if (scale.diverging) return 0;
+    const exact = scale.mid;
+    if (scale.scaleName !== 'log10' || !(exact > 0) || !(scale.min > 0)) return exact;
+    if (Math.log10(scale.max / scale.min) < MIN_SNAP_DECADES) return exact;
     const decade = 10 ** Math.round(Math.log10(exact));
     const position = scale.normalize(decade);
-    return position > MID_TICK_MARGIN && position < 1 - MID_TICK_MARGIN
-      ? { value: decade, position } : midpoint;
+    return position > MID_TICK_MARGIN && position < 1 - MID_TICK_MARGIN ? decade : exact;
   };
-  return [{ value: scale.min, position: 0 }, middle(), { value: scale.max, position: 1 }];
+  const placed = [];
+  for (const value of [scale.min, scale.max, middleValue()]) {
+    if (placed.some((tick) => tick.value === value)) continue;
+    const tick = rampTickBox(scale, metric, value);
+    const clear = (row) => !placed.some(
+      (other) => other.row === row && tickLabelsCollide(tick, other),
+    );
+    const row = clear(0) ? 0 : 1;
+    if (row === 1 && !clear(1)) continue;
+    placed.push({ ...tick, row });
+  }
+  return placed
+    .sort((one, other) => one.position - other.position)
+    .map(({ value, position, text, row }) => ({ value, position, text, row }));
 }
 
 /**
  * One sentence naming the value scale the ramp is drawn under, and whatever
  * that scale needs the reader to know to read a colour correctly: a symmetric
- * log's linear threshold, or the cohort a percentile ranks against.
+ * log's transition scale, or the cohort a percentile ranks against.
  */
 export function describeValueScale(metric, scale) {
   const parts = [`Scale: ${rampScaleLabel(scale)}. The tick labels read ${metric.label} in its `
     + 'own units, at the positions this scale puts them; no stored value changes.'];
   if (scale.scaleName === 'symlog') {
     const unit = metric.unit ? ` ${metric.unit}` : '';
-    parts.push(`Values within ±${formatValue(metric, scale.scaleThreshold)}${unit} of zero `
-      + 'read linearly, and the scale is logarithmic beyond that in both directions.');
+    const transition = `${formatValue(metric, scale.scaleTransition)}${unit}`;
+    parts.push(`The scale is approximately linear for values well inside ±${transition} of zero `
+      + `and logarithmic for values well outside it, turning from one into the other around `
+      + `±${transition}. It is one smooth curve, so there is no exact linear interval and no `
+      + 'kink in the colour at the transition.');
   }
   if (scale.scaleName === 'percentile') {
     parts.push('Colour is a rank against every gene that has a value, so it shows order rather '
-      + 'than magnitude: two genes a thousandfold apart can take adjacent colours.');
+      + 'than magnitude: two genes a thousandfold apart can take adjacent colours. Each tick is a '
+      + 'value some gene really has, at the rank it holds.');
   }
   return parts.join(' ');
 }
@@ -448,12 +533,19 @@ export function renderLegend(host, state) {
   // the ramp's width instead of centred on its edges.
   const ticks = document.createElement('div');
   ticks.className = 'legend-ticks';
-  for (const tick of rampTicks(scale)) {
+  for (const tick of rampTicks(scale, metric)) {
     const label = document.createElement('span');
-    label.textContent = formatValue(metric, tick.value);
+    label.textContent = tick.text;
     label.style.left = `${(Math.min(1, Math.max(0, tick.position)) * 100).toFixed(2)}%`;
-    if (tick.position <= 0) label.classList.add('at-start');
-    else if (tick.position >= 1) label.classList.add('at-end');
+    if (tick.position <= EDGE_TOLERANCE) label.classList.add('at-start');
+    else if (tick.position >= 1 - EDGE_TOLERANCE) label.classList.add('at-end');
+    // A ramp whose arms are padded can put two labels within a few pixels of each
+    // other; the crowded one hangs below at its own position rather than being
+    // nudged along the ramp to somewhere it does not belong.
+    if (tick.row > 0) {
+      label.classList.add('below');
+      ticks.classList.add('stacked');
+    }
     ticks.append(label);
   }
 

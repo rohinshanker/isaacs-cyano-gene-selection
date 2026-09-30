@@ -69,14 +69,23 @@ discovered in the picture. **Do not move the threshold to make a metric land
 where it is wanted**: the threshold is the rule, and a metric that crosses it is
 a fact about the data.
 
-**Symmetric log's linear threshold** is one deterministic value per metric: the
+**Symmetric log's transition scale** is one deterministic value per metric: the
 median of the non-zero absolute finite values, rounded down to a power of ten.
-Roughly half the valued genes then fall inside the linear region, where small
-signed differences near zero read as they are, while the long tail outside it is
+Roughly half the valued genes then fall below it, where small signed differences
+near zero read very nearly as they are, while the long tail above it is
 compressed logarithmically. Rounding to a decade keeps the legend legible ("±10
-nt", not "±53 nt") and keeps the threshold from moving on an ordinary data
-refresh. Both neighbour distances get 10 nt on this release. The legend states
-the threshold.
+nt", not "±53 nt") and keeps the value from moving on an ordinary data refresh.
+Both neighbour distances get 10 nt on this release. The legend states it.
+
+Call it a **transition scale and not a linear threshold**: the transform is one
+smooth formula, `sign(v) · log10(1 + |v| / t)`, everywhere. It is approximately
+linear for magnitudes well under `t` and logarithmic for magnitudes well over it,
+and the bend is spread around ±`t` rather than being a straight segment that
+stops there — `f(5)/f(10)` is 0.585 on a transition scale of 10, where a strictly
+linear interval would give 0.5. Owner decision, 2026-09-29: **keep the smooth
+transform**, because a piecewise one would put a kink in the colour at the
+threshold. Nothing in the interface or in these documents may promise a linear
+interval it does not have; the derivation rule above is unchanged.
 
 **The legend states the scale and reads in real values.** The scale's name sits
 beside the ramp; the ramp's tick labels are the metric's own values placed at the
@@ -85,6 +94,20 @@ labels its middle tick with the nearest power of ten, at that decade's real
 position. A reader never has to guess whether a colour difference is tenfold or
 ten units. The accessible description of the scatter canvas and of the chromosome
 canvas both name the scale.
+
+**A tick's position is `scale.normalize(its own value)`, by construction**, for
+every scale and every metric, so a label can never name a value whose colour is
+somewhere else on the ramp. Two consequences follow, and both are deliberate.
+Under **Percentile** a tick is a value the cohort really holds, placed at the rank
+it really has, which for a heavily tied column puts the middle label off the
+middle of the ramp — that is the truth about a rank scale, not a bug. Where a
+**diverging** ramp pads the shorter of its two arms to keep zero at the centre,
+the padded end stands for no measurement, so the extreme value is labelled where
+it truly falls rather than at the edge of the ramp. A crowded label is never
+nudged along the ramp; it drops to a second row at its own position, and a
+duplicate value is one tick. The invariant is swept over every shipped metric and
+every available scale in
+[tests/js/color-scale.test.mjs](../../tests/js/color-scale.test.mjs).
 
 **A diverging metric keeps its centre.** A metric the legend draws as diverging
 around zero has its ramp centred where the scale puts zero, with the same reach

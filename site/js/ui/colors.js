@@ -131,7 +131,11 @@ export const RAMP_BUCKET_COUNT = 48;
  * `../core/value-scales.js`, and it changes only which ramp position a value
  * takes: the domain is measured in transformed space, and `min`, `max` and
  * `mid` are inverted back so a legend always labels a ramp position in the
- * metric's own units. A diverging ramp keeps zero at its midpoint under any
+ * metric's own units. Every one of those is a real measurement — a rank scale
+ * inverts to the cohort's own value at that rank — but only an exactly
+ * invertible scale puts it back at the position it was read from, so a legend
+ * places a label at `normalize(value)` rather than assuming the position it
+ * asked for; see `rampTicks` in ui/legend.js. A diverging ramp keeps zero at its midpoint under any
  * transform that sends zero to zero, which is every transform offered for a
  * diverging metric. A transform that cannot represent this column's extremes —
  * a hand-edited link asking for a logarithm of a zero — is refused here and the
@@ -139,12 +143,12 @@ export const RAMP_BUCKET_COUNT = 48;
  * accessible description name the scale actually drawn.
  *
  * @param {Float64Array|number[]} values
- * @param {{scale?: string|null, transform?: {scale: string, threshold: number|null,
+ * @param {{scale?: string|null, transform?: {scale: string, transition: number|null,
  *   apply: (value: number) => number, invert: (position: number) => number}}} options
  * @returns {{color(value: number): string, normalize(value: number): number,
- *   min: number, max: number, mid: number, valueAt(position: number): number,
+ *   min: number, max: number, mid: number,
  *   diverging: boolean, buckets: string[], bucketOf(value: number): number,
- *   scaleSource: 'declared'|'inferred', scaleName: string, scaleThreshold: number|null}}
+ *   scaleSource: 'declared'|'inferred', scaleName: string, scaleTransition: number|null}}
  */
 export function buildColorScale(values, options = {}) {
   let min = Infinity;
@@ -189,6 +193,10 @@ export function buildColorScale(values, options = {}) {
     hi = centre + half;
   }
   const normalize = (value) => (project(value) - lo) / (hi - lo);
+  // The three values a legend labels the ramp with, read back into the metric's
+  // own units. Only these three are needed, so the inverse is not exposed: a
+  // caller with a ramp position and no value to go with it has nothing truthful
+  // to do with it under a scale whose inverse is not exact.
   const valueAt = (position) => unproject(lo + (hi - lo) * position);
   const ramp = diverging ? divergingColor : sequentialColor;
 
@@ -205,11 +213,10 @@ export function buildColorScale(values, options = {}) {
     min: valueAt(0),
     max: valueAt(1),
     mid: diverging ? 0 : valueAt(0.5),
-    valueAt,
     diverging,
     scaleSource,
     scaleName: transform ? transform.scale : 'linear',
-    scaleThreshold: transform ? transform.threshold : null,
+    scaleTransition: transform ? transform.transition : null,
     normalize,
     buckets,
     bucketOf,

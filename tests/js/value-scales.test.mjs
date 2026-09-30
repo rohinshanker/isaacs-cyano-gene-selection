@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import {
   AXIS_SCALES, DEFAULT_VALUE_SCALE, SKEWED_DEFAULT_SHARE, VALUE_SCALES, VALUE_SCALE_LABELS,
   defaultValueScale, log10Availability, log10DisabledReason, lowestTenthShare,
-  sqrtAvailability, symlogThreshold, valueScaleAvailability, valueScaleClause,
+  sqrtAvailability, symlogTransition, valueScaleAvailability, valueScaleClause,
   valueScaleTransform,
 } from '../../site/js/core/value-scales.js';
 
@@ -153,20 +153,20 @@ test('the default scale is a rule on the data, with one named threshold', () => 
   assert.equal(defaultValueScale(skewedColumn(99, 1, 1000), { centred: true }), 'symlog');
 });
 
-test('the symmetric-log threshold is the median non-zero magnitude, floored to a decade', () => {
+test('the symmetric-log transition scale is the median non-zero magnitude, floored to a decade', () => {
   // Median |value| is 53, whose decade is 10.
-  assert.equal(symlogThreshold([-116, 0, 21, 53, 85, 6375]), 10);
+  assert.equal(symlogTransition([-116, 0, 21, 53, 85, 6375]), 10);
   // Median 0.4 floors to 0.1, so the rule holds below 1 as well.
-  assert.equal(symlogThreshold([0.2, 0.4, 0.9]), 0.1);
+  assert.equal(symlogTransition([0.2, 0.4, 0.9]), 0.1);
   // Zeros are excluded from the median: they say nothing about a magnitude.
-  assert.equal(symlogThreshold([0, 0, 0, 0, 4000]), 1000);
+  assert.equal(symlogTransition([0, 0, 0, 0, 4000]), 1000);
   // A column with no non-zero value has no median to take.
-  assert.equal(symlogThreshold([0, 0, NaN]), 1);
-  assert.equal(symlogThreshold([NaN]), 1);
+  assert.equal(symlogTransition([0, 0, NaN]), 1);
+  assert.equal(symlogTransition([NaN]), 1);
   // Deterministic: the same column always gives the same threshold, and it only
   // moves when the median crosses a decade.
-  assert.equal(symlogThreshold([9, 9, 9]), 1);
-  assert.equal(symlogThreshold([10, 10, 10]), 10);
+  assert.equal(symlogTransition([9, 9, 9]), 1);
+  assert.equal(symlogTransition([10, 10, 10]), 10);
 });
 
 test('every transform sends a missing value to NaN and inverts its own positions', () => {
@@ -187,7 +187,6 @@ test('every transform sends a missing value to NaN and inverts its own positions
     for (let i = 1; i < applied.length; i += 1) {
       assert.ok(applied[i] > applied[i - 1], `${scale} is increasing at ${values[i]}`);
     }
-    if (scale === 'percentile') continue;
     for (const value of values) {
       assert.ok(Math.abs(transform.invert(transform.apply(value)) - value) < 1e-9,
         `${scale} inverts ${value}`);
@@ -212,19 +211,35 @@ test('log10 and square root are the transforms their names claim', () => {
   assert.ok(Number.isNaN(valueScaleTransform('log10', [0, 1]).apply(0)));
 });
 
-test('symmetric log is linear inside its threshold and logarithmic outside it', () => {
+test('symmetric log is approximately linear near zero and logarithmic far from it', () => {
   // Magnitudes 5, 12, 53, 116, 6375: median 53, whose decade is 10.
   const values = [-116, 0, 5, 12, 53, 6375];
   const transform = valueScaleTransform('symlog', values);
-  assert.equal(transform.threshold, 10);
-  // A decade above the threshold is one unit further along, as a logarithm is.
-  const at = transform.apply(transform.threshold * (10 ** 1 - 1));
-  const tenfold = transform.apply(transform.threshold * (10 ** 2 - 1));
+  assert.equal(transform.transition, 10);
+  // Far out it is a logarithm: a tenfold step is one unit further along.
+  const at = transform.apply(transform.transition * (10 ** 1 - 1));
+  const tenfold = transform.apply(transform.transition * (10 ** 2 - 1));
   assert.ok(Math.abs(tenfold - at - 1) < 1e-12);
-  // Well inside the threshold the transform is very nearly a straight line.
+  // Well inside the transition scale it is very nearly a straight line: the
+  // slope over the first fortieth of it is constant to three decimals.
   const small = transform.apply(0.5) / 0.5;
   const smaller = transform.apply(0.25) / 0.25;
-  assert.ok(Math.abs(small - smaller) < 1e-3, 'near zero the slope is constant');
+  assert.ok(Math.abs(small - smaller) < 1e-3, 'near zero the slope is nearly constant');
+  // Approximately, and not exactly: the transition is spread around ±10 rather
+  // than being a straight segment that stops there, so the ratio a strictly
+  // linear interval would force is not the ratio this scale gives. Nothing in
+  // the interface may promise that it is.
+  const half = transform.apply(5) / transform.apply(10);
+  assert.ok(Math.abs(half - 0.5) > 0.05, `a linear interval would give 0.5, got ${half}`);
+  assert.ok(Math.abs(half - 0.5849625007211562) < 1e-12);
+  // And the curve has no join anywhere: the slope falls off smoothly through the
+  // transition instead of stepping at it, which is why no colour kinks there.
+  const slope = (value) => (transform.apply(value + 1e-6) - transform.apply(value)) / 1e-6;
+  const slopes = [1, 5, 9.5, 10, 10.5, 20, 100].map(slope);
+  for (let index = 1; index < slopes.length; index += 1) {
+    assert.ok(slopes[index] < slopes[index - 1], 'the slope only ever falls');
+    assert.ok(slopes[index] / slopes[index - 1] > 0.05, 'and never steps down');
+  }
 });
 
 test('percentile ranks against the cohort it is given, so an axis can rank a filtered view', () => {
@@ -241,10 +256,27 @@ test('percentile ranks against the cohort it is given, so an axis can rank a fil
   const empty = valueScaleTransform('percentile', values, { cohort: [] });
   assert.ok(Number.isNaN(empty.apply(20)));
   assert.ok(Number.isNaN(empty.invert(50)));
-  // Inverting a rank reads the cohort's own value at it, in the metric's units.
-  assert.equal(whole.invert(50), 25);
+  // Inverting a rank reads back the cohort's own value at that rank, in the
+  // metric's units, and never a number between two of them: a rank scale is a
+  // step function, and a value halfway between two ranks is a measurement no
+  // gene has. 50% falls on the third of four ranks.
+  assert.equal(whole.invert(50), 30);
   assert.equal(whole.invert(0), 10);
   assert.equal(whole.invert(100), 40);
+  // A rank past either end of the cohort — a diverging ramp pads its domain past
+  // it — clamps to that end's own value rather than inventing one.
+  assert.equal(whole.invert(-40), 10);
+  assert.equal(whole.invert(180), 40);
+});
+
+test('percentile inverts its own ranks exactly, tied values included', () => {
+  // Ties are the case a quantile gets wrong: three genes share 20, so that value
+  // holds one rank, and reading that rank back has to land on 20 again.
+  const values = [10, 20, 20, 20, 30, 40, 40];
+  const transform = valueScaleTransform('percentile', values);
+  for (const value of values) {
+    assert.equal(transform.invert(transform.apply(value)), value, `${value} round-trips`);
+  }
 });
 
 test('an unrecognised scale is the identity, never a thrown error mid-render', () => {
@@ -252,5 +284,5 @@ test('an unrecognised scale is the identity, never a thrown error mid-render', (
   assert.equal(transform.scale, 'linear');
   assert.equal(transform.apply(2), 2);
   assert.equal(transform.invert(2), 2);
-  assert.equal(transform.threshold, null);
+  assert.equal(transform.transition, null);
 });

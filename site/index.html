@@ -289,8 +289,11 @@ if (window.location.protocol === 'file:') {
           filters, the comparison, and the export stays the stored value, and a gene with
           no value stays uncoloured under every scale. A scale a metric cannot take is
           listed but disabled, with the reason; no offset is ever added to make a
-          logarithm work. The legend names the scale in effect and labels the ramp in this
-          metric's own units. The chromosome tab reads the same choice.
+          logarithm work. When Colour by is Function category the whole control is
+          disabled, because a set of named categories is not a ramp over values. The
+          legend names the scale in effect and labels the ramp in this metric's own units,
+          at the positions the scale puts them. The chromosome tab reads the same choice
+          and disables its own control with it.
         </p>
         <p class="visually-hidden" id="gene-search-hint">
           Searches locus tags, gene names, product descriptions, reviewed function

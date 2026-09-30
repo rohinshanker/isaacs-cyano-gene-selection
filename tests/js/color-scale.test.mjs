@@ -14,7 +14,7 @@ import {
   buildMetricRegistry, metricValues, metricsInDisplayOrder,
 } from '../../site/js/core/metric-registry.js';
 import {
-  defaultValueScale, valueScaleAvailability, valueScaleTransform,
+  VALUE_SCALES, defaultValueScale, valueScaleAvailability, valueScaleTransform,
 } from '../../site/js/core/value-scales.js';
 import {
   RAMP_BUCKET_COUNT, buildColorScale, isDivergingRamp,
@@ -22,6 +22,7 @@ import {
 import {
   describeValueScale, rampScaleLabel, rampTicks, renderLegend,
 } from '../../site/js/ui/legend.js';
+import { formatValue } from '../../site/js/ui/format.js';
 import { fileFetch } from './helpers.mjs';
 import { withFakeDocument } from './fake-dom.mjs';
 
@@ -183,7 +184,7 @@ test('the symmetric-log default reaches the neighbour distances a linear ramp fl
     const linear = await rampOf(key, 'linear');
     const symmetric = await rampOf(key, 'symlog');
     // One deterministic threshold per metric, from the median non-zero magnitude.
-    assert.equal(symmetric.scale.scaleThreshold, 10);
+    assert.equal(symmetric.scale.scaleTransition, 10);
     const flat = bucketOccupancy(linear.values, linear.scale);
     const spread = bucketOccupancy(symmetric.values, symmetric.scale);
     assert.ok(flat.biggestShare > 0.7, `${key} linear should crowd one bucket`);
@@ -205,7 +206,7 @@ test('a ramp asked for a scale its column cannot take falls back and says which 
 
 test('the legend labels the ramp in the metric units at the positions the scale puts them', async () => {
   const logarithmic = await rampOf('tssInitiation', 'log10');
-  const ticks = rampTicks(logarithmic.scale);
+  const ticks = rampTicks(logarithmic.scale, logarithmic.metric);
   assert.equal(ticks.length, 3);
   assert.equal(ticks[0].position, 0);
   assert.equal(ticks[2].position, 1);
@@ -217,22 +218,146 @@ test('the legend labels the ramp in the metric units at the positions the scale 
   // wrong.
   assert.equal(ticks[1].value, 10000);
   assert.ok(ticks[1].position > 0.55 && ticks[1].position < 0.62, String(ticks[1].position));
-  assert.ok(Math.abs(ticks[1].position - logarithmic.scale.normalize(10000)) < 1e-12);
 
   // Linear keeps the three evenly spaced ticks it always had.
   const linear = await rampOf('gc3', 'linear');
-  assert.deepEqual(rampTicks(linear.scale).map((tick) => tick.position), [0, 0.5, 1]);
-  assert.equal(rampTicks(linear.scale)[1].value, linear.scale.mid);
+  assert.deepEqual(rampTicks(linear.scale, linear.metric).map((tick) => tick.position), [0, 0.5, 1]);
+  assert.equal(rampTicks(linear.scale, linear.metric)[1].value, linear.scale.mid);
 
   // A diverging ramp labels its centre zero under a nonlinear scale too.
   const symmetric = await rampOf('neighborDownstreamNt', 'symlog');
-  assert.deepEqual(rampTicks(symmetric.scale)[1], { value: 0, position: 0.5 });
+  assert.deepEqual(rampTicks(symmetric.scale, symmetric.metric)[1],
+    { value: 0, position: 0.5, text: '0', row: 0 });
 
-  // Percentile reads back the metric's own value at each rank, not the rank.
+  // Percentile labels a value some gene really has, at the rank it really holds.
   const ranked = await rampOf('tssInitiation', 'percentile');
-  const middle = rampTicks(ranked.scale)[1];
+  const middle = rampTicks(ranked.scale, ranked.metric)[1];
   assert.equal(middle.position, 0.5);
   assert.ok(middle.value > 800 && middle.value < 860, `median-ish value, got ${middle.value}`);
+  assert.ok(ranked.values.includes(middle.value), 'the label is a value in the cohort');
+});
+
+/**
+ * The property the legend rests on, over everything that ships: a tick sits
+ * exactly where the scale puts its own value. It is what makes a label unable to
+ * disagree with the colour beside it, and it is checked by construction rather
+ * than metric by metric, because the failures it replaces were all in the gap
+ * between an approximate inverse and the ramp position a value really takes.
+ */
+test('every tick of every shipped metric sits at normalize(its own value)', async () => {
+  const { dataset, registry } = await shipped();
+  let checked = 0;
+  for (const metric of metricsInDisplayOrder(registry)) {
+    const values = metricValues(metric, dataset.genes.length);
+    const centred = isDivergingRamp(values, metric.scale);
+    const availability = valueScaleAvailability(values, { label: metric.label, centred });
+    for (const name of VALUE_SCALES) {
+      if (!availability.get(name).available) continue;
+      const scale = buildColorScale(values, {
+        scale: metric.scale, transform: valueScaleTransform(name, values),
+      });
+      const ticks = rampTicks(scale, metric);
+      assert.ok(ticks.length > 0, `${metric.key} ${name} labels its ramp`);
+      for (const tick of ticks) {
+        assert.equal(tick.position, scale.normalize(tick.value),
+          `${metric.key} ${name}: ${tick.value} is labelled at ${tick.position} `
+            + `but coloured at ${scale.normalize(tick.value)}`);
+        assert.equal(tick.text, formatValue(metric, tick.value));
+        checked += 1;
+      }
+      // Ticks read left to right, and no two labels overlap: a crowded one takes
+      // the second row rather than being nudged off its own position.
+      for (let index = 1; index < ticks.length; index += 1) {
+        assert.ok(ticks[index].position >= ticks[index - 1].position, `${metric.key} ${name} order`);
+      }
+      const rows = new Map();
+      for (const tick of ticks) {
+        const row = rows.get(tick.row) ?? [];
+        row.push(tick);
+        rows.set(tick.row, row);
+      }
+      for (const row of rows.values()) {
+        for (let index = 1; index < row.length; index += 1) {
+          const gap = (row[index].position - row[index - 1].position) * 196;
+          assert.ok(gap > 4, `${metric.key} ${name} crowds two labels ${gap}px apart`);
+        }
+      }
+    }
+  }
+  // The sweep is the evidence, so it has to have swept something.
+  assert.ok(checked > 600, `only ${checked} ticks checked`);
+});
+
+/**
+ * A padded arm can bring two labels within a few pixels of each other, and the
+ * answer is never to move one along the ramp: the upstream distance's lowest
+ * value sits at 43% and zero at 50%, so zero drops to a second row at its own
+ * position and both readings survive.
+ */
+test('two crowded tick labels stack rather than one moving off its position', async () => {
+  const upstream = await rampOf('neighborUpstreamNt', 'percentile');
+  const ticks = rampTicks(upstream.scale, upstream.metric);
+  assert.deepEqual(ticks.map((tick) => [tick.text, tick.row]),
+    [['-103', 0], ['0', 1], ['6,375', 0]]);
+  for (const tick of ticks) {
+    assert.equal(tick.position, upstream.scale.normalize(tick.value));
+  }
+
+  // And the rendered row says so, so the second line has somewhere to go.
+  await withFakeDocument((document) => {
+    const host = document.createElement('div');
+    renderLegend(host, {
+      metric: upstream.metric,
+      scale: upstream.scale,
+      missingCount: 0,
+      hiddenCount: 0,
+      showHidden: false,
+      provenanceNote: null,
+    });
+    const row = host.querySelector('.legend-ticks');
+    assert.ok(row.className.includes('stacked'), 'the row is given room for two lines');
+    assert.deepEqual(row.children.map((tick) => tick.className),
+      ['', 'below', 'at-end']);
+    assert.deepEqual(row.children.map((tick) => tick.style.left),
+      ['43.46%', '50.00%', '100.00%']);
+  });
+});
+
+/**
+ * The three readings an independent review found wrong, pinned as values. Each
+ * came from inverting an interpolated quantile under a rank convention that is
+ * not the one `apply` uses, so the label named a value whose colour was
+ * somewhere else on the ramp.
+ */
+test('percentile labels no longer name a value the colour beside them is not', async () => {
+  // A padded diverging arm: -116 is the lowest value there is, and it takes the
+  // colour at 38.7% of the ramp, not the one at the very start.
+  const downstream = await rampOf('neighborDownstreamNt', 'percentile');
+  const [lowest] = rampTicks(downstream.scale, downstream.metric);
+  assert.equal(lowest.value, -116);
+  assert.ok(Math.abs(lowest.position - 0.3872) < 1e-3, String(lowest.position));
+  assert.equal(lowest.position, downstream.scale.normalize(-116));
+  // Zero still gets its label at the centre, which is what makes the diverging
+  // centre readable.
+  const zero = rampTicks(downstream.scale, downstream.metric)
+    .find((tick) => tick.value === 0);
+  assert.deepEqual(zero, { value: 0, position: 0.5, text: '0', row: 0 });
+
+  // A heavily tied column: the middle label is a size some operon really has,
+  // where that size is actually coloured.
+  const operons = await rampOf('operonSize', 'percentile');
+  const middle = rampTicks(operons.scale, operons.metric)[1];
+  assert.equal(middle.value, 2);
+  assert.ok(Math.abs(middle.position - 0.3521) < 1e-3, String(middle.position));
+  assert.equal(middle.position, operons.scale.normalize(2));
+
+  // A long upper tail: the top label is the maximum, which is what takes the end
+  // colour, and not the midpoint between the two largest values.
+  const initiation = await rampOf('tssInitiation', 'percentile');
+  const highest = rampTicks(initiation.scale, initiation.metric).at(-1);
+  assert.ok(Math.abs(highest.value - 323995.75) < 1e-6, String(highest.value));
+  assert.equal(highest.position, 1);
+  assert.equal(initiation.scale.max, highest.value);
 });
 
 test('the legend note names the scale, and states what each scale needs explaining', async () => {
@@ -242,7 +367,13 @@ test('the legend note names the scale, and states what each scale needs explaini
   assert.match(note,
     /read Downstream-neighbor distance in its own units, at the positions this scale puts them/);
   assert.match(note, /no stored value changes/);
-  assert.match(note, /within ±10 nt of zero read linearly/);
+  // The wording promises what the formula actually does: approximately linear
+  // near zero, logarithmic far from it, and no exact linear interval anywhere.
+  assert.match(note, /approximately linear for values well inside ±10 nt of zero/);
+  assert.match(note, /logarithmic for values well outside it/);
+  assert.match(note, /turning from one into the other around ±10 nt/);
+  assert.match(note, /no exact linear interval and no kink in the colour/);
+  assert.equal(/read linearly/.test(note), false);
 
   const ranked = await rampOf('tssInitiation', 'percentile');
   assert.match(describeValueScale(ranked.metric, ranked.scale), /^Scale: Percentile\./);
@@ -253,7 +384,7 @@ test('the legend note names the scale, and states what each scale needs explaini
   const plain = describeValueScale(logarithmic.metric, logarithmic.scale);
   assert.match(plain, /^Scale: Logarithmic\./);
   // Only a scale with something extra to explain says more than its name.
-  assert.equal(plain.includes('linearly'), false);
+  assert.equal(plain.includes('linear'), false);
 });
 
 test('the rendered legend puts the scale beside the ramp and each tick at its own position', async () => {

@@ -197,11 +197,16 @@ come from `app.js` on each render, under
   legend, and the hash all said CAI.
 - This view's toolbar reads **Colour by**, then **Scale**, then its own colour
   explanation directly beneath the toolbar — the map toolbar's order, so the two
-  tabs are learned once. The scale options, which of them are disabled, and the
-  reason each disabled one carries come from `app.js` through the model, and both
-  toolbars point their selector at them with the one `syncScaleSelect`, so they
-  cannot offer different scales or give different reasons. The colour scale
-  itself is contracted in
+  tabs are learned once. The Scale control's whole state is **one object**:
+  `scaleControlState` in `site/js/ui/scale-select.js` decides the options, which of
+  them are disabled and why, the scale in effect, and whether the control itself
+  is disabled with its own reason; `app.js` builds it once per render and hands the
+  same object to both toolbars, which apply it with the one `syncScaleSelect`.
+  Carrying the control-level state beside the options rather than inside them is
+  what once left this toolbar's selector **enabled under a Function category
+  colour**, offering five scales that snapped silently back to Linear; a state
+  that travels with the options cannot be applied to one toolbar and not the
+  other. The colour scale itself is contracted in
   [current-design-answers.md](current-design-answers.md#the-colour-scale).
 - A selection that arrives from anywhere else is reconciled in `update`, not
   only when the view happens to be idle: the camera reveals it (`revealIndex`)

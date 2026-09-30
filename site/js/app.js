@@ -36,7 +36,7 @@ import {
   metricLog10Availability, log10DisabledReason, AXIS_SCALES, DEFAULT_AXIS_SCALE,
 } from './core/metric-axes.js';
 import {
-  VALUE_SCALES, VALUE_SCALE_LABELS, DEFAULT_VALUE_SCALE, defaultValueScale,
+  VALUE_SCALES, VALUE_SCALE_LABELS, defaultValueScale,
   valueScaleAvailability, valueScaleClause, valueScaleTransform,
 } from './core/value-scales.js';
 import { projectionHelp } from './core/projection-help.js';
@@ -44,7 +44,7 @@ import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
 import { renderLegend, renderCategoryLegend } from './ui/legend.js';
 import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/colors.js';
-import { syncScaleSelect } from './ui/scale-select.js';
+import { scaleControlState, syncScaleSelect } from './ui/scale-select.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
 import { FilterPanel, clearedFilterState } from './ui/filters.js';
@@ -514,16 +514,6 @@ function scheduleTiming() {
 }
 
 /**
- * The colour channel every view shares: the resolved category model or the
- * selected metric, its values, and the ramp built over them. The scatter map
- * and the chromosome view read this one model, so a gene is the same colour in
- * both and neither can drift into its own colour rules.
- */
-/** Why a function-category colour has no value scale to choose. */
-const CATEGORICAL_SCALE_REASON = 'Function category has no numeric scale: its colours are a set '
-  + 'of named categories, not a ramp over values.';
-
-/**
  * The colour scale in effect, and the availability of every scale the current
  * Colour by could take.
  *
@@ -563,19 +553,6 @@ function resolveColorScale() {
   return { categorical: false, metric, values, scale, availability };
 }
 
-/** Every scale a selector lists, with the blocked ones disabled and explained. */
-function colorScaleOptions(availability) {
-  return VALUE_SCALES.map((scale) => {
-    const entry = availability?.get(scale) ?? { available: true, reason: null };
-    return {
-      value: scale,
-      label: VALUE_SCALE_LABELS[scale],
-      disabled: !entry.available,
-      reason: entry.reason,
-    };
-  });
-}
-
 /**
  * The colour channel every view shares: the resolved category model or the
  * selected metric, its values, the scale the reader chose, and the ramp built
@@ -604,22 +581,20 @@ function colorModel() {
     values,
     scale,
     valueScale: resolved.scale,
-    scaleOptions: colorScaleOptions(resolved.availability),
+    // One control state for both toolbars, decided where the scales are defined.
+    scaleControl: scaleControlState(resolved),
     derived: resolved.categorical ? categories.derived : null,
     label: metric.label,
   };
 }
 
 /**
- * Point the map toolbar's Scale selector at the scale in effect and the options
- * the current metric can take. The chromosome view's own copy is pointed at the
- * same values through its model, so the two toolbars cannot disagree.
+ * Point the map toolbar's Scale selector at the one control state the colour
+ * model resolved. The chromosome tab's own selector is handed the same object
+ * through its model, so the two cannot disagree about an option or a reason.
  */
 function syncColorScaleControl(colors) {
-  const select = element('color-scale');
-  syncScaleSelect(select, colors.scaleOptions, colors.valueScale ?? DEFAULT_VALUE_SCALE);
-  select.disabled = colors.categorical;
-  select.title = colors.categorical ? CATEGORICAL_SCALE_REASON : '';
+  syncScaleSelect(element('color-scale'), colors.scaleControl);
 }
 
 /** The clause an accessible description adds for the scale in effect, if any. */
@@ -876,8 +851,7 @@ function renderChromosomeView() {
     colorLabel: colors.label,
     colorOptions: colorSelectOptions(),
     colorKey: state.colorBy,
-    colorScaleOptions: colors.scaleOptions,
-    colorScale: colors.valueScale ?? DEFAULT_VALUE_SCALE,
+    colorScaleControl: colors.scaleControl,
     colorScaleClause: colorScaleClause(colors),
     pinned: pinnedIndex(),
     hovered: context.hoveredIndex,

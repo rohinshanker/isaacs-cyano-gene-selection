@@ -40,7 +40,7 @@ sampling limits are in [pca-length-sensitivity.md](pca-length-sensitivity.md).
 `site/js/core/value-scales.js` is the single place a column of metric reads is
 rescaled. It declares the scale names, the availability test for each, the
 disabled-option wording, the transform and its inverse, the symmetric-log
-threshold rule, and the rule that picks a metric's default scale. Both the
+transition-scale rule, and the rule that picks a metric's default scale. Both the
 Metric X vs Y axes and the colour ramp import it: the axis controls offer
 `linear`, `log10` and `percentile` (`AXIS_SCALES`), and the colour ramp offers
 those three plus `sqrt` and `symlog` (`VALUE_SCALES`). `metric-axes.js`
@@ -50,11 +50,20 @@ that module rather than defining its own, so a scale is declared once.
 The axes deliberately offer the smaller set. An axis draws the transformed
 numbers directly on its ticks — a `log10` axis reads 3 where the value is 1,000
 — so the axis title names the scale and drops the native unit. Symmetric log
-would put unlabelled symlog units on an axis with its linear threshold visible
+would put unlabelled symlog units on an axis with its transition scale visible
 nowhere, and square root adds nothing an axis reader cannot get from `log10` or
-`percentile`. The colour ramp is the opposite case: its tick labels are inverted
+`percentile`. The colour ramp is the opposite case: its tick labels are read
 back into the metric's own units, so a nonlinear scale stays readable there.
 Extending the axes is a separate change, with its own axis-tick and title work.
+
+An axis reads only `apply`; the colour ramp reads `invert` as well, to label a
+ramp position. The two rank conventions must therefore agree, and `invert` is
+defined so that they do: `apply` puts the cohort's *i*-th value at rank
+`(i + 0.5) / n`, and `invert` reads a rank back as an index, rounds to the
+nearest one and returns that value. It is the exact inverse of `apply` for every
+value in the cohort, ties included, and it never returns a number between two
+ranks — a measurement no gene has. The percentile **axis** semantics are
+unchanged by this: it ranks the filter-visible cohort through `apply` alone.
 
 Two naming registers, on purpose. A **control** names the scale in words —
 Linear, Logarithmic, Percentile, Square root, Symmetric log (`VALUE_SCALE_LABELS`,

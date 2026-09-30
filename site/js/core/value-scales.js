@@ -171,28 +171,34 @@ export function log10DisabledReason(label, availability) {
 }
 
 /**
- * The linear threshold a symmetric-log scale uses for one metric: the median of
+ * The transition scale a symmetric-log scale uses for one metric: the median of
  * the non-zero absolute finite values, rounded down to a power of ten.
+ *
+ * It is a transition scale and not a linear threshold: the transform is one
+ * smooth formula everywhere, approximately linear for magnitudes well under this
+ * value and logarithmic for magnitudes well over it, with the bend spread around
+ * ±this value rather than a straight segment that stops at it. A piecewise
+ * transform would give the exact linear interval instead, at the price of a kink
+ * in the colour ramp at the transition, which the owner chose against.
  *
  * The rule is one deterministic value per metric, derived from that metric's own
  * data, and it is what the legend states. Rounding down to a decade is what
  * makes it legible and stable: the legend reads "±10 nt" rather than "±53 nt",
- * and the threshold only moves when the metric's typical magnitude crosses a
- * decade, so an ordinary data refresh does not silently repaint the map. The
- * median is the centre of the choice: roughly half of the valued genes fall
- * inside the linear region, where small signed differences near zero are read
- * as they are rather than exaggerated, while the long tail outside it is
- * compressed logarithmically — which is the whole reason a signed, heavily
- * skewed metric needs this scale.
+ * and it only moves when the metric's typical magnitude crosses a decade, so an
+ * ordinary data refresh does not silently repaint the map. The median is the
+ * centre of the choice: roughly half of the valued genes fall below it, where
+ * small signed differences near zero are read very nearly as they are rather
+ * than exaggerated, while the long tail above it is compressed logarithmically
+ * — which is the whole reason a signed, heavily skewed metric needs this scale.
  *
  * A column with no non-zero finite value has nothing to take a median of and
- * gets 1, which makes the transform the identity-shaped `log10(1 + |v|)` on a
- * column that is all zeros anyway.
+ * gets 1, which makes the transform `log10(1 + |v|)` on a column that is all
+ * zeros anyway.
  *
  * @param {Float64Array|number[]} values
  * @returns {number} a strictly positive power of ten.
  */
-export function symlogThreshold(values) {
+export function symlogTransition(values) {
   const magnitudes = [];
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
@@ -294,7 +300,7 @@ function sortedFinite(values) {
 
 const IDENTITY_TRANSFORM = Object.freeze({
   scale: 'linear',
-  threshold: null,
+  transition: null,
   apply: (value) => (Number.isFinite(value) ? value : NaN),
   invert: (position) => position,
 });
@@ -315,14 +321,14 @@ const IDENTITY_TRANSFORM = Object.freeze({
  *   rank-based scale ranks against, for a caller that ranks within a subset —
  *   the percentile axis ranks the filter-visible cohort, while the colour ramp
  *   ranks every valued gene. Omitted means every finite value in `values`.
- * @returns {{scale: string, threshold: number|null, apply: (value: number) => number,
+ * @returns {{scale: string, transition: number|null, apply: (value: number) => number,
  *   invert: (position: number) => number}}
  */
 export function valueScaleTransform(scale, values, options = {}) {
   if (scale === 'log10') {
     return {
       scale,
-      threshold: null,
+      transition: null,
       apply: (value) => (Number.isFinite(value) && value > 0 ? Math.log10(value) : NaN),
       invert: (position) => 10 ** position,
     };
@@ -333,34 +339,47 @@ export function valueScaleTransform(scale, values, options = {}) {
     // a diverging ramp's domain, which reaches below zero, still inverts.
     return {
       scale,
-      threshold: null,
+      transition: null,
       apply: (value) => (Number.isFinite(value) ? Math.sign(value) * Math.sqrt(Math.abs(value)) : NaN),
       invert: (position) => Math.sign(position) * position * position,
     };
   }
   if (scale === 'symlog') {
-    const threshold = symlogThreshold(values);
+    // One smooth formula over the whole line, with no piecewise join: the slope
+    // falls off gradually, so there is no magnitude at which the colour ramp
+    // kinks. Near zero it is very nearly a straight line; far out it is a
+    // logarithm; `transition` is where it turns from one into the other.
+    const transition = symlogTransition(values);
     return {
       scale,
-      threshold,
+      transition,
       apply: (value) => (Number.isFinite(value)
-        ? Math.sign(value) * Math.log10(1 + Math.abs(value) / threshold) : NaN),
-      invert: (position) => Math.sign(position) * (10 ** Math.abs(position) - 1) * threshold,
+        ? Math.sign(value) * Math.log10(1 + Math.abs(value) / transition) : NaN),
+      invert: (position) => Math.sign(position) * (10 ** Math.abs(position) - 1) * transition,
     };
   }
   if (scale === 'percentile') {
     const cohort = options.cohort ?? sortedFinite(values);
     return {
       scale,
-      threshold: null,
+      transition: null,
       // The same mid-rank convention the percentile axis uses, so the two
-      // controls mean one thing. `invert` is the cohort's quantile at that rank:
-      // the pair is inverse to within the granularity of tied values, which is
-      // all a ramp tick label needs to read truthfully.
+      // controls mean one thing.
       apply: (value) => (Number.isFinite(value) && cohort.length > 0
         ? percentileRank(cohort, value) * 100 : NaN),
-      invert: (position) => (cohort.length === 0 ? NaN
-        : quantileSorted(cohort, Math.min(1, Math.max(0, position / 100)))),
+      // The cohort's own value at that rank, never an interpolation between two
+      // ranks: a rank scale is a step function, and a value halfway between two
+      // ranks is a measurement no gene has. `apply` puts `cohort[i]` at rank
+      // `(i + 0.5) / n`, so this reads the rank back as an index and rounds to
+      // the nearest one, which returns a real measurement and inverts `apply`
+      // exactly for every value in the cohort, ties included. A rank outside the
+      // cohort's own range — a diverging ramp pads its domain past it — clamps to
+      // the nearest end value rather than inventing one.
+      invert: (position) => {
+        if (cohort.length === 0) return NaN;
+        const index = Math.round((position / 100) * cohort.length - 0.5);
+        return cohort[Math.min(cohort.length - 1, Math.max(0, index))];
+      },
     };
   }
   return IDENTITY_TRANSFORM;
