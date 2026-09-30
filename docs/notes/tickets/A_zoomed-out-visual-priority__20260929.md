@@ -112,6 +112,24 @@ bucket order.
    applies to Native codon space, Metric X vs Y, Recoding-risk space, Baseline
    risk UMAP, and Perturbation space alike.
 
+6. **Disclosure, relaxed 2026-09-30 after the first render.** No ordering
+   text and no D1 notice in the visible legend or the conventions note, and no
+   info button or popover: the owner does not want explanation for what a
+   reader learns by zooming or panning. The ordering, the D2 rule, the
+   genes-per-column figure, and the D1 notice while it applies stay in the
+   accessible descriptions and inside the collapsed colour explanation, beside
+   the draw-direction control. The legend is no taller than on `34bb240` in any
+   colour. This relaxes D1's first condition and the "priority is disclosed"
+   constraint below; the second D1 condition, that the hollow style returns as
+   soon as a bar is wide enough, stands.
+7. **No visible cue for bundled columns.** A zoomed-out column that stands for
+   several CDSs gets no marker, badge, or status text; the site is not optimised
+   for phones, and zooming in is the answer.
+8. **D4 goes to a follow-up ticket.** The inspector's render on `b6e21e9` found
+   the standout TSS initiation and expression genes correct but not conspicuous
+   at whole-genome zoom. This ticket resolves on ordering alone; a separate
+   ticket proposes the second channel on that evidence.
+
 Pushing to `main` has not been approved for this ticket. The coordinator asks
 before any push.
 
