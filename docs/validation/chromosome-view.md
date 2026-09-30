@@ -500,6 +500,17 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
 - `document.documentElement.scrollWidth <= innerWidth` in every state;
 - a clean browser console.
 
+Column checks are taken by `getImageData`, never by eye: at whole-genome zoom a
+column is one CSS pixel, which is two device pixels at ratio 2, so count in the
+unit `pieceRect` snaps to or every figure doubles. The expected picture comes from
+the site's own modules imported into the page, not from a copy of the drawing
+code, which goes stale the moment a rule changes. The zoomed-out visual priority
+ticket, resolved 2026-09-30, measured its before and after this way at 375, 768,
+1280 and 1440 px: columns with a categorised CDS reading white went from 932 to
+1,644 to 0, the ten highest TSS initiation genes owning their column from 1 to 5
+of 10 to 9 to 10, and a click selecting the CDS its column shows from 16% to 100%
+of shared columns, with scatter frame time unchanged at 0.5 ms median.
+
 The published site pins `color-scheme: light` in `site/css/app.css`, so a dark
 operating-system preference renders it identically. Emulating dark is still part
 of the check; the expected result is an unchanged page, and a difference means

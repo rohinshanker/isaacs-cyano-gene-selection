@@ -24,7 +24,6 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_agent-topology-and-handoff__20260928](O_agent-topology-and-handoff__20260928.md) | Owner-side half of the Claude Science topology: which agent profiles to create in that account and their loadouts, and ratification of the mandatory-validation trigger list. The mechanism lives in [claude-science-handoff.md](../../validation/claude-science-handoff.md) |
 | [O_progressive-site-loading__20260929](O_progressive-site-loading__20260929.md) | Replace the blank loading page with a shell present from first paint, a determinate loading-bar overlay, and data fetched in priority tiers; eight further suggestions await the owner's approval. **Not started by owner instruction** |
 | [O_standout-visual-channel__20260930](O_standout-visual-channel__20260930.md) | Decide whether standout TSS initiation and expression genes get a second visual mark on the zoomed-out chromosome view, beyond paint order; was decision D4 of the visual priority ticket, deferred on the inspector's render. Four questions for the owner. **Not started** |
-| [A_zoomed-out-visual-priority__20260929](A_zoomed-out-visual-priority__20260929.md) | Draw the informative marks on top when genes share pixels: categorised over uncategorised and no white gaps on the zoomed-out chromosome view, standout high values over low ones for TSS initiation and expression, and the same ordering on the scatter maps. **Active 2026-09-30**, implemented as `b6e21e9`, returned for fixes by review, repair dispatched |
 
 ## Pending Claude Science
 
