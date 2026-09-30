@@ -20,6 +20,14 @@ export const MIN_ZOOM = 0.4;
 export const MAX_ZOOM = 200;
 export const SQUARE_TO_CIRCLE_RADIUS = Math.sqrt(4 / Math.PI);
 
+/**
+ * Stroke widths the frame paints around a filled marker. A stroke is centred on
+ * the path, so half of it lies outside the body's radius, and a pointer on that
+ * half is on the marker's paint even though it is outside the path.
+ */
+export const DERIVED_RING_WIDTH = 1.3;
+export const REVIEWED_BORDER_WIDTH = 0.8;
+
 /** Keep a zoom factor inside the range the plot can actually render. */
 export function clampZoom(zoom) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
@@ -392,6 +400,28 @@ export function markerBodies(radius, scale) {
   };
 }
 
+/**
+ * How far each filled marker kind's paint reaches, stroke included: the body
+ * radius plus the half of the stroke that lies outside it. The hit test reads
+ * this, not {@link markerBodies}, because a category ring's dark edge is on the
+ * screen and a click on it selects the ring's gene, not the disc it covers.
+ * Open kinds keep their body radius; nothing is painted inside them anyway and
+ * {@link markerIsFilled} keeps them out of containment.
+ *
+ * @param {number} radius the base radius the frame is drawing at.
+ * @param {{categorical?: boolean}|null|undefined} scale
+ */
+export function markerReach(radius, scale) {
+  const bodies = markerBodies(radius, scale);
+  const categorical = Boolean(scale?.categorical);
+  return {
+    ...bodies,
+    [MARKER_KINDS.derived.code]: bodies[MARKER_KINDS.derived.code] + DERIVED_RING_WIDTH / 2,
+    [MARKER_KINDS.colored.code]: bodies[MARKER_KINDS.colored.code]
+      + (categorical ? REVIEWED_BORDER_WIDTH / 2 : 0),
+  };
+}
+
 /** Whether a marker kind's body is painted rather than open. */
 export function markerIsFilled(code) {
   return Boolean(KIND_BY_CODE[code]?.filled);
@@ -672,7 +702,7 @@ export class ScatterPlot {
     const { x, y } = this.projection;
     const { kx, ky, cx, cy, ox, oy } = this.transform();
     const buckets = this.buckets ?? this.rebuildBuckets();
-    const bodies = markerBodies(this.markerRadius(), this.colors?.scale);
+    const bodies = markerReach(this.markerRadius(), this.colors?.scale);
     let onTop = -1;
     let onTopRank = -1;
     let nearest = -1;
@@ -1003,7 +1033,7 @@ export class ScatterPlot {
     const reach = bodies[MARKER_KINDS.derived.code];
     context.fillStyle = DERIVED_MARKER_FILL;
     context.strokeStyle = scale.buckets[bucket];
-    context.lineWidth = 1.3;
+    context.lineWidth = DERIVED_RING_WIDTH;
     context.beginPath();
     for (let n = 0; n < list.length; n += 1) {
       const i = list[n];
@@ -1041,7 +1071,7 @@ export class ScatterPlot {
     context.fill();
     if (!scale.categorical) return;
     context.strokeStyle = REVIEWED_MARKER_BORDER;
-    context.lineWidth = 0.8;
+    context.lineWidth = REVIEWED_BORDER_WIDTH;
     context.stroke();
   }
 

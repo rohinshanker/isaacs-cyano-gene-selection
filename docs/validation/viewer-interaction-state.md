@@ -157,8 +157,11 @@ selects the mark painted on top, not the one whose centre is nearest.
 - On the scatter map, where the pointer is inside a painted disc the topmost such
   disc wins, and the nearest centre decides only where the pointer is on no disc
   at all — which is what a click in empty space needs. The open ring for a gene
-  with no value is not a disc: nothing is painted inside it. The rank comes from
-  the batches, so a pointer move reads it and never sorts.
+  with no value is not a disc: nothing is painted inside it. A disc reaches as
+  far as its paint, stroke included (`markerReach`): a reviewed disc's dark
+  border and a derived ring's coloured stroke lie half outside the path, and a
+  pointer on that half is on the mark that drew it. The rank comes from the
+  batches, so a pointer move reads it and never sorts.
 - On the chromosome view, a click on an occupied column selects the CDS that
   column shows; see
   [chromosome-view.md](chromosome-view.md#which-cds-a-shared-column-shows).

@@ -14,7 +14,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ScatterPlot, batchList, bucketDrawOrder, buildMarkerBuckets, markerBodies, paintBatches,
+  DERIVED_RING_WIDTH, REVIEWED_BORDER_WIDTH,
+  ScatterPlot, batchList, bucketDrawOrder, buildMarkerBuckets, markerBodies, markerReach,
+  paintBatches,
 } from '../../site/js/ui/scatter.js';
 import {
   comparePaintPriority, paintPriority,
@@ -314,6 +316,60 @@ test('a click where two discs overlap pins the one painted on top', () => {
       restore();
     }
   }
+});
+
+test('a click on the painted border of a reviewed disc selects it, not the disc under it', () => {
+  // The defect: at 1280 px in Function category colour the pointer sat on the
+  // dark border of `M744_RS00090`, 4.36 px from its centre, and the click pinned
+  // the blue disc beneath it, because containment stopped at the 4.29 px path
+  // and the stroke painted outside it was not counted. A reviewed disc draws
+  // over a derived one, so its border is the paint on top at that pixel.
+  const scale = buildCategoryColorScale(2);
+  const projection = {
+    available: true,
+    x: Float64Array.from([0, 0.004, 1]),
+    y: Float64Array.from([0, 0, 0]),
+    xLabel: 'x',
+    yLabel: 'y',
+  };
+  const values = Float64Array.from([0, 1, 1]);
+  const { plot, restore } = drive((instance) => {
+    instance.setProjection(projection);
+    instance.setColor({ values, scale, derived: Uint8Array.from([1, 0, 0]) });
+  });
+  try {
+    const bodies = markerBodies(plot.markerRadius(), scale);
+    const reach = markerReach(plot.markerRadius(), scale);
+    const reviewed = centreOf(plot, 1);
+    const derived = centreOf(plot, 0);
+    // Past the reviewed path but inside its border, on the side that lies over
+    // the derived disc drawn beneath it.
+    const onBorder = { x: reviewed.x - (bodies[4] + REVIEWED_BORDER_WIDTH / 4), y: reviewed.y };
+    assert.ok(Math.abs(onBorder.x - derived.x) < bodies[3], 'the derived disc is under that pixel');
+    assert.ok(Math.abs(onBorder.x - reviewed.x) > bodies[4], 'and the reviewed path is not');
+    assert.ok(Math.abs(onBorder.x - reviewed.x) < reach[4], 'but its painted border is');
+    assert.equal(plot.hitTest(onBorder.x, onBorder.y), 1, 'the border on top wins');
+    // Just past the border the derived disc, still under the pointer, wins again.
+    const pastBorder = { x: reviewed.x - (reach[4] + 0.05), y: reviewed.y };
+    assert.equal(plot.hitTest(pastBorder.x, pastBorder.y), 0);
+  } finally {
+    restore();
+  }
+});
+
+test('the painted reach is the body plus the half of the stroke outside it', () => {
+  const ramp = markerBodies(2.3, RAMP);
+  const rampReach = markerReach(2.3, RAMP);
+  const categories = buildCategoryColorScale(2);
+  const categoryBodies = markerBodies(2.3, categories);
+  const categoryReach = markerReach(2.3, categories);
+  assert.equal(rampReach[3], ramp[3] + DERIVED_RING_WIDTH / 2, 'a derived ring in metric colour');
+  assert.equal(rampReach[4], ramp[4], 'a metric disc has no border');
+  assert.equal(categoryReach[3], categoryBodies[3] + DERIVED_RING_WIDTH / 2);
+  assert.equal(categoryReach[4], categoryBodies[4] + REVIEWED_BORDER_WIDTH / 2,
+    'a reviewed disc in category colour has its dark border');
+  assert.equal(rampReach[2], ramp[2], 'an open ring keeps its body radius');
+  assert.equal(rampReach[0], ramp[0]);
 });
 
 test('a click on no disc at all still finds the nearest centre', () => {
