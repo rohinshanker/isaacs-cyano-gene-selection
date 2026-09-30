@@ -63,11 +63,20 @@ was invisible. Under the owner's decision of 2026-09-30 a derived category
 narrower than that threshold draws in its **full category colour** instead, and
 the hollow style returns the moment a bar is wide enough to show it.
 
+The threshold is applied **per drawn segment**, not per CDS: a discontinuous CDS
+can have one segment wide enough for the hollow style and one not, and each
+segment is drawn as what it can actually show. `M744_RS00920` at 1280 px over
+160,000–180,000 is the case — segments of 1.9 and 27.9 px, the first solid and
+the second hollow.
+
 This is the one place a derived category is drawn the same as a reviewed one, so
 it is disclosed rather than left to be noticed: at that zoom the legend area and
 the canvas's accessible description both say that derived and reviewed colour
 draw alike **and give the count of each**, which was the owner's condition on
-approving it. Nothing about the label changes — the detail panel, the export, the
+approving it. A CDS counts once if any segment the view drew is solid, so a CDS
+like the one above is in the count; counting only the CDSs whose every segment
+was narrow left it out and let the note claim no derived category was drawn solid
+while one was. Nothing about the label changes — the detail panel, the export, the
 conflict notes and the counts still name the evidence source for every locus, and
 the scatter map, whose points are never sub-pixel, keeps the hollow marker at
 every size. See
@@ -76,7 +85,12 @@ every size. See
 **A reviewed category is drawn over a derived one wherever they overlap**, on
 both views, so where the two coincide it is the lab-reviewed evidence that is
 seen. On the scatter map the derived batch is issued before the reviewed one;
-before 2026-09-30 it was issued after.
+before 2026-09-30 it was issued after. Which of two *different* categories of
+equal evidence is seen is decided per column on the chromosome view — the
+category with more CDSs in that column, then the earlier locus — and by batch on
+the scatter map, where points of one colour are drawn as one path and cannot be
+interleaved; see
+[viewer-interaction-state.md](viewer-interaction-state.md#which-mark-is-seen-where-they-overlap).
 
 ## Blinded judgments
 

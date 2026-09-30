@@ -10,7 +10,8 @@ import assert from 'node:assert/strict';
 import {
   CATEGORICAL_DIRECTION_REASON, DEFAULT_DRAW_DIRECTION, DRAW_DIRECTIONS, DRAW_DIRECTION_LABELS,
   EMPHASIS_RANK, EVIDENCE_RANK, PAINT_TIER, comparePaintPriority, describeDrawOrder, drawOrderNote,
-  normalizeDrawDirection, paintPriority, paintRanks, sortByPaintOrder,
+  normalizeDrawDirection, paintBatchOrder, paintPriority, paintRanks, sortByPaintOrder,
+  topByPaintOrder,
 } from '../../site/js/core/paint-priority.js';
 
 /**
@@ -95,10 +96,12 @@ test('a gene with no value stays under the valued ones in the lowest direction t
 });
 
 test('highest on top paints the valued genes ascending, lowest reverses only them', () => {
-  assert.deepEqual(sortByPaintOrder([0, 1, 2, 3, 4], metricModel()), [0, 1, 2, 3, 4]);
+  // Genes 0 and 1 are both filtered out and tie on every field, so the earlier
+  // locus is painted last *within that tier* and stays under everything above it.
+  assert.deepEqual(sortByPaintOrder([0, 1, 2, 3, 4], metricModel()), [1, 0, 2, 3, 4]);
   assert.deepEqual(
     sortByPaintOrder([0, 1, 2, 3, 4], metricModel({ direction: 'lowest' })),
-    [0, 1, 2, 4, 3],
+    [1, 0, 2, 4, 3],
   );
 });
 
@@ -108,7 +111,7 @@ test('a non-finite value inside the valued tier does not poison the comparison',
   // implementation-defined.
   const model = metricModel({ hasValue: () => true, valueOf: () => NaN });
   assert.equal(paintPriority(3, model).value, 0);
-  assert.deepEqual(sortByPaintOrder([4, 3, 2], model), [2, 3, 4]);
+  assert.deepEqual(sortByPaintOrder([4, 3, 2], model), [4, 3, 2]);
 });
 
 test('in category colour a derived category draws under a reviewed one', () => {
@@ -132,10 +135,14 @@ test('owner decision D2: reviewed beats a bigger derived category, not the rever
   assert.deepEqual(sortByPaintOrder([3, 1], model), [1, 3]);
 });
 
-test('owner decision D2: an equal majority falls through to locus order', () => {
+test('owner decision D2: an equal majority falls through to the earlier locus', () => {
   const model = categoryModel({ columnMajority: () => 2 });
-  assert.deepEqual(sortByPaintOrder([2, 1], model), [1, 2]);
-  assert.deepEqual(sortByPaintOrder([1, 2], model), [1, 2]);
+  // Gene 1 is the earlier locus, so it is painted last and is what the column
+  // shows. The disclosure and the validation documents say "then the earlier
+  // locus"; the comparator used to leave the later one on top instead.
+  assert.deepEqual(sortByPaintOrder([2, 1], model), [2, 1]);
+  assert.deepEqual(sortByPaintOrder([1, 2], model), [2, 1]);
+  assert.equal(topByPaintOrder([1, 2], model), 1);
 });
 
 test('emphasised marks sit above every valued one, in their own order', () => {
@@ -166,13 +173,29 @@ test('a model that omits the optional accessors still orders', () => {
   assert.equal(entry.tier, PAINT_TIER.valued);
   assert.equal(entry.emphasis, EMPHASIS_RANK.none);
   assert.equal(entry.majority, 0);
-  assert.deepEqual(sortByPaintOrder([2, 1, 0], bare), [0, 1, 2]);
+  assert.deepEqual(sortByPaintOrder([2, 1, 0], bare), [0, 2, 1]);
 });
 
-test('ties break by locus order, so a re-render never flickers', () => {
+test('ties break by the earlier locus, so a re-render never flickers', () => {
   const model = metricModel({ passes: () => true, hasValue: () => true, valueOf: () => 7 });
-  assert.deepEqual(sortByPaintOrder([4, 0, 2, 3, 1], model), [0, 1, 2, 3, 4]);
-  assert.deepEqual(sortByPaintOrder([0, 1, 2, 3, 4], model), [0, 1, 2, 3, 4]);
+  // Painted ascending, so the earliest locus is last and is the one seen. Two
+  // different input orders give the same answer, which is what stops a flicker.
+  assert.deepEqual(sortByPaintOrder([4, 0, 2, 3, 1], model), [4, 3, 2, 1, 0]);
+  assert.deepEqual(sortByPaintOrder([0, 1, 2, 3, 4], model), [4, 3, 2, 1, 0]);
+  assert.equal(topByPaintOrder([4, 0, 2, 3, 1], model), 0);
+  assert.ok(comparePaintPriority(paintPriority(0, model), paintPriority(1, model)) > 0,
+    'the earlier locus compares greater, so it sorts last and lands on top');
+});
+
+test('the top of an empty list is nothing, not a gene', () => {
+  assert.equal(topByPaintOrder([], metricModel()), -1);
+});
+
+test('the top of a list is the gene the full sort would paint last', () => {
+  const model = metricModel();
+  for (const indices of [[0, 1, 2, 3, 4], [4, 3], [2], [0, 1]]) {
+    assert.equal(topByPaintOrder(indices, model), sortByPaintOrder(indices, model).at(-1));
+  }
 });
 
 test('sorting leaves the caller’s list alone, since both views keep theirs', () => {
@@ -214,9 +237,15 @@ test('the category disclosure names the evidence order, which has no direction',
 test('the legend clause is one short sentence and still says the direction', () => {
   const highest = drawOrderNote({ categorical: false, direction: 'highest' });
   const lowest = drawOrderNote({ categorical: false, direction: 'lowest' });
-  assert.equal(highest, 'Overlapping marks: highest value on top.');
-  assert.equal(lowest, 'Overlapping marks: lowest value on top.');
-  assert.ok(highest.length < 60 && lowest.length < 60);
+  // Short enough to cost the legend no line at any of the four widths, in any
+  // of the 53 metric colours: the notes are set to a 38-character measure, and
+  // the clause takes the characters the note was spending on repeating the
+  // scale's name. The full sentence is in `describeDrawOrder`.
+  assert.equal(highest, 'Overlaps: highest on top.');
+  assert.equal(lowest, 'Overlaps: lowest on top.');
+  assert.ok(highest.length <= 26 && lowest.length <= 26);
+  assert.match(highest, /highest/);
+  assert.match(lowest, /lowest/);
   assert.equal(drawOrderNote({ categorical: true, direction: 'lowest' }),
     'Overlapping marks: reviewed over derived, over no category.');
 });
@@ -224,4 +253,99 @@ test('the legend clause is one short sentence and still says the direction', () 
 test('the reason a category colour cannot choose a direction is stated, not implied', () => {
   assert.match(CATEGORICAL_DIRECTION_REASON, /no value order to reverse/);
   assert.match(CATEGORICAL_DIRECTION_REASON, /lab-reviewed above source-derived/);
+});
+
+test('a category model with no evidence accessor reads every category as reviewed', () => {
+  // `isDerived` is optional, so a view that has no derivation to report must
+  // still get a total order rather than an undefined evidence rank.
+  const bare = {
+    categorical: true,
+    passes: () => true,
+    hasValue: () => true,
+  };
+  assert.equal(paintPriority(0, bare).evidence, EVIDENCE_RANK.reviewed);
+  assert.deepEqual(sortByPaintOrder([0, 1], bare), [1, 0]);
+});
+
+test('the disclosure drops the metric name when there is none to give', () => {
+  assert.match(describeDrawOrder({ categorical: false }),
+    /^Where marks overlap, the highest value draws on top/);
+  assert.match(describeDrawOrder({ categorical: false, direction: 'lowest' }),
+    /^Where marks overlap, the lowest value draws on top/);
+});
+
+/**
+ * The batch order a view that groups marks by colour issues, from this same
+ * rule. The fields are what a batch of marks shares; the sequence comes back
+ * from {@link comparePaintPriority}, not from the caller's own opinion.
+ */
+const BATCHES = Object.freeze([
+  { passes: false, hasValue: false },
+  { passes: false, hasValue: true },
+  { hasValue: false },
+  { derived: true, value: 0 },
+  { derived: true, value: 1 },
+  { value: 0 },
+  { value: 1 },
+]);
+
+test('batches are issued by tier, then evidence, then value', () => {
+  assert.deepEqual(
+    paintBatchOrder(BATCHES, { categorical: true }),
+    [0, 1, 2, 3, 4, 5, 6],
+    'in category colour every derived batch precedes every reviewed one',
+  );
+  assert.deepEqual(
+    paintBatchOrder(BATCHES, { categorical: false }),
+    [0, 1, 2, 3, 5, 4, 6],
+    'in metric colour the value decides, and evidence is not part of the rule',
+  );
+});
+
+test('the lowest direction reverses the valued batches and nothing above them', () => {
+  const order = paintBatchOrder(BATCHES, { categorical: false, direction: 'lowest' });
+  assert.deepEqual(order, [0, 1, 2, 4, 6, 3, 5]);
+  assert.deepEqual(order.slice(0, 3), [0, 1, 2],
+    'the filtered-out and no-value batches stay at the bottom in either direction',
+  );
+});
+
+test('two batches the rule cannot separate keep the order the caller declared', () => {
+  // The rule's last word is the earlier locus, and a batch has no single locus.
+  // This is the one permitted difference from a view that sorts marks, so it is
+  // pinned: the declared sequence is the tie-break, and it is deterministic.
+  const tied = [{ value: 7 }, { value: 7 }, { value: 7 }];
+  assert.deepEqual(paintBatchOrder(tied, { categorical: false }), [0, 1, 2]);
+  assert.deepEqual(paintBatchOrder(tied, { categorical: false, direction: 'lowest' }), [0, 1, 2]);
+  assert.deepEqual(paintBatchOrder(tied, { categorical: true }), [0, 1, 2]);
+});
+
+test('a batch that omits every field is a passing, valued, reviewed batch at value 0', () => {
+  const [only] = paintBatchOrder([{}]);
+  assert.equal(only, 0);
+  assert.deepEqual(paintBatchOrder([{ value: 1 }, {}]), [1, 0],
+    'defaults put it below a batch of higher value, so "no fields" is not "no tier"',
+  );
+  assert.deepEqual(paintBatchOrder([]), []);
+});
+
+test('the lowest direction survives a value the model cannot give a number for', () => {
+  // Both the `-value` and the finiteness guard, in the reversed direction: the
+  // negation of a non-finite value is still non-finite, and the comparator has
+  // to stay total either way.
+  const nanModel = metricModel({
+    direction: 'lowest', hasValue: () => true, valueOf: () => NaN,
+  });
+  assert.equal(paintPriority(3, nanModel).value, 0);
+  const bareLowest = {
+    categorical: false,
+    direction: 'lowest',
+    passes: () => true,
+    hasValue: () => true,
+  };
+  assert.equal(paintPriority(2, bareLowest).value, 0,
+    'a model with no value accessor at all is 0, not NaN, in either direction');
+  assert.deepEqual(sortByPaintOrder([2, 1], bareLowest), [2, 1]);
+  const finiteLowest = metricModel({ direction: 'lowest', hasValue: () => true });
+  assert.equal(paintPriority(4, finiteLowest).value, -90);
 });

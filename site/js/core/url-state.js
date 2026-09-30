@@ -50,12 +50,16 @@ const KEYS = {
  * hash ignores `csc` and draws linear, which no version number here could
  * change. The per-axis `xs`/`ys` scales were added on the same reasoning.
  *
- * The draw direction `dt` did not bump it either, on that same test. A hash
- * with no `dt` has to mean one thing, and it does: highest value on top, which
- * is both the fresh view and what every viewer drew before the field existed —
- * the colour buckets were already issued in ascending order, so a link shared
- * then showed the same picture `dt=highest` shows now. There is no older
- * meaning for an omitted field to preserve, so no reader can misread one.
+ * The draw direction `dt` did not bump it either, on that same test: a hash with
+ * no `dt` has to mean one thing, and it does — highest value on top, which is
+ * the fresh view. It does *not* mean "the picture this link used to draw", and
+ * no number here could make it. Before this field existed the chromosome view
+ * put whichever CDS started last on top rather than the highest value, and the
+ * no-value and evidence layers moved on both views; `dt=highest` is a different
+ * picture from the one an old link drew, and a version bump would not have
+ * brought the old one back because there is no code left that draws it. What
+ * the test asks is only whether an *omitted* field is ambiguous, and this one
+ * is not: it has exactly one meaning and no older one to preserve.
  */
 export const STATE_VERSION = 6;
 

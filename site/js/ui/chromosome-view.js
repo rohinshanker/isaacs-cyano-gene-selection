@@ -12,16 +12,16 @@
  * This module only turns that model into pixels and events.
  */
 import {
-  MIN_WINDOW_BP, clampWindow, describeChromosomeView, formatBasePairs, formatCoordinate,
-  fullWindow, locateIndex, navigationLanes, neighborMark, operonBrackets, panWindow,
-  positionTicks, repliconScale, tssPositions, visibleMarks, zoomWindow,
+  MIN_WINDOW_BP, clampWindow, describeChromosomeView, describeSolidDerived, formatBasePairs,
+  formatCoordinate, fullWindow, locateIndex, navigationLanes, neighborMark, operonBrackets,
+  panWindow, positionTicks, repliconScale, tssPositions, visibleMarks, zoomWindow,
 } from '../core/chromosome-model.js';
 import {
   ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, GHOST_BORDER, GHOST_COLOR,
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
 import {
-  EMPHASIS_RANK, describeDrawOrder, normalizeDrawDirection, sortByPaintOrder,
+  EMPHASIS_RANK, describeDrawOrder, normalizeDrawDirection, sortByPaintOrder, topByPaintOrder,
 } from '../core/paint-priority.js';
 import { confirmedReset } from './confirm-dialog.js';
 import { syncScaleSelect } from './scale-select.js';
@@ -210,6 +210,15 @@ export function pieceColumns(scale, piece) {
 }
 
 /**
+ * The inclusive column range a band draws into, in the unit `pieceRect` snaps
+ * to. Columns outside it are off-screen: `paintMark` skips the piece, and the
+ * reader can neither see nor click it.
+ */
+export function drawnColumns(band) {
+  return { first: Math.floor(band.left), last: Math.ceil(band.left + band.width) - 1 };
+}
+
+/**
  * Which marks land on which column of which lane: `"<lane>#<column>"` to the
  * gene indices drawn there, in coordinate order.
  *
@@ -217,8 +226,21 @@ export function pieceColumns(scale, piece) {
  * measurable rather than a hope about paint order: the same grouping decides
  * owner decision D2's majority, the genes-per-column figure the view discloses,
  * and which gene a click on a shared column selects.
+ *
+ * `extent` is the band, and bounds the answer to the columns that band actually
+ * draws into. Without it a CDS wider than the window contributes every column
+ * it would span at this scale — 1,883 of them on a 564 px canvas at one
+ * measured window — and the crowding figure counts columns nobody can see. The
+ * clamp also drops the far piece of an origin-crossing CDS whose other piece is
+ * what brought it into the window.
+ *
+ * @param {{bpToX: (bp: number) => number}} scale
+ * @param {{index: number, lane: string, pieces: {from: number, to: number}[]}[]} marks
+ * @param {{left: number, width: number}|null} extent the band, or null to leave
+ *   the columns unbounded, which is what a caller measuring geometry alone wants.
  */
-export function columnOccupancy(scale, marks) {
+export function columnOccupancy(scale, marks, extent = null) {
+  const bounds = extent ? drawnColumns(extent) : { first: -Infinity, last: Infinity };
   const columns = new Map();
   for (const mark of marks) {
     // Every earlier range is checked, not just the one before, so the grouping
@@ -228,7 +250,9 @@ export function columnOccupancy(scale, marks) {
     // has at most three pieces, so this is two comparisons.
     const ranges = mark.pieces.map((piece) => pieceColumns(scale, piece));
     ranges.forEach((range, position) => {
-      for (let column = range.first; column <= range.last; column += 1) {
+      const first = Math.max(range.first, bounds.first);
+      const last = Math.min(range.last, bounds.last);
+      for (let column = first; column <= last; column += 1) {
         // One gene in a column is one gene, however many of its own segments
         // snapped onto it.
         const alreadyCounted = ranges.slice(0, position)
@@ -242,6 +266,11 @@ export function columnOccupancy(scale, marks) {
     });
   }
   return columns;
+}
+
+/** The column number out of a `"<lane>#<column>"` occupancy key. */
+export function columnOfKey(key) {
+  return Number(key.slice(key.indexOf('#') + 1));
 }
 
 /**
@@ -304,6 +333,10 @@ export class ChromosomeView {
     // ranks so a click on a shared column answers with the gene the picture
     // shows, which is only knowable from the picture that was painted.
     this.paintRank = new Map();
+    // What each drawn column ends the frame showing, keyed
+    // `"<accession>#<lane>#<column>"`. A hit test reads the picture out of it
+    // rather than guessing at the geometry a second time.
+    this.columnShown = new Map();
     this.drawStats = { columns: null, alikeDerived: 0, reviewedDrawn: 0 };
   }
 
@@ -645,14 +678,13 @@ export class ChromosomeView {
     // evidence kind, and the ordinary sentence returns as bars widen.
     const alike = this.drawStats?.alikeDerived ?? 0;
     parts.push(alike > 0
-      ? `At this zoom ${formatCount(alike)} source-derived `
-        + `categor${alike === 1 ? 'y draws' : 'ies draw'} in the same solid category colour as the `
-        + `${formatCount(this.drawStats.reviewedDrawn)} lab-reviewed one`
-        + `${this.drawStats.reviewedDrawn === 1 ? '' : 's'}, because a bar under `
-        + `${MIN_HOLLOW_MARK_PX} pixels wide cannot show the hollow derived style. Zoom in and the `
-        + 'hollow outlined bar with a pale fill returns as soon as a bar is wide enough for it.'
-      : 'A source-derived function category draws as an outlined bar with a pale fill, '
-        + 'never as a solid reviewed one.');
+      ? describeSolidDerived({
+        derived: alike,
+        reviewed: this.drawStats.reviewedDrawn,
+        threshold: MIN_HOLLOW_MARK_PX,
+      })
+      : 'At this zoom every source-derived function category draws as an outlined bar with a '
+        + 'pale fill, never as the solid bar a lab-reviewed one takes.');
     parts.push('Shortlisted CDSs carry a dark diamond beside the bar, and '
       + 'the pinned CDS is outlined in red with a line through its band.');
     parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
@@ -748,6 +780,7 @@ export class ChromosomeView {
     ctx.font = '11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
     ctx.textBaseline = 'alphabetic';
     this.paintRank = new Map();
+    this.columnShown = new Map();
     this.drawStats = { columns: null, alikeDerived: 0, reviewedDrawn: 0 };
     for (const band of this.bands()) {
       this.paintBand(ctx, band);
@@ -793,7 +826,11 @@ export class ChromosomeView {
       accession: this.primaryTrack().accession,
       columns: this.drawStats.columns,
       alike: categorical && this.drawStats.alikeDerived > 0
-        ? { derived: this.drawStats.alikeDerived, reviewed: this.drawStats.reviewedDrawn }
+        ? {
+          derived: this.drawStats.alikeDerived,
+          reviewed: this.drawStats.reviewedDrawn,
+          threshold: MIN_HOLLOW_MARK_PX,
+        }
         : null,
     };
   }
@@ -808,6 +845,16 @@ export class ChromosomeView {
     const { colors } = this.model;
     if (!colors.scale || !colors.values) return -1;
     return colors.scale.bucketOf(colors.values[index]);
+  }
+
+  /**
+   * The value the selected colour reads for a gene, or NaN where the channel
+   * carries no values at all. A colour with no column is not an error: the
+   * shared rule's finiteness guard puts such a gene in its no-value tier.
+   */
+  colorValueOf(index) {
+    const { values } = this.model.colors;
+    return values ? values[index] : NaN;
   }
 
   /** Whether a gene has a value for the selected colour at all. */
@@ -833,33 +880,42 @@ export class ChromosomeView {
   }
 
   /**
-   * The shared paint-order rule, read against this view's own columns.
+   * The shared paint-order rule, read against this view's own state.
    *
-   * Only `columnMajority` is this view's: owner decision D2 asks, when two
-   * different categories land on one column, for the one with more CDSs in that
-   * column, and that count exists nowhere but here. Everything else in the rule
-   * comes from core/paint-priority.js, which the scatter maps read too.
+   * Everything in the rule comes from core/paint-priority.js, which the scatter
+   * maps read too. What this view supplies is its reading of the colour channel
+   * and the reader's selection, and — when it is resolving one column —
+   * `columnMajority`, owner decision D2's count of how many CDSs in that column
+   * carry the same category.
    *
-   * @param {Map<string, number[]>} columns as {@link columnOccupancy} returns.
-   * @param {Map<number, string>} firstColumn gene index to the column its first
-   *   piece snapped onto.
+   * `members` is what makes the difference between the two questions this rule
+   * answers. With no members it is the order to paint the whole band in, where
+   * no column has been named yet and no majority can be counted. With the CDSs
+   * drawn in one column it is that column's own answer: a CDS wider than a
+   * column lies in several, whose majorities differ, so a single order over the
+   * CDSs cannot be right about all of them.
+   *
+   * @param {number[]|null} members the gene indices drawn in the column being
+   *   resolved, or null to order a band.
    */
-  paintModel(columns, firstColumn) {
-    const { colors } = this.model;
-    return {
+  paintModel(members = null) {
+    const model = {
       categorical: this.categoricalColor,
       direction: normalizeDrawDirection(this.model.drawOnTop),
       passes: (index) => this.passesIndex(index),
       hasValue: (index) => this.hasColorValue(index),
-      valueOf: (index) => (colors.values ? colors.values[index] : NaN),
+      valueOf: (index) => this.colorValueOf(index),
       isDerived: (index) => this.isDerivedCategory(index),
       emphasis: (index) => this.emphasisOf(index),
+    };
+    if (!members) return model;
+    return {
+      ...model,
       columnMajority: (index) => {
         const bucket = this.colorBucketOf(index);
         if (bucket < 0) return 0;
-        const sharing = columns.get(firstColumn.get(index)) ?? [];
         let count = 0;
-        for (const other of sharing) {
+        for (const other of members) {
           if (this.passesIndex(other) && this.colorBucketOf(other) === bucket) count += 1;
         }
         return count;
@@ -915,15 +971,7 @@ export class ChromosomeView {
     ctx.textAlign = 'left';
 
     const marks = visibleMarks(track.marks, view);
-    // Filtered-out CDSs first, so a passing gene is never buried under one.
-    if (this.model.showHidden) {
-      for (const mark of marks) {
-        if (this.passes(mark)) continue;
-        this.paintMark(ctx, band, mark, { fill: GHOST_COLOR, stroke: GHOST_BORDER, hollow: false });
-      }
-    }
     this.paintMarks(ctx, band, marks);
-
     this.paintOperons(ctx, band);
     this.paintTss(ctx, band);
     this.paintSelectionMarks(ctx, band, marks);
@@ -934,47 +982,111 @@ export class ChromosomeView {
   }
 
   /**
-   * Every CDS the filters keep, painted lowest priority first, so the mark that
-   * belongs on top of a shared column is the last one drawn there.
+   * Every CDS in this band, painted lowest priority first, and then each
+   * occupied column left showing the CDS owner decision D2 names for it.
    *
    * One sort per band per frame over the visible marks, by the one rule in
    * core/paint-priority.js. Sorting rather than the old two passes is what makes
    * "the column shows the highest-priority gene among them" true of the pixels:
    * the two passes could only separate a valued CDS from an unvalued one, and
    * left the winner among the valued ones to whichever happened to start last.
+   *
+   * The filtered-out CDSs are in that one sort rather than in a pass of their
+   * own. They are the rule's bottom tier, so they come out underneath anyway,
+   * and having them in it means every drawn CDS has a paint rank — which is
+   * what makes "what does this column show" answerable for a column that holds
+   * nothing else.
    */
   paintMarks(ctx, band, marks) {
     const drawn = this.model.showHidden ? marks : marks.filter((mark) => this.passes(mark));
     const byIndex = new Map(drawn.map((mark) => [mark.index, mark]));
-    const columns = columnOccupancy(band.scale, drawn);
-    const firstColumn = new Map(drawn.map((mark) => [
-      mark.index, `${mark.lane}#${pieceColumns(band.scale, mark.pieces[0]).first}`,
-    ]));
+    const columns = columnOccupancy(band.scale, drawn, band);
     if (band.track.primary) this.drawStats.columns = columnCrowding(columns);
 
-    const passing = marks.filter((mark) => this.passes(mark)).map((mark) => mark.index);
-    const model = this.paintModel(columns, firstColumn);
-    const order = sortByPaintOrder(passing, model);
-    // Ranks over exactly the marks that were painted, so a hit test on this
-    // band answers with the gene this band shows.
+    const order = sortByPaintOrder(byIndex.keys(), this.paintModel());
     const base = this.paintRank.size;
     order.forEach((index, rank) => this.paintRank.set(index, base + rank));
 
     for (const index of order) {
       const mark = byIndex.get(index);
-      const style = this.markStyle(mark);
-      this.paintMark(ctx, band, mark, style);
-      if (!model.categorical || this.colorBucketOf(index) < 0) continue;
-      if (this.isDerivedCategory(index)) {
-        // Counted once per CDS, and only where owner decision D1 actually
-        // applies: every piece of it too narrow to show the hollow style.
-        const hollowless = mark.pieces
-          .every((piece) => pieceRect(band.scale, piece).width < MIN_HOLLOW_MARK_PX);
-        if (hollowless) this.drawStats.alikeDerived += 1;
-      } else {
-        this.drawStats.reviewedDrawn += 1;
-      }
+      this.paintMark(ctx, band, mark, this.markStyleFor(mark));
+      this.countEvidenceDrawn(band, mark);
     }
+    this.paintColumnWinners(ctx, band, columns, byIndex);
+  }
+
+  /**
+   * How one CDS is drawn in this frame: the ghost treatment where the filters
+   * hide it and "Show filtered-out genes" is on, its own colour otherwise.
+   */
+  markStyleFor(mark) {
+    return this.passes(mark)
+      ? this.markStyle(mark)
+      : { fill: GHOST_COLOR, stroke: GHOST_BORDER, hollow: false };
+  }
+
+  /**
+   * Owner decision D1's disclosure counts, for the CDS just painted.
+   *
+   * A derived CDS counts once if *any* segment of it that this band drew came
+   * out narrower than the hollow style needs. `some`, not `every`: a CDS drawn
+   * as two segments can have one wide enough for the hollow style and one not —
+   * `M744_RS00920` at 1280 px has segments of 1.9 and 27.9 px — and the narrow
+   * one is solid on the screen whatever the wide one does. Counting only the
+   * wholly narrow CDSs left that one uncounted, which made the disclosure say
+   * no derived category was drawn solid while one was.
+   */
+  countEvidenceDrawn(band, mark) {
+    if (!this.categoricalColor || !this.passes(mark)) return;
+    if (this.colorBucketOf(mark.index) < 0) return;
+    if (!this.isDerivedCategory(mark.index)) {
+      this.drawStats.reviewedDrawn += 1;
+      return;
+    }
+    const solid = mark.pieces.some((piece) => {
+      const { left, width } = pieceRect(band.scale, piece);
+      if (left + width < band.left || left > band.left + band.width) return false;
+      return width < MIN_HOLLOW_MARK_PX;
+    });
+    if (solid) this.drawStats.alikeDerived += 1;
+  }
+
+  /**
+   * Owner decision D2, resolved for each column rather than for each CDS, and
+   * painted wherever the band's own order did not already settle it.
+   *
+   * The majority belongs to the column, not to the CDS. A CDS drawn across
+   * several columns can hold the majority category in one and be a minority in
+   * the next, so there is no single number to put in a band-wide order: scoring
+   * a CDS by one of its columns paints it over the others, and a column then
+   * shows a category that one CDS in it carries against two that do not. Each
+   * occupied column is therefore asked its own question, and the answer is
+   * painted clipped to that column when it is not already on top of it.
+   *
+   * Nothing else in the picture moves. The clip is one column wide, the CDS is
+   * drawn by the same {@link paintMark} with the same style resolved at the same
+   * piece width, so the column takes exactly the pixels that CDS would have put
+   * there, and its outline and wrap marker stay its own.
+   */
+  paintColumnWinners(ctx, band, columns, byIndex) {
+    for (const [key, members] of columns) {
+      const winner = topByPaintOrder(members, this.paintModel(members));
+      this.columnShown.set(`${band.track.accession}#${key}`, winner);
+      const painted = members.reduce((top, index) => (
+        this.paintRank.get(index) > this.paintRank.get(top) ? index : top));
+      if (winner === painted) continue;
+      this.paintColumnSlice(ctx, band, byIndex.get(winner), columnOfKey(key));
+    }
+  }
+
+  /** One CDS's bar, painted over one column only, so that column shows it. */
+  paintColumnSlice(ctx, band, mark, column) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(column, band.layout.top, 1, band.layout.height);
+    ctx.clip();
+    this.paintMark(ctx, band, mark, this.markStyleFor(mark));
+    ctx.restore();
   }
 
   /**
@@ -1217,7 +1329,22 @@ export class ChromosomeView {
     return null;
   }
 
-  /** The CDS under a canvas position, or -1. */
+  /**
+   * The CDS under a canvas position, or -1.
+   *
+   * The bar drawn under the pointer decides, and only where none was drawn does
+   * the pointer reach for a nearby one. Every occupied column ends a frame
+   * showing the CDS {@link paintColumnWinners} resolved for it, across the whole
+   * column, so looking that answer up *is* the containment test — and it is the
+   * same answer the picture gives, by construction.
+   *
+   * The enlarged target below is what a 1 px bar needs to be clickable at all,
+   * and it was the whole of the old answer. That let a bar in column *c* sit at
+   * distance zero from a pointer in column *c+1*: wherever the neighbour ranked
+   * higher it won the click inside a bar the reader could see, on 166 of 787
+   * shared columns at 1440 px. Reaching out of a column only when that column
+   * drew nothing keeps the reach and drops the theft.
+   */
   hitTest(x, y) {
     const band = this.bandAt(y);
     if (!band) return -1;
@@ -1226,17 +1353,22 @@ export class ChromosomeView {
     const below = y >= layout.laneBelowTop && y <= layout.bracketBelowTop + 2;
     if (!above && !below) return -1;
     const lane = above ? 'above' : 'below';
+    const shown = this.columnShown.get(`${band.track.accession}#${lane}#${Math.floor(x)}`);
+    if (shown !== undefined) return shown;
     let best = -1;
     let bestDistance = Infinity;
     let bestRank = -1;
     for (const mark of visibleMarks(band.track.marks, band.window)) {
       if (mark.lane !== lane) continue;
-      if (!this.model.showHidden && !this.passes(mark)) continue;
-      // Where two CDSs are the same distance from the pointer — which is what
-      // sharing a column means — the one the picture shows wins, so a click
-      // selects the gene the reader is looking at. Every other CDS in the
-      // column stays reachable by the arrow keys and by zooming in.
-      const rank = this.paintRank.get(mark.index) ?? -1;
+      // Only a CDS this frame painted can take a click, and having a paint rank
+      // is exactly what that means: with "Show filtered-out genes" off, the
+      // ghosts were never drawn and are not there to be reached.
+      //
+      // Where two CDSs are then the same distance from the pointer, the one the
+      // picture shows wins. Every other CDS stays reachable by the arrow keys
+      // and by zooming in.
+      const rank = this.paintRank.get(mark.index);
+      if (rank === undefined) continue;
       for (const piece of mark.pieces) {
         // Measured against the rectangle the piece was drawn into, not against
         // its unsnapped coordinates. Four CDSs snapped onto one column are one

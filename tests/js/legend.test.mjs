@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  categoryExcludedLegendRows, legendMarkerDescription, renderCategoryLegend, renderLegend,
+  categoryExcludedLegendRows, describeValueScale, legendMarkerDescription, renderCategoryLegend,
+  renderLegend,
 } from '../../site/js/ui/legend.js';
 import {
   CATEGORY_UNKNOWN_COLOR, GHOST_BORDER, GHOST_COLOR, buildCategoryColorScale, buildColorScale,
@@ -89,15 +90,47 @@ test('the value legend says how overlapping marks are ordered, without a note of
       return host;
     };
     const plain = render('');
-    const ordered = render('Overlapping marks: lowest value on top.');
+    const ordered = render('Overlaps: lowest on top.');
     // The clause joins the scale's own note, so it costs no extra paragraph.
     assert.equal(
       plain.querySelectorAll('.legend-ramp-note').length,
       ordered.querySelectorAll('.legend-ramp-note').length,
     );
-    assert.match(ordered.querySelector('.legend-scale-note').textContent,
-      /Overlapping marks: lowest value on top\.$/);
-    assert.ok(!plain.querySelector('.legend-scale-note').textContent.includes('Overlapping'));
+    const plainNote = plain.querySelector('.legend-scale-note').textContent;
+    const orderedNote = ordered.querySelector('.legend-scale-note').textContent;
+    assert.match(orderedNote, /Overlaps: lowest on top\.$/);
+    assert.ok(!plainNote.includes('Overlaps'));
+    // And it costs no extra *line* either, which is the owner's condition. These
+    // notes are set to a 38-character measure, so a clause is only free if the
+    // note pays for it out of characters it was already spending: this one
+    // spends the opening repeat of the scale name, which the ramp row above
+    // still carries. Growing by less than one full line's characters is what
+    // makes that possible; appending the clause outright grew the note by 40 and
+    // made the legend one line taller in 52 of the 53 metric colours, at 375,
+    // 768, 1280 and 1440 px. The rendered measurement is the acceptance check —
+    // this is the unit guard that keeps the wording from drifting past it.
+    assert.ok(orderedNote.length - plainNote.length < 38,
+      `the clause must not cost a whole line's characters: the note went from `
+        + `${plainNote.length} to ${orderedNote.length}`);
+    assert.match(plainNote, /^Scale: /, 'with no clause the note opens by naming the scale');
+    assert.ok(!orderedNote.startsWith('Scale: '),
+      'with a clause the scale name is left to the ramp row, which shows it');
+    assert.equal(ordered.querySelector('.legend-scale-name').textContent,
+      plain.querySelector('.legend-scale-name').textContent,
+      'and the ramp row names the scale either way, so nothing is lost');
+  });
+});
+
+test('the scale note can be written without its opening name', async () => {
+  await withFakeDocument(() => {
+    const metric = { key: 'cai', label: 'CAI', unit: '' };
+    const scale = buildColorScale(Float64Array.from([0.1, 0.5, 0.9]), { scale: 'sequential' });
+    const named = describeValueScale(metric, scale);
+    const unnamed = describeValueScale(metric, scale, { nameScale: false });
+    assert.match(named, /^Scale: /);
+    assert.match(unnamed, /^The tick labels read CAI/);
+    assert.equal(named.slice(named.indexOf('The tick labels')), unnamed,
+      'the two differ by the opening sentence and by nothing else');
   });
 });
 

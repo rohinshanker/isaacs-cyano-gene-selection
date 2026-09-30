@@ -46,7 +46,10 @@ test('category marker buckets split excluded unknowns from excluded reviewed gen
     Uint8Array.from([0, 0, 0]), scale, values,
   );
   assert.deepEqual([...buckets.hiddenMissing], [0]);
-  assert.deepEqual([...buckets.hidden], [1, 2]);
+  // Back to front inside a batch, so the earlier locus is painted last there
+  // too — the same tie-break the shared rule applies between batches. Every
+  // point in a batch shares its colour, so the picture is unchanged.
+  assert.deepEqual([...buckets.hidden], [2, 1]);
 
   const model = { categoryIds: ['first', 'second'], values };
   assert.deepEqual(

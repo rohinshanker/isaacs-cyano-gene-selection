@@ -2,11 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, bandLayout, canvasHeightFor, columnCrowding,
-  columnOccupancy, fitTickLabels, fitTrackLabel, pieceColumns, resolveMarkPaint,
-  trackLabelVariants,
+  columnOccupancy, columnOfKey, drawnColumns, fitTickLabels, fitTrackLabel, pieceColumns,
+  pieceRect, resolveMarkPaint, trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
 import { repliconTracks } from '../../site/js/core/chromosome-model.js';
-import { buildCategoryColorScale, buildColorScale } from '../../site/js/ui/colors.js';
+import {
+  DERIVED_MARKER_FILL, buildCategoryColorScale, buildColorScale,
+} from '../../site/js/ui/colors.js';
 import {
   valueScaleAvailability, valueScaleClause, valueScaleTransform,
 } from '../../site/js/core/value-scales.js';
@@ -125,8 +127,16 @@ class FakeElement {
       fillStyle: '', strokeStyle: '', lineWidth: 1, font: '', textAlign: '', textBaseline: '',
       miterLimit: 10,
       clearRect: () => record({ op: 'clear' }),
-      fillRect: (x, y, w, h) => record({ op: 'fillRect', x, y, w, h, fill: context.fillStyle }),
-      strokeRect: (x, y, w, h) => record({ op: 'strokeRect', x, y, w, h, stroke: context.strokeStyle }),
+      // The clip in force is recorded with the rectangle, because a paint that
+      // is entirely outside it puts no pixel anywhere: the view repaints one
+      // column of a bar by clipping to that column, and a test asking "what is
+      // the last thing painted here" has to know which calls reached it.
+      fillRect: (x, y, w, h) => record({
+        op: 'fillRect', x, y, w, h, fill: context.fillStyle, clipBox: clip(),
+      }),
+      strokeRect: (x, y, w, h) => record({
+        op: 'strokeRect', x, y, w, h, stroke: context.strokeStyle, clipBox: clip(),
+      }),
       fillText: (text, x, y) => record({ op: 'text', text, x, y }),
       beginPath: () => { path = []; record({ op: 'beginPath' }); },
       closePath: () => record({ op: 'closePath' }),
@@ -1594,7 +1604,7 @@ test('owner decision D2: among derived categories the one with more CDSs in the 
   }
 });
 
-test('owner decision D2: an even split falls through to locus order, deterministically', () => {
+test('owner decision D2: an even split falls through to the earlier locus', () => {
   const { view, restore, ops, flush } = mount({
     genes: CROWDED,
     categorical: true,
@@ -1609,8 +1619,12 @@ test('owner decision D2: an even split falls through to locus order, determinist
       return painted[painted.length - 1].fill;
     };
     const first = last();
-    assert.equal(first, view.model.colors.scale.buckets[1],
-      'two against two: the later locus wins, which is SHARE_D of category 1');
+    // The disclosure and the validation documents both end owner decision D2
+    // with "then the earlier locus", and this is the case that says which one
+    // that is: two against two, so nothing above the tie-break can decide it.
+    // The comparator used to leave the later locus on top here.
+    assert.equal(first, view.model.colors.scale.buckets[0],
+      'two against two: the earlier locus wins, which is SHARE_A of category 0');
     // A redraw with nothing changed repaints the same winner, so the picture
     // cannot flicker between two equally ranked CDSs.
     view.draw();
@@ -1718,9 +1732,17 @@ test('the accessible description states the order, the crowding, and the D2 rule
   try {
     const label = view.canvas.getAttribute('aria-label');
     assert.match(label, /lab-reviewed category draws over a source-derived one/);
-    assert.match(label, /occupied columns hold more than one CDS/);
+    // Singular at a count of one, which is what the crowding figure reaches as
+    // soon as bars start separating: "1 of 632 occupied columns hold" was not
+    // English.
+    assert.match(label, /1 of 1 occupied columns holds more than one CDS/);
     assert.match(label, /then the category with more CDSs in that column, then the earlier locus/);
-    assert.match(label, /source-derived categories draw in the same solid colour/);
+    assert.match(label, /a CDS wide enough to cross several can hold the majority in one/);
+    // No lab-reviewed CDS is in this view, so the sentence cannot offer a count
+    // of zero as something to compare the colour against.
+    assert.match(label,
+      /4 source-derived categories draw in the solid colour a lab-reviewed category takes, with/);
+    assert.doesNotMatch(label, /the 0 lab-reviewed/);
     assert.match(label, /every CDS stays selectable, reachable by the arrow keys, and counted/);
   } finally {
     restore();
@@ -1749,12 +1771,13 @@ test('the marker note says derived and reviewed draw alike, and stops once they 
   });
   try {
     assert.match(view.markerNote.textContent,
-      /source-derived categories draw in the same solid category colour/);
+      /4 source-derived categories draw in the solid colour a lab-reviewed category takes/);
     assert.match(view.markerNote.textContent, /under 3 pixels wide/);
+    assert.doesNotMatch(view.markerNote.textContent, /the 0 lab-reviewed/);
     view.zoomBand(view.bands()[0], 400, 100300);
     flush();
     assert.match(view.markerNote.textContent,
-      /draws as an outlined bar with a pale fill, never as a solid reviewed one/);
+      /draws as an outlined bar with a pale fill, never as the solid bar a lab-reviewed one takes/);
   } finally {
     restore();
   }
@@ -1799,6 +1822,447 @@ test('in Function category colour the Draw on top control is disabled with its r
     const notice = field.find((node) => String(node.className).includes('draw-direction-notice'))[0];
     assert.equal(notice.hidden, false);
     assert.match(notice.textContent, /no value order to reverse/);
+  } finally {
+    restore();
+  }
+});
+
+/**
+ * Base pairs one CSS column covers on the primary band at whole-genome zoom,
+ * for the default stage width. `repliconScale` spreads the replicon across the
+ * band, and `pieceRect` snaps anything narrower than 1.5 px onto one column, so
+ * this is what lets a fixture put a CDS on a *named* column.
+ */
+const CHROMOSOME_BP = 2690418;
+const BAND_LEFT = 16;
+const BAND_WIDTH = CANVAS_WIDTH - 32;
+const BP_PER_COLUMN = CHROMOSOME_BP / BAND_WIDTH;
+
+/** The first base whose drawn piece snaps onto column `column`. */
+function bpAtColumn(column) {
+  return Math.round(1 + (column - BAND_LEFT) * BP_PER_COLUMN);
+}
+
+/**
+ * Paint calls that could put a pixel at drawing-space `x` in the plus-strand
+ * lane, in the order they were issued. A call whose clip excludes `x` painted
+ * nothing there and is left out.
+ */
+function paintsAt(view, ops, x) {
+  const band = view.bands()[0];
+  const top = band.layout.laneAboveTop + 2;
+  return ops.filter((op) => op.op === 'fillRect'
+    && Math.abs(op.y - top) <= 0.6
+    && op.x <= x && op.x + op.w >= x
+    && op.clipBox.left <= x && op.clipBox.right >= x);
+}
+
+test('the column fixture puts its CDSs on the columns it names', () => {
+  const genes = [
+    gene({ id: 'LEFT', start: bpAtColumn(200), end: bpAtColumn(200) + 150, strand: '+' }),
+    gene({ id: 'RIGHT', start: bpAtColumn(201), end: bpAtColumn(201) + 150, strand: '+' }),
+  ];
+  const { view, restore } = mount({ genes });
+  try {
+    const band = view.bands()[0];
+    const columns = [...columnOccupancy(band.scale, band.track.marks, band).keys()];
+    assert.deepEqual(columns, ['above#200', 'above#201']);
+    for (const mark of band.track.marks) {
+      assert.equal(pieceRect(band.scale, mark.pieces[0]).width, 1, 'each bar is one column wide');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('a click inside a one-pixel bar selects that bar, not its higher-ranked neighbour', () => {
+  // The defect this pins: a 1 px bar was given a 2 px hit rectangle, so the bar
+  // in column 200 sat at distance zero from a pointer in column 201 and, being
+  // reviewed where its neighbour is derived, won the click inside the bar the
+  // reader was pointing at. 166 of 787 shared columns at 1440 px went that way.
+  const genes = [
+    gene({ id: 'REVIEWED_LEFT', start: bpAtColumn(200), end: bpAtColumn(200) + 150, strand: '+' }),
+    gene({ id: 'DERIVED_RIGHT', start: bpAtColumn(201), end: bpAtColumn(201) + 150, strand: '+' }),
+  ];
+  for (const canvasWidth of [CANVAS_WIDTH]) {
+    const { view, restore } = mount({
+      genes,
+      viewport: { canvasWidth },
+      categorical: true,
+      categoryOf: () => 0,
+      derivedOf: (_row, index) => index === 1,
+    });
+    try {
+      const band = view.bands()[0];
+      const y = band.layout.laneAboveTop + 4;
+      assert.ok(view.paintRank.get(0) > view.paintRank.get(1),
+        'the reviewed CDS really is the higher-ranked one, or this proves nothing');
+      assert.equal(view.hitTest(200.5, y), 0, 'its own column still selects the left bar');
+      assert.equal(view.hitTest(201.5, y), 1, 'the right bar keeps the clicks inside it');
+      // The reach that a 1 px bar needs is not lost: a column that drew nothing
+      // still finds the nearest bar.
+      assert.equal(view.hitTest(202.6, y), 1);
+      assert.equal(view.hitTest(199.4, y), 0);
+      assert.equal(view.hitTest(250, y), -1, 'and it does not reach across the whole track');
+    } finally {
+      restore();
+    }
+  }
+});
+
+test('the click follows the picture at every stage width and device pixel ratio', () => {
+  // Widths stand in for the four rendered viewports; the ratio is threaded
+  // through because the hit test is measured in CSS columns and the bitmap is
+  // not. Both filter states, because "Show filtered-out genes" changes which
+  // CDSs are drawn and therefore which column shows what.
+  for (const canvasWidth of [343, 736, 1248, 1408]) {
+    for (const devicePixelRatio of [1, 2]) {
+      for (const showHidden of [true, false]) {
+        const bandWidth = canvasWidth - 32;
+        const perColumn = CHROMOSOME_BP / bandWidth;
+        const atColumn = (column) => Math.round(1 + (column - BAND_LEFT) * perColumn);
+        const genes = [
+          gene({ id: 'A', start: atColumn(120), end: atColumn(120) + 120, strand: '+' }),
+          gene({ id: 'B', start: atColumn(121), end: atColumn(121) + 120, strand: '+' }),
+          gene({ id: 'C', start: atColumn(122), end: atColumn(122) + 120, strand: '+' }),
+        ];
+        const { view, restore } = mount({
+          genes,
+          viewport: { canvasWidth, devicePixelRatio },
+          showHidden,
+          mask: Uint8Array.from([1, 0, 1]),
+          categorical: true,
+          categoryOf: () => 0,
+          derivedOf: (_row, index) => index !== 1,
+        });
+        try {
+          const band = view.bands()[0];
+          const y = band.layout.laneAboveTop + 4;
+          const where = `${canvasWidth}px, ratio ${devicePixelRatio}, showHidden ${showHidden}`;
+          assert.equal(view.hitTest(120.5, y), 0, `column 120 at ${where}`);
+          assert.equal(view.hitTest(122.5, y), 2, `column 122 at ${where}`);
+          // The filtered-out CDS in the middle column is what the column shows
+          // while ghosts are drawn, and nothing is drawn there once they are not.
+          assert.equal(view.hitTest(121.5, y), showHidden ? 1 : 0, `column 121 at ${where}`);
+        } finally {
+          restore();
+        }
+      }
+    }
+  }
+});
+
+/**
+ * Owner decision D2's counterexample, from the review of `b6e21e9`: a CDS two
+ * columns wide carrying category A, three of A in the left column, and two of
+ * category B in the right one. The right column holds one A against two B, so
+ * B is its majority — but scoring the wide CDS by the column its first piece
+ * landed on gave it A's majority of three and painted A over both.
+ */
+const SPANNING = [
+  gene({
+    id: 'WIDE_A', strand: '+',
+    start: bpAtColumn(200),
+    end: bpAtColumn(200) + Math.round(2 * BP_PER_COLUMN) - 1,
+  }),
+  gene({ id: 'A1', start: bpAtColumn(200) + 100, end: bpAtColumn(200) + 250, strand: '+' }),
+  gene({ id: 'A2', start: bpAtColumn(200) + 300, end: bpAtColumn(200) + 450, strand: '+' }),
+  gene({ id: 'B1', start: bpAtColumn(201), end: bpAtColumn(201) + 150, strand: '+' }),
+  gene({ id: 'B2', start: bpAtColumn(201) + 200, end: bpAtColumn(201) + 350, strand: '+' }),
+];
+
+/** The fixture's colour: WIDE_A, A1, A2 in bucket 0, B1 and B2 in bucket 1. */
+const SPANNING_COLOR = {
+  categorical: true,
+  categoryOf: (_row, index) => (index >= 3 ? 1 : 0),
+  derivedOf: () => true,
+};
+
+test('the spanning fixture really puts one A against two B in the right column', () => {
+  const { view, restore } = mount({ genes: SPANNING, ...SPANNING_COLOR });
+  try {
+    const band = view.bands()[0];
+    const columns = columnOccupancy(band.scale, band.track.marks, band);
+    assert.deepEqual(columns.get('above#200'), [0, 1, 2]);
+    assert.deepEqual(columns.get('above#201'), [0, 3, 4]);
+    assert.equal(pieceColumns(band.scale, band.track.marks[0].pieces[0]).last, 201,
+      'the wide CDS reaches the right column');
+  } finally {
+    restore();
+  }
+});
+
+test('owner decision D2: each column shows its own majority, not another column’s', () => {
+  const { view, restore, ops } = mount({ genes: SPANNING, ...SPANNING_COLOR });
+  try {
+    const buckets = view.model.colors.scale.buckets;
+    assert.equal(paintsAt(view, ops, 200.5).at(-1).fill, buckets[0],
+      'three of A against nothing: the left column shows A');
+    assert.equal(paintsAt(view, ops, 201.5).at(-1).fill, buckets[1],
+      'one A against two B: the right column shows B, not the wide CDS');
+    // And the click agrees with the pixels in both columns.
+    const y = view.bands()[0].layout.laneAboveTop + 4;
+    assert.equal(view.hitTest(200.5, y), 0);
+    assert.equal(view.hitTest(201.5, y), 3, 'B1 is the earlier of the two B loci');
+  } finally {
+    restore();
+  }
+});
+
+test('a column majority counts only the CDSs the filters keep, in that column', () => {
+  // Filtering out B2 leaves one A against one B in the right column, so the
+  // majority no longer decides it and the earlier locus does — the wide A. An
+  // excluded CDS that still voted would keep B on top, with the ghosts drawn
+  // and with them hidden alike.
+  for (const showHidden of [true, false]) {
+    const { view, restore, ops } = mount({
+      genes: SPANNING,
+      ...SPANNING_COLOR,
+      showHidden,
+      mask: Uint8Array.from([1, 1, 1, 1, 0]),
+    });
+    try {
+      const buckets = view.model.colors.scale.buckets;
+      assert.equal(paintsAt(view, ops, 201.5).at(-1).fill, buckets[0],
+        `one against one: the right column shows A with showHidden ${showHidden}`);
+      assert.equal(paintsAt(view, ops, 200.5).at(-1).fill, buckets[0],
+        `and the left column still shows A with showHidden ${showHidden}`);
+    } finally {
+      restore();
+    }
+  }
+});
+
+test('owner decision D1: a CDS with one narrow segment and one wide one is counted', () => {
+  // `M744_RS00920` at 1280 px is drawn as segments of 1.9 and 27.9 px: the
+  // narrow one is solid under D1 while the wide one keeps the hollow style.
+  // Counting only the CDSs whose *every* segment was narrow left it out, so the
+  // disclosure said no derived category was drawn solid while one was.
+  const narrowFrom = bpAtColumn(200);
+  const wideFrom = bpAtColumn(260);
+  const genes = [
+    gene({
+      id: 'MIXED_WIDTHS',
+      strand: '+',
+      start: narrowFrom,
+      end: wideFrom + Math.round(10 * BP_PER_COLUMN),
+      cdsSegments: [
+        [narrowFrom, narrowFrom + 150],
+        [wideFrom, wideFrom + Math.round(10 * BP_PER_COLUMN)],
+      ],
+    }),
+  ];
+  const { view, restore, ops } = mount({
+    genes, categorical: true, categoryOf: () => 0, derivedOf: () => true,
+  });
+  try {
+    const band = view.bands()[0];
+    const [narrow, wide] = band.track.marks[0].pieces
+      .map((piece) => pieceRect(band.scale, piece));
+    assert.ok(narrow.width < MIN_HOLLOW_MARK_PX, 'one segment is under the threshold');
+    assert.ok(wide.width >= MIN_HOLLOW_MARK_PX, 'and the other is over it');
+    const color = view.model.colors.scale.buckets[0];
+    assert.equal(paintsAt(view, ops, narrow.left + 0.5).at(-1).fill, color,
+      'the narrow segment is drawn in its full category colour');
+    assert.equal(paintsAt(view, ops, wide.left + 2).at(-1).fill, DERIVED_MARKER_FILL,
+      'the wide one keeps the pale hollow fill');
+    assert.equal(view.drawStats.alikeDerived, 1, 'the CDS is counted once');
+    assert.match(view.markerNote.textContent,
+      /1 source-derived category draws in the solid colour a lab-reviewed category takes/);
+    assert.match(view.markerNote.textContent, /segment by segment/);
+  } finally {
+    restore();
+  }
+});
+
+test('crowding counts only the columns the band draws into', () => {
+  // The review's case: at a 500 bp window one CDS spans 1,769 bp, and the
+  // unclamped count reported 1,883 "occupied columns" on a canvas a few hundred
+  // pixels wide. A figure the reader is told about the picture cannot count
+  // columns outside it.
+  const genes = [
+    gene({ id: 'WIDER_THAN_THE_WINDOW', start: 99565, end: 101334, strand: '+' }),
+    gene({ id: 'ELSEWHERE', start: 2000000, end: 2000500, strand: '+' }),
+  ];
+  const { view, restore, flush } = mount({ genes });
+  try {
+    view.windows.set(CHROMOSOME, { from: 100000, to: 100499 });
+    view.draw();
+    flush();
+    const band = view.bands()[0];
+    const drawn = columnOccupancy(band.scale, band.track.marks, band);
+    const unbounded = columnOccupancy(band.scale, band.track.marks);
+    assert.ok(unbounded.size > 3000, 'unclamped, one CDS claims thousands of columns');
+    assert.equal(drawn.size, BAND_WIDTH, 'clamped, it claims the columns the band has');
+    assert.deepEqual(view.drawStats.columns,
+      { occupied: BAND_WIDTH, shared: 0, median: 1, max: 1 });
+    assert.match(view.canvas.getAttribute('aria-label'),
+      new RegExp(`each of the ${BAND_WIDTH.toLocaleString('en-US')} occupied columns`));
+  } finally {
+    restore();
+  }
+});
+
+test('crowding leaves out the far piece of an origin-crossing CDS', () => {
+  // `M744_RS13290` opens the plasmid at base 1 and closes it at 46,366. A
+  // window over one end must not be told about the columns the other end would
+  // take at this scale.
+  const { view, restore, flush } = mount();
+  try {
+    view.windows.set(PLASMID_B, { from: 1, to: 3000 });
+    view.draw();
+    flush();
+    const band = view.bands().find((entry) => entry.track.accession === PLASMID_B);
+    const drawn = columnOccupancy(band.scale, band.track.marks, band);
+    const columns = [...drawn.keys()].map(columnOfKey);
+    const bounds = drawnColumns(band);
+    assert.ok(columns.length > 0, 'the opening piece is drawn');
+    assert.ok(Math.max(...columns) <= bounds.last,
+      'and nothing is counted past the right edge of the band');
+    assert.ok(Math.min(...columns) >= bounds.first, 'nor before its left edge');
+    assert.deepEqual(bounds, { first: BAND_LEFT, last: BAND_LEFT + BAND_WIDTH - 1 });
+  } finally {
+    restore();
+  }
+});
+
+test('a colour channel with no values reads NaN rather than throwing', () => {
+  const { view, restore } = mount({ genes: CROWDED });
+  try {
+    assert.equal(Number.isFinite(view.colorValueOf(0)), true);
+    view.model.colors = { ...view.model.colors, values: null };
+    assert.ok(Number.isNaN(view.colorValueOf(0)),
+      'the shared rule puts a gene with no value in its own tier, so this is not an error');
+    assert.equal(view.hasColorValue(0), false);
+    assert.equal(view.colorBucketOf(0), -1);
+  } finally {
+    restore();
+  }
+});
+
+test('an uncategorised CDS in a resolved column votes for no category', () => {
+  // `columnMajority` is asked about every CDS in the column, including one the
+  // colour has no bucket for, and an unknown has no category to be a majority of.
+  const { view, restore, ops } = mount({
+    genes: CROWDED,
+    categorical: true,
+    // SHARE_A unknown, the rest all in category 0 and derived.
+    categoryOf: (_row, index) => (index === 0 ? -1 : 0),
+    derivedOf: () => true,
+  });
+  try {
+    const band = view.bands()[0];
+    const key = `above#${Math.round(band.scale.bpToX(100000))}`;
+    const members = columnOccupancy(band.scale, band.track.marks, band).get(key);
+    const majority = view.paintModel(members).columnMajority;
+    assert.equal(view.colorBucketOf(0), -1, 'SHARE_A really has no category');
+    assert.equal(majority(0), 0, 'an unknown counts for nothing');
+    assert.equal(majority(1), 3, 'and the three categorised CDSs count for each other');
+    const buckets = view.model.colors.scale.buckets;
+    assert.equal(paintsAt(view, ops, Number(columnOfKey(key)) + 0.5).at(-1).fill, buckets[0],
+      'so the column shows the category, not the unknown');
+    assert.equal(view.drawStats.alikeDerived, 3, 'and only the categorised ones are counted');
+  } finally {
+    restore();
+  }
+});
+
+test('owner decision D1 counts only the segments this band actually drew', () => {
+  // A CDS with one segment in the window and one far outside it: the segment
+  // the band never drew cannot make the CDS solid, and the one it drew can.
+  const inWindow = bpAtColumn(200);
+  const genes = [
+    gene({
+      id: 'HALF_OFFSCREEN',
+      strand: '+',
+      start: inWindow,
+      end: inWindow + 1500000,
+      cdsSegments: [[inWindow, inWindow + 150], [inWindow + 1400000, inWindow + 1500000]],
+    }),
+  ];
+  const { view, restore, flush } = mount({
+    genes, categorical: true, categoryOf: () => 0, derivedOf: () => true,
+  });
+  try {
+    // Whole genome: both segments are on the canvas, the near one sub-pixel.
+    assert.equal(view.drawStats.alikeDerived, 1);
+    // A window holding only the wide far segment: nothing narrow is drawn.
+    view.windows.set(CHROMOSOME, { from: inWindow + 1400000, to: inWindow + 1500000 });
+    view.draw();
+    flush();
+    assert.equal(view.drawStats.alikeDerived, 0,
+      'the off-screen narrow segment is not counted');
+    assert.match(view.markerNote.textContent,
+      /every source-derived function category draws as an outlined bar with a pale fill/);
+  } finally {
+    restore();
+  }
+});
+
+test('a pointer between the two lanes hits nothing', () => {
+  const { view, restore } = mount({ genes: CROWDED });
+  try {
+    const band = view.bands()[0];
+    assert.equal(view.hitTest(200, band.layout.tssTop + 1), -1, 'above the plus lane');
+    assert.equal(view.hitTest(200, band.layout.bracketBelowTop + 6), -1, 'below the minus lane');
+  } finally {
+    restore();
+  }
+});
+
+test('the reach out of an empty column prefers a passing CDS and the mark on top', () => {
+  // Nothing is drawn on the pointer's own column, so the enlarged target
+  // applies. A ghost two columns away loses to a passing CDS the same distance
+  // off, and between two equally distant passing bars the one the picture shows
+  // on top wins.
+  const genes = [
+    gene({ id: 'GHOST_LEFT', start: bpAtColumn(198), end: bpAtColumn(198) + 120, strand: '+' }),
+    gene({ id: 'PASSING_RIGHT', start: bpAtColumn(202), end: bpAtColumn(202) + 120, strand: '+' }),
+  ];
+  const { view, restore } = mount({
+    genes,
+    mask: Uint8Array.from([0, 1]),
+    categorical: true,
+    categoryOf: () => 0,
+    derivedOf: () => false,
+  });
+  try {
+    const band = view.bands()[0];
+    const y = band.layout.laneAboveTop + 4;
+    assert.equal(view.columnShown.get(`${CHROMOSOME}#above#200`), undefined,
+      'column 200 really is empty');
+    assert.equal(view.hitTest(200.0, y), 1,
+      'two columns from each, the passing CDS wins over the ghost');
+    // Far enough from both and the reach runs out.
+    assert.equal(view.hitTest(210, y), -1);
+  } finally {
+    restore();
+  }
+});
+
+test('outside an occupied column the higher-ranked of two equal distances wins', () => {
+  const genes = [
+    gene({ id: 'DERIVED_LEFT', start: bpAtColumn(199), end: bpAtColumn(199) + 120, strand: '+' }),
+    gene({ id: 'REVIEWED_RIGHT', start: bpAtColumn(203), end: bpAtColumn(203) + 120, strand: '+' }),
+  ];
+  const { view, restore } = mount({
+    genes,
+    categorical: true,
+    categoryOf: () => 0,
+    derivedOf: (_row, index) => index === 0,
+  });
+  try {
+    const band = view.bands()[0];
+    const y = band.layout.laneAboveTop + 4;
+    // Column 201 drew nothing and sits between the two bars. The left bar's
+    // enlarged target reaches 201; the right bar's own left edge is 203, two
+    // columns away, so the left bar is the nearer one.
+    assert.equal(view.columnShown.get(`${CHROMOSOME}#above#201`), undefined);
+    assert.equal(view.hitTest(201.5, y), 0);
+    assert.ok(view.paintRank.get(1) > view.paintRank.get(0),
+      'the reviewed CDS is the higher-ranked one');
+    // Equidistant from both: the reviewed CDS is on top, so it takes the click.
+    assert.equal(view.hitTest(202.0, y), 1);
   } finally {
     restore();
   }

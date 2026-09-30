@@ -11,7 +11,9 @@ import {
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER,
   SHORTLIST_COLOR,
 } from './colors.js';
-import { DEFAULT_DRAW_DIRECTION, normalizeDrawDirection } from '../core/paint-priority.js';
+import {
+  DEFAULT_DRAW_DIRECTION, normalizeDrawDirection, paintBatchOrder,
+} from '../core/paint-priority.js';
 
 const PADDING = { left: 66, right: 18, top: 18, bottom: 46 };
 export const MIN_ZOOM = 0.4;
@@ -201,12 +203,114 @@ export function tickTarget(pixels, perTick) {
 }
 
 /**
- * Group finite plotted points by marker treatment. In category mode, an
- * excluded unknown stays distinct from an excluded classified category so the
- * canvas and legend can use different ghost shapes without changing category
- * filtering or export semantics, and a point whose colour is source-derived
- * (`derived[i]` set) is grouped apart from a reviewed one so it draws with
- * the hollow derived treatment in the same colour.
+ * The marker treatments this map batches by, and the paint-order state every
+ * point in one of them shares. `core/paint-priority.js` reads exactly these
+ * fields, so naming them here is the whole of what the map has to say about its
+ * own order — the sequence comes back from the rule.
+ *
+ * `missing` is the open marker for a point with no value for the selected
+ * colour, and its body is a ring rather than a disc: nothing is painted inside
+ * it. That is why `filled` is here and not only in the drawing code — a pointer
+ * inside an open ring is over the background, not over that point.
+ */
+export const MARKER_KINDS = Object.freeze({
+  hiddenMissing: { code: 0, passes: false, hasValue: false, filled: true },
+  hidden: { code: 1, passes: false, hasValue: true, filled: true },
+  missing: { code: 2, passes: true, hasValue: false, filled: false },
+  derived: { code: 3, passes: true, hasValue: true, derived: true, filled: true },
+  colored: { code: 4, passes: true, hasValue: true, derived: false, filled: true },
+});
+
+/** Marker kind by its code, for reading a point's kind back out of an array. */
+const KIND_BY_CODE = Object.freeze(Object.fromEntries(
+  Object.entries(MARKER_KINDS).map(([name, kind]) => [kind.code, { name, ...kind }]),
+));
+
+/**
+ * Every batch this map can issue, in the order `core/paint-priority.js` puts
+ * them in.
+ *
+ * The map batches by quantized colour because a path per point cannot hold a
+ * frame rate at a few thousand points, so it cannot sort points one at a time.
+ * It does not have to: a batch is a set of points that share every field the
+ * rule compares, so describing the batch is enough to price it, and
+ * {@link paintBatchOrder} returns the sequence. The rule has one home, and this
+ * map's pass order is no longer a second opinion about it.
+ *
+ * The declared order below is the tie-break, and the one place this map's answer
+ * can differ from a view that sorts marks: two categories of equal evidence tie
+ * on every field, and the rule's last word — the earlier locus — cannot apply to
+ * a batch. They are issued by bucket, which is the order the legend lists them
+ * in. The drawing contract states it:
+ * `docs/validation/viewer-interaction-state.md`, "Which mark is seen where they
+ * overlap".
+ *
+ * @param {{categorical?: boolean}|null|undefined} scale
+ * @param {number} bucketCount how many colour buckets the scale has.
+ * @param {string} direction the reader's draw direction.
+ * @returns {{kind: string, bucket: number}[]} first issued first.
+ */
+export function paintBatches(scale, bucketCount, direction = DEFAULT_DRAW_DIRECTION) {
+  const declared = [
+    { kind: 'hiddenMissing', bucket: -1 },
+    { kind: 'hidden', bucket: -1 },
+    { kind: 'missing', bucket: -1 },
+  ];
+  for (const kind of ['derived', 'colored']) {
+    for (let bucket = 0; bucket < bucketCount; bucket += 1) declared.push({ kind, bucket });
+  }
+  // `bucketOf` is monotonic in value, so the bucket index is a representative
+  // value: ordering the batches by it is ordering them by value, and reversing
+  // that is the whole of "lowest on top".
+  const order = paintBatchOrder(
+    declared.map((batch) => ({ ...MARKER_KINDS[batch.kind], value: batch.bucket })),
+    { categorical: Boolean(scale?.categorical), direction: normalizeDrawDirection(direction) },
+  );
+  return order.map((position) => declared[position]);
+}
+
+/**
+ * The order the colour batches of *valued* points are issued in, as bucket
+ * indices. Taken out of {@link paintBatches} so the two cannot disagree.
+ *
+ * @param {number} count how many colour buckets the scale has.
+ * @param {{categorical?: boolean}|null|undefined} scale
+ * @param {string} direction the reader's draw direction.
+ * @returns {Int32Array} bucket indices, first drawn first.
+ */
+export function bucketDrawOrder(count, scale, direction = DEFAULT_DRAW_DIRECTION) {
+  return Int32Array.from(paintBatches(scale, count, direction)
+    .filter((batch) => batch.kind === 'colored')
+    .map((batch) => batch.bucket));
+}
+
+/** The point list one batch draws, out of the grouped buckets. */
+export function batchList(buckets, batch) {
+  if (batch.kind === 'derived') return buckets.derivedLists[batch.bucket];
+  if (batch.kind === 'colored') return buckets.lists[batch.bucket];
+  return buckets[batch.kind];
+}
+
+/**
+ * Group finite plotted points by marker treatment, and record the order the
+ * batches are issued in and where each point lands in the finished picture.
+ *
+ * In category mode, an excluded unknown stays distinct from an excluded
+ * classified category so the canvas and legend can use different ghost shapes
+ * without changing category filtering or export semantics, and a point whose
+ * colour is source-derived (`derived[i]` set) is grouped apart from a reviewed
+ * one so it draws with the hollow derived treatment in the same colour.
+ *
+ * Points are collected back to front within a batch, so the *earlier* locus is
+ * the last one painted there — the rule's own tie-break, applied inside a batch
+ * as well as between them. Every point in a batch shares its colour, so this
+ * changes no pixel; it is what lets a hit test answer with the same gene the
+ * rule would name for two points that coincide exactly.
+ *
+ * `rank` is that finished order, point index to its place from the bottom up,
+ * and -1 for a point this colour draws nothing for. It is built once with the
+ * batches — on a colour, mask, or direction change — so a pointer move reads it
+ * instead of sorting anything.
  */
 export function buildMarkerBuckets(x, y, mask, scale, values, derived = null,
   direction = DEFAULT_DRAW_DIRECTION) {
@@ -215,48 +319,82 @@ export function buildMarkerBuckets(x, y, mask, scale, values, derived = null,
   const missing = [];
   const hidden = [];
   const hiddenMissing = [];
-  for (let i = 0; i < x.length; i += 1) {
+  const kinds = new Int8Array(x.length).fill(-1);
+  for (let i = x.length - 1; i >= 0; i -= 1) {
     if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
     const bucket = scale && values ? scale.bucketOf(values[i]) : -1;
     if (mask && !mask[i]) {
-      if (scale?.categorical && bucket < 0) hiddenMissing.push(i);
-      else hidden.push(i);
+      if (scale?.categorical && bucket < 0) {
+        hiddenMissing.push(i);
+        kinds[i] = MARKER_KINDS.hiddenMissing.code;
+      } else {
+        hidden.push(i);
+        kinds[i] = MARKER_KINDS.hidden.code;
+      }
       continue;
     }
     if (!scale || !values) continue;
-    if (bucket < 0) missing.push(i);
-    else if (derived && derived[i]) derivedLists[bucket].push(i);
-    else lists[bucket].push(i);
+    if (bucket < 0) {
+      missing.push(i);
+      kinds[i] = MARKER_KINDS.missing.code;
+    } else if (derived && derived[i]) {
+      derivedLists[bucket].push(i);
+      kinds[i] = MARKER_KINDS.derived.code;
+    } else {
+      lists[bucket].push(i);
+      kinds[i] = MARKER_KINDS.colored.code;
+    }
   }
-  return {
+  const buckets = {
     lists: lists.map((list) => Int32Array.from(list)),
     derivedLists: derivedLists.map((list) => Int32Array.from(list)),
     missing: Int32Array.from(missing),
     hidden: Int32Array.from(hidden),
     hiddenMissing: Int32Array.from(hiddenMissing),
+    kinds,
     order: bucketDrawOrder(lists.length, scale, direction),
+    batches: paintBatches(scale, lists.length, direction),
   };
+  const rank = new Int32Array(x.length).fill(-1);
+  let next = 0;
+  for (const batch of buckets.batches) {
+    for (const index of batchList(buckets, batch)) {
+      rank[index] = next;
+      next += 1;
+    }
+  }
+  buckets.rank = rank;
+  return buckets;
 }
 
 /**
- * The order the colour batches are issued in, decided once here rather than per
- * frame: `bucketOf` is monotonic in value, so issuing the batches by ascending
- * bucket index paints the highest value last and puts it on top, and reversing
- * that list is the whole of the "lowest on top" direction.
+ * How far each marker kind's own paint reaches from its point's centre, at a
+ * given base radius, and whether that reach is filled.
  *
- * A category set has no value order to reverse — its buckets are names — so it
- * keeps its natural order under either direction, and the control that would
- * reverse it is disabled.
+ * One reading of the marker geometry, used by the frame that draws it and by
+ * the hit test that has to agree with the frame. A hit test with its own copy
+ * of these numbers would drift the moment a marker's size changed.
  *
- * @param {number} count how many colour buckets the scale has.
+ * @param {number} radius the base radius the frame is drawing at.
  * @param {{categorical?: boolean}|null|undefined} scale
- * @param {string} direction the reader's draw direction.
- * @returns {Int32Array} bucket indices, first drawn first.
  */
-export function bucketDrawOrder(count, scale, direction = DEFAULT_DRAW_DIRECTION) {
-  const order = Int32Array.from({ length: count }, (_unused, index) => index);
-  if (scale?.categorical || normalizeDrawDirection(direction) !== 'lowest') return order;
-  return order.reverse();
+export function markerBodies(radius, scale) {
+  const categorical = Boolean(scale?.categorical);
+  const squareHalfSize = categorical ? radius + 1.5 : radius;
+  const colored = squareHalfSize * SQUARE_TO_CIRCLE_RADIUS;
+  const ghost = Math.min(5, Math.max(3.5, radius * 2 * 0.8)) / 2;
+  return {
+    [MARKER_KINDS.hiddenMissing.code]: ghost,
+    [MARKER_KINDS.hidden.code]: ghost,
+    [MARKER_KINDS.missing.code]: categorical ? Math.max(1.4, radius * 0.7) : radius + 0.4,
+    [MARKER_KINDS.derived.code]: colored,
+    [MARKER_KINDS.colored.code]: colored,
+  };
+}
+
+/** Whether a marker kind's body is painted rather than open. */
+export function markerIsFilled(code) {
+  return Boolean(KIND_BY_CODE[code]?.filled);
 }
 
 /** Radius of the centre dot inside a hollow derived marker of radius `radius`. */
@@ -508,27 +646,58 @@ export class ScatterPlot {
     return { minX: topLeft.x, maxX: bottomRight.x, minY: bottomRight.y, maxY: topLeft.y };
   }
 
-  /** Nearest gene to a screen position within `limit` pixels, or -1. */
+  /** The radius a point's marker is drawn at, at the current zoom. */
+  markerRadius() {
+    return Math.min(4.2, Math.max(1.8, 2.3 * Math.sqrt(this.zoom)));
+  }
+
+  /**
+   * The gene a pointer selects: the one painted on top where the pointer is on
+   * a drawn marker, and the nearest centre within `limit` where it is on none.
+   *
+   * Following the picture is the point. At 1280 px on the native map with
+   * "lowest on top", `M744_RS00045`'s centre is covered by `M744_RS13045`, half
+   * a pixel away: the pixel under the pointer is the covering gene's colour, and
+   * a nearest-centre answer pinned the covered one, so the reader selected a CDS
+   * whose colour was nowhere on the screen. Where painted bodies overlap the
+   * topmost wins; only a pointer over none of them reaches for the nearest
+   * centre, which is what a click in empty space needs.
+   *
+   * Still one linear scan, and still no sort. The rank comes from the batches,
+   * built once per colour, mask, or direction change, and an open marker is not
+   * a body at all — nothing is painted inside the ring for a gene with no value.
+   */
   hitTest(screenX, screenY, limit = 14) {
     if (!this.projection?.available) return -1;
     const { x, y } = this.projection;
     const { kx, ky, cx, cy, ox, oy } = this.transform();
-    let best = -1;
-    let bestDistance = limit * limit;
+    const buckets = this.buckets ?? this.rebuildBuckets();
+    const bodies = markerBodies(this.markerRadius(), this.colors?.scale);
+    let onTop = -1;
+    let onTopRank = -1;
+    let nearest = -1;
+    let nearestDistance = limit * limit;
     for (let i = 0; i < x.length; i += 1) {
-      if (this.mask && !this.mask[i] && !this.showHidden) continue;
+      const excluded = Boolean(this.mask) && !this.mask[i];
+      if (excluded && !this.showHidden) continue;
       if (!Number.isFinite(x[i]) || !Number.isFinite(y[i])) continue;
       const dx = ox + (x[i] - cx) * kx - screenX;
       const dy = oy - (y[i] - cy) * ky - screenY;
       const distance = dx * dx + dy * dy;
+      const code = buckets.kinds[i];
+      const reach = bodies[code];
+      if (markerIsFilled(code) && distance <= reach * reach && buckets.rank[i] > onTopRank) {
+        onTopRank = buckets.rank[i];
+        onTop = i;
+      }
       // A visible gene wins ties against one hidden by a filter.
-      const penalty = this.mask && !this.mask[i] ? 40 : 0;
-      if (distance + penalty < bestDistance) {
-        bestDistance = distance + penalty;
-        best = i;
+      const penalty = excluded ? 40 : 0;
+      if (distance + penalty < nearestDistance) {
+        nearestDistance = distance + penalty;
+        nearest = i;
       }
     }
-    return best;
+    return onTop >= 0 ? onTop : nearest;
   }
 
   /**
@@ -716,105 +885,30 @@ export class ScatterPlot {
     context.rect(rect.left, rect.top, rect.width, rect.height);
     context.clip();
 
-    const radius = Math.min(4.2, Math.max(1.8, 2.3 * Math.sqrt(this.zoom)));
-    const size = radius * 2;
+    const radius = this.markerRadius();
     const buckets = this.buckets ?? this.rebuildBuckets();
     const scale = this.colors?.scale;
+    const bodies = markerBodies(radius, scale);
+    const at = { x, y, kx, ky, cx, cy, ox, oy };
 
-    if (this.showHidden) {
-      const ghostSize = Math.min(5, Math.max(3.5, size * 0.8));
-      context.fillStyle = CATEGORY_UNKNOWN_COLOR;
-      for (let n = 0; n < buckets.hiddenMissing.length; n += 1) {
-        const i = buckets.hiddenMissing[n];
-        context.beginPath();
-        context.arc(
-          ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, ghostSize / 2, 0, Math.PI * 2,
-        );
-        context.fill();
-      }
-      context.fillStyle = GHOST_COLOR;
-      context.strokeStyle = GHOST_BORDER;
-      context.lineWidth = 1;
-      for (let n = 0; n < buckets.hidden.length; n += 1) {
-        const i = buckets.hidden[n];
-        const left = ox + (x[i] - cx) * kx - ghostSize / 2;
-        const top = oy - (y[i] - cy) * ky - ghostSize / 2;
-        context.fillRect(left, top, ghostSize, ghostSize);
-        context.strokeRect(left, top, ghostSize, ghostSize);
-      }
-    }
-
-    if (scale) {
-      // A gene with no value is under every valued point, in both colour modes
-      // and in both draw directions: absence is not a low value, and "lowest on
-      // top" reverses the valued order only. In metric colour these open
-      // markers used to be issued last, so a valueless ring crossed the centre
-      // of a top-percentile point and read back as the missing-value grey.
-      context.strokeStyle = scale.categorical ? CATEGORY_UNKNOWN_COLOR : MISSING_COLOR;
-      context.lineWidth = scale.categorical ? 0.9 : 1.2;
-      for (let n = 0; n < buckets.missing.length; n += 1) {
-        const i = buckets.missing[n];
-        context.beginPath();
-        context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky,
-          scale.categorical ? Math.max(1.4, radius * 0.7) : radius + 0.4,
-          0, Math.PI * 2);
-        context.stroke();
-      }
-      // Circles are the included-point convention in every colour mode. Scale
-      // the radius so each one has the same area as the square it replaced.
-      const squareHalfSize = scale.categorical ? radius + 1.5 : radius;
-      const coloredRadius = squareHalfSize * SQUARE_TO_CIRCLE_RADIUS;
-      // Derived category colours draw hollow: white disc, category-colour
-      // ring, and a centre dot in the same colour. Same area as a reviewed
-      // circle, visibly different fill, never mistaken for lab review. They go
-      // first, so a lab-reviewed category is the one seen where the two
-      // overlap; the derived layer used to be issued last and covered it.
-      const dotRadius = derivedDotRadius(coloredRadius);
-      for (const bucket of buckets.order) {
-        const list = buckets.derivedLists[bucket];
-        if (list.length === 0) continue;
-        context.fillStyle = DERIVED_MARKER_FILL;
-        context.strokeStyle = scale.buckets[bucket];
-        context.lineWidth = 1.3;
-        context.beginPath();
-        for (let n = 0; n < list.length; n += 1) {
-          const i = list[n];
-          context.moveTo(ox + (x[i] - cx) * kx + coloredRadius, oy - (y[i] - cy) * ky);
-          context.arc(
-            ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, coloredRadius, 0, Math.PI * 2,
-          );
-        }
-        context.fill();
-        context.stroke();
-        context.fillStyle = scale.buckets[bucket];
-        context.beginPath();
-        for (let n = 0; n < list.length; n += 1) {
-          const i = list[n];
-          context.moveTo(ox + (x[i] - cx) * kx + dotRadius, oy - (y[i] - cy) * ky);
-          context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, dotRadius, 0, Math.PI * 2);
-        }
-        context.fill();
-      }
-      // The reader's direction decides this list's order, and it was decided
-      // with the buckets: a frame replays it, it never sorts.
-      for (const bucket of buckets.order) {
-        const list = buckets.lists[bucket];
-        if (list.length === 0) continue;
-        context.fillStyle = scale.buckets[bucket];
-        context.beginPath();
-        for (let n = 0; n < list.length; n += 1) {
-          const i = list[n];
-          context.moveTo(ox + (x[i] - cx) * kx + coloredRadius, oy - (y[i] - cy) * ky);
-          context.arc(
-            ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, coloredRadius, 0, Math.PI * 2,
-          );
-        }
-        context.fill();
-        if (scale.categorical) {
-          context.strokeStyle = REVIEWED_MARKER_BORDER;
-          context.lineWidth = 0.8;
-          context.stroke();
-        }
+    // Every batch, in the order the shared rule put them in when the buckets
+    // were built. A frame replays that sequence; it never decides it, and it
+    // never sorts. A gene with no value is under every valued point in both
+    // colour modes and both directions because the rule says absence is not a
+    // low value — these open markers used to be issued last, so a valueless
+    // ring crossed the centre of a top-percentile point and read back as the
+    // missing-value grey.
+    for (const batch of buckets.batches) {
+      const list = batchList(buckets, batch);
+      if (list.length === 0) continue;
+      if (batch.kind === 'hiddenMissing' || batch.kind === 'hidden') {
+        if (this.showHidden) this.paintGhostBatch(batch.kind, list, at, bodies);
+      } else if (batch.kind === 'missing') {
+        this.paintMissingBatch(list, at, scale, bodies);
+      } else if (batch.kind === 'derived') {
+        this.paintDerivedBatch(list, at, scale, batch.bucket, bodies);
+      } else {
+        this.paintColoredBatch(list, at, scale, batch.bucket, bodies);
       }
     }
 
@@ -850,6 +944,105 @@ export class ScatterPlot {
     const elapsed = performance.now() - started;
     this.frameTimes.push(elapsed);
     if (this.frameTimes.length > 240) this.frameTimes.shift();
+  }
+
+  /**
+   * One ghost batch: the squares for a filtered-out point with a value, and the
+   * small circles for a filtered-out unknown category, which the legend gives
+   * different shapes so category filtering reads as itself.
+   */
+  paintGhostBatch(kind, list, at, bodies) {
+    const context = this.context;
+    const reach = bodies[MARKER_KINDS[kind].code];
+    const { x, y, kx, ky, cx, cy, ox, oy } = at;
+    if (kind === 'hiddenMissing') {
+      context.fillStyle = CATEGORY_UNKNOWN_COLOR;
+      for (let n = 0; n < list.length; n += 1) {
+        const i = list[n];
+        context.beginPath();
+        context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, reach, 0, Math.PI * 2);
+        context.fill();
+      }
+      return;
+    }
+    context.fillStyle = GHOST_COLOR;
+    context.strokeStyle = GHOST_BORDER;
+    context.lineWidth = 1;
+    for (let n = 0; n < list.length; n += 1) {
+      const i = list[n];
+      const left = ox + (x[i] - cx) * kx - reach;
+      const top = oy - (y[i] - cy) * ky - reach;
+      context.fillRect(left, top, reach * 2, reach * 2);
+      context.strokeRect(left, top, reach * 2, reach * 2);
+    }
+  }
+
+  /** The open marker for a point with no value for the selected colour. */
+  paintMissingBatch(list, at, scale, bodies) {
+    const context = this.context;
+    const { x, y, kx, ky, cx, cy, ox, oy } = at;
+    context.strokeStyle = scale.categorical ? CATEGORY_UNKNOWN_COLOR : MISSING_COLOR;
+    context.lineWidth = scale.categorical ? 0.9 : 1.2;
+    const reach = bodies[MARKER_KINDS.missing.code];
+    for (let n = 0; n < list.length; n += 1) {
+      const i = list[n];
+      context.beginPath();
+      context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, reach, 0, Math.PI * 2);
+      context.stroke();
+    }
+  }
+
+  /**
+   * One bucket of source-derived category colour: white disc, category-colour
+   * ring, and a centre dot in the same colour. Same area as a reviewed circle,
+   * visibly different fill, never mistaken for lab review.
+   */
+  paintDerivedBatch(list, at, scale, bucket, bodies) {
+    const context = this.context;
+    const { x, y, kx, ky, cx, cy, ox, oy } = at;
+    const reach = bodies[MARKER_KINDS.derived.code];
+    context.fillStyle = DERIVED_MARKER_FILL;
+    context.strokeStyle = scale.buckets[bucket];
+    context.lineWidth = 1.3;
+    context.beginPath();
+    for (let n = 0; n < list.length; n += 1) {
+      const i = list[n];
+      context.moveTo(ox + (x[i] - cx) * kx + reach, oy - (y[i] - cy) * ky);
+      context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, reach, 0, Math.PI * 2);
+    }
+    context.fill();
+    context.stroke();
+    const dotRadius = derivedDotRadius(reach);
+    context.fillStyle = scale.buckets[bucket];
+    context.beginPath();
+    for (let n = 0; n < list.length; n += 1) {
+      const i = list[n];
+      context.moveTo(ox + (x[i] - cx) * kx + dotRadius, oy - (y[i] - cy) * ky);
+      context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, dotRadius, 0, Math.PI * 2);
+    }
+    context.fill();
+  }
+
+  /**
+   * One bucket of ordinary colour. Circles are the included-point convention in
+   * every colour mode, at the same area as the square they replaced.
+   */
+  paintColoredBatch(list, at, scale, bucket, bodies) {
+    const context = this.context;
+    const { x, y, kx, ky, cx, cy, ox, oy } = at;
+    const reach = bodies[MARKER_KINDS.colored.code];
+    context.fillStyle = scale.buckets[bucket];
+    context.beginPath();
+    for (let n = 0; n < list.length; n += 1) {
+      const i = list[n];
+      context.moveTo(ox + (x[i] - cx) * kx + reach, oy - (y[i] - cy) * ky);
+      context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, reach, 0, Math.PI * 2);
+    }
+    context.fill();
+    if (!scale.categorical) return;
+    context.strokeStyle = REVIEWED_MARKER_BORDER;
+    context.lineWidth = 0.8;
+    context.stroke();
   }
 
   drawFocus(index, color, withLabel) {

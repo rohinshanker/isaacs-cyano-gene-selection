@@ -198,17 +198,32 @@ lower.
 
 **Owner decision D2, when two different categories share a column:** a
 lab-reviewed category over a source-derived one, then the category with more CDSs
-in that column, then the earlier locus. The majority is counted in the column the
-CDS's first piece snapped onto, which for a sub-pixel mark — the case D2 exists
-for — is the only column it occupies.
+in that column, then the earlier locus.
 
-**Hit testing follows the picture.** A click is measured against the rectangle a
-piece was *drawn* into, not against its unsnapped coordinates, and where two CDSs
-are the same distance from the pointer the one the picture shows wins. Four CDSs
-on one column are one column to the reader, and sub-pixel differences between
-their true coordinates must not decide the click while the picture has already
-decided something else. Every other CDS in the column stays reachable by the
-arrow keys and by zooming in; nothing is removed, and all 2,715 stay counted.
+**The majority is a property of the column, not of the CDS.** A CDS wide enough
+to cross several columns can hold the majority category in one of them and be the
+minority in the next, so there is no single number to put in a band-wide order:
+scoring the CDS by one of its columns paints it over the others, and a column
+then shows a category that one CDS in it carries against two that do not. Each
+occupied column is therefore resolved on its own, by `topByPaintOrder` with the
+majority counted **in that column**, and where that answer is not already the
+last thing the band's order painted there, the winner's bar is repainted clipped
+to that one column. The band's own order is the same rule with no majority in it,
+which is exactly right: until a column is named there is no majority to count.
+Only the CDSs the filters keep are counted, and only in the column being
+resolved.
+
+**Hit testing follows the picture.** A click on an occupied column selects the
+CDS that column shows — the same answer, read out of the same per-column
+resolution, so the two cannot disagree. The enlarged hit target a one-pixel bar
+needs applies **only** where the pointer's column drew nothing, and reaches for
+the nearest bar within three drawing units. It used to be the whole of the
+answer: a one-pixel bar was given a two-pixel rectangle, so a bar in column *c*
+sat at distance zero from a pointer in column *c+1*, and wherever that neighbour
+ranked higher it won the click inside a bar the reader could see — measured on
+`b6e21e9` as **166 of 787 shared columns** at 1440 px. Every other CDS in a
+column stays reachable by the arrow keys and by zooming in; nothing is removed,
+and all 2,715 stay counted.
 
 ### Owner decision D1: a sub-pixel source-derived category draws solid
 
@@ -224,8 +239,9 @@ category colour**; at or above it the hollow style is back. The rule lives in
 `resolveMarkPaint` and nowhere else: `markStyle` returns the pale fill as a
 request flagged `hollow`, and each piece resolves its own paint, because a
 discontinuous CDS can have one piece wide enough for the hollow style and one
-not. Measured after the change: every column holding a categorised CDS reads a
-category colour and **none reads white**, at 375, 768, 1280 and 1440 px.
+not — `M744_RS00920` at 1280 px over 160,000–180,000 is drawn as segments of 1.9
+and 27.9 px. Measured after the change: every column holding a categorised CDS
+reads a category colour and **none reads white**, at 375, 768, 1280 and 1440 px.
 
 The threshold is three because the hollow style needs an outline column on each
 side and at least one column of fill between them. There is no width between one
@@ -244,14 +260,33 @@ mark that could be misread as a low value for no measured gain.
 Paint order changes which gene is seen without changing a value, so it is
 disclosed wherever it changes the picture. The canvas's accessible description
 names the ordering and its direction, gives the genes-per-column figure on the
-primary track at the current zoom, states the D2 rule in category colour, and —
-while D1's full-colour drawing is in effect — says that source-derived and
-lab-reviewed categories draw alike at this zoom **with the count of each**, which
-is the owner's own condition on approving D1. The conventions note beneath the
-colour key says the same in the view's own words and returns to the ordinary
-"outlined bar with a pale fill" sentence as soon as bars are wide enough. Both
-are written after the bands are painted, because neither figure is knowable
-before the picture exists.
+primary track at the current zoom, states the D2 rule in category colour
+including that each column is decided by what is in it, and — while D1's
+full-colour drawing is in effect — says that source-derived and lab-reviewed
+categories draw alike at this zoom **with the count of each**, which is the
+owner's own condition on approving D1. The conventions note beneath the colour
+key says the same in the view's own words, from the same sentence in
+`describeSolidDerived`, and returns to the ordinary "outlined bar with a pale
+fill" sentence as soon as bars are wide enough. Both are written after the bands
+are painted, because neither figure is knowable before the picture exists.
+
+Three things about those figures are load-bearing, because a figure the reader is
+given about the picture has to be true of the picture:
+
+- **The crowding count is clamped to the columns the band draws into.** A CDS
+  wider than the window covers every column it would take at this scale, and
+  unclamped that reported **1,883 occupied columns on a 564 px canvas** at a
+  500 bp window. `columnOccupancy` takes the band and bounds the answer to
+  `drawnColumns(band)`, which also drops the far piece of an origin-crossing CDS
+  whose other piece is what brought it into the window.
+- **A derived CDS is counted once if *any* segment the band drew came out under
+  the threshold**, not only if every segment did. Counting only the wholly narrow
+  CDSs left `M744_RS00920`'s solid 1.9 px segment out of the count and let the
+  note say no derived category was drawn solid while one was.
+- **The sentence reads at every count it can take.** At one CDS of either kind it
+  is singular; where no lab-reviewed CDS is in the window it says what the colour
+  is rather than offering "the 0 lab-reviewed ones" as something to compare
+  against. The crowding sentence is singular at one shared column too.
 
 ## Shared state, not a second copy of it
 

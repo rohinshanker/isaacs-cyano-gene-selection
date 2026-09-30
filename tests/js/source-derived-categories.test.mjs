@@ -280,7 +280,9 @@ test('the canvas groups derived points apart from reviewed ones in the same colo
   assert.deepEqual([...buckets.missing], [3]);
   assert.deepEqual([...buckets.hidden], [4]);
   const plain = buildMarkerBuckets(x, y, mask, scale, values);
-  assert.deepEqual([...plain.lists[0]], [0, 1]);
+  // Back to front inside a batch: the earlier locus is painted last, which is
+  // the shared rule's own tie-break. One colour per batch, so no pixel moves.
+  assert.deepEqual([...plain.lists[0]], [1, 0]);
   assert.ok(plain.derivedLists.every((list) => list.length === 0));
   assert.ok(derivedDotRadius(4) < 4 && derivedDotRadius(4) > 0);
   assert.equal(derivedDotRadius(0.5), 0.9);

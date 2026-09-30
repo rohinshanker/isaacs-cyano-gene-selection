@@ -14,9 +14,10 @@
  * colour channel holds, whether the category came from review or from a
  * derivation — through the accessor object {@link paintPriority} takes.
  *
- * Ties break by the dataset's gene index, which is the release's locus order.
- * Without that a re-render could swap two genes that coincide exactly and make
- * the picture flicker between two equally valid answers.
+ * Ties break by locus order, with the earlier locus on top, which is what owner
+ * decision D2 asks for and what both views disclose. Without a last word a
+ * re-render could swap two genes that coincide exactly and make the picture
+ * flicker between two equally valid answers.
  */
 
 /** The draw directions the reader can choose, and the one a fresh view uses. */
@@ -84,8 +85,9 @@ export const EVIDENCE_RANK = Object.freeze({ derived: 0, reviewed: 1 });
  *   columnMajority?: (index: number) => number,
  *   emphasis?: (index: number) => number}} model the view's reading of the
  *   shared colour and selection state. `columnMajority` is owner decision D2's
- *   count — how many genes in this gene's own device column share its category
- *   — and is 0 for a view that has no columns. `emphasis` is
+ *   count — how many genes share this gene's category in the one column being
+ *   resolved — and is 0 for a view that has no columns, and for a caller
+ *   ordering genes rather than deciding one column. `emphasis` is
  *   {@link EMPHASIS_RANK}; a view that draws its selection marks as a separate
  *   pass above everything leaves it at `none` and gets the same picture.
  * @returns {{tier: number, evidence: number, value: number, majority: number,
@@ -107,7 +109,10 @@ export function paintPriority(index, model) {
       majority: model.columnMajority ? model.columnMajority(index) : 0,
     };
   }
-  const value = model.valueOf ? model.valueOf(index) : NaN;
+  // `valueOf` is optional, and a view that reports a value it cannot give a
+  // number for is not an error either: the finiteness guard below makes both
+  // cases 0, so the comparator stays a total order in every tier.
+  const value = model.valueOf?.(index);
   // "Lowest on top" reverses the valued tier and nothing else: a gene with no
   // value stays underneath either way, because absence is not a low value.
   const signed = normalizeDrawDirection(model.direction) === 'lowest' ? -value : value;
@@ -122,6 +127,11 @@ export function paintPriority(index, model) {
  * not use are zero for every gene in it, so they fall through without a branch
  * and the comparator stays a total order — which is what makes the locus-order
  * tie-break the last word rather than one of several.
+ *
+ * That last word is `b.index - a.index`, not the other way round, because this
+ * order is painted ascending: the smaller index has to sort *last* for the
+ * earlier locus to be the one on top. Owner decision D2 ends "then the earlier
+ * locus", and both views say so in their descriptions.
  */
 export function comparePaintPriority(a, b) {
   return a.tier - b.tier
@@ -129,7 +139,7 @@ export function comparePaintPriority(a, b) {
     || a.evidence - b.evidence
     || a.value - b.value
     || a.majority - b.majority
-    || a.index - b.index;
+    || b.index - a.index;
 }
 
 /**
@@ -145,6 +155,76 @@ export function sortByPaintOrder(indices, model) {
     .map((index) => paintPriority(index, model))
     .sort(comparePaintPriority)
     .map((entry) => entry.index);
+}
+
+/**
+ * The gene that ends up on top among `indices`: the last one this rule would
+ * paint, or -1 for an empty list.
+ *
+ * Where a view has to answer for one place in the picture rather than order
+ * everything, this is the question it is really asking — which gene does that
+ * place show. The chromosome view resolves each shared column with it, because
+ * owner decision D2's majority is a property of a column and not of a gene, and
+ * a gene wider than a column can be the majority category in one column and a
+ * minority in the next. No single order over the genes can put the right one on
+ * top of both columns; resolving them one at a time can.
+ *
+ * @param {Iterable<number>} indices
+ * @param {object} model as {@link paintPriority} takes.
+ * @returns {number}
+ */
+export function topByPaintOrder(indices, model) {
+  let top = -1;
+  let topPriority = null;
+  for (const index of indices) {
+    const priority = paintPriority(index, model);
+    if (topPriority === null || comparePaintPriority(topPriority, priority) < 0) {
+      top = index;
+      topPriority = priority;
+    }
+  }
+  return top;
+}
+
+/**
+ * The order a view that batches its marks issues those batches in, from this
+ * same rule and this same comparator.
+ *
+ * A view that groups marks by quantized colour to keep panning fast cannot sort
+ * marks one at a time, but it can still take its order from here rather than
+ * decide one of its own. Each batch is described by the state every mark in it
+ * shares — whether the filters keep them, whether they carry a value for the
+ * selected colour, whether the category came from a derivation, and one
+ * representative value monotonic in the real ones — and those descriptions are
+ * ordered by {@link comparePaintPriority}.
+ *
+ * **The one permitted difference from a view that sorts marks.** Two batches
+ * that tie on every field the rule compares keep the order the caller declared
+ * them in. The rule's last word is the earlier locus, and a batch has no single
+ * locus; `Array.prototype.sort` is stable, so the caller's declared sequence is
+ * the tie-break instead. It is deterministic, and the view that uses it states
+ * it in its drawing contract.
+ *
+ * @param {{passes?: boolean, hasValue?: boolean, derived?: boolean,
+ *   value?: number}[]} batches one descriptor per batch, in the order the
+ *   caller wants ties resolved in.
+ * @param {{categorical: boolean, direction?: string}} model
+ * @returns {number[]} positions into `batches`, first issued first.
+ */
+export function paintBatchOrder(batches, { categorical, direction } = {}) {
+  // Every descriptor is priced at the same index, so the comparator's locus
+  // term is always zero and the stable sort keeps the declared order.
+  const priorities = batches.map((batch) => paintPriority(0, {
+    categorical,
+    direction,
+    passes: () => batch.passes !== false,
+    hasValue: () => batch.hasValue !== false,
+    isDerived: () => batch.derived === true,
+    valueOf: () => batch.value ?? 0,
+  }));
+  return batches
+    .map((_batch, position) => position)
+    .sort((a, b) => comparePaintPriority(priorities[a], priorities[b]));
 }
 
 /**
@@ -183,10 +263,17 @@ export function describeDrawOrder({ categorical, direction, metricLabel = null }
       + 'the coloured ones.';
 }
 
-/** The short form for a legend note, where the long sentence would add a line. */
+/**
+ * The short form for a legend note, where the long sentence would add a line.
+ *
+ * A value ramp gets the shortest form that still says which way the picture is
+ * ordered, because the legend's notes are set to a 38-character measure and
+ * every character over it costs a whole line at every width. The full sentence
+ * is in {@link describeDrawOrder}, which both canvases' descriptions carry.
+ */
 export function drawOrderNote({ categorical, direction }) {
   if (categorical) return 'Overlapping marks: reviewed over derived, over no category.';
   return normalizeDrawDirection(direction) === 'lowest'
-    ? 'Overlapping marks: lowest value on top.'
-    : 'Overlapping marks: highest value on top.';
+    ? 'Overlaps: lowest on top.'
+    : 'Overlaps: highest on top.';
 }

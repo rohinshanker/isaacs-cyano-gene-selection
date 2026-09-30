@@ -545,7 +545,8 @@ function describePaintOrder(paintOrder) {
     parts.push(columns.shared > 0
       ? `They do share pixels here: on ${paintOrder.accession} at this zoom, `
         + `${columns.shared.toLocaleString('en-US')} of `
-        + `${columns.occupied.toLocaleString('en-US')} occupied columns hold more than one CDS, `
+        + `${columns.occupied.toLocaleString('en-US')} occupied columns `
+        + `${columns.shared === 1 ? 'holds' : 'hold'} more than one CDS, `
         + `${columns.median.toLocaleString('en-US')} in the middle column and up to `
         + `${columns.max.toLocaleString('en-US')} at the worst.`
       : `They do not share pixels here: each of the ${columns.occupied.toLocaleString('en-US')} `
@@ -554,18 +555,47 @@ function describePaintOrder(paintOrder) {
   if (paintOrder.categorical) {
     parts.push('Where CDSs of different categories share one column, the column shows a '
       + 'lab-reviewed category over a source-derived one, then the category with more CDSs in '
-      + 'that column, then the earlier locus.');
+      + 'that column, then the earlier locus. Every column is decided by what is in it: a CDS '
+      + 'wide enough to cross several can hold the majority in one and be the minority in the '
+      + 'next.');
   }
   if (paintOrder.alike) {
-    parts.push(`At this zoom ${paintOrder.alike.derived.toLocaleString('en-US')} source-derived `
-      + `categories draw in the same solid colour as the `
-      + `${paintOrder.alike.reviewed.toLocaleString('en-US')} lab-reviewed ones, because a bar `
-      + 'that narrow cannot show the hollow derived style; it returns as soon as a bar is wide '
-      + 'enough for it.');
+    parts.push(describeSolidDerived(paintOrder.alike));
   }
   parts.push('Nothing is hidden by this order: every CDS stays selectable, reachable by the '
     + 'arrow keys, and counted.');
   return parts;
+}
+
+/**
+ * Owner decision D1's disclosure: how many source-derived categories are drawn
+ * in the solid colour a lab-reviewed one takes, because their bars are too
+ * narrow to show the hollow style.
+ *
+ * Written once, here, and used by both the legend note and the canvas
+ * description, so the two cannot disagree about the same picture.
+ *
+ * Every count this can actually take has to read as English, including the two
+ * the picture really produces: one CDS of either kind, and — at any zoom where
+ * no lab-reviewed CDS is in the window — none of them. "The same solid colour
+ * as the 0 lab-reviewed ones" names a comparison the reader has nothing on
+ * screen to make, so at zero the sentence says what the colour is instead.
+ *
+ * @param {{derived: number, reviewed: number, threshold: number}} alike the
+ *   counts the last paint produced, and the width the hollow style needs.
+ */
+export function describeSolidDerived({ derived, reviewed, threshold }) {
+  const subject = derived === 1
+    ? '1 source-derived category draws'
+    : `${derived.toLocaleString('en-US')} source-derived categories draw`;
+  const against = reviewed === 0
+    ? 'in the solid colour a lab-reviewed category takes, with no lab-reviewed CDS in the window '
+      + 'to compare it against'
+    : `in the same solid colour as the ${reviewed.toLocaleString('en-US')} lab-reviewed `
+      + `${reviewed === 1 ? 'one' : 'ones'}`;
+  return `At this zoom ${subject} ${against}, because a bar under ${threshold} pixels wide `
+    + 'cannot show the hollow derived style. It returns on any bar wide enough for it, segment '
+    + 'by segment, so zooming in brings it back.';
 }
 
 /**

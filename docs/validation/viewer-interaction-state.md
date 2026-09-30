@@ -127,8 +127,44 @@ on top. The tiers, lowest first:
    focus rings it already draws last; the chromosome view sorts its bars by it
    as well, so a pinned bar is not buried by a neighbour.
 
-Ties break by **locus order**, so a re-render can never flicker between two
-equally ranked CDSs.
+Ties break by the **earlier locus**, which is therefore the one on top, and that
+is the rule's last word: two CDSs equal on every other field always resolve the
+same way, so a re-render can never flicker between them.
+
+**One rule, and what the scatter map's batching does to it.** The scatter map
+groups its points by quantized colour and draws each group as one path, because
+a path per point cannot hold a frame rate at this size. It cannot sort points one
+at a time, so it does not: a batch is a set of points that share every field the
+rule compares, and `paintBatchOrder` prices each batch through `paintPriority`
+and sequences them with the same comparator. The map's pass order — ghosts, then
+no-value rings, then derived, then reviewed — is that sequence, not a second
+opinion about it.
+
+One residual difference follows from batching, and it is the only one permitted:
+two batches that tie on **every** field the rule compares cannot be separated by
+the earlier locus, because a batch has no single locus. Those are issued in a
+fixed declared order — the unknown ghosts before the classified ones, then by
+bucket within each evidence layer, which is the order the legend lists the
+categories in. It arises only in a **category** colour, where two categories of
+equal evidence tie; a value ramp separates every batch by value, so it has no
+residual at all. `tests/js/scatter-paint-order.test.mjs` asserts the agreement
+pair by pair, on every tier and in both directions, and asserts that a value
+ramp's residual count is zero.
+
+**Picking follows the picture, on both views.** Where marks overlap, a click
+selects the mark painted on top, not the one whose centre is nearest.
+
+- On the scatter map, where the pointer is inside a painted disc the topmost such
+  disc wins, and the nearest centre decides only where the pointer is on no disc
+  at all — which is what a click in empty space needs. The open ring for a gene
+  with no value is not a disc: nothing is painted inside it. The rank comes from
+  the batches, so a pointer move reads it and never sorts.
+- On the chromosome view, a click on an occupied column selects the CDS that
+  column shows; see
+  [chromosome-view.md](chromosome-view.md#which-cds-a-shared-column-shows).
+
+Before this, both views answered by nearest centre or nearest rectangle, which
+could pin a gene whose colour was nowhere under the pointer.
 
 **Draw on top: highest or lowest.** Highest is the default for every metric.
 The control reverses only tier 3, and only for a value ramp: a function-category
@@ -152,17 +188,29 @@ decided with the buckets — on a colour, mask, or direction change — never pe
 frame.
 
 **URL field `dt`,** written only when the direction is reversed. It did **not**
-bump the encoder, on the test in the section below: an omitted `dt` has only ever
-meant highest on top, which is both the fresh view and what every earlier viewer
-drew, so no reader can misread another's hash. The export manifest records it in
-`viewState.drawOnTop`, because it changes no number but does decide which of two
-overlapping marks the exported picture shows.
+bump the encoder, on the test in the section below: an omitted `dt` has exactly
+one meaning — highest on top, which is the fresh view — so no reader can misread
+another's hash.
 
-Coverage is `tests/js/paint-priority.test.mjs` (every tier and tie-break),
-`tests/js/scatter-paint-order.test.mjs` (the batches a frame actually issues, in
-both directions), `tests/js/chromosome-view.test.mjs` (the shared-column rule and
-the hit test), `tests/js/url-state.test.mjs` (the round trip and the no-key case)
-and `tests/js/legend.test.mjs` (the note).
+It does not mean "the picture this link used to draw", and the version number
+could not have made it mean that. Before this work the chromosome view put
+whichever CDS started last on top rather than the highest value, and the no-value
+and evidence layers moved on both views, so an old link opens on a different
+picture whatever number the encoder carries; there is no code left that draws the
+old one. The version test is only about whether an omitted field is ambiguous.
+
+The export manifest records the direction in `viewState.drawOnTop`, because it
+changes no number but does decide which of two overlapping marks the exported
+picture shows.
+
+Coverage is `tests/js/paint-priority.test.mjs` (every tier, the earlier-locus
+tie-break, and the batch order), `tests/js/scatter-paint-order.test.mjs` (the
+batches a frame actually issues in both directions, the agreement between the
+comparator and the batch order, and picking where discs overlap),
+`tests/js/chromosome-view.test.mjs` (the per-column rule, the D1 disclosure
+counts, the clamped crowding figures, and the click at four stage widths and both
+device pixel ratios), `tests/js/url-state.test.mjs` (the round trip and the
+no-key case) and `tests/js/legend.test.mjs` (the note).
 
 ## Pinned status row
 
@@ -206,7 +254,8 @@ the **absence** of a field has to mean two different things to two readers, as a
 omitted `ax`/`ay` does. The per-axis scales `xs`/`ys` and the colour scale `csc`
 and the draw direction `dt` are all absent-means-the-default fields, so none of
 them bumped the encoder: an omitted `xs`/`ys` has only ever meant linear, an
-omitted `dt` has only ever meant highest on top, and an omitted `csc` means the
+omitted `dt` means highest on top and has never meant anything else, and an
+omitted `csc` means the
 colour metric's own default scale, which is exactly what a fresh view shows. That
 last point is an owner decision of 2026-09-29 and is what makes an already shared
 link to TSS initiation agree with a fresh view rather than stay pixel-identical to
