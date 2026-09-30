@@ -82,9 +82,15 @@ bucket order.
 2. **D2, reviewed then majority.** When different categories share a device
    column the column shows reviewed over derived, then the category with more
    genes in that column, then locus order. The view's description states the rule.
-3. **D3, every metric, with a control.** Highest value on top is the default for
-   every metric. A "Draw on top: highest / lowest" control, remembered in the
-   URL, reverses it.
+3. **D3, every metric, with a control kept out of the way.** Highest value on
+   top is the default for every metric. A "Draw on top: highest / lowest"
+   control, remembered in the URL, reverses it. The owner added the same day
+   that this is an aesthetic preference of little consequence, so the control
+   takes no space in a primary area: it is not on the toolbar rows, adds no
+   always-visible row or label, and lives inside an existing secondary surface
+   that is collapsed or out of the main flow by default. The direction in
+   effect is still stated in the legend note and the accessible descriptions,
+   so a non-default view is never silent.
 4. **D4, deferred.** No second visual channel for standouts is built under this
    ticket. It was not put to the owner again; the ticket's own recommendation
    stands until the ordering has been looked at in a render.
