@@ -45,6 +45,10 @@ import { renderLoadings } from './ui/loadings.js';
 import { renderLegend, renderCategoryLegend } from './ui/legend.js';
 import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/colors.js';
 import { scaleControlState, syncScaleSelect } from './ui/scale-select.js';
+import { drawDirectionControlState, renderDrawDirection } from './ui/draw-direction.js';
+import {
+  DRAW_DIRECTION_LABELS, describeDrawOrder, drawOrderNote, normalizeDrawDirection,
+} from './core/paint-priority.js';
 import { colorAnnouncement, installColorControls } from './ui/color-controls.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
@@ -584,9 +588,25 @@ function colorModel() {
     valueScale: resolved.scale,
     // One control state for both toolbars, decided where the scales are defined.
     scaleControl: scaleControlState(resolved),
+    // The same arrangement for Draw on top: one state, both surfaces.
+    drawDirectionControl: drawDirectionControlState(resolved, state.drawOnTop),
+    drawOnTop: normalizeDrawDirection(state.drawOnTop),
     derived: resolved.categorical ? categories.derived : null,
     label: metric.label,
   };
+}
+
+/**
+ * Adopt a draw direction from either surface: one shared value, both views, the
+ * legend, the accessible descriptions, the link, and the export manifest.
+ */
+function setDrawDirection(direction) {
+  const next = normalizeDrawDirection(direction);
+  if (next === state.drawOnTop) return;
+  state.drawOnTop = next;
+  renderCurrentView();
+  persist();
+  announce(`Overlapping marks now draw ${DRAW_DIRECTION_LABELS[next].toLowerCase()} on top.`);
 }
 
 /**
@@ -602,6 +622,27 @@ function syncColorScaleControl(colors) {
 /** The clause an accessible description adds for the scale in effect, if any. */
 function colorScaleClause(colors) {
   return colors.categorical ? null : valueScaleClause(colors.valueScale);
+}
+
+/**
+ * How overlapping marks are ordered, in one sentence, for a canvas's accessible
+ * description, and in one clause for a legend note.
+ *
+ * The Draw on top control lives inside a disclosure that is closed in a fresh
+ * view, so these two are what make a reversed order readable without opening
+ * anything. Both come from the rule itself, in core/paint-priority.js, so
+ * neither can describe an order the views do not paint.
+ */
+function drawOrderSentence(colors) {
+  return describeDrawOrder({
+    categorical: colors.categorical,
+    direction: colors.drawOnTop,
+    metricLabel: colors.categorical ? null : colors.label,
+  });
+}
+
+function drawOrderClause(colors) {
+  return drawOrderNote({ categorical: colors.categorical, direction: colors.drawOnTop });
 }
 
 /**
@@ -639,6 +680,7 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
       onToggleCategory: (id) => toggleCategoryFilter(id),
       onResetCategoryFilter: () => clearCategoryFilter(),
       markerConventions,
+      drawOrderNote: drawOrderClause(colors),
     });
     return;
   }
@@ -657,6 +699,7 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
     basisCounts: isMeasuredExpressionMetric
       ? expressionBasisCounts(context.dataset.genes, metric) : null,
     markerConventions,
+    drawOrderNote: drawOrderClause(colors),
   });
 }
 
@@ -758,10 +801,19 @@ function renderMap() {
   const { categories, categorical, metric, values, scale } = colors;
   syncColorScaleControl(colors);
   renderColorHelp(element('colour-help'));
+  // After the colour explanation, which rewrites that disclosure's body: the
+  // control is mounted beside the body rather than inside it, so it survives the
+  // rewrite and keyboard focus stays on the select the reader just used. The
+  // chromosome view mounts its own copy in its own toolbar the same way.
+  renderDrawDirection(element('colour-help'), colors.drawDirectionControl, {
+    idPrefix: 'draw-direction',
+    onChange: (direction) => setDrawDirection(direction),
+  });
   renderProjectionHelp(element('features-used'),
     projectionHelp(state.panel, context.dataset, context.registry,
       { x: state.axisX, y: state.axisY }), citationsManifest);
   plot.setColor({ values, scale, derived: colors.derived });
+  plot.setDrawDirection(colors.drawOnTop);
   plot.setMask(context.mask);
   plot.setShowHidden(state.showHidden);
   plot.setMarks({
@@ -798,7 +850,9 @@ function renderMap() {
     projection.available
       ? `${panel.name}: ${formatCount(context.passing)} of `
         + `${formatCount(context.dataset.genes.length)} genes shown, coloured by `
-        + `${metric.label}${scaleClause ? ` ${scaleClause}` : ''}.`
+        + `${metric.label}${scaleClause ? ` ${scaleClause}` : ''}. `
+        + `${drawOrderSentence(colors)} Nothing is hidden by that order: every gene stays `
+        + 'selectable, reachable by the arrow keys, and counted.'
       : `${panel.name}: ${projection.message}`,
   );
 
@@ -855,6 +909,8 @@ function renderChromosomeView() {
     colorKey: state.colorBy,
     colorScaleControl: colors.scaleControl,
     colorScaleClause: colorScaleClause(colors),
+    drawOnTop: colors.drawOnTop,
+    drawDirectionControl: colors.drawDirectionControl,
     pinned: pinnedIndex(),
     hovered: context.hoveredIndex,
     active: context.activeIndex,
@@ -1824,6 +1880,7 @@ async function boot() {
       persist();
       announceColorScale();
     },
+    onDrawDirectionChange: (direction) => setDrawDirection(direction),
     onShowHiddenChange: (value) => {
       state.showHidden = value;
       syncSharedControls();

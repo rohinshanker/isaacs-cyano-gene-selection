@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CHROMOSOME_TAB, ChromosomeView, bandLayout, canvasHeightFor, fitTickLabels, fitTrackLabel,
+  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, bandLayout, canvasHeightFor, columnCrowding,
+  columnOccupancy, fitTickLabels, fitTrackLabel, pieceColumns, resolveMarkPaint,
   trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
 import { repliconTracks } from '../../site/js/core/chromosome-model.js';
@@ -10,6 +11,7 @@ import {
   valueScaleAvailability, valueScaleClause, valueScaleTransform,
 } from '../../site/js/core/value-scales.js';
 import { CATEGORICAL_SCALE_REASON, scaleControlState } from '../../site/js/ui/scale-select.js';
+import { drawDirectionControlState } from '../../site/js/ui/draw-direction.js';
 import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
 
 const CHROMOSOME = 'NZ_CP006471.1';
@@ -309,14 +311,16 @@ function colorValues(genes) {
  * ramp and the Scale control are derived from one column and one chosen scale,
  * so a fixture cannot describe a state the application could not produce.
  */
-function colorModel(genes, { colorScale, categorical }) {
+function colorModel(genes, { colorScale, categorical, categoryOf, derivedOf }) {
   const values = colorValues(genes);
   if (categorical) {
+    const bucket = categoryOf ?? ((_row, index) => index % 2);
     return {
-      values: Float64Array.from(genes.map((_, index) => index % 2),
-      ),
+      values: Float64Array.from(genes.map((row, index) => bucket(row, index))),
       scale: buildCategoryColorScale(2),
-      derived: new Map(),
+      // The same shape app.js passes: one flag per gene saying its category came
+      // from a derivation rather than from lab review.
+      derived: Uint8Array.from(genes.map((row, index) => (derivedOf?.(row, index) ? 1 : 0))),
       label: 'Function category',
       categorical: true,
     };
@@ -364,8 +368,10 @@ const NEGATIVE_CAI_GENES = GENES.map(
 function viewModel({
   genes = GENES, meta = META, mask = null, showHidden = true,
   categoryFilterLabels = [], colorScale = 'log10', categorical = false,
+  drawOnTop = 'highest', pinned = -1, hovered = -1, active = -1, shortlist = new Set(),
+  categoryOf = null, derivedOf = null,
 } = {}) {
-  const colorMode = { colorScale, categorical };
+  const colorMode = { colorScale, categorical, categoryOf, derivedOf };
   const colors = colorModel(genes, colorMode);
   const { tracks, problems, verified } = repliconTracks(genes, meta);
   return {
@@ -386,10 +392,14 @@ function viewModel({
     // Read off the model's own scale by the same call `app.js` makes, so a fixture
     // cannot describe the ramp as logarithmic while building a linear one.
     colorScaleClause: colors.categorical ? null : valueScaleClause(colors.valueScale),
-    pinned: -1,
-    hovered: -1,
-    active: -1,
-    shortlist: new Set(),
+    drawOnTop,
+    // Built by the application's own call, so a fixture cannot offer the view a
+    // control state the application would never hand it.
+    drawDirectionControl: drawDirectionControlState({ categorical }, drawOnTop),
+    pinned,
+    hovered,
+    active,
+    shortlist,
     passing: genes.length,
     total: genes.length,
     categoryFilterLabels,
@@ -1376,6 +1386,419 @@ test('Reset view asks first, as every reset control does', async () => {
     confirmParts(document).confirm.dispatch('click');
     await settled();
     assert.deepEqual(view.windowFor(band.track), { from: 1, to: band.track.lengthBp });
+  } finally {
+    restore();
+  }
+});
+
+
+/**
+ * Four CDSs close enough together to snap onto one column at whole-genome zoom,
+ * which the first test below asserts rather than assumes. Their categories and
+ * their evidence are what the shared-column tests vary.
+ */
+const CROWDED = [
+  gene({ id: 'SHARE_A', start: 100000, end: 100150, strand: '+' }),
+  gene({ id: 'SHARE_B', start: 100200, end: 100350, strand: '+' }),
+  gene({ id: 'SHARE_C', start: 100400, end: 100550, strand: '+' }),
+  gene({ id: 'SHARE_D', start: 100600, end: 100750, strand: '+' }),
+];
+
+/** The paint calls that landed on one column of the plus-strand lane, in order. */
+function columnPaints(view, ops, column) {
+  const band = view.bands()[0];
+  const top = band.layout.laneAboveTop + 2;
+  return ops.filter((op) => (op.op === 'fillRect' || op.op === 'strokeRect')
+    && Math.abs(op.y - top) <= 0.6
+    && Math.abs(op.x - column) <= 1.1);
+}
+
+test('the crowded fixture really does put four CDSs on one column', () => {
+  const { view, restore } = mount({ genes: CROWDED });
+  try {
+    const band = view.bands()[0];
+    const columns = columnOccupancy(band.scale, band.track.marks);
+    assert.deepEqual(columnCrowding(columns), {
+      occupied: 1, shared: 1, median: 4, max: 4,
+    });
+    assert.deepEqual([...columns.values()][0], [0, 1, 2, 3]);
+  } finally {
+    restore();
+  }
+});
+
+test('owner decision D1: the hollow style is kept at and above its threshold, dropped below', () => {
+  const hollow = { fill: '#ffffff', stroke: '#0072b2', hollow: true };
+  // Below: a white fill inside a 1 px ring needs a column for each edge and one
+  // between them, so at two the ring is the whole bar and the fill is a gap.
+  assert.deepEqual(resolveMarkPaint(hollow, MIN_HOLLOW_MARK_PX - 1),
+    { fill: '#0072b2', stroke: '#0072b2' });
+  assert.deepEqual(resolveMarkPaint(hollow, 1), { fill: '#0072b2', stroke: '#0072b2' });
+  // At and above: the hollow style is legible, so it is what is drawn.
+  assert.deepEqual(resolveMarkPaint(hollow, MIN_HOLLOW_MARK_PX),
+    { fill: '#ffffff', stroke: '#0072b2' });
+  assert.deepEqual(resolveMarkPaint(hollow, MIN_HOLLOW_MARK_PX + 8),
+    { fill: '#ffffff', stroke: '#0072b2' });
+  assert.equal(MIN_HOLLOW_MARK_PX, 3);
+});
+
+test('owner decision D1: a style that never asked to be hollow is untouched at any width', () => {
+  const reviewed = { fill: '#0072b2', stroke: '#314254', hollow: false };
+  const unknown = { fill: null, stroke: '#c6cdd5', hollow: false };
+  for (const width of [0.5, 1, MIN_HOLLOW_MARK_PX, 40]) {
+    assert.deepEqual(resolveMarkPaint(reviewed, width),
+      { fill: '#0072b2', stroke: '#314254' });
+    assert.deepEqual(resolveMarkPaint(unknown, width), { fill: null, stroke: '#c6cdd5' });
+  }
+});
+
+test('a sub-pixel derived category paints its category colour, not a white column', () => {
+  const { view, restore, ops } = mount({
+    genes: CROWDED, categorical: true, categoryOf: () => 0, derivedOf: () => true,
+  });
+  try {
+    const band = view.bands()[0];
+    const column = Math.round(band.scale.bpToX(100000));
+    const painted = columnPaints(view, ops, column);
+    const fills = painted.filter((op) => op.op === 'fillRect');
+    assert.ok(fills.length > 0, 'the column is painted at all');
+    for (const fill of fills) {
+      assert.equal(fill.fill, view.model.colors.scale.buckets[0]);
+      assert.notEqual(fill.fill, '#ffffff');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('zoomed in until the bar is wide enough, the hollow derived style returns', () => {
+  const { view, restore, flush } = mount({
+    genes: CROWDED, categorical: true, categoryOf: () => 0, derivedOf: () => true,
+  });
+  try {
+    view.zoomBand(view.bands()[0], 400, 100300);
+    const ops = flush();
+    const band = view.bands()[0];
+    const wide = ops.filter((op) => op.op === 'fillRect'
+      && Math.abs(op.y - (band.layout.laneAboveTop + 2)) <= 0.6);
+    assert.ok(wide.length > 0);
+    assert.ok(wide.every((op) => op.w >= MIN_HOLLOW_MARK_PX),
+      'the fixture has to be zoomed past the threshold for this to mean anything');
+    assert.ok(wide.every((op) => op.fill === '#ffffff'),
+      'a bar wide enough to show the hollow style draws it again');
+  } finally {
+    restore();
+  }
+});
+
+test('columns group by lane, so a plus-strand and a minus-strand CDS never share one', () => {
+  const genes = [
+    gene({ id: 'UP', start: 100000, end: 100600, strand: '+' }),
+    gene({ id: 'DOWN', start: 100100, end: 100700, strand: '-' }),
+  ];
+  const { view, restore } = mount({ genes });
+  try {
+    const band = view.bands()[0];
+    const columns = columnOccupancy(band.scale, band.track.marks);
+    assert.equal(columnCrowding(columns).max, 1);
+    assert.equal(columnCrowding(columns).shared, 0);
+    assert.equal(columnCrowding(columns).occupied, 2);
+  } finally {
+    restore();
+  }
+});
+
+test('an origin-crossing CDS occupies both of its segments’ columns, counted once each', () => {
+  // Its two segments sit at opposite ends of the replicon, so a grouping that
+  // dropped either would lose the gene from half the columns it is drawn in,
+  // and one that counted their shared column twice would report a crowding the
+  // picture does not have.
+  const { view, restore } = mount();
+  try {
+    const plasmid = view.bands()[1];
+    const wrap = plasmid.track.marks.find((mark) => mark.wraps);
+    assert.ok(wrap, 'the fixture carries an origin-crossing CDS');
+    assert.equal(wrap.pieces.length, 2);
+    const columns = columnOccupancy(plasmid.scale, [wrap]);
+    const held = [...columns.entries()].filter(([, list]) => list.includes(wrap.index));
+    const ends = held.map(([key]) => Number(key.split('#')[1])).sort((a, b) => a - b);
+    assert.ok(ends.length >= 2, 'both segments register');
+    assert.ok(ends[ends.length - 1] - ends[0] > 1, 'and at opposite ends of the replicon');
+    for (const [, list] of held) {
+      assert.equal(list.filter((index) => index === wrap.index).length, 1,
+        'one gene in a column is one gene, however many of its segments landed there');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('a piece covers one column when sub-pixel and its whole run when wide', () => {
+  const scale = { bpToX: (bp) => bp / 100 };
+  assert.deepEqual(pieceColumns(scale, { from: 1000, to: 1010 }), { first: 10, last: 10 });
+  assert.deepEqual(pieceColumns(scale, { from: 1000, to: 1499 }), { first: 10, last: 14 });
+});
+
+test('crowding reports the occupied, shared, middle, and worst counts', () => {
+  const columns = new Map([['above#1', [0]], ['above#2', [1, 2]], ['above#3', [3, 4, 5]]]);
+  assert.deepEqual(columnCrowding(columns), {
+    occupied: 3, shared: 2, median: 2, max: 3,
+  });
+  assert.deepEqual(columnCrowding(new Map()), {
+    occupied: 0, shared: 0, median: 0, max: 0,
+  });
+});
+
+test('owner decision D2: a reviewed category is what a shared column shows', () => {
+  // Three derived CDSs of category 1 and one reviewed CDS of category 0, all on
+  // one column. The reviewed CDS is both the minority and the *earliest* locus,
+  // so it can only win on evidence: neither the majority rule nor the
+  // locus-order tie-break would put it on top.
+  const { view, restore, ops } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: (_row, index) => (index === 0 ? 0 : 1),
+    derivedOf: (_row, index) => index !== 0,
+  });
+  try {
+    const band = view.bands()[0];
+    const column = Math.round(band.scale.bpToX(100000));
+    const painted = columnPaints(view, ops, column).filter((op) => op.op === 'fillRect');
+    assert.ok(painted.length >= 4, 'every CDS in the column is still painted');
+    assert.equal(painted[painted.length - 1].fill, view.model.colors.scale.buckets[0],
+      'the reviewed category is painted last, so it is the colour the column shows');
+  } finally {
+    restore();
+  }
+});
+
+test('owner decision D2: among derived categories the one with more CDSs in the column wins', () => {
+  // Three derived CDSs of category 0 and one of category 1, every one derived.
+  // The majority category holds the three *earlier* loci, so the locus-order
+  // tie-break on its own would hand the column to the single later CDS: only
+  // the majority rule produces this answer.
+  const { view, restore, ops } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: (_row, index) => (index === 3 ? 1 : 0),
+    derivedOf: () => true,
+  });
+  try {
+    const band = view.bands()[0];
+    const column = Math.round(band.scale.bpToX(100000));
+    const painted = columnPaints(view, ops, column).filter((op) => op.op === 'fillRect');
+    assert.equal(painted[painted.length - 1].fill, view.model.colors.scale.buckets[0],
+      'three CDSs of one category outrank the single, later CDS of the other');
+  } finally {
+    restore();
+  }
+});
+
+test('owner decision D2: an even split falls through to locus order, deterministically', () => {
+  const { view, restore, ops, flush } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: (_row, index) => (index < 2 ? 0 : 1),
+    derivedOf: () => true,
+  });
+  try {
+    const band = view.bands()[0];
+    const column = Math.round(band.scale.bpToX(100000));
+    const last = () => {
+      const painted = columnPaints(view, ops, column).filter((op) => op.op === 'fillRect');
+      return painted[painted.length - 1].fill;
+    };
+    const first = last();
+    assert.equal(first, view.model.colors.scale.buckets[1],
+      'two against two: the later locus wins, which is SHARE_D of category 1');
+    // A redraw with nothing changed repaints the same winner, so the picture
+    // cannot flicker between two equally ranked CDSs.
+    view.draw();
+    const repeat = flush();
+    const again = columnPaints(view, repeat, column).filter((op) => op.op === 'fillRect');
+    assert.equal(again[again.length - 1].fill, first);
+  } finally {
+    restore();
+  }
+});
+
+test('a filtered-out CDS stays underneath however extreme its value', () => {
+  const genes = [
+    gene({ id: 'HIDDEN_HIGH', start: 100000, end: 100600, strand: '+', cai: 0.99 }),
+    gene({ id: 'SHOWN_LOW', start: 100200, end: 100800, strand: '+', cai: 0.01 }),
+  ];
+  const { view, restore, ops } = mount({ genes, mask: Uint8Array.from([0, 1]) });
+  try {
+    const band = view.bands()[0];
+    const column = Math.round(band.scale.bpToX(100000));
+    const painted = columnPaints(view, ops, column).filter((op) => op.op === 'fillRect');
+    assert.equal(painted[painted.length - 1].fill,
+      view.model.colors.scale.color(0.01),
+      'the passing CDS is on top even though the hidden one has the higher value');
+  } finally {
+    restore();
+  }
+});
+
+test('clicking a shared column selects the CDS that column shows', () => {
+  const { view, restore } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: (_row, index) => (index === 0 ? 0 : 1),
+    derivedOf: (_row, index) => index !== 0,
+  });
+  try {
+    const band = view.bands()[0];
+    const x = band.scale.bpToX(100300);
+    const y = band.layout.laneAboveTop + 4;
+    // Index 0 is the reviewed CDS, which owner decision D2 puts on top. It is
+    // also the earliest locus, so a hit test that merely took the first or the
+    // nearest candidate could not agree with the picture by accident.
+    assert.equal(view.hitTest(x, y), 0);
+    // And every other CDS in the column is still reachable, so nothing is lost.
+    for (const index of [0, 1, 2]) {
+      assert.ok(view.model.genes[index], 'every CDS is still in the model');
+    }
+    assert.equal(view.paintRank.size, CROWDED.length);
+  } finally {
+    restore();
+  }
+});
+
+test('the click follows the picture even when the winner is the last CDS in the column', () => {
+  // The mirror of the test above: here the reviewed CDS is the *latest* locus,
+  // so a hit test that took the first candidate at the same distance — which is
+  // what it used to do — would answer with a CDS the column does not show.
+  const { view, restore } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: (_row, index) => (index === 3 ? 0 : 1),
+    derivedOf: (_row, index) => index !== 3,
+  });
+  try {
+    const band = view.bands()[0];
+    const y = band.layout.laneAboveTop + 4;
+    assert.equal(view.hitTest(band.scale.bpToX(100000), y), 3);
+    assert.equal(view.hitTest(band.scale.bpToX(100700), y), 3);
+  } finally {
+    restore();
+  }
+});
+
+test('the highest value owns a shared column, and the lowest direction reverses that', () => {
+  const genes = [
+    gene({ id: 'LOW', start: 100000, end: 100600, strand: '+', cai: 0.05 }),
+    gene({ id: 'HIGH', start: 100200, end: 100800, strand: '+', cai: 0.95 }),
+  ];
+  const paintedTop = (drawOnTop) => {
+    const { view, restore, ops } = mount({ genes, drawOnTop });
+    try {
+      const band = view.bands()[0];
+      const column = Math.round(band.scale.bpToX(100000));
+      const painted = columnPaints(view, ops, column).filter((op) => op.op === 'fillRect');
+      return painted[painted.length - 1].fill;
+    } finally {
+      restore();
+    }
+  };
+  const { view, restore } = mount({ genes });
+  const scale = view.model.colors.scale;
+  restore();
+  assert.equal(paintedTop('highest'), scale.color(0.95));
+  assert.equal(paintedTop('lowest'), scale.color(0.05));
+});
+
+test('the accessible description states the order, the crowding, and the D2 rule', () => {
+  const { view, restore } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: () => 0,
+    derivedOf: () => true,
+  });
+  try {
+    const label = view.canvas.getAttribute('aria-label');
+    assert.match(label, /lab-reviewed category draws over a source-derived one/);
+    assert.match(label, /occupied columns hold more than one CDS/);
+    assert.match(label, /then the category with more CDSs in that column, then the earlier locus/);
+    assert.match(label, /source-derived categories draw in the same solid colour/);
+    assert.match(label, /every CDS stays selectable, reachable by the arrow keys, and counted/);
+  } finally {
+    restore();
+  }
+});
+
+test('the description states the direction in effect, and changes when it is reversed', () => {
+  const labelFor = (drawOnTop) => {
+    const { view, restore } = mount({ genes: CROWDED, drawOnTop });
+    try {
+      return view.canvas.getAttribute('aria-label');
+    } finally {
+      restore();
+    }
+  };
+  assert.match(labelFor('highest'), /highest CAI value draws on top/);
+  assert.match(labelFor('lowest'), /lowest CAI value draws on top/);
+});
+
+test('the marker note says derived and reviewed draw alike, and stops once they do not', () => {
+  const { view, restore, flush } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: () => 0,
+    derivedOf: () => true,
+  });
+  try {
+    assert.match(view.markerNote.textContent,
+      /source-derived categories draw in the same solid category colour/);
+    assert.match(view.markerNote.textContent, /under 3 pixels wide/);
+    view.zoomBand(view.bands()[0], 400, 100300);
+    flush();
+    assert.match(view.markerNote.textContent,
+      /draws as an outlined bar with a pale fill, never as a solid reviewed one/);
+  } finally {
+    restore();
+  }
+});
+
+test('the Draw on top control sits inside the closed colour explanation, never on a row', () => {
+  const chosen = [];
+  const { view, restore } = mount({
+    handlers: { onDrawDirectionChange: (direction) => chosen.push(direction) },
+  });
+  try {
+    const toolbar = view.host.find((node) => node.className === 'chromosome-toolbar')[0];
+    const rows = toolbar.children.filter((node) => String(node.className).includes('toolbar-row'));
+    for (const row of rows) {
+      assert.equal(row.find((node) => node.className === 'draw-direction').length, 0,
+        'the control must not be on a toolbar row');
+    }
+    const field = view.colourHelp.children.find((node) => node.className === 'draw-direction');
+    assert.ok(field, 'it is mounted inside the colour explanation disclosure');
+    // The disclosure is a `details` with no `open` attribute, so it is closed in
+    // a fresh view and the control occupies no height.
+    assert.equal(view.colourHelp.tagName, 'details');
+    assert.equal(view.colourHelp.getAttribute('open'), null);
+
+    const select = field.find((node) => node.tagName === 'select')[0];
+    assert.equal(select.value, 'highest');
+    assert.equal(select.disabled, false);
+    select.value = 'lowest';
+    select.dispatch('change');
+    assert.deepEqual(chosen, ['lowest']);
+  } finally {
+    restore();
+  }
+});
+
+test('in Function category colour the Draw on top control is disabled with its reason', () => {
+  const { view, restore } = mount({ categorical: true });
+  try {
+    const field = view.colourHelp.children.find((node) => node.className === 'draw-direction');
+    const select = field.find((node) => node.tagName === 'select')[0];
+    assert.equal(select.disabled, true);
+    const notice = field.find((node) => String(node.className).includes('draw-direction-notice'))[0];
+    assert.equal(notice.hidden, false);
+    assert.match(notice.textContent, /no value order to reverse/);
   } finally {
     restore();
   }

@@ -53,6 +53,31 @@ states in its title which sources are counted, and summarises how many points
 are coloured by review, by each derived source, or by no enabled source, and
 how many carry a conflict.
 
+**The hollow marker has a width below which it cannot be read.** On the
+chromosome view a mark is a bar, and a bar narrower than three drawing units
+cannot show a white fill inside a one-unit outline: the outline would be the
+whole bar. Drawn hollow at that size the bar was its white fill and nothing else,
+which at whole-genome zoom left **0 of 916 to 1,634** derived-only columns
+carrying any category colour — the evidence layer was not merely pale there, it
+was invisible. Under the owner's decision of 2026-09-30 a derived category
+narrower than that threshold draws in its **full category colour** instead, and
+the hollow style returns the moment a bar is wide enough to show it.
+
+This is the one place a derived category is drawn the same as a reviewed one, so
+it is disclosed rather than left to be noticed: at that zoom the legend area and
+the canvas's accessible description both say that derived and reviewed colour
+draw alike **and give the count of each**, which was the owner's condition on
+approving it. Nothing about the label changes — the detail panel, the export, the
+conflict notes and the counts still name the evidence source for every locus, and
+the scatter map, whose points are never sub-pixel, keeps the hollow marker at
+every size. See
+[chromosome-view.md](chromosome-view.md#owner-decision-d1-a-sub-pixel-source-derived-category-draws-solid).
+
+**A reviewed category is drawn over a derived one wherever they overlap**, on
+both views, so where the two coincide it is the lab-reviewed evidence that is
+seen. On the scatter map the derived batch is issued before the reviewed one;
+before 2026-09-30 it was issued after.
+
 ## Blinded judgments
 
 TypeSafe `jev-1.13.0` answers one Choice per source and locus. The frozen

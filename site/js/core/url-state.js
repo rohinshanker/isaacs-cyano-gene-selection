@@ -16,6 +16,7 @@ import {
   DEFAULT_PANEL_ORDER, DEFAULT_PANEL_COLLAPSED, NO_PANELS_COLLAPSED,
   normalizePanelOrder, normalizeCollapsed, isDefaultPanelOrder, isDefaultCollapsed,
 } from './left-panels.js';
+import { DRAW_DIRECTIONS, DEFAULT_DRAW_DIRECTION } from './paint-priority.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
@@ -23,7 +24,7 @@ const KEYS = {
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
   categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
-  panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc',
+  panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc', drawOnTop: 'dt',
 };
 
 /**
@@ -48,6 +49,13 @@ const KEYS = {
  * reads this number for the colour scale. An older deployed reader shown a newer
  * hash ignores `csc` and draws linear, which no version number here could
  * change. The per-axis `xs`/`ys` scales were added on the same reasoning.
+ *
+ * The draw direction `dt` did not bump it either, on that same test. A hash
+ * with no `dt` has to mean one thing, and it does: highest value on top, which
+ * is both the fresh view and what every viewer drew before the field existed —
+ * the colour buckets were already issued in ascending order, so a link shared
+ * then showed the same picture `dt=highest` shows now. There is no older
+ * meaning for an omitted field to preserve, so no reader can misread one.
  */
 export const STATE_VERSION = 6;
 
@@ -102,6 +110,7 @@ export function defaultState() {
     axisYScale: DEFAULT_AXIS_SCALE,
     panelOrder: [...DEFAULT_PANEL_ORDER],
     panelCollapsed: [...DEFAULT_PANEL_COLLAPSED],
+    drawOnTop: DEFAULT_DRAW_DIRECTION,
   };
 }
 
@@ -158,6 +167,10 @@ export function viewStateOf(state) {
     axisYScale: state.axisYScale,
     categoryFilter: state.categoryFilter,
     colorSources: normalizeAnnotationSources(state.colorSources),
+    // Which of two overlapping marks the exported picture shows. It changes no
+    // number, but it decides what is visible in the image, so a manifest that
+    // omitted it could not reproduce the figure it describes.
+    drawOnTop: state.drawOnTop ?? DEFAULT_DRAW_DIRECTION,
   };
 }
 
@@ -244,6 +257,11 @@ export function encodeState(state) {
     push(KEYS.expressionFilter, state.expressionFilter);
   }
   if (!state.showHidden) push(KEYS.showHidden, '0');
+  // Written only when reversed. Omitted means highest on top, which is the
+  // fresh view and what every earlier encoder's link showed; see STATE_VERSION.
+  if (state.drawOnTop && state.drawOnTop !== DEFAULT_DRAW_DIRECTION) {
+    push(KEYS.drawOnTop, state.drawOnTop);
+  }
   // The controls-column layout encodes only when it differs from the fresh
   // view, so an ordinary link stays short. `pc` needs the explicit `none`
   // sentinel because "nothing is collapsed" is a deliberate arrangement, not
@@ -326,6 +344,12 @@ export function decodeState(hash) {
   if (values.has(KEYS.colorScale)) {
     const scale = values.get(KEYS.colorScale);
     if (VALUE_SCALES.includes(scale)) state.colorScale = scale;
+  }
+  // An unknown value leaves the field unset, so `applyDecoded` restores the
+  // default rather than drawing an order nothing in the app can produce.
+  if (values.has(KEYS.drawOnTop)) {
+    const direction = values.get(KEYS.drawOnTop);
+    if (DRAW_DIRECTIONS.includes(direction)) state.drawOnTop = direction;
   }
   if (values.has(KEYS.axisX)) state.axisX = values.get(KEYS.axisX);
   if (values.has(KEYS.axisY)) state.axisY = values.get(KEYS.axisY);

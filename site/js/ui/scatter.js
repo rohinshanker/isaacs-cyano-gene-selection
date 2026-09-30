@@ -11,6 +11,7 @@ import {
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER,
   SHORTLIST_COLOR,
 } from './colors.js';
+import { DEFAULT_DRAW_DIRECTION, normalizeDrawDirection } from '../core/paint-priority.js';
 
 const PADDING = { left: 66, right: 18, top: 18, bottom: 46 };
 export const MIN_ZOOM = 0.4;
@@ -207,7 +208,8 @@ export function tickTarget(pixels, perTick) {
  * (`derived[i]` set) is grouped apart from a reviewed one so it draws with
  * the hollow derived treatment in the same colour.
  */
-export function buildMarkerBuckets(x, y, mask, scale, values, derived = null) {
+export function buildMarkerBuckets(x, y, mask, scale, values, derived = null,
+  direction = DEFAULT_DRAW_DIRECTION) {
   const lists = scale ? scale.buckets.map(() => []) : [];
   const derivedLists = scale ? scale.buckets.map(() => []) : [];
   const missing = [];
@@ -232,7 +234,29 @@ export function buildMarkerBuckets(x, y, mask, scale, values, derived = null) {
     missing: Int32Array.from(missing),
     hidden: Int32Array.from(hidden),
     hiddenMissing: Int32Array.from(hiddenMissing),
+    order: bucketDrawOrder(lists.length, scale, direction),
   };
+}
+
+/**
+ * The order the colour batches are issued in, decided once here rather than per
+ * frame: `bucketOf` is monotonic in value, so issuing the batches by ascending
+ * bucket index paints the highest value last and puts it on top, and reversing
+ * that list is the whole of the "lowest on top" direction.
+ *
+ * A category set has no value order to reverse — its buckets are names — so it
+ * keeps its natural order under either direction, and the control that would
+ * reverse it is disabled.
+ *
+ * @param {number} count how many colour buckets the scale has.
+ * @param {{categorical?: boolean}|null|undefined} scale
+ * @param {string} direction the reader's draw direction.
+ * @returns {Int32Array} bucket indices, first drawn first.
+ */
+export function bucketDrawOrder(count, scale, direction = DEFAULT_DRAW_DIRECTION) {
+  const order = Int32Array.from({ length: count }, (_unused, index) => index);
+  if (scale?.categorical || normalizeDrawDirection(direction) !== 'lowest') return order;
+  return order.reverse();
 }
 
 /** Radius of the centre dot inside a hollow derived marker of radius `radius`. */
@@ -271,6 +295,7 @@ export class ScatterPlot {
     this.mask = null;
     this.colors = null;
     this.buckets = null;
+    this.drawOnTop = DEFAULT_DRAW_DIRECTION;
     this.pinned = -1;
     this.hovered = -1;
     // Distinct from `pinned`: where the keyboard has moved to, previewed but
@@ -337,6 +362,24 @@ export class ScatterPlot {
   }
 
   /**
+   * Which of two overlapping points is seen: the higher value or the lower one.
+   *
+   * Dropping the buckets is what keeps panning free of this. The order is
+   * decided with them — once per colour, mask, or direction change — and a frame
+   * only replays the batches in the order already recorded, so reversing the
+   * direction costs one rebuild and nothing per frame.
+   *
+   * @param {string} direction the reader's draw direction.
+   */
+  setDrawDirection(direction) {
+    const next = normalizeDrawDirection(direction);
+    if (next === this.drawOnTop) return;
+    this.drawOnTop = next;
+    this.buckets = null;
+    this.draw();
+  }
+
+  /**
    * Group point indices by quantized colour once, so panning and zooming only
    * replay the groups instead of re-bucketing every gene on every frame.
    */
@@ -344,7 +387,9 @@ export class ScatterPlot {
     const { x, y } = this.projection;
     const scale = this.colors?.scale;
     const values = this.colors?.values;
-    this.buckets = buildMarkerBuckets(x, y, this.mask, scale, values, this.colors?.derived ?? null);
+    this.buckets = buildMarkerBuckets(
+      x, y, this.mask, scale, values, this.colors?.derived ?? null, this.drawOnTop,
+    );
     return this.buckets;
   }
 
@@ -700,49 +745,32 @@ export class ScatterPlot {
     }
 
     if (scale) {
-      const drawMissing = () => {
-        // In category mode the many unknown rings sit behind the few reviewed
-        // coloured points; numeric missing markers keep their usual foreground.
-        context.strokeStyle = scale.categorical ? CATEGORY_UNKNOWN_COLOR : MISSING_COLOR;
-        context.lineWidth = scale.categorical ? 0.9 : 1.2;
-        for (let n = 0; n < buckets.missing.length; n += 1) {
-          const i = buckets.missing[n];
-          context.beginPath();
-          context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky,
-            scale.categorical ? Math.max(1.4, radius * 0.7) : radius + 0.4,
-            0, Math.PI * 2);
-          context.stroke();
-        }
-      };
-      if (scale.categorical) drawMissing();
+      // A gene with no value is under every valued point, in both colour modes
+      // and in both draw directions: absence is not a low value, and "lowest on
+      // top" reverses the valued order only. In metric colour these open
+      // markers used to be issued last, so a valueless ring crossed the centre
+      // of a top-percentile point and read back as the missing-value grey.
+      context.strokeStyle = scale.categorical ? CATEGORY_UNKNOWN_COLOR : MISSING_COLOR;
+      context.lineWidth = scale.categorical ? 0.9 : 1.2;
+      for (let n = 0; n < buckets.missing.length; n += 1) {
+        const i = buckets.missing[n];
+        context.beginPath();
+        context.arc(ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky,
+          scale.categorical ? Math.max(1.4, radius * 0.7) : radius + 0.4,
+          0, Math.PI * 2);
+        context.stroke();
+      }
       // Circles are the included-point convention in every colour mode. Scale
       // the radius so each one has the same area as the square it replaced.
       const squareHalfSize = scale.categorical ? radius + 1.5 : radius;
       const coloredRadius = squareHalfSize * SQUARE_TO_CIRCLE_RADIUS;
-      for (let bucket = 0; bucket < buckets.lists.length; bucket += 1) {
-        const list = buckets.lists[bucket];
-        if (list.length === 0) continue;
-        context.fillStyle = scale.buckets[bucket];
-        context.beginPath();
-        for (let n = 0; n < list.length; n += 1) {
-          const i = list[n];
-          context.moveTo(ox + (x[i] - cx) * kx + coloredRadius, oy - (y[i] - cy) * ky);
-          context.arc(
-            ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, coloredRadius, 0, Math.PI * 2,
-          );
-        }
-        context.fill();
-        if (scale.categorical) {
-          context.strokeStyle = REVIEWED_MARKER_BORDER;
-          context.lineWidth = 0.8;
-          context.stroke();
-        }
-      }
       // Derived category colours draw hollow: white disc, category-colour
       // ring, and a centre dot in the same colour. Same area as a reviewed
-      // circle, visibly different fill, never mistaken for lab review.
+      // circle, visibly different fill, never mistaken for lab review. They go
+      // first, so a lab-reviewed category is the one seen where the two
+      // overlap; the derived layer used to be issued last and covered it.
       const dotRadius = derivedDotRadius(coloredRadius);
-      for (let bucket = 0; bucket < buckets.derivedLists.length; bucket += 1) {
+      for (const bucket of buckets.order) {
         const list = buckets.derivedLists[bucket];
         if (list.length === 0) continue;
         context.fillStyle = DERIVED_MARKER_FILL;
@@ -767,8 +795,27 @@ export class ScatterPlot {
         }
         context.fill();
       }
-      // Numeric missing values remain open foreground markers.
-      if (!scale.categorical) drawMissing();
+      // The reader's direction decides this list's order, and it was decided
+      // with the buckets: a frame replays it, it never sorts.
+      for (const bucket of buckets.order) {
+        const list = buckets.lists[bucket];
+        if (list.length === 0) continue;
+        context.fillStyle = scale.buckets[bucket];
+        context.beginPath();
+        for (let n = 0; n < list.length; n += 1) {
+          const i = list[n];
+          context.moveTo(ox + (x[i] - cx) * kx + coloredRadius, oy - (y[i] - cy) * ky);
+          context.arc(
+            ox + (x[i] - cx) * kx, oy - (y[i] - cy) * ky, coloredRadius, 0, Math.PI * 2,
+          );
+        }
+        context.fill();
+        if (scale.categorical) {
+          context.strokeStyle = REVIEWED_MARKER_BORDER;
+          context.lineWidth = 0.8;
+          context.stroke();
+        }
+      }
     }
 
     context.strokeStyle = SHORTLIST_COLOR;

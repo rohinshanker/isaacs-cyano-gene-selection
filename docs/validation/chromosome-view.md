@@ -166,11 +166,92 @@ and at both device pixel ratios: slack there does not only drift the hit test,
 it makes the browser resample the bitmap horizontally, which softens every
 one-pixel bar the device-column snapping below exists to keep sharp.
 
-A sub-pixel CDS is snapped to a whole device column. At whole-genome zoom a
-1 kb gene is a third of a pixel, and drawn at a fractional edge it anti-aliases
-into a pale smear that loses its colour. In category mode the CDSs with no
-category are painted before those that have one, so a wash of empty outlines
-cannot bury the few that carry a value.
+A sub-pixel CDS is snapped to a whole column. At whole-genome zoom a 1 kb gene
+is a third of a pixel, and drawn at a fractional edge it anti-aliases into a pale
+smear that loses its colour.
+
+**The column is a CSS pixel, not a device pixel.** `pieceRect` rounds to a whole
+drawing unit, and the canvas transform is set to `devicePixelRatio`, so that unit
+is a CSS pixel — two device pixels at ratio 2. Every rule below is stated in that
+unit deliberately: `strokeRect`'s one-pixel outline and its half-pixel inset are
+CSS pixels too, and two marks coincide *exactly* only when they snap to the same
+CSS column. A measurement taken in device columns reports each CSS column twice
+and must be halved before it is compared with anything here.
+
+### Which CDS a shared column shows
+
+Columns are shared almost everywhere at whole-genome zoom: 69% to 96% of the
+occupied ones hold more than one CDS, with a median of 2 to 5 and a worst case of
+9 to 16. The column shows the **highest-priority** CDS among them, under the one
+shared rule in `site/js/core/paint-priority.js` — see
+[viewer-interaction-state.md](viewer-interaction-state.md#which-mark-is-seen-where-they-overlap),
+which the scatter maps read too. `columnOccupancy` groups the visible marks by
+lane and column, and the view sorts by that rule and paints ascending, so the
+winner is simply the last mark drawn there. It is recomputed on every zoom, so it
+disappears as soon as genes separate.
+
+Two passes — unvalued first, then valued — used to be the whole of it, which
+separated a categorised CDS from an uncategorised one but left the winner among
+the valued ones to whichever happened to start last. That is why the genome-wide
+TSS maximum, `M744_RS11625` at 323,996, was overpainted by a neighbour 62 times
+lower.
+
+**Owner decision D2, when two different categories share a column:** a
+lab-reviewed category over a source-derived one, then the category with more CDSs
+in that column, then the earlier locus. The majority is counted in the column the
+CDS's first piece snapped onto, which for a sub-pixel mark — the case D2 exists
+for — is the only column it occupies.
+
+**Hit testing follows the picture.** A click is measured against the rectangle a
+piece was *drawn* into, not against its unsnapped coordinates, and where two CDSs
+are the same distance from the pointer the one the picture shows wins. Four CDSs
+on one column are one column to the reader, and sub-pixel differences between
+their true coordinates must not decide the click while the picture has already
+decided something else. Every other CDS in the column stays reachable by the
+arrow keys and by zooming in; nothing is removed, and all 2,715 stay counted.
+
+### Owner decision D1: a sub-pixel source-derived category draws solid
+
+`paintMark` can stroke a filled bar only at `MIN_HOLLOW_MARK_PX` (3) or wider:
+below that the outline would be the whole bar. A source-derived category is a
+white fill inside a category-coloured outline, so below that width it used to be
+its white fill and nothing else — measured on `main` at `34bb240` as **0 of 916
+to 1,634 derived-only columns keeping any category colour**, at every width and
+both device pixel ratios, leaving 72% to 92% of occupied columns reading white.
+
+Under D1, a derived category narrower than that threshold draws in its **full
+category colour**; at or above it the hollow style is back. The rule lives in
+`resolveMarkPaint` and nowhere else: `markStyle` returns the pale fill as a
+request flagged `hollow`, and each piece resolves its own paint, because a
+discontinuous CDS can have one piece wide enough for the hollow style and one
+not. Measured after the change: every column holding a categorised CDS reads a
+category colour and **none reads white**, at 375, 768, 1280 and 1440 px.
+
+The threshold is three because the hollow style needs an outline column on each
+side and at least one column of fill between them. There is no width between one
+and three at which both the white fill and its ring can be read, which is why the
+style gives way rather than being drawn anyway.
+
+A CDS with **no** category is unaffected and keeps its empty outline. It never
+read as a gap: uncategorised-only columns read the uncategorised grey `#c6cdd5`,
+measured as 0 white out of 1,649 across the four widths before the change and
+after it. The sub-pixel neutral tick this view once proposed for them was
+therefore **not built** — grey is not crowding out colour, and a tick would add a
+mark that could be misread as a low value for no measured gain.
+
+### What the view says about all this
+
+Paint order changes which gene is seen without changing a value, so it is
+disclosed wherever it changes the picture. The canvas's accessible description
+names the ordering and its direction, gives the genes-per-column figure on the
+primary track at the current zoom, states the D2 rule in category colour, and —
+while D1's full-colour drawing is in effect — says that source-derived and
+lab-reviewed categories draw alike at this zoom **with the count of each**, which
+is the owner's own condition on approving D1. The conventions note beneath the
+colour key says the same in the view's own words and returns to the ordinary
+"outlined bar with a pale fill" sentence as soon as bars are wide enough. Both
+are written after the bands are painted, because neither figure is knowable
+before the picture exists.
 
 ## Shared state, not a second copy of it
 
@@ -188,6 +269,12 @@ come from `app.js` on each render, under
   camera-level change and never touches filter or URL state.
 - Selecting a CDS pins it, which opens it in the gene visualizer; see
   [controls-column-and-resets.md](controls-column-and-resets.md).
+- **Draw on top** is one more piece of shared state with two sets of controls,
+  decided once by `drawDirectionControlState` and applied by
+  `renderDrawDirection` to both. It sits at the foot of each toolbar's colour
+  explanation disclosure, which is closed in a fresh view, so it adds no row,
+  label, or height to this toolbar at any width; see
+  [viewer-interaction-state.md](viewer-interaction-state.md#which-mark-is-seen-where-they-overlap).
 - Colour, the colour **Scale**, and **Show filtered-out genes** are one piece of
   state with two sets of controls: the map's, in the map toolbar, and this view's
   own copies in its own toolbar. This view resyncs all three on every render;
@@ -328,6 +415,14 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
 - zoom the chromosome in hard, pin a distant gene from another tab's search,
   return, and confirm the window moves to it and the next arrow key steps from
   it;
+- in Function category colour at whole-genome zoom, read pixels back and confirm
+  that every column holding a categorised CDS shows a category colour and none
+  reads white, then zoom in and confirm the hollow derived style returns;
+- click a column holding several CDSs and confirm the gene detail names the one
+  the column shows, then step through the rest with the arrow keys;
+- open the colour explanation, reverse **Draw on top**, and confirm the legend
+  note, both canvases' descriptions, and the hash all follow, and that with the
+  disclosure closed the toolbar, canvas and legend are the height they were;
 - press **Reset view** and confirm the question, that Cancel keeps the windows,
   and that confirming returns every track to its full length;
 - `document.documentElement.scrollWidth <= innerWidth` in every state;

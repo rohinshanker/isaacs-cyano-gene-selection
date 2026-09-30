@@ -472,6 +472,24 @@ input[type="range"] { width: 100%; }
 .metric-help-list dd { margin: 0; overflow-wrap: anywhere; }
 .projection-feature-list { display: grid; gap: 0.35rem; padding-left: 1.2rem; max-height: 20rem; overflow-y: auto; }
 .method-help a { overflow-wrap: anywhere; }
+/*
+ * The Draw on top control, at the foot of the colour explanation disclosure.
+ * A `details` that is closed renders only its summary, so this whole block —
+ * label, select, hint, and reason — has no height until the reader opens it,
+ * which is what keeps it out of every primary area. It is separated from the
+ * explanation above it by a rule rather than by a heading, because it is a
+ * control and not another paragraph of that explanation.
+ */
+.draw-direction {
+  margin-top: 0.55rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+}
+.draw-direction > .field-row { margin-bottom: 0; }
+.draw-direction-hint, .draw-direction-notice { margin: 0; }
 @media (max-width: 480px) {
   .metric-help-list > div { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
 }

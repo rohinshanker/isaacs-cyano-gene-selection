@@ -402,3 +402,57 @@ test('a version 5 link carrying chosen comparison metrics opens on the defaults'
   assert.equal(decoded.panel, 'native');
   assert.ok(!encodeState(defaultState()).includes('cm='));
 });
+
+test('a fresh view draws the highest value on top and writes no draw-direction field', () => {
+  assert.equal(defaultState().drawOnTop, 'highest');
+  assert.ok(!encodeState(defaultState()).includes('dt='));
+});
+
+test('the reversed direction round-trips through a link', () => {
+  const state = { ...defaultState(), drawOnTop: 'lowest' };
+  const hash = encodeState(state);
+  assert.ok(hash.includes('dt=lowest'));
+  assert.equal(decodeState(hash).drawOnTop, 'lowest');
+  assert.equal(applyDecoded(defaultState(), decodeState(hash)).drawOnTop, 'lowest');
+  // And back again: choosing the default writes the field out of the link.
+  assert.ok(!encodeState({ ...state, drawOnTop: 'highest' }).includes('dt='));
+});
+
+test('a hash with no draw-direction field means highest, whatever was on screen', () => {
+  const decoded = decodeState(`#ver=${STATE_VERSION}&p=native&c=cai`);
+  assert.ok(!Object.hasOwn(decoded, 'drawOnTop'));
+  // `applyDecoded` resets first, so a link that does not speak to the direction
+  // returns the reader to the default rather than leaving the previous choice.
+  const target = { ...defaultState(), drawOnTop: 'lowest' };
+  assert.equal(applyDecoded(target, decoded).drawOnTop, 'highest');
+});
+
+test('a hand-edited direction is ignored rather than drawn, and leaves the default', () => {
+  for (const hash of ['#dt=sideways', '#dt=', '#dt=HIGHEST']) {
+    const decoded = decodeState(hash);
+    assert.ok(!Object.hasOwn(decoded, 'drawOnTop'), hash);
+    assert.equal(applyDecoded(defaultState(), decoded).drawOnTop, 'highest');
+  }
+});
+
+test('the draw direction did not bump the encoder version, and links stay readable both ways', () => {
+  // An older link has no `dt`, which means highest — and highest is what every
+  // earlier viewer drew, so the two agree and no reader can misread the other's
+  // hash. That is the test the version number exists for.
+  assert.equal(STATE_VERSION, 6);
+  const older = decodeState('#ver=6&p=native&c=cai');
+  assert.equal(applyDecoded(defaultState(), older).drawOnTop, 'highest');
+  const newer = decodeState(encodeState({ ...defaultState(), drawOnTop: 'lowest' }));
+  assert.equal(newer.version, 6);
+});
+
+test('the export manifest records the direction the picture was drawn in', () => {
+  // It changes no number, but it decides which of two overlapping marks the
+  // exported image shows, so a manifest without it could not reproduce it.
+  assert.equal(viewStateOf({ ...defaultState(), drawOnTop: 'lowest' }).drawOnTop, 'lowest');
+  assert.equal(viewStateOf(defaultState()).drawOnTop, 'highest');
+  // A state object built before this field existed still describes a picture.
+  const legacy = { ...defaultState() };
+  delete legacy.drawOnTop;
+  assert.equal(viewStateOf(legacy).drawOnTop, 'highest');
+});

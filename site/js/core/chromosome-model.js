@@ -522,13 +522,60 @@ export function tssPositions(track, genes) {
 }
 
 /**
+ * What the view did about marks that share pixels, in sentences.
+ *
+ * Paint order changes which gene is seen without changing a single value, so it
+ * has to be said out loud: a region can look hotter than its typical gene
+ * purely because the standout was moved on top. These sentences name the rule,
+ * how crowded the columns are at the zoom now drawn, the rule that settles two
+ * different categories in one column, and — while a bar is too narrow to carry
+ * the hollow derived style — that derived and reviewed categories draw alike,
+ * with the count of each.
+ *
+ * @param {{categorical: boolean, order: string, accession: string,
+ *   columns: {occupied: number, shared: number, median: number, max: number}|null,
+ *   alike: {derived: number, reviewed: number}|null}|null} paintOrder
+ * @returns {string[]}
+ */
+function describePaintOrder(paintOrder) {
+  if (!paintOrder) return [];
+  const parts = [paintOrder.order];
+  const columns = paintOrder.columns;
+  if (columns && columns.occupied > 0) {
+    parts.push(columns.shared > 0
+      ? `They do share pixels here: on ${paintOrder.accession} at this zoom, `
+        + `${columns.shared.toLocaleString('en-US')} of `
+        + `${columns.occupied.toLocaleString('en-US')} occupied columns hold more than one CDS, `
+        + `${columns.median.toLocaleString('en-US')} in the middle column and up to `
+        + `${columns.max.toLocaleString('en-US')} at the worst.`
+      : `They do not share pixels here: each of the ${columns.occupied.toLocaleString('en-US')} `
+        + `occupied columns on ${paintOrder.accession} holds one CDS at this zoom.`);
+  }
+  if (paintOrder.categorical) {
+    parts.push('Where CDSs of different categories share one column, the column shows a '
+      + 'lab-reviewed category over a source-derived one, then the category with more CDSs in '
+      + 'that column, then the earlier locus.');
+  }
+  if (paintOrder.alike) {
+    parts.push(`At this zoom ${paintOrder.alike.derived.toLocaleString('en-US')} source-derived `
+      + `categories draw in the same solid colour as the `
+      + `${paintOrder.alike.reviewed.toLocaleString('en-US')} lab-reviewed ones, because a bar `
+      + 'that narrow cannot show the hollow derived style; it returns as soon as a bar is wide '
+      + 'enough for it.');
+  }
+  parts.push('Nothing is hidden by this order: every CDS stays selectable, reachable by the '
+    + 'arrow keys, and counted.');
+  return parts;
+}
+
+/**
  * One sentence naming what this view is showing, for the canvas's accessible
  * label. A picture with no text equivalent leaves the view unreadable to
  * anyone not looking at it.
  */
 export function describeChromosomeView({
   tracks, window, colorLabel, passing, total, selected = null, categoryFilterLabels = [],
-  colorScaleClause = null,
+  colorScaleClause = null, paintOrder = null,
 }) {
   if (!Array.isArray(tracks) || tracks.length === 0) {
     return 'The chromosome view has no verified replicon to draw.';
@@ -551,6 +598,7 @@ export function describeChromosomeView({
         + `${track.cdsCount.toLocaleString('en-US')} plotted CDSs`).join('; ')}.`);
   }
   parts.push('Plus-strand CDSs sit above each axis and minus-strand CDSs below it.');
+  parts.push(...describePaintOrder(paintOrder));
   const wrapping = tracks.flatMap((track) => track.marks.filter((mark) => mark.wraps));
   if (wrapping.length > 0) {
     parts.push(`${wrapping.map((mark) => mark.id).join(' and ')} cross the circular origin and are `

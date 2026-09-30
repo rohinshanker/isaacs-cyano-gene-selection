@@ -20,8 +20,12 @@ import {
   ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, GHOST_BORDER, GHOST_COLOR,
   HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
+import {
+  EMPHASIS_RANK, describeDrawOrder, normalizeDrawDirection, sortByPaintOrder,
+} from '../core/paint-priority.js';
 import { confirmedReset } from './confirm-dialog.js';
 import { syncScaleSelect } from './scale-select.js';
+import { renderDrawDirection } from './draw-direction.js';
 import { formatCount } from './format.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
@@ -50,6 +54,28 @@ const MIN_BRACKET_PX = 4;
 const WRAP_MARKER_PX = 5;
 /** Room each start-site tick needs before the row stops being separate ticks. */
 const MIN_TSS_SPACING_PX = 3;
+/**
+ * Narrowest bar, in drawing units, on which the hollow source-derived style can
+ * be read — and therefore the width at and above which it is drawn.
+ *
+ * Owner decision D1. The hollow style is a white fill inside a category-coloured
+ * 1 px outline, so it needs an outline column on each side and at least one
+ * column of fill between them: three. Below that `paintMark` cannot stroke a
+ * filled bar at all, which is why a sub-pixel derived bar used to be its white
+ * fill and nothing else — measured at whole-genome zoom as 0 of 916 to 1,634
+ * derived-only columns keeping any category colour. Under the threshold a
+ * derived category draws in its full category colour instead, and the hollow
+ * style returns the moment a bar is wide enough to show it.
+ *
+ * The unit is the one `pieceRect` snaps to: a CSS pixel, which at
+ * `devicePixelRatio` 2 is two device pixels. That is deliberate. The canvas
+ * transform is set to the ratio, so `strokeRect`'s 1 px outline and the
+ * half-pixel inset are CSS pixels too; a threshold in device pixels would be
+ * compared against a width measured in something else, and two marks coincide
+ * exactly only when they snap to the same CSS column.
+ */
+export const MIN_HOLLOW_MARK_PX = 3;
+
 /** The clipped-edge chevron reads against any colour the bar beneath it takes. */
 const WRAP_MARKER_FILL = '#ffffff';
 const WRAP_MARKER_STROKE = '#1b2733';
@@ -168,6 +194,88 @@ export function pieceRect(scale, piece) {
   return { left: exact < 1.5 ? Math.round(x0) : x0, width: Math.max(1, exact) };
 }
 
+/**
+ * The inclusive column range one drawn piece covers, in the unit `pieceRect`
+ * snaps to: whole CSS pixels.
+ *
+ * `first` is the column a sub-pixel piece was snapped onto, and is the column
+ * owner decision D2's majority is counted in — a piece that narrow occupies
+ * exactly one, which is the case D2 exists for. A wider piece is by definition
+ * not a shared-column case, and its own first column is where it is compared.
+ */
+export function pieceColumns(scale, piece) {
+  const { left, width } = pieceRect(scale, piece);
+  const first = Math.round(left);
+  return { first, last: Math.max(first, Math.round(left + width) - 1) };
+}
+
+/**
+ * Which marks land on which column of which lane: `"<lane>#<column>"` to the
+ * gene indices drawn there, in coordinate order.
+ *
+ * This is what makes "the column shows the highest-priority gene among them"
+ * measurable rather than a hope about paint order: the same grouping decides
+ * owner decision D2's majority, the genes-per-column figure the view discloses,
+ * and which gene a click on a shared column selects.
+ */
+export function columnOccupancy(scale, marks) {
+  const columns = new Map();
+  for (const mark of marks) {
+    // Every earlier range is checked, not just the one before, so the grouping
+    // does not depend on `cdsPieces` happening to sort its segments: an
+    // origin-crossing CDS has one segment at each end of the replicon, and
+    // dropping either would lose it from half the columns it is drawn in. A CDS
+    // has at most three pieces, so this is two comparisons.
+    const ranges = mark.pieces.map((piece) => pieceColumns(scale, piece));
+    ranges.forEach((range, position) => {
+      for (let column = range.first; column <= range.last; column += 1) {
+        // One gene in a column is one gene, however many of its own segments
+        // snapped onto it.
+        const alreadyCounted = ranges.slice(0, position)
+          .some((earlier) => column >= earlier.first && column <= earlier.last);
+        if (alreadyCounted) continue;
+        const key = `${mark.lane}#${column}`;
+        const list = columns.get(key);
+        if (list) list.push(mark.index);
+        else columns.set(key, [mark.index]);
+      }
+    });
+  }
+  return columns;
+}
+
+/**
+ * How crowded the columns are, for the disclosure: how many are occupied, how
+ * many hold more than one CDS, and the middle and worst crowding among them.
+ */
+export function columnCrowding(columns) {
+  const sizes = [...columns.values()].map((list) => list.length).sort((a, b) => a - b);
+  if (sizes.length === 0) return { occupied: 0, shared: 0, median: 0, max: 0 };
+  return {
+    occupied: sizes.length,
+    shared: sizes.filter((size) => size > 1).length,
+    median: sizes[Math.floor(sizes.length / 2)],
+    max: sizes[sizes.length - 1],
+  };
+}
+
+/**
+ * The fill and outline one piece actually takes, given how wide it is.
+ *
+ * Owner decision D1 lives here and nowhere else: a source-derived category
+ * narrower than {@link MIN_HOLLOW_MARK_PX} drops the hollow white fill and draws
+ * in its full category colour, because at that width the hollow style is not a
+ * pale marker but an unpainted white column. Everything else is drawn as
+ * `markStyle` asked.
+ */
+export function resolveMarkPaint(style, width) {
+  if (style.hollow && width < MIN_HOLLOW_MARK_PX) {
+    return { fill: style.stroke, stroke: style.stroke };
+  }
+  return { fill: style.fill, stroke: style.stroke };
+}
+
+
 export class ChromosomeView {
   /**
    * @param {HTMLElement} host the tab panel, emptied and rebuilt on first use.
@@ -191,6 +299,12 @@ export class ChromosomeView {
     this.reconciledSelection = -1;
     this.dragging = null;
     this.pendingFrame = 0;
+    // What the last paint actually drew: where each gene landed in the painted
+    // order, and the figures the disclosure quotes. The hit test reads the
+    // ranks so a click on a shared column answers with the gene the picture
+    // shows, which is only knowable from the picture that was painted.
+    this.paintRank = new Map();
+    this.drawStats = { columns: null, alikeDerived: 0, reviewedDrawn: 0 };
   }
 
   /**
@@ -199,7 +313,9 @@ export class ChromosomeView {
    *   colorOptions: {value: string, label: string, group: string}[], colorKey: string,
    *   colorScaleControl: {options: {value: string, label: string, disabled: boolean,
    *     reason: string|null}[], value: string, disabled: boolean, reason: string|null},
-   *   colorScaleClause: string,
+   *   colorScaleClause: string, drawOnTop: string,
+   *   drawDirectionControl: {options: {value: string, label: string}[], value: string,
+   *     disabled: boolean, reason: string|null},
    *   pinned: number, hovered: number, active: number, shortlist: Set<number>,
    *   passing: number, total: number, categoryFilterLabels: string[],
    *   hasSelection: boolean}} model
@@ -484,6 +600,12 @@ export class ChromosomeView {
     }
     this.colorSelect.value = colorKey;
     syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl, this.scaleNotice);
+    // Inside the colour explanation, which is closed in a fresh view, so it adds
+    // no row, label, or height to this toolbar. See ui/draw-direction.js.
+    renderDrawDirection(this.colourHelp, this.model.drawDirectionControl, {
+      idPrefix: 'chromosome-draw-direction',
+      onChange: (direction) => this.handlers.onDrawDirectionChange?.(direction),
+    });
     this.showHidden.checked = showHidden;
     this.detailJump.hidden = !this.model.hasSelection;
   }
@@ -517,8 +639,21 @@ export class ChromosomeView {
       parts.push(`${formatCount(excluded)} excluded by the current filters keep their coordinates `
         + 'and draw grey behind the rest.');
     }
-    parts.push('A source-derived function category draws as an outlined bar with a pale fill, '
-      + 'never as a solid reviewed one. Shortlisted CDSs carry a dark diamond beside the bar, and '
+    // Owner decision D1's disclosure. A bar narrower than the hollow style can
+    // show draws in its full category colour, so at that zoom the sentence
+    // below would be false; the reader is told instead, with the count of each
+    // evidence kind, and the ordinary sentence returns as bars widen.
+    const alike = this.drawStats?.alikeDerived ?? 0;
+    parts.push(alike > 0
+      ? `At this zoom ${formatCount(alike)} source-derived `
+        + `categor${alike === 1 ? 'y draws' : 'ies draw'} in the same solid category colour as the `
+        + `${formatCount(this.drawStats.reviewedDrawn)} lab-reviewed one`
+        + `${this.drawStats.reviewedDrawn === 1 ? '' : 's'}, because a bar under `
+        + `${MIN_HOLLOW_MARK_PX} pixels wide cannot show the hollow derived style. Zoom in and the `
+        + 'hollow outlined bar with a pale fill returns as soon as a bar is wide enough for it.'
+      : 'A source-derived function category draws as an outlined bar with a pale fill, '
+        + 'never as a solid reviewed one.');
+    parts.push('Shortlisted CDSs carry a dark diamond beside the bar, and '
       + 'the pinned CDS is outlined in red with a line through its band.');
     parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
       + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
@@ -612,9 +747,16 @@ export class ChromosomeView {
     ctx.clearRect(0, 0, this.width, this.height);
     ctx.font = '11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
     ctx.textBaseline = 'alphabetic';
+    this.paintRank = new Map();
+    this.drawStats = { columns: null, alikeDerived: 0, reviewedDrawn: 0 };
     for (const band of this.bands()) {
       this.paintBand(ctx, band);
     }
+    // Written after the bands, not with the other summaries: how many CDSs
+    // share a column and how many derived categories lost their hollow style
+    // are properties of the picture that was just painted, at the zoom it was
+    // painted at, and are not knowable before it.
+    this.markerNote.textContent = this.markerConventions();
     this.canvas.setAttribute('aria-label', describeChromosomeView({
       tracks: this.model.tracks,
       window: this.windowFor(this.primaryTrack()),
@@ -624,7 +766,105 @@ export class ChromosomeView {
       total: this.model.total,
       selected: this.selectedId(),
       categoryFilterLabels: this.model.categoryFilterLabels,
+      paintOrder: this.paintOrderFacts(),
     }));
+  }
+
+  /** Whether the colour channel is a category set rather than a value ramp. */
+  get categoricalColor() {
+    return Boolean(this.model.colors?.scale?.categorical);
+  }
+
+  /**
+   * What the last paint did about overlapping marks, for the accessible
+   * description: the ordering rule in words, the crowding on the primary track
+   * at the zoom it was drawn at, and — while owner decision D1's full-colour
+   * drawing is in effect — how many categories of each evidence kind draw alike.
+   */
+  paintOrderFacts() {
+    const categorical = this.categoricalColor;
+    return {
+      categorical,
+      order: describeDrawOrder({
+        categorical,
+        direction: this.model.drawOnTop,
+        metricLabel: categorical ? null : this.model.colorLabel,
+      }),
+      accession: this.primaryTrack().accession,
+      columns: this.drawStats.columns,
+      alike: categorical && this.drawStats.alikeDerived > 0
+        ? { derived: this.drawStats.alikeDerived, reviewed: this.drawStats.reviewedDrawn }
+        : null,
+    };
+  }
+
+  /** Whether the gene at `index` passes the current filters. */
+  passesIndex(index) {
+    return !this.model.mask || this.model.mask[index] === 1;
+  }
+
+  /** The colour bucket a gene falls in, or -1 where it has no value. */
+  colorBucketOf(index) {
+    const { colors } = this.model;
+    if (!colors.scale || !colors.values) return -1;
+    return colors.scale.bucketOf(colors.values[index]);
+  }
+
+  /** Whether a gene has a value for the selected colour at all. */
+  hasColorValue(index) {
+    const { colors } = this.model;
+    if (!colors.scale) return false;
+    const value = colors.values ? colors.values[index] : NaN;
+    return colors.scale.categorical ? colors.scale.bucketOf(value) >= 0 : Number.isFinite(value);
+  }
+
+  /** Whether a gene's category colour came from a derivation rather than review. */
+  isDerivedCategory(index) {
+    return Boolean(this.model.colors.derived && this.model.colors.derived[index]);
+  }
+
+  /** How strongly the reader has singled a gene out; see EMPHASIS_RANK. */
+  emphasisOf(index) {
+    const { pinned, hovered, active, shortlist } = this.model;
+    if (index === pinned) return EMPHASIS_RANK.pinned;
+    if (index === hovered) return EMPHASIS_RANK.hovered;
+    if (index === active) return EMPHASIS_RANK.active;
+    return shortlist?.has(index) ? EMPHASIS_RANK.shortlisted : EMPHASIS_RANK.none;
+  }
+
+  /**
+   * The shared paint-order rule, read against this view's own columns.
+   *
+   * Only `columnMajority` is this view's: owner decision D2 asks, when two
+   * different categories land on one column, for the one with more CDSs in that
+   * column, and that count exists nowhere but here. Everything else in the rule
+   * comes from core/paint-priority.js, which the scatter maps read too.
+   *
+   * @param {Map<string, number[]>} columns as {@link columnOccupancy} returns.
+   * @param {Map<number, string>} firstColumn gene index to the column its first
+   *   piece snapped onto.
+   */
+  paintModel(columns, firstColumn) {
+    const { colors } = this.model;
+    return {
+      categorical: this.categoricalColor,
+      direction: normalizeDrawDirection(this.model.drawOnTop),
+      passes: (index) => this.passesIndex(index),
+      hasValue: (index) => this.hasColorValue(index),
+      valueOf: (index) => (colors.values ? colors.values[index] : NaN),
+      isDerived: (index) => this.isDerivedCategory(index),
+      emphasis: (index) => this.emphasisOf(index),
+      columnMajority: (index) => {
+        const bucket = this.colorBucketOf(index);
+        if (bucket < 0) return 0;
+        const sharing = columns.get(firstColumn.get(index)) ?? [];
+        let count = 0;
+        for (const other of sharing) {
+          if (this.passesIndex(other) && this.colorBucketOf(other) === bucket) count += 1;
+        }
+        return count;
+      },
+    };
   }
 
   selectedId() {
@@ -679,22 +919,10 @@ export class ChromosomeView {
     if (this.model.showHidden) {
       for (const mark of marks) {
         if (this.passes(mark)) continue;
-        this.paintMark(ctx, band, mark, GHOST_COLOR, GHOST_BORDER);
+        this.paintMark(ctx, band, mark, { fill: GHOST_COLOR, stroke: GHOST_BORDER, hollow: false });
       }
     }
-    // Valued CDSs last. In category mode most loci have no reviewed or derived
-    // category, and their empty outlines would otherwise bury the few that do
-    // under a wash of grey at whole-genome zoom.
-    const styled = marks.filter((mark) => this.passes(mark))
-      .map((mark) => ({ mark, ...this.markStyle(mark) }));
-    for (const entry of styled) {
-      if (entry.fill !== null) continue;
-      this.paintMark(ctx, band, entry.mark, entry.fill, entry.stroke);
-    }
-    for (const entry of styled) {
-      if (entry.fill === null) continue;
-      this.paintMark(ctx, band, entry.mark, entry.fill, entry.stroke);
-    }
+    this.paintMarks(ctx, band, marks);
 
     this.paintOperons(ctx, band);
     this.paintTss(ctx, band);
@@ -702,7 +930,51 @@ export class ChromosomeView {
   }
 
   passes(mark) {
-    return !this.model.mask || this.model.mask[mark.index] === 1;
+    return this.passesIndex(mark.index);
+  }
+
+  /**
+   * Every CDS the filters keep, painted lowest priority first, so the mark that
+   * belongs on top of a shared column is the last one drawn there.
+   *
+   * One sort per band per frame over the visible marks, by the one rule in
+   * core/paint-priority.js. Sorting rather than the old two passes is what makes
+   * "the column shows the highest-priority gene among them" true of the pixels:
+   * the two passes could only separate a valued CDS from an unvalued one, and
+   * left the winner among the valued ones to whichever happened to start last.
+   */
+  paintMarks(ctx, band, marks) {
+    const drawn = this.model.showHidden ? marks : marks.filter((mark) => this.passes(mark));
+    const byIndex = new Map(drawn.map((mark) => [mark.index, mark]));
+    const columns = columnOccupancy(band.scale, drawn);
+    const firstColumn = new Map(drawn.map((mark) => [
+      mark.index, `${mark.lane}#${pieceColumns(band.scale, mark.pieces[0]).first}`,
+    ]));
+    if (band.track.primary) this.drawStats.columns = columnCrowding(columns);
+
+    const passing = marks.filter((mark) => this.passes(mark)).map((mark) => mark.index);
+    const model = this.paintModel(columns, firstColumn);
+    const order = sortByPaintOrder(passing, model);
+    // Ranks over exactly the marks that were painted, so a hit test on this
+    // band answers with the gene this band shows.
+    const base = this.paintRank.size;
+    order.forEach((index, rank) => this.paintRank.set(index, base + rank));
+
+    for (const index of order) {
+      const mark = byIndex.get(index);
+      const style = this.markStyle(mark);
+      this.paintMark(ctx, band, mark, style);
+      if (!model.categorical || this.colorBucketOf(index) < 0) continue;
+      if (this.isDerivedCategory(index)) {
+        // Counted once per CDS, and only where owner decision D1 actually
+        // applies: every piece of it too narrow to show the hollow style.
+        const hollowless = mark.pieces
+          .every((piece) => pieceRect(band.scale, piece).width < MIN_HOLLOW_MARK_PX);
+        if (hollowless) this.drawStats.alikeDerived += 1;
+      } else {
+        this.drawStats.reviewedDrawn += 1;
+      }
+    }
   }
 
   /**
@@ -711,24 +983,31 @@ export class ChromosomeView {
    * source-derived category is outlined over a pale fill, and a value the
    * release does not have is an empty outline rather than a colour that would
    * imply a measurement.
+   *
+   * The pale fill is returned as a request, flagged `hollow`, not as a decision.
+   * Whether it survives depends on how wide the bar turns out to be, which this
+   * function cannot see; {@link resolveMarkPaint} settles it per piece under
+   * owner decision D1.
    */
   markStyle(mark) {
     const { colors } = this.model;
     const scale = colors.scale;
     const value = colors.values ? colors.values[mark.index] : NaN;
     const derived = Boolean(colors.derived && colors.derived[mark.index]);
-    if (!scale) return { fill: MISSING_COLOR, stroke: MISSING_COLOR };
+    if (!scale) return { fill: MISSING_COLOR, stroke: MISSING_COLOR, hollow: false };
     if (scale.categorical) {
       const bucket = scale.bucketOf(value);
-      if (bucket < 0) return { fill: null, stroke: CATEGORY_UNKNOWN_COLOR };
+      if (bucket < 0) return { fill: null, stroke: CATEGORY_UNKNOWN_COLOR, hollow: false };
       const color = scale.buckets[bucket];
       return derived
-        ? { fill: DERIVED_MARKER_FILL, stroke: color }
-        : { fill: color, stroke: REVIEWED_MARKER_BORDER };
+        ? { fill: DERIVED_MARKER_FILL, stroke: color, hollow: true }
+        : { fill: color, stroke: REVIEWED_MARKER_BORDER, hollow: false };
     }
-    if (!Number.isFinite(value)) return { fill: null, stroke: MISSING_COLOR };
+    if (!Number.isFinite(value)) return { fill: null, stroke: MISSING_COLOR, hollow: false };
     const color = scale.color(value);
-    return derived ? { fill: DERIVED_MARKER_FILL, stroke: color } : { fill: color, stroke: color };
+    return derived
+      ? { fill: DERIVED_MARKER_FILL, stroke: color, hollow: true }
+      : { fill: color, stroke: color, hollow: false };
   }
 
   laneTop(layout, mark) {
@@ -742,16 +1021,24 @@ export class ChromosomeView {
    * the release does not have is drawn. A gap between pieces is left empty: the
    * three discontinuous CDSs really are discontinuous, and the two that cross
    * the origin get their wrap marker rather than a bar spanning the replicon.
+   *
+   * Each piece resolves its own paint from `style`, because a CDS drawn as two
+   * pieces can have one wide enough for the hollow derived style and one not.
    */
-  paintMark(ctx, band, mark, fill, stroke) {
-    ctx.fillStyle = fill ?? 'transparent';
-    ctx.strokeStyle = stroke;
+  paintMark(ctx, band, mark, style) {
     ctx.lineWidth = 1;
     for (const piece of mark.pieces) {
       const { left, top, width, height } = this.barRect(band, mark, piece);
       if (left + width < band.left || left > band.left + band.width) continue;
+      const { fill, stroke } = resolveMarkPaint(style, width);
+      ctx.fillStyle = fill ?? 'transparent';
+      ctx.strokeStyle = stroke;
       if (fill) ctx.fillRect(left, top, width, height);
-      if (!fill || width >= 3) {
+      // A filled bar narrower than the outline needs is left unstroked: the
+      // stroke would be the whole bar. That is why a hollow style has to give
+      // way to a solid one below MIN_HOLLOW_MARK_PX rather than stroke anyway —
+      // there is no width at which a white fill and its ring both fit.
+      if (!fill || width >= MIN_HOLLOW_MARK_PX) {
         ctx.strokeRect(left + 0.5, top + 0.5, Math.max(1, width - 1), height - 1);
       }
     }
@@ -941,17 +1228,32 @@ export class ChromosomeView {
     const lane = above ? 'above' : 'below';
     let best = -1;
     let bestDistance = Infinity;
+    let bestRank = -1;
     for (const mark of visibleMarks(band.track.marks, band.window)) {
       if (mark.lane !== lane) continue;
       if (!this.model.showHidden && !this.passes(mark)) continue;
+      // Where two CDSs are the same distance from the pointer — which is what
+      // sharing a column means — the one the picture shows wins, so a click
+      // selects the gene the reader is looking at. Every other CDS in the
+      // column stays reachable by the arrow keys and by zooming in.
+      const rank = this.paintRank.get(mark.index) ?? -1;
       for (const piece of mark.pieces) {
-        const x0 = band.scale.bpToX(piece.from);
-        const x1 = Math.max(x0 + 2, band.scale.bpToX(piece.to + 1));
+        // Measured against the rectangle the piece was drawn into, not against
+        // its unsnapped coordinates. Four CDSs snapped onto one column are one
+        // column to the reader, and sub-pixel differences between their true
+        // coordinates would otherwise decide the click while the picture had
+        // already decided something else.
+        const { left, width } = pieceRect(band.scale, piece);
+        const x0 = left;
+        const x1 = Math.max(x0 + 2, left + width);
         const distance = x < x0 ? x0 - x : x > x1 ? x - x1 : 0;
         // A CDS the filters keep wins a tie against one they hide.
         const penalty = this.passes(mark) ? 0 : 3;
-        if (distance <= 3 && distance + penalty < bestDistance) {
-          bestDistance = distance + penalty;
+        if (distance > 3) continue;
+        const score = distance + penalty;
+        if (score < bestDistance || (score === bestDistance && rank > bestRank)) {
+          bestDistance = score;
+          bestRank = rank;
           best = mark.index;
         }
       }

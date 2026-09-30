@@ -158,7 +158,7 @@ export function renderCategoryLegend(host, {
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
   evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
-  markerConventions = true,
+  markerConventions = true, drawOrderNote = '',
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
@@ -267,7 +267,11 @@ export function renderCategoryLegend(host, {
       + 'changes the colour; the detail panel and export name the conflict. '
     : 'Only lab-reviewed locus assignments receive a category colour. '
       + 'GO IEA suggestions alone leave a gene unclassified. ')
-    + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
+    + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.'
+    // Appended to a paragraph that is already here rather than given one of its
+    // own: paint order decides what is seen, so it has to be stated, and a
+    // separate note would cost a line at every width for a one-clause fact.
+    + (drawOrderNote ? ` ${drawOrderNote}` : '');
   host.append(toggles, title, list);
   const summary = categoryEvidenceSummary(
     evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount,
@@ -478,7 +482,8 @@ export function describeBasisCounts(basisCounts) {
  * @param {HTMLElement} host
  * @param {{metric: object, scale: object, missingCount: number, hiddenCount: number,
  *   showHidden: boolean, provenanceNote: string|null, markerConventions?: boolean,
- *   basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
+ *   basisCounts?: {counts: Map<string, number>, recorded: boolean},
+ *   drawOrderNote?: string}} state
  *   `markerConventions` false omits the rows naming the scatter map's point
  *   shapes, for a view that draws the same evidence states as something else.
  *   That caller states its own conventions; the colour key is what it shares.
@@ -580,7 +585,12 @@ export function renderLegend(host, state) {
 
   const scaleNote = document.createElement('p');
   scaleNote.className = 'legend-ramp-note legend-scale-note';
-  scaleNote.textContent = describeValueScale(metric, scale);
+  // The draw order joins the scale's own note rather than taking a paragraph of
+  // its own. Both say how a colour on this map is to be read, and a separate
+  // note would add a line at every width for one clause.
+  scaleNote.textContent = state.drawOrderNote
+    ? `${describeValueScale(metric, scale)} ${state.drawOrderNote}`
+    : describeValueScale(metric, scale);
 
   host.append(title, rampRow, ticks, notes, scaleNote, ramp);
   const basis = describeBasisCounts(state.basisCounts);

@@ -107,6 +107,63 @@ checkbox, keyboard focus stays on the checkbox after the legend rebuilds, and
 hover, click, and multi-select filtering act on the resolved category; see
 [source-derived-categories.md](source-derived-categories.md).
 
+## Which mark is seen where they overlap
+
+At 2,715 CDSs many marks land on the same pixels, so something has to be on top
+and everything else underneath it. That is one rule, in
+`site/js/core/paint-priority.js`, read by the scatter maps and the chromosome
+view alike; neither carries a copy. Painting ascending puts the highest priority
+on top. The tiers, lowest first:
+
+1. a CDS the filters exclude, whatever its value — a hidden standout never
+   climbs over a passing gene;
+2. a CDS with **no value** for the selected colour. Absence is not a low value,
+   so it stays under the coloured marks in either draw direction;
+3. a CDS with a value. In category colour a **lab-reviewed** category draws over
+   a **source-derived** one. In metric colour the order is by value, in the
+   direction below;
+4. the marks the reader singled out — shortlisted, keyboard-active, hovered,
+   pinned — above everything. The scatter map realises this tier through the
+   focus rings it already draws last; the chromosome view sorts its bars by it
+   as well, so a pinned bar is not buried by a neighbour.
+
+Ties break by **locus order**, so a re-render can never flicker between two
+equally ranked CDSs.
+
+**Draw on top: highest or lowest.** Highest is the default for every metric.
+The control reverses only tier 3, and only for a value ramp: a function-category
+colour has no value order to reverse, so it is shown **disabled with its reason**
+in visible text, exactly as the Scale control is under the same colour. It is an
+aesthetic preference of little consequence, so by owner decision of 2026-09-30 it
+takes no space in a primary area: it is on no toolbar row, adds no always-visible
+row, label, or height, and lives at the foot of the **colour explanation**
+disclosure beneath Colour by — closed in a fresh view, present on every scatter
+tab and on the chromosome tab. It is keyboard reachable, in visual order, once
+that disclosure is open.
+
+Because it is normally out of sight, the direction in effect is never only there.
+The legend note states it in one clause appended to a note that already exists,
+and both canvases' accessible descriptions state it in a sentence. A reader who
+never opens the disclosure can still tell which way the picture is ordered.
+
+The scatter map keeps its batching by quantized colour, which is what makes
+panning fast. Only the order the batches are issued in changes, and that order is
+decided with the buckets — on a colour, mask, or direction change — never per
+frame.
+
+**URL field `dt`,** written only when the direction is reversed. It did **not**
+bump the encoder, on the test in the section below: an omitted `dt` has only ever
+meant highest on top, which is both the fresh view and what every earlier viewer
+drew, so no reader can misread another's hash. The export manifest records it in
+`viewState.drawOnTop`, because it changes no number but does decide which of two
+overlapping marks the exported picture shows.
+
+Coverage is `tests/js/paint-priority.test.mjs` (every tier and tie-break),
+`tests/js/scatter-paint-order.test.mjs` (the batches a frame actually issues, in
+both directions), `tests/js/chromosome-view.test.mjs` (the shared-column rule and
+the hit test), `tests/js/url-state.test.mjs` (the round trip and the no-key case)
+and `tests/js/legend.test.mjs` (the note).
+
 ## Pinned status row
 
 When a gene is pinned, the unpin control sits to the left of the "Pinned"
@@ -147,8 +204,9 @@ round trip.
 Not every new field needs a version. A version number earns its place only where
 the **absence** of a field has to mean two different things to two readers, as an
 omitted `ax`/`ay` does. The per-axis scales `xs`/`ys` and the colour scale `csc`
-are both absent-means-the-default fields, so neither bumped the encoder: an
-omitted `xs`/`ys` has only ever meant linear, and an omitted `csc` means the
+and the draw direction `dt` are all absent-means-the-default fields, so none of
+them bumped the encoder: an omitted `xs`/`ys` has only ever meant linear, an
+omitted `dt` has only ever meant highest on top, and an omitted `csc` means the
 colour metric's own default scale, which is exactly what a fresh view shows. That
 last point is an owner decision of 2026-09-29 and is what makes an already shared
 link to TSS initiation agree with a fresh view rather than stay pixel-identical to
