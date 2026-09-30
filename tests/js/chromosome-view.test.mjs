@@ -6,7 +6,9 @@ import {
 } from '../../site/js/ui/chromosome-view.js';
 import { repliconTracks } from '../../site/js/core/chromosome-model.js';
 import { buildCategoryColorScale, buildColorScale } from '../../site/js/ui/colors.js';
-import { valueScaleAvailability, valueScaleTransform } from '../../site/js/core/value-scales.js';
+import {
+  valueScaleAvailability, valueScaleClause, valueScaleTransform,
+} from '../../site/js/core/value-scales.js';
 import { CATEGORICAL_SCALE_REASON, scaleControlState } from '../../site/js/ui/scale-select.js';
 import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
 
@@ -327,6 +329,7 @@ function colorModel(genes, { colorScale, categorical }) {
     derived: null,
     label: 'CAI',
     categorical: false,
+    valueScale: colorScale,
   };
 }
 
@@ -363,6 +366,7 @@ function viewModel({
   categoryFilterLabels = [], colorScale = 'log10', categorical = false,
 } = {}) {
   const colorMode = { colorScale, categorical };
+  const colors = colorModel(genes, colorMode);
   const { tracks, problems, verified } = repliconTracks(genes, meta);
   return {
     tracks,
@@ -371,7 +375,7 @@ function viewModel({
     genes,
     mask,
     showHidden,
-    colors: colorModel(genes, colorMode),
+    colors,
     colorLabel: categorical ? 'Function category' : 'CAI',
     colorOptions: [
       { group: 'Reviewed function', value: 'functionCategory', label: 'Function category' },
@@ -379,7 +383,9 @@ function viewModel({
     ],
     colorKey: categorical ? 'functionCategory' : 'cai',
     colorScaleControl: scaleControl(genes, colorMode),
-    colorScaleClause: categorical ? null : 'on a logarithmic scale',
+    // Read off the model's own scale by the same call `app.js` makes, so a fixture
+    // cannot describe the ramp as logarithmic while building a linear one.
+    colorScaleClause: colors.categorical ? null : valueScaleClause(colors.valueScale),
     pinned: -1,
     hovered: -1,
     active: -1,
@@ -717,10 +723,27 @@ test('the view states its own marker conventions, since the shared key omits the
 });
 
 test('the accessible description states the scale the colours are read under', () => {
-  const { view, restore } = mount();
+  const { view, restore, flush } = mount();
   try {
     assert.match(view.canvas.getAttribute('aria-label'),
       /coloured by CAI on a logarithmic scale\./);
+
+    // Through `update`, the entry point `app.js` calls: the sentence follows the
+    // scale the ramp was built under rather than naming whichever one the view
+    // opened on. The column here has a negative value, so a logarithm is not even
+    // available for it and a description claiming one would be describing a ramp
+    // the application cannot draw.
+    view.update(viewModel({ genes: NEGATIVE_CAI_GENES, colorScale: 'linear' }));
+    flush();
+    assert.match(view.canvas.getAttribute('aria-label'),
+      /coloured by CAI on a linear scale\./);
+
+    // And a function category, which has no scale, names none.
+    view.update(viewModel({ categorical: true }));
+    flush();
+    const label = view.canvas.getAttribute('aria-label');
+    assert.match(label, /coloured by Function category\./);
+    assert.doesNotMatch(label, /on a [a-z ]+ scale/);
   } finally {
     restore();
   }

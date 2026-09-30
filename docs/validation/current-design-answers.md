@@ -68,6 +68,23 @@ update one and leave the other stale. Both toolbars have their own note
 (`#color-scale-notice`, `#chromosome-color-scale-notice`) and receive the same
 state.
 
+**What a change says is read from that state too.** Choosing a colour or a scale
+announces the colour channel that resulted: the metric and the scale it is now
+read under, or — for Function category — the metric and the one reason there is
+no scale, taken from the control state's own `reason` rather than a second copy
+of that sentence. The two handlers and the sentence live in
+[site/js/ui/color-controls.js](../../site/js/ui/color-controls.js) rather than
+inline in `app.js`, because `app.js` boots the whole application on import and
+nothing inside it can be reached by a unit test. That is not hypothetical: the
+sentence once named a constant after it had moved to another module, and the
+`ReferenceError` was raised only for a reader who chose Function category in a
+browser, leaving the previous metric's sentence standing in the live region.
+[tests/js/color-controls.test.mjs](../../tests/js/color-controls.test.mjs) drives
+a real `change` on each selector and asserts the text; the static half is
+[tests/js/module-constants.test.mjs](../../tests/js/module-constants.test.mjs),
+which fails on any UPPER_SNAKE constant a published module names without
+importing or declaring it.
+
 **The default is a rule, not a list.** A metric opens **Logarithmic** when every
 finite value is strictly positive and at least `SKEWED_DEFAULT_SHARE` (0.9) of its
 valued genes fall in the lowest tenth of its linear range. A metric that meets

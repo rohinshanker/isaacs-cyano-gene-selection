@@ -45,6 +45,7 @@ import { renderLoadings } from './ui/loadings.js';
 import { renderLegend, renderCategoryLegend } from './ui/legend.js';
 import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/colors.js';
 import { scaleControlState, syncScaleSelect } from './ui/scale-select.js';
+import { colorAnnouncement, installColorControls } from './ui/color-controls.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
 import { FilterPanel, clearedFilterState } from './ui/filters.js';
@@ -1209,40 +1210,35 @@ function buildColorSelect() {
     group.append(node);
   }
   select.value = state.colorBy;
-  select.addEventListener('change', () => {
-    state.colorBy = select.value;
-    // A new metric has its own default scale, and the previous metric's choice
-    // says nothing about this one. Only a hash naming `csc` overrides that, and
-    // it does so by writing `state.colorScale` after this handler has run.
-    state.colorScale = null;
-    renderMap();
-    persist();
-    announceColorScale();
-  });
 }
 
 /**
- * The map toolbar's Scale selector. It writes the one shared value both views
- * and the legend read; {@link syncColorScaleControl} keeps its options and its
- * disabled state pointed at whatever Colour by now holds.
+ * The map toolbar's Colour by and Scale selectors. Both write the one shared
+ * colour selection every view and the legend read, and both are wired by
+ * {@link installColorControls}, which owns the scale-clearing rule and the
+ * sentence each change announces; {@link syncColorScaleControl} keeps the Scale
+ * options and the disabled state pointed at whatever Colour by now holds.
  */
-function buildColorScaleSelect() {
-  const select = element('color-scale');
-  select.addEventListener('change', () => {
-    state.colorScale = select.value;
-    renderMap();
-    persist();
-    announceColorScale();
+function buildColorControls() {
+  buildColorSelect();
+  installColorControls({
+    colorBy: element('color-by'),
+    scale: element('color-scale'),
+    model: colorModel,
+    announce,
+    onChange: ({ colorBy, colorScale }) => {
+      state.colorBy = colorBy;
+      state.colorScale = colorScale;
+      renderMap();
+      persist();
+    },
   });
   syncColorScaleControl(colorModel());
 }
 
 /** Say which metric and scale the colours now read, for a screen reader. */
 function announceColorScale() {
-  const colors = colorModel();
-  announce(colors.categorical
-    ? `Colouring by ${colors.label}. ${CATEGORICAL_SCALE_REASON}`
-    : `Colouring by ${colors.label} ${valueScaleClause(colors.valueScale)}.`);
+  announce(colorAnnouncement(colorModel()));
 }
 
 function buildAxisSelects() {
@@ -1909,8 +1905,7 @@ async function boot() {
 
   buildPanelTabs();
   updatePanelTabs();
-  buildColorSelect();
-  buildColorScaleSelect();
+  buildColorControls();
   buildAxisSelects();
   buildAxisScaleSelects();
   buildGeneSearch();
