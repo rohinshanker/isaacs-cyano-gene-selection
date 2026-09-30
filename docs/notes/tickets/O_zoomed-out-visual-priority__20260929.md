@@ -120,12 +120,12 @@ not decided in this ticket. Each is built only once approved here by name.
 ## Constraints that are not negotiable
 
 - **This ticket does not change the colour scale.** It works through paint order
-  only. The scale itself is
-  [A_colour-scale-and-map-toolbar__20260929](A_colour-scale-and-map-toolbar__20260929.md),
-  opened the same day by owner decision, which adds a selectable scale and
-  defaults the most skewed metrics to logarithmic. That ticket goes first: a
-  logarithmic default changes which genes read as standouts, so this ticket's
-  acceptance checks are run under whatever scale is the default once it lands.
+  only. The selectable colour scale, with TSS initiation and expression
+  defaulting to logarithmic and the neighbour distances to symmetric log,
+  shipped on 2026-09-30 under the contract in
+  [explicit-metric-axes.md](../../validation/explicit-metric-axes.md) and
+  [current-design-answers.md](../../validation/current-design-answers.md). This
+  ticket's acceptance checks run under those defaults.
 - **Missing stays absent.** A gene with no value is never given a colour, at any
   zoom, under [data-contract.md](../../validation/data-contract.md) and
   [chromosome-view.md](../../validation/chromosome-view.md). The neutral tick for
