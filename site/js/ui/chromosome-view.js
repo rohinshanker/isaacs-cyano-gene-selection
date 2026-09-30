@@ -575,9 +575,15 @@ export class ChromosomeView {
       + 'an offset against a named UTEX locus, in the gene visualizer. A value a source does not '
       + 'report is absent here, never zero.';
 
+    // The pinned gene's sequence close-up sits at the foot of the figure, by
+    // owner decision of 2026-09-30, below the tracks and their key. The app
+    // mounts its own view here through `sequenceElement`, as it does the legend.
+    this.sequenceHost = document.createElement('div');
+    this.sequenceHost.className = 'chromosome-sequence';
+
     this.figure.append(toolbar, this.windowReadout, this.canvasHost,
       this.instructions, this.detailJump, this.legendHost, this.markerNote, this.trackSummaries,
-      this.evidenceNote);
+      this.evidenceNote, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -608,6 +614,11 @@ export class ChromosomeView {
   /** The host for the shared colour-metric explanation disclosure. */
   colourHelpElement() {
     return this.colourHelp;
+  }
+
+  /** The host for the pinned gene's sequence close-up, at the foot of the figure. */
+  sequenceElement() {
+    return this.sequenceHost;
   }
 
   syncControls() {

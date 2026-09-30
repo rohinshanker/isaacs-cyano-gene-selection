@@ -53,6 +53,8 @@ test('decode and encode round-trip, and translation follows the code', () => {
 test('decode rejects a symbol outside the alphabet', () => {
   const table = standardTable();
   assert.throws(() => table.decode('!'), /unknown codon symbol/);
+  // A code past the ASCII table is undefined in the lookup, not -1, and must still throw.
+  assert.throws(() => table.decode('\u00ff'), /unknown codon symbol/);
 });
 
 test('a malformed alphabet is rejected rather than silently accepted', () => {

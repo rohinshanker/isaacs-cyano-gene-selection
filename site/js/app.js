@@ -61,6 +61,7 @@ import { ComparePanel } from './ui/compare.js';
 import { normalizeCompareAxes } from './ui/compare-model.js';
 import { LeftPanels } from './ui/left-panels.js';
 import { renderGeneViewer } from './ui/gene-viewer.js';
+import { GeneSequenceView } from './ui/gene-sequence-view.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -484,6 +485,7 @@ let citationsPanel = null;
 let lengthExplorer = null;
 let regulatorySitesPanel = null;
 let chromosomeView = null;
+let geneSequenceView = null;
 let workspaceResizer = null;
 let leftPanels = null;
 /** Chosen comparison metrics for this browser, or null for the defaults. */
@@ -941,6 +943,18 @@ function renderChromosomeView() {
   if (verified) {
     renderColorLegend(chromosomeView.legendElement(), colors, { markerConventions: false });
   }
+  // The sequence close-up follows the pinned gene only, never a hover or a
+  // keyboard preview, and re-renders only when that gene or the scheme changes.
+  geneSequenceView ??= new GeneSequenceView(chromosomeView.sequenceElement(), {
+    onAnnounce: (message) => announce(message),
+  });
+  const pinned = pinnedIndex();
+  geneSequenceView.update({
+    gene: pinned >= 0 ? context.dataset.genes[pinned] : null,
+    table: context.dataset.table,
+    scheme: context.scheme,
+    schemeVersion: context.schemeVersion,
+  });
 }
 
 /**

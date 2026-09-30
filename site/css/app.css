@@ -1364,6 +1364,65 @@ input[type="range"] { width: 100%; }
 .gene-view-facts dt { color: var(--ink-muted); }
 .gene-view-facts dd { margin: 0; }
 
+/* Sequence close-up, at the foot of the chromosome tab ------------------ */
+
+.chromosome-sequence { margin-top: 0.75rem; }
+.gene-sequence-figure { display: grid; gap: 0.5rem; }
+.gene-sequence-facts { color: var(--ink-muted); font-size: 0.85rem; font-weight: normal; }
+.gene-sequence-strip {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gene-sequence-strip.is-dragging { cursor: grabbing; }
+.gene-sequence-strip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gene-sequence-svg { display: block; width: 100%; height: auto; font-family: var(--mono); }
+.gene-sequence-labels text { fill: var(--ink-muted); font-family: var(--font); font-size: 11px; }
+.gene-sequence-ruler line { stroke: var(--line-strong); stroke-width: 1; }
+.gene-sequence-ruler text { fill: var(--ink-muted); font-family: var(--font); font-size: 9px; }
+.gene-sequence-upstream rect { fill: var(--surface-sunken); stroke: var(--line); stroke-width: 0.5; }
+.gene-sequence-upstream text { fill: var(--ink-muted); }
+.gene-sequence-codon text { fill: var(--ink); }
+.gene-sequence-bases, .gene-sequence-recoded { fill: var(--surface); stroke: var(--line-strong); stroke-width: 0.6; }
+.gene-sequence-codon-alt .gene-sequence-bases,
+.gene-sequence-codon-alt .gene-sequence-recoded { fill: var(--accent-soft); }
+.gene-sequence-codon-start .gene-sequence-bases,
+.gene-sequence-codon-start .gene-sequence-recoded,
+.gene-sequence-start-mark { fill: var(--accent); }
+.gene-sequence-codon-stop .gene-sequence-bases,
+.gene-sequence-codon-stop .gene-sequence-recoded,
+.gene-sequence-stop-mark { fill: var(--danger); }
+/* Only the base letters lie on the solid start and stop cells, so only they
+   read white. Selecting every `text` in those cells also caught the residue
+   letter and the residue number, which sit on the white protein cell below and
+   carry their own colours: the first codon's "M" and its "1" were white on
+   white. Keying the rule on the letter classes is what keeps the two rows apart. */
+.gene-sequence-codon-start .gene-sequence-letter-original,
+.gene-sequence-codon-start .gene-sequence-letter-recoded,
+.gene-sequence-codon-stop .gene-sequence-letter-original,
+.gene-sequence-codon-stop .gene-sequence-letter-recoded { fill: #fff; }
+/* A codon the scheme changed is amber in the recoded row, a reassigned terminal
+   stop included, so its recoded letters come back to dark ink. */
+.gene-sequence-changed .gene-sequence-recoded, .gene-sequence-change-tick { fill: #f6d98a; }
+.gene-sequence-changed .gene-sequence-letter-recoded { fill: var(--ink); }
+.gene-sequence-change-mark { fill: var(--ink); }
+.gene-sequence-residue { fill: var(--surface); stroke: var(--line); stroke-width: 0.5; }
+.gene-sequence-residue-letter { fill: var(--ink); font-weight: 600; }
+.gene-sequence-codon-stop .gene-sequence-residue-letter { fill: var(--danger); }
+.gene-sequence-residue-number { fill: var(--ink-muted); font-family: var(--font); }
+.gene-sequence-selected rect { stroke: var(--focus); stroke-width: 2; }
+.gene-sequence-selected-mark { fill: none; stroke: var(--focus); stroke-width: 2; }
+.gene-sequence-upstream-bar { fill: var(--surface-sunken); stroke: var(--line); }
+.gene-sequence-cds-bar { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; }
+.gene-sequence-junctions line { stroke: var(--ink-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.gene-sequence-junctions text { fill: var(--ink-muted); font-family: var(--font); }
+.gene-sequence-selection { margin: 0; font-size: 0.85rem; }
+
 @media (prefers-reduced-motion: reduce) {
   .panel-caret { transition: none; }
 }

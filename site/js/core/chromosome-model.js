@@ -105,6 +105,12 @@ export function cdsPieces(gene) {
  * a gene that merely begins at base 1, or a spliced gene in the middle of a
  * replicon, is not a wrap and must not be marked as one.
  */
+/** Length of a replicon in the genome of record, by accession, or null. */
+export function repliconLength(seqid) {
+  const replicon = GENOME_OF_RECORD.replicons.find((entry) => entry.accession === seqid);
+  return replicon ? replicon.lengthBp : null;
+}
+
 export function wrapsOrigin(pieces, lengthBp) {
   if (!Array.isArray(pieces) || pieces.length < 2 || !Number.isFinite(lengthBp)) return false;
   return pieces.some((piece) => piece.from === 1) && pieces.some((piece) => piece.to === lengthBp);
@@ -148,11 +154,13 @@ export function cdsMark(gene, index, lengthBp) {
     pieces,
     wraps,
     // The coordinate a wrapping CDS is navigated and announced by: its first
-    // transcribed base, which is the far end of the replicon on the plus strand
-    // and base 1's piece on the minus strand. For every other CDS this is just
-    // its own first base.
+    // transcribed base, which is the far piece's first base on the plus strand
+    // and the high end of base 1's piece on the minus strand, because
+    // `complement(join(45877..46366,1..2510))` is read from 2,510 down to 1 and
+    // then from the last base down. For every other CDS this is just its own
+    // first base.
     anchorBp: wraps
-      ? (gene.strand === '-' ? pieces[pieces.length - 1].to : pieces[pieces.length - 1].from)
+      ? (gene.strand === '-' ? pieces[0].to : pieces[pieces.length - 1].from)
       : pieces[0].from,
     coveredBp: pieces.reduce((total, piece) => total + (piece.to - piece.from + 1), 0),
   };

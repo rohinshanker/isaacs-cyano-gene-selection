@@ -108,8 +108,10 @@ export class CodonTable {
   decode(packed) {
     const out = new Uint8Array(packed.length);
     for (let i = 0; i < packed.length; i += 1) {
+      // A code past the ASCII table reads as undefined, not -1, so the guard
+      // asks for a known index rather than for the absence of the sentinel.
       const index = this.symbolToIndex[packed.charCodeAt(i)];
-      if (index < 0) throw new Error(`unknown codon symbol ${JSON.stringify(packed[i])} at ${i}`);
+      if (!(index >= 0)) throw new Error(`unknown codon symbol ${JSON.stringify(packed[i])} at ${i}`);
       out[i] = index;
     }
     return out;

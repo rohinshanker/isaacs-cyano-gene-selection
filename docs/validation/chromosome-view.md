@@ -134,8 +134,22 @@ is also centred on that rectangle and reaches at most to its rows, so the clip
 bounds the stroke rather than cutting the shape.
 
 `anchorBp` is the CDS's first transcribed base, which for a wrapping CDS is the
-piece before the origin on the plus strand and the high end on the minus strand.
-Keyboard navigation and the announcement use it.
+piece before the origin on the plus strand, and on the minus strand the high end
+of the piece that begins at base 1. `M744_RS13290` is
+`complement(join(45877..46366,1..2510))`, so it is read from 2,510 down to 1 and
+then from 46,366 down to 45,877, and 2,510 is where a reader arriving by keyboard
+lands. Reading the pieces in coordinate order instead announced 46,366, a base
+the ribosome reaches last. Keyboard navigation and the announcement use it.
+
+**Transcription order is one rule, and the gene visualizers read it too.**
+`transcriptionPieces` in [`core/gene-view-model.js`](../../site/js/core/gene-view-model.js)
+orders a CDS's pieces the way they are transcribed, measures each gap around the
+circle so a wrap junction correctly skips nothing, and is what both the small
+gene visualizer and the sequence close-up build their offsets from. It matters
+most for exactly the two CDSs above: their `start` and `end` span an entire
+replicon, so ordering by coordinate drew `M744_RS13620`, a 294 nt gene, across
+all 7,842 bp of its plasmid. Only `cdsSegments` describes them truthfully, here
+and in [gene-sequence-closeup.md](gene-sequence-closeup.md).
 
 **Operon brackets.** `operonBrackets` groups a track's marks by `operonId` and
 spans the member CDSs only. The bracket is never extended to a promoter or a

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  geneViewModel, orientedSegments, tssMarks, fractionOf, tickStep, ticksFor,
+  geneViewModel, orientedSegments, transcriptionPieces, tssMarks, fractionOf, tickStep, ticksFor,
   UPSTREAM_CONTEXT_NT,
 } from '../../site/js/core/gene-view-model.js';
 
@@ -122,4 +122,61 @@ test('the ruler steps in ones, twos and fives, and always marks the start', () =
   assert.equal(tickStep({ min: 0, max: 100 }, 4), 50);
   assert.ok(ticksFor({ min: -60, max: 1040 }, 4).includes(0));
   assert.ok(ticksFor({ min: -614, max: 1050 }, 4).includes(0));
+});
+
+test('an origin-crossing plus-strand gene is one short track, not the whole replicon', () => {
+  // M744_RS13620: join(7830..7842,1..281) on the 7,842 bp plasmid. Its record
+  // spans the entire replicon, so ordering its pieces by coordinate drew a
+  // 294 nt gene across 7,842 nt.
+  const wrap = {
+    ...plusGene,
+    id: 'M744_RS13620', seqid: 'NZ_CP006473.1', start: 1, end: 7842,
+    lengthNt: 294, lengthCodons: 97, cdsSegments: [[7830, 7842], [1, 281]],
+  };
+  assert.deepEqual(transcriptionPieces(wrap), [
+    { low: 7830, high: 7842, gapBefore: 0 },
+    { low: 1, high: 281, gapBefore: 0 },
+  ]);
+  assert.deepEqual(orientedSegments(wrap), [{ from: 0, to: 12 }, { from: 13, to: 293 }]);
+  const model = geneViewModel(wrap);
+  assert.ok(model.spliced);
+  assert.equal(model.domain.max < 400, true);
+});
+
+test('an origin-crossing minus-strand gene reads base 1\'s piece first', () => {
+  // M744_RS13290: complement(join(45877..46366,1..2510)), transcribed from
+  // 2,510 down to 1 and then from 46,366 down to 45,877.
+  const wrap = {
+    ...plusGene,
+    id: 'M744_RS13290', seqid: 'NZ_CP006472.1', strand: '-', start: 1, end: 46366,
+    lengthNt: 3000, lengthCodons: 999, cdsSegments: [[45877, 46366], [1, 2510]],
+  };
+  assert.deepEqual(transcriptionPieces(wrap), [
+    { low: 1, high: 2510, gapBefore: 0 },
+    { low: 45877, high: 46366, gapBefore: 0 },
+  ]);
+  assert.deepEqual(orientedSegments(wrap), [{ from: 0, to: 2509 }, { from: 2510, to: 2999 }]);
+});
+
+test('a spliced gene that merely touches base 1 is not a wrap', () => {
+  const edge = {
+    ...plusGene, seqid: 'NZ_CP006473.1', start: 1, end: 100,
+    cdsSegments: [[1, 30], [41, 100]],
+  };
+  assert.deepEqual(transcriptionPieces(edge), [
+    { low: 1, high: 30, gapBefore: 0 },
+    { low: 41, high: 100, gapBefore: 10 },
+  ]);
+  const minus = { ...edge, strand: '-' };
+  assert.deepEqual(transcriptionPieces(minus), [
+    { low: 41, high: 100, gapBefore: 0 },
+    { low: 1, high: 30, gapBefore: 10 },
+  ]);
+  assert.deepEqual(orientedSegments(minus), [{ from: 0, to: 59 }, { from: 70, to: 99 }]);
+});
+
+test('a gene on an unknown replicon still orders its pieces by coordinate', () => {
+  const unknown = { ...plusGene, seqid: 'NZ_UNKNOWN.1', cdsSegments: [[4314, 4400], [4402, 5318]] };
+  assert.deepEqual(orientedSegments(unknown), [{ from: 0, to: 86 }, { from: 88, to: 1004 }]);
+  assert.deepEqual(transcriptionPieces({ ...plusGene, start: null, end: null }), []);
 });

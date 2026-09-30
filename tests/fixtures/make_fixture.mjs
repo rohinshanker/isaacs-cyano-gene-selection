@@ -134,6 +134,32 @@ const SEQIDS = [
   { id: 'NZ_CP006473.1', length: 17913, share: 0.02 },
 ];
 
+/** `count` random ACGT bases. */
+function randomBases(random, count) {
+  let out = '';
+  for (let i = 0; i < count; i += 1) out += 'ACGT'[Math.floor(random() * 4)];
+  return out;
+}
+
+/**
+ * The contract's alternate `rnaContext` form: the [-30,60) genomic window with
+ * a zero-based CDS offset per base, or -1 outside the gene. A CDS shorter than
+ * 60 bases runs past its stop into random downstream bases, which is exactly
+ * the case the form exists for.
+ */
+function startWindow(upstream, cds, random) {
+  const inside = cds.slice(0, 60);
+  const downstream = randomBases(random, 60 - inside.length);
+  return {
+    sequence: upstream + inside + downstream,
+    cdsOffsets: [
+      ...Array(30).fill(-1),
+      ...inside.split('').map((_, offset) => offset),
+      ...Array(60 - inside.length).fill(-1),
+    ],
+  };
+}
+
 function weightedPick(random, entries) {
   const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
   let roll = random() * total;
@@ -474,6 +500,13 @@ function main() {
       operonPosition: gene.operonPosition,
       operonSize: gene.operonSize,
       terminalStop: gene.terminalStop,
+      // The contract's exact start window: 30 upstream bases in transcription
+      // orientation for an ordinary CDS, or the 90-base genomic window with a
+      // CDS offset per base. One gene carries the second form so its decoder
+      // is exercised against the fixture as well as against hand-made records.
+      rnaContext: g === 41
+        ? startWindow(randomBases(random, 30), nucleotides + gene.terminalStop, random)
+        : { upstream: randomBases(random, 30) },
       // Three genes in the real set are spliced, one of them for a programmed
       // frameshift, so the fixture carries both shapes.
       translationalException: g === 17 ? 'ribosomal_slippage' : null,

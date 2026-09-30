@@ -118,7 +118,9 @@ test('a wrapping CDS is navigated from its first transcribed base', () => {
   // Plus strand: transcription enters at the piece before the origin.
   assert.equal(cdsMark(WRAP_PLUS, 0, PLASMID_C_BP).anchorBp, 7830);
   // Minus strand: transcription enters at the high end of the later piece.
-  assert.equal(cdsMark(WRAP_MINUS, 0, PLASMID_B_BP).anchorBp, 46366);
+  // complement(join(45877..46366,1..2510)) is transcribed from 2,510 down to 1
+  // and then from the last base down, so its first transcribed base is 2,510.
+  assert.equal(cdsMark(WRAP_MINUS, 0, PLASMID_B_BP).anchorBp, 2510);
   assert.equal(cdsMark(gene({}), 0, CHROMOSOME_BP).anchorBp, 32);
 });
 

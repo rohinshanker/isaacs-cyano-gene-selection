@@ -10,6 +10,8 @@
  * because genomic coordinates do not transfer across the UTEX 2973 inversion.
  */
 
+import { cdsPieces, repliconLength, wrapsOrigin } from './chromosome-model.js';
+
 /** Upstream context drawn by default: the contract's own [-30,60) start window. */
 export const UPSTREAM_CONTEXT_NT = 30;
 
@@ -20,31 +22,71 @@ const MIN_UPSTREAM_NT = 60;
 const DOWNSTREAM_PAD_FRACTION = 0.04;
 
 /**
- * Genomic interval to transcription-oriented offsets.
- * On the minus strand the gene's `end` is its first transcribed base, so the
- * interval is mirrored and its ends swap.
+ * The genomic pieces of a CDS in the order they are transcribed, each with the
+ * number of genomic bases skipped before it.
+ *
+ * Plus-strand pieces run by ascending coordinate and minus-strand pieces by
+ * descending coordinate. A CDS that crosses the circular origin, one whose
+ * pieces touch both base 1 and the replicon's last base (`wrapsOrigin`), is
+ * the exception: on the plus strand the piece ending at the last base comes
+ * first and the piece starting at base 1 follows it, and on the minus strand
+ * base 1's piece is transcribed first, down to base 1, then the far piece from
+ * the last base down. `M744_RS13290` is `complement(join(45877..46366,1..2510))`
+ * and reads from 2,510 down to 1 and then from 46,366 down to 45,877. Every gap
+ * is measured around the circle, so the wrap junction skips nothing.
+ *
+ * @returns {{low: number, high: number, gapBefore: number}[]}
  */
-function orientInterval([low, high], gene) {
-  return gene.strand === '-'
-    ? { from: gene.end - high, to: gene.end - low }
-    : { from: low - gene.start, to: high - gene.start };
+export function transcriptionPieces(gene, lengthBp = repliconLength(gene?.seqid)) {
+  const pieces = cdsPieces(gene);
+  if (pieces.length === 0) return [];
+  const wraps = wrapsOrigin(pieces, lengthBp);
+  let ordered;
+  if (gene.strand === '-') {
+    const descending = [...pieces].sort((a, b) => b.from - a.from);
+    const far = descending.findIndex((piece) => piece.to === lengthBp);
+    ordered = wraps ? [...descending.slice(far + 1), ...descending.slice(0, far + 1)] : descending;
+  } else {
+    const origin = pieces.findIndex((piece) => piece.from === 1);
+    ordered = wraps ? [...pieces.slice(origin + 1), ...pieces.slice(0, origin + 1)] : pieces;
+  }
+  const around = (distance) => (Number.isFinite(lengthBp) && lengthBp > 0
+    ? ((distance % lengthBp) + lengthBp) % lengthBp
+    : distance);
+  return ordered.map((piece, i) => {
+    let gapBefore = 0;
+    if (i > 0) {
+      const previous = ordered[i - 1];
+      gapBefore = gene.strand === '-'
+        ? around(previous.from - piece.to - 1)
+        : around(piece.from - previous.to - 1);
+    }
+    return { low: piece.from, high: piece.to, gapBefore };
+  });
 }
 
 /**
- * The coding segments in transcription order.
+ * The coding segments in transcription order, as offsets from the first
+ * transcribed base.
  *
  * A gene with `cdsSegments` is a join of non-adjacent genomic pieces, and the
  * gap between them is real: the drawn track must show it rather than a
  * continuous bar, because a translation that depends on a frameshift is a
- * high-risk recoding target the viewer should not smooth over.
+ * high-risk recoding target the viewer should not smooth over. The offsets
+ * accumulate piece by piece with each genomic gap, which is what places an
+ * origin-crossing plasmid gene on one short track instead of across the whole
+ * replicon its `start` and `end` span.
  */
 export function orientedSegments(gene) {
-  const raw = Array.isArray(gene.cdsSegments) && gene.cdsSegments.length > 0
-    ? gene.cdsSegments
-    : [[gene.start, gene.end]];
-  return raw
-    .map((segment) => orientInterval(segment, gene))
-    .sort((a, b) => a.from - b.from);
+  const segments = [];
+  let offset = 0;
+  for (const piece of transcriptionPieces(gene)) {
+    offset += piece.gapBefore;
+    const length = piece.high - piece.low + 1;
+    segments.push({ from: offset, to: offset + length - 1 });
+    offset += length;
+  }
+  return segments.length > 0 ? segments : [{ from: 0, to: Math.max(0, gene.end - gene.start) }];
 }
 
 /**
