@@ -289,11 +289,11 @@ denies. Both are written after the bands are painted, because neither figure is
 knowable before the picture exists, and both are rewritten on zoom, pan, filter,
 and colour change.
 
-The conventions note beneath the colour key reads exactly as it did on `34bb240`.
-Note that this reinstates its unqualified "never as a solid reviewed one", which
-is not true of the picture at the zooms where D1 draws a derived category solid;
-the owner accepted that in preference to a visible notice, and the description and
-the disclosure are where the truthful count is.
+The conventions note beneath the colour key reads as it did on `34bb240` with one
+clause removed: "never as a solid reviewed one" is not true of the picture at the
+zooms where D1 draws a derived category solid, so the sentence now stops at the
+pale fill. Nothing was added in its place; the description and the disclosure are
+where the count of solid derived bars is.
 
 Three things about those figures are load-bearing, because a figure the reader is
 given about the picture has to be true of the picture:

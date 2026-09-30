@@ -742,7 +742,8 @@ test('the view states its own marker conventions, since the shared key omits the
     assert.match(note, /0 excluded by the current filters/);
     assert.match(note, /Shortlisted CDSs carry a dark diamond/);
     assert.match(note, /pinned CDS is outlined in red/);
-    assert.match(note, /outlined bar with a pale fill, never as a solid reviewed one/);
+    assert.match(note, /outlined bar with a pale fill\. Shortlisted/);
+    assert.doesNotMatch(note, /never as a solid reviewed one/);
     // And, by owner decision of 2026-09-30, nothing about paint order: no
     // ordering clause, no crowding figure, no owner decision D1 notice. Those
     // are in the accessible description and in the colour explanation only.
@@ -1797,8 +1798,8 @@ test('the colour explanation says derived and reviewed draw alike, and stops onc
     view.zoomBand(view.bands()[0], 400, 100300);
     flush();
     assert.doesNotMatch(disclosureText(view), /source-derived categor/);
-    assert.match(view.markerNote.textContent,
-      /outlined bar with a pale fill, never as a solid reviewed one/);
+    assert.match(view.markerNote.textContent, /outlined bar with a pale fill\. Shortlisted/);
+    assert.doesNotMatch(view.markerNote.textContent, /never as a solid reviewed one/);
   } finally {
     restore();
   }

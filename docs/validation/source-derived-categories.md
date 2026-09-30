@@ -77,10 +77,11 @@ which was the owner's condition on approving it. Those two are the only places.
 The owner relaxed the condition on 2026-09-30, after the first render: the notice
 is **not** in the visible legend and **not** in the chromosome view's conventions
 note, because explanation for what a reader learns by zooming does not belong in
-the visible interface. The conventions note therefore still reads, at every zoom,
-that a derived category draws as an outlined bar with a pale fill and never as a
-solid reviewed one; where D1 is in effect that is untrue of the picture, and the
-truthful count is in the description and in the disclosure.
+the visible interface. The conventions note says only that a derived category
+draws as an outlined bar with a pale fill; its former clause "never as a solid
+reviewed one" was dropped the same day because it is untrue of the picture where
+D1 is in effect, and the count of solid derived bars is in the description and in
+the disclosure.
 
 A CDS counts once if any segment the view drew is solid, so a CDS like the one
 above is in the count; counting only the CDSs whose every segment was narrow left

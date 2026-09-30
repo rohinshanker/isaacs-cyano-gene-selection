@@ -691,8 +691,12 @@ export class ChromosomeView {
       parts.push(`${formatCount(excluded)} excluded by the current filters keep their coordinates `
         + 'and draw grey behind the rest.');
     }
-    parts.push('A source-derived function category draws as an outlined bar with a pale fill, '
-      + 'never as a solid reviewed one. Shortlisted CDSs carry a dark diamond beside the bar, and '
+    // "Never as a solid reviewed one" left this sentence on 2026-09-30: under
+    // owner decision D1 a sub-pixel derived bar is solid, so the claim would be
+    // false at whole-genome zoom. The count of such bars is in the description
+    // and the colour explanation, not here.
+    parts.push('A source-derived function category draws as an outlined bar with a pale fill. '
+      + 'Shortlisted CDSs carry a dark diamond beside the bar, and '
       + 'the pinned CDS is outlined in red with a line through its band.');
     parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
       + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
