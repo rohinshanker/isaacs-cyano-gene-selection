@@ -12,7 +12,7 @@
  * This module only turns that model into pixels and events.
  */
 import {
-  MIN_WINDOW_BP, clampWindow, describeChromosomeView, describeSolidDerived, formatBasePairs,
+  MIN_WINDOW_BP, clampWindow, describeChromosomeView, describePaintOrder, formatBasePairs,
   formatCoordinate, fullWindow, locateIndex, navigationLanes, neighborMark, operonBrackets,
   panWindow, positionTicks, repliconScale, tssPositions, visibleMarks, zoomWindow,
 } from '../core/chromosome-model.js';
@@ -633,14 +633,33 @@ export class ChromosomeView {
     }
     this.colorSelect.value = colorKey;
     syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl, this.scaleNotice);
-    // Inside the colour explanation, which is closed in a fresh view, so it adds
-    // no row, label, or height to this toolbar. See ui/draw-direction.js.
+    this.syncDrawDirection();
+    this.showHidden.checked = showHidden;
+    this.detailJump.hidden = !this.model.hasSelection;
+  }
+
+  /**
+   * The **Draw on top** control and, beside it, what the picture is currently
+   * doing about overlapping marks.
+   *
+   * Both live inside the colour explanation, which is closed in a fresh view, so
+   * neither adds a row, a label, or any height to this toolbar. By owner decision
+   * of 2026-09-30 that disclosure is the only visible place the ordering, the
+   * per-column rule, the crowding figure and owner decision D1's notice appear;
+   * the legend and the conventions note carry none of them. The sentences come
+   * from `describePaintOrder`, which the canvas's accessible description also
+   * calls, so the two cannot disagree about the same picture.
+   *
+   * Called from `syncControls` and again from `paint`, because the crowding
+   * figure and D1's counts are properties of the picture that was just painted
+   * and are not knowable before it. See ui/draw-direction.js.
+   */
+  syncDrawDirection() {
     renderDrawDirection(this.colourHelp, this.model.drawDirectionControl, {
       idPrefix: 'chromosome-draw-direction',
       onChange: (direction) => this.handlers.onDrawDirectionChange?.(direction),
+      explanation: describePaintOrder(this.paintOrderFacts()),
     });
-    this.showHidden.checked = showHidden;
-    this.detailJump.hidden = !this.model.hasSelection;
   }
 
   /**
@@ -672,20 +691,8 @@ export class ChromosomeView {
       parts.push(`${formatCount(excluded)} excluded by the current filters keep their coordinates `
         + 'and draw grey behind the rest.');
     }
-    // Owner decision D1's disclosure. A bar narrower than the hollow style can
-    // show draws in its full category colour, so at that zoom the sentence
-    // below would be false; the reader is told instead, with the count of each
-    // evidence kind, and the ordinary sentence returns as bars widen.
-    const alike = this.drawStats?.alikeDerived ?? 0;
-    parts.push(alike > 0
-      ? describeSolidDerived({
-        derived: alike,
-        reviewed: this.drawStats.reviewedDrawn,
-        threshold: MIN_HOLLOW_MARK_PX,
-      })
-      : 'At this zoom every source-derived function category draws as an outlined bar with a '
-        + 'pale fill, never as the solid bar a lab-reviewed one takes.');
-    parts.push('Shortlisted CDSs carry a dark diamond beside the bar, and '
+    parts.push('A source-derived function category draws as an outlined bar with a pale fill, '
+      + 'never as a solid reviewed one. Shortlisted CDSs carry a dark diamond beside the bar, and '
       + 'the pinned CDS is outlined in red with a line through its band.');
     parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
       + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
@@ -788,8 +795,9 @@ export class ChromosomeView {
     // Written after the bands, not with the other summaries: how many CDSs
     // share a column and how many derived categories lost their hollow style
     // are properties of the picture that was just painted, at the zoom it was
-    // painted at, and are not knowable before it.
-    this.markerNote.textContent = this.markerConventions();
+    // painted at, and are not knowable before it. The disclosure and the
+    // description are the two places that carry them, and they are the only two.
+    this.syncDrawDirection();
     this.canvas.setAttribute('aria-label', describeChromosomeView({
       tracks: this.model.tracks,
       window: this.windowFor(this.primaryTrack()),

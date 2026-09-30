@@ -70,14 +70,24 @@ segment is drawn as what it can actually show. `M744_RS00920` at 1280 px over
 the second hollow.
 
 This is the one place a derived category is drawn the same as a reviewed one, so
-it is disclosed rather than left to be noticed: at that zoom the legend area and
-the canvas's accessible description both say that derived and reviewed colour
-draw alike **and give the count of each**, which was the owner's condition on
-approving it. A CDS counts once if any segment the view drew is solid, so a CDS
-like the one above is in the count; counting only the CDSs whose every segment
-was narrow left it out and let the note claim no derived category was drawn solid
-while one was. Nothing about the label changes — the detail panel, the export, the
-conflict notes and the counts still name the evidence source for every locus, and
+it is disclosed rather than left to be noticed: at that zoom the canvas's
+accessible description and the collapsed **colour explanation** disclosure both
+say that derived and reviewed colour draw alike **and give the count of each**,
+which was the owner's condition on approving it. Those two are the only places.
+The owner relaxed the condition on 2026-09-30, after the first render: the notice
+is **not** in the visible legend and **not** in the chromosome view's conventions
+note, because explanation for what a reader learns by zooming does not belong in
+the visible interface. The conventions note therefore still reads, at every zoom,
+that a derived category draws as an outlined bar with a pale fill and never as a
+solid reviewed one; where D1 is in effect that is untrue of the picture, and the
+truthful count is in the description and in the disclosure.
+
+A CDS counts once if any segment the view drew is solid, so a CDS like the one
+above is in the count; counting only the CDSs whose every segment was narrow left
+it out and let the note claim no derived category was drawn solid while one was.
+
+Nothing about the label changes — the detail panel, the export, the conflict
+notes and the counts still name the evidence source for every locus, and
 the scatter map, whose points are never sub-pixel, keeps the hollow marker at
 every size. See
 [chromosome-view.md](chromosome-view.md#owner-decision-d1-a-sub-pixel-source-derived-category-draws-solid).

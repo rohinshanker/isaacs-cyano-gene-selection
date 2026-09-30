@@ -490,6 +490,16 @@ input[type="range"] { width: 100%; }
 }
 .draw-direction > .field-row { margin-bottom: 0; }
 .draw-direction-hint, .draw-direction-notice { margin: 0; }
+/*
+ * What the picture is currently doing about overlapping marks. By owner decision
+ * of 2026-09-30 this disclosure is the only visible place those sentences appear,
+ * so they must fit the narrowest stage: a grid of separate paragraphs wraps each
+ * sentence on its own, and `overflow-wrap` keeps a long accession or a figure
+ * from pushing the block past a 375 px viewport.
+ */
+.draw-direction-state { display: grid; gap: 0.3rem; }
+.draw-direction-state > p { margin: 0; overflow-wrap: anywhere; }
+.draw-direction-state:empty { display: none; }
 @media (max-width: 480px) {
   .metric-help-list > div { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
 }

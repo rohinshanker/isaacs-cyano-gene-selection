@@ -177,10 +177,28 @@ disclosure beneath Colour by — closed in a fresh view, present on every scatte
 tab and on the chromosome tab. It is keyboard reachable, in visual order, once
 that disclosure is open.
 
-Because it is normally out of sight, the direction in effect is never only there.
-The legend note states it in one clause appended to a note that already exists,
-and both canvases' accessible descriptions state it in a sentence. A reader who
-never opens the disclosure can still tell which way the picture is ordered.
+**That disclosure is also the only visible place any of this is explained**, by a
+second owner decision of the same day, taken after the first render: no ordering
+clause in the legend in any colour or either direction, no D1 notice and no
+crowding sentence in the chromosome view's conventions note, no info button, no
+popover, and no cue that a zoomed-out column stands for several CDSs. The reader
+learns those by zooming or panning, and the owner does not want them explained on
+screen; the site is not optimised for phones. With the disclosure closed, nothing
+about paint order is on screen and every legend box is the height it is on
+`34bb240`.
+
+The explanation is therefore in two places and two only: both canvases'
+**accessible descriptions**, which state it unconditionally, and the **open
+disclosure**, which states the same sentences beside the control that reverses
+them. `describePaintOrder` in `core/chromosome-model.js` composes both from one
+set of facts — `describeDrawOrder` for the ordering, the crowding sentence, the
+D2 sentence, and `describeSolidDerived` for D1 — so the visible copy cannot drift
+from the description, and neither can drift from the comparator. A short legend
+clause lived in `drawOrderNote` until this decision; it was deleted rather than
+left unused, because a second wording with no caller is the thing that drifts.
+The scatter map's copy passes no columns and no D1 counts: its marks are discs on
+a projection, so the crowding figure and the per-column majority have nothing to
+be about there.
 
 The scatter map keeps its batching by quantized colour, which is what makes
 panning fast. Only the order the batches are issued in changes, and that order is
@@ -210,7 +228,9 @@ comparator and the batch order, and picking where discs overlap),
 `tests/js/chromosome-view.test.mjs` (the per-column rule, the D1 disclosure
 counts, the clamped crowding figures, and the click at four stage widths and both
 device pixel ratios), `tests/js/url-state.test.mjs` (the round trip and the
-no-key case) and `tests/js/legend.test.mjs` (the note).
+no-key case), `tests/js/draw-direction.test.mjs` (the control and the explanation
+block it carries) and `tests/js/legend.test.mjs` (that the legend states none of
+it, whatever it is handed).
 
 ## Pinned status row
 

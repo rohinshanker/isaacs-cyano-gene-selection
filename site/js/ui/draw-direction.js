@@ -13,9 +13,15 @@
  * collapsed surface in the toolbar itself: putting the control in the controls
  * column would separate it from the picture it changes.
  *
- * Because it is normally out of sight, the direction in effect is never only
- * here: the legend note and both canvases' accessible descriptions state it,
- * so a non-default view is never silent about why a mark is on top.
+ * By owner decision of 2026-09-30, taken after the first render, this disclosure
+ * is also the **only visible place** that explains any of it. The legend note and
+ * the chromosome view's conventions note carry no ordering clause and no D1
+ * notice: the owner does not want explanation on screen for what a reader learns
+ * by zooming or panning. So the same sentences the canvases' accessible
+ * descriptions carry are mounted here as well, beside the control that reverses
+ * them, where a reader who opens the disclosure asks for them — and nothing is
+ * added to the closed view's height. See `explanation` in
+ * {@link renderDrawDirection}.
  *
  * Mounted **after** the `.help-content` the colour explanation rewrites on every
  * render, not inside it, so the element survives a re-render and keyboard focus
@@ -67,10 +73,15 @@ export function drawDirectionControlState(colors, direction) {
  * @param {{options: {value: string, label: string}[], value: string,
  *   disabled: boolean, reason: string|null}} control as
  *   {@link drawDirectionControlState} returns.
- * @param {{idPrefix: string, onChange: (direction: string) => void}} options
+ * @param {{idPrefix: string, onChange: (direction: string) => void,
+ *   explanation?: string[]}} options `explanation` is what the picture is
+ *   currently doing about overlapping marks — one paragraph per sentence, from
+ *   `describePaintOrder`, rewritten on every render so it follows zoom, pan,
+ *   filter and colour change exactly as the canvas description does. Omitted or
+ *   empty, the block carries nothing and takes no height.
  * @returns {HTMLElement} the mounted field.
  */
-export function renderDrawDirection(details, control, { idPrefix, onChange }) {
+export function renderDrawDirection(details, control, { idPrefix, onChange, explanation = [] }) {
   let entry = mounted.get(details);
   if (!entry) {
     const field = document.createElement('div');
@@ -103,13 +114,27 @@ export function renderDrawDirection(details, control, { idPrefix, onChange }) {
       + 'gene stays selectable and reachable by keyboard, and a gene with no value stays under '
       + 'the coloured ones in either direction.';
 
-    field.append(row, hint, notice);
+    // What the picture is doing right now, after the control and the note about
+    // what the control does: the reader meets the choice, then what it chose.
+    // A `div` of paragraphs rather than one long paragraph, so each sentence
+    // wraps on its own and the block fits a 375 px disclosure.
+    const state = document.createElement('div');
+    state.className = 'draw-direction-state';
+
+    field.append(row, hint, notice, state);
     details.append(field);
-    entry = { field, select, notice, onChange };
+    entry = { field, select, notice, state, onChange };
     mounted.set(details, entry);
   }
   entry.onChange = onChange;
-  const { select, notice } = entry;
+  const { select, notice, state } = entry;
+  state.replaceChildren();
+  for (const sentence of explanation) {
+    const line = document.createElement('p');
+    line.className = 'panel-note draw-direction-sentence';
+    line.textContent = sentence;
+    state.append(line);
+  }
   // The list is two fixed options, so it is written once and then left alone:
   // replacing a select's children on every render is what would drop the
   // reader's focus off the control they are using.

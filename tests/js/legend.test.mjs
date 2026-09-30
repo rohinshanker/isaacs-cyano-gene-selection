@@ -77,64 +77,46 @@ test('excluded category legend rows omit zero counts independently', () => {
   }]);
 });
 
-test('the value legend says how overlapping marks are ordered, without a note of its own', async () => {
+/**
+ * The legend says nothing about paint order, by owner decision of 2026-09-30.
+ *
+ * It said so for one commit. After the first render the owner decided that
+ * explanation for what a reader learns by zooming or panning does not belong in
+ * the visible interface: the ordering clause, the D1 notice, and the crowding
+ * figure live in the accessible descriptions and inside the collapsed colour
+ * explanation, and nowhere a reader has to look at them. So these two tests are
+ * an *absence*, and they are written the way the clause actually arrived — as a
+ * `drawOrderNote` handed to the legend — so that re-adding it fails here rather
+ * than at the next rendered measurement of legend height.
+ */
+test('the value legend states no draw order, whatever it is handed', async () => {
   await withFakeDocument((document) => {
     const metric = { key: 'cai', label: 'CAI', unit: '' };
     const scale = buildColorScale(Float64Array.from([0.1, 0.5, 0.9]), { scale: 'sequential' });
-    const render = (drawOrderNote) => {
-      const host = document.createElement('div');
-      renderLegend(host, {
-        metric, scale, missingCount: 0, hiddenCount: 0, showHidden: false,
-        provenanceNote: null, drawOrderNote,
-      });
-      return host;
-    };
-    const plain = render('');
-    const ordered = render('Overlaps: lowest on top.');
-    // The clause joins the scale's own note, so it costs no extra paragraph.
-    assert.equal(
-      plain.querySelectorAll('.legend-ramp-note').length,
-      ordered.querySelectorAll('.legend-ramp-note').length,
-    );
-    const plainNote = plain.querySelector('.legend-scale-note').textContent;
-    const orderedNote = ordered.querySelector('.legend-scale-note').textContent;
-    assert.match(orderedNote, /Overlaps: lowest on top\.$/);
-    assert.ok(!plainNote.includes('Overlaps'));
-    // And it costs no extra *line* either, which is the owner's condition. These
-    // notes are set to a 38-character measure, so a clause is only free if the
-    // note pays for it out of characters it was already spending: this one
-    // spends the opening repeat of the scale name, which the ramp row above
-    // still carries. Growing by less than one full line's characters is what
-    // makes that possible; appending the clause outright grew the note by 40 and
-    // made the legend one line taller in 52 of the 53 metric colours, at 375,
-    // 768, 1280 and 1440 px. The rendered measurement is the acceptance check —
-    // this is the unit guard that keeps the wording from drifting past it.
-    assert.ok(orderedNote.length - plainNote.length < 38,
-      `the clause must not cost a whole line's characters: the note went from `
-        + `${plainNote.length} to ${orderedNote.length}`);
-    assert.match(plainNote, /^Scale: /, 'with no clause the note opens by naming the scale');
-    assert.ok(!orderedNote.startsWith('Scale: '),
-      'with a clause the scale name is left to the ramp row, which shows it');
-    assert.equal(ordered.querySelector('.legend-scale-name').textContent,
-      plain.querySelector('.legend-scale-name').textContent,
-      'and the ramp row names the scale either way, so nothing is lost');
+    const host = document.createElement('div');
+    renderLegend(host, {
+      metric, scale, missingCount: 0, hiddenCount: 0, showHidden: false, provenanceNote: null,
+      drawOrderNote: 'Overlaps: highest on top.',
+    });
+    const notes = host.querySelectorAll('.legend-ramp-note')
+      .map((node) => node.textContent);
+    for (const note of notes) {
+      assert.doesNotMatch(note, /Overlap|on top|draws over|Draw on top/i,
+        `no legend note may mention paint order: ${note}`);
+    }
+    // And the scale note is the one `describeValueScale` writes, character for
+    // character: the clause was paid for by dropping this note's opening repeat
+    // of the scale name, so the name has to be back for the height to be back.
+    const scaleNote = host.querySelector('.legend-scale-note').textContent;
+    assert.equal(scaleNote, describeValueScale(metric, scale));
+    assert.match(scaleNote, /^Scale: /);
+    // The ramp row still names the scale above the note, as it always did.
+    assert.ok(host.querySelector('.legend-ramp-row'));
+    assert.ok(host.querySelector('.legend-scale-name').textContent.length > 0);
   });
 });
 
-test('the scale note can be written without its opening name', async () => {
-  await withFakeDocument(() => {
-    const metric = { key: 'cai', label: 'CAI', unit: '' };
-    const scale = buildColorScale(Float64Array.from([0.1, 0.5, 0.9]), { scale: 'sequential' });
-    const named = describeValueScale(metric, scale);
-    const unnamed = describeValueScale(metric, scale, { nameScale: false });
-    assert.match(named, /^Scale: /);
-    assert.match(unnamed, /^The tick labels read CAI/);
-    assert.equal(named.slice(named.indexOf('The tick labels')), unnamed,
-      'the two differ by the opening sentence and by nothing else');
-  });
-});
-
-test('the category legend states the evidence order in the note it already has', async () => {
+test('the category legend states no draw order either', async () => {
   await withFakeDocument((document) => {
     const host = document.createElement('div');
     renderCategoryLegend(host, {
@@ -151,10 +133,9 @@ test('the category legend states the evidence order in the note it already has',
       hasDerivedData: true,
       drawOrderNote: 'Overlapping marks: reviewed over derived, over no category.',
     });
-    const notes = host.querySelectorAll('.legend-ramp-note');
-    const text = notes.map((node) => node.textContent).join(' ');
-    assert.match(text, /Overlapping marks: reviewed over derived, over no category\./);
-    // One paragraph carries both the precedence rule and the draw order.
-    assert.equal(notes.filter((node) => node.textContent.includes('Overlapping')).length, 1);
+    for (const note of host.querySelectorAll('.legend-ramp-note').map((n) => n.textContent)) {
+      assert.doesNotMatch(note, /Overlapping marks|Overlaps|draws over|Draw on top/i,
+        `no category legend note may mention paint order: ${note}`);
+    }
   });
 });

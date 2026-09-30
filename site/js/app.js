@@ -24,7 +24,7 @@ import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citat
 import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
-import { repliconTracks } from './core/chromosome-model.js';
+import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
 import { metricHelp, functionCategoryHelp } from './core/metric-help.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
@@ -47,7 +47,7 @@ import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/
 import { scaleControlState, syncScaleSelect } from './ui/scale-select.js';
 import { drawDirectionControlState, renderDrawDirection } from './ui/draw-direction.js';
 import {
-  DRAW_DIRECTION_LABELS, describeDrawOrder, drawOrderNote, normalizeDrawDirection,
+  DRAW_DIRECTION_LABELS, describeDrawOrder, normalizeDrawDirection,
 } from './core/paint-priority.js';
 import { colorAnnouncement, installColorControls } from './ui/color-controls.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
@@ -625,13 +625,13 @@ function colorScaleClause(colors) {
 }
 
 /**
- * How overlapping marks are ordered, in one sentence, for a canvas's accessible
- * description, and in one clause for a legend note.
+ * How overlapping marks are ordered, in one sentence, for the map canvas's
+ * accessible description and for the disclosure the Draw on top control sits in.
  *
- * The Draw on top control lives inside a disclosure that is closed in a fresh
- * view, so these two are what make a reversed order readable without opening
- * anything. Both come from the rule itself, in core/paint-priority.js, so
- * neither can describe an order the views do not paint.
+ * It comes from the rule itself, in core/paint-priority.js, so it cannot describe
+ * an order the views do not paint. By owner decision of 2026-09-30 the legend
+ * carries no clause about it: the description states it whatever the reader has
+ * open, and the disclosure states it where the control that reverses it is.
  */
 function drawOrderSentence(colors) {
   return describeDrawOrder({
@@ -641,8 +641,21 @@ function drawOrderSentence(colors) {
   });
 }
 
-function drawOrderClause(colors) {
-  return drawOrderNote({ categorical: colors.categorical, direction: colors.drawOnTop });
+/**
+ * The same sentences, for the map's colour explanation disclosure, which by owner
+ * decision of 2026-09-30 is the only visible place on this view that explains the
+ * order. A scatter map has no device columns, so it passes none: the crowding
+ * figure and the per-column majority belong to the chromosome view, and what is
+ * left is the ordering in effect and that nothing is hidden by it.
+ */
+function drawOrderExplanation(colors) {
+  return describePaintOrder({
+    categorical: colors.categorical,
+    order: drawOrderSentence(colors),
+    accession: null,
+    columns: null,
+    alike: null,
+  });
 }
 
 /**
@@ -680,7 +693,6 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
       onToggleCategory: (id) => toggleCategoryFilter(id),
       onResetCategoryFilter: () => clearCategoryFilter(),
       markerConventions,
-      drawOrderNote: drawOrderClause(colors),
     });
     return;
   }
@@ -699,7 +711,6 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
     basisCounts: isMeasuredExpressionMetric
       ? expressionBasisCounts(context.dataset.genes, metric) : null,
     markerConventions,
-    drawOrderNote: drawOrderClause(colors),
   });
 }
 
@@ -808,6 +819,7 @@ function renderMap() {
   renderDrawDirection(element('colour-help'), colors.drawDirectionControl, {
     idPrefix: 'draw-direction',
     onChange: (direction) => setDrawDirection(direction),
+    explanation: drawOrderExplanation(colors),
   });
   renderProjectionHelp(element('features-used'),
     projectionHelp(state.panel, context.dataset, context.registry,

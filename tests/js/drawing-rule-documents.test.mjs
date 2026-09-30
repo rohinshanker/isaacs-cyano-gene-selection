@@ -62,6 +62,40 @@ test('the shared drawing contract states the rule the comparator implements', as
   assert.match(doc, /It does not mean "the picture this link used to draw"/);
 });
 
+test('every document says the disclosure carries the explanation and the legend none', async () => {
+  // Owner decision of 2026-09-30, after the first render: the ordering, the D2
+  // rule, the crowding figure and D1's notice are in the accessible descriptions
+  // and inside the collapsed colour explanation, and nowhere visible else. A
+  // document that still tells the next reader the legend states the order would
+  // send them to undo this.
+  const chromosome = await read('docs/validation/chromosome-view.md');
+  const state = await read('docs/validation/viewer-interaction-state.md');
+  const evidence = await read('docs/validation/source-derived-categories.md');
+
+  assert.match(chromosome,
+    /stated in exactly two places and the visible legend and conventions note are\s+neither of them/);
+  assert.match(chromosome, /\*\*The collapsed colour explanation\*\*/);
+  assert.match(chromosome, /the legend carries no ordering clause/);
+  assert.match(state, /\*\*That disclosure is also the only visible place any of this is explained\*\*/);
+  assert.match(state, /no ordering\s+clause in the legend in any colour or either direction/);
+  assert.match(evidence,
+    /the canvas's\s+accessible description and the collapsed \*\*colour explanation\*\* disclosure both/);
+
+  // The retracted placement, in each of the three, in the words each used.
+  assert.ok(!/The legend note states it in one clause/.test(state),
+    'the shared contract must no longer send the clause to the legend note');
+  assert.ok(!/at that zoom the legend area and/.test(evidence),
+    'the evidence contract must no longer put the D1 notice in the legend area');
+  assert.ok(!/The conventions note beneath the colour\s+key says the same/.test(chromosome),
+    'the chromosome contract must no longer put the D1 sentence in the conventions note');
+
+  // And the module that carried the legend's short clause is gone with it.
+  const rule = await read('site/js/core/paint-priority.js');
+  assert.ok(!/export function drawOrderNote/.test(rule),
+    'the short legend form must be deleted, not left without a caller');
+  assert.match(state, /A short legend\s+clause lived in `drawOrderNote` until this decision/);
+});
+
 test('the chromosome contract states the per-column majority and the clamped figures', async () => {
   const doc = await read('docs/validation/chromosome-view.md');
   assert.match(doc, /\*\*The majority is a property of the column, not of the CDS\.\*\*/);

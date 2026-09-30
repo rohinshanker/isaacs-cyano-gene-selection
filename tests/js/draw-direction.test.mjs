@@ -28,6 +28,7 @@ function partsOf(field) {
     notice: nodes.find((node) => String(node.className).includes('draw-direction-notice')),
     hint: nodes.find((node) => String(node.className).includes('draw-direction-hint')),
     label: nodes.find((node) => node.tagName === 'label'),
+    state: nodes.find((node) => String(node.className).includes('draw-direction-state')),
   };
 }
 
@@ -151,5 +152,57 @@ test('an option list that changes length is rewritten, so a direction can be add
     ]);
     assert.deepEqual(partsOf(field).select.children.map((node) => node.textContent),
       ['Highest value', 'Lowest value']);
+  });
+});
+
+/**
+ * The explanation beside the control. By owner decision of 2026-09-30 this
+ * disclosure is the only visible place the ordering, the crowding figure and
+ * owner decision D1's notice appear, so the block has to carry whatever sentences
+ * the caller was given and has to be rewritten on every render — the figures
+ * follow zoom, pan, filter and colour exactly as the canvas description does.
+ */
+test('the explanation is one paragraph per sentence, in the order it was given', async () => {
+  await withFakeDocument((document) => {
+    const details = document.createElement('details');
+    const field = renderDrawDirection(details,
+      drawDirectionControlState({ categorical: false }, 'highest'), {
+        idPrefix: 'probe',
+        onChange: () => {},
+        explanation: ['Where marks overlap, the highest value draws on top.', 'Nothing is hidden.'],
+      });
+    const { state } = partsOf(field);
+    assert.deepEqual(state.children.map((node) => node.textContent),
+      ['Where marks overlap, the highest value draws on top.', 'Nothing is hidden.']);
+    assert.deepEqual(state.children.map((node) => node.tagName), ['p', 'p']);
+    for (const line of state.children) {
+      assert.match(String(line.className), /draw-direction-sentence/);
+    }
+  });
+});
+
+test('the explanation is rewritten on every render, so the figures follow the picture', async () => {
+  await withFakeDocument((document) => {
+    const details = document.createElement('details');
+    const mount = (explanation) => renderDrawDirection(details,
+      drawDirectionControlState({ categorical: false }, 'highest'),
+      { idPrefix: 'probe', onChange: () => {}, explanation });
+    const before = partsOf(mount(['600 of 900 occupied columns hold more than one CDS.'])).state;
+    const after = partsOf(mount(['1 of 4 occupied columns holds more than one CDS.'])).state;
+    assert.equal(before, after, 'the block is the same element, so focus is not disturbed');
+    assert.deepEqual(after.children.map((node) => node.textContent),
+      ['1 of 4 occupied columns holds more than one CDS.']);
+  });
+});
+
+test('a caller with nothing to explain leaves an empty block, which takes no height', async () => {
+  await withFakeDocument((document) => {
+    const details = document.createElement('details');
+    const field = renderDrawDirection(details,
+      drawDirectionControlState({ categorical: false }, 'highest'),
+      { idPrefix: 'probe', onChange: () => {} });
+    // `.draw-direction-state:empty` is `display: none`, so an omitted explanation
+    // costs the open disclosure nothing at all.
+    assert.deepEqual(partsOf(field).state.children, []);
   });
 });

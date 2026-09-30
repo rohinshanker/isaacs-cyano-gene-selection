@@ -255,20 +255,45 @@ after it. The sub-pixel neutral tick this view once proposed for them was
 therefore **not built** — grey is not crowding out colour, and a tick would add a
 mark that could be misread as a low value for no measured gain.
 
-### What the view says about all this
+### What the view says about all this, and where
 
-Paint order changes which gene is seen without changing a value, so it is
-disclosed wherever it changes the picture. The canvas's accessible description
-names the ordering and its direction, gives the genes-per-column figure on the
-primary track at the current zoom, states the D2 rule in category colour
-including that each column is decided by what is in it, and — while D1's
-full-colour drawing is in effect — says that source-derived and lab-reviewed
-categories draw alike at this zoom **with the count of each**, which is the
-owner's own condition on approving D1. The conventions note beneath the colour
-key says the same in the view's own words, from the same sentence in
-`describeSolidDerived`, and returns to the ordinary "outlined bar with a pale
-fill" sentence as soon as bars are wide enough. Both are written after the bands
-are painted, because neither figure is knowable before the picture exists.
+Paint order changes which gene is seen without changing a value, so it is stated
+in words. **By owner decision of 2026-09-30, taken after the first render, it is
+stated in exactly two places and the visible legend and conventions note are
+neither of them.** The owner does not want explanation on screen for what a
+reader learns by zooming or panning, so the legend carries no ordering clause,
+the conventions note carries no D1 notice and no crowding figure, there is no
+info button and no popover, and a column that stands for several CDSs gets no
+badge or cue. The site is not optimised for phones; zooming in is the answer.
+
+The two places are:
+
+- **The canvas's accessible description**, which states everything unconditionally
+  — the ordering and its direction, the genes-per-column figure on the primary
+  track at the current zoom, the D2 rule in category colour including that each
+  column is decided by what is in it, and, while D1's full-colour drawing is in
+  effect, that source-derived and lab-reviewed categories draw alike at this zoom
+  **with the count of each**.
+- **The collapsed colour explanation**, the `details` beneath Colour by where the
+  **Draw on top** control sits. It is closed in a fresh view, so with it closed
+  nothing about any of this is on screen and the toolbar, canvas and legend are
+  the height they were on `34bb240`. Opened, it carries the same sentences.
+
+The same sentences, not a second wording of them: both come from
+`describePaintOrder` in `core/chromosome-model.js`, which composes
+`describeDrawOrder` from the rule itself, the crowding sentence, the D2 sentence
+and `describeSolidDerived`. `syncDrawDirection` writes the disclosure and
+`describeChromosomeView` writes the description, both from the one
+`paintOrderFacts()` object, so neither can claim an order or a figure the other
+denies. Both are written after the bands are painted, because neither figure is
+knowable before the picture exists, and both are rewritten on zoom, pan, filter,
+and colour change.
+
+The conventions note beneath the colour key reads exactly as it did on `34bb240`.
+Note that this reinstates its unqualified "never as a solid reviewed one", which
+is not true of the picture at the zooms where D1 draws a derived category solid;
+the owner accepted that in preference to a visible notice, and the description and
+the disclosure are where the truthful count is.
 
 Three things about those figures are load-bearing, because a figure the reader is
 given about the picture has to be true of the picture:
@@ -287,6 +312,12 @@ given about the picture has to be true of the picture:
   is singular; where no lab-reviewed CDS is in the window it says what the colour
   is rather than offering "the 0 lab-reviewed ones" as something to compare
   against. The crowding sentence is singular at one shared column too.
+
+The scatter map's copy of the disclosure calls the same function with no columns
+and no D1 counts, because its marks are discs on a projection rather than bars on
+an axis: the crowding figure and the per-column majority have nothing to be about
+there, and what is left is the ordering in effect and that nothing is hidden by
+it.
 
 ## Shared state, not a second copy of it
 
@@ -308,7 +339,9 @@ come from `app.js` on each render, under
   decided once by `drawDirectionControlState` and applied by
   `renderDrawDirection` to both. It sits at the foot of each toolbar's colour
   explanation disclosure, which is closed in a fresh view, so it adds no row,
-  label, or height to this toolbar at any width; see
+  label, or height to this toolbar at any width — and that disclosure is also the
+  only visible place the ordering is explained, under the owner decision above;
+  see
   [viewer-interaction-state.md](viewer-interaction-state.md#which-mark-is-seen-where-they-overlap).
 - Colour, the colour **Scale**, and **Show filtered-out genes** are one piece of
   state with two sets of controls: the map's, in the map toolbar, and this view's
@@ -455,9 +488,13 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
   reads white, then zoom in and confirm the hollow derived style returns;
 - click a column holding several CDSs and confirm the gene detail names the one
   the column shows, then step through the rest with the arrow keys;
-- open the colour explanation, reverse **Draw on top**, and confirm the legend
-  note, both canvases' descriptions, and the hash all follow, and that with the
-  disclosure closed the toolbar, canvas and legend are the height they were;
+- with the colour explanation **closed**, confirm the legend states no ordering
+  clause in any colour, the conventions note states no D1 notice and no crowding
+  figure, and every legend box is the height it is on `34bb240`;
+- then open the colour explanation, reverse **Draw on top**, and confirm the
+  sentences inside it, both canvases' descriptions, and the hash all follow, that
+  the open disclosure does not overflow at 375 px, and that with it closed again
+  the toolbar, canvas and legend are the height they were;
 - press **Reset view** and confirm the question, that Cancel keeps the windows,
   and that confirming returns every track to its full length;
 - `document.documentElement.scrollWidth <= innerWidth` in every state;

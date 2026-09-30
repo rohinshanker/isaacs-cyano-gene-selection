@@ -5,7 +5,7 @@ import {
   columnOccupancy, columnOfKey, drawnColumns, fitTickLabels, fitTrackLabel, pieceColumns,
   pieceRect, resolveMarkPaint, trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
-import { repliconTracks } from '../../site/js/core/chromosome-model.js';
+import { describePaintOrder, repliconTracks } from '../../site/js/core/chromosome-model.js';
 import {
   DERIVED_MARKER_FILL, buildCategoryColorScale, buildColorScale,
 } from '../../site/js/ui/colors.js';
@@ -435,6 +435,18 @@ function mount({ handlers = {}, viewport = undefined, ...modelOptions } = {}) {
   return { host, view, tracks: model.tracks, restore, flush, ops, document: fake.document };
 }
 
+/**
+ * The sentences inside the collapsed colour explanation, beside the **Draw on
+ * top** control — which by owner decision of 2026-09-30 is the only visible place
+ * the ordering, the per-column rule, the crowding figure and owner decision D1's
+ * notice appear. The legend and the conventions note carry none of them.
+ */
+function disclosureText(view) {
+  const field = view.colourHelp.children.find((node) => node.className === 'draw-direction');
+  const state = field.find((node) => String(node.className).includes('draw-direction-state'))[0];
+  return state.children.map((node) => node.textContent).join(' ');
+}
+
 test('the tab descriptor is frozen and carries the permanent chromosome id', () => {
   assert.equal(CHROMOSOME_TAB.id, 'chromosome');
   assert.equal(CHROMOSOME_TAB.name, 'Chromosome');
@@ -730,6 +742,11 @@ test('the view states its own marker conventions, since the shared key omits the
     assert.match(note, /0 excluded by the current filters/);
     assert.match(note, /Shortlisted CDSs carry a dark diamond/);
     assert.match(note, /pinned CDS is outlined in red/);
+    assert.match(note, /outlined bar with a pale fill, never as a solid reviewed one/);
+    // And, by owner decision of 2026-09-30, nothing about paint order: no
+    // ordering clause, no crowding figure, no owner decision D1 notice. Those
+    // are in the accessible description and in the colour explanation only.
+    assert.doesNotMatch(note, /Where marks overlap|draws on top|occupied columns|At this zoom/);
     // With filtered-out genes hidden there is nothing for that clause to describe.
     const hidden = mount({ mask: Uint8Array.from([1, 0, 1, 1, 1, 1, 1]), showHidden: false });
     try {
@@ -1762,7 +1779,7 @@ test('the description states the direction in effect, and changes when it is rev
   assert.match(labelFor('lowest'), /lowest CAI value draws on top/);
 });
 
-test('the marker note says derived and reviewed draw alike, and stops once they do not', () => {
+test('the colour explanation says derived and reviewed draw alike, and stops once they do not', () => {
   const { view, restore, flush } = mount({
     genes: CROWDED,
     categorical: true,
@@ -1770,16 +1787,62 @@ test('the marker note says derived and reviewed draw alike, and stops once they 
     derivedOf: () => true,
   });
   try {
-    assert.match(view.markerNote.textContent,
+    assert.match(disclosureText(view),
       /4 source-derived categories draw in the solid colour a lab-reviewed category takes/);
-    assert.match(view.markerNote.textContent, /under 3 pixels wide/);
-    assert.doesNotMatch(view.markerNote.textContent, /the 0 lab-reviewed/);
+    assert.match(disclosureText(view), /under 3 pixels wide/);
+    assert.doesNotMatch(disclosureText(view), /the 0 lab-reviewed/);
+    // The notice is owner decision D1's, so it goes when D1 is not in effect —
+    // and it never had a replacement sentence: the conventions note says what a
+    // derived category ordinarily looks like, and says it at every zoom.
     view.zoomBand(view.bands()[0], 400, 100300);
     flush();
+    assert.doesNotMatch(disclosureText(view), /source-derived categor/);
     assert.match(view.markerNote.textContent,
-      /draws as an outlined bar with a pale fill, never as the solid bar a lab-reviewed one takes/);
+      /outlined bar with a pale fill, never as a solid reviewed one/);
   } finally {
     restore();
+  }
+});
+
+test('the disclosure carries the order, the crowding and the D2 rule, and the notes carry none', () => {
+  const { view, restore } = mount({
+    genes: CROWDED,
+    categorical: true,
+    categoryOf: () => 0,
+    derivedOf: () => true,
+  });
+  try {
+    const shown = disclosureText(view);
+    assert.match(shown, /lab-reviewed category draws over a source-derived one/);
+    assert.match(shown, /1 of 1 occupied columns holds more than one CDS/);
+    assert.match(shown, /then the category with more CDSs in that column, then the earlier locus/);
+    assert.match(shown, /4 source-derived categories draw in the solid colour/);
+    assert.match(shown, /every CDS stays selectable, reachable by the arrow keys, and counted/);
+    // Word for word what the canvas description says, because both come from
+    // `describePaintOrder`; the disclosure is the visible copy, not a second
+    // wording that could drift from the rule.
+    const label = view.canvas.getAttribute('aria-label');
+    for (const sentence of describePaintOrder(view.paintOrderFacts())) {
+      assert.ok(label.includes(sentence), `the description is missing: ${sentence}`);
+      assert.ok(shown.includes(sentence), `the disclosure is missing: ${sentence}`);
+    }
+    // None of it reaches the visible note beside the colour key.
+    assert.doesNotMatch(view.markerNote.textContent,
+      /draws over a source-derived one|occupied columns|solid colour a lab-reviewed/);
+  } finally {
+    restore();
+  }
+});
+
+test('the disclosure follows the direction, and a reversed one is never silent', () => {
+  for (const [drawOnTop, pattern] of [['highest', /highest CAI value draws on top/],
+    ['lowest', /lowest CAI value draws on top/]]) {
+    const { view, restore } = mount({ genes: CROWDED, drawOnTop });
+    try {
+      assert.match(disclosureText(view), pattern);
+    } finally {
+      restore();
+    }
   }
 });
 
@@ -2067,9 +2130,9 @@ test('owner decision D1: a CDS with one narrow segment and one wide one is count
     assert.equal(paintsAt(view, ops, wide.left + 2).at(-1).fill, DERIVED_MARKER_FILL,
       'the wide one keeps the pale hollow fill');
     assert.equal(view.drawStats.alikeDerived, 1, 'the CDS is counted once');
-    assert.match(view.markerNote.textContent,
+    assert.match(disclosureText(view),
       /1 source-derived category draws in the solid colour a lab-reviewed category takes/);
-    assert.match(view.markerNote.textContent, /segment by segment/);
+    assert.match(disclosureText(view), /segment by segment/);
   } finally {
     restore();
   }
@@ -2192,8 +2255,8 @@ test('owner decision D1 counts only the segments this band actually drew', () =>
     flush();
     assert.equal(view.drawStats.alikeDerived, 0,
       'the off-screen narrow segment is not counted');
-    assert.match(view.markerNote.textContent,
-      /every source-derived function category draws as an outlined bar with a pale fill/);
+    assert.doesNotMatch(disclosureText(view), /source-derived categor/,
+      'with nothing drawn solid there is no D1 notice to make');
   } finally {
     restore();
   }

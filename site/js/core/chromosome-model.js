@@ -532,16 +532,28 @@ export function tssPositions(track, genes) {
  * the hollow derived style — that derived and reviewed categories draw alike,
  * with the count of each.
  *
+ * Both places a reader can meet these sentences call this one function: the
+ * canvas's accessible description, and the collapsed colour explanation where
+ * the **Draw on top** control sits. By owner decision of 2026-09-30 those are
+ * the only two — the legend and the conventions note carry none of it — so the
+ * wording cannot drift between them, and neither can drift from the rule.
+ *
+ * A caller with no columns to report — the scatter map, whose marks are discs on
+ * a projection and not bars on an axis — passes `columns` and `alike` null and
+ * gets the ordering alone. The column-majority rule goes with the columns for
+ * the same reason: without them there is no column whose majority to settle.
+ *
  * @param {{categorical: boolean, order: string, accession: string,
  *   columns: {occupied: number, shared: number, median: number, max: number}|null,
  *   alike: {derived: number, reviewed: number}|null}|null} paintOrder
  * @returns {string[]}
  */
-function describePaintOrder(paintOrder) {
+export function describePaintOrder(paintOrder) {
   if (!paintOrder) return [];
   const parts = [paintOrder.order];
   const columns = paintOrder.columns;
-  if (columns && columns.occupied > 0) {
+  const hasColumns = Boolean(columns) && columns.occupied > 0;
+  if (hasColumns) {
     parts.push(columns.shared > 0
       ? `They do share pixels here: on ${paintOrder.accession} at this zoom, `
         + `${columns.shared.toLocaleString('en-US')} of `
@@ -552,7 +564,7 @@ function describePaintOrder(paintOrder) {
       : `They do not share pixels here: each of the ${columns.occupied.toLocaleString('en-US')} `
         + `occupied columns on ${paintOrder.accession} holds one CDS at this zoom.`);
   }
-  if (paintOrder.categorical) {
+  if (paintOrder.categorical && hasColumns) {
     parts.push('Where CDSs of different categories share one column, the column shows a '
       + 'lab-reviewed category over a source-derived one, then the category with more CDSs in '
       + 'that column, then the earlier locus. Every column is decided by what is in it: a CDS '

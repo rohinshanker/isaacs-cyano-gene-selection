@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CATEGORICAL_DIRECTION_REASON, DEFAULT_DRAW_DIRECTION, DRAW_DIRECTIONS, DRAW_DIRECTION_LABELS,
-  EMPHASIS_RANK, EVIDENCE_RANK, PAINT_TIER, comparePaintPriority, describeDrawOrder, drawOrderNote,
+  EMPHASIS_RANK, EVIDENCE_RANK, PAINT_TIER, comparePaintPriority, describeDrawOrder,
   normalizeDrawDirection, paintBatchOrder, paintPriority, paintRanks, sortByPaintOrder,
   topByPaintOrder,
 } from '../../site/js/core/paint-priority.js';
@@ -234,20 +234,15 @@ test('the category disclosure names the evidence order, which has no direction',
   assert.match(text, /over genes with no category/);
 });
 
-test('the legend clause is one short sentence and still says the direction', () => {
-  const highest = drawOrderNote({ categorical: false, direction: 'highest' });
-  const lowest = drawOrderNote({ categorical: false, direction: 'lowest' });
-  // Short enough to cost the legend no line at any of the four widths, in any
-  // of the 53 metric colours: the notes are set to a 38-character measure, and
-  // the clause takes the characters the note was spending on repeating the
-  // scale's name. The full sentence is in `describeDrawOrder`.
-  assert.equal(highest, 'Overlaps: highest on top.');
-  assert.equal(lowest, 'Overlaps: lowest on top.');
-  assert.ok(highest.length <= 26 && lowest.length <= 26);
-  assert.match(highest, /highest/);
-  assert.match(lowest, /lowest/);
-  assert.equal(drawOrderNote({ categorical: true, direction: 'lowest' }),
-    'Overlapping marks: reviewed over derived, over no category.');
+test('there is no second, shorter wording for a legend to carry', async () => {
+  // The legend note carried a short clause for one commit. The owner removed it
+  // from the visible interface on 2026-09-30, so the module exports one wording
+  // and only one: a second form is what would let the legend's sentence drift
+  // from the description's, and there is no longer a caller for it.
+  const module = await import('../../site/js/core/paint-priority.js');
+  assert.equal(module.drawOrderNote, undefined);
+  assert.ok(!Object.keys(module).some((name) => /note|clause/i.test(name)),
+    `no short-form export may return: ${Object.keys(module).join(', ')}`);
 });
 
 test('the reason a category colour cannot choose a direction is stated, not implied', () => {

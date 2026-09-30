@@ -158,7 +158,7 @@ export function renderCategoryLegend(host, {
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
   evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
-  markerConventions = true, drawOrderNote = '',
+  markerConventions = true,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
@@ -267,11 +267,7 @@ export function renderCategoryLegend(host, {
       + 'changes the colour; the detail panel and export name the conflict. '
     : 'Only lab-reviewed locus assignments receive a category colour. '
       + 'GO IEA suggestions alone leave a gene unclassified. ')
-    + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.'
-    // Appended to a paragraph that is already here rather than given one of its
-    // own: paint order decides what is seen, so it has to be stated, and a
-    // separate note would cost a line at every width for a one-clause fact.
-    + (drawOrderNote ? ` ${drawOrderNote}` : '');
+    + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
   host.append(toggles, title, list);
   const summary = categoryEvidenceSummary(
     evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount,
@@ -437,9 +433,8 @@ export function rampTicks(scale, metric) {
  * that scale needs the reader to know to read a colour correctly: a symmetric
  * log's transition scale, or the cohort a percentile ranks against.
  */
-export function describeValueScale(metric, scale, { nameScale = true } = {}) {
-  const opening = nameScale ? `Scale: ${rampScaleLabel(scale)}. ` : '';
-  const parts = [`${opening}The tick labels read ${metric.label} in its `
+export function describeValueScale(metric, scale) {
+  const parts = [`Scale: ${rampScaleLabel(scale)}. The tick labels read ${metric.label} in its `
     + 'own units, at the positions this scale puts them; no stored value changes.'];
   if (scale.scaleName === 'symlog') {
     const unit = metric.unit ? ` ${metric.unit}` : '';
@@ -483,10 +478,7 @@ export function describeBasisCounts(basisCounts) {
  * @param {HTMLElement} host
  * @param {{metric: object, scale: object, missingCount: number, hiddenCount: number,
  *   showHidden: boolean, provenanceNote: string|null, markerConventions?: boolean,
- *   basisCounts?: {counts: Map<string, number>, recorded: boolean},
- *   drawOrderNote?: string}} state `drawOrderNote` is the one clause saying
- *   which of two overlapping marks is seen; it replaces the scale note's
- *   opening repeat of the scale name rather than adding to the note.
+ *   basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
  *   `markerConventions` false omits the rows naming the scatter map's point
  *   shapes, for a view that draws the same evidence states as something else.
  *   That caller states its own conventions; the colour key is what it shares.
@@ -588,24 +580,7 @@ export function renderLegend(host, state) {
 
   const scaleNote = document.createElement('p');
   scaleNote.className = 'legend-ramp-note legend-scale-note';
-  // The draw order joins the scale's own note rather than taking a paragraph of
-  // its own: both say how a colour on this map is to be read, and a separate
-  // note would cost a line at every width for one clause.
-  //
-  // It also takes the characters the note was spending on a repeat. This note
-  // opened by naming the scale, which `.legend-ramp-row` already shows one line
-  // above it in this same column, beside the ramp that scale colours — and the
-  // ramp's own `aria-label` names it a third time. These notes are set to a
-  // 38-character measure, so at 375 px there is no slack on any line and an
-  // added clause is an added line in most colour channels. Swapping the repeat
-  // for the clause makes the legend no taller in **any** of the 53 metric
-  // colours than it was before the clause existed, at 375, 768, 1280 and
-  // 1440 px, and one line shorter in TSS initiation colour. The scale is still
-  // named wherever the clause is not: with no clause to carry, the note opens
-  // with the scale as it always did.
-  scaleNote.textContent = state.drawOrderNote
-    ? `${describeValueScale(metric, scale, { nameScale: false })} ${state.drawOrderNote}`
-    : describeValueScale(metric, scale);
+  scaleNote.textContent = describeValueScale(metric, scale);
 
   host.append(title, rampRow, ticks, notes, scaleNote, ramp);
   const basis = describeBasisCounts(state.basisCounts);

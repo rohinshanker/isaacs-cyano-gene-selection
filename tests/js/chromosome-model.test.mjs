@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
   GENOME_OF_RECORD, MIN_WINDOW_BP, axisUnit, cdsMark, cdsPieces, clampWindow,
-  describeChromosomeView,
+  describeChromosomeView, describePaintOrder,
   formatBasePairs, fullWindow, locateIndex, navigationLanes, neighborMark, normalizeAccession,
   operonBrackets, panWindow, positionTicks, repliconScale, repliconTracks, sameReplicon,
   strandLane, tickStepBp, tssPositions, visibleMarks, wrapsOrigin, zoomWindow,
@@ -530,4 +530,64 @@ test('the shipped release places all 2,715 plotted CDSs on its three replicons',
       `${bracket.operonId} draws every member the pipeline counted`);
     assert.ok(bracket.from <= bracket.to);
   }
+});
+
+/**
+ * `describePaintOrder` writes the sentences for both places a reader can meet
+ * them — the canvas description and the collapsed colour explanation — so they
+ * are asserted here, once, rather than twice through two views.
+ */
+test('the paint-order sentences say what the picture did, and stop where it did not', () => {
+  const columns = { occupied: 900, shared: 600, median: 2, max: 9 };
+  const full = describePaintOrder({
+    categorical: true,
+    order: 'Where marks overlap, a lab-reviewed category draws over a source-derived one.',
+    accession: 'NZ_CP006471.1',
+    columns,
+    alike: { derived: 1337, reviewed: 12, threshold: 3 },
+  });
+  assert.equal(full.length, 5, 'order, crowding, D2, D1, and nothing-is-hidden');
+  assert.match(full[1], /600 of 900 occupied columns hold more than one CDS, 2 in the middle/);
+  assert.match(full[2], /then the category with more CDSs in that column, then the earlier locus/);
+  assert.match(full[3], /1,337 source-derived categories draw in the same solid colour as the 12/);
+  assert.match(full[4], /every CDS stays selectable, reachable by the arrow keys, and counted/);
+
+  // No shared column is its own sentence, and it is singular at one.
+  const separated = describePaintOrder({
+    categorical: false, order: 'ordered', accession: 'NZ_CP006471.1',
+    columns: { occupied: 637, shared: 0, median: 1, max: 1 }, alike: null,
+  });
+  assert.match(separated[1], /each of the 637 occupied columns on NZ_CP006471.1 holds one CDS/);
+  assert.equal(separated.length, 3, 'no D2 sentence in a value colour, and no D1 notice');
+  const one = describePaintOrder({
+    categorical: false, order: 'ordered', accession: 'X',
+    columns: { occupied: 4, shared: 1, median: 1, max: 2 }, alike: null,
+  });
+  assert.match(one[1], /1 of 4 occupied columns holds more than one CDS/);
+});
+
+test('a caller with no columns gets the ordering alone, which is what the scatter map is', () => {
+  // The map's copy of the disclosure. Its marks are discs on a projection, so
+  // there is no column whose majority to settle and no sub-pixel bar to report:
+  // the per-column D2 sentence must not be offered about a picture with no
+  // columns in it, in a category colour or any other.
+  for (const categorical of [true, false]) {
+    const sentences = describePaintOrder({
+      categorical, order: 'Where marks overlap, the highest value draws on top.',
+      accession: null, columns: null, alike: null,
+    });
+    assert.deepEqual(sentences, [
+      'Where marks overlap, the highest value draws on top.',
+      'Nothing is hidden by this order: every CDS stays selectable, reachable by the '
+        + 'arrow keys, and counted.',
+    ], `categorical: ${categorical}`);
+  }
+  // An occupancy map that came back empty is the same case, not a sentence about
+  // zero columns.
+  assert.equal(describePaintOrder({
+    categorical: true, order: 'ordered', accession: 'X',
+    columns: { occupied: 0, shared: 0, median: 0, max: 0 }, alike: null,
+  }).length, 2);
+  // And a view that has not painted yet says nothing at all.
+  assert.deepEqual(describePaintOrder(null), []);
 });

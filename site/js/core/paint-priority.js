@@ -243,9 +243,15 @@ export function paintRanks(indices, model) {
 }
 
 /**
- * How the ordering reads in a sentence, for the legend note and the accessible
- * descriptions. Kept beside the rule so the wording cannot describe an order
- * the comparator does not produce.
+ * How the ordering reads in a sentence, for both canvases' accessible
+ * descriptions and for the collapsed colour explanation the Draw on top control
+ * sits in. Kept beside the rule so the wording cannot describe an order the
+ * comparator does not produce.
+ *
+ * Those are the only places it appears. A short clause for the legend note lived
+ * here until the owner decided on 2026-09-30, after seeing the first render, that
+ * the legend states none of this; there is no second, shorter wording to keep in
+ * step with this one.
  *
  * @param {{categorical: boolean, direction?: string, metricLabel?: string|null}} model
  * @returns {string}
@@ -261,19 +267,4 @@ export function describeDrawOrder({ categorical, direction, metricLabel = null }
       + 'the coloured ones.'
     : `Where marks overlap, the highest ${label}value draws on top; genes with no value stay under `
       + 'the coloured ones.';
-}
-
-/**
- * The short form for a legend note, where the long sentence would add a line.
- *
- * A value ramp gets the shortest form that still says which way the picture is
- * ordered, because the legend's notes are set to a 38-character measure and
- * every character over it costs a whole line at every width. The full sentence
- * is in {@link describeDrawOrder}, which both canvases' descriptions carry.
- */
-export function drawOrderNote({ categorical, direction }) {
-  if (categorical) return 'Overlapping marks: reviewed over derived, over no category.';
-  return normalizeDrawDirection(direction) === 'lowest'
-    ? 'Overlaps: lowest on top.'
-    : 'Overlaps: highest on top.';
 }
