@@ -45,7 +45,12 @@ test('the stylesheet hides text, not structure, while loading', async () => {
   // The stage is the map canvas's own box.
   const canvasHost = /\.canvas-host \{[^}]*height: (clamp\([^;]+\));/.exec(css)[1];
   assert.ok(block.includes(`height: ${canvasHost};`), 'the grid stands where the map will');
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.load-gene, \.load-tail-fill \{ transition: none; \}/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.load-tail-fill \{ transition: none; \}/);
+  // A segment just appears: the owner asked for no expand animation, since
+  // easing each one in made the blocky load read as fluid again.
+  const genes = css.slice(css.indexOf('.load-gene {'), css.indexOf('/* After the reveal'));
+  assert.match(genes, /\.load-gene \{ fill: #dfe5ea; \}\s*\.load-gene\.is-on \{ fill: var\(--gene\); \}/);
+  assert.ok(!/transition|transform|animation/.test(genes), 'no segment is eased, grown, or faded in');
 });
 
 test('the reveal waits for the minimum bar time and for a link\'s own files', async () => {

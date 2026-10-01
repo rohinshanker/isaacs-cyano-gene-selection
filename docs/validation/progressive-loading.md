@@ -273,6 +273,12 @@ unlit gene is faint and neutral, so the bar reads as a chromosome from the first
 paint; a gene's colour is a custom property rather than `fill`, which is what
 lets the stylesheet dim it.
 
+**A segment just appears.** It takes its colour the instant the progress reaches
+it, with no grow, fade, or other transition, by owner decision of 2026-09-30:
+easing each segment in made the blocky load read as fluid again, which is what
+the uneven blocks exist to avoid. `tests/js/loading-shell.test.mjs` holds the
+segment rules free of any transition, transform, or animation.
+
 **The bar measures the files this visit waits for.** `boot` reads the view the
 link asks for from the URL hash, before any data has arrived, and gives
 `setBlocking` the tier 1 files plus whatever `promotedFileKeys` returns for that

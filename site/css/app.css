@@ -168,16 +168,12 @@ pre {
 .load-chromosome { display: block; width: 100%; height: 44px; overflow: visible; }
 .load-chromosome-axis { stroke: #536774; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 /* The whole track is there from the first paint, faint and neutral, so the bar
-   reads as a chromosome before any gene has loaded. A gene takes its colour and
-   its full height as the progress reaches it. */
-.load-gene {
-  fill: #dfe5ea;
-  transform: scaleY(0.6);
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: fill 140ms ease-out, transform 180ms ease-out;
-}
-.load-gene.is-on { fill: var(--gene); transform: none; }
+   reads as a chromosome before any gene has loaded. A gene takes its colour the
+   instant the progress reaches it: no grow, no fade. By owner decision of
+   2026-09-30 the segments just appear, because easing them in made the blocky
+   load read as fluid again. */
+.load-gene { fill: #dfe5ea; }
+.load-gene.is-on { fill: var(--gene); }
 
 /* After the reveal: later files still landing, and any that could not load.
    While files are only loading the tail lies over the map card's own top
@@ -224,7 +220,7 @@ pre {
 @keyframes evidence-pulse { 50% { opacity: 0.55; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .load-gene, .load-tail-fill { transition: none; }
+  .load-tail-fill { transition: none; }
   .evidence-pending[data-pending="loading"] { animation: none; }
 }
 
