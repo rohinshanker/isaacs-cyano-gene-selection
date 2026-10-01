@@ -101,6 +101,24 @@ export function describeLoad(snapshot, identity = null) {
   return `${what}, ${percent}%.${who ? ` ${who}.` : ''}`;
 }
 
+/**
+ * One gene's `rect` attributes, the same whether the page ships the mark or
+ * this module builds it. The colour is a custom property rather than `fill`, so
+ * the stylesheet can draw an unlit gene as a faint neutral and a lit one in its
+ * own colour.
+ */
+export function loadGeneAttributes(gene) {
+  const { axisY, laneHeight } = LOAD_BAR_VIEW;
+  return {
+    class: 'load-gene',
+    x: gene.x.toFixed(2),
+    y: gene.lane === 'above' ? axisY - 3 - laneHeight : axisY + 3,
+    width: gene.width.toFixed(2),
+    height: laneHeight,
+    style: `--gene: ${gene.color}`,
+  };
+}
+
 function svg(name, attributes = {}) {
   const node = document.createElementNS(SVG_NS, name);
   for (const [key, value] of Object.entries(attributes)) {
@@ -131,25 +149,26 @@ export class LoadProgress {
   }
 
   buildBar() {
-    const { width, height, axisY, laneHeight } = LOAD_BAR_VIEW;
-    const root = svg('svg', {
-      class: 'load-chromosome', viewBox: `0 0 ${width} ${height}`, preserveAspectRatio: 'none',
-      'aria-hidden': 'true', focusable: 'false',
-    });
-    root.append(svg('line', { class: 'load-chromosome-axis', x1: 0, x2: width, y1: axisY, y2: axisY }));
-    this.marks = this.genes.map((gene) => {
-      const mark = svg('rect', {
-        class: 'load-gene',
-        x: gene.x.toFixed(2),
-        y: gene.lane === 'above' ? axisY - 3 - laneHeight : axisY + 3,
-        width: gene.width.toFixed(2),
-        height: laneHeight,
-        fill: gene.color,
+    // The page ships the whole track, so it is there from the first paint and
+    // not a bare axis until this module arrives. Those marks are adopted; a
+    // host without them, as in a test, gets the same track built here.
+    const shipped = this.bar.querySelectorAll('rect.load-gene');
+    if (shipped.length === this.genes.length) {
+      this.marks = shipped;
+    } else {
+      const { width, height, axisY } = LOAD_BAR_VIEW;
+      const root = svg('svg', {
+        class: 'load-chromosome', viewBox: `0 0 ${width} ${height}`, preserveAspectRatio: 'none',
+        'aria-hidden': 'true', focusable: 'false',
       });
-      root.append(mark);
-      return mark;
-    });
-    this.bar.replaceChildren(root);
+      root.append(svg('line', { class: 'load-chromosome-axis', x1: 0, x2: width, y1: axisY, y2: axisY }));
+      this.marks = this.genes.map((gene) => {
+        const mark = svg('rect', loadGeneAttributes(gene));
+        root.append(mark);
+        return mark;
+      });
+      this.bar.replaceChildren(root);
+    }
     this.bar.setAttribute('role', 'progressbar');
     this.bar.setAttribute('aria-label', 'Loading the gene data');
     this.bar.setAttribute('aria-valuemin', '0');
@@ -228,6 +247,9 @@ export class LoadProgress {
     const failed = DATA_FILES.filter((file) => this.files?.[file.key]?.state === FILE_STATE.FAILED);
     const loading = snapshot?.currentTier ?? null;
     this.tail.hidden = loading === null && failed.length === 0;
+    // Loading alone, the tail overlays the card's padding and moves nothing.
+    // A failure takes a place in the flow, for its message and its Retry.
+    this.tail.classList.toggle('has-failures', failed.length > 0);
     if (this.tail.hidden) return;
     const who = describeIdentity(this.identity);
     this.tailStatus.textContent = loading !== null

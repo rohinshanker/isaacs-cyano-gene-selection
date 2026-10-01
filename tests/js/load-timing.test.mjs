@@ -23,6 +23,7 @@ test('with no overrides the resolved timing equals the defaults and is a fresh c
       minimumBarMs: LOAD_TIMING.minimumBarMs,
       scramble: { ...LOAD_TIMING.scramble },
       mapIntro: { ...LOAD_TIMING.mapIntro },
+      anchorView: true,
     });
     assert.notEqual(timing.scramble, LOAD_TIMING.scramble);
   }
@@ -37,10 +38,11 @@ test('every tunable has an address-bar override', () => {
       lagLetters: 4, lettersPerSecond: 90, maxDurationMs: 2500, flipFastMs: 20, flipSlowMs: 300,
     },
     mapIntro: { appearMs: 1000, colourMs: 3000 },
+    anchorView: true,
   });
   assert.deepEqual([...LOAD_TIMING_PARAMETERS].sort(), [
-    'load-flip-fast', 'load-flip-slow', 'load-lag', 'load-letters', 'load-map-appear',
-    'load-map-colour', 'load-min', 'load-text-max',
+    'load-anchor', 'load-flip-fast', 'load-flip-slow', 'load-lag', 'load-letters',
+    'load-map-appear', 'load-map-colour', 'load-min', 'load-text-max',
   ]);
   // The leading question mark is optional, and zero is a legitimate value.
   assert.equal(resolveLoadTiming('load-min=0').minimumBarMs, 0);
@@ -62,4 +64,14 @@ test('reduced motion is read from the media query, and its absence means no pref
   const asked = [];
   prefersReducedMotion({ matchMedia: (query) => { asked.push(query); return { matches: false }; } });
   assert.deepEqual(asked, ['(prefers-reduced-motion: reduce)']);
+});
+
+test('holding the map where the grid stood is a switch, on unless turned off', () => {
+  assert.equal(LOAD_TIMING.anchorView, true);
+  assert.equal(resolveLoadTiming('?load-anchor=0').anchorView, false);
+  assert.equal(resolveLoadTiming('?load-anchor=1').anchorView, true);
+  // Anything that is not exactly 0 or 1 leaves the default alone.
+  for (const bad of ['', 'no', 'false', '2', '-1']) {
+    assert.equal(resolveLoadTiming(`?load-anchor=${bad}`).anchorView, true, JSON.stringify(bad));
+  }
 });

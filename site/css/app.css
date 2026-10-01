@@ -167,20 +167,50 @@ pre {
 .load-progress { position: relative; width: min(80%, 34rem); }
 .load-chromosome { display: block; width: 100%; height: 44px; overflow: visible; }
 .load-chromosome-axis { stroke: #536774; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-/* A gene grows out of the axis as the progress reaches it. */
+/* The whole track is there from the first paint, faint and neutral, so the bar
+   reads as a chromosome before any gene has loaded. A gene takes its colour and
+   its full height as the progress reaches it. */
 .load-gene {
-  opacity: 0;
-  transform: scaleY(0.15);
+  fill: #dfe5ea;
+  transform: scaleY(0.6);
   transform-box: fill-box;
   transform-origin: center;
-  transition: opacity 140ms ease-out, transform 180ms ease-out;
+  transition: fill 140ms ease-out, transform 180ms ease-out;
 }
-.load-gene.is-on { opacity: 1; transform: none; }
+.load-gene.is-on { fill: var(--gene); transform: none; }
 
-/* After the reveal: later files still landing, and any that could not load. */
-.load-tail { display: grid; gap: 0.3rem; font-size: 0.8rem; color: var(--ink-muted); }
-.load-tail-status { margin: 0; }
-.load-tail-meter { height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
+/* After the reveal: later files still landing, and any that could not load.
+   While files are only loading the tail lies over the map card's own top
+   padding, out of the flow: it appears and leaves without moving the map by a
+   pixel, which matters because it leaves while the visitor is already working.
+   A failure needs room for its message and its Retry, so only then does it take
+   a place in the flow. */
+#map-section { position: relative; }
+.load-tail {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: grid;
+  gap: 1px;
+  font-size: 0.66rem;
+  line-height: 1;
+  color: var(--ink-muted);
+  pointer-events: none;
+}
+.load-tail-status { margin: 0; padding: 0 1rem; order: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.load-tail-meter {
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--line);
+  overflow: hidden;
+}
+.load-tail.has-failures {
+  position: static;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  line-height: inherit;
+  pointer-events: auto;
+}
+.load-tail.has-failures .load-tail-status { padding: 0; order: 0; white-space: normal; }
 .load-tail-fill { height: 100%; background: var(--accent); transition: width 200ms linear; }
 .load-failures { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
 .load-failure { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--danger); }

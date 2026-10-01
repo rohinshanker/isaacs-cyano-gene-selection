@@ -33,6 +33,12 @@ export const LOAD_TIMING = Object.freeze({
     /** The map's points have all taken their colour after this long. */
     colourMs: 2000,
   }),
+  /**
+   * Whether the map is held where the loading grid stood through the reveal.
+   * Not a duration, but tuned by eye with the rest: `?load-anchor=0` lets the
+   * page stay at its top instead, with the map wherever the layout puts it.
+   */
+  anchorView: true,
 });
 
 /** Query parameter for each tunable, and where it lands. */
@@ -47,11 +53,16 @@ const OVERRIDES = Object.freeze([
   ['load-map-colour', 'mapIntro', 'colourMs'],
 ]);
 
+/** The one switch among the tunables: `0` or `1`, anything else is ignored. */
+export const ANCHOR_PARAMETER = 'load-anchor';
+
 /** The largest value an override may take, so a typo cannot hang the page. */
 export const MAX_OVERRIDE = 60000;
 
 /** The query parameters that tune the loading presentation, for documentation and tests. */
-export const LOAD_TIMING_PARAMETERS = Object.freeze(OVERRIDES.map(([name]) => name));
+export const LOAD_TIMING_PARAMETERS = Object.freeze(
+  [...OVERRIDES.map(([name]) => name), ANCHOR_PARAMETER],
+);
 
 /**
  * The timings in effect, with any address-bar overrides applied.
@@ -61,7 +72,7 @@ export const LOAD_TIMING_PARAMETERS = Object.freeze(OVERRIDES.map(([name]) => na
  * producing a duration of `NaN`.
  *
  * @param {string} [search] `location.search`, with or without its question mark.
- * @returns {{minimumBarMs: number, scramble: object, mapIntro: object}}
+ * @returns {{minimumBarMs: number, scramble: object, mapIntro: object, anchorView: boolean}}
  */
 export function resolveLoadTiming(search = '') {
   const parameters = new URLSearchParams(search);
@@ -69,7 +80,10 @@ export function resolveLoadTiming(search = '') {
     minimumBarMs: LOAD_TIMING.minimumBarMs,
     scramble: { ...LOAD_TIMING.scramble },
     mapIntro: { ...LOAD_TIMING.mapIntro },
+    anchorView: LOAD_TIMING.anchorView,
   };
+  const anchor = parameters.get(ANCHOR_PARAMETER);
+  if (anchor === '0' || anchor === '1') timing.anchorView = anchor === '1';
   for (const [name, group, key] of OVERRIDES) {
     const raw = parameters.get(name);
     if (raw === null || raw.trim() === '') continue;

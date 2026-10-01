@@ -44,6 +44,7 @@ is easiest to judge with the network throttled in the browser's developer tools
 | Flip speed just before it resolves | `load-flip-slow` | 170 ms | 110, 260 |
 | How fast the map's points appear | `load-map-appear` | 700 ms | 400, 1200 |
 | How long the map takes to colour | `load-map-colour` | 2000 ms | 1200, 3000 |
+| Whether the page lands on the map or at its top | `load-anchor` | 1 (on the map) | 0 |
 
 Several can be combined, for example
 `?load-min=1500&load-letters=90&load-map-colour=3000`.
@@ -61,6 +62,16 @@ Questions to answer while watching:
 6. On a throttled connection, where the points appear in the neutral colour and
    take their categories several seconds later: does that second wave read as the
    same animation?
+7. **Where should a visit land?** The map sits lower in the page than the loading
+   grid, so to keep the fill-in in view the page is scrolled at the reveal and
+   the visit lands on the map, with the header and tabs above it. With
+   `?load-anchor=0` the page stays at its top and the map is wherever the layout
+   puts it: mostly below the fold on a laptop and off screen on a phone. This is
+   a change to where every visit starts, made so the animation you asked for can
+   be seen, and it is yours to keep or reverse.
+8. Dropdown options and input placeholders are not scrambled: they show their
+   finished text among the flipping letters. Is that seam acceptable, or should
+   form controls be held back until the text has settled?
 
 ## What an agent does with the answers
 

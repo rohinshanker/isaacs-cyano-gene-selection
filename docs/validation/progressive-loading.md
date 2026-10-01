@@ -72,7 +72,11 @@ Tiers say what the page waits for and what it draws first.
 | 1 | `meta.json`, `genes.json`, `function-categories-v1.json` | Usable: every map's points, the chromosome view, selectors, search by locus and product, registry filters, the shortlist |
 | 2 | `annotations.json`, `candidate_evidence.json`, `source-derived-categories-v1.json`, `length_cohorts.json`, `codon_pca.json`, `excluded.json` | Coloured by function category; protein filter; loadings |
 | 3 | `tss_evidence.json`, `go-iea-essentiality-v1.json`, `go-term-names-v1.json` | Complete in gene detail, the gene visualizer, and the chromosome tick row |
-| 4 | `regulatory_tss.json`, and `citations.json` through its own loader | Complete on the Regulatory sites and Citations tabs |
+| 4 | `regulatory_tss.json` | Complete on the Regulatory sites tab |
+
+`citations.json` is outside the tiers. Its own loader asks for it at start-up,
+through the manifest like every other file; it is 27 kB, never blocks anything,
+and the Citations tab keeps its own loading, absent and empty states.
 
 **The tiers follow what a file's validation reads, not only what it feeds.**
 `validateSourceDerivedCategories` checks every derived category against the
@@ -257,13 +261,43 @@ about them can be read as data. It is a `progressbar` whose value text names the
 tier in plain words and, once `meta.json` has landed, the release and its gene
 count.
 
+**The whole track is in the page, not added by the script.** Built by
+`ui/load-progress.js` alone, the bar was a bare axis with no value text until the
+module graph had arrived, the first second and a half of the wait on the
+throttled profile and the part where a visitor decides whether the page is
+working. `node tools/build_load_bar.mjs` writes the marks into `site/index.html`
+from the same `loadBarGenes` the script uses; the script adopts them rather than
+rebuilding, and `tests/js/load-progress.test.mjs` fails when the two differ. An
+unlit gene is faint and neutral, so the bar reads as a chromosome from the first
+paint; a gene's colour is a custom property rather than `fill`, which is what
+lets the stylesheet dim it.
+
 **A minimum of one second**, measured from navigation, however fast the data.
 
 **The reveal.** At the later of tier 1 being built, any promoted files landing,
 and the minimum, `revealPage` removes `is-loading`, shows the sections below the
 workspace, and replaces the stage with the map. The page was built while the
 shell hid it, so the reveal only uncovers it; the canvases are measured then,
-because they were built inside a frame that was not displayed.
+because they were built inside a frame that was not displayed. The status line
+is hidden at the same moment: left in the settled page it told a screen reader
+that a finished load was still in progress.
+
+**The map is held where the grid stood** (`holdInPlace` in `ui/view-anchor.js`).
+The grid is the map canvas's own box in width and height, but not in position:
+at the reveal the tabs, the blurb and the toolbar reappear above the map, and on
+one column the controls column returns above the whole map card. Unheld, the map
+landed 471 to 2,884 px below where the grid stood, off screen on a phone and
+mostly below the fold on a laptop, and went on sinking as the tab labels typed in
+and wrapped; the fill-in played out of sight. The page is therefore scrolled by
+exactly the distance the map moved, and kept corrected while the text above is
+still changing height, so the map stays within a pixel of the grid's position
+through the whole reveal. The hold ends the moment the visitor scrolls, clicks,
+touches or presses a key. Under reduced motion it corrects once. On a tab that is
+not a scatter map the active tab panel is held instead.
+
+This changes where a visit lands: on the map, with the header and tabs scrolled
+above it. It is a switch, `anchorView`, so the owner can judge it against landing
+at the top of the page.
 
 **The text types in as base pairs** (`ui/text-scramble.js`). Each text node grows
 left to right as random A, T, G and C that keep flipping; eight letters behind
@@ -287,7 +321,11 @@ out points appear on schedule but never take the neutral colour, since it means
 appeared, the colour half runs again rather than every point changing at once.
 
 **The later files continue under the tail**, a slim line that never blocks the
-page, naming the tier still in flight.
+page, naming the tier still in flight. While files are only loading it lies over
+the map card's own top padding, out of the flow, so it appears and leaves without
+moving the map: it leaves while the visitor is already working, and in the flow
+it shifted the map by its own height when it did. Only a failure takes a place in
+the flow, for its message and its Retry.
 
 ### Timing
 
@@ -303,9 +341,11 @@ Every duration is in `site/js/ui/load-timing.js` and nowhere else.
 | Flip interval just before resolving | 170 ms | `load-flip-slow` |
 | Map points all appeared | 700 ms | `load-map-appear` |
 | Map points all coloured | 2,000 ms | `load-map-colour` |
+| Hold the map where the grid stood | on | `load-anchor`, `0` or `1` |
 
 An override is a query parameter, read once at start-up, used only when it is a
-finite number from 0 to 60,000, and never written to the URL hash, which is
+finite number from 0 to 60,000 (or exactly `0` or `1` for the switch), and never
+written to the URL hash, which is
 analysis state and is unchanged by any of this. `?load-log` prints per-file
 timings and the three `cyano:` performance marks (`core`, `revealed`, `settled`)
 to the console; the marks are always recorded.
@@ -340,6 +380,7 @@ npm test
 .venv/bin/python tools/validate_contract.py
 .venv/bin/python tools/build_data_manifest.py check
 node tools/build_module_preloads.mjs --check
+node tools/build_load_bar.mjs --check
 ```
 
 Unit coverage:
@@ -354,18 +395,21 @@ Unit coverage:
   gate, and the borderless pending disc.
 - `tests/js/load-progress.test.mjs`, `tests/js/early-data.test.mjs`,
   `tests/js/load-timing.test.mjs`, `tests/js/text-scramble.test.mjs`,
-  `tests/js/scatter-intro.test.mjs`, `tests/js/module-preloads.test.mjs`,
-  `tests/js/loading-shell.test.mjs`.
+  `tests/js/scatter-intro.test.mjs`, `tests/js/view-anchor.test.mjs`,
+  `tests/js/module-preloads.test.mjs`, `tests/js/loading-shell.test.mjs`.
 - `tests/test_data_manifest.py`: the builder and both gates.
 
 Rendered validation is required for any change here. A fast local connection
 hides every state this document is about, so throttle the network and disable
 the cache, then check at **375, 768, 1280 and 1440 px**:
 
-- the shell: no visible text, the grid within the viewport, the bar reporting a
-  real fraction, no horizontal overflow;
-- the reveal: text typing in and resolving, map points appearing and colouring,
-  nothing left `aria-busy` or `aria-hidden` afterwards, every text its final self;
+- the shell: no visible text, the grid within the viewport, the whole track
+  present and a value text set before the page's script has run, the bar then
+  reporting a real fraction, no horizontal overflow;
+- the reveal: text typing in and resolving, map points appearing and colouring
+  **in view**, the map's top within a pixel of where the grid's was from the
+  first frame to the last, nothing left `aria-busy`, `aria-hidden` or `inert`
+  afterwards, every text its final self, and the status line hidden;
 - tier 1 landed and tier 2 not: neutral points, the legend's single loading row,
   the tail naming the tier in flight;
 - everything landed: the tail gone, the legend and counts as on a normal load;

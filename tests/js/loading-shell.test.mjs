@@ -25,7 +25,8 @@ test('the page opens as an empty shell with the stage in the map frame', async (
   const tabs = html.indexOf('id="panel-tabs"');
   assert.ok(mapSection < stage && stage < tabs, 'the stage is inside the map card, ahead of its content');
   assert.match(html, /<div class="load-grid" aria-hidden="true"><\/div>/);
-  assert.match(html, /id="load-progress" class="load-progress" role="progressbar"\s+aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"/);
+  assert.match(html, /id="load-progress" class="load-progress" role="progressbar"\s+aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"\s+aria-valuetext="Loading genes, 0%\."/,
+    'the bar has a value text before any script runs');
   assert.match(html, /<line class="load-chromosome-axis"/, 'the axis is drawn before any script runs');
   assert.match(html, /<div id="load-tail" class="load-tail" hidden><\/div>/);
   // The shell shows no text, so its status line is for assistive technology
@@ -62,8 +63,19 @@ test('the reveal waits for the minimum bar time and for a link\'s own files', as
     assert.ok(at >= from, `${step} comes in order`);
     from = at;
   }
-  const reveal = source.slice(source.indexOf('function revealPage()'), source.indexOf('function mapTabActive()'));
+  const reveal = source.slice(source.indexOf('function revealPage()'), source.indexOf('function holdRevealedView('));
+  const hold = source.slice(source.indexOf('function holdRevealedView('), source.indexOf('function mapTabActive()'));
+  assert.match(hold, /if \(!loadTiming\.anchorView\) return;/);
+  assert.match(hold, /durationMs: reducedMotion \? 0 : loadTiming\.scramble\.maxDurationMs \+ 250,/);
   assert.match(reveal, /document\.body\.classList\.remove\('is-loading'\);/);
+  // The status line said the data was loading. Left in the settled page it
+  // told a screen reader that a finished load was still in progress.
+  assert.match(reveal, /element\('load-status'\)\.hidden = true;/);
+  // The grid's position is read before anything is uncovered, and the view
+  // that replaces it is held there.
+  assert.ok(reveal.indexOf("element('load-stage').getBoundingClientRect().top")
+    < reveal.indexOf("classList.remove('is-loading')"));
+  assert.match(reveal, /holdRevealedView\(stageTop\);\s*startMapIntro/);
   assert.match(reveal, /startMapIntro\(loadTiming\.mapIntro\);\s*startTextReveal\(\);/);
   assert.match(source, /function startMapIntro\(\{ appearMs, colourMs \}\) \{\s*if \(reducedMotion \|\| !mapTabActive\(\)\) return;/);
   assert.match(source, /function startTextReveal\(\) \{\s*if \(reducedMotion\) return;/);

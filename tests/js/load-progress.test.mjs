@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   LOAD_BAR_GENES, LOAD_BAR_VIEW, LoadProgress, describeIdentity, describeLoad, loadBarGenes,
-  loadFraction,
+  loadFraction, loadGeneAttributes,
 } from '../../site/js/ui/load-progress.js';
 import { DATA_FILES, FILE_STATE } from '../../site/js/core/data-files.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
@@ -121,6 +121,7 @@ test('after the reveal the tail reports later files without blocking, then leave
     progress.reveal();
     assert.equal(stage.hidden, true, 'the stage gives way to the map');
     assert.equal(tail.hidden, false);
+    assert.ok(!tail.hasClass('has-failures'), 'loading alone, the tail overlays and moves nothing');
     assert.equal(tail.querySelector('p').textContent,
       'Release GCF_000817325.1-RS_2026_05_13, 2,715 genes. Still loading function categories and filters.');
     assert.equal(tail.querySelector('p').getAttribute('role'), 'status');
@@ -152,6 +153,7 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
       excluded: { state: FILE_STATE.FAILED, error: null, blockedBy: null },
     }));
     assert.equal(tail.hidden, false);
+    assert.ok(tail.hasClass('has-failures'), 'a failure takes room in the flow for its Retry');
     assert.equal(tail.querySelector('p').textContent, '3 data files could not be loaded.');
     assert.equal(tail.querySelector('div.load-tail-meter').hidden, true);
     const rows = tail.querySelectorAll('li.load-failure');
@@ -171,6 +173,7 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
     assert.equal(tail.querySelector('p').textContent, '1 data file could not be loaded.');
     progress.setFiles(records());
     assert.equal(tail.hidden, true);
+    assert.ok(!tail.hasClass('has-failures'));
   });
 });
 
@@ -188,5 +191,47 @@ test('a whole-dataset retry puts the stage back at empty', async () => {
     // Before the reveal a file list changes nothing on screen.
     progress.setFiles(records({ excluded: { state: FILE_STATE.FAILED, error: null, blockedBy: null } }));
     assert.equal(tail.hidden, true);
+  });
+});
+
+test('the track is shipped in the page, and the script adopts it instead of rebuilding', async () => {
+  // Built by the script alone, the bar was a bare axis until the module graph
+  // had arrived: the first second and a half of the wait on a slow connection.
+  const { PAGE, END_MARK, START_MARK, loadBarBlock, withLoadBarBlock } = await import('../../tools/build_load_bar.mjs');
+  const { readFile } = await import('node:fs/promises');
+  const html = await readFile(PAGE, 'utf8');
+  assert.equal(withLoadBarBlock(html), html,
+    'index.html is out of date; run: node tools/build_load_bar.mjs');
+  const shipped = [...html.matchAll(/<rect class="load-gene" ([^>]*)>/g)];
+  assert.equal(shipped.length, LOAD_BAR_GENES);
+  const genes = loadBarGenes();
+  assert.match(shipped[0][1], new RegExp(`style="--gene: ${genes[0].color}"`));
+  assert.ok(!/fill=/.test(shipped[0][1]), 'the colour is a custom property, so CSS can dim an unlit gene');
+  assert.throws(() => withLoadBarBlock('<svg></svg>'), /has no .*load-bar:start/);
+  assert.equal(withLoadBarBlock(`${START_MARK}old${END_MARK}`, genes.slice(0, 1)),
+    loadBarBlock(genes.slice(0, 1)));
+
+  await withFakeDocument((document) => {
+    const stage = document.createElement('div');
+    const bar = document.createElement('div');
+    const tail = document.createElement('div');
+    // The page's own marks, as the script finds them.
+    const shippedMarks = genes.map((gene) => {
+      const mark = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      mark.className = 'load-gene';
+      for (const [name, value] of Object.entries(loadGeneAttributes(gene))) mark.setAttribute(name, value);
+      bar.append(mark);
+      return mark;
+    });
+    const progress = new LoadProgress({ stage, bar, tail });
+    assert.deepEqual(progress.marks, shippedMarks, 'the shipped marks are the ones that light');
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    assert.ok(shippedMarks.every((mark) => mark.hasClass('is-on')));
+    // A host with a different number of marks is rebuilt rather than half adopted.
+    const partial = document.createElement('div');
+    partial.append(shippedMarks[0]);
+    const rebuilt = new LoadProgress({ stage, bar: partial, tail });
+    assert.equal(rebuilt.marks.length, LOAD_BAR_GENES);
+    assert.equal(rebuilt.marks[0].getAttribute('style'), `--gene: ${genes[0].color}`);
   });
 });

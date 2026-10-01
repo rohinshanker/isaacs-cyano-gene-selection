@@ -80,6 +80,7 @@ import {
 import { LoadProgress } from './ui/load-progress.js';
 import { prefersReducedMotion, resolveLoadTiming } from './ui/load-timing.js';
 import { TextScramble } from './ui/text-scramble.js';
+import { holdInPlace } from './ui/view-anchor.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
@@ -1826,6 +1827,8 @@ function retryFile(key) {
  * the grid and the chromosome bar is replaced by the map it stood in for.
  */
 function revealPage() {
+  // Where the grid stands now, so the view that replaces it can be held there.
+  const stageTop = element('load-stage').getBoundingClientRect().top;
   revealed = true;
   document.body.classList.remove('is-loading');
   for (const id of ['compare-section', 'panel-section', 'site-footer']) element(id).hidden = false;
@@ -1835,9 +1838,34 @@ function revealPage() {
   // are real only now, so the first true picture is drawn here.
   workspaceResizer?.update();
   renderAll();
+  // The status line said the data was loading, to assistive technology only.
+  // It is no longer true, so it leaves; a failure would have replaced it.
+  element('load-status').hidden = true;
   performance.mark('cyano:revealed');
+  holdRevealedView(stageTop);
   startMapIntro(loadTiming.mapIntro);
   startTextReveal();
+}
+
+/**
+ * Keep the view that replaced the grid where the grid stood.
+ *
+ * The tabs and toolbar reappear above the map at the reveal, and on a narrow
+ * screen so does the whole controls column, so without this the map lands below
+ * the fold and its fill-in plays out of sight. The hold lasts while the text
+ * above is still typing in and changing height, and ends at once if the visitor
+ * scrolls. Under reduced motion nothing moves after the reveal, so it corrects
+ * once.
+ */
+function holdRevealedView(stageTop) {
+  if (!loadTiming.anchorView) return;
+  const anchor = mapTabActive()
+    ? element('map-canvas').parentElement
+    : document.querySelector('#map-section [role="tabpanel"]:not([hidden])');
+  if (!anchor) return;
+  holdInPlace(anchor, stageTop, {
+    durationMs: reducedMotion ? 0 : loadTiming.scramble.maxDurationMs + 250,
+  });
 }
 
 /**
