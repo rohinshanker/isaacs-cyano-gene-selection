@@ -404,7 +404,7 @@ test('the chromosome note does not report a resolved zero while categories are p
 test('the text reveal holds each element only while its own text is flipping', async () => {
   // `aria-hidden` alone left the header's buttons tabbable but unannounced, and
   // holding a whole region would leave the page unusable for as long as its
-  // longest text takes, which is now up to ten seconds.
+  // longest text takes, which is up to five seconds.
   await withFakeDocument(async (document) => {
     const root = document.createElement('div');
     root.setAttribute('aria-busy', 'false');

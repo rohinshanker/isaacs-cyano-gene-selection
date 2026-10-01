@@ -23,7 +23,7 @@ export const LOAD_TIMING = Object.freeze({
     /** The trail runs this many times faster than the lock, so it finishes first. */
     trailRatio: 1.5,
     /** A long text speeds up so that no single text takes longer than this. */
-    maxDurationMs: 10000,
+    maxDurationMs: 5000,
     /** How often a letter flips while it is far ahead of the lock. */
     flipFastMs: 40,
     /** How often it flips just before it locks; flipping slows towards this. */

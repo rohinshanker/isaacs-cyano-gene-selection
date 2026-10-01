@@ -7,7 +7,7 @@ import {
 test('the defaults are the times the owner chose on 2026-09-30', () => {
   assert.equal(LOAD_TIMING.minimumBarMs, 1500, 'the bar takes at least a second and a half');
   assert.deepEqual({ ...LOAD_TIMING.scramble }, {
-    leadLetters: 10, lockLettersPerSecond: 50, trailRatio: 1.5, maxDurationMs: 10000,
+    leadLetters: 10, lockLettersPerSecond: 50, trailRatio: 1.5, maxDurationMs: 5000,
     flipFastMs: 40, flipSlowMs: 170,
   });
   assert.deepEqual({ ...LOAD_TIMING.mapIntro }, { appearMs: 700, colourMs: 1200 });
