@@ -83,4 +83,3 @@ async function main(argv) {
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   process.exitCode = await main(process.argv.slice(2));
 }
-
