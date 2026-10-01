@@ -28,6 +28,7 @@ import { RegulatorySitesPanel } from '../../site/js/ui/regulatory-sites.js';
 import { renderLoadings } from '../../site/js/ui/loadings.js';
 import { ChromosomeView } from '../../site/js/ui/chromosome-view.js';
 import { MARKER_KINDS, ScatterPlot } from '../../site/js/ui/scatter.js';
+import { TextScramble } from '../../site/js/ui/text-scramble.js';
 import { GeneSearchResults } from '../../site/js/ui/gene-search-results.js';
 import { ShortlistPanel } from '../../site/js/ui/shortlist.js';
 import { PanelDesigner } from '../../site/js/ui/panel-designer.js';
@@ -307,6 +308,19 @@ test('a GO search that misses while GO annotations load is not reported as a mis
       /GO annotations could not be loaded, so GO IDs and GO term names cannot match\.$/);
     assert.match(message(datasetWith({ annotations: FILE_STATE.READY, goTerms: FILE_STATE.READY })),
       /name the annotation uses\.$/);
+    // A query that does match something is still not the whole list while GO loads.
+    const matched = (dataset) => {
+      const host = document.createElement('div');
+      const results = new GeneSearchResults(host, {
+        onPin() {}, onShortlist() {}, isShortlisted: () => false, isPinned: () => false,
+      });
+      results.setGenes(genes, null, dataset);
+      results.search('dnaA');
+      return host.querySelector('p.search-status').textContent;
+    };
+    assert.equal(matched(datasetWith({ annotations: LOADING })),
+      '1 gene matches “dnaA”. GO annotations are still loading, so GO IDs and GO term names cannot match yet.');
+    assert.equal(matched(datasetWith({ annotations: FILE_STATE.READY })), '1 gene matches “dnaA”.');
   });
 });
 
@@ -365,4 +379,56 @@ test('a point whose category has not loaded carries no reviewed border', () => {
   assert.match(reviewed[2], /^stroke:/, 'a real category still takes its border');
   // A value ramp never had the border.
   assert.equal(paint({ categorical: false, buckets: ['#111'] }, 0).length, 2);
+});
+
+test('the chromosome note does not report a resolved zero while categories are pending', () => {
+  const scale = buildCategoryColorScale(2, { pending: true });
+  const model = (pending) => ({
+    colors: {
+      values: [3, 3], scale,
+      categories: pending
+        ? pendingFunctionCategories({ reviewed: REVIEWED, genes: [{}, {}], sources: [], pending })
+        : null,
+    },
+    mask: null, genes: [{}, {}], showHidden: false, tssPending: null,
+  });
+  const note = (pending) => ChromosomeView.prototype.markerConventions.call({ model: model(pending) });
+  // Every CDS sits in the not-loaded bucket, which is a drawn value; counting
+  // them as valued said "0 CDSs have no value" beside a legend that said not loaded.
+  assert.match(note(LOADING), /The function categories are still loading, so every CDS draws in one neutral colour that means not loaded, not unknown\./);
+  assert.match(note(FAILED), /The function categories could not be loaded, so every CDS/);
+  for (const pending of [LOADING, FAILED]) assert.ok(!/have no value for this colour/.test(note(pending)));
+  assert.match(note(null), /0 CDSs have no value for this colour/);
+});
+
+test('the text reveal takes its regions out of the tab order while they are hidden', async () => {
+  // `aria-hidden` alone left the header's buttons tabbable but unannounced.
+  await withFakeDocument(async (document) => {
+    const root = document.createElement('div');
+    const button = document.createElement('button');
+    button.append('Jump to map');
+    root.append(button);
+    document.body.append(root);
+    root.setAttribute('aria-busy', 'false');
+    const queue = [];
+    let clock = 0;
+    const scramble = new TextScramble({
+      timing: { lagLetters: 2, lettersPerSecond: 1000, maxDurationMs: 100, flipFastMs: 1, flipSlowMs: 2 },
+      random: () => 0, now: () => clock,
+      requestFrame: (callback) => queue.push(callback), cancelFrame: () => { queue.length = 0; },
+    });
+    const done = scramble.run(root);
+    for (const name of ['aria-busy', 'aria-hidden', 'inert']) {
+      assert.equal(root.getAttribute(name), 'true', `${name} while animating`);
+    }
+    while (queue.length > 0) {
+      clock += 20;
+      queue.shift()();
+    }
+    await done;
+    assert.equal(root.getAttribute('inert'), null, 'inert is lifted when the text has settled');
+    assert.equal(root.getAttribute('aria-hidden'), null);
+    assert.equal(root.getAttribute('aria-busy'), 'false', 'an attribute it had before is put back');
+    assert.equal(button.textContent, 'Jump to map');
+  });
 });

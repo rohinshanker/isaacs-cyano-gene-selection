@@ -52,8 +52,15 @@ const SKIP_ELEMENTS = new Set([
   'script', 'style', 'noscript', 'textarea', 'option', 'title', 'svg', 'canvas',
 ]);
 
-/** The attributes a root carries while it animates, so no reader follows along. */
-const BUSY_ATTRIBUTES = ['aria-busy', 'aria-hidden'];
+/**
+ * The attributes a root carries while it animates, so no reader follows along.
+ *
+ * `aria-hidden` alone hides a region from assistive technology and leaves its
+ * controls in the tab order, so a keyboard could land on a button that is not
+ * announced. `inert` takes the region out of the tab order and away from the
+ * pointer for the same second and a half, which is what makes hiding it honest.
+ */
+const BUSY_ATTRIBUTES = ['aria-busy', 'aria-hidden', 'inert'];
 
 /** An element that asks for its text to appear at once. */
 const SKIP_CLASS = 'visually-hidden';

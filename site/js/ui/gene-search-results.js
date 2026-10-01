@@ -134,25 +134,26 @@ export class GeneSearchResults {
 
     const status = document.createElement('p');
     status.className = 'search-status';
+    // GO terms come from files that may not have landed. A miss on one is then
+    // not a miss, and a list of matches is not the whole list, so the status
+    // says so either way.
+    const goPending = pendingState(this.dataset, 'annotations') ?? pendingState(this.dataset, 'goTerms');
+    const goPendingNote = !goPending ? ''
+      : goPending === 'failed'
+        ? ' GO annotations could not be loaded, so GO IDs and GO term names cannot match.'
+        : ' GO annotations are still loading, so GO IDs and GO term names cannot match yet.';
     if (result.total === 0) {
       // Never a silent empty state: say what was searched and what to try.
       status.textContent = `Nothing matches “${this.query.trim()}”. Search covers locus `
         + 'tags, gene names, product descriptions, reviewed categories, GO IDs and GO term names. Try a shorter '
         + 'word or the name the annotation uses.';
-      // GO terms come from files that may not have landed; a miss on one is
-      // then not a miss, and is not reported as one.
-      const goPending = pendingState(this.dataset, 'annotations') ?? pendingState(this.dataset, 'goTerms');
-      if (goPending) {
-        status.textContent += goPending === 'failed'
-          ? ' GO annotations could not be loaded, so GO IDs and GO term names cannot match.'
-          : ' GO annotations are still loading, so GO IDs and GO term names cannot match yet.';
-      }
+      status.textContent += goPendingNote;
       host.append(status);
       return;
     }
     status.textContent = `${formatCount(result.total)} gene`
       + `${result.total === 1 ? '' : 's'} match`
-      + `${result.total === 1 ? 'es' : ''} “${this.query.trim()}”.`;
+      + `${result.total === 1 ? 'es' : ''} “${this.query.trim()}”.${goPendingNote}`;
     host.append(status);
 
     if (result.aliasesUsed.length > 0) {

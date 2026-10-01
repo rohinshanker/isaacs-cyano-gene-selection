@@ -371,18 +371,18 @@ export const DATA_APPLIERS = Object.freeze({
 });
 
 /**
- * Read a response body as JSON, reporting the bytes as they arrive.
+ * Read a response body, reporting the bytes as they arrive.
  *
  * The stream yields decoded bytes whatever compression the host applied, so
  * the count is comparable with the manifest's sizes. A response with no
  * readable body, which is what a test double returns, is parsed whole and
- * reports no size.
+ * carries no bytes to verify.
  *
- * @returns {Promise<{data: any, bytes: number|null}>}
+ * @returns {Promise<{data: any}|{raw: Uint8Array}>}
  */
-async function readJson(response, onBytes) {
+async function readBody(response, onBytes) {
   const reader = response.body?.getReader?.();
-  if (!reader) return { data: await response.json(), bytes: null };
+  if (!reader) return { data: await response.json() };
   const chunks = [];
   let bytes = 0;
   for (;;) {
@@ -392,13 +392,32 @@ async function readJson(response, onBytes) {
     bytes += value.byteLength;
     onBytes(bytes);
   }
-  const whole = new Uint8Array(bytes);
+  const raw = new Uint8Array(bytes);
   let offset = 0;
   for (const chunk of chunks) {
-    whole.set(chunk, offset);
+    raw.set(chunk, offset);
     offset += chunk.byteLength;
   }
-  return { data: JSON.parse(new TextDecoder().decode(whole)), bytes };
+  return { raw };
+}
+
+/**
+ * Whether the bytes received are the file the manifest entry names.
+ *
+ * Size first, because it is free. Then the digest, because two releases of a
+ * file can be the same length, and a copy that is the right size and the wrong
+ * content is exactly the stale copy a content-addressed cache must never show.
+ * Where the platform has no `crypto.subtle`, which is a page served over plain
+ * HTTP from a host other than localhost, the size is all there is to check.
+ */
+async function matchesManifest(raw, entry) {
+  if (raw.byteLength !== entry.bytes) return false;
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) return true;
+  const digest = new Uint8Array(await subtle.digest('SHA-256', raw));
+  let hex = '';
+  for (const byte of digest) hex += byte.toString(16).padStart(2, '0');
+  return hex === entry.sha256;
 }
 
 const defaultNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -595,14 +614,17 @@ export function loadDatasetStaged({
         };
       }
       if (!response.ok) {
-        if (!file.required && response.status === 404) return { absent: true };
+        // Not found means not published only when no manifest says otherwise.
+        // A file the manifest lists exists, so a 404 for it is a deployment
+        // fault to report and retry, never evidence that is absent.
+        if (!file.required && !entry && response.status === 404) return { absent: true };
         return {
           error: new Error(`could not read ${request.plainUrl}: HTTP ${response.status}`),
           kind: 'fetch',
         };
       }
       try {
-        return await readJson(response, (bytes) => {
+        return await readBody(response, (bytes) => {
           record.receivedBytes = bytes;
           releaseTiers();
           report();
@@ -611,19 +633,32 @@ export function loadDatasetStaged({
         return { error, kind: 'parse' };
       }
     };
-    const reload = { cache: 'reload' };
-    let result = fresh
-      ? await attempt(request.plainUrl, reload)
-      : await attempt(request.url, request.init);
-    // A copy whose size is not the manifest's is not the file the key names:
-    // a cached copy from another release, or a manifest that has fallen behind.
-    // Either way the server's current file is the one to read, and asking for
-    // it by its plain name bypasses the cache the key would have answered from.
-    if (!fresh && entry && Number.isInteger(result.bytes) && result.bytes !== entry.bytes) {
-      result = await attempt(request.plainUrl, reload);
+    // `reload` asks the server and replaces whatever the cache held under this
+    // address, so a stale copy is evicted rather than left to be found again.
+    const reload = { ...request.init, cache: 'reload' };
+    let result = await attempt(request.url, fresh ? reload : request.init);
+    // A copy that is not the file the key names is a cached copy from another
+    // release, or a server that has the new manifest and not yet the new file.
+    // It is asked for once more, from the server. If that is still not the
+    // file the manifest names, nothing is shown: bytes that cannot be tied to
+    // the published release are not data, and the file fails with a retry.
+    if (entry && result.raw && !(await matchesManifest(result.raw, entry))) {
+      if (!fresh) result = await attempt(request.url, reload);
+      if (result.raw && !(await matchesManifest(result.raw, entry))) {
+        return {
+          error: new Error(`${request.plainUrl} does not match the published data manifest; `
+            + 'the site may be mid-update'),
+          kind: 'integrity',
+        };
+      }
     }
-    if (Number.isInteger(result.bytes)) record.receivedBytes = result.bytes;
-    return result;
+    if (!result.raw) return result;
+    record.receivedBytes = result.raw.byteLength;
+    try {
+      return { data: JSON.parse(new TextDecoder().decode(result.raw)) };
+    } catch (error) {
+      return { error, kind: 'parse' };
+    }
   };
 
   /** A file's request has finished, whatever it returned: the next tier may be due. */
@@ -679,6 +714,12 @@ export function loadDatasetStaged({
     const coreOk = await coreSettled;
     await Promise.all(file.needs.map((key) => applied[key]));
     let result = await raw[file.key];
+    // A file this one reads may have been retried while this one was still
+    // downloading. Applying now would validate against data that is on its way,
+    // and fail for a reason no retry of this file could fix.
+    while (file.needs.some((key) => files[key].state === FILE_STATE.LOADING)) {
+      await Promise.all(file.needs.map((key) => applied[key]));
+    }
     if (!coreOk) {
       settle(file.key, FILE_STATE.FAILED,
         new Error(`${file.name} was not read because the gene data could not be loaded`),

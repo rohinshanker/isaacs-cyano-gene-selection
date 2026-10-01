@@ -269,15 +269,18 @@ test('a copy that is not the size the manifest names is re-read from the server'
   const { fetchImpl, log } = memoryFetch({
     ...bodies,
     [DATA_MANIFEST_NAME]: manifestFor({ ...bodies, 'excluded.json': '[]' }),
-    // The keyed address answers with another release's copy; the plain one is current.
-    'excluded.json': (url) => (url.includes('?v=') ? stale : '[]'),
+    // The cache answers with another release's copy; the server has the current one.
+    'excluded.json': (url, init) => (init.cache === 'reload' ? '[]' : stale),
   });
   const dataset = await loadDatasetStaged({ baseUrl: BASE, fetchImpl }).settled;
   const requests = log.filter((entry) => entry.name === 'excluded.json');
   assert.equal(requests.length, 2);
   assert.match(requests[0].url, /\?v=/);
-  assert.equal(requests[1].url, `${BASE}excluded.json`);
-  assert.deepEqual(requests[1].init, { cache: 'reload' });
+  assert.equal(requests[0].init.cache, 'force-cache');
+  // Asked for again under the same address, from the server, which also
+  // replaces the stale copy the cache held there.
+  assert.equal(requests[1].url, requests[0].url);
+  assert.equal(requests[1].init.cache, 'reload');
   assert.deepEqual(dataset.excluded, [], 'the current file is the one that was read');
 });
 
@@ -406,7 +409,7 @@ function siteFetch(overrides = {}) {
     log.push({ name, url, init });
     if (name in overrides) {
       let route = overrides[name];
-      if (typeof route === 'function') route = route(url, init);
+      if (typeof route === 'function') route = await route(url, init);
       if (route instanceof Error) throw route;
       if (route instanceof Response) return route;
       if (route !== undefined) return new Response(route, { status: 200 });
@@ -483,8 +486,8 @@ test('a failed file blocks only the files that read it, and a retry re-runs them
   }
   assert.ok(dataset.sourceDerivedCategories, 'the derived categories validated on the retry');
   const retried = log.filter((entry) => entry.name === 'candidate_evidence.json').at(-1);
-  assert.equal(retried.url, `${BASE}candidate_evidence.json`, 'a retry asks by the plain name');
-  assert.deepEqual(retried.init, { cache: 'reload' });
+  assert.match(retried.url, /candidate_evidence\.json\?v=[0-9a-f]{16}$/);
+  assert.equal(retried.init.cache, 'reload', 'a retry asks the server, not the cache');
   assert.equal(log.filter((entry) => entry.name === 'source-derived-categories-v1.json').length, 1,
     'a dependent that was only waiting is re-applied, not re-downloaded');
   assert.ok(events.includes('candidateEvidence:failed') && events.at(-1).endsWith(':ready'));
@@ -572,4 +575,145 @@ test('a retry is asked for at once, whatever tier it is in', async () => {
   await staged.when(['regulatoryTss']);
   assert.equal(attempts, 2);
   assert.equal(log.filter((entry) => entry.name === 'regulatory_tss.json').length, 2);
+});
+
+test('a stale copy of the same size is caught by its digest, not shown', async () => {
+  // Two releases of a file can be the same length. Size alone would accept the
+  // old one under the new key, and the cache would then keep answering with it.
+  const core = await coreRoutes();
+  const current = '[{"id":"a"}]';
+  const stale = '[{"id":"b"}]';
+  assert.equal(current.length, stale.length);
+  const bodies = { ...core, 'excluded.json': current };
+  const { fetchImpl, log } = memoryFetch({
+    ...bodies,
+    [DATA_MANIFEST_NAME]: manifestFor(bodies),
+    'excluded.json': (url, init) => (init.cache === 'reload' ? current : stale),
+  });
+  const dataset = await loadDatasetStaged({ baseUrl: BASE, fetchImpl }).settled;
+  const requests = log.filter((entry) => entry.name === 'excluded.json');
+  assert.equal(requests.length, 2, 'the cached copy was rejected and the file re-read');
+  assert.equal(requests[1].init.cache, 'reload');
+  assert.deepEqual(dataset.excluded, [{ id: 'a' }]);
+  // A copy that does match is read once.
+  const clean = memoryFetch({ ...bodies, [DATA_MANIFEST_NAME]: manifestFor(bodies) });
+  await loadDatasetStaged({ baseUrl: BASE, fetchImpl: clean.fetchImpl }).settled;
+  assert.equal(clean.log.filter((entry) => entry.name === 'excluded.json').length, 1);
+});
+
+test('where the platform cannot hash, the size is still checked', async () => {
+  const core = await coreRoutes();
+  const bodies = { ...core, 'excluded.json': '[{"id":"a"}]' };
+  const routes = (served) => ({
+    ...bodies, [DATA_MANIFEST_NAME]: manifestFor(bodies),
+    'excluded.json': (url, init) => (init.cache === 'reload' ? bodies['excluded.json'] : served),
+  });
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+  Object.defineProperty(globalThis, 'crypto', { value: {}, configurable: true });
+  try {
+    // Same size, different content: undetectable without a digest, so it is read as served.
+    const sameSize = memoryFetch(routes('[{"id":"b"}]'));
+    const first = await loadDatasetStaged({ baseUrl: BASE, fetchImpl: sameSize.fetchImpl }).settled;
+    assert.equal(sameSize.log.filter((entry) => entry.name === 'excluded.json').length, 1);
+    assert.deepEqual(first.excluded, [{ id: 'b' }]);
+    // A different size is still caught.
+    const otherSize = memoryFetch(routes('[]'));
+    const second = await loadDatasetStaged({ baseUrl: BASE, fetchImpl: otherSize.fetchImpl }).settled;
+    assert.equal(otherSize.log.filter((entry) => entry.name === 'excluded.json').length, 2);
+    assert.deepEqual(second.excluded, [{ id: 'a' }]);
+  } finally {
+    Object.defineProperty(globalThis, 'crypto', original);
+  }
+});
+
+test('a file waits for a dependency that is being retried while it downloads', async () => {
+  // The derived categories read the candidate evidence. If that file fails,
+  // is retried, and is still on its way when the derived categories finish
+  // downloading, validating at once would fail for want of data that is coming.
+  let candidateAttempts = 0;
+  const derivedHeld = gate();
+  const retryHeld = gate();
+  const { fetchImpl } = siteFetch({
+    'candidate_evidence.json': async () => {
+      candidateAttempts += 1;
+      if (candidateAttempts === 1) return new Response('', { status: 502 });
+      await retryHeld.promise;
+      return undefined;
+    },
+    'source-derived-categories-v1.json': async () => {
+      await derivedHeld.promise;
+      return undefined;
+    },
+  });
+  const staged = loadDatasetStaged({ baseUrl: BASE, fetchImpl });
+  await staged.when(['candidateEvidence']);
+  assert.equal(staged.files.candidateEvidence.state, 'failed');
+  assert.equal(staged.files.sourceDerivedCategories.state, 'loading');
+  assert.equal(staged.retry('candidateEvidence'), true);
+  // The dependent finishes downloading while its dependency is still in flight.
+  derivedHeld.open();
+  await settleTurns();
+  assert.equal(staged.files.sourceDerivedCategories.state, 'loading', 'it waits rather than failing');
+  retryHeld.open();
+  const dataset = await staged.settled;
+  assert.equal(dataset.files.candidateEvidence.state, 'ready');
+  assert.equal(dataset.files.sourceDerivedCategories.state, 'ready');
+  assert.equal(dataset.files.sourceDerivedCategories.error, null);
+  assert.ok(dataset.sourceDerivedCategories);
+});
+
+test('a server that keeps answering with the wrong bytes is a failure, never data', async () => {
+  // The manifest reached this visitor before the data file did, and the server
+  // goes on answering the new address with the old content. Accepting the
+  // second answer would show bytes that cannot be tied to the published release.
+  const core = await coreRoutes();
+  const bodies = { ...core, 'codon_pca.json': '{"explainedVariance":[0.2,0.1]}' };
+  const wrong = '{"explainedVariance":[0.9,0.8]}';
+  assert.equal(wrong.length, bodies['codon_pca.json'].length);
+  const routes = { ...bodies, [DATA_MANIFEST_NAME]: manifestFor(bodies), 'codon_pca.json': wrong };
+  const { fetchImpl, log } = memoryFetch(routes);
+  const staged = loadDatasetStaged({ baseUrl: BASE, fetchImpl });
+  const dataset = await staged.settled;
+  assert.equal(dataset.files.codonPca.state, 'failed');
+  assert.equal(dataset.files.codonPca.error.message,
+    `${BASE}codon_pca.json does not match the published data manifest; the site may be mid-update`);
+  assert.equal(dataset.codonPca, null, 'the unverified content was not used');
+  assert.equal(log.filter((entry) => entry.name === 'codon_pca.json').length, 2, 'asked twice, then stopped');
+  // A retry is verified too, and recovers once the server has the right file.
+  routes['codon_pca.json'] = bodies['codon_pca.json'];
+  assert.equal(staged.retry('codonPca'), true);
+  await staged.when(['codonPca']);
+  assert.equal(dataset.files.codonPca.state, 'ready');
+  assert.deepEqual(dataset.codonPca, { explainedVariance: [0.2, 0.1] });
+  // The single-step loader does not turn it into an absent file either.
+  await assert.rejects(
+    loadDataset({ baseUrl: BASE, fetchImpl: memoryFetch({ ...routes, 'codon_pca.json': wrong }).fetchImpl }),
+    /does not match the published data manifest/,
+  );
+});
+
+test('a file the manifest lists is published, so a 404 for it is a failure', async () => {
+  // Not found means not published only when nothing says otherwise. With the
+  // shipped manifest, a 404 for the derived categories used to settle as
+  // absent: 2,703 genes drew as unknown, nothing had failed, and an export was
+  // allowed, all from one transient deployment fault.
+  const missing = (name) => siteFetch({ [name]: new Response('', { status: 404 }) });
+  const staged = loadDatasetStaged({
+    baseUrl: BASE, fetchImpl: missing('source-derived-categories-v1.json').fetchImpl,
+  });
+  const dataset = await staged.settled;
+  assert.equal(dataset.files.sourceDerivedCategories.state, 'failed');
+  assert.match(dataset.files.sourceDerivedCategories.error.message,
+    /source-derived-categories-v1\.json: HTTP 404/);
+  assert.equal(dataset.sourceDerivedCategories, null);
+  // Tier 1 is no exception: a listed reviewed-category table that is not served fails the load.
+  const core = loadDatasetStaged({
+    baseUrl: BASE, fetchImpl: missing('function-categories-v1.json').fetchImpl,
+  });
+  await assert.rejects(core.core, /function-categories-v1\.json: HTTP 404/);
+  await core.settled;
+  // The single-step loader keeps its leniency for an optional file it cannot fetch.
+  const lenient = await loadDataset({ baseUrl: BASE, fetchImpl: missing('codon_pca.json').fetchImpl });
+  assert.equal(lenient.codonPca, null);
+  assert.equal(lenient.files.codonPca.state, 'absent');
 });

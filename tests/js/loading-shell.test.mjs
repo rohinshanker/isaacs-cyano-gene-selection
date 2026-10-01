@@ -87,11 +87,13 @@ test('nothing computed once at start-up is left stale when its file lands', asyn
   const flush = source.slice(source.indexOf('function flushLandings()'),
     source.indexOf('/** Ask again for one later file'));
   assert.match(flush, /keys\.has\('lengthCohorts'\)\) \{\s*refreshProteinRecords\(\);/);
-  assert.match(flush, /if \(!dataset\.lengthCohorts\) state\.proteinFilter = 'any';/);
+  // Dropped only once the inventory is known not to be published: a failed
+  // request may be retried, and the link's filter must still be there when it is.
+  assert.match(flush, /if \(!dataset\.lengthCohorts && !pendingState\(dataset, 'lengthCohorts'\)\) \{\s*state\.proteinFilter = 'any';/);
   assert.match(flush, /keys\.has\('codonPca'\)\) context\.projections\.clear\(\);/);
   assert.match(flush, /searchResults\?\.setGenes\(dataset\.genes, dataset\.goTerms\?\.terms, dataset\);/);
   assert.match(flush, /keys\.has\('excluded'\)\) renderProvenance\(\);/);
   assert.match(flush, /renderAll\(\);/);
   // A link's protein filter survives while the inventory is still loading.
-  assert.match(source, /!context\.dataset\.lengthCohorts && !isLoading\(context\.dataset, 'lengthCohorts'\)/);
+  assert.match(source, /!context\.dataset\.lengthCohorts && !pendingState\(context\.dataset, 'lengthCohorts'\)/);
 });

@@ -1671,9 +1671,10 @@ function normalizeAndApply(decoded) {
   state.shortlist = state.shortlist.filter((id) => context.dataset.indexById.has(id));
   if (state.pinnedId && !context.dataset.indexById.has(state.pinnedId)) state.pinnedId = null;
   if (!ALL_TABS.some((panel) => panel.id === state.panel)) state.panel = 'native';
-  // A link's protein filter survives while the inventory is still loading; it
-  // is dropped only once the file is known not to be there.
-  if (!context.dataset.lengthCohorts && !isLoading(context.dataset, 'lengthCohorts')) {
+  // A link's protein filter survives while the inventory is still loading, and
+  // while it has failed and may be retried; it is dropped only once the file is
+  // known not to be published.
+  if (!context.dataset.lengthCohorts && !pendingState(context.dataset, 'lengthCohorts')) {
     state.proteinFilter = 'any';
   }
   if (!context.basisCounts.recorded) state.expressionFilter = 'any';
@@ -1786,8 +1787,11 @@ function flushLandings() {
   const { dataset } = context;
   if (keys.has('lengthCohorts')) {
     refreshProteinRecords();
-    // Kept while the inventory was loading; dropped now if there is none.
-    if (!dataset.lengthCohorts) state.proteinFilter = 'any';
+    // Kept while the inventory was loading or had failed; dropped only now
+    // that it is known not to be published.
+    if (!dataset.lengthCohorts && !pendingState(dataset, 'lengthCohorts')) {
+      state.proteinFilter = 'any';
+    }
   }
   // The native projection's axis labels and loadings come from this file.
   if (keys.has('codonPca')) context.projections.clear();
