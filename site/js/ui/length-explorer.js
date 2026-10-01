@@ -1,4 +1,5 @@
 /** Accessible, release-pinned length histogram and CDS range control. */
+import { pendingNote } from './loading-note.js';
 import {
   LENGTH_COHORTS, cohortValues, countInRange, lengthBins, passingLengthBins,
 } from '../core/length-cohorts.js';
@@ -26,10 +27,12 @@ export class LengthExplorer {
     this.built = false;
   }
 
-  update({ inventory, cohortId, range, mapPassing, mapCount }) {
+  update({ inventory, cohortId, range, mapPassing, mapCount, pending = null }) {
     if (!inventory) {
-      const note = document.createElement('p');
-      note.textContent = 'The pinned length inventory is unavailable in this dataset.';
+      // Still loading, or not loadable, is not "unavailable in this dataset".
+      const note = pending ? pendingNote(pending, 'the length inventory')
+        : document.createElement('p');
+      if (!pending) note.textContent = 'The pinned length inventory is unavailable in this dataset.';
       this.host.replaceChildren(note);
       this.built = false;
       return;

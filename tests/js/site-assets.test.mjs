@@ -74,6 +74,7 @@ test('the complete JavaScript module and worker graph resolves locally', async (
 test('required publication and runtime assets are present', async () => {
   for (const path of [
     '.nojekyll',
+    'data/data-manifest.json',
     'data/meta.json',
     'data/genes.json',
     'data/codon_pca.json',

@@ -202,6 +202,27 @@ export function methodKeys() {
  */
 export function functionCategoryHelp({ reviewed, derived, categories }) {
   const threshold = DERIVED_THRESHOLDS.derivedProbabilityAtLeast.toFixed(2);
+  // The derived categories have not landed, or could not be loaded. Describing
+  // the colour as reviewed-only, with no CDS derived, would be a statement
+  // about a resolution that has not happened.
+  if (categories.pending) {
+    const waiting = categories.pending === 'failed' ? 'could not be loaded' : 'are still loading';
+    return {
+      title: 'Function category',
+      summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '
+        + 'sources: the lab-reviewed UTEX 2973 assignment when that source is enabled and a '
+        + 'reviewed row exists, otherwise a category derived from the PCC 7942 product name or '
+        + 'the GO IEA terms. The same colour has the same category on every map tab.',
+      unit: 'category (not a numeric metric)',
+      method: `The function categories ${waiting}, so no CDS is coloured by category yet and `
+        + 'every CDS is drawn in one neutral colour. That colour means not loaded, not unknown.',
+      origin: `UTEX 2973 RefSeq ${reviewed.source.provenance.annotationRelease} product records `
+        + 'and the lab review table; derived categories from PCC 7942 product names and Gene '
+        + 'Ontology IEA relationships.',
+      coverage: `Not counted: the function categories ${waiting}.`,
+      citations: ['ncbi-utex-2973'],
+    };
+  }
   return {
     title: 'Function category',
     summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '

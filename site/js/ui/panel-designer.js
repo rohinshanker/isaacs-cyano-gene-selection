@@ -11,6 +11,7 @@
  * once per selected scheme, and a panel that changed under the reader's hands
  * would be impossible to reason about.
  */
+import { exportBlockedReason } from '../core/export-manifest.js';
 import { confirmedReset } from './confirm-dialog.js';
 import { compileScheme } from '../core/scheme.js';
 import { computeLiveMetrics } from '../core/live-metrics.js';
@@ -976,6 +977,11 @@ export class PanelDesigner {
 
   exportPanel() {
     const { dataset, registry, colorSources } = this.state;
+    const blocked = exportBlockedReason(dataset);
+    if (blocked) {
+      this.exportStatus.textContent = blocked;
+      return;
+    }
     const result = buildPanelExport({
       dataset,
       registry,

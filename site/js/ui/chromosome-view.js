@@ -709,10 +709,24 @@ export class ChromosomeView {
     parts.push('A source-derived function category draws as an outlined bar with a pale fill. '
       + 'Shortlisted CDSs carry a dark diamond beside the bar, and '
       + 'the pinned CDS is outlined in red with a line through its band.');
-    parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
-      + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
-      + 'is narrow enough to tell them apart, so they fill in as you zoom. The start-site '
-      + 'positions were measured on this assembly and are drawn where that study published them.');
+    // The start-site file may not have landed. Saying the sites "fill in as you
+    // zoom" would then promise marks no zoom can show, and an empty tick row
+    // would read as a genome with no start sites.
+    const { tssPending } = this.model;
+    if (tssPending) {
+      parts.push('Operon brackets from the annotation’s adjacent same-strand call appear once '
+        + 'the window is narrow enough to tell them apart, so they fill in as you zoom. '
+        + (tssPending === 'failed'
+          ? 'The Tan 2018 gene-linked start sites could not be loaded, so the tick row above '
+            + 'each axis is empty.'
+          : 'The Tan 2018 gene-linked start sites are still loading, so the tick row above '
+            + 'each axis is empty for now.'));
+    } else {
+      parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
+        + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
+        + 'is narrow enough to tell them apart, so they fill in as you zoom. The start-site '
+        + 'positions were measured on this assembly and are drawn where that study published them.');
+    }
     return parts.join(' ');
   }
 

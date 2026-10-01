@@ -1,8 +1,18 @@
 /**
  * Loading and indexing of the pipeline's JSON, per docs/validation/data-contract.md.
  *
- * The pipeline is the only writer of those files; everything here is read-only
- * and happens once at start-up.
+ * The pipeline is the only writer of those files; everything here is read-only.
+ *
+ * Loading is staged. Every file starts downloading at once, the page becomes
+ * usable when the tier 1 files have been validated and indexed, and each later
+ * file is validated and joined onto the same dataset when it arrives. Staging
+ * changes when a check runs, never whether: every validation and join the
+ * single-step loader performed still runs, on every file, with the same
+ * message when it fails. `loadDataset` is that single-step loader, kept as the
+ * staged one awaited to the end, so the two cannot drift.
+ *
+ * A file that has not arrived is `loading`, which is not `absent`: see
+ * docs/validation/progressive-loading.md.
  */
 import { CodonTable } from './codon-table.js';
 import {
@@ -19,21 +29,10 @@ import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
-
-async function fetchJson(fetchImpl, url, { optional = false } = {}) {
-  let response;
-  try {
-    response = await fetchImpl(url, { cache: 'no-cache' });
-  } catch (cause) {
-    if (optional) return null;
-    throw new Error(`could not read ${url}: ${cause.message}`, { cause });
-  }
-  if (!response.ok) {
-    if (optional) return null;
-    throw new Error(`could not read ${url}: HTTP ${response.status}`);
-  }
-  return response.json();
-}
+import {
+  CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
+  normalizeManifest,
+} from './data-files.js';
 
 function requireArray(value, name) {
   if (!Array.isArray(value)) throw new Error(`${name} must be an array`);
@@ -78,96 +77,24 @@ function agreement(genes, key, recomputed) {
 }
 
 /**
- * Load and index the whole dataset.
- * @param {{baseUrl: URL|string, fetchImpl?: typeof fetch}} options
+ * Index the tier 1 files into a dataset the map can be drawn from.
+ *
+ * Everything a recoding scheme is scored against is here: the packed codons,
+ * the terminal stops, the weight tables, and the baseline the pipeline's own
+ * metrics are checked against. The evidence files are joined later by
+ * `DATA_APPLIERS`; until then their fields are null and their entry in `files`
+ * says `loading`, which is how a consumer tells not-yet-here from not-there.
+ *
+ * @param {object} meta parsed meta.json.
+ * @param {object[]} genes parsed genes.json.
+ * @param {object|null} functionCategoryData parsed function-categories-v1.json.
  */
-export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
-  const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
-  const url = (name) => new URL(name, base).href;
-
-  const [meta, genes, codonPca, excluded, annotations, tssEvidence, lengthCohorts,
-    regulatoryTss, candidateEvidence, goTerms, functionCategoryData,
-    goIeaEssentiality, sourceDerivedCategoryData] = await Promise.all([
-    fetchJson(fetchImpl, url('meta.json')),
-    fetchJson(fetchImpl, url('genes.json')),
-    fetchJson(fetchImpl, url('codon_pca.json'), { optional: true }),
-    fetchJson(fetchImpl, url('excluded.json'), { optional: true }),
-    fetchJson(fetchImpl, url('annotations.json'), { optional: true }),
-    fetchJson(fetchImpl, url('tss_evidence.json'), { optional: true }),
-    fetchJson(fetchImpl, url('length_cohorts.json'), { optional: true }),
-    fetchJson(fetchImpl, url('regulatory_tss.json'), { optional: true }),
-    fetchJson(fetchImpl, url('candidate_evidence.json'), { optional: true }),
-    fetchJson(fetchImpl, url('go-term-names-v1.json'), { optional: true }),
-    fetchJson(fetchImpl, url('function-categories-v1.json'), { optional: true }),
-    fetchJson(fetchImpl, url('go-iea-essentiality-v1.json'), { optional: true }),
-    fetchJson(fetchImpl, url('source-derived-categories-v1.json'), { optional: true }),
-  ]);
-
+export function buildCoreDataset(meta, genes, functionCategoryData) {
   requireArray(genes, 'genes.json');
   if (genes.length === 0) throw new Error('genes.json is empty');
-  if (lengthCohorts) {
-    validateLengthInventory(lengthCohorts, genes, meta.annotationRelease?.releaseId);
-  }
-  if (regulatoryTss) validateRegulatoryTss(regulatoryTss, genes);
-  if (candidateEvidence) {
-    validateCandidateEvidence(candidateEvidence, genes, meta.annotationRelease?.releaseId);
-  }
-  if (goIeaEssentiality) {
-    validateGoIeaEssentiality(
-      goIeaEssentiality, genes, candidateEvidence, meta.annotationRelease?.releaseId,
-    );
-  }
-  if (goTerms && (goTerms.schemaVersion !== 1 || !goTerms.terms
-    || typeof goTerms.terms !== 'object' || Array.isArray(goTerms.terms))) {
-    throw new Error('go-term-names-v1.json has an invalid lookup schema');
-  }
-  if (meta.annotationRelease && (!annotations || typeof annotations !== 'object')) {
-    throw new Error('annotations.json is required by meta.annotationRelease');
-  }
-  if (meta.tssEvidenceSource && (
-    !tssEvidence || typeof tssEvidence !== 'object' || Array.isArray(tssEvidence)
-  )) {
-    throw new Error('tss_evidence.json is required by meta.tssEvidenceSource');
-  }
-  if (annotations) {
-    for (const gene of genes) {
-      const evidence = annotations[gene.id];
-      if (!evidence || typeof evidence !== 'object') {
-        throw new Error(`annotations.json has no evidence for ${gene.id}`);
-      }
-      gene.annotationEvidence = evidence;
-    }
-  }
-  if (goTerms && annotations) {
-    for (const gene of genes) {
-      for (const relation of gene.annotationEvidence.goAnnotations ?? []) {
-        if (!goTerms.terms[relation.goId]?.name) {
-          throw new Error(`go-term-names-v1.json has no name for ${relation.goId}`);
-        }
-      }
-    }
-  }
   const functionCategories = functionCategoryData
     ? joinFunctionCategories(functionCategoryData, genes, meta.annotationRelease?.releaseId)
     : null;
-  // Derived categories are checked against the reviewed table, the PCC joins,
-  // and each gene's GO terms, and every assignment is re-derived from its
-  // probability, so a stale or hand-edited category cannot load.
-  const sourceDerivedCategories = sourceDerivedCategoryData
-    ? validateSourceDerivedCategories(
-      sourceDerivedCategoryData, genes, functionCategories, candidateEvidence,
-      meta.annotationRelease?.releaseId,
-    )
-    : null;
-  if (tssEvidence) {
-    for (const gene of genes) {
-      const rows = tssEvidence[gene.id] ?? [];
-      if (!Array.isArray(rows)) {
-        throw new Error(`tss_evidence.json has invalid rows for ${gene.id}`);
-      }
-      gene.tssEvidence = rows;
-    }
-  }
   const table = new CodonTable(meta.codonAlphabet);
   const conventions = resolveConventions(meta, table);
   const { initiatorIndex } = conventions;
@@ -277,15 +204,15 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
   const dataset = {
     meta,
     genes,
-    codonPca,
-    excluded: excluded ?? [],
-    lengthCohorts,
-    regulatoryTss,
-    candidateEvidence,
-    goIeaEssentiality: goIeaEssentiality ?? null,
-    goTerms,
+    codonPca: null,
+    excluded: [],
+    lengthCohorts: null,
+    regulatoryTss: null,
+    candidateEvidence: null,
+    goIeaEssentiality: null,
+    goTerms: null,
     functionCategories,
-    sourceDerivedCategories,
+    sourceDerivedCategories: null,
     table,
     conventions,
     packed,
@@ -298,6 +225,9 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     taiWeights,
     cpsScores,
     indexById: new Map(genes.map((gene, i) => [gene.id, i])),
+    // Per-file load state, written by `loadDatasetStaged`. A dataset built
+    // without the loader has none, and reads as fully settled.
+    files: {},
     provenance: {
       genesWithoutTerminalStop: genesWithoutStop,
       expressionSource: meta.expressionSource ?? null,
@@ -308,7 +238,7 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
       encFlagMismatches,
       declaredGeneCount: meta.geneCount ?? null,
       loadedGeneCount: n,
-      excludedCount: (excluded ?? []).length,
+      excludedCount: 0,
     },
   };
 
@@ -322,5 +252,522 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
     agreement(genes, 'enc', baseline.recodedEnc),
     agreement(genes, 'cps', baseline.recodedCps),
   ];
+  return dataset;
+}
+
+/**
+ * One validator-and-join per later file.
+ *
+ * Each takes the dataset and the file's parsed content, or null when this
+ * deployment does not publish the file, and either writes the validated data
+ * onto the dataset or throws the message the single-step loader threw. A file
+ * whose validation reads another file's joined data declares that in
+ * `DATA_FILES[...].needs`, and the loader applies it only after those settle.
+ */
+export const DATA_APPLIERS = Object.freeze({
+  annotations(dataset, annotations) {
+    const { meta, genes } = dataset;
+    if (meta.annotationRelease && (!annotations || typeof annotations !== 'object')) {
+      throw new Error('annotations.json is required by meta.annotationRelease');
+    }
+    if (!annotations) return;
+    for (const gene of genes) {
+      const evidence = annotations[gene.id];
+      if (!evidence || typeof evidence !== 'object') {
+        throw new Error(`annotations.json has no evidence for ${gene.id}`);
+      }
+    }
+    // Joined only once every gene is known to have a record, so a file that
+    // fails half way leaves no gene carrying evidence its neighbours lack.
+    for (const gene of genes) gene.annotationEvidence = annotations[gene.id];
+  },
+
+  candidateEvidence(dataset, candidateEvidence) {
+    if (candidateEvidence) {
+      validateCandidateEvidence(
+        candidateEvidence, dataset.genes, dataset.meta.annotationRelease?.releaseId,
+      );
+    }
+    dataset.candidateEvidence = candidateEvidence;
+  },
+
+  // Derived categories are checked against the reviewed table, the PCC joins,
+  // and each gene's GO terms, and every assignment is re-derived from its
+  // probability, so a stale or hand-edited category cannot load.
+  sourceDerivedCategories(dataset, data) {
+    dataset.sourceDerivedCategories = data
+      ? validateSourceDerivedCategories(
+        data, dataset.genes, dataset.functionCategories, dataset.candidateEvidence,
+        dataset.meta.annotationRelease?.releaseId,
+      )
+      : null;
+  },
+
+  lengthCohorts(dataset, lengthCohorts) {
+    if (lengthCohorts) {
+      validateLengthInventory(
+        lengthCohorts, dataset.genes, dataset.meta.annotationRelease?.releaseId,
+      );
+    }
+    dataset.lengthCohorts = lengthCohorts;
+  },
+
+  codonPca(dataset, codonPca) {
+    dataset.codonPca = codonPca;
+  },
+
+  excluded(dataset, excluded) {
+    dataset.excluded = excluded ?? [];
+    dataset.provenance.excludedCount = dataset.excluded.length;
+  },
+
+  tssEvidence(dataset, tssEvidence) {
+    const { meta, genes } = dataset;
+    if (meta.tssEvidenceSource && (
+      !tssEvidence || typeof tssEvidence !== 'object' || Array.isArray(tssEvidence)
+    )) {
+      throw new Error('tss_evidence.json is required by meta.tssEvidenceSource');
+    }
+    if (!tssEvidence) return;
+    for (const gene of genes) {
+      if (!Array.isArray(tssEvidence[gene.id] ?? [])) {
+        throw new Error(`tss_evidence.json has invalid rows for ${gene.id}`);
+      }
+    }
+    for (const gene of genes) gene.tssEvidence = tssEvidence[gene.id] ?? [];
+  },
+
+  goIeaEssentiality(dataset, goIeaEssentiality) {
+    if (goIeaEssentiality) {
+      validateGoIeaEssentiality(
+        goIeaEssentiality, dataset.genes, dataset.candidateEvidence,
+        dataset.meta.annotationRelease?.releaseId,
+      );
+    }
+    dataset.goIeaEssentiality = goIeaEssentiality ?? null;
+  },
+
+  goTerms(dataset, goTerms) {
+    if (goTerms && (goTerms.schemaVersion !== 1 || !goTerms.terms
+      || typeof goTerms.terms !== 'object' || Array.isArray(goTerms.terms))) {
+      throw new Error('go-term-names-v1.json has an invalid lookup schema');
+    }
+    if (goTerms) {
+      for (const gene of dataset.genes) {
+        for (const relation of gene.annotationEvidence?.goAnnotations ?? []) {
+          if (!goTerms.terms[relation.goId]?.name) {
+            throw new Error(`go-term-names-v1.json has no name for ${relation.goId}`);
+          }
+        }
+      }
+    }
+    dataset.goTerms = goTerms;
+  },
+
+  regulatoryTss(dataset, regulatoryTss) {
+    if (regulatoryTss) validateRegulatoryTss(regulatoryTss, dataset.genes);
+    dataset.regulatoryTss = regulatoryTss;
+  },
+});
+
+/**
+ * Read a response body as JSON, reporting the bytes as they arrive.
+ *
+ * The stream yields decoded bytes whatever compression the host applied, so
+ * the count is comparable with the manifest's sizes. A response with no
+ * readable body, which is what a test double returns, is parsed whole and
+ * reports no size.
+ *
+ * @returns {Promise<{data: any, bytes: number|null}>}
+ */
+async function readJson(response, onBytes) {
+  const reader = response.body?.getReader?.();
+  if (!reader) return { data: await response.json(), bytes: null };
+  const chunks = [];
+  let bytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    bytes += value.byteLength;
+    onBytes(bytes);
+  }
+  const whole = new Uint8Array(bytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    whole.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { data: JSON.parse(new TextDecoder().decode(whole)), bytes };
+}
+
+const defaultNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+/**
+ * How many bytes of the earlier tiers may still be outstanding when a tier's
+ * requests go out.
+ *
+ * Asking for every file at once shares the connection between them, so the gene
+ * file, which is the largest and the one the map waits for, finishes last: on a
+ * throttled link the map became usable at the same moment as everything else.
+ * Each tier is therefore released only when the tiers before it are all but in.
+ *
+ * The lead exists for one reason, to cover the round trip a new request needs
+ * before its first byte, so the connection is never idle between tiers and the
+ * total time stays what it was. It is a byte count rather than a fraction
+ * because the cost of releasing early is paid on what remains: at 85% the gene
+ * file's last 780 kB shared the link with five files and took 4.6 s on the
+ * throttled profile. 128 kB is under a fifth of a second of that link.
+ */
+export const TIER_LEAD_BYTES = 128 * 1024;
+
+/**
+ * The order the single-step loader met its checks in, so that `loadDataset`
+ * reports the same failure when more than one file is wrong.
+ */
+const LEGACY_FAILURE_ORDER = Object.freeze([
+  'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
+  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'codonPca', 'excluded',
+]);
+
+/**
+ * Start loading every file, and report each as it lands.
+ *
+ * Nothing here waits for anything it does not need: all requests go out as
+ * soon as the manifest is read, `core` resolves when the tier 1 files are
+ * indexed, and every later file is validated and joined onto that same dataset
+ * on arrival. No promise on the returned object rejects except `core`.
+ *
+ * @param {{baseUrl: URL|string, fetchImpl?: typeof fetch,
+ *   onProgress?: (snapshot: object) => void,
+ *   onFile?: (key: string, record: object) => void,
+ *   lenientOptional?: boolean, now?: () => number}} options
+ *   `lenientOptional` treats an optional file that could not be fetched as
+ *   absent, which is what the single-step loader did; the page leaves it off so
+ *   a failed request stays distinguishable from a file that is not published.
+ * @returns {{manifest: Promise<object|null>, core: Promise<object>,
+ *   settled: Promise<object|null>, files: object,
+ *   when: (keys: string[]) => Promise<void>, retry: (key: string) => boolean,
+ *   snapshot: () => object}}
+ */
+export function loadDatasetStaged({
+  baseUrl, fetchImpl = fetch, onProgress = null, onFile = null, lenientOptional = false,
+  now = defaultNow,
+} = {}) {
+  const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
+  const startedAt = now();
+  const files = {};
+  for (const file of DATA_FILES) {
+    files[file.key] = {
+      state: FILE_STATE.LOADING, error: null, blockedBy: null, receivedBytes: 0, bytes: null,
+      startedAt: null, endedAt: null,
+    };
+  }
+  let manifestValue = null;
+  let dataset = null;
+
+  // One gate per later tier, opened by `releaseTiers` below.
+  const fetched = new Set();
+  const gates = {};
+  for (const file of DATA_FILES) {
+    if (file.tier > 1 && !gates[file.tier]) {
+      let open;
+      const promise = new Promise((resolve) => { open = resolve; });
+      gates[file.tier] = { promise, open, opened: false };
+    }
+  }
+  const openGate = (tier) => {
+    gates[tier].opened = true;
+    gates[tier].open();
+  };
+  /**
+   * Open every tier whose earlier tiers have arrived, or nearly. Tiers open in
+   * order, so a later one never starts ahead of the one before it.
+   */
+  const releaseTiers = () => {
+    for (const tier of Object.keys(gates).map(Number).sort((a, b) => a - b)) {
+      if (gates[tier].opened) continue;
+      const earlier = DATA_FILES.filter((file) => file.tier < tier);
+      let received = 0;
+      let total = 0;
+      for (const file of earlier) {
+        const size = files[file.key].bytes ?? 0;
+        total += size;
+        received += fetched.has(file.key) ? size : Math.min(files[file.key].receivedBytes, size);
+      }
+      const arrived = earlier.every((file) => fetched.has(file.key));
+      if (!arrived && total - received > TIER_LEAD_BYTES) return;
+      openGate(tier);
+    }
+  };
+
+  /** Bytes and files so far, for the loading bar. */
+  const snapshot = () => {
+    let receivedBytes = 0;
+    let totalBytes = 0;
+    let settledFiles = 0;
+    const tiers = {};
+    for (const file of DATA_FILES) {
+      const record = files[file.key];
+      const settled = record.state !== FILE_STATE.LOADING;
+      const tier = (tiers[file.tier] ??= { settled: 0, total: 0 });
+      tier.total += 1;
+      if (settled) {
+        tier.settled += 1;
+        settledFiles += 1;
+      }
+      const size = record.bytes ?? 0;
+      totalBytes += size;
+      // A settled file counts whole, whatever became of it: a file that is not
+      // published, or that failed, must not hold the bar short of full.
+      receivedBytes += settled ? size : Math.min(record.receivedBytes, size || Infinity);
+    }
+    const pending = DATA_FILES.find((file) => files[file.key].state === FILE_STATE.LOADING);
+    return {
+      receivedBytes,
+      totalBytes,
+      // Sizes are exact only when the manifest supplied them up front.
+      exact: manifestValue !== null,
+      settledFiles,
+      totalFiles: DATA_FILES.length,
+      tiers,
+      currentTier: pending ? pending.tier : null,
+      elapsedMs: now() - startedAt,
+    };
+  };
+  const report = () => onProgress?.(snapshot());
+
+  const settle = (key, state, error = null, blockedBy = null) => {
+    const record = files[key];
+    record.state = state;
+    record.error = error;
+    record.blockedBy = blockedBy;
+    record.endedAt = now();
+    if (record.bytes === null) record.bytes = record.receivedBytes;
+    onFile?.(key, record);
+    report();
+  };
+
+  const manifest = (async () => {
+    try {
+      const response = await fetchImpl(new URL(DATA_MANIFEST_NAME, base).href,
+        { cache: 'no-cache', priority: 'high' });
+      if (!response.ok) return null;
+      manifestValue = normalizeManifest(await response.json());
+    } catch {
+      manifestValue = null;
+    }
+    if (manifestValue) {
+      for (const file of DATA_FILES) {
+        files[file.key].bytes = manifestValue.files.get(file.name)?.bytes ?? 0;
+      }
+      report();
+    } else {
+      // No sizes to pace by, so every file is asked for at once, as before.
+      for (const tier of Object.keys(gates)) openGate(tier);
+    }
+    return manifestValue;
+  })();
+
+  /**
+   * Fetch and parse one file. Resolves to `{data}`, `{absent: true}`, or
+   * `{error, kind}` and never rejects.
+   */
+  const fetchFile = async (file, { fresh = false } = {}) => {
+    const known = await manifest;
+    // A retry is one file asked for on its own; it has no tier to wait behind.
+    if (file.tier > 1 && !fresh) await gates[file.tier].promise;
+    const entry = known?.files.get(file.name) ?? null;
+    const record = files[file.key];
+    record.startedAt = now();
+    // The manifest lists everything this deployment publishes, so an optional
+    // file it does not list is absent and needs no request to find that out.
+    if (known && !entry && !file.required) return { absent: true };
+    const request = dataRequest(base, file.name, entry, file.tier);
+    const attempt = async (url, init) => {
+      let response;
+      try {
+        response = await fetchImpl(url, init);
+      } catch (cause) {
+        return {
+          error: new Error(`could not read ${request.plainUrl}: ${cause.message}`, { cause }),
+          kind: 'fetch',
+        };
+      }
+      if (!response.ok) {
+        if (!file.required && response.status === 404) return { absent: true };
+        return {
+          error: new Error(`could not read ${request.plainUrl}: HTTP ${response.status}`),
+          kind: 'fetch',
+        };
+      }
+      try {
+        return await readJson(response, (bytes) => {
+          record.receivedBytes = bytes;
+          releaseTiers();
+          report();
+        });
+      } catch (error) {
+        return { error, kind: 'parse' };
+      }
+    };
+    const reload = { cache: 'reload' };
+    let result = fresh
+      ? await attempt(request.plainUrl, reload)
+      : await attempt(request.url, request.init);
+    // A copy whose size is not the manifest's is not the file the key names:
+    // a cached copy from another release, or a manifest that has fallen behind.
+    // Either way the server's current file is the one to read, and asking for
+    // it by its plain name bypasses the cache the key would have answered from.
+    if (!fresh && entry && Number.isInteger(result.bytes) && result.bytes !== entry.bytes) {
+      result = await attempt(request.plainUrl, reload);
+    }
+    if (Number.isInteger(result.bytes)) record.receivedBytes = result.bytes;
+    return result;
+  };
+
+  /** A file's request has finished, whatever it returned: the next tier may be due. */
+  const requested = (file, options) => fetchFile(file, options).finally(() => {
+    fetched.add(file.key);
+    releaseTiers();
+  });
+  const raw = {};
+  for (const file of DATA_FILES) raw[file.key] = requested(file);
+
+  const core = (async () => {
+    const results = {};
+    await Promise.all(CORE_FILE_KEYS.map(async (key) => {
+      results[key] = await raw[key];
+    }));
+    const failCore = (error) => {
+      for (const key of CORE_FILE_KEYS) {
+        if (files[key].state === FILE_STATE.LOADING) settle(key, FILE_STATE.FAILED, error);
+      }
+      throw error;
+    };
+    for (const key of CORE_FILE_KEYS) {
+      const result = results[key];
+      const file = DATA_FILE_BY_KEY[key];
+      if (!result.error) continue;
+      if (lenientOptional && !file.required && result.kind === 'fetch') {
+        results[key] = { absent: true };
+        continue;
+      }
+      settle(key, FILE_STATE.FAILED, result.error);
+      failCore(result.error);
+    }
+    try {
+      dataset = buildCoreDataset(
+        results.meta.data, results.genes.data,
+        results.functionCategories.absent ? null : results.functionCategories.data,
+      );
+    } catch (error) {
+      failCore(error);
+    }
+    dataset.files = files;
+    for (const key of CORE_FILE_KEYS) {
+      settle(key, results[key].absent ? FILE_STATE.ABSENT : FILE_STATE.READY);
+    }
+    return dataset;
+  })();
+  // `core` is the one promise callers are expected to catch; the bookkeeping
+  // below must not turn its rejection into an unhandled one of its own.
+  const coreSettled = core.then(() => true, () => false);
+
+  const applied = {};
+  const applyFile = (file) => (async () => {
+    const coreOk = await coreSettled;
+    await Promise.all(file.needs.map((key) => applied[key]));
+    let result = await raw[file.key];
+    if (!coreOk) {
+      settle(file.key, FILE_STATE.FAILED,
+        new Error(`${file.name} was not read because the gene data could not be loaded`),
+        CORE_FILE_KEYS[1]);
+      return;
+    }
+    const blocker = file.needs.find((key) => files[key].state === FILE_STATE.FAILED);
+    if (blocker) {
+      settle(file.key, FILE_STATE.FAILED,
+        new Error(`${file.name} is waiting on ${DATA_FILE_BY_KEY[blocker].name}, `
+          + 'which could not be loaded'), blocker);
+      return;
+    }
+    if (result.error && lenientOptional && result.kind === 'fetch') result = { absent: true };
+    if (result.error) {
+      settle(file.key, FILE_STATE.FAILED, result.error);
+      return;
+    }
+    try {
+      DATA_APPLIERS[file.key](dataset, result.absent ? null : result.data);
+    } catch (error) {
+      settle(file.key, FILE_STATE.FAILED, error);
+      return;
+    }
+    settle(file.key, result.absent ? FILE_STATE.ABSENT : FILE_STATE.READY);
+  })();
+  const later = DATA_FILES.filter((file) => !CORE_FILE_KEYS.includes(file.key));
+  for (const file of later) applied[file.key] = applyFile(file);
+
+  const promiseFor = (key) => (CORE_FILE_KEYS.includes(key) ? coreSettled : applied[key]);
+
+  /**
+   * Ask again for one later file that failed, and re-run the files that were
+   * waiting on it. Returns false when there is nothing to retry: an unknown
+   * key, a tier 1 file (the page reloads the whole dataset for those), or a
+   * file that did not fail.
+   */
+  const retry = (key) => {
+    const file = DATA_FILE_BY_KEY[key];
+    if (!file || CORE_FILE_KEYS.includes(key) || files[key].state !== FILE_STATE.FAILED) return false;
+    const reset = (target) => {
+      Object.assign(files[target.key], {
+        state: FILE_STATE.LOADING, error: null, blockedBy: null, endedAt: null,
+      });
+    };
+    const waiting = later.filter((other) => files[other.key].blockedBy === key);
+    reset(file);
+    files[key].receivedBytes = 0;
+    raw[key] = requested(file, { fresh: true });
+    applied[key] = applyFile(file);
+    for (const other of waiting) {
+      reset(other);
+      applied[other.key] = applyFile(other);
+    }
+    report();
+    return true;
+  };
+
+  return {
+    manifest,
+    core,
+    files,
+    snapshot,
+    retry,
+    when: (keys) => Promise.all(keys.map(promiseFor)).then(() => undefined),
+    get settled() {
+      return Promise.all([coreSettled, ...later.map((file) => applied[file.key])])
+        .then(() => dataset);
+    },
+  };
+}
+
+/**
+ * Load and index the whole dataset in one step.
+ *
+ * The staged loader awaited to the end, with a failure in any file thrown as
+ * the single-step loader threw it. Tools and tests that want every file
+ * validated before they read anything use this.
+ *
+ * @param {{baseUrl: URL|string, fetchImpl?: typeof fetch}} options
+ */
+export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
+  const staged = loadDatasetStaged({ baseUrl, fetchImpl, lenientOptional: true });
+  const dataset = await staged.core;
+  await staged.settled;
+  const failed = (key) => dataset.files[key].state === FILE_STATE.FAILED;
+  // A file blocked by another names a consequence; the cause is thrown first.
+  const first = LEGACY_FAILURE_ORDER.find((key) => failed(key) && !dataset.files[key].blockedBy)
+    ?? LEGACY_FAILURE_ORDER.find(failed);
+  if (first) throw dataset.files[first].error;
   return dataset;
 }

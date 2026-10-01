@@ -11,6 +11,7 @@
  * 2018 start sites at their own published distances. Nothing is inferred and
  * nothing is placed at a coordinate its source did not report.
  */
+import { pendingNote } from './loading-note.js';
 import { geneViewModel, fractionOf, ticksFor } from '../core/gene-view-model.js';
 import { formatCount } from './format.js';
 
@@ -46,7 +47,7 @@ function signedNt(offset) {
  * A picture with no text equivalent would leave this view unreadable to anyone
  * not looking at it.
  */
-export function describeGeneView(model) {
+export function describeGeneView(model, tssPending = null) {
   if (!model) return 'No gene is selected.';
   const parts = [];
   const identity = model.name ? `${model.id} ${model.name}` : model.id;
@@ -66,6 +67,11 @@ export function describeGeneView(model) {
     parts.push(`${model.tss.length} Tan 2018 start site${model.tss.length === 1 ? '' : 's'} `
       + `upstream at ${distances}, at the distances that study published against its own gene `
       + 'model, not remeasured against this release.');
+  } else if (tssPending) {
+    // Not loaded is not none: the start-site file has not landed, or could not.
+    parts.push(tssPending === 'failed'
+      ? 'The Tan 2018 start sites could not be loaded, so none is drawn.'
+      : 'The Tan 2018 start sites are still loading, so none is drawn yet.');
   } else {
     parts.push('No Tan 2018 start site maps to this locus by exact locus tag.');
   }
@@ -161,7 +167,7 @@ function drawTss(root, model, x) {
 }
 
 /** Build the SVG for one view model. Exported for rendered tests. */
-export function geneViewSvg(model) {
+export function geneViewSvg(model, tssPending = null) {
   const root = svg('svg', {
     class: 'gene-view-svg',
     viewBox: `0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`,
@@ -169,9 +175,9 @@ export function geneViewSvg(model) {
     preserveAspectRatio: 'xMidYMid meet',
   });
   const description = svg('desc');
-  description.textContent = describeGeneView(model);
+  description.textContent = describeGeneView(model, tssPending);
   root.append(description);
-  root.setAttribute('aria-label', describeGeneView(model));
+  root.setAttribute('aria-label', describeGeneView(model, tssPending));
   const inner = VIEW_WIDTH - MARGIN_X * 2;
   const x = (offset) => MARGIN_X + fractionOf(model.domain, offset) * inner;
   drawRuler(root, model, x);
@@ -223,8 +229,11 @@ function factsFor(model) {
  * @param {HTMLElement} host emptied before drawing.
  * @param {object|null} gene a `genes.json` record with `tssEvidence` joined, or
  *   null when nothing is selected.
+ * @param {{tssPending?: 'loading'|'failed'|null}} [options] set while the
+ *   start-site file has not landed, so an empty track says so instead of
+ *   reading as a gene with no start site.
  */
-export function renderGeneViewer(host, gene) {
+export function renderGeneViewer(host, gene, { tssPending = null } = {}) {
   host.replaceChildren();
   host.classList.add('gene-view');
   const model = geneViewModel(gene);
@@ -247,7 +256,8 @@ export function renderGeneViewer(host, gene) {
     product.textContent = model.product;
     heading.append(document.createElement('br'), product);
   }
-  host.append(heading, geneViewSvg(model));
+  host.append(heading, geneViewSvg(model, tssPending));
+  if (tssPending) host.append(pendingNote(tssPending, 'the Tan 2018 start sites'));
 
   const items = [
     ['gene-view-key-cds', 'Coding sequence'],

@@ -1,0 +1,355 @@
+# Progressive loading
+
+Reusable contract for how the site loads: which file lands in which tier, how
+each file is addressed and cached, what a view shows while its file is in flight,
+what the visitor sees before and at the reveal, and the checks a change here has
+to pass.
+
+The loader is `loadDatasetStaged` in `site/js/core/dataset.js`, over the file
+registry in `site/js/core/data-files.js`. The page side is `boot` and the
+functions around it in `site/js/app.js`. Everything below is a property of the
+first two unless it names another file.
+
+## Loading is not missing
+
+The one rule every other section serves. A file that has not landed has
+**unknown** content. Its place is taken by a statement that it is loading, or
+that it could not be loaded, and never by the sentence a view uses when the
+evidence is absent, and never by a zero.
+
+Each file is in one of four states, `FILE_STATE` in `data-files.js`: `loading`,
+`ready`, `absent` (an optional file this deployment does not publish), and
+`failed` (could not be read, or failed its validation). `dataset.files[key]`
+carries the state, and `pendingState`, `isLoading`, `hasFailed` and
+`firstUnsettled` are the only ways a view asks. A dataset built without the
+loader has no record and reads as fully settled, which is what keeps every test
+and tool that builds one by hand unchanged.
+
+What each reader shows while its file is `loading` or `failed`:
+
+| File | Reader | Instead of |
+| --- | --- | --- |
+| `source-derived-categories-v1.json` | Scatter maps, chromosome view, legend, colour explanation, gene detail | every CDS in one neutral colour, the legend's single row "Function categories are loading"; never "Unknown or unclassified" |
+| `length_cohorts.json` | Protein evidence filter, Lengths tab | a waiting fieldset and a loading note; never "unavailable in this dataset" |
+| `codon_pca.json` | Loadings table | a loading note; never an empty table |
+| `excluded.json` | Provenance row | "loading…"; never `0` |
+| `tss_evidence.json` | Gene visualizer, gene detail, basis tags, chromosome tick row | "start sites are still loading"; basis tags read "Table S1 sites not loaded"; never "No Tan 2018 start site maps" |
+| `annotations.json`, `go-term-names-v1.json` | Gene detail, gene search | a loading section; a GO search miss says GO annotations are still loading |
+| `candidate_evidence.json`, `go-iea-essentiality-v1.json` | Gene detail | a loading section; never an absent disclosure |
+| `regulatory_tss.json` | Regulatory sites tab | a loading note; never "unavailable in this dataset" |
+
+**The category colour is the case that decides the design.** The fresh view
+colours by function category. On the reviewed table alone about a dozen CDSs
+would take a colour and some 1,350 categorised ones would draw as unknown, which
+is a claim about each of them. So while the derived categories are loading the
+model is `pendingFunctionCategories`: the same shape as the resolved one, every
+CDS in one extra bucket drawn in `PENDING_CATEGORY_COLOR`, nothing counted, and
+no source toggles. The reviewed rows are held back too: a legend naming a dozen
+categories over a map that cannot show the rest invites reading the rest as
+absent. A pending point is a plain disc with no dark border, because the border
+is the mark of lab review and a point that has not loaded has no evidence tier.
+
+**The start-site basis is loading-aware without knowing about loading.** The
+loader joins a row list onto every gene, empty where no site maps. A gene with no
+list at all is therefore one whose site layer has not been joined, and
+`tssInitiationBasis` says "Table S1 sites not loaded" with a site count of null.
+A joined empty list is a known zero and still says so. This is why the comparison
+table is not blocked while the file loads: each cell states its own basis
+truthfully.
+
+**Exports wait.** `exportBlockedReason` in `core/export-manifest.js` names the
+file an export is waiting on, over `EXPORT_FILE_KEYS`, and `buildExport` itself
+throws that reason, so no caller can write a manifest in which a not-yet-loaded
+field appears as an empty one. Panel design reads tier 1 only and is not blocked;
+its export is.
+
+## Tiers
+
+Tiers say what the page waits for and what it draws first.
+
+| Tier | Files | The page becomes |
+| --- | --- | --- |
+| 1 | `meta.json`, `genes.json`, `function-categories-v1.json` | Usable: every map's points, the chromosome view, selectors, search by locus and product, registry filters, the shortlist |
+| 2 | `annotations.json`, `candidate_evidence.json`, `source-derived-categories-v1.json`, `length_cohorts.json`, `codon_pca.json`, `excluded.json` | Coloured by function category; protein filter; loadings |
+| 3 | `tss_evidence.json`, `go-iea-essentiality-v1.json`, `go-term-names-v1.json` | Complete in gene detail, the gene visualizer, and the chromosome tick row |
+| 4 | `regulatory_tss.json`, and `citations.json` through its own loader | Complete on the Regulatory sites and Citations tabs |
+
+**The tiers follow what a file's validation reads, not only what it feeds.**
+`validateSourceDerivedCategories` checks every derived category against the
+candidate evidence's PCC joins and against each gene's GO annotations, so the
+derived categories cannot be validated without `candidate_evidence.json` and
+`annotations.json`. Those two are therefore tier 2, with the colour they make
+possible. `DATA_FILES[...].needs` records each such dependency, and a file is
+applied only after the files it needs have settled. A file whose dependency
+failed is `failed` with a message naming the file it was waiting on, and its
+`blockedBy` says which.
+
+**`pcc7942-essentiality-v1.json` is published and never fetched.** It is an input
+to `candidate_evidence.json`. It is in the manifest, because the manifest lists
+everything published, and in no tier.
+
+**`annotations.json` and `tss_evidence.json` are required when `meta.json`
+declares them**, which the shipped one does. Their absence is that file's
+failure, with the single-step loader's own message, and no longer the whole
+page's.
+
+**Staging changes when a check runs, never whether.** `buildCoreDataset` indexes
+tier 1; `DATA_APPLIERS` holds one validator-and-join per later file, each
+throwing the message the single-step loader threw. `loadDataset` is the staged
+loader awaited to the end, with any failure thrown as before and the cause thrown
+ahead of a file that was only blocked by it, so the two cannot drift. An applier
+validates the whole file before it joins any of it: a file that fails half way
+leaves no gene carrying evidence its neighbours lack.
+
+### A link is opened onto its own data
+
+`promotedFileKeys` in `app.js` lists the later files the reveal also waits for.
+A fresh view waits for none. A link that filters by category waits for the
+derived categories; one that filters by protein evidence or opens the Lengths tab
+waits for the length inventory; one that opens Regulatory sites waits for that
+table; one that pins a gene waits for every file the gene detail reads. A link's
+protein filter and category filter are **kept, not dropped**, while their file
+loads, and applied when it lands; a filter is dropped only once its file is known
+to be absent.
+
+### Pacing the tiers
+
+Every file used to be asked for at once. That shares the connection between
+them, so the gene file, the largest and the one the map waits for, finished last:
+on the throttled profile below the map became usable at 17.3 s, the same moment
+as everything else, and staging bought nothing.
+
+Each later tier is therefore released only when the tiers before it are all but
+in: when no more than `TIER_LEAD_BYTES` (128 kB) of them is outstanding, or they
+have all finished. The lead exists to cover the round trip a new request needs
+before its first byte, so the connection is never idle between tiers and the
+total time stays what it was. It is a byte count and not a fraction because the
+cost of releasing early is paid on what remains: at an 85% lead the gene file's
+last 780 kB shared the link with five files and took 4.6 s. Without a manifest
+there are no sizes to pace by and every file goes out at once, as before. A retry
+is one file asked for on its own and waits behind nothing.
+
+Measured in Chromium against `python3 -m http.server`, cache disabled, 750 kB/s
+down, 80 ms latency, uncompressed, two runs each:
+
+| | Map usable | Category colour | Complete |
+| --- | ---: | ---: | ---: |
+| Before, `315f7a0`, one parallel fetch | 17.5 s | 17.5 s | 17.5 s |
+| Staged, all files at once | 17.3 s | 17.3 s | 17.4 s |
+| Staged, 85% lead | 12.3 s | 15.7 s | 17.2 s |
+| Staged, 128 kB lead | 9.1 s | 13.1 s | 17.2 s |
+
+The published host compresses JSON in transit, so real times are shorter; the
+ordering is what the table shows. About 1.0 MB of unbundled JavaScript competes
+with the gene file for the first two seconds on this profile.
+
+## The content manifest and the cache
+
+`site/data/data-manifest.json`, written by `tools/build_data_manifest.py`, lists
+every published JSON file with its byte size and SHA-256. The loader reads it
+first, always revalidated, and uses it twice.
+
+**The size is the loading bar's denominator.** The response stream yields decoded
+bytes whatever compression the host applied, so bytes received over manifest
+bytes is exact. Without a manifest the bar counts files settled over files
+requested, which is coarser but never claims a size it does not know. A settled
+file counts whole whatever became of it, so a missing or failed file cannot hold
+the bar short of full.
+
+**The digest is the cache key.** Each file is requested as
+`<name>?v=<first 16 hex of its SHA-256>` with `cache: 'force-cache'`, so a repeat
+visit reads the data from the browser cache without asking the server. That is
+safe because a file whose content changes is requested under a different
+address.
+
+**`meta.builtAt` was rejected as the key**, and this is the reason the manifest
+exists. A dozen tools rewrite single files in `site/data` without touching
+`meta.json`, so a build timestamp would have pinned visitors to a superseded
+file.
+
+**The key is only as good as the manifest, so the manifest is gated three
+times**: `tools/build_data_manifest.py check`, `validate_data_manifest` in
+`tools/validate_contract.py` (which recomputes every digest without importing the
+builder), and the deploy workflow. **Run `tools/build_data_manifest.py build`
+after any tool that writes `site/data`.**
+
+Two further guards. The manifest lists everything published, so an optional file
+it does not list is `absent` with no request made. And a copy whose size is not
+the manifest's is not the file its key names, so it is re-read by plain name with
+`cache: 'reload'`: a stale cached copy can cost one extra request and can never
+be shown.
+
+### Starting before the script
+
+Two classic inline scripts in `site/index.html` run before any module. The first
+is the `file:` notice. The second asks for the manifest and the tier 1 files as
+soon as the document is parsed, so the gene file is already downloading while
+the browser is still fetching the module graph. `adoptingFetch` in
+`core/early-data.js` hands those requests to the loader by exact address, and
+waits on the script's `ready` promise first, which is what guarantees a file is
+never requested twice. `tests/js/early-data.test.mjs` evaluates the page's own
+script and holds its addresses and options equal to `dataRequest`'s.
+
+The module graph itself is listed as `<link rel="modulepreload">`, one per
+statically imported module, so it is fetched in one round rather than a level at
+a time. The list is generated by `node tools/build_module_preloads.mjs` and
+`tests/js/module-preloads.test.mjs` fails when it falls behind.
+
+## A file that fails
+
+A later file that cannot be read, or fails its validation, is `failed`, and the
+page stays usable. The tail at the top of the map card lists it with the loader's
+exact message and a **Retry** control (`LoadProgress` in `ui/load-progress.js`).
+`retry(key)` asks for that one file again by its plain name with
+`cache: 'reload'`, then re-applies the files that were only waiting on it without
+downloading them again. A file blocked by another has no Retry of its own; it is
+retried by retrying the one it waited on.
+
+A tier 1 failure cannot be worked around, since nothing can be drawn. It is
+reported in the status notice with the same wording as before and a Retry that
+runs the whole load again; the files that did arrive come back from the cache.
+An optional tier 1 file that is published but unreadable also fails tier 1,
+rather than colouring every reviewed gene as unknown.
+
+`loadDataset` keeps the single-step rule for tools and tests: an optional file
+that could not be fetched is absent.
+
+## The loading presentation
+
+Owner requirements of 2026-09-30, in the order the visitor meets them.
+
+**An empty shell.** The page opens as an empty version of itself: the header
+bar, the left column, the right column, and the centre area, with only an empty
+grid and the loading bar in the centre, and no text. `body.is-loading` does this
+by hiding the *children* of each box with `visibility`, which keeps every box its
+real size: the bars and columns are the page's own, not a separate skeleton that
+could drift from it. On one column the centre leads, so the grid is within view
+on a phone. The status line is in the document for assistive technology and is
+visually hidden until it carries a failure.
+
+**A chromosome loading bar.** Drawn like the chromosome track: an axis with
+genes above and below it, lit from left to right as data arrives. How many are
+lit is the fraction loaded. They are a fixed deterministic picture, not the
+release's genes, which have not arrived when the bar first draws, so nothing
+about them can be read as data. It is a `progressbar` whose value text names the
+tier in plain words and, once `meta.json` has landed, the release and its gene
+count.
+
+**A minimum of one second**, measured from navigation, however fast the data.
+
+**The reveal.** At the later of tier 1 being built, any promoted files landing,
+and the minimum, `revealPage` removes `is-loading`, shows the sections below the
+workspace, and replaces the stage with the map. The page was built while the
+shell hid it, so the reveal only uncovers it; the canvases are measured then,
+because they were built inside a frame that was not displayed.
+
+**The text types in as base pairs** (`ui/text-scramble.js`). Each text node grows
+left to right as random A, T, G and C that keep flipping; eight letters behind
+the typing front a second front resolves each into its real character; a letter
+flips more slowly as that front approaches. Whitespace is never scrambled, so
+words keep their shape. The real text is in the document throughout and is
+restored exactly on finish or cancel. The animated regions carry `aria-hidden`
+and `aria-busy` while they flip, so a screen reader reads the final text once. A
+panel the page re-renders during the run simply shows its final text.
+
+**The map fills in alongside** (`startIntro` in `ui/scatter.js`). Each point has
+a fixed threshold from an integer hash of its index. It appears when the appear
+progress passes its threshold, as a plain neutral disc, and takes its real style
+when the colour progress does. Paint order among coloured points is the shared
+rule; not-yet-coloured points are underneath. Points with no value and filtered
+out points appear on schedule but never take the neutral colour, since it means
+"has a colour, not shown yet". When the categories land after the points have
+appeared, the colour half runs again rather than every point changing at once.
+
+**The later files continue under the tail**, a slim line that never blocks the
+page, naming the tier still in flight.
+
+### Timing
+
+Every duration is in `site/js/ui/load-timing.js` and nowhere else.
+
+| Tunable | Default | Address-bar override |
+| --- | ---: | --- |
+| Minimum bar time | 1,000 ms | `load-min` |
+| Letters between the typing and resolving fronts | 8 | `load-lag` |
+| Typing speed | 110 letters/s | `load-letters` |
+| Longest any one text may take | 1,600 ms | `load-text-max` |
+| Flip interval just after typing | 40 ms | `load-flip-fast` |
+| Flip interval just before resolving | 170 ms | `load-flip-slow` |
+| Map points all appeared | 700 ms | `load-map-appear` |
+| Map points all coloured | 2,000 ms | `load-map-colour` |
+
+An override is a query parameter, read once at start-up, used only when it is a
+finite number from 0 to 60,000, and never written to the URL hash, which is
+analysis state and is unchanged by any of this. `?load-log` prints per-file
+timings and the three `cyano:` performance marks (`core`, `revealed`, `settled`)
+to the console; the marks are always recorded.
+
+**Reduced motion skips all presentation**: the scramble, the map fill-in, and
+the minimum bar time. The page shows its final state as soon as it is built.
+
+A browser refuses to run `requestAnimationFrame` as a method of anything but its
+own window. The scramble's default frame functions are therefore wrapped, not
+passed by reference, and a test that mimics the browser's check holds that: the
+first version passed every injected-clock test and stopped the real page with no
+text on it.
+
+## Decisions on the original suggestions
+
+| # | Suggestion | Decision |
+| --- | --- | --- |
+| S1 | Skeleton placeholders | Approved, then superseded by the owner's empty shell; loading notes stand in for evidence after the reveal |
+| S2 | Preload hints | Approved. Built as an early inline fetch plus module preloads, which starts tier 1 before the script is parsed without depending on how a browser matches a preload to a `fetch` |
+| S3 | Cache keyed on the release | Approved. Keyed on each file's content digest, not `meta.builtAt` |
+| S4 | Split `genes.json` | Declined; a pipeline and contract change that would need its own ticket |
+| S5 | Release identity early | Approved. In the bar's value text during the shell, which shows no text, and in the tail afterwards |
+| S6 | Per-file retry | Approved |
+| S7 | Streamed map drawing | Declined; conflicts with validating the file whole |
+| S8 | Load timing flag | Approved, as `?load-log` |
+
+## Checks
+
+```sh
+npm test
+.venv/bin/python -m pytest -q
+.venv/bin/python tools/validate_contract.py
+.venv/bin/python tools/build_data_manifest.py check
+node tools/build_module_preloads.mjs --check
+```
+
+Unit coverage:
+
+- `tests/js/staged-loader.test.mjs`: registry order and dependencies; the map
+  usable on tier 1 with a later file in flight; manifest addressing and the
+  no-manifest fallback; streamed progress; the size-mismatch re-read; absent
+  against failed; tier 1 failure; required-by-meta files; validate-then-join;
+  parity with the single-step loader on the published data; blocking and retry;
+  tier pacing.
+- `tests/js/loading-states.test.mjs`: every reader in the table above, the export
+  gate, and the borderless pending disc.
+- `tests/js/load-progress.test.mjs`, `tests/js/early-data.test.mjs`,
+  `tests/js/load-timing.test.mjs`, `tests/js/text-scramble.test.mjs`,
+  `tests/js/scatter-intro.test.mjs`, `tests/js/module-preloads.test.mjs`,
+  `tests/js/loading-shell.test.mjs`.
+- `tests/test_data_manifest.py`: the builder and both gates.
+
+Rendered validation is required for any change here. A fast local connection
+hides every state this document is about, so throttle the network and disable
+the cache, then check at **375, 768, 1280 and 1440 px**:
+
+- the shell: no visible text, the grid within the viewport, the bar reporting a
+  real fraction, no horizontal overflow;
+- the reveal: text typing in and resolving, map points appearing and colouring,
+  nothing left `aria-busy` or `aria-hidden` afterwards, every text its final self;
+- tier 1 landed and tier 2 not: neutral points, the legend's single loading row,
+  the tail naming the tier in flight;
+- everything landed: the tail gone, the legend and counts as on a normal load;
+- one later file failing: the page usable, the tail listing it with its message,
+  Retry recovering it;
+- a pinned-gene link: the reveal no earlier than that gene's evidence, and no
+  loading note in its detail card;
+- reduced motion: the final page with no animation and no minimum wait;
+- a clean console throughout, and the three `cyano:` marks in order.
+
+Re-measure the table under "Pacing the tiers" on the same profile after any
+change to the loader, and record it here rather than estimating it.

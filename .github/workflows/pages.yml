@@ -74,6 +74,12 @@ jobs:
       - name: Validate generated data against the contract
         run: python3 tools/validate_contract.py --data-dir site/data --raw-dir data/raw
 
+      # The browser caches each data file under its content digest, so a
+      # manifest that no longer matches the files would pin visitors to a
+      # superseded copy. This runs after every tool that writes site/data.
+      - name: Verify the data manifest matches the published data
+        run: python3 tools/build_data_manifest.py check
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

@@ -8,7 +8,7 @@
  */
 import {
   ACTIVE_FOCUS_COLOR, CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, GHOST_BORDER, GHOST_COLOR,
-  HOVER_FOCUS_COLOR, MISSING_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER,
+  HOVER_FOCUS_COLOR, MISSING_COLOR, PENDING_CATEGORY_COLOR, PINNED_COLOR, REVIEWED_MARKER_BORDER,
   SHORTLIST_COLOR,
 } from './colors.js';
 import {
@@ -27,6 +27,21 @@ export const SQUARE_TO_CIRCLE_RADIUS = Math.sqrt(4 / Math.PI);
  */
 export const DERIVED_RING_WIDTH = 1.3;
 export const REVIEWED_BORDER_WIDTH = 0.8;
+
+/**
+ * A stable, well-mixed threshold for one point in the loading reveal.
+ *
+ * Integer mixing keeps the reveal identical across frames and visits without
+ * storing another array alongside the dataset. Dividing an unsigned 32-bit
+ * result by 2^32 gives [0, 1), including zero but never one.
+ */
+export function introThreshold(index) {
+  let value = index >>> 0;
+  value = Math.imul(value ^ (value >>> 16), 0x45d9f3b);
+  value = Math.imul(value ^ (value >>> 16), 0x45d9f3b);
+  value ^= value >>> 16;
+  return (value >>> 0) / 0x100000000;
+}
 
 /** Keep a zoom factor inside the range the plot can actually render. */
 export function clampZoom(zoom) {
@@ -478,11 +493,55 @@ export class ScatterPlot {
     this.width = 0;
     this.height = 0;
     this.pendingFrame = 0;
+    this.intro = null;
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas.parentElement ?? canvas);
     this.bindEvents();
     this.resize();
+  }
+
+  /** Whether the point fill-in animation is running. */
+  get introActive() {
+    return this.intro !== null;
+  }
+
+  /**
+   * Start the deterministic point fill-in and colour reveal.
+   *
+   * @param {{appearMs: number, colourMs: number, now?: () => number,
+   *   onDone?: (() => void)|null}} options
+   */
+  startIntro({ appearMs, colourMs, now = () => performance.now(), onDone = null }) {
+    if (this.intro) {
+      const previousDone = this.intro.onDone;
+      this.intro = null;
+      previousDone?.();
+    }
+    const safeDuration = (duration) => (
+      Number.isFinite(duration) ? Math.max(0, duration) : 0
+    );
+    this.intro = {
+      appearMs: safeDuration(appearMs),
+      colourMs: safeDuration(colourMs),
+      now,
+      onDone,
+      startedAt: now(),
+    };
+    this.draw();
+  }
+
+  /** Stop the fill-in immediately, paint the final picture, and finish once. */
+  cancelIntro() {
+    if (!this.intro) return;
+    const { onDone } = this.intro;
+    this.intro = null;
+    if (this.pendingFrame) {
+      cancelAnimationFrame(this.pendingFrame);
+      this.pendingFrame = 0;
+    }
+    this.renderNow();
+    onDone?.();
   }
 
   resize() {
@@ -891,11 +950,38 @@ export class ScatterPlot {
     if (this.pendingFrame) return;
     this.pendingFrame = requestAnimationFrame(() => {
       this.pendingFrame = 0;
-      this.renderNow();
+      const introFrame = this.intro ? this.introFrame() : null;
+      this.renderNow(introFrame);
+      if (introFrame) this.advanceIntro(introFrame);
     });
   }
 
-  renderNow() {
+  /** Progress sampled once for a frame, so every point sees the same instant. */
+  introFrame() {
+    const elapsed = Math.max(0, this.intro.now() - this.intro.startedAt);
+    const progress = (duration) => (duration === 0 ? 1 : Math.min(1, elapsed / duration));
+    return {
+      state: this.intro,
+      elapsed,
+      appear: progress(this.intro.appearMs),
+      colour: progress(this.intro.colourMs),
+      duration: Math.max(this.intro.appearMs, this.intro.colourMs),
+    };
+  }
+
+  /** Finish at the terminal frame, otherwise keep the animation's frame loop alive. */
+  advanceIntro(frame) {
+    if (this.intro !== frame.state) return;
+    if (frame.elapsed < frame.duration) {
+      this.draw();
+      return;
+    }
+    const { onDone } = this.intro;
+    this.intro = null;
+    onDone?.();
+  }
+
+  renderNow(introFrame = null) {
     const context = this.context;
     if (!context || this.width === 0) return;
     const started = performance.now();
@@ -921,24 +1007,28 @@ export class ScatterPlot {
     const bodies = markerBodies(radius, scale);
     const at = { x, y, kx, ky, cx, cy, ox, oy };
 
-    // Every batch, in the order the shared rule put them in when the buckets
-    // were built. A frame replays that sequence; it never decides it, and it
-    // never sorts. A gene with no value is under every valued point in both
-    // colour modes and both directions because the rule says absence is not a
-    // low value — these open markers used to be issued last, so a valueless
-    // ring crossed the centre of a top-percentile point and read back as the
-    // missing-value grey.
-    for (const batch of buckets.batches) {
-      const list = batchList(buckets, batch);
-      if (list.length === 0) continue;
-      if (batch.kind === 'hiddenMissing' || batch.kind === 'hidden') {
-        if (this.showHidden) this.paintGhostBatch(batch.kind, list, at, bodies);
-      } else if (batch.kind === 'missing') {
-        this.paintMissingBatch(list, at, scale, bodies);
-      } else if (batch.kind === 'derived') {
-        this.paintDerivedBatch(list, at, scale, batch.bucket, bodies);
-      } else {
-        this.paintColoredBatch(list, at, scale, batch.bucket, bodies);
+    if (introFrame) {
+      this.paintIntroBatches(buckets, at, scale, bodies, introFrame);
+    } else {
+      // Every batch, in the order the shared rule put them in when the buckets
+      // were built. A frame replays that sequence; it never decides it, and it
+      // never sorts. A gene with no value is under every valued point in both
+      // colour modes and both directions because the rule says absence is not a
+      // low value — these open markers used to be issued last, so a valueless
+      // ring crossed the centre of a top-percentile point and read back as the
+      // missing-value grey.
+      for (const batch of buckets.batches) {
+        const list = batchList(buckets, batch);
+        if (list.length === 0) continue;
+        if (batch.kind === 'hiddenMissing' || batch.kind === 'hidden') {
+          if (this.showHidden) this.paintGhostBatch(batch.kind, list, at, bodies);
+        } else if (batch.kind === 'missing') {
+          this.paintMissingBatch(list, at, scale, bodies);
+        } else if (batch.kind === 'derived') {
+          this.paintDerivedBatch(list, at, scale, batch.bucket, bodies);
+        } else {
+          this.paintColoredBatch(list, at, scale, batch.bucket, bodies);
+        }
       }
     }
 
@@ -974,6 +1064,70 @@ export class ScatterPlot {
     const elapsed = performance.now() - started;
     this.frameTimes.push(elapsed);
     if (this.frameTimes.length > 240) this.frameTimes.shift();
+  }
+
+  /**
+   * Paint one intro frame. Each existing batch is partitioned once: points not
+   * yet coloured join one neutral path underneath, then revealed points replay
+   * the normal batch order and treatment. Ghosts and missing-value rings never
+   * receive the pending colour because they have no eventual colour to reveal.
+   *
+   * Intro visibility is presentation-only. Hit testing and keyboard navigation
+   * deliberately continue to read the complete projection, so a point that is
+   * not visible yet remains pinnable during this brief animation.
+   */
+  paintIntroBatches(buckets, at, scale, bodies, frame) {
+    const pending = [];
+    const visible = [];
+    for (const batch of buckets.batches) {
+      if (!this.showHidden && (batch.kind === 'hiddenMissing' || batch.kind === 'hidden')) {
+        visible.push({ batch, list: [] });
+        continue;
+      }
+      const list = batchList(buckets, batch);
+      const shown = [];
+      const canBePending = batch.kind === 'derived' || batch.kind === 'colored';
+      for (let n = 0; n < list.length; n += 1) {
+        const index = list[n];
+        const threshold = introThreshold(index);
+        if (threshold >= frame.appear) continue;
+        if (canBePending && threshold >= frame.colour) pending.push(index);
+        else shown.push(index);
+      }
+      visible.push({ batch, list: shown });
+    }
+
+    if (pending.length > 0) this.paintPendingBatch(pending, at, bodies);
+    for (const { batch, list } of visible) {
+      if (list.length === 0) continue;
+      if (batch.kind === 'hiddenMissing' || batch.kind === 'hidden') {
+        this.paintGhostBatch(batch.kind, list, at, bodies);
+      } else if (batch.kind === 'missing') {
+        this.paintMissingBatch(list, at, scale, bodies);
+      } else if (batch.kind === 'derived') {
+        this.paintDerivedBatch(list, at, scale, batch.bucket, bodies);
+      } else {
+        this.paintColoredBatch(list, at, scale, batch.bucket, bodies);
+      }
+    }
+  }
+
+  /** All appeared points whose real colour is still hidden, in one filled path. */
+  paintPendingBatch(list, at, bodies) {
+    const context = this.context;
+    const { x, y, kx, ky, cx, cy, ox, oy } = at;
+    const reach = bodies[MARKER_KINDS.colored.code];
+    context.fillStyle = PENDING_CATEGORY_COLOR;
+    context.beginPath();
+    for (let n = 0; n < list.length; n += 1) {
+      const index = list[n];
+      context.moveTo(ox + (x[index] - cx) * kx + reach, oy - (y[index] - cy) * ky);
+      context.arc(
+        ox + (x[index] - cx) * kx, oy - (y[index] - cy) * ky,
+        reach, 0, Math.PI * 2,
+      );
+    }
+    context.fill();
   }
 
   /**
@@ -1070,6 +1224,10 @@ export class ScatterPlot {
     }
     context.fill();
     if (!scale.categorical) return;
+    // The dark border is the mark of a lab-reviewed category. A CDS whose
+    // category has not loaded has no evidence tier to show, so the one bucket
+    // that means "not loaded yet" is a plain disc, as it is during the intro.
+    if (scale.buckets[bucket] === PENDING_CATEGORY_COLOR) return;
     context.strokeStyle = REVIEWED_MARKER_BORDER;
     context.lineWidth = REVIEWED_BORDER_WIDTH;
     context.stroke();

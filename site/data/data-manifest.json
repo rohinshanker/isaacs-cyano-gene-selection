@@ -1,0 +1,65 @@
+{
+  "files": {
+    "annotations.json": {
+      "bytes": 1587449,
+      "sha256": "cb4c1dada12bcd59062cc1bfb78369e5c4beda60db5ad065b8161a22c956daf7"
+    },
+    "candidate_evidence.json": {
+      "bytes": 542111,
+      "sha256": "896d01639c9c7c2ea9c2019ea62cd129ec704bfe661ddfe4592e99b653c4de74"
+    },
+    "citations.json": {
+      "bytes": 27145,
+      "sha256": "d25e4e7500163194b3252644b8ff19474c58b8c6c2913bb8e00a10fd5749f52e"
+    },
+    "codon_pca.json": {
+      "bytes": 5327,
+      "sha256": "fdb7eb32ba5db03ee0906af9f0d729f034353de6da1a33d82ae620c4df1ae1dd"
+    },
+    "excluded.json": {
+      "bytes": 447,
+      "sha256": "41ff2d44a0fb08242cdc6282401f51e3c677cd3ccd75757aa9b2e4cabe98cd06"
+    },
+    "function-categories-v1.json": {
+      "bytes": 7250,
+      "sha256": "2ac4661ec3acea118b49c1fab7f4c2a69c91b718a74456f5681d0774f6064a0e"
+    },
+    "genes.json": {
+      "bytes": 5169989,
+      "sha256": "0d2711ade57d566832e126fe14ccb893ce91d932229118c6873775d356273552"
+    },
+    "go-iea-essentiality-v1.json": {
+      "bytes": 454699,
+      "sha256": "881162013c73c29eb53151e1b8f7a00e83ffbe30f13183272fe65ed1ac2c9252"
+    },
+    "go-term-names-v1.json": {
+      "bytes": 126065,
+      "sha256": "6938e8f4696c373d235083098365d73b45046f82b9119abec509ce673768ad07"
+    },
+    "length_cohorts.json": {
+      "bytes": 449136,
+      "sha256": "16362fa4618e5f83c224af33513e9fd71462a625c35525898d5dda6e7dada4df"
+    },
+    "meta.json": {
+      "bytes": 26958,
+      "sha256": "a532a73f429493786651cac6d1a82b8e5b17e0d675677fb68302e0f1ac28ba10"
+    },
+    "pcc7942-essentiality-v1.json": {
+      "bytes": 603979,
+      "sha256": "88c82984d2ba2e7ab524f69ba23b683177ae6ea94362777de4b89c3621638102"
+    },
+    "regulatory_tss.json": {
+      "bytes": 1572876,
+      "sha256": "cb531b048b90db491f263417d1d6bd25839463df9aa4433f5d5fa57769d7e3cc"
+    },
+    "source-derived-categories-v1.json": {
+      "bytes": 612250,
+      "sha256": "d2c793be21bb558df0309205ccea5423a1a3c708b6feb4d3567b2f2c0a463c81"
+    },
+    "tss_evidence.json": {
+      "bytes": 1193977,
+      "sha256": "5bc931e453064411611a504271e99890452f677fcd09752a819e863e08535a1a"
+    }
+  },
+  "schemaVersion": 1
+}

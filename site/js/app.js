@@ -4,7 +4,11 @@
  * Holds the shared state, recomputes scheme-dependent metrics once per scheme
  * change, and keeps every panel looking at the same selection.
  */
-import { loadDataset } from './core/dataset.js';
+import { loadDatasetStaged } from './core/dataset.js';
+import {
+  DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, dataRequest, hasFailed, isLoading, pendingState,
+} from './core/data-files.js';
+import { adoptingFetch } from './core/early-data.js';
 import { geneIdentity, geneMapLabel } from './core/gene-identity.js';
 import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillReplacement } from './core/scheme.js';
 import { computeLiveMetrics } from './core/live-metrics.js';
@@ -70,8 +74,12 @@ import {
   annotationSourceLabel, isAllSources, normalizeAnnotationSources,
 } from './core/annotation-source.js';
 import {
-  resolveFunctionCategories, categoryLabelFor, THRESHOLDS as DERIVED_THRESHOLDS,
+  resolveFunctionCategories, pendingFunctionCategories, categoryLabelFor,
+  THRESHOLDS as DERIVED_THRESHOLDS,
 } from './core/source-derived-categories.js';
+import { LoadProgress } from './ui/load-progress.js';
+import { prefersReducedMotion, resolveLoadTiming } from './ui/load-timing.js';
+import { TextScramble } from './ui/text-scramble.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
@@ -116,6 +124,19 @@ const store = {
 const state = defaultState();
 let pendingMapJump = false;
 
+/** The staged load in progress, its progress surfaces, and what has landed since the last render. */
+let staged = null;
+let loadProgress = null;
+const landed = new Set();
+let landingFlush = false;
+/** True once the page has been built on tier 1 and can take a re-render. */
+let booted = false;
+/** True once the empty shell has given way to the page. */
+let revealed = false;
+const loadTiming = resolveLoadTiming(window.location.search);
+const reducedMotion = prefersReducedMotion(window);
+const textScramble = new TextScramble({ timing: loadTiming.scramble });
+
 const context = {
   dataset: null,
   registry: null,
@@ -144,7 +165,10 @@ function resolveDataBase() {
 
 function showLoadError(error) {
   const status = element('load-status');
-  status.classList.add('error');
+  // The shell shows no text of its own, so this notice is visually hidden until
+  // it has a failure to report.
+  status.className = 'load-status error';
+  status.hidden = false;
   status.replaceChildren();
   const heading = document.createElement('strong');
   heading.textContent = 'The gene data could not be loaded. ';
@@ -156,6 +180,19 @@ function showLoadError(error) {
     + 'annotation and TSS evidence files into this page’s data folder, and that the server '
     + 'can serve them.';
   status.append(hint);
+  // Nothing was built, so the whole load can simply be run again. The files
+  // that did arrive come back from the browser cache.
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.className = 'chip-button';
+  retry.textContent = 'Retry';
+  retry.addEventListener('click', () => {
+    status.className = 'load-status visually-hidden';
+    status.textContent = 'Loading gene data…';
+    loadProgress.restart();
+    boot();
+  });
+  status.append(retry);
 }
 
 /**
@@ -228,13 +265,26 @@ function clearLivePercentiles() {
  * preview, and canvas all read this one model.
  */
 function resolveCategoryModel() {
-  const reviewed = context.dataset.functionCategories;
-  context.categories = reviewed ? resolveFunctionCategories({
-    reviewed,
-    derived: context.dataset.sourceDerivedCategories,
-    genes: context.dataset.genes,
-    sources: state.colorSources,
-  }) : null;
+  const { dataset } = context;
+  const reviewed = dataset.functionCategories;
+  // The derived categories' file carries most of the colour. Until it lands,
+  // or if it cannot, resolving on the reviewed table alone would draw some
+  // 1,350 categorised CDSs as unknown, so the channel is pending instead.
+  const pending = isLoading(dataset, 'sourceDerivedCategories') ? FILE_STATE.LOADING
+    : hasFailed(dataset, 'sourceDerivedCategories') ? FILE_STATE.FAILED : null;
+  if (!reviewed) context.categories = null;
+  else if (pending) {
+    context.categories = pendingFunctionCategories({
+      reviewed, genes: dataset.genes, sources: state.colorSources, pending,
+    });
+  } else {
+    context.categories = resolveFunctionCategories({
+      reviewed,
+      derived: dataset.sourceDerivedCategories,
+      genes: dataset.genes,
+      sources: state.colorSources,
+    });
+  }
   return context.categories;
 }
 
@@ -299,7 +349,10 @@ function computeMask() {
       if (expressionBasisOf(dataset.genes[i]).basis !== 'measured') mask[i] = 0;
     }
   }
-  if (state.proteinFilter === 'refseq') {
+  // While the length inventory is still loading there is no record set to
+  // filter on, and filtering on an empty one would hide every gene. The filter
+  // is applied when the file lands; the filter panel says it is waiting.
+  if (state.proteinFilter === 'refseq' && dataset.lengthCohorts) {
     for (let i = 0; i < count; i += 1) {
       if (mask[i] && !context.proteinRecordIds.has(dataset.genes[i].id)) mask[i] = 0;
     }
@@ -313,7 +366,9 @@ function computeMask() {
 
   let finalMask = mask;
   const categories = context.categories;
-  if (state.categoryFilter.length > 0 && categories) {
+  // A pending category model has no categories to filter by; the selection is
+  // kept and applied when the categories land.
+  if (state.categoryFilter.length > 0 && categories && !categories.pending) {
     finalMask = new Uint8Array(count);
     for (let i = 0; i < count; i += 1) {
       finalMask[i] = mask[i] && passesCategoryFilter(categories, i, state.categoryFilter) ? 1 : 0;
@@ -570,13 +625,16 @@ function resolveColorScale() {
 function colorModel() {
   const resolved = resolveColorScale();
   const categories = context.categories ?? resolveCategoryModel();
-  const metric = resolved.categorical ? { label: 'Function category' } : resolved.metric;
+  const pendingCategories = resolved.categorical && categories.pending;
+  const metric = resolved.categorical
+    ? { label: pendingCategories ? 'Function category (not loaded yet)' : 'Function category' }
+    : resolved.metric;
   const { values } = resolved;
   // The ramp family is whatever the metric declares; undeclared is inferred and
   // the legend says so. `direction` is never read. The scale only changes which
   // ramp position a value takes; the value itself is untouched.
   const scale = resolved.categorical
-    ? buildCategoryColorScale(categories.labels.length)
+    ? buildCategoryColorScale(categories.labels.length, { pending: Boolean(pendingCategories) })
     : buildColorScale(values, {
       scale: metric.scale,
       transform: valueScaleTransform(resolved.scale, values),
@@ -853,7 +911,11 @@ function renderMap() {
   loadingsHost.hidden = !projection.available;
   loadingsHost.querySelector('summary').textContent = state.panel === 'axes'
     ? 'About these axes' : 'What drives these axes';
-  if (projection.available) renderLoadings(element('loadings'), projection);
+  if (projection.available) {
+    renderLoadings(element('loadings'), projection, {
+      pending: state.panel === 'native' ? pendingState(context.dataset, 'codonPca') : null,
+    });
+  }
 
   const canvas = element('map-canvas');
   // The scale belongs in this sentence: which colour a value takes depends on
@@ -937,6 +999,7 @@ function renderChromosomeView() {
     total: context.dataset.genes.length,
     categoryFilterLabels: selectedCategoryLabels(),
     hasSelection: pinnedIndex() >= 0 || context.activeIndex >= 0 || context.hoveredIndex >= 0,
+    tssPending: pendingState(context.dataset, 'tssEvidence'),
   });
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
@@ -1008,7 +1071,8 @@ function renderControlsGeneViewer(index) {
   if (!body || body.hidden) return;
   const host = body.querySelector('#gene-viewer-controls');
   if (!host) return;
-  renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null);
+  renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null,
+    { tssPending: pendingState(context.dataset, 'tssEvidence') });
 }
 
 function renderAll({ schemeErrors = [] } = {}) {
@@ -1042,6 +1106,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       count: context.proteinRecordIds.size,
       unavailableReason: context.dataset.lengthCohorts.directDetection.reason,
     } : null,
+    proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
   });
   shortlistPanel.update({
     ids: state.shortlist,
@@ -1252,12 +1317,14 @@ function renderCurrentView() {
       range: state.filters.lengthNt,
       mapPassing: context.passing,
       mapCount: context.dataset.genes.length,
+      pending: pendingState(context.dataset, 'lengthCohorts'),
     });
     return;
   }
   if (regulatoryActive) {
     element('panel-blurb').textContent = REGULATORY_TAB.blurb;
-    regulatorySitesPanel.update(context.dataset.regulatoryTss);
+    regulatorySitesPanel.update(context.dataset.regulatoryTss,
+      pendingState(context.dataset, 'regulatoryTss'));
     return;
   }
   renderMap();
@@ -1502,7 +1569,10 @@ function renderProvenance() {
   add('Genes loaded', `${formatCount(provenance.loadedGeneCount)}`
     + (provenance.declaredGeneCount && provenance.declaredGeneCount !== provenance.loadedGeneCount
       ? ` (meta.json declares ${formatCount(provenance.declaredGeneCount)})` : ''));
-  add('Excluded CDS', formatCount(provenance.excludedCount));
+  // A count of zero is a claim, so it is not made before the file has landed.
+  add('Excluded CDS', isLoading(context.dataset, 'excluded') ? 'loading…'
+    : hasFailed(context.dataset, 'excluded') ? 'could not be loaded'
+      : formatCount(provenance.excludedCount));
   add('CAI reference set', provenance.caiReferenceFallback
     ? 'not found in this dataset, so weights come from genome-wide usage'
     : `${formatCount(provenance.caiReferenceGenes)} genes`);
@@ -1601,7 +1671,11 @@ function normalizeAndApply(decoded) {
   state.shortlist = state.shortlist.filter((id) => context.dataset.indexById.has(id));
   if (state.pinnedId && !context.dataset.indexById.has(state.pinnedId)) state.pinnedId = null;
   if (!ALL_TABS.some((panel) => panel.id === state.panel)) state.panel = 'native';
-  if (!context.dataset.lengthCohorts) state.proteinFilter = 'any';
+  // A link's protein filter survives while the inventory is still loading; it
+  // is dropped only once the file is known not to be there.
+  if (!context.dataset.lengthCohorts && !isLoading(context.dataset, 'lengthCohorts')) {
+    state.proteinFilter = 'any';
+  }
   if (!context.basisCounts.recorded) state.expressionFilter = 'any';
 
   const schemeErrors = recomputeScheme();
@@ -1662,10 +1736,196 @@ function applyLiveHash() {
   announce('View updated from the address bar.');
 }
 
+/** The set of protein-record loci the protein filter reads, from the length inventory. */
+function refreshProteinRecords() {
+  context.proteinRecordIds = new Set((context.dataset.lengthCohorts?.records ?? [])
+    .filter((record) => record.refseqProteinRecord).map((record) => record.id));
+}
+
+/**
+ * The later files this view cannot be shown without, beyond tier 1.
+ *
+ * A shared link changes what the page waits for. A link that filters by
+ * category, filters by protein evidence, opens the Lengths or Regulatory sites
+ * tab, or pins a gene promotes the files that view reads, so it never opens
+ * onto a view still missing its own data. A fresh view waits for none: its map
+ * draws on tier 1 and its colour arrives as the category files land.
+ */
+function promotedFileKeys() {
+  const keys = new Set();
+  if (state.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
+  if (state.proteinFilter !== 'any' || state.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
+  if (state.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
+  if (state.pinnedId) {
+    for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
+      'goIeaEssentiality', 'goTerms', 'tssEvidence']) keys.add(key);
+  }
+  return [...keys];
+}
+
+/** A later file settled. Renders are coalesced, since several often land together. */
+function fileLanded(key) {
+  landed.add(key);
+  if (!booted || landingFlush) return;
+  landingFlush = true;
+  queueMicrotask(flushLandings);
+}
+
+/**
+ * Bring the page up to date with every file that settled since the last render.
+ *
+ * Most of the page reads the dataset afresh on each render, so a re-render is
+ * all a landing needs. The few values computed once at start-up are recomputed
+ * here, each against the file it was computed from.
+ */
+function flushLandings() {
+  landingFlush = false;
+  if (landed.size === 0) return;
+  const keys = new Set(landed);
+  landed.clear();
+  const { dataset } = context;
+  if (keys.has('lengthCohorts')) {
+    refreshProteinRecords();
+    // Kept while the inventory was loading; dropped now if there is none.
+    if (!dataset.lengthCohorts) state.proteinFilter = 'any';
+  }
+  // The native projection's axis labels and loadings come from this file.
+  if (keys.has('codonPca')) context.projections.clear();
+  if (keys.has('goTerms') || keys.has('annotations')) {
+    searchResults?.setGenes(dataset.genes, dataset.goTerms?.terms, dataset);
+  }
+  if (keys.has('excluded')) renderProvenance();
+  loadProgress.setFiles(staged.files);
+  renderAll();
+  // The categories arrived after the points had already appeared in the
+  // not-loaded colour: let them take their real colours the way the intro does,
+  // rather than all at once. An intro still running picks the colours up itself.
+  if (revealed && keys.has('sourceDerivedCategories') && state.colorBy === FUNCTION_COLOR_KEY
+    && !isLoading(dataset, 'sourceDerivedCategories') && !plot.introActive) {
+    startMapIntro({ appearMs: 0, colourMs: loadTiming.mapIntro.colourMs });
+  }
+}
+
+/** Ask again for one later file that could not be loaded. */
+function retryFile(key) {
+  if (!staged?.retry(key)) return;
+  loadProgress.setFiles(staged.files);
+  renderAll();
+  announce(`Retrying ${DATA_FILE_BY_KEY[key].label}.`);
+}
+
+/**
+ * The empty shell gives way to the page.
+ *
+ * Everything was built while the shell hid it, so this only uncovers it: the
+ * text appears, the sections below the workspace are shown, and the stage with
+ * the grid and the chromosome bar is replaced by the map it stood in for.
+ */
+function revealPage() {
+  revealed = true;
+  document.body.classList.remove('is-loading');
+  for (const id of ['compare-section', 'panel-section', 'site-footer']) element(id).hidden = false;
+  loadProgress.setFiles(staged.files);
+  loadProgress.reveal();
+  // The canvases were built inside a frame that was not displayed. Their sizes
+  // are real only now, so the first true picture is drawn here.
+  workspaceResizer?.update();
+  renderAll();
+  performance.mark('cyano:revealed');
+  startMapIntro(loadTiming.mapIntro);
+  startTextReveal();
+}
+
+/**
+ * Type the page's text in as flipping base letters that settle into the words.
+ *
+ * Presentation only, so it is skipped under reduced motion. The real text is in
+ * the document throughout and the animated regions are hidden from assistive
+ * technology while they flip, so a screen reader reads the final text once. A
+ * panel the page re-renders during the run simply shows its final text.
+ */
+function startTextReveal() {
+  if (reducedMotion) return;
+  try {
+    textScramble.run([
+      document.querySelector('.site-header'), element('main'), element('compare-section'),
+      element('panel-section'), element('site-footer'),
+    ]);
+  } catch (error) {
+    // The animation is decoration over real text. If it cannot run, the text
+    // must still be there: cancelling restores every node it had touched.
+    textScramble.cancel();
+    console.error(error);
+  }
+}
+
+/** Whether the tab on screen is one of the scatter maps. */
+function mapTabActive() {
+  return PANELS.some((panel) => panel.id === state.panel);
+}
+
+/**
+ * Fill the map's points in, and let them take their colour.
+ *
+ * Presentation only: skipped under reduced motion and on any tab that is not a
+ * scatter map. While the function categories are still loading the points
+ * appear in the one neutral colour that means not loaded, and `flushLandings`
+ * runs the colour half again when the categories arrive.
+ */
+function startMapIntro({ appearMs, colourMs }) {
+  if (reducedMotion || !mapTabActive()) return;
+  plot.startIntro({ appearMs, colourMs });
+}
+
+/**
+ * Load timings in the console, behind `?load-log`.
+ *
+ * The three marks are always recorded, because they cost nothing and the
+ * browser's own performance panel reads them; the table is printed only when
+ * asked for, so that "still fast" can be measured on a real device.
+ */
+function logLoadTimings() {
+  performance.mark('cyano:settled');
+  if (!new URLSearchParams(window.location.search).has('load-log')) return;
+  const round = (value) => (Number.isFinite(value) ? Math.round(value) : null);
+  console.table(DATA_FILES.map((file) => {
+    const record = staged.files[file.key];
+    return {
+      file: file.name, tier: file.tier, state: record.state, bytes: record.bytes,
+      startMs: round(record.startedAt), endMs: round(record.endedAt),
+    };
+  }));
+  console.table(performance.getEntriesByType('mark')
+    .filter((mark) => mark.name.startsWith('cyano:'))
+    .map((mark) => ({ milestone: mark.name, ms: round(mark.startTime) })));
+}
+
 async function boot() {
-  // Started before the (required) gene dataset fetch so both requests are in
-  // flight together; a missing or broken manifest must never hold up the map.
-  const citationsLoaded = loadCitationsManifest({ baseUrl: resolveDataBase() })
+  loadProgress ??= new LoadProgress({
+    stage: element('load-stage'), bar: element('load-progress'), tail: element('load-tail'),
+  }, { onRetry: (key) => retryFile(key) });
+  // The page's inline script has already asked for the manifest and the tier 1
+  // files; this hands those requests to the loader instead of repeating them.
+  const fetchImpl = adoptingFetch(window.__cyanoEarlyData, (url, init) => fetch(url, init));
+  const dataBase = new URL(resolveDataBase(), document.baseURI);
+  staged = loadDatasetStaged({
+    baseUrl: dataBase,
+    fetchImpl,
+    onProgress: (snapshot) => loadProgress.update(snapshot),
+    onFile: (key) => fileLanded(key),
+  });
+  const load = staged;
+
+  // Started beside the dataset so both are in flight together; a missing or
+  // broken manifest must never hold up the map. It is addressed through the
+  // content manifest like every other data file.
+  const citationsFetch = async () => {
+    const manifest = await load.manifest;
+    const request = dataRequest(dataBase, 'citations.json',
+      manifest?.files.get('citations.json') ?? null, 4);
+    return fetchImpl(request.url, request.init);
+  };
+  const citationsLoaded = loadCitationsManifest({ baseUrl: dataBase, fetchImpl: citationsFetch })
     .then((manifest) => {
       citationsManifest = manifest;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(manifest);
@@ -1686,25 +1946,23 @@ async function boot() {
 
   let dataset;
   try {
-    dataset = await loadDataset({ baseUrl: resolveDataBase() });
+    dataset = await load.core;
   } catch (error) {
     showLoadError(error);
     return;
   }
+  performance.mark('cyano:core');
   context.dataset = dataset;
-  context.proteinRecordIds = new Set((dataset.lengthCohorts?.records ?? [])
-    .filter((record) => record.refseqProteinRecord).map((record) => record.id));
+  loadProgress.setIdentity({
+    releaseId: dataset.meta.annotationRelease?.releaseId ?? null,
+    geneCount: dataset.genes.length,
+  });
+  refreshProteinRecords();
   context.exceptionCount = dataset.genes
     .filter((gene) => Boolean(gene.translationalException)).length;
   context.basisCounts = expressionBasisCounts(dataset.genes);
 
   normalizeAndApply(decodeState(window.location.hash));
-
-  element('load-status').hidden = true;
-  element('main').hidden = false;
-  element('compare-section').hidden = false;
-  element('panel-section').hidden = false;
-  element('site-footer').hidden = false;
 
   plot = new ScatterPlot(element('map-canvas'), {
     onHover: (index) => {
@@ -2070,8 +2328,20 @@ async function boot() {
   window.addEventListener('popstate', applyLiveHash);
 
   renderAll();
+  booted = true;
+  flushLandings();
+
+  // The bar stays for its minimum time and for any file this view was opened
+  // onto; both are presentation or promotion, never a reason to delay a request.
+  const minimum = reducedMotion ? 0 : Math.max(0, loadTiming.minimumBarMs - performance.now());
+  await Promise.all([
+    load.when(promotedFileKeys()),
+    new Promise((resolve) => { setTimeout(resolve, minimum); }),
+  ]);
+  revealPage();
   if (pendingMapJump) jumpToMap();
   announce(`${formatCount(dataset.genes.length)} genes loaded.`);
+  load.settled.then(logLoadTimings);
 }
 
 // Install these handlers before boot reaches its first await so a click during

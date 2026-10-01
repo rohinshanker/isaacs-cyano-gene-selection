@@ -119,6 +119,85 @@ pre {
 }
 .load-status.error { border-color: var(--danger); }
 
+/* Loading shell ---------------------------------------------------------- */
+
+/* While the data loads the page is an empty version of itself: the header bar,
+   the left column, the right column, and the centre area, with only an empty
+   grid and the chromosome loading bar in the centre. No text is shown until the
+   reveal. Children are hidden with `visibility`, which keeps each box its real
+   size, so the bars and columns are the page's own and not a separate skeleton
+   that could drift from it. */
+.is-loading .site-header > *,
+.is-loading .column.controls > .card > *,
+.is-loading .column.detail > * { visibility: hidden; }
+.is-loading .resize-handle { visibility: hidden; }
+.is-loading #help,
+.is-loading #metric-agreement,
+.is-loading .analysis > :not(#map-section),
+.is-loading #map-section > :not(#load-stage) { display: none; }
+.is-loading .column.controls > .card { min-height: 7rem; }
+.is-loading .column.detail { min-height: 18rem; }
+/* One column on a narrow screen stacks controls, map, detail. The grid is what
+   the visitor is waiting on, so while loading it leads and stays within view. */
+@media (max-width: 959px) {
+  .is-loading .analysis { order: -1; }
+  .is-loading .column.controls > .card { min-height: 3.5rem; }
+  .is-loading .column.detail { min-height: 5rem; }
+}
+
+/* The same box the map canvas takes, so the grid stands where the map will. */
+.load-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: clamp(320px, 58vh, 620px);
+}
+.load-grid {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 12.5% 20%;
+}
+.load-progress { position: relative; width: min(80%, 34rem); }
+.load-chromosome { display: block; width: 100%; height: 44px; overflow: visible; }
+.load-chromosome-axis { stroke: #536774; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+/* A gene grows out of the axis as the progress reaches it. */
+.load-gene {
+  opacity: 0;
+  transform: scaleY(0.15);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 140ms ease-out, transform 180ms ease-out;
+}
+.load-gene.is-on { opacity: 1; transform: none; }
+
+/* After the reveal: later files still landing, and any that could not load. */
+.load-tail { display: grid; gap: 0.3rem; font-size: 0.8rem; color: var(--ink-muted); }
+.load-tail-status { margin: 0; }
+.load-tail-meter { height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.load-tail-fill { height: 100%; background: var(--accent); transition: width 200ms linear; }
+.load-failures { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+.load-failure { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--danger); }
+.load-failure .chip-button { min-height: 28px; padding: 0.1rem 0.6rem; }
+
+/* Evidence whose file has not landed, or could not be loaded: never drawn as
+   absent, and never as a value. */
+.evidence-pending { color: var(--ink-muted); font-style: italic; }
+.evidence-pending[data-pending="loading"] { animation: evidence-pulse 1.4s ease-in-out infinite; }
+.evidence-pending[data-pending="failed"] { color: var(--danger); font-style: normal; }
+@keyframes evidence-pulse { 50% { opacity: 0.55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .load-gene, .load-tail-fill { transition: none; }
+  .evidence-pending[data-pending="loading"] { animation: none; }
+}
+
 .layout {
   display: grid;
   gap: var(--gap);

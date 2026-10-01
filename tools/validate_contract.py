@@ -1203,6 +1203,44 @@ def validate_source_derived_categories(data: Any, genes: list[dict[str, Any]], c
                  "every reviewed row colours by review under all sources, never by a derived source")
 
 
+def validate_data_manifest(data_dir: str, report: Report) -> None:
+    """Check that data-manifest.json describes exactly the files beside it.
+
+    The browser addresses each data file by the digest this manifest publishes
+    and may then answer from its cache without asking the server. That is only
+    safe while the manifest matches the files, and several tools rewrite single
+    files here without touching ``meta.json``, so a manifest that has fallen
+    behind would pin visitors to a superseded file. Recomputed here rather than
+    imported from the builder, so a fault in the builder cannot pass its own gate.
+    """
+    path = os.path.join(data_dir, "data-manifest.json")
+    manifest = load_json(path, report)
+    if manifest is None:
+        return
+    listed = manifest.get("files") if isinstance(manifest, dict) else None
+    if not report.check(
+        isinstance(manifest, dict) and manifest.get("schemaVersion") == 1
+        and isinstance(listed, dict),
+        "data-manifest.json declares schema 1 and a file table",
+    ):
+        return
+    actual: dict[str, dict[str, Any]] = {}
+    for name in sorted(os.listdir(data_dir)):
+        if not name.endswith(".json") or name == "data-manifest.json":
+            continue
+        with open(os.path.join(data_dir, name), "rb") as handle:
+            content = handle.read()
+        actual[name] = {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
+    stale = sorted(
+        name for name in set(actual) | set(listed) if actual.get(name) != listed.get(name)
+    )
+    report.check(
+        not stale,
+        "data-manifest.json lists every published JSON file with its exact size and SHA-256",
+        f"out of date for {stale}; run tools/build_data_manifest.py build",
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", default="site/data")
@@ -1430,6 +1468,8 @@ def main() -> int:
             size_mb = os.path.getsize(path) / (1024 * 1024)
             report.check(size_mb <= 6.0, "genes.json is within the 6 MB budget",
                          f"{size_mb:.2f} MB")
+
+    validate_data_manifest(args.data_dir, report)
 
     return report.emit()
 

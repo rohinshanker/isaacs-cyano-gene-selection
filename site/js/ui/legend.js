@@ -1,4 +1,5 @@
 /** Colour legend for the active map: scale, units, and what an open marker means. */
+import { CATEGORY_PENDING_LABELS } from '../core/source-derived-categories.js';
 import { formatValue, formatCount } from './format.js';
 import {
   CATEGORY_UNKNOWN_COLOR, DERIVED_MARKER_FILL, MISSING_COLOR, GHOST_BORDER, GHOST_COLOR,
@@ -158,10 +159,33 @@ export function renderCategoryLegend(host, {
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
   sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
   evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
-  markerConventions = true,
+  markerConventions = true, pending = null,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
+  // The categories have not landed, or could not be loaded. Every CDS is drawn
+  // in one neutral colour, and the key says only that: no category rows, no
+  // counts, and no source toggles, because any of them would describe a
+  // resolution that has not happened.
+  if (pending) {
+    host.replaceChildren();
+    host.classList.add('category-mode');
+    const title = document.createElement('p');
+    title.className = 'legend-title';
+    title.textContent = 'Function categories';
+    const list = document.createElement('ul');
+    list.className = 'legend-notes category-legend';
+    const item = document.createElement('li');
+    item.className = 'evidence-pending';
+    item.dataset.pending = pending;
+    item.setAttribute('role', 'status');
+    const color = scale.buckets[scale.buckets.length - 1];
+    item.append(makeSwatch('filled-circle', color, color),
+      document.createTextNode(CATEGORY_PENDING_LABELS[pending]));
+    list.append(item);
+    host.append(title, list);
+    return;
+  }
   // A row rerender (every toggle calls renderAll) replaces every list element,
   // which would otherwise drop keyboard focus to BODY and break repeated
   // Enter/Space toggling on the same row. Remember which category id or

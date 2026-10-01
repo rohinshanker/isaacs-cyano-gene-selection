@@ -1,4 +1,5 @@
 /** Search and inspect Tan 2018 non-gene-linked transcription start sites. */
+import { pendingNote } from './loading-note.js';
 import { REGULATORY_TYPES, potentialTargetsBySite, searchRegulatoryTss } from '../core/regulatory-tss.js';
 import { formatTssStatistic } from '../core/tss-evidence.js';
 
@@ -131,10 +132,14 @@ export class RegulatorySitesPanel {
     this.built = false;
   }
 
-  update(inventory) {
+  update(inventory, pending = null) {
     if (!inventory) {
-      const note = document.createElement('p');
-      note.textContent = 'The regulatory start-site table is unavailable in this dataset.';
+      // Still loading, or not loadable, is not "unavailable in this dataset".
+      const note = pending ? pendingNote(pending, 'the regulatory start-site table')
+        : document.createElement('p');
+      if (!pending) {
+        note.textContent = 'The regulatory start-site table is unavailable in this dataset.';
+      }
       this.host.replaceChildren(note);
       this.built = false;
       return;

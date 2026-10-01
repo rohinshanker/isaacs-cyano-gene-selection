@@ -7,15 +7,40 @@
  * `.class`, `tag.class`, and `tag[data-x="y"]`). Anything else throws, so a
  * renderer that grows a new DOM dependency fails loudly.
  */
+
+/**
+ * Whether `node` is still in the document, with real `isConnected` semantics.
+ *
+ * Each step up is checked against the parent's current children, so a node that
+ * `replaceChildren` or a new `textContent` dropped reports itself disconnected
+ * even though it still remembers the parent it used to be under.
+ */
+function isAttached(node) {
+  let current = node;
+  while (current.parentNode) {
+    if (!current.parentNode.children.includes(current)) return false;
+    current = current.parentNode;
+  }
+  return current === globalThis.document?.body;
+}
+
 export class FakeNode {
   constructor(text) {
     this.nodeType = 3;
+    this.parentNode = null;
     this.textContent = text;
   }
+
+  /** A text node's own text, which is what a DOM caller writes. */
+  get data() { return this.textContent; }
+  set data(text) { this.textContent = String(text); }
+
+  get isConnected() { return isAttached(this); }
 }
 
 export class FakeElement {
   constructor(tagName, namespace = null) {
+    this.nodeType = 1;
     this.tagName = tagName;
     this.namespace = namespace;
     this.children = [];
@@ -40,18 +65,27 @@ export class FakeElement {
   classes() { return this.className.split(/\s+/).filter(Boolean); }
   hasClass(name) { return this.classes().includes(name); }
 
+  /** Every child, text nodes included, which is what a DOM walk reads. */
+  get childNodes() { return this.children; }
+
+  get parentNode() { return this.parent; }
+
+  get isConnected() { return isAttached(this); }
+
   get textContent() {
     return this.children.map((child) => child.textContent).join('');
   }
 
   set textContent(text) {
-    this.children = text === '' ? [] : [new FakeNode(String(text))];
+    this.children = [];
+    if (text !== '') this.append(String(text));
   }
 
   append(...nodes) {
     for (const node of nodes) {
       const child = typeof node === 'string' ? new FakeNode(node) : node;
       if (child instanceof FakeElement) child.parent = this;
+      else child.parentNode = this;
       this.children.push(child);
     }
   }
@@ -88,6 +122,7 @@ export class FakeElement {
 
   setAttribute(name, value) { this.attributes[name] = String(value); }
   getAttribute(name) { return this.attributes[name] ?? null; }
+  removeAttribute(name) { delete this.attributes[name]; }
   addEventListener(type, listener) { (this.listeners[type] ??= []).push(listener); }
   dispatch(type, event = {}) { for (const listener of this.listeners[type] ?? []) listener(event); }
   focus() {

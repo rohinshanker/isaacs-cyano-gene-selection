@@ -1,4 +1,5 @@
 /** Loadings view: which inputs pull genes along each axis of a projection. */
+import { pendingNote } from './loading-note.js';
 
 const BAR_WIDTH = 78;
 
@@ -25,14 +26,20 @@ function bar(value) {
  * @param {HTMLElement} host
  * @param {{loadings: object[], loadingNote?: string}} projection
  */
-export function renderLoadings(host, projection) {
+export function renderLoadings(host, projection, { pending = null } = {}) {
   host.replaceChildren();
+  const loadings = projection.loadings ?? [];
+  // The file these loadings come from has not landed: an empty table under the
+  // usual note would read as a projection that has none.
+  if (loadings.length === 0 && pending) {
+    host.append(pendingNote(pending, 'the axis loadings'));
+    return;
+  }
   const note = document.createElement('p');
   note.className = 'panel-note';
   note.textContent = projection.loadingNote ?? '';
   host.append(note);
 
-  const loadings = projection.loadings ?? [];
   if (loadings.length === 0) return;
 
   const ranked = [...loadings]

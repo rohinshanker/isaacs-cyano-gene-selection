@@ -10,6 +10,7 @@
  *
  * Nothing here touches the DOM, so the round trip is testable in Node.
  */
+import { firstUnsettled } from './data-files.js';
 import { compileScheme, serializeSchemeMap } from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
 import { expressionBasisOf } from './metric-registry.js';
@@ -241,6 +242,29 @@ function caveatsFor(dataset, manifest) {
   return caveats;
 }
 
+/** The later files an export reads a field from. */
+export const EXPORT_FILE_KEYS = Object.freeze([
+  'sourceDerivedCategories', 'annotations', 'candidateEvidence', 'goIeaEssentiality', 'goTerms',
+  'tssEvidence',
+]);
+
+/**
+ * Why an export cannot be written yet, or null when it can.
+ *
+ * An export records every field as it stands. A field whose file has not
+ * landed would be written as empty, and an empty field in a manifest says the
+ * evidence is absent, so nothing is written until every file it reads has
+ * settled without failing.
+ */
+export function exportBlockedReason(dataset) {
+  const waiting = firstUnsettled(dataset, EXPORT_FILE_KEYS);
+  if (!waiting) return null;
+  return waiting.state === 'failed'
+    ? `The export cannot be written because the ${waiting.file.label} could not be loaded. `
+      + 'Retry that file from the notice above the map.'
+    : `The export is waiting on the ${waiting.file.label}, which is still loading.`;
+}
+
 /**
  * Build the manifest and CSV for a shortlist under one or more schemes.
  *
@@ -254,6 +278,8 @@ export function buildExport({
   filterState = null, filterMask = null, viewState = null,
   colorSources = undefined, trRosettaRnaHandoffs = [],
 }) {
+  const blocked = exportBlockedReason(dataset);
+  if (blocked) throw new Error(blocked);
   // The sources enabled for category colouring; every other field is unscoped.
   const sources = normalizeAnnotationSources(colorSources);
   const { meta, genes, indexById, table } = dataset;

@@ -9,8 +9,92 @@
      does not ship, which would otherwise log a failed request on every page load. -->
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/app.css">
+<!-- Every statically imported module, so the browser fetches the whole graph in
+     one round instead of discovering it a level at a time. Generated: run
+     `node tools/build_module_preloads.mjs` after adding or removing a module;
+     tests/js/site-assets.test.mjs fails when this list falls behind. -->
+<!-- modulepreload:start -->
+<link rel="modulepreload" href="js/app.js">
+<link rel="modulepreload" href="js/core/annotation-evidence.js">
+<link rel="modulepreload" href="js/core/annotation-source.js">
+<link rel="modulepreload" href="js/core/candidate-evidence.js">
+<link rel="modulepreload" href="js/core/chromosome-model.js">
+<link rel="modulepreload" href="js/core/codon-metrics.js">
+<link rel="modulepreload" href="js/core/codon-table.js">
+<link rel="modulepreload" href="js/core/conventions.js">
+<link rel="modulepreload" href="js/core/data-files.js">
+<link rel="modulepreload" href="js/core/dataset.js">
+<link rel="modulepreload" href="js/core/early-data.js">
+<link rel="modulepreload" href="js/core/export-manifest.js">
+<link rel="modulepreload" href="js/core/folding-client.js">
+<link rel="modulepreload" href="js/core/folding-sequences.js">
+<link rel="modulepreload" href="js/core/function-categories.js">
+<link rel="modulepreload" href="js/core/gene-identity.js">
+<link rel="modulepreload" href="js/core/gene-search.js">
+<link rel="modulepreload" href="js/core/gene-sequence-model.js">
+<link rel="modulepreload" href="js/core/gene-view-model.js">
+<link rel="modulepreload" href="js/core/go-iea-essentiality.js">
+<link rel="modulepreload" href="js/core/left-panels.js">
+<link rel="modulepreload" href="js/core/length-cohorts.js">
+<link rel="modulepreload" href="js/core/live-metrics.js">
+<link rel="modulepreload" href="js/core/metric-axes.js">
+<link rel="modulepreload" href="js/core/metric-help.js">
+<link rel="modulepreload" href="js/core/metric-registry.js">
+<link rel="modulepreload" href="js/core/paint-priority.js">
+<link rel="modulepreload" href="js/core/panel-design.js">
+<link rel="modulepreload" href="js/core/panel-export.js">
+<link rel="modulepreload" href="js/core/panel-features.js">
+<link rel="modulepreload" href="js/core/pca.js">
+<link rel="modulepreload" href="js/core/projection-help.js">
+<link rel="modulepreload" href="js/core/regulatory-tss.js">
+<link rel="modulepreload" href="js/core/rosetta-handoff.js">
+<link rel="modulepreload" href="js/core/scheme.js">
+<link rel="modulepreload" href="js/core/source-derived-categories.js">
+<link rel="modulepreload" href="js/core/stats.js">
+<link rel="modulepreload" href="js/core/tss-evidence.js">
+<link rel="modulepreload" href="js/core/url-state.js">
+<link rel="modulepreload" href="js/core/value-scales.js">
+<link rel="modulepreload" href="js/ui/axis-copy.js">
+<link rel="modulepreload" href="js/ui/chromosome-view.js">
+<link rel="modulepreload" href="js/ui/citations.js">
+<link rel="modulepreload" href="js/ui/color-controls.js">
+<link rel="modulepreload" href="js/ui/colors.js">
+<link rel="modulepreload" href="js/ui/compare-model.js">
+<link rel="modulepreload" href="js/ui/compare.js">
+<link rel="modulepreload" href="js/ui/confirm-dialog.js">
+<link rel="modulepreload" href="js/ui/draw-direction.js">
+<link rel="modulepreload" href="js/ui/filters.js">
+<link rel="modulepreload" href="js/ui/folding-panel.js">
+<link rel="modulepreload" href="js/ui/format.js">
+<link rel="modulepreload" href="js/ui/gene-search-results.js">
+<link rel="modulepreload" href="js/ui/gene-sequence-view.js">
+<link rel="modulepreload" href="js/ui/gene-viewer.js">
+<link rel="modulepreload" href="js/ui/left-panels.js">
+<link rel="modulepreload" href="js/ui/legend.js">
+<link rel="modulepreload" href="js/ui/length-explorer.js">
+<link rel="modulepreload" href="js/ui/load-progress.js">
+<link rel="modulepreload" href="js/ui/load-timing.js">
+<link rel="modulepreload" href="js/ui/loading-note.js">
+<link rel="modulepreload" href="js/ui/loadings.js">
+<link rel="modulepreload" href="js/ui/locus-tag.js">
+<link rel="modulepreload" href="js/ui/metric-help.js">
+<link rel="modulepreload" href="js/ui/panel-designer.js">
+<link rel="modulepreload" href="js/ui/panels.js">
+<link rel="modulepreload" href="js/ui/regulatory-sites.js">
+<link rel="modulepreload" href="js/ui/rosetta-handoff-panel.js">
+<link rel="modulepreload" href="js/ui/scale-select.js">
+<link rel="modulepreload" href="js/ui/scatter.js">
+<link rel="modulepreload" href="js/ui/scheme-editor.js">
+<link rel="modulepreload" href="js/ui/shortlist.js">
+<link rel="modulepreload" href="js/ui/side-panel.js">
+<link rel="modulepreload" href="js/ui/text-scramble.js">
+<link rel="modulepreload" href="js/ui/workspace-resize.js">
+<!-- modulepreload:end -->
 </head>
-<body>
+<!-- The page opens as an empty shell: the header bar, the three columns, and an
+     empty grid with the chromosome loading bar. `is-loading` holds every piece
+     of text back until the reveal; see docs/validation/progressive-loading.md. -->
+<body class="is-loading">
 <button type="button" class="skip-link map-jump" aria-controls="map-section">Skip to the map</button>
 
 <header class="site-header">
@@ -150,7 +234,10 @@
   </details>
 </section>
 
-<p id="load-status" class="load-status" role="status">Loading gene data…</p>
+<!-- Read by assistive technology while the shell is empty, and the place a load
+     failure is written. The shell shows no text of its own, so this is visually
+     hidden until it carries an error. -->
+<p id="load-status" class="load-status visually-hidden" role="status">Loading gene data…</p>
 <script>
 // Deliberately a classic inline script, not a module. Browsers refuse to load a
 // module script from a file path, so when this page is opened by double-clicking
@@ -178,6 +265,48 @@ if (window.location.protocol === 'file:') {
   notice.appendChild(then);
 }
 </script>
+<script>
+// Also a classic inline script, after the notice above so that one still runs
+// first. It starts the first-tier downloads now, while the browser is still
+// fetching the module graph, instead of when js/app.js finally runs: on a slow
+// connection that is the difference between the gene file starting at once and
+// starting seconds later. The module adopts these requests by exact address
+// through core/early-data.js, which waits on `ready`, so nothing is ever
+// requested twice. tests/js/early-data.test.mjs holds the two sides to the same
+// addresses.
+(function () {
+  if (window.location.protocol === 'file:') return;
+  // An overridden data folder is resolved by the module, which knows the rule.
+  if (new URLSearchParams(window.location.search).get('data')) return;
+  var base = new URL('data/', document.baseURI);
+  var responses = {};
+  // A request that fails here is not an error of this script: the module finds
+  // the same rejection when it adopts the request, and asks again. Marking it
+  // handled keeps the console free of a rejection nobody is waiting on yet.
+  var keep = function (url, request) {
+    responses[url] = request;
+    request.catch(function () {});
+  };
+  var manifestUrl = new URL('data-manifest.json', base).href;
+  var manifest = fetch(manifestUrl, { cache: 'no-cache', priority: 'high' });
+  // Cloned before the body below is read, so the module gets an unread copy.
+  keep(manifestUrl, manifest.then(function (response) { return response.clone(); }));
+  var ready = manifest
+    .then(function (response) { return response.ok ? response.json() : null; })
+    .then(function (published) {
+      if (!published || published.schemaVersion !== 1 || !published.files) return;
+      ['meta.json', 'genes.json', 'function-categories-v1.json'].forEach(function (name) {
+        var entry = published.files[name];
+        if (!entry || typeof entry.sha256 !== 'string') return;
+        var url = new URL(name, base);
+        url.searchParams.set('v', entry.sha256.slice(0, 16));
+        keep(url.href, fetch(url.href, { cache: 'force-cache', priority: 'high' }));
+      });
+    })
+    .catch(function () {});
+  window.__cyanoEarlyData = { ready: ready, responses: responses };
+})();
+</script>
 
 <!-- Shown only when a metric this page recomputes does not match the pipeline's
      published value. A disagreement means the maps and the controls describe the
@@ -185,7 +314,7 @@ if (window.location.protocol === 'file:') {
      than inside the About card. -->
 <div id="metric-agreement" class="metric-alert" role="alert" hidden></div>
 
-<main class="layout" id="main" hidden>
+<main class="layout" id="main">
   <!-- Each panel carries its own id so the controls column can be reordered and
        collapsed from a shared link. The head, caret, and move buttons are added
        by ui/left-panels.js, which needs only the id, the heading, and the body. -->
@@ -219,6 +348,22 @@ if (window.location.protocol === 'file:') {
 
   <div class="column analysis" id="analysis-column">
     <section class="map card" id="map-section" aria-label="Gene maps and sources">
+      <!-- The loading stage: an empty grid where the map will be, and the
+           chromosome bar over it. The axis is here at first paint; ui/load-progress.js
+           adds the genes and lights them as the data arrives. -->
+      <div id="load-stage" class="load-stage">
+        <div class="load-grid" aria-hidden="true"></div>
+        <div id="load-progress" class="load-progress" role="progressbar"
+             aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <svg class="load-chromosome" viewBox="0 0 600 44" preserveAspectRatio="none"
+               aria-hidden="true" focusable="false">
+            <line class="load-chromosome-axis" x1="0" x2="600" y1="22" y2="22"></line>
+          </svg>
+        </div>
+      </div>
+      <!-- After the reveal, while later files are still landing, and the place a
+           file that could not be loaded is listed with its Retry control. -->
+      <div id="load-tail" class="load-tail" hidden></div>
       <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map views and sources"></div>
       <p class="panel-blurb" id="panel-blurb"></p>
       <details id="features-used" class="method-help" hidden>

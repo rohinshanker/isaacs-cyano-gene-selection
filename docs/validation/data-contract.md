@@ -701,6 +701,30 @@ is the only change needed to switch axes; nothing downstream hardcodes this data
 [ { "id": "M744_RS03825", "reason": "length_not_multiple_of_3", "lengthNt": 755 } ]
 ```
 
+### `data-manifest.json`
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "files": {
+    "genes.json": { "bytes": 5169989, "sha256": "<64 lower-case hex digits>" }
+    // one entry for every other published *.json file, this one excluded
+  }
+}
+```
+
+The content manifest of this directory: every published JSON file with its exact
+byte size and SHA-256. It carries no biological content and changes no value. The
+site reads it first and addresses each data file by its digest, so a browser may
+answer from its cache without asking the server, and uses the sizes as the
+loading bar's denominator; see [progressive-loading.md](progressive-loading.md).
+
+It is written by `tools/build_data_manifest.py build`, which must run **last**,
+after any tool that writes here, because several of them rewrite one file without
+touching `meta.json`. A manifest that no longer matches the files would pin
+visitors to a superseded copy, so `tools/build_data_manifest.py check`,
+`tools/validate_contract.py`, and the deploy workflow each refuse one.
+
 ## Computed in the browser, not the pipeline
 
 These depend on the active recoding scheme and must never be baked into JSON:

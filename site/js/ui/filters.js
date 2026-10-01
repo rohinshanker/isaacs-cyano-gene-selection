@@ -9,6 +9,7 @@
  * rather than zero, so it is kept unless the user says otherwise, and the
  * count is always visible.
  */
+import { pendingNote } from './loading-note.js';
 import {
   isExpressionMetric, isExpressionProxyMetric, metricValues,
   expressionSourceScope, metricsInDisplayOrder,
@@ -280,6 +281,17 @@ export class FilterPanel {
 
   renderProteinFilter(state) {
     this.proteinHost.replaceChildren();
+    // The length inventory this filter reads has not landed, or could not be
+    // loaded. An absent fieldset would read as a filter this dataset lacks.
+    if (!state.proteinEvidence && state.proteinEvidencePending) {
+      const waiting = document.createElement('fieldset');
+      waiting.className = 'flag-filter';
+      const heading = document.createElement('legend');
+      heading.textContent = 'Protein evidence';
+      waiting.append(heading, pendingNote(state.proteinEvidencePending, 'the protein evidence filter'));
+      this.proteinHost.append(waiting);
+      return;
+    }
     if (!state.proteinEvidence) return;
     const fieldset = document.createElement('fieldset');
     fieldset.className = 'flag-filter';

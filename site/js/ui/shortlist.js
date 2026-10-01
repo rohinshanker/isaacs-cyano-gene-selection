@@ -6,6 +6,7 @@
  * would cost it. The export writes a CSV plus a manifest so two exports under two
  * schemes stay distinguishable without relying on filenames.
  */
+import { exportBlockedReason } from '../core/export-manifest.js';
 import { formatCount, formatValue } from './format.js';
 import { buildExport } from '../core/export-manifest.js';
 import { FoldingPanel } from './folding-panel.js';
@@ -211,6 +212,13 @@ export class ShortlistPanel {
   }
 
   exportCsv() {
+    // An export records every field as it stands, so it waits for every file
+    // it reads rather than writing a not-yet-loaded field as an empty one.
+    const blocked = exportBlockedReason(this.state.dataset);
+    if (blocked) {
+      this.status.textContent = blocked;
+      return;
+    }
     const result = this.buildExport();
     for (const file of result.files) {
       const blob = new Blob([file.content], { type: file.type });

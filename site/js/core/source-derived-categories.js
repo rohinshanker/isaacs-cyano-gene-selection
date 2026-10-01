@@ -242,6 +242,55 @@ export function resolveFunctionCategories({ reviewed, derived, genes, sources })
   };
 }
 
+/** What the legend says while the category channel cannot be resolved. */
+export const CATEGORY_PENDING_LABELS = Object.freeze({
+  loading: 'Function categories are loading',
+  failed: 'Function categories could not be loaded',
+});
+
+/**
+ * The category model while the derived categories are still loading, or could
+ * not be loaded.
+ *
+ * The same shape `resolveFunctionCategories` returns, so every reader takes it
+ * unchanged, but every CDS sits in one `pending` bucket and nothing is counted.
+ * Resolving on the reviewed table alone would be a claim: it would draw some
+ * 1,350 categorised CDSs as unknown, and "not loaded yet" is not "no category".
+ * The reviewed rows are held back too, because a legend that names a dozen
+ * categories over a map that cannot show the rest invites reading the rest as
+ * absent.
+ *
+ * @param {{reviewed: object, genes: object[], sources: string[],
+ *   pending: 'loading'|'failed'}} input
+ */
+export function pendingFunctionCategories({ reviewed, genes, sources, pending }) {
+  const classified = reviewed.categoryIds;
+  // One past the multiple-functions bucket, which sits at `classified.length`.
+  const pendingBucket = classified.length + 1;
+  return {
+    source: reviewed.source,
+    labels: reviewed.labels,
+    categoryIds: classified,
+    multipleLabel: reviewed.multipleLabel,
+    assignmentsById: reviewed.assignmentsById,
+    values: new Int16Array(genes.length).fill(pendingBucket),
+    derived: new Uint8Array(genes.length),
+    counts: new Int32Array(classified.length),
+    unknownCount: 0,
+    multipleCount: 0,
+    reviewedCount: 0,
+    reviewedColouredCount: 0,
+    derivedCount: 0,
+    colouredCount: 0,
+    conflictCount: 0,
+    evidenceCounts: { reviewed: 0, 'pcc-7942-derived': 0, 'go-iea-derived': 0, none: 0 },
+    sources: normalizeAnnotationSources(sources),
+    hasDerivedData: false,
+    pending,
+    pendingBucket,
+  };
+}
+
 /** The display label for a category id, the multiple bucket, or unknown. */
 export function categoryLabelFor(reviewed, id) {
   if (id === MULTIPLE_CATEGORY_ID) {

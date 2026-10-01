@@ -46,7 +46,22 @@ export function tssInitiationBasis(gene, {
       basis: 'unrecorded', short: '', text: '', siteCount: null,
     };
   }
-  const siteCount = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence.length : 0;
+  // The loader joins a row list onto every gene, empty where no site maps, so a
+  // gene with no list at all is one whose site layer has not been joined: still
+  // loading, or not loadable. That is not a count of zero, and it is not said
+  // to be one.
+  if (!Array.isArray(gene?.tssEvidence)) {
+    const pooled = Number.isFinite(value);
+    return {
+      basis: pooled ? 'measured' : 'none',
+      short: pooled ? 'pooled score; Table S1 sites not loaded' : 'no pooled score; Table S1 sites not loaded',
+      text: `The separate ${pooledSourceId} pooled initiation table has ${pooled ? 'a value' : 'no row'} `
+        + 'for this locus. The Table S1 site layer is not loaded, so whether a gTSS row maps to '
+        + 'this locus is not known yet.',
+      siteCount: null,
+    };
+  }
+  const siteCount = gene.tssEvidence.length;
   if (Number.isFinite(value)) {
     if (siteCount === 0) {
       return {

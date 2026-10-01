@@ -6,6 +6,8 @@
  * the genome, because a bare number does not tell a bench scientist whether the
  * value is unusual.
  */
+import { firstUnsettled, pendingState } from '../core/data-files.js';
+import { pendingNote } from './loading-note.js';
 import {
   formatValue, formatDelta, formatPercentile, formatCount, formatExpressionSource,
   formatSpan, MISSING,
@@ -193,6 +195,23 @@ function goAttribution(source) {
 }
 
 /** The suffix on a source line whose toggle is off: it is shown, not coloured by. */
+/**
+ * The stand-in for an evidence section whose file has not landed, or null when
+ * every file it reads has settled and the section itself should be drawn.
+ */
+export function pendingSection(dataset, keys, title, what) {
+  const waiting = firstUnsettled(dataset, keys);
+  if (!waiting) return null;
+  const block = document.createElement('div');
+  block.className = 'metric-group evidence-pending-section';
+  const heading = document.createElement('p');
+  const strong = document.createElement('strong');
+  strong.textContent = title;
+  heading.append(strong);
+  block.append(heading, pendingNote(waiting.state, what));
+  return block;
+}
+
 function colouringSuffix(entry) {
   return entry.enabled ? '' : ' Not enabled for colouring.';
 }
@@ -682,28 +701,42 @@ export class SidePanel {
     const viewerSummary = document.createElement('summary');
     viewerSummary.textContent = 'Gene visualizer';
     const viewerBody = document.createElement('div');
-    renderGeneViewer(viewerBody, gene);
+    renderGeneViewer(viewerBody, gene, { tssPending: pendingState(dataset, 'tssEvidence') });
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
 
-    const candidateEvidence = this.rememberDisclosure(candidateEvidenceDisclosure(
-      gene, dataset.candidateEvidence, dataset.goIeaEssentiality,
-    ), 'candidate-evidence');
+    // Each evidence section below reads a file that may not have landed. Until
+    // it has, the section's place is taken by a note that says so: an absent
+    // section would read as a gene with no such evidence.
+    const candidateEvidence = pendingSection(dataset, ['candidateEvidence', 'goIeaEssentiality'],
+      'Candidate evidence', 'candidate evidence')
+      ?? this.rememberDisclosure(candidateEvidenceDisclosure(
+        gene, dataset.candidateEvidence, dataset.goIeaEssentiality,
+      ), 'candidate-evidence');
     if (candidateEvidence) this.host.append(candidateEvidence);
 
-    const category = this.rememberDisclosure(
-      functionCategoryBlock(gene, dataset, state.colorSources), 'function-category',
-    );
+    const category = (dataset.functionCategories
+      ? pendingSection(dataset, ['sourceDerivedCategories'], 'Function category (colour)',
+        'function categories')
+      : null)
+      ?? this.rememberDisclosure(
+        functionCategoryBlock(gene, dataset, state.colorSources), 'function-category',
+      );
     if (category) this.host.append(category);
 
-    const annotation = this.rememberDisclosure(
-      annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms), 'annotation',
-    );
+    const annotation = pendingSection(dataset, ['annotations', 'goTerms'],
+      'Annotation evidence and recoding context', 'annotation evidence')
+      ?? this.rememberDisclosure(
+        annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms), 'annotation',
+      );
     if (annotation) this.host.append(annotation);
 
-    const tssEvidence = this.rememberDisclosure(
-      tssEvidenceDisclosure(gene, dataset.meta), 'tss-evidence',
-    );
+    const tssEvidence = (dataset.meta?.tssEvidenceSource
+      ? pendingSection(dataset, ['tssEvidence'], 'TSS initiation evidence', 'Tan 2018 start sites')
+      : null)
+      ?? this.rememberDisclosure(
+        tssEvidenceDisclosure(gene, dataset.meta), 'tss-evidence',
+      );
     if (tssEvidence) this.host.append(tssEvidence);
 
     if (state.schemeActive) {

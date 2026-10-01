@@ -51,12 +51,19 @@ export const DERIVED_MARKER_FILL = '#ffffff';
 export const HOVER_FOCUS_COLOR = '#4a5568';
 export const ACTIVE_FOCUS_COLOR = '#2f6f8f';
 
+/** The one colour every CDS takes while the function categories are loading. */
+export const PENDING_CATEGORY_COLOR = '#b7c2cd';
+
 /** Categorical colours use the same bucket interface as numeric canvas scales. */
-export function buildCategoryColorScale(categoryCount) {
+export function buildCategoryColorScale(categoryCount, { pending = false } = {}) {
   if (!Number.isInteger(categoryCount) || categoryCount < 1 || categoryCount > CATEGORICAL.length) {
     throw new Error('category count exceeds the reviewed colour palette');
   }
   const buckets = [...CATEGORICAL.slice(0, categoryCount), MULTIPLE_FUNCTION_COLOR];
+  // While the categories are still loading every CDS takes one further bucket,
+  // a neutral that is none of the category colours and not the open ring an
+  // unknown CDS draws as: not loaded yet must not look like no category.
+  if (pending) buckets.push(PENDING_CATEGORY_COLOR);
   return {
     buckets,
     categorical: true,

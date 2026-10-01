@@ -258,7 +258,12 @@ python3 -m venv .venv
 ./.venv/bin/python -m pip install -r requirements.txt
 ./tools/fetch_genome.sh data/raw
 ./.venv/bin/python scripts/build_features.py
+./.venv/bin/python tools/build_data_manifest.py build   # last, after any tool that writes site/data
 ```
+
+The site addresses each data file by the digest in `site/data/data-manifest.json`,
+so that manifest must be rebuilt whenever a file in `site/data` changes. After
+adding or removing a JavaScript module, run `node tools/build_module_preloads.mjs`.
 
 Then run the core developer gate. Every command must pass; the complete release
 gate, including annotation, Git-integrity, and rendered-browser checks, is in the

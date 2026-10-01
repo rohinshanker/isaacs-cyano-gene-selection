@@ -5,6 +5,7 @@
  * which field it matched on, and lets a gene be pinned or shortlisted without
  * touching the map.
  */
+import { pendingState } from '../core/data-files.js';
 import { searchGenes, SEARCH_RESULT_LIMIT } from '../core/gene-search.js';
 import { formatCount } from './format.js';
 import { createLocusTag } from './locus-tag.js';
@@ -138,6 +139,14 @@ export class GeneSearchResults {
       status.textContent = `Nothing matches “${this.query.trim()}”. Search covers locus `
         + 'tags, gene names, product descriptions, reviewed categories, GO IDs and GO term names. Try a shorter '
         + 'word or the name the annotation uses.';
+      // GO terms come from files that may not have landed; a miss on one is
+      // then not a miss, and is not reported as one.
+      const goPending = pendingState(this.dataset, 'annotations') ?? pendingState(this.dataset, 'goTerms');
+      if (goPending) {
+        status.textContent += goPending === 'failed'
+          ? ' GO annotations could not be loaded, so GO IDs and GO term names cannot match.'
+          : ' GO annotations are still loading, so GO IDs and GO term names cannot match yet.';
+      }
       host.append(status);
       return;
     }
