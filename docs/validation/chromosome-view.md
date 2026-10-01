@@ -239,6 +239,13 @@ ranked higher it won the click inside a bar the reader could see — measured on
 column stays reachable by the arrow keys and by zooming in; nothing is removed,
 and all 2,715 stay counted.
 
+**Paint order is the only channel for a standout, by owner decision of
+2026-09-30.** A second mark for the highest-valued genes at whole-genome zoom, a
+taller bar, a tick, or a halo, was proposed and declined. The ordering already
+gives such a gene its column's colour, zooming in makes it unmistakable, and an
+extra mark would be a cue for something the reader learns by zooming, which this
+site does not add. Do not reopen it without a new request from the owner.
+
 ### Owner decision D1: a sub-pixel source-derived category draws solid
 
 `paintMark` can stroke a filled bar only at `MIN_HOLLOW_MARK_PX` (3) or wider:
