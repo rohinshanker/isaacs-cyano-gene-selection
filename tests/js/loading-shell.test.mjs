@@ -51,10 +51,13 @@ test('the stylesheet hides text, not structure, while loading', async () => {
 test('the reveal waits for the minimum bar time and for a link\'s own files', async () => {
   const source = await read('js/app.js');
   const boot = source.slice(source.indexOf('async function boot()'));
-  // Presentation is skipped under reduced motion, and the minimum is measured
-  // from navigation, not from when the script happened to start.
-  assert.match(boot, /const minimum = reducedMotion \? 0 : Math\.max\(0, loadTiming\.minimumBarMs - performance\.now\(\)\);/);
-  assert.match(boot, /await Promise\.all\(\[\s*load\.when\(promotedFileKeys\(\)\),/);
+  // Presentation is skipped under reduced motion: the bar has no minimum then.
+  assert.match(boot, /minimumMs: reducedMotion \? 0 : loadTiming\.minimumBarMs,/);
+  // The files this visit waits for are read from the link before any data
+  // arrives, so the bar measures them from its first frame.
+  assert.match(boot, /const requested = defaultState\(\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash\)\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(\[\.\.\.CORE_FILE_KEYS, \.\.\.promoted\]\);/);
+  // The reveal waits for those files, and then for the bar to finish.
+  assert.match(boot, /await load\.when\(promoted\);\s*await loadProgress\.finished\(\);\s*revealPage\(\);/);
   const order = ['renderAll();\n  booted = true;', 'flushLandings();', 'revealPage();',
     'if (pendingMapJump) jumpToMap();'];
   let from = 0;
@@ -63,19 +66,15 @@ test('the reveal waits for the minimum bar time and for a link\'s own files', as
     assert.ok(at >= from, `${step} comes in order`);
     from = at;
   }
-  const reveal = source.slice(source.indexOf('function revealPage()'), source.indexOf('function holdRevealedView('));
-  const hold = source.slice(source.indexOf('function holdRevealedView('), source.indexOf('function mapTabActive()'));
-  assert.match(hold, /if \(!loadTiming\.anchorView\) return;/);
-  assert.match(hold, /durationMs: reducedMotion \? 0 : loadTiming\.scramble\.maxDurationMs \+ 250,/);
+  const reveal = source.slice(source.indexOf('function revealPage()'), source.indexOf('function mapTabActive()'));
   assert.match(reveal, /document\.body\.classList\.remove\('is-loading'\);/);
   // The status line said the data was loading. Left in the settled page it
   // told a screen reader that a finished load was still in progress.
   assert.match(reveal, /element\('load-status'\)\.hidden = true;/);
-  // The grid's position is read before anything is uncovered, and the view
-  // that replaces it is held there.
-  assert.ok(reveal.indexOf("element('load-stage').getBoundingClientRect().top")
-    < reveal.indexOf("classList.remove('is-loading')"));
-  assert.match(reveal, /holdRevealedView\(stageTop\);\s*startMapIntro/);
+  // The visit starts at the top of the page, by owner decision: the shell may
+  // have been scrolled, and nothing holds the map in view.
+  assert.match(reveal, /window\.scrollTo\(\{ top: 0, behavior: 'instant' \}\);\s*startMapIntro/);
+  assert.ok(!/holdInPlace|view-anchor/.test(source));
   assert.match(reveal, /startMapIntro\(loadTiming\.mapIntro\);\s*startTextReveal\(\);/);
   assert.match(source, /function startMapIntro\(\{ appearMs, colourMs \}\) \{\s*if \(reducedMotion \|\| !mapTabActive\(\)\) return;/);
   assert.match(source, /function startTextReveal\(\) \{\s*if \(reducedMotion\) return;/);
@@ -83,11 +82,11 @@ test('the reveal waits for the minimum bar time and for a link\'s own files', as
 
 test('a link is opened onto its own data: what each view promotes', async () => {
   const source = await read('js/app.js');
-  const promoted = source.slice(source.indexOf('function promotedFileKeys()'),
+  const promoted = source.slice(source.indexOf('function promotedFileKeys(view)'),
     source.indexOf('/** A later file settled.'));
-  assert.match(promoted, /state\.categoryFilter\.length > 0\) keys\.add\('sourceDerivedCategories'\)/);
-  assert.match(promoted, /state\.proteinFilter !== 'any' \|\| state\.panel === LENGTH_TAB\.id\) keys\.add\('lengthCohorts'\)/);
-  assert.match(promoted, /state\.panel === REGULATORY_TAB\.id\) keys\.add\('regulatoryTss'\)/);
+  assert.match(promoted, /view\.categoryFilter\.length > 0\) keys\.add\('sourceDerivedCategories'\)/);
+  assert.match(promoted, /view\.proteinFilter !== 'any' \|\| view\.panel === LENGTH_TAB\.id\) keys\.add\('lengthCohorts'\)/);
+  assert.match(promoted, /view\.panel === REGULATORY_TAB\.id\) keys\.add\('regulatoryTss'\)/);
   for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
     'goIeaEssentiality', 'goTerms', 'tssEvidence']) {
     assert.ok(promoted.includes(`'${key}'`), `a pinned gene waits for ${key}`);

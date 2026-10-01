@@ -5,47 +5,44 @@
  * duration of its own, and each one can be overridden from the address bar for
  * a visual test without editing a file:
  *
- *   ?load-min=1500&load-letters=90&load-map-colour=3000
+ *   ?load-min=2000&load-letters=70&load-map-colour=2000
  *
  * An override is read once at start-up and is never written to the URL hash,
  * which is analysis state and stays unchanged.
  */
 
-/** The defaults. All times are milliseconds. */
+/** The defaults, as the owner set them on 2026-09-30. All times are milliseconds. */
 export const LOAD_TIMING = Object.freeze({
-  /** The chromosome loading bar stays at least this long, however fast the data. */
-  minimumBarMs: 1000,
+  /** The chromosome loading bar takes at least this long, however fast the data. */
+  minimumBarMs: 1500,
   scramble: Object.freeze({
-    /** Letters between the typing front and the point where they resolve. */
-    lagLetters: 8,
-    /** How fast the typing front moves. */
-    lettersPerSecond: 110,
+    /** How far ahead of the locking text the flipping trail starts, in letters. */
+    leadLetters: 10,
+    /** How fast readable text locks in, in letters per second. */
+    lockLettersPerSecond: 50,
+    /** The trail runs this many times faster than the lock, so it finishes first. */
+    trailRatio: 1.5,
     /** A long text speeds up so that no single text takes longer than this. */
-    maxDurationMs: 1600,
-    /** How often a letter flips just after it is typed. */
+    maxDurationMs: 10000,
+    /** How often a letter flips while it is far ahead of the lock. */
     flipFastMs: 40,
-    /** How often it flips just before it resolves; flipping slows towards this. */
+    /** How often it flips just before it locks; flipping slows towards this. */
     flipSlowMs: 170,
   }),
   mapIntro: Object.freeze({
     /** The map's points have all appeared after this long. */
     appearMs: 700,
     /** The map's points have all taken their colour after this long. */
-    colourMs: 2000,
+    colourMs: 1200,
   }),
-  /**
-   * Whether the map is held where the loading grid stood through the reveal.
-   * Not a duration, but tuned by eye with the rest: `?load-anchor=0` lets the
-   * page stay at its top instead, with the map wherever the layout puts it.
-   */
-  anchorView: true,
 });
 
 /** Query parameter for each tunable, and where it lands. */
 const OVERRIDES = Object.freeze([
   ['load-min', null, 'minimumBarMs'],
-  ['load-lag', 'scramble', 'lagLetters'],
-  ['load-letters', 'scramble', 'lettersPerSecond'],
+  ['load-lead', 'scramble', 'leadLetters'],
+  ['load-letters', 'scramble', 'lockLettersPerSecond'],
+  ['load-trail', 'scramble', 'trailRatio'],
   ['load-text-max', 'scramble', 'maxDurationMs'],
   ['load-flip-fast', 'scramble', 'flipFastMs'],
   ['load-flip-slow', 'scramble', 'flipSlowMs'],
@@ -53,16 +50,11 @@ const OVERRIDES = Object.freeze([
   ['load-map-colour', 'mapIntro', 'colourMs'],
 ]);
 
-/** The one switch among the tunables: `0` or `1`, anything else is ignored. */
-export const ANCHOR_PARAMETER = 'load-anchor';
-
 /** The largest value an override may take, so a typo cannot hang the page. */
 export const MAX_OVERRIDE = 60000;
 
 /** The query parameters that tune the loading presentation, for documentation and tests. */
-export const LOAD_TIMING_PARAMETERS = Object.freeze(
-  [...OVERRIDES.map(([name]) => name), ANCHOR_PARAMETER],
-);
+export const LOAD_TIMING_PARAMETERS = Object.freeze(OVERRIDES.map(([name]) => name));
 
 /**
  * The timings in effect, with any address-bar overrides applied.
@@ -72,7 +64,7 @@ export const LOAD_TIMING_PARAMETERS = Object.freeze(
  * producing a duration of `NaN`.
  *
  * @param {string} [search] `location.search`, with or without its question mark.
- * @returns {{minimumBarMs: number, scramble: object, mapIntro: object, anchorView: boolean}}
+ * @returns {{minimumBarMs: number, scramble: object, mapIntro: object}}
  */
 export function resolveLoadTiming(search = '') {
   const parameters = new URLSearchParams(search);
@@ -80,10 +72,7 @@ export function resolveLoadTiming(search = '') {
     minimumBarMs: LOAD_TIMING.minimumBarMs,
     scramble: { ...LOAD_TIMING.scramble },
     mapIntro: { ...LOAD_TIMING.mapIntro },
-    anchorView: LOAD_TIMING.anchorView,
   };
-  const anchor = parameters.get(ANCHOR_PARAMETER);
-  if (anchor === '0' || anchor === '1') timing.anchorView = anchor === '1';
   for (const [name, group, key] of OVERRIDES) {
     const raw = parameters.get(name);
     if (raw === null || raw.trim() === '') continue;

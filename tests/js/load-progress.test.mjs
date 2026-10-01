@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  LOAD_BAR_GENES, LOAD_BAR_VIEW, LoadProgress, describeIdentity, describeLoad, loadBarGenes,
-  loadFraction, loadGeneAttributes,
+  FULL_HOLD_MS, LOAD_BAR_GENES, LOAD_BAR_VIEW, LoadProgress, describeIdentity, describeLoad,
+  displayedFraction, loadBarGenes, loadFraction, loadGeneAttributes, loadSchedule,
 } from '../../site/js/ui/load-progress.js';
 import { DATA_FILES, FILE_STATE } from '../../site/js/core/data-files.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
@@ -17,12 +17,37 @@ function snapshot(overrides = {}) {
   };
 }
 
-function mount(document, handlers = {}) {
+function mount(document, handlers = {}, options = {}) {
   const stage = document.createElement('div');
   const bar = document.createElement('div');
   const tail = document.createElement('div');
   stage.append(bar);
-  return { stage, bar, tail, progress: new LoadProgress({ stage, bar, tail }, handlers) };
+  return { stage, bar, tail, progress: new LoadProgress({ stage, bar, tail }, handlers, options) };
+}
+
+/** A frame and timeout queue advanced by hand. */
+function clock() {
+  let time = 0;
+  let requested = 0;
+  let frames = [];
+  let timers = [];
+  return {
+    now: () => time,
+    requestFrame(callback) { requested += 1; frames.push(callback); },
+    setTimeout(callback, delay) { timers.push({ callback, at: time + delay }); },
+    advance(ms) {
+      time += ms;
+      const readyFrames = frames;
+      frames = [];
+      for (const callback of readyFrames) callback();
+      const readyTimers = timers.filter((timer) => timer.at <= time);
+      timers = timers.filter((timer) => timer.at > time);
+      for (const timer of readyTimers) timer.callback();
+    },
+    get time() { return time; },
+    get requested() { return requested; },
+    get waiting() { return frames.length; },
+  };
 }
 
 /** Per-file records as the loader keeps them, all ready unless overridden. */
@@ -50,6 +75,51 @@ test('the bar\'s genes tile the track left to right and are the same on every lo
   assert.equal(loadBarGenes(5).length, 5);
 });
 
+test('the loading schedule is deterministic, uneven, and fills near the minimum', () => {
+  assert.deepEqual(loadSchedule(1500), loadSchedule(1500));
+  assert.notDeepEqual(loadSchedule(1500), loadSchedule(1500, 7));
+  assert.deepEqual(loadSchedule(0), []);
+  assert.deepEqual(loadSchedule(-1), []);
+  for (const seed of [1, 7, 2973, 9999]) {
+    const schedule = loadSchedule(1500, seed);
+    assert.ok(schedule.length >= 7 && schedule.length <= 12);
+    assert.ok(schedule[0].atMs > 0);
+    assert.equal(schedule.at(-1).fraction, 1);
+    assert.ok(schedule.at(-1).atMs >= 1350 && schedule.at(-1).atMs <= 1500);
+    for (let index = 1; index < schedule.length; index += 1) {
+      assert.ok(schedule[index].atMs > schedule[index - 1].atMs);
+      assert.ok(schedule[index].fraction > schedule[index - 1].fraction);
+    }
+    const fractions = schedule.map((step, index) => step.fraction - (schedule[index - 1]?.fraction ?? 0));
+    assert.ok(Math.max(...fractions) >= 0.2, 'there is a visible jump');
+    assert.ok(Math.min(...fractions) <= 0.05, 'and a visibly small block');
+    const pauses = schedule.map((step, index) => step.atMs - (schedule[index - 1]?.atMs ?? 0));
+    const median = [...pauses].sort((a, b) => a - b)[Math.floor(pauses.length / 2)];
+    assert.ok(Math.max(...pauses) > median * 1.5, 'one pause is noticeably longer than the median');
+  }
+});
+
+test('displayed progress obeys both time and data without moving backwards', () => {
+  const schedule = loadSchedule(1500);
+  assert.equal(displayedFraction(0.42, 10, []), 0.42, 'no minimum shows real progress');
+  let previous = 0;
+  for (let index = 0; index <= 60; index += 1) {
+    const real = index / 60;
+    const displayed = displayedFraction(real, index * 30, schedule);
+    assert.ok(displayed <= real);
+    assert.ok(displayed >= previous);
+    previous = displayed;
+  }
+  const largestBlock = Math.max(...schedule.map((step, index) => (
+    step.fraction - (schedule[index - 1]?.fraction ?? 0)
+  )));
+  for (let real = 0.01; real <= 1; real += 0.01) {
+    const displayed = displayedFraction(real, 1500, schedule);
+    assert.ok(real - displayed <= largestBlock + 1e-12,
+      'once time is no constraint, a slow load trails by no more than one block');
+  }
+});
+
 test('progress is bytes against the manifest, or files when sizes are unknown', () => {
   assert.equal(loadFraction(null), 0);
   assert.equal(loadFraction(snapshot({ receivedBytes: 250 })), 0.25);
@@ -60,6 +130,17 @@ test('progress is bytes against the manifest, or files when sizes are unknown', 
   assert.ok(Math.abs(loadFraction(snapshot({ exact: false, settledFiles: 4 })) - 4 / 13) < 1e-12);
   assert.equal(loadFraction(snapshot({ exact: true, totalBytes: 0, settledFiles: 13 })), 1);
   assert.equal(loadFraction(snapshot({ exact: false, totalFiles: 0 })), 0);
+
+  const files = {
+    genes: { receivedBytes: 80, bytes: 100, settled: false },
+    meta: { receivedBytes: 50, bytes: 50, settled: true },
+  };
+  assert.equal(loadFraction(snapshot({ files }), ['genes', 'meta']), 130 / 150);
+  assert.equal(loadFraction(snapshot({ exact: false, files }), ['genes', 'meta']), 0.5);
+  assert.equal(loadFraction(snapshot({ files }), ['missing']), 0,
+    'an absent key contributes neither bytes nor a settled file');
+  assert.equal(loadFraction(snapshot({ files }), []), 0);
+  assert.equal(loadFraction(snapshot({ files: { genes: { receivedBytes: 200, bytes: 100 } } }), ['genes']), 1);
 });
 
 test('the bar says which tier is loading, how far, and what the release is', () => {
@@ -72,6 +153,185 @@ test('the bar says which tier is loading, how far, and what the release is', () 
   assert.equal(describeIdentity(null), '');
   assert.equal(describeIdentity({ releaseId: null, geneCount: 12 }), '12 genes');
   assert.equal(describeIdentity({ releaseId: 'R1', geneCount: NaN }), 'Release R1');
+  assert.equal(describeLoad(snapshot({
+    receivedBytes: 900,
+    files: { genes: { receivedBytes: 10, bytes: 100, settled: false } },
+  }), null, ['genes']), 'Loading genes, 10%.');
+});
+
+test('an instant load advances in blocks and finishes only after the full hold', async () => {
+  await withFakeDocument(async (document) => {
+    const manual = clock();
+    const previousTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (callback, delay) => manual.setTimeout(callback, delay);
+    try {
+      const { bar, progress } = mount(document, {}, {
+        minimumMs: 1500, now: manual.now, requestFrame: manual.requestFrame,
+      });
+      const marks = bar.querySelectorAll('rect.load-gene');
+      const lit = () => marks.filter((mark) => mark.hasClass('is-on')).length;
+      progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+      const done = progress.finished();
+      assert.equal(done, progress.finished(), 'one cycle always returns the same promise');
+      let finished = false;
+      done.then(() => { finished = true; });
+      const seen = new Set([lit()]);
+      for (const step of loadSchedule(1500)) {
+        manual.advance(step.atMs - manual.time + 0.001);
+        seen.add(lit());
+      }
+      assert.ok(seen.size >= 6, 'several visibly distinct blocks crossed the bar');
+      assert.equal(lit(), LOAD_BAR_GENES);
+      assert.equal(manual.waiting, 0, 'the frame loop stops at full');
+      await Promise.resolve();
+      assert.equal(finished, false);
+      manual.advance(FULL_HOLD_MS - 1);
+      await Promise.resolve();
+      assert.equal(finished, false);
+      manual.advance(1);
+      await done;
+      assert.equal(finished, true);
+    } finally {
+      globalThis.setTimeout = previousTimeout;
+    }
+  });
+});
+
+test('the minimum is a floor: a longer one holds the full bar until it has passed', async () => {
+  // The schedule's last block lands a little short of the minimum, by a share
+  // that grows with it. With a two-second minimum the bar was full at about
+  // 1.81 s and the page would have been revealed at 1.96 s, before the minimum.
+  await withFakeDocument(async (document) => {
+    const manual = clock();
+    const previousTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (callback, delay) => manual.setTimeout(callback, delay);
+    try {
+      const { progress } = mount(document, {}, {
+        minimumMs: 2000, now: manual.now, requestFrame: manual.requestFrame,
+      });
+      progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+      let finished = false;
+      const done = progress.finished();
+      done.then(() => { finished = true; });
+      const last = loadSchedule(2000).at(-1).atMs;
+      assert.ok(last + FULL_HOLD_MS < 2000, 'the hold alone would end before the minimum');
+      for (const step of loadSchedule(2000)) manual.advance(step.atMs - manual.time + 0.001);
+      manual.advance(FULL_HOLD_MS);
+      await Promise.resolve();
+      assert.equal(finished, false, 'not before the minimum, however full the bar');
+      manual.advance(2000 - manual.time - 1);
+      await Promise.resolve();
+      assert.equal(finished, false);
+      manual.advance(1);
+      await done;
+      assert.equal(finished, true);
+    } finally {
+      globalThis.setTimeout = previousTimeout;
+    }
+  });
+});
+
+test('the genes lag while assistive technology reports real blocking progress', async () => {
+  await withFakeDocument((document) => {
+    const manual = clock();
+    const { bar, progress } = mount(document, {}, {
+      minimumMs: 1500, now: manual.now, requestFrame: manual.requestFrame,
+    });
+    progress.update(snapshot({ receivedBytes: 750 }));
+    assert.equal(bar.getAttribute('aria-valuenow'), '75');
+    assert.equal(bar.getAttribute('aria-valuetext'), 'Loading genes, 75%.');
+    assert.equal(bar.querySelectorAll('rect.load-gene').filter((mark) => mark.hasClass('is-on')).length, 0);
+    manual.advance(loadSchedule(1500)[0].atMs + 0.001);
+    const lit = bar.querySelectorAll('rect.load-gene').filter((mark) => mark.hasClass('is-on')).length;
+    assert.ok(lit > 0 && lit < LOAD_BAR_GENES * 0.75);
+    assert.equal(bar.getAttribute('aria-valuenow'), '75', 'the accessible value is never paced');
+  });
+});
+
+test('blocking files fill the stage while the tail continues to measure everything', async () => {
+  await withFakeDocument(async (document) => {
+    const { bar, tail, progress } = mount(document);
+    progress.setBlocking(['genes', 'meta']);
+    progress.update(snapshot({
+      receivedBytes: 250,
+      files: {
+        genes: { receivedBytes: 100, bytes: 100, settled: true },
+        meta: { receivedBytes: 50, bytes: 50, settled: true },
+        later: { receivedBytes: 100, bytes: 850, settled: false },
+      },
+    }));
+    assert.equal(bar.getAttribute('aria-valuenow'), '100');
+    assert.equal(bar.querySelectorAll('rect.load-gene').every((mark) => mark.hasClass('is-on')), true);
+    await progress.finished();
+    progress.reveal();
+    assert.equal(tail.querySelector('div.load-tail-fill').style.width, '25.0%',
+      'the post-reveal tail remains whole-load progress');
+  });
+});
+
+test('zero minimum requests no frames and finishes with real progress immediately', async () => {
+  await withFakeDocument(async (document) => {
+    const manual = clock();
+    const { progress } = mount(document, {}, {
+      minimumMs: 0, now: manual.now, requestFrame: manual.requestFrame,
+    });
+    assert.equal(manual.requested, 0);
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    await progress.finished();
+    assert.equal(manual.requested, 0);
+  });
+});
+
+test('reveal stops the frame loop, and restart creates a new timed cycle', async () => {
+  await withFakeDocument((document) => {
+    const manual = clock();
+    const { progress } = mount(document, {}, {
+      minimumMs: 1500, now: manual.now, requestFrame: manual.requestFrame,
+    });
+    const first = progress.finished();
+    assert.equal(manual.requested, 1);
+    progress.reveal();
+    manual.advance(100);
+    assert.equal(manual.requested, 1, 'the queued callback requested no successor after reveal');
+    progress.restart();
+    assert.notEqual(progress.finished(), first);
+    assert.equal(manual.requested, 2);
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    manual.advance(loadSchedule(1500).at(-1).atMs - 1);
+    assert.ok(progress.fraction < 1, 'restart measures its minimum from the restart time');
+  });
+});
+
+test('the default frame function keeps the browser receiver', async () => {
+  const previous = {
+    requestAnimationFrame: globalThis.requestAnimationFrame,
+    performance: globalThis.performance,
+    setTimeout: globalThis.setTimeout,
+  };
+  const queue = [];
+  let time = 0;
+  const browserOnly = function browserOnly(callback) {
+    if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+    queue.push(callback);
+  };
+  globalThis.requestAnimationFrame = browserOnly;
+  globalThis.setTimeout = (callback) => callback();
+  Object.defineProperty(globalThis, 'performance', { value: { now: () => time }, configurable: true });
+  try {
+    await withFakeDocument(async (document) => {
+      const { progress } = mount(document, {}, { minimumMs: 10 });
+      progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+      while (queue.length > 0) {
+        time += 2;
+        queue.shift()();
+      }
+      await progress.finished();
+    });
+  } finally {
+    globalThis.requestAnimationFrame = previous.requestAnimationFrame;
+    globalThis.setTimeout = previous.setTimeout;
+    Object.defineProperty(globalThis, 'performance', { value: previous.performance, configurable: true });
+  }
 });
 
 test('the bar is a progressbar whose genes light from left to right as data arrives', async () => {

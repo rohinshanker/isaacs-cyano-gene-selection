@@ -4,14 +4,18 @@ import {
   LOAD_TIMING, LOAD_TIMING_PARAMETERS, MAX_OVERRIDE, prefersReducedMotion, resolveLoadTiming,
 } from '../../site/js/ui/load-timing.js';
 
-test('the defaults are the owner\'s stated times', () => {
-  assert.equal(LOAD_TIMING.minimumBarMs, 1000, 'the bar stays at least one second');
-  assert.equal(LOAD_TIMING.scramble.lagLetters, 8, 'letters resolve eight behind the front');
-  assert.equal(LOAD_TIMING.mapIntro.colourMs, 2000, 'the map colours itself in about two seconds');
+test('the defaults are the times the owner chose on 2026-09-30', () => {
+  assert.equal(LOAD_TIMING.minimumBarMs, 1500, 'the bar takes at least a second and a half');
+  assert.deepEqual({ ...LOAD_TIMING.scramble }, {
+    leadLetters: 10, lockLettersPerSecond: 50, trailRatio: 1.5, maxDurationMs: 10000,
+    flipFastMs: 40, flipSlowMs: 170,
+  });
+  assert.deepEqual({ ...LOAD_TIMING.mapIntro }, { appearMs: 700, colourMs: 1200 });
+  assert.ok(LOAD_TIMING.scramble.trailRatio > 1, 'the trail leads the lock and finishes first');
+  assert.ok(LOAD_TIMING.scramble.flipFastMs < LOAD_TIMING.scramble.flipSlowMs,
+    'flipping slows towards the point a letter locks');
   assert.ok(LOAD_TIMING.mapIntro.appearMs < LOAD_TIMING.mapIntro.colourMs,
     'points appear before they colour');
-  assert.ok(LOAD_TIMING.scramble.flipFastMs < LOAD_TIMING.scramble.flipSlowMs,
-    'flipping slows towards the point a letter resolves');
   assert.ok(Object.isFrozen(LOAD_TIMING) && Object.isFrozen(LOAD_TIMING.scramble)
     && Object.isFrozen(LOAD_TIMING.mapIntro));
 });
@@ -23,26 +27,25 @@ test('with no overrides the resolved timing equals the defaults and is a fresh c
       minimumBarMs: LOAD_TIMING.minimumBarMs,
       scramble: { ...LOAD_TIMING.scramble },
       mapIntro: { ...LOAD_TIMING.mapIntro },
-      anchorView: true,
     });
     assert.notEqual(timing.scramble, LOAD_TIMING.scramble);
   }
 });
 
 test('every tunable has an address-bar override', () => {
-  const search = '?load-min=1500&load-lag=4&load-letters=90&load-text-max=2500'
+  const search = '?load-min=2000&load-lead=4&load-letters=90&load-trail=2.5&load-text-max=2500'
     + '&load-flip-fast=20&load-flip-slow=300&load-map-appear=1000&load-map-colour=3000';
   assert.deepEqual(resolveLoadTiming(search), {
-    minimumBarMs: 1500,
+    minimumBarMs: 2000,
     scramble: {
-      lagLetters: 4, lettersPerSecond: 90, maxDurationMs: 2500, flipFastMs: 20, flipSlowMs: 300,
+      leadLetters: 4, lockLettersPerSecond: 90, trailRatio: 2.5, maxDurationMs: 2500,
+      flipFastMs: 20, flipSlowMs: 300,
     },
     mapIntro: { appearMs: 1000, colourMs: 3000 },
-    anchorView: true,
   });
   assert.deepEqual([...LOAD_TIMING_PARAMETERS].sort(), [
-    'load-anchor', 'load-flip-fast', 'load-flip-slow', 'load-lag', 'load-letters',
-    'load-map-appear', 'load-map-colour', 'load-min', 'load-text-max',
+    'load-flip-fast', 'load-flip-slow', 'load-lead', 'load-letters', 'load-map-appear',
+    'load-map-colour', 'load-min', 'load-text-max', 'load-trail',
   ]);
   // The leading question mark is optional, and zero is a legitimate value.
   assert.equal(resolveLoadTiming('load-min=0').minimumBarMs, 0);
@@ -64,14 +67,4 @@ test('reduced motion is read from the media query, and its absence means no pref
   const asked = [];
   prefersReducedMotion({ matchMedia: (query) => { asked.push(query); return { matches: false }; } });
   assert.deepEqual(asked, ['(prefers-reduced-motion: reduce)']);
-});
-
-test('holding the map where the grid stood is a switch, on unless turned off', () => {
-  assert.equal(LOAD_TIMING.anchorView, true);
-  assert.equal(resolveLoadTiming('?load-anchor=0').anchorView, false);
-  assert.equal(resolveLoadTiming('?load-anchor=1').anchorView, true);
-  // Anything that is not exactly 0 or 1 leaves the default alone.
-  for (const bad of ['', 'no', 'false', '2', '-1']) {
-    assert.equal(resolveLoadTiming(`?load-anchor=${bad}`).anchorView, true, JSON.stringify(bad));
-  }
 });

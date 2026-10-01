@@ -526,6 +526,7 @@ export function loadDatasetStaged({
     let totalBytes = 0;
     let settledFiles = 0;
     const tiers = {};
+    const perFile = {};
     for (const file of DATA_FILES) {
       const record = files[file.key];
       const settled = record.state !== FILE_STATE.LOADING;
@@ -539,7 +540,9 @@ export function loadDatasetStaged({
       totalBytes += size;
       // A settled file counts whole, whatever became of it: a file that is not
       // published, or that failed, must not hold the bar short of full.
-      receivedBytes += settled ? size : Math.min(record.receivedBytes, size || Infinity);
+      const received = settled ? size : Math.min(record.receivedBytes, size || Infinity);
+      receivedBytes += received;
+      perFile[file.key] = { receivedBytes: received, bytes: size, settled };
     }
     const pending = DATA_FILES.find((file) => files[file.key].state === FILE_STATE.LOADING);
     return {
@@ -549,6 +552,9 @@ export function loadDatasetStaged({
       exact: manifestValue !== null,
       settledFiles,
       totalFiles: DATA_FILES.length,
+      // Per file, so a reader can report progress over the files it waits for
+      // rather than over everything.
+      files: perFile,
       tiers,
       currentTier: pending ? pending.tier : null,
       elapsedMs: now() - startedAt,

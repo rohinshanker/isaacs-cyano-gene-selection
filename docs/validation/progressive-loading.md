@@ -242,7 +242,8 @@ that could not be fetched is absent.
 
 ## The loading presentation
 
-Owner requirements of 2026-09-30, in the order the visitor meets them.
+Owner requirements and decisions of 2026-09-30, in the order the visitor meets
+them.
 
 **An empty shell.** The page opens as an empty version of itself: the header
 bar, the left column, the right column, and the centre area, with only an empty
@@ -255,11 +256,11 @@ visually hidden until it carries a failure.
 
 **A chromosome loading bar.** Drawn like the chromosome track: an axis with
 genes above and below it, lit from left to right as data arrives. How many are
-lit is the fraction loaded. They are a fixed deterministic picture, not the
-release's genes, which have not arrived when the bar first draws, so nothing
-about them can be read as data. It is a `progressbar` whose value text names the
-tier in plain words and, once `meta.json` has landed, the release and its gene
-count.
+lit is never more than the fraction loaded. They are a fixed deterministic
+picture, not the release's genes, which have not arrived when the bar first
+draws, so nothing about them can be read as data. It is a `progressbar` whose
+value text names the tier in plain words and, once tier 1 is built, the release
+and its gene count.
 
 **The whole track is in the page, not added by the script.** Built by
 `ui/load-progress.js` alone, the bar was a bare axis with no value text until the
@@ -272,53 +273,134 @@ unlit gene is faint and neutral, so the bar reads as a chromosome from the first
 paint; a gene's colour is a custom property rather than `fill`, which is what
 lets the stylesheet dim it.
 
-**A minimum of one second**, measured from navigation, however fast the data.
+**The bar measures the files this visit waits for.** `boot` reads the view the
+link asks for from the URL hash, before any data has arrived, and gives
+`setBlocking` the tier 1 files plus whatever `promotedFileKeys` returns for that
+view. `loadFraction` then counts those files alone, from the per-file progress
+the loader's `snapshot()` carries in `files`: bytes received over manifest
+bytes, or files settled over files when there is no manifest. Measured over
+every file, the bar would stand part full at the reveal of a fresh view, which
+waits for tier 1 alone; it is full when the page is ready and not before.
+Because the set is read from the hash, it is fixed before the first byte and the
+bar never changes what it measures part way. The tail after the reveal still
+measures every file.
 
-**The reveal.** At the later of tier 1 being built, any promoted files landing,
-and the minimum, `revealPage` removes `is-loading`, shows the sections below the
-workspace, and replaces the stage with the map. The page was built while the
-shell hid it, so the reveal only uncovers it; the canvases are measured then,
-because they were built inside a frame that was not displayed. The status line
-is hidden at the same moment: left in the settled page it told a screen reader
-that a finished load was still in progress.
+**It fills in uneven blocks, with pauses, over at least 1.5 seconds.** The
+owner's decision: "1.5s, but have the load look a bit like a natural load rather
+than a streamline (have it pause/jump and have a load a bit more blockily)".
+`loadSchedule` lays the minimum out as 7 to 12 steps, each a moment and the
+fraction the bar may show from then on. One block is 22% of the bar and one is
+3.5%; one pause is 27% of the time to the last block and one is 3.5%; the rest
+are uneven, so it reads as neither a ramp nor a metronome. The generator is
+seeded, so the schedule is the same on every visit: with the default it is nine
+blocks, the last at 1,357 ms. Time is counted from navigation, so the wait for
+the script is part of the minimum and not added to it. A whole-dataset Retry
+starts the schedule again from that moment.
 
-**The map is held where the grid stood** (`holdInPlace` in `ui/view-anchor.js`).
+**What the bar shows is never ahead of what has arrived.** `displayedFraction`
+is the largest scheduled block that both the clock and the real fraction have
+reached. On a fast connection the schedule paces the bar; on a slow one the data
+does, in the same blocks, trailing the real fraction by no more than one of
+them once the minimum has passed. A bar run on the clock alone would light genes
+for data that has not come. Assistive technology is given the real fraction, in
+`aria-valuenow` and `aria-valuetext`, and not the displayed one: the pacing is
+for the eye, and a reader told the paced figure would be told less than has
+loaded.
+
+**The reveal.** `boot` builds the page on tier 1 while the shell hides it, then
+waits for the promoted files (`load.when(promoted)`), and then for
+`loadProgress.finished()`, which resolves once the bar has shown full for
+`FULL_HOLD_MS`, 150 ms, so that the full bar is seen before the map replaces it,
+and never before the minimum bar time has passed. Neither wait delays a
+request. `revealPage` then removes
+`is-loading`, shows the sections below the workspace, and replaces the stage
+with the map. The page was built while the shell hid it, so the reveal only
+uncovers it; the canvases are measured then, because they were built inside a
+frame that was not displayed. The status line is hidden at the same moment: left
+in the settled page it told a screen reader that a finished load was still in
+progress.
+
+**The visit lands at the top of the page.** The owner's decision: "once the
+loading bar finishes, the website should scroll back up to the top rather than
+staying at the map". `revealPage` calls
+`window.scrollTo({ top: 0, behavior: 'instant' })` before the map and the text
+start, wherever the shell had been scrolled to, and under reduced motion too.
+Nothing holds the map in view. The cost is known and accepted with the decision.
 The grid is the map canvas's own box in width and height, but not in position:
 at the reveal the tabs, the blurb and the toolbar reappear above the map, and on
-one column the controls column returns above the whole map card. Unheld, the map
-landed 471 to 2,884 px below where the grid stood, off screen on a phone and
-mostly below the fold on a laptop, and went on sinking as the tab labels typed in
-and wrapped; the fill-in played out of sight. The page is therefore scrolled by
-exactly the distance the map moved, and kept corrected while the text above is
-still changing height, so the map stays within a pixel of the grid's position
-through the whole reveal. The hold ends the moment the visitor scrolls, clicks,
-touches or presses a key. Under reduced motion it corrects once. On a tab that is
-not a scatter map the active tab panel is held instead.
+one column the controls column returns above the whole map card. The map
+therefore lands 471 to 2,884 px below where the grid stood, so on a phone the
+fill-in plays off screen and on a laptop mostly below the fold. That is a
+consequence of the owner's choice, not a defect to repair.
 
-This changes where a visit lands: on the map, with the header and tabs scrolled
-above it. It is a switch, `anchorView`, so the owner can judge it against landing
-at the top of the page.
+**The text locks in from base pairs** (`ui/text-scramble.js`). Each text grows
+left to right as random A, T, G and C that keep flipping, and locks into its
+real characters behind them. Two fronts cross it, both from `scrambleProgress`:
 
-**The text types in as base pairs** (`ui/text-scramble.js`). Each text node grows
-left to right as random A, T, G and C that keep flipping; eight letters behind
-the typing front a second front resolves each into its real character; a letter
-flips more slowly as that front approaches. Whitespace is never scrambled, so
-words keep their shape. The real text is in the document throughout and is
-restored exactly on finish or cancel. The animated regions carry `aria-hidden`,
-`aria-busy` and `inert` while they flip, so a screen reader reads the final text
-once and the keyboard cannot land on a control inside a region that is not being
-announced; `aria-hidden` alone left the header's buttons in the tab order. Each
-root gets back exactly the attributes it had. A panel the page re-renders during
-the run simply shows its final text.
+- The **lock front** is the readable text. The owner's decision: "50 letters per
+  second with a max of 10s", as the speed at which readable text locks. A text
+  of `n` characters, spaces included, takes `n / 50` seconds; one longer than
+  500 characters locks faster, so that its last character locks at exactly
+  10,000 ms. The front is `floor(speed × elapsed)` characters, and all of them
+  once that duration has passed.
+- The **trail front** is the flipping edge. The owner's decision: "the trail
+  should start as 10 letters ahead and should extend faster than the letters lock
+  by 1.5x, so that it leads and finishes while the text lock has to catch up".
+  It is `floor(10 + 1.5 × speed × elapsed)` characters, never behind the lock
+  front and never past the end. A text of ten characters or fewer is all
+  flipping from the first frame; a 100 character text has its trail at the end
+  at 1.2 s and its last character locked at 2 s.
 
-**The map fills in alongside** (`startIntro` in `ui/scatter.js`). Each point has
-a fixed threshold from an integer hash of its index. It appears when the appear
-progress passes its threshold, as a plain neutral disc, and takes its real style
-when the colour progress does. Paint order among coloured points is the shared
-rule; not-yet-coloured points are underneath. Points with no value and filtered
-out points appear on schedule but never take the neutral colour, since it means
-"has a colour, not shown yet". When the categories land after the points have
-appeared, the colour half runs again rather than every point changing at once.
+A letter flips every `flipFastMs`, 40 ms, while the lock front is ten or more
+letters behind it, and waits longer in proportion as the front closes, up to
+`flipSlowMs`, 170 ms, just before it locks (`flipInterval`), so the eye can
+follow each one landing. Whitespace is never scrambled, so words keep their
+shape and lines keep their breaks. The real text is in the document throughout
+and is restored exactly on finish or cancel. A text the page re-renders or
+rewrites during the run is dropped and simply shows its final text.
+
+**Form text animates too.** The owner's decision: "have buttons and labels also
+fill in with the text animation". Beside every text node,
+`collectScrambleTargets` gathers the `placeholder` of each `input` and
+`textarea` and the text of the option each `select` is showing: left as finished
+text among the flipping letters, they were a seam in the reveal. The options a
+dropdown is not showing are left alone, since nobody can see them, and a
+`textarea`'s content is never animated. The placeholder attribute and the
+option's text are rewritten in place and come back exact, like a text node.
+`hidden`, `.visually-hidden` and `data-no-scramble` opt an element out with
+everything inside it.
+
+**Each element is held only while its own text is flipping.** The owner element,
+which is a text node's parent or the control whose placeholder or shown option
+is animating, carries `aria-busy`, `aria-hidden` and `inert` from the first
+frame, and gets back exactly the attributes it had the moment the last of its
+own text locks. A screen reader therefore reads the final text once and never
+the flipping letters, and the keyboard cannot land on a control that is not
+being announced; `aria-hidden` alone left the header's buttons in the tab order.
+An element with several texts of its own waits for the last of them, and an
+element inside a held one is out of reach with it until that one is released.
+The roots the page passes (the header, `main`, and the three sections below the
+workspace) are not held as roots: an element is held only for text it directly
+contains.
+The hold is per element because a text may now take up to ten seconds. Held as
+whole regions, every region would stay hidden from assistive technology and
+closed to the keyboard and the pointer until its longest text had locked: up to
+ten seconds after the reveal in which nothing in it could be used. Held per
+element, a button with a three letter label is usable 60 ms after the reveal
+while a long paragraph elsewhere is still locking.
+
+**The map fills in alongside** (`startIntro` in `ui/scatter.js`). The owner's
+decision: "all points appear in .7s and all colour by 1.2s", both counted from
+the reveal. Each point has a fixed threshold from an integer hash of its index.
+It appears when the appear progress passes its threshold, as a plain neutral
+disc, and takes its real style when the colour progress does. Paint order among
+coloured points is the shared rule; not-yet-coloured points are underneath.
+Points with no value and filtered out points appear on schedule but never take
+the neutral colour, since it means "has a colour, not shown yet". It runs only
+when the tab on screen is a scatter map. When the categories land after the
+points have appeared, the colour half runs again over the same 1.2 s rather than
+every point changing at once; the owner kept this second wave for a slow
+connection. An intro still running when they land takes the colours up itself.
 
 **The later files continue under the tail**, a slim line that never blocks the
 page, naming the tier still in flight. While files are only loading it lies over
@@ -329,35 +411,45 @@ the flow, for its message and its Retry.
 
 ### Timing
 
-Every duration is in `site/js/ui/load-timing.js` and nowhere else.
+Every tunable is in `LOAD_TIMING` in `site/js/ui/load-timing.js` and nowhere
+else.
 
-| Tunable | Default | Address-bar override |
-| --- | ---: | --- |
-| Minimum bar time | 1,000 ms | `load-min` |
-| Letters between the typing and resolving fronts | 8 | `load-lag` |
-| Typing speed | 110 letters/s | `load-letters` |
-| Longest any one text may take | 1,600 ms | `load-text-max` |
-| Flip interval just after typing | 40 ms | `load-flip-fast` |
-| Flip interval just before resolving | 170 ms | `load-flip-slow` |
-| Map points all appeared | 700 ms | `load-map-appear` |
-| Map points all coloured | 2,000 ms | `load-map-colour` |
-| Hold the map where the grid stood | on | `load-anchor`, `0` or `1` |
+| Tunable | In `LOAD_TIMING` | Default | Address-bar override |
+| --- | --- | ---: | --- |
+| Minimum bar time | `minimumBarMs` | 1,500 ms | `load-min` |
+| Letters the trail starts ahead of the lock | `scramble.leadLetters` | 10 | `load-lead` |
+| Speed at which readable text locks | `scramble.lockLettersPerSecond` | 50 letters/s | `load-letters` |
+| Trail speed, as a multiple of the lock speed | `scramble.trailRatio` | 1.5 | `load-trail` |
+| Longest any one text may take | `scramble.maxDurationMs` | 10,000 ms | `load-text-max` |
+| Flip interval while the lock is far behind | `scramble.flipFastMs` | 40 ms | `load-flip-fast` |
+| Flip interval just before a letter locks | `scramble.flipSlowMs` | 170 ms | `load-flip-slow` |
+| Map points all appeared | `mapIntro.appearMs` | 700 ms | `load-map-appear` |
+| Map points all coloured | `mapIntro.colourMs` | 1,200 ms | `load-map-colour` |
 
 An override is a query parameter, read once at start-up, used only when it is a
-finite number from 0 to 60,000 (or exactly `0` or `1` for the switch), and never
-written to the URL hash, which is
+finite number from 0 to 60,000, and never written to the URL hash, which is
 analysis state and is unchanged by any of this. `?load-log` prints per-file
 timings and the three `cyano:` performance marks (`core`, `revealed`, `settled`)
 to the console; the marks are always recorded.
 
-**Reduced motion skips all presentation**: the scramble, the map fill-in, and
-the minimum bar time. The page shows its final state as soon as it is built.
+**Two things are fixed in `ui/load-progress.js` and have no override**: the
+150 ms of `FULL_HOLD_MS`, and the shape of the schedule.
+
+**The minimum is a floor.** The schedule's last block lands a little short of
+the minimum, by a share that grows with it, so the full bar is held for whichever
+is longer: the 150 ms that lets it be seen, or the rest of the minimum. Held for
+the 150 ms alone, a two-second minimum revealed the page at 1.96 s.
+
+**Reduced motion skips all presentation**: the scramble, the map fill-in, the
+minimum bar time, and the hold on the full bar. The bar then shows the real
+fraction as it arrives, and the page shows its final state, at its top, as soon
+as it is built and its promoted files are in.
 
 A browser refuses to run `requestAnimationFrame` as a method of anything but its
-own window. The scramble's default frame functions are therefore wrapped, not
-passed by reference, and a test that mimics the browser's check holds that: the
-first version passed every injected-clock test and stopped the real page with no
-text on it.
+own window. The default frame functions of the scramble and of the bar are
+therefore wrapped, not passed by reference, and a test for each mimics the
+browser's check to hold that: the first version of the scramble passed every
+injected-clock test and stopped the real page with no text on it.
 
 ## Decisions on the original suggestions
 
@@ -395,8 +487,8 @@ Unit coverage:
   gate, and the borderless pending disc.
 - `tests/js/load-progress.test.mjs`, `tests/js/early-data.test.mjs`,
   `tests/js/load-timing.test.mjs`, `tests/js/text-scramble.test.mjs`,
-  `tests/js/scatter-intro.test.mjs`, `tests/js/view-anchor.test.mjs`,
-  `tests/js/module-preloads.test.mjs`, `tests/js/loading-shell.test.mjs`.
+  `tests/js/scatter-intro.test.mjs`, `tests/js/module-preloads.test.mjs`,
+  `tests/js/loading-shell.test.mjs`.
 - `tests/test_data_manifest.py`: the builder and both gates.
 
 Rendered validation is required for any change here. A fast local connection
@@ -404,12 +496,21 @@ hides every state this document is about, so throttle the network and disable
 the cache, then check at **375, 768, 1280 and 1440 px**:
 
 - the shell: no visible text, the grid within the viewport, the whole track
-  present and a value text set before the page's script has run, the bar then
-  reporting a real fraction, no horizontal overflow;
-- the reveal: text typing in and resolving, map points appearing and colouring
-  **in view**, the map's top within a pixel of where the grid's was from the
-  first frame to the last, nothing left `aria-busy`, `aria-hidden` or `inert`
-  afterwards, every text its final self, and the status line hidden;
+  present and a value text set before the page's script has run, `aria-valuenow`
+  and the value text then reporting the real fraction while the genes light in
+  blocks that never run ahead of it, no horizontal overflow;
+- the bar on a fast connection, with no throttle: filling in visibly uneven
+  steps with pauses over at least 1.5 s from navigation, and seen full before
+  the map replaces it;
+- the reveal: the page at its top; text growing as flipping letters and locking
+  left to right behind them; each input's placeholder and the option each
+  dropdown shows animating with the rest and ending exact; each element usable
+  the moment its own text has locked, while longer texts are still running; map
+  points appearing and then colouring, wherever the map sits in the page; the
+  status line hidden;
+- everything settled: no element carrying an `aria-busy`, `aria-hidden` or
+  `inert` it did not have before the reveal, and every text, placeholder and
+  shown option its final self;
 - tier 1 landed and tier 2 not: neutral points, the legend's single loading row,
   the tail naming the tier in flight;
 - everything landed: the tail gone, the legend and counts as on a normal load;
@@ -417,7 +518,8 @@ the cache, then check at **375, 768, 1280 and 1440 px**:
   Retry recovering it;
 - a pinned-gene link: the reveal no earlier than that gene's evidence, and no
   loading note in its detail card;
-- reduced motion: the final page with no animation and no minimum wait;
+- reduced motion: the final page at its top with no animation, no minimum wait
+  and no hold on the full bar;
 - a clean console throughout, and the three `cyano:` marks in order.
 
 Re-measure the table under "Pacing the tiers" on the same profile after any

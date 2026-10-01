@@ -29,6 +29,9 @@ export const LOAD_BAR_VIEW = Object.freeze({ width: 600, height: 44, axisY: 22, 
 /** Genes drawn along the bar. */
 export const LOAD_BAR_GENES = 132;
 
+/** The full bar is held this long before the page replaces it, so it is seen. */
+export const FULL_HOLD_MS = 150;
+
 /** A small deterministic generator, so the bar is the same picture on every load. */
 function lcg(seed) {
   let state = seed >>> 0;
@@ -36,6 +39,64 @@ function lcg(seed) {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
     return state / 0x100000000;
   };
+}
+
+/** Keep a progress value inside the range the bar can represent. */
+function clampFraction(value) {
+  return Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
+}
+
+/**
+ * The uneven steps a bar would take if all its data were already available.
+ *
+ * @returns {{atMs: number, fraction: number}[]}
+ */
+export function loadSchedule(minimumMs, seed = 2973) {
+  if (!Number.isFinite(minimumMs) || minimumMs <= 0) return [];
+  const random = lcg(seed);
+  const count = 7 + Math.floor(random() * 6);
+  const weightedSteps = (largeShare, smallShare) => {
+    const large = Math.floor(random() * count);
+    let small = Math.floor(random() * (count - 1));
+    if (small >= large) small += 1;
+    const weights = Array.from({ length: count }, () => 0);
+    weights[large] = largeShare;
+    weights[small] = smallShare;
+    const ordinary = weights.map((weight, index) => (
+      index === large || index === small ? 0 : 0.45 + random()
+    ));
+    const ordinaryTotal = ordinary.reduce((sum, weight) => sum + weight, 0);
+    const remainder = 1 - largeShare - smallShare;
+    return weights.map((weight, index) => weight || (ordinary[index] / ordinaryTotal) * remainder);
+  };
+
+  // One conspicuous jump and one small advance make the blocks readable. The
+  // time weights likewise guarantee one long pause rather than a metronome.
+  const fractions = weightedSteps(0.22, 0.035);
+  const pauses = weightedSteps(0.27, 0.035);
+  const lastAt = minimumMs * (0.9 + random() * 0.1);
+  let atMs = 0;
+  let fraction = 0;
+  return fractions.map((step, index) => {
+    atMs += pauses[index] * lastAt;
+    fraction += step;
+    return {
+      atMs: index === count - 1 ? lastAt : atMs,
+      fraction: index === count - 1 ? 1 : fraction,
+    };
+  });
+}
+
+/** The largest scheduled block that time and real progress have both reached. */
+export function displayedFraction(real, elapsedMs, schedule) {
+  if (schedule.length === 0) return real;
+  const available = real;
+  let displayed = 0;
+  for (const step of schedule) {
+    if (step.atMs > elapsedMs || step.fraction > available) break;
+    displayed = step.fraction;
+  }
+  return displayed;
 }
 
 /**
@@ -75,12 +136,20 @@ export function loadBarGenes(count = LOAD_BAR_GENES, seed = 2973) {
  * settled against files requested, which is coarser but never claims a size it
  * does not know.
  */
-export function loadFraction(snapshot) {
+export function loadFraction(snapshot, keys = null) {
   if (!snapshot) return 0;
+  if (keys !== null) {
+    const records = keys.map((key) => snapshot.files?.[key] ?? null);
+    const totalBytes = records.reduce((sum, record) => sum + (record?.bytes ?? 0), 0);
+    const fraction = snapshot.exact && totalBytes > 0
+      ? records.reduce((sum, record) => sum + (record?.receivedBytes ?? 0), 0) / totalBytes
+      : (keys.length > 0 ? records.filter((record) => record?.settled).length / keys.length : 0);
+    return clampFraction(fraction);
+  }
   const fraction = snapshot.exact && snapshot.totalBytes > 0
     ? snapshot.receivedBytes / snapshot.totalBytes
     : (snapshot.totalFiles > 0 ? snapshot.settledFiles / snapshot.totalFiles : 0);
-  return Math.min(1, Math.max(0, fraction));
+  return clampFraction(fraction);
 }
 
 /** The release and its size, once `meta.json` has landed; empty before. */
@@ -93,8 +162,8 @@ export function describeIdentity(identity) {
 }
 
 /** What the bar says to assistive technology: the tier in plain words, and how far. */
-export function describeLoad(snapshot, identity = null) {
-  const percent = Math.round(loadFraction(snapshot) * 100);
+export function describeLoad(snapshot, identity = null, keys = null) {
+  const percent = Math.round(loadFraction(snapshot, keys) * 100);
   const tier = snapshot?.currentTier ? TIER_LABELS[snapshot.currentTier] : null;
   const what = tier ? `Loading ${tier}` : 'Loading complete';
   const who = describeIdentity(identity);
@@ -136,16 +205,31 @@ export class LoadProgress {
    *   `progressbar` element, and the tail shown after the reveal.
    * @param {{onRetry?: (key: string) => void}} handlers
    */
-  constructor({ stage, bar, tail }, handlers = {}) {
+  constructor({ stage, bar, tail }, handlers = {}, {
+    minimumMs = 0,
+    now = () => performance.now(),
+    requestFrame = (callback) => requestAnimationFrame(callback),
+  } = {}) {
     this.stage = stage;
     this.bar = bar;
     this.tail = tail;
     this.handlers = handlers;
+    this.minimumMs = Number.isFinite(minimumMs) ? Math.max(0, minimumMs) : 0;
+    this.now = now;
+    this.requestFrame = requestFrame;
+    this.schedule = loadSchedule(this.minimumMs);
+    this.blockingKeys = null;
     this.identity = null;
     this.revealed = false;
+    this.snapshot = null;
+    this.framePending = false;
+    this.frameVersion = 0;
+    this.cycle = 0;
+    this.startedAt = 0;
     this.genes = loadBarGenes();
     this.buildBar();
     this.buildTail();
+    this.startCycle(0);
   }
 
   buildBar() {
@@ -173,7 +257,8 @@ export class LoadProgress {
     this.bar.setAttribute('aria-label', 'Loading the gene data');
     this.bar.setAttribute('aria-valuemin', '0');
     this.bar.setAttribute('aria-valuemax', '100');
-    this.setFraction(0, describeLoad(null));
+    this.setFraction(0);
+    this.setAria(0, describeLoad(null));
   }
 
   buildTail() {
@@ -192,19 +277,91 @@ export class LoadProgress {
   }
 
   /** Light every gene whose right edge the fraction has passed. */
-  setFraction(fraction, text) {
+  setFraction(fraction) {
     this.fraction = fraction;
     // The last gene's edge is the full width, so floating-point rounding must
     // not leave it dark at 100%.
     const reached = fraction >= 1 ? Infinity : fraction;
     this.marks.forEach((mark, i) => mark.classList.toggle('is-on', this.genes[i].at <= reached));
+  }
+
+  /** Report real progress even when the decorative genes are deliberately behind it. */
+  setAria(fraction, text) {
     this.bar.setAttribute('aria-valuenow', String(Math.round(fraction * 100)));
     this.bar.setAttribute('aria-valuetext', text);
   }
 
-  /** The release's name and gene count, shown as soon as `meta.json` lands. */
+  /** Begin one independently finishable presentation cycle. */
+  startCycle(startedAt) {
+    this.cycle += 1;
+    this.frameVersion += 1;
+    this.startedAt = startedAt;
+    this.framePending = false;
+    this.finishScheduled = false;
+    this.finishedPromise = new Promise((resolve) => { this.resolveFinished = resolve; });
+    this.requestNextFrame();
+  }
+
+  /** Promise fulfilled after this cycle has shown and held its complete bar. */
+  finished() {
+    return this.finishedPromise;
+  }
+
+  requestNextFrame() {
+    if (this.minimumMs === 0 || this.revealed || this.fraction >= 1 || this.framePending) return;
+    const cycle = this.cycle;
+    const version = this.frameVersion;
+    this.framePending = true;
+    this.requestFrame(() => {
+      if (cycle !== this.cycle || version !== this.frameVersion) return;
+      this.framePending = false;
+      if (this.revealed) return;
+      this.renderStage();
+      this.requestNextFrame();
+    });
+  }
+
+  renderStage() {
+    const real = loadFraction(this.snapshot, this.blockingKeys);
+    const elapsed = this.now() - this.startedAt;
+    const displayed = displayedFraction(real, elapsed, this.schedule);
+    this.setFraction(displayed);
+    this.setAria(real, describeLoad(this.snapshot, this.identity, this.blockingKeys));
+    if (displayed < 1) return;
+    // There may be a callback already queued when an update reaches full.
+    // Invalidate it so reaching full stops the loop immediately.
+    this.frameVersion += 1;
+    this.framePending = false;
+    if (this.minimumMs === 0) {
+      this.resolveFinished();
+      return;
+    }
+    if (this.finishScheduled) return;
+    this.finishScheduled = true;
+    const cycle = this.cycle;
+    // The minimum is a floor, not a target the schedule happens to approach.
+    // The last block lands a little short of it, by a share that grows with the
+    // minimum, so the full bar is held for whichever is longer: the hold that
+    // lets it be seen, or the rest of the minimum.
+    const remaining = this.startedAt + this.minimumMs - this.now();
+    setTimeout(() => {
+      if (cycle === this.cycle) this.resolveFinished();
+    }, Math.max(FULL_HOLD_MS, remaining));
+  }
+
+  /** The release's name and gene count, reported once tier 1 has been built. */
   setIdentity(identity) {
     this.identity = identity;
+    if (!this.revealed) this.renderStage();
+  }
+
+  /** Limit the stage bar to the files that must land before the reveal. */
+  setBlocking(keys) {
+    this.blockingKeys = keys === null ? null : [...keys];
+    if (!this.revealed) {
+      this.renderStage();
+      this.requestNextFrame();
+    }
   }
 
   /**
@@ -213,14 +370,18 @@ export class LoadProgress {
    */
   update(snapshot) {
     this.snapshot = snapshot;
-    const fraction = loadFraction(snapshot);
-    this.setFraction(fraction, describeLoad(snapshot, this.identity));
+    if (!this.revealed) {
+      this.renderStage();
+      this.requestNextFrame();
+    }
     if (this.revealed) this.renderTail();
   }
 
   /** The empty shell gives way to the page; later files continue under the tail. */
   reveal() {
     this.revealed = true;
+    this.frameVersion += 1;
+    this.framePending = false;
     this.stage.hidden = true;
     this.renderTail();
   }
@@ -228,9 +389,12 @@ export class LoadProgress {
   /** Put the stage back for a whole-dataset retry. */
   restart() {
     this.revealed = false;
+    this.snapshot = null;
     this.stage.hidden = false;
     this.tail.hidden = true;
-    this.setFraction(0, describeLoad(null));
+    this.setFraction(0);
+    this.setAria(0, describeLoad(null));
+    this.startCycle(this.now());
   }
 
   /**

@@ -1,21 +1,31 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SCRAMBLE_LETTERS, TextScramble, collectScrambleNodes, flipInterval, scrambleProgress,
+  SCRAMBLE_LETTERS, TextScramble, collectScrambleNodes, collectScrambleTargets,
+  flipInterval, scrambleProgress,
 } from '../../site/js/ui/text-scramble.js';
 import { LOAD_TIMING } from '../../site/js/ui/load-timing.js';
-import { FakeNode, withFakeDocument } from './fake-dom.mjs';
+import { FakeElement, FakeNode, withFakeDocument } from './fake-dom.mjs';
 
 /**
- * A letter every ten milliseconds, four letters of lag, and flip waits of 10 ms
- * and 50 ms, so every front position and every flip falls on a round number.
+ * A letter locks every ten milliseconds, the trail starts four letters ahead and
+ * runs half again as fast, and the flip waits are 10 ms and 50 ms, so every flip
+ * falls on a round number: the wait is 50 - 10 x remaining.
  */
 const TIMING = {
-  lagLetters: 4, lettersPerSecond: 100, maxDurationMs: 10000, flipFastMs: 10, flipSlowMs: 50,
+  leadLetters: 4,
+  lockLettersPerSecond: 100,
+  trailRatio: 1.5,
+  maxDurationMs: 10000,
+  flipFastMs: 10,
+  flipSlowMs: 50,
 };
 
-/** The same, a letter every millisecond, for the tests that only watch the fronts. */
-const FAST = { ...TIMING, lettersPerSecond: 1000 };
+/**
+ * The same, a letter locked every millisecond and a trail at twice that, for the
+ * tests that watch the fronts rather than the flipping.
+ */
+const FAST = { ...TIMING, lockLettersPerSecond: 1000, trailRatio: 2 };
 
 /**
  * A frame queue and a clock the test moves by hand, in place of
@@ -62,7 +72,7 @@ function cyclingRandom() {
   };
 }
 
-/** What a node should show when every draw is the first letter, A. */
+/** What a string should show when every draw is the first letter, A. */
 function allA(original, front, resolved) {
   let shown = original.slice(0, resolved);
   for (let index = resolved; index < front; index += 1) {
@@ -93,46 +103,109 @@ function countWrites(node) {
   return () => writes;
 }
 
-test('the fronts advance a letter at a time, the resolve front trailing by the lag', () => {
-  // A letter a millisecond, so elapsed milliseconds are letters travelled.
+/** The same budget for an element's text, which is how an option is written. */
+function countTextWrites(element) {
+  const base = Object.getOwnPropertyDescriptor(FakeElement.prototype, 'textContent');
+  let writes = 0;
+  Object.defineProperty(element, 'textContent', {
+    configurable: true,
+    get: () => base.get.call(element),
+    set: (value) => { writes += 1; base.set.call(element, value); },
+  });
+  return () => writes;
+}
+
+/** And for an attribute, which is how a placeholder is written. */
+function countAttributeWrites(element, name) {
+  const base = element.setAttribute.bind(element);
+  let writes = 0;
+  element.setAttribute = (attribute, value) => {
+    if (attribute === name) writes += 1;
+    base(attribute, value);
+  };
+  return () => writes;
+}
+
+/** The three attributes an owner carries while its own text is flipping. */
+function holdAttributes(element) {
+  return ['aria-busy', 'aria-hidden', 'inert'].map((name) => element.getAttribute(name));
+}
+
+test('the trail starts ahead of the lock, leads it, and finishes first', () => {
+  // A letter locked a millisecond, a trail at twice that, four letters of lead.
   const length = 10;
   const at = (ms) => scrambleProgress(length, ms, FAST);
-  assert.deepEqual(at(0), { front: 0, resolved: 0, done: false });
-  assert.deepEqual(at(1), { front: 1, resolved: 0, done: false });
-  assert.deepEqual(at(4), { front: 4, resolved: 0, done: false });
-  // Five letters typed, the first one resolved: the lag is four.
-  assert.deepEqual(at(5), { front: 5, resolved: 1, done: false });
-  assert.deepEqual(at(10), { front: 10, resolved: 6, done: false });
-  // The typing front has reached the end; the resolve front keeps the same speed.
-  assert.deepEqual(at(12), { front: 10, resolved: 8, done: false });
-  assert.deepEqual(at(14), { front: 10, resolved: 10, done: true });
+  assert.deepEqual(at(0), { front: 4, resolved: 0, done: false },
+    'the trail already shows the lead, and nothing is locked');
+  assert.deepEqual(at(1), { front: 6, resolved: 1, done: false });
+  assert.deepEqual(at(2), { front: 8, resolved: 2, done: false });
+  // The trail is at the end with seven letters still to lock behind it.
+  assert.deepEqual(at(3), { front: 10, resolved: 3, done: false });
+  assert.deepEqual(at(9), { front: 10, resolved: 9, done: false });
+  assert.deepEqual(at(10), { front: 10, resolved: 10, done: true });
   // And it stays done, however long the caller keeps asking.
   assert.deepEqual(at(10000), { front: 10, resolved: 10, done: true });
   // Time never runs backwards, but a negative elapsed must not run the text back.
-  assert.deepEqual(at(-50), { front: 0, resolved: 0, done: false });
+  assert.deepEqual(at(-50), { front: 4, resolved: 0, done: false });
+  // The trail leads by the lead letters plus the distance it has gained.
+  for (let ms = 0; ms <= 10; ms += 1) {
+    const { front, resolved } = at(ms);
+    assert.ok(front >= resolved, `the trail is never behind the lock at ${ms}`);
+    assert.equal(front, Math.min(length, 4 + 2 * ms));
+  }
 });
 
-test('a text too long for the maximum duration speeds up to fit inside it', () => {
+test('a text shorter than the lead is all flipping from the first frame', () => {
+  const { front, resolved, done } = scrambleProgress(2, 0, FAST);
+  assert.deepEqual({ front, resolved, done }, { front: 2, resolved: 0, done: false },
+    'the trail cannot lead past the end of the text');
+  assert.deepEqual(scrambleProgress(2, 1, FAST), { front: 2, resolved: 1, done: false });
+  assert.deepEqual(scrambleProgress(2, 2, FAST), { front: 2, resolved: 2, done: true });
+});
+
+test('a trail ratio of less than one still never falls behind the lock', () => {
+  for (const trailRatio of [0.5, 0, -1]) {
+    const timing = { ...FAST, trailRatio };
+    for (const ms of [0, 5, 20, 60]) {
+      const { front, resolved } = scrambleProgress(100, ms, timing);
+      assert.ok(front >= resolved, `ratio ${trailRatio} at ${ms}: ${front} < ${resolved}`);
+    }
+    // The lock is unaffected by the trail: it is what sets the pace.
+    assert.equal(scrambleProgress(100, 40, timing).resolved, 40);
+  }
+});
+
+test('a text too long for the maximum duration locks its last letter exactly then', () => {
   const timing = LOAD_TIMING.scramble;
   const length = 1000;
-  // At 110 letters a second this text plus its lag would take over nine seconds.
-  assert.ok((length + timing.lagLetters) / timing.lettersPerSecond * 1000 > timing.maxDurationMs);
+  // At fifty letters a second this text would take twenty seconds to lock.
+  assert.ok((length / timing.lockLettersPerSecond) * 1000 > timing.maxDurationMs);
   assert.equal(scrambleProgress(length, timing.maxDurationMs, timing).done, true,
-    'the whole animation, typing and trailing lag, is over by the maximum');
+    'the lock front reaches the end at the maximum');
   assert.equal(scrambleProgress(length, timing.maxDurationMs - 1, timing).done, false,
     'and not before it');
-  // Halfway through the time is halfway through the distance, lag included.
+  // Halfway through the time is halfway through the letters, with the trail
+  // ahead by its lead plus the ground its extra speed has gained.
   const half = scrambleProgress(length, timing.maxDurationMs / 2, timing);
-  assert.equal(half.front, Math.floor((length + timing.lagLetters) / 2));
-  assert.equal(half.front - half.resolved, timing.lagLetters);
+  assert.equal(half.resolved, length / 2);
+  assert.equal(half.front, Math.floor(timing.leadLetters + timing.trailRatio * (length / 2)));
 
   // A short text keeps the stated speed rather than being stretched to the maximum.
-  const short = scrambleProgress(20, 1000, timing);
-  assert.deepEqual(short, { front: 20, resolved: 20, done: true });
+  const naturalMs = (20 / timing.lockLettersPerSecond) * 1000;
+  assert.deepEqual(scrambleProgress(20, naturalMs, timing), { front: 20, resolved: 20, done: true });
+  assert.equal(scrambleProgress(20, naturalMs - 1, timing).done, false);
 });
 
 test('a length or a duration of zero resolves at once instead of dividing by zero', () => {
-  for (const timing of [TIMING, { ...TIMING, maxDurationMs: 0 }, { ...TIMING, lagLetters: 0 }]) {
+  const edges = [
+    TIMING,
+    { ...TIMING, maxDurationMs: 0 },
+    { ...TIMING, leadLetters: 0 },
+    { ...TIMING, lockLettersPerSecond: 0 },
+    { ...TIMING, lockLettersPerSecond: 0, maxDurationMs: 0 },
+    { ...TIMING, trailRatio: 0 },
+  ];
+  for (const timing of edges) {
     for (const elapsed of [0, 10]) {
       const progress = scrambleProgress(0, elapsed, timing);
       assert.deepEqual(progress, { front: 0, resolved: 0, done: true }, JSON.stringify(timing));
@@ -141,28 +214,27 @@ test('a length or a duration of zero resolves at once instead of dividing by zer
   // A real text with the duration tuned to nothing is simply already finished.
   assert.deepEqual(scrambleProgress(6, 0, { ...TIMING, maxDurationMs: 0 }),
     { front: 6, resolved: 6, done: true });
-  // Letters per second of zero leaves the maximum duration as the only speed.
-  const stalled = { ...TIMING, lettersPerSecond: 0, maxDurationMs: 5000 };
+  // A lock speed of zero leaves the maximum duration as the only speed.
+  const stalled = { ...TIMING, lockLettersPerSecond: 0, maxDurationMs: 5000 };
   assert.deepEqual(scrambleProgress(10, 5000, stalled), { front: 10, resolved: 10, done: true });
-  // Halfway through that duration is halfway through the ten letters and the lag.
-  assert.deepEqual(scrambleProgress(10, 2500, stalled), { front: 7, resolved: 3, done: false });
+  assert.deepEqual(scrambleProgress(10, 2500, stalled), { front: 10, resolved: 5, done: false });
 });
 
-test('a letter flips fast when just typed and slows as its resolution approaches', () => {
-  assert.equal(flipInterval(TIMING.lagLetters, TIMING), TIMING.flipFastMs);
-  assert.equal(flipInterval(TIMING.lagLetters + 5, TIMING), TIMING.flipFastMs,
-    'a letter ahead of the lag is no faster than just-typed');
+test('a letter flips fast while the lock is far behind and slows as it closes in', () => {
+  assert.equal(flipInterval(TIMING.leadLetters, TIMING), TIMING.flipFastMs);
+  assert.equal(flipInterval(TIMING.leadLetters + 5, TIMING), TIMING.flipFastMs,
+    'a letter further ahead than the lead is no faster than one just at it');
   assert.equal(flipInterval(0, TIMING), TIMING.flipSlowMs);
   assert.equal(flipInterval(-2, TIMING), TIMING.flipSlowMs, 'and no slower than that');
-  assert.equal(flipInterval(2, TIMING), 30, 'halfway along the lag is halfway between the waits');
+  assert.equal(flipInterval(2, TIMING), 30, 'halfway along the lead is halfway between the waits');
   let previous = TIMING.flipFastMs - 1;
-  for (let remaining = TIMING.lagLetters; remaining >= 0; remaining -= 1) {
+  for (let remaining = TIMING.leadLetters; remaining >= 0; remaining -= 1) {
     const wait = flipInterval(remaining, TIMING);
-    assert.ok(wait > previous, `the wait grows as the front closes: ${remaining}`);
+    assert.ok(wait > previous, `the wait grows as the lock closes: ${remaining}`);
     previous = wait;
   }
-  // With no lag a letter resolves as soon as it is typed, so it never slows.
-  assert.equal(flipInterval(0, { ...TIMING, lagLetters: 0 }), TIMING.flipFastMs);
+  // With no lead a letter locks as soon as it appears, so it never slows.
+  assert.equal(flipInterval(0, { ...TIMING, leadLetters: 0 }), TIMING.flipFastMs);
 });
 
 test('the nodes collected are the visible prose, in document order', async () => {
@@ -177,6 +249,9 @@ test('the nodes collected are the visible prose, in document order', async () =>
     root.append(inner, document.createTextNode('\n  '));
     assert.deepEqual(collectScrambleNodes(root).map((node) => node.data),
       ['first', 'second', 'third'], 'whitespace between tags has nothing to reveal');
+    // Each text node is held by the element it sits in, not by the root.
+    assert.deepEqual(collectScrambleTargets(root).map((target) => target.owner),
+      [root, inner, deep]);
   });
 });
 
@@ -205,13 +280,69 @@ test('collection passes over scripts, hidden elements and anything opted out', a
     add('p', 'the only prose');
 
     assert.deepEqual(collectScrambleNodes(root).map((node) => node.data), ['the only prose']);
+    assert.deepEqual(collectScrambleTargets(root).map((target) => target.kind), ['text']);
     // A root is the caller's choice and is never tested itself.
     const hiddenRoot = document.createElement('div');
     hiddenRoot.setAttribute('hidden', '');
     hiddenRoot.append(document.createTextNode('still animated'));
     assert.deepEqual(collectScrambleNodes(hiddenRoot).map((node) => node.data), ['still animated']);
     // A node with no children at all is simply empty.
-    assert.deepEqual(collectScrambleNodes(document.createElement('div')), []);
+    assert.deepEqual(collectScrambleTargets(document.createElement('div')), []);
+  });
+});
+
+test('placeholders and the option a dropdown shows are collected too', async () => {
+  await withFakeDocument((document) => {
+    const root = document.createElement('div');
+    const label = document.createElement('label');
+    label.append(document.createTextNode('Search'));
+    const input = document.createElement('input');
+    input.setAttribute('placeholder', 'Gene or locus');
+    const area = document.createElement('textarea');
+    area.setAttribute('placeholder', 'Paste a list');
+    area.append(document.createTextNode('its content is never animated'));
+    const blank = document.createElement('input');
+    blank.setAttribute('placeholder', '');
+    const spaces = document.createElement('input');
+    spaces.setAttribute('placeholder', '   ');
+    const plain = document.createElement('input');
+    const select = document.createElement('select');
+    const chosen = document.createElement('option');
+    chosen.append(document.createTextNode('By length'));
+    chosen.selected = true;
+    const other = document.createElement('option');
+    other.append(document.createTextNode('By position'));
+    select.append(other, chosen);
+    root.append(label, input, area, blank, spaces, plain, select);
+    document.body.append(root);
+
+    const targets = collectScrambleTargets(root);
+    assert.deepEqual(targets.map((target) => [target.kind, target.read()]), [
+      ['text', 'Search'],
+      ['placeholder', 'Gene or locus'],
+      ['placeholder', 'Paste a list'],
+      ['option', 'By length'],
+    ], 'in document order, with nothing to reveal left out');
+    assert.deepEqual(targets.map((target) => target.owner), [label, input, area, select],
+      'a control holds its own placeholder, and a select its shown option');
+    // The option a reader cannot see is never collected, by either walk.
+    assert.deepEqual(collectScrambleNodes(root).map((node) => node.data), ['Search']);
+
+    // With nothing selected the first option is the one on show, and a select
+    // that opts out, or whose option does, animates neither.
+    chosen.selected = false;
+    assert.equal(collectScrambleTargets(root)[2 + 1].read(), 'By position');
+    chosen.selected = true;
+    chosen.setAttribute('data-no-scramble', '');
+    assert.equal(collectScrambleTargets(root).length, 3);
+    chosen.removeAttribute('data-no-scramble');
+    select.setAttribute('hidden', '');
+    assert.equal(collectScrambleTargets(root).length, 3);
+    // A select with no options at all has nothing to show.
+    select.removeAttribute('hidden');
+    select.replaceChildren();
+    assert.equal(collectScrambleTargets(root).length, 3);
+    root.remove();
   });
 });
 
@@ -224,52 +355,60 @@ test('the text grows left to right out of base letters and settles into itself',
     const run = scramble.run([root]);
 
     assert.equal(scramble.active, true);
-    assert.equal(node.data, '', 'the real text is never shown for even one frame');
-    const seen = [''];
-    for (let step = 0; step < 12; step += 1) {
+    assert.equal(node.data, 'AAAA', 'the real text is never shown for even one frame');
+    const seen = [node.data];
+    for (let step = 0; step < 8; step += 1) {
       clock.advance(1);
       const { front, resolved } = scrambleProgress(text.length, step + 1, FAST);
-      assert.equal(node.data.length, front, 'exactly the typed letters are visible');
+      assert.equal(node.data.length, front, 'exactly the letters the trail has reached are visible');
       assert.equal(node.data.slice(0, resolved), text.slice(0, resolved),
-        'and the resolved ones are the real characters');
+        'and the locked ones are the real characters');
       for (const letter of node.data.slice(resolved)) {
         assert.ok(SCRAMBLE_LETTERS.includes(letter) || /\s/.test(letter),
-          `an unresolved position shows a base letter: ${JSON.stringify(node.data)}`);
+          `an unlocked position shows a base letter: ${JSON.stringify(node.data)}`);
       }
       assert.equal(node.data, allA(text, front, resolved));
       seen.push(node.data);
     }
     await run;
     assert.deepEqual(seen, [
-      '', 'A', 'AA', 'AAA', 'AAAA', 'GAAA ', 'GeAA A', 'GenA AA',
-      'Gene AAA', 'Gene AAA', 'Gene mAA', 'Gene maA', 'Gene map',
-    ], 'the space holds its place from the moment the front passes it');
+      'AAAA', 'GAAA A', 'GeAA AAA', 'GenA AAA', 'Gene AAA', 'Gene AAA',
+      'Gene mAA', 'Gene maA', 'Gene map',
+    ], 'the space holds its place from the moment the trail passes it');
     assert.equal(node.data, text);
     assert.equal(scramble.active, false);
   });
 });
 
-test('a flipping letter holds still between flips and waits longer as it nears resolving', async () => {
+test('a flipping letter holds still between flips and waits longer as it nears locking', async () => {
   await withFakeDocument(async (document) => {
     const { root, node } = mount(document, 'abcdefghij');
     const clock = frameClock();
     const scramble = new TextScramble({ timing: TIMING, random: cyclingRandom(), ...clock });
-    const run = scramble.run([root]);
+    const run = scramble.run(root);
 
-    // A letter every ten milliseconds; the first is drawn as A with a 20 ms wait,
-    // because the resolve front is three letters of travel away from it.
+    // Four letters of lead, drawn A, T, G, C. The nearest the lock gets the
+    // slowest wait, fifty milliseconds, and the furthest the fastest, ten.
+    assert.equal(node.data, 'ATGC');
     clock.advance(10);
-    assert.equal(node.data, 'A');
+    assert.equal(node.data, 'aTGCA', 'the first letter locked and the trail took a fifth');
     clock.advance(10);
-    assert.equal(node.data, 'AT', 'the first letter holds while the second is typed');
+    assert.equal(node.data, 'abGTAGC', 'the letter that was due flipped, the new ones were drawn');
+
+    // The seventh letter: drawn at twenty with ten milliseconds to wait, then
+    // twenty, then forty, each wait longer than the last as the lock closes on
+    // it, and the lock reaches it before that last wait is up.
+    assert.equal(node.data[6], 'C');
     clock.advance(10);
-    assert.equal(node.data, 'GTC', 'at twenty-one milliseconds old the first letter flips');
-    // Its wait has now grown to forty milliseconds, one letter of travel from
-    // resolving, so it holds through the next frame rather than flipping again.
+    assert.equal(node.data[6], 'T', 'ten milliseconds later it flipped');
     clock.advance(10);
-    assert.equal(node.data[0], 'G');
+    assert.equal(node.data[6], 'T', 'and then held, its wait now twice as long');
     clock.advance(10);
-    assert.equal(node.data[0], 'a', 'and then it settles into the real character');
+    assert.equal(node.data[6], 'C', 'fifty milliseconds in, its third flip');
+    clock.advance(10);
+    assert.equal(node.data[6], 'C', 'and it holds through a wait of forty');
+    clock.advance(10);
+    assert.equal(node.data[6], 'g', 'which the lock cut short by locking it');
 
     scramble.cancel();
     await run;
@@ -277,7 +416,7 @@ test('a flipping letter holds still between flips and waits longer as it nears r
   });
 });
 
-test('one frame loop drives every node, writing a node at most once a frame', async () => {
+test('one frame loop drives every target, writing each at most once a frame', async () => {
   await withFakeDocument(async (document) => {
     const frames = [];
     for (const count of [1, 6]) {
@@ -297,74 +436,195 @@ test('one frame loop drives every node, writing a node at most once a frame', as
       while (scramble.active) clock.advance(1);
       await run;
       assert.equal(clock.waiting, 0, 'no frame is left pending');
-      // Thirteen frames cover the text, and twelve of them changed its visible
-      // string: the frame where the resolving space replaced a flipping space
+      // Nine frames cover the text, and eight of them changed its visible
+      // string: the frame where the locking space replaced a flipping space
       // left the node alone.
-      assert.equal(writes(), 12);
+      assert.equal(writes(), 8);
       frames.push(clock.requested);
+      root.remove();
     }
     assert.equal(frames[0], frames[1], 'six nodes cost the same frames as one');
   });
 });
 
-test('a frame that changes nothing writes nothing', async () => {
+test('a frame that changes nothing writes nothing, whatever the target kind', async () => {
   await withFakeDocument(async (document) => {
-    const { root, node } = mount(document, 'Gene map');
+    const root = document.createElement('div');
+    const block = document.createElement('p');
+    block.append(document.createTextNode('Gene map'));
+    const input = document.createElement('input');
+    input.setAttribute('placeholder', 'Gene map');
+    const select = document.createElement('select');
+    const option = document.createElement('option');
+    option.append(document.createTextNode('Gene map'));
+    select.append(option);
+    root.append(block, input, select);
+    document.body.append(root);
+
     const clock = frameClock();
     const scramble = new TextScramble({ timing: TIMING, random: () => 0, ...clock });
     const run = scramble.run(root);
-    const writes = countWrites(node);
+    const counts = [
+      countWrites(block.children[0]),
+      countAttributeWrites(input, 'placeholder'),
+      countTextWrites(option),
+    ];
     clock.advance(10);
-    assert.equal(writes(), 1);
-    // Still the same letter, the same front, and nothing due to flip.
+    for (const writes of counts) assert.equal(writes(), 1, 'a letter locked, so each one wrote');
+    // Still the same letters, the same fronts, and nothing due to flip.
     clock.advance(1);
-    assert.equal(writes(), 1, 'the node is left alone between changes');
+    for (const writes of counts) assert.equal(writes(), 1, 'the target is left alone between changes');
     scramble.cancel();
     await run;
+    root.remove();
   });
 });
 
-test('while running a root is busy and hidden, and gets back exactly what it had', async () => {
+test('an owner is held only while its own text is still flipping', async () => {
   await withFakeDocument(async (document) => {
-    const { root } = mount(document, 'Gene map');
-    const other = document.createElement('section');
-    other.setAttribute('aria-hidden', 'true');
-    other.append(document.createTextNode('Lengths'));
-    document.body.append(other);
+    const root = document.createElement('div');
+    const button = document.createElement('button');
+    button.append(document.createTextNode('Map'));
+    const paragraph = document.createElement('p');
+    paragraph.setAttribute('aria-busy', 'false');
+    paragraph.append(document.createTextNode('Gene map and every coding sequence'));
+    root.append(button, paragraph);
+    document.body.append(root);
 
     const clock = frameClock();
     const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
-    const run = scramble.run([root, other]);
-    for (const element of [root, other]) {
-      assert.equal(element.getAttribute('aria-busy'), 'true');
-      assert.equal(element.getAttribute('aria-hidden'), 'true');
-    }
+    const run = scramble.run(root);
+    assert.deepEqual(holdAttributes(root), [null, null, null],
+      'a root that holds no text of its own is never touched');
+    assert.deepEqual(holdAttributes(button), ['true', 'true', 'true']);
+    assert.deepEqual(holdAttributes(paragraph), ['true', 'true', 'true']);
+
+    // Three letters at a letter a millisecond: the button is usable at once.
+    clock.advance(3);
+    assert.equal(button.textContent, 'Map');
+    assert.deepEqual(holdAttributes(button), [null, null, null],
+      'released the moment its own label locked');
+    assert.deepEqual(holdAttributes(paragraph), ['true', 'true', 'true'],
+      'while the long text is still typing');
+    assert.equal(scramble.active, true);
+
     while (scramble.active) clock.advance(1);
     await run;
-    assert.equal(root.getAttribute('aria-busy'), null);
-    assert.equal(root.getAttribute('aria-hidden'), null, 'an attribute it never had is removed');
-    assert.equal(other.getAttribute('aria-busy'), null);
-    assert.equal(other.getAttribute('aria-hidden'), 'true', 'one it already had is left as it was');
-    other.remove();
+    assert.deepEqual(holdAttributes(paragraph), ['false', null, null],
+      'an attribute it already had is put back, one it never had is removed');
+    assert.equal(paragraph.textContent, 'Gene map and every coding sequence');
+    root.remove();
   });
 });
 
-test('cancelling mid-flight restores every text at once, and cancelling again does nothing', async () => {
+test('an owner with two texts waits for the later of them', async () => {
   await withFakeDocument(async (document) => {
-    const { root, node } = mount(document, 'Gene map');
+    const root = document.createElement('div');
+    const paragraph = document.createElement('p');
+    const emphasis = document.createElement('em');
+    emphasis.append(document.createTextNode('Map'));
+    paragraph.append(document.createTextNode('ab'), emphasis, document.createTextNode('abcdef'));
+    root.append(paragraph);
+    document.body.append(root);
+
+    const clock = frameClock();
+    const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
+    const run = scramble.run(root);
+    // Two milliseconds locks the paragraph's own first text, 'ab', and nothing else.
+    clock.advance(2);
+    for (const element of [paragraph, emphasis]) {
+      assert.deepEqual(holdAttributes(element), ['true', 'true', 'true'], element.tagName);
+    }
+    clock.advance(1);
+    assert.deepEqual(holdAttributes(emphasis), [null, null, null],
+      'the emphasis is free as soon as its own three letters locked');
+    assert.deepEqual(holdAttributes(paragraph), ['true', 'true', 'true'],
+      'while the paragraph waits for the six letters that follow it');
+    while (scramble.active) clock.advance(1);
+    await run;
+    assert.deepEqual(holdAttributes(paragraph), [null, null, null]);
+    assert.equal(paragraph.textContent, 'abMapabcdef');
+    root.remove();
+  });
+});
+
+test('a placeholder and a dropdown animate like prose and come back exactly', async () => {
+  await withFakeDocument(async (document) => {
+    const root = document.createElement('div');
+    const input = document.createElement('input');
+    input.setAttribute('placeholder', 'Gene or\tlocus');
+    const select = document.createElement('select');
+    const chosen = document.createElement('option');
+    chosen.append(document.createTextNode('By length'));
+    chosen.selected = true;
+    const unseen = document.createElement('option');
+    unseen.append(document.createTextNode('By position'));
+    select.append(chosen, unseen);
+    root.append(input, select);
+    document.body.append(root);
+
+    const clock = frameClock();
+    const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
+    const run = scramble.run(root);
+    assert.equal(input.getAttribute('placeholder'), 'AAAA');
+    assert.equal(chosen.textContent, 'AA A', 'the space in the option keeps its place');
+    assert.equal(unseen.textContent, 'By position', 'an option nobody can see is left alone');
+    assert.deepEqual(holdAttributes(input), ['true', 'true', 'true']);
+    assert.deepEqual(holdAttributes(select), ['true', 'true', 'true']);
+    assert.deepEqual(holdAttributes(chosen), [null, null, null],
+      'the select is the owner, not the option');
+
+    // Seven letters locked, and the trail is at the end of both strings by now.
+    clock.advance(7);
+    assert.equal(input.getAttribute('placeholder'), 'Gene or\tAAAAA',
+      'the tab keeps its place, as a space does in prose');
+    assert.equal(chosen.textContent, 'By lengAA', 'and the option locks at the same speed');
+    assert.deepEqual(holdAttributes(select), ['true', 'true', 'true']);
+
+    clock.advance(2);
+    assert.equal(chosen.textContent, 'By length');
+    assert.deepEqual(holdAttributes(select), [null, null, null],
+      'the dropdown is usable as soon as its own text locked');
+    while (scramble.active) clock.advance(1);
+    await run;
+    assert.equal(input.getAttribute('placeholder'), 'Gene or\tlocus');
+    assert.deepEqual(holdAttributes(input), [null, null, null]);
+    assert.equal(unseen.textContent, 'By position');
+    root.remove();
+  });
+});
+
+test('cancelling mid-flight restores every string and every owner at once', async () => {
+  await withFakeDocument(async (document) => {
+    const root = document.createElement('div');
+    const block = document.createElement('p');
+    block.append(document.createTextNode('Gene map'));
     const second = document.createElement('p');
     second.append(document.createTextNode('Lengths'));
-    root.append(second);
+    const input = document.createElement('input');
+    input.setAttribute('placeholder', 'Gene or locus');
+    const select = document.createElement('select');
+    const option = document.createElement('option');
+    option.append(document.createTextNode('By length'));
+    select.append(option);
+    root.append(block, second, input, select);
+    document.body.append(root);
+    const node = block.children[0];
+
     const clock = frameClock();
     const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
     const run = scramble.run(root);
     clock.advance(3);
-    assert.equal(node.data, 'AAA');
+    assert.equal(node.data, 'GenA AAA');
 
     scramble.cancel();
     assert.equal(node.data, 'Gene map');
     assert.equal(second.children[0].data, 'Lengths');
-    assert.equal(root.getAttribute('aria-busy'), null);
+    assert.equal(input.getAttribute('placeholder'), 'Gene or locus');
+    assert.equal(option.textContent, 'By length');
+    for (const element of [block, second, input, select]) {
+      assert.deepEqual(holdAttributes(element), [null, null, null], element.tagName);
+    }
     assert.equal(scramble.active, false);
     assert.deepEqual(clock.cancelled, [clock.requested], 'the pending frame was cancelled');
     await run;
@@ -373,83 +633,118 @@ test('cancelling mid-flight restores every text at once, and cancelling again do
     scramble.cancel();
     assert.equal(writes(), 0, 'a second cancel has nothing to undo');
     assert.deepEqual(clock.cancelled, [clock.requested]);
+    root.remove();
   });
 });
 
-test('a node taken out of the document is restored once and then left alone', async () => {
+test('a target taken out of the document is restored once, freeing its owner', async () => {
   await withFakeDocument(async (document) => {
-    const { root, block, node } = mount(document, 'Gene map');
+    const root = document.createElement('div');
+    const block = document.createElement('p');
+    block.append(document.createTextNode('Gene map'));
+    const select = document.createElement('select');
+    const option = document.createElement('option');
+    option.append(document.createTextNode('By length'));
+    select.append(option);
     const kept = document.createElement('p');
-    kept.append(document.createTextNode('Lengths'));
-    root.append(kept);
+    kept.append(document.createTextNode('Lengths and every coding sequence'));
+    root.append(block, select, kept);
+    document.body.append(root);
+    const node = block.children[0];
+
     const clock = frameClock();
     const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
     const run = scramble.run(root);
     clock.advance(3);
-    assert.equal(node.data, 'AAA');
+    assert.equal(node.data, 'GenA AAA');
 
-    // The app re-renders the panel while the scramble is running.
+    // The app re-renders the panel and the dropdown while the scramble runs.
     block.remove();
+    select.remove();
     clock.advance(1);
     assert.equal(node.data, 'Gene map', 'no stray base letter is left behind');
+    assert.equal(option.textContent, 'By length');
+    assert.deepEqual(holdAttributes(block), [null, null, null], 'the owner it left with is restored');
+    assert.deepEqual(holdAttributes(select), [null, null, null]);
     const writes = countWrites(node);
     while (scramble.active) clock.advance(1);
     await run;
     assert.equal(writes(), 0, 'the dropped node is never written to again');
-    assert.equal(kept.children[0].data, 'Lengths', 'the nodes still in the document finish');
+    assert.equal(kept.children[0].data, 'Lengths and every coding sequence',
+      'the targets still in the document finish');
+    root.remove();
   });
 });
 
-test('a node someone else rewrote is dropped rather than overwritten', async () => {
+test('a string someone else rewrote is dropped rather than overwritten', async () => {
   await withFakeDocument(async (document) => {
-    const { root, node } = mount(document, 'Gene map');
+    const root = document.createElement('div');
+    const block = document.createElement('p');
+    block.append(document.createTextNode('Gene map'));
+    const input = document.createElement('input');
+    input.setAttribute('placeholder', 'Gene or locus');
+    root.append(block, input);
+    document.body.append(root);
+    const node = block.children[0];
+
     const clock = frameClock();
     const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
     const run = scramble.run(root);
     clock.advance(3);
 
     node.data = 'Gene map, 2,789 genes';
+    input.setAttribute('placeholder', 'Locus tag');
     clock.advance(1);
     assert.equal(node.data, 'Gene map, 2,789 genes');
+    assert.equal(input.getAttribute('placeholder'), 'Locus tag');
+    assert.deepEqual(holdAttributes(block), [null, null, null], 'the owner of a dropped text is freed');
+    assert.deepEqual(holdAttributes(input), [null, null, null]);
     while (scramble.active) clock.advance(1);
     await run;
     assert.equal(node.data, 'Gene map, 2,789 genes', 'the stale original is never put back');
+    assert.equal(input.getAttribute('placeholder'), 'Locus tag');
+    root.remove();
   });
 });
 
-test('with nothing to animate the run is over at once and no root is touched', async () => {
+test('with nothing to animate the run is over at once and no element is touched', async () => {
   await withFakeDocument(async (document) => {
     const root = document.createElement('div');
-    root.append(document.createTextNode('\n  '), document.createElement('canvas'));
+    const blank = document.createElement('input');
+    blank.setAttribute('placeholder', '');
+    root.append(document.createTextNode('\n  '), document.createElement('canvas'), blank);
     document.body.append(root);
     const clock = frameClock();
     const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
     await scramble.run([root, null]);
     assert.equal(scramble.active, false);
     assert.equal(clock.requested, 0, 'not even one frame is asked for');
-    assert.equal(root.getAttribute('aria-busy'), null);
-    assert.equal(root.getAttribute('aria-hidden'), null);
+    assert.deepEqual(holdAttributes(root), [null, null, null]);
+    assert.deepEqual(holdAttributes(blank), [null, null, null]);
+    root.remove();
   });
 });
 
 test('starting a run cancels the one already going', async () => {
   await withFakeDocument(async (document) => {
-    const { root, node } = mount(document, 'Gene map');
+    const { root, block, node } = mount(document, 'Gene map');
     const second = mount(document, 'Lengths');
     const clock = frameClock();
     const scramble = new TextScramble({ timing: FAST, random: () => 0, ...clock });
     const first = scramble.run(root);
     clock.advance(3);
-    assert.equal(node.data, 'AAA');
+    assert.equal(node.data, 'GenA AAA');
 
     const next = scramble.run(second.root);
     await first;
     assert.equal(node.data, 'Gene map', 'the abandoned run put its text back');
-    assert.equal(root.getAttribute('aria-busy'), null);
-    assert.equal(second.node.data, '');
+    assert.deepEqual(holdAttributes(block), [null, null, null]);
+    assert.equal(second.node.data, 'AAAA');
     while (scramble.active) clock.advance(1);
     await next;
     assert.equal(second.node.data, 'Lengths');
+    assert.deepEqual(holdAttributes(second.block), [null, null, null]);
+    root.remove();
     second.root.remove();
   });
 });
@@ -475,20 +770,26 @@ test('left to itself the scramble uses the browser clock, frames and randomness'
       await new TextScramble({ timing: { ...FAST, maxDurationMs: 0 } }).run(instant.root);
       assert.equal(instant.node.data, 'Gene map');
       assert.equal(pending.length, 0);
+      instant.root.remove();
 
-      // A lag far wider than the front can reach keeps every visible letter
-      // unresolved, so timer jitter cannot change what this expects.
+      // A trail far faster than the lock, over a text whose first letter cannot
+      // lock for five minutes: after any plausible frame delay the trail has
+      // moved and nothing has locked, so timer jitter cannot change what this
+      // expects.
       const text = 'Gene map and the lengths of every coding sequence. '.repeat(40);
       const { root, node } = mount(document, text);
-      const scramble = new TextScramble({ timing: { ...FAST, lagLetters: 2000 } });
+      const timing = {
+        ...TIMING, lockLettersPerSecond: 0.1, trailRatio: 100, maxDurationMs: 600000,
+      };
+      const scramble = new TextScramble({ timing });
       const run = scramble.run(root);
-      assert.equal(node.data, '');
+      assert.equal(node.data.length, timing.leadLetters, 'the lead is on screen at once');
       assert.equal(pending.length, 1, 'the frame came from the browser');
 
       await new Promise((resolve) => { setTimeout(resolve, 20); });
       pending.pop().callback();
-      assert.ok(node.data.length > 0 && node.data.length < text.length,
-        `the real clock moved the front along: ${JSON.stringify(node.data)}`);
+      assert.ok(node.data.length > timing.leadLetters && node.data.length < text.length,
+        `the real clock moved the trail along: ${JSON.stringify(node.data)}`);
       for (const letter of node.data) {
         assert.ok(SCRAMBLE_LETTERS.includes(letter) || /\s/.test(letter), 'drawn by Math.random');
       }
@@ -497,6 +798,7 @@ test('left to itself the scramble uses the browser clock, frames and randomness'
       assert.deepEqual(cancelled, [nextFrame], 'the browser cancelled the frame still pending');
       assert.equal(node.data, text);
       await run;
+      root.remove();
     });
   } finally {
     Object.assign(globalThis, saved);
@@ -531,7 +833,12 @@ test('the default frame functions are called the way a browser allows', async ()
       root.append('Recoding');
       document.body.append(root);
       const timing = {
-        lagLetters: 2, lettersPerSecond: 1000, maxDurationMs: 1000, flipFastMs: 1, flipSlowMs: 2,
+        leadLetters: 2,
+        lockLettersPerSecond: 1000,
+        trailRatio: 1.5,
+        maxDurationMs: 1000,
+        flipFastMs: 1,
+        flipSlowMs: 2,
       };
       const scramble = new TextScramble({ timing, random: () => 0 });
       const done = scramble.run(root);
@@ -547,6 +854,7 @@ test('the default frame functions are called the way a browser allows', async ()
       scramble.cancel();
       await again;
       assert.equal(root.textContent, 'Recoding');
+      root.remove();
     });
   } finally {
     globalThis.requestAnimationFrame = previous.requestAnimationFrame;

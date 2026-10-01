@@ -401,34 +401,62 @@ test('the chromosome note does not report a resolved zero while categories are p
   assert.match(note(null), /0 CDSs have no value for this colour/);
 });
 
-test('the text reveal takes its regions out of the tab order while they are hidden', async () => {
-  // `aria-hidden` alone left the header's buttons tabbable but unannounced.
+test('the text reveal holds each element only while its own text is flipping', async () => {
+  // `aria-hidden` alone left the header's buttons tabbable but unannounced, and
+  // holding a whole region would leave the page unusable for as long as its
+  // longest text takes, which is now up to ten seconds.
   await withFakeDocument(async (document) => {
     const root = document.createElement('div');
+    root.setAttribute('aria-busy', 'false');
     const button = document.createElement('button');
     button.append('Jump to map');
-    root.append(button);
+    const paragraph = document.createElement('p');
+    const prose = 'Every coding sequence in the release, with its length.';
+    paragraph.append(prose);
+    root.append(button, paragraph);
     document.body.append(root);
-    root.setAttribute('aria-busy', 'false');
     const queue = [];
     let clock = 0;
     const scramble = new TextScramble({
-      timing: { lagLetters: 2, lettersPerSecond: 1000, maxDurationMs: 100, flipFastMs: 1, flipSlowMs: 2 },
-      random: () => 0, now: () => clock,
+      timing: {
+        leadLetters: 2,
+        lockLettersPerSecond: 1000,
+        trailRatio: 1.5,
+        maxDurationMs: 100,
+        flipFastMs: 1,
+        flipSlowMs: 2,
+      },
+      random: () => 0,
+      now: () => clock,
       requestFrame: (callback) => queue.push(callback), cancelFrame: () => { queue.length = 0; },
     });
     const done = scramble.run(root);
     for (const name of ['aria-busy', 'aria-hidden', 'inert']) {
-      assert.equal(root.getAttribute(name), 'true', `${name} while animating`);
+      assert.equal(button.getAttribute(name), 'true', `${name} while the label animates`);
+      assert.equal(paragraph.getAttribute(name), 'true', `${name} while the prose animates`);
     }
+    assert.equal(root.getAttribute('inert'), null, 'the region itself is never held');
+    assert.equal(root.getAttribute('aria-busy'), 'false');
+
+    // A letter a millisecond: the eleven-letter label is done inside one frame,
+    // the fifty-three-letter paragraph is not.
+    clock = 20;
+    queue.shift()();
+    assert.equal(button.textContent, 'Jump to map');
+    assert.equal(button.getAttribute('inert'), null,
+      'the button is usable as soon as its own label locked');
+    assert.equal(button.getAttribute('aria-hidden'), null);
+    assert.equal(button.getAttribute('aria-busy'), null);
+    assert.equal(paragraph.getAttribute('inert'), 'true', 'while the longer text is still typing');
+
     while (queue.length > 0) {
       clock += 20;
       queue.shift()();
     }
     await done;
-    assert.equal(root.getAttribute('inert'), null, 'inert is lifted when the text has settled');
-    assert.equal(root.getAttribute('aria-hidden'), null);
-    assert.equal(root.getAttribute('aria-busy'), 'false', 'an attribute it had before is put back');
-    assert.equal(button.textContent, 'Jump to map');
+    assert.equal(paragraph.getAttribute('inert'), null, 'inert is lifted when the text has settled');
+    assert.equal(paragraph.getAttribute('aria-hidden'), null);
+    assert.equal(paragraph.textContent, prose);
+    assert.equal(root.getAttribute('aria-busy'), 'false', 'and the region is exactly as it was');
   });
 });

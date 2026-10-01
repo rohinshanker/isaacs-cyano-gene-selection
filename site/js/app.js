@@ -6,7 +6,8 @@
  */
 import { loadDatasetStaged } from './core/dataset.js';
 import {
-  DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, dataRequest, hasFailed, isLoading, pendingState,
+  CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, dataRequest, hasFailed, isLoading,
+  pendingState,
 } from './core/data-files.js';
 import { adoptingFetch } from './core/early-data.js';
 import { geneIdentity, geneMapLabel } from './core/gene-identity.js';
@@ -80,7 +81,6 @@ import {
 import { LoadProgress } from './ui/load-progress.js';
 import { prefersReducedMotion, resolveLoadTiming } from './ui/load-timing.js';
 import { TextScramble } from './ui/text-scramble.js';
-import { holdInPlace } from './ui/view-anchor.js';
 
 const STORAGE_SCHEMES = 'cyano.schemes.v1';
 const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
@@ -1752,13 +1752,18 @@ function refreshProteinRecords() {
  * tab, or pins a gene promotes the files that view reads, so it never opens
  * onto a view still missing its own data. A fresh view waits for none: its map
  * draws on tier 1 and its colour arrives as the category files land.
+ *
+ * @param {object} view the state the link asks for. It is read from the hash
+ *   alone, before any data has arrived, so the loading bar can measure the
+ *   files this visit waits for from its first frame instead of changing its
+ *   denominator part way.
  */
-function promotedFileKeys() {
+function promotedFileKeys(view) {
   const keys = new Set();
-  if (state.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
-  if (state.proteinFilter !== 'any' || state.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
-  if (state.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
-  if (state.pinnedId) {
+  if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
+  if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
+  if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
+  if (view.pinnedId) {
     for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
       'goIeaEssentiality', 'goTerms', 'tssEvidence']) keys.add(key);
   }
@@ -1827,8 +1832,6 @@ function retryFile(key) {
  * the grid and the chromosome bar is replaced by the map it stood in for.
  */
 function revealPage() {
-  // Where the grid stands now, so the view that replaces it can be held there.
-  const stageTop = element('load-stage').getBoundingClientRect().top;
   revealed = true;
   document.body.classList.remove('is-loading');
   for (const id of ['compare-section', 'panel-section', 'site-footer']) element(id).hidden = false;
@@ -1842,30 +1845,11 @@ function revealPage() {
   // It is no longer true, so it leaves; a failure would have replaced it.
   element('load-status').hidden = true;
   performance.mark('cyano:revealed');
-  holdRevealedView(stageTop);
+  // The visit starts at the top of the page, by owner decision of 2026-09-30:
+  // the shell may have been scrolled, and on one column it led with the grid.
+  window.scrollTo({ top: 0, behavior: 'instant' });
   startMapIntro(loadTiming.mapIntro);
   startTextReveal();
-}
-
-/**
- * Keep the view that replaced the grid where the grid stood.
- *
- * The tabs and toolbar reappear above the map at the reveal, and on a narrow
- * screen so does the whole controls column, so without this the map lands below
- * the fold and its fill-in plays out of sight. The hold lasts while the text
- * above is still typing in and changing height, and ends at once if the visitor
- * scrolls. Under reduced motion nothing moves after the reveal, so it corrects
- * once.
- */
-function holdRevealedView(stageTop) {
-  if (!loadTiming.anchorView) return;
-  const anchor = mapTabActive()
-    ? element('map-canvas').parentElement
-    : document.querySelector('#map-section [role="tabpanel"]:not([hidden])');
-  if (!anchor) return;
-  holdInPlace(anchor, stageTop, {
-    durationMs: reducedMotion ? 0 : loadTiming.scramble.maxDurationMs + 250,
-  });
 }
 
 /**
@@ -1933,9 +1917,19 @@ function logLoadTimings() {
 }
 
 async function boot() {
+  // The minimum bar time is presentation, so reduced motion has none.
   loadProgress ??= new LoadProgress({
     stage: element('load-stage'), bar: element('load-progress'), tail: element('load-tail'),
-  }, { onRetry: (key) => retryFile(key) });
+  }, { onRetry: (key) => retryFile(key) }, {
+    minimumMs: reducedMotion ? 0 : loadTiming.minimumBarMs,
+  });
+  // What this visit waits for, read from the link before any data arrives: the
+  // tier 1 files and whatever the view it opens onto reads. The bar fills over
+  // exactly these, so it is full when the page is ready and not before.
+  const requested = defaultState();
+  applyDecoded(requested, decodeState(window.location.hash));
+  const promoted = promotedFileKeys(requested);
+  loadProgress.setBlocking([...CORE_FILE_KEYS, ...promoted]);
   // The page's inline script has already asked for the manifest and the tier 1
   // files; this hands those requests to the loader instead of repeating them.
   const fetchImpl = adoptingFetch(window.__cyanoEarlyData, (url, init) => fetch(url, init));
@@ -2363,13 +2357,11 @@ async function boot() {
   booted = true;
   flushLandings();
 
-  // The bar stays for its minimum time and for any file this view was opened
-  // onto; both are presentation or promotion, never a reason to delay a request.
-  const minimum = reducedMotion ? 0 : Math.max(0, loadTiming.minimumBarMs - performance.now());
-  await Promise.all([
-    load.when(promotedFileKeys()),
-    new Promise((resolve) => { setTimeout(resolve, minimum); }),
-  ]);
+  // The reveal waits for any file this view was opened onto, and then for the
+  // bar to finish: it fills in uneven blocks over its minimum time and is held
+  // full for a moment so it is seen. Neither ever delays a request.
+  await load.when(promoted);
+  await loadProgress.finished();
   revealPage();
   if (pendingMapJump) jumpToMap();
   announce(`${formatCount(dataset.genes.length)} genes loaded.`);
