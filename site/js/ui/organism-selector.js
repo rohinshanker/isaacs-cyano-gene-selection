@@ -8,7 +8,10 @@
  * Each organism remembers the view it was last left in. That view is stored
  * under the organism's own key by the page as it changes, and an option's
  * link carries it in the hash, so choosing an organism returns to its own last
- * view while a bare link to it opens fresh.
+ * view while a bare link to it opens fresh. A link is only as good as its
+ * address, and the address a reader copies is read without a click, so every
+ * option is refreshed whenever the memory it carries can have changed or is
+ * about to be read.
  */
 import {
   ORGANISMS, approximateGeneCount, publishesLayer, storageKeys, switchSearch,
@@ -46,44 +49,72 @@ function identityNodes(organism) {
 }
 
 /**
+ * The events after which an option's `href` can be read, so it is written
+ * first.
+ *
+ * Following a link is not the only way its address is used: the context menu
+ * offers to copy it, a middle click or a modified click opens it in another
+ * tab, and a drag carries it. Each of those is preceded by one of these, and
+ * every one of them fires before the browser reads the attribute.
+ */
+const BEFORE_READ = Object.freeze(['pointerdown', 'contextmenu', 'keydown', 'click']);
+
+/**
  * Draw the selector into `host`.
  *
  * The option for the organism in view is marked `aria-current` and goes
- * nowhere; every other option is a link whose address is refreshed as it is
- * activated, so it carries that organism's view as last saved by any tab.
+ * nowhere; every option's address carries that organism's view as last saved
+ * by any tab, kept current two ways. Another tab saving a view fires `storage`
+ * here, which is the only notice this tab gets; and anything that can read an
+ * address refreshes it first, so copying a link gives the same address that
+ * following it would.
  *
  * @param {HTMLElement} host a `nav` with an accessible name.
  * @param {{current: object, location: {pathname: string, search: string},
- *   store: {read: Function}, organisms?: object[]}} options
+ *   store: {read: Function}, organisms?: object[],
+ *   view?: {addEventListener?: Function}}} options `view` is the window whose
+ *   `storage` events say another tab wrote; omitted, it is this page's own.
+ * @returns {{refresh: () => void}} `refresh` rewrites every option's address,
+ *   which is what the listeners above call.
  */
 export function renderOrganismSelector(host, {
-  current, location, store, organisms = ORGANISMS,
+  current, location, store, organisms = ORGANISMS, view = globalThis.window,
 }) {
   host.replaceChildren();
+  const refreshers = [];
   for (const organism of organisms) {
     const option = document.createElement('a');
     const selected = organism === current;
     option.className = `chip-button header-link organism-option${selected ? ' active' : ''}`;
     option.textContent = organism.label;
     option.dataset.organism = organism.id;
-    option.href = switchHref(location, organism, store);
+    const refresh = () => { option.href = switchHref(location, organism, store); };
+    refresh();
+    refreshers.push({ organism, refresh });
     if (selected) {
       option.setAttribute('aria-current', 'page');
       // Already here. Following the link would reload the page onto a stored
       // view and discard the one on screen.
       option.addEventListener('click', (event) => event.preventDefault());
-    } else {
-      option.addEventListener('click', () => {
-        option.href = switchHref(location, organism, store);
-      });
     }
+    for (const type of BEFORE_READ) option.addEventListener(type, refresh);
     host.append(option);
   }
+  const refreshAll = () => { for (const { refresh } of refreshers) refresh(); };
+  // `storage` fires only for writes by another tab, which is the one case no
+  // interaction here can catch: this tab's own writes go through `rememberView`
+  // and are read back by the refresh above. A null key is storage being cleared.
+  const watched = new Set(refreshers
+    .map(({ organism }) => storageKeys(organism).lastView));
+  view?.addEventListener?.('storage', (event) => {
+    if (event?.key == null || watched.has(event.key)) refreshAll();
+  });
   const identity = document.createElement('span');
   identity.className = 'organism-identity';
   identity.id = 'organism-identity';
   identity.append(...identityNodes(current));
   host.append(identity);
+  return { refresh: refreshAll };
 }
 
 /** What the gene search looks in, for one organism, as its placeholder and its hint. */

@@ -7,13 +7,16 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_ORGANISM, ORGANISMS, organismById } from '../../site/js/core/organisms.js';
+import {
+  DEFAULT_ORGANISM, ORGANISMS, organismById, storageKeys,
+} from '../../site/js/core/organisms.js';
 import {
   applyGeneCount, applyOrganismIdentity, rememberView, renderOrganismSelector, searchCopy,
 } from '../../site/js/ui/organism-selector.js';
 import { describeGeneView, renderGeneViewer } from '../../site/js/ui/gene-viewer.js';
 import { geneViewModel } from '../../site/js/core/gene-view-model.js';
 import { RegulatorySitesPanel } from '../../site/js/ui/regulatory-sites.js';
+import { CITATIONS_TAB, CitationsPanel, citationsBlurb } from '../../site/js/ui/citations.js';
 import { FakeElement, withFakeDocument } from './fake-dom.mjs';
 
 const ECOLI = organismById('ecoli-k12-mg1655');
@@ -29,12 +32,28 @@ function memoryStore() {
   };
 }
 
+/** A window whose `storage` events the selector can be made to hear. */
+function fakeView() {
+  const listeners = [];
+  return {
+    addEventListener: (type, listener) => {
+      assert.equal(type, 'storage', 'the selector listens for nothing else on the window');
+      listeners.push(listener);
+    },
+    /** Another tab wrote `key`, as the browser reports it to this one. */
+    wrote: (key) => { for (const listener of listeners) listener({ key }); },
+    listeners,
+  };
+}
+
 /** Draw the selector for `current` on the page at `search`. */
-function selectorFor(current, search, store = memoryStore()) {
+function selectorFor(current, search, store = memoryStore(), view = fakeView()) {
   const host = new FakeElement('nav');
-  renderOrganismSelector(host, { current, location: { pathname: '/site/', search }, store });
+  const handle = renderOrganismSelector(host, {
+    current, location: { pathname: '/site/', search }, store, view,
+  });
   const options = host.querySelectorAll('a');
-  return { host, options, store, identity: host.querySelector('span') };
+  return { host, options, store, view, handle, identity: host.querySelector('span') };
 }
 
 test('the selector offers both organisms, Cyanobacteria first and selected by default', async () => {
@@ -95,6 +114,73 @@ test('a switch returns to the view that organism was last left in, as saved by a
       'the address is refreshed as the link is activated');
     // The view this page is leaving is its own organism's, never carried across.
     assert.ok(!/M744|cs=/.test(options[1].href));
+  });
+});
+
+test('a link is current whenever its address can be read, not only when followed', async () => {
+  await withFakeDocument(() => {
+    const store = memoryStore();
+    const { options, view, handle } = selectorFor(DEFAULT_ORGANISM, '', store);
+    const ecoli = options[1];
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655', 'nothing saved yet');
+
+    // Another tab leaves E. coli on the chromosome with a gene pinned. This tab
+    // hears only the storage event, and copying the address must not lose it.
+    rememberView(store, ECOLI, 'ver=6&p=chromosome&g=b0002&l=b0002');
+    view.wrote(storageKeys(ECOLI).lastView);
+    const remembered = '/site/?org=ecoli-k12-mg1655#ver=6&p=chromosome&g=b0002&l=b0002';
+    assert.equal(ecoli.href, remembered, 'the storage event alone keeps the address current');
+
+    // And before anything that can read the attribute, whatever the event order:
+    // the context menu's copy, a middle or modified click, a drag, Enter.
+    for (const type of ['contextmenu', 'pointerdown', 'keydown', 'click']) {
+      rememberView(store, ECOLI, `ver=6&p=umap&src=${type}`);
+      ecoli.href = '/site/stale';
+      ecoli.dispatch(type, { preventDefault() {} });
+      assert.equal(ecoli.href, `/site/?org=ecoli-k12-mg1655#ver=6&p=umap&src=${type}`, type);
+    }
+
+    // The option for the organism in view is kept current the same way, and
+    // still goes nowhere when it is followed.
+    rememberView(store, DEFAULT_ORGANISM, 'ver=6&p=native');
+    view.wrote(storageKeys(DEFAULT_ORGANISM).lastView);
+    assert.equal(options[0].href, '/site/#ver=6&p=native');
+    let prevented = 0;
+    options[0].dispatch('click', { preventDefault: () => { prevented += 1; } });
+    assert.equal(prevented, 1);
+
+    // A key neither organism keeps a view under is no reason to rewrite anything.
+    rememberView(store, ECOLI, 'ver=6&p=lengths');
+    view.wrote('cyano.schemes.v1');
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655#ver=6&p=umap&src=click');
+    // Storage being cleared is reported with no key at all, and does refresh.
+    view.wrote(null);
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655#ver=6&p=lengths');
+
+    // The returned handle is the same refresh, for a caller that knows better.
+    rememberView(store, ECOLI, 'ver=6&p=citations');
+    handle.refresh();
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655#ver=6&p=citations');
+  });
+});
+
+test('the selector works where a window cannot be reached, and listens for nothing else', async () => {
+  await withFakeDocument(() => {
+    const store = memoryStore();
+    rememberView(store, ECOLI, 'ver=6&p=umap');
+    const host = new FakeElement('nav');
+    // No view at all: the links are still drawn and still refresh on interaction.
+    renderOrganismSelector(host, {
+      current: DEFAULT_ORGANISM, location: { pathname: '/site/', search: '' }, store, view: null,
+    });
+    const ecoli = host.querySelectorAll('a')[1];
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655#ver=6&p=umap');
+    rememberView(store, ECOLI, 'ver=6&p=chromosome');
+    ecoli.dispatch('pointerdown', {});
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655#ver=6&p=chromosome');
+    const view = fakeView();
+    selectorFor(DEFAULT_ORGANISM, '', store, view);
+    assert.equal(view.listeners.length, 1, 'one window listener, for storage');
   });
 });
 
@@ -224,5 +310,33 @@ test('the regulatory tab draws a table only for an organism that declares one', 
     assert.equal(host.textContent, 'The regulatory start-site table is unavailable in this dataset.');
     panel.update(null, null);
     assert.equal(host.textContent, 'The regulatory start-site table is unavailable in this dataset.');
+  });
+});
+
+test('an absent citations ledger is a short unavailable state, with no blurb', async () => {
+  await withFakeDocument(() => {
+    const host = document.createElement('div');
+    const panel = new CitationsPanel(host);
+    panel.render(null);
+    assert.equal(host.textContent, 'The source ledger is unavailable in this dataset.');
+    assert.equal(host.querySelectorAll('p').length, 1, 'one short line, not a paragraph of advice');
+    // No instruction to publish anything, and so no directory to name wrongly:
+    // the ledger a release does not publish is not a deployment to be fixed.
+    assert.ok(!/citations\.json|publish|data\/|deployment|will be listed/.test(host.textContent));
+    assert.equal(citationsBlurb(null), '', 'nothing to introduce');
+
+    // Still loading is not "unavailable in this dataset", and keeps the blurb.
+    panel.render(undefined);
+    assert.equal(host.textContent, 'Loading the source ledger\u2026');
+    assert.equal(citationsBlurb(undefined), CITATIONS_TAB.blurb);
+
+    // A published ledger is unchanged, blurb and entries alike.
+    const manifest = { sections: [{ id: 's', title: 'Primary data', description: '', items: [] }] };
+    panel.render(manifest);
+    assert.equal(citationsBlurb(manifest), CITATIONS_TAB.blurb);
+    assert.match(host.textContent, /Primary data/);
+    panel.render({ sections: [] });
+    assert.equal(host.textContent, 'The source ledger is published but currently lists no sources.');
+    assert.equal(citationsBlurb({ sections: [] }), CITATIONS_TAB.blurb);
   });
 });
