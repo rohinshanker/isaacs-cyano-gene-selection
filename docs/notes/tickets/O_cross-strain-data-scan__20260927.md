@@ -8,7 +8,7 @@
   `site/`.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-09-28
+- **Updated:** 2026-10-04
 
 ## Current state
 
@@ -71,15 +71,213 @@ with its manifest, tool, tests, and
 [sister-strain-crosswalk.md](../../validation/sister-strain-crosswalk.md). Counts:
 PCC 6311 matched 2,663 of 2,715 UTEX loci, 52 unmatched, 8 ambiguous; PCC 7943
 matched 2,636, 79 unmatched, 8 ambiguous. The independent Claude Science
-re-derivation is queued in the ticket index; until it returns, both strains'
-sources stay unadmitted, as this step requires. Releases pinned,
-identified by Claude Science and to be re-verified against NCBI before pinning:
+re-derivation returned 2026-10-04 and **agrees on all four sides** (results block
+below), so the gate this step placed on PCC 6311 and PCC 7943 sources is lifted;
+no source for either strain exists yet to admit. Releases pinned,
+identified by Claude Science and corrected against NCBI at intake 2026-09-28 (the
+session wrote `RS_2025_12_2`; NCBI Datasets serves `RS_2025_12_23`, verified by the
+coordinator and independently by the DEM-147 run — see
+[RET_claude-science-session__20260928.md](../handoff/RET_claude-science-session__20260928.md#what-this-session-resolved)):
 PCC 6311 `GCF_022984265.1`, release `GCF_022984265.1-RS_2025_12_23`; PCC 7943
 `GCF_022984345.1`, release `GCF_022984345.1-RS_2025_12_23`. Both are
 Chromosome-level assemblies, not Complete Genome, so an unmatched locus may be
 assembly incompleteness rather than absence; the audit records that. The sweep
 below found no functional-genomics deposit for either strain, so this crosswalk
 unlocks nothing currently available: it is forward-looking infrastructure.
+
+### Crosswalk second check result, returned 2026-10-04
+
+Queue row "Crosswalk second check", sent 2026-10-02 on a read-only mount, returned
+2026-10-04. The session could not write to the mount, so the owner placed the two
+return files in `docs/notes/handoff/` by hand; they are the return as given.
+
+**Verdict:** supported. All four sides reproduce the repository's counts exactly:
+UTEX 2973 vs PCC 6311 2,715/2,663/52/8, PCC 6311 vs UTEX 2,714/2,661/53/6, UTEX vs
+PCC 7943 2,715/2,636/79/8, PCC 7943 vs UTEX 2,715/2,635/80/7. No locus disagrees.
+
+**Sources:**
+[`cyano_crosswalk_second_check_20261004.tsv`](../handoff/cyano_crosswalk_second_check_20261004.tsv),
+SHA-256 `d578e26d0ba1aca64bcb0b70ed3b972bfa0273bba0a74081541ee55fe1d817d6`;
+[`cyano_crosswalk_second_check_20261004.md`](../handoff/cyano_crosswalk_second_check_20261004.md),
+SHA-256 `6f6f69a165c7b394a5ccaa266dc35d48a17551c09bcd8a0a026409940e56867b` (no value
+was pinned for the report; recorded here at intake). Inputs the session fetched
+from NCBI on 2026-10-04: `GCF_000817325.1_ASM81732v1_genomic.gff.gz`,
+`GCF_022984265.1_ASM2298426v1_genomic.gff.gz`,
+`GCF_022984345.1_ASM2298434v1_genomic.gff.gz`, with the SHA-256 values and
+`#!annotation-source` lines quoted in the report.
+
+**Returned text:**
+
+````markdown
+# Crosswalk second check — PCC 6311 and PCC 7943 — 2026-10-04
+
+```
+requester:   owner
+target:      mythos / fable (the in-repository agents)
+ticket:      docs/notes/tickets/O_cross-strain-data-scan__20260927.md
+package:     independent second check of the PCC 6311 and PCC 7943 crosswalk
+status:      returned 2026-10-04
+```
+
+This is a second check in the sense of
+`docs/validation/claude-science-handoff.md`, "Second-checking, not just
+fetching": the counts were re-derived from the pinned NCBI releases without
+reading the implementation. **Nothing was written to the repository** — the
+dispatch asks for the result as session text and a saved artifact, and treats
+the mount as read-only, so this file is an artifact only.
+
+## Verdict: all four sides agree
+
+| Side | Against | Total | Matched | Unmatched | Ambiguous | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| UTEX 2973 | PCC 6311 | 2,715 | 2,663 | 52 | 8 | **agrees** |
+| PCC 6311 | UTEX 2973 | 2,714 | 2,661 | 53 | 6 | **agrees** |
+| UTEX 2973 | PCC 7943 | 2,715 | 2,636 | 79 | 8 | **agrees** |
+| PCC 7943 | UTEX 2973 | 2,715 | 2,635 | 80 | 7 | **agrees** |
+
+Every one of the twelve stated numbers — four totals, four matched, four
+unmatched — and all four ambiguous counts reproduce exactly. **Matched +
+unmatched equals the total on every side** (2,663 + 52 = 2,715;
+2,661 + 53 = 2,714; 2,636 + 79 = 2,715; 2,635 + 80 = 2,715), which confirms the
+dispatch's statement that ambiguous is a subset of matched and not a third
+bucket. No locus disagrees, so `sister-strain-crosswalk-v1.tsv` was never
+opened; the dispatch permits opening it only to locate a disagreement.
+
+Machine-readable form: `cyano_crosswalk_second_check_20261004.tsv`, SHA-256
+`d578e26d0ba1aca64bcb0b70ed3b972bfa0273bba0a74081541ee55fe1d817d6`.
+
+## Releases retrieved, and confirmation that each is the one named
+
+All three fetched from the NCBI genomes FTP on 2026-10-04. The
+`#!annotation-source` line of each GFF3 is quoted, which is what confirms the
+annotation release rather than just the assembly accession.
+
+| Strain | File | Bytes | SHA-256 | `#!annotation-source` |
+| --- | --- | --- | --- | --- |
+| UTEX 2973 | `GCF_000817325.1_ASM81732v1_genomic.gff.gz` | 240383 | `7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f` | `NCBI RefSeq GCF_000817325.1-RS_2026_05_13` |
+| PCC 6311 | `GCF_022984265.1_ASM2298426v1_genomic.gff.gz` | 238990 | `ed629966691e74e519a249e3fe9a8124993730bc60f84f85ef88641532efbd1f` | `NCBI RefSeq GCF_022984265.1-RS_2025_12_23` |
+| PCC 7943 | `GCF_022984345.1_ASM2298434v1_genomic.gff.gz` | 239087 | `0b5579670813b978c4741b86db25dafd14b66a1110bdc09e34ffd3d9fe9b77b7` | `NCBI RefSeq GCF_022984345.1-RS_2025_12_23` |
+
+Each `#!annotation-source` string matches the release the dispatch pins,
+character for character. The `#!annotation-date` lines agree with them:
+05/13/2026, 12/23/2025 and 12/23/2025.
+
+## How the counts were derived
+
+Only the GFF3 was read. For every `CDS` feature the `locus_tag` and
+`protein_id` attributes were taken; nothing else — not product text, not
+coordinates, not sequence — entered the join.
+
+| Strain | CDS lines | Protein-bearing loci | Distinct protein accessions | CDS with no `protein_id` |
+| --- | --- | --- | --- | --- |
+| UTEX 2973 | 2723 | **2715** | 2711 | 7 |
+| PCC 6311 | 2724 | **2714** | 2712 | 9 |
+| PCC 7943 | 2725 | **2715** | 2712 | 9 |
+
+The protein-bearing locus totals — 2,715, 2,714 and 2,715 — are the dispatch's
+totals, reached independently. Every CDS carries a `locus_tag`; the handful
+without a `protein_id` are the only CDS lines excluded, and no locus in any of
+the three genomes carries more than one distinct protein accession.
+
+A locus was called **matched** when at least one of its protein accessions also
+appears on a locus of the other strain, **unmatched** otherwise, and
+**ambiguous** when matched but the mapping is not one-to-one — that is, unless
+it reaches exactly one counterpart and that counterpart reaches back to exactly
+this one locus.
+
+**The agreement is robust to how the ambiguity clause is read.** The dispatch
+phrases it two ways — a protein attached to more than one locus on either side,
+or a locus reaching more than one counterpart. Both were implemented
+separately, and they return identical counts on all four sides, so the
+agreement does not rest on a particular reading.
+
+## Why the counts are what they are
+
+All 29 ambiguous calls across the four sides trace to **four duplicated
+proteins**, and nothing else:
+
+| Protein | UTEX 2973 loci | PCC 6311 loci | PCC 7943 loci |
+| --- | --- | --- | --- |
+| `WP_011243185.1` | M744_RS07945, M744_RS12910 | PCC6311_RS03400 | PCC7943_RS03400 |
+| `WP_011242480.1` | M744_RS09190, M744_RS11690 | PCC6311_RS04685 | PCC7943_RS04685, PCC7943_RS07235 |
+| `WP_011242807.1` | M744_RS10890, M744_RS10915 | PCC6311_RS05475, PCC6311_RS05500 | PCC7943_RS05475, PCC7943_RS05500 |
+| `WP_011242808.1` | M744_RS10895, M744_RS10920 | PCC6311_RS05470, PCC6311_RS05495 | PCC7943_RS05470, PCC7943_RS05495 |
+
+That table predicts each ambiguous count exactly, which is a second, independent
+way of arriving at them:
+
+- **UTEX 2973, 8 either way.** Each of the four proteins sits on two UTEX loci,
+  so 4 × 2 = 8 UTEX loci are ambiguous against either sister.
+- **PCC 6311, 6.** Two of the four proteins are single-copy in PCC 6311 but reach
+  two UTEX loci each (2 loci), and two are two-copy (4 loci). 2 + 4 = 6.
+- **PCC 7943, 7.** One protein is single-copy (1 locus) and three are two-copy
+  (6 loci). 1 + 6 = 7.
+
+The asymmetry between the sides is therefore a real gene-duplication difference
+between the strains, not an artefact of the join. The full locus lists are in
+the `ambiguous_loci` column of the TSV.
+
+## What this check does and does not establish
+
+- It establishes that the **coverage counts are reproducible** from the pinned
+  releases under the stated join rule, by code that never saw `tools/`,
+  `sister-strain-crosswalk-v1.tsv`, `tests/`, or
+  `docs/validation/sister-strain-crosswalk.md`.
+- It does **not** check the crosswalk file's contents row by row. Agreement on
+  four counts is consistent with, but does not prove, agreement on every
+  mapping. A row-level check would need the file opened, which the dispatch
+  reserves for a disagreement.
+- **The dispatch supplied the target numbers**, so this is a reproduction of the
+  method against a known answer, not a blind estimate. The mitigation is that
+  the derivation is mechanical and the code is described above in full; the
+  counts fell out of it rather than being matched to.
+- **One disclosure on the reading restriction.** In a prior session on this
+  machine, a different package loaded every file in `docs/validation/` into a
+  variable in bulk, which included `sister-strain-crosswalk.md`. Its contents
+  were never printed, quoted or otherwise surfaced, and that kernel has since
+  been discarded. No restricted file was opened in this session.
+
+## Boundaries observed
+
+The crosswalk was not edited and no mapping was proposed for any unmatched or
+ambiguous locus. No source was admitted. Nothing was written to the repository.
+No work was done outside this scope.
+````
+
+**Intake check:** the in-repository agent (this session), 2026-10-04.
+
+- Both return files' checksums recomputed; the TSV matches the pinned value and
+  the report's value is recorded above.
+- The three input GFF3 SHA-256 values match the bytes this repository pins:
+  `data/raw/GCF_000817325.1_ASM81732v1_genomic.gff.gz` (`7f606a08…`),
+  `data/annotation/source/GCF_022984265.1_ASM2298426v1_genomic.gff.gz`
+  (`ed629966…`), and `data/annotation/source/GCF_022984345.1_ASM2298434v1_genomic.gff.gz`
+  (`0b557967…`), whose MD5 values are the ones in
+  `data/manifest/sister-strain-crosswalk-v1.json`. The session therefore
+  re-derived from the same release bytes.
+- Every count matches the coverage table in
+  [sister-strain-crosswalk.md](../../validation/sister-strain-crosswalk.md).
+- The `ambiguous_loci` lists match the repository artifact exactly: the eight UTEX
+  loci, six PCC 6311 loci and seven PCC 7943 loci carrying
+  `shared-protein-many-to-many` in `sister-strain-crosswalk-v1.tsv` are the same
+  tags, and the four duplicated proteins the report names (`WP_011243185.1`,
+  `WP_011242480.1`, `WP_011242807.1`, `WP_011242808.1`) are the four `evidence`
+  values on those rows.
+
+**What the agreement establishes, weighed.** The report is explicit about its
+limits and they are accepted as stated. It verifies that the coverage counts and
+the ambiguous set are reproducible from the pinned releases under the stated join
+rule by code that did not read the implementation; it does not verify the 10,538
+relationship rows one by one, because the dispatch reserved opening the file for
+a disagreement. The dispatch supplied the target numbers, so this is a
+reproduction against a known answer, mitigated by the derivation being mechanical
+and fully described, and by the ambiguous-locus lists, which the dispatch did not
+supply, matching the artifact tag for tag. The disclosure that a prior session
+bulk-loaded `docs/validation/` into a variable, including
+`sister-strain-crosswalk.md`, without surfacing its contents, is recorded and does
+not change the verdict: the counts in that document are the same numbers the
+dispatch itself supplied. A row-level second check remains available to request
+if a sister-strain source is ever admitted.
 
 Approved. The pangenome workbook gives these two strains pangenome IDs, coordinates,
 and strand but no NCBI locus column, so no source keyed by their own RefSeq tags can
@@ -127,7 +325,7 @@ already shipped. Every rejected row, kept so a later sweep does not re-raise it:
 | Artifact | Assay | Reason |
 | --- | --- | --- |
 | GEO GSE104202; PMID 29239721 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
-| GEO GSE106824; PMID 29241543 | transcriptomics (RNA-seq) | listed as an RNA-seq candidate, but all 12 samples are `library_strategy = ChIP-Seq`; treated as rejected pending the package correction |
+| GEO GSE106824; PMID 29241543 | ChIP-seq (not an admitted data type) | all 12 samples are `library_strategy = ChIP-Seq`, confirmed and reclassified by the package A correction returned 2026-10-03; the corrected table's `assay` cell still reads "transcriptomics (RNA-seq)" and is left as is, since the row is rejected either way |
 | GEO GSE114693 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
 | GEO GSE14225; PMID 19666549 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
 | GEO GSE205444; PMID 35814646 | transcriptomics (RNA-seq) | shipped: PCC 7942 abundance table - recognised, not new |
@@ -143,6 +341,61 @@ already shipped. Every rejected row, kept so a later sweep does not re-raise it:
 | GEO GSE55637; PMID 26058805 | ChIP-seq (not an admitted data … | ChIP-seq is not an admitted data type |
 | ENA PRJNA420395 / SRP125902; DOI 10.1186/s13068-018-1215-8 | TSS (dRNA-seq) + RNA-seq, prima… | already shipped as TAN2018_TSS - recognised, not new |
 | RefSeq GCF_000817325.1 | annotation (RefSeq PGAP) | genome of record, already pinned |
+| RefSeq GCF_000817325.1, listed a second time as PCC 6301 (package A data row 54) | annotation (RefSeq PGAP) | the accession is UTEX 2973 (NCBI taxid 1350461), not PCC 6301; a duplicate of the row above that the 2026-09-28 intake missed; found at package B and C intake 2026-10-04 and treated as rejected |
+| PRIDE PXD010000 | proteomics (LC-MS/MS) | rejected by package B: a 51-organism re-processed benchmark set with no growth conditions for any organism and no publication of its own |
+
+#### Result, 2026-10-04
+
+Packages B and C returned 2026-10-03 and passed intake 2026-10-04, B with two
+rows returned for relabelling; the package A correction returned 2026-10-03 and
+passed; details in the
+[offload ticket](O_claude-science-offload__20260927.md#package-b-intake-2026-10-04).
+Condition metadata is in `cyano_package_B_conditions_20261003.tsv` (88 rows, one
+per condition set), licence evidence in `cyano_package_C_licences_20261003.tsv`,
+and the per-artifact licence decisions in
+[source-ledger.md](../../validation/source-ledger.md#licence-decisions-for-the-package-a-candidates-2026-10-04).
+The register in the roadmap carries the per-artifact outcome. Three things this
+step now knows that the 2026-09-28 result did not:
+
+- **Four input rows were mislabelled and are escalated, not scored.** GSE104204 is
+  a mixed series (37 ChIP-seq, 60 RNA-seq); GSE50922 is a four-platform
+  SuperSeries (71 array, 19 ChIP-seq, 18 RNA-seq) whose four growth protocols cut
+  across the assay arms; GSE205443 is RB-TnSeq fitness data, not transcriptomics,
+  and GSE205445 is 25 RB-TnSeq plus 21 RNA-seq. GSE205443 may be wanted as a
+  fitness screen, which is a different data type from any admitted here and would
+  need its own ticket and an owner decision.
+- **Two PRIDE strains are resolved.** PXD011485 is *S. elongatus* PCC 11801, not
+  one of the six admitted strains and not in the pangenome, so it has no mapping
+  route and leaves the programme. PXD014590 is UTEX 2973 itself: native, no
+  cross-strain transfer, and the only native deposit beside Tan 2018.
+- **GSE103606 is a SuperSeries** whose 94 RNA-seq samples are exactly the union of
+  GSE103462, GSE103463, GSE103644, GSE103704 and GSE105774. The five SubSeries are
+  the datasets; the SuperSeries row is a container and is not scored as a pair
+  member.
+
+Package B's 29 `escalate` rows, by study and reason, kept here so step 3 and
+package D treat them correctly:
+
+| Artifact | Rows | Reason returned |
+| --- | --- | --- |
+| GSE104204 | 3 | mixed ChIP-seq/RNA-seq series, input assay label wrong |
+| GSE205443 | 3 | RB-TnSeq, not transcriptomics |
+| GSE205445 | 4 | RB-TnSeq arm plus RNA-seq arm; several sets use conditioned medium |
+| GSE335065 | 4 | 9 of 36 samples are *S. elongatus* + *Rhodotorula toruloides* co-culture; held out as its own set |
+| GSE50922 | 4 | four-platform SuperSeries, assay arms do not align with condition sets |
+| PXD000510 | 1 | conditions only partly obtainable; paper outside the Europe PMC OA subset |
+| PXD005851 | 1 | 48-organism deposit; *S. elongatus* arm extracted from Table S1 (22 °C, unshaken) |
+| PXD011485 | 4 | strain is PCC 11801, outside the six admitted strains |
+| PXD014590 | 1 | strain is UTEX 2973, the genome of record; carried-over crosswalk route does not apply |
+| PXD023591 | 1 | no growth conditions obtainable; no publication |
+| PXD027430 | 1 | paper outside the Europe PMC OA subset; conditions not obtainable |
+| PXD036717 | 1 | paper has no resolvable OA deposit; conditions not obtainable |
+| PXD044412 | 1 | four-organism deposit; no growth temperature reported for the cyanobacterial arm |
+
+Two archive-record conflicts B found are recorded for package D and the
+depositors, not resolved: GSE252562's six samples titled `LD8:16` whose
+characteristics read `LD16:8`, and GSE122841's four samples against a design
+stating triplicates.
 
 
 ### 3. Decide how datasets combine
@@ -181,18 +434,23 @@ model, the splice and translational-exception flags, and a sentence-level access
 description. Verified against the spliced `M744_RS00920` and the multi-site
 `M744_RS08615`.
 
-Still to build. The 2026-09-28 sweep found no ribosome-occupancy, TIS, TSS, or
-TTS deposit for any admitted strain, so the first two items below are gated on data
-that does not currently exist, not on this ticket's progress. Decision recorded
-2026-09-28: the viewer states that absence explicitly in its evidence caveats rather
-than leaving an empty track, and the overlay code is not built ahead of a source.
+Still to build. The 2026-09-28 sweep returned no new ribosome-occupancy, TIS, TSS,
+or TTS candidate for any admitted strain; its one TTS hit, `GSE309256`, is already
+ranked in the roadmap and not admitted. The first two items below are therefore
+gated on data that is not admitted, not on this ticket's progress. The viewer states
+that absence in its accessible description rather than leaving an empty track
+(built 2026-10-02; see "The recorded absence" in
+[controls-column-and-resets.md](../../validation/controls-column-and-resets.md)),
+and the overlay code is not built ahead of a source.
 
 - sister-strain TSS, TIS, and TTS overlays, drawn as offsets against a named UTEX
   locus and labelled with strain, study, and condition, visibly transferred;
 - ribosome occupancy as a positional track where a source supports one, and as a
   per-gene value otherwise;
-- the flanking-neighbour context and the explicit [-30,60) start window, which the
-  current version states numerically but does not draw as a separate band.
+- the flanking-neighbour context; the explicit [-30,60) start window is now drawn
+  base by base, by the pinned gene's sequence close-up, shipped 2026-09-30 (see
+  [gene-sequence-closeup.md](../../validation/gene-sequence-closeup.md)). Whether
+  the small gene visualizer also needs it as a separate band is still open.
 
 ### 5. Chromosome visualizer
 
@@ -331,14 +589,25 @@ one selected dataset. Follow
 
 ## Verification
 
-Not started. When work lands, each ingested source needs its manifest entry,
-checksum, mapping audit with matched, unmatched, and ambiguous counts, contract tests,
-and the sister-strain, condition-comparability, and UTEX 3055 coverage rows of
+**Verified.** The PCC 6311/7943 crosswalk (step 1) shipped with its manifest entry,
+checksums, contract tests, and matched/unmatched/ambiguous counts:
+[sister-strain-crosswalk.md](../../validation/sister-strain-crosswalk.md).
+The chromosome tab (step 5) shipped with rendered validation at mobile, tablet,
+and desktop widths: [chromosome-view.md](../../validation/chromosome-view.md).
+
+**Verified 2026-10-04.** The crosswalk's independent Claude Science second check
+returned and agrees on every count and every ambiguous locus (results block under
+step 1), so PCC 6311 and PCC 7943 sources are no longer held back by this
+ticket; none exists yet. Packages B and C passed intake; their checks are
+recorded in the offload ticket.
+
+**Not yet verified.** Pair scoring (step 3) waits on package D, which has not
+been sent. The dataset and condition selectors (step 6) are not yet
+designed. Any source ingested later still needs its own manifest entry, checksum,
+mapping audit with matched, unmatched, and ambiguous counts, contract tests, and
+the sister-strain, condition-comparability, and UTEX 3055 coverage rows of
 [AAA-manual-review-checklist.md](../../validation/AAA-manual-review-checklist.md)
-checked against the rendered site. The gene viewer and chromosome visualizer are UI
-work
-and need rendered validation at mobile, tablet, and desktop widths, not source
-inspection.
+checked against the rendered site.
 
 ## Cleanup
 

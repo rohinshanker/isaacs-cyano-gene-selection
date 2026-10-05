@@ -578,6 +578,18 @@ when the recoding scheme changes.
 Nulls are permitted for `name`, `operonId`, and any metric that genuinely could
 not be computed. The site renders null as an em-space, never as zero.
 
+One recorded exception, found by the 2026-10-03 data-use audit (finding A-03):
+the two live projections, the risk PCA and the perturbation PCA, substitute a
+feature column's finite mean for a non-finite cell before fitting, as
+[metric-explanations.md](metric-explanations.md) specifies and the "Features
+used" disclosure states to the reader. No shipped feature column has a null, so
+the path is dormant on this release; if one ever did, the affected gene would be
+placed at that axis's centroid without a per-gene mark. The precomputed
+projections take the opposite route and drop such a gene. Whether to keep the
+exception or make the live projections drop the gene too is an owner decision;
+until it is made, this paragraph is the contract's record that the exception
+exists.
+
 `annotations.json` is an object keyed by every published gene's exact locus tag.
 The loader requires it when `meta.annotationRelease` is present and attaches its
 record to the in-memory gene as `annotationEvidence`. Keeping this relationship

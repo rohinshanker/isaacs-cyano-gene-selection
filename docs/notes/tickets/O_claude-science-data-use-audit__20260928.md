@@ -7,7 +7,7 @@
   reader-facing prose. Produces findings only; every fix is a separate change.
 - **Status:** open
 - **Opened:** 2026-09-28
-- **Updated:** 2026-09-28
+- **Updated:** 2026-10-04
 
 ## Current state
 
@@ -29,7 +29,19 @@ The [offload ticket](O_claude-science-offload__20260927.md) covers finding *new*
 data. This one covers the data already here. The two must not be merged: one looks
 outward and returns candidates, this one looks inward and returns findings.
 
-Findings are pasted back into this ticket as a results block and are triaged and
+**Returned 2026-10-03, intake 2026-10-04.** Sent 2026-10-02. The return is
+[`cyano_data_use_audit_20261003.tsv`](../handoff/cyano_data_use_audit_20261003.tsv)
+(SHA-256 `708a3294f993fc1574f76ef6a969e519721a4c21816c262f3db9fe19d60e4913`, 10
+findings) with its rendering
+[`cyano_data_use_audit_20261003.md`](../handoff/cyano_data_use_audit_20261003.md)
+(SHA-256 `e80d6a6b18dbb71f5619381cca3fb7781db0f9dee229d0a40c6b38e6b72e0514`) and
+section D of
+[`RET_claude-science-session__20261003.md`](../handoff/RET_claude-science-session__20261003.md).
+Both checksums recomputed and match. It audited commit `70bc5900` plus the
+working tree; the triage under "Intake" below was done against the working tree
+of 2026-10-04, in which the two modified files it names carry only the changes
+the diff shows. The findings were pasted back as a results block (the two files
+above) and are triaged and
 fixed by the in-repo agents, never by the audit itself. The block shape, the intake
 checks, and the rule that a return carries no patch are fixed in
 [claude-science-handoff.md](../../validation/claude-science-handoff.md); this audit is
@@ -53,11 +65,11 @@ not duplicated here. What they mean for this audit:
 - **Findings come back** as a saved artifact, one row per finding in the format below
   as TSV plus a Markdown rendering, optionally written into the working tree. No
   fix is applied, per the hard boundaries.
-- **One narrowing.** Per-file licence legends on publisher hosts are unreachable
-  without a network grant, so a finding that turns on the exact wording of a
-  supplement legend is reported as uncheckable with the reason, not guessed. This
-  audit reads shipped data and contracts rather than licences, so the effect is
-  small; it is recorded because the coverage report has to be honest about it.
+- **No narrowing on licence legends.** Per-file licence legends come from Europe
+  PMC, not from publisher hosts, so a finding that turns on the exact wording of a
+  supplement legend is checkable the same route package C's licence evidence uses;
+  see
+  [claude-science-handoff.md](../../validation/claude-science-handoff.md#what-claude-science-is-for-this-repository).
 
 If the audit can be given repository contents, give it the pinned release and the
 validation documents together, because a finding is only useful when it names both
@@ -168,9 +180,64 @@ Triage each finding into: accepted and fixed, accepted and ticketed, rejected wi
 a recorded reason, or escalated to the lab as a scientific judgment. A rejected
 finding keeps its reason, so a later audit does not re-raise it as new.
 
+### Intake check, 2026-10-04
+
+Every location the ten findings cite was opened on the working tree and holds the
+quoted code or field. The uncommitted diffs in `site/js/ui/chromosome-view.js`
+(one constant exported) and `site/js/ui/gene-viewer.js` (an accessible-description
+sentence added above the cited line) do not touch what A-02 and A-07 cite, so both
+findings hold on commit `70bc5900` as well. Every number was recomputed from the
+shipped files with the same definitions the audit states and reproduced exactly:
+
+| Finding | Recomputed on 2026-10-04 |
+| --- | --- |
+| A-01 | 421 of 2,551 `expression` values and 272 of 1,727 `tssInitiation` values exceed robust \|z\| = 3 (median and 1.4826 × MAD, IQR fallback); maxima 432.3 and 378.4. Eight of 35 registry metrics clamp more than 5% of their valued genes; the audit's seven excludes `rareCount`, which sits at exactly 5.0%. |
+| A-02 | 2,432 gTSS rows; 2,196 agree, 236 rows over 178 loci differ by 3 to 198 nt, median 34.5; 15 implied distances negative. `tss_evidence.json` has 1,789 keys. |
+| A-03 | None of the pipeline risk-feature columns has a null in `genes.json`; the fill is dormant. |
+| A-05 | Both `sourceWarnings` entries carry `comparison: "dark"`. |
+| A-06 | 0 zeros and 0 nulls in `source_start_distance_nt` across the 2,333 `regulatory_tss.json` rows; 47 zeros in the Table S1 extract. |
+| A-07 | `lengthCodons` has no nulls. |
+| A-08 | 59 loadings, all components finite. |
+| A-09 | Average-rank reproduces the shipped `expressionPercentile` to 5.0e-7; mid-rank differs by up to 1.97e-4; shipped maximum 1.0. |
+| A-10 | `genesWithoutMappedTss` 926; `tssInitiation` non-null for 1,727; 2,715 − 926 = 1,789. |
+
+The audit's three rejected candidates were re-read and the rejections stand for
+the reasons it gives (pinned `jev-1.13.0` is a documented judgment source; the
+lab-reviewed search tier reads only `reviewedFunctionLabels`; Tan 2018 absolute
+coordinates are native to the genome of record). They are recorded here as
+rejected so a later audit does not re-raise them.
+
+### Triage, 2026-10-04
+
+Each fix is its own change with its own review, per the hard boundaries. The code
+fixes are collected in
+[O_data-use-audit-fixes__20261004](O_data-use-audit-fixes__20261004.md), one
+item per finding; the two document-only fixes were made here.
+
+| Finding | Triage | Where |
+| --- | --- | --- |
+| A-01 clamp hides heavy tails in the comparison views | Accepted and ticketed | Fixes ticket item 1: mark clamped values in the radar and parallel-coordinates views and record the clamp in `candidate-comparison-and-export.md`; needs rendered validation |
+| A-02 gene visualizer and chromosome view place the same gTSS differently | Accepted and ticketed, and escalated to the lab | Fixes ticket item 2 labels the divergence in both views and both documents; which placement a construct boundary should follow is a scientific judgment, added as evidence to row 8 of [AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md) |
+| A-03 live PCAs mean-impute, contract silent | Accepted and fixed (document) | [data-contract.md](../../validation/data-contract.md) now records the exception and points to `metric-explanations.md`; whether to drop the exception instead is an owner choice, noted there |
+| A-04 length histogram text claims a range filter it did not apply | Accepted and ticketed | Fixes ticket item 3; needs rendered validation including the accessible label |
+| A-05 hardcoded "Dark vs control" prefix | Accepted and ticketed | Fixes ticket item 4 |
+| A-06 truthiness guard drops a distance of 0 | Accepted and ticketed | Fixes ticket item 5 |
+| A-07 `lengthCodons ?? 0` renders a missing count as 0 | Accepted and ticketed | Fixes ticket item 6 |
+| A-08 `?? 0` on PCA loadings | Accepted and ticketed | Fixes ticket item 7 |
+| A-09 two percentile-rank conventions | Accepted and fixed (document), remainder ticketed | [metric-convention-parity.md](../../validation/metric-convention-parity.md) now records the split and its bound; unifying the two is fixes ticket item 8 |
+| A-10 `meta.json` carries two TSS coverage counts without naming the layer | Accepted and ticketed | Fixes ticket item 9: a pipeline change adding the layer name beside each count |
+
+No finding was rejected. Nothing here touches rows 13 to 15 of the
+biological-decisions list.
+
 ## Verification
 
-Not started. When findings arrive, each accepted one needs its fix, a regression
+Intake complete 2026-10-04 (checksums recomputed, every cited location opened,
+every number reproduced; table above). The two document fixes landed with this
+intake; the repository gates were re-run after them. Each code fix is verified in
+[O_data-use-audit-fixes__20261004](O_data-use-audit-fixes__20261004.md). For
+findings A-01 and A-04 the audit itself notes that no browser was run, so the fix
+is designed only after the defect is confirmed on screen. When findings arrive, each accepted one needs its fix, a regression
 test or contract check where the defect was mechanically detectable, and an update
 to whichever validation document states the rule. Where a defect was **not**
 mechanically detectable, record that explicitly: a class of error that only a

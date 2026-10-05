@@ -8,7 +8,7 @@
   returned package is accepted, after which the scan ticket owns the data work.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-09-28
+- **Updated:** 2026-10-04
 
 ## Current state
 
@@ -23,13 +23,17 @@ comparability scoring. That is bounded research with a fixed return shape, which
 the part worth offloading. The crosswalk build, the gene viewer, the chromosome
 visualizer, the selectors, and every admission decision stay in this repository.
 
-Nothing has been dispatched. The capability questions that gated dispatch were
-confirmed empirically on 2026-09-28 and are recorded under "Before dispatch" below,
-with the probe behind each answer. The work packages and return contract were
-written to hold whatever the answers turned out to be, and they do, with two
-narrowings: publisher-hosted supplement legends and three proteomics archives are
-unreachable without a per-domain network grant, so package C is narrowed and the
-proteomics half of package A covers PRIDE only until those grants exist.
+Package A returned 2026-09-28 and passed intake with one row sent back; its
+correction returned 2026-10-03 and passed intake 2026-10-04. Packages B and C were
+dispatched 2026-10-02, returned 2026-10-03, and passed intake 2026-10-04, B with
+two rows returned for relabelling, under "Package B intake, 2026-10-04" and
+"Package C intake, 2026-10-04" below. Package D has not been sent; it waits on the
+owner and takes `docs/notes/handoff/cyano_package_B_conditions_20261003.tsv` as
+its input. The licence decisions C's evidence supports are recorded in
+[source-ledger.md](../../validation/source-ledger.md#licence-decisions-for-the-package-a-candidates-2026-10-04);
+nothing is admitted and nothing has been downloaded. The capability questions that
+gated dispatch were confirmed empirically on 2026-09-28 and are recorded under
+"Before dispatch" below, with the probe behind each answer.
 
 ## Work
 
@@ -83,8 +87,9 @@ Tan 2018 at PMID 30127850 / PMC6091082 / `10.1186/s13068-018-1215-8`.
 which source the determination came from. Probed: PMID 30127850 → CC BY 4.0, sourced
 from PMC; PMID 30409802 → no licence metadata at all, source `not_available`. It does
 **not** read a supplement legend or a per-file notice. The Adomako 2022 Data Set S1
-case that package C is built around therefore cannot be answered by this tool, and
-the publisher host that serves that legend is blocked — see the grant list below.
+case that package C is built around is therefore not answered by this tool; see
+"The ASM refusal does not block package C" below, which answers it via Europe PMC
+instead.
 
 **Repository deposits and supplementary files.** Reachable and probed:
 
@@ -301,6 +306,110 @@ ChIP-seq samples. Condition extraction must cover the RNA-seq samples only.
 Accepted for the next step: the remaining 57 candidate rows, to be appended to the
 ranked table in [future-data-roadmap.md](../../validation/future-data-roadmap.md#ranked-candidates)
 with the 16 rejected rows and their reasons recorded in the scan ticket.
+
+### Package A correction intake, 2026-10-04
+
+Sent 2026-10-02, returned 2026-10-03. Checked against
+[`cyano_package_A_candidates_20261003.tsv`](../handoff/cyano_package_A_candidates_20261003.tsv),
+SHA-256 `b93b079861f18d7daf72391e49b8eb12db3fe581dbd08dbb5a4550f6291916ea`, 74 rows,
+manifest section A.1 of
+[`RET_claude-science-session__20261003.md`](../handoff/RET_claude-science-session__20261003.md)
+(SHA-256 `878295503a853eb98b0762280010da9e2794b589a2c85dbbd2976efc0ca95e5b`, recomputed).
+
+| Check | Result |
+| --- | --- |
+| Cell-by-cell comparison | Exactly one cell differs from the 2026-09-28 file (SHA-256 `d6f45617…`, recomputed): data row 11, `status`, `candidate` → `rejected: ChIP-seq is not an admitted data type`. The byte diff is a single line. |
+| Record re-read | GSE106824 re-fetched 2026-10-04: 12 samples, `!Sample_library_strategy = ChIP-Seq` on all 12, GPL16957, `SubSeries of: GSE103606`. GSE103606: 106 samples, 94 `RNA-Seq` and 12 `ChIP-Seq`, `SuperSeries of:` GSE103462, GSE103463, GSE103644, GSE103704, GSE105774, GSE106824. Both as the return states. |
+| Boundaries | Evidence only; no other row changed. |
+
+**Passed.** Two follow-ups the return reported and left to intake, decided here:
+
+- **The `assay` cell of the corrected row** still reads `transcriptomics (RNA-seq)`
+  while the twelve sibling rejections read `ChIP-seq (not an admitted data type)`.
+  No further correction is requested: the row is rejected, and the scan ticket's
+  rejected register records its assay as ChIP-seq with the note.
+- **GSE103606 is a SuperSeries whose RNA-seq samples are exactly the union of the
+  five SubSeries** GSE103462, GSE103463, GSE103644, GSE103704 and GSE105774. The
+  six rows describe 94 samples, not 188. Decision: the five SubSeries are the
+  candidate datasets; GSE103606 is kept as a container record and is not counted
+  as a dataset, not scored as a pair member in package D, and not promoted on its
+  own. Recorded in the roadmap register and the scan ticket.
+
+### Package B intake, 2026-10-04
+
+Sent 2026-10-02, returned 2026-10-03. Checked against
+[`cyano_package_B_conditions_20261003.tsv`](../handoff/cyano_package_B_conditions_20261003.tsv),
+SHA-256 `fa65266cd402ae974c072e9ad587bd990773d2df002eb08ed856ba4bca0c750e`, 88 data
+rows (79 condition-set rows over 48 assay records, 9 annotation rows marked "not
+applicable" as the dispatch required), manifest section B of
+`RET_claude-science-session__20261003.md`. Row numbers below are data rows, header
+excluded.
+
+| Check | Result |
+| --- | --- |
+| Identifiers resolve | All 57 distinct artifacts resolved directly on 2026-10-04 and each record names itself: 34 GSE via the GEO SOFT text endpoint (`targ=all`), 14 PXD via PRIDE REST v3, 9 GCF via NCBI Datasets v2. |
+| Checksums | The `checksum` column is empty on every row; the package retrieved nothing into it. The one file the manifest checksums (B.3.5), `mbo006173609st1.xls` from the Europe PMC `supplementaryFiles` zip for PMC5705920, was re-fetched: 49,152 bytes, SHA-256 `c0bea2222143063edb39ed79b993d7afa9fdc1506cc3c1f7b1ac3f1cdf8ef258`, matches. |
+| Quotations | Every `[location; quote: "…"]` segment was re-matched mechanically after Unicode normalisation (514 segments by this parse; the return counts 513). 319 archive-cited quotes are all present in the fetched GEO SOFT or PRIDE records; 20 of them are composites of several GEO fields joined with `\|`, every piece of which is verbatim. 195 paper- or supplement-cited quotes are all present in Europe PMC `fullTextXML` (19 PMCIDs), NCBI `efetch db=pmc` (PMC11473183, PMC4477845), the PMC article page for PMC5167140, or the Table S1 workbook bytes. None missing. |
+| Conditions sampled | At least one archive-cited value per study was read against its GEO or PRIDE field for the 39 studies that cite one; the studies whose values come only from a paper (PXD005105, PXD011485, PXD014590, PXD030282, PXD044412, PXD062851, PXD074299 and others) were read against the PMC text. |
+| Input corrections, checked | GSE104204: 37 ChIP-Seq and 60 RNA-Seq on GPL17750. GSE50922: 108 samples, 71 on GPL9534, 19 ChIP-Seq, 18 RNA-Seq, SuperSeries of six. GSE205443: 25 × `OTHER`. GSE205445: 25 `OTHER` + 21 RNA-Seq. GSE335065: 9 samples list *Rhodotorula toruloides*. PXD011485: PRIDE title names PCC 11801. PXD014590: PRIDE title names UTEX 2973. GSE252562: six samples titled `LD8:16` with characteristics `LD16:8`. GSE122841: 4 GSMs against "in triplicate". All as the return states. PRIDE lists 47 organisms for PXD005851 and 50 for PXD010000 where the return quotes the papers' 48 and 51; both are the deposits' own descriptions, not an error. |
+| Required cells | `status`, `source` and `mapping_route` present on all 88 rows. `mapping_route` names the existing exact shared-protein crosswalk, the PCC 6311/7943 crosswalk target, `none`, or says the carried-over route does not apply while preserving the input value (PXD011485, PXD014590). No per-locus mapping. |
+| Boundaries | `licence` carried over unchanged, still "Recommendation only". No join. No comparability verdict: the only "comparable" wording quotes the contract's conditioned-medium rule, and every out-of-band value is routed to package D or the lab, not judged. |
+| Not reported versus not retrieved | Held to the return's own definition (B.1 and B.3.4). 15 of the 17 artifacts carrying a `not retrieved` cell are in B.3's unreadable list. Two are not; see below. |
+
+**Returned for correction, two rows.** Data row 31 (GSE225426: `co2`,
+`culture_format`, `growth_phase`) and data row 70 (PXD023591: seven axes) are
+labelled `not retrieved`. Both deposits have no publication (B.3.4), the deposit
+record was read, and B.3.4 itself says that for such records the axes the deposit
+omits are returned as `not reported`. The label fails the return's own
+distinction. Package D treats those ten cells as not reported either way, so the
+relabel does not gate paste 6.
+
+**Treated as rejected here, one row, from package A.** Data row 81 carries strain
+`PCC 6301` with artifact `RefSeq GCF_000817325.1`. NCBI Datasets resolves that
+accession to *Synechococcus elongatus* UTEX 2973 (taxid 1350461), the genome of
+record, which the same table already rejects as data row 51. Package A data row
+54 was wrong and the 2026-09-28 intake missed it; B and C carried it unchanged as
+their format required. It is recorded as rejected (duplicate of the genome of
+record) in the roadmap register and the scan ticket. It needs no condition or
+licence work. Whether to send a one-row package A correction for it is the
+owner's call; it is listed with the B relabel in the queue so one paste covers
+both.
+
+**Observation, not a failure.** GSE50908 and GSE52486, whose paper is unreadable
+per B.3.1, give replicates as `not stated; 1 sample per timepoint in GEO sample
+list` rather than `not retrieved`. That is consistent with B.3.1's statement that
+only replicate structure is left open for the Markson series.
+
+**Accepted:** `docs/notes/handoff/cyano_package_B_conditions_20261003.tsv`,
+SHA-256 `fa65266cd402ae974c072e9ad587bd990773d2df002eb08ed856ba4bca0c750e`, as
+returned, with rows 31 and 70 pending relabel and row 81 rejected. That file is
+what paste 6 names as `<PACKAGE_B_TABLE>`. Downstream: the 29 `escalate` rows and
+the one `rejected` row (PXD010000) are recorded in the scan ticket; B.5's
+out-of-band values are added as evidence to rows 13 and 14 of the
+biological-decisions list; B.6's capability notes are folded into
+[claude-science-handoff.md](../../validation/claude-science-handoff.md).
+
+### Package C intake, 2026-10-04
+
+Sent 2026-10-02, returned 2026-10-03. Checked against
+[`cyano_package_C_licences_20261003.tsv`](../handoff/cyano_package_C_licences_20261003.tsv),
+SHA-256 `5d8b1a99a72708c02946879accf9ea553edee3150a61407fb23475ef9697241c`, 57 data
+rows, manifest section C of `RET_claude-science-session__20261003.md`.
+
+| Check | Result |
+| --- | --- |
+| Identifiers resolve | The same 57 artifacts as package B; all resolved 2026-10-04. |
+| Checksums | The `checksum` column is empty on every row, by the package's own boundary (no data file was downloaded). The two governing-text pages the return checksums were re-fetched 2026-10-04 and match byte for byte: NCBI *Policies and Disclaimers*, 38,936 bytes, SHA-256 `8ad8f6f186ca51ec73a5fb8935ecfa17b8cbaad300b7025b381898ab72621869`; EMBL-EBI *Terms of Use*, 30,152 bytes, SHA-256 `f3c148e6b91501af2a516e24edf0be61c21e2ce1b4e9f40bd834c606f1f23ae9`. |
+| Quotations | 157 quoted passages re-matched at their stated locations: the Molecular Data Usage and Copyright Status passages on the NCBI policies page; the two EMBL-EBI passages on the terms page; the PRIDE `license` field on each of the 14 PXD rows (10 `Creative Commons Public Domain (CC0)`, 4 `EBI terms of use`, matching the live REST v3 records); and the `<permissions>` text of all 29 PMC records via `efetch db=pmc` or Europe PMC `fullTextXML`. None missing. |
+| Required cells | Every `licence` cell carries `REPOSITORY TERMS`, `PER-FILE NOTICE`, `ARTICLE TERMS`, `DIVERGENCE` and a `RECOMMENDATION` segment labelled "not a permission". `status` 37 candidate, 20 escalate; `source` and `mapping_route` present throughout. |
+| Boundaries | No permission decided. "permitted" appears only inside quoted CC BY licence text. `conditions` and `replicates` are package A's, carried over as the format required, and are superseded by B; nothing was taken from them. |
+| Article classes | As C.3: 24 openly licensed, 10 non-open, 10 unreadable, 13 not applicable. Four of the 24 are CC BY-NC-ND (GSE237858, GSE254350, GSE335065, PXD074299); C's "open licence" label does not separate ND from BY, and the ledger decisions do. |
+| Row 37 | `GCF_000817325.1` labelled PCC 6301: the package A duplicate described under package B; treated as rejected. |
+
+**Passed.** The licence decisions are recorded, one per artifact, in
+[source-ledger.md](../../validation/source-ledger.md#licence-decisions-for-the-package-a-candidates-2026-10-04).
+No file has been downloaded; every download still waits on that ledger entry and
+the roadmap's mode-and-pin rules, and no decision there is an admission.
 
 ## Cleanup
 

@@ -65,6 +65,17 @@ and frozen-set decision are in
 codon's share of its own amino acid's usage, with the same additive smoothing of
 0.5 on both sides of the ratio.
 
+**Percentile rank, a recorded split.** The pipeline writes `expressionPercentile`
+on the average-rank convention, reaching exactly 1.0 at the top of the column;
+the browser's `percentileRank` in `site/js/core/stats.js` uses mid-rank,
+`(below + equal / 2) / n`, and tops out at 1 − 1/(2n). On the 2,551 measured
+expression values the two differ by at most 1.97e-4, which is outside the 1e-6
+tolerance, so they are two conventions and not a rounding difference. Recorded
+2026-10-04 from audit finding A-09; the stored column and the live ramp, axis, and
+rank column carry the same word in the interface. Unifying them is an open change
+(audit-fixes ticket item 8); until it lands, treat the stored column as
+average-rank and every browser-computed percentile as mid-rank.
+
 ## Where this lives
 
 `site/js/core/conventions.js` resolves every convention from `meta.json` and

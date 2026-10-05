@@ -24,6 +24,20 @@ probes run from a session with this repository mounted:
   Figshare, and `static-content.springer.com`. A session runs behind a host
   allowlist and each grant is one domain per approval by the session operator, so a
   package naming a new host should expect one approval per host.
+- **BioCyc and GtRNAdb are reachable**, both probed 2026-09-30: `biocyc.org` and
+  `gtrnadb.ucsc.edu` were refused by the allowlist and granted on request, one
+  domain per approval, then read from the session.
+- **BioCyc has no 404 for an unknown organism.** `organism-summary?orgid=` answers
+  an orgid that does not exist with HTTP 200 and a complete *Escherichia coli*
+  K-12 MG1655 page, so a status code is never evidence that a strain's database
+  exists; a BioCyc probe needs an invalid-orgid control to establish what a miss
+  looks like.
+- **BioCyc meters page views without an account.** Probed from this repository's
+  agents 2026-10-02: the first summary-page requests were served, and later the
+  same day every `organism-summary` request redirected to
+  `account-required.shtml` (HTTP 200), while `biocyc-pgdb-list.shtml` and
+  `download.shtml` stayed readable. A probe must check for that redirect as well
+  as for the *E. coli* fallback, and no agent creates an account to get past it.
 - **`journals.asm.org` returns 403 from ASM itself**, not from the allowlist, and
   that is left alone: no User-Agent spoofing, no mirror, no archive proxy. It is not
   needed, see the next bullet.
@@ -41,6 +55,25 @@ probes run from a session with this repository mounted:
   per-artifact licence evidence is obtainable for any article with a PMC deposit,
   with no publisher host involved. The NCBI OA packager (`oa.fcgi`) returned 404 for
   that record; Europe PMC is the working route.
+- **Europe PMC `fullTextXML` answers HTTP 500, not 404, for a PMC record outside
+  the open-access subset**, established 2026-10-03 across 26 PMCIDs (19 served, 7
+  refused). A 500 there is the normal answer for a non-OA deposit, not a
+  transient fault. NCBI `efetch db=pmc` is the second route: it recovered a full
+  body for 2 of those 7 and returns the `<permissions>` block even when it
+  withholds the body, so a non-OA record is often readable for terms when not for
+  methods. The PMC article page serves a proof-of-work challenge to automated
+  clients; it is not solved. The NCBI ID converter and Europe PMC can disagree on
+  whether a PMID has a PMCID; query both.
+- **PRIDE REST v3 exposes a per-project `license` field**
+  (`/pride/ws/archive/v3/projects/<PXD>`), the one affirmative grant found over any
+  deposited artifact in package C: `Creative Commons Public Domain (CC0)` on every
+  project published from 2019 onward in that set, `EBI terms of use` before. The
+  Europe PMC per-file legend route works but rarely finds anything: 6 of 154
+  `<supplementary-material>` legends across 29 PMC records carried licence text,
+  all from one ASM article. `ncbi.nlm.nih.gov/geo/info/*.html` sits behind a
+  reCAPTCHA check and `ebi.ac.uk/pride/markdownpage/*` is client-rendered; point
+  licence questions at `ncbi.nlm.nih.gov/home/about/policies/`, the EMBL-EBI
+  Terms of Use, and the REST record.
 - **bioRxiv has no keyword search.** The connector filters by date, category, and
   server only and rejects a free-text query outright. Preprint discovery runs
   through OpenAlex or PubMed.
@@ -222,6 +255,14 @@ Before anything from a Claude Science session changes this repository:
 5. The queue row is removed from the ticket index and the claim status updated.
 
 Then the dependent step proceeds under the ticket's ordinary verification.
+
+A return may separate "not reported" (the source was read and is silent) from
+"not retrieved" (the source could not be read), as package B did. Intake holds
+every cell to the definition the return itself gives, and a cell that breaks it is
+returned for relabelling rather than reinterpreted here. Quotations are checked
+mechanically where the cited record is an archive field or a PMC text, not by
+eye; a composite quote assembled from several fields passes only when every piece
+is verbatim.
 
 ## Not an automated bridge
 

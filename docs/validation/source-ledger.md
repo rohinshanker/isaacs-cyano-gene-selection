@@ -50,3 +50,108 @@ secondary-structure formats. This repository prepares inputs only: no submitted
 sequence or returned model becomes project provenance automatically. Keep the
 external server terms and privacy setting separate from the standalone Apache-2.0
 code and the separate PyRosetta licence.
+
+## Licence decisions for the package A candidates, 2026-10-04
+
+Recorded at intake of Claude Science package C
+(`docs/notes/handoff/cyano_package_C_licences_20261003.tsv`, SHA-256
+`5d8b1a99a72708c02946879accf9ea553edee3150a61407fb23475ef9697241c`), whose rows
+quote the governing text for each artifact; the quotations were re-matched at
+their stated locations on 2026-10-04 and the two terms pages re-fetched with
+matching checksums. The decisions are this repository's, not the return's. They
+are permission decisions only: a permitted artifact still needs the
+[admission contract](future-data-roadmap.md#admission-contract), a manifest entry,
+and a checksum before anything is downloaded or shown, and nothing has been
+downloaded under them yet.
+
+The rules the decisions follow:
+
+- **An affirmative grant over the files is required to redistribute them or a
+  table derived from them.** Among the 57 artifacts the only such grant is the
+  PRIDE per-project `license` field reading `Creative Commons Public Domain
+  (CC0)`, present on the ten projects published from 2019 onward. `EBI terms of
+  use` is a disclaimer of EBI's own claims, not a grant.
+- **NCBI asserts no licence over GEO or RefSeq submitter data and disclaims the
+  ability to grant permission.** For a GEO series whose article is CC BY, the
+  article's licence is taken as the grant over the article's deposited data,
+  following the precedent of the shipped GSE205444 table (PMID 35814646, CC BY
+  4.0): a derived per-gene table may be redistributed with attribution, and the
+  GEO file itself is fetched at build time under a checksum pin, not committed.
+  A CC BY-NC-ND article excludes a derived table. An all-rights-reserved article,
+  a PMC text-mining notice, an unreadable article, or no article leaves no grant,
+  and the artifact stays link-only.
+- **A RefSeq accession has two layers.** The PGAP annotation is created by or for
+  the US government and is public domain; the submitted assembly bytes fall under
+  NCBI's data usage policies. The repository's existing practice for the
+  crosswalk inputs applies: annotation files may be retained as reproducibility
+  inputs and are never offered as a product download.
+- **Undetermined is a decision**: the artifact stays link-only, is not fetched,
+  and is revisited only when the governing text is read.
+
+| Artifact | Strain | Decision |
+| --- | --- | --- |
+| GSE102914 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE103462 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE103463 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE103606 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE103644 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE103704 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE104203 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE104204 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
+| GSE105774 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE122841 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE140121 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
+| GSE18902 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE205443 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
+| GSE205445 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
+| GSE222067 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE225426 | PCC 7942 | undetermined: no grant over the files and no article; link-only |
+| GSE227397 | Synechococcus elongatus | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE237858 | PCC 7942 | not permitted: the article is CC BY-NC-ND, which excludes a derived table; link-only |
+| GSE252562 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE254350 | PCC 7942 | not permitted: the article is CC BY-NC-ND, which excludes a derived table; link-only |
+| GSE288532 | Synechococcus elongatus | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE311172 | PCC 7942 | undetermined: no grant over the files and no article; link-only |
+| GSE327989 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
+| GSE335065 | PCC 7942 | not permitted: the article is CC BY-NC-ND, which excludes a derived table; link-only |
+| GSE45762 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE50908 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE50919 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE50920 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE50922 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE51112 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE52486 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE59112 | PCC 7942 | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| GSE79726 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GSE89999 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
+| GCF_022984195.1 | PCC 6301 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_000010065.1 | PCC 6301 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_000817325.1 | PCC 6301 | rejected: duplicate of the genome of record; no decision |
+| GCF_022984265.1 | PCC 6311 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_030544905.1 | PCC 7942 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_000012525.1 | PCC 7942 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_014698905.1 | PCC 7942 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_022984345.1 | PCC 7943 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| GCF_003957805.1 | UTEX 3055 | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
+| PXD000510 | PCC 7942 | not permitted: no grant over the files (EBI terms of use) and the article is all rights reserved; link-only |
+| PXD005105 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| PXD005851 | PCC 7942 | split: PRIDE files carry no grant (link-only); the article and its Table S1 legend are CC BY 4.0, so that table may be redistributed with attribution |
+| PXD010000 | PCC 7942 | rejected by package B; no grant over the files; no decision needed |
+| PXD011485 | Synechococcus elongatus | files CC0, but the strain is PCC 11801, outside the admitted strains: no admission route; recorded for completeness |
+| PXD014590 | Synechococcus elongatus | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD019731 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD023591 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD027430 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD030282 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD036717 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD044412 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD062851 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD074299 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+
+Counts: 23 permitted (13 GEO under a CC BY article, 9 PRIDE CC0, 1 PRIDE
+split on PXD005851's Table S1), 8 RefSeq annotations permitted as reproducibility
+inputs, 12 not permitted, 11 undetermined, PXD011485 recorded without an
+admission route, and 2 rejected (the duplicate genome-of-record row and
+PXD010000). A permitted decision on an artifact that package B escalated
+(GSE104204, GSE205443, GSE205445) does not make that artifact admissible as
+returned.
