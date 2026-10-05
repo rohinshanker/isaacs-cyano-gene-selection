@@ -383,6 +383,18 @@ select, input[type="text"], input[type="number"], input[type="search"] {
   min-height: 32px;
   max-width: 100%;
 }
+/* Reserve text space for a chevron inset from the right border on every select. */
+select {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%234a5568' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 0.75rem 0.5rem;
+}
+@media (forced-colors: active) {
+  select { appearance: auto; background-image: none; }
+}
 input[type="number"] { width: 7.5rem; }
 input[type="range"] { width: 100%; }
 
@@ -456,6 +468,7 @@ input[type="range"] { width: 100%; }
 /* Filters --------------------------------------------------------------- */
 
 .traffic-filter { border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
+.traffic-filter > .field-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
 .traffic-heading { margin: 0 0 0.35rem; font-size: 0.92rem; }
 .traffic-label { display: block; font-size: 0.85rem; color: var(--ink-muted); }
 .traffic-readout { display: block; font-size: 0.85rem; font-weight: 600; }

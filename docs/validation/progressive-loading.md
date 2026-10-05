@@ -343,11 +343,11 @@ consequence of the owner's choice, not a defect to repair.
 left to right as random A, T, G and C that keep flipping, and locks into its
 real characters behind them. Two fronts cross it, both from `scrambleProgress`:
 
-- The **lock front** is the readable text. The owner's decision: "50 letters per
-  second with a max of 10s", as the speed at which readable text locks, with the
-  maximum then shortened to five seconds on seeing it. A text of `n` characters,
-  spaces included, takes `n / 50` seconds; one longer than 250 characters locks
-  faster, so that its last character locks at exactly 5,000 ms. The front is `floor(speed × elapsed)` characters, and all of them
+- The **lock front** is the readable text. Text locks at 50 letters per second,
+  with a maximum duration of 2.5 seconds per text. A text of `n` characters,
+  spaces included, takes `n / 50` seconds; one longer than 125 characters locks
+  faster, so that its last character locks at exactly 2,500 ms. The front is
+  `floor(speed × elapsed)` characters, and all of them
   once that duration has passed.
 - The **trail front** is the flipping edge. The owner's decision: "the trail
   should start as 10 letters ahead and should extend faster than the letters lock
@@ -388,10 +388,10 @@ element inside a held one is out of reach with it until that one is released.
 The roots the page passes (the header, `main`, and the three sections below the
 workspace) are not held as roots: an element is held only for text it directly
 contains.
-The hold is per element because a text may take up to five seconds. Held as
+The hold is per element because a text may take up to 2.5 seconds. Held as
 whole regions, every region would stay hidden from assistive technology and
 closed to the keyboard and the pointer until its longest text had locked: up to
-five seconds after the reveal in which nothing in it could be used. Held per
+2.5 seconds after the reveal in which nothing in it could be used. Held per
 element, a button with a three letter label is usable 60 ms after the reveal
 while a long paragraph elsewhere is still locking.
 
@@ -426,7 +426,7 @@ else.
 | Letters the trail starts ahead of the lock | `scramble.leadLetters` | 10 | `load-lead` |
 | Speed at which readable text locks | `scramble.lockLettersPerSecond` | 50 letters/s | `load-letters` |
 | Trail speed, as a multiple of the lock speed | `scramble.trailRatio` | 1.5 | `load-trail` |
-| Longest any one text may take | `scramble.maxDurationMs` | 5,000 ms | `load-text-max` |
+| Longest any one text may take | `scramble.maxDurationMs` | 2,500 ms | `load-text-max` |
 | Flip interval while the lock is far behind | `scramble.flipFastMs` | 40 ms | `load-flip-fast` |
 | Flip interval just before a letter locks | `scramble.flipSlowMs` | 170 ms | `load-flip-slow` |
 | Map points all appeared | `mapIntro.appearMs` | 700 ms | `load-map-appear` |

@@ -5,6 +5,7 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_add-ecoli-organism__20261005](O_add-ecoli-organism__20261005.md) | Preliminary E. coli fallback organism view with a top-level Cyanobacteria/E. coli selector, cyano default; six questions cover strain, features, evidence, comparisons, and saved state |
 | [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md) | Assess UTEX GtRNAdb/tRNAscan-SE evidence and tRNA identification filter/coloring, reusing completed tRNA validation; future sister-strain/local-run options and questions recorded; probability interpretation depends on CS-1; not started |
 | [O_folding-compute-backend__20260930](O_folding-compute-backend__20260930.md) | Assess future RNA/protein folding backend on Yale Bouchet, with lab Mac mini and owner Jetson Orin Nano fallbacks; access, workloads, routing, and architecture questions recorded; not started |
 | [O_regulatory-site-viewer-layers__20260930](O_regulatory-site-viewer-layers__20260930.md) | Audit mapped Tan 2018 gene-view markers; support future initiation/termination/regulatory markers and chromosome site-type toggles, preserving source and coordinate semantics; not started |
