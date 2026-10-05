@@ -5,7 +5,7 @@
   types and evidence requirements before choosing or implementing the metric.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
@@ -17,13 +17,32 @@ site inventory, coverage threshold, and display unit remain undecided.
 The desired outcome is a coloring option that responds to the selected recoding
 scheme and indicates changes to regulatory-site DNA. Sequence change and a
 functional regulatory effect must be defined separately; neither is established
-by this ticket.
+by this ticket. Native sites are read against the pinned UTEX 2973 RefSeq assembly
+`GCF_000817325.1` (taxid 1350461, Complete); any sister-strain evidence names its
+own assembly and never lands on this genome's coordinate axis.
+
+## Claude Science claims
+
+No scientific claim is asserted or verified here. D1 requires a bounded research
+package, and that package's return format is already fully specified below.
+**It is one owner answer away from dispatchable:** clarifying question 1, which
+regulatory-site types come first (2026-09-30 return, section 5.3). The only missing
+input is a scope decision, so D1 is not blocked on evidence it is not waiting for.
+The package is not queued in Pending Claude Science until that answer lands.
+
+Its return format is one row per site type: definition, biological
+context, assay or annotation basis, strain and genome build, coordinate and strand
+convention, candidate datasets, coverage and uncertainty, resolvable sources, and
+limits on interpreting a sequence edit as a functional effect. Record unsupported
+or unavailable evidence explicitly. Returned evidence does not itself admit data
+or settle owner decisions. Add ticket-local falsifiable claim rows and queue them
+when a concrete scientific assumption gates a step.
 
 ## Dependencies
 
 | Id | Prerequisite | Dependent step | Completion condition |
 | --- | --- | --- | --- |
-| D1 | Better information on the relevant regulatory-site types | Decide which features the metric covers | Owner approves the site taxonomy and evidence standards after a sourced review |
+| D1 | The owner's initial scope list (clarifying question 1), then a sourced review of the relevant regulatory-site types | Decide which features the metric covers | Owner approves the site taxonomy and evidence standards after that review |
 | D2 | Sufficient admitted data for the approved types | Compute and expose the metric | Owner defines “enough data”; sources pass the existing admission, coordinate, provenance, and licence contracts |
 | D3 | Exact changes produced by each supported recoding scheme | Compare original and recoded site sequences | A tested sequence/coordinate contract identifies edited bases and their overlap with admitted sites |
 | D4 | Metric and coloring decisions below | Implement aggregation and UI | Owner resolves the blocking design questions and approves a concrete definition |
@@ -58,20 +77,6 @@ ticket need not finish before this metric can proceed. Research routing follows
    be considered? What evidence would permit either interpretation?
 9. Must the option compare multiple recoding schemes, or only show the active
    scheme against the original sequence? Which recoding controls does it follow?
-
-## Claude Science claims
-
-No scientific claim is asserted or verified here. D1 requires a bounded research
-package once the owner chooses the initial scope. That package is not yet
-dispatchable and is not queued in Pending Claude Science.
-
-Its proposed return format is one row per site type: definition, biological
-context, assay or annotation basis, strain and genome build, coordinate and strand
-convention, candidate datasets, coverage and uncertainty, resolvable sources, and
-limits on interpreting a sequence edit as a functional effect. Record unsupported
-or unavailable evidence explicitly. Returned evidence does not itself admit data
-or settle owner decisions. Add ticket-local falsifiable claim rows and queue them
-when a concrete scientific assumption gates a step.
 
 ## Acceptance criteria
 

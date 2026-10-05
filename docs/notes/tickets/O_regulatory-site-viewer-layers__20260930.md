@@ -5,21 +5,53 @@
   add site-type visibility toggles in the Chromosome visualizer.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
-Opened during the owner's ticket-planning session; implementation has not started.
-The current gene viewer already has Tan TSS rendering through `tssMarks()` in
-`site/js/core/gene-view-model.js` and `site/js/ui/gene-viewer.js`. This ticket first
-audits that behavior for all valid mapped sites and repairs verified gaps rather
-than adding a duplicate rendering path. No rendered completeness check has been
-performed in this pass.
+Opened during the owner's ticket-planning session. D1, the completeness audit of the
+mapped Tan 2018 sites, is done: every shipped site reaches the drawing faithfully,
+nothing needed repair, and the audit now runs on every test run over the shipped file
+rather than a fixture. Its counts, case coverage and rendered checks are recorded
+once, under [Verification](#d1-2026-10-02). The rest of the ticket has not started:
+the chromosome site-type toggles, the shared marker layer, and the overlap-readability
+item below are all open.
+
+The gene viewer renders Tan TSS evidence through `tssMarks()`, which lives only in
+`site/js/core/gene-view-model.js`. `site/js/ui/gene-viewer.js` draws `model.tss` and
+derives nothing of its own, so there is one path from the evidence file to a mark
+and D1 kept it that way.
+
+**Found, not repaired, and not D1's scope:** at desktop widths `M744_RS01695`'s
+tightest marks sit 2.3 px apart as 5.1 px circles, so the heads overlap into a
+cluster. Every mark is still drawn and each keeps its own `<title>`, so no evidence
+is lost, but the cluster is not separately readable. That is the "preserve readable
+markers when sites overlap" item under Required behavior, which needs the owner's
+answer to clarifying question 6 before a design.
+
+`site/js/ui/chromosome-view.js` hides **all** start-site ticks in a band when
+`sites.length * MIN_TSS_SPACING_PX > band.width`, with `MIN_TSS_SPACING_PX = 3`
+(applied in `paintTss`). Confirmed as the behaviour and **recorded as designed**: at
+whole-chromosome zoom 2,413 ticks over a few hundred pixels merge into a solid bar,
+which would read as continuous evidence across the genome rather than as discrete
+start sites. Unchanged, and deliberately so, and now pinned on both sides of its
+threshold in `tests/js/chromosome-view.test.mjs`.
 
 The existing chromosome contract places native gene-linked Tan sites at their
 published absolute positions, while non-gene-linked features remain in the
 Regulatory sites tab. The requested type toggles and any expanded chromosome
 coverage need an explicit revision of that display contract during implementation.
+
+## Claude Science claims
+
+None for auditing and faithfully rendering existing admitted Tan evidence or
+adding visibility controls. No new biological interpretation is asserted here.
+New source admission, taxonomy requiring scientific interpretation, positional
+mapping assumptions, or altered source semantics require ticket-local bounded
+claims and queue entries under the
+[Claude Science handoff](../../validation/claude-science-handoff.md). Gate only
+the dependent dataset or interpretation; current Tan/UI work can proceed when
+this ticket is activated.
 
 ## Required behavior
 
@@ -72,9 +104,11 @@ Related dependencies are artifact-specific:
 [UTEX BioCyc assessment](O_biocyc-utex-2973-data__20260930.md),
 [promoter assessment](O_idog-promoter-prediction__20260930.md), and
 [RBS assessment](O_rbs-calculator-gene-visualizer__20260930.md) may supply future
-features only after their own validation. Coordinate the shared layer with the
-[larger pinned-gene viewer](O_pinned-gene-sequence-viewer__20260930.md) so both gene
-views show the same admitted evidence. Neither ticket needs to wait for the
+features only after their own validation. Coordinate the shared layer with the sequence close-up, whose shipped behaviour is
+recorded in [gene-sequence-closeup.md](../../validation/gene-sequence-closeup.md);
+its own ticket is resolved and deleted. The close-up shipped with no start-site
+marks at all, so "both gene views show the same admitted evidence" is still open
+and belongs to whichever ticket takes it on. Neither view needs to wait for the
 other's entire implementation. The
 [recoding regulatory metric](O_recoding-regulatory-site-change__20260930.md) may
 consume these features later; displaying them does not establish recoding effects.
@@ -99,17 +133,6 @@ consume these features later; displaying them does not establish recoding effect
 8. What should selecting a site do: inspect metadata, pin an associated gene,
    jump to sequence position, or open the Regulatory sites tab?
 
-## Claude Science claims
-
-None for auditing and faithfully rendering existing admitted Tan evidence or
-adding visibility controls. No new biological interpretation is asserted here.
-New source admission, taxonomy requiring scientific interpretation, positional
-mapping assumptions, or altered source semantics require ticket-local bounded
-claims and queue entries under the
-[Claude Science handoff](../../validation/claude-science-handoff.md). Gate only
-the dependent dataset or interpretation; current Tan/UI work can proceed when
-this ticket is activated.
-
 ## Acceptance criteria
 
 - Every valid mapped Tan site is inspectable in the gene view; site-only,
@@ -129,11 +152,64 @@ Ticket creation verified 2026-09-30: fields, local links, dependencies, and live
 index entry checked; `git diff --check` passed. Repository gates passed:
 `npm test` (659 tests), pytest (332 passed, 1 skipped, 24 subtests passed), and
 contract validation (96 passed, 0 failed, 1 declared skip). No rendered behavior
-was validated in this ticket-opening pass.
+was validated in that ticket-opening pass.
 
-Future implementation: use the UI render/inspect/repair skill on the real gene
-and Chromosome views at mobile, tablet, and desktop widths, covering the cases
-above. Check Tan fixtures and source/provenance mappings independently of renderer
+### D1, 2026-10-02
+
+`tests/js/gene-view-tan-evidence.test.mjs` runs the audit over the shipped
+`site/data/tss_evidence.json` on every test run: **2,432 sites across 1,789 genes,
+2,432 marks drawn, no omissions and nothing to repair.** The marks are read back out
+of the SVG that `geneViewSvg()` builds rather than counted off `model.tss`, so the
+audit measures the drawing and not the model: with `drawTss` deleted from the builder
+it fails. Drawn marks and source rows are compared as multisets in both directions
+over rows whose ids are required distinct, which is what catches one site drawn in
+place of another — the counts agree in that case and every drawn id is a real
+published site. Each mark keeps its row's id, distance, strand, position and
+replicon, carries a stem and a head, is painted at the position its domain gives it,
+and lands inside that domain. The domain bound is the check that needed the real
+file: `fractionOf` clamps, so a mark past either end is painted onto the edge at a
+distance the source never published instead of being dropped.
+
+Each case class is asserted non-empty first, so the pass cannot come from finding
+nothing: 482 genes with more than one site, 472 site-only genes with no pooled
+`tssInitiation` score, 862 minus-strand and 927 plus-strand genes, the one spliced
+gene with sites (`M744_RS00920`), 46 sites published at the annotated start itself
+(distance 0, drawn at offset zero rather than read as a missing value), and 15
+plasmid genes carrying 19 sites on `NZ_CP006472.1`. Distances run from 0 to 999 nt.
+The two origin-crossing plasmid genes `M744_RS13290` and `M744_RS13620` carry **no**
+Tan rows in the shipped file; both still build a view model on their own short track
+— 3,121 and 307 nt rather than their replicon-spanning `start`–`end` — and the
+completeness rule is asserted over whatever rows they carry, so a row added later is
+covered without editing the test. The injected failures put the same audit function
+to a row with no published distance, the second row of a two-site gene replaced by a
+copy of the first, and a site placed past the domain, and require it to reject each
+one. `tests/js/loading-states.test.mjs` pins that the recorded-absence statement
+waits while the start-site file is in flight.
+
+The Chromosome view's tick-density rule is unchanged and pinned on both sides of its
+threshold in `tests/js/chromosome-view.test.mjs`: with the row's ticks exactly filling
+the band width every one is drawn, and one tick past that the whole row is dropped
+rather than thinned. `MIN_TSS_SPACING_PX` is exported from
+`site/js/ui/chromosome-view.js` for it, and the test fails if the constant moves in
+either direction.
+
+Rendered with the UI render/inspect/repair skill at 375x812, 768x1024, 1280x800 and
+1440x900, pinning `M744_RS01695` (20 sites, densest), `M744_RS07975` (the 999 nt
+furthest site), `M744_RS01280` (a site at distance 0), `M744_RS09240` (minus strand)
+and `M744_RS00920` (spliced): every mark painted, sized, opaque and inside the SVG
+box at every width, no page overflow, no console messages. The crowding finding in
+Current State is the only thing the renders turned up. Nothing drawn has changed
+since — the fix round that followed touched a comment, one new export, the tests and
+these documents — so those renders still stand and none was repeated.
+
+Gates: `npm test` 937 passed, pytest 355 passed with 1 skipped and 39 subtests,
+contract validation 98 passed with 0 failed and 1 declared skip. The pytest run needs
+the gitignored `data/raw/GCF_000817325.1_*` release inputs, which a fresh worktree
+does not carry; copy them from the canonical checkout before running the gate there.
+
+Still to verify when the rest of the ticket is implemented: the Chromosome type
+toggles and the shared marker layer, at the same widths, with mouse, keyboard and
+touch. Check Tan fixtures and source/provenance mappings independently of renderer
 geometry. Run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`.
 

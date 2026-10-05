@@ -344,6 +344,44 @@ already shipped. Every rejected row, kept so a later sweep does not re-raise it:
 | RefSeq GCF_000817325.1, listed a second time as PCC 6301 (package A data row 54) | annotation (RefSeq PGAP) | the accession is UTEX 2973 (NCBI taxid 1350461), not PCC 6301; a duplicate of the row above that the 2026-09-28 intake missed; found at package B and C intake 2026-10-04 and treated as rejected |
 | PRIDE PXD010000 | proteomics (LC-MS/MS) | rejected by package B: a 51-organism re-processed benchmark set with no growth conditions for any organism and no publication of its own |
 
+#### Correction to the rejected register, 2026-10-05
+
+Found while answering the owner's question about further data sources, by
+re-reading the GEO records fetched on 2026-10-04 and querying GEO, SRA, BioProject,
+PRIDE and BioStudies directly. Package A marked thirteen series "ChIP-seq (not an
+admitted data type)", and both intakes accepted that label without reading the
+records' series type. Only four of the thirteen are ChIP-seq alone: GSE104202,
+GSE106824, GSE343576 and GSE51093. **Seven are expression microarray series and two
+are mixed series that include RNA-seq.** They are reinstated as candidates. None
+has condition metadata or a licence decision yet, so none is admissible as it
+stands. The same check found two sources the sweep never saw.
+
+| Artifact | What the GEO or archive record says | Samples | Paper |
+| --- | --- | --- | --- |
+| GSE14225 | Expression profiling by array; "Circadian and diurnal expression data of Synechococcus" | 104 | PMID 19666549 |
+| GSE22468 | Expression profiling by array; nocturnal expression, WT and kaiABC-null | 29 | PMID 21896749 |
+| GSE28430 | Expression profiling by array; circadian expression in WT, rpoD6-, sasA- and rpaA-null | 21 | none linked |
+| GSE42542 | Expression profiling by array; clpX overexpression | 4 | PMID 23913328 |
+| GSE47015 | Expression profiling by array; circadian profile under kaiA overexpression | 9 | none linked |
+| GSE48901 | Expression profiling by array; circadian profile without KaiC phosphorylation cycling | 12 | PMID 24244001 |
+| GSE55637 | Expression profiling by array; dark or light, with or without photosynthesis | 28 | PMID 26058805 |
+| GSE114693 | Mixed: 72 RNA-Seq and 6 ChIP-Seq; RpaA-dependent sigma factor cascade; two supplementary tables | 78 | none linked |
+| GSE29264 | Mixed: 3 RNA-Seq, 6 ChIP-Seq and a tiling array; "A high resolution map of a cyanobacterial transcriptome"; strand-specific coverage files | 13 | PMID 21612627 |
+| PRIDE PXD082340 | Label-free proteomics of SeOmp85 mutants, PCC 7942; licence field CC0; published 2026-09-30, after the sweep | — | not yet read |
+| ArrayExpress E-MEXP-1657 | Transcription profiling of wild type and two mutants with and without iron; in ArrayExpress only, not mirrored from GEO | — | not yet read |
+
+GSE29264 is also the first transcription-start-site candidate for a sister strain:
+its paper maps start sites genome-wide in PCC 7942, which contradicts the
+2026-09-28 result that no new TSS candidate exists. That is from the paper's title
+and the deposit's coverage files and still needs the paper read.
+
+Checked and unchanged: GEO holds no UTEX 2973 series and no series for PCC 11801,
+PCC 11802, UTEX 3055 or UTEX 3154; all 49 GEO series for the organism were already
+in the sweep. SRA holds 18 UTEX 2973 experiments, 17 of them Tan 2018 and one a
+genome resequencing project. The BioStudies free-text search the offload ticket
+asked for is now done: 18 ArrayExpress entries, 17 of them mirrors of GEO series
+already known.
+
 #### Result, 2026-10-04
 
 Packages B and C returned 2026-10-03 and passed intake 2026-10-04, B with two
@@ -563,8 +601,95 @@ Requested behaviour:
 - Where a metric has several conditions, a control at the bottom of the view selects
   among them. Low-light versus high-light proteome is the motivating case.
 - The user can select a single paper's dataset to display.
-- The user can select several at once when a defensible normalization exists, with a
-  visible warning and the agreement statistic when they do not align well.
+- The user can select several at once as separate layers, always (owner decision
+  2026-10-05, replacing "when a defensible normalization exists"). A warning and the
+  agreement statistics appear when the shown datasets have no recorded pair
+  judgement.
+
+#### Owner design, 2026-10-05
+
+The owner reviewed the Claude Science mockup
+(`docs/notes/handoff/cyano_dataset_panel_mockup_20261005.html`), approved the
+selection screen, and fixed how it enters the site. This replaces the proposal in
+the returned architecture document to add a fourth controls-column panel.
+
+- **A "Data Sources" section directly below "Color by"** in the controls column.
+  Opened, its dropdown lists the data sources currently selected. The section can be
+  hidden.
+- **A button labelled "Change Data Selection"** opens a centre peek: a panel over the
+  middle of the page holding the full data selection window from the mockup, with
+  the comparison panel beside it where the width allows.
+- **While the peek is open the page behind it is dimmed and not clickable.** It
+  therefore needs a real modal: focus moved in and trapped, Escape and a close
+  control, focus returned to the button, and the background inert to pointer,
+  keyboard and assistive technology.
+- **Explanations stay out of the way.** A small help or info icon opens a popover on
+  hover or click; anything longer opens in a side or centre peek. No standing
+  explanatory lines. A later human pass to reduce clutter is
+  [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md).
+- **Defaults, delegated to the agents.** The default selection is the standard
+  photoautotrophic growth group plus the layers already shipped, so an existing link
+  shows what it showed before; if that group is empty for a data type, the group
+  holding the most datasets. Two datasets that disagree are both shown with the
+  conflict marked. The six illustrative groups of the mockup stand until someone
+  names better ones.
+- **Tabs and platforms.** Transcriptomics, proteomics, and fitness screens each get
+  their own tab. Array datasets are listed apart from RNA-seq by default; the
+  RNA-seq selection has an option to include them, and an array row says it is an
+  array and how many targets it covers.
+- **Statistics.** Level correlation against each dataset's replicate band, and
+  fold-change agreement where both sides have their own control. Distribution
+  comparison is a units check only. No pass mark.
+
+#### Owner design, second round, 2026-10-05
+
+Further requirements from the owner after reviewing the first mockup. All are
+built into a revised prototype,
+`docs/notes/handoff/cyano_dataset_panel_mockup_v2_20261005.html`, which was
+rendered and exercised at 1440, 1280, 768 and 375 px with no script error.
+
+- **Tick marks in every row.** Each condition track carries the scale's tick marks,
+  aligned with one labelled axis in the sticky header, so a value can be read
+  against the scale in place. No mark, label or chip may overlap another.
+- **CO₂ scale.** Linear from 0 to 5.5%, with ticks at each whole percent. No
+  admitted condition set exceeds 5%, and the useful resolution is between 1 and 5%.
+- **Custom filters.** Besides the groups, the reader adds filters of their own: a
+  range on temperature, light or CO₂, or a choice of strain, platform, light
+  regime, medium or treatment, or text in the study name. A range filter says
+  whether it also keeps rows that do not report the value. "Select all shown"
+  selects whatever the filters leave.
+- **An info button on every dataset.** It opens, beside the table, each condition
+  as the source reports it, with the quoted sentence and where it was found, the
+  replicate statement, the per-gene table, and the citation with a link to the
+  paper and to the archive record. The aim is a table of objective facts that
+  helps a reader choose what to show.
+- **Subgroups inside a group.** Where a group holds sets that are comparable with
+  each other, each such set is its own subgroup with a select-all box. Sets with no
+  comparable partner are gathered under one heading with no select-all box. A group
+  that would have only one subgroup shows none.
+- **Data-type tabs stay available in the peek** whatever the map shows; the tab the
+  peek opens on follows the map's current metric.
+
+Assumptions made to build the prototype, each put to the owner as a question:
+
+- Two condition sets are comparable for subgrouping when every axis both report
+  passes the default thresholds, at least three axes are reported by both, and
+  their treatment tags match. An axis only one side reports neither passes nor
+  fails. The owner's pair judgements override this in both directions, read as
+  the lab-facing review document records them: pair 24's "fine, as long as the
+  lights aren't changing in one and constant on the other" groups its two sets
+  only where both report the same kind of light regime, and pairs 9 and 10 are
+  affirmative with a qualification or a follow-up. A subgroup is a set in which
+  every member is comparable with every other.
+- The top-level "Other" group also has no select-all box.
+- Selection is per condition set, not per study.
+- The colour-blind check failed for the first mockup's green and orange. The
+  prototype uses three validated hues; position, not colour, carries the value.
+
+Not started. It waits on the package D and E intake, on the prerequisite gaps that
+intake is to confirm in the code, and on structured condition records for the
+shipped sources. With only the two shipped sources the section and the peek can
+still be built and rendered.
 
 Still to design: placement at each breakpoint, URL-hash encoding, interaction with the
 existing colour, axis, and filter selectors, and what happens to genes missing from

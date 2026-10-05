@@ -4,24 +4,30 @@
   data for PCC 6301 as explicitly labelled sister-strain evidence for UTEX 2973.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
 Opened at the owner's request for additional sister-strain data tickets.
-BioCyc focus is provisional, following the UTEX request. No organism-summary URL,
-database availability, release, data family, access terms, or retrieval method
-has been verified for PCC 6301. No research dispatch or data pull has started.
+BioCyc focus is provisional, following the UTEX request. The current RefSeq
+assembly is `GCF_000010065.1` (Complete). No data pull or admission has started.
 
 Reuse existing strain crosswalk and source findings where applicable, but verify
 that the BioCyc release and identifier namespace actually fit them.
+
+## Claude Science claims
+
+The confirmed availability result is recorded under D2 and links to the single
+six-strain results block. Further external research must follow the
+[handoff contract](../../validation/claude-science-handoff.md). Research output
+is evidence, not data admission, licence permission, or a lab decision.
 
 ## Dependencies
 
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Relevant priorities, evidence standards, and access decisions from [the UTEX BioCyc ticket](O_biocyc-utex-2973-data__20260930.md) | Select useful data families; availability discovery is independent |
-| D2 | Verify a BioCyc database actually represents PCC 6301, its release, curation basis, and accessible artifacts | Inventory and choose source artifacts |
+| D2 | BioCyc version 30.0 serves orgid `GCF_000010065` as a Tier 3 Uncurated PGDB for PCC 6301; artifact availability and access remain to inventory. See the [six-strain results block](O_biocyc-utex-2973-data__20260930.md#biocyc-availability-six-strains-returned-2026-09-30). | Inventory and choose source artifacts |
 | D3 | Artifact-specific licence/access evidence and recorded source-ledger permission decision | Retrieve and redistribute selected data |
 | D4 | Exact, unique, release-compatible identifier crosswalk to UTEX 2973; required independent checks passed | Transfer admissible locus evidence |
 | D5 | Applicable strain/data-type and condition-comparability contracts, with provenance and evidence basis retained | Integrate and display selected data |
@@ -49,22 +55,7 @@ New data types require an explicit contract decision before admission.
 6. Does the owner want a ranked inventory first, or authorize retrieval of
    selected artifacts once the research, licence, and admission gates pass?
 
-## Claude Science claims
-
-No scientific or licence claim is verified by opening this ticket. Before
-external research proceeds, prepare a bounded Claude Science package under the
-[handoff contract](../../validation/claude-science-handoff.md), then add the
-dispatchable package to Pending Claude Science. It is not dispatchable yet:
-scope questions and BioCyc access capabilities remain unresolved.
-
-Return one row per candidate data family or artifact: organism and database
-identifier, release, source URL, upstream citation, curation/evidence basis,
-available fields and coverage, identifier namespace and mapping route, retrieval
-method, quoted access/reuse/redistribution terms with their location, proposed
-project use, duplication or conflicts with shipped data, and recommendation.
-Explicitly report unavailable data and inaccessible sources. Add bounded,
-falsifiable claim rows for assumptions that gate implementation. Research output
-is evidence, not data admission, licence permission, or a lab decision.
+7. Raised by the 2026-09-30 return; unanswered (Q2): Should the per-strain tickets give way to one ortholog-annotation ticket organised by database, or do you want per-strain tickets retained because strain identity matters to how you will read the evidence?
 
 ## Acceptance criteria
 
@@ -85,6 +76,11 @@ from the repository root passed: `npm test` (659 tests), pytest (332 passed,
 1 skipped, 24 subtests passed), and contract validation (96 passed, 0 failed,
 1 declared skip). No data retrieval, admission, implementation, or UI change
 in this pass.
+
+Evidence-return application verified 2026-10-02: the shared BioCyc block and
+ticket-local result, owner questions, assembly, links, and required fields passed
+contract validation; `git diff --check`, `npm test`, and the full Python test
+suite passed. No data was admitted or retrieved.
 
 Future integration: run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`; verify pinned artifact checksums,

@@ -1,35 +1,97 @@
 # O_biocyc-utex-2973-data__20260930 — Open
 
-- **Scope:** Assess what relevant BioCyc data for UTEX 2973 can be retrieved to
-  strengthen the project's evidence and annotations; select useful additions
-  before planning any data pull.
+- **Scope:** Assess what relevant BioCyc data for UTEX 2973 can add beyond the
+  pinned RefSeq annotation; select useful additions before planning any data pull.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
 Owner-supplied starting point:
 [BioCyc organism summary](https://biocyc.org/organism-summary?orgid=GCF_000817325).
-The repository's target assembly is `GCF_000817325.1`, UTEX 2973, per
-[data-contract.md](../../validation/data-contract.md). The BioCyc page's organism
-identity, release, contents, retrieval options, and terms still need verification.
-A read attempt through the web tool on 2026-09-30 returned an inaccessible-page
-error; no page contents were obtained.
+The repository's target RefSeq assembly is `GCF_000817325.1`, UTEX 2973, per
+[data-contract.md](../../validation/data-contract.md). The 2026-09-30 failed read
+was a refusal by the web tool, not the BioCyc server; the page was read in the
+Claude Science return and its identity and availability result passed intake.
 
-This is an open planning ticket. Research and data ingestion have not started.
-Potential inventory categories include gene/product annotations, pathways,
-reactions, enzymes, complexes, metabolites, and regulatory annotations where
-available. These are questions to investigate, not claims that BioCyc has them.
+This is an open planning ticket. No data pull or admission has started.
+Potential inventory categories include pathways, reactions, enzymes, complexes,
+metabolites, and regulatory annotations where available. These are questions to
+investigate, not claims that BioCyc has them.
+
+## Claude Science claims
+
+The availability result below answers the BioCyc identity and existence part of
+D1. It is returned evidence, not admission, licence permission, or a lab decision.
+
+### BioCyc availability, six strains, returned 2026-09-30
+
+**Verdict:** three of six have a PGDB; three do not.
+
+**Sources:** `https://biocyc.org/organism-summary?orgid=…` per strain and
+`?object=SYNEL`, plus `https://biocyc.org/biocyc-pgdb-list.shtml`, all read
+2026-09-30 against BioCyc version 30.0; invalid-orgid control
+`?orgid=GCF_999999999`.
+
+**Returned text:** the tables in 1.1 and 1.2. Note the fallback behaviour: an
+invalid orgid returns HTTP 200 and a complete *E. coli* K-12 MG1655 page, so a
+status code is not evidence that a strain's database exists.
+
+**Intake check:** `claude-evidence-analyst (Multica DEM-193), 2026-10-02: the invalid-orgid control, all six strain probes, SYNEL by both orgid and object, the PGDB list, BioCyc version 30.0, the three tiers as the pages state them, and all fifteen counts in table 1.2 resolved; nothing in this block failed to resolve`
+
+For UTEX 2973, BioCyc version 30.0 serves orgid `GCF_000817325` as a
+Tier 3 Uncurated PGDB whose sequence source is `GCF_000817325.1`. It was
+generated in 2020 from an older annotation of the same assembly that the
+repository pins, so the additive inventory should focus on pathway and reaction
+inferences and its 1,969 computationally predicted transcription units, not treat
+its gene annotations as new or those predictions as measurement. Any future pull
+must first compare the organism named on the returned page with the requested
+strain rather than accept HTTP 200 as a match.
+
+The public summary pages are served without login only for a limited number of
+views: on 2026-10-02, after the intake probes, every summary request from this
+machine redirected to `account-required.shtml`, which asks for a free account.
+The database list at `biocyc-pgdb-list.shtml` stayed readable. No account was
+created. BioCyc's download page states that data
+file access requires both a licence and a paid subscription and offers separate
+academic and commercial routes; authenticated download was not tested, and reuse
+or redistribution remains gated on an artifact-specific source-ledger decision.
+
+### Returned ortholog table for D4
+
+The 2026-09-30 return supplied
+`docs/notes/handoff/cyano_ortholog_annotation_20260930.tsv`: 318,256 bytes,
+SHA-256 `e49f7d8f7d328cfc3b7e4e9f50c4a802f450f32cbc782b8fd9428eb3a01ec861`,
+with 2,715 unique published loci. Its columns are `locus_tag`, `old_locus_tag`,
+`protein_id`, `product`, `kegg_ko`, `ko_count`, `ortholog_in_eco_K12`,
+`ortholog_in_syf_PCC7942`, `ortholog_in_syc_PCC6301`, `pinned_go_iea_count`,
+`annotation_status`, and `evidence_basis_if_used`.
+
+Intake recomputed the headline counts: 1,385 loci are `ko_assigned`, 492 are
+`go_iea_only`, 447 are `named_no_ko_no_go`, and 391 are
+`hypothetical_no_homology_evidence`; 1,584 loci have pinned GO IEA, 1,385 have a
+KEGG KO, their union is 1,877, KO adds 293 beyond GO, and 838 have neither.
+Among KO-bearing loci, 879 share a KO with *E. coli* K-12, 1,376 with PCC 7942,
+and 506 lack an *E. coli* KO counterpart. Of 394 `hypothetical protein` loci,
+none has pinned GO IEA, three have a KO, none has an *E. coli* ortholog, and 391
+have neither GO nor KO.
+
+The apparently conflicting `old_locus_tag` counts describe different
+populations: 2,655 of all 2,776 GFF gene and pseudogene features have one, while
+2,600 of the 2,715 published protein-coding loci represented in this table have
+one. Intake found one table defect: 46 `product` values retain the GFF escape
+`%2C` instead of a comma. The table is returned evidence, not an admitted source
+or an identifier join; D3 through D5 still apply before any value is used.
 
 ## Dependencies
 
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
-| D1 | Confirm BioCyc database identity, release, curation basis, and accessible retrieval methods | Build a trustworthy inventory |
+| D1 | BioCyc identity, version, tier, and public-summary availability are confirmed above; artifact retrieval methods still require verification | Build a trustworthy inventory |
 | D2 | Resolve priorities and intended use below | Select additions that make UTEX “more robust” |
 | D3 | Verify artifact-specific access, reuse, and redistribution terms; record permission decisions in the source ledger | Retrieve and publish selected artifacts |
-| D4 | Establish release-compatible identifiers and exact mapping to target loci, retaining ambiguity | Integrate selected annotations |
+| D4 | Assess the returned ortholog table above under the identifier-crosswalk contract; establish release-compatible, exact mappings and retain ambiguity | Integrate selected annotations |
 | D5 | Pass evidence, provenance, and admission checks under existing contracts | Ship any data or derived display |
 
 Coordinate research with the
@@ -64,22 +126,9 @@ establish regulatory function or make that metric ready to implement.
 7. Are the sister-strain tickets also BioCyc-focused, as provisionally scoped,
    or should they cover additional sources beyond the existing cross-strain scan?
 
-## Claude Science claims
-
-No scientific or licence claim is verified by opening this ticket. Before
-external research proceeds, prepare a bounded Claude Science package under the
-[handoff contract](../../validation/claude-science-handoff.md), then add the
-dispatchable package to Pending Claude Science. It is not dispatchable yet:
-scope questions and BioCyc access capabilities remain unresolved.
-
-Return one row per candidate data family or artifact: organism and database
-identifier, release, source URL, upstream citation, curation/evidence basis,
-available fields and coverage, identifier namespace and mapping route, retrieval
-method, quoted access/reuse/redistribution terms with their location, proposed
-project use, duplication or conflicts with shipped data, and recommendation.
-Explicitly report unavailable data and inaccessible sources. Add bounded,
-falsifiable claim rows for assumptions that gate implementation. Research output
-is evidence, not data admission, licence permission, or a lab decision.
+8. Raised by the 2026-09-30 return; unanswered (Q2): Should the per-strain tickets give way to one ortholog-annotation ticket organised by database, or do you want per-strain tickets retained because strain identity matters to how you will read the evidence?
+9. Raised by the 2026-09-30 return; unanswered (Q4): Is a clearly-labelled *predicted* pathway and operon layer useful to you, or does the no-prediction-as-measurement rule make it more cost than value in this interface?
+10. Raised by the 2026-09-30 return; unanswered (Q6, concerning the proposed ortholog ticket): Given that this cannot name the unnamed genes, is curated *E. coli* experimental context on already-named loci worth a display layer — and at rank 4 in the evidence order, would you show it at all, or hold it as export-only?
 
 ## Acceptance criteria
 
@@ -100,6 +149,11 @@ from the repository root passed: `npm test` (659 tests), pytest (332 passed,
 1 skipped, 24 subtests passed), and contract validation (96 passed, 0 failed,
 1 declared skip). No data retrieval, admission, implementation, or UI change
 in this pass.
+
+Evidence-return application verified 2026-10-02: the returned BioCyc block was
+compared verbatim apart from its filled intake line; all local links and required
+ticket fields passed contract validation; `git diff --check` passed; `npm test`
+and the full Python test suite passed. No data was admitted or retrieved.
 
 Future integration: run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`; verify pinned artifact checksums,

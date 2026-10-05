@@ -4,25 +4,31 @@
   data for UTEX 3055 as explicitly labelled sister-strain evidence for UTEX 2973.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
 Opened at the owner's request for additional sister-strain data tickets.
-BioCyc focus is provisional, following the UTEX request. No organism-summary URL,
-database availability, release, data family, access terms, or retrieval method
-has been verified for UTEX 3055. No research dispatch or data pull has started.
+BioCyc focus is provisional, following the UTEX request. The current RefSeq
+assembly is `GCF_003957805.1` (Complete). No data pull or admission has started.
 
 UTEX 3055 is admitted as a more divergent sister strain under the data contract.
 Preserve unmatched genes and gene-content differences explicitly; do not fill
 missing UTEX 2973 values or prefer this strain over closer evidence by default.
+
+## Claude Science claims
+
+The confirmed availability result is recorded under D2 and links to the single
+six-strain results block. Further external research must follow the
+[handoff contract](../../validation/claude-science-handoff.md). Research output
+is evidence, not data admission, licence permission, or a lab decision.
 
 ## Dependencies
 
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Relevant priorities, evidence standards, and access decisions from [the UTEX BioCyc ticket](O_biocyc-utex-2973-data__20260930.md) | Select useful data families; availability discovery is independent |
-| D2 | Verify a BioCyc database actually represents UTEX 3055, its release, curation basis, and accessible artifacts | Inventory and choose source artifacts |
+| D2 | No UTEX 3055 PGDB exists in BioCyc version 30.0: the assembly-orgid probe returns the *E. coli* fallback and the PGDB list contains no UTEX 3055 entry. See the [six-strain results block](O_biocyc-utex-2973-data__20260930.md#biocyc-availability-six-strains-returned-2026-09-30). | Decide whether any BioCyc inventory remains useful |
 | D3 | Artifact-specific licence/access evidence and recorded source-ledger permission decision | Retrieve and redistribute selected data |
 | D4 | Exact, unique, release-compatible identifier crosswalk to UTEX 2973; required independent checks passed | Transfer admissible locus evidence |
 | D5 | Applicable strain/data-type and condition-comparability contracts, with provenance and evidence basis retained | Integrate and display selected data |
@@ -50,22 +56,8 @@ New data types require an explicit contract decision before admission.
 6. Does the owner want a ranked inventory first, or authorize retrieval of
    selected artifacts once the research, licence, and admission gates pass?
 
-## Claude Science claims
-
-No scientific or licence claim is verified by opening this ticket. Before
-external research proceeds, prepare a bounded Claude Science package under the
-[handoff contract](../../validation/claude-science-handoff.md), then add the
-dispatchable package to Pending Claude Science. It is not dispatchable yet:
-scope questions and BioCyc access capabilities remain unresolved.
-
-Return one row per candidate data family or artifact: organism and database
-identifier, release, source URL, upstream citation, curation/evidence basis,
-available fields and coverage, identifier namespace and mapping route, retrieval
-method, quoted access/reuse/redistribution terms with their location, proposed
-project use, duplication or conflicts with shipped data, and recommendation.
-Explicitly report unavailable data and inaccessible sources. Add bounded,
-falsifiable claim rows for assumptions that gate implementation. Research output
-is evidence, not data admission, licence permission, or a lab decision.
+7. Raised by the 2026-09-30 return; unanswered (Q1): These three add no annotation the pinned RefSeq and GO layers do not already carry. Is there a comparative use that still makes them worth keeping — gene presence/absence across the clade, or confirming a locus is conserved? In particular, is **UTEX 3055's greater divergence an asset** here, as an outgroup for a conservation score, rather than the deficiency this return has been treating it as?
+8. Raised by the 2026-09-30 return; unanswered (Q2): Should the per-strain tickets give way to one ortholog-annotation ticket organised by database, or do you want per-strain tickets retained because strain identity matters to how you will read the evidence?
 
 ## Acceptance criteria
 
@@ -86,6 +78,11 @@ from the repository root passed: `npm test` (659 tests), pytest (332 passed,
 1 skipped, 24 subtests passed), and contract validation (96 passed, 0 failed,
 1 declared skip). No data retrieval, admission, implementation, or UI change
 in this pass.
+
+Evidence-return application verified 2026-10-02: the shared BioCyc block and
+ticket-local result, owner questions, assembly, links, and required fields passed
+contract validation; `git diff --check`, `npm test`, and the full Python test
+suite passed. No data was admitted or retrieved.
 
 Future integration: run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`; verify pinned artifact checksums,

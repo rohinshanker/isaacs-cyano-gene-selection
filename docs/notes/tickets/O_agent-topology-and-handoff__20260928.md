@@ -9,7 +9,7 @@
   interface, not a repository change.
 - **Status:** open
 - **Opened:** 2026-09-28
-- **Updated:** 2026-09-28
+- **Updated:** 2026-10-02
 
 ## Current state
 
@@ -60,6 +60,11 @@ loci. Read-only.
 A fourth is worth it only if sweep volume justifies it: a per-data-type scout so the
 seven types run in parallel rather than in sequence.
 
+**Created 2026-09-28:** `CYANO_EVIDENCE_SCOUT` and `CYANO_CROSSWALK_VERIFIER`, per
+[RET_claude-science-session__20260928.md](../handoff/RET_claude-science-session__20260928.md#profile-decisions-and-a-review-request).
+`CYANO_DATA_AUDITOR` was not created; its loadout awaited the review below, now
+resolved.
+
 ### 2. Decide each profile's loadout
 
 A profile either sees the full live skill and connector catalogue, which keeps working
@@ -70,11 +75,12 @@ per-profile decision, not a policy. Record the choice here with its reason.
 
 ### 3. Ratify the mandatory-validation triggers
 
-The six triggers under
+The five triggers under
 [what must not land](../../validation/claude-science-handoff.md#what-must-not-land-without-a-claude-science-claim-or-package)
-are derived from this repository's own contracts but have not been ratified. Confirm,
-extend, or cut them, then delete this step. Until ratified, an agent that is unsure
-writes a claim row rather than guessing, which is the conservative failure.
+are derived from this repository's own contracts, reduced from six by the
+2026-09-28 agent-team review below, but have not been ratified by the owner.
+Until ratified, an agent that is unsure writes a claim row rather than guessing,
+which is the conservative failure.
 
 ## Agent-team review, 2026-09-28
 
@@ -106,7 +112,7 @@ archive list plus OpenAlex, and create `CYANO_DATA_AUDITOR` curated the same way
 plus a read-only mount, since its literature reach is the same and it must not
 write.
 
-**3. Six triggers become four, two narrowed, one moved.** Checked against the
+**3. Six triggers become five, two narrowed, one moved.** Checked against the
 work that actually landed on 2026-09-28:
 
 | Trigger | Verdict | Reason |
@@ -130,12 +136,13 @@ the row.
 
 ## Open questions for the owner
 
-1. **`multica` topology.** The contract specifies what the in-repo side must satisfy,
-   not how `multica` is wired, because that wiring has not been described here. Record
-   which existing agent owns the claims blocks, the index queue, and the gate runs.
-2. **Whether a verifier profile is worth a separate agent** or is better run as a
-   package against the general profile. It depends on how often a crosswalk is
-   rebuilt, which is not yet known.
+1. **Ratify the trigger list.** The five triggers above, reduced from six and two
+   of them narrowed, are a recommendation from the 2026-09-28 agent-team review;
+   the owner ratifies or reverts them in
+   [claude-science-handoff.md](../../validation/claude-science-handoff.md).
+2. **Create `CYANO_DATA_AUDITOR`.** Specified under "Profiles to create" above,
+   curated the same way as the scout plus a read-only mount, but not yet created
+   in the Claude Science account.
 
 ## Verification
 

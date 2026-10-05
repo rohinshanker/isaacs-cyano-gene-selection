@@ -6,17 +6,23 @@
   pinned local tRNAscan-SE runs.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
 Owner sources:
 [UTEX 2973 GtRNAdb page](https://gtrnadb.ucsc.edu/genomes/bacteria/Syne_UTEX_2973/)
 and [tRNAscan-SE code](https://github.com/UCSC-LoweLab/tRNAscan-SE).
-The GtRNAdb URL could not be read through the web tool on 2026-09-30; its assembly,
-release, available artifacts, and terms remain unverified. The code README
-describes tRNA-gene prediction from FASTA sequences; this is pre-grounding, not
-verification of score semantics or biological function.
+The GtRNAdb URL could not be read on 2026-09-30 because the agent's web tool was
+refused the host — the refusal came from the tool, not from the server. The page is
+reachable, and a Claude Science session read it the same day once the owner granted
+`gtrnadb.ucsc.edu` to that session's allowlist. Its assembly, release, and
+available artifacts are now determined; see the D1 result block below. **Its terms
+are not:** no licence or terms statement appears on either GtRNAdb page or in its
+download bundle, and the return quotes none, so admitting any GtRNAdb artifact
+still waits on that question. The code README describes tRNA-gene prediction from
+FASTA sequences; this is pre-grounding, not verification of score semantics or
+biological function.
 
 **Duplicate check, 2026-09-30:** Searched the canonical project ticket queue,
 ISAACS-LAB site/pipeline worktree ticket directories, and workspace ticket queue
@@ -34,11 +40,16 @@ and comparison code/tests in `tools/trna_validate.py` and
 or reopen its settled lab decisions. No new scan, data admission, or UI work has
 started.
 
+The strain in scope is *Synechococcus* sp. UTEX 2973, RefSeq assembly
+`GCF_000817325.1` (taxid 1350461, Complete), which this repository pins; GtRNAdb
+runs on its GenBank counterpart `GCA_000817325.1`. Both runs read 48 first-pass
+candidates and confirm 45.
+
 ## Claude Science claims
 
 | Id | Claim | Why the work depends on it | Answer that unblocks | Evidence expected | Pre-grounding | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| CS-1 | A tRNAscan-SE score can be mapped to a calibrated probability of tRNA-gene identity in the evaluation population selected for this feature. | Labelling numeric coloring/filtering as “likelihood” or probability rather than a tool score or evidence category. | Supported with a validated calibration and its domain, or refuted/uncheckable so the proposed metric uses accurately labelled scores/categories instead. | Resolvable score definitions and applicable calibration/evaluation evidence, including target population and limitations. | Existing validation establishes computational plausibility and concordance, not calibrated probabilities, expression, or charging. | pending |
+| CS-1 | A tRNAscan-SE score can be mapped to a calibrated probability of tRNA-gene identity in the evaluation population selected for this feature, now known to be the 45 Infernal-confirmed tRNA loci on this genome rather than an open-ended genome-wide screen. | Labelling numeric coloring/filtering as “likelihood” or probability rather than a tool score or evidence category. | Supported with a validated calibration and its domain, or refuted/uncheckable so the proposed metric uses accurately labelled scores/categories instead. | Resolvable score definitions and applicable calibration/evaluation evidence, including target population and limitations. | Existing validation establishes computational plausibility and concordance, not calibrated probabilities, expression, or charging. | pending |
 
 Follow [Claude Science handoff](../../validation/claude-science-handoff.md) for
 external source, licence, and scientific-semantic evidence. A new GtRNAdb artifact
@@ -79,10 +90,35 @@ ambiguous mappings, and unsupported data types explicitly.
 
 Related: [cross-strain scan](O_cross-strain-data-scan__20260927.md) and
 [BioCyc assessment](O_biocyc-utex-2973-data__20260930.md) may supply annotations;
-[pinned sequence viewer](O_pinned-gene-sequence-viewer__20260930.md) may inspect
-tRNA sequences if its feature population is extended. Coordinate feature rendering
+the [pinned gene's sequence close-up](../../validation/gene-sequence-closeup.md)
+may inspect tRNA sequences if its feature population is extended. Coordinate
+feature rendering
 with [viewer layers](O_regulatory-site-viewer-layers__20260930.md), while keeping
 tRNA genes distinct from regulatory sites. No whole-ticket dependency is imposed.
+
+### D1 result, O_trna-identification-viewer, returned 2026-09-30
+
+Not a CS claim row — this answers dependency D1 directly.
+
+**Verdict:** GtRNAdb contributes no new tRNA loci for this genome.
+
+**Sources:** `https://gtrnadb.ucsc.edu/genomes/bacteria/Syne_UTEX_2973/` and its
+`-stats.html` sibling, read 2026-09-30; compared against
+`data/trna/independent_run/trnascan.stats` in this repository.
+
+**Returned text:** GtRNAdb's UTEX 2973 entry is a tRNAscan-SE v2.0.2 (February
+2019) bacterial-mode Infernal run against assembly `GCA_000817325.1`
+(`ASM81732v1`), the GenBank counterpart of the pinned `GCF_000817325.1`. The
+repository's pinned v2.0.12 run reproduces it exactly on every reported
+statistic, including 2,744,626 bases read, 48 first-pass candidates, 45
+Infernal-confirmed tRNAs, 44 decoding the standard 20 amino acids, 1 predicted
+pseudogene, 0 introns, and the full per-isotype anticodon breakdown. GtRNAdb is
+therefore the same tool on the same assembly at an older version, not an
+independent source. Its only content absent from this repository is
+presentational — HMM and 2'-structure score breakdowns, alignments, mature-tRNA
+FASTA — plus the identity of the three first-pass candidates Infernal dropped.
+
+**Intake check:** `claude-evidence-analyst (Multica DEM-193), 2026-10-02: both GtRNAdb pages, tRNAscan-SE v2.0.2 run of 2019-04-23 in bacterial Infernal mode, assembly GCA_000817325.1 (identical to the pinned GCF_000817325.1 per the NCBI assembly report), every statistic and the full anticodon table against data/trna/independent_run/trnascan.stats, and all 45 loci against trnascan.out resolved; the statement that GtRNAdb holds the identity of the three dropped first-pass candidates did not resolve — GtRNAdb publishes only the count 48, which the repository’s own trnascan.stats also records`
 
 ## Clarifying questions for later
 
@@ -95,6 +131,12 @@ tRNA genes distinct from regulatory sites. No whole-ticket dependency is imposed
    pseudogene status, or a calibrated probability? What thresholds are useful?
 4. Should GtRNAdb supply a separate comparison layer or reconcile the existing
    pinned run? How should disagreements and low-confidence calls appear?
+   Q3, raised by the 2026-09-30 return; unanswered: "Are those three dropped
+   candidates and the HMM/2'-structure score breakdown worth retrieving, or is the
+   real want the viewer feature over the 45 loci you already have?" Intake found the
+   premise about the three candidates does not hold: GtRNAdb publishes only the
+   count 48, which this repository's own `trnascan.stats` already records, and
+   nothing in its pages or bundle enumerates the three.
 5. Which sister strains should be considered next, and should their data remain
    separate evidence layers rather than being transferred to native UTEX features?
 6. Should tRNA structure, anticodon, and isotype be displayed alongside sequence,

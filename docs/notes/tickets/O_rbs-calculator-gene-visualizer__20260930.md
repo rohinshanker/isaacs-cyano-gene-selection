@@ -4,17 +4,60 @@
   RBS features for UTEX 2973 and support their display in the gene visualizer.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
 Owner-supplied code:
 [Ribosome-Binding-Site-Calculator-v1.0](https://github.com/hsalis/Ribosome-Binding-Site-Calculator-v1.0).
-The README, inspected 2026-09-30, describes translation-initiation-rate prediction
-and synthetic RBS design using a thermodynamic model. It identifies
-`RBS_Calculator.py` as the calculation module and states GPL v3.0 licensing.
-These are preliminary repository descriptions, not scientific validation or a
-licence compatibility decision. No code has been cloned, run, or integrated.
+The README describes translation-initiation-rate prediction and synthetic RBS
+design using a thermodynamic model, and identifies `RBS_Calculator.py` as the
+calculation module. No code has been run or integrated here. The following are
+established about the code and its terms, and are not themselves scientific
+validation or a licence decision:
+
+- **The GPL v3.0 statement is correct.** Both the README ("licensed under the GNU
+  GPL license v3.0") and the `LICENSE` file say so; `LICENSE` is the eleven-line
+  GPL notice rather than the full text, which is why the GitHub API reports
+  `spdx_id: NOASSERTION`. That is a metadata artifact, not a conflict — do not
+  "correct" it.
+- **Copyright is held by the Regents of the University of California**, and the
+  README routes academic use to `salislab.net/software` and commercial use to
+  `denovodna.com/software`. That dual route sits alongside the GPL grant; the
+  permission decision belongs in
+  [source-ledger.md](../../validation/source-ledger.md), not here.
+- **`RBS_Calculator.py` is Python 2.** At commit `8a9c1de` (2015-10-27) it is
+  1,145 lines with eleven bare `print` statements, and `python3 -m py_compile`
+  fails with a `SyntaxError`. It will not run on this repository's interpreter
+  without a port.
+- **It imports NuPACK** (`RBS_Calculator.py:19`, `from NuPACK import NuPACK`),
+  a wrapper for NUPACK 2.0 that shells out to binaries the repository does not
+  bundle. NUPACK is separately licensed, so a GPL-compatible substitute or a
+  licence decision is required before the code runs at all, let alone ships.
+  `nupack.org` names a "NUPACK Software License Agreement for Non-Commercial
+  Academic Use", but that page renders by script and the 2.0 release's terms have
+  not been read; the unread page was a tool-reach limit, not a refusal by the
+  server.
+- **The anti-Shine-Dalgarno sequence defaults to an *E. coli* value.**
+  `RBS_Calculator.py:54` sets a class attribute `rRNA = "acctcctta"`, commented as
+  the last nine nucleotides of the 16S rRNA 3' end in *E. coli* — a real, settable
+  input, though a class attribute rather than a constructor argument. Run at that
+  default against UTEX 2973 sequence the calculator does not predict UTEX 2973
+  initiation; it predicts *E. coli* initiation on cyanobacterial sequence. The
+  UTEX 2973 value is derived inside this repository rather than requested from
+  Claude Science: `tools/rrna_3prime.py`, documented in
+  [annotation-release-readiness.md](../../validation/annotation-release-readiness.md#deriving-annotated-16s-rrna-3-termini),
+  reports `ACCUCCUUU` at the annotated 3' end of both 16S copies,
+  `M744_RS03180` and `M744_RS13280`, against the *E. coli* default `ACCUCCUUA`.
+  The two differ only at the final base. That is the sequence at each annotated
+  boundary, with no processing-site evidence behind it; it is not a validated
+  anti-Shine-Dalgarno sequence, and it does not decide what sequence either tool
+  should be given. The
+  [iDOG assessment](O_idog-promoter-prediction__20260930.md) records the same
+  default for `create_RBS`.
+
+The strain in scope is *Synechococcus* sp. UTEX 2973, RefSeq assembly
+`GCF_000817325.1` (taxid 1350461, Complete), the assembly this repository pins.
 
 The first task is to determine what “predict RBS” can mean with this code:
 identifying a binding region, scoring initiation at a supplied start site, or
@@ -26,7 +69,7 @@ boundary. No model assignment was requested for this ticket.
 
 | Id | Claim | Why the work depends on it | Answer that unblocks | Evidence expected | Pre-grounding | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| CS-1 | The v1.0 RBS Calculator's translation-initiation predictions are supported by validation applicable to UTEX 2973. | Interpreting calculator outputs as biologically useful UTEX predictions in the visualizer. | Supported with applicable validation and limitations, or refuted/uncheckable with the evidence gap stated so the assessment can conclude or propose evaluation. | Resolvable method and validation sources identifying organisms, inputs, outputs, and performance. | The supplied README describes bacterial initiation-rate prediction; it does not itself establish UTEX applicability. | pending |
+| CS-1 | The v1.0 RBS Calculator's translation-initiation predictions are supported by validation applicable to UTEX 2973. | Interpreting calculator outputs as biologically useful UTEX predictions in the visualizer. | Supported with applicable validation and limitations, or refuted/uncheckable with the evidence gap stated so the assessment can conclude or propose evaluation. | Resolvable method and validation sources identifying organisms, inputs, outputs, and performance. | The supplied README describes bacterial initiation-rate prediction; it does not itself establish UTEX applicability. PubMed returns exactly one record pairing the RBS Calculator with any cyanobacterium — PMID 31908923, Sebesta J and Peebles CA, *Metab Eng Commun* 2020;10:e00117, heterologous expression in *Synechocystis* sp. PCC 6803 — and none for *Synechococcus* or UTEX 2973. This sets the expected shape of the answer; it is not a verdict. | pending |
 
 External scientific evidence and any licence questions follow the
 [Claude Science handoff](../../validation/claude-science-handoff.md). Code
@@ -39,16 +82,17 @@ planning only; no dispatch or implementation has started.
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Clarify desired output and display below | Define the feature and evaluation target |
-| D2 | Pin and inspect code, output contracts, runtime dependencies, and code/dependency licences | Decide reuse, adaptation effort, and integration architecture |
+| D2 | Pin and inspect code, output contracts, runtime dependencies, and code/dependency licences. The two named blockers are the Python 2 port and the unbundled, separately licensed NuPACK dependency | Decide reuse, adaptation effort, and integration architecture |
 | D3 | Establish reliable input sequences, start-site annotations, strand/coordinate mapping, and required model parameters | Run meaningful predictions |
 | D4 | Scientific applicability evidence (CS-1) and an approved benchmark where needed | Interpret predictions and set display thresholds |
 | D5 | Owner-approved proposal, provenance contract, and required tests/rendered checks | Add outputs to the gene visualizer |
 
 When activated, assess whether more robust data or annotations are mandatory or
 beneficial: genomic flanks and transcript context, accurate CDS/TIS/TSS positions,
-strain-specific rRNA parameters if used by the implementation, operon context,
-and suitable measured translation-initiation or RBS validation data. Verify each
-actual requirement from the method; these candidates are not asserted inputs.
+the strain-specific `rRNA` value, which is a confirmed input rather than a
+speculative one, operon context, and suitable measured translation-initiation or
+RBS validation data. Verify each remaining requirement from the method; the rest
+of these candidates are not asserted inputs.
 Return a gap table with current coverage, missing inputs, candidate sources,
 mapping/condition caveats, and whether each gap prevents use or improves confidence.
 
@@ -81,6 +125,10 @@ That metric still requires its own definition and evidence decisions.
    predictions be available as an explicitly exploratory layer?
 6. Is assessment restricted to v1.0, or may it compare newer accessible versions
    or alternatives if v1.0 is unsuitable? Which runtime/compute budget is acceptable?
+   Q7, raised by the 2026-09-30 return; unanswered: "Is porting v1.0 worth it, or
+   would you rather the assessment consider the current Salis-lab version or a
+   different initiation model? Your clarifying question 6 asks this; the licence and
+   runtime findings now give it a cost side".
 7. Which additional data or annotation gaps should be prioritized if needed, and
    is experimental validation in scope?
 

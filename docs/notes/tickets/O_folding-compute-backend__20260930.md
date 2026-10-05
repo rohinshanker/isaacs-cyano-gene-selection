@@ -6,7 +6,7 @@
   requirements before implementation.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-09-30
+- **Updated:** 2026-10-02
 
 ## Current State
 
@@ -26,7 +26,28 @@ before depending on that architecture; recheck current limits when activated.
 The project already runs local, on-demand RNA folding in a browser worker under
 [rna-folding.md](../../validation/rna-folding.md). This assessment should identify
 which heavier workloads benefit from remote compute and how to preserve the
-existing local path. The intended RNA/protein algorithms remain undecided.
+existing local path. The intended RNA/protein algorithms remain undecided. Inputs
+come from the pinned UTEX 2973 RefSeq assembly `GCF_000817325.1` (taxid 1350461,
+Complete).
+
+**Architecture is a visible constraint before any benchmark runs.** At least one
+tool a sibling ticket depends on ships as an x86-64 Linux binary needing
+recompilation for arm64: the TransTermHP bundled with
+[iDOG](O_idog-promoter-prediction__20260930.md), whose README says so. The
+2026-09-30 return further states that both fallback devices are arm64; that is the
+return's unverified statement — intake could not check it, because this ticket
+records no Mac mini model and the Jetson module page served no CPU text. Determine
+each device's architecture under D2 rather than inheriting the claim.
+
+## Claude Science claims
+
+None asserted for this infrastructure assessment. Algorithm validity, comparative
+accuracy, model/data licences, and biological interpretation require bounded
+claims or research packages under the
+[Claude Science handoff](../../validation/claude-science-handoff.md) when concrete
+methods are selected. Yale access/service policy is an operational dependency to
+confirm through official documentation or the account owner/YCRC; it is not
+settled by scientific inference. Gate only the dependent method or host.
 
 ## Dependencies and assessment
 
@@ -71,7 +92,7 @@ requires a deliberate update to the current statement that no sequence leaves
 the browser and clear user-facing disclosure of the selected compute destination.
 Benchmark equivalent local/remote calculations before claiming equivalence.
 
-Related: [pinned-gene sequence viewer](O_pinned-gene-sequence-viewer__20260930.md)
+Related: the [pinned gene's sequence close-up](../../validation/gene-sequence-closeup.md)
 may inspect inputs/results. Other prediction tickets may later use this job
 interface only after compatibility is demonstrated. They are not prerequisites
 for backend feasibility, nor does this ticket authorize their scientific adoption.
@@ -88,6 +109,11 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
    and what do YCRC rules allow for a website-connected research service?
 5. What Mac mini model, RAM, storage, and availability are available? What Jetson
    RAM/storage, software stack, and power/network availability can be relied on?
+   Record each device's CPU architecture explicitly, since the x86-only binary
+   above makes it a gating answer rather than a detail.
+   Q8, raised by the 2026-09-30 return; unanswered: "Should this ticket wait for
+   Bouchet, or should the Mac mini and Jetson be specified and benchmarked first so
+   the cluster is an addition rather than a prerequisite?"
 6. What waiting time is acceptable? Should fallback be manually selected or
    automatic under explicit queue-delay, outage, and capacity rules?
 7. May sequences and results leave the browser and move among these hosts? What
@@ -96,16 +122,6 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
    remote computation offered for selected heavier jobs?
 9. Is an always-on API/job store already available, or should the assessment include
    where to host it and its operating cost and maintenance burden?
-
-## Claude Science claims
-
-None asserted for this infrastructure assessment. Algorithm validity, comparative
-accuracy, model/data licences, and biological interpretation require bounded
-claims or research packages under the
-[Claude Science handoff](../../validation/claude-science-handoff.md) when concrete
-methods are selected. Yale access/service policy is an operational dependency to
-confirm through official documentation or the account owner/YCRC; it is not
-settled by scientific inference. Gate only the dependent method or host.
 
 ## Acceptance criteria
 
