@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, bandLayout, canvasHeightFor, columnCrowding,
-  columnOccupancy, columnOfKey, drawnColumns, fitTickLabels, fitTrackLabel, pieceColumns,
-  pieceRect, resolveMarkPaint, trackLabelVariants,
+  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, MIN_TSS_SPACING_PX, bandLayout,
+  canvasHeightFor, columnCrowding, columnOccupancy, columnOfKey, drawnColumns, fitTickLabels,
+  fitTrackLabel, pieceColumns, pieceRect, resolveMarkPaint, trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
 import { describePaintOrder, repliconTracks } from '../../site/js/core/chromosome-model.js';
 import {
@@ -729,6 +729,61 @@ test('start-site ticks appear only once they are separate ticks, not a solid bar
     assert.ok(tssRow(flush()).length > 0, 'zoomed in, the individual sites are drawn');
   } finally {
     restore();
+  }
+});
+
+/** One gene per start site, so `count` ticks land in the chromosome's full window. */
+function tickGenes(count) {
+  return Array.from({ length: count }, (_, i) => {
+    const position = 1000 + i * 1000;
+    return gene({
+      id: `T${i}`,
+      start: position,
+      end: position + 200,
+      tssEvidence: [{
+        id: `gTSS+${position}`,
+        replicon: 'CP006471',
+        strand: '+',
+        position,
+        sourceStartDistanceNt: 10,
+      }],
+    });
+  });
+}
+
+test('the start-site row is drawn while every tick fits, and dropped one tick past that', () => {
+  // The previous test holds the two ends of the rule, a whole chromosome against
+  // a zoomed window. This one holds the threshold itself, which is the band's own
+  // width over the room one tick needs, so the width is measured rather than
+  // assumed and the two mounts sit either side of the count it allows. Both sides
+  // are what pin the constant: a smaller spacing would draw the crowded row, a
+  // larger one would drop the row that fits.
+  const tickRow = ({ view, ops }) => {
+    const { layout } = view.bands()[0];
+    return ops.filter((op) => op.op === 'moveTo'
+      && Math.abs(op.y - (layout.tssTop + 1)) < 0.001);
+  };
+  const measured = mount({ genes: tickGenes(1) });
+  const { width } = measured.view.bands()[0];
+  measured.restore();
+  // The constant is pinned as a value too: both sides above are measured from it,
+  // so they would move with it and a changed spacing would go unnoticed.
+  assert.equal(MIN_TSS_SPACING_PX, 3);
+  const fits = Math.floor(width / MIN_TSS_SPACING_PX);
+  assert.ok(fits > 1, 'the band is wide enough for the rule to have two sides');
+
+  const fitting = mount({ genes: tickGenes(fits) });
+  try {
+    assert.equal(tickRow(fitting).length, fits, 'every tick is drawn while they all fit');
+  } finally {
+    fitting.restore();
+  }
+  const crowded = mount({ genes: tickGenes(fits + 1) });
+  try {
+    assert.equal(tickRow(crowded).length, 0,
+      'one tick past the width, the whole row is dropped rather than thinned');
+  } finally {
+    crowded.restore();
   }
 });
 

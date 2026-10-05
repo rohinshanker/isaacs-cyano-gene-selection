@@ -86,6 +86,19 @@ class ManifestTest(unittest.TestCase):
             with self.assertRaisesRegex(release.ReleaseError, "outside pinned baseUrl"):
                 release.load_manifest(path)
 
+    def test_manifest_rejects_missing_pinned_source_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "manifest.json"
+            for field in ("assemblyAccession", "annotationRelease"):
+                with self.subTest(field=field):
+                    missing = json.loads(json.dumps(self.manifest))
+                    del missing["sources"][0][field]
+                    path.write_text(json.dumps(missing), encoding="utf-8")
+                    with self.assertRaisesRegex(
+                        release.ReleaseError, f"source is missing fields: {field}"
+                    ):
+                        release.load_manifest(path)
+
     def test_verify_rejects_missing_wrong_size_and_wrong_checksum(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -173,7 +186,9 @@ class ParserTest(unittest.TestCase):
                 "##gff-version 3\n"
                 "##sequence-region seq 1 100\n"
                 "seq\tRefSeq\tgene\t95\t110\t.\t+\t.\t"
-                "ID=gene-x;locus_tag=x;gene_biotype=protein_coding\n",
+                "ID=gene-x;locus_tag=x;gene_biotype=protein_coding\n"
+                "seq\tRefSeq\tgene\t105\t110\t.\t+\t.\t"
+                "ID=gene-y;locus_tag=y;gene_biotype=protein_coding\n",
                 encoding="utf-8",
             )
             features, lengths = release.parse_gff(path)
@@ -181,6 +196,8 @@ class ParserTest(unittest.TestCase):
             self.assertEqual([(95, 100), (1, 10)], release.normalized_segments(
                 features[0], 100
             ))
+            with self.assertRaisesRegex(release.ReleaseError, "invalid coordinates"):
+                release.normalized_segments(features[1], 100)
 
             path.write_text("##gff-version 3\nseq\tbad\n", encoding="utf-8")
             with self.assertRaisesRegex(release.ReleaseError, "expected 9"):

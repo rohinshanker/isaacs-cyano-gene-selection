@@ -384,7 +384,7 @@ def parse_gff(path: Path) -> tuple[list[Feature], dict[str, int]]:
 
 def normalized_segments(feature: Feature, length: int) -> list[tuple[int, int]]:
     """Splits NCBI's end-overflow notation for circular-origin features."""
-    if feature.start < 1 or feature.end < feature.start:
+    if feature.start < 1 or feature.start > length or feature.end < feature.start:
         raise ReleaseError(f"invalid coordinates for {feature.attrs.get('locus_tag')}")
     if feature.end <= length:
         return [(feature.start, feature.end)]

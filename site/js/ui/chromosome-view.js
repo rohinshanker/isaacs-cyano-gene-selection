@@ -52,8 +52,11 @@ const SECONDARY_LANE_HEIGHT = 13;
 const MIN_BRACKET_PX = 4;
 /** Vertical room a wrap marker needs beside the lane. */
 const WRAP_MARKER_PX = 5;
-/** Room each start-site tick needs before the row stops being separate ticks. */
-const MIN_TSS_SPACING_PX = 3;
+/**
+ * Room each start-site tick needs before the row stops being separate ticks.
+ * Exported so a test can pin both sides of that rule at the width it turns on.
+ */
+export const MIN_TSS_SPACING_PX = 3;
 /**
  * Narrowest bar, in drawing units, on which the hollow source-derived style can
  * be read — and therefore the width at and above which it is drawn.

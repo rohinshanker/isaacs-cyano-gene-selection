@@ -43,6 +43,24 @@ function signedNt(offset) {
 }
 
 /**
+ * The evidence this view has no data to draw, stated rather than left as an
+ * absent track.
+ *
+ * No ribosome-occupancy, translation-initiation-site, or
+ * transcription-termination-site data set is admitted, and no start-site data
+ * set beyond the Tan 2018 evidence already shipped here. A sweep of every
+ * admitted strain returned no new candidate for any of those tracks, which is
+ * not the same as finding nothing deposited: its one termination-site hit,
+ * GSE309256, is ranked in the roadmap and not admitted. An empty space reads as
+ * "measured and nothing found"; the sentence says what is actually the case,
+ * which is that nothing is admitted to draw. It is written about admission, not
+ * about biology: these features are not claimed to be absent from the organism.
+ */
+const NO_ADMITTED_TRACK_DATA = 'No ribosome-occupancy, translation-initiation-site, '
+  + 'transcription-termination-site, or start-site data set beyond Tan 2018 is admitted for this '
+  + 'strain or its admitted sister strains, so none of those tracks is drawn.';
+
+/**
  * One sentence naming what is drawn, for the SVG's accessible description.
  * A picture with no text equivalent would leave this view unreadable to anyone
  * not looking at it.
@@ -75,6 +93,11 @@ export function describeGeneView(model, tssPending = null) {
   } else {
     parts.push('No Tan 2018 start site maps to this locus by exact locus tag.');
   }
+  // Held back while the start-site file is in flight. The sentence rests on the
+  // Tan evidence being the one start-site data set there is, which is a claim
+  // about what has landed; saying it beside "still loading" would contradict
+  // the loading wording standing right next to it.
+  if (!tssPending) parts.push(NO_ADMITTED_TRACK_DATA);
   return parts.join(' ');
 }
 

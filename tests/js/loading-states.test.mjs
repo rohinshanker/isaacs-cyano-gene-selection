@@ -184,6 +184,12 @@ test('the gene visualizer says start sites are loading instead of that none maps
   assert.match(describeGeneView(model, LOADING), /start sites are still loading, so none is drawn yet/);
   assert.match(describeGeneView(model, FAILED), /start sites could not be loaded, so none is drawn/);
   assert.ok(!/No Tan 2018 start site maps/.test(describeGeneView(model, LOADING)));
+  // The recorded-absence statement rests on Tan 2018 being the one admitted
+  // start-site data set, so it waits for the file too rather than standing
+  // beside the loading wording and contradicting it.
+  assert.ok(!/is admitted for this strain/.test(describeGeneView(model, LOADING)));
+  assert.ok(!/is admitted for this strain/.test(describeGeneView(model, FAILED)));
+  assert.match(describeGeneView(model), /is admitted for this strain or its admitted sister strains/);
   // Sites that have landed are described as usual, whatever the flag says.
   const withSite = geneViewModel({ ...GENE, tssEvidence: [{ id: 'T1', sourceStartDistanceNt: 40 }] });
   assert.match(describeGeneView(withSite, LOADING), /1 Tan 2018 start site upstream at 40 nt/);
