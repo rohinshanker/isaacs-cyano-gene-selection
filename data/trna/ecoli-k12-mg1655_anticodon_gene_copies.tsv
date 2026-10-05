@@ -1,0 +1,42 @@
+amino_acid	anticodon	decodes_codon	gene_copies	note
+Ala	GGC	GCC	2	
+Ala	TGC	GCA	3	
+Arg	ACG	CGT	4	inosine-modified wobble base represented as ICG in the decoding pool
+Arg	CCG	CGG	1	
+Arg	CCT	AGG	1	
+Arg	TCT	AGA	1	
+Asn	GTT	AAC	4	
+Asp	GTC	GAC	3	
+Cys	GCA	TGC	1	
+Gln	CTG	CAG	2	
+Gln	TTG	CAA	2	
+Glu	TTC	GAA	4	
+Gly	CCC	GGG	1	
+Gly	GCC	GGC	4	
+Gly	TCC	GGA	1	
+His	GTG	CAC	1	
+Ile	CAT	ATA	2	lysidine-modified tRNA-Ile2; decodes ATA not ATG
+Ile	GAT	ATC	3	
+Leu	CAA	TTG	1	
+Leu	CAG	CTG	4	
+Leu	GAG	CTC	1	
+Leu	TAA	TTA	1	
+Leu	TAG	CTA	1	
+Lys	TTT	AAA	6	
+Met	CAT	ATG	6	
+Phe	GAA	TTC	2	
+Pro	CGG	CCG	1	
+Pro	GGG	CCC	1	
+Pro	TGG	CCA	1	
+Sec	TCA	TGA	1	reported species; excluded from the elongator decoding pool
+Ser	CGA	TCG	1	
+Ser	GCT	AGC	1	
+Ser	GGA	TCC	2	
+Ser	TGA	TCA	1	
+Thr	CGT	ACG	1	
+Thr	GGT	ACC	2	
+Thr	TGT	ACA	1	
+Trp	CCA	TGG	1	
+Tyr	GTA	TAC	3	
+Val	GAC	GTC	2	
+Val	TAC	GTA	5	

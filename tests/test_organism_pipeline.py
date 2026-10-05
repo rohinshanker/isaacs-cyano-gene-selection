@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import pickle
 import sys
 from pathlib import Path
 
@@ -16,7 +17,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import build_features  # noqa: E402
 import check_utex_build_identity  # noqa: E402
 import validate_contract  # noqa: E402
-from organisms import get_organism  # noqa: E402
+from organisms import _validate, get_organism  # noqa: E402
 
 
 def test_default_and_named_organisms_are_explicit() -> None:
@@ -32,6 +33,23 @@ def test_default_and_named_organisms_are_explicit() -> None:
 def test_unknown_organism_id_fails_loudly() -> None:
     with pytest.raises(ValueError, match="Unknown organism id 'not-real'"):
         get_organism("not-real")
+
+
+def test_organism_config_requires_expectations_and_rejects_unknown_trna_keys() -> None:
+    values = dict(get_organism("ecoli-k12-mg1655").values)
+    values.pop("expectedCdsRecords")
+    with pytest.raises(ValueError, match="expectedCdsRecords"):
+        _validate("fixture", values)
+
+    values = dict(get_organism("ecoli-k12-mg1655").values)
+    values["trnaSpecialCases"] = {**values["trnaSpecialCases"], "typo": True}
+    with pytest.raises(ValueError, match="unknown trnaSpecialCases: typo"):
+        _validate("fixture", values)
+
+
+def test_organism_config_round_trips_through_pickle() -> None:
+    organism = get_organism("ecoli-k12-mg1655")
+    assert pickle.loads(pickle.dumps(organism)) == organism
 
 
 def test_organism_expectations_cannot_mix() -> None:
@@ -70,18 +88,77 @@ def test_refseq_note_anticodon_and_selenocysteine_are_not_misread(tmp_path: Path
         handle.write(
             "chr\tRefSeq\ttRNA\t1\t3\t.\t+\t.\t"
             "ID=rna-b1;Note=tRNA-Ile(CAU);product=tRNA-Ile;locus_tag=b1\n"
+            "chr\tRefSeq\ttRNA\t4\t6\t.\t+\t.\t"
+            "ID=rna-b2;Note=tRNA-Trp(CCA);product=tRNA-Trp;locus_tag=b2\n"
+            "chr\tRefSeq\ttRNA\t7\t9\t.\t+\t.\t"
+            "ID=rna-b3;Note=tRNA-Sec(TCA);product=tRNA-Sec;locus_tag=b3\n"
         )
     config = get_organism("ecoli-k12-mg1655")
     _, anticodons, species = build_features.parse_gff(
-        gff, {"chr": "CAT"}, config.trnaSpecialCases
+        gff, {"chr": "CATCCATCA"}, config.trnaSpecialCases
     )
-    assert species == {("Ile", "CAT"): 1}
-    assert anticodons == {"LAT": 1}
+    assert species == {("Ile", "CAT"): 1, ("Trp", "CCA"): 1, ("Sec", "TCA"): 1}
+    assert anticodons == {"LAT": 1, "CCA": 1}
+    assert "TCA" not in anticodons
+    observed = build_features.fm.trna_adaptiveness(
+        "TGG", anticodons, build_features.S_VALUES
+    )
+    without_sec = build_features.fm.trna_adaptiveness(
+        "TGG", {"LAT": 1, "CCA": 1}, build_features.S_VALUES
+    )
+    assert observed == without_sec == 1
     annotation = {"translExcept": "(pos:1..3,aa:Sec)"}
     assert (
         build_features.exclusion_reason("ATGTGATAA", annotation)
         == "selenocysteine_internal_tga"
     )
+
+
+def test_unreadable_trna_feature_fails_closed(tmp_path: Path) -> None:
+    gff = tmp_path / "annotation.gff.gz"
+    with gzip.open(gff, "wt") as handle:
+        handle.write(
+            "chr\tRefSeq\ttRNA\t1\t3\t.\t+\t.\t"
+            "ID=rna-bad;product=tRNA-Leu;locus_tag=bad\n"
+        )
+    with pytest.raises(ValueError, match="Cannot derive anticodon.*bad"):
+        build_features.parse_gff(gff, {"chr": "AAA"}, {})
+
+
+def test_cds_annotation_is_keyed_by_selected_protein_id(tmp_path: Path) -> None:
+    gff = tmp_path / "annotation.gff.gz"
+    with gzip.open(gff, "wt") as handle:
+        handle.write(
+            "chr\tRefSeq\tCDS\t1\t9\t.\t+\t0\t"
+            "locus_tag=b1;protein_id=long;product=primary;gene_biotype=protein_coding\n"
+            "chr\tRefSeq\tCDS\t1\t6\t.\t+\t0\t"
+            "locus_tag=b1;protein_id=short;product=alternate;"
+            "gene_biotype=protein_coding;exception=ribosomal slippage\n"
+        )
+    annotations, _, _ = build_features.parse_gff(gff, {"chr": "ATGAAATAA"}, {})
+    assert annotations[("b1", "long")]["product"] == "primary"
+    assert annotations[("b1", "long")]["translationalException"] is None
+    assert annotations[("b1", "short")]["translationalException"] == "ribosomal_slippage"
+
+
+def test_ecoli_cai_rule_matches_only_declared_translation_machinery() -> None:
+    rule = "ecoli-translation-machinery-product-match-v1"
+    for product in (
+        "RNA polymerase subunit alpha",
+        "translation elongation factor Tu 1",
+        "protein chain elongation factor EF-Ts",
+        "elongation factor G",
+        "protein chain elongation factor EF-P",
+    ):
+        assert build_features.is_cai_reference(product, rule)
+    for product in (
+        "RNA polymerase sigma factor RpoS",
+        "RNA polymerase-binding transcription factor DksA",
+        "transcription elongation factor GreA",
+        "selenocysteyl-tRNA-specific translation elongation factor",
+        "elongation factor P-like protein",
+    ):
+        assert not build_features.is_cai_reference(product, rule)
 
 
 def test_built_at_is_the_only_meta_normalization() -> None:

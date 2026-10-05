@@ -15,6 +15,7 @@ import build_data_manifest as manifest_tool  # noqa: E402
 import validate_contract  # noqa: E402
 
 SITE_DATA = ROOT / "site/data"
+ECOLI_DATA = SITE_DATA / "organisms/ecoli-k12-mg1655"
 
 
 def populate(directory: Path) -> None:
@@ -114,11 +115,15 @@ class BuildDataManifestTest(unittest.TestCase):
 
     def test_the_published_manifest_matches_the_published_data(self) -> None:
         """The cache key is only safe while this holds, so it gates every deploy."""
-        manifest_tool.check_manifest(SITE_DATA)
-        published = json.loads(
-            (SITE_DATA / manifest_tool.MANIFEST_NAME).read_text(encoding="utf-8"))
-        for required in ("meta.json", "genes.json"):
-            self.assertIn(required, published["files"])
+        for data_dir, required_files in (
+            (SITE_DATA, ("meta.json", "genes.json")),
+            (ECOLI_DATA, ("meta.json", "genes.json", "citations.json")),
+        ):
+            manifest_tool.check_manifest(data_dir)
+            published = json.loads(
+                (data_dir / manifest_tool.MANIFEST_NAME).read_text(encoding="utf-8"))
+            for required in required_files:
+                self.assertIn(required, published["files"])
 
 
 class ContractGateTest(unittest.TestCase):
@@ -136,6 +141,7 @@ class ContractGateTest(unittest.TestCase):
             manifest_tool.write_manifest(directory)
             self.assertEqual(self.run_gate(directory).failures, [])
         self.assertEqual(self.run_gate(SITE_DATA).failures, [])
+        self.assertEqual(self.run_gate(ECOLI_DATA).failures, [])
 
     def test_the_gate_names_every_file_that_fell_out_of_date(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

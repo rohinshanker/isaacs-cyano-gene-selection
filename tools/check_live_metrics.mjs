@@ -36,7 +36,7 @@ const { computeLiveMetrics } = await import(new URL('site/js/core/live-metrics.j
 // Measured independently from the raw NCBI CDS records. See
 // docs/validation/genome-provenance.md and tools/validate_contract.py.
 const EXPECTED_STOPS = organism.expectedTerminalStops;
-const EXPECTED_GENES = Object.values(EXPECTED_STOPS).reduce((sum, count) => sum + count, 0);
+const EXPECTED_GENES = organism.expectedGeneCount;
 
 const failures = [];
 function note(ok, label, detail = '') {

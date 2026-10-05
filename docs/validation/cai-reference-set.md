@@ -21,6 +21,46 @@ published locus list exactly reproduces that result. The build requires at least
 30 references and then derives Sharp–Li relative-adaptiveness weights from their
 CDSs.
 
+## E. coli K-12 MG1655 rule and members
+
+The E. coli rule is separately derived from the pinned record's product wording.
+It selects structural ribosomal-subunit proteins while excluding modifiers;
+translation initiation factors; peptide-chain release factors; products beginning
+with `translation elongation factor`, `protein chain elongation factor`, or
+`elongation factor G`; chaperonins and cochaperonins; products containing
+`RNA polymerase subunit`; and ATP-synthase subunits. The narrow elongation prefixes
+include EF-Tu, EF-Ts, EF-G, and EF-P while excluding `greA`, `greB`, `selB`, and
+`yeiP`. The RNA-polymerase clause includes `rpoA`, `rpoB`, `rpoC`, and `rpoZ`,
+not sigma factors, `rapA`, or `dksA`.
+
+The rule yields these 81 exact members:
+
+`b0023/rpsT`, `b0169/rpsB`, `b0170/tsf`, `b4506/ykgO`, `b0296/ykgM`,
+`b0884/infA`, `b0911/rpsA`, `b1089/rpmF`, `b1211/prfA`, `b1716/rplT`,
+`b1717/rpmI`, `b1718/infC`, `b2185/rplY`, `b2606/rplS`, `b2609/rpsP`,
+`b2891/prfB`, `b3065/rpsU`, `b3165/rpsO`, `b3168/infB`, `b3185/rpmA`,
+`b3186/rplU`, `b3230/rpsI`, `b3231/rplM`, `b3294/rplQ`, `b3295/rpoA`,
+`b3296/rpsD`, `b3297/rpsK`, `b3298/rpsM`, `b3299/rpmJ`, `b3301/rplO`,
+`b3302/rpmD`, `b3303/rpsE`, `b3304/rplR`, `b3305/rplF`, `b3306/rpsH`,
+`b3307/rpsN`, `b3308/rplE`, `b3309/rplX`, `b3310/rplN`, `b3311/rpsQ`,
+`b3312/rpmC`, `b3313/rplP`, `b3314/rpsC`, `b3315/rplV`, `b3316/rpsS`,
+`b3317/rplB`, `b3318/rplW`, `b3319/rplD`, `b3320/rplC`, `b3321/rpsJ`,
+`b3339/tufA`, `b3340/fusA`, `b3341/rpsG`, `b3342/rpsL`, `b3636/rpmG`,
+`b3637/rpmB`, `b3649/rpoZ`, `b3703/rpmH`, `b3731/atpC`, `b3732/atpD`,
+`b3733/atpG`, `b3734/atpA`, `b3735/atpH`, `b3736/atpF`, `b3737/atpE`,
+`b3738/atpB`, `b3936/rpmE`, `b3980/tufB`, `b3983/rplK`, `b3984/rplA`,
+`b3985/rplJ`, `b3986/rplL`, `b3987/rpoB`, `b3988/rpoC`, `b4142/groS`,
+`b4143/groL`, `b4147/efp`, `b4200/rpsF`, `b4202/rpsR`, `b4203/rplI`,
+and `b4375/prfC`.
+
+Membership is rule-derived, not hand-edited. Three biological-policy questions
+remain open for the lab: whether programmed-frameshift release factor `prfB`
+belongs in a high-expression reference; whether the zinc-independent paralogues
+`ykgM` and `ykgO` should remain despite their condition dependence; and whether
+EF-P (`efp`) should remain under the rule's translation-elongation wording. This
+release includes all four loci because the stated rule includes them; that is not
+a lab decision that they are ideal references.
+
 ## TypeSafe/Jev audit
 
 On 2026-09-19, every product annotation was independently classified through the

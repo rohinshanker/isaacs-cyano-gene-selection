@@ -297,16 +297,6 @@ def validate_meta(
         report.check(not shape_problems,
                      "codonOccurrences gives total and editable per codon",
                      f"malformed: {shape_problems[:4]}")
-        if organism.organism_id == "utex2973":
-            for codon, expected_total, expected_editable in (
-                    ("GTG", 18659, 18303), ("TTG", 20427, 20324)):
-                entry = occurrences.get(codon, {})
-                report.check(
-                    entry.get("total") == expected_total
-                    and entry.get("editable") == expected_editable,
-                    f"{codon} occurrence counts match a direct scan",
-                    f"got {entry.get('total')}/{entry.get('editable')}, "
-                    f"expected {expected_total}/{expected_editable}")
     else:
         report.fail("meta.codonOccurrences is present",
                     "required so the interface can quote editable, not raw, counts")
@@ -677,21 +667,21 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
     bad_stops = {s: n for s, n in stops.items() if s not in STOP_CODONS}
     report.check(not bad_stops, "every terminalStop is a real stop codon",
                  f"found {bad_stops}")
-    expected_stops = organism.values.get("expectedTerminalStops", {})
+    expected_stops = organism.expectedTerminalStops
     report.check(dict(stops) == expected_stops,
                  "terminal stop distribution matches the pinned organism configuration",
                  f"got {dict(stops.most_common())}")
 
     observed_spliced = {g["id"] for g in genes
                         if isinstance(g, dict) and g.get("cdsSegments")}
-    expected_spliced = set(organism.values.get("expectedSpliced", []))
+    expected_spliced = set(organism.expectedSpliced)
     report.check(observed_spliced == expected_spliced,
                  "cdsSegments names exactly the pinned joined CDSs",
                  f"got {sorted(observed_spliced)}")
 
     observed_exceptions = {g["id"]: g.get("translationalException") for g in genes
                            if isinstance(g, dict) and g.get("translationalException")}
-    expected_exceptions = organism.values.get("expectedExceptions", {})
+    expected_exceptions = organism.expectedExceptions
     report.check(observed_exceptions == expected_exceptions,
                  "translationalException matches the pinned exceptional gene models",
                  f"got {observed_exceptions}")
@@ -865,7 +855,7 @@ def validate_excluded(
                  f"{len(missing_reason)} without one")
 
     total = gene_count + len(excluded)
-    expected_records = organism.values.get("expectedCdsRecords")
+    expected_records = organism.expectedCdsRecords
     report.check(total == expected_records,
                  "included plus excluded reconciles to the pinned CDS record count",
                  f"{gene_count} + {len(excluded)} = {total}")
@@ -873,6 +863,7 @@ def validate_excluded(
 
 def cross_check_against_genome(
     genes: list[dict[str, Any]], meta: dict[str, Any], raw_dir: str, report: Report,
+    excluded: list[dict[str, Any]],
     organism: OrganismConfig = DEFAULT_ORGANISM,
 ) -> None:
     """Re-derives protein sequences from packed codons and compares to NCBI's."""
@@ -894,16 +885,67 @@ def cross_check_against_genome(
                     "codon alphabet unavailable")
         return
 
+    raw_by_locus: dict[str, list[tuple[str, str | None]]] = (
+        collections.defaultdict(list)
+    )
+    alternate_records = collections.Counter(
+        (row.get("id"), row.get("proteinId"), row.get("lengthNt"))
+        for row in excluded
+        if isinstance(row, dict) and row.get("reason") == "alternate_cds"
+    )
+    unmatched_alternates = alternate_records.copy()
     by_locus: dict[str, str] = {}
     protein_id_of: dict[str, str] = {}
     for header, sequence in read_fasta(cds_path):
         match = re.search(r"\[locus_tag=([^\]]+)\]", header)
         pid = re.search(r"\[protein_id=([^\]]+)\]", header)
-        if match and len(sequence) > len(by_locus.get(match.group(1), "")):
-            locus = match.group(1)
-            by_locus[locus] = sequence.upper()
-            if pid:
-                protein_id_of[locus] = pid.group(1)
+        if match:
+            raw_by_locus[match.group(1)].append(
+                (sequence.upper(), pid.group(1) if pid else None)
+            )
+
+    selection_problems = []
+    for locus, candidates in raw_by_locus.items():
+        selected = []
+        for sequence, protein_id in candidates:
+            key = (locus, protein_id, len(sequence))
+            if unmatched_alternates[key]:
+                unmatched_alternates[key] -= 1
+            else:
+                selected.append((sequence, protein_id))
+        if len(selected) != 1:
+            selection_problems.append(f"{locus}: {len(selected)} selected records")
+            continue
+        by_locus[locus], protein_id = selected[0]
+        if protein_id:
+            protein_id_of[locus] = protein_id
+    leftover_alternates = [
+        key for key, count in unmatched_alternates.items() if count
+    ]
+    report.check(
+        not selection_problems and not leftover_alternates,
+        "selected CDS records reconcile against excluded.json",
+        f"selection problems {selection_problems[:3]}; unmatched alternates "
+        f"{leftover_alternates[:3]}",
+    )
+
+    direct_total: collections.Counter[str] = collections.Counter()
+    direct_editable: collections.Counter[str] = collections.Counter()
+    for gene in genes:
+        sequence = by_locus.get(gene.get("id"))
+        if not sequence:
+            continue
+        codons = [sequence[index:index + 3] for index in range(0, len(sequence), 3)]
+        direct_total.update(codons)
+        direct_editable.update(codons[1:])
+    direct_occurrences = {
+        codon: {"total": direct_total[codon], "editable": direct_editable[codon]}
+        for codon in codon_table()
+    }
+    report.check(
+        meta.get("codonOccurrences") == direct_occurrences,
+        "codonOccurrences match a direct scan of every selected raw CDS",
+    )
 
     checked = mismatched = unmatched = 0
     examples: list[str] = []
@@ -978,16 +1020,24 @@ def cross_check_against_genome(
     report.check(no_protein == 0, "every gene resolves to an NCBI protein record",
                  f"{no_protein} unresolved")
 
-    if organism.organism_id == "utex2973":
-        # Four protein accessions are shared by two loci each. Genes must not have
-        # been deduplicated to match the protein file's record count.
-        shared = collections.Counter(
-            protein_id_of[g["id"]] for g in genes
-            if isinstance(g, dict) and g.get("id") in protein_id_of)
-        duplicated = {p: n for p, n in shared.items() if n > 1}
-        report.check(len(duplicated) == 4,
-                     "the four dual-locus proteins are present for both loci",
-                     f"found {len(duplicated)}: {sorted(duplicated)[:6]}")
+    excluded_loci = {
+        row.get("id") for row in excluded
+        if isinstance(row, dict) and row.get("reason") != "alternate_cds"
+    }
+    expected_protein_multiplicity = collections.Counter(
+        protein_id
+        for locus, protein_id in protein_id_of.items()
+        if locus not in excluded_loci
+    )
+    published_protein_multiplicity = collections.Counter(
+        protein_id_of[gene["id"]]
+        for gene in genes
+        if isinstance(gene, dict) and gene.get("id") in protein_id_of
+    )
+    report.check(
+        published_protein_multiplicity == expected_protein_multiplicity,
+        "protein accession multiplicities match the selected raw CDS records",
+    )
 
 
 GO_IEA_TIERS = ("tested-utex-allele", "admitted-pcc-call", "go-iea-context", "unknown")
@@ -1324,7 +1374,14 @@ def main() -> int:
                         "no spliced CDSs declared and no raw genome available")
         validate_genes(genes, meta, report, spliced, organism)
         validate_distributions(genes, meta, report)
-        cross_check_against_genome(genes, meta, raw_dir, report, organism)
+        cross_check_against_genome(
+            genes,
+            meta,
+            raw_dir,
+            report,
+            excluded if isinstance(excluded, list) else [],
+            organism,
+        )
         cross_check_rna_context(genes, raw_dir, report, organism)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
@@ -1512,9 +1569,12 @@ def main() -> int:
     if isinstance(genes, list):
         path = os.path.join(data_dir, "genes.json")
         if os.path.exists(path):
-            size_mb = os.path.getsize(path) / (1024 * 1024)
-            report.check(size_mb <= 6.0, "genes.json is within the 6 MB budget",
-                         f"{size_mb:.2f} MB")
+            size_bytes = os.path.getsize(path)
+            report.check(
+                size_bytes <= 6_291_456,
+                "genes.json is within the 6,291,456-byte budget",
+                f"{size_bytes:,} bytes",
+            )
 
     validate_data_manifest(data_dir, report)
 

@@ -135,13 +135,18 @@ def is_cai_reference(
             term in normalized for term in modifiers
         )
         housekeeping = normalized.startswith(
-            ("translation elongation factor", "translation initiation factor")
+            (
+                "translation elongation factor",
+                "protein chain elongation factor",
+                "elongation factor g",
+                "translation initiation factor",
+            )
         )
         housekeeping = housekeeping or normalized.startswith(
             ("chaperonin", "cochaperonin")
         )
         housekeeping = housekeeping or (
-            "dna-directed rna polymerase subunit" in normalized
+            "rna polymerase subunit" in normalized
         )
         housekeeping = housekeeping or (
             "atp synthase" in normalized and "subunit" in normalized
@@ -162,6 +167,24 @@ def require(condition: bool, message: str) -> None:
     """Raises a persistent, descriptive input-contract error."""
     if not condition:
         raise ValueError(message)
+
+
+def number_word(value: int) -> str:
+    """Returns a compact count label while preserving established metadata prose."""
+    words = {
+        0: "zero",
+        1: "one",
+        2: "two",
+        3: "three",
+        4: "four",
+        5: "five",
+        6: "six",
+        7: "seven",
+        8: "eight",
+        9: "nine",
+        10: "ten",
+    }
+    return words.get(value, str(value))
 
 
 def parse_attributes(value: str) -> dict[str, str]:
@@ -197,7 +220,11 @@ def parse_gff(
     path: Path,
     genomes: Mapping[str, str],
     trna_special_cases: Mapping[str, Any] | None = None,
-) -> tuple[dict[str, dict], dict[str, int], dict[tuple[str, str], int]]:
+) -> tuple[
+    dict[tuple[str, str | None], dict],
+    dict[str, int],
+    dict[tuple[str, str], int],
+]:
     """Reads CDS annotations and derives tRNA anticodons from GFF coordinates."""
     cds = {}
     anticodons: collections.Counter[str] = collections.Counter()
@@ -232,10 +259,24 @@ def parse_gff(
                     )
                     if note_match:
                         genomic_anticodon = note_match.group(1).replace("U", "T")
-                if genomic_anticodon:
-                    amino_acid = attributes["product"].removeprefix("tRNA-")
-                    trna_species[(amino_acid, genomic_anticodon)] += 1
-                    # NCBI records genomic bases. Apply the two standard bacterial
+                feature_id = (
+                    attributes.get("locus_tag")
+                    or attributes.get("ID")
+                    or "unknown"
+                )
+                require(
+                    bool(genomic_anticodon),
+                    f"Cannot derive anticodon for tRNA feature {feature_id}",
+                )
+                product = attributes.get("product")
+                require(bool(product), f"tRNA feature {feature_id} has no product")
+                amino_acid = product.removeprefix("tRNA-")
+                trna_species[(amino_acid, genomic_anticodon)] += 1
+                excluded_amino_acids = set(
+                    (trna_special_cases or {}).get("excludedFromDecodingPool", [])
+                )
+                if amino_acid not in excluded_amino_acids:
+                    # NCBI records genomic bases. Apply the standard bacterial
                     # wobble-position modifications needed by the dos-Reis model.
                     anticodons[
                         effective_anticodon(
@@ -246,13 +287,14 @@ def parse_gff(
             locus = attributes.get("locus_tag")
             if not locus:
                 continue
+            protein_id = attributes.get("protein_id")
             entry = cds.setdefault(
-                locus,
+                (locus, protein_id),
                 {
                     "id": locus,
                     "name": attributes.get("gene"),
                     "product": attributes.get("product", ""),
-                    "proteinId": attributes.get("protein_id"),
+                    "proteinId": protein_id,
                     "seqid": seqid,
                     "start": start_i,
                     "end": end_i,
@@ -956,18 +998,22 @@ def build(
             f"Derived tRNA species differ from verified table: {trna_species!r}",
         )
     all_raw_records = cds_records(paths["cds_from_genomic.fna"])
-    expected_cds_records = organism.values.get("expectedCdsRecords")
-    if expected_cds_records is not None:
-        require(
-            len(all_raw_records) == expected_cds_records,
-            f"Observed {len(all_raw_records)} CDS records; expected "
-            f"{expected_cds_records:,}",
-        )
+    expected_cds_records = organism.expectedCdsRecords
+    require(
+        len(all_raw_records) == expected_cds_records,
+        f"Observed {len(all_raw_records)} CDS records; expected "
+        f"{expected_cds_records:,}",
+    )
     raw_records, excluded = select_cds_records(all_raw_records)
     included = []
     for record in raw_records:
         locus, sequence = record["locus_tag"], record["sequence"]
-        annotation = annotations[locus]
+        annotation_key = (locus, record.get("protein_id"))
+        require(
+            annotation_key in annotations,
+            f"No GFF annotation matches selected CDS {locus}/{record.get('protein_id')}",
+        )
+        annotation = annotations[annotation_key]
         reason = exclusion_reason(sequence, annotation)
         if reason:
             excluded.append({"id": locus, "reason": reason, "lengthNt": len(sequence)})
@@ -1000,12 +1046,10 @@ def build(
         f"Included gene count {len(included)} is outside contract range [{low}, {high}]",
     )
     terminal_stops = collections.Counter(gene["sequence"][-3:] for gene in included)
-    expected_stops = organism.values.get("expectedTerminalStops")
-    if expected_stops is not None:
-        require(
-            terminal_stops == expected_stops,
-            f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
-        )
+    require(
+        terminal_stops == organism.expectedTerminalStops,
+        f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
+    )
 
     included_loci = {gene["id"] for gene in included}
     tss_evidence: dict[str, Any] = {}
@@ -1203,39 +1247,46 @@ def build(
     if not organism.has_layer("expression"):
         metric_labels.pop("expressionPercentile")
     metric_definitions = dict(METRIC_DEFINITIONS)
-    if organism.organism_id != "utex2973":
-        substituted = sum(gene["encHasSubstitutedFamilies"] for gene in genes)
-        substitution_share = round(100 * substituted / len(genes))
-        metric_definitions["enc"] = (
-            "Effective number of codons (Wright 1990), ranging from 20 for maximal "
-            "synonymous concentration to 61 for equal synonymous use. Families "
-            f"observed fewer than twice use a degeneracy-class estimate; {substituted:,} "
-            f"of {len(genes):,} genes ({substitution_share}%) require at least one such "
-            "substitution, flagged by encHasSubstitutedFamilies."
+    substituted = sum(gene["encHasSubstitutedFamilies"] for gene in genes)
+    substitution_share = round(100 * substituted / len(genes))
+    metric_definitions["enc"] = (
+        "Effective number of codons (Wright 1990), ranging from 20 for maximal "
+        "synonymous concentration to 61 for equal synonymous use. Families "
+        f"observed fewer than twice use a degeneracy-class estimate; {substituted:,} "
+        f"of {len(genes):,} genes ({substitution_share}%) require at least one such "
+        "substitution, flagged by encHasSubstitutedFamilies."
+    )
+    metric_definitions["cai"] = (
+        "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and "
+        f"calculated against the {len(references):,}-gene "
+        f"{organism.caiReferenceDescription} reference set; zero reference counts "
+        "receive a 0.5 pseudocount and Met and Trp are excluded."
+    )
+    zero_weight_codons = [
+        codon
+        for codon in fm.SENSE_CODONS
+        if fm.trna_adaptiveness(codon, anticodon_counts, S_VALUES) == 0
+    ]
+    if zero_weight_codons:
+        missing_label = ", ".join(zero_weight_codons)
+        tai_caveat = (
+            f"{missing_label} has no cognate tRNA and uses the geometric mean of "
+            "non-zero codon weights."
         )
-        metric_definitions["cai"] = (
-            "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and "
-            f"calculated against the {len(references):,}-gene "
-            "ribosomal-plus-housekeeping reference set; zero reference counts receive "
-            "a 0.5 pseudocount and Met and Trp are excluded."
-        )
-        zero_weight_codons = [
-            codon
-            for codon in fm.SENSE_CODONS
-            if fm.trna_adaptiveness(codon, anticodon_counts, S_VALUES) == 0
-        ]
-        missing_label = ", ".join(zero_weight_codons) or "No sense codon"
-        metric_definitions["tai"] = (
-            "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and "
-            "derived from this genome's tRNA gene copies with bacterial wobble "
-            f"penalties; {missing_label} has no cognate tRNA and uses the geometric "
-            "mean of non-zero codon weights."
-        )
-        metric_definitions["minLocalTai"] = (
-            "Minimum mean tRNA-adaptation weight across all sliding 9-codon windows, "
-            "shortened to the whole gene when necessary; ranges from 0 to 1 and "
-            "inherits the tAI no-cognate-codon substitution convention."
-        )
+        local_tai_caveat = f"inherits the tAI {missing_label} substitution caveat."
+    else:
+        tai_caveat = "Every sense codon has a cognate or wobble-compatible tRNA."
+        local_tai_caveat = "every sense codon has cognate or wobble-compatible support."
+    metric_definitions["tai"] = (
+        "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and "
+        "derived from this genome's tRNA gene copies with bacterial wobble "
+        f"penalties; {tai_caveat}"
+    )
+    metric_definitions["minLocalTai"] = (
+        "Minimum mean tRNA-adaptation weight across all sliding 9-codon windows, "
+        "shortened to the whole gene when necessary; ranges from 0 to 1 and "
+        f"{local_tai_caveat}"
+    )
     meta = {
         "schemaVersion": 1,
         "builtAt": datetime.datetime.now(datetime.timezone.utc)
@@ -1263,11 +1314,7 @@ def build(
         "defaultReplacement": replacement_map(counts),
         "highExpressedReplacement": replacement_map(reference_counts),
         "caiReferenceSet": {
-            "method": (
-                "ribosomal+housekeeping product-name match"
-                if organism.organism_id == "utex2973"
-                else organism.caiReferenceRule
-            ),
+            "method": organism.caiReferenceMethod,
             "locusTags": [gene["id"] for gene in references],
             "n": len(references),
             "zeroCountAdjustment": 0.5,
@@ -1285,7 +1332,21 @@ def build(
             "excludedAminoAcids": ["M"],
             "lysidineConvention": (
                 "Ile-CAT is represented as LAT and decodes ATA with s=0.89; "
-                "Met-CAT remains a separate two-copy species decoding ATG"
+                "Met-CAT remains a separate "
+                f"{number_word(anticodon_counts.get('CAT', 0))}-copy species decoding ATG"
+            ),
+            **(
+                {
+                    "excludedTRNAAminoAcids": organism.trnaSpecialCases[
+                        "excludedFromDecodingPool"
+                    ],
+                    "decodingPoolExclusion": (
+                        "Excluded tRNA species remain in the reported species table "
+                        "but do not contribute to elongator codon weights."
+                    ),
+                }
+                if organism.trnaSpecialCases.get("excludedFromDecodingPool")
+                else {}
             ),
         },
         **(

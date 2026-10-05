@@ -22,13 +22,26 @@ REQUIRED_FIELDS = {
     "taxid",
     "umapSeed",
     "caiReferenceRule",
+    "caiReferenceMethod",
+    "caiReferenceDescription",
     "trnaSpecialCases",
     "optionalLayers",
     "rawDirectory",
     "outputDirectory",
     "geneCountRange",
+    "expectedGeneCount",
+    "expectedCdsRecords",
+    "expectedTerminalStops",
+    "expectedSpliced",
+    "expectedExceptions",
 }
 KNOWN_OPTIONAL_LAYERS = {"annotation", "expression", "tss"}
+KNOWN_TRNA_SPECIAL_CASES = {
+    "excludedFromDecodingPool",
+    "inosineAtWobble",
+    "lysidine",
+    "verifiedSpeciesTable",
+}
 
 
 @dataclass(frozen=True)
@@ -39,6 +52,8 @@ class OrganismConfig:
     values: Mapping[str, Any]
 
     def __getattr__(self, name: str) -> Any:
+        if name == "values":
+            raise AttributeError(name)
         try:
             return self.values[name]
         except KeyError as error:
@@ -75,6 +90,25 @@ def _validate(organism_id: str, values: Any) -> OrganismConfig:
         )
     if not isinstance(values["geneCountRange"], list) or len(values["geneCountRange"]) != 2:
         raise ValueError(f"Organism configuration {organism_id!r} has invalid geneCountRange")
+    special_cases = values["trnaSpecialCases"]
+    if not isinstance(special_cases, dict):
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has invalid trnaSpecialCases"
+        )
+    unknown_special_cases = sorted(set(special_cases) - KNOWN_TRNA_SPECIAL_CASES)
+    if unknown_special_cases:
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has unknown trnaSpecialCases: "
+            f"{', '.join(unknown_special_cases)}"
+        )
+    excluded = special_cases.get("excludedFromDecodingPool", [])
+    if not isinstance(excluded, list) or not all(
+        isinstance(amino_acid, str) and amino_acid for amino_acid in excluded
+    ):
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has invalid "
+            "trnaSpecialCases.excludedFromDecodingPool"
+        )
     layers = values["optionalLayers"]
     if not isinstance(layers, list) or set(layers) - KNOWN_OPTIONAL_LAYERS:
         raise ValueError(f"Organism configuration {organism_id!r} has invalid optionalLayers")

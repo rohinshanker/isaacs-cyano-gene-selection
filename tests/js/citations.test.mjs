@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import {
   normalizeCitationsManifest, loadCitationsManifest, fetchCitationBlob, CITATIONS_TAB,
 } from '../../site/js/ui/citations.js';
@@ -210,4 +211,18 @@ test('the manifest is requested from citations.json beside the other data files'
   });
   assert.equal(requested.length, 1);
   assert.equal(requested[0], 'https://example.test/data/citations.json');
+});
+
+test('the published E. coli ledger is well formed and contains only used sources', async () => {
+  const path = new URL(
+    '../../site/data/organisms/ecoli-k12-mg1655/citations.json', import.meta.url);
+  const raw = JSON.parse(await readFile(path, 'utf8'));
+  const manifest = normalizeCitationsManifest(raw);
+  assert.ok(manifest);
+  assert.deepEqual(manifest.sections.map(({ id }) => id), ['primary-data', 'methods-and-tools']);
+  const items = manifest.sections.flatMap(({ items }) => items);
+  assert.ok(items.some(({ id }) => id === 'ncbi-ecoli-k12-mg1655'));
+  assert.ok(items.every(({ downloads }) => downloads.length === 0));
+  const forbidden = ['expression', 'tss', 'essential', 'protein-evidence', 'gene-ontology', 'trrosettarna'];
+  assert.ok(items.every(({ id }) => !forbidden.some((term) => id.includes(term))));
 });

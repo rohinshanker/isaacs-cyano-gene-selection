@@ -187,6 +187,29 @@ every pipeline build) matches the 44 RefSeq loci extracted independently by
 same per-species copy counts, totalling 44. No sensitivity recalculation of
 tAI was needed because no discrepancy exists to resolve.
 
+## E. coli K-12 MG1655 annotation parity
+
+The second configured organism uses the tracked table
+`data/trna/ecoli-k12-mg1655_anticodon_gene_copies.tsv`. It is derived from the
+pinned `GCF_000005845.2` GFF and is asserted for exact parity on every build:
+86 annotated tRNA genes across 41 `(amino acid, genomic anticodon)` species.
+The annotation records the anticodon in `Note=tRNA-X(ABC)` rather than an
+`anticodon=` coordinate attribute. Any tRNA feature from which the parser cannot
+derive an anticodon now fails the build instead of silently shrinking the pool.
+
+No independent tRNAscan-SE run has been performed for this E. coli release.
+GtRNAdb lists 89 predictions against the RefSeq annotation's 86; the three-call
+difference is located in the Thr(CGT) species count, but it has not been
+reconciled at locus level and does not alter the tracked table. This is a stated
+comparison, not an independent validation result.
+
+The table includes two Ile-CAT loci, which become effective anticodon `LAT`, and
+six Met-CAT loci, which remain `CAT`; the amino-acid-qualified rule prevents the
+lysidine substitution from catching methionine. The one Sec-TCA locus remains in
+the 86-gene/41-species report but is excluded from the elongator decoding pool.
+The effective pool therefore has 85 genes and 40 anticodons, contains no `TCA`,
+and does not inflate the `TGG` weight.
+
 ## Secondary structure
 
 `trnascan.struct` (produced by the same run, `-f` output) contains a

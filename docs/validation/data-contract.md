@@ -23,7 +23,8 @@ is not this organism.
 organisms use `site/data/organisms/<organism-id>/`; E. coli K-12 MG1655 uses
 `site/data/organisms/ecoli-k12-mg1655/`. Each directory is a complete release
 root with its own `meta.json`, `genes.json`, `excluded.json`, `codon_pca.json`,
-and `data-manifest.json`. A manifest describes only the JSON files beside it.
+`citations.json` when provenance is published, and `data-manifest.json`. A
+manifest describes only the JSON files beside it.
 
 Optional evidence files are local to one organism. They are published only when
 that organism's configuration admits their source and `meta.json` declares the
@@ -299,14 +300,26 @@ A CDS enters the analysis set only if all hold:
 3. Length divisible by 3.
 4. Exactly one terminal stop codon and no internal stop.
 5. Sequence contains only `ACGT`.
+6. One deposited CDS is selected per exact locus tag. When RefSeq supplies
+   alternatives, the longest deposited CDS wins; every other record is excluded
+   as `alternate_cds` with its `proteinId`, so the selected accession can be
+   reconciled without re-deriving the tie-break.
 
-Every excluded CDS is recorded in `excluded.json` with its locus tag and reason.
+An otherwise valid CDS with an internal `TGA` annotated by `transl_except` as
+selenocysteine is excluded as `selenocysteine_internal_tga`; it is not published
+as an ordinary internal stop or a recodable stop. Every excluded CDS is recorded
+in `excluded.json` with its locus tag and reason.
 
 Applying this rule to the 2,722 CDS records yields **exactly 2,715 genes and 7
 exclusions**, measured independently by the coordinator. All seven exclusions are
 pseudogenes; the one CDS whose length is not a multiple of three and the two with
 internal stops are among those seven. The pipeline asserts a count between 2,650
 and 2,725 and fails loudly outside that range.
+
+For E. coli, 4,318 CDS records at 4,308 locus tags yield 4,287 included genes and
+31 exclusions: 15 `pseudogene`, ten `alternate_cds`, three
+`selenocysteine_internal_tga`, two `missing_terminal_stop`, and one
+`length_not_multiple_of_3`.
 
 **Do not assert equality against the 2,711 records in `protein.faa.gz`.** That file
 is keyed by `WP_` protein accession and deduplicated, and four accessions are each
@@ -758,8 +771,17 @@ is the only change needed to switch axes; nothing downstream hardcodes this data
 ### `excluded.json`
 
 ```jsonc
-[ { "id": "M744_RS03825", "reason": "length_not_multiple_of_3", "lengthNt": 755 } ]
+[
+  { "id": "M744_RS03825", "reason": "length_not_multiple_of_3", "lengthNt": 755 },
+  { "id": "b0470", "reason": "alternate_cds", "lengthNt": 1296,
+    "proteinId": "YP_009518751.1" }
+]
 ```
+
+Published JSON is UTF-8 with non-ASCII text emitted directly
+(`ensure_ascii=false`), compact separators, insertion-order keys, and one trailing
+newline. Those byte-level choices are part of reproducibility: a rebuild must
+match every generated file byte for byte except `meta.builtAt`.
 
 ### `data-manifest.json`
 
@@ -814,14 +836,14 @@ link reproduces the exact view.
 ## Size budget
 
 The site must load in under three seconds on a normal connection. `genes.json`
-stays under 6 MB uncompressed; relationship-heavy `annotations.json` and
+stays at or below **6,291,456 bytes uncompressed**; relationship-heavy `annotations.json` and
 `tss_evidence.json` are separate payloads joined by locus tag, and GitHub Pages
 serves them compressed.
 If the core file exceeds the budget, move `rscu` and `codons` into a separate
 lazily-fetched file rather than dropping precision.
 
 The RefSeq-only E. coli candidate has 4,287 analysable loci and measures
-8,042,780 bytes (7.67 MiB) in this unchanged schema. It therefore does **not**
+8,042,652 bytes, exceeding the 6,291,456-byte gate. It therefore does **not**
 satisfy this release gate. Publishing it needs an explicit owner choice between
 an organism-specific larger budget and the contracted sidecar split, which also
 requires loader work. Until then, the validator's failure is intentional.

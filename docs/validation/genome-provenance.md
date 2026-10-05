@@ -187,27 +187,32 @@ contract.
 The included start distribution is ATG 3,865; GTG 336; TTG 80; ATT 4; CTG 2.
 Terminal stops are TAA 2,744; TGA 1,239; TAG 304. `prfB` (`b2891`) is the one
 included joined CDS and carries `ribosomal_slippage`. `dnaX` (`b0470`) and
-`copA` (`b0484`) also retain the gene-level slippage flag because RefSeq records
-alternative frameshifted products at those loci; the longest primary products
-remain the displayed CDSs. All 59 included `ins*` loci remain under the ordinary
-protein-coding inclusion rule (25 included products explicitly contain
-`transposase`).
+`copA` (`b0484`) publish the contiguous primary products `NP_415003.1` and
+`NP_415017.1` without a slippage flag. Each locus also has a shorter alternate
+frameshift product (`YP_009518751.1` and `YP_009518752.1`) recorded in
+`excluded.json`; that locus-level fact is not copied onto the selected CDS. All
+59 included `ins*` loci remain under the ordinary protein-coding inclusion rule
+(25 included products explicitly contain `transposase`).
 
 RefSeq records E. coli anticodons in each tRNA feature's `Note=tRNA-X(ABC)`
 field rather than the coordinate-valued `anticodon=` attribute used by the UTEX
 annotation. The build derives 86 tRNA genes across 41 amino-acid/anticodon
 species, including two Ile-CAT lysidine tRNAs, one tRNA-Sec (`Sec-TCA`), and the
-generic A34-to-inosine convention. Every sense codon has a cognate or wobble-
-compatible tRNA under the configured model; no zero-weight sense codon remains.
+generic A34-to-inosine convention. The Sec locus remains in that honest 86-gene,
+41-species inventory but is excluded from the elongator decoding pool; it cannot
+contribute a wobble weight to `TGG`. The resulting pool contains 85 genes across
+40 effective anticodons. Every sense codon has cognate or wobble-compatible
+support under the configured model; no zero-weight sense codon remains.
 
 The E. coli CAI reference set is derived, never hard-coded, by
 `ecoli-translation-machinery-product-match-v1`: annotated ribosomal-subunit
 proteins excluding modifiers, translation initiation/elongation and peptide-
 release factors, chaperonins/cochaperonins, RNA-polymerase subunits, and ATP-
-synthase subunits. It selects 74 exact `b`-number loci, published in
+synthase subunits. The elongation wording includes EF-P (`efp`) as well as
+EF-Tu, EF-Ts and EF-G. It selects 81 exact `b`-number loci, published in
 `meta.json.caiReferenceSet.locusTags`.
 
-The unchanged 4,287-row `genes.json` is 8,042,780 bytes (7.67 MiB), so it fails
-the frozen 6 MiB budget. All biological, round-trip, protein, context, manifest,
+The 4,287-row `genes.json` is 8,042,652 bytes, so it fails the frozen
+6,291,456-byte budget. All biological, round-trip, protein, context, manifest,
 and browser-metric checks pass; publication is held at the size gate as described
 in the data contract.
