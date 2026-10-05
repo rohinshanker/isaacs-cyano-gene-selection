@@ -5,6 +5,10 @@ __pycache__/
 data/raw/*.gz
 data/raw/*.txt
 !data/raw/md5checksums.txt
+data/raw/**/*.gz
+data/raw/**/*.txt
+!data/raw/*/
+!data/raw/**/md5checksums.txt
 data/interim/
 data/protein-evidence/source/
 .pytest_cache/

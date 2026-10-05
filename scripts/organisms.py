@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Loads and validates the repository's organism build configurations."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Mapping
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CONFIG_PATH = ROOT / "config/organisms.json"
+REQUIRED_FIELDS = {
+    "accession",
+    "assemblyPrefix",
+    "ftpDirectory",
+    "expectedTotalLength",
+    "organismIdentity",
+    "strainIdentity",
+    "taxid",
+    "umapSeed",
+    "caiReferenceRule",
+    "trnaSpecialCases",
+    "optionalLayers",
+    "rawDirectory",
+    "outputDirectory",
+    "geneCountRange",
+}
+KNOWN_OPTIONAL_LAYERS = {"annotation", "expression", "tss"}
+
+
+@dataclass(frozen=True)
+class OrganismConfig:
+    """One fully validated organism build configuration."""
+
+    organism_id: str
+    values: Mapping[str, Any]
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self.values[name]
+        except KeyError as error:
+            raise AttributeError(name) from error
+
+    def path(self, field: str) -> Path:
+        """Returns a repository-relative configured path as an absolute path."""
+        return ROOT / self.values[field]
+
+    def has_layer(self, layer: str) -> bool:
+        """Returns whether the organism publishes an optional evidence layer."""
+        return layer in self.optionalLayers
+
+
+def _load_document(path: Path = CONFIG_PATH) -> dict[str, Any]:
+    """Loads the canonical JSON configuration document."""
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"Cannot load organism configuration {path}: {error}") from error
+    if not isinstance(document, dict) or not isinstance(document.get("organisms"), dict):
+        raise ValueError(f"Organism configuration {path} must contain an organisms object")
+    return document
+
+
+def _validate(organism_id: str, values: Any) -> OrganismConfig:
+    """Validates one declarative record and returns its immutable wrapper."""
+    if not isinstance(values, dict):
+        raise ValueError(f"Organism configuration {organism_id!r} must be an object")
+    missing = sorted(REQUIRED_FIELDS - values.keys())
+    if missing:
+        raise ValueError(
+            f"Organism configuration {organism_id!r} is missing: {', '.join(missing)}"
+        )
+    if not isinstance(values["geneCountRange"], list) or len(values["geneCountRange"]) != 2:
+        raise ValueError(f"Organism configuration {organism_id!r} has invalid geneCountRange")
+    layers = values["optionalLayers"]
+    if not isinstance(layers, list) or set(layers) - KNOWN_OPTIONAL_LAYERS:
+        raise ValueError(f"Organism configuration {organism_id!r} has invalid optionalLayers")
+    known_cai_rules = {
+        "ribosomal-and-housekeeping-product-match-v1",
+        "ecoli-translation-machinery-product-match-v1",
+    }
+    if values["caiReferenceRule"] not in known_cai_rules:
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has an unknown CAI reference rule"
+        )
+    return OrganismConfig(organism_id, values)
+
+
+def get_organism(organism_id: str | None = None) -> OrganismConfig:
+    """Returns a configured organism, defaulting to the established UTEX release."""
+    document = _load_document()
+    selected = organism_id or document.get("defaultOrganism")
+    if selected not in document["organisms"]:
+        choices = ", ".join(sorted(document["organisms"]))
+        raise ValueError(f"Unknown organism id {selected!r}; choose one of: {choices}")
+    return _validate(selected, document["organisms"][selected])
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Prints tab-separated values consumed by the portable Bash fetcher."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("organism", nargs="?")
+    args = parser.parse_args(argv)
+    try:
+        config = get_organism(args.organism)
+    except ValueError as error:
+        parser.error(str(error))
+    fields = (
+        config.organism_id,
+        config.assemblyPrefix,
+        config.ftpDirectory,
+        config.organismIdentity,
+        config.strainIdentity,
+        str(config.taxid),
+        str(config.path("rawDirectory")),
+    )
+    print("\t".join(fields))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

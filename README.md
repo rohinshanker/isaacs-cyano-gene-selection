@@ -261,6 +261,28 @@ python3 -m venv .venv
 ./.venv/bin/python tools/build_data_manifest.py build   # last, after any tool that writes site/data
 ```
 
+Those commands keep UTEX 2973 as the default. The organism configurations live
+in `config/organisms.json`; an unknown id is an error. The equivalent E. coli
+candidate build is:
+
+```sh
+./tools/fetch_genome.sh --organism ecoli-k12-mg1655
+./.venv/bin/python scripts/build_features.py --organism ecoli-k12-mg1655
+./.venv/bin/python tools/build_data_manifest.py build --organism ecoli-k12-mg1655
+./.venv/bin/python tools/validate_contract.py --organism ecoli-k12-mg1655
+node tools/check_live_metrics.mjs --organism ecoli-k12-mg1655
+```
+
+The current E. coli core payload is a measured **7.67 MiB**, above the frozen
+6 MiB `genes.json` limit. The validator therefore refuses it. Do not publish it
+or raise the limit implicitly; the choices are to approve the larger organism-
+specific budget or to split `rscu` and `codons` into a loader-supported sidecar.
+UTEX byte identity can be reproduced without rewriting `site/data/`:
+
+```sh
+./.venv/bin/python tools/check_utex_build_identity.py
+```
+
 The site addresses each data file by the digest in `site/data/data-manifest.json`,
 so that manifest must be rebuilt whenever a file in `site/data` changes. After
 adding or removing a JavaScript module, run `node tools/build_module_preloads.mjs`;

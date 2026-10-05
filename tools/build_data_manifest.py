@@ -31,7 +31,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "site/data"
+sys.path.insert(0, str(ROOT / "scripts"))
+from organisms import get_organism  # noqa: E402
+
+DATA_DIR = get_organism().path("outputDirectory")
 MANIFEST_NAME = "data-manifest.json"
 SCHEMA_VERSION = 1
 
@@ -120,17 +123,20 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("mode", choices=("build", "check"))
-    parser.add_argument("--data-dir", type=Path, default=DATA_DIR)
+    parser.add_argument("--organism", default=None)
+    parser.add_argument("--data-dir", type=Path, default=None)
     args = parser.parse_args(argv)
     try:
+        organism = get_organism(args.organism)
+        data_dir = args.data_dir or organism.path("outputDirectory")
         if args.mode == "build":
-            target = write_manifest(args.data_dir)
+            target = write_manifest(data_dir)
             count = len(json.loads(target.read_text(encoding="utf-8"))["files"])
             print(f"wrote {target} describing {count} files")
         else:
-            check_manifest(args.data_dir)
-            print(f"{args.data_dir / MANIFEST_NAME} matches the files beside it")
-    except DataManifestError as error:
+            check_manifest(data_dir)
+            print(f"{data_dir / MANIFEST_NAME} matches the files beside it")
+    except (DataManifestError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0

@@ -17,6 +17,27 @@
 Do not substitute another accession. `GCF_000817745.x` is *Aphanocapsa montana* and
 is not this organism.
 
+## Organism-scoped releases
+
+`site/data/` remains the backwards-compatible UTEX 2973 release. Additional
+organisms use `site/data/organisms/<organism-id>/`; E. coli K-12 MG1655 uses
+`site/data/organisms/ecoli-k12-mg1655/`. Each directory is a complete release
+root with its own `meta.json`, `genes.json`, `excluded.json`, `codon_pca.json`,
+and `data-manifest.json`. A manifest describes only the JSON files beside it.
+
+Optional evidence files are local to one organism. They are published only when
+that organism's configuration admits their source and `meta.json` declares the
+layer. The absence of an unconfigured expression, TSS, essentiality, protein-
+evidence, function-category, or annotation layer is intentional and is never
+filled with another organism's file. Compatibility measured fields in a gene row
+remain `null`; the separately labelled genome-derived expression proxy remains
+available.
+
+The canonical records are in `config/organisms.json`. All build and validation
+commands default to `utex2973`; `--organism ecoli-k12-mg1655` selects the second
+record, and an unknown id must fail before reading or writing data. Raw inputs use
+the configured per-organism directory under `data/raw/`.
+
 ## Evidence coverage and cross-organism transfer
 
 UTEX 2973 remains the genome, coordinate system, and experimental target of every
@@ -798,6 +819,12 @@ stays under 6 MB uncompressed; relationship-heavy `annotations.json` and
 serves them compressed.
 If the core file exceeds the budget, move `rscu` and `codons` into a separate
 lazily-fetched file rather than dropping precision.
+
+The RefSeq-only E. coli candidate has 4,287 analysable loci and measures
+8,042,780 bytes (7.67 MiB) in this unchanged schema. It therefore does **not**
+satisfy this release gate. Publishing it needs an explicit owner choice between
+an organism-specific larger budget and the contracted sidecar split, which also
+requires loader work. Until then, the validator's failure is intentional.
 
 ## Length cohort inventory
 

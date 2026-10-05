@@ -105,6 +105,12 @@ The rules the evidence-based decisions follow:
   NCBI's data usage policies. The repository's existing practice for the
   crosswalk inputs applies: annotation files may be retained as reproducibility
   inputs and are never offered as a product download.
+
+The same reproducibility-input rule now covers E. coli K-12 MG1655 RefSeq
+`GCF_000005845.2` (ASM584v2). Its assembly and annotation files are fetched at
+build time into the gitignored per-organism raw directory, verified against
+NCBI's `md5checksums.txt` and assembly identity fields, and never offered as a
+product download. Only the checksum manifest is tracked.
 - **Undetermined is a decision**: the artifact stays link-only, is not fetched,
   and is revisited only when the governing text is read.
 

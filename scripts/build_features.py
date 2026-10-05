@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds target-independent gene features for UTEX 2973."""
+"""Builds target-independent gene features for a configured organism."""
 
 from __future__ import annotations
 
@@ -27,14 +27,11 @@ from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
+from organisms import OrganismConfig, get_organism  # noqa: E402
 from rna_context import folding_context, restore_start_window  # noqa: E402
 from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
 
 
-ACCESSION = "GCF_000817325.1"
-PREFIX = "GCF_000817325.1_ASM81732v1_"
-TOTAL_LENGTH = 2_744_626
-UMAP_SEED = 2973
 OPERON_GAP = 100
 RARE_THRESHOLD = 0.1
 # dos Reis et al. (2004) selective constraints. U is represented as DNA T;
@@ -47,7 +44,6 @@ S_VALUES = {
     "T:G": 0.68,
     "L:A": 0.89,
 }
-LYSIDINE_TRNA = ("Ile", "CAT")
 MISSING_POLICY = "null renders as unknown, never as zero or median"
 REFERENCE_PATTERNS = (
     "translation elongation factor",
@@ -120,9 +116,40 @@ EXPRESSION_SOURCE_FIELDS = (
 )
 
 
-def is_cai_reference(product: str) -> bool:
+def is_cai_reference(
+    product: str,
+    rule: str = "ribosomal-and-housekeeping-product-match-v1",
+) -> bool:
     """Returns whether a product belongs in the CAI reference set."""
     normalized = product.lower()
+    if rule == "ecoli-translation-machinery-product-match-v1":
+        ribosomal = re.search(r"ribosomal (?:subunit )?protein", normalized)
+        modifiers = (
+            "modification",
+            "methyl",
+            "transferase",
+            "hydroxylase",
+            "accessory",
+        )
+        is_ribosomal_protein = bool(ribosomal) and not any(
+            term in normalized for term in modifiers
+        )
+        housekeeping = normalized.startswith(
+            ("translation elongation factor", "translation initiation factor")
+        )
+        housekeeping = housekeeping or normalized.startswith(
+            ("chaperonin", "cochaperonin")
+        )
+        housekeeping = housekeeping or (
+            "dna-directed rna polymerase subunit" in normalized
+        )
+        housekeeping = housekeeping or (
+            "atp synthase" in normalized and "subunit" in normalized
+        )
+        housekeeping = housekeeping or "peptide chain release factor" in normalized
+        return is_ribosomal_protein or housekeeping
+    if rule != "ribosomal-and-housekeeping-product-match-v1":
+        raise ValueError(f"Unknown CAI reference rule: {rule}")
     is_ribosomal_protein = (
         "ribosomal protein" in normalized and "transferase" not in normalized
     )
@@ -147,20 +174,29 @@ def parse_attributes(value: str) -> dict[str, str]:
     return result
 
 
-def effective_anticodon(amino_acid: str, genomic_anticodon: str) -> str:
+def effective_anticodon(
+    amino_acid: str,
+    genomic_anticodon: str,
+    special_cases: Mapping[str, Any] | None = None,
+) -> str:
     """Returns the modified anticodon used by the bacterial tAI model."""
+    special_cases = special_cases or get_organism().trnaSpecialCases
     anticodon = genomic_anticodon
-    if anticodon.startswith("A"):
+    if special_cases.get("inosineAtWobble") and anticodon.startswith("A"):
         anticodon = "I" + anticodon[1:]
-    # Ile-CAT is modified at C34 to lysidine. It decodes ATA, not ATG; the
-    # same raw CAT anticodon occurs in two Met tRNAs and must remain distinct.
-    if (amino_acid, anticodon) == LYSIDINE_TRNA:
-        return "LAT"
+    lysidine = special_cases.get("lysidine", {})
+    if (
+        amino_acid == lysidine.get("aminoAcid")
+        and genomic_anticodon == lysidine.get("genomicAnticodon")
+    ):
+        return lysidine["effectiveAnticodon"]
     return anticodon
 
 
 def parse_gff(
-    path: Path, genomes: Mapping[str, str]
+    path: Path,
+    genomes: Mapping[str, str],
+    trna_special_cases: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, dict], dict[str, int], dict[tuple[str, str], int]]:
     """Reads CDS annotations and derives tRNA anticodons from GFF coordinates."""
     cds = {}
@@ -177,19 +213,35 @@ def parse_gff(
             attributes = parse_attributes(raw_attributes)
             start_i, end_i = int(start), int(end)
             if kind == "tRNA":
+                genomic_anticodon = None
                 match = re.search(
                     r"(?:complement\()?([0-9]+)\.\.([0-9]+)",
                     attributes.get("anticodon", ""),
                 )
                 if match:
-                    anticodon = genomes[seqid][int(match.group(1)) - 1 : int(match.group(2))]
+                    genomic_anticodon = genomes[seqid][
+                        int(match.group(1)) - 1 : int(match.group(2))
+                    ]
                     if "complement" in attributes["anticodon"]:
-                        anticodon = str(Seq(anticodon).reverse_complement())
+                        genomic_anticodon = str(
+                            Seq(genomic_anticodon).reverse_complement()
+                        )
+                else:
+                    note_match = re.search(
+                        r"tRNA-[^(]+\(([ACGTU]{3})\)", attributes.get("Note", "")
+                    )
+                    if note_match:
+                        genomic_anticodon = note_match.group(1).replace("U", "T")
+                if genomic_anticodon:
                     amino_acid = attributes["product"].removeprefix("tRNA-")
-                    trna_species[(amino_acid, anticodon)] += 1
+                    trna_species[(amino_acid, genomic_anticodon)] += 1
                     # NCBI records genomic bases. Apply the two standard bacterial
                     # wobble-position modifications needed by the dos-Reis model.
-                    anticodons[effective_anticodon(amino_acid, anticodon)] += 1
+                    anticodons[
+                        effective_anticodon(
+                            amino_acid, genomic_anticodon, trna_special_cases
+                        )
+                    ] += 1
                 continue
             locus = attributes.get("locus_tag")
             if not locus:
@@ -215,6 +267,7 @@ def parse_gff(
                         if "exception" in attributes
                         else None
                     ),
+                    "translExcept": attributes.get("transl_except"),
                 },
             )
             entry["start"] = min(entry["start"], start_i)
@@ -223,6 +276,8 @@ def parse_gff(
                 entry["translationalException"] = attributes["exception"].replace(
                     " ", "_"
                 )
+            if attributes.get("transl_except"):
+                entry["translExcept"] = attributes["transl_except"]
     return cds, dict(anticodons), dict(trna_species)
 
 
@@ -569,6 +624,46 @@ def cds_records(path: Path) -> list[dict[str, str]]:
     return records
 
 
+def select_cds_records(
+    records: Iterable[Mapping[str, str]],
+) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
+    """Selects one longest CDS per locus and records alternate products.
+
+    RefSeq may publish alternative translated products for one bacterial locus.
+    The site's stable key is the locus tag, so one record must win without a
+    symbol or product-text join. The longest deposited CDS is deterministic and
+    keeps the primary full-length product for every current configured genome.
+    """
+    groups: dict[str, list[dict[str, str]]] = collections.defaultdict(list)
+    order: list[str] = []
+    for source in records:
+        record = dict(source)
+        locus = record.get("locus_tag")
+        require(bool(locus), "Every CDS FASTA record must carry a locus_tag")
+        if locus not in groups:
+            order.append(locus)
+        groups[locus].append(record)
+
+    selected = []
+    alternates = []
+    for locus in order:
+        candidates = groups[locus]
+        winner = max(candidates, key=lambda item: len(item["sequence"]))
+        selected.append(winner)
+        for record in candidates:
+            if record is winner:
+                continue
+            alternates.append(
+                {
+                    "id": locus,
+                    "reason": "alternate_cds",
+                    "lengthNt": len(record["sequence"]),
+                    "proteinId": record.get("protein_id"),
+                }
+            )
+    return selected, alternates
+
+
 def cds_segments(location: str) -> list[list[int]] | None:
     """Returns explicit one-based closed segments for a joined CDS location."""
     if "join(" not in location:
@@ -589,12 +684,38 @@ def exclusion_reason(sequence: str, annotation: Mapping[str, Any]) -> str | None
     if not codons or codons[-1] not in fm.TABLE.stop_codons:
         return "missing_terminal_stop"
     if any(codon in fm.TABLE.stop_codons for codon in codons[:-1]):
+        if "aa:Sec" in (annotation.get("translExcept") or ""):
+            return "selenocysteine_internal_tga"
         return "internal_stop"
     if not annotation.get("proteinCoding", True):
         return "not_protein_coding"
     if annotation.get("pseudo", False):
         return "pseudogene"
     return None
+
+
+def verify_assembly_identity(raw_dir: Path, config: OrganismConfig) -> None:
+    """Checks assembly-report identity independently of file checksums."""
+    report_path = raw_dir / f"{config.assemblyPrefix}_assembly_report.txt"
+    require(report_path.is_file(), f"Assembly report is missing: {report_path}")
+    report = report_path.read_text(encoding="utf-8")
+    fields = {
+        line.split(":", 1)[0].removeprefix("# "): line.split(":", 1)[1].strip()
+        for line in report.splitlines()
+        if line.startswith("# ") and ":" in line
+    }
+    require(
+        fields.get("RefSeq assembly accession") == config.accession,
+        f"Assembly report does not name {config.accession}",
+    )
+    require(
+        config.organismIdentity in report and config.strainIdentity in report,
+        f"Assembly report does not match {config.organismIdentity}",
+    )
+    require(
+        fields.get("Taxid") == str(config.taxid),
+        f"Assembly report does not name taxid {config.taxid}",
+    )
 
 
 def circular_slice(sequence: str, start: int, end: int) -> str:
@@ -799,11 +920,16 @@ def checksum(path: Path) -> str:
 
 
 def build(
-    raw_dir: Path, output_dir: Path, annotation_dir: Path | None = None
+    raw_dir: Path,
+    output_dir: Path,
+    annotation_dir: Path | None = None,
+    organism: OrganismConfig | None = None,
 ) -> tuple[list[dict], list[dict], dict, dict]:
     """Builds and writes the contracted site JSON documents."""
+    organism = organism or get_organism()
+    verify_assembly_identity(raw_dir, organism)
     paths = {
-        suffix: raw_dir / f"{PREFIX}{suffix}.gz"
+        suffix: raw_dir / f"{organism.assemblyPrefix}_{suffix}.gz"
         for suffix in (
             "genomic.fna",
             "genomic.gff",
@@ -814,26 +940,31 @@ def build(
     genomes = fasta_dict(paths["genomic.fna"])
     observed_total_length = sum(map(len, genomes.values()))
     require(
-        observed_total_length == TOTAL_LENGTH,
-        f"Genome length {observed_total_length:,} != expected {TOTAL_LENGTH:,}",
+        observed_total_length == organism.expectedTotalLength,
+        f"Genome length {observed_total_length:,} != expected "
+        f"{organism.expectedTotalLength:,} for {organism.organism_id}",
     )
     annotations, anticodon_counts, trna_species = parse_gff(
-        paths["genomic.gff"], genomes
+        paths["genomic.gff"], genomes, organism.trnaSpecialCases
     )
     repository = Path(__file__).resolve().parents[1]
-    verified_trna = verified_trna_species(
-        repository / "data/trna/anticodon_gene_copies.tsv"
-    )
-    require(
-        trna_species == verified_trna,
-        f"Derived tRNA species differ from verified table: {trna_species!r}",
-    )
-    raw_records = cds_records(paths["cds_from_genomic.fna"])
-    require(
-        len(raw_records) == 2722,
-        f"Observed {len(raw_records)} CDS records; expected 2,722",
-    )
-    included, excluded = [], []
+    verified_table = organism.trnaSpecialCases.get("verifiedSpeciesTable")
+    if verified_table:
+        verified_trna = verified_trna_species(repository / verified_table)
+        require(
+            trna_species == verified_trna,
+            f"Derived tRNA species differ from verified table: {trna_species!r}",
+        )
+    all_raw_records = cds_records(paths["cds_from_genomic.fna"])
+    expected_cds_records = organism.values.get("expectedCdsRecords")
+    if expected_cds_records is not None:
+        require(
+            len(all_raw_records) == expected_cds_records,
+            f"Observed {len(all_raw_records)} CDS records; expected "
+            f"{expected_cds_records:,}",
+        )
+    raw_records, excluded = select_cds_records(all_raw_records)
+    included = []
     for record in raw_records:
         locus, sequence = record["locus_tag"], record["sequence"]
         annotation = annotations[locus]
@@ -860,43 +991,53 @@ def build(
                 }
             )
     require(
-        len(included) + len(excluded) == len(raw_records),
+        len(included) + len(excluded) == len(all_raw_records),
         "Included and excluded CDS counts do not reconcile with the input",
     )
+    low, high = organism.geneCountRange
     require(
-        2650 <= len(included) <= 2725,
-        f"Included gene count {len(included)} is outside contract range [2650, 2725]",
+        low <= len(included) <= high,
+        f"Included gene count {len(included)} is outside contract range [{low}, {high}]",
     )
     terminal_stops = collections.Counter(gene["sequence"][-3:] for gene in included)
-    require(
-        terminal_stops == {"TAG": 1071, "TAA": 895, "TGA": 749},
-        f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
-    )
+    expected_stops = organism.values.get("expectedTerminalStops")
+    if expected_stops is not None:
+        require(
+            terminal_stops == expected_stops,
+            f"Unexpected terminal-stop distribution: {dict(terminal_stops)}",
+        )
 
     included_loci = {gene["id"] for gene in included}
-    tss_evidence, tss_summary = load_tss_evidence(
-        repository / "data/expression/tan2018_utex2973_tss_table_s1.tsv",
-        included_loci,
-    )
-    if annotation_dir is None:
-        annotation_dir = (
-            repository
-            / "data/annotation/releases/GCF_000817325.1-RS_2026_05_13"
+    tss_evidence: dict[str, Any] = {}
+    tss_summary: dict[str, Any] = {}
+    if organism.has_layer("tss"):
+        tss_evidence, tss_summary = load_tss_evidence(
+            repository / "data/expression/tan2018_utex2973_tss_table_s1.tsv",
+            included_loci,
         )
-    annotation_evidence, annotation_release = load_annotation_layer(
-        annotation_dir, included_loci
-    )
+    annotation_evidence: dict[str, Any] = {}
+    annotation_release: dict[str, Any] | None = None
+    if organism.has_layer("annotation"):
+        if annotation_dir is None:
+            annotation_dir = organism.path("annotationDirectory")
+        annotation_evidence, annotation_release = load_annotation_layer(
+            annotation_dir, included_loci
+        )
 
-    expression_sources, expression_values = load_expression_sources(
-        repository / "data/expression", METRIC_DEFINITIONS
-    )
+    expression_sources: list[dict[str, Any]] = []
+    expression_values: dict[str, dict[str, float]] = {}
+    if organism.has_layer("expression"):
+        expression_sources, expression_values = load_expression_sources(
+            repository / "data/expression", METRIC_DEFINITIONS
+        )
     sources_by_metric = {source["metricKey"]: source for source in expression_sources}
-    require(
-        "expression" in sources_by_metric,
-        "Expression source manifest must select the primary abundance metric 'expression'",
-    )
-    primary_expression_source = sources_by_metric["expression"]
-    expression = expression_values["expression"]
+    primary_expression_source = sources_by_metric.get("expression")
+    if organism.has_layer("expression"):
+        require(
+            primary_expression_source is not None,
+            "Expression source manifest must select the primary abundance metric 'expression'",
+        )
+    expression = expression_values.get("expression", {})
     percentiles = expression_percentiles(expression)
 
     sequences = [gene["sequence"] for gene in included]
@@ -906,7 +1047,7 @@ def build(
     references = [
         gene
         for gene in included
-        if is_cai_reference(gene["product"])
+        if is_cai_reference(gene["product"], organism.caiReferenceRule)
     ]
     if len(references) < 30:
         raise ValueError("CAI reference selection unexpectedly produced fewer than 30 genes")
@@ -950,12 +1091,14 @@ def build(
         values["deltaEnc"] = values["encExpected"] - values["enc"]
         values["cai"] = fm.codon_adaptation_index(sequence, cai)
         values["tai"] = fm.trna_adaptation_index(sequence, tai)
+        values["expression"] = None
         for metric_key, source_values in expression_values.items():
             values[metric_key] = source_values.get(source["id"])
         values["expressionPercentile"] = percentiles.get(source["id"])
         values["expressionSourceId"] = (
             primary_expression_source["id"]
-            if values["expression"] is not None
+            if primary_expression_source is not None
+            and values["expression"] is not None
             else None
         )
         values.update(fm.rare_codon_metrics(sequence, frequencies, tai, RARE_THRESHOLD))
@@ -986,7 +1129,7 @@ def build(
 
     rscu_matrix = np.asarray([gene["rscu"] for gene in genes])
     scaled_rscu = StandardScaler().fit_transform(rscu_matrix)
-    pca = PCA(n_components=6, random_state=UMAP_SEED).fit(scaled_rscu)
+    pca = PCA(n_components=6, random_state=organism.umapSeed).fit(scaled_rscu)
     coordinates = pca.transform(scaled_rscu)
     for gene, point in zip(genes, coordinates, strict=True):
         gene["codonPca"] = point.tolist()
@@ -1000,7 +1143,7 @@ def build(
     )
     embedding = umap.UMAP(
         n_components=2,
-        random_state=UMAP_SEED,
+        random_state=organism.umapSeed,
         n_neighbors=15,
         min_dist=0.1,
         n_jobs=1,
@@ -1057,13 +1200,53 @@ def build(
         "operonPosition": ("Operon position", "index"),
         "operonSize": ("Operon size", "genes"),
     }
+    if not organism.has_layer("expression"):
+        metric_labels.pop("expressionPercentile")
+    metric_definitions = dict(METRIC_DEFINITIONS)
+    if organism.organism_id != "utex2973":
+        substituted = sum(gene["encHasSubstitutedFamilies"] for gene in genes)
+        substitution_share = round(100 * substituted / len(genes))
+        metric_definitions["enc"] = (
+            "Effective number of codons (Wright 1990), ranging from 20 for maximal "
+            "synonymous concentration to 61 for equal synonymous use. Families "
+            f"observed fewer than twice use a degeneracy-class estimate; {substituted:,} "
+            f"of {len(genes):,} genes ({substitution_share}%) require at least one such "
+            "substitution, flagged by encHasSubstitutedFamilies."
+        )
+        metric_definitions["cai"] = (
+            "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and "
+            f"calculated against the {len(references):,}-gene "
+            "ribosomal-plus-housekeeping reference set; zero reference counts receive "
+            "a 0.5 pseudocount and Met and Trp are excluded."
+        )
+        zero_weight_codons = [
+            codon
+            for codon in fm.SENSE_CODONS
+            if fm.trna_adaptiveness(codon, anticodon_counts, S_VALUES) == 0
+        ]
+        missing_label = ", ".join(zero_weight_codons) or "No sense codon"
+        metric_definitions["tai"] = (
+            "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and "
+            "derived from this genome's tRNA gene copies with bacterial wobble "
+            f"penalties; {missing_label} has no cognate tRNA and uses the geometric "
+            "mean of non-zero codon weights."
+        )
+        metric_definitions["minLocalTai"] = (
+            "Minimum mean tRNA-adaptation weight across all sliding 9-codon windows, "
+            "shortened to the whole gene when necessary; ranges from 0 to 1 and "
+            "inherits the tAI no-cognate-codon substitution convention."
+        )
     meta = {
         "schemaVersion": 1,
         "builtAt": datetime.datetime.now(datetime.timezone.utc)
         .replace(microsecond=0)
         .isoformat()
         .replace("+00:00", "Z"),
-        "genome": {"accession": ACCESSION, "taxid": 1350461, "totalLength": TOTAL_LENGTH},
+        "genome": {
+            "accession": organism.accession,
+            "taxid": organism.taxid,
+            "totalLength": organism.expectedTotalLength,
+        },
         "annotationRelease": annotation_release,
         "sourceChecksums": {
             path.name: checksum(path)
@@ -1080,7 +1263,11 @@ def build(
         "defaultReplacement": replacement_map(counts),
         "highExpressedReplacement": replacement_map(reference_counts),
         "caiReferenceSet": {
-            "method": "ribosomal+housekeeping product-name match",
+            "method": (
+                "ribosomal+housekeeping product-name match"
+                if organism.organism_id == "utex2973"
+                else organism.caiReferenceRule
+            ),
             "locusTags": [gene["id"] for gene in references],
             "n": len(references),
             "zeroCountAdjustment": 0.5,
@@ -1101,18 +1288,24 @@ def build(
                 "Met-CAT remains a separate two-copy species decoding ATG"
             ),
         },
-        # Kept for the existing expressionBasis contract: this always describes
-        # the primary abundance field, never the other measured sources.
-        "expressionSource": {
-            "accession": primary_expression_source["id"],
-            "organismMeasured": primary_expression_source["organism"],
-            "isTargetOrganism": primary_expression_source["isTargetOrganism"],
-            "condition": primary_expression_source["condition"],
-            "normalization": primary_expression_source["units"],
-            "coverage": {"withValue": len(expression), "total": len(genes)},
-            "caveat": primary_expression_source["caveat"],
-            "provenanceDoc": primary_expression_source["provenanceDoc"],
-        },
+        **(
+            {
+                # Kept for the existing expressionBasis contract: this always
+                # describes the primary abundance field, never another source.
+                "expressionSource": {
+                    "accession": primary_expression_source["id"],
+                    "organismMeasured": primary_expression_source["organism"],
+                    "isTargetOrganism": primary_expression_source["isTargetOrganism"],
+                    "condition": primary_expression_source["condition"],
+                    "normalization": primary_expression_source["units"],
+                    "coverage": {"withValue": len(expression), "total": len(genes)},
+                    "caveat": primary_expression_source["caveat"],
+                    "provenanceDoc": primary_expression_source["provenanceDoc"],
+                }
+            }
+            if primary_expression_source is not None
+            else {}
+        ),
         "expressionSources": [
             {
                 **source,
@@ -1125,7 +1318,6 @@ def build(
         ],
         "tssEvidenceSource": {
             "id": "TAN2018_TABLE_S1",
-            "pooledScoreSourceId": "TAN2018_TSS",
             "doi": "10.1186/s13068-018-1215-8",
             "sourceArtifactUrl": "https://static-content.springer.com/esm/art%3A10.1186%2Fs13068-018-1215-8/MediaObjects/13068_2018_1215_MOESM1_ESM.xlsx",
             "sourceSha256": "098ecbd204cd1042a6edee1d2a500eaeca4efe034c503e2ade3db1c605e79b00",
@@ -1145,6 +1337,7 @@ def build(
             "tssDiscoveryMinimumRawReadsInAnyLibrary": 300,
             "isGeneBodyAbundance": False,
             "summary": tss_summary,
+            "pooledScoreSourceId": "TAN2018_TSS",
         },
         "expressionProxy": {
             "method": (
@@ -1158,7 +1351,7 @@ def build(
             "coverage": {"withValue": len(genes), "total": len(genes)},
         },
         "rareCodonThreshold": RARE_THRESHOLD,
-        "umap": {"seed": UMAP_SEED, "features": risk_fields},
+        "umap": {"seed": organism.umapSeed, "features": risk_fields},
         "operon": {"method": "adjacent same-strand CDS", "maximumIntergenicNt": OPERON_GAP},
         "localGcWindowNt": 30,
         "deltaEncConvention": "expected Wright neutral-curve ENC minus observed ENC",
@@ -1174,7 +1367,7 @@ def build(
                 key: {
                     "label": label,
                     "unit": unit,
-                    "desc": METRIC_DEFINITIONS[key],
+                    "desc": metric_definitions[key],
                     "scale": (
                         "diverging" if key in DIVERGING_METRICS else "sequential"
                     ),
@@ -1197,20 +1390,34 @@ def build(
             },
         },
     }
+    if annotation_release is None:
+        meta.pop("annotationRelease")
+    if primary_expression_source is None:
+        meta.pop("expressionSources")
+    if not organism.has_layer("tss"):
+        meta.pop("tssEvidenceSource")
     output_dir.mkdir(parents=True, exist_ok=True)
     documents = {
         "genes.json": genes,
-        "tss_evidence.json": tss_evidence,
-        "annotations.json": annotation_evidence,
         "excluded.json": excluded,
         "meta.json": meta,
         "codon_pca.json": codon_pca,
     }
+    if organism.has_layer("tss"):
+        documents["tss_evidence.json"] = tss_evidence
+    if organism.has_layer("annotation"):
+        documents["annotations.json"] = annotation_evidence
     for name, document in documents.items():
         # Tiny published adjusted p-values must not round to zero.
         serializable = document if name == "tss_evidence.json" else round_floats(document)
-        content = json.dumps(serializable, separators=(",", ":")) + "\n"
+        content = json.dumps(
+            serializable, separators=(",", ":"), ensure_ascii=False
+        ) + "\n"
         (output_dir / name).write_text(content, encoding="utf-8")
+    for absent_name in {"tss_evidence.json", "annotations.json"} - documents.keys():
+        stale = output_dir / absent_name
+        if stale.exists():
+            stale.unlink()
     return genes, excluded, meta, codon_pca
 
 
@@ -1218,23 +1425,30 @@ def main() -> None:
     """Command-line entry point."""
     repository = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser()
+    parser.add_argument("--organism", default=None)
     parser.add_argument(
         "--raw-dir",
         type=Path,
-        default=repository / "data/raw",
+        default=None,
     )
-    parser.add_argument("--output-dir", type=Path, default=repository / "site/data")
+    parser.add_argument("--output-dir", type=Path, default=None)
     parser.add_argument(
         "--annotation-dir",
         type=Path,
-        default=(
-            repository
-            / "data/annotation/releases/GCF_000817325.1-RS_2026_05_13"
-        ),
+        default=None,
     )
     args = parser.parse_args()
-    genes, excluded, _, _ = build(args.raw_dir, args.output_dir, args.annotation_dir)
-    print(f"Wrote {len(genes)} genes and {len(excluded)} exclusions to {args.output_dir}")
+    try:
+        organism = get_organism(args.organism)
+    except ValueError as error:
+        parser.error(str(error))
+    raw_dir = args.raw_dir or organism.path("rawDirectory")
+    output_dir = args.output_dir or organism.path("outputDirectory")
+    annotation_dir = args.annotation_dir
+    genes, excluded, _, _ = build(
+        raw_dir, output_dir, annotation_dir, organism
+    )
+    print(f"Wrote {len(genes)} genes and {len(excluded)} exclusions to {output_dir}")
 
 
 if __name__ == "__main__":

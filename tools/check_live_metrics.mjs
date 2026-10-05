@@ -6,12 +6,27 @@
 // figures measured independently from the raw genome. It needs no browser, so it
 // can run in CI alongside the contract validator.
 //
-// Usage: node tools/check_live_metrics.mjs
+// Usage: node tools/check_live_metrics.mjs [--organism utex2973]
 
 import { readFile } from 'node:fs/promises';
 
 const ROOT = new URL('../', import.meta.url);
-const DATA = new URL('site/data/', ROOT);
+const configDocument = JSON.parse(
+  await readFile(new URL('config/organisms.json', ROOT), 'utf8'));
+const organismFlag = process.argv.indexOf('--organism');
+if (organismFlag >= 0 && !process.argv[organismFlag + 1]) {
+  throw new Error('--organism requires an id');
+}
+const organismId = organismFlag >= 0
+  ? process.argv[organismFlag + 1]
+  : configDocument.defaultOrganism;
+const organism = configDocument.organisms?.[organismId];
+if (!organism) {
+  throw new Error(
+    `Unknown organism id ${JSON.stringify(organismId)}; choose one of: ${Object.keys(configDocument.organisms).sort().join(', ')}`);
+}
+const outputDirectory = organism.outputDirectory.replace(/\/?$/, '/');
+const DATA = new URL(outputDirectory, ROOT);
 
 const { loadDataset } = await import(new URL('site/js/core/dataset.js', ROOT));
 const { compileScheme, verifyProteinsUnchanged, PRESETS } =
@@ -20,8 +35,8 @@ const { computeLiveMetrics } = await import(new URL('site/js/core/live-metrics.j
 
 // Measured independently from the raw NCBI CDS records. See
 // docs/validation/genome-provenance.md and tools/validate_contract.py.
-const EXPECTED_GENES = 2715;
-const EXPECTED_STOPS = { TAG: 1071, TAA: 895, TGA: 749 };
+const EXPECTED_STOPS = organism.expectedTerminalStops;
+const EXPECTED_GENES = Object.values(EXPECTED_STOPS).reduce((sum, count) => sum + count, 0);
 
 const failures = [];
 function note(ok, label, detail = '') {

@@ -28,16 +28,27 @@ import sys
 from typing import Any, Callable, Iterable, Iterator
 from urllib.parse import unquote
 
+ROOT = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+from organisms import OrganismConfig, get_organism  # noqa: E402
+
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 BASES = "TCAG"
 AMINO_ACIDS = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
 STOP_CODONS = ("TAA", "TAG", "TGA")
 
-ASSEMBLY = "GCF_000817325.1"
-ASSEMBLY_PREFIX = "GCF_000817325.1_ASM81732v1"
-EXPECTED_TOTAL_LENGTH = 2_744_626
-EXPECTED_CDS_RECORDS = 2722
-GENE_COUNT_RANGE = (2650, 2725)
+# Public compatibility names used by focused validator tests and small local
+# tools. Their values remain the historical default organism; organism-aware
+# validation takes an explicit ``OrganismConfig`` below.
+DEFAULT_ORGANISM = get_organism()
+ASSEMBLY = DEFAULT_ORGANISM.accession
+ASSEMBLY_PREFIX = DEFAULT_ORGANISM.assemblyPrefix
+EXPECTED_TOTAL_LENGTH = DEFAULT_ORGANISM.expectedTotalLength
+EXPECTED_CDS_RECORDS = DEFAULT_ORGANISM.expectedCdsRecords
+GENE_COUNT_RANGE = tuple(DEFAULT_ORGANISM.geneCountRange)
+EXPECTED_TERMINAL_STOPS = DEFAULT_ORGANISM.expectedTerminalStops
+EXPECTED_SPLICED = set(DEFAULT_ORGANISM.expectedSpliced)
+EXPECTED_EXCEPTIONS = DEFAULT_ORGANISM.expectedExceptions
 
 # The contract permits metrics serialised at six decimal places. Two such values
 # summed against a third can therefore disagree by about 1.5e-6 through rounding
@@ -83,16 +94,6 @@ REQUIRED_GENE_FIELDS = (
     "rscu", "codonPca", "riskUmap", "codons",
     "terminalStop", "translationalException", "cdsSegments", "rnaContext",
 )
-
-# Measured directly from the raw CDS records over the included set. These are
-# exact, not approximate: a drift here means the inclusion rule changed.
-EXPECTED_TERMINAL_STOPS = {"TAG": 1071, "TAA": 895, "TGA": 749}
-
-# The three CDSs that are a join of non-adjacent segments, and the one of them
-# with an NCBI-recorded translational exception.
-EXPECTED_SPLICED = {"M744_RS00920", "M744_RS13290", "M744_RS13620"}
-EXPECTED_EXCEPTIONS = {"M744_RS00920": "ribosomal_slippage"}
-
 
 def codon_table() -> dict[str, str]:
     """Returns the standard genetic code keyed by codon, in TCAG order."""
@@ -175,7 +176,9 @@ def read_fasta(path: str) -> Iterator[tuple[str, str]]:
         yield name, "".join(chunks)
 
 
-def validate_meta(meta: Any, report: Report) -> dict[str, Any] | None:
+def validate_meta(
+    meta: Any, report: Report, organism: OrganismConfig = DEFAULT_ORGANISM
+) -> dict[str, Any] | None:
     """Checks meta.json structure and the codon alphabet's internal consistency."""
     if not isinstance(meta, dict):
         report.fail("meta.json is an object")
@@ -185,13 +188,14 @@ def validate_meta(meta: Any, report: Report) -> dict[str, Any] | None:
                  repr(meta.get("schemaVersion")))
 
     genome = meta.get("genome", {})
-    report.check(genome.get("accession") == ASSEMBLY,
+    report.check(genome.get("accession") == organism.accession,
                  "meta.genome.accession is the genome of record",
-                 f"got {genome.get('accession')!r}, expected {ASSEMBLY!r}")
-    report.check(genome.get("taxid") == 1350461, "meta.genome.taxid is 1350461",
+                 f"got {genome.get('accession')!r}, expected {organism.accession!r}")
+    report.check(genome.get("taxid") == organism.taxid,
+                 f"meta.genome.taxid is {organism.taxid}",
                  repr(genome.get("taxid")))
-    report.check(genome.get("totalLength") == EXPECTED_TOTAL_LENGTH,
-                 "meta.genome.totalLength is 2,744,626",
+    report.check(genome.get("totalLength") == organism.expectedTotalLength,
+                 f"meta.genome.totalLength is {organism.expectedTotalLength:,}",
                  repr(genome.get("totalLength")))
 
     alphabet = meta.get("codonAlphabet")
@@ -293,15 +297,16 @@ def validate_meta(meta: Any, report: Report) -> dict[str, Any] | None:
         report.check(not shape_problems,
                      "codonOccurrences gives total and editable per codon",
                      f"malformed: {shape_problems[:4]}")
-        for codon, expected_total, expected_editable in (
-                ("GTG", 18659, 18303), ("TTG", 20427, 20324)):
-            entry = occurrences.get(codon, {})
-            report.check(
-                entry.get("total") == expected_total
-                and entry.get("editable") == expected_editable,
-                f"{codon} occurrence counts match a direct scan",
-                f"got {entry.get('total')}/{entry.get('editable')}, "
-                f"expected {expected_total}/{expected_editable}")
+        if organism.organism_id == "utex2973":
+            for codon, expected_total, expected_editable in (
+                    ("GTG", 18659, 18303), ("TTG", 20427, 20324)):
+                entry = occurrences.get(codon, {})
+                report.check(
+                    entry.get("total") == expected_total
+                    and entry.get("editable") == expected_editable,
+                    f"{codon} occurrence counts match a direct scan",
+                    f"got {entry.get('total')}/{entry.get('editable')}, "
+                    f"expected {expected_total}/{expected_editable}")
     else:
         report.fail("meta.codonOccurrences is present",
                     "required so the interface can quote editable, not raw, counts")
@@ -317,7 +322,9 @@ def validate_meta(meta: Any, report: Report) -> dict[str, Any] | None:
     return meta
 
 
-def spliced_loci(raw_dir: str) -> set[str]:
+def spliced_loci(
+    raw_dir: str, organism: OrganismConfig = DEFAULT_ORGANISM
+) -> set[str]:
     """Returns locus tags whose CDS is a join of non-adjacent genomic segments.
 
     These genes are shorter than their genomic span, so the usual
@@ -326,7 +333,9 @@ def spliced_loci(raw_dir: str) -> set[str]:
     whose peptide chain release factor 2 is produced by a programmed ribosomal
     frameshift that skips a single base.
     """
-    path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_cds_from_genomic.fna.gz")
+    path = os.path.join(
+        raw_dir, f"{organism.assemblyPrefix}_cds_from_genomic.fna.gz"
+    )
     if not os.path.exists(path):
         return set()
     tags: set[str] = set()
@@ -430,15 +439,21 @@ def ordered_cds_positions(
 
 
 def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
-                            report: Report) -> None:
+                            report: Report,
+                            organism: OrganismConfig = DEFAULT_ORGANISM) -> None:
     """Independently check context and edit maps using raw genomic FASTA and GFF.
 
     GFF extended coordinates may pass the circular origin. Multiple CDS rows
     are concatenated in transcription order, including genuine internal joins.
     The start window remains genomic; it does not splice out intervening bases.
     """
-    genome_path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_genomic.fna.gz")
-    gff_path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_genomic.gff.gz")
+    genome_path = os.path.join(
+        raw_dir, f"{organism.assemblyPrefix}_genomic.fna.gz"
+    )
+    gff_path = os.path.join(raw_dir, f"{organism.assemblyPrefix}_genomic.gff.gz")
+    cds_path = os.path.join(
+        raw_dir, f"{organism.assemblyPrefix}_cds_from_genomic.fna.gz"
+    )
     label = "RNA contexts and CDS maps reproduce raw strand-oriented genomic windows"
     missing = [path for path in (genome_path, gff_path) if not os.path.exists(path)]
     if missing:
@@ -449,6 +464,16 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
     try:
         genomes = {header.split()[0]: sequence.upper()
                    for header, sequence in read_fasta(genome_path)}
+        selected_proteins: dict[str, tuple[int, str]] = {}
+        if os.path.exists(cds_path):
+            for header, sequence in read_fasta(cds_path):
+                locus_match = re.search(r"\[locus_tag=([^\]]+)\]", header)
+                protein_match = re.search(r"\[protein_id=([^\]]+)\]", header)
+                if not locus_match or not protein_match:
+                    continue
+                locus = locus_match.group(1)
+                if len(sequence) > selected_proteins.get(locus, (0, ""))[0]:
+                    selected_proteins[locus] = (len(sequence), protein_match.group(1))
         with gzip.open(gff_path, "rt") as handle:
             for line in handle:
                 if line.startswith("#") or not line.strip():
@@ -458,7 +483,9 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
                     continue
                 attributes = dict(part.split("=", 1) for part in fields[8].split(";") if "=" in part)
                 locus = unquote(attributes.get("locus_tag", ""))
-                if locus in loci:
+                selected = selected_proteins.get(locus)
+                protein_id = unquote(attributes.get("protein_id", ""))
+                if locus in loci and (selected is None or protein_id == selected[1]):
                     annotations[locus].append((fields[0], int(fields[3]), int(fields[4]), fields[6]))
     except (OSError, ValueError) as error:
         report.fail(label, f"cannot read raw genomic input: {error}")
@@ -510,13 +537,14 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
 
 
 def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
-                   spliced: set[str]) -> None:
+                   spliced: set[str],
+                   organism: OrganismConfig = DEFAULT_ORGANISM) -> None:
     """Checks per-gene records for structure, ranges, and codon-string integrity."""
     if not isinstance(genes, list):
         report.fail("genes.json is an array", repr(type(genes)))
         return
 
-    low, high = GENE_COUNT_RANGE
+    low, high = organism.geneCountRange
     report.check(low <= len(genes) <= high,
                  f"gene count is within [{low}, {high}]", f"got {len(genes)}")
 
@@ -649,20 +677,23 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
     bad_stops = {s: n for s, n in stops.items() if s not in STOP_CODONS}
     report.check(not bad_stops, "every terminalStop is a real stop codon",
                  f"found {bad_stops}")
-    report.check(dict(stops) == EXPECTED_TERMINAL_STOPS,
-                 "terminal stop distribution is TAG 1071, TAA 895, TGA 749",
+    expected_stops = organism.values.get("expectedTerminalStops", {})
+    report.check(dict(stops) == expected_stops,
+                 "terminal stop distribution matches the pinned organism configuration",
                  f"got {dict(stops.most_common())}")
 
     observed_spliced = {g["id"] for g in genes
                         if isinstance(g, dict) and g.get("cdsSegments")}
-    report.check(observed_spliced == EXPECTED_SPLICED,
-                 "cdsSegments is set for exactly the three joined CDSs",
+    expected_spliced = set(organism.values.get("expectedSpliced", []))
+    report.check(observed_spliced == expected_spliced,
+                 "cdsSegments names exactly the pinned joined CDSs",
                  f"got {sorted(observed_spliced)}")
 
     observed_exceptions = {g["id"]: g.get("translationalException") for g in genes
                            if isinstance(g, dict) and g.get("translationalException")}
-    report.check(observed_exceptions == EXPECTED_EXCEPTIONS,
-                 "translationalException is set for exactly prfB",
+    expected_exceptions = organism.values.get("expectedExceptions", {})
+    report.check(observed_exceptions == expected_exceptions,
+                 "translationalException matches the pinned exceptional gene models",
                  f"got {observed_exceptions}")
 
     segment_problems = []
@@ -817,7 +848,12 @@ def validate_codon_pca(pca: Any, meta: dict[str, Any], report: Report) -> None:
         report.fail("codon_pca.loadings is an array", repr(type(loadings)))
 
 
-def validate_excluded(excluded: Any, gene_count: int, report: Report) -> None:
+def validate_excluded(
+    excluded: Any,
+    gene_count: int,
+    report: Report,
+    organism: OrganismConfig = DEFAULT_ORGANISM,
+) -> None:
     """Checks that included and excluded CDSs reconcile against the raw count."""
     if not isinstance(excluded, list):
         report.fail("excluded.json is an array", repr(type(excluded)))
@@ -829,17 +865,23 @@ def validate_excluded(excluded: Any, gene_count: int, report: Report) -> None:
                  f"{len(missing_reason)} without one")
 
     total = gene_count + len(excluded)
-    report.check(total == EXPECTED_CDS_RECORDS,
-                 "included plus excluded reconciles to 2,722 CDS records",
+    expected_records = organism.values.get("expectedCdsRecords")
+    report.check(total == expected_records,
+                 "included plus excluded reconciles to the pinned CDS record count",
                  f"{gene_count} + {len(excluded)} = {total}")
 
 
 def cross_check_against_genome(
-    genes: list[dict[str, Any]], meta: dict[str, Any], raw_dir: str, report: Report
+    genes: list[dict[str, Any]], meta: dict[str, Any], raw_dir: str, report: Report,
+    organism: OrganismConfig = DEFAULT_ORGANISM,
 ) -> None:
     """Re-derives protein sequences from packed codons and compares to NCBI's."""
-    protein_path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_protein.faa.gz")
-    cds_path = os.path.join(raw_dir, f"{ASSEMBLY_PREFIX}_cds_from_genomic.fna.gz")
+    protein_path = os.path.join(
+        raw_dir, f"{organism.assemblyPrefix}_protein.faa.gz"
+    )
+    cds_path = os.path.join(
+        raw_dir, f"{organism.assemblyPrefix}_cds_from_genomic.fna.gz"
+    )
     if not os.path.exists(cds_path):
         report.skip("codon strings reproduce NCBI CDS sequences",
                     f"raw CDS file not found at {cds_path}")
@@ -853,10 +895,15 @@ def cross_check_against_genome(
         return
 
     by_locus: dict[str, str] = {}
+    protein_id_of: dict[str, str] = {}
     for header, sequence in read_fasta(cds_path):
         match = re.search(r"\[locus_tag=([^\]]+)\]", header)
-        if match:
-            by_locus[match.group(1)] = sequence.upper()
+        pid = re.search(r"\[protein_id=([^\]]+)\]", header)
+        if match and len(sequence) > len(by_locus.get(match.group(1), "")):
+            locus = match.group(1)
+            by_locus[locus] = sequence.upper()
+            if pid:
+                protein_id_of[locus] = pid.group(1)
 
     checked = mismatched = unmatched = 0
     examples: list[str] = []
@@ -893,14 +940,6 @@ def cross_check_against_genome(
         report.skip("translated CDSs match NCBI proteins",
                     f"not found at {protein_path}")
         return
-
-    # protein_id per locus tag, taken from the CDS FASTA headers.
-    protein_id_of: dict[str, str] = {}
-    for header, _ in read_fasta(cds_path):
-        locus = re.search(r"\[locus_tag=([^\]]+)\]", header)
-        pid = re.search(r"\[protein_id=([^\]]+)\]", header)
-        if locus and pid:
-            protein_id_of[locus.group(1)] = pid.group(1)
 
     proteins: dict[str, str] = {}
     for header, sequence in read_fasta(protein_path):
@@ -939,15 +978,16 @@ def cross_check_against_genome(
     report.check(no_protein == 0, "every gene resolves to an NCBI protein record",
                  f"{no_protein} unresolved")
 
-    # Four protein accessions are shared by two loci each. Genes must not have
-    # been deduplicated to match the protein file's record count.
-    shared = collections.Counter(
-        protein_id_of[g["id"]] for g in genes
-        if isinstance(g, dict) and g.get("id") in protein_id_of)
-    duplicated = {p: n for p, n in shared.items() if n > 1}
-    report.check(len(duplicated) == 4,
-                 "the four dual-locus proteins are present for both loci",
-                 f"found {len(duplicated)}: {sorted(duplicated)[:6]}")
+    if organism.organism_id == "utex2973":
+        # Four protein accessions are shared by two loci each. Genes must not have
+        # been deduplicated to match the protein file's record count.
+        shared = collections.Counter(
+            protein_id_of[g["id"]] for g in genes
+            if isinstance(g, dict) and g.get("id") in protein_id_of)
+        duplicated = {p: n for p, n in shared.items() if n > 1}
+        report.check(len(duplicated) == 4,
+                     "the four dual-locus proteins are present for both loci",
+                     f"found {len(duplicated)}: {sorted(duplicated)[:6]}")
 
 
 GO_IEA_TIERS = ("tested-utex-allele", "admitted-pcc-call", "go-iea-context", "unknown")
@@ -1243,18 +1283,25 @@ def validate_data_manifest(data_dir: str, report: Report) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", default="site/data")
-    parser.add_argument("--raw-dir", default="data/raw")
+    parser.add_argument("--organism", default=None)
+    parser.add_argument("--data-dir", default=None)
+    parser.add_argument("--raw-dir", default=None)
     args = parser.parse_args()
+    try:
+        organism = get_organism(args.organism)
+    except ValueError as error:
+        parser.error(str(error))
+    data_dir = args.data_dir or os.fspath(organism.path("outputDirectory"))
+    raw_dir = args.raw_dir or os.fspath(organism.path("rawDirectory"))
 
     report = Report()
-    meta = validate_meta(load_json(os.path.join(args.data_dir, "meta.json"), report),
-                         report)
-    genes = load_json(os.path.join(args.data_dir, "genes.json"), report)
-    pca = load_json(os.path.join(args.data_dir, "codon_pca.json"), report)
-    excluded = load_json(os.path.join(args.data_dir, "excluded.json"), report)
+    meta = validate_meta(load_json(os.path.join(data_dir, "meta.json"), report),
+                         report, organism)
+    genes = load_json(os.path.join(data_dir, "genes.json"), report)
+    pca = load_json(os.path.join(data_dir, "codon_pca.json"), report)
+    excluded = load_json(os.path.join(data_dir, "excluded.json"), report)
     tss_evidence = (
-        load_json(os.path.join(args.data_dir, "tss_evidence.json"), report)
+        load_json(os.path.join(data_dir, "tss_evidence.json"), report)
         if isinstance(meta, dict) and "tssEvidenceSource" in meta else None
     )
 
@@ -1267,7 +1314,7 @@ def main() -> int:
         # failures, which invites someone to "fix" correct data.
         declared = {g["id"] for g in genes
                     if isinstance(g, dict) and g.get("cdsSegments")}
-        spliced = declared or spliced_loci(args.raw_dir)
+        spliced = declared or spliced_loci(raw_dir, organism)
         source = "declared by cdsSegments" if declared else "derived from the raw genome"
         if spliced:
             report.skip("contiguity check for spliced CDSs",
@@ -1275,14 +1322,14 @@ def main() -> int:
         else:
             report.skip("contiguity check for spliced CDSs",
                         "no spliced CDSs declared and no raw genome available")
-        validate_genes(genes, meta, report, spliced)
+        validate_genes(genes, meta, report, spliced, organism)
         validate_distributions(genes, meta, report)
-        cross_check_against_genome(genes, meta, args.raw_dir, report)
-        cross_check_rna_context(genes, args.raw_dir, report)
+        cross_check_against_genome(genes, meta, raw_dir, report, organism)
+        cross_check_rna_context(genes, raw_dir, report, organism)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
     if excluded is not None and isinstance(genes, list):
-        validate_excluded(excluded, len(genes), report)
+        validate_excluded(excluded, len(genes), report, organism)
 
     if isinstance(meta, dict) and "tssEvidenceSource" in meta and isinstance(genes, list):
         source = meta["tssEvidenceSource"]
@@ -1446,30 +1493,30 @@ def main() -> int:
                 "every published TSS JSON value matches the pinned Table S1 rows",
             )
 
-    go_iea_path = os.path.join(args.data_dir, "go-iea-essentiality-v1.json")
+    go_iea_path = os.path.join(data_dir, "go-iea-essentiality-v1.json")
     if os.path.exists(go_iea_path) and isinstance(genes, list):
         validate_go_iea_essentiality(
             load_json(go_iea_path, report), genes,
-            load_json(os.path.join(args.data_dir, "candidate_evidence.json"), report), report,
+            load_json(os.path.join(data_dir, "candidate_evidence.json"), report), report,
         )
 
-    derived_path = os.path.join(args.data_dir, "source-derived-categories-v1.json")
+    derived_path = os.path.join(data_dir, "source-derived-categories-v1.json")
     if os.path.exists(derived_path) and isinstance(genes, list):
         validate_source_derived_categories(
             load_json(derived_path, report), genes,
-            load_json(os.path.join(args.data_dir, "function-categories-v1.json"), report),
-            load_json(os.path.join(args.data_dir, "pcc7942-essentiality-v1.json"), report),
-            load_json(os.path.join(args.data_dir, "annotations.json"), report), report,
+            load_json(os.path.join(data_dir, "function-categories-v1.json"), report),
+            load_json(os.path.join(data_dir, "pcc7942-essentiality-v1.json"), report),
+            load_json(os.path.join(data_dir, "annotations.json"), report), report,
         )
 
     if isinstance(genes, list):
-        path = os.path.join(args.data_dir, "genes.json")
+        path = os.path.join(data_dir, "genes.json")
         if os.path.exists(path):
             size_mb = os.path.getsize(path) / (1024 * 1024)
             report.check(size_mb <= 6.0, "genes.json is within the 6 MB budget",
                          f"{size_mb:.2f} MB")
 
-    validate_data_manifest(args.data_dir, report)
+    validate_data_manifest(data_dir, report)
 
     return report.emit()
 

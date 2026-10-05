@@ -1,0 +1,54 @@
+{
+  "defaultOrganism": "utex2973",
+  "organisms": {
+    "utex2973": {
+      "accession": "GCF_000817325.1",
+      "assemblyPrefix": "GCF_000817325.1_ASM81732v1",
+      "ftpDirectory": "GCF/000/817/325/GCF_000817325.1_ASM81732v1",
+      "expectedTotalLength": 2744626,
+      "organismIdentity": "Synechococcus elongatus UTEX 2973",
+      "strainIdentity": "UTEX 2973",
+      "taxid": 1350461,
+      "umapSeed": 2973,
+      "caiReferenceRule": "ribosomal-and-housekeeping-product-match-v1",
+      "trnaSpecialCases": {
+        "inosineAtWobble": true,
+        "lysidine": {"aminoAcid": "Ile", "genomicAnticodon": "CAT", "effectiveAnticodon": "LAT"},
+        "verifiedSpeciesTable": "data/trna/anticodon_gene_copies.tsv"
+      },
+      "optionalLayers": ["annotation", "expression", "tss"],
+      "rawDirectory": "data/raw",
+      "outputDirectory": "site/data",
+      "annotationDirectory": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13",
+      "geneCountRange": [2650, 2725],
+      "expectedCdsRecords": 2722,
+      "expectedTerminalStops": {"TAG": 1071, "TAA": 895, "TGA": 749},
+      "expectedSpliced": ["M744_RS00920", "M744_RS13290", "M744_RS13620"],
+      "expectedExceptions": {"M744_RS00920": "ribosomal_slippage"}
+    },
+    "ecoli-k12-mg1655": {
+      "accession": "GCF_000005845.2",
+      "assemblyPrefix": "GCF_000005845.2_ASM584v2",
+      "ftpDirectory": "GCF/000/005/845/GCF_000005845.2_ASM584v2",
+      "expectedTotalLength": 4641652,
+      "organismIdentity": "Escherichia coli str. K-12 substr. MG1655",
+      "strainIdentity": "K-12 substr. MG1655",
+      "taxid": 511145,
+      "umapSeed": 1655,
+      "caiReferenceRule": "ecoli-translation-machinery-product-match-v1",
+      "trnaSpecialCases": {
+        "inosineAtWobble": true,
+        "lysidine": {"aminoAcid": "Ile", "genomicAnticodon": "CAT", "effectiveAnticodon": "LAT"},
+        "selenocysteineIsNotAStop": true
+      },
+      "optionalLayers": [],
+      "rawDirectory": "data/raw/ecoli-k12-mg1655",
+      "outputDirectory": "site/data/organisms/ecoli-k12-mg1655",
+      "geneCountRange": [4000, 4400],
+      "expectedCdsRecords": 4318,
+      "expectedTerminalStops": {"TAG": 304, "TAA": 2744, "TGA": 1239},
+      "expectedSpliced": ["b2891"],
+      "expectedExceptions": {"b0470": "ribosomal_slippage", "b0484": "ribosomal_slippage", "b2891": "ribosomal_slippage"}
+    }
+  }
+}

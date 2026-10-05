@@ -2,7 +2,7 @@
 
 - Purpose: Reacquire and re-verify the genome of record from scratch.
 - Scope: `data/raw/` in this repository.
-- Last verified: 2026-09-18
+- Last verified: 2026-10-05
 
 ## Genome of record
 
@@ -137,3 +137,77 @@ locus tags, so a tag matching is not evidence that the gene model matches.
   CDS records (`WP_011243185.1`, `WP_011242480.1`, `WP_011242807.1`,
   `WP_011242808.1`), which are identical proteins encoded at two loci. Join by
   `protein_id` and never assert equality of record counts.
+
+## E. coli K-12 MG1655 candidate
+
+The second configured genome is RefSeq `GCF_000005845.2` (ASM584v2), organism
+*Escherichia coli* str. K-12 substr. MG1655, taxid 511145, one chromosome of
+4,641,652 bp. It was re-resolved on 2026-10-05 through NCBI Datasets v2:
+
+```text
+GET https://api.ncbi.nlm.nih.gov/datasets/v2/genome/taxon/511145/dataset_report
+    ?filters.reference_only=true&filters.assembly_source=refseq
+    &filters.has_annotation=true
+```
+
+The response had `total_count: 1`; `reports[0]` named accession
+`GCF_000005845.2`, assembly `ASM584v2`, organism and strain as above, taxid
+511145, total length 4,641,652, and annotation counts of 4,290 protein-coding
+genes, 215 non-coding genes, and 145 pseudogenes. The retrieved JSON's SHA-256
+was `d3ae26c9d6ac9f8d21e8c0d0b7ad787b79c71e82be306fa4997e8985de6249a1`.
+The assembly report independently re-matched organism, strain and taxid; its
+SHA-256 was `ca161bcfe8d1842b2160ca3fa20b480956d8242895115c53f5f819a11e895362`.
+
+Acquire and verify every configured file with:
+
+```sh
+./tools/fetch_genome.sh --organism ecoli-k12-mg1655
+```
+
+This writes gitignored inputs under `data/raw/ecoli-k12-mg1655/`. Only its NCBI
+`md5checksums.txt` is tracked (SHA-256
+`433d33545422cffdb762278ecc30256c3c45e8bff9f7859f103ba33f57bc6337`);
+the annotation files remain build-time reproducibility inputs, not downloads
+offered by the product.
+
+### Derived gene-model inventory
+
+The CDS FASTA contains 4,318 records at 4,308 locus tags. Nine loci have
+alternative translated products (ten extra records); the longest deposited CDS
+is selected per exact `b`-number, and every alternative is retained in
+`excluded.json` as `alternate_cds`. The frozen inclusion rule then keeps 4,287
+genes and excludes 31 records: 15 ordinary pseudogene records, ten alternative
+CDSs, three selenoproteins (`b1474`/`fdnG`, `b3894`/`fdoG`, `b4079`/`fdhF`),
+two partial pseudogene CDSs without terminal stops, and one pseudogene CDS whose
+length is not divisible by three. The three in-frame `TGA` selenocysteine codons
+are recognized from GFF `transl_except=...aa:Sec` and excluded explicitly; they
+never become internal stops or recodable stop targets in the unchanged site
+contract.
+
+The included start distribution is ATG 3,865; GTG 336; TTG 80; ATT 4; CTG 2.
+Terminal stops are TAA 2,744; TGA 1,239; TAG 304. `prfB` (`b2891`) is the one
+included joined CDS and carries `ribosomal_slippage`. `dnaX` (`b0470`) and
+`copA` (`b0484`) also retain the gene-level slippage flag because RefSeq records
+alternative frameshifted products at those loci; the longest primary products
+remain the displayed CDSs. All 59 included `ins*` loci remain under the ordinary
+protein-coding inclusion rule (25 included products explicitly contain
+`transposase`).
+
+RefSeq records E. coli anticodons in each tRNA feature's `Note=tRNA-X(ABC)`
+field rather than the coordinate-valued `anticodon=` attribute used by the UTEX
+annotation. The build derives 86 tRNA genes across 41 amino-acid/anticodon
+species, including two Ile-CAT lysidine tRNAs, one tRNA-Sec (`Sec-TCA`), and the
+generic A34-to-inosine convention. Every sense codon has a cognate or wobble-
+compatible tRNA under the configured model; no zero-weight sense codon remains.
+
+The E. coli CAI reference set is derived, never hard-coded, by
+`ecoli-translation-machinery-product-match-v1`: annotated ribosomal-subunit
+proteins excluding modifiers, translation initiation/elongation and peptide-
+release factors, chaperonins/cochaperonins, RNA-polymerase subunits, and ATP-
+synthase subunits. It selects 74 exact `b`-number loci, published in
+`meta.json.caiReferenceSet.locusTags`.
+
+The unchanged 4,287-row `genes.json` is 8,042,780 bytes (7.67 MiB), so it fails
+the frozen 6 MiB budget. All biological, round-trip, protein, context, manifest,
+and browser-metric checks pass; publication is held at the size gate as described
+in the data contract.
