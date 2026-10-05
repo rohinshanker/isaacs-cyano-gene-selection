@@ -1,0 +1,21 @@
+{
+  "files": {
+    "codon_pca.json": {
+      "bytes": 5330,
+      "sha256": "e10f7a08938f1692ca0683a41e615f73e67bee93771f5c1a150733bca939f919"
+    },
+    "excluded.json": {
+      "bytes": 2033,
+      "sha256": "c719a056891ee2ba6e412da0066dbbd4061b353586e5c7a47ef7a9c1521a44c9"
+    },
+    "genes.json": {
+      "bytes": 8042780,
+      "sha256": "7b79d8014ac8eea6978f3e95d8ed1101012b04d4abfc038b044232ff968f2f8a"
+    },
+    "meta.json": {
+      "bytes": 21338,
+      "sha256": "1cca09c9f9715de73e909c5a8922aad367b1a53b7a27deb7a64718ed906c1cd0"
+    }
+  },
+  "schemaVersion": 1
+}
