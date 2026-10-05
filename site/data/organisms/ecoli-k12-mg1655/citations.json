@@ -3,7 +3,7 @@
     {
       "id": "primary-data",
       "title": "Primary data",
-      "description": "This record supplied the sequence and annotation used by this release. The full genome inputs are fetched during the build, checksum-pinned, not committed to this repository, and are not offered for download here.",
+      "description": "This record supplied the sequence and annotation used by this release. The full genome inputs are fetched during the build, checksum-pinned, and are not offered for download here.",
       "items": [
         {
           "id": "ncbi-ecoli-k12-mg1655",

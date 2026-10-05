@@ -23,7 +23,11 @@ def test_a_file_at_the_limit_passes_and_one_byte_over_fails_with_the_figures():
     report = Report()
     assert check_genes_json_budget(report, 20_000, 10) is True
     assert report.failures == []
-    assert report.passes == ["genes.json is within the 2,000-byte-per-gene budget"]
+    # A passing run states the figures too, not only a failing one.
+    assert report.passes == [
+        "genes.json is within the 2,000-byte-per-gene budget: "
+        "20,000 bytes for 10 genes; the limit is 20,000 bytes"
+    ]
 
     assert check_genes_json_budget(report, 20_001, 10) is False
     assert report.failures == [

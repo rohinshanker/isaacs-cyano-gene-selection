@@ -853,7 +853,10 @@ behind it:
 | `genes.json`, bytes | 5,169,989 | 8,042,652 |
 | bytes per gene | 1,904 | 1,876 |
 | limit, bytes | 5,430,000 | 8,574,000 |
-| gzip -9, bytes | 1,596,122 | 2,506,417 |
+| gzip, bytes | 1,614,825 | 2,534,207 |
+
+The gzip row is `gzip -n -9 -c genes.json | wc -c` with Apple gzip 479 on the
+files whose SHA-256 begin `0d2711ade57d` and `171ecc78e98a`.
 
 The two organisms cost the same per gene, so E. coli's larger file is gene
 count, not schema growth, and a per-gene gate still catches the latter. What the

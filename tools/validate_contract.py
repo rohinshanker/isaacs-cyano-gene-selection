@@ -156,11 +156,14 @@ class Report:
 
 
 def check_genes_json_budget(report: Report, size_bytes: int, gene_count: int) -> bool:
-    """Checks genes.json against the per-gene budget and reports the figures."""
+    """Checks genes.json against the per-gene budget.
+
+    The figures are part of the label, so a passing run reports them too.
+    """
     limit = genes_json_budget_bytes(gene_count)
     return report.check(
         size_bytes <= limit,
-        f"genes.json is within the {GENES_JSON_BYTES_PER_GENE:,}-byte-per-gene budget",
+        f"genes.json is within the {GENES_JSON_BYTES_PER_GENE:,}-byte-per-gene budget: "
         f"{size_bytes:,} bytes for {gene_count:,} genes; the limit is {limit:,} bytes",
     )
 
