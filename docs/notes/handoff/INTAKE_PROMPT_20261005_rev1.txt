@@ -1,0 +1,154 @@
+INTAKE PROMPT, 2026-10-05, revision 1
+Supersedes the Claude Science artifact INTAKE_PROMPT_20261005.txt (3,415 bytes, SHA-256
+1a686c857c7e0dd1038a22ee0c739a21d6585f4f625c133bf252caa918bdaf06), which lives in the Claude
+Science artifact store and was never placed in this repository. Revised by the in-repository
+agent on 2026-10-05 after checking that prompt against the working tree. What changed and why is
+at the end.
+
+OWNER DECISIONS OF 2026-10-05, made after this prompt was first written. Where a step below
+says "ask the owner", check this list first.
+- D1 to D5 are confirmed as the owner's. The contract, the roadmap paragraph, rows 13 and 14 and
+  scan ticket step 6 already carry them; do not edit them again.
+- OD730 and A730 count as OD750. Fold-change agreement and replicate-band correlation are the
+  comparability evidence; distribution comparison is a units check. Reprocessing is approved.
+- Calibration downloads are allowed. The pilot's seven downloads are covered; record, don't flag.
+- Claude Science is the last resort. Verify here whatever can be reached here.
+- The blocked-task register is not opened as a ticket. The prerequisites ticket is opened once
+  the five gaps are confirmed in the code.
+- The dataset selector enters the site as a "Data Sources" section below "Color by" with a
+  centre peek; see scan ticket step 6, "Owner design". Help icons and popovers are fine.
+- Still open for the owner: the narrow-miss boundary, array versus RNA-seq, the fitness data
+  type, and the 32 escalated pairs.
+
+Two Claude Science returns are waiting in docs/notes/handoff/. Run intake on both, in this order,
+under docs/validation/claude-science-handoff.md ("Intake", "Hard boundaries") and the offload
+ticket ("Intake", "Verification"). Read those sections first. Refer to ticket and contract text by
+section heading, never by line number: step 1 edits the same files step 2 points into.
+
+STEP 0: STATE OF THE TREE
+- Branch main at c0eee4d, which holds the 2026-10-04 intake, unpushed. Other sessions' work and
+  the five tickets opened 2026-10-05 are still uncommitted. Check git status first. Do not commit, stage, or stash anything unless the
+  owner has said to. Edit only the files this prompt names.
+- Confirm no tracked file changed since the 2026-10-04 intake. The session says it edited none.
+
+STEP 1: PACKAGE D (returned 2026-10-04; ask the owner for the Sent date)
+Files: RET_claude-science-session__20261004.md and cyano_package_D_pairs_20261004.tsv, SHA-256
+9a45d8384a23ecbf2ea2619043d5610a11d096912020878bd95df59f91ff799c, 941 data rows.
+Check, do not accept on a checksum alone:
+- Both checksums, the row count, and the input: the table must cite the accepted package B file,
+  SHA-256 fa65266cd402ae974c072e9ad587bd990773d2df002eb08ed856ba4bca0c750e.
+- The verdict counts (0 comparable, 32 escalate, 178 undecidable, 731 not comparable) and the
+  axes-passed distribution, recomputed from the table.
+- The pair arithmetic: 63 condition sets, 25 stated exclusions, no within-artifact pair, no
+  cross-data-type pair, no SuperSeries scored beside its SubSeries.
+- That every source_a and source_b cell is verbatim from the package B row it names (mechanical).
+- A re-score of a sample of pairs against the contract's six thresholds, including all seven
+  nearest misses and all 32 escalated pairs.
+- Boundaries: no pair admitted, no threshold set, no escalated pair resolved.
+Weigh three judgements the return made and says it made. They are the lab's, so record them as
+open and do not adopt them: the "narrow miss" boundary that defines escalate (3 C, ratio 1.5,
+factor 3) is the package's own; array and RNA-seq were pooled as one data type; OD730 and A730
+were scored undecidable against the contract's OD750.
+A failing row is named and returned, not repaired. A package can pass with rows returned.
+If it passes: record the intake in the offload ticket; record the result and the rejected pairs
+by failing axis in scan ticket step 3 (summarise, cite the table); add the 32 escalated pairs and
+the seven nearest misses as evidence to row 14 of AAA-biological-decisions-to-review.md with
+assay, both condition sets and the marginal axis; remove the Package D queue row; correct every
+sentence that still calls package D unsent (ticket index, offload ticket "Current state", scan
+ticket "Verification"). The owner decided 2026-10-05 that the Package B relabel (data rows 31
+and 70) may be made locally or through Claude Science. If made locally, write a new dated table,
+change only the ten cells, record the edit as an in-repository correction in the offload ticket,
+and then remove the Package B correction row. The SEND file may be deleted only
+once all six pastes carry a Sent date.
+Also fix a line the 2026-10-04 intake missed: the PCC 6311 and PCC 7943 BioCyc tickets still say
+the crosswalk second check is pending.
+
+STEP 2: PACKAGE E (returned 2026-10-05)
+Read RET_claude-science-session__20261005.md, SHA-256
+298d4513a9fcde2ac703506cf19088b751a17037fd42dbafa57c4ecfce785900. Recompute the 16 checksums in
+its E.1 table before reading further.
+
+2a. What this package is. It was dispatched by the owner directly in a Claude Science session.
+It has no queue row and no SEND text in this repository. Its architecture document, integration
+map and mockup are design work about this repository, which the handoff contract assigns to the
+agents here. Treat them as a proposal and as pre-grounding, never as a verified design. The
+methods memo, the pilot and the register are evidence and get the ordinary intake checks.
+
+2b. Intake checks.
+- Citations: all 44 identifiers in cyano_comparability_methods_citations_20261005.tsv resolve to
+  the named paper. List the 15 read from abstracts only and mark every claim that rests on one.
+- Pilot files: re-fetch the seven GEO files in cyano_comparability_pilot_files_20261005.tsv and
+  recompute each SHA-256.
+- Pilot statistics: recompute the headline numbers from the pairs file (pooled AUROC, the
+  replicate bound, the cross-study count inside it, the similar-controls AUROC).
+- Missing artifact: the pilot names pilot_code.tar.gz. It is not in docs/notes/handoff/ and not
+  in E.1. Name it as missing and return for it; without it the pairs file cannot be regenerated.
+- Integration map: re-match every quoted rule B1 to B61 at its file and line on the current tree
+  (mechanical). Open each of the five "existing gaps" in architecture section 7 in the code and
+  confirm it before repeating it.
+- Condition records: compare a sample of the 63 hand-parsed records with their package B rows,
+  at least one per study. They are illustrative; nothing reads them as data.
+- Register: spot-check evidence_location on every high-priority row.
+- Mockup: it is self-contained. Render it at mobile, tablet and desktop widths and record what
+  was and was not seen. It is evidence of a proposal, not shipped UI.
+- Boundary to record, not to repair: the pilot downloaded seven candidate GEO tables into the
+  session sandbox on the strength of source-ledger entries written hours earlier, uncommitted,
+  that say nothing has been downloaded and that a permitted artifact still needs the admission
+  contract first. One of them, GSE327989, is permitted only conditionally. Nothing reached data/
+  or site/. Record the fact in the offload ticket and make the ledger sentence true again.
+
+2c. What may change now, without the owner.
+- Scan ticket steps 3 and 6: a short pointer to the return and its files, the pilot's findings as
+  evidence, and the list of owner decisions the design waits on. Do not write architecture
+  sections 3 to 6 into the ticket as "the method" or "the design".
+- GSE45762: the pilot found its column labels contradict its own sample sheet. Record that in the
+  roadmap register beside the artifact.
+- The ticket index: one line saying package E returned and where its intake is recorded.
+
+2d. What waits for the owner. Ask; do not edit first.
+- D1 to D5. First ask the owner to confirm that the instruction quoted in architecture section 1
+  is theirs as written; this repository holds no other copy. Only after D1 to D5 are confirmed,
+  edit data-contract.md "Condition comparability", the roadmap's sister-strain paragraph, scan
+  ticket step 6 and rows 13 and 14.
+- New tickets. Both proposed tickets come from Claude Science, not the owner. Put a plain
+  keep-or-decline question for each before any design question: a ticket for architecture
+  section 7's prerequisites, and O_blocked-task-register. The register as proposed keeps every
+  row forever, which the working policy forbids for a ticket; if the owner keeps it, say where a
+  never-deleted list should live. Until then the 59-row TSV stays in handoff/ as evidence.
+- Supplied PDFs. The owner decided 2026-10-05 to place them in
+  ~/Desktop/coding_stuff/ISAACS-LAB/private-literature/, outside this repository; its README
+  lists what is wanted. Read them there. Commit none of them.
+- Credentials. Request no credential and open no account. Any step that needs one is disclosed
+  to the owner first, with the exact action and reason.
+- Questions. Add the six questions of architecture section 10 to the scan ticket's "Open
+  questions for the lab" under ids E-Q1 to E-Q6. The return calls reprocessing "Q5"; Q1 to Q8
+  already mean other questions in this repository. Add package D's three lab questions beside
+  them.
+- The design adds tooltips, explanatory lines and missing-value marks to a panel. Raise that
+  with the owner before any of it is built.
+
+BOUNDARIES
+Nothing from the pilot enters data/ or site/. No dataset is admitted, no pair is judged
+comparable, no threshold is set, no licence decision is changed, no ticket is closed. Intake
+creates no Claude Science work beyond naming what is returned.
+
+FINISH
+Run npm test, .venv/bin/python -m pytest -q and .venv/bin/python tools/validate_contract.py.
+Whitespace-check the edited files. Report: every checksum result, each return passed or returned
+with rows named, every file changed, everything left for the owner.
+
+WHAT CHANGED FROM THE ORIGINAL, AND WHY
+1. Package D was to be accepted on a checksum and a row count. The offload ticket requires more,
+   and the return itself declares three judgement calls that belong to the lab.
+2. Package D's downstream records were missing: row 14 evidence, the scan ticket result, the
+   queue row, the SEND file rule.
+3. Line-number addressing was correct on the tree as it stood, but step 1 edits the files step 2
+   pointed into.
+4. Package E's intake stopped at checksums. Citations, pilot files, pilot statistics, quoted
+   rules and the missing code archive were unchecked.
+5. Actions 2 and 3 wrote an unconfirmed design into the scan ticket as the method and the
+   design, ahead of the owner decisions the same prompt says must come first.
+6. Action 5 created a ticket whose "rows are never deleted" rule conflicts with the working
+   policy, and both new tickets skipped the keep-or-decline question.
+7. The owner-question ids collided with Q1 to Q8.
+8. The pilot's sandbox downloads and the stale BioCyc ticket lines were not mentioned.

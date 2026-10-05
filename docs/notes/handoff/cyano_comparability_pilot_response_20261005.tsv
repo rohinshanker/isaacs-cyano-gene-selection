@@ -1,0 +1,52 @@
+contrast_a	study_a	desc_a	contrast_b	study_b	desc_b	response_class	n_shared_genes	spearman_lfc
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	same_perturbation_same_study	2498	0.7582
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C03	GSE79726	N-minus vs N-plus, 48 h	different_perturbation	2498	0.1753
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	different_perturbation	2498	0.3917
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	different_perturbation	2498	-0.5601
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C06	GSE89999	clock-rescue: 1 h darkness vs dusk	different_perturbation	2498	-0.5591
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	different_perturbation	2498	-0.5999
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	-0.242
+C01	GSE222067	WT 300 vs 0 mM NaCl, day 4	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	0.2049
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C03	GSE79726	N-minus vs N-plus, 48 h	different_perturbation	2498	0.1003
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	different_perturbation	2498	0.3008
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	different_perturbation	2498	-0.4348
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C06	GSE89999	clock-rescue: 1 h darkness vs dusk	different_perturbation	2498	-0.4123
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	different_perturbation	2498	-0.5029
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	-0.1929
+C02	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	0.1514
+C03	GSE79726	N-minus vs N-plus, 48 h	C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	different_perturbation	2498	-0.1148
+C03	GSE79726	N-minus vs N-plus, 48 h	C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	different_perturbation	2498	0.0638
+C03	GSE79726	N-minus vs N-plus, 48 h	C06	GSE89999	clock-rescue: 1 h darkness vs dusk	different_perturbation	2498	-0.0528
+C03	GSE79726	N-minus vs N-plus, 48 h	C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	different_perturbation	2498	-0.1629
+C03	GSE79726	N-minus vs N-plus, 48 h	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	0.153
+C03	GSE79726	N-minus vs N-plus, 48 h	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	0.078
+C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	opposite_perturbation	2498	-0.7131
+C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	C06	GSE89999	clock-rescue: 1 h darkness vs dusk	opposite_perturbation	2498	-0.4705
+C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	opposite_perturbation	2498	-0.4892
+C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	-0.3058
+C04	GSE104203	60 min in 10x high light vs pre-pulse (8 h)	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	0.0904
+C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	C06	GSE89999	clock-rescue: 1 h darkness vs dusk	same_perturbation_cross_study	2498	0.6883
+C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	same_perturbation_cross_study	2498	0.6131
+C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	0.2582
+C05	GSE104203	60 min in 10x shade vs pre-pulse (8 h)	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	-0.1841
+C06	GSE89999	clock-rescue: 1 h darkness vs dusk	C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	same_perturbation_same_study	2498	0.6873
+C06	GSE89999	clock-rescue: 1 h darkness vs dusk	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	0.1183
+C06	GSE89999	clock-rescue: 1 h darkness vs dusk	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	-0.1222
+C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	C08	GSE327989	PebAB overexpression vs WT, day 4	different_perturbation	2498	0.1646
+C07	GSE89999	rpaA- clock-rescue: 1 h darkness vs dusk	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	-0.12
+C08	GSE327989	PebAB overexpression vs WT, day 4	C09	GSE288532	cscB-sps subjective day, 8 h vs 0 h	different_perturbation	2498	0.0794
+C01_rep1	GSE222067	WT 300 vs 0 mM NaCl, day 4 (rep 1 only)	C01_rep2	GSE222067	WT 300 vs 0 mM NaCl, day 4 (rep 2 only)	replicate_split_same_contrast	2498	0.8945
+C01_rep1	GSE222067	WT 300 vs 0 mM NaCl, day 4 (rep 1 only)	C01_rep3	GSE222067	WT 300 vs 0 mM NaCl, day 4 (rep 3 only)	replicate_split_same_contrast	2498	0.8192
+C01_rep2	GSE222067	WT 300 vs 0 mM NaCl, day 4 (rep 2 only)	C01_rep3	GSE222067	WT 300 vs 0 mM NaCl, day 4 (rep 3 only)	replicate_split_same_contrast	2498	0.8821
+C02_rep1	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4 (rep 1 only)	C02_rep2	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4 (rep 2 only)	replicate_split_same_contrast	2498	0.7052
+C02_rep1	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4 (rep 1 only)	C02_rep3	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4 (rep 3 only)	replicate_split_same_contrast	2498	0.7521
+C02_rep2	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4 (rep 2 only)	C02_rep3	GSE222067	dsps-ect 300 vs 0 mM NaCl, day 4 (rep 3 only)	replicate_split_same_contrast	2498	0.8253
+C03_rep1	GSE79726	N-minus vs N-plus, 48 h (rep 1 only)	C03_rep2	GSE79726	N-minus vs N-plus, 48 h (rep 2 only)	replicate_split_same_contrast	2498	0.3912
+C04_rep1	GSE104203	60 min in 10x high light vs pre-pulse (8 h) (rep 1 only)	C04_rep2	GSE104203	60 min in 10x high light vs pre-pulse (8 h) (rep 2 only)	replicate_split_same_contrast	2498	0.7409
+C05_rep1	GSE104203	60 min in 10x shade vs pre-pulse (8 h) (rep 1 only)	C05_rep2	GSE104203	60 min in 10x shade vs pre-pulse (8 h) (rep 2 only)	replicate_split_same_contrast	2498	0.8122
+C08_rep1	GSE327989	PebAB overexpression vs WT, day 4 (rep 1 only)	C08_rep2	GSE327989	PebAB overexpression vs WT, day 4 (rep 2 only)	replicate_split_same_contrast	2498	0.6495
+C08_rep1	GSE327989	PebAB overexpression vs WT, day 4 (rep 1 only)	C08_rep3	GSE327989	PebAB overexpression vs WT, day 4 (rep 3 only)	replicate_split_same_contrast	2498	0.6057
+C08_rep2	GSE327989	PebAB overexpression vs WT, day 4 (rep 2 only)	C08_rep3	GSE327989	PebAB overexpression vs WT, day 4 (rep 3 only)	replicate_split_same_contrast	2498	0.6665
+C09_rep1	GSE288532	cscB-sps subjective day, 8 h vs 0 h (rep 1 only)	C09_rep2	GSE288532	cscB-sps subjective day, 8 h vs 0 h (rep 2 only)	replicate_split_same_contrast	2498	0.8277
+C09_rep1	GSE288532	cscB-sps subjective day, 8 h vs 0 h (rep 1 only)	C09_rep3	GSE288532	cscB-sps subjective day, 8 h vs 0 h (rep 3 only)	replicate_split_same_contrast	2498	0.7813
+C09_rep2	GSE288532	cscB-sps subjective day, 8 h vs 0 h (rep 2 only)	C09_rep3	GSE288532	cscB-sps subjective day, 8 h vs 0 h (rep 3 only)	replicate_split_same_contrast	2498	0.8735

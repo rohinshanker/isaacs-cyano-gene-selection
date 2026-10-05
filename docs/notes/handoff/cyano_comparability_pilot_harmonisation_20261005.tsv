@@ -1,0 +1,9 @@
+study	rows_in	duplicated_ids_dropped	not_in_pcc7942_gff_dropped	genes_harmonised	id_route	rows	rs_with_old_tag	geneid_without_unique_tag	name_vs_geneid_tag_disagreements	n_samples	n_conditions	in_shared_universe
+GSE104203	2661	0	41	2620	Gene ID column = Synpcc7942_ old tag (whitespace stripped)					60.0	30.0	2498
+GSE222067	2661	0	41	2620	locus_tag column = Synpcc7942_ old tag					12.0	4.0	2498
+GSE288532	2665	0	0	2665	SYNPCC7942_RS locus_tag -> old_locus_tag on same GFF gene feature	2761.0	2665.0			30.0	10.0	2498
+GSE327989	2611	0	39	2572	Name column = Synpcc7942_ old tag					12.0	4.0	2498
+GSE45762	2662	2	41	2619	NCBI GeneID -> NCBI Gene esummary otheraliases Synpcc7942_ tag (unique)			61.0	0.0			2498
+GSE79726	2661	0	41	2620	ID_REF = Synpcc7942_ old tag					6.0	3.0	2498
+GSE89999	2661	0	41	2620	Gene name column = Synpcc7942_ old tag					24.0	24.0	2498
+GSE205444	2550	0	0	2550	source_gene_id = Synpcc7942_ old tag (repo table)					1.0	1.0	2498

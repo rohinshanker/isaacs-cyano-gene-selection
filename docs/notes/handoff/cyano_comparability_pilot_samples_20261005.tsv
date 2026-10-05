@@ -1,0 +1,146 @@
+study	sample	label	condition	genotype	rep	f_geno	f_treat	f_time	package_B_row	similar_ctrl
+GSE104203	GSM2792387	Low Light, 0.5 hours since dawn, replicate 1	LowLight_0.5h	WT	1	WT	LowLight	0.5h	9.0	True
+GSE104203	GSM2792389	Low Light, 2 hours since dawn, replicate 1	LowLight_2.0h	WT	1	WT	LowLight	2.0h	9.0	True
+GSE104203	GSM2792391	Low Light, 4 hours since dawn, replicate 1	LowLight_4.0h	WT	1	WT	LowLight	4.0h	9.0	True
+GSE104203	GSM2792393	Low Light, 6 hours since dawn, replicate 1	LowLight_6.0h	WT	1	WT	LowLight	6.0h	9.0	True
+GSE104203	GSM2792395	Low Light, 8 hours since dawn, replicate 1	LowLight_8.0h	WT	1	WT	LowLight	8.0h	9.0	True
+GSE104203	GSM2792397	Low Light, 9 hours since dawn, replicate 1	LowLight_9.0h	WT	1	WT	LowLight	9.0h	9.0	True
+GSE104203	GSM2792399	Low Light, 10 hours since dawn, replicate 1	LowLight_10.0h	WT	1	WT	LowLight	10.0h	9.0	True
+GSE104203	GSM2792401	Low Light, 12 hours since dawn, replicate 1	LowLight_12.0h	WT	1	WT	LowLight	12.0h	9.0	True
+GSE104203	GSM2792403	Clear Day, 0.5 hours since dawn, replicate 1	ClearDay_0.5h	WT	1	WT	ClearDay	0.5h	10.0	True
+GSE104203	GSM2792405	Clear Day, 2 hours since dawn, replicate 1	ClearDay_2.0h	WT	1	WT	ClearDay	2.0h	10.0	True
+GSE104203	GSM2792407	Clear Day, 4 hours since dawn, replicate 1	ClearDay_4.0h	WT	1	WT	ClearDay	4.0h	10.0	True
+GSE104203	GSM2792409	Clear Day, 6 hours since dawn, replicate 1	ClearDay_6.0h	WT	1	WT	ClearDay	6.0h	10.0	True
+GSE104203	GSM2792411	Clear Day, 8 hours since dawn, replicate 1	ClearDay_8.0h	WT	1	WT	ClearDay	8.0h	10.0	True
+GSE104203	GSM2792413	Clear Day, 9 hours since dawn, replicate 1	ClearDay_9.0h	WT	1	WT	ClearDay	9.0h	10.0	True
+GSE104203	GSM2792415	Clear Day, 10 hours since dawn, replicate 1	ClearDay_10.0h	WT	1	WT	ClearDay	10.0h	10.0	True
+GSE104203	GSM2792417	Clear Day, 12 hours since dawn, replicate 1	ClearDay_12.0h	WT	1	WT	ClearDay	12.0h	10.0	True
+GSE104203	GSM2792419	High Light Pulse, 8 hours since Dawn, Time 0, replicate 1	HighLightPulse_8.0h	WT	1	WT	HighLightPulse	8.0h	11.0	False
+GSE104203	GSM2792421	High Light Pulse, 8.25 hours since Dawn, Time 15 min, replicate 1	HighLightPulse_8.25h	WT	1	WT	HighLightPulse	8.25h	11.0	False
+GSE104203	GSM2792423	High Light Pulse, 8.5 hours since Dawn, Time 30 min, replicate 1	HighLightPulse_8.5h	WT	1	WT	HighLightPulse	8.5h	11.0	False
+GSE104203	GSM2792425	High Light Pulse, 9 hours since Dawn, Time 60 min, replicate 1	HighLightPulse_9.0h	WT	1	WT	HighLightPulse	9.0h	11.0	False
+GSE104203	GSM2792427	High Light Pulse, 9.25 hours since Dawn, Time 15 min return, replicate 1	HighLightPulse_9.25h	WT	1	WT	HighLightPulse	9.25h	11.0	False
+GSE104203	GSM2792429	High Light Pulse, 9.5 hours since Dawn, Time 30 min return, replicate 1	HighLightPulse_9.5h	WT	1	WT	HighLightPulse	9.5h	11.0	False
+GSE104203	GSM2792431	High Light Pulse, 10 hours since Dawn, Time 60 min return, replicate 1	HighLightPulse_10.0h	WT	1	WT	HighLightPulse	10.0h	11.0	False
+GSE104203	GSM2792433	Shade Pulse, 8 hours since Dawn, Time 0, replicate 1	ShadePulse_8.0h	WT	1	WT	ShadePulse	8.0h	12.0	False
+GSE104203	GSM2792435	Shade Pulse, 8.25 hours since Dawn, Time 15 min, replicate 1	ShadePulse_8.25h	WT	1	WT	ShadePulse	8.25h	12.0	False
+GSE104203	GSM2792437	Shade Pulse, 8.5 hours since Dawn, Time 30 min, replicate 1	ShadePulse_8.5h	WT	1	WT	ShadePulse	8.5h	12.0	False
+GSE104203	GSM2792439	Shade Pulse, 9 hours since Dawn, Time 60 min, replicate 1	ShadePulse_9.0h	WT	1	WT	ShadePulse	9.0h	12.0	False
+GSE104203	GSM2792441	Shade Pulse, 9.25 hours since Dawn, Time 15 min return, replicate 1	ShadePulse_9.25h	WT	1	WT	ShadePulse	9.25h	12.0	False
+GSE104203	GSM2792443	Shade Pulse, 9.5 hours since Dawn, Time 30 min return, replicate 1	ShadePulse_9.5h	WT	1	WT	ShadePulse	9.5h	12.0	False
+GSE104203	GSM2792445	Shade Pulse, 10 hours since Dawn, Time 60 min return, replicate 1	ShadePulse_10.0h	WT	1	WT	ShadePulse	10.0h	12.0	False
+GSE104203	GSM2792388	Low Light, 0.5 hours since dawn, replicate 2	LowLight_0.5h	WT	2	WT	LowLight	0.5h	9.0	True
+GSE104203	GSM2792390	Low Light, 2 hours since dawn, replicate 2	LowLight_2.0h	WT	2	WT	LowLight	2.0h	9.0	True
+GSE104203	GSM2792392	Low Light, 4 hours since dawn, replicate 2	LowLight_4.0h	WT	2	WT	LowLight	4.0h	9.0	True
+GSE104203	GSM2792394	Low Light, 6 hours since dawn, replicate 2	LowLight_6.0h	WT	2	WT	LowLight	6.0h	9.0	True
+GSE104203	GSM2792396	Low Light, 8 hours since dawn, replicate 2	LowLight_8.0h	WT	2	WT	LowLight	8.0h	9.0	True
+GSE104203	GSM2792398	Low Light, 9 hours since dawn, replicate 2	LowLight_9.0h	WT	2	WT	LowLight	9.0h	9.0	True
+GSE104203	GSM2792400	Low Light, 10 hours since dawn, replicate 2	LowLight_10.0h	WT	2	WT	LowLight	10.0h	9.0	True
+GSE104203	GSM2792402	Low Light, 12 hours since dawn, replicate 2	LowLight_12.0h	WT	2	WT	LowLight	12.0h	9.0	True
+GSE104203	GSM2792404	Clear Day, 0.5 hours since dawn, replicate 2	ClearDay_0.5h	WT	2	WT	ClearDay	0.5h	10.0	True
+GSE104203	GSM2792406	Clear Day, 2 hours since dawn, replicate 2	ClearDay_2.0h	WT	2	WT	ClearDay	2.0h	10.0	True
+GSE104203	GSM2792408	Clear Day, 4 hours since dawn, replicate 2	ClearDay_4.0h	WT	2	WT	ClearDay	4.0h	10.0	True
+GSE104203	GSM2792410	Clear Day, 6 hours since dawn, replicate 2	ClearDay_6.0h	WT	2	WT	ClearDay	6.0h	10.0	True
+GSE104203	GSM2792412	Clear Day, 8 hours since dawn, replicate 2	ClearDay_8.0h	WT	2	WT	ClearDay	8.0h	10.0	True
+GSE104203	GSM2792414	Clear Day, 9 hours since dawn, replicate 2	ClearDay_9.0h	WT	2	WT	ClearDay	9.0h	10.0	True
+GSE104203	GSM2792416	Clear Day, 10 hours since dawn, replicate 2	ClearDay_10.0h	WT	2	WT	ClearDay	10.0h	10.0	True
+GSE104203	GSM2792418	Clear Day, 12 hours since dawn, replicate 2	ClearDay_12.0h	WT	2	WT	ClearDay	12.0h	10.0	True
+GSE104203	GSM2792420	High Light Pulse, 8 hours since Dawn, Time 0, replicate 2	HighLightPulse_8.0h	WT	2	WT	HighLightPulse	8.0h	11.0	False
+GSE104203	GSM2792422	High Light Pulse, 8.25 hours since Dawn, Time 15 min, replicate 2	HighLightPulse_8.25h	WT	2	WT	HighLightPulse	8.25h	11.0	False
+GSE104203	GSM2792424	High Light Pulse, 8.5 hours since Dawn, Time 30 min, replicate 2	HighLightPulse_8.5h	WT	2	WT	HighLightPulse	8.5h	11.0	False
+GSE104203	GSM2792426	High Light Pulse, 9 hours since Dawn, Time 60 min, replicate 2	HighLightPulse_9.0h	WT	2	WT	HighLightPulse	9.0h	11.0	False
+GSE104203	GSM2792428	High Light Pulse, 9.25 hours since Dawn, Time 15 min return, replicate 2	HighLightPulse_9.25h	WT	2	WT	HighLightPulse	9.25h	11.0	False
+GSE104203	GSM2792430	High Light Pulse, 9.5 hours since Dawn, Time 30 min return, replicate 2	HighLightPulse_9.5h	WT	2	WT	HighLightPulse	9.5h	11.0	False
+GSE104203	GSM2792432	High Light Pulse, 10 hours since Dawn, Time 60 min return, replicate 2	HighLightPulse_10.0h	WT	2	WT	HighLightPulse	10.0h	11.0	False
+GSE104203	GSM2792434	Shade Pulse, 8 hours since Dawn, Time 0, replicate 2	ShadePulse_8.0h	WT	2	WT	ShadePulse	8.0h	12.0	False
+GSE104203	GSM2792436	Shade Pulse, 8.25 hours since Dawn, Time 15 min, replicate 2	ShadePulse_8.25h	WT	2	WT	ShadePulse	8.25h	12.0	False
+GSE104203	GSM2792438	Shade Pulse, 8.5 hours since Dawn, Time 30 min, replicate 2	ShadePulse_8.5h	WT	2	WT	ShadePulse	8.5h	12.0	False
+GSE104203	GSM2792440	Shade Pulse, 9 hours since Dawn, Time 60 min, replicate 2	ShadePulse_9.0h	WT	2	WT	ShadePulse	9.0h	12.0	False
+GSE104203	GSM2792442	Shade Pulse, 9.25 hours since Dawn, Time 15 min return, replicate 2	ShadePulse_9.25h	WT	2	WT	ShadePulse	9.25h	12.0	False
+GSE104203	GSM2792444	Shade Pulse, 9.5 hours since Dawn, Time 30 min return, replicate 2	ShadePulse_9.5h	WT	2	WT	ShadePulse	9.5h	12.0	False
+GSE104203	GSM2792446	Shade Pulse, 10 hours since Dawn, Time 60 min return, replicate 2	ShadePulse_10.0h	WT	2	WT	ShadePulse	10.0h	12.0	False
+GSE222067	GSM6914144	WT, 0 mM NaCl, 4-day, rep1	WT_0mM_NaCl	WT	1	WT	0mM_NaCl	day4	29.0	False
+GSE222067	GSM6914145	WT, 0 mM NaCl, 4-day, rep2	WT_0mM_NaCl	WT	2	WT	0mM_NaCl	day4	29.0	False
+GSE222067	GSM6914146	WT, 0 mM NaCl, 4-day, rep3	WT_0mM_NaCl	WT	3	WT	0mM_NaCl	day4	29.0	False
+GSE222067	GSM6914147	WT, 300 mM NaCl, 4-day, rep1	WT_300mM_NaCl	WT	1	WT	300mM_NaCl	day4	30.0	False
+GSE222067	GSM6914148	WT, 300 mM NaCl, 4-day, rep2	WT_300mM_NaCl	WT	2	WT	300mM_NaCl	day4	30.0	False
+GSE222067	GSM6914149	WT, 300 mM NaCl, 4-day, rep3	WT_300mM_NaCl	WT	3	WT	300mM_NaCl	day4	30.0	False
+GSE222067	GSM6914150	Syn7942/Δsps-ect, 0 mM NaCl, 4-day, rep1	dsps-ect_0mM_NaCl	dsps-ect	1	dsps-ect	0mM_NaCl	day4	29.0	False
+GSE222067	GSM6914151	Syn7942/Δsps-ect, 0 mM NaCl, 4-day, rep2	dsps-ect_0mM_NaCl	dsps-ect	2	dsps-ect	0mM_NaCl	day4	29.0	False
+GSE222067	GSM6914152	Syn7942/Δsps-ect, 0 mM NaCl, 4-day, rep3	dsps-ect_0mM_NaCl	dsps-ect	3	dsps-ect	0mM_NaCl	day4	29.0	False
+GSE222067	GSM6914153	Syn7942/Δsps-ect, 300 mM NaCl, 4-day, rep1	dsps-ect_300mM_NaCl	dsps-ect	1	dsps-ect	300mM_NaCl	day4	30.0	False
+GSE222067	GSM6914154	Syn7942/Δsps-ect, 300 mM NaCl, 4-day, rep2	dsps-ect_300mM_NaCl	dsps-ect	2	dsps-ect	300mM_NaCl	day4	30.0	False
+GSE222067	GSM6914155	Syn7942/Δsps-ect, 300 mM NaCl, 4-day, rep3	dsps-ect_300mM_NaCl	dsps-ect	3	dsps-ect	300mM_NaCl	day4	30.0	False
+GSE288532	GSM8769503	Light, Time 0 hours, rep 1	subjDay_T0h	cscB-sps	1	cscB-sps	subjDay	T0h	38.0	False
+GSE288532	GSM8769504	Light, Time 0 hours, rep 2	subjDay_T0h	cscB-sps	2	cscB-sps	subjDay	T0h	38.0	False
+GSE288532	GSM8769505	Light, Time 0 hours, rep 3	subjDay_T0h	cscB-sps	3	cscB-sps	subjDay	T0h	38.0	False
+GSE288532	GSM8769506	Light, Time 2 hours, rep 1	subjDay_T2h	cscB-sps	1	cscB-sps	subjDay	T2h	38.0	False
+GSE288532	GSM8769507	Light, Time 2 hours, rep 2	subjDay_T2h	cscB-sps	2	cscB-sps	subjDay	T2h	38.0	False
+GSE288532	GSM8769508	Light, Time 2 hours, rep 3	subjDay_T2h	cscB-sps	3	cscB-sps	subjDay	T2h	38.0	False
+GSE288532	GSM8769509	Light, Time 4 hours, rep 1	subjDay_T4h	cscB-sps	1	cscB-sps	subjDay	T4h	38.0	False
+GSE288532	GSM8769510	Light, Time 4 hours, rep 2	subjDay_T4h	cscB-sps	2	cscB-sps	subjDay	T4h	38.0	False
+GSE288532	GSM8769511	Light, Time 4 hours, rep 3	subjDay_T4h	cscB-sps	3	cscB-sps	subjDay	T4h	38.0	False
+GSE288532	GSM8769512	Light, Time 8 hours, rep 1	subjDay_T8h	cscB-sps	1	cscB-sps	subjDay	T8h	38.0	False
+GSE288532	GSM8769513	Light, Time 8 hours, rep 2	subjDay_T8h	cscB-sps	2	cscB-sps	subjDay	T8h	38.0	False
+GSE288532	GSM8769514	Light, Time 8 hours, rep 3	subjDay_T8h	cscB-sps	3	cscB-sps	subjDay	T8h	38.0	False
+GSE288532	GSM8769515	Light, Time 12 hours, rep 1	subjDay_T12h	cscB-sps	1	cscB-sps	subjDay	T12h	38.0	False
+GSE288532	GSM8769516	Light, Time 12 hours, rep 2	subjDay_T12h	cscB-sps	2	cscB-sps	subjDay	T12h	38.0	False
+GSE288532	GSM8769517	Light, Time 12 hours, rep 3	subjDay_T12h	cscB-sps	3	cscB-sps	subjDay	T12h	38.0	False
+GSE288532	GSM8769518	Light, Time 16 hours, rep 1	subjDay_T16h	cscB-sps	1	cscB-sps	subjDay	T16h	38.0	False
+GSE288532	GSM8769519	Light, Time 16 hours, rep 2	subjDay_T16h	cscB-sps	2	cscB-sps	subjDay	T16h	38.0	False
+GSE288532	GSM8769520	Light, Time 16 hours, rep 3	subjDay_T16h	cscB-sps	3	cscB-sps	subjDay	T16h	38.0	False
+GSE288532	GSM8769521	Dark, Time 0 hours, rep 1	subjNight_T0h	cscB-sps	1	cscB-sps	subjNight	T0h	38.0	False
+GSE288532	GSM8769522	Dark, Time 0 hours, rep 2	subjNight_T0h	cscB-sps	2	cscB-sps	subjNight	T0h	38.0	False
+GSE288532	GSM8769523	Dark, Time 0 hours, rep 3	subjNight_T0h	cscB-sps	3	cscB-sps	subjNight	T0h	38.0	False
+GSE288532	GSM8769524	Dark, Time 2 hours, rep 1	subjNight_T2h	cscB-sps	1	cscB-sps	subjNight	T2h	38.0	False
+GSE288532	GSM8769525	Dark, Time 2 hours, rep 2	subjNight_T2h	cscB-sps	2	cscB-sps	subjNight	T2h	38.0	False
+GSE288532	GSM8769526	Dark, Time 2 hours, rep 3	subjNight_T2h	cscB-sps	3	cscB-sps	subjNight	T2h	38.0	False
+GSE288532	GSM8769527	Dark, Time 4 hours, rep 1	subjNight_T4h	cscB-sps	1	cscB-sps	subjNight	T4h	38.0	False
+GSE288532	GSM8769528	Dark, Time 4 hours, rep 2	subjNight_T4h	cscB-sps	2	cscB-sps	subjNight	T4h	38.0	False
+GSE288532	GSM8769529	Dark, Time 4 hours, rep 3	subjNight_T4h	cscB-sps	3	cscB-sps	subjNight	T4h	38.0	False
+GSE288532	GSM8769530	Dark, Time 8 hours, rep 1	subjNight_T8h	cscB-sps	1	cscB-sps	subjNight	T8h	38.0	False
+GSE288532	GSM8769531	Dark, Time 8 hours, rep 2	subjNight_T8h	cscB-sps	2	cscB-sps	subjNight	T8h	38.0	False
+GSE288532	GSM8769532	Dark, Time 8 hours, rep 3	subjNight_T8h	cscB-sps	3	cscB-sps	subjNight	T8h	38.0	False
+GSE327989	GSM9670053	WT cells, Day4, sample 1	WT_day4	WT	1	WT	BG11	day4	40.0	True
+GSE327989	GSM9670054	WT cells, Day4, sample 2	WT_day4	WT	2	WT	BG11	day4	40.0	True
+GSE327989	GSM9670055	WT cells, Day4, sample 3	WT_day4	WT	3	WT	BG11	day4	40.0	True
+GSE327989	GSM9670056	PEB1 cells, Day4, sample 1	PEBAB1_day4	PEBAB1	1	PEBAB1	BG11	day4	40.0	False
+GSE327989	GSM9670057	PEB1 cells, Day4, sample 2	PEBAB1_day4	PEBAB1	2	PEBAB1	BG11	day4	40.0	False
+GSE327989	GSM9670058	PEB1 cells, Day4, sample 3	PEBAB1_day4	PEBAB1	3	PEBAB1	BG11	day4	40.0	False
+GSE327989	GSM9670059	pcyX cells, Day4, sample 1	PCYX_day4	PCYX	1	PCYX	BG11	day4	40.0	False
+GSE327989	GSM9670060	pcyX cells, Day4, sample 2	PCYX_day4	PCYX	2	PCYX	BG11	day4	40.0	False
+GSE327989	GSM9670061	pcyX cells, Day4, sample 3	PCYX_day4	PCYX	3	PCYX	BG11	day4	40.0	False
+GSE327989	GSM9670062	pebS cells, Day4, sample 1	PEBS_day4	PEBS	1	PEBS	BG11	day4	40.0	False
+GSE327989	GSM9670063	pebS cells, Day4, sample 2	PEBS_day4	PEBS	2	PEBS	BG11	day4	40.0	False
+GSE327989	GSM9670064	pebS cells, Day4, sample 3	PEBS_day4	PEBS	3	PEBS	BG11	day4	40.0	False
+GSE79726	GSM2101632	Control 24h rep1	Control 24h	WT	1	WT	N-replete	24h	56.0	True
+GSE79726	GSM2101633	Control 24h rep2	Control 24h	WT	2	WT	N-replete	24h	56.0	True
+GSE79726	GSM2101634	N-minus 48h rep1	N-minus 48h	WT	1	WT	N-minus	48h	56.0	False
+GSE79726	GSM2101635	N-minus 48h rep2	N-minus 48h	WT	2	WT	N-minus	48h	56.0	False
+GSE79726	GSM2101636	N-plus 48h rep1	N-plus 48h	WT	1	WT	N-replete	48h	56.0	True
+GSE79726	GSM2101637	N-plus 48h rep2	N-plus 48h	WT	2	WT	N-replete	48h	56.0	True
+GSE89999	GSM2395359	control_duskZT12	control_duskZT12	WT-clockrescue	1	WT-clockrescue	duskZT12	control_duskZT12	57.0	True
+GSE89999	GSM2395360	control_darkness_5min	control_darkness_5min	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_5min	57.0	False
+GSE89999	GSM2395361	control_darkness_15min	control_darkness_15min	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_15min	57.0	False
+GSE89999	GSM2395362	control_darkness_30min	control_darkness_30min	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_30min	57.0	False
+GSE89999	GSM2395363	control_darkness_1h	control_darkness_1h	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_1h	57.0	False
+GSE89999	GSM2395364	control_darkness_2h	control_darkness_2h	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_2h	57.0	False
+GSE89999	GSM2395365	control_darkness_4h	control_darkness_4h	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_4h	57.0	False
+GSE89999	GSM2395366	control_darkness_8h	control_darkness_8h	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_8h	57.0	False
+GSE89999	GSM2395367	control_darkness_11h50min	control_darkness_11h50min	WT-clockrescue	1	WT-clockrescue	darkness	control_darkness_11h50min	57.0	False
+GSE89999	GSM2395368	control_dawn_5min	control_dawn_5min	WT-clockrescue	1	WT-clockrescue	dawn	control_dawn_5min	57.0	False
+GSE89999	GSM2395369	control_dawn_15min	control_dawn_15min	WT-clockrescue	1	WT-clockrescue	dawn	control_dawn_15min	57.0	False
+GSE89999	GSM2395370	control_dawn_30min	control_dawn_30min	WT-clockrescue	1	WT-clockrescue	dawn	control_dawn_30min	57.0	False
+GSE89999	GSM2395371	deltaR_duskZT12	deltaR_duskZT12	rpaA-clockrescue	1	rpaA-clockrescue	duskZT12	deltaR_duskZT12	57.0	False
+GSE89999	GSM2395372	deltaR_darkness_5min	deltaR_darkness_5min	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_5min	57.0	False
+GSE89999	GSM2395373	deltaR_darkness_15min	deltaR_darkness_15min	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_15min	57.0	False
+GSE89999	GSM2395374	deltaR_darkness_30min	deltaR_darkness_30min	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_30min	57.0	False
+GSE89999	GSM2395375	deltaR_darkness_1h	deltaR_darkness_1h	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_1h	57.0	False
+GSE89999	GSM2395376	deltaR_darkness_2h	deltaR_darkness_2h	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_2h	57.0	False
+GSE89999	GSM2395377	deltaR_darkness_4h	deltaR_darkness_4h	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_4h	57.0	False
+GSE89999	GSM2395378	deltaR_darkness_8h	deltaR_darkness_8h	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_8h	57.0	False
+GSE89999	GSM2395379	deltaR_darkness_11h50min	deltaR_darkness_11h50min	rpaA-clockrescue	1	rpaA-clockrescue	darkness	deltaR_darkness_11h50min	57.0	False
+GSE89999	GSM2395380	deltaR_dawn_5min	deltaR_dawn_5min	rpaA-clockrescue	1	rpaA-clockrescue	dawn	deltaR_dawn_5min	57.0	False
+GSE89999	GSM2395381	deltaR_dawn_15min	deltaR_dawn_15min	rpaA-clockrescue	1	rpaA-clockrescue	dawn	deltaR_dawn_15min	57.0	False
+GSE89999	GSM2395382	deltaR_dawn_30min	deltaR_dawn_30min	rpaA-clockrescue	1	rpaA-clockrescue	dawn	deltaR_dawn_30min	57.0	False
+GSE205444	GSE205444_mean	WT fresh BG-11 day 1, mean of 3	WT_freshBG11_day1	WT	0	WT	freshBG11	day1		False
