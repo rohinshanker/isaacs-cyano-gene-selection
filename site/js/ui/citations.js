@@ -18,6 +18,16 @@ export const CITATIONS_TAB = Object.freeze({
   source: '',
 });
 
+/**
+ * The tab's introductory blurb, or nothing when there is no ledger to introduce.
+ *
+ * The blurb promises what every entry says; with no ledger published there are
+ * no entries, and the unavailable state says the whole of what is known.
+ */
+export function citationsBlurb(manifest) {
+  return manifest === null ? '' : CITATIONS_TAB.blurb;
+}
+
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
@@ -143,13 +153,11 @@ export class CitationsPanel {
       return;
     }
     if (manifest === null) {
-      this.host.append(this.note(
-        'The source ledger is not available on this deployment. Once data/citations.json is '
-        + 'published, every primary dataset, design decision, validation study, and '
-        + 'software dependency this site relies on will be listed here, each with exactly what '
-        + 'was used from it and, where the source file ships in this repository, a download for '
-        + 'that exact file.',
-      ));
+      // A short unavailable state, as the Lengths and Regulatory sites tabs
+      // give: an organism whose release publishes no ledger is not a deployment
+      // to be fixed, and naming a file to publish would name one directory for
+      // every organism, which is the wrong one for all but the default.
+      this.host.append(this.note('The source ledger is unavailable in this dataset.'));
       return;
     }
     if (manifest.sections.length === 0) {

@@ -31,7 +31,9 @@ import {
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
-import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citations.js';
+import {
+  CITATIONS_TAB, CitationsPanel, citationsBlurb, loadCitationsManifest,
+} from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
@@ -1332,6 +1334,19 @@ function updatePanelTabs() {
 }
 
 /**
+ * Draw the citations tab, blurb and body together.
+ *
+ * The blurb introduces the entries, so it goes when there are none to
+ * introduce: an organism whose release publishes no ledger gets the short
+ * unavailable state and nothing else, as the Lengths and Regulatory sites tabs
+ * do for a layer their dataset does not carry.
+ */
+function renderCitationsTab(manifest) {
+  element('panel-blurb').textContent = citationsBlurb(manifest);
+  citationsPanel.render(manifest);
+}
+
+/**
  * Switch between the map view and the citations ledger, hiding whichever one
  * is not on screen. The tablist, the URL, and localStorage persistence are
  * shared across both, so a link to a map panel or to the citations tab round-
@@ -1360,8 +1375,7 @@ function renderCurrentView() {
     return;
   }
   if (citationsActive) {
-    element('panel-blurb').textContent = CITATIONS_TAB.blurb;
-    citationsPanel.render(citationsManifest);
+    renderCitationsTab(citationsManifest);
     return;
   }
   if (lengthsActive) {
@@ -2024,7 +2038,7 @@ async function boot() {
   const citationsLoaded = loadCitationsManifest({ baseUrl: dataBase, fetchImpl: citationsFetch })
     .then((manifest) => {
       citationsManifest = manifest;
-      if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(manifest);
+      if (citationsPanel && state.panel === CITATIONS_TAB.id) renderCitationsTab(manifest);
       if (context.dataset && PANELS.some((panel) => panel.id === state.panel)) {
         renderColorHelp(element('colour-help'));
         renderProjectionHelp(element('features-used'),
@@ -2037,7 +2051,7 @@ async function boot() {
     })
     .catch(() => {
       citationsManifest = null;
-      if (citationsPanel && state.panel === CITATIONS_TAB.id) citationsPanel.render(null);
+      if (citationsPanel && state.panel === CITATIONS_TAB.id) renderCitationsTab(null);
     });
 
   let dataset;
@@ -2448,7 +2462,7 @@ async function boot() {
 // asked for: the static document is the default organism's.
 applyOrganismIdentity(document, organism);
 renderOrganismSelector(element('organism-selector'), {
-  current: organism, location: window.location, store,
+  current: organism, location: window.location, store, view: window,
 });
 
 // Install these handlers before boot reaches its first await so a click during
