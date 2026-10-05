@@ -23,10 +23,16 @@ There is no in-page dataset swap and none should be added.
 `site/index.html` reads `org`, sets the tab title, and starts the manifest and
 tier 1 downloads from that organism's directory. The module resolves the same
 directory by `resolveDataDirectory` and adopts those requests by exact address,
-so nothing is fetched twice. The inline script cannot import the registry, so
-it holds each non-default organism's directory and title itself;
-`tests/js/organisms.test.mjs` evaluates the page's script for every organism and
-fails when an address or a title differs from the registry's.
+so nothing is fetched twice. The inline script cannot import the registry, so it
+holds each organism's directory, title, **and tier 1 file list** itself. That
+list is `coreFileNames(organism)` in `core/data-files.js`, which is the loader's
+own `publishesFile` rule: a study-bound layer the record does not declare is not
+asked for here either, whatever the manifest lists, because a request the loader
+never makes is one nothing adopts and a layer recorded absent must be absent
+without a request. `tests/js/organisms.test.mjs` runs the page's real script
+against the real `loadDatasetStaged` for every organism, including against a
+manifest that lists an undeclared study-bound file, and fails when the two ask
+for different addresses or for anything else.
 
 | Address | Organism | Data directory |
 | --- | --- | --- |
@@ -70,6 +76,15 @@ unavailable. Nothing is said about what was found, because nothing was looked
 for: an organism with no start-site layer is never told that no start site maps
 to a gene.
 
+An unavailable state is one short line and nothing else. "The regulatory
+start-site table is unavailable in this dataset." is the shape; the Lengths and
+Citations tabs say the same of their own layer. A tab's introductory blurb goes
+with its content: the Citations blurb promises what each entry says, so with no
+ledger published there is no blurb either. None of these name a file to publish
+or a directory to put it in — a release that does not publish a layer is not a
+deployment to be repaired, and one directory would be the wrong one for every
+organism but the default.
+
 **Where organism wording lives.** A sentence that states an organism fact is in
 its record, or composed from the record's names, or read from the dataset's own
 `meta.json`. A module that draws takes the organism from `organismOf(dataset)`
@@ -88,6 +103,13 @@ Only a selector link carries it, so choosing an organism returns to the view it
 was last left in, while a bare link opens that organism's fresh view with, as
 before, this browser's saved shortlist.
 
+A link is only as good as its address, and an address is read without a click:
+"Copy link address", a middle or modified click, a drag. Every option is
+therefore rewritten on the `storage` event — the only notice this tab gets that
+another one saved a view — and again on `pointerdown`, `contextmenu`, `keydown`
+and `click`, each of which precedes anything that can read the attribute. A
+copied link and a followed link give the same address.
+
 **Exports.** The manifest carries `organism` (id, label, species, strain,
 assembly). A file name carries the record's `exportTag`; the default organism's
 is null, so its file names are unchanged.
@@ -99,15 +121,55 @@ is null, so its file names are unchanged.
    Declare a study-bound layer only with the labels its views read.
 2. Add its directory and title to the table in the inline script in
    `site/index.html`.
-3. Add a profile to `tests/fixtures/make_fixture.mjs` if its tests need data.
-4. Run `node tools/build_module_preloads.mjs`, then the gates.
+3. Add its tier 1 file list to that same table, from `coreFileNames`.
+4. Add a profile to `tests/fixtures/make_fixture.mjs` if its tests need data,
+   with its replicon lengths: the generator bounds every coordinate it places to
+   the replicon, scaling the gaps it drew when a realistic gene count would run
+   past the end, and refuses a count whose coding sequence cannot fit at all.
+5. Run `node tools/build_module_preloads.mjs`, then the gates.
 
-Its dataset must declare `meta.genome.accession` equal to the record's
-`genome.accession`, a `totalLength` equal to the sum of the record's replicon
-lengths, and each gene's `seqid` as one of the record's replicon accessions.
-A new evidence layer for an organism other than the default needs its reader
-generalised first: the study-bound validators check the default organism's
-files.
+### What its dataset must declare
+
+What the code actually enforces, and where, because the two checks are in
+different places and fail differently.
+
+| The dataset declares | Checked by | A mismatch |
+| --- | --- | --- |
+| `meta.genome.accession` exactly equal to the record's `genome.accession` | `requireGenomeOfRecord` in `core/dataset.js`, before the dataset is built | fails the core load: the page shows the load error and draws nothing |
+| `meta.genome.totalLength` equal to the sum of the record's replicon `lengthBp` | `repliconTracks` in `core/chromosome-model.js`, not the core loader | the map and every other tab still draw; the chromosome view reports the problem and refuses its axis |
+| each gene's `seqid` naming one of the record's replicons | `sameReplicon`, through `repliconTracks` | that CDS has no axis, and the chromosome view says which replicon is not of the genome of record |
+
+**`seqid` is matched on the bare sequence name, not the exact accession.**
+`sameReplicon` normalises through `normalizeAccession`, which strips an `NZ_`
+prefix and the version suffix and upper-cases the rest, so a gene on
+`NC_000913`, `NC_000913.2` or `NC_000913.999` is drawn on the axis the record
+labels `NC_000913.3`. This is the behaviour the cyanobacterial model has always
+had, and it is there because `genes.json` writes `NZ_CP006471.1` where a
+start-site extract writes `CP006471`; it is deliberately kept. Exactness is the
+assembly accession's job, and that is checked above, before anything is drawn.
+
+**An optional file is published, or declared, never one without the other.**
+Two fields in `meta.json` turn an optional file into a required one, and a
+dataset that declares either without publishing the file is a failed load:
+
+- `meta.annotationRelease` makes `annotations.json` mandatory, and that file
+  must carry a record for **every** gene — a file covering some of them fails
+  rather than annotating a subset.
+- `meta.tssEvidenceSource` makes `tss_evidence.json` mandatory. An organism
+  that declares no `tssEvidence` layer never has that file requested, so for it
+  the field must be **absent**: declaring it gives a dataset nothing can load.
+
+**Published GO names must cover the GO relationships that are joined.**
+`go-term-names-v1.json` is optional, but when it is published every `goId` in
+any gene's `annotationEvidence.goAnnotations` must have a name in it, or the
+file fails. Deriving the names file from the relationships actually present is
+what makes this hold by construction; `tests/fixtures/make_fixture.mjs
+--with-annotations` does exactly that.
+
+A new study-bound evidence layer for an organism other than the default needs
+its reader generalised first: those validators check the default organism's
+files. The two organism-neutral annotation files above need no record change at
+all — an organism publishes them by publishing them.
 
 ## Checks
 
@@ -119,17 +181,22 @@ node tools/build_module_preloads.mjs --check
 ```
 
 Unit coverage: `tests/js/organisms.test.mjs` (registry, resolution, canonical
-address, storage keys, the inline script against the registry, the static
+address, storage keys, the inline script run against the real loader, the static
 page against the default record), `tests/js/organism-isolation.test.mjs`
 (loader gating and the assembly check, the replicon model, links, storage, view
-memory, both sweeps, export naming), `tests/js/organism-selector.test.mjs`
-(the selector, the identity rewrite, truthful absence), and
-`tests/js/fixture-generator.test.mjs` (the second organism's fixture).
+memory, both sweeps, export naming, and the annotated release),
+`tests/js/organism-selector.test.mjs` (the selector, link freshness, the
+identity rewrite, truthful absence), and `tests/js/fixture-generator.test.mjs`
+(each organism's fixture, its coordinate bounds at a realistic gene count, and
+the default fixtures against digests pinned outside the generator).
 
 Rendered validation is required for any change here, at **375, 768, 1280 and
-1440 px**, with a clean console. The second organism's fixture is written by
-`npm run generate:test-fixtures` to `tests/fixtures/data-ecoli/`; serve it at
-its registry directory, or pass it as `?org=ecoli-k12-mg1655&data=<dir>`.
+1440 px**, with a clean console. The second organism's fixtures are written by
+`npm run generate:test-fixtures` to `tests/fixtures/data-ecoli/` and, with its
+annotation layer, `tests/fixtures/data-ecoli-annotated/`; serve either at its
+registry directory, or pass it as `?org=ecoli-k12-mg1655&data=<dir>`. For a
+realistic size, write one with
+`node tests/fixtures/make_fixture.mjs --organism ecoli-k12-mg1655 --genes 4287`.
 
 - the default view and existing shareable links (one with a scheme, one with a
   pinned gene and shortlist, one on the chromosome tab) read exactly as before;
