@@ -42,6 +42,7 @@ KNOWN_TRNA_SPECIAL_CASES = {
     "lysidine",
     "verifiedSpeciesTable",
 }
+LYSIDINE_FIELDS = {"aminoAcid", "genomicAnticodon", "effectiveAnticodon"}
 
 
 @dataclass(frozen=True)
@@ -102,12 +103,58 @@ def _validate(organism_id: str, values: Any) -> OrganismConfig:
             f"{', '.join(unknown_special_cases)}"
         )
     excluded = special_cases.get("excludedFromDecodingPool", [])
-    if not isinstance(excluded, list) or not all(
-        isinstance(amino_acid, str) and amino_acid for amino_acid in excluded
-    ):
+    if not isinstance(excluded, list):
         raise ValueError(
             f"Organism configuration {organism_id!r} has invalid "
             "trnaSpecialCases.excludedFromDecodingPool"
+        )
+    if not all(isinstance(amino_acid, str) for amino_acid in excluded):
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has non-string "
+            "trnaSpecialCases.excludedFromDecodingPool entry"
+        )
+    if not all(amino_acid for amino_acid in excluded):
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has empty "
+            "trnaSpecialCases.excludedFromDecodingPool entry"
+        )
+    inosine = special_cases.get("inosineAtWobble")
+    if inosine is not None and not isinstance(inosine, bool):
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has invalid "
+            "trnaSpecialCases.inosineAtWobble"
+        )
+    lysidine = special_cases.get("lysidine")
+    if lysidine is not None:
+        if not isinstance(lysidine, dict):
+            raise ValueError(
+                f"Organism configuration {organism_id!r} has invalid "
+                "trnaSpecialCases.lysidine"
+            )
+        missing_lysidine = sorted(LYSIDINE_FIELDS - lysidine.keys())
+        unknown_lysidine = sorted(set(lysidine) - LYSIDINE_FIELDS)
+        if missing_lysidine or unknown_lysidine:
+            details = []
+            if missing_lysidine:
+                details.append(f"missing {', '.join(missing_lysidine)}")
+            if unknown_lysidine:
+                details.append(f"unknown {', '.join(unknown_lysidine)}")
+            raise ValueError(
+                f"Organism configuration {organism_id!r} has invalid "
+                f"trnaSpecialCases.lysidine fields: {'; '.join(details)}"
+            )
+        if not all(isinstance(value, str) and value for value in lysidine.values()):
+            raise ValueError(
+                f"Organism configuration {organism_id!r} has invalid "
+                "trnaSpecialCases.lysidine value"
+            )
+    verified_table = special_cases.get("verifiedSpeciesTable")
+    if verified_table is not None and not (
+        isinstance(verified_table, str) and verified_table
+    ):
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has invalid "
+            "trnaSpecialCases.verifiedSpeciesTable"
         )
     layers = values["optionalLayers"]
     if not isinstance(layers, list) or set(layers) - KNOWN_OPTIONAL_LAYERS:

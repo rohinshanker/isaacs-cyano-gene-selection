@@ -34,21 +34,34 @@ jobs:
       # verifies the organism, because a valid checksum only proves the download
       # was intact, not that it is the right assembly.
       - name: Fetch and verify genome
+        id: fetch_genomes
+        continue-on-error: true
         run: |
           chmod +x tools/fetch_genome.sh
+          status=0
           for organism in $ORGANISMS; do
-            ./tools/fetch_genome.sh --organism "$organism"
+            if ./tools/fetch_genome.sh --organism "$organism"; then
+              echo "PASS fetch $organism"
+            else
+              echo "::error::FAIL fetch $organism"
+              status=1
+            fi
           done
+          exit "$status"
 
       # This gate is driven by the release manifest, not by the downloader's
       # file list. It checks all core and retained companion inputs, the pinned
       # RefSeq/PGAP releases, and deterministic annotation artifacts.
       - name: Verify pinned annotation release
+        id: annotation_release
+        continue-on-error: true
         run: |
           python3 tools/annotation_release.py verify
           python3 tools/annotation_release.py check
 
       - name: Verify sister-strain crosswalk
+        id: sister_strain
+        continue-on-error: true
         run: |
           python3 tools/sister_strain_crosswalk.py --verify
           python3 tools/sister_strain_crosswalk.py --check
@@ -56,39 +69,65 @@ jobs:
       # This audit uses only authenticated RefSeq inputs fetched above. The
       # optional PASS00399 observations never gate or enter the admitted release.
       - name: Verify protein identity evidence
+        id: protein_evidence
+        continue-on-error: true
         run: |
           python3 tools/protein_evidence.py verify
           python3 tools/protein_evidence.py check
           python3 tools/candidate_evidence.py check
 
       - name: Verify length cohorts
+        id: length_cohorts
+        continue-on-error: true
         run: python3 tools/length_cohorts.py check
 
       - name: Verify Tan regulatory site publication
+        id: regulatory_tss
+        continue-on-error: true
         run: python3 tools/regulatory_tss.py check
 
       # Standard-library negative tests run before installing pipeline
       # dependencies, keeping checksum/release failures independent of pytest
       # or scientific-package resolution.
       - name: Run annotation readiness and negative-fixture tests
+        id: readiness_tests
+        continue-on-error: true
         run: python3 -m unittest discover -s tests/readiness -p 'test_*.py'
 
       # validate_contract.py uses only the standard library on purpose, so the
       # gate cannot be broken by a dependency resolution failure.
       - name: Validate generated data against the contract
+        id: contract
+        continue-on-error: true
         run: |
+          status=0
           for organism in $ORGANISMS; do
-            python3 tools/validate_contract.py --organism "$organism"
+            if python3 tools/validate_contract.py --organism "$organism"; then
+              echo "PASS contract $organism"
+            else
+              echo "::error::FAIL contract $organism"
+              status=1
+            fi
           done
+          exit "$status"
 
       # The browser caches each data file under its content digest, so a
       # manifest that no longer matches the files would pin visitors to a
       # superseded copy. This runs after every tool that writes site/data.
       - name: Verify the data manifest matches the published data
+        id: manifests
+        continue-on-error: true
         run: |
+          status=0
           for organism in $ORGANISMS; do
-            python3 tools/build_data_manifest.py check --organism "$organism"
+            if python3 tools/build_data_manifest.py check --organism "$organism"; then
+              echo "PASS manifest $organism"
+            else
+              echo "::error::FAIL manifest $organism"
+              status=1
+            fi
           done
+          exit "$status"
 
       - uses: actions/setup-node@v4
         with:
@@ -98,23 +137,38 @@ jobs:
       # live-metric code against the real generated data, so a scheme that
       # miscounts on the actual genome cannot reach production.
       - name: Check live metrics against real data
+        id: live_metrics
+        continue-on-error: true
         run: |
+          status=0
           for organism in $ORGANISMS; do
-            node tools/check_live_metrics.mjs --organism "$organism"
+            if node tools/check_live_metrics.mjs --organism "$organism"; then
+              echo "PASS live metrics $organism"
+            else
+              echo "::error::FAIL live metrics $organism"
+              status=1
+            fi
           done
+          exit "$status"
 
       # Fixture data is generated, not committed; the generator is the asset.
       # Both variants are required: the export and basis suites load the
       # expression variant, and without it twelve tests fail on a clean checkout.
       - name: Generate test fixtures
+        id: fixtures
+        continue-on-error: true
         run: |
           node tests/fixtures/make_fixture.mjs
           node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
 
       - name: Run site unit tests
+        id: js_tests
+        continue-on-error: true
         run: node --test "tests/js/*.test.mjs"
 
       - name: Reject whitespace and conflict-marker damage
+        id: whitespace
+        continue-on-error: true
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
@@ -127,22 +181,67 @@ jobs:
           fi
 
       - name: Install pipeline dependencies
+        id: install_dependencies
+        continue-on-error: true
         run: pip install --quiet -r requirements.txt
 
       - name: Verify pinned PCC essentiality joins
+        id: essentiality
+        continue-on-error: true
         run: python3 tools/build_pcc7942_essentiality.py --check
 
       # Rebuilds the GO IEA fallback from pinned Jev judgments. It never calls
       # the TypeSafe API, so CI needs no key.
       - name: Verify GO IEA essentiality context
+        id: go_iea
+        continue-on-error: true
         run: python3 tools/build_go_iea_essentiality.py --check
 
       # Rebuilds the derived category layer from pinned Jev judgments; offline.
       - name: Verify source-derived function categories
+        id: categories
+        continue-on-error: true
         run: python3 tools/build_source_derived_categories.py --check
 
       - name: Run pipeline tests
+        id: pytest
+        continue-on-error: true
         run: python -m pytest -q
+
+      # Let every gate report before preserving the job-level failure that
+      # blocks deploy.
+      - name: Fail if any validation gate failed
+        if: always()
+        run: |
+          status=0
+          for gate in \
+            "fetch_genomes=${{ steps.fetch_genomes.outcome }}" \
+            "annotation_release=${{ steps.annotation_release.outcome }}" \
+            "sister_strain=${{ steps.sister_strain.outcome }}" \
+            "protein_evidence=${{ steps.protein_evidence.outcome }}" \
+            "length_cohorts=${{ steps.length_cohorts.outcome }}" \
+            "regulatory_tss=${{ steps.regulatory_tss.outcome }}" \
+            "readiness_tests=${{ steps.readiness_tests.outcome }}" \
+            "contract=${{ steps.contract.outcome }}" \
+            "manifests=${{ steps.manifests.outcome }}" \
+            "live_metrics=${{ steps.live_metrics.outcome }}" \
+            "fixtures=${{ steps.fixtures.outcome }}" \
+            "js_tests=${{ steps.js_tests.outcome }}" \
+            "whitespace=${{ steps.whitespace.outcome }}" \
+            "install_dependencies=${{ steps.install_dependencies.outcome }}" \
+            "essentiality=${{ steps.essentiality.outcome }}" \
+            "go_iea=${{ steps.go_iea.outcome }}" \
+            "categories=${{ steps.categories.outcome }}" \
+            "pytest=${{ steps.pytest.outcome }}"
+          do
+            name="${gate%%=*}"
+            outcome="${gate#*=}"
+            if [ "$outcome" != "success" ]; then
+              echo "::error::Validation gate $name concluded $outcome"
+              status=1
+            fi
+          done
+          exit "$status"
 
   deploy:
     needs: validate

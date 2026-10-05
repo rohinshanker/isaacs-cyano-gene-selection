@@ -942,9 +942,19 @@ def cross_check_against_genome(
         codon: {"total": direct_total[codon], "editable": direct_editable[codon]}
         for codon in codon_table()
     }
+    published_occurrences = meta.get("codonOccurrences")
+    comparable_occurrences = (
+        published_occurrences if isinstance(published_occurrences, dict) else {}
+    )
     report.check(
-        meta.get("codonOccurrences") == direct_occurrences,
+        published_occurrences == direct_occurrences,
         "codonOccurrences match a direct scan of every selected raw CDS",
+        "; ".join(
+            f"{codon}: got {comparable_occurrences.get(codon)!r}, "
+            f"expected {direct_occurrences[codon]!r}"
+            for codon in codon_table()
+            if comparable_occurrences.get(codon) != direct_occurrences[codon]
+        )[:500],
     )
 
     checked = mismatched = unmatched = 0
@@ -1037,6 +1047,16 @@ def cross_check_against_genome(
     report.check(
         published_protein_multiplicity == expected_protein_multiplicity,
         "protein accession multiplicities match the selected raw CDS records",
+        "; ".join(
+            f"{accession}: got {published_protein_multiplicity[accession]}, "
+            f"expected {expected_protein_multiplicity[accession]}"
+            for accession in sorted(
+                set(published_protein_multiplicity) | set(expected_protein_multiplicity),
+                key=str,
+            )
+            if published_protein_multiplicity[accession]
+            != expected_protein_multiplicity[accession]
+        )[:500],
     )
 
 

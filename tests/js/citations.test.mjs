@@ -214,9 +214,9 @@ test('the manifest is requested from citations.json beside the other data files'
 });
 
 test('the published E. coli ledger is well formed and contains only used sources', async () => {
-  const path = new URL(
+  const citationsPath = new URL(
     '../../site/data/organisms/ecoli-k12-mg1655/citations.json', import.meta.url);
-  const raw = JSON.parse(await readFile(path, 'utf8'));
+  const raw = JSON.parse(await readFile(citationsPath, 'utf8'));
   const manifest = normalizeCitationsManifest(raw);
   assert.ok(manifest);
   assert.deepEqual(manifest.sections.map(({ id }) => id), ['primary-data', 'methods-and-tools']);
@@ -225,4 +225,32 @@ test('the published E. coli ledger is well formed and contains only used sources
   assert.ok(items.every(({ downloads }) => downloads.length === 0));
   const forbidden = ['expression', 'tss', 'essential', 'protein-evidence', 'gene-ontology', 'trrosettarna'];
   assert.ok(items.every(({ id }) => !forbidden.some((term) => id.includes(term))));
+
+  // These checks guard duplicated prose against generated or pinned inputs. They
+  // do not generate the ledger or validate the scientific claims in its entries.
+  const item = (id) => items.find((candidate) => candidate.id === id);
+  const metaPath = new URL(
+    '../../site/data/organisms/ecoli-k12-mg1655/meta.json', import.meta.url);
+  const meta = JSON.parse(await readFile(metaPath, 'utf8'));
+  const caiCount = Number(item('sharp-li-cai').contribution.match(/(\d+)-gene/)[1]);
+  assert.equal(caiCount, meta.caiReferenceSet.n);
+
+  const trnaPath = new URL(
+    '../../data/trna/ecoli-k12-mg1655_anticodon_gene_copies.tsv', import.meta.url);
+  const trnaRows = (await readFile(trnaPath, 'utf8')).trimEnd().split('\n').slice(1);
+  const ileCat = trnaRows.map((row) => row.split('\t'))
+    .find(([aminoAcid, anticodon]) => aminoAcid === 'Ile' && anticodon === 'CAT');
+  const countWords = new Map([
+    ['zero', 0], ['one', 1], ['two', 2], ['three', 3], ['four', 4], ['five', 5],
+    ['six', 6], ['seven', 7], ['eight', 8], ['nine', 9], ['ten', 10],
+  ]);
+  const ledgerCount = item('soma-lysidine').contribution.match(/the (\w+) Ile-CAT loci/)[1];
+  assert.equal(countWords.get(ledgerCount), Number(ileCat[3]));
+
+  const requirementsPath = new URL('../../requirements.txt', import.meta.url);
+  const requirements = await readFile(requirementsPath, 'utf8');
+  const pinnedVersion = requirements.match(/^ViennaRNA==([^\s]+)$/m)[1];
+  const vienna = item('viennarna');
+  assert.equal(vienna.citation.match(/ViennaRNA (\d+\.\d+\.\d+)/)[1], pinnedVersion);
+  assert.equal(vienna.contribution.match(/compiled (\d+\.\d+\.\d+) engine/)[1], pinnedVersion);
 });

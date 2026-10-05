@@ -47,6 +47,50 @@ def test_organism_config_requires_expectations_and_rejects_unknown_trna_keys() -
         _validate("fixture", values)
 
 
+@pytest.mark.parametrize(
+    ("special_cases", "message"),
+    [
+        (None, "invalid trnaSpecialCases"),
+        ({"excludedFromDecodingPool": "Sec"}, "excludedFromDecodingPool"),
+        ({"excludedFromDecodingPool": [7]}, "non-string.*excludedFromDecodingPool"),
+        ({"excludedFromDecodingPool": [""]}, "empty.*excludedFromDecodingPool"),
+        ({"inosineAtWobble": "maybe"}, "inosineAtWobble"),
+        ({"lysidine": "yes"}, "trnaSpecialCases.lysidine"),
+        ({"lysidine": {"aminoAcid": "Ile"}}, "lysidine fields: missing"),
+        (
+            {
+                "lysidine": {
+                    "aminoAcid": "Ile",
+                    "genomicAnticodon": "CAT",
+                    "effectiveAnticodon": "LAT",
+                    "typo": "LAT",
+                }
+            },
+            "lysidine fields: unknown typo",
+        ),
+        (
+            {
+                "lysidine": {
+                    "aminoAcid": "Ile",
+                    "genomicAnticodon": "CAT",
+                    "effectiveAnticodon": 7,
+                }
+            },
+            "lysidine value",
+        ),
+        ({"verifiedSpeciesTable": 7}, "verifiedSpeciesTable"),
+        ({"verifiedSpeciesTable": ""}, "verifiedSpeciesTable"),
+    ],
+)
+def test_organism_config_rejects_invalid_trna_special_case_values(
+    special_cases: object, message: str
+) -> None:
+    values = dict(get_organism("ecoli-k12-mg1655").values)
+    values["trnaSpecialCases"] = special_cases
+    with pytest.raises(ValueError, match=message):
+        _validate("fixture", values)
+
+
 def test_organism_config_round_trips_through_pickle() -> None:
     organism = get_organism("ecoli-k12-mg1655")
     assert pickle.loads(pickle.dumps(organism)) == organism
@@ -92,19 +136,35 @@ def test_refseq_note_anticodon_and_selenocysteine_are_not_misread(tmp_path: Path
             "ID=rna-b2;Note=tRNA-Trp(CCA);product=tRNA-Trp;locus_tag=b2\n"
             "chr\tRefSeq\ttRNA\t7\t9\t.\t+\t.\t"
             "ID=rna-b3;Note=tRNA-Sec(TCA);product=tRNA-Sec;locus_tag=b3\n"
+            "chr\tRefSeq\ttRNA\t10\t12\t.\t+\t.\t"
+            "ID=rna-b4;Note=tRNA-Met(CAU);product=tRNA-Met;locus_tag=b4\n"
+            "chr\tRefSeq\ttRNA\t13\t15\t.\t+\t.\t"
+            "ID=rna-b5;Note=tRNA-initiator Met(CAU);product=tRNA-Met;locus_tag=b5\n"
         )
     config = get_organism("ecoli-k12-mg1655")
-    _, anticodons, species = build_features.parse_gff(
+    _, anticodons, species, roles = build_features.parse_gff(
         gff, {"chr": "CATCCATCA"}, config.trnaSpecialCases
     )
-    assert species == {("Ile", "CAT"): 1, ("Trp", "CCA"): 1, ("Sec", "TCA"): 1}
-    assert anticodons == {"LAT": 1, "CCA": 1}
+    assert species == {
+        ("Ile", "CAT"): 1,
+        ("Trp", "CCA"): 1,
+        ("Sec", "TCA"): 1,
+        ("Met", "CAT"): 2,
+    }
+    assert anticodons == {"LAT": 1, "CCA": 1, "CAT": 2}
+    assert roles == {
+        ("Ile", "CAT", "elongator"): 1,
+        ("Trp", "CCA", "elongator"): 1,
+        ("Sec", "TCA", "elongator"): 1,
+        ("Met", "CAT", "elongator"): 1,
+        ("Met", "CAT", "initiator"): 1,
+    }
     assert "TCA" not in anticodons
     observed = build_features.fm.trna_adaptiveness(
         "TGG", anticodons, build_features.S_VALUES
     )
     without_sec = build_features.fm.trna_adaptiveness(
-        "TGG", {"LAT": 1, "CCA": 1}, build_features.S_VALUES
+        "TGG", {"LAT": 1, "CCA": 1, "CAT": 2}, build_features.S_VALUES
     )
     assert observed == without_sec == 1
     annotation = {"translExcept": "(pos:1..3,aa:Sec)"}
@@ -135,10 +195,26 @@ def test_cds_annotation_is_keyed_by_selected_protein_id(tmp_path: Path) -> None:
             "locus_tag=b1;protein_id=short;product=alternate;"
             "gene_biotype=protein_coding;exception=ribosomal slippage\n"
         )
-    annotations, _, _ = build_features.parse_gff(gff, {"chr": "ATGAAATAA"}, {})
+    annotations, _, _, _ = build_features.parse_gff(gff, {"chr": "ATGAAATAA"}, {})
     assert annotations[("b1", "long")]["product"] == "primary"
     assert annotations[("b1", "long")]["translationalException"] is None
     assert annotations[("b1", "short")]["translationalException"] == "ribosomal_slippage"
+
+
+def test_lysidine_convention_uses_annotation_roles_and_preserves_utex_wording() -> None:
+    assert build_features.lysidine_convention({"CAT": 2}, {}) == (
+        "Ile-CAT is represented as LAT and decodes ATA with s=0.89; "
+        "Met-CAT remains a separate two-copy species decoding ATG"
+    )
+    roles = {
+        ("Met", "CAT", "elongator"): 2,
+        ("Met", "CAT", "initiator"): 4,
+    }
+    assert build_features.lysidine_convention({"CAT": 6}, roles) == (
+        "Ile-CAT is represented as LAT and decodes ATA with s=0.89; "
+        "six annotated Met-CAT loci (two elongator and four initiator); "
+        "Met is excluded from tAI"
+    )
 
 
 def test_ecoli_cai_rule_matches_only_declared_translation_machinery() -> None:

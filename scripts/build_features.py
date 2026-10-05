@@ -187,6 +187,33 @@ def number_word(value: int) -> str:
     return words.get(value, str(value))
 
 
+def lysidine_convention(
+    anticodon_counts: Mapping[str, int],
+    trna_roles: Mapping[tuple[str, str, str], int],
+) -> str:
+    """Describes lysidine and annotated Met-CAT roles without hard-coded counts."""
+    met_cat_count = anticodon_counts.get("CAT", 0)
+    initiator_count = trna_roles.get(("Met", "CAT", "initiator"), 0)
+    if initiator_count:
+        elongator_count = met_cat_count - initiator_count
+        met_description = (
+            f"{number_word(met_cat_count)} annotated Met-CAT loci "
+            f"({number_word(elongator_count)} elongator and "
+            f"{number_word(initiator_count)} initiator); Met is excluded from tAI"
+        )
+    else:
+        # Preserve the established UTEX metadata byte-for-byte. Its annotation
+        # does not distinguish initiator from elongator Met-CAT loci.
+        met_description = (
+            "Met-CAT remains a separate "
+            f"{number_word(met_cat_count)}-copy species decoding ATG"
+        )
+    return (
+        "Ile-CAT is represented as LAT and decodes ATA with s=0.89; "
+        f"{met_description}"
+    )
+
+
 def parse_attributes(value: str) -> dict[str, str]:
     """Parses a GFF3 attribute column."""
     result = {}
@@ -224,11 +251,13 @@ def parse_gff(
     dict[tuple[str, str | None], dict],
     dict[str, int],
     dict[tuple[str, str], int],
+    dict[tuple[str, str, str], int],
 ]:
     """Reads CDS annotations and derives tRNA anticodons from GFF coordinates."""
     cds = {}
     anticodons: collections.Counter[str] = collections.Counter()
     trna_species: collections.Counter[tuple[str, str]] = collections.Counter()
+    trna_roles: collections.Counter[tuple[str, str, str]] = collections.Counter()
     with gzip.open(path, "rt") as handle:
         for line in handle:
             if line.startswith("#"):
@@ -272,6 +301,12 @@ def parse_gff(
                 require(bool(product), f"tRNA feature {feature_id} has no product")
                 amino_acid = product.removeprefix("tRNA-")
                 trna_species[(amino_acid, genomic_anticodon)] += 1
+                role = (
+                    "initiator"
+                    if "tRNA-initiator" in attributes.get("Note", "")
+                    else "elongator"
+                )
+                trna_roles[(amino_acid, genomic_anticodon, role)] += 1
                 excluded_amino_acids = set(
                     (trna_special_cases or {}).get("excludedFromDecodingPool", [])
                 )
@@ -320,7 +355,7 @@ def parse_gff(
                 )
             if attributes.get("transl_except"):
                 entry["translExcept"] = attributes["transl_except"]
-    return cds, dict(anticodons), dict(trna_species)
+    return cds, dict(anticodons), dict(trna_species), dict(trna_roles)
 
 
 def verified_trna_species(path: Path) -> dict[tuple[str, str], int]:
@@ -986,7 +1021,7 @@ def build(
         f"Genome length {observed_total_length:,} != expected "
         f"{organism.expectedTotalLength:,} for {organism.organism_id}",
     )
-    annotations, anticodon_counts, trna_species = parse_gff(
+    annotations, anticodon_counts, trna_species, trna_roles = parse_gff(
         paths["genomic.gff"], genomes, organism.trnaSpecialCases
     )
     repository = Path(__file__).resolve().parents[1]
@@ -1275,8 +1310,11 @@ def build(
         )
         local_tai_caveat = f"inherits the tAI {missing_label} substitution caveat."
     else:
-        tai_caveat = "Every sense codon has a cognate or wobble-compatible tRNA."
-        local_tai_caveat = "every sense codon has cognate or wobble-compatible support."
+        tai_caveat = "every sense codon has a cognate or wobble-compatible tRNA."
+        local_tai_caveat = (
+            "inherits the tAI convention; every sense codon has cognate or "
+            "wobble-compatible support."
+        )
     metric_definitions["tai"] = (
         "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and "
         "derived from this genome's tRNA gene copies with bacterial wobble "
@@ -1330,10 +1368,14 @@ def build(
                 if fm.trna_adaptiveness(codon, anticodon_counts, S_VALUES) == 0
             ],
             "excludedAminoAcids": ["M"],
-            "lysidineConvention": (
-                "Ile-CAT is represented as LAT and decodes ATA with s=0.89; "
-                "Met-CAT remains a separate "
-                f"{number_word(anticodon_counts.get('CAT', 0))}-copy species decoding ATG"
+            **(
+                {
+                    "lysidineConvention": lysidine_convention(
+                        anticodon_counts, trna_roles
+                    )
+                }
+                if organism.trnaSpecialCases.get("lysidine")
+                else {}
             ),
             **(
                 {
