@@ -51,9 +51,10 @@ import {
 } from '../../site/js/ui/organism-selector.js';
 import { withFakeDocument } from './fake-dom.mjs';
 import {
-  ECOLI, ECOLI_DATA_URL, FIXTURE_DIR, ecoliFixtureDataset, ecoliFixtureFiles, fixtureDataset,
-  memoryDirectory,
+  ECOLI, ECOLI_DATA_URL, FIXTURE_DIR, ecoliAnnotatedFixtureDataset, ecoliAnnotatedFixtureFiles,
+  ecoliFixtureDataset, ecoliFixtureFiles, fixtureDataset, memoryDirectory,
 } from './helpers.mjs';
+import { annotationEvidenceModel } from '../../site/js/core/annotation-evidence.js';
 
 /** Anything that names the cyanobacterial organism, a sister strain, or one of its studies. */
 const CYANOBACTERIAL = /UTEX|Synechococcus|elongatus|PCC|pcc-?7942|Tan (?:et al\.? )?2018|Tan et al|GSE205444|M744_|NZ_CP|cyanobacteri/i;
@@ -563,5 +564,155 @@ test('an export file is tagged for every organism but the default', () => {
   for (const organism of ORGANISMS) {
     assert.equal(organismFileTag({ organism: { id: organism.id } }),
       organism.exportTag ? `_${organism.exportTag}` : '');
+  }
+});
+
+// --- The annotated release ------------------------------------------------
+//
+// The first E. coli release is sequence only. Its annotation layer is published
+// next, and `annotations.json` with `go-term-names-v1.json` are the two files
+// that arrive with it: organism-neutral files, so they load for any organism
+// that publishes them, with no record change at all. These tests are what the
+// page then does with them.
+
+test('the annotated E. coli release loads both new files and joins them', async () => {
+  const { dataset, requested } = await ecoliAnnotatedFixtureDataset();
+  assert.deepEqual([...requested].sort(), [DATA_MANIFEST_NAME, 'annotations.json',
+    'codon_pca.json', 'excluded.json', 'genes.json', 'go-term-names-v1.json',
+    'meta.json'].sort());
+  assert.equal(dataset.files.annotations.state, FILE_STATE.READY);
+  assert.equal(dataset.files.goTerms.state, FILE_STATE.READY);
+  // Every gene carries a record, which is what the applier requires.
+  assert.ok(dataset.genes.every((gene) => gene.annotationEvidence
+    && typeof gene.annotationEvidence === 'object'));
+  // And every GO id joined onto a gene has a name, which is what the other
+  // applier requires: the names file is derived from the ids actually used.
+  const relations = dataset.genes.flatMap((gene) => gene.annotationEvidence.goAnnotations);
+  assert.ok(relations.length > 50, `${relations.length} GO relationships`);
+  for (const relation of relations) {
+    assert.ok(dataset.goTerms.terms[relation.goId]?.name, relation.goId);
+  }
+  assert.equal(dataset.meta.annotationRelease.releaseId, 'GCF_000005845.2-RS_2026_05_13');
+  assert.deepEqual(dataset.meta.annotationRelease.coverage, {
+    siteGenes: 120,
+    withAnnotationEvidence: 120,
+    withGoAnnotations: dataset.genes.filter((g) => g.annotationEvidence.goAnnotations.length).length,
+    goRelationships: relations.length,
+  });
+  // The study-bound layers are still absent: an annotation release is not one.
+  for (const key of STUDY_LAYER_KEYS) {
+    assert.equal(dataset.files[key].state, FILE_STATE.ABSENT, key);
+  }
+  // Declaring the release without the file is a load the page refuses.
+  const without = { ...ecoliAnnotatedFixtureFiles() };
+  delete without['annotations.json'];
+  const manifest = JSON.parse(without[DATA_MANIFEST_NAME]);
+  delete manifest.files['annotations.json'];
+  without[DATA_MANIFEST_NAME] = JSON.stringify(manifest);
+  const staged = loadDatasetStaged({
+    baseUrl: ECOLI_DATA_URL, organism: ECOLI,
+    fetchImpl: memoryDirectory(ECOLI_DATA_URL, without).fetchImpl,
+  });
+  await staged.core;
+  await staged.settled;
+  assert.equal(staged.files.annotations.state, FILE_STATE.FAILED);
+  assert.match(staged.files.annotations.error.message,
+    /annotations\.json is required by meta\.annotationRelease/);
+});
+
+test('the gene detail panel reads E. coli annotation evidence and its GO names', async () => {
+  const { dataset } = await ecoliAnnotatedFixtureDataset();
+  const gene = dataset.genes.find((entry) => entry.annotationEvidence.goAnnotations.length > 0);
+  const model = annotationEvidenceModel(gene, dataset.meta, dataset.goTerms.terms);
+  assert.equal(model.releaseId, 'GCF_000005845.2-RS_2026_05_13');
+  assert.equal(model.replicon, 'chromosome');
+  assert.ok(model.methods.length > 0);
+  assert.ok(model.inferences.length > 0);
+  assert.ok(model.go.length > 0);
+  for (const relation of model.go) {
+    // The name is shown beside the id, not the bare id, and the aspect is in words.
+    assert.match(relation.text,
+      new RegExp(`^${relation.goId} — ${dataset.goTerms.terms[relation.goId].name}`));
+    assert.match(relation.text, /molecular function|biological process|cellular component/);
+    assert.match(relation.text, / · IEA/);
+  }
+  assert.deepEqual(model.attribution, dataset.meta.annotationRelease.goAttribution);
+
+  // An obsolete id is marked as such, which is the one thing the names file
+  // says that the relationship itself cannot.
+  const obsolete = Object.entries(dataset.goTerms.terms)
+    .find(([, term]) => term.isObsolete)?.[0];
+  assert.ok(obsolete, 'the fixture publishes one obsolete id on purpose');
+  const marked = dataset.genes
+    .map((entry) => annotationEvidenceModel(entry, dataset.meta, dataset.goTerms.terms))
+    .flatMap((entry) => entry.go)
+    .filter((relation) => relation.goId === obsolete);
+  assert.ok(marked.length > 0, `${obsolete} is joined onto at least one gene`);
+  assert.ok(marked.every((relation) => /\[obsolete ID in pinned GO name release\]/.test(relation.text)));
+
+  // Nothing of the other organism, in any of it.
+  for (const entry of dataset.genes.slice(0, 40)) {
+    const text = JSON.stringify(annotationEvidenceModel(entry, dataset.meta, dataset.goTerms.terms));
+    const hit = CYANOBACTERIAL.exec(text);
+    assert.equal(hit, null, hit ? text.slice(Math.max(0, hit.index - 60), hit.index + 60) : '');
+  }
+});
+
+test('a GO term name finds an E. coli gene, and the id does too', async () => {
+  const { dataset } = await ecoliAnnotatedFixtureDataset();
+  const terms = dataset.goTerms.terms;
+  const relation = dataset.genes
+    .flatMap((gene) => gene.annotationEvidence.goAnnotations)
+    .find((entry) => !terms[entry.goId].isObsolete);
+
+  const byId = searchGenes(dataset.genes, relation.goId,
+    { goTerms: terms, aliases: ECOLI.searchAliases });
+  assert.ok(byId.total > 0, relation.goId);
+  assert.equal(byId.shown[0].matchedOn, 'GO ID');
+  assert.equal(byId.shown[0].goMatch.id, relation.goId);
+  assert.equal(byId.shown[0].goMatch.isObsolete, false);
+
+  const byName = searchGenes(dataset.genes, terms[relation.goId].name,
+    { goTerms: terms, aliases: ECOLI.searchAliases });
+  assert.ok(byName.total > 0, terms[relation.goId].name);
+  assert.equal(byName.shown[0].matchedOn, 'GO term name');
+  assert.equal(byName.shown[0].goMatch.name, terms[relation.goId].name);
+  assert.ok(byName.shown.every((match) => /^b\d{4}$/.test(match.gene.id)));
+
+  // An obsolete name is found and marked obsolete, rather than quietly missing.
+  const [obsoleteId, obsoleteTerm] = Object.entries(terms)
+    .find(([, term]) => term.isObsolete);
+  const obsolete = searchGenes(dataset.genes, obsoleteTerm.name,
+    { goTerms: terms, aliases: ECOLI.searchAliases });
+  assert.ok(obsolete.total > 0, obsoleteTerm.name);
+  assert.equal(obsolete.shown[0].goMatch.id, obsoleteId);
+  assert.equal(obsolete.shown[0].goMatch.isObsolete, true);
+
+  // Without the names file the ids still match and the names cannot.
+  assert.equal(searchGenes(dataset.genes, terms[relation.goId].name,
+    { aliases: ECOLI.searchAliases }).total, 0);
+  assert.ok(searchGenes(dataset.genes, relation.goId,
+    { aliases: ECOLI.searchAliases }).total > 0);
+});
+
+test('an annotated E. coli export carries its release and its GO relationships', async () => {
+  const { dataset } = await ecoliAnnotatedFixtureDataset();
+  const { registry } = withRegistry(dataset);
+  const { said, exported } = await everythingSaid(dataset, registry, ECOLI);
+  // The sweep still finds nothing of the other organism now that there is more
+  // to say: the annotation release is the one this dataset declares.
+  for (const text of said) {
+    const hit = CYANOBACTERIAL.exec(text);
+    assert.equal(hit, null, hit ? `"${text.slice(Math.max(0, hit.index - 60), hit.index + 60)}"` : '');
+    assert.ok(!NEGATIVE_CLAIM.test(text), text.slice(0, 200));
+  }
+  assert.equal(exported.manifest.dataset.annotationRelease.releaseId,
+    'GCF_000005845.2-RS_2026_05_13');
+  assert.ok(exported.manifest.genes.some((gene) => gene.goAnnotations?.length > 0));
+  assert.ok(exported.files.every((file) => file.name.startsWith('recoding-candidates_ecoli-k12-mg1655_')));
+  // The layers it still does not publish stay out of the export, release or no.
+  for (const key of ['tssEvidenceSource', 'candidateEvidence', 'goIeaEssentiality',
+    'sourceDerivedCategories', 'functionCategories']) {
+    assert.ok(!(key in exported.manifest.dataset), key);
   }
 });

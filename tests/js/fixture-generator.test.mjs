@@ -12,7 +12,11 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { buildFixture } from '../fixtures/make_fixture.mjs';
 import { DATA_FILES, normalizeManifest } from '../../site/js/core/data-files.js';
-import { ECOLI, FIXTURE_DIR, ecoliFixtureFiles } from './helpers.mjs';
+import { repliconTracks } from '../../site/js/core/chromosome-model.js';
+import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
+import {
+  ECOLI, FIXTURE_DIR, ecoliAnnotatedFixtureFiles, ecoliFixtureFiles,
+} from './helpers.mjs';
 
 test('the second organism\'s fixture is E. coli K-12 MG1655 in every identifier', () => {
   const files = ecoliFixtureFiles();
@@ -73,20 +77,69 @@ test('nothing in it carries cyanobacterial provenance', () => {
   }
 });
 
+/**
+ * The default fixture's files as the generator wrote them at `c56f1a8`, the
+ * commit this organism's work started from, by SHA-256 of their exact bytes.
+ *
+ * Pinned, not regenerated: comparing the generator with its own current output
+ * — whether in memory or through `tests/fixtures/data/`, which `pretest` has
+ * just rewritten with this same generator — can only ever agree with itself,
+ * and so cannot show that the cyanobacterial fixture is unchanged. These
+ * digests were taken outside the generator, from that commit's own tree:
+ *
+ *     git archive c56f1a8 | tar -x -C <scratch>
+ *     cd <scratch> && node tests/fixtures/make_fixture.mjs --out <scratch>/out
+ *     shasum -a 256 <scratch>/out/*
+ *
+ * Re-run that to re-establish them after an intended change to the default
+ * fixture, and say in the commit why the bytes moved.
+ */
+const BASELINE_DIGESTS = Object.freeze({
+  'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',
+  'excluded.json': 'f5812402efd22d2b1fcb41f0c131271ce1a93fff07e3980bbbcd02e4bf0c9cd5',
+  'genes.json': 'aa3bf767a1b7f3055e6f56c1409fd27820970e87065542f0d2cfd0ca92165e8d',
+  'meta.json': '2b90d84dc5c9e2c327924140d6fd5644d5bf779396fb9dad7e18f279ae8e824a',
+});
+
+/** The SHA-256 of a fixture file's exact bytes. */
+function digestOf(text) {
+  return createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex');
+}
+
 test('the default fixture is the one the generator has always written', async () => {
   const fixture = buildFixture();
   assert.deepEqual(fixture.options, {
-    genes: 300, seed: 20260918, expression: false, organism: 'utex2973',
+    genes: 300, seed: 20260918, expression: false, annotations: false, organism: 'utex2973',
   });
   assert.deepEqual(Object.keys(fixture.files).sort(),
     ['codon_pca.json', 'excluded.json', 'genes.json', 'meta.json'], 'and no manifest');
-  // Byte for byte what `npm run generate:test-fixtures` wrote to disk.
+  // Byte for byte what the generator wrote at the baseline commit, above.
+  for (const [name, text] of Object.entries(fixture.files)) {
+    assert.equal(digestOf(text), BASELINE_DIGESTS[name], name);
+  }
+  assert.deepEqual(Object.keys(fixture.files).sort(), Object.keys(BASELINE_DIGESTS).sort());
+  // And what `npm run generate:test-fixtures` put on disk for the rendered checks.
   for (const [name, text] of Object.entries(fixture.files)) {
     assert.equal(text, await readFile(`${FIXTURE_DIR}/${name}`, 'utf8'), name);
   }
   const genes = JSON.parse(fixture.files['genes.json']);
   assert.equal(genes[0].id, 'M744_RS00005');
   assert.equal(JSON.parse(fixture.files['meta.json']).genome.accession, 'GCF_000817325.1');
+});
+
+test('the expression variant is the one the generator has always written', () => {
+  // The second default fixture `pretest` writes, pinned the same way: the
+  // commands above with `--with-expression --out <scratch>/out-expression`.
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(buildFixture({ expression: true }).files)
+      .map(([name, text]) => [name, digestOf(text)])),
+    {
+      'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',
+      'excluded.json': 'f5812402efd22d2b1fcb41f0c131271ce1a93fff07e3980bbbcd02e4bf0c9cd5',
+      'genes.json': '21ce72483dd397a8835f9fe9af31caccb2710ea7c00935e3313b9045a30a2f45',
+      'meta.json': '96aa042183920957383d7eb95d23382ce34bd31a25f66768ece0d39e9899356b',
+    },
+  );
 });
 
 test('the generator is deterministic, and refuses what an organism does not have', () => {
@@ -103,4 +156,148 @@ test('the generator is deterministic, and refuses what an organism does not have
   assert.throws(() => buildFixture({ organism: 'constructor' }), /unknown organism constructor/);
   assert.throws(() => buildFixture({ genes: 0 }), /--genes must be a positive integer/);
   assert.throws(() => buildFixture({ genes: 1.5 }), /--genes must be a positive integer/);
+});
+
+// --- Coordinates stay on the replicon, at the size the release really is ------
+
+/** Every gene the fixture places, and the replicon lengths it placed them on. */
+function placed(options, organism) {
+  const files = buildFixture(options).files;
+  const genes = JSON.parse(files['genes.json']);
+  const lengths = new Map(organism.genome.replicons
+    .map((replicon) => [replicon.accession, replicon.lengthBp]));
+  return { files, genes, lengths, meta: JSON.parse(files['meta.json']) };
+}
+
+/** The genes that fall outside the replicon they name, by any of their pieces. */
+function outOfBounds(genes, lengths) {
+  return genes.filter((gene) => {
+    const pieces = gene.cdsSegments?.length ? gene.cdsSegments : [[gene.start, gene.end]];
+    const limit = lengths.get(gene.seqid);
+    return limit === undefined
+      || pieces.some(([from, to]) => from < 1 || to > limit || to < from);
+  });
+}
+
+test('the E. coli fixture fits its chromosome at the size the release really is', () => {
+  // 4,287 genes is the published gene count of the real dataset. Before the
+  // generator bounded its layout, 309 of them ran past 4,641,652 bp and the
+  // chromosome view correctly refused the fixture, so no integration check at a
+  // realistic size was possible.
+  const { genes, lengths, meta } = placed({ organism: ECOLI.id, genes: 4287 }, ECOLI);
+  assert.equal(genes.length, 4287);
+  assert.deepEqual(outOfBounds(genes, lengths).map((gene) => gene.id), []);
+  const last = Math.max(...genes.map((gene) => gene.end));
+  assert.ok(last <= 4641652, `the last gene ends at ${last}`);
+  // Bounded, not crushed: the genes still fill most of the chromosome, so the
+  // fixture exercises a realistic density rather than a packed prefix.
+  assert.ok(last > 4641652 * 0.9, `the layout keeps its shape: ends at ${last}`);
+  assert.ok(genes.every((gene, index) => index === 0
+    || gene.seqid !== genes[index - 1].seqid || gene.start > genes[index - 1].start),
+  'genes still advance along the replicon');
+
+  // And the render model takes it: this is what the chromosome view draws from.
+  const { tracks, problems, verified, plottedCount } = repliconTracks(genes, meta, ECOLI.genome);
+  assert.deepEqual(problems, []);
+  assert.equal(verified, true);
+  assert.equal(plottedCount, 4287);
+  assert.equal(tracks.length, 1);
+  assert.equal(tracks[0].cdsCount, 4287);
+  assert.equal(tracks[0].lengthBp, 4641652);
+  // Every mark is inside the axis it is drawn on, which is what refused before.
+  for (const mark of tracks[0].marks) {
+    for (const piece of mark.pieces) {
+      assert.ok(piece.from >= 1 && piece.to <= 4641652, `${mark.id ?? mark.index}`);
+    }
+  }
+});
+
+test('every organism\'s fixture stays on its replicons, at every size', () => {
+  for (const [organism, sizes] of [
+    [DEFAULT_ORGANISM, [1, 300, 2715]],
+    [ECOLI, [1, 120, 4287]],
+  ]) {
+    for (const genes of sizes) {
+      const where = `${organism.id} at ${genes} genes`;
+      const fixture = placed({ organism: organism.id, genes }, organism);
+      assert.equal(fixture.genes.length, genes, where);
+      assert.deepEqual(outOfBounds(fixture.genes, fixture.lengths).map((gene) => gene.id), [], where);
+      const { problems, verified } = repliconTracks(
+        fixture.genes, fixture.meta, organism.genome,
+      );
+      assert.deepEqual(problems, [], where);
+      assert.equal(verified, true, where);
+    }
+  }
+});
+
+test('a gene count no spacing could fit is refused, not written out of bounds', () => {
+  // Past about 4,500 genes the coding sequence alone outgrows this chromosome,
+  // and no scaling of the gaps can recover that: it is an impossible request,
+  // and a fixture nothing could draw is better refused than written.
+  assert.throws(() => buildFixture({ organism: ECOLI.id, genes: 6000 }),
+    /6000 genes do not fit on NC_000913\.3 \(4641652 bp\) at any spacing: \d+ bp of coding/);
+  // The cyanobacterial profile has three replicons and restarts its layout
+  // whenever the draw moves between them, so its runs stay short by design;
+  // that is existing behaviour and is what keeps its fixtures small.
+  assert.ok(buildFixture({ genes: 2715 }).files['genes.json']);
+});
+
+test('the annotated E. coli variant publishes exactly the two files its release adds', () => {
+  const plain = ecoliFixtureFiles();
+  const files = ecoliAnnotatedFixtureFiles();
+  assert.deepEqual(Object.keys(files).sort(), ['annotations.json', 'codon_pca.json',
+    'data-manifest.json', 'excluded.json', 'genes.json', 'go-term-names-v1.json', 'meta.json']);
+  // Only the annotation layer differs: the same genes, the same codon space.
+  for (const name of ['genes.json', 'codon_pca.json', 'excluded.json']) {
+    assert.equal(files[name], plain[name], name);
+  }
+  // And the manifest really describes what is there, so the loader asks for both.
+  const manifest = JSON.parse(files['data-manifest.json']);
+  assert.ok(normalizeManifest(manifest));
+  assert.deepEqual(Object.keys(manifest.files).sort(),
+    Object.keys(files).filter((name) => name !== 'data-manifest.json').sort());
+  for (const [name, entry] of Object.entries(manifest.files)) {
+    const bytes = Buffer.from(files[name], 'utf8');
+    assert.equal(entry.bytes, bytes.byteLength, name);
+    assert.equal(entry.sha256, createHash('sha256').update(bytes).digest('hex'), name);
+  }
+
+  // Every gene has an evidence record, and every GO id used has a name: the two
+  // things the loader's appliers refuse a release for.
+  const genes = JSON.parse(files['genes.json']);
+  const annotations = JSON.parse(files['annotations.json']);
+  const { terms } = JSON.parse(files['go-term-names-v1.json']);
+  assert.deepEqual(Object.keys(annotations).sort(), genes.map((gene) => gene.id).sort());
+  const used = new Set(Object.values(annotations)
+    .flatMap((record) => record.goAnnotations.map((relation) => relation.goId)));
+  assert.ok(used.size > 1);
+  for (const goId of used) assert.ok(terms[goId]?.name, goId);
+  assert.deepEqual(Object.keys(terms).sort(), [...used].sort(),
+    'no name is published for an id nothing uses');
+  assert.ok(Object.values(terms).some((term) => term.isObsolete), 'one obsolete id, on purpose');
+
+  // An overlap it reports is an overlap the coordinates really have.
+  const byId = new Map(genes.map((gene) => [gene.id, gene]));
+  for (const [id, record] of Object.entries(annotations)) {
+    for (const overlap of record.overlappingCds) {
+      const other = byId.get(overlap.locusTag);
+      assert.ok(other && other.end >= byId.get(id).start, `${id} over ${overlap.locusTag}`);
+    }
+  }
+
+  // Declaring the release and publishing the file are one decision.
+  const meta = JSON.parse(files['meta.json']);
+  assert.equal(meta.annotationRelease.releaseId, 'GCF_000005845.2-RS_2026_05_13');
+  assert.ok(!('annotationRelease' in JSON.parse(plain['meta.json'])));
+
+  // And no cyanobacterial provenance has come in with the new layer.
+  const forbidden = /UTEX|Synechococcus|elongatus|PCC|GSE205444|M744|NZ_CP|GCF_000817325|1350461|cyano|photosystem|phycobili|carboxysome|\bTan\b/i;
+  for (const name of ['annotations.json', 'go-term-names-v1.json', 'meta.json']) {
+    const hit = forbidden.exec(files[name]);
+    assert.equal(hit, null, hit ? `${name}: ${files[name].slice(Math.max(0, hit.index - 40), hit.index + 40)}` : '');
+  }
+
+  assert.throws(() => buildFixture({ annotations: true }),
+    /utex2973 has no annotation layer, so --with-annotations does not apply/);
 });

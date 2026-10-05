@@ -109,6 +109,36 @@ export function memoryDirectory(base, files) {
   return { fetchImpl, requested };
 }
 
+let cachedAnnotatedFiles = null;
+/**
+ * The second organism's annotated fixture: the same release plus
+ * `annotations.json`, `go-term-names-v1.json`, and the `meta.annotationRelease`
+ * that makes the first of them mandatory. This is the shape the real E. coli
+ * release takes once its annotation layer is published.
+ */
+export function ecoliAnnotatedFixtureFiles() {
+  cachedAnnotatedFiles ??= buildFixture({
+    organism: ECOLI.id, genes: 120, annotations: true,
+  }).files;
+  return cachedAnnotatedFiles;
+}
+
+let cachedAnnotated = null;
+/** The annotated E. coli fixture, loaded the way the page loads it. */
+export async function ecoliAnnotatedFixtureDataset() {
+  if (!cachedAnnotated) {
+    const { fetchImpl, requested } = memoryDirectory(
+      ECOLI_DATA_URL, ecoliAnnotatedFixtureFiles(),
+    );
+    const staged = loadDatasetStaged({ baseUrl: ECOLI_DATA_URL, fetchImpl, organism: ECOLI });
+    cachedAnnotated = staged.core.then(async (dataset) => {
+      await staged.settled;
+      return { dataset, requested };
+    });
+  }
+  return cachedAnnotated;
+}
+
 let cachedEcoli = null;
 /**
  * The second organism's dataset, loaded the way the page loads it: through the

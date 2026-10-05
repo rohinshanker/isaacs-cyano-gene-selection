@@ -26,7 +26,7 @@
  *                        `ecoli-k12-mg1655` is the second organism: its own
  *                        locus namespace, one replicon, its own genome
  *                        accession, taxid and length, and a content manifest
- *                        that lists only the four files it publishes, so every
+ *                        that lists only the files it publishes, so every
  *                        optional layer is absent by declaration. Nothing in it
  *                        names the default organism or any of its studies.
  *   --with-expression    add the contract's `expression` fields plus
@@ -36,6 +36,13 @@
  *                        measured, one in seventeen has only the proxy, and one
  *                        in fifty-three has neither, so the interface's rule that
  *                        missing never looks like the median is actually tested.
+ *   --with-annotations   add `annotations.json`, `go-term-names-v1.json`, and the
+ *                        `meta.annotationRelease` that makes the first of them
+ *                        mandatory, for an organism whose release publishes them.
+ *                        Every gene carries an evidence record and about three in
+ *                        five carry GO relationships, including one obsolete id,
+ *                        so the detail panel, GO-name search, and export all have
+ *                        something real to read.
  */
 import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -68,14 +75,17 @@ function mulberry32(seed) {
 
 /** The options a fixture is built from, with every default filled in. */
 function resolveOptions({
-  genes = 300, seed = 20260918, expression = false, organism = 'utex2973',
+  genes = 300, seed = 20260918, expression = false, annotations = false, organism = 'utex2973',
 } = {}) {
   if (!Number.isInteger(genes) || genes < 1) throw new Error('--genes must be a positive integer');
   if (!Object.hasOwn(PROFILES, organism)) throw new Error(`unknown organism ${organism}`);
   if (expression && !PROFILES[organism].expression) {
     throw new Error(`${organism} has no expression layer, so --with-expression does not apply`);
   }
-  return { genes, seed, expression, organism };
+  if (annotations && !PROFILES[organism].annotations) {
+    throw new Error(`${organism} has no annotation layer, so --with-annotations does not apply`);
+  }
+  return { genes, seed, expression, annotations, organism };
 }
 
 function parseArgs(argv) {
@@ -86,6 +96,7 @@ function parseArgs(argv) {
     else if (flag === '--genes') args.genes = Number(argv[(i += 1)]);
     else if (flag === '--seed') args.seed = Number(argv[(i += 1)]);
     else if (flag === '--with-expression') args.expression = true;
+    else if (flag === '--with-annotations') args.annotations = true;
     else if (flag === '--organism') args.organism = argv[(i += 1)];
     else throw new Error(`unknown flag ${flag}`);
   }
@@ -187,6 +198,7 @@ const PROFILES = {
     geneNames: GENE_NAMES,
     excluded: ['M744_RS99990', 'M744_RS99995', 'M744_RS99999'],
     expression: true,
+    annotations: false,
     manifest: false,
   },
   'ecoli-k12-mg1655': {
@@ -197,9 +209,134 @@ const PROFILES = {
     geneNames: ECOLI_GENE_NAMES,
     excluded: ['b9990', 'b9995', 'b9999'],
     expression: false,
+    annotations: true,
     manifest: true,
   },
 };
+
+/**
+ * A small GO vocabulary for the annotated variant: ids that really exist, with
+ * their real names, namespaces and aspects, so a term the page shows is a term a
+ * reader can look up. One obsolete id is included on purpose, because the
+ * evidence model and the search both mark an obsolete name and nothing else here
+ * would reach that path.
+ */
+const GO_VOCABULARY = [
+  { goId: 'GO:0003677', name: 'DNA binding', namespace: 'molecular_function', aspect: 'F' },
+  { goId: 'GO:0003723', name: 'RNA binding', namespace: 'molecular_function', aspect: 'F' },
+  { goId: 'GO:0003735', name: 'structural constituent of ribosome', namespace: 'molecular_function', aspect: 'F' },
+  { goId: 'GO:0005524', name: 'ATP binding', namespace: 'molecular_function', aspect: 'F' },
+  { goId: 'GO:0016491', name: 'oxidoreductase activity', namespace: 'molecular_function', aspect: 'F' },
+  { goId: 'GO:0006096', name: 'glycolytic process', namespace: 'biological_process', aspect: 'P' },
+  { goId: 'GO:0006412', name: 'translation', namespace: 'biological_process', aspect: 'P' },
+  { goId: 'GO:0006810', name: 'transmembrane transport', namespace: 'biological_process', aspect: 'P' },
+  { goId: 'GO:0055085', name: 'transmembrane transport', namespace: 'biological_process', aspect: 'P' },
+  { goId: 'GO:0005737', name: 'cytoplasm', namespace: 'cellular_component', aspect: 'C' },
+  { goId: 'GO:0005886', name: 'plasma membrane', namespace: 'cellular_component', aspect: 'C' },
+  { goId: 'GO:0022627', name: 'cytosolic small ribosomal subunit', namespace: 'cellular_component', aspect: 'C' },
+  { goId: 'GO:0006118', name: 'obsolete electron transport', namespace: 'biological_process', aspect: 'P', isObsolete: true },
+];
+
+/** The annotation methods a RefSeq prokaryotic release records. */
+const ANNOTATION_METHODS = ['Protein Homology', 'GeneMarkS-2+', 'cmsearch'];
+
+/** Non-coding neighbours an annotated release reports near a CDS. */
+const NONCODING_BIOTYPES = ['tRNA', 'rRNA', 'ncRNA', 'tmRNA'];
+
+/**
+ * The annotation-evidence and GO-name layers for one organism's genes.
+ *
+ * Drawn from a stream of its own, seeded off the fixture's seed, so publishing
+ * this layer cannot move a single byte of the files a fixture without it writes.
+ * Every gene carries a record, because `annotations.json` is required to cover
+ * all of them, and the names file is derived from the ids actually used, so the
+ * GO coverage the loader checks holds by construction rather than by luck.
+ *
+ * Overlaps and neighbour distances are read back from the placed coordinates, so
+ * the evidence describes the genes the fixture really wrote.
+ *
+ * @param {object[]} genes the placed genes.
+ * @param {number} seed the fixture's seed.
+ * @returns {{annotations: object, goTerms: object, coverage: object}}
+ */
+function annotationLayer(genes, seed) {
+  const random = mulberry32((seed ^ 0x5bf03635) >>> 0);
+  const annotations = {};
+  const usedGoIds = new Set();
+  let withGoAnnotations = 0;
+  let goRelationships = 0;
+  genes.forEach((gene, index) => {
+    const previous = index > 0 ? genes[index - 1] : null;
+    const next = index + 1 < genes.length ? genes[index + 1] : null;
+    const overlapping = previous && previous.seqid === gene.seqid && gene.start <= previous.end
+      ? [{ locusTag: previous.id, overlapNt: previous.end - gene.start + 1 }] : [];
+    const nearby = next && next.seqid === gene.seqid && random() < 0.12
+      ? [{
+        locusTag: `${gene.id}-nc`,
+        biotype: NONCODING_BIOTYPES[Math.floor(random() * NONCODING_BIOTYPES.length)],
+        distanceNt: Math.max(1, next.start - gene.end - 1),
+      }] : [];
+    // Roughly the real release's GO coverage: about three genes in five carry
+    // relationships, most of them one or two.
+    const relationCount = random() < 0.62 ? 1 + Math.floor(random() ** 2 * 3) : 0;
+    const chosen = new Set();
+    while (chosen.size < relationCount) {
+      chosen.add(GO_VOCABULARY[Math.floor(random() * GO_VOCABULARY.length)]);
+    }
+    const goAnnotations = [...chosen].map((term) => {
+      usedGoIds.add(term.goId);
+      return {
+        goId: term.goId,
+        qualifier: term.aspect === 'F' ? 'enables' : term.aspect === 'P' ? 'involved_in' : 'part_of',
+        aspect: term.aspect,
+        evidenceCode: 'IEA',
+        reference: 'GO_REF:0000043',
+        withFrom: `UniProtKB-KW:KW-${String(100 + Math.floor(random() * 900))}`,
+        assignedBy: 'RefSeq',
+        mappingAmbiguity: '',
+        mappingMethod: 'exact RefSeq protein_id',
+      };
+    });
+    if (goAnnotations.length > 0) withGoAnnotations += 1;
+    goRelationships += goAnnotations.length;
+    annotations[gene.id] = {
+      repliconType: 'chromosome',
+      repliconName: 'chromosome',
+      annotationMethods: [ANNOTATION_METHODS[Math.floor(random() * ANNOTATION_METHODS.length)]],
+      inferences: [`COORDINATES: similar to AA sequence:RefSeq:WP_${
+        String(1000000 + Math.floor(random() * 8999999))}.1`],
+      overlappingCds: overlapping,
+      nearbyNoncodingRnas: nearby,
+      goAnnotations,
+    };
+  });
+  const goTerms = {
+    schemaVersion: 1,
+    source: {
+      ontology: { releaseDate: '2026-05-19', url: 'https://release.geneontology.org/2026-05-19/ontology/go-basic.obo' },
+      license: {
+        name: 'Creative Commons Attribution 4.0 International',
+        url: 'https://creativecommons.org/licenses/by/4.0/',
+        attribution: 'Gene Ontology Consortium',
+      },
+    },
+    terms: Object.fromEntries(GO_VOCABULARY
+      .filter((term) => usedGoIds.has(term.goId))
+      .map((term) => [term.goId, {
+        name: term.name, namespace: term.namespace, isObsolete: Boolean(term.isObsolete),
+      }])),
+  };
+  return {
+    annotations,
+    goTerms,
+    coverage: {
+      siteGenes: genes.length,
+      withAnnotationEvidence: genes.length,
+      withGoAnnotations,
+      goRelationships,
+    },
+  };
+}
 
 /** `count` random ACGT bases. */
 function randomBases(random, count) {
@@ -245,6 +382,83 @@ function logNormal(random, median, sigma, min, max) {
   return Math.min(max, Math.max(min, Math.round(median * Math.exp(sigma * z))));
 }
 
+/**
+ * Where the first gene of a run along a replicon is measured from.
+ *
+ * A run is a stretch of consecutive genes drawn for the same replicon; the
+ * cursor restarts here each time the replicon changes, which is what has always
+ * kept the multi-replicon fixture's three tracks short and independent.
+ */
+const RUN_ORIGIN = 480;
+
+/** The closest a gene may start to the end of the one before it. */
+const MAX_OVERLAP_NT = 15;
+
+/**
+ * Lay the drawn genes out along their replicons, inside each replicon's length.
+ *
+ * Coordinates follow the gaps already drawn, so any fixture whose genes fit
+ * keeps the coordinates this generator has always written, byte for byte. A
+ * realistic gene count does not fit: 4,287 E. coli genes draw gaps worth
+ * 536 kb on top of 4.47 Mb of coding sequence, which runs 362 kb past the end
+ * of a 4,641,652 bp chromosome and makes the chromosome view refuse the fixture.
+ * Every positive gap on an overrunning replicon is therefore scaled by the one
+ * largest factor that keeps the last gene inside it, so the layout keeps its
+ * shape rather than piling its tail against the end. Drawn overlaps are left as
+ * drawn. A replicon too short for the coding sequence itself cannot be laid out
+ * at any spacing, and is refused rather than written out of bounds.
+ *
+ * Each gene's placed gap is written back to `_gap`, which is what the per-gene
+ * neighbour fields read, so those describe the coordinates actually written.
+ *
+ * @param {object[]} genes the drawn genes, in the order they were drawn.
+ * @param {{id: string, length: number}[]} seqids the profile's replicons.
+ */
+function placeGenes(genes, seqids) {
+  const lengthOf = new Map(seqids.map((entry) => [entry.id, entry.length]));
+  const gapOf = (gene) => Math.max(-MAX_OVERLAP_NT, gene._gap);
+  // One pass for the largest scale each replicon can take. Within a run the
+  // last gene ends at `fixed + scale * positive`, where `fixed` carries the
+  // origin, the coding lengths, and the overlaps, so the bound is linear.
+  const scale = new Map(seqids.map((entry) => [entry.id, 1]));
+  let replicon = seqids[0].id;
+  let fixed = RUN_ORIGIN - 1;
+  let positive = 0;
+  for (const gene of genes) {
+    if (gene.seqid !== replicon) {
+      replicon = gene.seqid;
+      fixed = RUN_ORIGIN - 1;
+      positive = 0;
+    }
+    const gap = gapOf(gene);
+    if (gap > 0) positive += gap; else fixed += gap;
+    fixed += gene.lengthNt;
+    const room = lengthOf.get(replicon) - fixed;
+    if (room < 0) {
+      throw new Error(`${genes.length} genes do not fit on ${replicon} (${lengthOf.get(replicon)} `
+        + `bp) at any spacing: ${fixed - RUN_ORIGIN + 1} bp of coding sequence by ${gene.id}`);
+    }
+    if (positive > 0) scale.set(replicon, Math.min(scale.get(replicon), room / positive));
+  }
+
+  // One pass to place them, at that scale. Flooring each scaled gap only ever
+  // pulls a gene earlier, so the bound the scale establishes still holds.
+  replicon = seqids[0].id;
+  let cursor = RUN_ORIGIN;
+  for (const gene of genes) {
+    if (gene.seqid !== replicon) {
+      replicon = gene.seqid;
+      cursor = RUN_ORIGIN;
+    }
+    const gap = gapOf(gene);
+    gene._gap = gap > 0 ? Math.floor(gap * scale.get(replicon)) : gap;
+    gene.start = cursor + gene._gap;
+    gene.end = gene.start + gene.lengthNt - 1;
+    cursor = gene.end + 1;
+  }
+  return genes;
+}
+
 function main(args) {
   const profile = PROFILES[args.organism];
   const seqids = profile.seqids;
@@ -270,8 +484,6 @@ function main(args) {
   const aaEntries = Object.entries(AA_FREQUENCY);
   const genes = [];
   const packedIndices = [];
-  let cursor = 480;
-  let seqidCursor = 0;
   let operonIndex = 0;
   let operonRemaining = 0;
   let operonSize = 0;
@@ -306,15 +518,10 @@ function main(args) {
     const terminalStop = weightedPick(random, [['TAG', 1071], ['TAA', 895], ['TGA', 749]]);
 
     const share = weightedPick(random, seqids.map((entry) => [entry, entry.share]));
-    if (share.id !== seqids[seqidCursor].id) {
-      seqidCursor = seqids.findIndex((entry) => entry.id === share.id);
-      cursor = 480;
-    }
     const lengthNt = lengthCodons * 3 + 3;
+    // Coordinates are assigned by `placeGenes` once every length and gap is
+    // drawn, because fitting a replicon is a property of the whole run.
     const gap = Math.round(-6 + random() * 260);
-    const start = cursor + Math.max(-15, gap);
-    const end = start + lengthNt - 1;
-    cursor = end + 1;
 
     if (operonRemaining === 0) {
       operonSize = 1 + Math.floor(random() * 4);
@@ -330,8 +537,8 @@ function main(args) {
       name: random() < 0.42 ? profile.geneNames[Math.floor(random() * profile.geneNames.length)] : null,
       product: profile.products[Math.floor(random() * profile.products.length)],
       seqid: share.id,
-      start,
-      end,
+      start: null,
+      end: null,
       strand: random() < 0.52 ? '+' : '-',
       lengthNt,
       lengthCodons,
@@ -343,6 +550,7 @@ function main(args) {
       _gap: gap,
     });
   }
+  placeGenes(genes, seqids);
 
   // Codon-usage metrics count position zero as methionine, whatever triplet is
   // there, because every bacterial start translates as methionine. Composition
@@ -807,7 +1015,31 @@ function main(args) {
     { id: third, reason: 'pseudo', lengthNt: 402 },
   ];
 
-  return { meta, records, codonPcaFile, excludedFile };
+  // The annotation layer and the release that makes it mandatory, together: a
+  // dataset declaring `annotationRelease` without `annotations.json` is one the
+  // loader refuses, so neither is written without the other.
+  let annotationsFile = null;
+  let goTermsFile = null;
+  if (args.annotations) {
+    const layer = annotationLayer(genes, args.seed);
+    annotationsFile = layer.annotations;
+    goTermsFile = layer.goTerms;
+    meta.annotationRelease = {
+      releaseId: `${profile.genome.accession}-RS_2026_05_13`,
+      schemaVersion: 1,
+      siteFile: 'annotations.json',
+      coverage: layer.coverage,
+      goAttribution: {
+        creator: 'Gene Ontology Consortium',
+        license: 'CC BY 4.0',
+        source: 'https://geneontology.org/',
+        notice: 'GO relationships are evidence-coded annotations, not an inferred pathway '
+          + 'or functional-category assignment.',
+      },
+    };
+  }
+
+  return { meta, records, codonPcaFile, excludedFile, annotationsFile, goTermsFile };
 }
 
 /** The content manifest for a set of files: each one's byte size and SHA-256. */
@@ -830,20 +1062,27 @@ function contentManifest(files) {
  * step had to write first; the command line below writes the same files to
  * disk for the rendered checks.
  *
- * @param {{genes?: number, seed?: number, expression?: boolean, organism?: string}} [options]
+ * @param {{genes?: number, seed?: number, expression?: boolean, annotations?: boolean,
+ *   organism?: string}} [options]
  * @returns {{options: object, files: Record<string, string>}} each published
  *   file's exact text by name, with `data-manifest.json` among them for an
  *   organism whose profile publishes one.
  */
 export function buildFixture(options = {}) {
   const resolved = resolveOptions(options);
-  const { meta, records, codonPcaFile, excludedFile } = main(resolved);
+  const {
+    meta, records, codonPcaFile, excludedFile, annotationsFile, goTermsFile,
+  } = main(resolved);
   const files = {
     'meta.json': `${JSON.stringify(meta, null, 1)}\n`,
     'genes.json': `${JSON.stringify(records)}\n`,
     'codon_pca.json': `${JSON.stringify(codonPcaFile, null, 1)}\n`,
     'excluded.json': `${JSON.stringify(excludedFile, null, 1)}\n`,
   };
+  if (annotationsFile) {
+    files['annotations.json'] = `${JSON.stringify(annotationsFile)}\n`;
+    files['go-term-names-v1.json'] = `${JSON.stringify(goTermsFile, null, 1)}\n`;
+  }
   if (PROFILES[resolved.organism].manifest) {
     files['data-manifest.json'] = `${JSON.stringify(contentManifest(files), null, 1)}\n`;
   }
@@ -859,6 +1098,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     .map(([name, text]) => writeFile(`${out}/${name}`, text)));
   process.stdout.write(
     `wrote ${fixture.options.genes} genes to ${out}`
-    + `${fixture.options.expression ? ' with expression, expressionBasis, and expressionProxy' : ''}\n`,
+    + `${fixture.options.expression ? ' with expression, expressionBasis, and expressionProxy' : ''}`
+    + `${fixture.options.annotations ? ' with annotation evidence and GO term names' : ''}\n`,
   );
 }
