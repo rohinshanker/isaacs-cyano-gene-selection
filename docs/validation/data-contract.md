@@ -95,8 +95,19 @@ Admitted data types, and nothing else:
 - ribosome occupancy, including ribosome profiling density and derived
   translation-efficiency estimates;
 - translation initiation sites (TIS);
-- transcription start sites (TSS); and
-- transcription termination sites (TTS).
+- transcription start sites (TSS);
+- transcription termination sites (TTS); and
+- condition-resolved fitness screens such as RB-TnSeq, admitted 2026-10-05 by owner
+  decision as a data type of its own. A fitness value is shown in its own tab and
+  is never placed on an expression scale or pooled with one.
+
+Platform is recorded beside the data type (owner decision 2026-10-05). A
+microarray is a transcriptomics platform and a protein array a proteomics one, but
+an array measures the targets its designers chose and not the whole transcriptome
+or proteome. Array datasets are therefore listed apart from sequencing or
+mass-spectrometry datasets by default, the RNA-seq selection offers an option to
+include them, and an array dataset always says that it is an array and how many
+targets it covers.
 
 Everything else keeps the rules it already has. Genome sequence, coordinates,
 codon content, GC, CAI, tAI, folding windows, and every other sequence-derived
@@ -149,6 +160,22 @@ Two datasets are comparable only when **every** axis the assay responds to agree
 | CO₂ | Same regime, ambient near 0.04% or elevated at 1% or more, and within a factor of two inside the elevated regime. | Elevated CO₂ changes carbon-concentrating and photosynthetic gene expression directly. |
 | Medium | BG-11 on both sides, same nitrogen source, no added organic carbon. Conditioned or spent medium is never comparable to fresh medium. | GSE205444 is a biofilm and conditioned-media experiment, which is why its caveat is recorded separately. |
 | Culture format and phase | Both planktonic or both biofilm, and both exponential with overlapping OD₇₅₀, or both stationary. | A day-1 biofilm sample and an exponential planktonic culture measure different physiology. |
+
+**Owner decisions, 2026-10-05.** The thresholds above are the default screen and a
+piece of evidence, not the sole gate. Agreement computed from the data is shown
+beside them: level correlation read against each dataset's own replicate band and,
+where both datasets carry their own control, agreement of fold changes.
+Whole-distribution comparison appears as a units check only. No statistic carries a
+pass mark. Two datasets share a layer or a combined estimate only when the lab
+records a judgement for that pair in row 14 of the biological-decisions list; until
+then they are separate layers, and any number of separate layers may be shown at
+once. On the phase axis an OD₇₃₀ or A₇₃₀ value is accepted as equivalent to OD₇₅₀.
+No fixed "narrow miss" boundary decides which near-passes a person looks at: the
+condition scales show how near or far two datasets sit on every axis, so the
+boundary may be drawn wide, and the owner revisits it if the resulting groups
+look wrong. GSE18902, GSE50908, GSE50919 and GSE52486 are judged to share a
+spectrum class, because Markson 2013 states its turbidostat cultures were grown as
+described in Vijayan 2009; row 14 records the judgement.
 
 A pair failing any axis may still be published, as separate selectable layers with
 their conditions stated. What it may not do is enter one combined estimate or one

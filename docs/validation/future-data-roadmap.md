@@ -21,13 +21,13 @@ mapping, biological distance, and uncertainty remain visible. See the
 
 PCC 6301, PCC 6311, PCC 7942, PCC 7943, and UTEX 3055 are now admitted sister
 strains for annotations, transcriptomics, proteomics, ribosome occupancy, TIS, TSS,
-and TTS, under
+TTS, and since 2026-10-05 condition-resolved fitness screens, under
 [the sister-strain rules](data-contract.md#sister-strains-admitted-for-utex-2973-data).
 A source in one of those strains and data types is a first-class candidate for this
 roadmap rather than a deferred cross-strain overlay. Coordinates still do not
-transfer, and each pair of datasets must pass the
-[condition-comparability thresholds](data-contract.md#condition-comparability)
-before sharing a layer. PCC 6311 and PCC 7943 additionally need the approved RefSeq
+transfer, and two datasets share a layer only under a recorded lab judgement, with
+the [condition-comparability thresholds](data-contract.md#condition-comparability)
+as the default screen (owner decision 2026-10-05). PCC 6311 and PCC 7943 additionally need the approved RefSeq
 crosswalk before a source keyed by their own locus tags can join, and UTEX 3055 has
 real gene-content differences that a missing value must not hide.
 
@@ -304,6 +304,27 @@ exactly one public deposit, Tan 2018, already shipped.
 | 55 | PCC 7942 | annotation (RefSeq PGAP) | RefSeq GCF_030544905.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
 | 56 | PCC 7943 | annotation (RefSeq PGAP) | RefSeq GCF_022984345.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
 | 57 | UTEX 3055 | annotation (RefSeq PGAP) | RefSeq GCF_003957805.1 | yes - RefSeq feature table / GFF per assembly | own RefSeq locus tags; crosswalk target | not applicable |
+
+#### Reinstated and newly found candidates, 2026-10-05
+
+Nine series that package A rejected as ChIP-seq are expression data and are
+candidates again, and a direct archive check found two sources the sweep missed.
+None has condition metadata or a licence decision; each needs both before it can
+join the register above. The correction is recorded in the scan ticket.
+
+| Artifact | What the GEO or archive record says | Samples | Paper |
+| --- | --- | --- | --- |
+| GSE14225 | Expression profiling by array; "Circadian and diurnal expression data of Synechococcus" | 104 | PMID 19666549 |
+| GSE22468 | Expression profiling by array; nocturnal expression, WT and kaiABC-null | 29 | PMID 21896749 |
+| GSE28430 | Expression profiling by array; circadian expression in WT, rpoD6-, sasA- and rpaA-null | 21 | none linked |
+| GSE42542 | Expression profiling by array; clpX overexpression | 4 | PMID 23913328 |
+| GSE47015 | Expression profiling by array; circadian profile under kaiA overexpression | 9 | none linked |
+| GSE48901 | Expression profiling by array; circadian profile without KaiC phosphorylation cycling | 12 | PMID 24244001 |
+| GSE55637 | Expression profiling by array; dark or light, with or without photosynthesis | 28 | PMID 26058805 |
+| GSE114693 | Mixed: 72 RNA-Seq and 6 ChIP-Seq; RpaA-dependent sigma factor cascade; two supplementary tables | 78 | none linked |
+| GSE29264 | Mixed: 3 RNA-Seq, 6 ChIP-Seq and a tiling array; "A high resolution map of a cyanobacterial transcriptome"; strand-specific coverage files | 13 | PMID 21612627 |
+| PRIDE PXD082340 | Label-free proteomics of SeOmp85 mutants, PCC 7942; licence field CC0; published 2026-09-30, after the sweep | — | not yet read |
+| ArrayExpress E-MEXP-1657 | Transcription profiling of wild type and two mutants with and without iron; in ArrayExpress only, not mirrored from GEO | — | not yet read |
 
 #### Package B and C intake outcome, 2026-10-04
 

@@ -195,6 +195,72 @@ sentence-level accessible description naming the gene, strand, replicon, length,
 any splice, any translational exception, the terminal stop, and each start-site
 distance with its caveat.
 
+### The recorded absence
+
+The description ends by stating what the view has no data to draw:
+
+> No ribosome-occupancy, translation-initiation-site, transcription-termination-site,
+> or start-site data set beyond Tan 2018 is admitted for this strain or its admitted
+> sister strains, so none of those tracks is drawn.
+
+No data set of any of those kinds is admitted, so the planned overlays have
+nothing to draw and no empty track is reserved for them. The sweep behind that
+returned no *new candidate* for any of those tracks, which is not the same as
+finding nothing deposited: its one termination-site hit, GSE309256, is ranked in
+[the roadmap](future-data-roadmap.md) and not admitted. That is why the sentence
+and this section say "no admitted data set" and never "no deposit".
+
+Left silent, the space reads as "measured and nothing found". The sentence is
+written about admission rather than biology: it does not claim the organism lacks
+these features, and it carries no sweep date, which would go stale the next time
+the sweep runs. `NO_ADMITTED_TRACK_DATA` in `site/js/ui/gene-viewer.js` holds the
+wording, and `tests/js/gene-view-tan-evidence.test.mjs` pins all three of those
+properties.
+
+It lives in the text equivalent only. The owner's decision against explanatory
+interface text stands, and the visible caveat beside the drawing stays the one
+about what the published distances mean. Raising the support claimed for a
+source needs a Claude Science claim; adding a caveat does not, per
+[the handoff contract](claude-science-handoff.md#what-must-not-land-without-a-claude-science-claim-or-package).
+
+The statement waits while the start-site file is in flight. It rests on Tan 2018
+being the one admitted start-site data set, which is a claim about what has
+landed, and beside "the Tan 2018 start sites are still loading" it would
+contradict the wording standing next to it. Both states are pinned in
+[`tests/js/loading-states.test.mjs`](../../tests/js/loading-states.test.mjs).
+
+### Every mapped site is drawn, and drawn inside the domain
+
+`tssMarks()` in `site/js/core/gene-view-model.js` is the only path from the
+evidence file to a mark; `gene-viewer.js` draws `model.tss` and derives nothing
+of its own. `tests/js/gene-view-tan-evidence.test.mjs` audits that path against
+the shipped data rather than a fixture, and it reads the marks back out of the
+SVG `geneViewSvg()` builds rather than off the model: a count taken from
+`model.tss` stands untouched while `drawTss` is deleted and nothing is painted.
+What the audit holds:
+
+- the drawn marks and the source rows are the same multiset, compared in both
+  directions, over rows whose ids are required to be distinct. Without that last
+  requirement one site standing in for another is invisible — the count still
+  agrees and both drawn ids are real published sites;
+- each mark is drawn in the model's own order, carrying its row's id and
+  published distance, with both a stem and a head, at the position the domain
+  puts it at. Present in the DOM is not painted;
+- each mark carries its row's distance, strand, position, and replicon unchanged,
+  and lands inside the drawn domain. That last one needs the real file:
+  `fractionOf` clamps, so a mark past either end is not dropped, it is painted
+  onto the edge at a distance the source never published. The domain's upstream
+  end is opened to the furthest site, which is what makes the rule hold for every
+  upstream row.
+
+The test asserts each case class is non-empty before checking it, so it cannot
+pass by finding nothing to test: multiple-site genes, site-only genes with no
+pooled initiation score, both strands, the spliced gene, sites published at the
+annotated start itself, and plasmid genes. Its injected failures put the same
+audit function to a row with no published distance, a duplicate standing in for
+an omission, and a site placed past the domain, and require it to reject each
+one, so a clean pass means the audit has teeth rather than nothing to find.
+
 ## Opening the help panel keeps its button on screen
 
 The **How to read this** toggle scrolls the page header to the top, not the help
@@ -214,6 +280,11 @@ Rendered checks, which source inspection does not replace:
 
 - At 375, 768, 1280 and 1440 wide: no horizontal page overflow, no panel-head
   overflow, and the gene visualizer SVG inside its column.
+- At the same four widths, pin a gene whose start-site marks crowd together and
+  confirm every one of them is painted, sized, opaque, and inside the SVG box.
+  Counting nodes in the DOM does not establish that: a mark can be present and
+  still have no pixels. `M744_RS01695` carries 20 sites over 769 nt and is the
+  densest case the release holds.
 - At the same four widths, and at 360 px: Colour by and Scale share the first
   toolbar row as two columns with one label placement between them, the scale
   note and then the colour explanation are beneath it, and Find a gene is alone

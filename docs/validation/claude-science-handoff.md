@@ -4,6 +4,22 @@ How work in this repository uses Claude Science, Anthropic's scientific research
 agent. It applies to every ticket and to every agent working here. The lab owner
 holds the Claude Science account and is the only route to it.
 
+## Owner decision, 2026-10-05: Claude Science is the last resort
+
+The owner decided that Claude Science is used only when absolutely necessary. It
+runs on a smaller model than the agents here and cannot delegate. Where the agents
+here can reach a source themselves, they read it themselves, and that read verifies
+a quotation — a condition value, a licence line, a methods sentence, a count in an
+archive record — once the quote is re-matched mechanically against the retrieved
+text and the retrieval is recorded with date, location and checksum. Such a result
+does not go back through Claude Science. A package or claim is sent only when the
+agents here cannot reach the source by any route that circumvents nothing, or when
+the owner asks for an independent second check. Everything below about returns,
+boundaries and intake still governs what Claude Science does send back, and every
+hard boundary on admission, joins, predictions and lab decisions binds the agents
+here equally. Where a later section calls an in-repository search "pre-grounding,
+not verification", read it under this decision.
+
 ## What Claude Science is, for this repository
 
 Claude Science is an interactive agent session, not an API. Confirmed 2026-09-28 by
@@ -61,8 +77,12 @@ probes run from a session with this repository mounted:
   transient fault. NCBI `efetch db=pmc` is the second route: it recovered a full
   body for 2 of those 7 and returns the `<permissions>` block even when it
   withholds the body, so a non-OA record is often readable for terms when not for
-  methods. The PMC article page serves a proof-of-work challenge to automated
-  clients; it is not solved. The NCBI ID converter and Europe PMC can disagree on
+  methods. The PMC PDF address (`/articles/<PMCID>/pdf/`) serves a
+  proof-of-work challenge to automated clients; it is not solved. The article page
+  itself is a different matter: probed from this repository's agents 2026-10-05
+  with a plain client, it served the full article for all five non-OA records the
+  packages could not read (PMC3935230, PMC2799730, PMC4125736, PMC9157067,
+  PMC5167140), one named article at a time. Supplements are not on that page. The NCBI ID converter and Europe PMC can disagree on
   whether a PMID has a PMCID; query both.
 - **PRIDE REST v3 exposes a per-project `license` field**
   (`/pride/ws/archive/v3/projects/<PXD>`), the one affirmative grant found over any

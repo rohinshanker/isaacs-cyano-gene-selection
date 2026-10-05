@@ -41,6 +41,32 @@ python3 -m unittest discover -s tests/readiness -p 'test_*.py'
 companions, and one release-pinned PCC 7942 GFF used only for the exact protein
 crosswalk. Existing valid files are reused. `--force` reacquires every input.
 
+## Deriving annotated 16S rRNA 3' termini
+
+`tools/rrna_3prime.py` reads the manifest-pinned UTEX genomic GFF3 and FASTA,
+checks both files' size and MD5 plus the GFF3 release headers, and reports one
+row per annotated 16S rRNA feature. Coordinates remain one-based and inclusive;
+the sequence is emitted as transcript-oriented RNA, 5' to 3', with reverse
+complement handling for minus-strand features. The default length is nine bases
+so its output can be compared directly with the nine-base defaults used by the
+translation-initiation tools under assessment.
+
+After acquiring the raw inputs with the release tool above, run:
+
+```sh
+python3 tools/rrna_3prime.py
+python3 tools/rrna_3prime.py --length 20 --format json
+```
+
+For `GCF_000817325.1-RS_2026_05_13`, both annotated copies are 1,489 nt on
+`NZ_CP006471.1`: `M744_RS03180` at 603902–605390 (`+`) and `M744_RS13280` at
+2688678–2690166 (`-`). Their derived nine-base 3' termini agree as
+`ACCUCCUUU`. The boundary is the annotation's; there is no processing-site
+evidence behind it. As an observation only, the derived `ACCUCCUUU` and the
+*E. coli* default `ACCUCCUUA` used by the RBS Calculator and iDOG differ only
+at the final base. This is not a validated anti-Shine-Dalgarno claim and does
+not decide what sequence an initiation model should receive.
+
 ## Release gates
 
 The validator fails before generation when any of these change:

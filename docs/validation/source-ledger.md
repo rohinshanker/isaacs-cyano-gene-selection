@@ -61,10 +61,30 @@ their stated locations on 2026-10-04 and the two terms pages re-fetched with
 matching checksums. The decisions are this repository's, not the return's. They
 are permission decisions only: a permitted artifact still needs the
 [admission contract](future-data-roadmap.md#admission-contract), a manifest entry,
-and a checksum before anything is downloaded or shown, and nothing has been
-downloaded under them yet.
+and a checksum before anything is shown, and nothing has been placed in this
+repository under them yet.
 
-The rules the decisions follow:
+**Owner decisions, 2026-10-05.** The repository owner decided two things that sit
+above the table below.
+
+- *Calibration downloads.* Agents may download any candidate table for calibration
+  and analysis, whatever its row below says, provided nothing from it enters
+  `data/` or `site/` without the admission contract. This replaces "is not
+  fetched". A Claude Science pilot had already fetched seven permitted GEO tables
+  into its session sandbox on 2026-10-05 on this ledger's strength; that is now
+  covered.
+- *Redistribution.* The owner accepts redistribution of derived tables with proper
+  attribution, on the basis that this is publicly funded, non-commercial research
+  and nothing is sold. The same decision covers tracking the 2026-09-30 return and
+  its ortholog table in this repository. Recorded with one caveat from the agent
+  that made the table: attribution and non-commercial use satisfy a CC BY or CC
+  BY-NC licence, but not the no-derivatives term of the three CC BY-NC-ND rows, an
+  all-rights-reserved article, or BioCyc's and KEGG's own terms, which funding
+  does not change. The rows below keep their evidence-based reading so that the
+  difference stays visible; an artifact shipped under the owner's decision against
+  a "not permitted" or "undetermined" row says so in its manifest entry.
+
+The rules the evidence-based decisions follow:
 
 - **An affirmative grant over the files is required to redistribute them or a
   table derived from them.** Among the 57 artifacts the only such grant is the
