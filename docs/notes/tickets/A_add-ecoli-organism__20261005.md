@@ -43,50 +43,40 @@ FTP directory and is not used.
 
 ## Integration branch
 
-`feat/ecoli-organism`, worktree `../worktrees/ecoli-organism`, holds both
-patches for testing: the selector commits on their baseline snapshot, with the
-pipeline commits, their repair, and the selector repair cherry-picked on top
-(through `8217d42`), plus the coordinator's `b0dc293`. On it, 1,007 JS tests pass, the E. coli live-metric check passes, and the real dataset loads
-through the selector at 1280 px: five requests, all inside its own directory, a
-clean console, the map and the chromosome view drawn, no cyanobacterial wording
-in the page text. The branch rests on a snapshot of other sessions' uncommitted
-work in the main checkout as of 2026-10-05, so it cannot land on `main` until
-that work is committed there; then it is rebased onto it.
+`feat/ecoli-organism`, worktree `../worktrees/ecoli-organism`, at `9fbbabd`: 18
+commits above `main`, onto which it was rebased on 2026-10-05 once the main
+checkout's outstanding work was committed there. It holds the selector stream,
+the pipeline stream, both repairs, the pipeline follow-up (DEM-243), and three
+coordinator commits: the Lengths blurb fix, the per-gene size budget, and a
+build-process remark dropped from the E. coli source ledger.
 
-The E. coli Citations tab now shows the dataset's provenance from its own
-ledger (the RefSeq record and the methods used). Its primary-data entry ends
-with a sentence about the open publication decision, which is repository
-bookkeeping in reader-facing text and has to come out before release.
+Gates on it, for both organisms, with the pinned inputs supplied: 1,007 JS
+tests; 405 Python tests passed, 1 skipped; contract validator 98 passed for UTEX
+2973 and 64 passed, 0 failed for E. coli; live-metric checks, manifest checks,
+and the UTEX byte-identity check pass. The real E. coli view loads through the
+selector with a clean console, its Citations tab shows the dataset's own
+ledger, and no cyanobacterial wording appears.
 
-## Open decision: the `genes.json` size budget
+Five commits on it have had no independent review; DEM-245 is the final
+integration review before a merge to local `main`. Nothing is pushed.
 
-The E. coli `genes.json` is 8,042,652 bytes after the repair's rebuild (8,042,780 before); the contract
-validator's budget is 6 MiB (6,291,456 bytes), set when the only organism had 2,715 genes. The
-pipeline run stopped and reported instead of weakening the check, and the
-repair is told to leave the limit alone. Measured by the review (DEM-235):
+## Decided: the `genes.json` size budget
 
-| | UTEX 2973 | E. coli K-12 |
-| --- | ---: | ---: |
-| included genes | 2,715 | 4,287 |
-| `genes.json`, raw bytes | 5,169,989 | 8,042,780 |
-| raw bytes per gene | 1,904 | 1,876 |
-| gzip -9 bytes | 1,596,122 | 2,506,417 |
-| brotli q11 bytes | 1,230,428 | 1,917,106 |
+Owner decision, 2026-10-05: 2,000 bytes per plotted gene for every organism,
+replacing the fixed 6,291,456 bytes. Implemented in the contract validator with
+tests (`cf69c0e`), and recorded with its measurements in the data contract's
+"Size budget" section. UTEX 2973 is 5,169,989 bytes against 5,430,000; E. coli
+is 8,042,652 against 8,574,000.
 
-The overage is gene count, not schema growth. The budget stands in for time to
-a usable map on a slow link: the documented profile (750 kB/s, uncompressed)
-gives 9.1 s for UTEX and scales to roughly 14 s for E. coli.
+## Open decision: publishing data derived from this annotation
 
-- **A per-gene budget** (about 2,000 bytes per gene admits both organisms):
-  one configuration value and a validator change, no loader work; the gate still
-  catches schema growth. It accepts the longer load without measuring it.
-- **A sidecar for `rscu` and the packed `codons`,** which the data contract
-  already names as the remedy when the core file exceeds the budget. Moving both
-  leaves a 4,936,617-byte core; moving `rscu` alone leaves 6,308,090 bytes,
-  still over. It needs loader work, and `codons` is what every recoding
-  computation reads, so the map would draw before recoding is ready.
-
-Until the owner decides, the E. coli validator run fails that one check.
+The RefSeq record's annotation is derived from EcoCyc, so the source ledger's
+RefSeq rule, which rests on NCBI's own pipeline being a government work, does
+not settle it. The owner asked for a recommended path on 2026-10-05; the
+coordinator's recommendation is to publish with attribution to both NCBI RefSeq
+and EcoCyc, record that as a ledger rule for curator-submitted RefSeq
+annotation, and send SRI the notification its open-database terms ask for.
+Not decided. Until it is, the branch is not pushed.
 
 ## Lab questions raised by the E. coli dataset
 
