@@ -282,7 +282,8 @@ Validation record:
 - [ ] Review `git log --oneline` and the full diff against the remote branch.
 - [ ] Confirm no credentials, private data, unpublished lab notes, or temporary
   browser/test artifacts are tracked.
-- [ ] Confirm `site/data/genes.json` remains at or below the 6,291,456-byte interaction budget.
+- [ ] Confirm every published `genes.json` remains at or below the 2,000-byte-per-gene budget
+  (`tools/validate_contract.py` reports the figures for each organism).
 - [ ] Confirm the dataset and annotation release IDs shown in the site match the
   manifest and exported files.
 - [ ] Confirm all external-source decisions above are recorded.

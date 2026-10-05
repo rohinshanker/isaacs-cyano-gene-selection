@@ -36,6 +36,9 @@ ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 BASES = "TCAG"
 AMINO_ACIDS = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
 STOP_CODONS = ("TAA", "TAG", "TGA")
+# Owner decision, 2026-10-05: the core payload is budgeted per gene, so the gate
+# scales with an organism's gene count and still catches growth in the schema.
+GENES_JSON_BYTES_PER_GENE = 2_000
 
 # Public compatibility names used by focused validator tests and small local
 # tools. Their values remain the historical default organism; organism-aware
@@ -112,6 +115,11 @@ def codon_order() -> list[str]:
     return [a + b + c for a in BASES for b in BASES for c in BASES]
 
 
+def genes_json_budget_bytes(gene_count: int) -> int:
+    """Returns the largest permitted genes.json size for a gene count."""
+    return GENES_JSON_BYTES_PER_GENE * gene_count
+
+
 class Report:
     """Accumulates pass/fail results so every check runs before exiting."""
 
@@ -145,6 +153,16 @@ class Report:
             f"skipped={len(self.skips)}"
         )
         return 1 if self.failures else 0
+
+
+def check_genes_json_budget(report: Report, size_bytes: int, gene_count: int) -> bool:
+    """Checks genes.json against the per-gene budget and reports the figures."""
+    limit = genes_json_budget_bytes(gene_count)
+    return report.check(
+        size_bytes <= limit,
+        f"genes.json is within the {GENES_JSON_BYTES_PER_GENE:,}-byte-per-gene budget",
+        f"{size_bytes:,} bytes for {gene_count:,} genes; the limit is {limit:,} bytes",
+    )
 
 
 def load_json(path: str, report: Report) -> Any:
@@ -1589,12 +1607,7 @@ def main() -> int:
     if isinstance(genes, list):
         path = os.path.join(data_dir, "genes.json")
         if os.path.exists(path):
-            size_bytes = os.path.getsize(path)
-            report.check(
-                size_bytes <= 6_291_456,
-                "genes.json is within the 6,291,456-byte budget",
-                f"{size_bytes:,} bytes",
-            )
+            check_genes_json_budget(report, os.path.getsize(path), len(genes))
 
     validate_data_manifest(data_dir, report)
 

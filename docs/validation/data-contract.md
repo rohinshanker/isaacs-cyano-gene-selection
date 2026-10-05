@@ -836,17 +836,33 @@ link reproduces the exact view.
 ## Size budget
 
 The site must load in under three seconds on a normal connection. `genes.json`
-stays at or below **6,291,456 bytes uncompressed**; relationship-heavy `annotations.json` and
+is the file the map waits for. It stays at or below **2,000 bytes per plotted
+gene, uncompressed**, for every organism; the validator computes the
+limit from the file's own gene count. Relationship-heavy `annotations.json` and
 `tss_evidence.json` are separate payloads joined by locus tag, and GitHub Pages
-serves them compressed.
-If the core file exceeds the budget, move `rscu` and `codons` into a separate
-lazily-fetched file rather than dropping precision.
+serves them compressed. If a core file exceeds the budget, move `rscu` and
+`codons` into a separate lazily-fetched file rather than dropping precision.
 
-The RefSeq-only E. coli candidate has 4,287 analysable loci and measures
-8,042,652 bytes, exceeding the 6,291,456-byte gate. It therefore does **not**
-satisfy this release gate. Publishing it needs an explicit owner choice between
-an organism-specific larger budget and the contracted sidecar split, which also
-requires loader work. Until then, the validator's failure is intentional.
+Owner decision, 2026-10-05: the budget is per gene, replacing a fixed
+6,291,456 bytes set when the only organism had 2,715 genes. The measurements
+behind it:
+
+| | UTEX 2973 | E. coli K-12 MG1655 |
+| --- | ---: | ---: |
+| plotted genes | 2,715 | 4,287 |
+| `genes.json`, bytes | 5,169,989 | 8,042,652 |
+| bytes per gene | 1,904 | 1,876 |
+| limit, bytes | 5,430,000 | 8,574,000 |
+| gzip -9, bytes | 1,596,122 | 2,506,417 |
+
+The two organisms cost the same per gene, so E. coli's larger file is gene
+count, not schema growth, and a per-gene gate still catches the latter. What the
+decision accepts: the first load of a larger genome takes proportionally longer.
+The documented slow-link profile in
+[progressive-loading.md](progressive-loading.md) gives a usable map at 9.1 s for
+UTEX 2973 and scales to roughly 14 s for E. coli; that E. coli figure is an
+estimate, not a measurement. The sidecar remains the remedy if a core file
+outgrows the per-gene budget.
 
 ## Length cohort inventory
 

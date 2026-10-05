@@ -273,10 +273,8 @@ candidate build is:
 node tools/check_live_metrics.mjs --organism ecoli-k12-mg1655
 ```
 
-The current E. coli core payload is a measured **7.67 MiB**, above the frozen
-6 MiB `genes.json` limit. The validator therefore refuses it. Do not publish it
-or raise the limit implicitly; the choices are to approve the larger organism-
-specific budget or to split `rscu` and `codons` into a loader-supported sidecar.
+The E. coli core payload is 8,042,652 bytes for 4,287 genes, inside the
+2,000-byte-per-gene budget the validator enforces for every organism.
 UTEX byte identity can be reproduced without rewriting `site/data/`:
 
 ```sh

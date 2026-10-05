@@ -212,7 +212,7 @@ synthase subunits. The elongation wording includes EF-P (`efp`) as well as
 EF-Tu, EF-Ts and EF-G. It selects 81 exact `b`-number loci, published in
 `meta.json.caiReferenceSet.locusTags`.
 
-The 4,287-row `genes.json` is 8,042,652 bytes, so it fails the frozen
-6,291,456-byte budget. All biological, round-trip, protein, context, manifest,
-and browser-metric checks pass; publication is held at the size gate as described
-in the data contract.
+The 4,287-row `genes.json` is 8,042,652 bytes, 1,876 bytes per gene, inside the
+2,000-byte-per-gene budget the data contract sets (8,574,000 bytes for this gene
+count). All biological, round-trip, protein, context, manifest, size, and
+browser-metric checks pass.
