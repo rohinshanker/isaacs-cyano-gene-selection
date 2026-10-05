@@ -1,8 +1,8 @@
 {
   "files": {
     "citations.json": {
-      "bytes": 8077,
-      "sha256": "f50a17581c6985f52199d5a020bba3bb789c452dd1be0826445cad12ff3d0ce5"
+      "bytes": 8042,
+      "sha256": "c67e441276026a22b22123bdecaedfad62904a938c5906715adea87ee2b09663"
     },
     "codon_pca.json": {
       "bytes": 5330,
