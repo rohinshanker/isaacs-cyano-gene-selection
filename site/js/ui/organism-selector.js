@@ -117,6 +117,17 @@ export function renderOrganismSelector(host, {
   return { refresh: refreshAll };
 }
 
+/**
+ * The directory the footer says this organism's files were built from, as a
+ * path from the repository root and without its trailing slash.
+ *
+ * The default organism's is `site/data`, which is what the static page already
+ * says, so its footer is unchanged.
+ */
+export function dataDirectoryPath(organism) {
+  return `site/${organism.dataDirectory}`.replace(/\/$/, '');
+}
+
 /** What the gene search looks in, for one organism, as its placeholder and its hint. */
 export function searchCopy(organism) {
   const categories = publishesLayer(organism, 'functionCategories');
@@ -157,6 +168,7 @@ export function applyOrganismIdentity(page, organism) {
   const search = searchCopy(organism);
   page.getElementById('gene-search')?.setAttribute('placeholder', search.placeholder);
   setText(page, 'gene-search-hint', search.hint);
+  setText(page, 'data-directory-path', dataDirectoryPath(organism));
   const sourceHint = page.getElementById('annotation-source-hint');
   if (sourceHint) {
     if (organism.copy.annotationSourceHint) {

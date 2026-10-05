@@ -22,7 +22,7 @@ import {
   dataFileLabel, dataRequest, normalizeManifest, publishesFile, tierLabelsFor,
 } from '../../site/js/core/data-files.js';
 import { loadDatasetStaged } from '../../site/js/core/dataset.js';
-import { searchCopy } from '../../site/js/ui/organism-selector.js';
+import { dataDirectoryPath, searchCopy } from '../../site/js/ui/organism-selector.js';
 
 const ECOLI = organismById('ecoli-k12-mg1655');
 const PAGE = 'https://example.test/site/';
@@ -464,5 +464,7 @@ test('the static page is the default organism\'s, word for word', async () => {
   assert.equal(text(/<p class="visually-hidden" id="gene-search-hint">([\s\S]*?)<\/p>/), search.hint);
   assert.equal(text(/id="gene-search"[\s\S]*?placeholder="([^"]*)"/), search.placeholder);
   assert.equal(text(/<span id="gene-count-phrase">([\s\S]*?)<\/span>/), approximateGeneCount(2715));
+  assert.equal(text(/<code id="data-directory-path">([\s\S]*?)<\/code>/),
+    dataDirectoryPath(DEFAULT_ORGANISM));
   assert.match(html, /<nav class="organism-selector" id="organism-selector" aria-label="Organism"><\/nav>/);
 });

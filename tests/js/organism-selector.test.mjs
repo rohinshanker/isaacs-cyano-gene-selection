@@ -11,7 +11,8 @@ import {
   DEFAULT_ORGANISM, ORGANISMS, organismById, storageKeys,
 } from '../../site/js/core/organisms.js';
 import {
-  applyGeneCount, applyOrganismIdentity, rememberView, renderOrganismSelector, searchCopy,
+  applyGeneCount, applyOrganismIdentity, dataDirectoryPath, rememberView, renderOrganismSelector,
+  searchCopy,
 } from '../../site/js/ui/organism-selector.js';
 import { describeGeneView, renderGeneViewer } from '../../site/js/ui/gene-viewer.js';
 import { geneViewModel } from '../../site/js/core/gene-view-model.js';
@@ -201,6 +202,7 @@ function fakePage() {
   node('gene-count-phrase', 'about 2,700');
   node('gene-search-hint', searchCopy(DEFAULT_ORGANISM).hint, 'p');
   node('annotation-source-hint', DEFAULT_ORGANISM.copy.annotationSourceHint, 'p');
+  node('data-directory-path', 'site/data', 'code');
   nodes.set('gene-search', new FakeElement('input'));
   const removed = [];
   nodes.get('annotation-source-hint').remove = () => {
@@ -230,6 +232,9 @@ test('the page is rewritten for E. coli before any data is asked for', () => {
   assert.ok(!/categor|rubisco/.test(page.nodes.get('gene-search-hint').textContent));
   assert.match(page.nodes.get('gene-search-hint').textContent, /nicknames such as rnap/);
   assert.deepEqual(page.removed, ['annotation-source-hint']);
+  // The footer says where this organism's files are, not where another's are.
+  assert.equal(page.nodes.get('data-directory-path').textContent,
+    'site/data/organisms/ecoli-k12-mg1655');
   const all = [page.title, page.description.getAttribute('content'),
     ...[...page.nodes.values()].map((node) => node.textContent)].join(' ');
   assert.ok(!/Synechococcus|UTEX|PCC|GO IEA among/.test(all));
@@ -246,6 +251,10 @@ test('for the default organism the rewrite leaves the page saying what it said',
     'Locus, product, category, or GO term');
   assert.equal(page.nodes.get('annotation-source-hint').textContent,
     DEFAULT_ORGANISM.copy.annotationSourceHint);
+  // Unchanged: the static footer already says the default organism's directory.
+  assert.equal(page.nodes.get('data-directory-path').textContent, 'site/data');
+  assert.equal(dataDirectoryPath(DEFAULT_ORGANISM), 'site/data');
+  assert.equal(dataDirectoryPath(ECOLI), 'site/data/organisms/ecoli-k12-mg1655');
   assert.deepEqual(page.removed, []);
   // A page without one of these nodes is left alone rather than failing.
   assert.doesNotThrow(() => applyOrganismIdentity({
