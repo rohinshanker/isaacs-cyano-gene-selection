@@ -41,6 +41,11 @@ whole column instead of competing with a select for it. The order is fixed in
 [controls-column-and-resets.md](controls-column-and-resets.md), and DOM order is
 keyboard order, so the visual order is the tab order at every width.
 
+Every dropdown reserves 2 rem on the right for its chevron, which sits 0.65 rem
+inside the border. The control remains a native select for keyboard and menu
+behavior; forced-colors mode restores its native appearance. The Filters
+activity chooser always places its full-width select below **Judge activity by**.
+
 **The Colour by and Scale row is the one exception to stacking**, by owner
 decision, 2026-09-29: the two fields stay two columns of one row down to 360 px
 rather than becoming two rows, because the owner asked for them on one line.
@@ -87,6 +92,9 @@ an opened axis-loadings table; completed shortlist and panel exports with their 
 filenames; an open designer with results; and a long selected-gene detail. Verify:
 
 - comparison begins immediately after the map rather than after a sidebar;
+- dropdown text leaves room before the inset chevron, including long selected
+  values and disabled Scale controls; the activity selector spans the filter
+  column below its label at every width;
 - in the map toolbar, Colour by and Scale share the first row, the colour
   explanation is directly beneath it, and Find a gene is alone on the next row at
   full width, with the tab order following that;

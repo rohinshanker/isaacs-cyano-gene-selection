@@ -5,6 +5,7 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_add-ecoli-organism__20261005](O_add-ecoli-organism__20261005.md) | Preliminary E. coli fallback organism view with a top-level Cyanobacteria/E. coli selector, cyano default; six questions cover strain, features, evidence, comparisons, and saved state |
 | [O_regulatory-site-viewer-layers__20260930](O_regulatory-site-viewer-layers__20260930.md) | D1 done 2026-10-02: all 2,432 mapped Tan 2018 sites draw in the gene view, pinned by a test over the shipped data. Remaining: future initiation/termination/regulatory markers and chromosome site-type toggles, preserving source and coordinate semantics; owner questions 1 to 8 unanswered |
 | [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md) | Assess UTEX GtRNAdb/tRNAscan-SE evidence and tRNA identification filter/coloring, reusing completed tRNA validation. D1 answered 2026-09-30: GtRNAdb is the same tool on the same assembly and adds no locus, and its terms remain undetermined. What is left is CS-1 (score semantics, pending) and the UI decision over the 45 known loci; owner question Q3 unanswered |
 | [O_biocyc-pcc-7942-data__20260930](O_biocyc-pcc-7942-data__20260930.md) | Assess BioCyc v30's `SYNEL`, the only Tier 2 curated database among the six strains, as labelled sister-strain evidence. Which assembly `SYNEL` is built on is observed, not determined; owner questions Q2 and Q5 and the source-ledger and admission decisions pending; no pull started |

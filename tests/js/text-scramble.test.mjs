@@ -196,6 +196,17 @@ test('a text too long for the maximum duration locks its last letter exactly the
   assert.equal(scrambleProgress(20, naturalMs - 1, timing).done, false);
 });
 
+test('the default reveal keeps short text at 50 letters per second and caps longer text at 2.5 seconds', () => {
+  for (const length of [1, 20, 124, 125, 126, 200, 1000]) {
+    const duration = Math.min((length / 50) * 1000, 2500);
+    assert.equal(scrambleProgress(length, duration - 1, LOAD_TIMING.scramble).done, false,
+      `${length} characters are still locking just before their deadline`);
+    assert.deepEqual(scrambleProgress(length, duration, LOAD_TIMING.scramble),
+      { front: length, resolved: length, done: true },
+      `${length} characters finish at their natural duration or the 2.5-second cap`);
+  }
+});
+
 test('a length or a duration of zero resolves at once instead of dividing by zero', () => {
   const edges = [
     TIMING,

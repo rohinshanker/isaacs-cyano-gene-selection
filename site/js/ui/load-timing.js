@@ -11,7 +11,7 @@
  * which is analysis state and stays unchanged.
  */
 
-/** The defaults, as the owner set them on 2026-09-30. All times are milliseconds. */
+/** The owner-selected defaults. All times are milliseconds. */
 export const LOAD_TIMING = Object.freeze({
   /** The chromosome loading bar takes at least this long, however fast the data. */
   minimumBarMs: 1500,
@@ -23,7 +23,7 @@ export const LOAD_TIMING = Object.freeze({
     /** The trail runs this many times faster than the lock, so it finishes first. */
     trailRatio: 1.5,
     /** A long text speeds up so that no single text takes longer than this. */
-    maxDurationMs: 5000,
+    maxDurationMs: 2500,
     /** How often a letter flips while it is far ahead of the lock. */
     flipFastMs: 40,
     /** How often it flips just before it locks; flipping slows towards this. */
