@@ -13,6 +13,22 @@ export const LENGTH_TAB = Object.freeze({
   source: '',
 });
 
+/**
+ * The line above the tab, which is empty when the dataset publishes no length
+ * inventory.
+ *
+ * The blurb promises a comparison and a range control; with no inventory there
+ * is neither, and the unavailable state says the whole of what is known. An
+ * inventory still loading, or one that failed, keeps the blurb.
+ *
+ * @param {object|null|undefined} inventory the dataset's length inventory.
+ * @param {string|null} pending `'loading'` or `'failed'`, else null.
+ * @returns {string}
+ */
+export function lengthsBlurb(inventory, pending = null) {
+  return inventory || pending ? LENGTH_TAB.blurb : '';
+}
+
 function svgElement(name, attributes) {
   const node = document.createElementNS(SVG_NS, name);
   for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, String(value));

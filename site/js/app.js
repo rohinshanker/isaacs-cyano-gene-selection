@@ -34,7 +34,7 @@ import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
 import {
   CITATIONS_TAB, CitationsPanel, citationsBlurb, loadCitationsManifest,
 } from './ui/citations.js';
-import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
+import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
@@ -1379,14 +1379,15 @@ function renderCurrentView() {
     return;
   }
   if (lengthsActive) {
-    element('panel-blurb').textContent = LENGTH_TAB.blurb;
+    const lengthsPending = pendingState(context.dataset, 'lengthCohorts');
+    element('panel-blurb').textContent = lengthsBlurb(context.dataset.lengthCohorts, lengthsPending);
     lengthExplorer.update({
       inventory: context.dataset.lengthCohorts,
       cohortId: state.lengthCohort,
       range: state.filters.lengthNt,
       mapPassing: context.passing,
       mapCount: context.dataset.genes.length,
-      pending: pendingState(context.dataset, 'lengthCohorts'),
+      pending: lengthsPending,
     });
     return;
   }

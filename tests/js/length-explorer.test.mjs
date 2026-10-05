@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LengthExplorer } from '../../site/js/ui/length-explorer.js';
+import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from '../../site/js/ui/length-explorer.js';
 
 class FakeElement {
   constructor(tagName) {
@@ -108,4 +108,18 @@ test('missing inventory has a visible empty state', () => {
   } finally {
     globalThis.document = previousDocument;
   }
+});
+
+test('the Lengths blurb is shown only when there is, or may yet be, an inventory', () => {
+  // A dataset that publishes no inventory has no comparison and no range
+  // control, so nothing introduces them above the unavailable line.
+  assert.equal(lengthsBlurb(null), '');
+  assert.equal(lengthsBlurb(undefined), '');
+  assert.equal(lengthsBlurb(null, null), '');
+  // Still loading, or failed and retryable, is not "unavailable in this dataset".
+  assert.equal(lengthsBlurb(null, 'loading'), LENGTH_TAB.blurb);
+  assert.equal(lengthsBlurb(null, 'failed'), LENGTH_TAB.blurb);
+  // A published inventory keeps the blurb exactly as it was.
+  assert.equal(lengthsBlurb({ records: [] }), LENGTH_TAB.blurb);
+  assert.equal(lengthsBlurb({ records: [] }, 'loading'), LENGTH_TAB.blurb);
 });

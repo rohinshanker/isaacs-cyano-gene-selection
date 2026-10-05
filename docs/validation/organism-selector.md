@@ -79,8 +79,9 @@ to a gene.
 An unavailable state is one short line and nothing else. "The regulatory
 start-site table is unavailable in this dataset." is the shape; the Lengths and
 Citations tabs say the same of their own layer. A tab's introductory blurb goes
-with its content: the Citations blurb promises what each entry says, so with no
-ledger published there is no blurb either. None of these name a file to publish
+with its content: the Citations blurb promises what each entry says and the
+Lengths blurb a comparison and a range control, so with no ledger or no length
+inventory published there is no blurb either. None of these name a file to publish
 or a directory to put it in — a release that does not publish a layer is not a
 deployment to be repaired, and one directory would be the wrong one for every
 organism but the default.
@@ -149,15 +150,18 @@ start-site extract writes `CP006471`; it is deliberately kept. Exactness is the
 assembly accession's job, and that is checked above, before anything is drawn.
 
 **An optional file is published, or declared, never one without the other.**
-Two fields in `meta.json` turn an optional file into a required one, and a
-dataset that declares either without publishing the file is a failed load:
+Two fields in `meta.json` turn an optional file into a required one. Declaring
+either without publishing its file fails that layer: the genes still load and
+the page stays usable, with the file's state `failed` and its sections showing
+the error. Only the all-at-once `loadDataset` wrapper rejects outright.
 
 - `meta.annotationRelease` makes `annotations.json` mandatory, and that file
   must carry a record for **every** gene — a file covering some of them fails
   rather than annotating a subset.
 - `meta.tssEvidenceSource` makes `tss_evidence.json` mandatory. An organism
   that declares no `tssEvidence` layer never has that file requested, so for it
-  the field must be **absent**: declaring it gives a dataset nothing can load.
+  the field must be **absent**: declaring it gives a start-site layer that can
+  only fail.
 
 **Published GO names must cover the GO relationships that are joined.**
 `go-term-names-v1.json` is optional, but when it is published every `goId` in
