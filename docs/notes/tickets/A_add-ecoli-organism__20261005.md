@@ -43,12 +43,13 @@ FTP directory and is not used.
 
 ## Integration branch
 
-`feat/ecoli-organism`, worktree `../worktrees/ecoli-organism`, at `9fbbabd`: 18
-commits above `main`, onto which it was rebased on 2026-10-05 once the main
+`feat/ecoli-organism`, worktree `../worktrees/ecoli-organism`, at `62dc528`: 19
+commits above `d38b431`, onto which it was rebased on 2026-10-05 once the main
 checkout's outstanding work was committed there. It holds the selector stream,
-the pipeline stream, both repairs, the pipeline follow-up (DEM-243), and three
-coordinator commits: the Lengths blurb fix, the per-gene size budget, and a
-build-process remark dropped from the E. coli source ledger.
+the pipeline stream, both repairs, the pipeline follow-up (DEM-243), and four
+coordinator commits: the Lengths blurb fix, the per-gene size budget, and two
+that take repository remarks out of the E. coli source ledger and close the
+final review's minor findings.
 
 Gates on it, for both organisms, with the pinned inputs supplied: 1,007 JS
 tests; 405 Python tests passed, 1 skipped; contract validator 98 passed for UTEX
@@ -57,8 +58,15 @@ and the UTEX byte-identity check pass. The real E. coli view loads through the
 selector with a clean console, its Citations tab shows the dataset's own
 ledger, and no cyanobacterial wording appears.
 
-Five commits on it have had no independent review; DEM-245 is the final
-integration review before a merge to local `main`. Nothing is pushed.
+The final integration review (DEM-245) found no blocking or should-fix defect,
+confirmed by `git range-diff` that the rebase lost and duplicated nothing, and
+gave two verdicts: merge to local `main`, yes; push, hold until the publication
+decision below. Its four minor findings are closed in `62dc528`, which no
+reviewer has seen.
+
+**Not merged.** A push of `main` deploys the site, and `main` carries other
+unpushed work the owner may want to publish first, so the branch stays apart
+until the owner says to merge. It merges into `main` without conflict.
 
 ## Decided: the `genes.json` size budget
 
@@ -165,19 +173,53 @@ Raised for the coordinator and the owner:
 
 ## Verification
 
-For implementation: verify the default organism, switching and return behavior,
-organism-specific labels and data, URL restoration, and absence of
-mixed-organism state. Render the selector and affected views at mobile, tablet,
-and desktop widths, then run the repository's JavaScript, Python, and
-data-contract gates. The E. coli dataset must pass the contract validator's
-independent re-derivation from the raw genome, and the UTEX 2973 output must be
-byte-identical before and after the pipeline is parametrised.
+Done on the integration branch: the default organism, switching and return,
+organism-specific labels and data, URL restoration, absence of mixed-organism
+state, and exports, rendered at 375, 768, 1280, and 1440 px in Chromium by the
+writer and independently by two reviewers; the JavaScript, Python, and
+data-contract gates for both organisms; the contract validator's independent
+re-derivation of the E. coli gene model from the raw genome; and UTEX 2973
+output byte-identical apart from `builtAt`.
+
+Not verified: browsers other than Chromium; a screen reader; the folding worker
+across an organism switch; a measured first load of the 8 MB E. coli gene file
+over a real network; the Pages workflow on GitHub itself, which has only been
+simulated locally; an independent tRNAscan-SE run for E. coli.
+
+## Remaining
+
+For the base view to ship:
+
+1. The owner's publication decision, then the EcoCyc citation and ledger rule
+   it implies.
+2. Merge to `main`, push, and verify the production URL and the first real CI
+   run.
+
+For the ticket's purpose, richer annotation and supporting data than the
+cyanobacterial view has, which the base view does not yet deliver (it carries
+genome-derived metrics only):
+
+3. The owner's choice of sources from the dossier's shortlist, and ledger rules
+   for the licence situations it lists.
+4. For each admitted source, the admission contract: a manifest entry, checksum
+   pin, the documented join to `b`-number locus tags with matched, unmatched,
+   and ambiguous counts, the organism record's layer declaration, and contract
+   and UI tests. The first candidates need no further permission step:
+   UniProtKB function and GO (CC BY 4.0), then PRECISE-1K transcript abundance
+   (MIT over the files).
+5. An annotation-evidence and GO layer for E. coli, which needs the annotation
+   release tooling generalised beyond UTEX 2973.
+
+Then the six clarifying questions and the lab questions below, and cleanup.
 
 ## Cleanup
 
-Once implemented and validated, distill reusable organism/data isolation and
-selector guidance into docs/validation/, update its index, resolve this ticket,
-and remove it from the live queue.
+Once shipped and validated: the reusable guidance already lives in
+`docs/validation/organism-selector.md`, `genome-provenance.md`,
+`data-contract.md`, `cai-reference-set.md`, and `trna-annotation-validation.md`;
+add the README's description of the organism selector, resolve this ticket, and
+remove it from the live queue. The Multica run worktree left behind by DEM-234
+and the merged agent branches can be removed.
 
 ## Scientific dependencies
 
