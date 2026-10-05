@@ -71,6 +71,36 @@ export const CORE_FILE_KEYS = Object.freeze(
   DATA_FILES.filter((entry) => entry.tier === 1).map((entry) => entry.key),
 );
 
+/**
+ * Whether a loader showing `organism` asks for this file at all.
+ *
+ * The loader's own rule, exported so that everything which has to predict the
+ * loader's requests reaches them by the same test rather than by a second
+ * reading of it: a required file is always asked for, a study-bound layer only
+ * for an organism whose record declares it, and a loader with no organism asks
+ * for everything, which is how tools read a directory on its own terms.
+ *
+ * @param {object|null} organism the registry record, or null for no organism.
+ * @param {{key: string, required: boolean}} file an entry of `DATA_FILES`.
+ */
+export function publishesFile(organism, file) {
+  return !organism || file.required || publishesLayer(organism, file.key);
+}
+
+/**
+ * The tier 1 file names one organism's loader asks for, in tier order.
+ *
+ * This is what the classic inline script in `site/index.html` starts
+ * downloading before any module runs, so the script holds the same list for
+ * each organism and `tests/js/organisms.test.mjs` runs the two together and
+ * fails when they diverge.
+ */
+export function coreFileNames(organism = DEFAULT_ORGANISM) {
+  return DATA_FILES
+    .filter((entry) => entry.tier === 1 && publishesFile(organism, entry))
+    .map((entry) => entry.name);
+}
+
 /** What each tier is, in the plain words the loading bar uses. */
 export const TIER_LABELS = Object.freeze({
   1: 'genes',

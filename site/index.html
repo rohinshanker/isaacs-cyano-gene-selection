@@ -287,25 +287,36 @@ if (window.location.protocol === 'file:') {
 // The organism is known here, before the first request: `?org=` names it, and no
 // `org`, or one that names nothing, is the default organism in `data/`. This
 // table is the registry in js/core/organisms.js reduced to what must be right
-// before any module runs, each organism's data directory and page title, and
-// tests/js/organisms.test.mjs fails when the two disagree.
+// before any module runs: each organism's data directory, page title, and the
+// tier 1 files its record declares. `core` is the module loader's own
+// `coreFileNames(organism)`, because a study-bound layer an organism does not
+// declare must stay absent without a request however its manifest reads, and a
+// request this script starts that the loader never makes is one nobody adopts.
+// tests/js/organisms.test.mjs runs this script against the real loader for
+// every organism and fails when the two ask for different addresses.
 (function () {
+  var DEFAULT = {
+    directory: 'data/',
+    title: null,
+    core: ['meta.json', 'genes.json', 'function-categories-v1.json']
+  };
   var ORGANISMS = {
     'ecoli-k12-mg1655': {
       directory: 'data/organisms/ecoli-k12-mg1655/',
-      title: 'Escherichia coli recoding-diversity map'
+      title: 'Escherichia coli recoding-diversity map',
+      core: ['meta.json', 'genes.json']
     }
   };
   var query = new URLSearchParams(window.location.search);
   var requested = query.get('org');
   var organism = requested !== null && Object.prototype.hasOwnProperty.call(ORGANISMS, requested)
-    ? ORGANISMS[requested] : null;
+    ? ORGANISMS[requested] : DEFAULT;
   // The tab must not name one organism while the address names another.
-  if (organism) document.title = organism.title;
+  if (organism.title) document.title = organism.title;
   if (window.location.protocol === 'file:') return;
   // An overridden data folder is resolved by the module, which knows the rule.
   if (query.get('data')) return;
-  var base = new URL(organism ? organism.directory : 'data/', document.baseURI);
+  var base = new URL(organism.directory, document.baseURI);
   var responses = {};
   // A request that fails here is not an error of this script: the module finds
   // the same rejection when it adopts the request, and asks again. Marking it
@@ -322,7 +333,7 @@ if (window.location.protocol === 'file:') {
     .then(function (response) { return response.ok ? response.json() : null; })
     .then(function (published) {
       if (!published || published.schemaVersion !== 1 || !published.files) return;
-      ['meta.json', 'genes.json', 'function-categories-v1.json'].forEach(function (name) {
+      organism.core.forEach(function (name) {
         var entry = published.files[name];
         if (!entry || typeof entry.sha256 !== 'string') return;
         var url = new URL(name, base);

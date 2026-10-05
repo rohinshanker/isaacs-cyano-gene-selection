@@ -29,10 +29,9 @@ import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
-import { publishesLayer } from './organisms.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
-  normalizeManifest,
+  normalizeManifest, publishesFile,
 } from './data-files.js';
 
 function requireArray(value, name) {
@@ -495,7 +494,7 @@ export function loadDatasetStaged({
   now = defaultNow, organism = null,
 } = {}) {
   /** Whether this organism publishes a file at all, whatever its directory holds. */
-  const published = (file) => !organism || file.required || publishesLayer(organism, file.key);
+  const published = (file) => publishesFile(organism, file);
   const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
   const startedAt = now();
   const files = {};

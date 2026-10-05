@@ -9,6 +9,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import {
   DATA_PARAM, DEFAULT_ORGANISM, ORGANISMS, ORGANISM_PARAM, STUDY_LAYER_KEYS,
@@ -17,9 +18,10 @@ import {
   sourceIds, sourceLabels, storageKeys, switchSearch,
 } from '../../site/js/core/organisms.js';
 import {
-  CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, TIER_LABELS, dataFileLabel,
-  dataRequest, normalizeManifest, tierLabelsFor,
+  CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, TIER_LABELS, coreFileNames,
+  dataFileLabel, dataRequest, normalizeManifest, publishesFile, tierLabelsFor,
 } from '../../site/js/core/data-files.js';
+import { loadDatasetStaged } from '../../site/js/core/dataset.js';
 import { searchCopy } from '../../site/js/ui/organism-selector.js';
 
 const ECOLI = organismById('ecoli-k12-mg1655');
@@ -274,8 +276,36 @@ async function pageHtml() {
   return readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
 }
 
+/**
+ * A directory the page can be served from: each file's exact text, and the
+ * content manifest whose digests those texts really have, so the loader never
+ * retries an address because its body does not match the key it was asked
+ * under. `extra` lists files the manifest claims and the directory does not.
+ */
+function directory(extra = {}) {
+  const bodies = {
+    'meta.json': '{"file":"meta"}',
+    'genes.json': '{"file":"genes"}',
+    'function-categories-v1.json': '{"file":"categories"}',
+  };
+  const manifest = {
+    schemaVersion: 1,
+    files: {
+      ...Object.fromEntries(Object.entries(bodies).map(([name, text]) => [name, {
+        bytes: Buffer.byteLength(text),
+        sha256: createHash('sha256').update(text).digest('hex'),
+      }])),
+      ...extra,
+    },
+  };
+  const serve = (url) => (url.includes(DATA_MANIFEST_NAME)
+    ? new Response(JSON.stringify(manifest), { status: 200 })
+    : new Response(bodies[new URL(url).pathname.split('/').pop()] ?? '{}', { status: 200 }));
+  return { bodies, manifest, serve };
+}
+
 /** Run the page's early-fetch script at `href` against a fake window. */
-async function runEarlyScript(href, manifest) {
+async function runEarlyScript(href, { manifest, serve }) {
   const html = await pageHtml();
   const source = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])
     .find((text) => text.includes('__cyanoEarlyData'));
@@ -283,8 +313,7 @@ async function runEarlyScript(href, manifest) {
   const fetchFake = (url, init) => {
     calls.push({ url, init });
     return Promise.resolve(url.endsWith(DATA_MANIFEST_NAME)
-      ? new Response(JSON.stringify(manifest), { status: 200 })
-      : new Response('{}', { status: 200 }));
+      ? new Response(JSON.stringify(manifest), { status: 200 }) : serve(url));
   };
   const location = new URL(href);
   const window = { location: { protocol: location.protocol, search: location.search } };
@@ -295,27 +324,36 @@ async function runEarlyScript(href, manifest) {
   return { early: window.__cyanoEarlyData, calls, title: document.title };
 }
 
-const MANIFEST = {
-  schemaVersion: 1,
-  files: {
-    'meta.json': { bytes: 10, sha256: SHA('a') },
-    'genes.json': { bytes: 20, sha256: SHA('b') },
-    'function-categories-v1.json': { bytes: 30, sha256: SHA('c') },
-  },
-};
+const MANIFEST = directory();
 
-/** What the module's loader asks for first, for the organism `search` names. */
-function moduleRequests(search) {
+/**
+ * What the module's loader actually asks for, for the organism `search` names.
+ *
+ * The real `loadDatasetStaged` under the real record, not a second reading of
+ * its rules: a helper that rebuilt the list from `CORE_FILE_KEYS` would bless
+ * exactly the divergence this test exists to catch. The manifest lists only
+ * tier 1 files, so every later file is absent without a request and what comes
+ * back is the set the inline script has to match. The stub bodies make `core`
+ * reject, which says nothing about addresses, so it is caught and the walk
+ * waits on `settled`.
+ */
+async function loaderRequests(search, { serve }) {
+  const { organism } = resolveOrganism(search);
   const base = new URL(resolveDataDirectory(search), PAGE);
-  const manifest = normalizeManifest(MANIFEST);
-  return [
-    { url: new URL(DATA_MANIFEST_NAME, base).href, init: { cache: 'no-cache', priority: 'high' } },
-    ...CORE_FILE_KEYS.map((key) => {
-      const file = DATA_FILE_BY_KEY[key];
-      const request = dataRequest(base, file.name, manifest.files.get(file.name), file.tier);
-      return { url: request.url, init: request.init };
-    }),
-  ];
+  const calls = [];
+  const fetchImpl = (url, init) => {
+    calls.push({ url, init });
+    return Promise.resolve(serve(url));
+  };
+  const staged = loadDatasetStaged({ baseUrl: base, fetchImpl, organism });
+  staged.core.catch(() => {});
+  await staged.settled;
+  return calls;
+}
+
+/** Both sides of one address, as a set: adoption is by exact address and option. */
+function addresses(calls) {
+  return calls.map(({ url, init }) => `${url} ${JSON.stringify(init)}`).sort();
 }
 
 test('the inline script and the module ask for the same addresses, for every organism', async () => {
@@ -326,25 +364,78 @@ test('the inline script and the module ask for the same addresses, for every org
       `?load-log&org=${organism.id}&load-min=0`,
     ]) {
       const { early, calls } = await runEarlyScript(`${PAGE}${search}`, MANIFEST);
-      const expected = moduleRequests(search);
-      // Address for address and option for option, which is what adoption needs.
-      assert.deepEqual(calls, expected, `${organism.id} at "${search}"`);
-      assert.deepEqual(Object.keys(early.responses).sort(), expected.map((call) => call.url).sort());
+      const expected = await loaderRequests(search, MANIFEST);
+      const where = `${organism.id} at "${search}"`;
+      // Address for address and option for option, which is what adoption needs,
+      // and nothing else on either side: a request the loader never makes is one
+      // nobody adopts, and a layer this organism does not publish must stay
+      // absent without a request.
+      assert.deepEqual(addresses(calls), addresses(expected), where);
+      assert.deepEqual(Object.keys(early.responses).sort(),
+        [...new Set(expected.map((call) => call.url))].sort(), where);
+      assert.equal(calls[0].url, new URL(DATA_MANIFEST_NAME, `${PAGE}${organism.dataDirectory}`).href,
+        'the manifest is asked for first, because it names every other address');
       assert.ok(calls.every((call) => call.url.startsWith(`${PAGE}${organism.dataDirectory}`)),
         `every early request is inside ${organism.dataDirectory}`);
+      // The addresses they agree on are this organism's declared tier 1 files.
+      assert.deepEqual(calls.slice(1).map((call) => new URL(call.url).pathname.split('/').pop()),
+        coreFileNames(organism), where);
     }
   }
+});
+
+test('a manifest listing a layer the organism does not declare is still not fetched', async () => {
+  // The E. coli record declares no reviewed function categories, so its loader
+  // records that layer absent whatever its directory publishes. A deployment
+  // whose manifest lists the file anyway must not make the inline script ask
+  // for a download the module then ignores.
+  const undeclared = STUDY_LAYER_KEYS
+    .map((key) => DATA_FILE_BY_KEY[key])
+    .filter((file) => !publishesFile(ECOLI, file));
+  assert.ok(undeclared.some((file) => file.tier === 1),
+    'the case only exists while a study-bound layer loads in tier 1');
+  const overfull = directory(Object.fromEntries(undeclared.map((file, index) => (
+    [file.name, { bytes: 40 + index, sha256: SHA(String(index)) }]))));
+  const search = `?org=${ECOLI.id}`;
+  const { calls } = await runEarlyScript(`${PAGE}${search}`, overfull);
+  assert.deepEqual(addresses(calls), addresses(await loaderRequests(search, overfull)));
+  for (const file of undeclared) {
+    assert.ok(!calls.some((call) => call.url.includes(file.name)), file.name);
+  }
+  assert.deepEqual(calls.slice(1).map((call) => new URL(call.url).pathname.split('/').pop()),
+    ['meta.json', 'genes.json']);
 });
 
 test('an unknown org is fetched as the default organism by both sides', async () => {
   for (const id of ['nothing', 'constructor', '__proto__', 'hasOwnProperty', '']) {
     const search = `?org=${id}`;
     const { calls, title } = await runEarlyScript(`${PAGE}${search}`, MANIFEST);
-    assert.deepEqual(calls, moduleRequests(search), id);
+    assert.deepEqual(addresses(calls), addresses(await loaderRequests(search, MANIFEST)), id);
     assert.ok(calls.every((call) => call.url.startsWith(`${PAGE}data/`)));
     assert.ok(!calls.some((call) => call.url.includes('organisms/')));
     assert.equal(title, DEFAULT_ORGANISM.title);
   }
+});
+
+test('the tier 1 list each side holds is the loader\'s own rule, per organism', () => {
+  assert.deepEqual(coreFileNames(DEFAULT_ORGANISM),
+    ['meta.json', 'genes.json', 'function-categories-v1.json']);
+  assert.deepEqual(coreFileNames(ECOLI), ['meta.json', 'genes.json']);
+  assert.deepEqual(coreFileNames(), coreFileNames(DEFAULT_ORGANISM));
+  // No organism: a tool reading a directory on its own terms asks for everything.
+  assert.deepEqual(coreFileNames(null),
+    CORE_FILE_KEYS.map((key) => DATA_FILE_BY_KEY[key].name));
+  for (const file of DATA_FILES) {
+    assert.equal(publishesFile(null, file), true, file.name);
+    assert.equal(publishesFile(DEFAULT_ORGANISM, file),
+      file.required || publishesLayer(DEFAULT_ORGANISM, file.key), file.name);
+    assert.equal(publishesFile(ECOLI, file),
+      file.required || publishesLayer(ECOLI, file.key), file.name);
+  }
+  assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.genes), true);
+  assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.functionCategories), false);
+  assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.codonPca), true,
+    'an organism-neutral file loads for every organism that publishes it');
 });
 
 test('the tab is titled for the organism before any module runs', async () => {
