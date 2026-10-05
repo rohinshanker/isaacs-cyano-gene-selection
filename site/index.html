@@ -40,6 +40,9 @@
 <link rel="modulepreload" href="js/core/metric-axes.js">
 <link rel="modulepreload" href="js/core/metric-help.js">
 <link rel="modulepreload" href="js/core/metric-registry.js">
+<link rel="modulepreload" href="js/core/organisms.js">
+<link rel="modulepreload" href="js/core/organisms/ecoli-k12-mg1655.js">
+<link rel="modulepreload" href="js/core/organisms/utex2973.js">
 <link rel="modulepreload" href="js/core/paint-priority.js">
 <link rel="modulepreload" href="js/core/panel-design.js">
 <link rel="modulepreload" href="js/core/panel-export.js">
@@ -78,6 +81,7 @@
 <link rel="modulepreload" href="js/ui/loadings.js">
 <link rel="modulepreload" href="js/ui/locus-tag.js">
 <link rel="modulepreload" href="js/ui/metric-help.js">
+<link rel="modulepreload" href="js/ui/organism-selector.js">
 <link rel="modulepreload" href="js/ui/panel-designer.js">
 <link rel="modulepreload" href="js/ui/panels.js">
 <link rel="modulepreload" href="js/ui/regulatory-sites.js">
@@ -99,9 +103,14 @@
 
 <header class="site-header">
   <div class="header-text">
-    <h1>Synechococcus elongatus recoding-diversity map</h1>
+    <!-- The organism in view, and the way to the other one. js/ui/organism-selector.js
+         builds one link per organism from the registry in js/core/organisms.js; a
+         switch is a page navigation to `?org=`, never a dataset swapped in place. -->
+    <nav class="organism-selector" id="organism-selector" aria-label="Organism"></nav>
+    <h1 id="site-title">Synechococcus elongatus recoding-diversity map</h1>
     <p class="tagline">
-      Every protein-coding gene of <i>Synechococcus elongatus</i> UTEX 2973, arranged so you can
+      Every protein-coding gene of <i id="organism-species">Synechococcus elongatus</i>
+      <span id="organism-strain">UTEX 2973</span>, arranged so you can
       see which genes a recoding scheme would disturb, and build a shortlist to compare.
     </p>
   </div>
@@ -125,7 +134,7 @@
     <div>
       <h3>What a dot is</h3>
       <p>
-        One dot is one gene. There are about 2,700 of them. Wherever you see a scatter of dots on
+        One dot is one gene. There are <span id="gene-count-phrase">about 2,700</span> of them. Wherever you see a scatter of dots on
         this page, every dot is the same gene it was on the previous plot, so a gene you pin stays
         highlighted when you switch views.
       </p>
@@ -274,11 +283,29 @@ if (window.location.protocol === 'file:') {
 // through core/early-data.js, which waits on `ready`, so nothing is ever
 // requested twice. tests/js/early-data.test.mjs holds the two sides to the same
 // addresses.
+//
+// The organism is known here, before the first request: `?org=` names it, and no
+// `org`, or one that names nothing, is the default organism in `data/`. This
+// table is the registry in js/core/organisms.js reduced to what must be right
+// before any module runs, each organism's data directory and page title, and
+// tests/js/organisms.test.mjs fails when the two disagree.
 (function () {
+  var ORGANISMS = {
+    'ecoli-k12-mg1655': {
+      directory: 'data/organisms/ecoli-k12-mg1655/',
+      title: 'Escherichia coli recoding-diversity map'
+    }
+  };
+  var query = new URLSearchParams(window.location.search);
+  var requested = query.get('org');
+  var organism = requested !== null && Object.prototype.hasOwnProperty.call(ORGANISMS, requested)
+    ? ORGANISMS[requested] : null;
+  // The tab must not name one organism while the address names another.
+  if (organism) document.title = organism.title;
   if (window.location.protocol === 'file:') return;
   // An overridden data folder is resolved by the module, which knows the rule.
-  if (new URLSearchParams(window.location.search).get('data')) return;
-  var base = new URL('data/', document.baseURI);
+  if (query.get('data')) return;
+  var base = new URL(organism ? organism.directory : 'data/', document.baseURI);
   var responses = {};
   // A request that fails here is not an error of this script: the module finds
   // the same rejection when it adopts the request, and asks again. Marking it

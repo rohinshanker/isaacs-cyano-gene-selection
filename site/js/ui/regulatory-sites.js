@@ -1,12 +1,22 @@
-/** Search and inspect Tan 2018 non-gene-linked transcription start sites. */
+/**
+ * Search and inspect non-gene-linked transcription start sites.
+ *
+ * The table is one study's, in that study's columns, so the study's name, its
+ * citation, and every sentence about it come from the `regulatoryTss` layer of
+ * the organism's record in `core/organisms.js`. An organism that declares no
+ * such layer has no table, and the tab says so in the page's usual words for an
+ * optional file that is not published.
+ */
 import { pendingNote } from './loading-note.js';
+import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import { REGULATORY_TYPES, potentialTargetsBySite, searchRegulatoryTss } from '../core/regulatory-tss.js';
 import { formatTssStatistic } from '../core/tss-evidence.js';
 
 export const REGULATORY_TAB = Object.freeze({
   id: 'regulatory',
   name: 'Regulatory sites',
-  blurb: 'Explore UTEX 2973 antisense, internal, and orphan or novel transcription start sites from Tan et al. 2018.',
+  // The default organism's; `tabBlurb` in ui/panels.js words it per organism.
+  blurb: DEFAULT_ORGANISM.copy.tabBlurbs.regulatory,
   source: '',
 });
 
@@ -125,15 +135,22 @@ function siteCard(row, claims, warnings, onShowGene) {
 }
 
 export class RegulatorySitesPanel {
-  constructor(host, { onShowGene }) {
+  /**
+   * @param {HTMLElement} host
+   * @param {{onShowGene: (id: string) => void, organism?: object}} options
+   *   `organism` is the record of the organism on screen.
+   */
+  constructor(host, { onShowGene, organism = DEFAULT_ORGANISM }) {
     this.host = host;
     this.onShowGene = onShowGene;
+    this.layer = layerOf(organism, 'regulatoryTss');
     this.page = 0;
     this.built = false;
   }
 
   update(inventory, pending = null) {
-    if (!inventory) {
+    // A table is drawn only for an organism whose record declares the layer.
+    if (!inventory || !this.layer) {
       // Still loading, or not loadable, is not "unavailable in this dataset".
       const note = pending ? pendingNote(pending, 'the regulatory start-site table')
         : document.createElement('p');
@@ -157,19 +174,16 @@ export class RegulatorySitesPanel {
     title.textContent = 'Regulatory start sites';
     const intro = document.createElement('p');
     intro.className = 'panel-note';
-    intro.textContent = 'Tan et al. measured transcription initiation in UTEX 2973. These 2,333 '
-      + 'antisense, internal, and orphan or novel sites are separate from the gene-linked TSSs '
-      + 'in gene detail. A published locus association is context, not proof that a site regulates '
-      + 'that gene. Missing results are unknown, not zero.';
+    intro.textContent = this.layer.intro;
     const source = document.createElement('p');
     source.className = 'panel-note';
     source.append('Source: ');
     const link = document.createElement('a');
-    link.href = 'https://doi.org/10.1186/s13068-018-1215-8';
-    link.textContent = 'Tan et al. 2018';
+    link.href = `https://doi.org/${this.layer.doi}`;
+    link.textContent = this.layer.citation;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    source.append(link, ' · UTEX 2973 · dRNA-seq · CC BY 4.0.');
+    source.append(link, this.layer.sourceSuffix);
     const conditions = document.createElement('details');
     const conditionsSummary = document.createElement('summary');
     conditionsSummary.textContent = 'Study conditions and interpretation';
@@ -194,7 +208,7 @@ export class RegulatorySitesPanel {
     searchLabel.textContent = 'Find site, coordinate, or locus';
     this.search = document.createElement('input');
     this.search.type = 'search';
-    this.search.placeholder = 'e.g. aTSS-1705677 or M744_RS08610';
+    this.search.placeholder = this.layer.searchPlaceholder;
     this.search.addEventListener('input', () => {
       this.page = 0;
       this.renderResults();

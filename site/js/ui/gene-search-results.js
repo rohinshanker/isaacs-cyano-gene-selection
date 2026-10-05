@@ -7,6 +7,7 @@
  */
 import { pendingState } from '../core/data-files.js';
 import { searchGenes, SEARCH_RESULT_LIMIT } from '../core/gene-search.js';
+import { organismOf } from '../core/organisms.js';
 import { formatCount } from './format.js';
 import { createLocusTag } from './locus-tag.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
@@ -127,8 +128,9 @@ export class GeneSearchResults {
       return;
     }
     host.hidden = false;
+    const organism = organismOf(this.dataset);
     const result = searchGenes(this.genes, this.query, {
-      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms,
+      limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms, aliases: organism.searchAliases,
     });
     this.result = result;
 
@@ -168,8 +170,7 @@ export class GeneSearchResults {
     if (result.shown.some((hit) => hit.goMatch)) {
       const note = document.createElement('p');
       note.className = 'search-alias-note';
-      note.textContent = 'GO matches are RefSeq IEA computational suggestions, not tested '
-        + 'UTEX 2973 functions. Review their evidence before selecting a candidate.';
+      note.textContent = organism.copy.goSearchNote;
       host.append(note);
     }
 

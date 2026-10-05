@@ -7,7 +7,8 @@ import {
 } from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
 import { VALUE_SCALE_LABELS } from '../core/value-scales.js';
-import { SOURCE_TOGGLES } from '../core/annotation-source.js';
+import { defaultColorSources } from '../core/annotation-source.js';
+import { DEFAULT_ORGANISM, sourceIds, sourceLabels } from '../core/organisms.js';
 import { describeReviewed } from '../core/source-derived-categories.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -88,12 +89,17 @@ export function categoryExcludedLegendRows(showHidden, hiddenReviewedCount, hidd
   ].filter(({ count }) => count > 0);
 }
 
-/** The legend title names exactly the sources the counts are taken under. */
-export function categoryLegendTitle(sources, hasDerivedData) {
+/**
+ * The legend title names exactly the sources the counts are taken under, in the
+ * names the organism's record gives them.
+ */
+export function categoryLegendTitle(sources, hasDerivedData, organism = DEFAULT_ORGANISM) {
+  const ids = sourceIds(organism);
+  const names = sourceLabels(organism);
   const parts = [];
-  if (sources.includes('utex-2973')) parts.push('UTEX 2973 reviewed');
-  if (hasDerivedData && sources.includes('pcc-7942')) parts.push('PCC 7942 derived');
-  if (hasDerivedData && sources.includes('go-iea')) parts.push('GO IEA derived');
+  if (sources.includes(ids.reviewed)) parts.push(`${names.reviewed} reviewed`);
+  if (hasDerivedData && sources.includes(ids.product)) parts.push(`${names.product} derived`);
+  if (hasDerivedData && sources.includes(ids.go)) parts.push(`${names.go} derived`);
   if (parts.length === 0) return 'Function categories (no source enabled: every CDS unknown)';
   return `Function categories, counted under ${parts.join(' + ')} (whole CDS set)`;
 }
@@ -101,11 +107,13 @@ export function categoryLegendTitle(sources, hasDerivedData) {
 /** The evidence sentence under the counts, or null when nothing is derived. */
 export function categoryEvidenceSummary(
   evidenceCounts, hasDerivedData, conflictCount = 0, reviewedColouredCount = null,
+  organism = DEFAULT_ORGANISM,
 ) {
   if (!hasDerivedData || !evidenceCounts) return null;
+  const names = sourceLabels(organism);
   return `${describeReviewed(evidenceCounts.reviewed, reviewedColouredCount)}, `
-    + `${formatCount(evidenceCounts['pcc-7942-derived'])} by PCC 7942, `
-    + `${formatCount(evidenceCounts['go-iea-derived'])} by GO IEA, `
+    + `${formatCount(evidenceCounts['pcc-7942-derived'])} by ${names.product}, `
+    + `${formatCount(evidenceCounts['go-iea-derived'])} by ${names.go}, `
     + `${formatCount(evidenceCounts.none)} by no enabled source`
     + (conflictCount > 0
       ? `; ${formatCount(conflictCount)} coloured by a higher-priority source over a conflicting one.`
@@ -113,10 +121,10 @@ export function categoryEvidenceSummary(
 }
 
 /**
- * The three colour-source checkboxes, rendered inside the legend above the
+ * The organism's colour-source checkboxes, rendered inside the legend above the
  * category rows. They govern colouring and these counts only.
  */
-function renderSourceToggles(sources, onToggleSource) {
+function renderSourceToggles(sources, onToggleSource, toggles) {
   const group = document.createElement('fieldset');
   group.className = 'source-toggles';
   group.id = 'annotation-sources';
@@ -129,7 +137,7 @@ function renderSourceToggles(sources, onToggleSource) {
   label.setAttribute('aria-hidden', 'true');
   label.textContent = 'Colour by sources';
   group.append(legend, label);
-  for (const { id, label: text } of SOURCE_TOGGLES) {
+  for (const { id, label: text } of toggles) {
     const row = document.createElement('span');
     row.className = 'checkbox-row source-toggle';
     const input = document.createElement('input');
@@ -150,14 +158,15 @@ function renderSourceToggles(sources, onToggleSource) {
 
 /**
  * A key for the resolved category colour under the enabled sources: reviewed
- * assignments win while UTEX 2973 is enabled, then source-derived categories
+ * assignments win while the reviewed source is enabled, then source-derived categories
  * with their distinct hollow marker. Category rows are interactive: hover/focus previews,
  * click/Enter/Space toggles a filter selection, and a scoped reset clears it.
  */
 export function renderCategoryLegend(host, {
   labels, categoryIds, multipleLabel, scale, counts, unknownCount, multipleCount,
   hiddenReviewedCount, hiddenUnknownCount, showHidden, selected = [],
-  sources = ['utex-2973', 'pcc-7942', 'go-iea'], hasDerivedData = false,
+  organism = DEFAULT_ORGANISM,
+  sources = defaultColorSources(organism.annotationSources), hasDerivedData = false,
   evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
   markerConventions = true, pending = null,
   onHoverCategory = () => {}, onFocusCategory = () => {},
@@ -198,10 +207,11 @@ export function renderCategoryLegend(host, {
     : null;
   host.replaceChildren();
   host.classList.add('category-mode');
-  const toggles = renderSourceToggles(sources, onToggleSource);
+  const names = sourceLabels(organism);
+  const toggles = renderSourceToggles(sources, onToggleSource, organism.annotationSources);
   const title = document.createElement('p');
   title.className = 'legend-title';
-  title.textContent = categoryLegendTitle(sources, hasDerivedData);
+  title.textContent = categoryLegendTitle(sources, hasDerivedData, organism);
   const list = document.createElement('ul');
   list.className = 'legend-notes category-legend';
 
@@ -284,17 +294,17 @@ export function renderCategoryLegend(host, {
   const note = document.createElement('p');
   note.className = 'legend-ramp-note';
   note.textContent = (hasDerivedData
-    ? 'Precedence UTEX 2973 > PCC 7942 > GO IEA among the enabled sources: a lab-reviewed '
-      + 'assignment wins, then a PCC 7942 or GO IEA category from a TypeSafe Jev judgment'
+    ? `Precedence ${names.precedence} among the enabled sources: a lab-reviewed `
+      + `assignment wins, then a ${names.product} or ${names.go} category from a TypeSafe Jev judgment`
       + `${derivedThreshold === null ? '' : ` at probability ${derivedThreshold.toFixed(2)} or above`}`
       + ', labelled pcc-7942-derived or go-iea-derived. A lower source that disagrees never '
       + 'changes the colour; the detail panel and export name the conflict. '
     : 'Only lab-reviewed locus assignments receive a category colour. '
-      + 'GO IEA suggestions alone leave a gene unclassified. ')
+      + `${names.go} suggestions alone leave a gene unclassified. `)
     + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
   host.append(toggles, title, list);
   const summary = categoryEvidenceSummary(
-    evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount,
+    evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount, organism,
   );
   if (summary) {
     const evidence = document.createElement('p');

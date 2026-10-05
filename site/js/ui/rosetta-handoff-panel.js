@@ -3,6 +3,7 @@ import {
 } from '../core/rosetta-handoff.js';
 import { FOLD_SETTINGS } from '../core/folding-sequences.js';
 import { serializeSchemeMap } from '../core/scheme.js';
+import { organismOf } from '../core/organisms.js';
 
 const EXTENSIONS = {
   sequence: 'txt', fasta: 'fasta', a3m: 'a3m', a2m: 'a2m', stockholm: 'sto',
@@ -119,7 +120,8 @@ export class RosettaHandoffPanel {
       const selected = handoffSequence({ gene, table: this.state.dataset.table,
         map: this.state.schemes.active.map, form, region, start: this.start.value, end: this.end.value });
       const schemeName = this.state.schemes.active.name || 'active-scheme';
-      const header = handoffHeader({ locus: id, strain: 'Synechococcus-elongatus-UTEX-2973',
+      // The strain a hand-off is labelled with is the dataset's own organism.
+      const header = handoffHeader({ locus: id, strain: organismOf(this.state.dataset).handoffStrain,
         form, schemeName, region: selected.label, siteVersion: this.state.dataset.meta.builtAt ?? 'unversioned' });
       const fold = this.matchingStructure(gene, selected.sequence, form, region);
       const files = writeHandoffFormats({ sequence: selected.sequence, header,
@@ -176,7 +178,9 @@ export class RosettaHandoffPanel {
       download.addEventListener('click', () => {
         const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
         const link = document.createElement('a');
-        link.href = url; link.download = `${slug(record.id)}_${slug(record.form)}_${slug(record.schemeName)}_${slug(record.region)}_${slug(format)}.${EXTENSIONS[format]}`;
+        // A non-default organism's files carry its tag, as its exports do.
+        const tag = organismOf(this.state.dataset).exportTag;
+        link.href = url; link.download = `${tag ? `${slug(tag)}_` : ''}${slug(record.id)}_${slug(record.form)}_${slug(record.schemeName)}_${slug(record.region)}_${slug(format)}.${EXTENSIONS[format]}`;
         document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(url);
         this.status.textContent = `Downloaded ${link.download}.`;
         this.record(record, format);

@@ -9,24 +9,30 @@ import { pca } from '../core/pca.js';
 import { buildFeatureMatrix } from '../core/live-metrics.js';
 import { metricValues } from '../core/metric-registry.js';
 import { geneMapLabel } from '../core/gene-identity.js';
+import { DEFAULT_ORGANISM } from '../core/organisms.js';
+
+/**
+ * The sentence under a tab, for one organism.
+ *
+ * A blurb that states an organism fact is that organism's own sentence, from
+ * its record; every other tab says the same thing for all of them.
+ */
+export function tabBlurb(tab, organism = DEFAULT_ORGANISM) {
+  return organism.copy.tabBlurbs[tab.id] ?? tab.blurb;
+}
 
 export const PANELS = Object.freeze([
   {
     id: 'native',
     name: 'Native codon space',
     source: 'Precomputed by the pipeline from codon usage (RSCU).',
-    blurb: 'Each dot is a gene, placed by how it uses synonymous codons in the wild-type genome. '
-      + 'Two genes close together prefer the same codons, whatever they do in the cell. '
-      + 'Short CDSs have more zero RSCU entries and can shift along PC2; length filters keep these coordinates fixed.',
+    blurb: DEFAULT_ORGANISM.copy.tabBlurbs.native,
   },
   {
     id: 'axes',
     name: 'Metric X vs Y',
     source: 'Plotted directly from the selected metrics; no PCA is fitted.',
-    blurb: 'Choose one gene metric for each axis to inspect their relationship directly. '
-      + 'A fresh view compares CDS length with measured UTEX 2973 evidence, and the note '
-      + 'below the selectors states that measurement\u2019s replicate and condition limits. '
-      + 'CAI and tAI remain selectable on either axis.',
+    blurb: DEFAULT_ORGANISM.copy.tabBlurbs.axes,
   },
   {
     id: 'risk',

@@ -22,11 +22,13 @@ import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
 import { renderGeneViewer } from './gene-viewer.js';
 import { essentialityEvidenceFor } from '../core/go-iea-essentiality.js';
-import { PCC_SOURCE, UTEX_SOURCE, GO_IEA_SOURCE } from '../core/annotation-source.js';
 import {
-  categoryResolutionFor, conflictNote, SOURCE_DISPLAY_NAMES,
+  categoryResolutionFor, conflictNote, sourceDisplayNames,
   THRESHOLDS as DERIVED_THRESHOLDS,
 } from '../core/source-derived-categories.js';
+import {
+  fillTemplate, layerOf, organismOf, sourceIds, sourceLabels,
+} from '../core/organisms.js';
 
 /**
  * Baseline context stays visible; scheme-only results open only when a scheme
@@ -93,11 +95,9 @@ function labelledList(label, values) {
 }
 
 /**
- * The RefSeq annotation-method/inference/coordinate rows are UTEX 2973 release
- * content; the GO relationships inside the same bundle are the GO IEA source.
- * A single source shows only its own rows here, blanking the rest; PCC 7942
- * contributes nothing to this bundle at all, so the disclosure does not exist
- * in that view.
+ * The RefSeq annotation-method/inference/coordinate rows are the organism's own
+ * release content; the GO relationships inside the same bundle are its GO
+ * annotations. Nothing here comes from another strain.
  */
 function annotationDisclosure(gene, meta, goTerms) {
   const model = annotationEvidenceModel(gene, meta, goTerms);
@@ -132,15 +132,8 @@ function annotationDisclosure(gene, meta, goTerms) {
   return details;
 }
 
-const TIER_SUMMARIES = Object.freeze({
-  'tested-utex-allele': 'Candidate evidence · tested UTEX allele',
-  'admitted-pcc-call': 'Candidate evidence · borrowed PCC 7942 call',
-  'go-iea-context': 'Candidate evidence · GO IEA context only',
-  unknown: 'Candidate evidence · no determinate call',
-});
-
 /** The GO IEA fallback wording, shown only where it can decide the tier. */
-function goContextBlock(evidence, source) {
+function goContextBlock(evidence, source, copy) {
   const block = document.createElement('div');
   block.className = 'candidate-go-context';
   const text = document.createElement('p');
@@ -153,8 +146,7 @@ function goContextBlock(evidence, source) {
   if (evidence.tier === 'go-iea-context') {
     const rank = document.createElement('p');
     rank.className = 'panel-note';
-    rank.textContent = 'This tier ranks below tested UTEX alleles and PCC 7942 calls and '
-      + 'never enters the panel objective.';
+    rank.textContent = copy.goTierRank;
     block.append(rank);
   }
   if (evidence.goContext) block.append(goAttribution(source));
@@ -217,23 +209,26 @@ function colouringSuffix(entry) {
 }
 
 /** One source's own category line for the detail panel. */
-function derivedSourceLine(sourceId, entry, derivedData) {
+function derivedSourceLine(sourceId, entry, derivedData, organism) {
+  const fromProduct = sourceId === sourceIds(organism).product;
   const item = document.createElement('li');
   const label = document.createElement('strong');
-  label.textContent = `${SOURCE_DISPLAY_NAMES[sourceId]}: `;
+  label.textContent = `${sourceDisplayNames(organism)[sourceId]}: `;
   item.append(label);
   if (!entry.judged) {
     item.append(`not judged (${entry.reason}).${colouringSuffix(entry)}`);
     return item;
   }
   const probability = entry.probability.toFixed(2);
-  const provenance = sourceId === PCC_SOURCE && entry.pccLocusTag
-    ? ` from the product name of joined PCC locus ${entry.pccLocusTag}` : '';
+  const provenance = fromProduct && entry.pccLocusTag
+    ? fillTemplate(layerOf(organism, 'sourceDerivedCategories').productLocusProvenance,
+      { locus: entry.pccLocusTag })
+    : '';
   if (entry.categoryId) {
     item.append(`${entry.label} (TypeSafe Jev probability ${probability}${provenance}).`
       + colouringSuffix(entry));
   } else if (entry.mostLikely === 'unknown-or-unclassified') {
-    item.append(`no category; the ${sourceId === PCC_SOURCE ? 'product name states' : 'GO terms state'} `
+    item.append(`no category; the ${fromProduct ? 'product name states' : 'GO terms state'} `
       + `no specific function (probability ${probability}${provenance}).${colouringSuffix(entry)}`);
   } else {
     item.append(`no category; most likely ${entry.mostLikelyLabel} at ${probability}, below the `
@@ -248,11 +243,18 @@ function derivedSourceLine(sourceId, entry, derivedData) {
  * The colour category under the sources enabled for colouring, the source and
  * evidence label behind it, every source's own judgment, and an explicit
  * conflict note, so a computational colour is never read as a reviewed one.
+ *
+ * Drawn only for an organism whose record declares the function-category
+ * layer, in the names that record gives its sources.
  */
 function functionCategoryBlock(gene, dataset, sources) {
+  const organism = organismOf(dataset);
+  if (!layerOf(organism, 'functionCategories')) return null;
+  const ids = sourceIds(organism);
+  const names = sourceLabels(organism);
   const resolution = categoryResolutionFor({
     reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
-    sources, locusId: gene.id,
+    sources, locusId: gene.id, organism,
   });
   if (!resolution) return null;
   const block = document.createElement('div');
@@ -268,28 +270,30 @@ function functionCategoryBlock(gene, dataset, sources) {
     : `evidence ${resolution.evidence}`;
   headline.append(heading, `${resolution.label} — ${evidenceText}.`);
   block.append(headline);
-  const conflicts = conflictNote(resolution);
+  const conflicts = conflictNote(resolution, organism);
   if (conflicts) {
     const note = document.createElement('p');
     note.className = 'panel-note function-category-conflict';
     note.setAttribute('role', 'note');
     note.textContent = `Conflict: ${conflicts}. The colour follows the highest-priority `
-      + 'enabled source (UTEX 2973 > PCC 7942 > GO IEA); no source is preferred as truth.';
+      + `enabled source (${names.precedence}); no source is preferred as truth.`;
     block.append(note);
   }
   const list = document.createElement('ul');
   list.className = 'function-category-sources';
-  const utex = resolution.perSource[UTEX_SOURCE];
-  const utexItem = document.createElement('li');
-  const utexLabel = document.createElement('strong');
-  utexLabel.textContent = `${SOURCE_DISPLAY_NAMES[UTEX_SOURCE]}: `;
-  utexItem.append(utexLabel, (utex.reviewed
-    ? `${utex.labels.join('; ')} (lab review, `
+  const reviewed = resolution.perSource[ids.reviewed];
+  const reviewedItem = document.createElement('li');
+  const reviewedLabel = document.createElement('strong');
+  reviewedLabel.textContent = `${sourceDisplayNames(organism)[ids.reviewed]}: `;
+  reviewedItem.append(reviewedLabel, (reviewed.reviewed
+    ? `${reviewed.labels.join('; ')} (lab review, `
       + `${dataset.functionCategories.source.provenance.userReview.date}).`
-    : 'no reviewed assignment.') + colouringSuffix(utex));
-  list.append(utexItem);
-  for (const sourceId of [PCC_SOURCE, GO_IEA_SOURCE]) {
-    list.append(derivedSourceLine(sourceId, resolution.perSource[sourceId], dataset.sourceDerivedCategories));
+    : 'no reviewed assignment.') + colouringSuffix(reviewed));
+  list.append(reviewedItem);
+  for (const sourceId of [ids.product, ids.go]) {
+    list.append(derivedSourceLine(
+      sourceId, resolution.perSource[sourceId], dataset.sourceDerivedCategories, organism,
+    ));
   }
   block.append(list);
   const derivedData = dataset.sourceDerivedCategories;
@@ -304,35 +308,42 @@ function functionCategoryBlock(gene, dataset, sources) {
     note.append('Derived categories are computational judgments by TypeSafe '
       + `${derivedData.judgment.model} (rubric ${derivedData.judgment.rubricVersion}) over `
       + 'automated annotations. They never change the reviewed table and are not lab review. '
-      + `GO IEA: ${derivedData.attribution.goIea.creator}, `, goLicense,
-      '. PCC 7942 product names: NCBI RefSeq GCF_000012525.1; joins: Adomako et al. 2022 '
-      + '(CC BY 4.0), republishing Rubin et al. 2015.');
+      + `${names.go}: ${derivedData.attribution.goIea.creator}, `, goLicense,
+      layerOf(organism, 'sourceDerivedCategories').attribution);
     block.append(note);
   }
   return block;
 }
 
-function candidateEvidenceDisclosure(gene, data, goData) {
+/**
+ * Tested alleles and borrowed sister-strain calls for one gene.
+ *
+ * The evidence is one organism's own studies, so every name in it is read from
+ * the `candidateEvidence` layer of that organism's record, and nothing is drawn
+ * for an organism that declares no such layer.
+ */
+function candidateEvidenceDisclosure(gene, data, goData, organism) {
+  const copy = layerOf(organism, 'candidateEvidence');
+  if (!copy) return null;
   const model = candidateEvidenceFor(data, gene.id);
   if (!model) return null;
-  const evidence = essentialityEvidenceFor(goData, gene.id);
+  const evidence = essentialityEvidenceFor(goData, gene.id, organism);
   const details = document.createElement('details');
   details.className = 'metric-group candidate-evidence';
   details.open = true;
   const summary = document.createElement('summary');
-  summary.textContent = evidence ? TIER_SUMMARIES[evidence.tier] : model.tested
-    ? 'Candidate evidence · tested UTEX allele'
+  summary.textContent = evidence ? copy.tierSummaries[evidence.tier] : model.tested
+    ? copy.testedSummary
     : ['unknown', 'missing', 'ambiguous', 'not_analyzed'].includes(model.pccCall?.status)
-      ? 'Candidate evidence · no determinate PCC 7942 call'
-      : 'Candidate evidence · borrowed PCC 7942 call';
+      ? copy.indeterminateSummary
+      : copy.borrowedSummary;
   details.append(summary);
   if (evidence) {
     const tier = document.createElement('p');
     tier.className = 'candidate-tier';
     const label = document.createElement('strong');
     label.textContent = `Evidence tier ${evidence.tierRank} of 4: ${evidence.tierLabel}.`;
-    tier.append(label, ' Precedence: tested UTEX allele > PCC 7942 call > GO IEA context '
-      + '> unknown.');
+    tier.append(label, copy.tierPrecedence);
     details.append(tier);
   }
 
@@ -351,7 +362,7 @@ function candidateEvidenceDisclosure(gene, data, goData) {
     citation.href = `https://doi.org/${model.testedSource.doi}`;
     citation.target = '_blank';
     citation.rel = 'noopener noreferrer';
-    citation.textContent = 'Ungerer et al. 2018 study';
+    citation.textContent = copy.testedStudyLink;
     details.append(claim, identity, condition, citation);
   }
 
@@ -360,10 +371,10 @@ function candidateEvidenceDisclosure(gene, data, goData) {
   const badge = document.createElement('strong');
   const call = model.pccCall;
   badge.textContent = call?.status === 'unknown'
-    ? 'PCC 7942 call unavailable'
+    ? copy.callUnavailable
     : ['missing', 'ambiguous', 'not_analyzed'].includes(call?.status)
-      ? 'PCC 7942 call indeterminate'
-      : 'PCC 7942 evidence · cross-strain assumption';
+      ? copy.callIndeterminate
+      : copy.callAssumed;
   const statusLabel = {
     essential: 'essential', beneficial: 'beneficial for growth',
     'non-essential': 'non-essential under the tested conditions',
@@ -371,11 +382,9 @@ function candidateEvidenceDisclosure(gene, data, goData) {
     unknown: 'unknown',
   }[call?.status] ?? 'unknown';
   const callText = call?.pccLocusTag
-    ? ` PCC locus ${call.pccLocusTag}: ${statusLabel}.`
-    : ` No supported PCC call for this UTEX locus: ${statusLabel}.`;
-  borrowed.append(badge, callText,
-    ' Treating PCC 7942 essentiality as UTEX 2973 essentiality is an assumption, '
-      + 'not a UTEX measurement or recoding outcome.');
+    ? fillTemplate(copy.callAt, { locus: call.pccLocusTag, status: statusLabel })
+    : fillTemplate(copy.noCall, { status: statusLabel });
+  borrowed.append(badge, callText, copy.assumption);
   details.append(borrowed);
   if (call?.status === 'unknown' && call.mappingReason) {
     const reason = document.createElement('p');
@@ -384,30 +393,24 @@ function candidateEvidenceDisclosure(gene, data, goData) {
     details.append(reason);
   }
   if (evidence && ['go-iea-context', 'unknown'].includes(evidence.tier)) {
-    details.append(goContextBlock(evidence, goData));
+    details.append(goContextBlock(evidence, goData, copy));
   }
   if (evidence?.discrepancies.length) details.append(discrepancyBlock(evidence, goData));
   const source = model.borrowedEssentiality.source;
   const condition = document.createElement('p');
   condition.className = 'panel-note';
-  condition.textContent = `PCC assay: ${source.rubinCondition}`;
+  condition.textContent = `${copy.assayLabel}: ${source.rubinCondition}`;
   details.append(condition);
   const growth = document.createElement('p');
   growth.className = 'panel-note';
-  growth.textContent = 'Growth context: the strains grew at similar rates at PCC-compatible '
-    + '400 µmol photons m⁻² s⁻¹ in Ungerer et al. 2018, but have different growth '
-    + 'optima. That comparison did not reproduce the Rubin screen conditions.';
+  growth.textContent = copy.growthContext;
   details.append(growth);
   const citation = document.createElement('p');
   citation.className = 'panel-note';
-  for (const [label, doi] of [
-    ['Adomako 2022 data', source.adomakoDoi],
-    ['Rubin 2015 assay', source.rubinDoi],
-    ['Ungerer 2018 growth comparison', source.growthDoi],
-  ]) {
+  for (const [label, field] of copy.citationLinks) {
     if (citation.childNodes.length) citation.append(' · ');
     const link = document.createElement('a');
-    link.href = `https://doi.org/${doi}`;
+    link.href = `https://doi.org/${source[field]}`;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = label;
@@ -456,8 +459,9 @@ function tssTable(headers, rows, className, captionText) {
   return table;
 }
 
-function tssEvidenceDisclosure(gene, meta) {
-  if (!meta?.tssEvidenceSource) return null;
+function tssEvidenceDisclosure(gene, meta, organism) {
+  const startSites = layerOf(organism, 'tssEvidence');
+  if (!startSites || !meta?.tssEvidenceSource) return null;
   const model = tssEvidenceModel(gene);
   const details = document.createElement('details');
   details.className = 'metric-group tss-evidence';
@@ -466,7 +470,7 @@ function tssEvidenceDisclosure(gene, meta) {
     ? 'TSS initiation evidence — no mapped TSS evidence'
     : `TSS initiation evidence (${model.count} mapped `
       + `${model.count === 1 ? 'site' : 'sites'})`;
-  // Measured UTEX 2973 evidence opens with the gene: its raw replicate counts
+  // Evidence measured in this organism opens with the gene: its raw replicate counts
   // and condition comparisons are the first thing a candidate is read on. A
   // gene with no mapped TSS says so in the summary and stays collapsed, so an
   // explicit unknown does not take the room the evidence would.
@@ -531,10 +535,10 @@ function tssEvidenceDisclosure(gene, meta) {
 
   const source = document.createElement('p');
   source.className = 'panel-note tss-source';
-  source.append('Source: Tan et al. 2018, ');
+  source.append(`Source: ${startSites.citation}, `);
   const doi = document.createElement('a');
-  doi.href = 'https://doi.org/10.1186/s13068-018-1215-8';
-  doi.textContent = 'doi:10.1186/s13068-018-1215-8';
+  doi.href = `https://doi.org/${startSites.doi}`;
+  doi.textContent = `doi:${startSites.doi}`;
   doi.target = '_blank';
   doi.rel = 'noopener noreferrer';
   source.append(doi, '.');
@@ -586,6 +590,7 @@ export class SidePanel {
    */
   update(state) {
     const { index, dataset } = state;
+    const organism = organismOf(dataset);
     const focusedAction = this.host.contains(document.activeElement)
       ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();
@@ -701,7 +706,9 @@ export class SidePanel {
     const viewerSummary = document.createElement('summary');
     viewerSummary.textContent = 'Gene visualizer';
     const viewerBody = document.createElement('div');
-    renderGeneViewer(viewerBody, gene, { tssPending: pendingState(dataset, 'tssEvidence') });
+    renderGeneViewer(viewerBody, gene, {
+      tssPending: pendingState(dataset, 'tssEvidence'), organism,
+    });
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
 
@@ -711,7 +718,7 @@ export class SidePanel {
     const candidateEvidence = pendingSection(dataset, ['candidateEvidence', 'goIeaEssentiality'],
       'Candidate evidence', 'candidate evidence')
       ?? this.rememberDisclosure(candidateEvidenceDisclosure(
-        gene, dataset.candidateEvidence, dataset.goIeaEssentiality,
+        gene, dataset.candidateEvidence, dataset.goIeaEssentiality, organism,
       ), 'candidate-evidence');
     if (candidateEvidence) this.host.append(candidateEvidence);
 
@@ -731,11 +738,12 @@ export class SidePanel {
       );
     if (annotation) this.host.append(annotation);
 
-    const tssEvidence = (dataset.meta?.tssEvidenceSource
-      ? pendingSection(dataset, ['tssEvidence'], 'TSS initiation evidence', 'Tan 2018 start sites')
+    const startSites = layerOf(organism, 'tssEvidence');
+    const tssEvidence = (startSites && dataset.meta?.tssEvidenceSource
+      ? pendingSection(dataset, ['tssEvidence'], 'TSS initiation evidence', startSites.fileLabel)
       : null)
       ?? this.rememberDisclosure(
-        tssEvidenceDisclosure(gene, dataset.meta), 'tss-evidence',
+        tssEvidenceDisclosure(gene, dataset.meta, organism), 'tss-evidence',
       );
     if (tssEvidence) this.host.append(tssEvidence);
 

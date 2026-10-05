@@ -59,8 +59,9 @@ test('the reveal waits for the minimum bar time and for a link\'s own files', as
   // Presentation is skipped under reduced motion: the bar has no minimum then.
   assert.match(boot, /minimumMs: reducedMotion \? 0 : loadTiming\.minimumBarMs,/);
   // The files this visit waits for are read from the link before any data
-  // arrives, so the bar measures them from its first frame.
-  assert.match(boot, /const requested = defaultState\(\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash\)\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(\[\.\.\.CORE_FILE_KEYS, \.\.\.promoted\]\);/);
+  // arrives, so the bar measures them from its first frame. The link is read
+  // under the organism the address names.
+  assert.match(boot, /const requested = defaultState\(organism\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash, organism\), organism\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(\[\.\.\.CORE_FILE_KEYS, \.\.\.promoted\]\);/);
   // The reveal waits for those files, and then for the bar to finish.
   assert.match(boot, /await load\.when\(promoted\);\s*await loadProgress\.finished\(\);\s*revealPage\(\);/);
   const order = ['renderAll();\n  booted = true;', 'flushLandings();', 'revealPage();',

@@ -3,15 +3,21 @@
  *
  * A link reproduces the exact view: panel, colour, metric axes, recoding
  * scheme, filters, shortlist, pinned gene, and comparison tab.
+ *
+ * The hash is read under the organism the address names in `?org=`, never the
+ * other way round: it carries no organism of its own. The one field whose
+ * vocabulary is an organism fact is the colour-source set `cs`, so every
+ * function that touches it takes the organism and defaults to the default one.
  */
 import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
-import { DEFAULT_METRIC_AXES, DEFAULT_AXIS_SCALE, AXIS_SCALES } from './metric-axes.js';
+import { DEFAULT_AXIS_SCALE, AXIS_SCALES } from './metric-axes.js';
 import { VALUE_SCALES } from './value-scales.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
 import {
-  DEFAULT_COLOR_SOURCES, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
+  defaultColorSources, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
   NO_SOURCES,
 } from './annotation-source.js';
+import { DEFAULT_ORGANISM } from './organisms.js';
 import {
   DEFAULT_PANEL_ORDER, DEFAULT_PANEL_COLLAPSED, NO_PANELS_COLLAPSED,
   normalizePanelOrder, normalizeCollapsed, isDefaultPanelOrder, isDefaultCollapsed,
@@ -84,7 +90,7 @@ export const EXPRESSION_FILTERS = Object.freeze(['any', 'measured']);
  * literal across calls would let a later mutation corrupt what "default"
  * means for the next reset.
  */
-export function defaultState() {
+export function defaultState(organism = DEFAULT_ORGANISM) {
   return {
     panel: 'native',
     colorBy: null,
@@ -98,7 +104,7 @@ export function defaultState() {
     highExpressed: false,
     filters: {},
     categoryFilter: [],
-    colorSources: [...DEFAULT_COLOR_SOURCES],
+    colorSources: defaultColorSources(organism.annotationSources),
     shortlist: [],
     pinnedId: null,
     compareTab: 'radar',
@@ -108,8 +114,8 @@ export function defaultState() {
     trafficKey: null,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
-    axisX: DEFAULT_METRIC_AXES.x,
-    axisY: DEFAULT_METRIC_AXES.y,
+    axisX: organism.freshAxes.x,
+    axisY: organism.freshAxes.y,
     axisXScale: DEFAULT_AXIS_SCALE,
     axisYScale: DEFAULT_AXIS_SCALE,
     panelOrder: [...DEFAULT_PANEL_ORDER],
@@ -146,8 +152,8 @@ export function clearSelections(state) {
  * or traffic metric displayed forever: the address bar says one thing, the
  * page still shows another. That was a real, shipped bug.
  */
-export function applyDecoded(target, decoded) {
-  Object.assign(target, defaultState(), decoded);
+export function applyDecoded(target, decoded, organism = DEFAULT_ORGANISM) {
+  Object.assign(target, defaultState(organism), decoded);
   return target;
 }
 
@@ -158,7 +164,7 @@ export function applyDecoded(target, decoded) {
  * to the fields' URL encoding, so a field added to one is added to the other
  * in the same place rather than drifting apart across two hand-kept lists.
  */
-export function viewStateOf(state) {
+export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
   return {
     panel: state.panel,
     colorBy: state.colorBy,
@@ -170,7 +176,7 @@ export function viewStateOf(state) {
     axisXScale: state.axisXScale,
     axisYScale: state.axisYScale,
     categoryFilter: state.categoryFilter,
-    colorSources: normalizeAnnotationSources(state.colorSources),
+    colorSources: normalizeAnnotationSources(state.colorSources, organism.annotationSources),
     // Which of two overlapping marks the exported picture shows. It changes no
     // number, but it decides what is visible in the image, so a manifest that
     // omitted it could not reproduce the figure it describes.
@@ -206,7 +212,8 @@ function decodeFilters(text) {
 }
 
 /** Serialize the shareable part of the application state into a hash string. */
-export function encodeState(state) {
+export function encodeState(state, organism = DEFAULT_ORGANISM) {
+  const toggles = organism.annotationSources;
   const parts = [`${KEYS.version}=${STATE_VERSION}`];
   const push = (key, value) => {
     if (value === '' || value === null || value === undefined) return;
@@ -222,8 +229,8 @@ export function encodeState(state) {
   // Every colour source on is the fresh default and leaves no field. Otherwise
   // the enabled toggles are listed, or `none` when every toggle is off: an
   // empty value would be dropped by `push` and read back as the default.
-  if (!isAllSources(state.colorSources)) {
-    const enabled = normalizeAnnotationSources(state.colorSources);
+  if (!isAllSources(state.colorSources, toggles)) {
+    const enabled = normalizeAnnotationSources(state.colorSources, toggles);
     push(KEYS.colorSources, enabled.length === 0 ? NO_SOURCES : enabled.join(','));
   }
   // Written whenever it is resolved, unlike the axis scales: the colour scale's
@@ -236,8 +243,8 @@ export function encodeState(state) {
   // Only a nondefault axis is encoded, and a decoded one is applied after the
   // defaults, so an explicit `ax`/`ay` in a link always wins over the
   // fresh-view axes.
-  if (state.axisX !== DEFAULT_METRIC_AXES.x) push(KEYS.axisX, state.axisX);
-  if (state.axisY !== DEFAULT_METRIC_AXES.y) push(KEYS.axisY, state.axisY);
+  if (state.axisX !== organism.freshAxes.x) push(KEYS.axisX, state.axisX);
+  if (state.axisY !== organism.freshAxes.y) push(KEYS.axisY, state.axisY);
   // A per-axis scale is a wholly new field with no legacy meaning to preserve,
   // so unlike `ax`/`ay` it is simply omitted when linear, the fresh default.
   if (state.axisXScale && state.axisXScale !== DEFAULT_AXIS_SCALE) {
@@ -286,7 +293,7 @@ export function encodeState(state) {
 }
 
 /** Parse a hash string into a partial state. Unknown or malformed parts are ignored. */
-export function decodeState(hash) {
+export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   const text = hash.startsWith('#') ? hash.slice(1) : hash;
   const values = new Map();
   for (const part of text.split('&')) {
@@ -340,7 +347,8 @@ export function decodeState(hash) {
   // old link opens on the combined view. Version 4 writes `cs` for the
   // colour-source toggles as a comma list or `none`.
   if (values.has(KEYS.colorSources)) {
-    const sources = parseAnnotationSources(values.get(KEYS.colorSources));
+    const sources = parseAnnotationSources(values.get(KEYS.colorSources),
+      organism.annotationSources);
     if (sources !== null) state.colorSources = sources;
   }
   // An unknown or absent value leaves `colorScale` unset, so `applyDecoded`

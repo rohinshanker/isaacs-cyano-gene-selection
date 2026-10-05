@@ -3,7 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { CodonTable, standardCodonList, standardAminoAcid } from '../../site/js/core/codon-table.js';
-import { loadDataset } from '../../site/js/core/dataset.js';
+import { loadDataset, loadDatasetStaged } from '../../site/js/core/dataset.js';
+import { organismById } from '../../site/js/core/organisms.js';
+import { buildFixture } from '../fixtures/make_fixture.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FIXTURE_DIR = resolve(HERE, '../fixtures/data');
@@ -70,4 +72,56 @@ export async function expressionFixtureDataset() {
     });
   }
   return cachedExpression;
+}
+
+/** The second organism's record. */
+export const ECOLI = organismById('ecoli-k12-mg1655');
+
+/** Where the page reads the second organism's files from, as an absolute address. */
+export const ECOLI_DATA_URL = `https://example.test/site/${ECOLI.dataDirectory}`;
+
+let cachedEcoliFiles = null;
+/**
+ * The second organism's fixture, built in memory by the fixture generator: each
+ * published file's exact text by name, its content manifest among them.
+ */
+export function ecoliFixtureFiles() {
+  cachedEcoliFiles ??= buildFixture({ organism: ECOLI.id, genes: 120 }).files;
+  return cachedEcoliFiles;
+}
+
+/**
+ * A `fetch` over an in-memory directory, which records every address asked for.
+ * @param {string} base the directory's address.
+ * @param {Record<string, string>} files each file's text by name.
+ * @returns {{fetchImpl: typeof fetch, requested: string[]}} `requested` holds
+ *   the file names asked for, in order, without their cache key.
+ */
+export function memoryDirectory(base, files) {
+  const requested = [];
+  const fetchImpl = async (url) => {
+    const address = new URL(url);
+    const name = address.href.startsWith(base) ? address.pathname.split('/').pop() : null;
+    requested.push(name ?? address.href);
+    return name !== null && Object.hasOwn(files, name)
+      ? new Response(files[name], { status: 200 }) : new Response('', { status: 404 });
+  };
+  return { fetchImpl, requested };
+}
+
+let cachedEcoli = null;
+/**
+ * The second organism's dataset, loaded the way the page loads it: through the
+ * staged loader, from its own directory, under its own organism record.
+ */
+export async function ecoliFixtureDataset() {
+  if (!cachedEcoli) {
+    const { fetchImpl } = memoryDirectory(ECOLI_DATA_URL, ecoliFixtureFiles());
+    const staged = loadDatasetStaged({ baseUrl: ECOLI_DATA_URL, fetchImpl, organism: ECOLI });
+    cachedEcoli = staged.core.then(async (dataset) => {
+      await staged.settled;
+      return dataset;
+    });
+  }
+  return cachedEcoli;
 }

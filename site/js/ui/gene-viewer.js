@@ -7,11 +7,18 @@
  * controls column, so a gene reads identically wherever it appears.
  *
  * It draws only what the release measured: the annotated coding span, its
- * splice gaps, the initiation triplet, the terminal stop, and published Tan
- * 2018 start sites at their own published distances. Nothing is inferred and
- * nothing is placed at a coordinate its source did not report.
+ * splice gaps, the initiation triplet, the terminal stop, and, for an organism
+ * that publishes a start-site layer, those sites at their own published
+ * distances. Nothing is inferred and nothing is placed at a coordinate its
+ * source did not report.
+ *
+ * Which start-site study there is, if any, is an organism fact. Every function
+ * here takes the organism's record and names the study from it; an organism
+ * with no such layer is never told that no start site maps to a gene, because
+ * nothing was looked for.
  */
 import { pendingNote } from './loading-note.js';
+import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import { geneViewModel, fractionOf, ticksFor } from '../core/gene-view-model.js';
 import { formatCount } from './format.js';
 
@@ -43,30 +50,18 @@ function signedNt(offset) {
 }
 
 /**
- * The evidence this view has no data to draw, stated rather than left as an
- * absent track.
- *
- * No ribosome-occupancy, translation-initiation-site, or
- * transcription-termination-site data set is admitted, and no start-site data
- * set beyond the Tan 2018 evidence already shipped here. A sweep of every
- * admitted strain returned no new candidate for any of those tracks, which is
- * not the same as finding nothing deposited: its one termination-site hit,
- * GSE309256, is ranked in the roadmap and not admitted. An empty space reads as
- * "measured and nothing found"; the sentence says what is actually the case,
- * which is that nothing is admitted to draw. It is written about admission, not
- * about biology: these features are not claimed to be absent from the organism.
- */
-const NO_ADMITTED_TRACK_DATA = 'No ribosome-occupancy, translation-initiation-site, '
-  + 'transcription-termination-site, or start-site data set beyond Tan 2018 is admitted for this '
-  + 'strain or its admitted sister strains, so none of those tracks is drawn.';
-
-/**
  * One sentence naming what is drawn, for the SVG's accessible description.
  * A picture with no text equivalent would leave this view unreadable to anyone
  * not looking at it.
+ *
+ * It closes with the organism's own statement of the evidence this view has no
+ * data to draw. An empty space reads as "measured and nothing found"; that
+ * sentence says what is actually the case, which is that nothing is admitted to
+ * draw. It is written about admission, not about biology.
  */
-export function describeGeneView(model, tssPending = null) {
+export function describeGeneView(model, tssPending = null, organism = DEFAULT_ORGANISM) {
   if (!model) return 'No gene is selected.';
+  const startSites = layerOf(organism, 'tssEvidence');
   const parts = [];
   const identity = model.name ? `${model.id} ${model.name}` : model.id;
   const length = Number.isFinite(model.lengthNt) ? `${formatCount(model.lengthNt)} nucleotides` : 'unknown length';
@@ -80,24 +75,27 @@ export function describeGeneView(model, tssPending = null) {
     parts.push(`Translational exception: ${model.translationalException.replace(/_/g, ' ')}.`);
   }
   if (model.terminalStop) parts.push(`Terminal stop ${model.terminalStop}.`);
-  if (model.tss.length > 0) {
+  if (!startSites) {
+    // No start-site layer exists for this organism, so nothing is said about
+    // one: "none maps to this locus" would be a finding nobody made.
+  } else if (model.tss.length > 0) {
     const distances = model.tss.map((site) => `${site.distanceNt} nt`).join(', ');
-    parts.push(`${model.tss.length} Tan 2018 start site${model.tss.length === 1 ? '' : 's'} `
+    parts.push(`${model.tss.length} ${startSites.label} start site${model.tss.length === 1 ? '' : 's'} `
       + `upstream at ${distances}, at the distances that study published against its own gene `
       + 'model, not remeasured against this release.');
   } else if (tssPending) {
     // Not loaded is not none: the start-site file has not landed, or could not.
     parts.push(tssPending === 'failed'
-      ? 'The Tan 2018 start sites could not be loaded, so none is drawn.'
-      : 'The Tan 2018 start sites are still loading, so none is drawn yet.');
+      ? `The ${startSites.label} start sites could not be loaded, so none is drawn.`
+      : `The ${startSites.label} start sites are still loading, so none is drawn yet.`);
   } else {
-    parts.push('No Tan 2018 start site maps to this locus by exact locus tag.');
+    parts.push(`No ${startSites.label} start site maps to this locus by exact locus tag.`);
   }
-  // Held back while the start-site file is in flight. The sentence rests on the
-  // Tan evidence being the one start-site data set there is, which is a claim
-  // about what has landed; saying it beside "still loading" would contradict
-  // the loading wording standing right next to it.
-  if (!tssPending) parts.push(NO_ADMITTED_TRACK_DATA);
+  // Held back while the start-site file is in flight. The sentence rests on
+  // which start-site data set there is, which is a claim about what has landed;
+  // saying it beside "still loading" would contradict the loading wording
+  // standing right next to it.
+  if (!tssPending) parts.push(organism.copy.noAdmittedTrackData);
   return parts.join(' ');
 }
 
@@ -172,8 +170,8 @@ function drawStart(root, x) {
   }));
 }
 
-function drawTss(root, model, x) {
-  if (model.tss.length === 0) return;
+function drawTss(root, model, x, startSites) {
+  if (!startSites || model.tss.length === 0) return;
   const group = svg('g', { class: 'gene-view-tss' });
   for (const site of model.tss) {
     const tx = x(site.offset);
@@ -181,8 +179,8 @@ function drawTss(root, model, x) {
     mark.append(svg('line', { x1: tx, x2: tx, y1: TSS_Y, y2: TRACK_Y - 2 }));
     mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: 3 }));
     const title = svg('title');
-    title.textContent = `${site.id}: published ${site.distanceNt} nt upstream of the Tan 2018 `
-      + 'gene-model start';
+    title.textContent = `${site.id}: published ${site.distanceNt} nt upstream of the `
+      + `${startSites.label} gene-model start`;
     mark.append(title);
     group.append(mark);
   }
@@ -190,7 +188,7 @@ function drawTss(root, model, x) {
 }
 
 /** Build the SVG for one view model. Exported for rendered tests. */
-export function geneViewSvg(model, tssPending = null) {
+export function geneViewSvg(model, tssPending = null, organism = DEFAULT_ORGANISM) {
   const root = svg('svg', {
     class: 'gene-view-svg',
     viewBox: `0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`,
@@ -198,15 +196,15 @@ export function geneViewSvg(model, tssPending = null) {
     preserveAspectRatio: 'xMidYMid meet',
   });
   const description = svg('desc');
-  description.textContent = describeGeneView(model, tssPending);
+  description.textContent = describeGeneView(model, tssPending, organism);
   root.append(description);
-  root.setAttribute('aria-label', describeGeneView(model, tssPending));
+  root.setAttribute('aria-label', describeGeneView(model, tssPending, organism));
   const inner = VIEW_WIDTH - MARGIN_X * 2;
   const x = (offset) => MARGIN_X + fractionOf(model.domain, offset) * inner;
   drawRuler(root, model, x);
   drawStart(root, x);
   drawTrack(root, model, x);
-  drawTss(root, model, x);
+  drawTss(root, model, x, layerOf(organism, 'tssEvidence'));
   return root;
 }
 
@@ -252,11 +250,15 @@ function factsFor(model) {
  * @param {HTMLElement} host emptied before drawing.
  * @param {object|null} gene a `genes.json` record with `tssEvidence` joined, or
  *   null when nothing is selected.
- * @param {{tssPending?: 'loading'|'failed'|null}} [options] set while the
- *   start-site file has not landed, so an empty track says so instead of
- *   reading as a gene with no start site.
+ * @param {{tssPending?: 'loading'|'failed'|null, organism?: object}} [options]
+ *   `tssPending` is set while the start-site file has not landed, so an empty
+ *   track says so instead of reading as a gene with no start site. `organism`
+ *   is the record of the organism on screen, the default one when omitted.
  */
-export function renderGeneViewer(host, gene, { tssPending = null } = {}) {
+export function renderGeneViewer(host, gene, {
+  tssPending = null, organism = DEFAULT_ORGANISM,
+} = {}) {
+  const startSites = layerOf(organism, 'tssEvidence');
   host.replaceChildren();
   host.classList.add('gene-view');
   const model = geneViewModel(gene);
@@ -279,15 +281,19 @@ export function renderGeneViewer(host, gene, { tssPending = null } = {}) {
     product.textContent = model.product;
     heading.append(document.createElement('br'), product);
   }
-  host.append(heading, geneViewSvg(model, tssPending));
-  if (tssPending) host.append(pendingNote(tssPending, 'the Tan 2018 start sites'));
+  host.append(heading, geneViewSvg(model, tssPending, organism));
+  if (startSites && tssPending) {
+    host.append(pendingNote(tssPending, `the ${startSites.fileLabel}`));
+  }
 
   const items = [
     ['gene-view-key-cds', 'Coding sequence'],
     ['gene-view-key-start', 'Initiation triplet'],
   ];
   if (model.terminalStop) items.push(['gene-view-key-stop', 'Terminal stop']);
-  if (model.tss.length > 0) items.push(['gene-view-key-tss', 'Tan 2018 start site']);
+  if (startSites && model.tss.length > 0) {
+    items.push(['gene-view-key-tss', `${startSites.label} start site`]);
+  }
   if (model.spliced) items.push(['gene-view-key-join', 'Splice gap']);
   host.append(legendRow(items));
 
@@ -297,10 +303,10 @@ export function renderGeneViewer(host, gene, { tssPending = null } = {}) {
     + `${signedNt(model.domain.min)} to ${signedNt(model.domain.max)} nucleotides.`;
   host.append(scale);
 
-  if (model.tss.length > 0) {
+  if (startSites && model.tss.length > 0) {
     const caveat = document.createElement('p');
     caveat.className = 'panel-note';
-    caveat.textContent = 'Start-site distances are the values Tan et al. 2018 published against '
+    caveat.textContent = `Start-site distances are the values ${startSites.citation} published against `
       + 'their own gene model. They are not remeasured against this release, whose annotated '
       + 'start may differ, and they measure initiation rather than transcript abundance.';
     host.append(caveat);

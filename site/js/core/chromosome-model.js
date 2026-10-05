@@ -1,6 +1,6 @@
 /**
- * Geometry for the chromosome view: every plotted CDS at its UTEX 2973
- * coordinate, on one linear track per replicon.
+ * Geometry for the chromosome view: every plotted CDS at its coordinate on the
+ * organism's genome of record, on one linear track per replicon.
  *
  * DOM-free so the arithmetic is testable in Node. Three rules shape everything
  * here and none of them is negotiable:
@@ -16,48 +16,24 @@
  *    and they are drawn as those pieces with a wrap marker.
  * 3. **Nothing is placed that was not measured on this assembly.** Replicon
  *    identities and lengths come from the genome of record and are verified
- *    against the shipped `meta.json` before anything is drawn. Tan 2018 gTSS
- *    positions were measured here, so they may sit at absolute coordinates; a
- *    sister-strain coordinate never can, and this module has no route for one.
+ *    against the shipped `meta.json` before anything is drawn. Start sites
+ *    measured on this assembly may sit at absolute coordinates; a coordinate
+ *    from another strain never can, and this module has no route for one.
  */
+import { DEFAULT_ORGANISM, repliconByAccession } from './organisms.js';
 
 /**
- * The genome of record's replicons, from
+ * The default organism's genome of record, from
  * `docs/validation/genome-provenance.md#genome-of-record`.
  *
- * `site/data/*.json` carries `meta.genome.accession` and `totalLength` but not
- * the per-replicon lengths, and the chromosome axis cannot be drawn without
- * them. They are therefore declared here and checked against the shipped
- * metadata by {@link repliconTracks}, which refuses to build tracks when the
- * declaration and the data disagree. An axis drawn against an unverified length
- * would misplace every mark on it.
+ * `meta.json` carries `genome.accession` and `totalLength` but not the
+ * per-replicon lengths, and the chromosome axis cannot be drawn without them.
+ * Each organism's record in `core/organisms.js` therefore declares its own, and
+ * {@link repliconTracks} checks the declaration against the shipped metadata
+ * and refuses to build tracks when the two disagree. An axis drawn against an
+ * unverified length would misplace every mark on it.
  */
-export const GENOME_OF_RECORD = Object.freeze({
-  accession: 'GCF_000817325.1',
-  replicons: Object.freeze([
-    Object.freeze({
-      accession: 'NZ_CP006471.1',
-      lengthBp: 2690418,
-      role: 'chromosome',
-      label: 'Chromosome',
-      primary: true,
-    }),
-    Object.freeze({
-      accession: 'NZ_CP006472.1',
-      lengthBp: 46366,
-      role: 'plasmid',
-      label: 'Plasmid',
-      primary: false,
-    }),
-    Object.freeze({
-      accession: 'NZ_CP006473.1',
-      lengthBp: 7842,
-      role: 'plasmid',
-      label: 'Plasmid',
-      primary: false,
-    }),
-  ]),
-});
+export const GENOME_OF_RECORD = DEFAULT_ORGANISM.genome;
 
 /** Narrowest window the chromosome track will zoom to, in base pairs. */
 export const MIN_WINDOW_BP = 500;
@@ -65,7 +41,7 @@ export const MIN_WINDOW_BP = 500;
 /**
  * A replicon accession reduced to its bare sequence name.
  *
- * `genes.json` writes `NZ_CP006471.1` while the Tan 2018 extract writes
+ * `genes.json` writes `NZ_CP006471.1` while a start-site extract writes
  * `CP006471`: the same sequence under RefSeq and INSDC naming. Comparing the
  * raw strings would silently drop every start site on the chromosome, so
  * accessions are compared in this normalised form and nowhere else.
@@ -105,10 +81,14 @@ export function cdsPieces(gene) {
  * a gene that merely begins at base 1, or a spliced gene in the middle of a
  * replicon, is not a wrap and must not be marked as one.
  */
-/** Length of a replicon in the genome of record, by accession, or null. */
+/**
+ * Length of a replicon by accession, or null.
+ *
+ * An accession names one sequence, so the lookup is over every organism's
+ * genome of record and needs no organism to be passed.
+ */
 export function repliconLength(seqid) {
-  const replicon = GENOME_OF_RECORD.replicons.find((entry) => entry.accession === seqid);
-  return replicon ? replicon.lengthBp : null;
+  return repliconByAccession(seqid)?.lengthBp ?? null;
 }
 
 export function wrapsOrigin(pieces, lengthBp) {
@@ -176,15 +156,17 @@ export function cdsMark(gene, index, lengthBp) {
  *
  * @param {object[]} genes `dataset.genes`.
  * @param {object} meta `dataset.meta`.
+ * @param {{accession: string, replicons: object[]}} [genomeOfRecord] the
+ *   organism's declared genome, from its registry record.
  */
-export function repliconTracks(genes, meta) {
+export function repliconTracks(genes, meta, genomeOfRecord = GENOME_OF_RECORD) {
   const problems = [];
-  const declaredTotal = GENOME_OF_RECORD.replicons
+  const declaredTotal = genomeOfRecord.replicons
     .reduce((total, replicon) => total + replicon.lengthBp, 0);
   const genome = meta?.genome ?? {};
-  if (genome.accession !== GENOME_OF_RECORD.accession) {
+  if (genome.accession !== genomeOfRecord.accession) {
     problems.push(`This dataset declares assembly ${genome.accession ?? 'none'}, not the `
-      + `${GENOME_OF_RECORD.accession} genome of record these replicon lengths describe.`);
+      + `${genomeOfRecord.accession} genome of record these replicon lengths describe.`);
   }
   if (genome.totalLength !== declaredTotal) {
     problems.push(`The declared replicon lengths total ${declaredTotal.toLocaleString('en-US')} bp, `
@@ -192,7 +174,7 @@ export function repliconTracks(genes, meta) {
   }
 
   const rows = Array.isArray(genes) ? genes : [];
-  const tracks = GENOME_OF_RECORD.replicons.map((replicon) => {
+  const tracks = genomeOfRecord.replicons.map((replicon) => {
     const marks = [];
     for (let index = 0; index < rows.length; index += 1) {
       const gene = rows[index];
@@ -225,7 +207,7 @@ export function repliconTracks(genes, meta) {
   if (placed !== rows.length) {
     const unplaced = new Set();
     for (const gene of rows) {
-      if (!GENOME_OF_RECORD.replicons.some((r) => sameReplicon(gene?.seqid, r.accession))) {
+      if (!genomeOfRecord.replicons.some((r) => sameReplicon(gene?.seqid, r.accession))) {
         unplaced.add(gene?.seqid ?? 'an unnamed replicon');
       }
     }
@@ -499,7 +481,7 @@ export function locateIndex(lanes, index) {
 }
 
 /**
- * Tan 2018 gene-linked start sites as absolute coordinates on one replicon.
+ * Gene-linked start sites as absolute coordinates on one replicon.
  *
  * These were measured on this assembly, so they are the one positional layer
  * that may sit on the axis directly. The published `position` is used as given
@@ -626,6 +608,7 @@ export function describeSolidDerived({ derived, reviewed, threshold }) {
 export function describeChromosomeView({
   tracks, window, colorLabel, passing, total, selected = null, categoryFilterLabels = [],
   colorScaleClause = null, paintOrder = null,
+  copyNumberSentence = DEFAULT_ORGANISM.copy.copyNumberSentence,
 }) {
   if (!Array.isArray(tracks) || tracks.length === 0) {
     return 'The chromosome view has no verified replicon to draw.';
@@ -665,8 +648,7 @@ export function describeChromosomeView({
   parts.push(selected
     ? `${selected} is selected and open in the gene visualizer.`
     : 'No CDS is selected.');
-  parts.push('Every value here is per genome copy. This chromosome is present in multiple copies '
-    + 'per cell and no source in this release records that copy number, so no per-cell dosage is '
-    + 'shown or implied.');
+  // An organism fact, so it is the organism's own sentence or none at all.
+  if (copyNumberSentence) parts.push(copyNumberSentence);
   return parts.join(' ');
 }

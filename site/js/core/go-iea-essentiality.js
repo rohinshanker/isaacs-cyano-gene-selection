@@ -1,22 +1,22 @@
 /**
  * GO IEA essentiality context: the lowest evidence tier above unknown.
  *
- * Precedence is tested UTEX allele > admitted PCC 7942 call > GO IEA context >
+ * Precedence is tested allele > admitted sister-strain call > GO IEA context >
  * unknown. The GO tier is computational inference from IEA terms, never a
  * knockout result, and the panel objective never reads it. The pinned file is
  * checked against candidate evidence so a stale tier cannot load.
+ *
+ * The file is one organism's, so the names its tiers are shown under are that
+ * organism's: they come from the `goIeaEssentiality` layer of its record.
  */
+import { DEFAULT_ORGANISM, layerOf } from './organisms.js';
 
 export const EVIDENCE_TIERS = Object.freeze([
   'tested-utex-allele', 'admitted-pcc-call', 'go-iea-context', 'unknown',
 ]);
 
-export const TIER_LABELS = Object.freeze({
-  'tested-utex-allele': 'Tested UTEX 2973 allele',
-  'admitted-pcc-call': 'Borrowed PCC 7942 call',
-  'go-iea-context': 'GO IEA context (computational)',
-  unknown: 'Unknown',
-});
+/** The default organism's reader-facing tier names. */
+export const TIER_LABELS = layerOf(DEFAULT_ORGANISM, 'goIeaEssentiality').tierLabels;
 
 /**
  * Pinned in docs/validation/go-iea-essentiality-context.md. Held here so a
@@ -110,30 +110,33 @@ export function validateGoIeaEssentiality(data, genes, candidateEvidence, releas
   return data;
 }
 
-/** Display model for one locus, or null when the dataset has no GO IEA file. */
-export function essentialityEvidenceFor(data, locusId) {
+/**
+ * Display model for one locus, or null when the dataset has no GO IEA file or
+ * the organism declares no such layer.
+ */
+export function essentialityEvidenceFor(data, locusId, organism = DEFAULT_ORGANISM) {
+  const layer = layerOf(organism, 'goIeaEssentiality');
   const row = data?.byLocus?.[locusId];
-  if (!row) return null;
+  if (!row || !layer) return null;
   const context = row.goContext;
   return {
     tier: row.tier,
-    tierLabel: TIER_LABELS[row.tier],
+    tierLabel: layer.tierLabels[row.tier],
     tierRank: EVIDENCE_TIERS.indexOf(row.tier) + 1,
     goContext: context,
-    goContextText: goContextText(row),
+    goContextText: goContextText(row, organism),
     discrepancies: row.discrepancies,
   };
 }
 
 /** Plain wording for the GO context, stated as inference rather than a result. */
-export function goContextText(row) {
+export function goContextText(row, organism = DEFAULT_ORGANISM) {
   const context = row.goContext;
   if (!context) return 'No GO IEA terms are annotated for this locus.';
   const probability = `TypeSafe Jev core-process probability ${context.pCore.toFixed(2)}`;
   if (context.label === 'core-cellular-process') {
     return `GO IEA terms place this protein in a core cellular process (${probability}). `
-      + 'This is computational inference from automated annotations, not a knockout '
-      + 'result, an essentiality call, or a UTEX 2973 measurement.';
+      + layerOf(organism, 'goIeaEssentiality').notAResult;
   }
   const reason = context.label === 'uncertain'
     ? 'are borderline for the core-process rule'

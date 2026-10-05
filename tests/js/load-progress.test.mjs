@@ -4,7 +4,8 @@ import {
   FULL_HOLD_MS, LOAD_BAR_GENES, LOAD_BAR_VIEW, LoadProgress, describeIdentity, describeLoad,
   displayedFraction, loadBarGenes, loadFraction, loadGeneAttributes, loadSchedule,
 } from '../../site/js/ui/load-progress.js';
-import { DATA_FILES, FILE_STATE } from '../../site/js/core/data-files.js';
+import { DATA_FILES, FILE_STATE, tierLabelsFor } from '../../site/js/core/data-files.js';
+import { organismById } from '../../site/js/core/organisms.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
 import { withFakeDocument } from './fake-dom.mjs';
 
@@ -434,6 +435,38 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
     progress.setFiles(records());
     assert.equal(tail.hidden, true);
     assert.ok(!tail.hasClass('has-failures'));
+  });
+});
+
+test('the tail and the bar name files and tiers for the organism on screen', async () => {
+  const ecoli = organismById('ecoli-k12-mg1655');
+  const failedStartSites = () => records({
+    tssEvidence: { state: FILE_STATE.FAILED, error: null, blockedBy: null },
+  });
+  await withFakeDocument((document) => {
+    // The default organism's start-site file is named for its study.
+    const cyano = mount(document);
+    cyano.progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    cyano.progress.reveal();
+    cyano.progress.setFiles(failedStartSites());
+    const row = cyano.tail.querySelector('li.load-failure');
+    assert.equal(row.querySelector('span').textContent, 'Tan 2018 start sites: could not be loaded');
+    assert.equal(row.querySelector('button').getAttribute('aria-label'),
+      'Retry loading Tan 2018 start sites');
+
+    // Another organism's is not, and its second tier is not called function categories.
+    const other = mount(document, {}, { organism: ecoli, tierLabels: tierLabelsFor(ecoli) });
+    other.progress.update(snapshot({ receivedBytes: 400, currentTier: 2 }));
+    assert.equal(other.bar.getAttribute('aria-valuetext'), 'Loading annotation and filters, 40%.');
+    other.progress.reveal();
+    other.progress.setFiles(records());
+    assert.equal(other.tail.querySelector('p').textContent, 'Still loading annotation and filters.');
+    other.progress.setFiles(failedStartSites());
+    other.progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    const plain = other.tail.querySelector('li.load-failure');
+    assert.equal(plain.querySelector('span').textContent, 'Start sites: could not be loaded');
+    assert.equal(plain.querySelector('button').getAttribute('aria-label'), 'Retry loading start sites');
+    assert.ok(!/Tan|function categor/.test(other.tail.textContent));
   });
 });
 

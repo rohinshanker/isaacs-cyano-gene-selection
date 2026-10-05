@@ -8,9 +8,17 @@
  * the complete scheme map, the metric definitions, and the caveats. Multi-scheme
  * exports use one row per gene and scheme rather than widening the table.
  *
+ * An export is one organism's: the manifest names it, a file name carries its
+ * tag, and every column, manifest key, and caveat that belongs to a study-bound
+ * layer is written only for an organism whose record declares that layer. An
+ * empty column would say the layer was looked at and found empty.
+ *
  * Nothing here touches the DOM, so the round trip is testable in Node.
  */
-import { firstUnsettled } from './data-files.js';
+import { dataFileLabel, firstUnsettled } from './data-files.js';
+import {
+  fillTemplate, layerOf, organismById, organismIdentity, organismOf, sourceIds,
+} from './organisms.js';
 import { compileScheme, serializeSchemeMap } from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
 import { expressionBasisOf } from './metric-registry.js';
@@ -19,8 +27,7 @@ import { metricHelp } from './metric-help.js';
 import { reviewedFunctionLabels } from './function-categories.js';
 import { discrepancyCell, essentialityEvidenceFor } from './go-iea-essentiality.js';
 import {
-  PCC_SOURCE, GO_IEA_SOURCE, annotationSourceId, annotationSourceLabel,
-  normalizeAnnotationSources,
+  annotationSourceId, annotationSourceLabel, normalizeAnnotationSources,
 } from './annotation-source.js';
 import { categoryResolutionFor, conflictNote } from './source-derived-categories.js';
 import { csvField } from '../ui/format.js';
@@ -45,6 +52,57 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
   'annotationDiscrepancies',
 ]);
+
+/** The identity columns each study-bound layer owns. */
+const LAYER_COLUMNS = Object.freeze({
+  functionCategories: ['functionCategory', 'reviewedFunctionCategories', 'functionReviewStatus',
+    'functionCategoryEvidence', 'functionCategoryConflict'],
+  sourceDerivedCategories: ['pcc7942DerivedCategory', 'pcc7942DerivedProbability',
+    'goIeaDerivedCategory', 'goIeaDerivedProbability'],
+  tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount'],
+  candidateEvidence: ['pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus'],
+  goIeaEssentiality: ['essentialityEvidenceTier', 'goIeaEssentialityContext',
+    'goIeaCoreProcessProbability', 'annotationDiscrepancies'],
+});
+
+/** The `dataset` keys of a manifest each study-bound layer owns. */
+const LAYER_DATASET_KEYS = Object.freeze({
+  functionCategories: ['functionCategories'],
+  sourceDerivedCategories: ['sourceDerivedCategories'],
+  tssEvidence: ['tssEvidenceSource'],
+  candidateEvidence: ['candidateEvidence'],
+  goIeaEssentiality: ['goIeaEssentiality'],
+});
+
+/** The per-gene keys of a manifest each study-bound layer owns. */
+const LAYER_GENE_KEYS = Object.freeze({
+  functionCategories: ['functionCategory', 'functionCategoryEvidence', 'functionCategoryConflicts',
+    'reviewedFunctionCategories', 'reviewedFunctionAssignment'],
+  sourceDerivedCategories: ['derivedFunctionCategories'],
+  tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisDetail'],
+  candidateEvidence: ['testedAllele', 'pcc7942Essentiality'],
+  goIeaEssentiality: ['essentialityEvidence'],
+});
+
+/** Every name in `byLayer` whose layer this organism does not declare. */
+function undeclared(byLayer, organism) {
+  return Object.entries(byLayer)
+    .filter(([key]) => !layerOf(organism, key))
+    .flatMap(([, names]) => names);
+}
+
+/** A copy of `record` without the named keys. */
+function without(record, names) {
+  const copy = { ...record };
+  for (const name of names) delete copy[name];
+  return copy;
+}
+
+/** The identity columns one organism's export carries. */
+export function identityColumnsFor(organism) {
+  const omitted = new Set(undeclared(LAYER_COLUMNS, organism));
+  return IDENTITY_COLUMNS.filter((column) => !omitted.has(column));
+}
 
 /** Columns after the metrics: the sequences that let every live metric be recomputed. */
 export const SEQUENCE_COLUMNS = Object.freeze(['wildTypeCds', 'recodedCds']);
@@ -150,18 +208,30 @@ function timestampSlug(date) {
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
-/** Filename stem: what was exported, when, and which manifest it belongs to. */
+/**
+ * The organism part of an export file name, with its leading separator, or ''.
+ *
+ * The default organism's files keep the names they have always had; any other
+ * organism's carry its tag, so two organisms' files cannot be mistaken on disk.
+ */
+export function organismFileTag(manifest) {
+  const tag = organismById(manifest.organism?.id)?.exportTag ?? null;
+  return tag ? `_${tag}` : '';
+}
+
+/** Filename stem: what was exported, of which organism, when, and which manifest. */
 export function exportFileBase(manifest) {
   const { schemes } = manifest;
   const schemePart = schemes.length === 1
     ? slug(schemes[0].name ?? schemes[0].schemeId.replace(/^scheme:/, '').replace(/\./g, '+'))
     : `${schemes.length}-schemes`;
-  return `${EXPORT_BASENAME}_${schemePart}_${timestampSlug(new Date(manifest.generatedAt))}`
-    + `_${manifest.manifestId.slice(0, 10)}`;
+  return `${EXPORT_BASENAME}${organismFileTag(manifest)}_${schemePart}`
+    + `_${timestampSlug(new Date(manifest.generatedAt))}_${manifest.manifestId.slice(0, 10)}`;
 }
 
-function caveatsFor(dataset, manifest) {
+function caveatsFor(dataset, manifest, organism) {
   const { meta } = dataset;
+  const layer = (key) => layerOf(organism, key);
   const caveats = [];
   const colourSources = manifest.functionColourSources;
   if (colourSources && dataset.functionCategories) {
@@ -186,54 +256,34 @@ function caveatsFor(dataset, manifest) {
       + `${meta.expressionSource.organismMeasured ?? 'an unstated organism'}`
       + `${meta.expressionSource.condition ? `, ${meta.expressionSource.condition}` : ''}.`);
   }
-  if (meta.tssEvidenceSource) {
-    caveats.push('Tan 2018 TSS counts and DESeq2 comparisons have only two biological '
-      + 'cultures per condition. They describe start-site initiation, not whole-gene '
-      + 'RNA abundance; a gene can have multiple separately regulated TSSs.');
+  // Each study-bound layer's caveat is the sentence its organism's record
+  // gives it, and is written only where that organism declares the layer.
+  if (layer('tssEvidence') && meta.tssEvidenceSource) {
+    caveats.push(layer('tssEvidence').exportCaveat);
   }
-  if (manifest.dataset.candidateEvidence?.borrowedEssentiality?.status === 'available') {
-    caveats.push('PCC 7942 essentiality was measured by Rubin et al. 2015 under its laboratory '
-      + 'conditions and republished in Adomako et al. 2022 Data Set S1. Applying each mapped '
-      + 'call to a UTEX 2973 candidate is a cross-strain assumption, not a UTEX measurement '
-      + 'or a recoding outcome. Unknown or ambiguous calls never mean non-essential. '
-      + 'Ungerer et al. 2018 reported similar growth at PCC-compatible light, but the strains '
-      + 'have different growth optima and Rubin used different conditions.');
+  if (layer('candidateEvidence')
+    && manifest.dataset.candidateEvidence?.borrowedEssentiality?.status === 'available') {
+    caveats.push(layer('candidateEvidence').exportCaveat);
   }
-  if (dataset.goIeaEssentiality) {
-    caveats.push('essentialityEvidenceTier follows tested UTEX allele > PCC 7942 call > GO IEA '
-      + 'context > unknown. GO IEA context is computational inference from automated Gene '
-      + 'Ontology annotations, judged by TypeSafe '
-      + `${dataset.goIeaEssentiality.judgment.model}; it is not a knockout result or a UTEX `
-      + 'measurement and never enters the panel objective. annotationDiscrepancies lists every '
-      + 'disagreement between GO IEA terms and the product names, reviewed category, or PCC '
-      + 'call; neither source is preferred. GO data: Gene Ontology Consortium, CC BY 4.0.');
+  if (layer('goIeaEssentiality') && dataset.goIeaEssentiality) {
+    caveats.push(fillTemplate(layer('goIeaEssentiality').exportCaveat,
+      { model: dataset.goIeaEssentiality.judgment.model }));
   }
-  if (dataset.goTerms) {
-    caveats.push('GO relationships are RefSeq IEA computational suggestions, not experimentally '
-      + 'tested UTEX 2973 functions. Obsolete GO IDs retain their historical names and are not remapped.');
-  }
-  if (dataset.functionCategories) {
+  if (dataset.goTerms) caveats.push(organism.copy.goTermsCaveat);
+  if (layer('functionCategories') && dataset.functionCategories) {
     const categorySource = dataset.functionCategories.source;
-    caveats.push(`The reviewed function-category table holds the ${categorySource.coverage.reviewedRows} `
-      + 'exact UTEX 2973 locus decisions approved by the lab on '
-      + `${categorySource.provenance.userReview.date}; it is never changed by derived categories. `
-      + 'functionCategory is the colour bucket under the enabled sources and '
-      + 'functionCategoryEvidence names what produced it: reviewed, pcc-7942-derived, or '
-      + 'go-iea-derived. An unknown colour does not imply that a function was experimentally '
-      + 'ruled out.');
+    caveats.push(fillTemplate(layer('functionCategories').exportCaveat, {
+      rows: categorySource.coverage.reviewedRows,
+      date: categorySource.provenance.userReview.date,
+    }));
   }
-  if (dataset.sourceDerivedCategories) {
+  if (layer('sourceDerivedCategories') && dataset.sourceDerivedCategories) {
     const derived = dataset.sourceDerivedCategories;
-    caveats.push('pcc7942DerivedCategory and goIeaDerivedCategory are computational judgments by '
-      + `TypeSafe ${derived.judgment.model} (rubric ${derived.judgment.rubricVersion}) over the `
-      + 'joined PCC 7942 RefSeq product name and the locus’s GO IEA terms, assigned only at '
-      + `probability ${derived.policy.thresholds.derivedProbabilityAtLeast} or above. They are `
-      + 'not lab review and never enter the reviewed table. Among the enabled sources colour '
-      + 'follows UTEX 2973 > PCC 7942 > GO IEA; when enabled sources disagree, the '
-      + 'highest-priority one sets functionCategory and functionCategoryConflict names the '
-      + 'other, never the Multiple functions bucket. GO data: Gene Ontology Consortium, CC BY 4.0. PCC 7942 product '
-      + 'names: NCBI RefSeq GCF_000012525.1; joins: Adomako et al. 2022 (CC BY 4.0), '
-      + 'republishing Rubin et al. 2015.');
+    caveats.push(fillTemplate(layer('sourceDerivedCategories').exportCaveat, {
+      model: derived.judgment.model,
+      rubric: derived.judgment.rubricVersion,
+      threshold: derived.policy.thresholds.derivedProbabilityAtLeast,
+    }));
   }
   if (manifest.dataset.annotationRelease === null) {
     caveats.push('meta.json does not publish the annotation release, so it is recorded as null '
@@ -259,10 +309,11 @@ export const EXPORT_FILE_KEYS = Object.freeze([
 export function exportBlockedReason(dataset) {
   const waiting = firstUnsettled(dataset, EXPORT_FILE_KEYS);
   if (!waiting) return null;
+  const label = dataFileLabel(waiting.file, organismOf(dataset));
   return waiting.state === 'failed'
-    ? `The export cannot be written because the ${waiting.file.label} could not be loaded. `
+    ? `The export cannot be written because the ${label} could not be loaded. `
       + 'Retry that file from the notice above the map.'
-    : `The export is waiting on the ${waiting.file.label}, which is still loading.`;
+    : `The export is waiting on the ${label}, which is still loading.`;
 }
 
 /**
@@ -280,13 +331,20 @@ export function buildExport({
 }) {
   const blocked = exportBlockedReason(dataset);
   if (blocked) throw new Error(blocked);
+  const organism = organismOf(dataset);
+  const toggles = organism.annotationSources;
+  const roleIds = sourceIds(organism);
   // The sources enabled for category colouring; every other field is unscoped.
-  const sources = normalizeAnnotationSources(colorSources);
+  const sources = normalizeAnnotationSources(colorSources, toggles);
   const { meta, genes, indexById, table } = dataset;
   const schemeList = normaliseSchemes(schemes);
   const metrics = registry.metrics;
   const tssMetric = tssLayerMetric(registry, meta.tssEvidenceSource);
-  const columns = [...IDENTITY_COLUMNS, ...metrics.map((metric) => metric.key), ...SEQUENCE_COLUMNS];
+  const columns = [
+    ...identityColumnsFor(organism), ...metrics.map((metric) => metric.key), ...SEQUENCE_COLUMNS,
+  ];
+  const omittedColumns = undeclared(LAYER_COLUMNS, organism);
+  const omittedGeneKeys = undeclared(LAYER_GENE_KEYS, organism);
 
   const rows = [];
   for (const scheme of schemeList) {
@@ -305,7 +363,7 @@ export function buildExport({
       });
       const category = categoryResolutionFor({
         reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
-        sources, locusId: id,
+        sources, locusId: id, organism,
       });
       // Every judged source's own category is a data fact and is always exported,
       // whether or not that source is enabled for colouring.
@@ -315,11 +373,11 @@ export function buildExport({
           category: entry.label ?? '', probability: entry.categoryId ? entry.probability : '',
         } : { category: '', probability: '' };
       };
-      const pccDerived = derivedCell(PCC_SOURCE);
-      const goDerived = derivedCell(GO_IEA_SOURCE);
+      const pccDerived = derivedCell(roleIds.product);
+      const goDerived = derivedCell(roleIds.go);
       const pccCall = dataset.candidateEvidence?.borrowedEssentiality?.byLocus?.[id] ?? null;
-      const evidence = essentialityEvidenceFor(dataset.goIeaEssentiality, id);
-      const row = {
+      const evidence = essentialityEvidenceFor(dataset.goIeaEssentiality, id, organism);
+      const row = without({
         manifestId: '',
         schemeId: scheme.schemeId,
         schemeName: scheme.name ?? '',
@@ -333,7 +391,7 @@ export function buildExport({
           ? dataset.functionCategories.assignmentsById.has(gene.id) ? 'reviewed' : 'unreviewed'
           : '',
         functionCategoryEvidence: category?.evidence ?? '',
-        functionCategoryConflict: conflictNote(category),
+        functionCategoryConflict: conflictNote(category, organism),
         pcc7942DerivedCategory: pccDerived.category,
         pcc7942DerivedProbability: pccDerived.probability,
         goIeaDerivedCategory: goDerived.category,
@@ -367,7 +425,7 @@ export function buildExport({
         annotationDiscrepancies: discrepancyCell(evidence),
         wildTypeCds: sequence.wildType,
         recodedCds: sequence.recoded,
-      };
+      }, omittedColumns);
       for (const metric of metrics) {
         const value = metric.source === 'live' ? live[metric.key][index] : metric.read(index);
         row[metric.key] = Number.isFinite(value) ? value : '';
@@ -390,7 +448,9 @@ export function buildExport({
     manifestId: '',
     generatedAt: generatedAt.toISOString(),
     generator: 'recoding-diversity-map site export',
-    dataset: {
+    // Which organism every row, checksum, and caveat below belongs to.
+    organism: organismIdentity(organism),
+    dataset: without({
       schemaVersion: meta.schemaVersion ?? null,
       builtAt: meta.builtAt ?? null,
       genome: meta.genome ?? null,
@@ -430,14 +490,19 @@ export function buildExport({
       sourceChecksums: meta.sourceChecksums ?? {},
       geneCount: meta.geneCount ?? genes.length,
       loadedGeneCount: genes.length,
-    },
+    }, undeclared(LAYER_DATASET_KEYS, organism)),
     expressionSource: meta.expressionSource ?? null,
     filterState: filterState ?? null,
     viewState: viewState ?? null,
     // Which sources were enabled for category colouring when this file was made.
-    functionColourSources: {
-      id: annotationSourceId(sources), label: annotationSourceLabel(sources), enabled: sources,
-    },
+    // An organism with no colour source has no such choice to record.
+    ...(toggles.length > 0 ? {
+      functionColourSources: {
+        id: annotationSourceId(sources, toggles),
+        label: annotationSourceLabel(sources, toggles),
+        enabled: sources,
+      },
+    } : {}),
     trRosettaRnaHandoffs: trRosettaRnaHandoffs.map((entry) => ({
       locus: entry.locus,
       form: entry.form,
@@ -460,7 +525,7 @@ export function buildExport({
         });
         const category = categoryResolutionFor({
           reviewed: dataset.functionCategories, derived: dataset.sourceDerivedCategories,
-          sources, locusId: id,
+          sources, locusId: id, organism,
         });
         const derivedEntry = (sourceId) => {
           const entry = category?.perSource[sourceId];
@@ -478,7 +543,7 @@ export function buildExport({
             dataset.goTerms?.terms?.[relation.goId]?.isObsolete
           ),
         }));
-        return {
+        return without({
           id: gene.id,
           name: gene.name ?? null,
           product: gene.product ?? null,
@@ -500,12 +565,10 @@ export function buildExport({
           functionCategoryConflicts: category?.conflicts ?? [],
           reviewedFunctionCategories: reviewedFunctionLabels(dataset.functionCategories, id),
           reviewedFunctionAssignment: dataset.functionCategories?.assignmentsById.get(id) ?? null,
-          derivedFunctionCategories: {
-            [PCC_SOURCE]: derivedEntry(PCC_SOURCE),
-            [GO_IEA_SOURCE]: derivedEntry(GO_IEA_SOURCE),
-          },
+          derivedFunctionCategories: Object.fromEntries([roleIds.product, roleIds.go]
+            .filter(Boolean).map((sourceId) => [sourceId, derivedEntry(sourceId)])),
           goAnnotations,
-        };
+        }, omittedGeneKeys);
       }),
     metrics: metrics.map((metric) => {
       const help = metricHelp(metric, dataset);
@@ -538,7 +601,7 @@ export function buildExport({
     },
     caveats: [],
   };
-  manifest.caveats = caveatsFor(dataset, manifest);
+  manifest.caveats = caveatsFor(dataset, manifest, organism);
   const { manifestId: _ignored, ...body } = manifest;
   manifest.manifestId = fnv1a64(canonicalJson(body));
   for (const row of rows) row.manifestId = manifest.manifestId;

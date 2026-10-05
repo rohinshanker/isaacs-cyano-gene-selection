@@ -29,6 +29,7 @@ import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
+import { publishesLayer } from './organisms.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
   normalizeManifest,
@@ -450,6 +451,21 @@ const LEGACY_FAILURE_ORDER = Object.freeze([
 ]);
 
 /**
+ * Refuse a data directory that holds another organism's assembly.
+ *
+ * The address names the organism, and every label on the page follows the
+ * address. Data from a different assembly drawn under those labels would be
+ * one organism's genes presented as another's, so it is a failed load.
+ */
+function requireGenomeOfRecord(meta, organism) {
+  const accession = meta?.genome?.accession;
+  if (accession !== organism.genome.accession) {
+    throw new Error(`this data directory holds assembly ${accession ?? 'none'}, not `
+      + `${organism.genome.accession}, the genome of record for ${organism.label}`);
+  }
+}
+
+/**
  * Start loading every file, and report each as it lands.
  *
  * Nothing here waits for anything it does not need: all requests go out as
@@ -460,10 +476,15 @@ const LEGACY_FAILURE_ORDER = Object.freeze([
  * @param {{baseUrl: URL|string, fetchImpl?: typeof fetch,
  *   onProgress?: (snapshot: object) => void,
  *   onFile?: (key: string, record: object) => void,
- *   lenientOptional?: boolean, now?: () => number}} options
+ *   lenientOptional?: boolean, now?: () => number, organism?: object|null}} options
  *   `lenientOptional` treats an optional file that could not be fetched as
  *   absent, which is what the single-step loader did; the page leaves it off so
  *   a failed request stays distinguishable from a file that is not published.
+ *   `organism` is the registry record the page is showing. With it the loader
+ *   refuses a data directory that holds another organism's assembly, never
+ *   requests a study-bound layer the record does not declare, and stamps the
+ *   dataset with the record. Without it nothing is checked or stamped, which
+ *   is how tools and tests load a directory on its own terms.
  * @returns {{manifest: Promise<object|null>, core: Promise<object>,
  *   settled: Promise<object|null>, files: object,
  *   when: (keys: string[]) => Promise<void>, retry: (key: string) => boolean,
@@ -471,8 +492,10 @@ const LEGACY_FAILURE_ORDER = Object.freeze([
  */
 export function loadDatasetStaged({
   baseUrl, fetchImpl = fetch, onProgress = null, onFile = null, lenientOptional = false,
-  now = defaultNow,
+  now = defaultNow, organism = null,
 } = {}) {
+  /** Whether this organism publishes a file at all, whatever its directory holds. */
+  const published = (file) => !organism || file.required || publishesLayer(organism, file.key);
   const base = new URL(String(baseUrl), typeof document === 'undefined' ? 'file:///' : document.baseURI);
   const startedAt = now();
   const files = {};
@@ -584,7 +607,8 @@ export function loadDatasetStaged({
     }
     if (manifestValue) {
       for (const file of DATA_FILES) {
-        files[file.key].bytes = manifestValue.files.get(file.name)?.bytes ?? 0;
+        files[file.key].bytes = published(file)
+          ? manifestValue.files.get(file.name)?.bytes ?? 0 : 0;
       }
       report();
     } else {
@@ -599,6 +623,10 @@ export function loadDatasetStaged({
    * `{error, kind}` and never rejects.
    */
   const fetchFile = async (file, { fresh = false } = {}) => {
+    // A study-bound layer this organism does not declare is not its evidence,
+    // so it is absent without a request, even if a file of that name is there.
+    // Decided before any wait, so the bar never names a tier as in flight for it.
+    if (!published(file)) return { absent: true };
     const known = await manifest;
     // A retry is one file asked for on its own; it has no tier to wait behind.
     if (file.tier > 1 && !fresh) await gates[file.tier].promise;
@@ -698,6 +726,7 @@ export function loadDatasetStaged({
       failCore(result.error);
     }
     try {
+      if (organism) requireGenomeOfRecord(results.meta.data, organism);
       dataset = buildCoreDataset(
         results.meta.data, results.genes.data,
         results.functionCategories.absent ? null : results.functionCategories.data,
@@ -706,6 +735,7 @@ export function loadDatasetStaged({
       failCore(error);
     }
     dataset.files = files;
+    if (organism) dataset.organism = organism;
     for (const key of CORE_FILE_KEYS) {
       settle(key, results[key].absent ? FILE_STATE.ABSENT : FILE_STATE.READY);
     }

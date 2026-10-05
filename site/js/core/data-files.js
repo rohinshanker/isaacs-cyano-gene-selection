@@ -14,6 +14,8 @@
  * reads as loading until tier 2 lands rather than being drawn early.
  */
 
+import { DEFAULT_ORGANISM, layerOf, publishesLayer } from './organisms.js';
+
 /** The content manifest, read before any other file. */
 export const DATA_MANIFEST_NAME = 'data-manifest.json';
 
@@ -52,7 +54,7 @@ export const DATA_FILES = Object.freeze([
   file('lengthCohorts', 'length_cohorts.json', 2, 'length inventory'),
   file('codonPca', 'codon_pca.json', 2, 'codon-space loadings'),
   file('excluded', 'excluded.json', 2, 'excluded loci'),
-  file('tssEvidence', 'tss_evidence.json', 3, 'Tan 2018 start sites'),
+  file('tssEvidence', 'tss_evidence.json', 3, 'start sites'),
   file('goIeaEssentiality', 'go-iea-essentiality-v1.json', 3, 'GO IEA essentiality context',
     { needs: ['candidateEvidence'] }),
   file('goTerms', 'go-term-names-v1.json', 3, 'GO term names', { needs: ['annotations'] }),
@@ -76,6 +78,26 @@ export const TIER_LABELS = Object.freeze({
   3: 'per-gene evidence',
   4: 'regulatory sites',
 });
+
+/** What tier 2 is for an organism that publishes no function categories. */
+const TIER_2_WITHOUT_CATEGORIES = 'annotation and filters';
+
+/**
+ * The tier names for one organism, so the bar never says it is loading a layer
+ * that organism does not publish.
+ */
+export function tierLabelsFor(organism = DEFAULT_ORGANISM) {
+  return publishesLayer(organism, 'functionCategories')
+    ? TIER_LABELS : Object.freeze({ ...TIER_LABELS, 2: TIER_2_WITHOUT_CATEGORIES });
+}
+
+/**
+ * A file's name in a sentence. A study-bound file is named for the study the
+ * organism's record gives it, so the wording is that organism's own.
+ */
+export function dataFileLabel(file, organism = DEFAULT_ORGANISM) {
+  return layerOf(organism, file.key)?.fileLabel ?? file.label;
+}
 
 /** Characters of the digest that address a file. Sixteen hex is 64 bits. */
 export const VERSION_KEY_LENGTH = 16;
@@ -156,7 +178,8 @@ export function hasFailed(dataset, key) {
 /**
  * The first of `keys` that is not usable yet, as `{key, state, file}`, or null
  * when every one has settled without failing. Consumers that read several
- * files, such as an export, name the file they are waiting on from this.
+ * files, such as an export, name the file they are waiting on from this,
+ * through {@link dataFileLabel}.
  */
 export function firstUnsettled(dataset, keys) {
   for (const key of keys) {

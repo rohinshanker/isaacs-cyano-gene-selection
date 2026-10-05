@@ -4,6 +4,7 @@
  * This is deliberately separate from PCA: choosing axes only reads the metric
  * registry and never fits or transforms coordinates.
  */
+import { DEFAULT_ORGANISM } from './organisms.js';
 import { metricValues, orderMeasuredFirst, isMeasuredMetric } from './metric-registry.js';
 import {
   AXIS_SCALES, DEFAULT_VALUE_SCALE, VALUE_SCALE_LABELS,
@@ -19,14 +20,15 @@ export {
 };
 
 /**
- * The fresh-view axes: CDS length against the strongest measured evidence this
- * release publishes for UTEX 2973 (Tan 2018 TSS initiation today).
+ * The default organism's fresh-view axes: CDS length against the strongest
+ * measured evidence its release publishes. Each organism's record declares its
+ * own pair as `freshAxes`.
  *
  * A codon-usage convention such as CAI or tAI is never a fresh-view axis. It
  * stays selectable, and an encoded `ay=cai` link still wins over this default,
  * because `applyDecoded` writes explicit URL fields after the defaults.
  */
-export const DEFAULT_METRIC_AXES = Object.freeze({ x: 'lengthNt', y: 'tssInitiation' });
+export const DEFAULT_METRIC_AXES = DEFAULT_ORGANISM.freshAxes;
 
 /** Axis keys that must not open a fresh view, however available they are. */
 const NON_DEFAULT_AXIS_KEYS = Object.freeze(['cai', 'tai', 'expressionProxy']);
@@ -41,16 +43,17 @@ const NON_DEFAULT_AXIS_KEYS = Object.freeze(['cai', 'tai', 'expressionProxy']);
  * those conventions, and then only because the alternative is an empty plot.
  *
  * @param {{byKey: Map<string, object>, metrics: object[]}} registry
+ * @param {{x: string, y: string}} [declared] the organism's own fresh axes.
  * @returns {{x: string, y: string}} keys that exist in `registry`.
  */
-export function resolveDefaultMetricAxes(registry) {
+export function resolveDefaultMetricAxes(registry, declared = DEFAULT_METRIC_AXES) {
   const metrics = registry.metrics ?? [];
-  if (metrics.length === 0) return { ...DEFAULT_METRIC_AXES };
+  if (metrics.length === 0) return { ...declared };
   const first = metrics[0].key;
-  const x = registry.byKey.has(DEFAULT_METRIC_AXES.x) ? DEFAULT_METRIC_AXES.x : first;
+  const x = registry.byKey.has(declared.x) ? declared.x : first;
   const measured = orderMeasuredFirst(metrics.filter(isMeasuredMetric));
   const preferred = [
-    DEFAULT_METRIC_AXES.y,
+    declared.y,
     ...measured.map((metric) => metric.key),
     ...metrics
       .filter((metric) => !NON_DEFAULT_AXIS_KEYS.includes(metric.key) && metric.key !== x)

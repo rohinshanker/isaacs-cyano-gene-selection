@@ -6,7 +6,7 @@
  * from the locus's GO IEA terms. These are computational judgments, never
  * reviewed assignments: they never enter the reviewed table, never change its
  * rows, and never colour a point without their evidence label. Precedence is
- * UTEX 2973 > PCC 7942 > GO IEA among the enabled sources; when a lower
+ * reviewed > product-derived > GO-derived among the enabled sources; when a lower
  * source assigns a different category the point keeps the higher source's
  * colour and the conflict is named in the detail panel and export.
  */
@@ -17,6 +17,7 @@ import {
 import {
   GO_IEA_SOURCE, PCC_SOURCE, UTEX_SOURCE, normalizeAnnotationSources,
 } from './annotation-source.js';
+import { DEFAULT_ORGANISM, sourceLabels } from './organisms.js';
 
 export const DERIVED_SOURCES = Object.freeze([PCC_SOURCE, GO_IEA_SOURCE]);
 
@@ -28,11 +29,18 @@ export const EVIDENCE_LABEL_OF_SOURCE = Object.freeze({
   [GO_IEA_SOURCE]: 'go-iea-derived',
 });
 
-export const SOURCE_DISPLAY_NAMES = Object.freeze({
-  [UTEX_SOURCE]: 'UTEX 2973 reviewed',
-  [PCC_SOURCE]: 'PCC 7942 derived',
-  [GO_IEA_SOURCE]: 'GO IEA derived',
-});
+/**
+ * How each source is named beside a category it assigned: its label from the
+ * organism's record, and whether the assignment is lab review or derived.
+ */
+export function sourceDisplayNames(organism = DEFAULT_ORGANISM) {
+  return Object.freeze(Object.fromEntries(organism.annotationSources.map((source) => [
+    source.id, `${source.label} ${source.role === 'reviewed' ? 'reviewed' : 'derived'}`,
+  ])));
+}
+
+/** The default organism's names. */
+export const SOURCE_DISPLAY_NAMES = sourceDisplayNames();
 
 /**
  * Pinned in docs/validation/source-derived-categories.md. Held here so an
@@ -323,9 +331,15 @@ function perSourceEntry(reviewed, entry, enabledNow, absentReason) {
  * the resolved bucket, the source and evidence label that coloured it, every
  * source's own judgment whether or not it is enabled for colouring, and the
  * enabled sources whose category conflicts with the colour.
+ *
+ * `organism` is the record whose function-category layer this is; the sources
+ * are named from it.
  */
-export function categoryResolutionFor({ reviewed, derived, sources, locusId }) {
+export function categoryResolutionFor({
+  reviewed, derived, sources, locusId, organism = DEFAULT_ORGANISM,
+}) {
   if (!reviewed) return null;
+  const names = sourceLabels(organism);
   const enabled = normalizeAnnotationSources(sources);
   const reviewedRow = reviewed.assignmentsById.get(locusId) ?? null;
   const derivedRow = derived?.byLocus?.[locusId] ?? null;
@@ -342,11 +356,11 @@ export function categoryResolutionFor({ reviewed, derived, sources, locusId }) {
     },
     [PCC_SOURCE]: perSourceEntry(
       reviewed, derivedRow?.[PCC_SOURCE] ?? null, enabled.includes(PCC_SOURCE),
-      derived ? 'no accepted PCC 7942 join' : 'no derived-category file',
+      derived ? `no accepted ${names.product} join` : 'no derived-category file',
     ),
     [GO_IEA_SOURCE]: perSourceEntry(
       reviewed, derivedRow?.[GO_IEA_SOURCE] ?? null, enabled.includes(GO_IEA_SOURCE),
-      derived ? 'no GO IEA terms' : 'no derived-category file',
+      derived ? `no ${names.go} terms` : 'no derived-category file',
     ),
   };
   return {
@@ -365,10 +379,11 @@ export function categoryResolutionFor({ reviewed, derived, sources, locusId }) {
 }
 
 /** One sentence naming every conflicting enabled source, or an empty string. */
-export function conflictNote(resolution) {
+export function conflictNote(resolution, organism = DEFAULT_ORGANISM) {
   if (!resolution || resolution.conflicts.length === 0) return '';
+  const names = sourceDisplayNames(organism);
   return resolution.conflicts
-    .map((entry) => `${SOURCE_DISPLAY_NAMES[entry.source]}: ${entry.label}`)
+    .map((entry) => `${names[entry.source]}: ${entry.label}`)
     .join('; ');
 }
 

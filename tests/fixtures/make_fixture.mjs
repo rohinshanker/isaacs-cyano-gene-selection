@@ -22,6 +22,13 @@
  *   --out <dir>          output directory (default tests/fixtures/data)
  *   --genes <n>          gene count (default 300)
  *   --seed <n>           PRNG seed (default 20260918)
+ *   --organism <id>      which organism's fixture to write (default utex2973).
+ *                        `ecoli-k12-mg1655` is the second organism: its own
+ *                        locus namespace, one replicon, its own genome
+ *                        accession, taxid and length, and a content manifest
+ *                        that lists only the four files it publishes, so every
+ *                        optional layer is absent by declaration. Nothing in it
+ *                        names the default organism or any of its studies.
  *   --with-expression    add the contract's `expression` fields plus
  *                        `meta.expressionSource`, so the opt-in low-traffic
  *                        overlay and its provenance notice can be exercised.
@@ -30,9 +37,10 @@
  *                        in fifty-three has neither, so the interface's rule that
  *                        missing never looks like the median is actually tested.
  */
+import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { CodonTable, standardCodonList, standardAminoAcid } from '../../site/js/core/codon-table.js';
 import {
   buildCaiWeights, buildTaiWeights, buildCodonPairScores,
@@ -58,17 +66,29 @@ function mulberry32(seed) {
   };
 }
 
+/** The options a fixture is built from, with every default filled in. */
+function resolveOptions({
+  genes = 300, seed = 20260918, expression = false, organism = 'utex2973',
+} = {}) {
+  if (!Number.isInteger(genes) || genes < 1) throw new Error('--genes must be a positive integer');
+  if (!Object.hasOwn(PROFILES, organism)) throw new Error(`unknown organism ${organism}`);
+  if (expression && !PROFILES[organism].expression) {
+    throw new Error(`${organism} has no expression layer, so --with-expression does not apply`);
+  }
+  return { genes, seed, expression, organism };
+}
+
 function parseArgs(argv) {
-  const args = { out: resolve(HERE, 'data'), genes: 300, seed: 20260918, expression: false };
+  const args = { out: resolve(HERE, 'data') };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
     if (flag === '--out') args.out = resolve(process.cwd(), argv[(i += 1)]);
     else if (flag === '--genes') args.genes = Number(argv[(i += 1)]);
     else if (flag === '--seed') args.seed = Number(argv[(i += 1)]);
     else if (flag === '--with-expression') args.expression = true;
+    else if (flag === '--organism') args.organism = argv[(i += 1)];
     else throw new Error(`unknown flag ${flag}`);
   }
-  if (!Number.isInteger(args.genes) || args.genes < 1) throw new Error('--genes must be a positive integer');
   return args;
 }
 
@@ -134,6 +154,53 @@ const SEQIDS = [
   { id: 'NZ_CP006473.1', length: 17913, share: 0.02 },
 ];
 
+/** Products and gene names for the second organism: nothing a phototroph alone would carry. */
+const ECOLI_PRODUCTS = [
+  'hypothetical protein', 'ATP synthase F1 complex subunit beta', '30S ribosomal subunit protein S12',
+  'RNA polymerase subunit beta', 'DNA gyrase subunit A', 'glyceraldehyde-3-phosphate dehydrogenase A',
+  'lactose permease', 'chaperonin GroEL', 'cell division protein FtsZ',
+  'two-component sensor histidine kinase with a PAS domain and a GAF domain',
+  'putative multidrug efflux transporter permease subunit of the resistance-nodulation-division superfamily',
+  'S-adenosyl-L-methionine-dependent methyltransferase MidAlongNameWithoutAnySpacesAtAllForWrapping',
+];
+
+const ECOLI_GENE_NAMES = [
+  'rpsL', 'rplA', 'atpD', 'rpoB', 'gyrA', 'gapA', 'lacY', 'groL', 'ftsZ', 'murC',
+  'thrA', 'dnaK', 'recA', 'lacZ', 'trpA', 'ompF', 'phoA', 'rpoD', 'glnA', 'clpB',
+];
+
+/**
+ * What differs between the organisms a fixture can be written for: the locus
+ * namespace, the replicons, the genome of record, the annotation's wording,
+ * and whether a content manifest is written.
+ *
+ * The default profile reproduces the fixture this generator has always written,
+ * value for value. The second organism publishes a manifest that lists only
+ * what it writes, which is how a release says its optional layers are absent.
+ */
+const PROFILES = {
+  utex2973: {
+    locus: (g) => `M744_RS${String(g * 5 + 5).padStart(5, '0')}`,
+    seqids: SEQIDS,
+    genome: { accession: 'GCF_000817325.1', taxid: 1350461, totalLength: 2744626 },
+    products: PRODUCTS,
+    geneNames: GENE_NAMES,
+    excluded: ['M744_RS99990', 'M744_RS99995', 'M744_RS99999'],
+    expression: true,
+    manifest: false,
+  },
+  'ecoli-k12-mg1655': {
+    locus: (g) => `b${String(g + 1).padStart(4, '0')}`,
+    seqids: [{ id: 'NC_000913.3', length: 4641652, share: 1 }],
+    genome: { accession: 'GCF_000005845.2', taxid: 511145, totalLength: 4641652 },
+    products: ECOLI_PRODUCTS,
+    geneNames: ECOLI_GENE_NAMES,
+    excluded: ['b9990', 'b9995', 'b9999'],
+    expression: false,
+    manifest: true,
+  },
+};
+
 /** `count` random ACGT bases. */
 function randomBases(random, count) {
   let out = '';
@@ -178,8 +245,9 @@ function logNormal(random, median, sigma, min, max) {
   return Math.min(max, Math.max(min, Math.round(median * Math.exp(sigma * z))));
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2));
+function main(args) {
+  const profile = PROFILES[args.organism];
+  const seqids = profile.seqids;
   const random = mulberry32(args.seed);
   const codons = standardCodonList();
   const alphabet = codons.map((codon, i) => ({
@@ -237,9 +305,9 @@ function main() {
     // Terminal stops in the real included set run TAG 1,071, TAA 895, TGA 749.
     const terminalStop = weightedPick(random, [['TAG', 1071], ['TAA', 895], ['TGA', 749]]);
 
-    const share = weightedPick(random, SEQIDS.map((entry) => [entry, entry.share]));
-    if (share.id !== SEQIDS[seqidCursor].id) {
-      seqidCursor = SEQIDS.findIndex((entry) => entry.id === share.id);
+    const share = weightedPick(random, seqids.map((entry) => [entry, entry.share]));
+    if (share.id !== seqids[seqidCursor].id) {
+      seqidCursor = seqids.findIndex((entry) => entry.id === share.id);
       cursor = 480;
     }
     const lengthNt = lengthCodons * 3 + 3;
@@ -258,9 +326,9 @@ function main() {
     const inOperon = operonSize > 1;
 
     genes.push({
-      id: `M744_RS${String(g * 5 + 5).padStart(5, '0')}`,
-      name: random() < 0.42 ? GENE_NAMES[Math.floor(random() * GENE_NAMES.length)] : null,
-      product: PRODUCTS[Math.floor(random() * PRODUCTS.length)],
+      id: profile.locus(g),
+      name: random() < 0.42 ? profile.geneNames[Math.floor(random() * profile.geneNames.length)] : null,
+      product: profile.products[Math.floor(random() * profile.products.length)],
       seqid: share.id,
       start,
       end,
@@ -677,7 +745,7 @@ function main() {
   const meta = {
     schemaVersion: 1,
     builtAt: new Date(Date.UTC(2026, 8, 18, 20, 0, 0)).toISOString(),
-    genome: { accession: 'GCF_000817325.1', taxid: 1350461, totalLength: 2744626 },
+    genome: { ...profile.genome },
     sourceChecksums: {
       'synthetic-fixture': `seed:${args.seed};genes:${args.genes}`,
     },
@@ -732,24 +800,65 @@ function main() {
     nComponents: codonPcaResult.components,
   };
 
+  const [first, second, third] = profile.excluded;
   const excludedFile = [
-    { id: 'M744_RS99990', reason: 'length_not_multiple_of_3', lengthNt: 755 },
-    { id: 'M744_RS99995', reason: 'internal_stop_codon', lengthNt: 1203 },
-    { id: 'M744_RS99999', reason: 'pseudo', lengthNt: 402 },
+    { id: first, reason: 'length_not_multiple_of_3', lengthNt: 755 },
+    { id: second, reason: 'internal_stop_codon', lengthNt: 1203 },
+    { id: third, reason: 'pseudo', lengthNt: 402 },
   ];
 
-  return { args, meta, records, codonPcaFile, excludedFile };
+  return { meta, records, codonPcaFile, excludedFile };
 }
 
-const { args, meta, records, codonPcaFile, excludedFile } = main();
-await mkdir(args.out, { recursive: true });
-await Promise.all([
-  writeFile(`${args.out}/meta.json`, `${JSON.stringify(meta, null, 1)}\n`),
-  writeFile(`${args.out}/genes.json`, `${JSON.stringify(records)}\n`),
-  writeFile(`${args.out}/codon_pca.json`, `${JSON.stringify(codonPcaFile, null, 1)}\n`),
-  writeFile(`${args.out}/excluded.json`, `${JSON.stringify(excludedFile, null, 1)}\n`),
-]);
-process.stdout.write(
-  `wrote ${records.length} genes to ${args.out}` +
-  `${args.expression ? ' with expression, expressionBasis, and expressionProxy' : ''}\n`,
-);
+/** The content manifest for a set of files: each one's byte size and SHA-256. */
+function contentManifest(files) {
+  const entries = {};
+  for (const [name, text] of Object.entries(files)) {
+    const bytes = Buffer.from(text, 'utf8');
+    entries[name] = {
+      bytes: bytes.byteLength,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+    };
+  }
+  return { schemaVersion: 1, files: entries };
+}
+
+/**
+ * Build one organism's fixture in memory.
+ *
+ * Tests read the result directly, so no test depends on a directory another
+ * step had to write first; the command line below writes the same files to
+ * disk for the rendered checks.
+ *
+ * @param {{genes?: number, seed?: number, expression?: boolean, organism?: string}} [options]
+ * @returns {{options: object, files: Record<string, string>}} each published
+ *   file's exact text by name, with `data-manifest.json` among them for an
+ *   organism whose profile publishes one.
+ */
+export function buildFixture(options = {}) {
+  const resolved = resolveOptions(options);
+  const { meta, records, codonPcaFile, excludedFile } = main(resolved);
+  const files = {
+    'meta.json': `${JSON.stringify(meta, null, 1)}\n`,
+    'genes.json': `${JSON.stringify(records)}\n`,
+    'codon_pca.json': `${JSON.stringify(codonPcaFile, null, 1)}\n`,
+    'excluded.json': `${JSON.stringify(excludedFile, null, 1)}\n`,
+  };
+  if (PROFILES[resolved.organism].manifest) {
+    files['data-manifest.json'] = `${JSON.stringify(contentManifest(files), null, 1)}\n`;
+  }
+  return { options: resolved, files };
+}
+
+// Run as a script: write the fixture to disk. Imported: build it on request.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const { out, ...options } = parseArgs(process.argv.slice(2));
+  const fixture = buildFixture(options);
+  await mkdir(out, { recursive: true });
+  await Promise.all(Object.entries(fixture.files)
+    .map(([name, text]) => writeFile(`${out}/${name}`, text)));
+  process.stdout.write(
+    `wrote ${fixture.options.genes} genes to ${out}`
+    + `${fixture.options.expression ? ' with expression, expressionBasis, and expressionProxy' : ''}\n`,
+  );
+}

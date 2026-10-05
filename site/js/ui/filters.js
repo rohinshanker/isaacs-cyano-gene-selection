@@ -16,6 +16,7 @@ import {
 } from '../core/metric-registry.js';
 import { formatCount, formatExpressionSource, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
+import { DEFAULT_ORGANISM } from '../core/organisms.js';
 
 const HISTOGRAM_BINS = 44;
 
@@ -27,7 +28,7 @@ const TRAFFIC_PROXY_PREFERENCE = ['cai', 'tai'];
  *
  * A metric actually measured in this organism leads. Next is any other real
  * measurement of transcript abundance, even one borrowed from another strain
- * (PCC 7942 today): a measurement outranks a proxy regardless of organism, as
+ * (one sister strain's, for the default organism): a measurement outranks a proxy regardless of organism, as
  * long as its borrowed-strain caveat stays attached wherever it is shown. This
  * genome's own codon-adaptation proxies (CAI/tAI) come next, then any
  * remaining expression evidence (a proxy rank derived from one of the above).
@@ -301,7 +302,9 @@ export class FilterPanel {
     const options = [
       ['any', 'All screened CDSs', false],
       ['refseq', `RefSeq protein record (${formatCount(state.proteinEvidence.count)} loci)`, false],
-      ['detected', 'Direct UTEX 2973 proteomics detection', true],
+      // The option's name is the organism's own: it names the proteomics it lacks.
+      ['detected', state.proteinEvidence.directDetectionLabel
+        ?? DEFAULT_ORGANISM.copy.directProteomicsLabel, true],
     ];
     for (const [value, text, disabled] of options) {
       const row = document.createElement('div');

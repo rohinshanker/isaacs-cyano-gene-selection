@@ -1,8 +1,12 @@
 /**
- * The chromosome view: every plotted CDS at its UTEX 2973 coordinate.
+ * The chromosome view: every plotted CDS at its coordinate on the organism's
+ * genome of record.
+ *
+ * The replicons, the copy-number statement, and the start-site study it may
+ * draw are organism facts: they come from the record handed to the constructor.
  *
  * Canvas rather than inline SVG, and for the opposite reason the gene
- * visualizer is SVG: this view draws 2,715 marks and pans and zooms
+ * visualizer is SVG: this view draws thousands of marks and pans and zooms
  * continuously, so a DOM node per CDS could not hold a frame rate. The canvas
  * therefore carries the same accessible treatment the scatter map does — a
  * sentence-level `aria-label` rebuilt on every render, described-by
@@ -27,13 +31,13 @@ import { confirmedReset } from './confirm-dialog.js';
 import { syncScaleSelect } from './scale-select.js';
 import { renderDrawDirection } from './draw-direction.js';
 import { formatCount } from './format.js';
+import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
   id: 'chromosome',
   name: 'Chromosome',
-  blurb: 'Every plotted CDS at its position on the genome of record: the 2.69 Mb chromosome as '
-    + 'the primary linear track, with both plasmids beneath it as explicit secondary tracks at '
-    + 'their own scales. Selecting a CDS opens it in the gene visualizer.',
+  // The default organism's; `tabBlurb` in ui/panels.js words it per organism.
+  blurb: DEFAULT_ORGANISM.copy.tabBlurbs.chromosome,
   source: 'Drawn from the release-pinned RefSeq coordinates in genes.json. No coordinate from '
     + 'another strain is ever placed on these axes.',
 });
@@ -86,7 +90,7 @@ const WRAP_MARKER_STROKE = '#1b2733';
 const AXIS_COLOR = '#536774';
 const LABEL_COLOR = '#4a5568';
 const OPERON_COLOR = '#687583';
-/** The gene visualizer's Tan 2018 colour, so one evidence layer reads as one colour. */
+/** The gene visualizer's start-site colour, so one evidence layer reads as one colour. */
 const TSS_COLOR = '#6b4f9e';
 
 /** Vertical layout of one replicon band, in pixels from the band's top edge. */
@@ -316,10 +320,14 @@ export class ChromosomeView {
    *   onColorChange: (key: string) => void, onColorScaleChange: (scale: string) => void,
    *   onShowHiddenChange: (value: boolean) => void,
    *   onDetailJump: () => void, onAnnounce: (message: string) => void}} handlers
+   * @param {{organism?: object}} [options] the record of the organism on screen.
    */
-  constructor(host, handlers = {}) {
+  constructor(host, handlers = {}, { organism = DEFAULT_ORGANISM } = {}) {
     this.host = host;
     this.handlers = handlers;
+    this.organism = organism;
+    /** The organism's start-site study, or null when it publishes none. */
+    this.startSites = layerOf(organism, 'tssEvidence');
     this.built = false;
     this.model = null;
     this.windows = new Map();
@@ -370,7 +378,8 @@ export class ChromosomeView {
     // camera, so they are resolved once per render rather than once per frame.
     this.layers = new Map(model.tracks.map((track) => [track.accession, {
       brackets: operonBrackets(track, model.genes),
-      tss: tssPositions(track, model.genes),
+      // Start sites are drawn only for an organism whose record declares them.
+      tss: this.startSites ? tssPositions(track, model.genes) : [],
     }]));
     for (const track of model.tracks) {
       if (!this.windows.has(track.accession)) {
@@ -426,12 +435,11 @@ export class ChromosomeView {
   build() {
     this.host.replaceChildren();
 
+    // An organism fact, so it is the organism's own sentence, or no paragraph.
     const copyNumber = document.createElement('p');
     copyNumber.className = 'panel-note';
-    copyNumber.textContent = 'Every per-gene value on this view is per genome copy. This '
-      + 'chromosome is present in many copies per cell, that number changes with growth '
-      + 'condition, and no source in this release records it, so nothing here is a per-cell '
-      + 'dosage.';
+    copyNumber.textContent = this.organism.copy.copyNumberNote ?? '';
+    copyNumber.hidden = !this.organism.copy.copyNumberNote;
 
     this.unavailable = document.createElement('div');
     this.unavailable.className = 'chromosome-unavailable';
@@ -573,10 +581,7 @@ export class ChromosomeView {
 
     this.evidenceNote = document.createElement('p');
     this.evidenceNote.className = 'panel-note';
-    this.evidenceNote.textContent = 'Coordinates do not transfer between strains, so no '
-      + 'sister-strain position is placed on these axes; such evidence reaches the viewer only as '
-      + 'an offset against a named UTEX locus, in the gene visualizer. A value a source does not '
-      + 'report is absent here, never zero.';
+    this.evidenceNote.textContent = this.organism.copy.coordinateEvidenceNote;
 
     // The pinned gene's sequence close-up sits at the foot of the figure, by
     // owner decision of 2026-09-30, below the tracks and their key. The app
@@ -724,17 +729,25 @@ export class ChromosomeView {
     // zoom" would then promise marks no zoom can show, and an empty tick row
     // would read as a genome with no start sites.
     const { tssPending } = this.model;
-    if (tssPending) {
-      parts.push('Operon brackets from the annotation’s adjacent same-strand call appear once '
-        + 'the window is narrow enough to tell them apart, so they fill in as you zoom. '
+    // Read from the record rather than a field the constructor set, so the
+    // sentence is right for any receiver; with no organism it is the default's.
+    const study = layerOf(this.organism ?? DEFAULT_ORGANISM, 'tssEvidence')?.label;
+    const brackets = 'Operon brackets from the annotation’s adjacent same-strand call appear once '
+      + 'the window is narrow enough to tell them apart, so they fill in as you zoom.';
+    if (!study) {
+      // No start-site layer for this organism: the tick row is not mentioned,
+      // because an empty one would read as a genome with no start sites.
+      parts.push(brackets);
+    } else if (tssPending) {
+      parts.push(`${brackets} `
         + (tssPending === 'failed'
-          ? 'The Tan 2018 gene-linked start sites could not be loaded, so the tick row above '
+          ? `The ${study} gene-linked start sites could not be loaded, so the tick row above `
             + 'each axis is empty.'
-          : 'The Tan 2018 gene-linked start sites are still loading, so the tick row above '
+          : `The ${study} gene-linked start sites are still loading, so the tick row above `
             + 'each axis is empty for now.'));
     } else {
       parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
-        + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
+        + `${study} gene-linked start sites on the tick row above each axis, appear once the window `
         + 'is narrow enough to tell them apart, so they fill in as you zoom. The start-site '
         + 'positions were measured on this assembly and are drawn where that study published them.');
     }
@@ -848,6 +861,7 @@ export class ChromosomeView {
       selected: this.selectedId(),
       categoryFilterLabels: this.model.categoryFilterLabels,
       paintOrder: this.paintOrderFacts(),
+      copyNumberSentence: this.organism.copy.copyNumberSentence,
     }));
   }
 
@@ -1299,8 +1313,8 @@ export class ChromosomeView {
   }
 
   /**
-   * Tan 2018 gene-linked start sites, at the absolute positions that study
-   * published on this assembly.
+   * Gene-linked start sites, at the absolute positions their study published
+   * on this assembly.
    *
    * Drawn only while the ticks are far enough apart to be separate ticks. At
    * whole-chromosome zoom 2,413 of them over a few hundred pixels merge into a

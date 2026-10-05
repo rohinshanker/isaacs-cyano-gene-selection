@@ -11,6 +11,7 @@
  * once per selected scheme, and a panel that changed under the reader's hands
  * would be impossible to reason about.
  */
+import { organismOf } from '../core/organisms.js';
 import { exportBlockedReason } from '../core/export-manifest.js';
 import { confirmedReset } from './confirm-dialog.js';
 import { compileScheme } from '../core/scheme.js';
@@ -343,7 +344,7 @@ export class PanelDesigner {
 
     const input = document.createElement('input');
     input.type = 'text';
-    input.placeholder = 'Locus tag, such as M744_RS00005';
+    input.placeholder = `Locus tag, such as ${organismOf(this.state.dataset).locusExample}`;
     input.autocomplete = 'off';
     const row = labelled('panel-gene-input', 'Locus tag', input);
 

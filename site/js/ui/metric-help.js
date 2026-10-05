@@ -1,15 +1,15 @@
 /** Render cited metric and map-feature methods beside their controls. */
+import { DEFAULT_ORGANISM } from '../core/organisms.js';
+
+/** Short labels for the method citations every organism shares. */
 const CITATION_LABELS = Object.freeze({
-  'ncbi-utex-2973': 'UTEX 2973 RefSeq release',
   'sharp-li-cai': 'Sharp and Li, CAI',
   'dos-reis-tai': 'dos Reis et al., tAI',
   'soma-lysidine': 'Soma et al., lysidine',
   'wright-enc': 'Wright, ENC',
   'coleman-codon-pairs': 'Coleman et al., codon pairs',
   viennarna: 'ViennaRNA method',
-  'simkovsky-2022': 'PCC 7942 transcriptome',
   deseq2: 'DESeq2 method',
-  'tan-2018': 'Tan et al., UTEX TSS',
   umap: 'UMAP method',
   'scikit-learn': 'Scikit-learn PCA',
 });
@@ -20,15 +20,28 @@ function citationIndex(manifest) {
     .map((item) => [item.id, item]));
 }
 
-function appendCitations(host, identifiers, manifest) {
+/**
+ * Short labels for one organism: the shared methods, its genome release, and
+ * the studies its own evidence comes from.
+ */
+function citationLabelsFor(organism) {
+  return {
+    ...CITATION_LABELS,
+    [organism.genomeCitation.id]: organism.genomeCitation.label,
+    ...organism.citationLabels,
+  };
+}
+
+function appendCitations(host, identifiers, manifest, organism) {
   const line = document.createElement('p');
   line.className = 'panel-note';
   line.append('Sources: ');
   const available = citationIndex(manifest);
+  const labels = citationLabelsFor(organism);
   identifiers.forEach((id, index) => {
     if (index > 0) line.append('; ');
     const item = available.get(id);
-    const label = CITATION_LABELS[id] ?? item?.citation ?? id;
+    const label = (Object.hasOwn(labels, id) ? labels[id] : null) ?? item?.citation ?? id;
     if (item?.url) {
       const link = document.createElement('a');
       link.href = item.url;
@@ -53,7 +66,14 @@ function definitionRow(label, value) {
   return row;
 }
 
-export function renderMetricHelp(details, model, manifest) {
+/**
+ * @param {HTMLElement} details the disclosure to fill.
+ * @param {object|null} model from `metricHelp` or `functionCategoryHelp`.
+ * @param {object|null|undefined} manifest the citations manifest, when loaded.
+ * @param {object} [organism] the record of the organism on screen, whose
+ *   citation labels are used.
+ */
+export function renderMetricHelp(details, model, manifest, organism = DEFAULT_ORGANISM) {
   const summary = details.querySelector('summary');
   const body = details.querySelector('.help-content');
   if (!model) {
@@ -75,10 +95,11 @@ export function renderMetricHelp(details, model, manifest) {
   // index is never read as the primary evidence for a candidate.
   if (model.reading) list.append(definitionRow('How to weigh it', model.reading));
   body.replaceChildren(list);
-  appendCitations(body, model.citations, manifest);
+  appendCitations(body, model.citations, manifest, organism);
 }
 
-export function renderProjectionHelp(details, model, manifest) {
+/** As {@link renderMetricHelp}, for a map's feature list. */
+export function renderProjectionHelp(details, model, manifest, organism = DEFAULT_ORGANISM) {
   const summary = details.querySelector('summary');
   const body = details.querySelector('.help-content');
   if (!model) {
@@ -100,5 +121,5 @@ export function renderProjectionHelp(details, model, manifest) {
     list.append(item);
   }
   body.replaceChildren(intro, list);
-  appendCitations(body, model.citations, manifest);
+  appendCitations(body, model.citations, manifest, organism);
 }

@@ -2,25 +2,34 @@
 import { RISK_FEATURES, PERTURBATION_FEATURES } from '../ui/panels.js';
 import { metricHelp } from './metric-help.js';
 import { DEFAULT_METRIC_AXES } from './metric-axes.js';
+import { organismOf } from './organisms.js';
 
-const DESCRIPTIONS = Object.freeze({
-  native: {
-    summary: 'The wild-type PCA uses 59 relative synonymous codon use (RSCU) columns. Each codon value is its observed use divided by equal use within that amino-acid family. Columns are standardized across genes before PCA; the map shows PC1 and PC2. PC2 correlates with CDS length (Pearson r = 0.141) and zero-RSCU count (r = -0.274). Downsampling long genes to 75 codons explains only part of the observed short-CDS shift. Filtering keeps the published coordinates fixed.',
-    citations: ['ncbi-utex-2973', 'scikit-learn'],
-  },
-  risk: {
-    summary: 'This PCA standardizes the available baseline risk, length, and active-scheme target-load columns. Unknown cells use the finite mean of their column. It is recomputed in the browser when the scheme changes.',
-    citations: ['ncbi-utex-2973'],
-  },
-  umap: {
-    summary: 'The baseline UMAP uses the fixed wild-type risk features declared in this release, standardized before fitting. It is independent of the active scheme. UMAP axes have no linear loadings.',
-    citations: ['ncbi-utex-2973', 'umap'],
-  },
-  perturbation: {
-    summary: 'This PCA uses only changes from wild type and active-scheme target-load columns. Unknown cells use their column mean. It requires a recoding scheme and is recomputed in the browser.',
-    citations: ['ncbi-utex-2973'],
-  },
-});
+/**
+ * Each map's explanation for one organism. The native map's summary quotes
+ * statistics audited on one release, and every map cites that organism's genome,
+ * so both come from the organism's record.
+ */
+function descriptionsFor(organism) {
+  const genome = organism.genomeCitation.id;
+  return {
+    native: {
+      summary: organism.copy.nativeProjectionSummary,
+      citations: [genome, 'scikit-learn'],
+    },
+    risk: {
+      summary: 'This PCA standardizes the available baseline risk, length, and active-scheme target-load columns. Unknown cells use the finite mean of their column. It is recomputed in the browser when the scheme changes.',
+      citations: [genome],
+    },
+    umap: {
+      summary: 'The baseline UMAP uses the fixed wild-type risk features declared in this release, standardized before fitting. It is independent of the active scheme. UMAP axes have no linear loadings.',
+      citations: [genome, 'umap'],
+    },
+    perturbation: {
+      summary: 'This PCA uses only changes from wild type and active-scheme target-load columns. Unknown cells use their column mean. It requires a recoding scheme and is recomputed in the browser.',
+      citations: [genome],
+    },
+  };
+}
 
 export function projectionHelp(panelId, dataset, registry, axes = DEFAULT_METRIC_AXES) {
   if (panelId === 'axes') {
@@ -38,8 +47,9 @@ export function projectionHelp(panelId, dataset, registry, axes = DEFAULT_METRIC
       features: explained,
     };
   }
-  const definition = DESCRIPTIONS[panelId];
-  if (!definition) return null;
+  const descriptions = descriptionsFor(organismOf(dataset));
+  if (!Object.hasOwn(descriptions, panelId)) return null;
+  const definition = descriptions[panelId];
   if (panelId === 'native') {
     const aminoAcids = new Map((dataset.codonPca?.loadings ?? [])
       .map((row) => [row.codon, row.aa]));

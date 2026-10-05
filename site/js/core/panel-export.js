@@ -11,7 +11,9 @@
  * Nothing here calls the output a prediction of fitness. It is a design and a
  * record of how it was chosen.
  */
-import { buildExport, canonicalJson, fnv1a64, schemeIdOf } from './export-manifest.js';
+import {
+  buildExport, canonicalJson, fnv1a64, organismFileTag, schemeIdOf,
+} from './export-manifest.js';
 import { csvField } from '../ui/format.js';
 import { OBJECTIVE_ID, SELECTION_ORDER, normaliseConfig } from './panel-design.js';
 
@@ -153,8 +155,8 @@ export function panelFileBase(manifest) {
       .replace(/^scheme:/, '').replace(/\./g, '+')).slice(0, 48) || 'unnamed'
     : `${schemes.length}-schemes`;
   const stamp = manifest.generatedAt.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-  return `${PANEL_EXPORT_BASENAME}_${manifest.panelDesign.size}-genes_${part}_${stamp}`
-    + `_${manifest.manifestId.slice(0, 10)}`;
+  return `${PANEL_EXPORT_BASENAME}${organismFileTag(manifest)}_${manifest.panelDesign.size}-genes`
+    + `_${part}_${stamp}_${manifest.manifestId.slice(0, 10)}`;
 }
 
 /**

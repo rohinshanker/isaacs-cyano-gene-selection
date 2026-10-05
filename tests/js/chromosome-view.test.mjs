@@ -15,6 +15,7 @@ import {
 import { CATEGORICAL_SCALE_REASON, scaleControlState } from '../../site/js/ui/scale-select.js';
 import { drawDirectionControlState } from '../../site/js/ui/draw-direction.js';
 import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
+import { organismById } from '../../site/js/core/organisms.js';
 
 const CHROMOSOME = 'NZ_CP006471.1';
 const PLASMID_B = 'NZ_CP006472.1';
@@ -2382,6 +2383,68 @@ test('outside an occupied column the higher-ranked of two equal distances wins',
       'the reviewed CDS is the higher-ranked one');
     // Equidistant from both: the reviewed CDS is on top, so it takes the click.
     assert.equal(view.hitTest(202.0, y), 1);
+  } finally {
+    restore();
+  }
+});
+
+test('an organism with no start-site layer gets no tick row and no copy-number claim', () => {
+  const ecoli = organismById('ecoli-k12-mg1655');
+  const meta = { genome: { accession: ecoli.genome.accession, totalLength: 4641652 } };
+  const site = {
+    id: 'gTSS-1', position: 100020, strand: '+', replicon: 'NC_000913.3', sourceStartDistanceNt: 20,
+  };
+  // Even a gene that somehow carries a start-site list draws none of it: the
+  // layer is the organism's to declare, not the record's to supply.
+  const genes = [
+    gene({ id: 'b0001', seqid: 'NC_000913.3', start: 100040, end: 101000, tssEvidence: [site] }),
+    gene({ id: 'b0002', seqid: 'NC_000913.3', start: 200000, end: 201000, strand: '-' }),
+  ];
+  const tracksFor = (organism) => repliconTracks(genes, meta, organism.genome);
+  const { restore, frames } = install();
+  try {
+    const host = new FakeElement('div');
+    const view = new ChromosomeView(host, {}, { organism: ecoli });
+    view.update({ ...viewModel({ genes, meta }), ...tracksFor(ecoli) });
+    for (const frame of frames.splice(0, frames.length)) frame();
+    assert.equal(view.model.verified, true);
+    assert.deepEqual(view.model.tracks.map((track) => track.accession), ['NC_000913.3']);
+    assert.deepEqual(view.layers.get('NC_000913.3').tss, []);
+    // The conventions note says nothing of a tick row that will never fill.
+    assert.ok(!/start site/i.test(view.markerNote.textContent));
+    assert.match(view.markerNote.textContent, /Operon brackets .* fill in as you zoom\./);
+    // No copy-number paragraph, and none in the description either.
+    const copyNumber = host.children[0];
+    assert.equal(copyNumber.hidden, true);
+    assert.equal(copyNumber.textContent, '');
+    const description = view.canvas.getAttribute('aria-label');
+    assert.match(description, /^Linear map of 2 plotted CDSs/);
+    assert.match(description, /NC_000913\.3, the 4\.64 Mb chromosome/);
+    assert.ok(!/per genome copy|copies per cell/.test(description));
+    assert.equal(view.evidenceNote.textContent, ecoli.copy.coordinateEvidenceNote);
+    assert.ok(!/UTEX|Tan 2018|sister-strain/.test(host.textContent));
+  } finally {
+    restore();
+  }
+});
+
+test('the default organism still draws its start sites and states its copy number', () => {
+  const site = {
+    id: 'gTSS-1', position: 99980, strand: '+', replicon: 'CP006471', sourceStartDistanceNt: 20,
+  };
+  const genes = [gene({ id: 'PLUS', start: 100000, end: 101000, tssEvidence: [site] })];
+  const { restore, frames } = install();
+  try {
+    const host = new FakeElement('div');
+    const view = new ChromosomeView(host, {});
+    view.update(viewModel({ genes }));
+    for (const frame of frames.splice(0, frames.length)) frame();
+    assert.equal(view.layers.get(CHROMOSOME).tss.length, 1);
+    assert.equal(host.children[0].hidden, false);
+    assert.match(host.children[0].textContent, /present in many copies per cell/);
+    assert.match(view.canvas.getAttribute('aria-label'), /present in multiple copies per cell/);
+    assert.match(view.evidenceNote.textContent, /offset against a named UTEX locus/);
+    assert.match(view.markerNote.textContent, /Tan 2018 gene-linked start sites on the tick row/);
   } finally {
     restore();
   }

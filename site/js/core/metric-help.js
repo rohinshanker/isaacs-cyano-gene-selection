@@ -7,7 +7,16 @@ import {
 import { annotationSourceLabel } from './annotation-source.js';
 import { THRESHOLDS as DERIVED_THRESHOLDS } from './source-derived-categories.js';
 import { formatCount } from '../ui/format.js';
+import { DEFAULT_ORGANISM, layerOf, organismOf, sourceLabels } from './organisms.js';
 
+/**
+ * How each metric is calculated, in words that hold for any organism.
+ *
+ * A method that states a fact of one release, such as the size of its CAI
+ * reference set or which study an expression value comes from, is that
+ * organism's own sentence: `copy.metricMethods` in its record overrides the
+ * entry here, and {@link methodFor} reads both.
+ */
 const METHODS = Object.freeze({
   gc: 'G or C bases divided by all bases in sense codons; terminal stop excluded.',
   gc1: 'G or C at the first position of each sense codon, divided by sense-codon count.',
@@ -20,9 +29,9 @@ const METHODS = Object.freeze({
   enc: 'Wright effective number of codons from synonymous-family frequencies. Families with fewer than two observations use the class mean or neutral fallback.',
   encExpected: 'Wright neutral expectation 2 + s + 29/(s² + (1 − s)²), where s is synonymous-site GC3 after excluding Met and Trp.',
   deltaEnc: 'Expected ENC from the neutral curve minus observed ENC for this CDS.',
-  cai: 'Geometric mean of synonymous codon weights relative to a fixed 71-locus ribosomal/housekeeping reference. Zero reference counts receive 0.5 before normalization; Met and Trp are excluded.',
+  cai: 'Geometric mean of synonymous codon weights relative to this release\u2019s fixed CAI reference set. Zero reference counts receive 0.5 before normalization; Met and Trp are excluded.',
   tai: 'Geometric mean of codon weights from annotated genomic tRNA copy counts and the dos Reis wobble model. Met is excluded; zero weights use the declared substitution, and Ile-CAT lysidine is represented separately.',
-  expressionPercentile: 'Midrank percentile of the PCC 7942 measured abundance values among genes with a mapped value; it is not a UTEX 2973 measurement.',
+  expressionPercentile: 'Midrank percentile of the measured abundance values among genes with a mapped value.',
   expressionProxy: 'Tie-aware average rank of √(CAI × tAI) across all plotted genes, scaled to 0–1. This is a model proxy, not a transcript count.',
   rareFraction: 'Rare sense-codon count divided by sense-codon count; rare means genome-wide frequency within the same amino-acid family strictly below 0.1.',
   rareCount: 'Count sense codons whose genome-wide within-amino-acid frequency is strictly below 0.1.',
@@ -42,7 +51,7 @@ const METHODS = Object.freeze({
   neighborDownstreamNt: 'Strand-aware separation from the following CDS on the circular replicon; negative means overlap.',
   operonPosition: 'One-based order within a predicted same-strand group of CDSs separated by at most 100 nt; singleton position is unknown.',
   operonSize: 'Number of CDSs in that predicted same-strand, at-most-100-nt group, including singletons.',
-  expression: 'DESeq2 normalized transcript counts from the mapped PCC 7942 study; no value is imputed for an unmatched UTEX locus.',
+  expression: 'Normalized transcript counts from the declared expression study; no value is imputed for an unmatched locus.',
   tssInitiation: 'Per locus, sum across the separately pinned Figshare per-TSS feature set of the mean of eight raw start-site count fields. This pooled score is independent of the Table S1 site list and is initiation, not gene-body abundance.',
   targetCount: 'Sense-codon target count plus one when the active scheme reassigns this gene’s terminal stop; the start codon is never edited.',
   targetStopEdit: 'One if the active scheme reassigns this gene’s terminal stop, otherwise zero.',
@@ -53,7 +62,7 @@ const METHODS = Object.freeze({
   targetClusters: 'Number of groups of targeted sense codons with gaps no larger than 10 codons.',
   maxClusterSpan: 'Largest inclusive first-to-last sense-codon span among those target clusters.',
   recodedGc3: 'Apply the active synonymous scheme, then recalculate third-position GC fraction over sense codons.',
-  recodedCai: 'Apply the active scheme, then recalculate CAI with the same fixed 71-locus reference and 0.5 zero-count convention.',
+  recodedCai: 'Apply the active scheme, then recalculate CAI with the same fixed reference set and 0.5 zero-count convention.',
   recodedTai: 'Apply the active scheme, then recalculate tAI with the same genomic tRNA copy counts and wobble model.',
   recodedEnc: 'Apply the active scheme, then recalculate Wright ENC with the same family-substitution convention.',
   recodedCps: 'Apply the active scheme, then average codon-pair log scores against the wild-type genome reference.',
@@ -93,12 +102,11 @@ const METHODS_CITATIONS = Object.freeze({
  * so a thin measurement is read as thin rather than hidden.
  */
 const READING = Object.freeze({
-  cai: () => 'A convention-derived index, not a measurement: read it as supporting context '
-    + 'for a candidate, behind measured UTEX 2973 evidence, never as the primary evidence.',
-  tai: () => 'A convention-derived index, not a measurement: read it as supporting context '
-    + 'for a candidate, behind measured UTEX 2973 evidence, never as the primary evidence.',
-  expressionProxy: () => 'A rank built from CAI and tAI, so it inherits both conventions: '
-    + 'read it as supporting context, behind measured UTEX 2973 evidence.',
+  // What a convention is worth depends on what was measured in the organism, so
+  // these three sentences are the organism's own.
+  cai: (_meta, organism) => organism.copy.metricReading.cai,
+  tai: (_meta, organism) => organism.copy.metricReading.tai,
+  expressionProxy: (_meta, organism) => organism.copy.metricReading.expressionProxy,
   tssInitiation: (meta) => {
     const replicates = meta?.tssEvidenceSource?.replicatesPerCondition;
     const conditions = meta?.tssEvidenceSource?.conditions?.length;
@@ -113,7 +121,7 @@ const READING = Object.freeze({
 
 /** The reading note plus any declared condition and coverage limits. */
 function readingNote(metric, dataset, formatCount) {
-  const base = READING[metric.key]?.(dataset.meta) ?? null;
+  const base = READING[metric.key]?.(dataset.meta, organismOf(dataset)) ?? null;
   const limits = measurementLimitClauses(metric, formatCount);
   if (!base && limits.length === 0) return null;
   const limitSentence = limits.length > 0 ? `Measurement limits — ${limits.join('; ')}.` : '';
@@ -128,7 +136,7 @@ function readingNote(metric, dataset, formatCount) {
  *
  * Replicate depth comes from the release record when it declares a count, and
  * otherwise from the source's own condition sentence, which is where a study
- * such as the PCC 7942 transcriptome states its replication. Neither is
+ * such as a borrowed transcriptome states its replication. Neither is
  * invented, and the coverage count always follows, so a promoted measurement
  * never appears without saying how thin it is.
  */
@@ -154,33 +162,47 @@ function shortLimits(metric, dataset, formatCount) {
   return clauses.length > 0 ? clauses.join('; ') : null;
 }
 
-/** Build an evidence-coded explanation from registry and release metadata. */
+/** A metric's calculation: the organism's own sentence where it has one. */
+function methodFor(metric, organism) {
+  const own = organism.copy.metricMethods;
+  if (Object.hasOwn(own, metric.key)) return own[metric.key];
+  return METHODS[metric.key] ?? metric.desc ?? 'Calculation method is not declared.';
+}
+
+/**
+ * Build an evidence-coded explanation from registry and release metadata.
+ *
+ * The organism is the dataset's own (`organismOf`), so the same call explains a
+ * metric in that organism's words whichever one is on screen.
+ */
 export function metricHelp(metric, dataset) {
   if (!metric) return null;
   const { genes, meta } = dataset;
+  const organism = organismOf(dataset);
+  const name = organism.shortName;
   const known = genes.reduce((sum, _gene, index) => sum + Number.isFinite(metric.read(index)), 0);
-  const release = meta.annotationRelease?.releaseId ?? meta.genome?.accession ?? 'the pinned UTEX 2973 genome';
+  const release = meta.annotationRelease?.releaseId ?? meta.genome?.accession ?? `the pinned ${name} genome`;
   const expression = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
   const origin = expression
     ? (describeExpressionSource(metric.provenance) ?? 'Expression source is not declared in this dataset.')
     : metric.key === 'expressionProxy'
-      ? `Derived from codon adaptation in UTEX 2973 release ${release}; it is not measured abundance.`
+      ? `Derived from codon adaptation in ${name} release ${release}; it is not measured abundance.`
       : metric.source === 'live'
-        ? `Computed in this browser from the active scheme and UTEX 2973 release ${release}.`
-        : `Derived from UTEX 2973 RefSeq release ${release}.`;
+        ? `Computed in this browser from the active scheme and ${name} release ${release}.`
+        : `Derived from ${name} RefSeq release ${release}.`;
   const formatCount = (value) => value.toLocaleString('en-US');
   return {
     key: metric.key,
     title: metric.label,
     summary: metric.desc || `${metric.label} for this gene.`,
-    method: METHODS[metric.key] ?? metric.desc ?? 'Calculation method is not declared.',
+    method: methodFor(metric, organism),
     unit: metric.unit || 'unit not declared',
     origin,
     coverage: `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
     reading: readingNote(metric, dataset, formatCount),
     limits: shortLimits(metric, dataset, formatCount),
     citations: [...(METHODS_CITATIONS[metric.key] ?? []),
-      ...(expression ? [] : ['ncbi-utex-2973'])],
+      ...(expression ? [] : [organism.genomeCitation.id])],
   };
 }
 
@@ -190,17 +212,26 @@ export function methodKeys() {
 
 /**
  * The explanation shown when the colour is Function category. It states the
- * implemented rule: among the enabled sources, UTEX 2973 > PCC 7942 > GO IEA,
- * so a reviewed row colours only while UTEX 2973 is enabled, and a
- * disagreement is coloured by the highest-priority enabled source and named,
- * never sent to the multiple-functions bucket.
+ * implemented rule: among the enabled sources the organism's own precedence
+ * holds, so a reviewed row colours only while the reviewed source is enabled,
+ * and a disagreement is coloured by the highest-priority enabled source and
+ * named, never sent to the multiple-functions bucket.
  *
- * @param {{reviewed: object, derived: object|null, categories: object}} options
- *   `reviewed` is `dataset.functionCategories`, `derived` is
- *   `dataset.sourceDerivedCategories` or null, and `categories` is the model
- *   from `resolveFunctionCategories` under the enabled sources.
+ * The sources are named from the organism's record, and the two sentences that
+ * describe its function-category layer are that layer's own.
+ *
+ * @param {{reviewed: object, derived: object|null, categories: object,
+ *   organism?: object}} options `reviewed` is `dataset.functionCategories`,
+ *   `derived` is `dataset.sourceDerivedCategories` or null, `categories` is
+ *   the model from `resolveFunctionCategories` under the enabled sources, and
+ *   `organism` is the record of the organism on screen.
  */
-export function functionCategoryHelp({ reviewed, derived, categories }) {
+export function functionCategoryHelp({
+  reviewed, derived, categories, organism = DEFAULT_ORGANISM,
+}) {
+  const names = sourceLabels(organism);
+  const layer = layerOf(organism, 'functionCategories');
+  const genomeCitation = organism.genomeCitation.id;
   const threshold = DERIVED_THRESHOLDS.derivedProbabilityAtLeast.toFixed(2);
   // The derived categories have not landed, or could not be loaded. Describing
   // the colour as reviewed-only, with no CDS derived, would be a statement
@@ -209,31 +240,25 @@ export function functionCategoryHelp({ reviewed, derived, categories }) {
     const waiting = categories.pending === 'failed' ? 'could not be loaded' : 'are still loading';
     return {
       title: 'Function category',
-      summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '
-        + 'sources: the lab-reviewed UTEX 2973 assignment when that source is enabled and a '
-        + 'reviewed row exists, otherwise a category derived from the PCC 7942 product name or '
-        + 'the GO IEA terms. The same colour has the same category on every map tab.',
+      summary: layer.summary,
       unit: 'category (not a numeric metric)',
       method: `The function categories ${waiting}, so no CDS is coloured by category yet and `
         + 'every CDS is drawn in one neutral colour. That colour means not loaded, not unknown.',
-      origin: `UTEX 2973 RefSeq ${reviewed.source.provenance.annotationRelease} product records `
-        + 'and the lab review table; derived categories from PCC 7942 product names and Gene '
+      origin: `${names.reviewed} RefSeq ${reviewed.source.provenance.annotationRelease} product records `
+        + `and the lab review table; derived categories from ${names.product} product names and Gene `
         + 'Ontology IEA relationships.',
       coverage: `Not counted: the function categories ${waiting}.`,
-      citations: ['ncbi-utex-2973'],
+      citations: [genomeCitation],
     };
   }
   return {
     title: 'Function category',
-    summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '
-      + 'sources: the lab-reviewed UTEX 2973 assignment when that source is enabled and a '
-      + 'reviewed row exists, otherwise a category derived from the PCC 7942 product name or '
-      + 'the GO IEA terms. The same colour has the same category on every map tab.',
+    summary: layer.summary,
     unit: 'category (not a numeric metric)',
     method: `The lab approved ${formatCount(reviewed.reviewedCount)} exact locus decisions `
       + `on ${reviewed.source.provenance.userReview.date}. Among the enabled sources, colour `
-      + 'follows UTEX 2973 > PCC 7942 > GO IEA: a reviewed row colours its CDS only while '
-      + 'UTEX 2973 is enabled, otherwise the PCC 7942 category, otherwise the GO IEA category. '
+      + `follows ${names.precedence}: a reviewed row colours its CDS only while `
+      + `${names.reviewed} is enabled, otherwise the ${names.product} category, otherwise the ${names.go} category. `
       + (derived
         ? `Derived categories are TypeSafe ${derived.judgment.model} judgments over each `
           + `enabled source, assigned only at probability ${threshold} or above, drawn as a `
@@ -241,16 +266,15 @@ export function functionCategoryHelp({ reviewed, derived, categories }) {
           + 'When enabled sources disagree, the highest-priority enabled source colours the CDS '
           + 'and the detail panel and export name the conflict; disagreements never use the '
           + 'multiple-functions bucket, which only two reviewed labels reach.'
-        : 'GO IEA suggestions never assign a category colour by themselves.'),
-    origin: `UTEX 2973 RefSeq ${reviewed.source.provenance.annotationRelease} product records `
+        : `${names.go} suggestions never assign a category colour by themselves.`),
+    origin: `${names.reviewed} RefSeq ${reviewed.source.provenance.annotationRelease} product records `
       + 'and the lab review table'
-      + (derived ? '; PCC 7942 RefSeq product names at admitted joins (Adomako et al. 2022, '
-        + 'CC BY 4.0); Gene Ontology IEA relationships (CC BY 4.0).' : '.'),
-    coverage: `Under ${annotationSourceLabel(categories.sources)}: `
+      + (derived ? `; ${layer.derivedOrigin}` : '.'),
+    coverage: `Under ${annotationSourceLabel(categories.sources, organism.annotationSources)}: `
       + `${describeReviewed(categories.reviewedCount, categories.reviewedColouredCount)}, `
       + `${formatCount(categories.derivedCount)} by a derived source, `
       + `${formatCount(categories.multipleCount)} in multiple functions, and `
       + `${formatCount(categories.unknownCount)} unknown or unclassified.`,
-    citations: ['ncbi-utex-2973'],
+    citations: [genomeCitation],
   };
 }

@@ -1,6 +1,9 @@
 /** Pointer and keyboard resizing for the desktop analysis workspace. */
 
-export const PANEL_WIDTH_STORAGE_KEY = 'cyano.panel-widths.v1';
+import { DEFAULT_ORGANISM, storageKeys } from '../core/organisms.js';
+
+/** The default organism's key; each organism keeps its own widths under its namespace. */
+export const PANEL_WIDTH_STORAGE_KEY = storageKeys(DEFAULT_ORGANISM).panelWidths;
 export const PANEL_MIN_WIDTH = 260;
 export const MAP_MIN_WIDTH = 400;
 
@@ -31,14 +34,22 @@ export function workspaceColumns(width, classList) {
 }
 
 export class WorkspaceResizer {
-  /** @param {HTMLElement} layout @param {object} controls DOM and storage adapter. */
-  constructor(layout, { leftHandle, rightHandle, resetButton, storage, confirm = null }) {
+  /**
+   * @param {HTMLElement} layout
+   * @param {object} controls DOM and storage adapter. `storageKey` is the key
+   *   the widths are kept under, the organism's own.
+   */
+  constructor(layout, {
+    leftHandle, rightHandle, resetButton, storage, confirm = null,
+    storageKey = PANEL_WIDTH_STORAGE_KEY,
+  }) {
+    this.storageKey = storageKey;
     this.layout = layout;
     this.leftHandle = leftHandle;
     this.rightHandle = rightHandle;
     this.resetButton = resetButton;
     this.storage = storage;
-    const saved = storage.read(PANEL_WIDTH_STORAGE_KEY, null);
+    const saved = storage.read(storageKey, null);
     this.requested = saved && typeof saved === 'object' && !Array.isArray(saved)
       ? { left: saved.left, right: saved.right } : { left: null, right: null };
     this.drag = null;
@@ -106,12 +117,12 @@ export class WorkspaceResizer {
       left: this.widths.left,
       right: this.widths.right ?? this.requested.right,
     };
-    this.storage.write(PANEL_WIDTH_STORAGE_KEY, this.requested);
+    this.storage.write(this.storageKey, this.requested);
   }
 
   reset() {
     this.requested = { left: null, right: null };
-    this.storage.write(PANEL_WIDTH_STORAGE_KEY, null);
+    this.storage.write(this.storageKey, null);
     this.update();
   }
 

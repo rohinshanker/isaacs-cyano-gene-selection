@@ -6,9 +6,15 @@
  */
 import { loadDatasetStaged } from './core/dataset.js';
 import {
-  CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, dataRequest, hasFailed, isLoading,
-  pendingState,
+  CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, dataFileLabel, dataRequest,
+  hasFailed, isLoading, pendingState, tierLabelsFor,
 } from './core/data-files.js';
+import {
+  canonicalSearch, layerOf, resolveDataDirectory, resolveOrganism, storageKeys,
+} from './core/organisms.js';
+import {
+  applyGeneCount, applyOrganismIdentity, rememberView, renderOrganismSelector,
+} from './ui/organism-selector.js';
 import { adoptingFetch } from './core/early-data.js';
 import { geneIdentity, geneMapLabel } from './core/gene-identity.js';
 import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillReplacement } from './core/scheme.js';
@@ -24,7 +30,7 @@ import {
   resetPanelLayout,
 } from './core/url-state.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
-import { PANELS, buildProjection } from './ui/panels.js';
+import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
 import { CITATIONS_TAB, loadCitationsManifest, CitationsPanel } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
@@ -82,17 +88,46 @@ import { LoadProgress } from './ui/load-progress.js';
 import { prefersReducedMotion, resolveLoadTiming } from './ui/load-timing.js';
 import { TextScramble } from './ui/text-scramble.js';
 
-const STORAGE_SCHEMES = 'cyano.schemes.v1';
-const STORAGE_SHORTLIST = 'cyano.shortlist.v1';
 /**
- * The comparison's chosen metrics.
+ * The organism this address names, known before anything is asked for.
  *
- * Kept in this browser rather than in the link: it is a reading preference
- * that would otherwise add a long list of metric keys to every shared URL,
- * and a colleague opening that link is better served by the comparison's own
- * dataset-aware defaults.
+ * `?org=` names it; no `org` is the default organism, so every link written
+ * before there was a second organism keeps its meaning. Everything below reads
+ * this one record: which data directory, which storage keys, which copy.
  */
-const STORAGE_COMPARE_AXES = 'cyano.compare-axes.v1';
+const { organism, requestedId: requestedOrganismId, recognised: organismRecognised } =
+  resolveOrganism(window.location.search);
+
+// An address must not name one organism while the page shows another. The
+// default organism's canonical address carries no `org`, so a link that spells
+// it out is shortened; an `org` that names nothing is removed along with its
+// hash, which was written under an organism this page cannot identify and so
+// cannot be read as the default's.
+const canonical = canonicalSearch(window.location.search);
+if (canonical !== null) {
+  window.history.replaceState(null, '',
+    `${window.location.pathname}${canonical}${organismRecognised ? window.location.hash : ''}`);
+}
+
+/**
+ * This organism's keys in browser storage: saved schemes, the shortlist, the
+ * comparison's chosen metrics, the panel widths, and the view it was last left
+ * in. The default organism's are the keys the site has always used. No key is
+ * shared between organisms, so nothing saved under one can be read under the
+ * other.
+ *
+ * The comparison's chosen metrics are kept here rather than in the link: they
+ * are a reading preference that would otherwise add a long list of metric keys
+ * to every shared URL, and a colleague opening that link is better served by
+ * the comparison's own dataset-aware defaults.
+ */
+const STORAGE = storageKeys(organism);
+const STORAGE_SCHEMES = STORAGE.schemes;
+const STORAGE_SHORTLIST = STORAGE.shortlist;
+const STORAGE_COMPARE_AXES = STORAGE.compareAxes;
+
+/** The organism's colour-source toggles, empty when it has no category colour. */
+const COLOR_SOURCE_TOGGLES = organism.annotationSources;
 
 /**
  * The shared tablist: map panels, then the chromosome, length, regulatory, and
@@ -122,7 +157,7 @@ const store = {
   },
 };
 
-const state = defaultState();
+const state = defaultState(organism);
 let pendingMapJump = false;
 
 /** The staged load in progress, its progress surfaces, and what has landed since the last render. */
@@ -158,10 +193,13 @@ function announce(message) {
   element('announcer').textContent = message;
 }
 
-/** Where the data files live: `data/` beside the page unless `?data=` says otherwise. */
+/**
+ * Where the data files live: the organism's own directory beside the page
+ * unless `?data=` says otherwise. The page's inline script resolves the same
+ * directory by the same rule, which is what lets its requests be adopted.
+ */
 function resolveDataBase() {
-  const override = new URL(window.location.href).searchParams.get('data');
-  return override ? (override.endsWith('/') ? override : `${override}/`) : 'data/';
+  return resolveDataDirectory(window.location.search);
 }
 
 function showLoadError(error) {
@@ -171,15 +209,21 @@ function showLoadError(error) {
   status.className = 'load-status error';
   status.hidden = false;
   status.replaceChildren();
+  // The shell stays up, so the selector is uncovered: the way to the other
+  // organism must not be lost with this one's data.
+  document.body.classList.add('load-failed');
   const heading = document.createElement('strong');
   heading.textContent = 'The gene data could not be loaded. ';
   const detail = document.createElement('span');
   detail.textContent = error.message;
   status.append(heading, detail);
   const hint = document.createElement('p');
-  hint.textContent = 'Check that the pipeline wrote meta.json, genes.json, and the declared '
-    + 'annotation and TSS evidence files into this page’s data folder, and that the server '
-    + 'can serve them.';
+  hint.textContent = layerOf(organism, 'tssEvidence')
+    ? 'Check that the pipeline wrote meta.json, genes.json, and the declared '
+      + 'annotation and TSS evidence files into this page’s data folder, and that the server '
+      + 'can serve them.'
+    : 'Check that the pipeline wrote meta.json, genes.json, and every file meta.json declares '
+      + 'into this page’s data folder, and that the server can serve them.';
   status.append(hint);
   // Nothing was built, so the whole load can simply be run again. The files
   // that did arrive come back from the browser cache.
@@ -188,6 +232,7 @@ function showLoadError(error) {
   retry.className = 'chip-button';
   retry.textContent = 'Retry';
   retry.addEventListener('click', () => {
+    document.body.classList.remove('load-failed');
     status.className = 'load-status visually-hidden';
     status.textContent = 'Loading gene data…';
     loadProgress.restart();
@@ -260,8 +305,9 @@ function clearLivePercentiles() {
 
 /**
  * Resolve every gene's category bucket under the enabled annotation sources:
- * UTEX 2973 reviewed rows first, then PCC 7942, then GO IEA, each only while
- * enabled; a disagreement keeps the highest-priority colour and is named, never
+ * reviewed rows first, then each derived source in the organism's precedence
+ * order, each only while enabled; a disagreement keeps the highest-priority
+ * colour and is named, never
  * bucketed. Recomputed whenever the toggles change; the legend, filter,
  * preview, and canvas all read this one model.
  */
@@ -294,14 +340,14 @@ function toggleColorSource(id, enabled) {
   const next = new Set(state.colorSources);
   if (enabled) next.add(id);
   else next.delete(id);
-  state.colorSources = normalizeAnnotationSources([...next]);
+  state.colorSources = normalizeAnnotationSources([...next], COLOR_SOURCE_TOGGLES);
   renderAll();
-  announce(isAllSources(state.colorSources)
+  announce(isAllSources(state.colorSources, COLOR_SOURCE_TOGGLES)
     ? 'Category colour: every annotation source enabled.'
     : state.colorSources.length === 0
       ? 'Category colour: no source enabled; every CDS is unknown until a source is turned on.'
-      : `Category colour: ${annotationSourceLabel(state.colorSources)} enabled. Every other view `
-        + 'still shows every source.');
+      : `Category colour: ${annotationSourceLabel(state.colorSources, COLOR_SOURCE_TOGGLES)} `
+        + 'enabled. Every other view still shows every source.');
 }
 
 function computeMask() {
@@ -522,7 +568,9 @@ let applyingHash = false;
 
 function persist() {
   store.write(STORAGE_SHORTLIST, state.shortlist);
-  const hash = encodeState(state);
+  const hash = encodeState(state, organism);
+  // The view this organism is being left in, for the selector to return to.
+  rememberView(store, organism, hash);
   const target = `${window.location.pathname}${window.location.search}${hash ? `#${hash}` : ''}`;
   applyingHash = true;
   window.history.replaceState(null, '', target);
@@ -741,6 +789,7 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
     }
     renderCategoryLegend(host, {
       ...categories,
+      organism,
       hasDerivedData: categories.hasDerivedData,
       derivedThreshold: DERIVED_THRESHOLDS.derivedProbabilityAtLeast,
       onToggleSource: (id, enabled) => toggleColorSource(id, enabled),
@@ -760,7 +809,7 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
   let missing = 0;
   for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
   // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
-  // primary PCC abundance field's, even though both share the same basis states.
+  // primary abundance field's, even though both share the same basis states.
   const isMeasuredExpressionMetric = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
   renderLegend(host, {
     metric,
@@ -800,11 +849,13 @@ function renderColorHelp(host) {
       reviewed: context.dataset.functionCategories,
       derived: context.dataset.sourceDerivedCategories,
       categories,
-    }), citationsManifest);
+      organism,
+    }), citationsManifest, organism);
     return;
   }
   renderMetricHelp(host,
-    metricHelp(context.registry.byKey.get(state.colorBy), context.dataset), citationsManifest);
+    metricHelp(context.registry.byKey.get(state.colorBy), context.dataset), citationsManifest,
+    organism);
 }
 
 /**
@@ -848,7 +899,7 @@ function syncAxisScaleAvailability(axis) {
 function renderMap() {
   const projection = projectionFor(state.panel);
   const panel = PANELS.find((entry) => entry.id === state.panel);
-  element('panel-blurb').textContent = `${panel.blurb} ${panel.source}`;
+  element('panel-blurb').textContent = `${tabBlurb(panel, organism)} ${panel.source}`;
   element('axis-chooser').hidden = state.panel !== 'axes';
   if (state.panel === 'axes') {
     element('axis-x').value = state.axisX;
@@ -884,7 +935,7 @@ function renderMap() {
   });
   renderProjectionHelp(element('features-used'),
     projectionHelp(state.panel, context.dataset, context.registry,
-      { x: state.axisX, y: state.axisY }), citationsManifest);
+      { x: state.axisX, y: state.axisY }), citationsManifest, organism);
   plot.setColor({ values, scale, derived: colors.derived });
   plot.setDrawDirection(colors.drawOnTop);
   plot.setMask(context.mask);
@@ -971,7 +1022,9 @@ function selectedCategoryLabels() {
  * against changes with the filters.
  */
 function renderChromosomeView() {
-  const { tracks, problems, verified } = repliconTracks(context.dataset.genes, context.dataset.meta);
+  const { tracks, problems, verified } = repliconTracks(
+    context.dataset.genes, context.dataset.meta, organism.genome,
+  );
   const colors = colorModel();
   chromosomeView.update({
     tracks,
@@ -1073,7 +1126,7 @@ function renderControlsGeneViewer(index) {
   const host = body.querySelector('#gene-viewer-controls');
   if (!host) return;
   renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null,
-    { tssPending: pendingState(context.dataset, 'tssEvidence') });
+    { tssPending: pendingState(context.dataset, 'tssEvidence'), organism });
 }
 
 function renderAll({ schemeErrors = [] } = {}) {
@@ -1106,6 +1159,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     proteinEvidence: context.dataset.lengthCohorts ? {
       count: context.proteinRecordIds.size,
       unavailableReason: context.dataset.lengthCohorts.directDetection.reason,
+      directDetectionLabel: organism.copy.directProteomicsLabel,
     } : null,
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
   });
@@ -1123,7 +1177,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       translationalException: state.exceptionFilter,
     },
     filterMask: context.mask,
-    viewState: () => viewStateOf(state),
+    viewState: () => viewStateOf(state, organism),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
     schemeActive: Object.keys(state.schemeMap).length > 0,
@@ -1246,7 +1300,7 @@ function buildPanelTabs() {
       updatePanelTabs();
       renderCurrentView();
       persist();
-      announce(`${panel.name}. ${panel.blurb}`);
+      announce(`${panel.name}. ${tabBlurb(panel, organism)}`);
     });
     button.addEventListener('keydown', (event) => {
       const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
@@ -1301,7 +1355,7 @@ function renderCurrentView() {
   element('regulatory-view').hidden = !regulatoryActive;
   element('citations-view').hidden = !citationsActive;
   if (chromosomeActive) {
-    element('panel-blurb').textContent = `${CHROMOSOME_TAB.blurb} ${CHROMOSOME_TAB.source}`;
+    element('panel-blurb').textContent = `${tabBlurb(CHROMOSOME_TAB, organism)} ${CHROMOSOME_TAB.source}`;
     renderChromosomeView();
     return;
   }
@@ -1323,7 +1377,7 @@ function renderCurrentView() {
     return;
   }
   if (regulatoryActive) {
-    element('panel-blurb').textContent = REGULATORY_TAB.blurb;
+    element('panel-blurb').textContent = tabBlurb(REGULATORY_TAB, organism);
     regulatorySitesPanel.update(context.dataset.regulatoryTss,
       pendingState(context.dataset, 'regulatoryTss'));
     return;
@@ -1445,7 +1499,7 @@ function buildAxisScaleSelects() {
 }
 
 function buildGeneSearch() {
-  // No datalist: it could only complete a locus tag prefix, it put 2,715 option
+  // No datalist: it could only complete a locus tag prefix, it put one option
   // elements in the document, and its native dropdown covered the result list
   // that replaced it.
   searchResults = new GeneSearchResults(element('gene-search-results'), {
@@ -1661,7 +1715,7 @@ function renderProvenance() {
  * page shows another" bug this whole mechanism exists to prevent.
  */
 function normalizeAndApply(decoded) {
-  applyDecoded(state, decoded);
+  applyDecoded(state, decoded, organism);
   // The shortlist is the one field with a second, local source of truth: a
   // hash that never mentions it (a bare initial load, or a partial/legacy
   // link) defers to what this browser last saved, not to the empty default
@@ -1679,6 +1733,9 @@ function normalizeAndApply(decoded) {
     state.proteinFilter = 'any';
   }
   if (!context.basisCounts.recorded) state.expressionFilter = 'any';
+  // A category selection means nothing in a dataset with no function
+  // categories, so it is not kept in the state, the address, or an export.
+  if (!context.dataset.functionCategories) state.categoryFilter = [];
 
   const schemeErrors = recomputeScheme();
   if (schemeErrors.length > 0) {
@@ -1688,6 +1745,11 @@ function normalizeAndApply(decoded) {
   if (!context.registry) {
     context.registry = buildMetricRegistry(context.dataset.meta, context.dataset.genes, context.live);
   }
+  // A filter or a traffic metric this dataset has no metric for cannot act, so
+  // it is dropped rather than carried in the address as if it were in effect.
+  state.filters = Object.fromEntries(Object.entries(state.filters)
+    .filter(([key]) => context.registry.byKey.has(key)));
+  if (state.trafficKey && !context.registry.byKey.has(state.trafficKey)) state.trafficKey = null;
   if (!state.colorBy || !(context.registry.byKey.has(state.colorBy)
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
     state.colorBy = freshViewColorKey(context.registry, context.dataset.functionCategories);
@@ -1697,7 +1759,7 @@ function normalizeAndApply(decoded) {
   // — becomes the metric's own default. Resolved here rather than at first paint
   // so a link written before any view renders already records the real scale.
   resolveColorScale();
-  const axes = resolveDefaultMetricAxes(context.registry);
+  const axes = resolveDefaultMetricAxes(context.registry, organism.freshAxes);
   if (!context.registry.byKey.has(state.axisX)) state.axisX = axes.x;
   if (!context.registry.byKey.has(state.axisY)) state.axisY = axes.y;
 }
@@ -1712,7 +1774,7 @@ function normalizeAndApply(decoded) {
  */
 function applyLiveHash() {
   if (applyingHash || !context.dataset) return;
-  const decoded = decodeState(window.location.hash);
+  const decoded = decodeState(window.location.hash, organism);
   normalizeAndApply(decoded);
   context.hoveredIndex = -1;
   context.activeIndex = -1;
@@ -1821,7 +1883,7 @@ function retryFile(key) {
   if (!staged?.retry(key)) return;
   loadProgress.setFiles(staged.files);
   renderAll();
-  announce(`Retrying ${DATA_FILE_BY_KEY[key].label}.`);
+  announce(`Retrying ${dataFileLabel(DATA_FILE_BY_KEY[key], organism)}.`);
 }
 
 /**
@@ -1922,12 +1984,14 @@ async function boot() {
     stage: element('load-stage'), bar: element('load-progress'), tail: element('load-tail'),
   }, { onRetry: (key) => retryFile(key) }, {
     minimumMs: reducedMotion ? 0 : loadTiming.minimumBarMs,
+    tierLabels: tierLabelsFor(organism),
+    organism,
   });
   // What this visit waits for, read from the link before any data arrives: the
   // tier 1 files and whatever the view it opens onto reads. The bar fills over
   // exactly these, so it is full when the page is ready and not before.
-  const requested = defaultState();
-  applyDecoded(requested, decodeState(window.location.hash));
+  const requested = defaultState(organism);
+  applyDecoded(requested, decodeState(window.location.hash, organism), organism);
   const promoted = promotedFileKeys(requested);
   loadProgress.setBlocking([...CORE_FILE_KEYS, ...promoted]);
   // The page's inline script has already asked for the manifest and the tier 1
@@ -1939,6 +2003,9 @@ async function boot() {
     fetchImpl,
     onProgress: (snapshot) => loadProgress.update(snapshot),
     onFile: (key) => fileLanded(key),
+    // Refuses another organism's assembly, and never asks for a study-bound
+    // layer this organism does not declare.
+    organism,
   });
   const load = staged;
 
@@ -1947,8 +2014,11 @@ async function boot() {
   // content manifest like every other data file.
   const citationsFetch = async () => {
     const manifest = await load.manifest;
-    const request = dataRequest(dataBase, 'citations.json',
-      manifest?.files.get('citations.json') ?? null, 4);
+    const entry = manifest?.files.get('citations.json') ?? null;
+    // The manifest lists everything this deployment publishes, so a ledger it
+    // does not list is absent and needs no request to find that out.
+    if (manifest && !entry) return new Response(null, { status: 404 });
+    const request = dataRequest(dataBase, 'citations.json', entry, 4);
     return fetchImpl(request.url, request.init);
   };
   const citationsLoaded = loadCitationsManifest({ baseUrl: dataBase, fetchImpl: citationsFetch })
@@ -1959,7 +2029,7 @@ async function boot() {
         renderColorHelp(element('colour-help'));
         renderProjectionHelp(element('features-used'),
           projectionHelp(state.panel, context.dataset, context.registry,
-            { x: state.axisX, y: state.axisY }), manifest);
+            { x: state.axisX, y: state.axisY }), manifest, organism);
       }
       if (context.dataset && chromosomeView && state.panel === CHROMOSOME_TAB.id) {
         renderColorHelp(chromosomeView.colourHelpElement());
@@ -1979,6 +2049,7 @@ async function boot() {
   }
   performance.mark('cyano:core');
   context.dataset = dataset;
+  applyGeneCount(document, dataset.genes.length);
   loadProgress.setIdentity({
     releaseId: dataset.meta.annotationRelease?.releaseId ?? null,
     geneCount: dataset.genes.length,
@@ -1988,7 +2059,7 @@ async function boot() {
     .filter((gene) => Boolean(gene.translationalException)).length;
   context.basisCounts = expressionBasisCounts(dataset.genes);
 
-  normalizeAndApply(decodeState(window.location.hash));
+  normalizeAndApply(decodeState(window.location.hash, organism));
 
   plot = new ScatterPlot(element('map-canvas'), {
     onHover: (index) => {
@@ -2009,6 +2080,7 @@ async function boot() {
     rightHandle: element('resize-detail'),
     resetButton: element('reset-panel-widths'),
     storage: store,
+    storageKey: STORAGE.panelWidths,
     confirm: () => confirmReset({
       title: 'Reset panel widths?',
       body: 'The controls and gene-detail columns return to their default widths. '
@@ -2198,9 +2270,10 @@ async function boot() {
     },
     onDetailJump: () => jumpToDetail(),
     onAnnounce: announce,
-  });
+  }, { organism });
 
   regulatorySitesPanel = new RegulatorySitesPanel(element('regulatory-view'), {
+    organism,
     onShowGene: (id) => {
       const index = context.dataset.indexById.get(id);
       if (index === undefined) return;
@@ -2364,9 +2437,19 @@ async function boot() {
   await loadProgress.finished();
   revealPage();
   if (pendingMapJump) jumpToMap();
-  announce(`${formatCount(dataset.genes.length)} genes loaded.`);
+  announce(organismRecognised
+    ? `${formatCount(dataset.genes.length)} genes loaded.`
+    : `No organism is called ${requestedOrganismId}. Showing ${organism.label}: `
+      + `${formatCount(dataset.genes.length)} genes loaded.`);
   load.settled.then(logLoadTimings);
 }
+
+// The page says which organism it is, and offers the other, before any data is
+// asked for: the static document is the default organism's.
+applyOrganismIdentity(document, organism);
+renderOrganismSelector(element('organism-selector'), {
+  current: organism, location: window.location, store,
+});
 
 // Install these handlers before boot reaches its first await so a click during
 // the data fetch can be completed once the map is visible.

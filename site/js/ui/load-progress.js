@@ -18,7 +18,7 @@
  * arrived when the bar first draws, so nothing about them can be read as data.
  */
 import { CATEGORICAL } from './colors.js';
-import { DATA_FILES, FILE_STATE, TIER_LABELS } from '../core/data-files.js';
+import { DATA_FILES, FILE_STATE, TIER_LABELS, dataFileLabel } from '../core/data-files.js';
 import { formatCount } from './format.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -162,9 +162,9 @@ export function describeIdentity(identity) {
 }
 
 /** What the bar says to assistive technology: the tier in plain words, and how far. */
-export function describeLoad(snapshot, identity = null, keys = null) {
+export function describeLoad(snapshot, identity = null, keys = null, tierLabels = TIER_LABELS) {
   const percent = Math.round(loadFraction(snapshot, keys) * 100);
-  const tier = snapshot?.currentTier ? TIER_LABELS[snapshot.currentTier] : null;
+  const tier = snapshot?.currentTier ? tierLabels[snapshot.currentTier] : null;
   const what = tier ? `Loading ${tier}` : 'Loading complete';
   const who = describeIdentity(identity);
   return `${what}, ${percent}%.${who ? ` ${who}.` : ''}`;
@@ -204,12 +204,20 @@ export class LoadProgress {
    *   the loading stage that holds the grid and the bar, the bar's own
    *   `progressbar` element, and the tail shown after the reveal.
    * @param {{onRetry?: (key: string) => void}} handlers
+   * @param {{minimumMs?: number, now?: () => number, requestFrame?: Function,
+   *   tierLabels?: Record<number, string>, organism?: object}} [options]
+   *   `tierLabels` and `organism` word the tiers and the files for the organism
+   *   on screen; both default to the default organism's.
    */
   constructor({ stage, bar, tail }, handlers = {}, {
     minimumMs = 0,
     now = () => performance.now(),
     requestFrame = (callback) => requestAnimationFrame(callback),
+    tierLabels = TIER_LABELS,
+    organism = undefined,
   } = {}) {
+    this.tierLabels = tierLabels;
+    this.organism = organism;
     this.stage = stage;
     this.bar = bar;
     this.tail = tail;
@@ -326,7 +334,8 @@ export class LoadProgress {
     const elapsed = this.now() - this.startedAt;
     const displayed = displayedFraction(real, elapsed, this.schedule);
     this.setFraction(displayed);
-    this.setAria(real, describeLoad(this.snapshot, this.identity, this.blockingKeys));
+    this.setAria(real,
+      describeLoad(this.snapshot, this.identity, this.blockingKeys, this.tierLabels));
     if (displayed < 1) return;
     // There may be a callback already queued when an update reaches full.
     // Invalidate it so reaching full stops the loop immediately.
@@ -417,7 +426,7 @@ export class LoadProgress {
     if (this.tail.hidden) return;
     const who = describeIdentity(this.identity);
     this.tailStatus.textContent = loading !== null
-      ? `${who ? `${who}. ` : ''}Still loading ${TIER_LABELS[loading]}.`
+      ? `${who ? `${who}. ` : ''}Still loading ${this.tierLabels[loading]}.`
       : `${formatCount(failed.length)} data file${failed.length === 1 ? '' : 's'} could not be loaded.`;
     this.tailMeter.hidden = loading === null;
     this.tailFill.style.width = `${(loadFraction(snapshot) * 100).toFixed(1)}%`;
@@ -431,7 +440,8 @@ export class LoadProgress {
     row.dataset.fileKey = file.key;
     const text = document.createElement('span');
     const label = document.createElement('strong');
-    label.textContent = `${file.label.charAt(0).toUpperCase()}${file.label.slice(1)}: `;
+    const name = dataFileLabel(file, this.organism);
+    label.textContent = `${name.charAt(0).toUpperCase()}${name.slice(1)}: `;
     text.append(label, record.error?.message ?? 'could not be loaded');
     row.append(text);
     // A file that failed only because another did is retried by retrying that one.
@@ -440,7 +450,7 @@ export class LoadProgress {
       retry.type = 'button';
       retry.className = 'chip-button';
       retry.textContent = 'Retry';
-      retry.setAttribute('aria-label', `Retry loading ${file.label}`);
+      retry.setAttribute('aria-label', `Retry loading ${name}`);
       retry.addEventListener('click', () => this.handlers.onRetry?.(file.key));
       row.append(retry);
     }

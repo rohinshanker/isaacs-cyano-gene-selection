@@ -13,29 +13,20 @@
  * judgment over product text, which is recorded as future work and is not
  * something to approximate with a scoring heuristic.
  */
-
+import { DEFAULT_ORGANISM } from './organisms.js';
 
 /**
  * Nicknames a lab types, mapped to the phrasing the annotation actually uses.
  *
- * Extend this freely: a key is what someone types, the values are phrases to look
- * for in the gene's name or product. Matching is case-insensitive, and a value
- * matches when every word in it appears in the gene's text, so word order and
- * punctuation in the annotation do not matter.
+ * The table is an organism fact, because the nicknames follow the biology: it
+ * lives in each organism's record in `core/organisms.js`, and this is the
+ * default organism's. Extend a record's table freely: a key is what someone
+ * types, the values are phrases to look for in the gene's name or product.
+ * Matching is case-insensitive, and a value matches when every word in it
+ * appears in the gene's text, so word order and punctuation in the annotation
+ * do not matter.
  */
-export const GENE_ALIASES = Object.freeze({
-  rubisco: ['ribulose bisphosphate carboxylase'],
-  'photosystem i': ['photosystem I', 'photosystem I P700'],
-  'photosystem ii': ['photosystem II'],
-  psi: ['photosystem I'],
-  psii: ['photosystem II'],
-  phycobilisome: ['phycobilisome', 'phycocyanin', 'allophycocyanin'],
-  carboxysome: ['carboxysome', 'carbon dioxide concentrating mechanism'],
-  'atp synthase': ['ATP synthase'],
-  atpase: ['ATP synthase'],
-  nitrogenase: ['nitrogenase'],
-  ribosome: ['ribosomal protein'],
-});
+export const GENE_ALIASES = DEFAULT_ORGANISM.searchAliases;
 
 /** How many results the interface shows before it starts counting the rest. */
 export const SEARCH_RESULT_LIMIT = 12;
@@ -61,12 +52,13 @@ function containsAllWords(haystack, needle) {
  * The query itself always counts. An alias fires when the whole query or one of
  * its words is a key, and contributes the annotation's own phrasing alongside.
  */
-function buildNeedles(query) {
+function buildNeedles(query, aliases) {
   const normalized = normalize(query);
   const needles = [{ phrase: normalized, alias: null }];
   const keys = new Set([normalized, ...words(normalized)]);
   for (const key of keys) {
-    for (const phrase of GENE_ALIASES[key] ?? []) {
+    // An own key only: a query such as "constructor" is not an alias.
+    for (const phrase of Object.hasOwn(aliases, key) ? aliases[key] : []) {
       needles.push({ phrase: normalize(phrase), alias: key });
     }
   }
@@ -144,16 +136,19 @@ function scoreNeedle(gene, needle) {
  *
  * @param {Array<object>} genes
  * @param {string} query
- * @param {{limit?: number, goTerms?: object}} options
+ * @param {{limit?: number, goTerms?: object, aliases?: Record<string, string[]>}} options
+ *   `aliases` is the organism's nickname table, the default organism's when omitted.
  * @returns {{query: string, total: number, shown: Array<object>, hiddenCount: number,
  *   aliasesUsed: string[]}} `shown` entries carry `{index, gene, matchedOn, alias}`.
  */
-export function searchGenes(genes, query, { limit = SEARCH_RESULT_LIMIT, goTerms = null } = {}) {
+export function searchGenes(genes, query, {
+  limit = SEARCH_RESULT_LIMIT, goTerms = null, aliases = GENE_ALIASES,
+} = {}) {
   const normalized = normalize(query);
   if (!normalized) {
     return { query: normalized, total: 0, shown: [], hiddenCount: 0, aliasesUsed: [] };
   }
-  const needles = buildNeedles(normalized);
+  const needles = buildNeedles(normalized, aliases);
   const aliasesUsed = new Set();
   const hits = [];
 
