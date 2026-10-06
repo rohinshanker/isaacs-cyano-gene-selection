@@ -1,24 +1,35 @@
 /** Loadings view: which inputs pull genes along each axis of a projection. */
 import { pendingNote } from './loading-note.js';
+import { MISSING } from './format.js';
 
 const BAR_WIDTH = 78;
 
+/** A missing component draws an empty track and the MISSING token, never a zero bar. */
 function bar(value) {
-  const magnitude = Math.min(1, Math.abs(value));
-  const width = Math.max(1, magnitude * (BAR_WIDTH / 2));
   const cell = document.createElement('td');
   cell.className = 'loading-bar-cell';
   const track = document.createElement('span');
   track.className = 'loading-bar';
-  const fill = document.createElement('span');
-  fill.className = value < 0 ? 'loading-fill negative' : 'loading-fill positive';
-  fill.style.width = `${width}px`;
-  track.append(fill);
   const text = document.createElement('span');
   text.className = 'loading-value';
-  text.textContent = value.toFixed(2);
+  if (Number.isFinite(value)) {
+    const magnitude = Math.min(1, Math.abs(value));
+    const width = Math.max(1, magnitude * (BAR_WIDTH / 2));
+    const fill = document.createElement('span');
+    fill.className = value < 0 ? 'loading-fill negative' : 'loading-fill positive';
+    fill.style.width = `${width}px`;
+    track.append(fill);
+    text.textContent = value.toFixed(2);
+  } else {
+    text.textContent = MISSING;
+  }
   cell.append(track, text);
   return cell;
+}
+
+/** Euclidean strength over the first two components, or null when either is missing. */
+function strengthOf(pc) {
+  return Number.isFinite(pc?.[0]) && Number.isFinite(pc?.[1]) ? Math.hypot(pc[0], pc[1]) : null;
 }
 
 /**
@@ -42,9 +53,10 @@ export function renderLoadings(host, projection, { pending = null } = {}) {
 
   if (loadings.length === 0) return;
 
+  // An unknown strength ranks after every known one rather than as zero.
   const ranked = [...loadings]
-    .map((entry) => ({ ...entry, strength: Math.hypot(entry.pc[0] ?? 0, entry.pc[1] ?? 0) }))
-    .sort((a, b) => b.strength - a.strength)
+    .map((entry) => ({ ...entry, strength: strengthOf(entry.pc) }))
+    .sort((a, b) => (b.strength ?? -Infinity) - (a.strength ?? -Infinity))
     .slice(0, 12);
 
   const table = document.createElement('table');
@@ -66,7 +78,7 @@ export function renderLoadings(host, projection, { pending = null } = {}) {
       sub.textContent = entry.sublabel;
       label.append(' ', sub);
     }
-    row.append(label, bar(entry.pc[0] ?? 0), bar(entry.pc[1] ?? 0));
+    row.append(label, bar(entry.pc?.[0]), bar(entry.pc?.[1]));
     body.append(row);
   }
   table.append(caption, head, body);
