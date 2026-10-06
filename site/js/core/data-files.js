@@ -53,6 +53,7 @@ export const DATA_FILES = Object.freeze([
   file('codonPca', 'codon_pca.json', 2, 'codon-space loadings'),
   file('excluded', 'excluded.json', 2, 'excluded loci'),
   file('tssEvidence', 'tss_evidence.json', 3, 'Tan 2018 start sites'),
+  file('expressionLayers', 'expression_layers.json', 3, 'expression layers'),
   file('goIeaEssentiality', 'go-iea-essentiality-v1.json', 3, 'GO IEA essentiality context',
     { needs: ['candidateEvidence'] }),
   file('goTerms', 'go-term-names-v1.json', 3, 'GO term names', { needs: ['annotations'] }),

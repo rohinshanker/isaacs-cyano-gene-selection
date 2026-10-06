@@ -157,6 +157,8 @@ const context = {
   schemeVersion: 0,
   projections: new Map(),
   percentiles: new Map(),
+  // A colour scale defaulted while its metric's file was loading, re-chosen on landing.
+  scaleAwaitsFile: null,
   timings: { scheme: NaN, projection: NaN, codons: 0 },
 };
 
@@ -617,8 +619,14 @@ function resolveColorScale() {
   };
   const availability = valueScaleAvailability(values, options);
   const requested = state.colorScale;
-  const scale = VALUE_SCALES.includes(requested) && availability.get(requested).available
-    ? requested : defaultValueScale(values, options);
+  const pinned = VALUE_SCALES.includes(requested) && availability.get(requested).available;
+  // A default chosen while the metric's own file is still loading was chosen
+  // over no values at all; it is chosen again, from the real values, once the
+  // file lands. A scale the reader or the link asked for stays.
+  if (!pinned && metric.fileKey && isLoading(context.dataset, metric.fileKey)) {
+    context.scaleAwaitsFile = { key: metric.key, fileKey: metric.fileKey };
+  }
+  const scale = pinned ? requested : defaultValueScale(values, options);
   state.colorScale = scale;
   return { categorical: false, metric, values, scale, availability };
 }
@@ -1904,6 +1912,23 @@ function promotedFileKeys(view) {
   return [...keys];
 }
 
+/**
+ * The later files whose metrics the view reads, known once `meta.json` has
+ * named which metric arrives in which file: a link coloured, plotted,
+ * filtered, or traffic-lit by a metric from the expression-layer payload waits
+ * for that payload the way a pinned gene waits for its evidence.
+ */
+function promotedMetricFileKeys(view, registry) {
+  const named = [view.colorBy, view.axisX, view.axisY, view.trafficKey,
+    ...Object.keys(view.filters ?? {})];
+  const keys = new Set();
+  for (const key of named) {
+    const fileKey = registry.byKey.get(key)?.fileKey;
+    if (fileKey) keys.add(fileKey);
+  }
+  return [...keys];
+}
+
 /** A later file settled. Renders are coalesced, since several often land together. */
 function fileLanded(key) {
   landed.add(key);
@@ -1939,6 +1964,18 @@ function flushLandings() {
     searchResults?.setGenes(dataset.genes, dataset.goTerms?.terms, dataset);
   }
   if (keys.has('excluded')) renderProvenance();
+  // Percentile ranks cached while a layer's values were still unknown would
+  // stay empty; the layer's metrics rank afresh from the values that landed.
+  if (keys.has('expressionLayers')) {
+    for (const metric of context.registry.metrics) {
+      if (metric.fileKey === 'expressionLayers') context.percentiles.delete(metric.key);
+    }
+  }
+  const awaiting = context.scaleAwaitsFile;
+  if (awaiting && keys.has(awaiting.fileKey)) {
+    context.scaleAwaitsFile = null;
+    if (state.colorBy === awaiting.key) state.colorScale = null;
+  }
   loadProgress.setFiles(staged.files);
   renderAll();
   // The categories arrived after the points had already appeared in the
@@ -2511,7 +2548,14 @@ async function boot() {
 
   // The reveal waits for any file this view was opened onto, and then for the
   // bar to finish: it fills in uneven blocks over its minimum time and is held
-  // full for a moment so it is seen. Neither ever delays a request.
+  // full for a moment so it is seen. Neither ever delays a request. Files named
+  // through a metric are known only now that the registry exists.
+  const promotedByMetric = promotedMetricFileKeys(state, context.registry)
+    .filter((key) => !promoted.includes(key));
+  if (promotedByMetric.length > 0) {
+    promoted.push(...promotedByMetric);
+    loadProgress.setBlocking([...CORE_FILE_KEYS, ...promoted]);
+  }
   await load.when(promoted);
   await loadProgress.finished();
   revealPage();

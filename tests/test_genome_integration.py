@@ -124,6 +124,19 @@ def test_generated_documents_follow_contract():
         2551, 2551, 2551,  # GSE89999 dusk / darkness / dawn
     ]
     assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
+    # The two original measurements ride in genes.json; every ingested layer is
+    # published apart, joined by locus tag, so the gene file keeps its budget.
+    layered = [s for s in meta["expressionSources"] if s["payload"] == "expression_layers.json"]
+    assert [s["payload"] for s in meta["expressionSources"][:2]] == ["genes.json", "genes.json"]
+    assert len(layered) == 11
+    layers = json.loads((DATA / "expression_layers.json").read_text())
+    assert layers["geneIds"] == [gene["id"] for gene in genes]
+    assert set(layers["layers"]) == {s["metricKey"] for s in layered}
+    assert all(s["metricKey"] not in gene for s in layered for gene in genes)
+    for source in layered:
+        column = layers["layers"][source["metricKey"]]
+        assert len(column) == 2715
+        assert sum(value is not None for value in column) == source["coverage"]["withValue"]
     tss_definition = meta["metrics"]["tssInitiation"]
     assert "transcription initiation strength" in tss_definition["desc"]
     assert "not transcript abundance" in tss_definition["desc"]

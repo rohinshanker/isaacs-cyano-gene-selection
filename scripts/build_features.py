@@ -14,7 +14,7 @@ import math
 import re
 import sys
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import unquote
 
 import numpy as np
@@ -103,6 +103,14 @@ DIVERGING_METRICS = {
     "neighborUpstreamNt",
     "neighborDownstreamNt",
 }
+
+# Where an expression source's per-gene values are published. The two original
+# measurements ride in genes.json; every further layer goes to the separate
+# expression_layers.json payload, joined by locus tag, so the gene file the map
+# waits for stays within its size budget however many studies are admitted.
+GENES_PAYLOAD = "genes.json"
+LAYERS_PAYLOAD = "expression_layers.json"
+PAYLOADS = (GENES_PAYLOAD, LAYERS_PAYLOAD)
 
 EXPRESSION_SOURCE_FIELDS = (
     "record",
@@ -442,6 +450,11 @@ def load_expression_sources(
             isinstance(source["citationId"], str) and bool(source["citationId"]),
             f"Expression source {source_id} names no citation ledger entry",
         )
+        source.setdefault("payload", GENES_PAYLOAD)
+        require(
+            source["payload"] in PAYLOADS,
+            f"Expression source {source_id} names an unknown payload: {source['payload']!r}",
+        )
 
         file_name = source["file"]
         require(
@@ -500,6 +513,30 @@ def expression_metric_definition(
         "scale": "sequential",
         "missingPolicy": MISSING_POLICY,
         "direction": "contextual",
+    }
+
+
+def expression_layers_document(
+    genes: Sequence[Mapping[str, Any]],
+    sources: Sequence[Mapping[str, Any]],
+    values: Mapping[str, Mapping[str, float]],
+) -> dict[str, Any] | None:
+    """The separate payload for layer sources: one value per gene, in genes.json order.
+
+    ``geneIds`` repeats the gene order so the site can refuse a payload built
+    from a different gene file; a gene with no mapped measurement is ``None``.
+    Returns ``None`` when no source publishes through the layer payload.
+    """
+    layer_sources = [s for s in sources if s["payload"] == LAYERS_PAYLOAD]
+    if not layer_sources:
+        return None
+    return {
+        "schemaVersion": 1,
+        "geneIds": [gene["id"] for gene in genes],
+        "layers": {
+            source["metricKey"]: [values[source["metricKey"]].get(gene["id"]) for gene in genes]
+            for source in layer_sources
+        },
     }
 
 
@@ -959,7 +996,8 @@ def build(
         values["cai"] = fm.codon_adaptation_index(sequence, cai)
         values["tai"] = fm.trna_adaptation_index(sequence, tai)
         for metric_key, source_values in expression_values.items():
-            values[metric_key] = source_values.get(source["id"])
+            if sources_by_metric[metric_key]["payload"] == GENES_PAYLOAD:
+                values[metric_key] = source_values.get(source["id"])
         values["expressionPercentile"] = percentiles.get(source["id"])
         values["expressionSourceId"] = (
             primary_expression_source["id"]
@@ -1214,6 +1252,9 @@ def build(
         "meta.json": meta,
         "codon_pca.json": codon_pca,
     }
+    layers = expression_layers_document(genes, expression_sources, expression_values)
+    if layers is not None:
+        documents[LAYERS_PAYLOAD] = layers
     for name, document in documents.items():
         # Tiny published adjusted p-values must not round to zero.
         serializable = document if name == "tss_evidence.json" else round_floats(document)

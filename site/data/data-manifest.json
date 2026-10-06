@@ -20,13 +20,17 @@
       "bytes": 447,
       "sha256": "41ff2d44a0fb08242cdc6282401f51e3c677cd3ccd75757aa9b2e4cabe98cd06"
     },
+    "expression_layers.json": {
+      "bytes": 259818,
+      "sha256": "dbf1b778f609e5cdcd861e9e5b36b7d00411a025c2bdf5c17e579865b3a48f1d"
+    },
     "function-categories-v1.json": {
       "bytes": 7250,
       "sha256": "2ac4661ec3acea118b49c1fab7f4c2a69c91b718a74456f5681d0774f6064a0e"
     },
     "genes.json": {
-      "bytes": 5988811,
-      "sha256": "cdc2cc01b6cb4f36a1242cab5d29c9c445773dcbcca1e07fca5ecfccff990c4e"
+      "bytes": 5169989,
+      "sha256": "0d2711ade57d566832e126fe14ccb893ce91d932229118c6873775d356273552"
     },
     "go-iea-essentiality-v1.json": {
       "bytes": 454699,
@@ -41,8 +45,8 @@
       "sha256": "16362fa4618e5f83c224af33513e9fd71462a625c35525898d5dda6e7dada4df"
     },
     "meta.json": {
-      "bytes": 90605,
-      "sha256": "9421cf115ea65cc5b26cef3984b2c1cac1fa957dcf8c108bb38a132ffb4ae961"
+      "bytes": 91036,
+      "sha256": "d5b9042cb92b8fef66a247d37ae091b366989c09841cfa8df1dd634495a82cc9"
     },
     "pcc7942-essentiality-v1.json": {
       "bytes": 603979,

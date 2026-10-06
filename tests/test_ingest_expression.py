@@ -295,6 +295,7 @@ def test_ingest_writes_layers_and_updates_the_manifest_in_place(tmp_path):
     assert entry["file"] == "GSE1_control.tsv"
     assert entry["isTargetOrganism"] is False
     assert entry["citationId"] == "test-2026"
+    assert entry["payload"] == "expression_layers.json"
     assert entry["condition"] == "control"
     assert entry["caveat"] == "Measured in PCC 7942."
     assert written[1]["caveat"] == "salt caveat"

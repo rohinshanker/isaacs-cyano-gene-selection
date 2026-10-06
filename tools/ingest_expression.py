@@ -278,6 +278,7 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
             "caveat": layer.get("caveat", spec["caveat"]),
             "provenanceDoc": spec["provenanceDoc"],
             "citationId": spec["citationId"],
+            "payload": "expression_layers.json",
             "ingest": {
                 "sourceFile": source["name"], "sourceSha256": source["sha256"], "sourceUrl": source["url"],
                 "columns": layer["columns"], "normalization": spec["normalization"],

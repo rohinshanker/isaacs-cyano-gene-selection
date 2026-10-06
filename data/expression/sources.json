@@ -323,6 +323,7 @@
     "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB-sps), not wild type, and not in UTEX 2973. Each value is the mean over the time points of one circadian arm.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "gilliam-2025",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE288532_rna_seq_counts.csv.gz",
       "sourceSha256": "1a05cb6032c39c37d515ff22148e82ed1c6e8018733d60e56ee198a11ccb66d8",
@@ -462,6 +463,7 @@
     "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB-sps), not wild type, and not in UTEX 2973. Each value is the mean over the time points of one circadian arm.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "gilliam-2025",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE288532_rna_seq_counts.csv.gz",
       "sourceSha256": "1a05cb6032c39c37d515ff22148e82ed1c6e8018733d60e56ee198a11ccb66d8",
@@ -589,6 +591,7 @@
     "caveat": "Measured in PCC 7942 at 37 °C, not in UTEX 2973. Wild-type samples only; the Δsps-ect strain in the same deposit is not shipped.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "dong-2023",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE222067_counts.xlsx",
       "sourceSha256": "5ac738c5b833e2ce1847f358256c165a16dc9d4e581291d274517c129a09d21d",
@@ -709,6 +712,7 @@
     "caveat": "Measured in PCC 7942 at 37 °C, not in UTEX 2973. Wild-type samples only; the Δsps-ect strain in the same deposit is not shipped.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "dong-2023",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE222067_counts.xlsx",
       "sourceSha256": "5ac738c5b833e2ce1847f358256c165a16dc9d4e581291d274517c129a09d21d",
@@ -829,6 +833,7 @@
     "caveat": "Measured in PCC 7942, not in UTEX 2973; the article's association with this deposit is by title and author list, not a cited accession. Wild-type samples only.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "sato-2026",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE327989_TPM_values_260414.csv.gz",
       "sourceSha256": "276e18547ea8827d4404299e8a47fca463ca0b2a64d041a7fbc0905c6a662f28",
@@ -950,6 +955,7 @@
     "caveat": "Measured in PCC 7942, not in UTEX 2973. Two replicates per condition.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "choi-2016",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE79726_Se7942-N-starv2016.txt.gz",
       "sourceSha256": "c40b47f4797106e1296d29a5afc962c3a0215d55976e8daf16e88aab90350f4d",
@@ -1072,6 +1078,7 @@
     "caveat": "Measured in PCC 7942, not in UTEX 2973, in nitrogen-free medium. Two replicates.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "choi-2016",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE79726_Se7942-N-starv2016.txt.gz",
       "sourceSha256": "c40b47f4797106e1296d29a5afc962c3a0215d55976e8daf16e88aab90350f4d",
@@ -1192,6 +1199,7 @@
     "caveat": "Measured in PCC 7942, not in UTEX 2973. Two replicates per condition.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "choi-2016",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE79726_Se7942-N-starv2016.txt.gz",
       "sourceSha256": "c40b47f4797106e1296d29a5afc962c3a0215d55976e8daf16e88aab90350f4d",
@@ -1314,6 +1322,7 @@
     "caveat": "Measured in a PCC 7942 clock-rescue strain, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "puszynska-2017",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE89999_Expression_timecourse.xls.gz",
       "sourceSha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4",
@@ -1435,6 +1444,7 @@
     "caveat": "Measured in a PCC 7942 clock-rescue strain, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "puszynska-2017",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE89999_Expression_timecourse.xls.gz",
       "sourceSha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4",
@@ -1563,6 +1573,7 @@
     "caveat": "Measured in a PCC 7942 clock-rescue strain, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "puszynska-2017",
+    "payload": "expression_layers.json",
     "ingest": {
       "sourceFile": "GSE89999_Expression_timecourse.xls.gz",
       "sourceSha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4",

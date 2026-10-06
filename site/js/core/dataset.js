@@ -337,6 +337,52 @@ export const DATA_APPLIERS = Object.freeze({
     for (const gene of genes) gene.tssEvidence = tssEvidence[gene.id] ?? [];
   },
 
+  /**
+   * Expression layers published apart from the gene file, joined by locus tag.
+   *
+   * The payload repeats the gene order, so a file built from another gene file
+   * is refused rather than joined one row off. Each value lands on its gene
+   * under the metric key the registry already reads; a null stays absent, so
+   * an unmeasured gene is unknown, never zero.
+   */
+  expressionLayers(dataset, payload) {
+    const { meta, genes } = dataset;
+    const declared = layerPayloadSources(meta);
+    if (declared.length === 0) {
+      if (payload) throw new Error('expression_layers.json is published but no source declares it');
+      return;
+    }
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new Error('expression_layers.json is required by meta.expressionSources');
+    }
+    if (payload.schemaVersion !== 1) {
+      throw new Error('expression_layers.json has an unknown schemaVersion');
+    }
+    const ids = payload.geneIds;
+    if (!Array.isArray(ids) || ids.length !== genes.length
+      || ids.some((id, index) => id !== genes[index].id)) {
+      throw new Error('expression_layers.json was built from a different gene file');
+    }
+    const layers = payload.layers;
+    if (!layers || typeof layers !== 'object' || Array.isArray(layers)) {
+      throw new Error('expression_layers.json has no layers object');
+    }
+    for (const source of declared) {
+      const column = layers[source.metricKey];
+      if (!Array.isArray(column) || column.length !== genes.length) {
+        throw new Error(`expression_layers.json has no complete layer for ${source.metricKey}`);
+      }
+      for (let index = 0; index < column.length; index += 1) {
+        const value = column[index];
+        if (value === null) continue;
+        if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+          throw new Error(`expression_layers.json has an invalid value for ${source.metricKey}`);
+        }
+        genes[index][source.metricKey] = value;
+      }
+    }
+  },
+
   goIeaEssentiality(dataset, goIeaEssentiality) {
     if (goIeaEssentiality) {
       validateGoIeaEssentiality(
@@ -446,8 +492,18 @@ export const TIER_LEAD_BYTES = 128 * 1024;
  */
 const LEGACY_FAILURE_ORDER = Object.freeze([
   'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
-  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'codonPca', 'excluded',
+  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca', 'excluded',
 ]);
+
+/**
+ * The expression sources whose values arrive in `expression_layers.json`
+ * rather than in the gene file. A source that names no payload is in the gene
+ * file, which is where the two original measurements have always been.
+ */
+export function layerPayloadSources(meta) {
+  return (meta?.expressionSources ?? [])
+    .filter((source) => source?.payload === 'expression_layers.json');
+}
 
 /**
  * Start loading every file, and report each as it lands.

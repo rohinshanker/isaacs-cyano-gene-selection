@@ -731,6 +731,26 @@ test requires the id to exist. A layer the ingestion tool made
 sample columns, normalisation, mapped and unmapped counts, mapping route), from
 which the metric help derives the layer's method line and citation.
 
+Each source also names its `payload`. The two original measurements
+(`expression`, `tssInitiation`) ride in `genes.json`; every ingested layer is
+published in `site/data/expression_layers.json`, a tier 3 file the site joins by
+locus tag, so the gene file the map waits for keeps its size budget however many
+studies are admitted:
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "geneIds": ["M744_RS00005", ...],          // genes.json order, checked before the join
+  "layers": { "exprGse288532Day": [12.3, null, ...], ... }  // one entry per gene; null is unknown
+}
+```
+
+The registry lists a layer metric before its file lands (it reads as unknown
+until then, and a link that colours, plots, filters, or traffic-lights by one
+waits for the file before the reveal); the validator checks the gene order, the
+layer set, the values, and the coverage, and that no layer value is duplicated in
+`genes.json`.
+
 ### `codon_pca.json`
 
 ```jsonc
