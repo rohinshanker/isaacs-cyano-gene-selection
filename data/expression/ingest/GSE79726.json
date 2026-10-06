@@ -1,0 +1,135 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE79726",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79726",
+  "citationId": "choi-2016",
+  "citation": {
+    "text": "Choi SY et al. Transcriptome landscape of Synechococcus elongatus PCC 7942 for nitrogen starvation responses using RNA-seq. Sci Rep 2016;6:30584.",
+    "url": "https://doi.org/10.1038/srep30584",
+    "pmid": "27488818"
+  },
+  "file": {
+    "name": "GSE79726_Se7942-N-starv2016.txt.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE79nnn/GSE79726/suppl/GSE79726_Se7942-N-starv2016.txt.gz",
+    "sha256": "c40b47f4797106e1296d29a5afc962c3a0215d55976e8daf16e88aab90350f4d"
+  },
+  "reader": {
+    "format": "tsv",
+    "idColumn": "ID_REF",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean normalized signal counts as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 56,
+  "replicates": {
+    "count": 2,
+    "text": "biological duplicate samples (2 per condition)"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 100,
+      "hi": 100,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "100 μE m-2 s-1"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": null,
+      "entrained": false,
+      "text": "continuous light; spectrum not reported"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported for the RNA-seq growth",
+      "where": ""
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11 medium"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "liquid culture"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "OD stated",
+      "od": [
+        1.0,
+        1.0
+      ],
+      "odNm": 730,
+      "text": "OD730 1.0 at the 24 h control harvest, before the nitrogen split; later time points not stated"
+    }
+  },
+  "caveat": "Measured in PCC 7942, not in UTEX 2973. Two replicates per condition.",
+  "layers": [
+    {
+      "id": "GSE79726_control_24h",
+      "metricKey": "exprGse79726Control",
+      "label": "Expression GSE79726 control 24 h (PCC 7942)",
+      "conditionSet": "Nitrogen-replete control at 24 h, before the split, mean of two replicates",
+      "samples": "Control 24h rep1–2 (GSM2101632, GSM2101633)",
+      "columns": [
+        "Control 24h rep1",
+        "Control 24h rep2"
+      ],
+      "treatments": [],
+      "group": "standard"
+    },
+    {
+      "id": "GSE79726_n_minus_48h",
+      "metricKey": "exprGse79726NMinus",
+      "label": "Expression GSE79726 nitrogen-free 48 h (PCC 7942)",
+      "conditionSet": "Nitrogen-free medium, 48 h, mean of two replicates",
+      "samples": "N-minus 48h rep1–2 (GSM2101634, GSM2101635)",
+      "columns": [
+        "N-minus 48h rep1",
+        "N-minus 48h rep2"
+      ],
+      "treatments": [
+        "nitrogen starvation"
+      ],
+      "group": "stress",
+      "caveat": "Measured in PCC 7942, not in UTEX 2973, in nitrogen-free medium. Two replicates."
+    },
+    {
+      "id": "GSE79726_n_plus_48h",
+      "metricKey": "exprGse79726NPlus",
+      "label": "Expression GSE79726 nitrogen-replete 48 h (PCC 7942)",
+      "conditionSet": "Nitrogen-replete medium, 48 h, mean of two replicates",
+      "samples": "N-plus 48h rep1–2 (GSM2101636, GSM2101637)",
+      "columns": [
+        "N-plus 48h rep1",
+        "N-plus 48h rep2"
+      ],
+      "treatments": [],
+      "group": "standard"
+    }
+  ]
+}

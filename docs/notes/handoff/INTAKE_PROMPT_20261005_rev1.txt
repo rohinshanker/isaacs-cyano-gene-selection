@@ -26,10 +26,11 @@ ticket ("Intake", "Verification"). Read those sections first. Refer to ticket an
 section heading, never by line number: step 1 edits the same files step 2 points into.
 
 STEP 0: STATE OF THE TREE
-- Branch main at c0eee4d, which holds the 2026-10-04 intake, unpushed. Other sessions' work and
-  the five tickets opened 2026-10-05 are still uncommitted. Check git status first. Do not commit, stage, or stash anything unless the
-  owner has said to. Edit only the files this prompt names.
-- Confirm no tracked file changed since the 2026-10-04 intake. The session says it edited none.
+- Branch main holds every return and all bookkeeping through 2026-10-05, committed and
+  unpushed. Packages D and E are committed as received and have not been taken in.
+- Check git status and git log first. Another session may be working in this checkout: re-read
+  a shared file immediately before editing it. Do not commit, stage, or stash anything unless
+  the owner has said to. Edit only the files this prompt names.
 
 STEP 1: PACKAGE D (returned 2026-10-04; ask the owner for the Sent date)
 Files: RET_claude-science-session__20261004.md and cyano_package_D_pairs_20261004.tsv, SHA-256

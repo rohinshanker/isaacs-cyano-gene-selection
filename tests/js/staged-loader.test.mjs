@@ -717,3 +717,83 @@ test('a file the manifest lists is published, so a 404 for it is a failure', asy
   assert.equal(lenient.codonPca, null);
   assert.equal(lenient.files.codonPca.state, 'absent');
 });
+
+/**
+ * The expression-layer payload: declared by `meta.expressionSources`, joined by
+ * locus tag onto the genes under each layer's metric key, and refused when it
+ * was built from a different gene file or is missing while declared.
+ */
+test('expression layers join onto the genes they were built from and nothing else', async () => {
+  const meta = JSON.parse(await fixture('meta.json'));
+  const genes = JSON.parse(await fixture('genes.json'));
+  const layerSource = {
+    id: 'GSE1_layer', metricKey: 'exprLayer', payload: 'expression_layers.json',
+    organism: 'PCC 7942', isTargetOrganism: false, condition: 'test', units: 'u',
+  };
+  meta.expressionSources = [...(meta.expressionSources ?? []), layerSource];
+  meta.metrics.exprLayer = {
+    label: 'Layer', unit: 'u', desc: 'A layer.', family: 'Expression', scale: 'sequential',
+    missingPolicy: 'null renders as unknown', direction: 'contextual',
+  };
+  const dataset = buildCoreDataset(meta, structuredClone(genes), null);
+  const ids = dataset.genes.map((gene) => gene.id);
+  const column = ids.map((_, index) => (index % 3 === 0 ? null : index * 1.5));
+  const payload = { schemaVersion: 1, geneIds: ids, layers: { exprLayer: column } };
+
+  // The payload is required once a source declares it, and must match the genes.
+  assert.throws(() => DATA_APPLIERS.expressionLayers(dataset, null),
+    /expression_layers.json is required by meta.expressionSources/);
+  assert.throws(() => DATA_APPLIERS.expressionLayers(dataset, { ...payload, schemaVersion: 2 }),
+    /unknown schemaVersion/);
+  assert.throws(() => DATA_APPLIERS.expressionLayers(dataset,
+    { ...payload, geneIds: [...ids.slice(1), ids[0]] }),
+  /built from a different gene file/);
+  assert.throws(() => DATA_APPLIERS.expressionLayers(dataset, { ...payload, layers: {} }),
+    /no complete layer for exprLayer/);
+  assert.throws(() => DATA_APPLIERS.expressionLayers(dataset,
+    { ...payload, layers: { exprLayer: column.map((v) => (v === null ? -1 : v)) } }),
+  /invalid value for exprLayer/);
+  assert.equal(dataset.genes[1].exprLayer, undefined, 'a refused payload joins nothing');
+
+  DATA_APPLIERS.expressionLayers(dataset, payload);
+  assert.equal(dataset.genes[0].exprLayer, undefined, 'null stays absent, never zero');
+  assert.equal(dataset.genes[1].exprLayer, 1.5);
+  assert.equal(dataset.genes[4].exprLayer, 6);
+
+  // Before the payload lands the metric is declared, selectable, and unknown.
+  const { buildMetricRegistry } = await import('../../site/js/core/metric-registry.js');
+  const fresh = buildCoreDataset(meta, structuredClone(genes), null);
+  const registry = buildMetricRegistry(fresh.meta, fresh.genes, {});
+  const metric = registry.byKey.get('exprLayer');
+  assert.ok(metric, 'the layer metric is in the registry before its file lands');
+  assert.equal(metric.fileKey, 'expressionLayers');
+  assert.ok(Number.isNaN(metric.read(1)));
+  assert.ok(!registry.declaredButMissing.includes('exprLayer'));
+  assert.equal(registry.byKey.get('gc3').fileKey, null);
+  DATA_APPLIERS.expressionLayers(fresh, payload);
+  assert.equal(metric.read(1), 1.5);
+
+  // A dataset that declares no layer source refuses a stray payload and
+  // accepts its absence.
+  const plain = buildCoreDataset(JSON.parse(await fixture('meta.json')), structuredClone(genes), null);
+  DATA_APPLIERS.expressionLayers(plain, null);
+  assert.throws(() => DATA_APPLIERS.expressionLayers(plain, payload),
+    /published but no source declares it/);
+});
+
+test('the published expression layers are in tier 3 and join the shipped genes', async () => {
+  assert.equal(DATA_FILE_BY_KEY.expressionLayers.tier, 3);
+  assert.equal(DATA_FILE_BY_KEY.expressionLayers.name, 'expression_layers.json');
+  const meta = JSON.parse(await site('meta.json'));
+  const layered = meta.expressionSources.filter((s) => s.payload === 'expression_layers.json');
+  assert.equal(layered.length, 11);
+  const payload = JSON.parse(await site('expression_layers.json'));
+  assert.deepEqual(Object.keys(payload.layers).sort(), layered.map((s) => s.metricKey).sort());
+  const genes = JSON.parse(await site('genes.json'));
+  assert.ok(genes.every((gene) => layered.every((s) => !(s.metricKey in gene))),
+    'layer values are not duplicated in the gene file');
+  for (const source of layered) {
+    const withValue = payload.layers[source.metricKey].filter((v) => v !== null).length;
+    assert.equal(withValue, source.coverage.withValue, source.metricKey);
+  }
+});

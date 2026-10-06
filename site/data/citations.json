@@ -103,6 +103,112 @@
           ]
         },
         {
+          "id": "gilliam-2025",
+          "citation": "Gilliam A et al. Cyanobacterial circadian regulation enhances bioproduction under subjective nighttime through rewiring of carbon partitioning dynamics, redox balance orchestration, and cell cycle modulation. Microbial Cell Factories 24, 56 (2025). doi:10.1186/s12934-025-02665-5; GEO GSE288532.",
+          "url": "https://doi.org/10.1186/s12934-025-02665-5",
+          "contribution": "Two optional RNA-abundance layers: subjective day (continuous light after entrainment, 18 samples) and subjective night (12 samples), as mean counts per million from the deposited raw counts. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over replicate columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY 4.0. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE288532_subjective_day.tsv",
+              "repoPath": "data/expression/GSE288532_subjective_day.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE288532_subjective_day.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE288532_subjective_night.tsv",
+              "repoPath": "data/expression/GSE288532_subjective_night.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE288532_subjective_night.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "dong-2023",
+          "citation": "Dong Z et al. Improved salt tolerance of Synechococcus elongatus PCC 7942 by heterologous synthesis of compatible solute ectoine. Frontiers in Microbiology 14, 1123081 (2023). doi:10.3389/fmicb.2023.1123081; GEO GSE222067.",
+          "url": "https://doi.org/10.3389/fmicb.2023.1123081",
+          "contribution": "Two optional RNA-abundance layers for the wild type at 0 mM and 300 mM NaCl (three replicates each), as mean counts per million from the deposited raw counts. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over replicate columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY 4.0. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE222067_wt_0mM_NaCl.tsv",
+              "repoPath": "data/expression/GSE222067_wt_0mM_NaCl.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE222067_wt_0mM_NaCl.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE222067_wt_300mM_NaCl.tsv",
+              "repoPath": "data/expression/GSE222067_wt_300mM_NaCl.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE222067_wt_300mM_NaCl.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "sato-2026",
+          "citation": "Sato M et al. Comparative study of phycoerythrobilin synthases for fine-tuning photosynthetic light-harvesting complexes, phycobilisomes. Scientific Reports 16 (2026). doi:10.1038/s41598-026-50582-3; GEO GSE327989.",
+          "url": "https://doi.org/10.1038/s41598-026-50582-3",
+          "contribution": "One optional RNA-abundance layer for the wild type at day 4 (three replicates), as mean TPM as deposited. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over replicate columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY 4.0. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE327989_wt_day4.tsv",
+              "repoPath": "data/expression/GSE327989_wt_day4.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE327989_wt_day4.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "choi-2016",
+          "citation": "Choi SY et al. Transcriptome landscape of Synechococcus elongatus PCC 7942 for nitrogen starvation responses using RNA-seq. Scientific Reports 6, 30584 (2016). doi:10.1038/srep30584; GEO GSE79726.",
+          "url": "https://doi.org/10.1038/srep30584",
+          "contribution": "Three optional RNA-abundance layers: control 24 h, nitrogen-free 48 h and nitrogen-replete 48 h (two replicates each), as mean normalised signal counts as deposited. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over replicate columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY 4.0. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE79726_control_24h.tsv",
+              "repoPath": "data/expression/GSE79726_control_24h.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE79726_control_24h.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE79726_n_minus_48h.tsv",
+              "repoPath": "data/expression/GSE79726_n_minus_48h.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE79726_n_minus_48h.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE79726_n_plus_48h.tsv",
+              "repoPath": "data/expression/GSE79726_n_plus_48h.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE79726_n_plus_48h.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "puszynska-2017",
+          "citation": "Puszynska AM, O'Shea EK. Switching of metabolic programs in response to light availability is an essential function of the cyanobacterial circadian output pathway. eLife 6, e23210 (2017). doi:10.7554/eLife.23210; GEO GSE89999.",
+          "url": "https://doi.org/10.7554/eLife.23210",
+          "contribution": "Three optional RNA-abundance layers from the control strain: dusk ZT12 (one sample), the darkness time course (mean of eight samples, 5 min to 11 h 50 min) and dawn (mean of three samples, 5 to 30 min), as RPKM as deposited; no replicates were deposited. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over replicate columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY 4.0. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE89999_control_dusk.tsv",
+              "repoPath": "data/expression/GSE89999_control_dusk.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE89999_control_dusk.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE89999_control_darkness.tsv",
+              "repoPath": "data/expression/GSE89999_control_darkness.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE89999_control_darkness.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE89999_control_dawn.tsv",
+              "repoPath": "data/expression/GSE89999_control_dawn.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE89999_control_dawn.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",

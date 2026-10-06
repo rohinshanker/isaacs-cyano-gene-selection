@@ -11,7 +11,8 @@ designing a construct. You can try it yourself at
 This document collects the open lab-review questions, with enough background that
 you can answer without having seen the tool before.
 
-**How to answer.** Reply by item id. A judgement with its basis is the most useful
+**How to answer.** Each item ends with a "Reviewer and date" line and one
+"Decision" line per decision it needs; fill those in, or reply by item id. A judgement with its basis is the most useful
 answer, but "don't know," "leave as is for now," and answering only the items you
 have an opinion on are all genuinely useful too — you do not need to answer
 everything, and you do not need any code or repository access. Each answer is
@@ -118,6 +119,9 @@ threshold."**
   categories take precedence when UTEX 2973 is enabled. See
   [the full method and numbers](source-derived-categories.md).
 - Useful expertise: a gene-function specialist.
+- Reviewer and date:
+- Decision (accept as built, change the threshold, reject, or blinded check first):
+- Decision (threshold, if changed from 0.8):
 
 **5. "Which functional claims are safe to use for priority genes, especially when
 based on homologs or computational GO?"**
@@ -134,6 +138,8 @@ based on homologs or computational GO?"**
   [protein evidence](protein-evidence.md) and
   [the function-category contract](function-categories.md).
 - Useful expertise: a gene-function specialist.
+- Reviewer and date:
+- Decision (priority genes to check, and any claim to retract):
 
 **Q4. "Is a clearly labelled predicted pathway and operon layer for UTEX 2973
 wanted?"**
@@ -150,6 +156,8 @@ wanted?"**
   and a paid subscription. Authenticated download has not been tested, and
   artifact-specific reuse and redistribution permission remains unresolved. See
   [the UTEX 2973 pathway-database assessment](../notes/tickets/O_biocyc-utex-2973-data__20260930.md).
+- Reviewer and date:
+- Decision (build the predicted layer, or decline):
 
 **Q5. "Is curated PCC 7942 pathway and regulatory content wanted as a transferred
 layer?"**
@@ -164,6 +172,8 @@ layer?"**
   licence and a paid subscription. Authenticated download has not been tested, and
   artifact-specific reuse and redistribution permission remains unresolved. See
   [the PCC 7942 pathway-database assessment](../notes/tickets/O_biocyc-pcc-7942-data__20260930.md).
+- Reviewer and date:
+- Decision (bring in the curated PCC 7942 layer, or leave it out):
 
 **Q6. "Is curated *E. coli* context on already-named loci worth a display layer, or
 export only?"**
@@ -182,6 +192,8 @@ export only?"**
   this table does not supply names for them. See
   [the ortholog table and its limits](../notes/tickets/O_biocyc-utex-2973-data__20260930.md)
   and [the cross-organism evidence contract](data-contract.md#evidence-coverage-and-cross-organism-transfer).
+- Reviewer and date:
+- Decision (visible layer, export only, or skip):
 
 ---
 
@@ -214,6 +226,9 @@ construct boundary?"**
   discrepancy and source-table conflicts. See
   [the Tan 2018 measurement scope and limits](../../data/expression/TAN2018_TSS_PROVENANCE.md#what-it-measures-and-what-it-does-not).
 - Useful expertise: a transcriptomics or regulatory-genomics reviewer.
+- Reviewer and date:
+- Decision (which placement a construct boundary trusts: the published start distance or the published coordinate):
+- Decision (whether a start site alone supports a regulatory interpretation):
 
 **11. "How should the two Tan 2018 TSS layers reconcile their locus sets?"**
 *Decided 2026-09-22 by the repository owner, still open for your review:* keep
@@ -244,6 +259,8 @@ internal, and orphan/novel Tan sites. Other proposed site types need admitted
 data. See
 [the regulatory-site layer questions](../notes/tickets/O_regulatory-site-viewer-layers__20260930.md)
 and [the non-gene-linked Tan sites](../../data/expression/TAN2018_TSS_PROVENANCE.md#non-gtss-regulatory-evidence).
+- Reviewer and date:
+- Decision (keep independent layers, or reconcile, and how):
 
 **R1. "Which distinct toggle types are wanted initially: TSS, TIS, TTS, promoters,
 RBS, binding sites, or broader categories?"**
@@ -256,6 +273,8 @@ RBS, binding sites, or broader categories?"**
   or ask for broader categories rather than individual types.
 - What's known and not known: only Tan 2018 transcription start sites are
   admitted so far, so this is about priority order for data not yet in hand.
+- Reviewer and date:
+- Decision (toggle types wanted first):
 
 **R2. "Should chromosome toggles expose Tan antisense, internal, and orphan/novel
 sites as separate types, including sites not associated with a plotted gene?"**
@@ -269,6 +288,8 @@ sites as separate types, including sites not associated with a plotted gene?"**
 - What's known and not known: 1,380 antisense, 724 internal, and 229
   orphan/novel Tan sites are extracted and held in the Regulatory sites tab; they
   do not duplicate the gene-associated rows.
+- Reviewer and date:
+- Decision (antisense, internal and orphan sites as separate types, and sites with no plotted gene):
 
 **R5. "Should you be able to select source, measured versus predicted evidence, and
 experimental condition independently of site type?"**
@@ -282,6 +303,8 @@ experimental condition independently of site type?"**
 - What's known and not known: the Tan sites carry their source condition, so the
   condition axis has real values today; measured-versus-predicted only becomes a
   distinction once predicted site types are admitted.
+- Reviewer and date:
+- Decision (source, measured-versus-predicted and condition selectable independently of site type):
 
 **R6. "How should overlapping sites, shared-gene associations, uncertain intervals,
 and gene-relative evidence without a chromosome position be presented?"**
@@ -300,6 +323,11 @@ and gene-relative evidence without a chromosome position be presented?"**
   site is still drawn and individually labelled. No treatment for overlap,
   interval uncertainty, or position-free evidence has been designed; this answer
   is what a design waits on.
+- Reviewer and date:
+- Decision (overlapping sites):
+- Decision (shared-gene associations):
+- Decision (uncertain intervals):
+- Decision (gene-relative evidence with no chromosome position):
 
 **C1. "Which regulatory-site types should the recoding metric consider first?"**
 
@@ -312,6 +340,8 @@ and gene-relative evidence without a chromosome position be presented?"**
   item chooses the site types for the initial evidence review; implementation also
   needs admitted data and a metric definition. See
   [the proposed recoding regulatory-site metric](../notes/tickets/O_recoding-regulatory-site-change__20260930.md).
+- Reviewer and date:
+- Decision (site types the recoding metric considers first):
 
 ---
 
@@ -341,6 +371,8 @@ for a recorded human judgement, not an automatic pooling rule. See
   screen for this pair. The recorded screen passed the other five axes, including
   OD₇₅₀ 0.3 on both sides; temperature was unresolved. See
   [the recorded pair judgements](../notes/tickets/O_comparability-lab-judgements__20261005.md).
+- Reviewer and date:
+- Decision (comparable, keep separate, or leave undecided):
 
 **J10. "The 32 escalated pairs, one by one: may each share a layer?"**
 
@@ -369,6 +401,8 @@ for a recorded human judgement, not an automatic pooling rule. See
   places each pair's conditions and source text side by side.
 - Useful expertise: a transcriptomics, proteomics, or physiology reviewer, matched
   to each pair's data type.
+- Reviewer and date:
+- Decision (any pair whose entry changes, by pair number, with the new judgement):
 
 ---
 
@@ -392,6 +426,9 @@ expression estimate?"**
   and [what the Tan data does and does not measure](../../data/expression/TAN2018_TSS_PROVENANCE.md#what-it-measures-and-what-it-does-not).
 - Useful expertise: cyanobacterial transcriptomics, comparative genomics, and
   statistics.
+- Reviewer and date:
+- Decision (sources to supply the estimate):
+- Decision (transfer model):
 
 ---
 
@@ -422,6 +459,9 @@ ambiguity. See
   that no such data exists. See
   [the recorded cross-strain sweep](../notes/tickets/O_cross-strain-data-scan__20260927.md).
 - Useful expertise: a comparative-genomics reviewer.
+- Reviewer and date:
+- Decision (comparative use of PCC 6311 and PCC 7943, if any):
+- Decision (UTEX 3055 as a conservation outgroup):
 
 **15. "Is UTEX 3055 close enough for each admitted data type, given its real
 gene-content difference?"**
@@ -439,6 +479,9 @@ gene-content difference?"**
   2973 CDSs have no UTEX 3055 counterpart. See
   [the admitted data types and the coverage caveat](data-contract.md#sister-strains-admitted-for-utex-2973-data).
 - Useful expertise: a comparative-genomics reviewer.
+- Reviewer and date:
+- Decision (annotation transfer from UTEX 3055):
+- Decision (quantitative data types from UTEX 3055):
 
 **7. "Should PCC 7942 evidence influence any panel choice, and under which
 cross-strain caveats?"**
@@ -458,6 +501,9 @@ cross-strain caveats?"**
   missing or ambiguous essentiality call never means "confirmed non-essential." See
   [the essentiality transfer policy](pcc-essentiality.md).
 - Useful expertise: a comparative-genomics or experimental reviewer.
+- Reviewer and date:
+- Decision (may PCC 7942 evidence influence a panel choice):
+- Decision (caveats that must accompany it):
 
 ---
 
@@ -484,6 +530,9 @@ what evidence would justify a later expression or charging tier?"**
   charging, or decoding; no such dataset for this organism is currently known to
   the project. See [the tRNA validation](trna-annotation-validation.md).
 - Useful expertise: a tRNA/translation specialist.
+- Reviewer and date:
+- Decision (copy-number adaptiveness as a proxy for this panel):
+- Decision (evidence that would justify an expression or charging tier):
 
 **Q3. "For tRNA, are the three dropped candidates and score breakdown wanted, and
 does 'how likely' mean the tool score or a calibrated probability?"**
@@ -503,6 +552,9 @@ does 'how likely' mean the tool score or a calibrated probability?"**
   is not established. See
   [the tRNA viewer questions](../notes/tickets/O_trna-identification-viewer__20260930.md).
 - Useful expertise: a tRNA/translation specialist.
+- Reviewer and date:
+- Decision (retrieve the three dropped candidates and the score breakdown):
+- Decision ("how likely" means the tool score or a calibrated probability):
 
 **Q7. "Port RBS Calculator v1.0, or assess a current version or another model?"**
 
@@ -519,6 +571,8 @@ does 'how likely' mean the tool score or a calibrated probability?"**
   *Synechococcus* or UTEX 2973. This is pre-grounding; validation applicable to
   UTEX 2973 remains unresolved. See
   [the RBS Calculator assessment](../notes/tickets/O_rbs-calculator-gene-visualizer__20260930.md).
+- Reviewer and date:
+- Decision (port v1.0, assess the current version, or another model):
 
 ---
 
@@ -541,6 +595,9 @@ reference set, and what independent evidence defines a suitable reference?"**
   evidence behind them so far. See
   [the audit and exact 71 loci](cai-reference-set.md).
 - Useful expertise: a translation/physiology reviewer.
+- Reviewer and date:
+- Decision (candidates to admit to the reference set, if any):
+- Decision (independent evidence that defines a suitable reference):
 
 ---
 
@@ -564,6 +621,8 @@ detected?"**
   detection list. See [the protein evidence contract](protein-evidence.md) and
   [candidate proteomics deposit and reuse status](source-ledger.md).
 - Useful expertise: a proteomics specialist and source curator.
+- Reviewer and date:
+- Decision (evidence that justifies "directly detected"):
 
 ---
 
@@ -588,6 +647,8 @@ proposed experiment?"**
   below-75-nucleotide flag exists for annotation review; nothing currently plotted
   falls below it. See [the length-sensitivity audit](pca-length-sensitivity.md).
 - Useful expertise: a quantitative-genomics reviewer.
+- Reviewer and date:
+- Decision (how a short gene's PCA position is to be read):
 
 **S4. "Is the native codon-space PCA retired now that the chromosome tab exists,
 and do the live risk and perturbation PCAs stay?"**
@@ -603,6 +664,9 @@ and do the live risk and perturbation PCAs stay?"**
   not a replacement, so retiring the older plot is a distinct, deliberate step
   that has not been taken. See
   [the open scope and retirement questions](../notes/tickets/O_cross-strain-data-scan__20260927.md).
+- Reviewer and date:
+- Decision (retire the native codon-space PCA):
+- Decision (live risk and perturbation PCAs stay):
 
 ---
 
@@ -625,6 +689,9 @@ perturbation?"**
   [the folding contract](rna-folding.md) and
   [metric conventions](current-design-answers.md#what-do-rare-codon-cai-and-tai-mean-here).
 - Useful expertise: a translation or RNA-structure reviewer.
+- Reviewer and date:
+- Decision (rare-codon convention):
+- Decision (local-folding convention):
 
 ---
 
@@ -644,6 +711,8 @@ map, and constraints appropriate for the intended experiment?"**
   substitution map, and experimental constraints. See
   [the panel review checklist](AAA-manual-review-checklist.md#2-review-the-actual-biological-panel).
 - Useful expertise: an experimental lead and a genome-annotation reviewer.
+- Reviewer and date:
+- Decision (for the named panel: loci, gene models, recoding map and constraints):
 
 ---
 
@@ -663,6 +732,8 @@ lookup?"**
 - What's known and not known: broadening scope is recorded as a schema change to
   the data the site loads. See
   [the open scope question](../notes/tickets/O_cross-strain-data-scan__20260927.md).
+- Reviewer and date:
+- Decision (recoding-panel workflow, or general lookup):
 
 ---
 
@@ -732,6 +803,24 @@ condition table the sheet quotes.
 | 30 | GSE254350 (row 37) | GSE89999 (row 57) | light_intensity | — | no entry |
 | 31 | GSE45762 (row 45) | GSE89999 (row 57) | light_intensity | fine | may share |
 | 32 | PXD062851 (row 77) | PXD074299 (row 78) | light_intensity | fine | may share |
+
+**Extrapolated entries, 2026-10-05.** The owner asked that the blank pairs be
+settled by extrapolation from the judgements already given on the same studies.
+These three are the agent's extrapolations, not the owner's words, and the owner
+may overrule any of them:
+
+- Pair 8 (PXD030282 row 74 against PXD062851 row 77): the same two studies and
+  the same light values as pair 7, so it takes pair 7's entry: undecided, with
+  the changing-light concern.
+- Pair 11 (GSE103462 at 40 µE, entrained then constant light, against GSE45762
+  at 60 µmol): the same values and regime as pairs 14 and 17, which the owner
+  marked "fine": may share.
+- Pair 30 (GSE254350 at 30 µmol against GSE89999 at 40 µE): the owner accepted
+  GSE89999 against GSE45762 at 60 µmol (pair 31, "fine") and GSE254350 against
+  the circadian array series (pairs 1, 3, 4 and 5, "may share"); the light ratio
+  here is smaller than in pair 31: may share.
+
+Pair 7 stays undecided; it is the owner's own "maybe".
 
 Rules the owner stated along the way, to apply to later pairs:
 

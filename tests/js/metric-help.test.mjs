@@ -19,9 +19,20 @@ const live = Object.fromEntries(LIVE_METRICS.map((metric) =>
 const registry = buildMetricRegistry(meta, genes, live);
 const dataset = { meta, genes, codonPca };
 
-test('all 53 selectable metrics have a calculation, origin, missingness and real citations', () => {
-  assert.equal(registry.metrics.length, 53);
-  assert.deepEqual(new Set(methodKeys()), new Set(registry.metrics.map((metric) => metric.key)));
+test('all 64 selectable metrics have a calculation, origin, missingness and real citations', () => {
+  assert.equal(registry.metrics.length, 64);
+  // Hand-written method lines cover every metric except the layers the
+  // ingestion tool made, whose method is derived from their provenance.
+  const ingested = registry.metrics.filter((metric) => metric.provenance?.ingest);
+  assert.equal(ingested.length, 11);
+  assert.deepEqual(new Set(methodKeys()), new Set(registry.metrics
+    .filter((metric) => !metric.provenance?.ingest).map((metric) => metric.key)));
+  for (const metric of ingested) {
+    const explanation = metricHelp(metric, dataset);
+    assert.match(explanation.method, /Arithmetic mean of \d+ deposited sample columns? from GSE\d+/);
+    assert.match(explanation.method, /one-to-one identifier crosswalk/);
+    assert.deepEqual(explanation.citations, [metric.provenance.citationId]);
+  }
   for (const metric of registry.metrics) {
     const explanation = metricHelp(metric, dataset);
     for (const field of ['title', 'summary', 'method', 'unit', 'origin', 'coverage']) {

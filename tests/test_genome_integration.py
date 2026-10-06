@@ -35,7 +35,8 @@ def test_generated_documents_follow_contract():
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
     assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
-    assert len(meta["metrics"]) == 35
+    # 35 computed metrics plus one expression metric per ingested layer (11).
+    assert len(meta["metrics"]) == 35 + 11
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -111,14 +112,31 @@ def test_generated_documents_follow_contract():
     assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
 
     manifest = json.loads(EXPRESSION_MANIFEST.read_text())
-    assert len(meta["expressionSources"]) == len(manifest) == 2
+    assert len(meta["expressionSources"]) == len(manifest) == 13
     for emitted, selected in zip(meta["expressionSources"], manifest, strict=True):
         assert emitted | selected == emitted
     assert [source["coverage"]["withValue"] for source in meta["expressionSources"]] == [
-        2551,
-        1727,
+        2551, 1727,
+        2615, 2615,  # GSE288532 subjective day / night
+        2550, 2550,  # GSE222067 WT 0 / 300 mM NaCl
+        2505,  # GSE327989 WT day 4
+        2551, 2551, 2551,  # GSE79726 control / N-minus / N-plus
+        2551, 2551, 2551,  # GSE89999 dusk / darkness / dawn
     ]
     assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
+    # The two original measurements ride in genes.json; every ingested layer is
+    # published apart, joined by locus tag, so the gene file keeps its budget.
+    layered = [s for s in meta["expressionSources"] if s["payload"] == "expression_layers.json"]
+    assert [s["payload"] for s in meta["expressionSources"][:2]] == ["genes.json", "genes.json"]
+    assert len(layered) == 11
+    layers = json.loads((DATA / "expression_layers.json").read_text())
+    assert layers["geneIds"] == [gene["id"] for gene in genes]
+    assert set(layers["layers"]) == {s["metricKey"] for s in layered}
+    assert all(s["metricKey"] not in gene for s in layered for gene in genes)
+    for source in layered:
+        column = layers["layers"][source["metricKey"]]
+        assert len(column) == 2715
+        assert sum(value is not None for value in column) == source["coverage"]["withValue"]
     tss_definition = meta["metrics"]["tssInitiation"]
     assert "transcription initiation strength" in tss_definition["desc"]
     assert "not transcript abundance" in tss_definition["desc"]

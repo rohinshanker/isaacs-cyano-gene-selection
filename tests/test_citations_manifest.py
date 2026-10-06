@@ -49,7 +49,9 @@ def test_sections_and_citations_are_complete():
     assert len(ids) == len(set(ids))
     assert {
         "yu-2015", "ncbi-utex-2973", "tan-2018", "simkovsky-2022",
-        "ncbi-pcc-7942", "gene-ontology", "adomako-2022-essentiality"
+        "gilliam-2025", "dong-2023", "sato-2026", "choi-2016",
+        "puszynska-2017", "ncbi-pcc-7942", "gene-ontology",
+        "adomako-2022-essentiality"
     } == {item["id"] for item in sections[0]["items"]}
     assert {
         "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
@@ -94,6 +96,10 @@ def test_every_retained_external_data_source_is_attributed():
         (ROOT / "data/expression/sources.json").read_text(encoding="utf-8")
     )
     required = {f"data/expression/{source['file']}" for source in expression}
+    ledger_ids = {
+        item["id"] for section in load_manifest()["sections"] for item in section["items"]
+    }
+    assert {source["citationId"] for source in expression} <= ledger_ids
     annotation = json.loads(
         (ROOT / "data/manifest/annotation-release-v1.json").read_text(
             encoding="utf-8"

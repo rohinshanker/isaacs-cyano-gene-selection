@@ -10,6 +10,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import feature_metrics as fm
+from condition_record import example_record
 from build_features import (
     S_VALUES,
     add_context,
@@ -18,6 +19,7 @@ from build_features import (
     codon_occurrences,
     effective_anticodon,
     exclusion_reason,
+    expression_layers_document,
     expression_proxy_scores,
     expression_percentiles,
     gene_pair_metrics,
@@ -221,6 +223,7 @@ def test_joined_cds_segments_preserve_location_order():
 def expression_source(file_name, metric_key, digest):
     """Returns a complete test manifest entry."""
     return {
+        "record": example_record(studyId=metric_key.upper()),
         "id": metric_key.upper(),
         "file": file_name,
         "metricKey": metric_key,
@@ -234,6 +237,7 @@ def expression_source(file_name, metric_key, digest):
         "licence": "test licence",
         "caveat": "test caveat",
         "provenanceDoc": "data/expression/test.md",
+        "citationId": "test-citation",
     }
 
 
@@ -268,6 +272,8 @@ def test_expression_manifest_loads_only_selected_sources_and_keeps_nulls(tmp_pat
         "expression": {"a": 10.0, "b": 20.0, "c": 20.0},
         "tssInitiation": {"b": 7.0},
     }
+    # A source that names no payload is in the gene file.
+    assert [source["payload"] for source in sources] == ["genes.json", "genes.json"]
     assert values["expression"].get("a") == 10
     assert values["tssInitiation"].get("a") is None
     assert expression_percentiles(values["expression"]) == {
@@ -303,6 +309,42 @@ def test_expression_manifest_rejects_a_metric_key_collision(tmp_path):
     (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="metricKey collision: cai"):
         load_expression_sources(tmp_path, {"cai"})
+
+
+def test_expression_manifest_rejects_an_unknown_payload(tmp_path):
+    digest = write_expression_table(tmp_path, "source.tsv", [("a", 10, "s1")])
+    manifest = [expression_source("source.tsv", "exprTest", digest) | {"payload": "layers.bin"}]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="unknown payload: 'layers.bin'"):
+        load_expression_sources(tmp_path, set())
+
+
+def test_expression_layers_document_holds_layer_sources_in_gene_order():
+    genes = [{"id": "g1"}, {"id": "g2"}, {"id": "g3"}]
+    sources = [
+        {"metricKey": "expression", "payload": "genes.json"},
+        {"metricKey": "exprA", "payload": "expression_layers.json"},
+        {"metricKey": "exprB", "payload": "expression_layers.json"},
+    ]
+    values = {
+        "expression": {"g1": 1.0},
+        "exprA": {"g3": 3.0, "g1": 1.5},
+        "exprB": {},
+    }
+    assert expression_layers_document(genes, sources, values) == {
+        "schemaVersion": 1,
+        "geneIds": ["g1", "g2", "g3"],
+        "layers": {"exprA": [1.5, None, 3.0], "exprB": [None, None, None]},
+    }
+    assert expression_layers_document(genes, sources[:1], values) is None
+
+
+def test_expression_manifest_rejects_an_empty_citation_id(tmp_path):
+    digest = write_expression_table(tmp_path, "source.tsv", [("a", 10, "s1")])
+    manifest = [expression_source("source.tsv", "exprTest", digest) | {"citationId": ""}]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="names no citation ledger entry"):
+        load_expression_sources(tmp_path, set())
 
 
 def test_expression_proxy_is_a_tie_aware_zero_to_one_cai_tai_rank():

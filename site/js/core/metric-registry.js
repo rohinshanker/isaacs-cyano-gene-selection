@@ -393,7 +393,12 @@ export function buildMetricRegistry(meta, genes, liveFields) {
     // Every gene, not a prefix sample: a sparse metric's first finite value can
     // land anywhere in gene order, and `.some` still exits on the first hit.
     const present = genes.some((gene) => typeof gene[key] === 'number' && Number.isFinite(gene[key]));
-    if (!present) {
+    // A metric published in the separate expression-layer payload is declared
+    // before its values land: it stays selectable, reads as unknown until the
+    // file is joined, and is never reported as missing.
+    const fileKey = expressionSources.get(key)?.payload === 'expression_layers.json'
+      ? 'expressionLayers' : null;
+    if (!present && !fileKey) {
       declaredButMissing.push(key);
       continue;
     }
@@ -408,6 +413,9 @@ export function buildMetricRegistry(meta, genes, liveFields) {
       family: definition.family ?? FAMILY_BY_KEY.get(key) ?? 'Other',
       scale: definition.scale ?? null,
       source: 'pipeline',
+      // The later data file this metric's values arrive in, or null when they
+      // are in the gene file itself.
+      fileKey,
       integer: INTEGER_KEYS.has(key),
       read: (index) => {
         const value = genes[index][key];

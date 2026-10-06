@@ -142,7 +142,12 @@ test('the production registry leads with measured UTEX evidence, before Translat
   const expression = orderMeasuredFirst(
     registry.metrics.filter((metric) => metric.family === 'Expression'),
   ).map((metric) => metric.key);
-  assert.deepEqual(expression, ['tssInitiation', 'expression']);
+  assert.deepEqual(expression.slice(0, 2), ['tssInitiation', 'expression']);
+  // The ingested PCC 7942 layers follow in manifest order, after the two
+  // original measurements.
+  assert.deepEqual(expression.slice(2), dataset.meta.expressionSources.slice(2)
+    .map((source) => source.metricKey));
+  assert.equal(expression.length, 13);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
   assert.equal(freshViewColorKey(registry, dataset.functionCategories), 'functionCategory');
 });

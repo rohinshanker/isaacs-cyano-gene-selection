@@ -65,7 +65,7 @@ import {
 import { colorAnnouncement, installColorControls } from './ui/color-controls.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
-import { FilterPanel, clearedFilterState } from './ui/filters.js';
+import { FilterPanel, clearedFilterState, orderTrafficCandidates } from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
@@ -76,6 +76,10 @@ import { LeftPanels } from './ui/left-panels.js';
 import { renderGeneViewer } from './ui/gene-viewer.js';
 import { GeneSequenceView } from './ui/gene-sequence-view.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
+import { DataSourcesPanel } from './ui/data-sources.js';
+import {
+  datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
+} from './core/data-sources.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
@@ -176,6 +180,8 @@ const reducedMotion = prefersReducedMotion(window);
 const textScramble = new TextScramble({ timing: loadTiming.scramble });
 
 const context = {
+  // The filters' threshold follows the colouring metric until the reader says otherwise.
+  trafficFollowsColor: true,
   dataset: null,
   registry: null,
   live: null,
@@ -188,6 +194,8 @@ const context = {
   schemeVersion: 0,
   projections: new Map(),
   percentiles: new Map(),
+  // A colour scale defaulted while its metric's file was loading, re-chosen on landing.
+  scaleAwaitsFile: null,
   timings: { scheme: NaN, projection: NaN, codons: 0 },
 };
 
@@ -582,6 +590,7 @@ function persist() {
 let plot = null;
 let schemeEditor = null;
 let filterPanel = null;
+let dataSourcesPanel = null;
 let sidePanel = null;
 let shortlistPanel = null;
 let searchResults = null;
@@ -660,8 +669,14 @@ function resolveColorScale() {
   };
   const availability = valueScaleAvailability(values, options);
   const requested = state.colorScale;
-  const scale = VALUE_SCALES.includes(requested) && availability.get(requested).available
-    ? requested : defaultValueScale(values, options);
+  const pinned = VALUE_SCALES.includes(requested) && availability.get(requested).available;
+  // A default chosen while the metric's own file is still loading was chosen
+  // over no values at all; it is chosen again, from the real values, once the
+  // file lands. A scale the reader or the link asked for stays.
+  if (!pinned && metric.fileKey && isLoading(context.dataset, metric.fileKey)) {
+    context.scaleAwaitsFile = { key: metric.key, fileKey: metric.fileKey };
+  }
+  const scale = pinned ? requested : defaultValueScale(values, options);
   state.colorScale = scale;
   return { categorical: false, metric, values, scale, availability };
 }
@@ -1145,8 +1160,11 @@ function renderAll({ schemeErrors = [] } = {}) {
     verification: context.verification,
     genesWithoutTerminalStop: context.dataset.provenance.genesWithoutTerminalStop,
   });
+  followColourForTraffic();
   filterPanel.update({
-    registry: context.registry,
+    registry: scopedRegistry(),
+    colorMetricKey: state.colorBy,
+    followColor: context.trafficFollowsColor,
     filters: state.filters,
     categoryFilter: state.categoryFilter,
     count: context.dataset.genes.length,
@@ -1179,7 +1197,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       translationalException: state.exceptionFilter,
     },
     filterMask: context.mask,
-    viewState: () => viewStateOf(state, organism),
+    viewState: () => ({ ...viewStateOf(state, organism), dataSources: sourceSelection() }),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
     schemeActive: Object.keys(state.schemeMap).length > 0,
@@ -1213,7 +1231,23 @@ function renderAll({ schemeErrors = [] } = {}) {
       },
     });
   }
+  dataSourcesPanel?.update({ selection: sourceSelection(), colorMetricKey: state.colorBy });
   persist();
+}
+
+/**
+ * The filters' "Use same source as colouring" rule: while it is on and the
+ * colour metric can stand in for gene activity, the low-traffic threshold
+ * judges activity by that same metric, and a threshold set on the previous
+ * one is dropped rather than silently kept on a metric no longer named.
+ */
+function followColourForTraffic() {
+  if (!context.trafficFollowsColor) return;
+  const candidates = orderTrafficCandidates(scopedRegistry());
+  if (!candidates.some((metric) => metric.key === state.colorBy)) return;
+  if (state.trafficKey === state.colorBy) return;
+  if (state.trafficKey) delete state.filters[state.trafficKey];
+  state.trafficKey = state.colorBy;
 }
 
 function setScheme(map, { name } = {}) {
@@ -1407,8 +1441,85 @@ function renderCurrentView() {
  */
 function familyMetrics(family) {
   return orderMeasuredFirst(
-    context.registry.metrics.filter((metric) => metric.family === family),
+    context.registry.metrics.filter((metric) => metric.family === family && metricInScope(metric)),
   );
+}
+
+/** The resolved data-source selection: ids of the datasets the menus offer. */
+function sourceSelection() {
+  return normalizeSelection(state.sources, context.datasets ?? []);
+}
+
+/**
+ * Whether a metric is offered by the colour, axis and filter selectors. A
+ * metric that belongs to a dataset is offered only while that dataset is
+ * selected in Data Sources; every computed metric is always offered. The
+ * gene detail, the comparison and the provenance list keep showing every
+ * source, so hiding a dataset here never hides evidence elsewhere.
+ */
+function metricInScope(metric) {
+  if (!metric || !context.datasets?.length) return true;
+  const owned = context.datasets.some((dataset) => dataset.metricKey === metric.key);
+  return !owned || selectedMetricKeys(state.sources, context.datasets).has(metric.key);
+}
+
+/** The registry as the selectors see it: the same lookup, fewer offered metrics. */
+function scopedRegistry() {
+  return { ...context.registry, metrics: context.registry.metrics.filter(metricInScope) };
+}
+
+/**
+ * Apply a new data-source selection: the menus narrow or widen, a colour or
+ * axis metric that was just deselected falls back to the fresh-view choice,
+ * and the link records the selection only when it differs from the default.
+ */
+function setSources(ids) {
+  const next = normalizeSelection(ids, context.datasets);
+  state.sources = isDefaultSelection(next, context.datasets) ? [] : next;
+  if (!metricInScope(context.registry.byKey.get(state.colorBy))) {
+    state.colorBy = freshViewColorKey(scopedRegistry(), context.dataset.functionCategories);
+    state.colorScale = null;
+    resolveColorScale();
+  }
+  const axes = resolveDefaultMetricAxes(scopedRegistry());
+  if (!metricInScope(context.registry.byKey.get(state.axisX))) state.axisX = axes.x;
+  if (!metricInScope(context.registry.byKey.get(state.axisY))) state.axisY = axes.y;
+  buildColorSelect();
+  fillAxisSelects();
+  syncAxisSourceSelects();
+  plot.projectionId = null;
+  renderMap();
+  renderAll();
+  announce(`Data sources: ${sourceSelection().length} selected.`);
+}
+
+/**
+ * A metric with several selected sources of its data type gets a source
+ * selector beside its axis; one with a single source, or a computed metric,
+ * does not. Choosing a source switches the axis to that source's metric.
+ */
+function syncAxisSourceSelects() {
+  for (const [axis, key] of [['x', 'axisX'], ['y', 'axisY']]) {
+    const row = element(`axis-${axis}-source-row`);
+    const select = element(`axis-${axis}-source`);
+    const type = dataTypeOfMetric(state[key], context.datasets ?? []);
+    const chosen = new Set(sourceSelection());
+    const candidates = (context.datasets ?? []).filter((dataset) => dataset.record.dataType === type
+      && chosen.has(dataset.id) && context.registry.byKey.has(dataset.metricKey));
+    if (!type || candidates.length < 2) {
+      row.hidden = true;
+      continue;
+    }
+    select.replaceChildren();
+    for (const dataset of candidates) {
+      const option = document.createElement('option');
+      option.value = dataset.metricKey;
+      option.textContent = `${dataset.record.studyId} · ${dataset.record.conditionSet}`;
+      select.append(option);
+    }
+    select.value = state[key];
+    row.hidden = false;
+  }
 }
 
 function buildColorSelect() {
@@ -1440,6 +1551,15 @@ function buildColorSelect() {
  */
 function buildColorControls() {
   buildColorSelect();
+  let storage = null;
+  try { storage = window.localStorage; } catch { storage = null; }
+  dataSourcesPanel = new DataSourcesPanel(element('data-sources'), {
+    datasets: context.datasets,
+    judgements: context.dataset.meta.pairJudgements ?? [],
+    storage,
+    onChange: (ids) => setSources(ids),
+  });
+  dataSourcesPanel.update({ selection: sourceSelection(), colorMetricKey: state.colorBy });
   installColorControls({
     colorBy: element('color-by'),
     scale: element('color-scale'),
@@ -1460,7 +1580,8 @@ function announceColorScale() {
   announce(colorAnnouncement(colorModel()));
 }
 
-function buildAxisSelects() {
+/** Fill both axis selectors with the metrics in scope; listeners are installed once. */
+function fillAxisSelects() {
   for (const [axis, key] of [['x', 'axisX'], ['y', 'axisY']]) {
     const select = element(`axis-${axis}`);
     select.replaceChildren();
@@ -1473,18 +1594,32 @@ function buildAxisSelects() {
         option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
         group.append(option);
       }
-      select.append(group);
+      if (group.children.length > 0) select.append(group);
     }
     select.value = state[key];
-    select.addEventListener('change', () => {
-      state[key] = select.value;
+  }
+}
+
+function buildAxisSelects() {
+  fillAxisSelects();
+  for (const [axis, key] of [['x', 'axisX'], ['y', 'axisY']]) {
+    const select = element(`axis-${axis}`);
+    const onAxisChange = (value) => {
+      state[key] = value;
+      syncAxisSourceSelects();
       plot.projectionId = null;
       renderMap();
       persist();
       announce(`Metric plot: ${element('axis-x').selectedOptions[0].textContent} on X, `
         + `${element('axis-y').selectedOptions[0].textContent} on Y.`);
+    };
+    select.addEventListener('change', () => onAxisChange(select.value));
+    element(`axis-${axis}-source`).addEventListener('change', (event) => {
+      onAxisChange(event.target.value);
+      element(`axis-${axis}`).value = state[key];
     });
   }
+  syncAxisSourceSelects();
 }
 
 /** Build the per-axis scale selectors once; their availability is kept in
@@ -1760,23 +1895,27 @@ function normalizeAndApply(decoded) {
   if (!context.registry) {
     context.registry = buildMetricRegistry(context.dataset.meta, context.dataset.genes, context.live);
   }
+  context.datasets = datasetsFrom(context.dataset.meta);
+  state.sources = isDefaultSelection(state.sources, context.datasets)
+    ? [] : normalizeSelection(state.sources, context.datasets);
   // A filter or a traffic metric this dataset has no metric for cannot act, so
   // it is dropped rather than carried in the address as if it were in effect.
   state.filters = Object.fromEntries(Object.entries(state.filters)
     .filter(([key]) => context.registry.byKey.has(key)));
   if (state.trafficKey && !context.registry.byKey.has(state.trafficKey)) state.trafficKey = null;
-  if (!state.colorBy || !(context.registry.byKey.has(state.colorBy)
+  if (!state.colorBy || !((context.registry.byKey.has(state.colorBy)
+    && metricInScope(context.registry.byKey.get(state.colorBy)))
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
-    state.colorBy = freshViewColorKey(context.registry, context.dataset.functionCategories);
+    state.colorBy = freshViewColorKey(scopedRegistry(), context.dataset.functionCategories);
   }
   // Colour by is settled, so the scale can be: a hash naming `csc` keeps it, and
   // anything else — a fresh view, an older link, a scale this metric cannot take
   // — becomes the metric's own default. Resolved here rather than at first paint
   // so a link written before any view renders already records the real scale.
   resolveColorScale();
-  const axes = resolveDefaultMetricAxes(context.registry, organism.freshAxes);
-  if (!context.registry.byKey.has(state.axisX)) state.axisX = axes.x;
-  if (!context.registry.byKey.has(state.axisY)) state.axisY = axes.y;
+  const axes = resolveDefaultMetricAxes(scopedRegistry(), organism.freshAxes);
+  if (!metricInScope(context.registry.byKey.get(state.axisX))) state.axisX = axes.x;
+  if (!metricInScope(context.registry.byKey.get(state.axisY))) state.axisY = axes.y;
 }
 
 
@@ -1802,6 +1941,9 @@ function applyLiveHash() {
   // genome, not whatever window the previous view was left at.
   chromosomeView?.resetView({ announce: false });
   updatePanelTabs();
+  buildColorSelect();
+  fillAxisSelects();
+  syncAxisSourceSelects();
   syncSharedControls();
   element('axis-x').value = state.axisX;
   element('axis-y').value = state.axisY;
@@ -1847,6 +1989,23 @@ function promotedFileKeys(view) {
   return [...keys];
 }
 
+/**
+ * The later files whose metrics the view reads, known once `meta.json` has
+ * named which metric arrives in which file: a link coloured, plotted,
+ * filtered, or traffic-lit by a metric from the expression-layer payload waits
+ * for that payload the way a pinned gene waits for its evidence.
+ */
+function promotedMetricFileKeys(view, registry) {
+  const named = [view.colorBy, view.axisX, view.axisY, view.trafficKey,
+    ...Object.keys(view.filters ?? {})];
+  const keys = new Set();
+  for (const key of named) {
+    const fileKey = registry.byKey.get(key)?.fileKey;
+    if (fileKey) keys.add(fileKey);
+  }
+  return [...keys];
+}
+
 /** A later file settled. Renders are coalesced, since several often land together. */
 function fileLanded(key) {
   landed.add(key);
@@ -1882,6 +2041,18 @@ function flushLandings() {
     searchResults?.setGenes(dataset.genes, dataset.goTerms?.terms, dataset);
   }
   if (keys.has('excluded')) renderProvenance();
+  // Percentile ranks cached while a layer's values were still unknown would
+  // stay empty; the layer's metrics rank afresh from the values that landed.
+  if (keys.has('expressionLayers')) {
+    for (const metric of context.registry.metrics) {
+      if (metric.fileKey === 'expressionLayers') context.percentiles.delete(metric.key);
+    }
+  }
+  const awaiting = context.scaleAwaitsFile;
+  if (awaiting && keys.has(awaiting.fileKey)) {
+    context.scaleAwaitsFile = null;
+    if (state.colorBy === awaiting.key) state.colorScale = null;
+  }
   loadProgress.setFiles(staged.files);
   renderAll();
   // The categories arrived after the points had already appeared in the
@@ -2224,6 +2395,24 @@ async function boot() {
       state.filters = filters;
       renderAll();
     },
+    onTrafficFollowChange: (follow) => {
+      context.trafficFollowsColor = follow;
+      renderAll();
+      announce(follow
+        ? 'The low-traffic threshold now judges activity by the colouring metric.'
+        : 'The low-traffic threshold now keeps its own source.');
+    },
+    onSelectSource: async (dataType, current, opener) => {
+      const key = await dataSourcesPanel.open({
+        mode: 'single', dataType, current, opener, title: 'Select the source the filter judges activity by',
+      });
+      if (!key || key === state.trafficKey) return;
+      const filters = { ...state.filters };
+      if (state.trafficKey) delete filters[state.trafficKey];
+      state.trafficKey = key;
+      state.filters = filters;
+      renderAll();
+    },
     onProteinFilterChange: (mode) => {
       state.proteinFilter = mode;
       renderAll();
@@ -2447,7 +2636,14 @@ async function boot() {
 
   // The reveal waits for any file this view was opened onto, and then for the
   // bar to finish: it fills in uneven blocks over its minimum time and is held
-  // full for a moment so it is seen. Neither ever delays a request.
+  // full for a moment so it is seen. Neither ever delays a request. Files named
+  // through a metric are known only now that the registry exists.
+  const promotedByMetric = promotedMetricFileKeys(state, context.registry)
+    .filter((key) => !promoted.includes(key));
+  if (promotedByMetric.length > 0) {
+    promoted.push(...promotedByMetric);
+    loadProgress.setBlocking([...CORE_FILE_KEYS, ...promoted]);
+  }
   await load.when(promoted);
   await loadProgress.finished();
   revealPage();

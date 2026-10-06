@@ -1,0 +1,105 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE327989",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327989",
+  "citationId": "sato-2026",
+  "citation": {
+    "text": "Sato M et al. Comparative study of phycoerythrobilin synthases for fine-tuning photosynthetic light-harvesting complexes, phycobilisomes. Sci Rep 2026;16.",
+    "url": "https://doi.org/10.1038/s41598-026-50582-3",
+    "pmid": "42045357"
+  },
+  "file": {
+    "name": "GSE327989_TPM_values_260414.csv.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE327nnn/GSE327989/suppl/GSE327989_TPM_values_260414.csv.gz",
+    "sha256": "276e18547ea8827d4404299e8a47fca463ca0b2a64d041a7fbc0905c6a662f28"
+  },
+  "reader": {
+    "format": "csv",
+    "idColumn": "Name",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean TPM as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 40,
+  "replicates": {
+    "count": 3,
+    "text": "3 biological replicates per strain"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30°C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 60,
+      "hi": 60,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "60 μmol photons m−2·s−1"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": null,
+      "entrained": false,
+      "text": "continuous light; white light, class not stated"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 2,
+      "hi": 2,
+      "unit": "%",
+      "text": "2% CO2, continuous bubbling"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "liquid BG-11 medium supplemented with 5 µM IPTG"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "bubbled liquid culture"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "exponential",
+      "od": null,
+      "odNm": null,
+      "text": "exponential phase, harvested on day 4"
+    }
+  },
+  "caveat": "Measured in PCC 7942, not in UTEX 2973; the article's association with this deposit is by title and author list, not a cited accession. Wild-type samples only.",
+  "layers": [
+    {
+      "id": "GSE327989_wt_day4",
+      "metricKey": "exprGse327989Wt",
+      "label": "Expression GSE327989 WT day 4 (PCC 7942)",
+      "conditionSet": "Wild type with 5 µM IPTG, day-4 harvest, mean of three replicates",
+      "samples": "WT_4d_1–3 (GSM9670053, GSM9670054, GSM9670055)",
+      "columns": [
+        "WT_4d_1 (GE) - TPM",
+        "WT_4d_2_S1 (GE) - TPM",
+        "WT_4d_3_S2 (GE) - TPM"
+      ],
+      "treatments": [
+        "IPTG induction"
+      ],
+      "group": "standard"
+    }
+  ]
+}

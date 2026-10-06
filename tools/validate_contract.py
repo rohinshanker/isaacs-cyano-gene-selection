@@ -1372,6 +1372,73 @@ def validate_data_manifest(data_dir: str, report: Report) -> None:
     )
 
 
+def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[Any],
+                               report: Report) -> None:
+    """Checks the separate expression-layer payload against the sources that declare it.
+
+    A source published through ``expression_layers.json`` keeps its values out
+    of ``genes.json``; the payload repeats the gene order so a stale file cannot
+    be joined, every layer has one entry per gene, a value is a finite
+    non-negative number or null, and the non-null count is the coverage the
+    source declares. A source published through ``genes.json`` must still be
+    found there.
+    """
+    sources = [s for s in meta.get("expressionSources", []) if isinstance(s, dict)]
+    layer_sources = [s for s in sources if s.get("payload") == "expression_layers.json"]
+    gene_sources = [s for s in sources if s.get("payload") == "genes.json"]
+    report.check(
+        len(layer_sources) + len(gene_sources) == len(sources),
+        "every expression source names its payload file",
+    )
+    gene_rows = [g for g in genes if isinstance(g, dict)]
+    report.check(
+        all(all(s["metricKey"] in g for g in gene_rows) for s in gene_sources),
+        "every genes.json expression source has its field on every gene",
+    )
+    report.check(
+        not any(s["metricKey"] in g for s in layer_sources for g in gene_rows),
+        "no layer-payload expression metric rides in genes.json",
+    )
+    path = os.path.join(data_dir, "expression_layers.json")
+    if not layer_sources:
+        report.check(not os.path.exists(path),
+                     "expression_layers.json is absent when no source declares it")
+        return
+    payload = load_json(path, report)
+    if not isinstance(payload, dict):
+        report.fail("expression_layers.json is an object")
+        return
+    report.check(payload.get("schemaVersion") == 1, "expression_layers.schemaVersion is 1")
+    report.check(
+        payload.get("geneIds") == [g.get("id") for g in gene_rows],
+        "expression_layers.geneIds repeats the genes.json order exactly",
+    )
+    layers = payload.get("layers")
+    report.check(
+        isinstance(layers, dict) and set(layers) == {s["metricKey"] for s in layer_sources},
+        "expression_layers.layers holds exactly the declared layer metrics",
+    )
+    if not isinstance(layers, dict):
+        return
+    problems = []
+    for source in layer_sources:
+        column = layers.get(source["metricKey"])
+        if not isinstance(column, list) or len(column) != len(gene_rows):
+            problems.append(f"{source['metricKey']}: not one entry per gene")
+            continue
+        bad = [v for v in column if v is not None
+               and (isinstance(v, bool) or not isinstance(v, (int, float))
+                    or not math.isfinite(v) or v < 0)]
+        if bad:
+            problems.append(f"{source['metricKey']}: {len(bad)} invalid values, e.g. {bad[:3]}")
+        with_value = sum(v is not None for v in column)
+        declared = (source.get("coverage") or {}).get("withValue")
+        if with_value != declared:
+            problems.append(f"{source['metricKey']}: {with_value} values, coverage says {declared}")
+    report.check(not problems, "every expression layer is complete, finite and matches its coverage",
+                 "; ".join(problems[:4]))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--organism", default=None)
@@ -1395,6 +1462,9 @@ def main() -> int:
         load_json(os.path.join(data_dir, "tss_evidence.json"), report)
         if isinstance(meta, dict) and "tssEvidenceSource" in meta else None
     )
+
+    if isinstance(meta, dict) and isinstance(genes, list):
+        validate_expression_layers(data_dir, meta, genes, report)
 
     if meta is not None and isinstance(genes, list):
         # Prefer the data's own declaration over the raw genome. `cdsSegments` is
@@ -1438,6 +1508,35 @@ def main() -> int:
             "Tan TSS evidence declares two replicates and no gene-body abundance",
         )
         expression_sources = meta.get("expressionSources", [])
+        # Every measured source states its growth condition axis by axis, with a
+        # status the site reads before it draws anything: a value is never
+        # invented for an axis the source did not report. Re-derived here rather
+        # than imported from the pipeline, like every other check in this file.
+        axes = ("temperature", "lightIntensity", "lightRegime", "co2", "medium", "format", "phase")
+        statuses = ("reported", "not reported", "not retrieved", "conflicting")
+        def record_is_complete(item):
+            record = item.get("record") if isinstance(item, dict) else None
+            conditions = record.get("conditions") if isinstance(record, dict) else None
+            if not isinstance(conditions, dict) or set(conditions) != set(axes):
+                return False
+            for name in axes:
+                axis = conditions[name]
+                if not isinstance(axis, dict) or axis.get("status") not in statuses:
+                    return False
+                if name in ("temperature", "lightIntensity", "co2"):
+                    lo, hi = axis.get("lo"), axis.get("hi")
+                    numeric = all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in (lo, hi))
+                    if axis["status"] == "reported" and not (numeric and lo <= hi):
+                        return False
+                    if axis["status"] in ("not reported", "not retrieved") and (lo, hi) != (None, None):
+                        return False
+            return (record.get("dataType") in ("transcriptomics", "proteomics", "fitness")
+                    and record.get("basis") in ("direct", "transferred")
+                    and isinstance(record.get("treatments"), list))
+        report.check(
+            bool(expression_sources) and all(record_is_complete(item) for item in expression_sources),
+            "every expression source carries a complete structured condition record",
+        )
         pooled_source_id = source.get("pooledScoreSourceId") if isinstance(source, dict) else None
         report.check(
             isinstance(pooled_source_id, str)

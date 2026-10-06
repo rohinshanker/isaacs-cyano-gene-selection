@@ -89,6 +89,24 @@ const METHODS_CITATIONS = Object.freeze({
 });
 
 /**
+ * The calculation behind a layer the ingestion tool made from a deposited
+ * table, read from the provenance the build copies out of the sources manifest
+ * rather than from a hand-written line per layer.
+ */
+function ingestedMethod(provenance) {
+  const ingest = provenance?.ingest;
+  if (!ingest) return null;
+  const columns = ingest.columns?.length ?? 0;
+  const samples = `${columns} deposited sample ${columns === 1 ? 'column' : 'columns'}`;
+  const scaling = ingest.normalization === 'cpm'
+    ? 'each scaled to counts per million over the genes it reports, '
+    : 'taken as deposited, ';
+  return `Arithmetic mean of ${samples} from ${ingest.sourceFile}, ${scaling}`
+    + 'then mapped from PCC 7942 to UTEX 2973 through the pinned one-to-one identifier '
+    + 'crosswalk; no value is imputed for an unmatched locus.';
+}
+
+/**
  * How to weigh a metric when reading a candidate.
  *
  * CAI and tAI reproduce a convention: CAI scores against a frozen 71-locus
@@ -166,7 +184,8 @@ function shortLimits(metric, dataset, formatCount) {
 function methodFor(metric, organism) {
   const own = organism.copy.metricMethods;
   if (Object.hasOwn(own, metric.key)) return own[metric.key];
-  return METHODS[metric.key] ?? metric.desc ?? 'Calculation method is not declared.';
+  return METHODS[metric.key] ?? ingestedMethod(metric.provenance) ?? metric.desc
+    ?? 'Calculation method is not declared.';
 }
 
 /**
@@ -201,11 +220,13 @@ export function metricHelp(metric, dataset) {
     coverage: `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
     reading: readingNote(metric, dataset, formatCount),
     limits: shortLimits(metric, dataset, formatCount),
-    citations: [...(METHODS_CITATIONS[metric.key] ?? []),
-      ...(expression ? [] : [organism.genomeCitation.id])],
+    citations: [...(METHODS_CITATIONS[metric.key]
+      ?? (expression && metric.provenance?.citationId ? [metric.provenance.citationId] : [])),
+    ...(expression ? [] : [organism.genomeCitation.id])],
   };
 }
 
+/** Metric keys with a hand-written method line; ingested layers derive theirs. */
 export function methodKeys() {
   return Object.keys(METHODS);
 }

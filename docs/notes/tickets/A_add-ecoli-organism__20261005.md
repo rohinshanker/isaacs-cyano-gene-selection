@@ -27,7 +27,7 @@ module state, caches, and folding workers have no teardown.
 
 | Stream | Scope | State |
 | --- | --- | --- |
-| 1. Source evidence | Dossier of candidate E. coli K-12 MG1655 sources with identifiers, licence text, and identifier namespaces | DEM-225 returned 2026-10-05: 69 candidate rows, commit `a49f18d` on `agent/claude-evidence-analyst/dem-225`, not yet in this checkout. Independent re-check DEM-231 returned 2026-10-05 asking for correction (1 blocking, 7 should-fix, 2 minor; quotations matched). Correction DEM-237 returned 2026-10-05 (commit `d6c8a9c` on `agent/claude-evidence-analyst/dem-237`, 74 rows): all ten findings upheld and applied. Confirmation DEM-241 returned 2026-10-05: the revised shortlist can go to the owner; all 60 re-checked quotations matched. Two should-fix items in the search section (queries not recorded reproducibly; one overgeneralised sentence) are with a final follow-up, DEM-244; then the dossier is placed in `docs/notes/handoff/` for the owner |
+| 1. Source evidence | Dossier of candidate E. coli K-12 MG1655 sources with identifiers, licence text, and identifier namespaces | Done, with the owner: `docs/notes/handoff/ecoli_source_dossier_20261005.md` and `.tsv` (74 rows) with its search manifest. Written as DEM-225, re-checked (DEM-231), corrected (DEM-237), confirmed (DEM-241), and closed by a final pass (DEM-244) that made the search reproducible and corrected one statement about where the Mori 2021 tables are deposited. Evidence only; nothing is admitted |
 | 2. Pipeline and base dataset | Organism-parametrised pipeline and contract validator; RefSeq-only E. coli dataset under `site/data/organisms/ecoli-k12-mg1655/` | DEM-226 returned 2026-10-05: commits `5d70c9f` and `11c90ee`; 4,287 genes kept, 31 excluded. Review DEM-235 reproduced every count independently and confirmed UTEX byte identity, and found the published E. coli tAI wrong (the selenocysteine tRNA counted as a decoder of the Trp codon, shifting 3,738 genes), the CAI reference rule missing the RNA-polymerase subunits and EF-G/EF-Ts it documents, and the dataset ungated in the Pages workflow. Repair DEM-239 returned 2026-10-05 (commits `17f04a0`, `7728925`, `a0365d7` on `agent/codex-implementer/dem-239`): all 18 findings addressed, Sec removed from the decoding pool, CAI reference set now 81 loci by rule, E. coli added to the Pages gate, a citations ledger published, dataset rebuilt (`genes.json` 8,042,652 bytes). Confirmation DEM-240 returned 2026-10-05: "integrate", all 18 findings resolved, every reported number reproduced independently, UTEX byte-identical. A final follow-up, DEM-243, is running for three should-fix items (reader-facing bookkeeping in the citations ledger, ledger values untied to the build, and a CI loop in which one organism's failure hid the other gates) and the minor ones. **Not release-valid** until the size budget is decided |
 | 3. Selector and isolation | Organism selector, per-organism data loading, URL and saved-state isolation | DEM-228 returned 2026-10-05: commits `26a6733` and `69e9839`, gates green (991 JS tests). Review DEM-234: no blocking defect and no wrong-organism data shown or exported; one should-fix (the inline early fetch ignores the organism's layer list) and three minor. Repair DEM-238 returned 2026-10-05 (six commits through `5a421d5` on `agent/claude-implementer/dem-238`): all four findings fixed with tests (1,005 JS tests), rendered against the real dataset at 375, 768, 1280, and 1440 px with a clean console; one further defect found and fixed (the footer named the default organism's data directory). Confirmation DEM-242 returned 2026-10-05: all four findings resolved, "can be integrated", rendered on the integrated real dataset at 375, 768, 1280, and 1440 px with no wrong-organism data or export contamination. Its two minor items (the Lengths blurb above an unavailable line; a runbook sentence overstating a failed layer as a failed load) are fixed by the coordinator on the integration branch, commit `b0dc293` |
 
@@ -43,50 +43,48 @@ FTP directory and is not used.
 
 ## Integration branch
 
-`feat/ecoli-organism`, worktree `../worktrees/ecoli-organism`, holds both
-patches for testing: the selector commits on their baseline snapshot, with the
-pipeline commits, their repair, and the selector repair cherry-picked on top
-(through `8217d42`), plus the coordinator's `b0dc293`. On it, 1,007 JS tests pass, the E. coli live-metric check passes, and the real dataset loads
-through the selector at 1280 px: five requests, all inside its own directory, a
-clean console, the map and the chromosome view drawn, no cyanobacterial wording
-in the page text. The branch rests on a snapshot of other sessions' uncommitted
-work in the main checkout as of 2026-10-05, so it cannot land on `main` until
-that work is committed there; then it is rebased onto it.
+`feat/ecoli-organism`, worktree `../worktrees/ecoli-organism`, at `62dc528`: 19
+commits above `d38b431`, onto which it was rebased on 2026-10-05 once the main
+checkout's outstanding work was committed there. It holds the selector stream,
+the pipeline stream, both repairs, the pipeline follow-up (DEM-243), and four
+coordinator commits: the Lengths blurb fix, the per-gene size budget, and two
+that take repository remarks out of the E. coli source ledger and close the
+final review's minor findings.
 
-The E. coli Citations tab now shows the dataset's provenance from its own
-ledger (the RefSeq record and the methods used). Its primary-data entry ends
-with a sentence about the open publication decision, which is repository
-bookkeeping in reader-facing text and has to come out before release.
+Gates on it, for both organisms, with the pinned inputs supplied: 1,007 JS
+tests; 405 Python tests passed, 1 skipped; contract validator 98 passed for UTEX
+2973 and 64 passed, 0 failed for E. coli; live-metric checks, manifest checks,
+and the UTEX byte-identity check pass. The real E. coli view loads through the
+selector with a clean console, its Citations tab shows the dataset's own
+ledger, and no cyanobacterial wording appears.
 
-## Open decision: the `genes.json` size budget
+The final integration review (DEM-245) found no blocking or should-fix defect,
+confirmed by `git range-diff` that the rebase lost and duplicated nothing, and
+gave two verdicts: merge to local `main`, yes; push, hold until the publication
+decision below. Its four minor findings are closed in `62dc528`, which no
+reviewer has seen.
 
-The E. coli `genes.json` is 8,042,652 bytes after the repair's rebuild (8,042,780 before); the contract
-validator's budget is 6 MiB (6,291,456 bytes), set when the only organism had 2,715 genes. The
-pipeline run stopped and reported instead of weakening the check, and the
-repair is told to leave the limit alone. Measured by the review (DEM-235):
+**Not merged.** A push of `main` deploys the site, and `main` carries other
+unpushed work the owner may want to publish first, so the branch stays apart
+until the owner says to merge. It merges into `main` without conflict.
 
-| | UTEX 2973 | E. coli K-12 |
-| --- | ---: | ---: |
-| included genes | 2,715 | 4,287 |
-| `genes.json`, raw bytes | 5,169,989 | 8,042,780 |
-| raw bytes per gene | 1,904 | 1,876 |
-| gzip -9 bytes | 1,596,122 | 2,506,417 |
-| brotli q11 bytes | 1,230,428 | 1,917,106 |
+## Decided: the `genes.json` size budget
 
-The overage is gene count, not schema growth. The budget stands in for time to
-a usable map on a slow link: the documented profile (750 kB/s, uncompressed)
-gives 9.1 s for UTEX and scales to roughly 14 s for E. coli.
+Owner decision, 2026-10-05: 2,000 bytes per plotted gene for every organism,
+replacing the fixed 6,291,456 bytes. Implemented in the contract validator with
+tests (`cf69c0e`), and recorded with its measurements in the data contract's
+"Size budget" section. UTEX 2973 is 5,169,989 bytes against 5,430,000; E. coli
+is 8,042,652 against 8,574,000.
 
-- **A per-gene budget** (about 2,000 bytes per gene admits both organisms):
-  one configuration value and a validator change, no loader work; the gate still
-  catches schema growth. It accepts the longer load without measuring it.
-- **A sidecar for `rscu` and the packed `codons`,** which the data contract
-  already names as the remedy when the core file exceeds the budget. Moving both
-  leaves a 4,936,617-byte core; moving `rscu` alone leaves 6,308,090 bytes,
-  still over. It needs loader work, and `codons` is what every recoding
-  computation reads, so the map would draw before recoding is ready.
+## Open decision: publishing data derived from this annotation
 
-Until the owner decides, the E. coli validator run fails that one check.
+The RefSeq record's annotation is derived from EcoCyc, so the source ledger's
+RefSeq rule, which rests on NCBI's own pipeline being a government work, does
+not settle it. The owner asked for a recommended path on 2026-10-05; the
+coordinator's recommendation is to publish with attribution to both NCBI RefSeq
+and EcoCyc, record that as a ledger rule for curator-submitted RefSeq
+annotation, and send SRI the notification its open-database terms ask for.
+Not decided. Until it is, the branch is not pushed.
 
 ## Lab questions raised by the E. coli dataset
 
@@ -102,7 +100,7 @@ Not decided here; for the owner or the lab.
   the alternates are excluded (for example the `dnaX` gamma frameshift product,
   CheA-short). Is the longest product the right one to recode against?
 
-## Source dossier, returned 2026-10-05, under correction
+## Source dossier, 2026-10-05
 
 Evidence only; nothing below is admitted, permitted, or decided. The dossier's
 first candidates by layer: PRECISE-1K for transcript abundance; Ettwiller 2016
@@ -175,19 +173,53 @@ Raised for the coordinator and the owner:
 
 ## Verification
 
-For implementation: verify the default organism, switching and return behavior,
-organism-specific labels and data, URL restoration, and absence of
-mixed-organism state. Render the selector and affected views at mobile, tablet,
-and desktop widths, then run the repository's JavaScript, Python, and
-data-contract gates. The E. coli dataset must pass the contract validator's
-independent re-derivation from the raw genome, and the UTEX 2973 output must be
-byte-identical before and after the pipeline is parametrised.
+Done on the integration branch: the default organism, switching and return,
+organism-specific labels and data, URL restoration, absence of mixed-organism
+state, and exports, rendered at 375, 768, 1280, and 1440 px in Chromium by the
+writer and independently by two reviewers; the JavaScript, Python, and
+data-contract gates for both organisms; the contract validator's independent
+re-derivation of the E. coli gene model from the raw genome; and UTEX 2973
+output byte-identical apart from `builtAt`.
+
+Not verified: browsers other than Chromium; a screen reader; the folding worker
+across an organism switch; a measured first load of the 8 MB E. coli gene file
+over a real network; the Pages workflow on GitHub itself, which has only been
+simulated locally; an independent tRNAscan-SE run for E. coli.
+
+## Remaining
+
+For the base view to ship:
+
+1. The owner's publication decision, then the EcoCyc citation and ledger rule
+   it implies.
+2. Merge to `main`, push, and verify the production URL and the first real CI
+   run.
+
+For the ticket's purpose, richer annotation and supporting data than the
+cyanobacterial view has, which the base view does not yet deliver (it carries
+genome-derived metrics only):
+
+3. The owner's choice of sources from the dossier's shortlist, and ledger rules
+   for the licence situations it lists.
+4. For each admitted source, the admission contract: a manifest entry, checksum
+   pin, the documented join to `b`-number locus tags with matched, unmatched,
+   and ambiguous counts, the organism record's layer declaration, and contract
+   and UI tests. The first candidates need no further permission step:
+   UniProtKB function and GO (CC BY 4.0), then PRECISE-1K transcript abundance
+   (MIT over the files).
+5. An annotation-evidence and GO layer for E. coli, which needs the annotation
+   release tooling generalised beyond UTEX 2973.
+
+Then the six clarifying questions and the lab questions below, and cleanup.
 
 ## Cleanup
 
-Once implemented and validated, distill reusable organism/data isolation and
-selector guidance into docs/validation/, update its index, resolve this ticket,
-and remove it from the live queue.
+Once shipped and validated: the reusable guidance already lives in
+`docs/validation/organism-selector.md`, `genome-provenance.md`,
+`data-contract.md`, `cai-reference-set.md`, and `trna-annotation-validation.md`;
+add the README's description of the organism selector, resolve this ticket, and
+remove it from the live queue. The Multica run worktree left behind by DEM-234
+and the merged agent branches can be removed.
 
 ## Scientific dependencies
 
