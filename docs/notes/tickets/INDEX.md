@@ -19,8 +19,8 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_biocyc-pcc-6311-data__20260930](O_biocyc-pcc-6311-data__20260930.md) | BioCyc v30 has no PCC 6311 database. Kept open pending owner questions Q1 and Q2 on whether the strain has a comparative use and what ticket shape to keep; no pull started |
 | [O_biocyc-pcc-7943-data__20260930](O_biocyc-pcc-7943-data__20260930.md) | BioCyc v30 has no PCC 7943 database. Kept open pending owner questions Q1 and Q2 on whether the strain has a comparative use and what ticket shape to keep; no pull started |
 | [O_biocyc-utex-3055-data__20260930](O_biocyc-utex-3055-data__20260930.md) | BioCyc v30 has no UTEX 3055 database. Kept open pending owner questions Q1 and Q2, including whether its greater divergence is useful as an outgroup; no pull started |
-| [O_cross-strain-data-scan__20260927](O_cross-strain-data-scan__20260927.md) | Package B's condition metadata is in; the crosswalk second check returned 2026-10-04 and agrees on every count, lifting the hold on PCC 6311/7943 sources (none exists yet). Pair scoring waits on package D; extend the gene viewer with sister-strain overlays (gated on data that is not admitted) and flanking-neighbour context; design the dataset and condition selectors |
-| [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Hand the cross-strain sweep to Claude Science as packages A to D under a fixed return format and the evidence-not-admission boundary. A (corrected), B, and C have returned and passed intake 2026-10-04, B with two rows returned for relabelling; licence decisions are in the source ledger; D is the one package still to send |
+| [O_cross-strain-data-scan__20260927](O_cross-strain-data-scan__20260927.md) | Package B's condition metadata is in; the crosswalk second check returned 2026-10-04 and agrees on every count, lifting the hold on PCC 6311/7943 sources (none exists yet). Pair scoring done through package D (intake 2026-10-06) and the owner's judgements; extend the gene viewer with sister-strain overlays (gated on data that is not admitted) and flanking-neighbour context; design the dataset and condition selectors |
+| [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Hand the cross-strain sweep to Claude Science as packages A to D under a fixed return format and the evidence-not-admission boundary. All four have returned and passed intake (A corrected, B, C on 2026-10-04; D on 2026-10-06: 0 comparable, 32 escalated and owner-judged, 178 undecidable, 731 not); licence decisions are in the source ledger. Remaining: cleanup only |
 | [O_comparability-lab-judgements__20261005](O_comparability-lab-judgements__20261005.md) | Ten scientific judgement questions from packages D and E, J1 to J10. The owner decided all but two on 2026-10-05. J10 is with the owner as a generated review sheet of the 32 escalated pairs; J2 is open and minor |
 | [O_unreadable-literature-workarounds__20261005](O_unreadable-literature-workarounds__20261005.md) | Eight papers Claude Science could not read. Five are readable by the agents from the PMC article page, probed 2026-10-05; the owner supplied the other five with supplements the same day, in a private drop folder outside the repository. An in-repository extraction with a mechanical quote match counts as verified. Next: the addendum to packages B and C |
 | [O_gated-pages-and-accounts__20261005](O_gated-pages-and-accounts__20261005.md) | Sources refused by a CAPTCHA, a script-rendered page, metering, or a missing account: which a browser render solves, which need an email for terms, and BioCyc, where the owner signs in to their own account in an opened browser and an agent reads the wanted pages with the owner present |
@@ -35,8 +35,9 @@ their reusable guidance distilled into `docs/validation/`.
 
 **Owner decision, 2026-10-05: Claude Science is the last resort, and nothing below
 needs to be sent.** The two CS-1 claims are researched in the repository. Package D
-has returned and waits only on intake. The Package B correction is made locally.
-The rows stay until that work is recorded, then go.
+returned 2026-10-04 and passed intake 2026-10-06 (offload ticket); the Package B
+correction's ten cells are read as not reported and Package D scored them so,
+which is all the correction changed. Their rows are gone.
 
 Items the owner takes to the next Claude Science session, per
 [claude-science-handoff.md](../../validation/claude-science-handoff.md). Agents add a
@@ -53,14 +54,15 @@ that date. Read
 [`docs/notes/handoff/RET_claude-science-session__20260930.md`](../handoff/RET_claude-science-session__20260930.md)
 before starting work on any ticket opened 2026-09-30.
 
-Paste-ready text for the rows that can go out now is in
+Paste-ready text for the rows that went out is in
 [`docs/notes/handoff/SEND_claude-science-session__20261002.md`](../handoff/SEND_claude-science-session__20261002.md).
 
-**Five of its six pastes have returned and passed intake 2026-10-04.** The
-manifest for pastes 1 to 4 is
+**All six pastes have returned and passed intake.** The manifest for pastes 1 to
+4 is
 [`docs/notes/handoff/RET_claude-science-session__20261003.md`](../handoff/RET_claude-science-session__20261003.md);
 paste 5 ran on a read-only mount and its two files were placed in
-`docs/notes/handoff/` by the owner. Paste 6 (package D) has not been sent.
+`docs/notes/handoff/` by the owner; paste 6 (package D) returned as
+[`RET_claude-science-session__20261004.md`](../handoff/RET_claude-science-session__20261004.md).
 
 | Paste | Queue row | Sent | Returned | Intake recorded in |
 | --- | --- | --- | --- | --- |
@@ -68,10 +70,9 @@ paste 5 ran on a read-only mount and its two files were placed in
 | 2 | Package C | 2026-10-02 | 2026-10-03 | [offload ticket](O_claude-science-offload__20260927.md#package-c-intake-2026-10-04); passed |
 | 4 | Package A correction | 2026-10-02 | 2026-10-03 | [offload ticket](O_claude-science-offload__20260927.md#package-a-correction-intake-2026-10-04); passed |
 | 5 | Crosswalk second check | 2026-10-02 | 2026-10-04 | [scan ticket](O_cross-strain-data-scan__20260927.md#crosswalk-second-check-result-returned-2026-10-04); passed, all four sides agree |
+| 6 | Package D | by the owner | 2026-10-04 | [offload ticket](O_claude-science-offload__20260927.md#package-d-intake-2026-10-06); passed, 32 escalations already judged by the owner |
 
 | Ticket | Id | Request | Unblocks | Sent | Returned |
 | --- | --- | --- | --- | --- | --- |
 | [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md) | CS-1 | Check whether tRNAscan-SE scores support calibrated tRNA-gene probabilities over the 45 Infernal-confirmed tRNA loci on this genome — the population is now known, not an open-ended genome-wide screen; return score semantics and calibration evidence/limits. Planning only; not dispatched | Accurate likelihood-versus-score definition for filtering/coloring | | |
 | [O_rbs-calculator-gene-visualizer__20260930](O_rbs-calculator-gene-visualizer__20260930.md) | CS-1 | Check whether v1.0 translation-initiation predictions have validation applicable to UTEX 2973; return method/validation sources and limitations. Planning only; not dispatched | Biological interpretation before RBS-prediction integration | | |
-| [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Package D | Candidate pair comparability against the documented thresholds, using the accepted package B table `docs/notes/handoff/cyano_package_B_conditions_20261003.tsv` (SHA-256 `fa65266c…`, accepted 2026-10-04) in place of `<PACKAGE_B_TABLE>` in paste 6. Score the five GSE103606 SubSeries, not the SuperSeries; treat the `not retrieved` cells of data rows 31 and 70 as not reported | Scan ticket step 3 verdicts and rows 13 to 15 escalations | | |
-| [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Package B correction | Relabel as `not reported` the `not retrieved` cells of data rows 31 (GSE225426: `co2`, `culture_format`, `growth_phase`) and 70 (PXD023591: seven axes), per the return's own rule in B.3.4 that a deposit with no publication reports what it omits as not reported. Optional, the owner's call: package A data row 54 lists `GCF_000817325.1` as a PCC 6301 annotation; it is the UTEX 2973 genome of record (NCBI taxid 1350461), already rejected as data row 51, and is treated as rejected here. See [Package B intake](O_claude-science-offload__20260927.md#package-b-intake-2026-10-04) | Nothing; the ten cells are read as not reported either way and paste 6 does not wait on this | | |

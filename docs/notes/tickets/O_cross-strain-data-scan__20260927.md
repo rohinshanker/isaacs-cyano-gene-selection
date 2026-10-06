@@ -727,9 +727,15 @@ step 1), so PCC 6311 and PCC 7943 sources are no longer held back by this
 ticket; none exists yet. Packages B and C passed intake; their checks are
 recorded in the offload ticket.
 
-**Not yet verified.** Pair scoring (step 3) waits on package D, which has not
-been sent. The dataset and condition selectors (step 6) are not yet
-designed. Any source ingested later still needs its own manifest entry, checksum,
+**Pair scoring (step 3)**: package D returned 2026-10-04 and passed intake
+2026-10-06 (offload ticket, "Package D intake, 2026-10-06"): 0 of 941 pairs
+comparable on the thresholds alone, 32 escalated and all judged by the owner on
+2026-10-05, 178 undecidable for missing metadata, 731 not comparable. Under the
+owner's 2026-10-05 decisions (thresholds a default screen; J1, J3, J4, J10) the
+comparable sets are computed by `site/js/core/data-sources.js` from the
+structured condition records and those judgements, which is what the Data
+Sources peek shows. The dataset and condition selectors (step 6) are built
+under the dedicated ticket. Any source ingested later still needs its own manifest entry, checksum,
 mapping audit with matched, unmatched, and ambiguous counts, contract tests, and
 the sister-strain, condition-comparability, and UTEX 3055 coverage rows of
 [AAA-manual-review-checklist.md](../../validation/AAA-manual-review-checklist.md)
