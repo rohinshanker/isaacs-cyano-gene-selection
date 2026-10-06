@@ -114,9 +114,19 @@ The rules the evidence-based decisions follow:
   public-domain premise above therefore cannot be carried onto this record.
   Conservative handling remains in force: fetch the assembly and annotation at
   build time, verify the checksum pin and identity fields, keep inputs gitignored,
-  and never offer them as product downloads. Whether data derived from this
-  annotation may be published is an open owner decision; this entry decides no
-  permission. Only the NCBI checksum manifest is tracked.
+  and never offer them as product downloads. Only the NCBI checksum manifest is
+  tracked.
+- **Curator-submitted RefSeq annotation is published with attribution to both
+  layers.** Owner decision, 2026-10-06, for `GCF_000005845.2` and for any later
+  RefSeq record whose annotation NCBI attributes to a named curator rather than
+  to PGAP: data derived from the annotation may be published, and the ledger
+  cites NCBI RefSeq (the record used), the named curator source (EcoCyc, with the
+  BioCyc attribution statement and a link to www.biocyc.org that SRI's
+  open-database terms ask for), and the original sequence publication
+  (Blattner et al. 1997, GenBank U00096). The curator's own files are not
+  downloaded or redistributed by this rule; EcoCyc files would need the executed
+  BioCyc licence. The notification SRI's terms ask for is the owner's action and
+  is recorded in the E. coli ticket when sent.
 - **Undetermined is a decision**: the artifact stays link-only, is not fetched,
   and is revisited only when the governing text is read.
 

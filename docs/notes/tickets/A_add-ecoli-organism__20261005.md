@@ -76,15 +76,20 @@ tests (`cf69c0e`), and recorded with its measurements in the data contract's
 "Size budget" section. UTEX 2973 is 5,169,989 bytes against 5,430,000; E. coli
 is 8,042,652 against 8,574,000.
 
-## Open decision: publishing data derived from this annotation
+## Decided: publishing data derived from this annotation
 
-The RefSeq record's annotation is derived from EcoCyc, so the source ledger's
-RefSeq rule, which rests on NCBI's own pipeline being a government work, does
-not settle it. The owner asked for a recommended path on 2026-10-05; the
-coordinator's recommendation is to publish with attribution to both NCBI RefSeq
-and EcoCyc, record that as a ledger rule for curator-submitted RefSeq
-annotation, and send SRI the notification its open-database terms ask for.
-Not decided. Until it is, the branch is not pushed.
+Owner decision, 2026-10-06: the recommended path. Data derived from the
+EcoCyc-derived RefSeq annotation is published with attribution to both NCBI
+RefSeq and EcoCyc; the rule for curator-submitted RefSeq annotation is in the
+[source ledger](../../validation/source-ledger.md); the E. coli citations ledger
+cites the RefSeq record, EcoCyc (Keseler et al. 2021, with the BioCyc
+attribution statement and biocyc.org link SRI's open-database terms ask for), and
+the original sequence paper (Blattner et al. 1997, GenBank U00096). **Owner
+action still open:** notify SRI that the site makes EcoCyc-derived content
+available, per the same terms, and record the date here. SRI's terms also ask
+for the BioCyc logo on a distribution of the open database itself; this site
+redistributes no EcoCyc file, so that clause is noted for the notification
+rather than acted on.
 
 ## Lab questions raised by the E. coli dataset
 
@@ -190,8 +195,8 @@ simulated locally; an independent tRNAscan-SE run for E. coli.
 
 For the base view to ship:
 
-1. The owner's publication decision, then the EcoCyc citation and ledger rule
-   it implies.
+1. Done 2026-10-06: the publication decision, the EcoCyc and Blattner citations,
+   and the ledger rule. Open: the owner's notification to SRI.
 2. Merge to `main`, push, and verify the production URL and the first real CI
    run.
 
