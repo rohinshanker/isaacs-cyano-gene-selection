@@ -167,11 +167,22 @@ radios keeps to the column. Still shown as its own entry: "Expression percentile
 (PCC 7942)", a derived rank tied to GSE205444; whether it should become a rank
 over the informing dataset is a follow-up.
 
-Open from this round, asked 2026-10-06: when several datasets of one type are
-selected, does the type metric show one chosen dataset (default: the first
-selected, changeable in the section) or a pooled value across the comparable
-set? Units differ between deposits (CPM, TPM, RPKM, as deposited), so pooling
-needs a stated normalisation and is not done by default.
+## Design round 5, owner, 2026-10-06
+
+1. **Pool.** Several selected datasets of one type show a pooled value; naming
+   one dataset (radio, axis source select, Select source) is the override.
+   Rule, since the deposits' units differ: an abundance pools as the mean of
+   each dataset's within-dataset mid-rank percentile (unitless, 0 to 1); a
+   fitness pools as the mean of the published log2 values, which share a scale.
+   The legend, the help and the axis note state the rule as the unit. Done
+   2026-10-06 (`site/js/core/type-metrics.js`, `contributingDatasets`).
+2. **Engineered strains in their own group.** A dataset measured in a
+   production, reporter or rescue strain is listed under "Engineered strain",
+   before Other, and named as such; GSE288532 (cscB-sps) and GSE89999
+   (clock-rescue) moved there, and PXD030282's L1118 baseline may enter under
+   it. Done 2026-10-06 for the group; PXD030282 follows.
+3. **Fitness Browser**: proceed — read its terms, record a ledger decision, then
+   ingest. In progress.
 
 ## Work
 

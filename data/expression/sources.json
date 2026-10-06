@@ -236,9 +236,10 @@
       },
       "treatments": [
         "circadian time course",
-        "sucrose export induction"
+        "sucrose export induction",
+        "diel time course"
       ],
-      "group": "diel",
+      "group": "engineered",
       "conditionTableRow": 38,
       "conditions": {
         "temperature": {
@@ -324,6 +325,7 @@
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "gilliam-2025",
     "payload": "expression_layers.json",
+    "signed": false,
     "ingest": {
       "sourceFile": "GSE288532_rna_seq_counts.csv.gz",
       "sourceSha256": "1a05cb6032c39c37d515ff22148e82ed1c6e8018733d60e56ee198a11ccb66d8",
@@ -376,9 +378,10 @@
       },
       "treatments": [
         "circadian time course",
-        "sucrose export induction"
+        "sucrose export induction",
+        "diel time course"
       ],
-      "group": "diel",
+      "group": "engineered",
       "conditionTableRow": 38,
       "conditions": {
         "temperature": {
@@ -464,6 +467,7 @@
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "gilliam-2025",
     "payload": "expression_layers.json",
+    "signed": false,
     "ingest": {
       "sourceFile": "GSE288532_rna_seq_counts.csv.gz",
       "sourceSha256": "1a05cb6032c39c37d515ff22148e82ed1c6e8018733d60e56ee198a11ccb66d8",
@@ -1237,7 +1241,7 @@
       "treatments": [
         "diel time course"
       ],
-      "group": "diel",
+      "group": "engineered",
       "conditionTableRow": 57,
       "conditions": {
         "temperature": {
@@ -1323,6 +1327,7 @@
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "puszynska-2017",
     "payload": "expression_layers.json",
+    "signed": false,
     "ingest": {
       "sourceFile": "GSE89999_Expression_timecourse.xls.gz",
       "sourceSha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4",
@@ -1357,9 +1362,10 @@
         "where": "checked: GEO GSE89999; PMID 28430105; PMC5400509; doi:10.7554/elife.23210"
       },
       "treatments": [
-        "dark time course"
+        "dark time course",
+        "diel time course"
       ],
-      "group": "diel",
+      "group": "engineered",
       "conditionTableRow": 57,
       "conditions": {
         "temperature": {
@@ -1445,6 +1451,7 @@
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "puszynska-2017",
     "payload": "expression_layers.json",
+    "signed": false,
     "ingest": {
       "sourceFile": "GSE89999_Expression_timecourse.xls.gz",
       "sourceSha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4",
@@ -1488,7 +1495,7 @@
       "treatments": [
         "diel time course"
       ],
-      "group": "diel",
+      "group": "engineered",
       "conditionTableRow": 57,
       "conditions": {
         "temperature": {
@@ -1574,6 +1581,7 @@
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
     "citationId": "puszynska-2017",
     "payload": "expression_layers.json",
+    "signed": false,
     "ingest": {
       "sourceFile": "GSE89999_Expression_timecourse.xls.gz",
       "sourceSha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4",

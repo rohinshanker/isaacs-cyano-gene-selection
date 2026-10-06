@@ -116,9 +116,10 @@
       ],
       "treatments": [
         "circadian time course",
-        "sucrose export induction"
+        "sucrose export induction",
+        "diel time course"
       ],
-      "group": "diel"
+      "group": "engineered"
     },
     {
       "id": "GSE288532_subjective_night",
@@ -142,9 +143,10 @@
       ],
       "treatments": [
         "circadian time course",
-        "sucrose export induction"
+        "sucrose export induction",
+        "diel time course"
       ],
-      "group": "diel"
+      "group": "engineered"
     }
   ]
 }

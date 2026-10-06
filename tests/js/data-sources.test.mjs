@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CONDITION_SCALES, DATASET_GROUPS, comparable, conditionRange, datasetsFrom, defaultSelection,
+  CONDITION_SCALES, DATASET_GROUPS, NO_SELECT_ALL_GROUPS, comparable, conditionRange, datasetsFrom, defaultSelection,
   emptyFilter, formatRange, groupDatasets, isDefaultSelection, normalizeSelection, passesFilters,
   regimeOf, selectedMetricKeys, studyColors, subgroups, summariseSet, dataTypeOfMetric,
 } from '../../site/js/core/data-sources.js';
@@ -129,7 +129,7 @@ test('subgroups are complete-linkage sets, and a group splits only when there is
   assert.equal(none[0].split, false, 'all singles need no subgroup header either');
   const other = groupDatasets([dataset({ id: 'X', group: 'other' })]);
   assert.equal(other[0].selectAll, false);
-  assert.equal(DATASET_GROUPS.length, 6);
+  assert.equal(DATASET_GROUPS.length, 7);
 });
 
 test('formatRange and summariseSet read the records as reported', () => {
@@ -178,4 +178,14 @@ test('the default selection is the standard group plus the two legacy metrics, a
   assert.deepEqual([...selectedMetricKeys(['EXTRA.1'], all)], ['mEXTRA1']);
   assert.equal(dataTypeOfMetric('expression', all), 'transcriptomics');
   assert.equal(dataTypeOfMetric('cai', all), null);
+});
+
+test('an engineered strain is listed in its own group, before Other, with select-all', () => {
+  const ids = DATASET_GROUPS.map((group) => group.id);
+  assert.ok(ids.indexOf('engineered') > ids.indexOf('standard'));
+  assert.equal(ids.indexOf('engineered'), ids.indexOf('other') - 1);
+  assert.match(DATASET_GROUPS.find((group) => group.id === 'engineered').rule, /rather than the wild type/);
+  assert.ok(!NO_SELECT_ALL_GROUPS.includes('engineered'));
+  const grouped = groupDatasets([dataset({ id: 'ENG', group: 'engineered' })]);
+  assert.ok(grouped.some((group) => group.id === 'engineered' && group.datasets.length === 1));
 });

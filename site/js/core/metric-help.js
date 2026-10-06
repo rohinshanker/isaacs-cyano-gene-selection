@@ -224,7 +224,8 @@ export function metricHelp(metric, dataset) {
     reading: readingNote(metric, dataset, formatCount),
     limits: shortLimits(metric, dataset, formatCount),
     citations: [...(METHODS_CITATIONS[metric.key]
-      ?? (expression && metric.provenance?.citationId ? [metric.provenance.citationId] : [])),
+      ?? (expression ? (metric.provenance?.citationIds
+        ?? (metric.provenance?.citationId ? [metric.provenance.citationId] : [])) : [])),
     ...(expression ? [] : [organism.genomeCitation.id])],
   };
 }

@@ -10,10 +10,14 @@
  * scale and provenance at call time, so changing the informing dataset changes
  * nothing but the answer, and no registry is rebuilt.
  *
- * Several selected datasets of one type never pool: units differ between
- * deposits (CPM, TPM, RPKM, as deposited) and no normalisation across them is
- * stated, so exactly one dataset informs a type at a time.
+ * Owner decision, 2026-10-06: several selected datasets of one type show a
+ * pooled value unless the reader names one. Units differ between deposits (CPM,
+ * TPM, RPKM, as deposited), so an abundance pools as the mean of each dataset's
+ * within-dataset mid-rank percentile, a unitless 0 to 1; a signed fitness pools
+ * as the mean of the values, which share the log2 scale. The pooling rule is
+ * stated beside the value wherever it is shown.
  */
+import { percentileRank, sortedFinite } from './stats.js';
 
 /** The kind of quantity a dataset measures, from its record's data type and its source's assay. */
 export function assayKind(dataset) {
@@ -88,19 +92,34 @@ export function normalizeTypeSources(value, datasets, selection) {
   for (const [typeKey, datasetId] of Object.entries(value ?? {})) {
     const group = groups.get(typeKey);
     if (!group) continue;
-    const dataset = selectedOfType(group, selection).find((d) => d.id === datasetId);
-    if (!dataset || dataset === defaultInforming(group, selection)) continue;
+    const candidates = selectedOfType(group, selection);
+    const dataset = candidates.find((d) => d.id === datasetId);
+    // Naming the only selected dataset says nothing the default does not.
+    if (!dataset || candidates.length < 2) continue;
     out[typeKey] = datasetId;
   }
   return out;
 }
 
-/** The dataset informing a type under the reader's choices, or null when none of its datasets is selected. */
+/**
+ * The dataset the reader named for a type, or the only selected one; null when
+ * the type pools several or none of its datasets is selected.
+ */
 export function informingDataset(typeKey, typeSources, datasets, selection) {
   const group = typeGroups(datasets).get(typeKey);
   if (!group) return null;
-  const chosen = typeSources?.[typeKey];
-  return selectedOfType(group, selection).find((d) => d.id === chosen) ?? defaultInforming(group, selection);
+  const candidates = selectedOfType(group, selection);
+  const chosen = candidates.find((d) => d.id === typeSources?.[typeKey]);
+  if (chosen) return chosen;
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+/** The datasets a type reads: the named one alone, else every selected dataset of the type. */
+export function contributingDatasets(typeKey, typeSources, datasets, selection) {
+  const group = typeGroups(datasets).get(typeKey);
+  if (!group) return [];
+  const named = informingDataset(typeKey, typeSources, datasets, selection);
+  return named ? [named] : selectedOfType(group, selection);
 }
 
 /** A dataset metric's type key; any other key is returned unchanged. */
@@ -115,33 +134,78 @@ export function typeKeyOf(metricKey, datasets) {
  * property that depends on the dataset is a getter, so a change of informing
  * dataset is seen by the next read without rebuilding anything.
  */
-export function buildTypeMetrics(datasets, { inform, metricOf }) {
+export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount = 0 }) {
   const metrics = [];
+  // Within-dataset mid-rank percentiles, built once per dataset metric and kept
+  // while that metric object lives; a dataset's values never change in a session.
+  const rankCache = new WeakMap();
+  const ranks = (metric) => {
+    if (!rankCache.has(metric)) {
+      const values = [];
+      for (let i = 0; i < geneCount; i += 1) values.push(metric.read(i));
+      rankCache.set(metric, sortedFinite(values));
+    }
+    return rankCache.get(metric);
+  };
   for (const group of typeGroups(datasets).values()) {
-    const current = () => {
-      const dataset = inform(group.key);
-      return dataset ? metricOf(dataset) ?? null : null;
+    const signed = assayKind(group.datasets[0]) === 'fitness';
+    const current = () => contributing(group.key).map((dataset) => metricOf(dataset) ?? null).filter(Boolean);
+    const one = () => { const list = current(); return list.length === 1 ? list[0] : null; };
+    const pooledProvenance = (list) => {
+      const first = list[0].provenance ?? {};
+      const ids = list.map((metric) => metric.provenance?.id ?? metric.key);
+      return {
+        ...first,
+        id: `pooled:${ids.join('+')}`,
+        pooled: ids,
+        isTargetOrganism: list.every((metric) => metric.provenance?.isTargetOrganism === true),
+        organism: [...new Set(list.map((metric) => metric.provenance?.organism).filter(Boolean))].join('; '),
+        condition: `${list.length} datasets pooled: ${list.map((metric) => metric.provenance?.condition ?? metric.key).join(' | ')}`,
+        units: signed
+          ? `mean gene fitness across ${list.length} fractions (shared log2 scale)`
+          : `pooled percentile across ${list.length} datasets: mean of each dataset's within-dataset mid-rank, 0 to 1`,
+        caveat: 'Pooled by owner decision of 2026-10-06. '
+          + (signed ? 'Fitness values share a log2 scale and are averaged as published.'
+            : 'The deposits report different units, so each is ranked within itself before averaging; the pooled value is a rank, not an abundance.')
+          + ' Choose one dataset under Data Sources to read its own values.',
+        citationIds: [...new Set(list.map((metric) => metric.provenance?.citationId).filter(Boolean))],
+      };
     };
     metrics.push({
       key: group.key,
       label: group.label,
       // A fitness screen is its own family (owner decision, 2026-10-05); every
       // abundance and initiation measure is expression evidence.
-      family: assayKind(group.datasets[0]) === 'fitness' ? 'Fitness' : 'Expression',
+      family: signed ? 'Fitness' : 'Expression',
       source: 'pipeline',
       integer: false,
       isType: true,
       typeKey: group.key,
-      get unit() { return current()?.unit ?? ''; },
-      get desc() { return current()?.desc ?? `${group.label}, from the dataset chosen under Data Sources.`; },
-      get scale() { return current()?.scale ?? 'sequential'; },
-      get provenance() { return current()?.provenance ?? null; },
-      get fileKey() { return current()?.fileKey ?? null; },
-      get tssEvidenceSource() { return current()?.tssEvidenceSource; },
-      get informing() { return inform(group.key); },
+      get unit() { const list = current(); return list.length === 1 ? list[0].unit : list.length > 1 ? pooledProvenance(list).units : ''; },
+      get desc() {
+        const list = current();
+        if (list.length === 1) return list[0].desc;
+        if (list.length > 1) return `${group.label}, pooled over ${list.length} selected datasets: ${pooledProvenance(list).units}.`;
+        return `${group.label}, from the datasets selected under Data Sources.`;
+      },
+      get scale() { return one()?.scale ?? (signed ? 'diverging' : 'sequential'); },
+      get provenance() { const list = current(); return list.length === 1 ? list[0].provenance : list.length > 1 ? pooledProvenance(list) : null; },
+      get fileKey() { return current().find((metric) => metric.fileKey)?.fileKey ?? null; },
+      get tssEvidenceSource() { return one()?.tssEvidenceSource; },
+      get informing() { return one() ? contributing(group.key)[0] : null; },
+      get pooled() { return current().length > 1; },
       read: (index) => {
-        const metric = current();
-        return metric ? metric.read(index) : NaN;
+        const list = current();
+        if (list.length === 0) return NaN;
+        if (list.length === 1) return list[0].read(index);
+        let sum = 0; let n = 0;
+        for (const metric of list) {
+          const value = metric.read(index);
+          if (!Number.isFinite(value)) continue;
+          sum += signed ? value : percentileRank(ranks(metric), value);
+          n += 1;
+        }
+        return n > 0 ? sum / n : NaN;
       },
     });
   }

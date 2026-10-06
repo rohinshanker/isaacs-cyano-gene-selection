@@ -55,6 +55,8 @@ export const DATASET_GROUPS = Object.freeze([
   Object.freeze({ id: 'stress', name: 'Stress and nutrient perturbation', rule: 'an applied stress or nutrient change' }),
   Object.freeze({ id: 'diel', name: 'Diel and circadian', rule: 'sampled across a light–dark cycle or a circadian free-run' }),
   Object.freeze({ id: 'standard', name: 'Standard photoautotrophic growth', rule: 'BG-11, 28–32 °C, ≤ 400 µmol, continuous light, planktonic, no applied stress' }),
+  // Owner decision, 2026-10-06: a non-wild-type strain is listed apart and says so.
+  Object.freeze({ id: 'engineered', name: 'Engineered strain', rule: 'measured in a production, reporter or rescue strain rather than the wild type; the strain is named on each row' }),
   Object.freeze({ id: 'other', name: 'Other', rule: 'fits no group above, or too little is reported to place it' }),
 ]);
 

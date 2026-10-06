@@ -810,14 +810,18 @@ an assay naming initiation, or `fitness`), the label names the quantity and the
 platform ("Transcript abundance (RNA-seq)", "Transcription initiation
 (RNA-seq)"), and the metric reads the one dataset that *informs* it at call
 time: its values, unit, description, scale and provenance. The informing dataset
-is the shipped original (GSE205444, TAN2018_TSS) or else the first selected of
-that type, unless the reader chooses another under Data Sources, on an axis
-source select, or through the filters' Select source; the choice rides in the
-link as `src=<type>=<datasetId>` only where it differs from the default. A link
-naming a dataset's own metric (older links, `c=exprGse288532Day`) is read as its
-type informed by that dataset, with the dataset added to the selection. Several
-selected datasets of one type never pool: units differ between deposits and no
-normalisation across them is stated.
+is the only selected dataset of that type; with several selected the type
+**pools** them (owner decision, 2026-10-06) unless the reader names one under
+Data Sources, on an axis source select, or through the filters' Select source;
+the named dataset rides in the link as `src=<type>=<datasetId>`. A link naming
+a dataset's own metric (older links, `c=exprGse288532Day`) is read as its type
+informed by that dataset, with the dataset added to the selection. The pooling
+rule, stated as the value's unit wherever it is shown: an abundance pools as the
+mean of each dataset's within-dataset mid-rank percentile (0 to 1, unitless,
+because the deposits' units differ); a signed fitness pools as the mean of the
+published log2 values. A pooled provenance names every contributing dataset and
+cites each. Datasets measured in an engineered strain sit in the `engineered`
+group of the data selection and are named as such (owner decision, 2026-10-06).
 
 `meta.pairJudgements` carries the owner's judgements on escalated condition-set
 pairs from `data/expression/pair_judgements.json` (the transcription of the

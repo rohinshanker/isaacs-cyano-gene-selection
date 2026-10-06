@@ -81,8 +81,8 @@ import {
   datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import {
-  buildTypeMetrics, informingDataset, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor,
-  typeKeyOf, typeLabelFor,
+  buildTypeMetrics, contributingDatasets, informingDataset, isTypeKey, normalizeTypeSources,
+  typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -1571,7 +1571,7 @@ function metricInScope(metric) {
   // the dataset chosen under Data Sources (owner decision, 2026-10-06).
   if (context.datasets.some((dataset) => dataset.metricKey === metric.key)) return false;
   if (metric.isType) {
-    return Boolean(informingDataset(metric.key, state.typeSources, context.datasets, sourceSelection()));
+    return contributingDatasets(metric.key, state.typeSources, context.datasets, sourceSelection()).length > 0;
   }
   return true;
 }
@@ -1590,6 +1590,8 @@ function setSources(ids) {
   const next = normalizeSelection(ids, context.datasets);
   state.sources = isDefaultSelection(next, context.datasets) ? [] : next;
   state.typeSources = normalizeTypeSources(state.typeSources, context.datasets, sourceSelection());
+  // A type's pooled value changes with the selection; its cached ranks go.
+  for (const metric of context.registry.metrics) if (metric.isType) context.percentiles.delete(metric.key);
   if (!metricInScope(context.registry.byKey.get(state.colorBy))) {
     state.colorBy = freshViewColorKey(scopedRegistry(), context.dataset.functionCategories);
     state.colorScale = null;
@@ -1630,6 +1632,10 @@ function syncAxisSourceSelects() {
       option.textContent = `${dataset.record.studyId} · ${dataset.record.conditionSet}`;
       select.append(option);
     }
+    const pooled = document.createElement('option');
+    pooled.value = '';
+    pooled.textContent = `Pooled (${candidates.length} datasets)`;
+    select.prepend(pooled);
     select.value = informingDataset(state[key], state.typeSources, context.datasets, chosen)?.id ?? '';
     row.hidden = false;
   }
@@ -1728,8 +1734,9 @@ function buildAxisSelects() {
     };
     select.addEventListener('change', () => onAxisChange(select.value));
     element(`axis-${axis}-source`).addEventListener('change', (event) => {
-      // The axis keeps its type; the chosen dataset informs it.
-      setInforming(state[key], event.target.value);
+      // The axis keeps its type; the chosen dataset informs it, or the empty
+      // choice pools every selected dataset of the type again.
+      setInforming(state[key], event.target.value || null);
     });
   }
   syncAxisSourceSelects();
@@ -2049,8 +2056,9 @@ function installTypeMetrics() {
   const registry = context.registry;
   if (registry.metrics.some((metric) => metric.isType)) return;
   const typeMetrics = buildTypeMetrics(context.datasets, {
-    inform: (typeKey) => informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection()),
+    contributing: (typeKey) => contributingDatasets(typeKey, state.typeSources, context.datasets, sourceSelection()),
     metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+    geneCount: context.dataset.genes.length,
   });
   // Placed before the first dataset metric so the Expression family keeps its
   // position in every default order.
@@ -2086,19 +2094,24 @@ function adoptLegacyMetricKeys() {
 }
 
 /**
- * Choose the dataset that informs one type metric. The type's cached ranks
- * and a defaulted colour scale are recomputed from the new values.
+ * Name the dataset that informs one type metric, or `null` to pool every
+ * selected dataset of the type again. The type's cached ranks and a defaulted
+ * colour scale are recomputed from the new values.
  */
 function setInforming(typeKey, datasetId) {
   const group = typeGroups(context.datasets).get(typeKey);
   if (!group) return;
-  const next = { ...state.typeSources, [typeKey]: datasetId };
+  const next = { ...state.typeSources };
+  if (datasetId) next[typeKey] = datasetId; else delete next[typeKey];
   state.typeSources = normalizeTypeSources(next, context.datasets, sourceSelection());
   context.percentiles.delete(typeKey);
   if (state.colorBy === typeKey) { state.colorScale = null; resolveColorScale(); }
   renderAll();
   const dataset = informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection());
-  announce(`${typeLabelFor(dataset)} now reads ${dataset.record.studyId}: ${dataset.record.conditionSet}.`);
+  const count = contributingDatasets(typeKey, state.typeSources, context.datasets, sourceSelection()).length;
+  announce(dataset
+    ? `${group.label} now reads ${dataset.record.studyId}: ${dataset.record.conditionSet}.`
+    : `${group.label} now pools ${count} selected datasets.`);
 }
 
 

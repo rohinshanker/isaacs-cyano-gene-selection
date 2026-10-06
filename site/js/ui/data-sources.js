@@ -301,11 +301,32 @@ export class DataSourcesPanel {
       const ofType = chosen.filter((d) => d.record.dataType === type.id);
       if (!ofType.length) continue;
       this.list.append(el('li', { className: 'data-sources-type', text: type.name }));
+      const pooledRows = new Set();
       for (const dataset of ofType) {
-        const item = el('li', { className: 'data-sources-item' });
-        item.dataset.id = dataset.id;
         const kind = this.informing?.typeOf(dataset) ?? null;
         const siblings = kind ? ofType.filter((d) => this.informing.typeOf(d).key === kind.key) : [];
+        if (kind && siblings.length > 1 && !pooledRows.has(kind.key)) {
+          // Several datasets of one type pool by default (owner, 2026-10-06);
+          // the first choice says so and brings the pooled value back.
+          pooledRows.add(kind.key);
+          const pooledChosen = !this.informing.chosen(kind.key);
+          const row = el('li', { className: 'data-sources-item data-sources-pooled' });
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `ds-inform-${kind.key}`;
+          radio.id = `ds-inform-${kind.key}-pooled`;
+          radio.checked = pooledChosen;
+          radio.setAttribute('aria-label', `Pool the ${siblings.length} selected datasets for ${kind.label}`);
+          radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(kind.key, null); });
+          row.append(radio, ' ', el('span', { className: 'data-sources-label', text: `Pooled: ${kind.label} over ${siblings.length} datasets` }));
+          if (pooledChosen) {
+            row.append(' ', chip(kind.key === this.colorMetricKey ? 'colouring the map' : `informs ${kind.label}`,
+              kind.key === this.colorMetricKey ? 'ds-chip ds-chip-active' : 'ds-chip'));
+          }
+          this.list.append(row);
+        }
+        const item = el('li', { className: 'data-sources-item' });
+        item.dataset.id = dataset.id;
         const informs = kind ? this.informing.chosen(kind.key)?.id === dataset.id : false;
         if (kind && siblings.length > 1) {
           // One dataset informs each type metric; the reader picks it here.

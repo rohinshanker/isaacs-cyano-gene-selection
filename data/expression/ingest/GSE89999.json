@@ -102,7 +102,7 @@
       "treatments": [
         "diel time course"
       ],
-      "group": "diel"
+      "group": "engineered"
     },
     {
       "id": "GSE89999_control_darkness",
@@ -121,9 +121,10 @@
         "control_darkness_11h50min"
       ],
       "treatments": [
-        "dark time course"
+        "dark time course",
+        "diel time course"
       ],
-      "group": "diel"
+      "group": "engineered"
     },
     {
       "id": "GSE89999_control_dawn",
@@ -139,7 +140,7 @@
       "treatments": [
         "diel time course"
       ],
-      "group": "diel"
+      "group": "engineered"
     }
   ]
 }

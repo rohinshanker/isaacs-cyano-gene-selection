@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dataset } from './data-sources-fixture.mjs';
 import {
-  assayKind, buildTypeMetrics, defaultInforming, informingDataset, isTypeKey, normalizeTypeSources,
-  typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  assayKind, buildTypeMetrics, contributingDatasets, defaultInforming, informingDataset, isTypeKey,
+  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from '../../site/js/core/type-metrics.js';
 
 function datasets() {
@@ -49,45 +49,64 @@ test('the shipped original informs its type by default, else the first selected 
   assert.equal(defaultInforming(abundance, ['PXD1.1']), null, 'no selected dataset of the type');
 });
 
-test('an informing choice survives only while it is selected, of the type, and not the default', () => {
+test('a named dataset survives only while selected and of the type; several selected pool unless one is named', () => {
   const all = datasets();
-  const selection = ['GSE205444', 'GSE9.5', 'TAN.1', 'PXD1.1'];
+  const selection = ['GSE205444', 'GSE9.5', 'TAN2018_TSS', 'PXD1.1'];
   const key = 'type.transcriptomics.rna-seq.abundance';
   assert.deepEqual(normalizeTypeSources({ [key]: 'GSE9.5' }, all, selection), { [key]: 'GSE9.5' });
-  assert.deepEqual(normalizeTypeSources({ [key]: 'GSE205444' }, all, selection), {}, 'the default is not recorded');
+  assert.deepEqual(normalizeTypeSources({ [key]: 'GSE205444' }, all, selection), { [key]: 'GSE205444' }, 'naming one of two is a choice');
   assert.deepEqual(normalizeTypeSources({ [key]: 'PXD1.1' }, all, selection), {}, 'wrong type');
   assert.deepEqual(normalizeTypeSources({ [key]: 'ARR.1' }, all, selection), {}, 'not selected');
   assert.deepEqual(normalizeTypeSources({ 'type.nope': 'GSE9.5' }, all, selection), {}, 'unknown type');
+  const lone = 'type.transcriptomics.rna-seq.initiation';
+  assert.deepEqual(normalizeTypeSources({ [lone]: 'TAN2018_TSS' }, all, selection), {}, 'the only selected dataset needs no naming');
   assert.equal(informingDataset(key, { [key]: 'GSE9.5' }, all, selection).id, 'GSE9.5');
-  assert.equal(informingDataset(key, {}, all, selection).id, 'GSE205444');
-  assert.equal(informingDataset(key, { [key]: 'ARR.1' }, all, selection).id, 'GSE205444', 'an unselected choice falls back');
+  assert.equal(informingDataset(key, {}, all, selection), null, 'two selected and none named: pooled');
+  assert.equal(informingDataset(lone, {}, all, selection).id, 'TAN2018_TSS', 'one selected informs alone');
+  assert.equal(informingDataset(key, { [key]: 'ARR.1' }, all, selection), null, 'an unselected choice pools');
   assert.equal(informingDataset('type.transcriptomics.array.abundance', {}, all, selection), null);
+  assert.deepEqual(contributingDatasets(key, {}, all, selection).map((d) => d.id), ['GSE205444', 'GSE9.5']);
+  assert.deepEqual(contributingDatasets(key, { [key]: 'GSE9.5' }, all, selection).map((d) => d.id), ['GSE9.5']);
+  assert.deepEqual(contributingDatasets('type.transcriptomics.array.abundance', {}, all, selection), []);
 });
 
-test('a type metric reads the informing dataset at call time and changes with it', () => {
+test('a type metric pools its selected datasets by within-dataset rank, or reads the one named', () => {
   const all = datasets();
-  const values = { expression: [1, 2, 3], 'GSE9.5': [10, 20, 30] };
+  // Three genes; the second dataset reports the third gene only as missing.
+  const values = { expression: [1, 2, 3], 'GSE9.5': [30, 10, NaN] };
   const metricsByKey = new Map([
-    ['expression', { key: 'expression', unit: 'counts', desc: 'A', scale: 'sequential', provenance: { id: 'GSE205444' }, read: (i) => values.expression[i] }],
-    [all[2].metricKey, { key: all[2].metricKey, unit: 'TPM', desc: 'B', scale: 'sequential', provenance: { id: 'GSE9.5' }, read: (i) => values['GSE9.5'][i] }],
+    ['expression', { key: 'expression', unit: 'counts', desc: 'A', scale: 'sequential', provenance: { id: 'GSE205444', citationId: 'a-2022', organism: 'PCC 7942', condition: 'c1' }, read: (i) => values.expression[i] }],
+    [all[2].metricKey, { key: all[2].metricKey, unit: 'TPM', desc: 'B', scale: 'sequential', provenance: { id: 'GSE9.5', citationId: 'b-2023', organism: 'PCC 7942', condition: 'c2' }, read: (i) => values['GSE9.5'][i] }],
   ]);
   let typeSources = {};
   const selection = ['GSE205444', 'GSE9.5'];
   const metrics = buildTypeMetrics(all, {
-    inform: (typeKey) => informingDataset(typeKey, typeSources, all, selection),
+    contributing: (typeKey) => contributingDatasets(typeKey, typeSources, all, selection),
     metricOf: (d) => metricsByKey.get(d.metricKey) ?? null,
+    geneCount: 3,
   });
   const abundance = metrics.find((m) => m.key === 'type.transcriptomics.rna-seq.abundance');
   assert.equal(abundance.family, 'Expression');
   assert.equal(abundance.isType, true);
-  assert.equal(abundance.label, 'Transcript abundance (RNA-seq)');
-  assert.equal(abundance.read(1), 2);
-  assert.equal(abundance.unit, 'counts');
-  assert.equal(abundance.provenance.id, 'GSE205444');
+  assert.equal(abundance.pooled, true);
+  assert.equal(abundance.informing, null);
+  // Pooled: the mean of each dataset's mid-rank percentile. Gene 0 ranks 1/6 in
+  // the first (lowest of three) and 3/4 in the second (highest of two).
+  assert.ok(Math.abs(abundance.read(0) - ((1 / 6) + (3 / 4)) / 2) < 1e-12);
+  // Gene 2 is missing from the second dataset, so only the first contributes.
+  assert.ok(Math.abs(abundance.read(2) - (5 / 6)) < 1e-12);
+  assert.match(abundance.unit, /^pooled percentile across 2 datasets/);
+  assert.equal(abundance.provenance.id, 'pooled:GSE205444+GSE9.5');
+  assert.deepEqual(abundance.provenance.citationIds, ['a-2022', 'b-2023']);
+  assert.match(abundance.provenance.caveat, /ranked within itself before averaging/);
+  assert.equal(abundance.scale, 'sequential');
+  // Naming one dataset reads its own values again, through the same object.
   typeSources = { 'type.transcriptomics.rna-seq.abundance': 'GSE9.5' };
-  assert.equal(abundance.read(1), 20, 'the same metric object now reads the chosen dataset');
+  assert.equal(abundance.pooled, false);
+  assert.equal(abundance.read(0), 30);
   assert.equal(abundance.unit, 'TPM');
   assert.equal(abundance.informing.id, 'GSE9.5');
+  assert.equal(abundance.provenance.id, 'GSE9.5');
   // A type none of whose datasets has a registry metric reads as unknown.
   const protein = metrics.find((m) => m.key === 'type.proteomics.lc-ms-ms.abundance');
   assert.ok(Number.isNaN(protein.read(0)));
@@ -95,10 +114,30 @@ test('a type metric reads the informing dataset at call time and changes with it
   assert.equal(protein.provenance, null);
 });
 
+test('a signed fitness type pools as the mean of its values, which share a scale', () => {
+  const screens = [
+    dataset({ id: 'F1', datasetId: 'F1', metricKey: 'fitA', dataType: 'fitness', platform: 'RB-TnSeq' }),
+    dataset({ id: 'F2', datasetId: 'F2', metricKey: 'fitB', dataType: 'fitness', platform: 'RB-TnSeq' }),
+  ];
+  const byKey = new Map([
+    ['fitA', { key: 'fitA', unit: 'fitness', desc: '', scale: 'diverging', provenance: { id: 'F1' }, read: (i) => [-2, 1][i] }],
+    ['fitB', { key: 'fitB', unit: 'fitness', desc: '', scale: 'diverging', provenance: { id: 'F2' }, read: (i) => [0, NaN][i] }],
+  ]);
+  const [fitness] = buildTypeMetrics(screens, {
+    contributing: (key) => contributingDatasets(key, {}, screens, ['F1', 'F2']),
+    metricOf: (d) => byKey.get(d.metricKey), geneCount: 2,
+  });
+  assert.equal(fitness.family, 'Fitness');
+  assert.equal(fitness.read(0), -1);
+  assert.equal(fitness.read(1), 1);
+  assert.match(fitness.unit, /^mean gene fitness across 2 fractions/);
+  assert.equal(fitness.scale, 'diverging');
+});
+
 test('a fitness screen is its own family; abundance and initiation are expression', () => {
   const all = datasets();
   const screen = dataset({ id: 'GSE205443', datasetId: 'GSE205443', metricKey: 'fitGse205443', dataType: 'fitness', platform: 'RB-TnSeq' });
-  const metrics = buildTypeMetrics([...all, screen], { inform: () => null, metricOf: () => null });
+  const metrics = buildTypeMetrics([...all, screen], { contributing: () => [], metricOf: () => null });
   const families = Object.fromEntries(metrics.map((m) => [m.key, m.family]));
   assert.equal(families['type.fitness.rb-tnseq.fitness'], 'Fitness');
   assert.equal(families['type.transcriptomics.rna-seq.abundance'], 'Expression');
