@@ -84,6 +84,13 @@ the committed selection in both its `filterState` and `viewState` fields.
 
 ## Annotation sources for colouring
 
+Owner decision, 2026-10-06: the three source toggles are data sources, so they
+are rendered by the Data Sources section (`site/js/ui/data-sources.js`,
+`annotation` mode) directly below "Function category explanation", on the map
+and on the chromosome tab, and not by the category legend. The section opens
+closed and is shown only while the colouring metric has a data selection
+behind it; the toggles' behaviour below is unchanged.
+
 Three checkboxes, UTEX 2973, PCC 7942, and GO IEA, sit inside the category
 legend directly above the category rows and appear only when **Colour by** is
 Function category. All three are on in a fresh view. They govern

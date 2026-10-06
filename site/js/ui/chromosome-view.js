@@ -539,7 +539,12 @@ export class ChromosomeView {
     colourHelpContent.className = 'help-content';
     this.colourHelp.append(colourHelpSummary, colourHelpContent);
 
-    toolbar.append(fieldsRow, this.scaleNotice, this.colourHelp, viewRow);
+    // Data Sources sits directly under the colour explanation here as it does
+    // on the map; app.js renders a panel into it.
+    this.dataSourcesHost = document.createElement('div');
+    this.dataSourcesHost.className = 'map-toolbar-row data-sources-row';
+    this.dataSourcesHost.id = 'chromosome-data-sources';
+    toolbar.append(fieldsRow, this.scaleNotice, this.colourHelp, this.dataSourcesHost, viewRow);
 
     this.windowReadout = document.createElement('p');
     this.windowReadout.className = 'chromosome-window';
@@ -626,6 +631,11 @@ export class ChromosomeView {
   /** The host for the shared colour-metric explanation disclosure. */
   colourHelpElement() {
     return this.colourHelp;
+  }
+
+  /** The host for the chromosome tab's Data Sources section, under the colour explanation. */
+  dataSourcesElement() {
+    return this.dataSourcesHost;
   }
 
   /** The host for the pinned gene's sequence close-up, at the foot of the figure. */

@@ -1115,7 +1115,10 @@ test('Scale sits beside Colour by, offers every scale, and disables the ones wit
     // order too. Flat, this toolbar wrapped a zoom button up beside Scale.
     const toolbar = view.figure.children[0];
     assert.equal(toolbar.className, 'chromosome-toolbar');
-    const [fieldsRow, notice, help, viewRow] = toolbar.children;
+    const [fieldsRow, notice, help, dataSources, viewRow] = toolbar.children;
+    // Data Sources sits under the colour explanation, as on the map (owner, 2026-10-06).
+    assert.equal(dataSources.id, 'chromosome-data-sources');
+    assert.equal(dataSources, view.dataSourcesElement());
     assert.equal(fieldsRow.className, 'chromosome-toolbar-row colour-scale-row');
     const [colourField, scaleField] = fieldsRow.children;
     assert.equal(fieldsRow.children.length, 2, 'nothing else shares the colour row');

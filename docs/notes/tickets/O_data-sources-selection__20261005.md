@@ -117,6 +117,36 @@ Not yet done: S1's five gaps are confirmed only where the feature needed them
 single source); the chromosome tab's own colour row has no Data Sources
 section; the rest of S5 (GSE104203, the CC0 proteomes) and S6.
 
+## Design round 4, owner, 2026-10-06
+
+1. **Colour by lists data types, not conditions.** The Expression family offers
+   the kind of data (transcript abundance by RNA-seq, by array, protein
+   abundance, …), and the Data Sources section chooses which dataset informs
+   that metric; a filter likewise names the type and takes its source there.
+2. **Collapsed at the start.** The Data Sources section opens closed.
+3. **Hidden when irrelevant.** When the colouring metric has no data selection
+   behind it (GC3, CAI, a live metric), the section is not shown.
+4. **Annotation sources belong to it.** For Function category, the UTEX 2973,
+   PCC 7942 and GO IEA toggles are data sources: they move into the opened
+   Data Sources section, directly below "Function category explained".
+5. **Type size.** The section's text is a different size from its neighbours;
+   match it.
+
+Done 2026-10-06 for 2 to 5: the section opens closed; it is shown only while
+the colouring metric has a data selection behind it (a dataset metric, or
+function category); under function category it holds the organism's
+annotation-source toggles, directly below "Function category explanation", on
+the map and on the chromosome tab (which has its own section), and the legend no
+longer draws them; its summary and body match the help disclosure's type sizes.
+Rendered at 375 and 1280 px. Decision 1 (type-level Colour by with the informing
+source chosen in the section) is the next step.
+
+Open from this round, asked 2026-10-06: when several datasets of one type are
+selected, does the type metric show one chosen dataset (default: the first
+selected, changeable in the section) or a pooled value across the comparable
+set? Units differ between deposits (CPM, TPM, RPKM, as deposited), so pooling
+needs a stated normalisation and is not done by default.
+
 ## Work
 
 | Stage | Work | Depends on |

@@ -121,10 +121,12 @@ export function categoryEvidenceSummary(
 }
 
 /**
- * The organism's colour-source checkboxes, rendered inside the legend above the
- * category rows. They govern colouring and these counts only.
+ * The organism's annotation-source checkboxes. They govern function-category
+ * colouring and the legend counts only. Owner decision, 2026-10-06: they are
+ * data sources, so the Data Sources section below "Function category
+ * explanation" renders them, not the legend.
  */
-function renderSourceToggles(sources, onToggleSource, toggles) {
+export function renderSourceToggles(sources, onToggleSource, toggles) {
   const group = document.createElement('fieldset');
   group.className = 'source-toggles';
   group.id = 'annotation-sources';
@@ -202,13 +204,9 @@ export function renderCategoryLegend(host, {
   const focusedId = host.contains(document.activeElement)
     ? document.activeElement.dataset.categoryId ?? null
     : null;
-  const focusedSource = host.contains(document.activeElement)
-    ? document.activeElement.dataset.sourceId ?? null
-    : null;
   host.replaceChildren();
   host.classList.add('category-mode');
   const names = sourceLabels(organism);
-  const toggles = renderSourceToggles(sources, onToggleSource, organism.annotationSources);
   const title = document.createElement('p');
   title.className = 'legend-title';
   title.textContent = categoryLegendTitle(sources, hasDerivedData, organism);
@@ -302,7 +300,7 @@ export function renderCategoryLegend(host, {
     : 'Only lab-reviewed locus assignments receive a category colour. '
       + `${names.go} suggestions alone leave a gene unclassified. `)
     + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
-  host.append(toggles, title, list);
+  host.append(title, list);
   const summary = categoryEvidenceSummary(
     evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount, organism,
   );
@@ -319,10 +317,6 @@ export function renderCategoryLegend(host, {
   if (focusedId !== null) {
     const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
       .find((row) => row.dataset.categoryId === focusedId);
-    if (toFocus) toFocus.focus();
-  }
-  if (focusedSource !== null) {
-    const toFocus = toggles.querySelector(`input[data-source-id="${focusedSource}"]`);
     if (toFocus) toFocus.focus();
   }
 }

@@ -591,6 +591,7 @@ let plot = null;
 let schemeEditor = null;
 let filterPanel = null;
 let dataSourcesPanel = null;
+let chromosomeDataSourcesPanel = null;
 let sidePanel = null;
 let shortlistPanel = null;
 let searchResults = null;
@@ -1089,6 +1090,8 @@ function renderChromosomeView() {
     scheme: context.scheme,
     schemeVersion: context.schemeVersion,
   });
+  // The toolbar exists once the view has rendered, so its section follows.
+  chromosomeDataSources()?.update(dataSourcesState());
 }
 
 /**
@@ -1292,7 +1295,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       },
     });
   }
-  dataSourcesPanel?.update({ selection: sourceSelection(), colorMetricKey: state.colorBy });
+  dataSourcesPanel?.update(dataSourcesState());
   persist();
 }
 
@@ -1506,6 +1509,34 @@ function familyMetrics(family) {
   );
 }
 
+/**
+ * What the Data Sources section shows: the dataset selection and the colouring
+ * metric, plus, while the map is coloured by function category, the
+ * organism's annotation-source toggles, which are data sources too (owner
+ * decision, 2026-10-06).
+ */
+function dataSourcesState() {
+  const annotation = state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories
+    ? { toggles: COLOR_SOURCE_TOGGLES, sources: state.colorSources, onToggle: toggleColorSource }
+    : null;
+  return { selection: sourceSelection(), colorMetricKey: state.colorBy, annotation };
+}
+
+/** The chromosome tab's own Data Sources section, built once its toolbar exists. */
+function chromosomeDataSources() {
+  if (!chromosomeDataSourcesPanel && chromosomeView?.dataSourcesElement()) {
+    let storage = null;
+    try { storage = window.localStorage; } catch { storage = null; }
+    chromosomeDataSourcesPanel = new DataSourcesPanel(chromosomeView.dataSourcesElement(), {
+      datasets: context.datasets,
+      judgements: context.dataset.meta.pairJudgements ?? [],
+      storage,
+      onChange: (ids) => setSources(ids),
+    });
+  }
+  return chromosomeDataSourcesPanel;
+}
+
 /** The resolved data-source selection: ids of the datasets the menus offer. */
 function sourceSelection() {
   return normalizeSelection(state.sources, context.datasets ?? []);
@@ -1620,7 +1651,7 @@ function buildColorControls() {
     storage,
     onChange: (ids) => setSources(ids),
   });
-  dataSourcesPanel.update({ selection: sourceSelection(), colorMetricKey: state.colorBy });
+  dataSourcesPanel.update(dataSourcesState());
   installColorControls({
     colorBy: element('color-by'),
     scale: element('color-scale'),

@@ -1561,7 +1561,9 @@ input[type="range"] { width: 100%; }
 /* Data Sources: the section under Colour by, and the data selection peek. */
 .data-sources-row { align-items: flex-start; }
 .data-sources { flex: 1 1 auto; min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); padding: 0.3rem 0.6rem; background: var(--surface); }
-.data-sources-summary { cursor: pointer; font-weight: 600; }
+.data-sources-summary { cursor: pointer; font-weight: 600; font-size: 0.86rem; }
+.data-sources-list, .data-sources-actions, .data-sources-toggles { font-size: 0.82rem; }
+.data-sources-toggles { margin: 0.3rem 0; }
 .data-sources-list { list-style: none; margin: 0.3rem 0; padding: 0; max-height: 11rem; overflow: auto; }
 .data-sources-list li { padding: 0.15rem 0; border-bottom: 1px dotted var(--line); }
 .data-sources-type { color: var(--ink-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 0 !important; }

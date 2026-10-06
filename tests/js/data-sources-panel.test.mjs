@@ -52,8 +52,51 @@ test('an organism with no measured source has no Data Sources section', async ()
     document.body.append(host);
     new DataSourcesPanel(host, { datasets: [], onChange: () => {}, storage: memoryStorage() });
     assert.equal(host.hidden, true);
-    const { host: shown } = mount(document);
+    const { host: shown, panel } = mount(document);
+    panel.update({ colorMetricKey: 'expression' });
     assert.equal(shown.hidden, false);
+  });
+});
+
+test('the section opens closed, and is shown only where a data selection informs the colour', async () => {
+  await withFakeDocument(async (document) => {
+    const { host, panel } = mount(document);
+    const details = host.querySelector('details');
+    assert.equal(details.open, false, 'closed at the start, by owner decision of 2026-10-06');
+    // A computed metric has no data selection behind it.
+    panel.update({ colorMetricKey: 'gc3' });
+    assert.equal(host.hidden, true);
+    // A dataset metric does.
+    panel.update({ colorMetricKey: 'tssInitiation' });
+    assert.equal(host.hidden, false);
+    assert.equal(details.open, false, 'a colour change does not open it');
+  });
+});
+
+test('function-category colouring puts the annotation-source toggles in the section', async () => {
+  await withFakeDocument(async (document) => {
+    const { host, panel } = mount(document);
+    const toggled = [];
+    const toggles = [
+      { id: 'utex-2973', label: 'UTEX 2973' }, { id: 'pcc-7942', label: 'PCC 7942' }, { id: 'go-iea', label: 'GO IEA' },
+    ];
+    panel.update({ colorMetricKey: 'functionCategory', annotation: {
+      toggles, sources: ['utex-2973', 'go-iea'], onToggle: (id, on) => toggled.push([id, on]),
+    } });
+    assert.equal(host.hidden, false);
+    assert.equal(host.querySelector('summary').textContent, 'Data Sources (UTEX 2973, GO IEA)');
+    const boxes = host.querySelectorAll('input').filter((input) => input.type === 'checkbox');
+    assert.deepEqual(boxes.map((box) => [box.dataset.sourceId, box.checked]),
+      [['utex-2973', true], ['pcc-7942', false], ['go-iea', true]]);
+    assert.equal(host.querySelector('div.data-sources-actions').hidden, true, 'no dataset peek to open');
+    boxes[1].checked = true;
+    boxes[1].dispatch('change');
+    assert.deepEqual(toggled, [['pcc-7942', true]]);
+    // Back to a dataset metric: the list returns and the toggles go.
+    panel.update({ colorMetricKey: 'expression', annotation: null });
+    assert.equal(host.querySelectorAll('input').filter((input) => input.type === 'checkbox').length, 0);
+    assert.equal(host.querySelector('div.data-sources-actions').hidden, false);
+    assert.match(host.querySelector('summary').textContent, /selected\)$/);
   });
 });
 

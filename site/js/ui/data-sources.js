@@ -22,6 +22,7 @@ import {
   formatRange, groupDatasets, normalizeSelection, passesFilters, regimeOf, studyColors,
   summariseSet,
 } from '../core/data-sources.js';
+import { renderSourceToggles } from './legend.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const REGIME_COLOR = Object.freeze({
@@ -198,6 +199,7 @@ export class DataSourcesPanel {
     this.storage = storage;
     this.selection = normalizeSelection([], datasets);
     this.colorMetricKey = null;
+    this.annotation = null;
     this.hidden = this.readHidden();
     this.peek = null;
     this.build();
@@ -215,12 +217,16 @@ export class DataSourcesPanel {
     this.host.replaceChildren();
     this.host.classList.add('data-sources-row');
     this.details = el('details', { className: 'data-sources' });
-    this.details.open = true;
+    // Closed at the start, by owner decision of 2026-10-06; the summary says
+    // what is selected without the list taking the toolbar's room.
+    this.details.open = false;
     this.summary = el('summary', { className: 'data-sources-summary' });
     this.list = el('ul', { className: 'data-sources-list' });
+    this.toggles = el('div', { className: 'data-sources-toggles' });
     this.changeButton = el('button', { className: 'chip-button data-sources-change', text: 'Change Data Selection', attrs: { type: 'button' } });
     this.changeButton.addEventListener('click', () => this.open({ opener: this.changeButton }));
-    this.details.append(this.summary, this.list, el('div', { className: 'data-sources-actions', children: [this.changeButton] }));
+    this.actions = el('div', { className: 'data-sources-actions', children: [this.changeButton] });
+    this.details.append(this.summary, this.toggles, this.list, this.actions);
     this.hideButton = el('button', { className: 'chip-button data-sources-hide', attrs: { type: 'button' } });
     this.hideButton.addEventListener('click', () => {
       this.hidden = !this.hidden;
@@ -231,11 +237,31 @@ export class DataSourcesPanel {
     this.renderSection();
   }
 
-  /** Re-render the section after the selection or the colour metric changed. */
-  update({ selection, colorMetricKey = this.colorMetricKey } = {}) {
+  /**
+   * Re-render the section after the selection, the colour metric, or the
+   * annotation sources changed.
+   *
+   * `annotation` is set while the map is coloured by function category: the
+   * organism's annotation-source toggles (`{toggles, sources, onToggle}`) are
+   * data sources too (owner decision, 2026-10-06) and the section shows them
+   * in place of the dataset list.
+   */
+  update({ selection, colorMetricKey = this.colorMetricKey, annotation = null } = {}) {
     if (selection) this.selection = normalizeSelection(selection, this.datasets);
     this.colorMetricKey = colorMetricKey;
+    this.annotation = annotation;
     this.renderSection();
+  }
+
+  /**
+   * Whether the colouring metric has a data selection behind it: a dataset
+   * metric, or function category with its annotation sources. A computed
+   * metric such as GC3 has none, and the section is not shown for it
+   * (owner decision, 2026-10-06).
+   */
+  relevant() {
+    if (this.annotation) return true;
+    return Boolean(dataTypeOfMetric(this.colorMetricKey, this.datasets));
   }
 
   selectedDatasets() {
@@ -244,12 +270,26 @@ export class DataSourcesPanel {
   }
 
   renderSection() {
-    // A dataset with no measured sources at all has nothing to choose among,
-    // so the section stays out of the toolbar rather than offering an empty peek.
-    this.host.hidden = this.datasets.length === 0;
+    // Shown only where a data selection informs the colour: a dataset with no
+    // measured source has nothing to choose among, and a computed metric has
+    // no source behind it.
+    this.host.hidden = !this.relevant();
+    this.toggles.replaceChildren();
+    this.list.replaceChildren();
+    if (this.annotation) {
+      const { toggles, sources, onToggle } = this.annotation;
+      const names = toggles.filter((t) => sources.includes(t.id)).map((t) => t.label);
+      this.summary.textContent = `Data Sources (${names.length ? names.join(', ') : 'no annotation source'})`;
+      this.toggles.append(renderSourceToggles(sources, onToggle, toggles));
+      this.actions.hidden = true;
+      this.details.hidden = this.hidden;
+      this.hideButton.textContent = this.hidden ? 'Show Data Sources' : 'Hide';
+      this.hideButton.setAttribute('aria-expanded', String(!this.hidden));
+      return;
+    }
+    this.actions.hidden = false;
     const chosen = this.selectedDatasets();
     this.summary.textContent = `Data Sources (${chosen.length} selected)`;
-    this.list.replaceChildren();
     if (!chosen.length) {
       this.list.append(el('li', { className: 'data-sources-empty', text: 'No data source selected.' }));
     }
