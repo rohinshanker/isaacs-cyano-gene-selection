@@ -118,8 +118,21 @@ on two axes (light 1.5×, CO₂ 2.5×), which is two misses, not one. The
 format-and-phase axis stays undecidable on every pair because PXD036717's OD at
 labeling is not stated.
 
-**Still open.** Work item 5, the 15 abstract-only method sources, and the ticket
-index row, which another session holds. The two optional supplements (Singh 2022, Guerreiro 2014) were not
+**Work item 5, probed 2026-10-06.** The memo already marks every claim that
+rests on an abstract "(abstract only)" at first use, and the companion table's
+`retrieved_via` column says "ABSTRACT ONLY" on the 15 rows (1, 2, 4, 7, 8, 11,
+12, 18, 20, 23, 26, 27, 29, 33, 41), so the marking is done. Four of the 15 have
+a PMC deposit (MAQC 2006 PMC3272078, Lin 2014 PMC4260565, Reese 2013
+PMC3810845, Evans 2017 PMC6171491). On 2026-10-06 the PMC article page answered
+each with a proof-of-work interstitial instead of the article (3.5 KB of
+challenge script, not solved, per the gated-pages ticket) and Europe PMC's
+`fullTextXML` returned HTTP 500 for all four, as for the other non-open
+deposits. The other eleven are subscription articles. None of the 15 bears on a
+ledger decision or a condition cell; they support statistics-method statements
+whose abstracts state the claim. Reading them is left to the owner's browser if
+wanted; nothing else waits on it.
+
+**Still open.** The ticket index row, which another session holds. The two optional supplements (Singh 2022, Guerreiro 2014) were not
 supplied and are not needed for any ledger decision.
 
 ## Verification
