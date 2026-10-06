@@ -20,8 +20,8 @@ function datasets() {
 
 test('a dataset collapses into a type by data type, platform and the kind of quantity', () => {
   const [abundance, initiation, , array, protein] = datasets();
-  assert.equal(assayKind(abundance.source), 'abundance');
-  assert.equal(assayKind(initiation.source), 'initiation');
+  assert.equal(assayKind(abundance), 'abundance');
+  assert.equal(assayKind(initiation), 'initiation');
   assert.equal(typeKeyFor(abundance), 'type.transcriptomics.rna-seq.abundance');
   assert.equal(typeKeyFor(initiation), 'type.transcriptomics.rna-seq.initiation');
   assert.equal(typeKeyFor(array), 'type.transcriptomics.array.abundance');
@@ -93,4 +93,15 @@ test('a type metric reads the informing dataset at call time and changes with it
   assert.ok(Number.isNaN(protein.read(0)));
   assert.equal(protein.unit, '');
   assert.equal(protein.provenance, null);
+});
+
+test('a fitness screen is its own family; abundance and initiation are expression', () => {
+  const all = datasets();
+  const screen = dataset({ id: 'GSE205443', datasetId: 'GSE205443', metricKey: 'fitGse205443', dataType: 'fitness', platform: 'RB-TnSeq' });
+  const metrics = buildTypeMetrics([...all, screen], { inform: () => null, metricOf: () => null });
+  const families = Object.fromEntries(metrics.map((m) => [m.key, m.family]));
+  assert.equal(families['type.fitness.rb-tnseq.fitness'], 'Fitness');
+  assert.equal(families['type.transcriptomics.rna-seq.abundance'], 'Expression');
+  assert.equal(families['type.transcriptomics.rna-seq.initiation'], 'Expression');
+  assert.equal(typeLabelFor(screen), 'Gene fitness (RB-TnSeq)');
 });

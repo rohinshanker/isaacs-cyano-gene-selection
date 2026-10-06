@@ -754,6 +754,11 @@ test('expression layers join onto the genes they were built from and nothing els
     { ...payload, layers: { exprLayer: column.map((v) => (v === null ? -1 : v)) } }),
   /invalid value for exprLayer/);
   assert.equal(dataset.genes[1].exprLayer, undefined, 'a refused payload joins nothing');
+  // A signed source, a fitness score, may be negative.
+  layerSource.signed = true;
+  DATA_APPLIERS.expressionLayers(dataset, { ...payload, layers: { exprLayer: column.map((v) => (v === null ? null : -v)) } });
+  assert.equal(dataset.genes[1].exprLayer, -1.5);
+  layerSource.signed = false;
 
   DATA_APPLIERS.expressionLayers(dataset, payload);
   assert.equal(dataset.genes[0].exprLayer, undefined, 'null stays absent, never zero');

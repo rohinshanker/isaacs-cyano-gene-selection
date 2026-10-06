@@ -623,6 +623,7 @@ def load_expression_sources(
             f"Expression source {source_id} names no citation ledger entry",
         )
         source.setdefault("payload", GENES_PAYLOAD)
+        source.setdefault("signed", source["record"]["dataType"] == "fitness")
         require(
             source["payload"] in PAYLOADS,
             f"Expression source {source_id} names an unknown payload: {source['payload']!r}",
@@ -659,8 +660,10 @@ def load_expression_sources(
                     f"Duplicate locus_tag {locus} in expression source {source_id}",
                 )
                 value = float(row["abundance"])
+                # A fitness score is signed (loss below zero, gain above); every
+                # abundance is not. The source says which it is.
                 require(
-                    math.isfinite(value) and value >= 0,
+                    math.isfinite(value) and (value >= 0 or source.get("signed") is True),
                     f"Invalid value for {locus} in expression source {source_id}: {value}",
                 )
                 values[locus] = value
@@ -686,8 +689,10 @@ def expression_metric_definition(
             f"{with_value:,} of {total:,} genes in the {source['metricKey']} column of "
             f"{source['payload']}. {source['caveat']}"
         ),
-        "family": "Expression",
-        "scale": "sequential",
+        # A fitness screen is its own family and centres on zero, by owner
+        # decision of 2026-10-05; an abundance is a one-sided ramp.
+        "family": "Fitness" if source["record"]["dataType"] == "fitness" else "Expression",
+        "scale": "diverging" if source.get("signed") else "sequential",
         "missingPolicy": MISSING_POLICY,
         "direction": "contextual",
     }

@@ -375,7 +375,8 @@ export const DATA_APPLIERS = Object.freeze({
       for (let index = 0; index < column.length; index += 1) {
         const value = column[index];
         if (value === null) continue;
-        if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+        // A fitness score is signed; an abundance is not. The source says which.
+        if (typeof value !== 'number' || !Number.isFinite(value) || (value < 0 && source.signed !== true)) {
           throw new Error(`expression_layers.json has an invalid value for ${source.metricKey}`);
         }
         genes[index][source.metricKey] = value;

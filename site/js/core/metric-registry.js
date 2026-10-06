@@ -424,7 +424,7 @@ export function buildMetricRegistry(meta, genes, liveFields) {
     };
     // A measured expression metric carries its provenance so every place that
     // shows it can say where it came from. The proxy is this genome's own.
-    if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
+    if (expressionSources.has(key) || (isExpressionMetric(metric) && !isExpressionProxyMetric(metric))) {
       // Prefer the per-metric manifest. A derived percentile inherits the
       // source of its raw measurement. `expressionSource` is the legacy single-
       // source declaration and applies only to that raw field and its rank.

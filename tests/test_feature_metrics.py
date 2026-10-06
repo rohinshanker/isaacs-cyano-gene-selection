@@ -318,6 +318,31 @@ def test_expression_manifest_rejects_a_metric_key_collision(tmp_path):
         load_expression_sources(tmp_path, {"cai"})
 
 
+def test_a_signed_source_may_carry_negative_values_and_an_abundance_may_not(tmp_path):
+    digest = write_expression_table(tmp_path, "fit.tsv", [("a", -1.5, "s1"), ("b", 0.25, "s2")])
+    unsigned = expression_source("fit.tsv", "fitTest", digest)
+    (tmp_path / "sources.json").write_text(json.dumps([unsigned]), encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid value for a"):
+        load_expression_sources(tmp_path, set())
+    signed = {**unsigned, "signed": True}
+    signed["record"] = {**signed["record"], "dataType": "fitness", "platform": "RB-TnSeq"}
+    (tmp_path / "sources.json").write_text(json.dumps([signed]), encoding="utf-8")
+    sources, values = load_expression_sources(tmp_path, set())
+    assert values["fitTest"] == {"a": -1.5, "b": 0.25}
+    assert sources[0]["signed"] is True
+    # A fitness record is signed by default and forms its own diverging family.
+    implied = {**unsigned}
+    implied["record"] = {**implied["record"], "dataType": "fitness", "platform": "RB-TnSeq"}
+    (tmp_path / "sources.json").write_text(json.dumps([implied]), encoding="utf-8")
+    sources, _ = load_expression_sources(tmp_path, set())
+    assert sources[0]["signed"] is True
+    from build_features import expression_metric_definition
+    definition = expression_metric_definition(sources[0], 2, 2)
+    assert (definition["family"], definition["scale"]) == ("Fitness", "diverging")
+    plain = expression_metric_definition(unsigned | {"signed": False, "payload": "genes.json"}, 2, 2)
+    assert (plain["family"], plain["scale"]) == ("Expression", "sequential")
+
+
 def test_expression_manifest_rejects_an_unknown_payload(tmp_path):
     digest = write_expression_table(tmp_path, "source.tsv", [("a", 10, "s1")])
     manifest = [expression_source("source.tsv", "exprTest", digest) | {"payload": "layers.bin"}]

@@ -15,10 +15,10 @@
  * stated, so exactly one dataset informs a type at a time.
  */
 
-/** The kind of quantity a source measures, from its declared assay. */
-export function assayKind(source) {
-  if (source?.record?.dataType === 'fitness') return 'fitness';
-  if (/initiation/i.test(source?.assay ?? '')) return 'initiation';
+/** The kind of quantity a dataset measures, from its record's data type and its source's assay. */
+export function assayKind(dataset) {
+  if (dataset?.record?.dataType === 'fitness') return 'fitness';
+  if (/initiation/i.test(dataset?.source?.assay ?? '')) return 'initiation';
   return 'abundance';
 }
 
@@ -27,7 +27,7 @@ const slug = (text) => String(text ?? 'unknown').toLowerCase().replace(/[^a-z0-9
 /** The type key a dataset's metric collapses into: `type.<dataType>.<platform>.<kind>`. */
 export function typeKeyFor(dataset) {
   const { dataType, platform } = dataset.record;
-  return `type.${slug(dataType)}.${slug(platform)}.${assayKind(dataset.source)}`;
+  return `type.${slug(dataType)}.${slug(platform)}.${assayKind(dataset)}`;
 }
 
 /** Whether a metric key names a type metric rather than a dataset's own. */
@@ -38,7 +38,7 @@ export function isTypeKey(key) {
 /** The reader-facing name of a type: the quantity, then the platform in brackets. */
 export function typeLabelFor(dataset) {
   const { dataType, platform } = dataset.record;
-  const kind = assayKind(dataset.source);
+  const kind = assayKind(dataset);
   const quantity = kind === 'initiation' ? 'Transcription initiation'
     : kind === 'fitness' ? 'Gene fitness'
       : dataType === 'proteomics' ? 'Protein abundance'
@@ -125,7 +125,9 @@ export function buildTypeMetrics(datasets, { inform, metricOf }) {
     metrics.push({
       key: group.key,
       label: group.label,
-      family: 'Expression',
+      // A fitness screen is its own family (owner decision, 2026-10-05); every
+      // abundance and initiation measure is expression evidence.
+      family: assayKind(group.datasets[0]) === 'fitness' ? 'Fitness' : 'Expression',
       source: 'pipeline',
       integer: false,
       isType: true,

@@ -169,8 +169,12 @@ def _split_header(rows: list[list[str]], id_column: str, title_rows: list[int]) 
     raise ValueError(f"no header row names {id_column!r}")
 
 
-def column_values(header: list[str], rows: list[list[str]], column: str) -> dict[str, float]:
-    """One column as identifier → number, with blank cells skipped and ids stripped."""
+def column_values(header: list[str], rows: list[list[str]], column: str, *, signed: bool = False) -> dict[str, float]:
+    """One column as identifier → number, with blank cells skipped and ids stripped.
+
+    A negative value is an error for an abundance and a fitness loss for a
+    signed layer (``signed``).
+    """
     try:
         position = header.index(column)
     except ValueError as error:
@@ -184,7 +188,7 @@ def column_values(header: list[str], rows: list[list[str]], column: str) -> dict
         if not cell or cell.lower() in ("na", "nan", "null"):
             continue
         value = float(cell)
-        if not math.isfinite(value) or value < 0:
+        if not math.isfinite(value) or (value < 0 and not signed):
             raise ValueError(f"{identifier}: {column!r} holds an invalid value {cell!r}")
         if identifier in values:
             raise ValueError(f"{identifier} appears twice in the table")
@@ -204,9 +208,10 @@ def normalise(values: dict[str, float], method: str) -> dict[str, float]:
     raise ValueError(f"unknown normalization {method!r}")
 
 
-def layer_means(header: list[str], rows: list[list[str]], columns: list[str], method: str) -> dict[str, float]:
+def layer_means(header: list[str], rows: list[list[str]], columns: list[str], method: str,
+                *, signed: bool = False) -> dict[str, float]:
     """The per-identifier arithmetic mean over a layer's sample columns."""
-    samples = [normalise(column_values(header, rows, column), method) for column in columns]
+    samples = [normalise(column_values(header, rows, column, signed=signed), method) for column in columns]
     shared = set.intersection(*(set(sample) for sample in samples)) if samples else set()
     return {identifier: sum(sample[identifier] for sample in samples) / len(samples) for identifier in sorted(shared)}
 
@@ -373,7 +378,8 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
     for layer in spec["layers"]:
         quotes, replicate_quote = condition_quotes(
             conditions_table, layer.get("conditionTableRow", spec.get("conditionTableRow")))
-        means = layer_means(header, rows, layer["columns"], spec["normalization"])
+        means = layer_means(header, rows, layer["columns"], spec["normalization"],
+                            signed=spec.get("signed", spec["dataType"] == "fitness"))
         no_locus = 0
         if via_uniprot:
             means, no_locus = through_uniprot(means, orf_names)
@@ -400,6 +406,7 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
             "provenanceDoc": spec["provenanceDoc"],
             "citationId": spec["citationId"],
             "payload": "expression_layers.json",
+            "signed": spec.get("signed", spec["dataType"] == "fitness"),
             "ingest": {
                 "sourceFile": source["name"], "sourceSha256": source["sha256"], "sourceUrl": source["url"],
                 "columns": layer["columns"], "normalization": spec["normalization"],

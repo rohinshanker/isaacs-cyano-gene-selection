@@ -1379,7 +1379,8 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
     A source published through ``expression_layers.json`` keeps its values out
     of ``genes.json``; the payload repeats the gene order so a stale file cannot
     be joined, every layer has one entry per gene, a value is a finite
-    non-negative number or null, and the non-null count is the coverage the
+    non-negative number or null (a source marked ``signed``, a fitness score,
+    may be negative), and the non-null count is the coverage the
     source declares. A source published through ``genes.json`` must still be
     found there.
     """
@@ -1426,9 +1427,10 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
         if not isinstance(column, list) or len(column) != len(gene_rows):
             problems.append(f"{source['metricKey']}: not one entry per gene")
             continue
+        signed = source.get("signed") is True
         bad = [v for v in column if v is not None
                and (isinstance(v, bool) or not isinstance(v, (int, float))
-                    or not math.isfinite(v) or v < 0)]
+                    or not math.isfinite(v) or (v < 0 and not signed))]
         if bad:
             problems.append(f"{source['metricKey']}: {len(bad)} invalid values, e.g. {bad[:3]}")
         with_value = sum(v is not None for v in column)

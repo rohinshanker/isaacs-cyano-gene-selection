@@ -312,6 +312,15 @@ def test_column_values_skips_blanks_and_rejects_bad_cells():
         ingest.column_values(header, [["g1", "1"], ["g1", "2"]], "a")
 
 
+def test_a_signed_column_keeps_negative_values():
+    header = ["id", "f"]
+    rows = [["g1", "-1.25"], ["g2", "0.5"]]
+    assert ingest.column_values(header, rows, "f", signed=True) == {"g1": -1.25, "g2": 0.5}
+    with pytest.raises(ValueError, match="invalid value"):
+        ingest.column_values(header, rows, "f")
+    assert ingest.layer_means(header, rows, ["f"], "as-deposited", signed=True) == {"g1": -1.25, "g2": 0.5}
+
+
 def test_normalise_scales_to_counts_per_million_or_keeps_values():
     values = {"g1": 1.0, "g2": 3.0}
     assert ingest.normalise(values, "as-deposited") is values

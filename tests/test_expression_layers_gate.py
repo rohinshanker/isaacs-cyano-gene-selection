@@ -65,6 +65,17 @@ def test_the_join_and_the_values_are_checked(tmp_path):
     assert any("invalid values" in f for f in run(tmp_path, payload=boolean).failures)
 
 
+def test_a_signed_layer_may_hold_negative_values(tmp_path):
+    meta = {"expressionSources": [
+        {"metricKey": "fitA", "payload": "expression_layers.json", "coverage": {"withValue": 2}, "signed": True},
+    ]}
+    payload = {"schemaVersion": 1, "geneIds": ["g1", "g2"], "layers": {"fitA": [-2.5, 0.5]}}
+    genes = [{"id": "g1"}, {"id": "g2"}]
+    assert run(tmp_path, meta=meta, genes=genes, payload=payload).failures == []
+    unsigned = {"expressionSources": [{**meta["expressionSources"][0], "signed": False}]}
+    assert any("invalid values" in f for f in run(tmp_path, meta=unsigned, genes=genes, payload=payload).failures)
+
+
 def test_payload_names_and_gene_fields_are_checked(tmp_path):
     unnamed = {"expressionSources": [{"metricKey": "exprA", "coverage": {"withValue": 1}}]}
     failures = run(tmp_path, meta=unnamed, payload=None).failures
