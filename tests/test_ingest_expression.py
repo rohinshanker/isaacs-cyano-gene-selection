@@ -472,3 +472,60 @@ def test_main_runs_a_spec_file_and_reports_each_layer(tmp_path, capsys):
     assert capsys.readouterr().out == "GSE1_control: 1 genes mapped, 0 identifiers unmapped -> GSE1_control.tsv\n"
     assert (manifest.parent / "GSE1_control.tsv").is_file()
     assert json.loads(manifest.read_text(encoding="utf-8"))[0]["record"]["conditionTableRow"] == 2
+
+
+def dtaselect_report(proteins, *, count_header="Spectrum Count"):
+    """A DTASelect report: preamble, two header lines, protein lines each followed by a peptide line, summary rows."""
+    lines = ["DTASelect v2.0.47", "/scratch/search", "", f"Locus\tSequence Count\t{count_header}\tSequence Coverage\tLength\tMolWt\tpI\tValidation Status\tDescriptive Name",
+             "Unique\tFileName\tXCorr\tDeltCN\tConf%\tM+H+\tCalcM+H+\tTotalIntensity\tSpR\tProb Score\tIonProportion\tRedundancy\tSequence"]
+    for locus, count in proteins:
+        lines.append(f"{locus}\t3\t{count}\t40.0%\t163\t17288\t5.6\tU\tSome protein OS=Synechococcus elongatus")
+        lines.append("*\t7.14821.14821.2\t6.357\t0.4866\t100.0\t1705.55\t1701.8766\t1947317.0\t1\t10.15\t92.3\t174\tM.SKTPLTEAVAAADSQGR.F")
+        lines.append("\t7.14822.14822.2\t5.1\t0.4\t100.0\t1705.55\t1701.8766\t1947317.0\t1\t10.15\t92.3\t174\tM.SKTPLTEAVAAADSQGR.F")
+    lines += ["", "Unfiltered\t5386\t322821\t325002", "Filtered\t804\t6291\t27388", "Forward FDR\t1.13\t0.32\t0.08"]
+    return "\n".join(lines) + "\n"
+
+
+def dtaselect_archive(members):
+    import zipfile
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name, text in members.items():
+            archive.writestr(name, text)
+    return buffer.getvalue()
+
+
+def test_read_dtaselect_tables_protein_counts_per_run_by_accession():
+    data = dtaselect_archive({
+        "search/log-1.txt": dtaselect_report([("P13530_PHCA_SYNE7", 1545), ("Reverse_Q31QQ3_Q31QQ3_SYNE7", 4),
+                                              ("contaminant_sp-P04264-K2C1_HUMAN", 9), ("Q31MM4_Q31MM4_SYNE7", 2)]),
+        "search/log-2.txt": dtaselect_report([("P13530_PHCA_SYNE7", 1077), ("A0A0H3K6W5_A0A0H3K6W5_SYNE7", 7)]),
+    })
+    header, rows = ingest.read_table(data, {"format": "dtaselect", "zipMembers": ["search/log-1.txt", "search/log-2.txt"]})
+    assert header == ["Locus", "log-1", "log-2"]
+    assert rows == [
+        ["P13530", "1545", "1077"],
+        ["contaminant_sp-P04264-K2C1_HUMAN", "9", ""],   # kept by name; fails to map later
+        ["Q31MM4", "2", ""],                               # a run that did not list it leaves a blank
+        ["A0A0H3K6W5", "", "7"],                           # a ten-character accession
+    ], "decoys are dropped, peptide and summary lines are never proteins"
+    means = ingest.layer_means(header, rows, ["log-1", "log-2"], "as-deposited")
+    assert means == {"P13530": 1311.0}, "the mean covers only proteins every run identified"
+    # A different count column can be named.
+    header, rows = ingest.read_table(dtaselect_archive({"a.txt": dtaselect_report([("P13530_PHCA_SYNE7", 5)])}),
+                                     {"format": "dtaselect", "zipMembers": ["a.txt"], "countColumn": "Sequence Count"})
+    assert rows == [["P13530", "3"]]
+
+
+def test_read_dtaselect_names_what_is_wrong():
+    good = dtaselect_report([("P13530_PHCA_SYNE7", 5)])
+    with pytest.raises(ValueError, match="two DTASelect members share the name 'a'"):
+        ingest.read_dtaselect(dtaselect_archive({"x/a.txt": good, "y/a.txt": good}), ["x/a.txt", "y/a.txt"])
+    with pytest.raises(ValueError, match="no DTASelect protein header names 'Spectrum Count'"):
+        ingest.read_dtaselect(dtaselect_archive({"a.txt": dtaselect_report([("P13530_PHCA_SYNE7", 5)], count_header="Spectra")}), ["a.txt"])
+    with pytest.raises(ValueError, match="no DTASelect protein header"):
+        ingest.read_dtaselect(dtaselect_archive({"a.txt": "DTASelect v2.0.47\nnothing here\n"}), ["a.txt"])
+    with pytest.raises(ValueError, match="P13530 is listed twice"):
+        ingest.read_dtaselect(dtaselect_archive({"a.txt": dtaselect_report([("P13530_PHCA_SYNE7", 5), ("P13530_OTHER_SYNE7", 6)])}), ["a.txt"])
+    with pytest.raises(ValueError, match="a.txt: no protein lines"):
+        ingest.read_dtaselect(dtaselect_archive({"a.txt": dtaselect_report([("Reverse_P13530_PHCA_SYNE7", 5)])}), ["a.txt"])

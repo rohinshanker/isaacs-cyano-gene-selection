@@ -11,6 +11,7 @@
  * value for an axis a record does not report: an unreported axis neither passes
  * nor fails a comparison, and is drawn as missing, never as zero.
  */
+import { isTypeKey, typeKeyFor } from './type-metrics.js';
 
 /** The three condition axes drawn as tracks, on one shared scale each. */
 export const CONDITION_SCALES = Object.freeze({
@@ -333,7 +334,14 @@ export function selectedMetricKeys(ids, datasets) {
   return new Set(datasets.filter((d) => chosen.has(d.id)).map((d) => d.metricKey));
 }
 
-/** Which data type the map's colour metric belongs to, or null for a computed metric. */
+/**
+ * Which data type the map's colour metric belongs to, or null for a computed
+ * metric. The key may be a dataset's own or the type metric its datasets
+ * collapse into (`type.<dataType>.<platform>.<kind>`), which is what the
+ * colour menu offers.
+ */
 export function dataTypeOfMetric(metricKey, datasets) {
-  return datasets.find((d) => d.metricKey === metricKey)?.record.dataType ?? null;
+  const dataset = datasets.find((d) => d.metricKey === metricKey)
+    ?? (isTypeKey(metricKey) ? datasets.find((d) => typeKeyFor(d) === metricKey) : null);
+  return dataset?.record.dataType ?? null;
 }

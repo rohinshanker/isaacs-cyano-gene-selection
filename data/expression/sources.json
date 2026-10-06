@@ -3390,5 +3390,245 @@
       "unmappedIdentifiers": 85,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
+  },
+  {
+    "record": {
+      "studyId": "PXD030282",
+      "dataType": "proteomics",
+      "platform": "LC-MS/MS",
+      "strain": "PCC 7942 L1118",
+      "basis": "transferred",
+      "conditionSet": "L1118 limonene producer, log phase (day 2, high limonene production phase); mean of three replicate runs",
+      "samples": "log-1, log-2, log-3 (DTASelect reports)",
+      "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD030282",
+      "citation": {
+        "text": "Li M, Long B, Dai SY, Golden JW, Wang X, Yuan JS. Altered carbon partitioning enhances CO2 to terpene conversion in cyanobacteria. BioDesign Res 2022;2022:9897425.",
+        "url": "https://doi.org/10.34133/2022/9897425",
+        "pmid": "37850123"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates",
+        "where": "PRIDE PXD030282 sampleProcessingProtocol; also paper PMC10521692 Methods 2.5"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": 73,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not restated for the log/stationary samples; the strains' general cultivation (Methods 2.2) was at 30 °C",
+          "quote": "",
+          "where": "not reported"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not restated for the log/stationary samples; general cultivation was 75 µmol photons m-2 s-1 in flasks, then 100 in a Roux bottle",
+          "quote": "",
+          "where": "not reported"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "continuity, photoperiod and spectrum not reported",
+          "quote": "",
+          "where": "not reported"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not restated for the log/stationary samples; general cultivation bubbled 5% CO2 at 50 mL/min in the Roux bottle",
+          "quote": "",
+          "where": "not reported"
+        },
+        "medium": {
+          "status": "not reported",
+          "base": null,
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "not restated for the log/stationary samples; general cultivation used BG11 with 10 mM TES, pH 8.2",
+          "quote": "",
+          "where": "not reported"
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "not restated for the log/stationary samples; general cultivation went from 250 mL flasks to a 1-L Roux bottle",
+          "quote": "",
+          "where": "not reported"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "exponential",
+          "od": null,
+          "odNm": null,
+          "text": "log phase, day 2, the high limonene production phase; OD not given",
+          "quote": "primary metabolism, including biosynthesis of amino acids, fatty acids, and carbohydrates, was upregulated at the late growth stage (day 7) when limonene production was decreased.",
+          "where": "paper PMC10521692, Discussion section"
+        }
+      }
+    },
+    "id": "PXD030282_l1118_log",
+    "file": "PXD030282_l1118_log.tsv",
+    "metricKey": "protPxd030282L1118Log",
+    "label": "Protein abundance PXD030282 L1118 log phase (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942, limonene-producing strain L1118",
+    "isTargetOrganism": false,
+    "assay": "LC-MS/MS protein abundance (label-free spectral counting)",
+    "units": "DTASelect spectral counts per million filtered spectra in the run, mean of three biological replicates",
+    "condition": "L1118 limonene producer, log phase (day 2, high limonene production phase); mean of three replicate runs",
+    "sha256": "e1ce45770eda2e28b05a128fbefb1769f8276a1a294570b8b4977c12a85718c7",
+    "licence": "PRIDE per-file CC0 (ledger decision 2026-10-04); attribute the deposit and the article",
+    "caveat": "Measured in L1118, an engineered limonene-producing derivative of PCC 7942, not in wild type and not in UTEX 2973; the strain's heterologous limonene synthase is among the identified proteins and does not map. Label-free spectral counts from an LTQ ion trap (ProLuCID search, DTASelect filter, PatternLab), a coarse abundance measure; a protein has a value only where all three replicates identified it. Decoy entries are dropped and contaminant entries do not map. The growth conditions of these samples are not restated for the comparison (Package B row 73).",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "li-2022",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "PXD030282_Search_1118_Log_vs_Sta.zip",
+      "sourceSha256": "bbffda9184eabda9b187cb69750f32d5fe81018305b75adbda4ed99ebecab11a",
+      "sourceUrl": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2023/10/PXD030282/Search_1118_Log_vs_Sta.zip",
+      "columns": [
+        "log-1",
+        "log-2",
+        "log-3"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 576,
+      "unmappedIdentifiers": 27,
+      "mappingRoute": "UniProt accession to ordered locus name in uniprot_pcc7942_orf_names.tsv, then pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "PXD030282",
+      "dataType": "proteomics",
+      "platform": "LC-MS/MS",
+      "strain": "PCC 7942 L1118",
+      "basis": "transferred",
+      "conditionSet": "L1118 limonene producer, stationary phase (day 7, late growth stage, low limonene production phase); mean of three replicate runs",
+      "samples": "sta-1, sta-2, sta-3 (DTASelect reports)",
+      "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD030282",
+      "citation": {
+        "text": "Li M, Long B, Dai SY, Golden JW, Wang X, Yuan JS. Altered carbon partitioning enhances CO2 to terpene conversion in cyanobacteria. BioDesign Res 2022;2022:9897425.",
+        "url": "https://doi.org/10.34133/2022/9897425",
+        "pmid": "37850123"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates",
+        "where": "PRIDE PXD030282 sampleProcessingProtocol; also paper PMC10521692 Methods 2.5"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": 73,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not restated for the log/stationary samples; the strains' general cultivation (Methods 2.2) was at 30 °C",
+          "quote": "",
+          "where": "not reported"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not restated for the log/stationary samples; general cultivation was 75 µmol photons m-2 s-1 in flasks, then 100 in a Roux bottle",
+          "quote": "",
+          "where": "not reported"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "continuity, photoperiod and spectrum not reported",
+          "quote": "",
+          "where": "not reported"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not restated for the log/stationary samples; general cultivation bubbled 5% CO2 at 50 mL/min in the Roux bottle",
+          "quote": "",
+          "where": "not reported"
+        },
+        "medium": {
+          "status": "not reported",
+          "base": null,
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "not restated for the log/stationary samples; general cultivation used BG11 with 10 mM TES, pH 8.2",
+          "quote": "",
+          "where": "not reported"
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "not restated for the log/stationary samples; general cultivation went from 250 mL flasks to a 1-L Roux bottle",
+          "quote": "",
+          "where": "not reported"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "stationary",
+          "od": null,
+          "odNm": null,
+          "text": "stationary phase, day 7, described as the late growth stage when limonene production had decreased; OD not given",
+          "quote": "primary metabolism, including biosynthesis of amino acids, fatty acids, and carbohydrates, was upregulated at the late growth stage (day 7) when limonene production was decreased.",
+          "where": "paper PMC10521692, Discussion section"
+        }
+      }
+    },
+    "id": "PXD030282_l1118_stationary",
+    "file": "PXD030282_l1118_stationary.tsv",
+    "metricKey": "protPxd030282L1118Stationary",
+    "label": "Protein abundance PXD030282 L1118 stationary phase (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942, limonene-producing strain L1118",
+    "isTargetOrganism": false,
+    "assay": "LC-MS/MS protein abundance (label-free spectral counting)",
+    "units": "DTASelect spectral counts per million filtered spectra in the run, mean of three biological replicates",
+    "condition": "L1118 limonene producer, stationary phase (day 7, late growth stage, low limonene production phase); mean of three replicate runs",
+    "sha256": "b3bc32b3f853b780b8343576eda8049611fee337df678d802558af102719ac8f",
+    "licence": "PRIDE per-file CC0 (ledger decision 2026-10-04); attribute the deposit and the article",
+    "caveat": "Measured in L1118, an engineered limonene-producing derivative of PCC 7942, not in wild type and not in UTEX 2973; the strain's heterologous limonene synthase is among the identified proteins and does not map. Label-free spectral counts from an LTQ ion trap (ProLuCID search, DTASelect filter, PatternLab), a coarse abundance measure; a protein has a value only where all three replicates identified it. Decoy entries are dropped and contaminant entries do not map. The growth conditions of these samples are not restated for the comparison (Package B row 73).",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "li-2022",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "PXD030282_Search_1118_Log_vs_Sta.zip",
+      "sourceSha256": "bbffda9184eabda9b187cb69750f32d5fe81018305b75adbda4ed99ebecab11a",
+      "sourceUrl": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2023/10/PXD030282/Search_1118_Log_vs_Sta.zip",
+      "columns": [
+        "sta-1",
+        "sta-2",
+        "sta-3"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 703,
+      "unmappedIdentifiers": 31,
+      "mappingRoute": "UniProt accession to ordered locus name in uniprot_pcc7942_orf_names.tsv, then pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
   }
 ]

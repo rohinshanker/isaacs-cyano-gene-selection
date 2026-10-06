@@ -11,15 +11,23 @@ identifier crosswalk, one-to-one rows only, exactly as the shipped GSE205444
 table was mapped (see `PROVENANCE.md`). A protein deposit keyed by UniProt
 accession first passes through `ingest/uniprot_pcc7942_orf_names.tsv`, UniProt's
 accession-to-ordered-locus table for the strain (CC BY 4.0, pinned here), and a
-deposit inside an archive names its member (`reader.zipMember`). Every `.tsv`
-here is reproducible from its spec; rerun the tool to regenerate it.
+deposit inside an archive names its member (`reader.zipMember`). A deposit of
+search-engine output rather than a table (`reader.format: dtaselect`, with
+`zipMembers`, one DTASelect filter report per run) is read by `read_dtaselect`:
+only the protein lines are taken, each run becomes one count column named by
+its file stem (`countColumn`, default `Spectrum Count`), a locus of the UniProt
+FASTA form `ACCESSION_ENTRY_ORGANISM` becomes its accession, reversed-sequence
+decoys are dropped, and a contaminant or introduced gene keeps its name and
+does not map. Every `.tsv` here is reproducible from its spec; rerun the tool
+to regenerate it.
 
 ## What a layer's value is
 
 The arithmetic mean over the layer's sample columns of the value as deposited,
 except where the spec's `normalization` is `cpm`: a raw-count table is first
 scaled per sample to counts per million over the genes it reports, so that
-replicates with different library sizes weigh equally. `units` in each manifest
+replicates with different library sizes weigh equally; spectral counts take the
+same scaling, per million filtered spectra in the run. `units` in each manifest
 entry says which. Nothing is imputed: a gene absent from the deposited table, or
 whose identifier does not map one-to-one, has no value and renders as unknown.
 
@@ -31,7 +39,9 @@ averaged, which removes the time structure the study was designed around; the
 layer's `conditionSet` says so. None of these layers is UTEX 2973 data: every
 one is a transfer from PCC 7942 under the sister-strain rules, labelled as such
 wherever it is shown, and none is pooled with another without a recorded lab
-judgement.
+judgement. A layer measured in an engineered derivative (PXD030282's
+limonene-producing L1118, GSE288532's cscB-sps, GSE89999's clock rescue) is
+listed under "Engineered strain" and its record names the strain.
 
 Regenerate:
 

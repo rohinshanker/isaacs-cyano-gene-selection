@@ -780,7 +780,12 @@ route in `tools/ingest_expression.py`: accession to PCC 7942 ordered-locus name
 through UniProt's own table for taxon 1140, pinned beside the specs, then the
 `pcc7942_old_locus_tag` crosswalk, both steps one-to-one; a protein group naming
 several accessions is dropped and counted. The route is recorded in the source's
-`ingest.mappingRoute` with its matched and unmapped counts.
+`ingest.mappingRoute` with its matched and unmapped counts. A deposit of
+DTASelect filter reports instead of a table (`reader.format: dtaselect`, one
+`zipMembers` entry per run) is read protein-line by protein-line into one count
+column per run (`countColumn`, default `Spectrum Count`); a locus of the UniProt
+FASTA form becomes its accession, decoys are dropped, and a layer mean covers
+only the proteins every replicate run identified.
 
 Each source also names its `payload`. The two original measurements
 (`expression`, `tssInitiation`) ride in `genes.json`; every ingested layer is

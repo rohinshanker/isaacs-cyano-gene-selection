@@ -70,6 +70,12 @@ test('the section opens closed, and is shown only where a data selection informs
     panel.update({ colorMetricKey: 'tssInitiation' });
     assert.equal(host.hidden, false);
     assert.equal(details.open, false, 'a colour change does not open it');
+    // So does the type metric the colour menu offers, which is what the app passes.
+    panel.update({ colorMetricKey: 'gc3' });
+    panel.update({ colorMetricKey: 'type.transcriptomics.rna-seq.abundance' });
+    assert.equal(host.hidden, false, 'a type key names the data type behind the colour');
+    panel.update({ colorMetricKey: 'type.fitness.rb-tnseq.fitness' });
+    assert.equal(host.hidden, true, 'a type with no dataset has nothing to choose among');
   });
 });
 

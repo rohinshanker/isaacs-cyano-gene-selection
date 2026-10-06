@@ -178,6 +178,8 @@ test('the default selection is the standard group plus the two legacy metrics, a
   assert.deepEqual([...selectedMetricKeys(['EXTRA.1'], all)], ['mEXTRA1']);
   assert.equal(dataTypeOfMetric('expression', all), 'transcriptomics');
   assert.equal(dataTypeOfMetric('cai', all), null);
+  assert.equal(dataTypeOfMetric('type.transcriptomics.rna-seq.abundance', all), 'transcriptomics', 'the colour menu offers type keys');
+  assert.equal(dataTypeOfMetric('type.proteomics.lc-ms-ms.abundance', all), null, 'no dataset of that type');
 });
 
 test('an engineered strain is listed in its own group, before Other, with select-all', () => {

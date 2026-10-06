@@ -1,0 +1,135 @@
+{
+  "dataType": "proteomics",
+  "platform": "LC-MS/MS",
+  "strain": "PCC 7942 L1118",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942, limonene-producing strain L1118",
+  "assay": "LC-MS/MS protein abundance (label-free spectral counting)",
+  "licence": "PRIDE per-file CC0 (ledger decision 2026-10-04); attribute the deposit and the article",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "PXD030282",
+  "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD030282",
+  "citationId": "li-2022",
+  "citation": {
+    "text": "Li M, Long B, Dai SY, Golden JW, Wang X, Yuan JS. Altered carbon partitioning enhances CO2 to terpene conversion in cyanobacteria. BioDesign Res 2022;2022:9897425.",
+    "url": "https://doi.org/10.34133/2022/9897425",
+    "pmid": "37850123"
+  },
+  "file": {
+    "name": "PXD030282_Search_1118_Log_vs_Sta.zip",
+    "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2023/10/PXD030282/Search_1118_Log_vs_Sta.zip",
+    "sha256": "bbffda9184eabda9b187cb69750f32d5fe81018305b75adbda4ed99ebecab11a"
+  },
+  "reader": {
+    "format": "dtaselect",
+    "zipMembers": [
+      "Search_1118_Log_vs_Sta/log-1.txt",
+      "Search_1118_Log_vs_Sta/log-2.txt",
+      "Search_1118_Log_vs_Sta/log-3.txt",
+      "Search_1118_Log_vs_Sta/sta-1.txt",
+      "Search_1118_Log_vs_Sta/sta-2.txt",
+      "Search_1118_Log_vs_Sta/sta-3.txt"
+    ],
+    "countColumn": "Spectrum Count",
+    "idKind": "uniprot_pcc7942"
+  },
+  "units": "DTASelect spectral counts per million filtered spectra in the run, mean of three biological replicates",
+  "normalization": "cpm",
+  "conditionTableRow": 73,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "°C",
+      "text": "not restated for the log/stationary samples; the strains' general cultivation (Methods 2.2) was at 30 °C"
+    },
+    "lightIntensity": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "not restated for the log/stationary samples; general cultivation was 75 µmol photons m-2 s-1 in flasks, then 100 in a Roux bottle"
+    },
+    "lightRegime": {
+      "status": "not reported",
+      "kind": null,
+      "photoperiod": null,
+      "spectrumClass": null,
+      "entrained": false,
+      "text": "continuity, photoperiod and spectrum not reported"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not restated for the log/stationary samples; general cultivation bubbled 5% CO2 at 50 mL/min in the Roux bottle"
+    },
+    "medium": {
+      "status": "not reported",
+      "base": null,
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "not restated for the log/stationary samples; general cultivation used BG11 with 10 mM TES, pH 8.2"
+    },
+    "format": {
+      "status": "not reported",
+      "value": null,
+      "text": "not restated for the log/stationary samples; general cultivation went from 250 mL flasks to a 1-L Roux bottle"
+    },
+    "phase": {
+      "status": "reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "set per layer"
+    }
+  },
+  "caveat": "Measured in L1118, an engineered limonene-producing derivative of PCC 7942, not in wild type and not in UTEX 2973; the strain's heterologous limonene synthase is among the identified proteins and does not map. Label-free spectral counts from an LTQ ion trap (ProLuCID search, DTASelect filter, PatternLab), a coarse abundance measure; a protein has a value only where all three replicates identified it. Decoy entries are dropped and contaminant entries do not map. The growth conditions of these samples are not restated for the comparison (Package B row 73).",
+  "layers": [
+    {
+      "id": "PXD030282_l1118_log",
+      "metricKey": "protPxd030282L1118Log",
+      "label": "Protein abundance PXD030282 L1118 log phase (PCC 7942)",
+      "conditionSet": "L1118 limonene producer, log phase (day 2, high limonene production phase); mean of three replicate runs",
+      "samples": "log-1, log-2, log-3 (DTASelect reports)",
+      "columns": ["log-1", "log-2", "log-3"],
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {"status": "not reported", "lo": null, "hi": null, "unit": "°C", "text": "not restated for the log/stationary samples; the strains' general cultivation (Methods 2.2) was at 30 °C"},
+        "lightIntensity": {"status": "not reported", "lo": null, "hi": null, "unit": "µmol photons m⁻² s⁻¹", "text": "not restated for the log/stationary samples; general cultivation was 75 µmol photons m-2 s-1 in flasks, then 100 in a Roux bottle"},
+        "lightRegime": {"status": "not reported", "kind": null, "photoperiod": null, "spectrumClass": null, "entrained": false, "text": "continuity, photoperiod and spectrum not reported"},
+        "co2": {"status": "not reported", "lo": null, "hi": null, "unit": "%", "text": "not restated for the log/stationary samples; general cultivation bubbled 5% CO2 at 50 mL/min in the Roux bottle"},
+        "medium": {"status": "not reported", "base": null, "modified": false, "conditioned": false, "nitrogenAltered": false, "text": "not restated for the log/stationary samples; general cultivation used BG11 with 10 mM TES, pH 8.2"},
+        "format": {"status": "not reported", "value": null, "text": "not restated for the log/stationary samples; general cultivation went from 250 mL flasks to a 1-L Roux bottle"},
+        "phase": {"status": "reported", "label": "exponential", "od": null, "odNm": null, "text": "log phase, day 2, the high limonene production phase; OD not given"}
+      }
+    },
+    {
+      "id": "PXD030282_l1118_stationary",
+      "metricKey": "protPxd030282L1118Stationary",
+      "label": "Protein abundance PXD030282 L1118 stationary phase (PCC 7942)",
+      "conditionSet": "L1118 limonene producer, stationary phase (day 7, late growth stage, low limonene production phase); mean of three replicate runs",
+      "samples": "sta-1, sta-2, sta-3 (DTASelect reports)",
+      "columns": ["sta-1", "sta-2", "sta-3"],
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {"status": "not reported", "lo": null, "hi": null, "unit": "°C", "text": "not restated for the log/stationary samples; the strains' general cultivation (Methods 2.2) was at 30 °C"},
+        "lightIntensity": {"status": "not reported", "lo": null, "hi": null, "unit": "µmol photons m⁻² s⁻¹", "text": "not restated for the log/stationary samples; general cultivation was 75 µmol photons m-2 s-1 in flasks, then 100 in a Roux bottle"},
+        "lightRegime": {"status": "not reported", "kind": null, "photoperiod": null, "spectrumClass": null, "entrained": false, "text": "continuity, photoperiod and spectrum not reported"},
+        "co2": {"status": "not reported", "lo": null, "hi": null, "unit": "%", "text": "not restated for the log/stationary samples; general cultivation bubbled 5% CO2 at 50 mL/min in the Roux bottle"},
+        "medium": {"status": "not reported", "base": null, "modified": false, "conditioned": false, "nitrogenAltered": false, "text": "not restated for the log/stationary samples; general cultivation used BG11 with 10 mM TES, pH 8.2"},
+        "format": {"status": "not reported", "value": null, "text": "not restated for the log/stationary samples; general cultivation went from 250 mL flasks to a 1-L Roux bottle"},
+        "phase": {"status": "reported", "label": "stationary", "od": null, "odNm": null, "text": "stationary phase, day 7, described as the late growth stage when limonene production had decreased; OD not given"}
+      }
+    }
+  ]
+}

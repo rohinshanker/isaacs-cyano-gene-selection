@@ -44,6 +44,10 @@ ID_RELATIONSHIPS = {"pcc7942_old": "pcc7942_old_locus_tag", "pcc7942_rs": "pcc79
 # old-locus-tag route; the table is a pinned input beside the specs.
 UNIPROT_ID_KIND = "uniprot_pcc7942"
 DEFAULT_UNIPROT_TABLE = ROOT / "data/expression/ingest/uniprot_pcc7942_orf_names.tsv"
+# A DTASelect report's protein lines name UniProt FASTA entries as
+# ACCESSION_ENTRY_ORGANISM; the accession is the part the UniProt route needs.
+UNIPROT_ACCESSION = re.compile(r"^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})_")
+DTASELECT_DECOY_PREFIX = "Reverse_"
 AXIS_BY_TABLE_NAME = {
     "temperature": "temperature", "light_intensity": "lightIntensity", "light_regime": "lightRegime",
     "co2": "co2", "medium": "medium", "culture_format": "format", "growth_phase": "phase",
@@ -83,10 +87,13 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     1-based, in priority order; ``blockTitleRow`` for one) has each header
     prefixed with the nearest title to its left in the first listed row that
     has one, so every column has a name of its own:
-    ``<block> :: <header> :: <sheet>``.
+    ``<block> :: <header> :: <sheet>``. A search-engine deposit of DTASelect
+    reports (``format: dtaselect``) is read by ``read_dtaselect`` instead.
     """
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
+    if reader["format"] == "dtaselect":
+        return read_dtaselect(data, reader["zipMembers"], reader.get("countColumn", "Spectrum Count"))
     if reader.get("zipMember"):
         import zipfile  # noqa: PLC0415 - only for archived deposits
 
@@ -126,6 +133,66 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     width = len(joined_header)
     # An identifier a sheet lacks keeps its row with the missing cells blank.
     return joined_header, [joined[i] + [""] * (width - len(joined[i])) for i in order]
+
+
+def read_dtaselect(data: bytes, members: list[str], count_column: str = "Spectrum Count") -> tuple[list[str], list[list[str]]]:
+    """Read DTASelect filter reports, one archive member per run, into one table.
+
+    A DTASelect report lists each protein on a line of its own (``Locus``,
+    ``Sequence Count``, ``Spectrum Count``, ...) followed by its peptide lines,
+    and closes with summary rows. Only the protein lines are read: a locus of
+    the UniProt FASTA form ``ACCESSION_ENTRY_ORGANISM`` becomes its accession, a
+    reversed-sequence decoy (``Reverse_``) is dropped, and any other locus (a
+    contaminant, an introduced gene) keeps its name and fails to map later.
+    Each member becomes one column named by its file stem holding that run's
+    count; a protein a run does not list has a blank cell there, so the layer
+    mean covers only proteins every replicate identified.
+    """
+    import zipfile  # noqa: PLC0415 - only for archived deposits
+
+    columns: list[str] = []
+    counts: dict[str, dict[str, str]] = {}
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        for member in members:
+            stem = Path(member).stem
+            if stem in counts:
+                raise ValueError(f"two DTASelect members share the name {stem!r}")
+            columns.append(stem)
+            counts[stem] = _dtaselect_counts(archive.read(member).decode("utf-8"), count_column, member)
+    order: list[str] = []
+    for stem in columns:
+        order.extend(identifier for identifier in counts[stem] if identifier not in order)
+    rows = [[identifier] + [counts[stem].get(identifier, "") for stem in columns] for identifier in order]
+    return ["Locus"] + columns, rows
+
+
+def _dtaselect_counts(text: str, count_column: str, member: str) -> dict[str, str]:
+    """One report's protein count column keyed by accession, decoys dropped."""
+    lines = text.splitlines()
+    start = next((index for index, line in enumerate(lines) if line.startswith("Locus\t")), None)
+    header = lines[start].split("\t") if start is not None else []
+    if count_column not in header:
+        raise ValueError(f"{member}: no DTASelect protein header names {count_column!r}")
+    position = header.index(count_column)
+    out: dict[str, str] = {}
+    for line in lines[start + 1:]:
+        fields = line.split("\t")
+        # A protein line is as wide as the header and holds an integer count;
+        # a peptide line starts with "*" or a blank, and the summary rows are
+        # narrower.
+        if not fields[0] or fields[0] == "*" or len(fields) < len(header) or not fields[position].isdigit():
+            continue
+        locus = fields[0]
+        if locus.startswith(DTASELECT_DECOY_PREFIX):
+            continue
+        match = UNIPROT_ACCESSION.match(locus)
+        identifier = match.group(1) if match else locus
+        if identifier in out:
+            raise ValueError(f"{member}: {identifier} is listed twice")
+        out[identifier] = fields[position]
+    if not out:
+        raise ValueError(f"{member}: no protein lines")
+    return out
 
 
 def _title_rows(reader: Mapping[str, Any]) -> list[int]:

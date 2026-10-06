@@ -309,6 +309,26 @@
           ]
         },
         {
+          "id": "li-2022",
+          "citation": "Li M, Long B, Dai SY, Golden JW, Wang X, Yuan JS. Altered carbon partitioning enhances CO₂ to terpene conversion in cyanobacteria. BioDesign Research 2022, 9897425 (2022). doi:10.34133/2022/9897425; PRIDE PXD030282.",
+          "url": "https://doi.org/10.34133/2022/9897425",
+          "contribution": "Two optional protein-abundance layers, listed under Engineered strain: label-free spectral counts (DTASelect Spectrum Count, scaled per run to counts per million filtered spectra and averaged over three biological replicates) of the limonene-producing PCC 7942 derivative L1118 in log phase (day 2) and in stationary phase (day 7), read from the deposit's Search_1118_Log_vs_Sta DTASelect reports, keyed by UniProt accession and mapped to UTEX 2973 through UniProt's ordered-locus names and the one-to-one identifier crosswalk; decoy entries are dropped and contaminant and heterologous entries do not map. The measured strain is an engineered PCC 7942, not wild type and not UTEX 2973. Deposit terms: PRIDE, files CC0; article as published. Reader, members and condition records are in data/expression/ingest/.",
+          "downloads": [
+            {
+              "filename": "PXD030282_l1118_log.tsv",
+              "repoPath": "data/expression/PXD030282_l1118_log.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD030282_l1118_log.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "PXD030282_l1118_stationary.tsv",
+              "repoPath": "data/expression/PXD030282_l1118_stationary.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD030282_l1118_stationary.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",

@@ -110,11 +110,16 @@ proteomics layer (one DIA layer over twenty runs, Package B row 77), which
 needed a `zipMember` reader and a `uniprot_pcc7942` identifier route: UniProt
 accession to PCC 7942 ordered-locus name through a pinned UniProt table
 (`data/expression/ingest/uniprot_pcc7942_orf_names.tsv`, CC BY 4.0), then the
-old-locus-tag crosswalk, one-to-one at both steps. Eighteen sources ship and
-the Proteomics tab and "Protein abundance (LC-MS/MS)" type are live. Still to
-ingest: PXD030282 (search-result archives); PXD019731 and PXD074299 deposit no
-proteome-wide table and wait on reprocessing; GSE45762 is excluded for
-contradictory sample labels.
+old-locus-tag crosswalk, one-to-one at both steps. PXD030282 (Li et al. 2022,
+Package B row 73) followed on 2026-10-06 as two label-free spectral-count
+layers of the limonene-producing L1118 strain, log and stationary phase, under
+Engineered strain; its deposit is DTASelect search output, not a table, so the
+tool gained a `dtaselect` reader (one count column per report, accession from
+the UniProt FASTA locus, decoys dropped; 576 and 703 genes). Its other archive
+(L1118 against Lsps) holds only `.sepr` search-engine state and is not
+readable. Twenty-nine sources ship. Still waiting: PXD019731 and PXD074299
+deposit no proteome-wide table; GSE45762 is excluded for contradictory sample
+labels.
 
 The pair judgements are a data file since 2026-10-06
 (`data/expression/pair_judgements.json`, 32 pairs, emitted as
@@ -179,8 +184,8 @@ over the informing dataset is a follow-up.
 2. **Engineered strains in their own group.** A dataset measured in a
    production, reporter or rescue strain is listed under "Engineered strain",
    before Other, and named as such; GSE288532 (cscB-sps) and GSE89999
-   (clock-rescue) moved there, and PXD030282's L1118 baseline may enter under
-   it. Done 2026-10-06 for the group; PXD030282 follows.
+   (clock-rescue) moved there, and PXD030282's two L1118 layers entered under
+   it the same day. Done 2026-10-06.
 3. **Fitness Browser**: proceed — read its terms, record a ledger decision, then
    ingest. Blocked 2026-10-06 by Cloudflare bot verification on every page the
    agents request; per the gated-pages ticket the owner opens the site in their
@@ -200,6 +205,16 @@ for a type with none of its datasets selected selects its defaults (shipped
 originals and standard-growth sets, else all of the type); and the section
 lists every dataset of the colouring type with an include checkbox, a pooled
 row and "alone informs" radios, then the other selected datasets by data type.
+
+Found later the same day, while verifying PXD030282 in the rendered build: the
+section's relevance check knew only dataset metric keys, so colouring by any
+type (which is all the colour menu offers for measured data) hid the whole
+section even though its list was built; the deployed build from round 6 had
+this. `dataTypeOfMetric` now resolves a type key to its datasets' data type,
+with the panel test asserting a type key shows the section and a type with no
+dataset hides it. Verified at 1280: Protein abundance shows "1 of 3", the two
+L1118 layers listed under their engineered-strain chip, and naming one colours
+the map with its spectral-count unit (576 genes valued).
 
 ## Work
 
