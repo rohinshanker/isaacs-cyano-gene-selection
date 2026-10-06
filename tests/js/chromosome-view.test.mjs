@@ -1445,29 +1445,17 @@ test('a pin made elsewhere replaces the keyboard cursor, not just an empty one',
   }
 });
 
-test('Reset view asks first, as every reset control does', async () => {
+test('Reset view acts at once, with no confirmation, by owner decision', async () => {
   const { view, document, restore } = mount({ handlers: { onAnnounce: () => {} } });
   try {
     const band = view.bands()[0];
     view.zoomBand(band, 400, 100000);
-    const zoomed = view.windowFor(band.track);
+    assert.notDeepEqual(view.windowFor(band.track), { from: 1, to: band.track.lengthBp });
 
     view.resetButton.dispatch('click');
     await settled();
     const asked = confirmParts(document);
-    assert.ok(asked, 'the reset control opens the shared confirmation');
-    assert.equal(asked.backdrop.hidden, false);
-    assert.equal(asked.confirm.textContent, 'Reset view');
-    assert.deepEqual(view.windowFor(band.track), zoomed, 'nothing is discarded before the answer');
-
-    asked.cancel.dispatch('click');
-    await settled();
-    assert.deepEqual(view.windowFor(band.track), zoomed, 'Cancel keeps the windows');
-
-    view.resetButton.dispatch('click');
-    await settled();
-    confirmParts(document).confirm.dispatch('click');
-    await settled();
+    assert.ok(!asked || asked.backdrop.hidden, 'no confirmation opens for Reset view');
     assert.deepEqual(view.windowFor(band.track), { from: 1, to: band.track.lengthBp });
   } finally {
     restore();

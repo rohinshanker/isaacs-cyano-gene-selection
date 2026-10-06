@@ -89,11 +89,11 @@ dragged card, and moving an element in the DOM drops its pointer capture, so
 listeners bound to the handle never receive the release and the drag hangs with
 the order unsaved. Window-level listeners were the fix.
 
-## Every reset asks first
+## Every reset but Reset view asks first
 
-`site/js/ui/confirm-dialog.js` is the single gate. Every reset control in the
-page is wired through `confirmedReset`, so a reset added later cannot skip the
-question by forgetting to ask.
+`site/js/ui/confirm-dialog.js` is the single gate. Every reset control that
+discards something the page cannot give back is wired through `confirmedReset`,
+so a reset added later cannot skip the question by forgetting to ask.
 
 The contract:
 
@@ -113,12 +113,13 @@ The contract:
 - A second question while one is open answers the first as Cancel rather than
   stacking two modals.
 
-Controls currently gated: Reset view, Reset selections, Reset panel widths, Reset
-panel layout, Reset metrics, the chromosome view's own Reset view, and the panel
-designer's Reset settings. A pointer or key shortcut that resets a camera —
-double-click and `0` on the scatter map and on the chromosome track — is
-deliberately not gated: the control is the gate, and a modal on a gesture would
-be noise. The category legend's **Clear category selection** is deliberately not
+Controls currently gated: Reset selections, Reset panel widths, Reset panel
+layout, Reset metrics, and the panel designer's Reset settings. **Reset view is
+the exception**, on the scatter map and in the chromosome view alike, by owner
+decision of 2026-10-05: it acts at once, because a camera framing or a track
+window is recovered by zooming again, and a question before it was noise. The
+pointer and key shortcuts that reset a camera — double-click and `0` on the
+scatter map and on the chromosome track — were never gated for the same reason. The category legend's **Clear category selection** is deliberately not
 gated for the same kind of reason: it clears a filter that is restored by
 clicking the categories again, so a modal would be noise rather than
 protection.
