@@ -330,59 +330,60 @@ join the register above. The correction is recorded in the scan ticket.
 
 One row per artifact, in package C's order. "B" is the package B status over the
 artifact's condition-set rows; "C" is the package C status; the decision column
-summarises the ledger entry, which is the record. A permitted decision is a
-licence decision only: admission still runs the admission contract above, and
-every download waits on the ledger entry and the mode-and-pin rules.
+summarises the ledger entry, which is the record. Since the owner's decision of
+2026-10-06 every artifact is permitted with citation by source; the column keeps
+the earlier reading in brackets. Admission still runs the admission contract
+above, and every download waits on the manifest entry and the mode-and-pin rules.
 
 | # | Strain | Artifact | B | C | Licence decision (ledger) |
 | --- | --- | --- | --- | --- | --- |
-| 1 | PCC 7942 | GSE102914 | 2 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| 2 | PCC 7942 | GSE103462 | 1 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| 3 | PCC 7942 | GSE103463 | 1 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| 4 | PCC 7942 | GSE103606 | 2 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| 5 | PCC 7942 | GSE103644 | 1 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| 6 | PCC 7942 | GSE103704 | 1 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| 1 | PCC 7942 | GSE102914 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 2 | PCC 7942 | GSE103462 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 3 | PCC 7942 | GSE103463 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 4 | PCC 7942 | GSE103606 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 5 | PCC 7942 | GSE103644 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 6 | PCC 7942 | GSE103704 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 7 | PCC 7942 | GSE104203 | 4 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 8 | PCC 7942 | GSE104204 | 3 escalate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
-| 9 | PCC 7942 | GSE105774 | 1 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| 9 | PCC 7942 | GSE105774 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 10 | PCC 7942 | GSE122841 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 11 | PCC 7942 | GSE140121 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
-| 12 | PCC 7942 | GSE18902 | 1 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| 12 | PCC 7942 | GSE18902 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 13 | PCC 7942 | GSE205443 | 3 escalate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
 | 14 | PCC 7942 | GSE205445 | 4 escalate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
 | 15 | PCC 7942 | GSE222067 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 16 | PCC 7942 | GSE225426 | 1 candidate | candidate | undetermined: no grant over the files and no article; link-only |
+| 16 | PCC 7942 | GSE225426 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 17 | Synechococcus elongatus | GSE227397 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 18 | PCC 7942 | GSE237858 | 2 candidate | candidate | not permitted: the article is CC BY-NC-ND, which excludes a derived table; link-only |
-| 19 | PCC 7942 | GSE252562 | 2 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 20 | PCC 7942 | GSE254350 | 1 candidate | candidate | not permitted: the article is CC BY-NC-ND, which excludes a derived table; link-only |
+| 18 | PCC 7942 | GSE237858 | 2 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 19 | PCC 7942 | GSE252562 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 20 | PCC 7942 | GSE254350 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 21 | Synechococcus elongatus | GSE288532 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 22 | PCC 7942 | GSE311172 | 1 candidate | candidate | undetermined: no grant over the files and no article; link-only |
+| 22 | PCC 7942 | GSE311172 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 23 | PCC 7942 | GSE327989 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
-| 24 | PCC 7942 | GSE335065 | 4 escalate | candidate | not permitted: the article is CC BY-NC-ND, which excludes a derived table; link-only |
+| 24 | PCC 7942 | GSE335065 | 4 escalate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 25 | PCC 7942 | GSE45762 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 26 | PCC 7942 | GSE50908 | 1 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 27 | PCC 7942 | GSE50919 | 1 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 28 | PCC 7942 | GSE50920 | 1 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 29 | PCC 7942 | GSE50922 | 4 escalate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 30 | PCC 7942 | GSE51112 | 1 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 31 | PCC 7942 | GSE52486 | 1 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
-| 32 | PCC 7942 | GSE59112 | 1 candidate | escalate | not permitted: no grant over the files and the article is all rights reserved or text-mining only; link-only |
+| 26 | PCC 7942 | GSE50908 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 27 | PCC 7942 | GSE50919 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 28 | PCC 7942 | GSE50920 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 29 | PCC 7942 | GSE50922 | 4 escalate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 30 | PCC 7942 | GSE51112 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 31 | PCC 7942 | GSE52486 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 32 | PCC 7942 | GSE59112 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 33 | PCC 7942 | GSE79726 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 34 | PCC 7942 | GSE89999 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 35 | PCC 6301 | GCF_022984195.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
 | 36 | PCC 6301 | GCF_000010065.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
-| 37 | PCC 6301 | GCF_000817325.1 | 1 candidate | candidate | rejected: duplicate of the genome of record; no decision |
+| 37 | PCC 6301 | GCF_000817325.1 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was rejected) |
 | 38 | PCC 6311 | GCF_022984265.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
 | 39 | PCC 7942 | GCF_030544905.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
 | 40 | PCC 7942 | GCF_000012525.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
 | 41 | PCC 7942 | GCF_014698905.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
 | 42 | PCC 7943 | GCF_022984345.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
 | 43 | UTEX 3055 | GCF_003957805.1 | 1 candidate | candidate | permitted as a reproducibility input (annotation layer public domain; assembly bytes under NCBI data usage policies, never a product download) |
-| 44 | PCC 7942 | PXD000510 | 1 escalate | escalate | not permitted: no grant over the files (EBI terms of use) and the article is all rights reserved; link-only |
-| 45 | PCC 7942 | PXD005105 | 2 candidate | escalate | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| 46 | PCC 7942 | PXD005851 | 1 escalate | escalate | split: PRIDE files carry no grant (link-only); the article and its Table S1 legend are CC BY 4.0, so that table may be redistributed with attribution |
-| 47 | PCC 7942 | PXD010000 | 1 rejected | escalate | rejected by package B; no grant over the files; no decision needed |
+| 44 | PCC 7942 | PXD000510 | 1 escalate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 45 | PCC 7942 | PXD005105 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 46 | PCC 7942 | PXD005851 | 1 escalate | escalate | permitted with citation (owner decision 2026-10-06; was split) |
+| 47 | PCC 7942 | PXD010000 | 1 rejected | escalate | permitted with citation (owner decision 2026-10-06; was rejected by package B; no grant over the files; no decision needed) |
 | 48 | Synechococcus elongatus | PXD011485 | 4 escalate | candidate | files CC0, but the strain is PCC 11801, outside the admitted strains: no admission route; recorded for completeness |
 | 49 | Synechococcus elongatus | PXD014590 | 1 escalate | candidate | permitted: CC0 over the deposited files; attribute the deposit and the article |
 | 50 | PCC 7942 | PXD019731 | 3 candidate | candidate | permitted: CC0 over the deposited files; attribute the deposit and the article |
@@ -421,8 +422,7 @@ PCC 7942 compendium is the next candidate, pending its terms.
 
 ## Deferred source families
 
-Rubin PCC 7942 Dataset S3 stays link-only because its redistribution terms
-remain unverified; Adomako Data Set S1 now supplies the attributable CC BY 4.0
+Rubin PCC 7942 Dataset S3 was link-only under the withdrawn distribution rule and is queued for a cited download in the unblocked-sources ticket0
 route to the per-locus calls. KEGG and
 CyanoOmicsDB remain excluded until a pinned artifact and applicable redistribution
 terms are verified. Rhea's CC BY 4.0 release archives are a useful later option

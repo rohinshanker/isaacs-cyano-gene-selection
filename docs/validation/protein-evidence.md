@@ -108,7 +108,7 @@ It places these three tested UTEX alleles first, states the paper's growth
 condition and separate in-vitro assays, then shows the independently sourced
 PCC 7942 essentiality call where an exact cross-strain join supports it.
 Adomako et al. 2022 Data Set S1 republishes Rubin 2015 calls under CC BY 4.0;
-the original Rubin Dataset S3 is not redistributed. The [PCC essentiality
+the original Rubin Dataset S3 is not yet offered here (queued since the owner decision of 2026-10-06). The [PCC essentiality
 runbook](pcc-essentiality.md) documents this separate evidence tier. Every
 candidate disclosure labels applying a PCC call to UTEX 2973 as an assumption;
 unknown and ambiguous calls are never rendered as nonessential.

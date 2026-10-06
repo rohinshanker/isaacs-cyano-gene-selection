@@ -99,9 +99,12 @@ files. Vicente 2019: 20 °C, 16:8 photoperiod for the stock and continuous light
 during exposure, exponential phase OD₇₃₀ 0.24, four biological replicates on two
 slides, publisher copyright.
 
-**Ledger changes** (rules unchanged): GSE103462, GSE103463, GSE103644,
-GSE103704, GSE105774, GSE102914 and GSE18902 move from undetermined to not
-permitted, link-only; PXD036717 stays permitted under its CC0 files.
+**Ledger changes.** Under the rules then in force, GSE103462, GSE103463,
+GSE103644, GSE103704, GSE105774, GSE102914 and GSE18902 moved from undetermined
+to not permitted, link-only, and PXD036717 stayed permitted under its CC0 files.
+Superseded the same day: the owner withdrew the distribution rule (every source
+is permitted with citation), so all seven are permitted and queued in
+[O_licence-unblocked-sources__20261006](O_licence-unblocked-sources__20261006.md).
 
 **Package D re-score, 2026-10-06.** Of the cells the addendum changed, only
 PXD036717's bear on a verdict: every other change turns `not retrieved` into

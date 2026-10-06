@@ -5,6 +5,7 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_licence-unblocked-sources__20261006](O_licence-unblocked-sources__20261006.md) | Ingest every source the withdrawn distribution rule held back (owner decision 2026-10-06: cite by source): the Puszyńska and NC-ND RNA-seq series first, then Markson's RNA-seq, the arrays, the remaining proteome archives, and the Rubin Dataset S3 and RefSeq downloads |
 | [O_condition-column-hover-guides__20261006](O_condition-column-hover-guides__20261006.md) | Hovering a condition-value column extends its value tick marks down the full column, reaching the condition-set count element rather than stopping above it, for easier comparison across rows |
 | [O_instant-hover-hints__20261006](O_instant-hover-hints__20261006.md) | Replace delayed native hints with instant mouse-following hints; clicking dismisses until pointer exit/re-entry; preserve all existing hint text exactly and add no interaction instructions |
 | [O_unify-chromosome-loading__20261006](O_unify-chromosome-loading__20261006.md) | Consolidate all loading under the main chromosome-style bar, including later stages currently shown by a secondary meter; optional small subtext below the bar names the active work, and completion covers the whole load cycle |

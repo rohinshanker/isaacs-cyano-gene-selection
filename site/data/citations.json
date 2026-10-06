@@ -407,7 +407,7 @@
           "id": "rubin-2015-assessed",
           "citation": "Rubin BE et al. The essential gene set of a photosynthetic organism. Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015). doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1073/pnas.1519220112",
-          "contribution": "Original PCC 7942 transposon-screen evidence behind the calls republished in Adomako 2022 Data Set S1. The assay used BG-11 at 30 C with multiple light and culture regimes. The original Rubin Dataset S3 is not redistributed here. Its calls are shown as PCC observations and an explicit cross-strain assumption for UTEX candidates; they do not establish UTEX essentiality or recoding outcomes.",
+          "contribution": "Original PCC 7942 transposon-screen evidence behind the calls republished in Adomako 2022 Data Set S1. The assay used BG-11 at 30 C with multiple light and culture regimes. The original Rubin Dataset S3 is not yet offered here. Its calls are shown as PCC observations and an explicit cross-strain assumption for UTEX candidates; they do not establish UTEX essentiality or recoding outcomes.",
           "downloads": []
         },
         {

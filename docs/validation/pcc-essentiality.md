@@ -20,7 +20,7 @@ S1](https://doi.org/10.1128/mbio.00862-22), sheet `PG_metadata`, column
 Rubin and publishes PCC 7942 and UTEX 2973 locus IDs in the same pangenome
 rows. The article's Data Set S1 legend names Adomako et al. as copyright
 holders and states **CC BY 4.0**; the spreadsheet does not include that notice.
-The original Rubin Dataset S3 is not redistributed. The
+The original Rubin Dataset S3 is not yet offered here; since the owner decision of 2026-10-06 it may be, cited to Rubin et al., and is queued in the unblocked-sources ticket. The
 unmodified Adomako workbook is pinned at
 `data/essentiality/source/mbio.00862-22-s0001.xlsx` (1,359,396 bytes,
 SHA-256 `b988b744c4c939ce6f47232eacfc30338907a9b911830999eb23414cbe6c331b`).
