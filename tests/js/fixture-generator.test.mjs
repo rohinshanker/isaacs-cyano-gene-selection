@@ -92,7 +92,10 @@ test('nothing in it carries cyanobacterial provenance', () => {
  *     shasum -a 256 <scratch>/out/*
  *
  * Re-run that to re-establish them after an intended change to the default
- * fixture, and say in the commit why the bytes moved.
+ * fixture, and say in the commit why the bytes moved. The digests are bound to
+ * one Node major (24, which CI pins): the generator calls Math.log, exp and cos,
+ * and V8 versions differ in their last bit, so Node 22 writes different bytes
+ * from the same seed.
  */
 const BASELINE_DIGESTS = Object.freeze({
   'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',

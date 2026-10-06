@@ -129,9 +129,13 @@ jobs:
           done
           exit "$status"
 
+      # Node 24, the version the fixture digests in
+      # tests/js/fixture-generator.test.mjs were taken with: the generator calls
+      # Math.log, exp and cos, whose last-bit results differ between V8
+      # versions, so the byte pin holds only on one Node major.
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
 
       # The site's unit tests run against synthetic fixtures. This runs the same
       # live-metric code against the real generated data, so a scheme that
