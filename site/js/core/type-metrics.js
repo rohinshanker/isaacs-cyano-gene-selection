@@ -68,6 +68,18 @@ export function typeGroups(datasets) {
 /** The two sources the site shipped first; they inform their types unless the reader chooses. */
 const LEGACY_PREFERRED = ['GSE205444', 'TAN2018_TSS'];
 
+/**
+ * The datasets a type starts with when the reader asks for it while none of
+ * its datasets is selected: the shipped originals and the standard-growth
+ * sets, or every dataset of the type when it has none of those.
+ */
+export function defaultDatasetsOfType(typeKey, datasets) {
+  const group = typeGroups(datasets).get(typeKey);
+  if (!group) return [];
+  const preferred = group.datasets.filter((d) => LEGACY_PREFERRED.includes(d.id) || d.record.group === 'standard');
+  return preferred.length ? preferred : group.datasets;
+}
+
 /** The datasets of one type that are selected, in selection order. */
 export function selectedOfType(group, selection) {
   const chosen = new Set(selection);

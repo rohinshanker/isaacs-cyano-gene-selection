@@ -293,60 +293,82 @@ export class DataSourcesPanel {
     }
     this.actions.hidden = false;
     const chosen = this.selectedDatasets();
-    this.summary.textContent = `Data Sources (${chosen.length} selected)`;
-    if (!chosen.length) {
-      this.list.append(el('li', { className: 'data-sources-empty', text: 'No data source selected.' }));
-    }
-    for (const type of DATA_TYPES) {
-      const ofType = chosen.filter((d) => d.record.dataType === type.id);
-      if (!ofType.length) continue;
-      this.list.append(el('li', { className: 'data-sources-type', text: type.name }));
-      const pooledRows = new Set();
-      for (const dataset of ofType) {
-        const kind = this.informing?.typeOf(dataset) ?? null;
-        const siblings = kind ? ofType.filter((d) => this.informing.typeOf(d).key === kind.key) : [];
-        if (kind && siblings.length > 1 && !pooledRows.has(kind.key)) {
-          // Several datasets of one type pool by default (owner, 2026-10-06);
-          // the first choice says so and brings the pooled value back.
-          pooledRows.add(kind.key);
-          const pooledChosen = !this.informing.chosen(kind.key);
-          const row = el('li', { className: 'data-sources-item data-sources-pooled' });
-          const radio = document.createElement('input');
-          radio.type = 'radio';
-          radio.name = `ds-inform-${kind.key}`;
-          radio.id = `ds-inform-${kind.key}-pooled`;
-          radio.checked = pooledChosen;
-          radio.setAttribute('aria-label', `Pool the ${siblings.length} selected datasets for ${kind.label}`);
-          radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(kind.key, null); });
-          row.append(radio, ' ', el('span', { className: 'data-sources-label', text: `Pooled: ${kind.label} over ${siblings.length} datasets` }));
-          if (pooledChosen) {
-            row.append(' ', chip(kind.key === this.colorMetricKey ? 'colouring the map' : `informs ${kind.label}`,
-              kind.key === this.colorMetricKey ? 'ds-chip ds-chip-active' : 'ds-chip'));
-          }
-          this.list.append(row);
-        }
+    const chosenIds = new Set(chosen.map((d) => d.id));
+    const colorType = this.informing?.colorTypeKey ?? null;
+    const forType = colorType ? this.informing.allOfType(colorType) : [];
+    const kindLabel = forType.length ? this.informing.typeOf(forType[0]).label : null;
+    const included = forType.filter((d) => chosenIds.has(d.id));
+    this.summary.textContent = colorType
+      ? `Data Sources (${included.length} of ${forType.length} for ${kindLabel}; ${chosen.length} selected in all)`
+      : `Data Sources (${chosen.length} selected)`;
+
+    // The colouring type first: every dataset of it, included or not (owner
+    // report, 2026-10-06), with inclusion edited here and the one that informs
+    // the type alone chosen among the included.
+    const rendered = new Set();
+    if (colorType && forType.length) {
+      this.list.append(el('li', { className: 'data-sources-type', text: `${kindLabel}: ${included.length} of ${forType.length} included` }));
+      const named = this.informing.chosen(colorType);
+      if (included.length > 1) {
+        const row = el('li', { className: 'data-sources-item data-sources-pooled' });
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = `ds-inform-${colorType}`;
+        radio.id = `ds-inform-${colorType}-pooled`;
+        radio.checked = !named;
+        radio.setAttribute('aria-label', `Pool the ${included.length} included datasets for ${kindLabel}`);
+        radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(colorType, null); });
+        row.append(radio, ' ', el('span', { className: 'data-sources-label', text: `Pooled: ${kindLabel} over ${included.length} datasets` }));
+        if (!named) row.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
+        this.list.append(row);
+      }
+      for (const dataset of forType) {
+        rendered.add(dataset.id);
         const item = el('li', { className: 'data-sources-item' });
         item.dataset.id = dataset.id;
-        const informs = kind ? this.informing.chosen(kind.key)?.id === dataset.id : false;
-        if (kind && siblings.length > 1) {
-          // One dataset informs each type metric; the reader picks it here.
+        const include = document.createElement('input');
+        include.type = 'checkbox';
+        include.id = `ds-include-${dataset.id}`;
+        include.checked = chosenIds.has(dataset.id);
+        include.setAttribute('aria-label', `Include ${dataset.record.studyId} ${dataset.record.conditionSet}`);
+        include.addEventListener('change', () => this.informing.onSelect(dataset.id, include.checked));
+        item.append(include, ' ');
+        if (include.checked && included.length > 1) {
           const radio = document.createElement('input');
           radio.type = 'radio';
-          radio.name = `ds-inform-${kind.key}`;
-          radio.id = `ds-inform-${kind.key}-${dataset.id}`;
-          radio.checked = informs;
-          radio.setAttribute('aria-label', `${dataset.record.studyId} ${dataset.record.conditionSet} informs ${kind.label}`);
-          radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(kind.key, dataset.id); });
+          radio.name = `ds-inform-${colorType}`;
+          radio.id = `ds-inform-${colorType}-${dataset.id}`;
+          radio.checked = named?.id === dataset.id;
+          radio.setAttribute('aria-label', `${dataset.record.studyId} ${dataset.record.conditionSet} alone informs ${kindLabel}`);
+          radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(colorType, dataset.id); });
           item.append(radio, ' ');
         }
         item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
           el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
-        if (kind && informs) {
-          item.append(' ', chip(kind.key === this.colorMetricKey ? 'colouring the map' : `informs ${kind.label}`,
-            kind.key === this.colorMetricKey ? 'ds-chip ds-chip-active' : 'ds-chip'));
-        } else if (dataset.metricKey === this.colorMetricKey) {
+        if (dataset.record.group === 'engineered') item.append(' ', chip('engineered strain', 'ds-chip'));
+        if (include.checked && (named ? named.id === dataset.id : included.length === 1)) {
           item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
         }
+        this.list.append(item);
+      }
+    }
+
+    // Everything else selected, by data type, as a record of the selection.
+    const rest = chosen.filter((d) => !rendered.has(d.id));
+    if (!chosen.length && !forType.length) {
+      this.list.append(el('li', { className: 'data-sources-empty', text: 'No data source selected.' }));
+    }
+    for (const type of DATA_TYPES) {
+      const ofType = rest.filter((d) => d.record.dataType === type.id);
+      if (!ofType.length) continue;
+      this.list.append(el('li', { className: 'data-sources-type', text: colorType ? `Also selected: ${type.name}` : type.name }));
+      for (const dataset of ofType) {
+        const item = el('li', { className: 'data-sources-item' });
+        item.dataset.id = dataset.id;
+        item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
+          el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
+        if (dataset.record.group === 'engineered') item.append(' ', chip('engineered strain', 'ds-chip'));
+        if (dataset.metricKey === this.colorMetricKey) item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
         this.list.append(item);
       }
     }

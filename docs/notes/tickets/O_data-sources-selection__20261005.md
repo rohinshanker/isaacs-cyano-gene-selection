@@ -182,7 +182,24 @@ over the informing dataset is a follow-up.
    (clock-rescue) moved there, and PXD030282's L1118 baseline may enter under
    it. Done 2026-10-06 for the group; PXD030282 follows.
 3. **Fitness Browser**: proceed — read its terms, record a ledger decision, then
-   ingest. In progress.
+   ingest. Blocked 2026-10-06 by Cloudflare bot verification on every page the
+   agents request; per the gated-pages ticket the owner opens the site in their
+   own browser with the agent present, or supplies the terms text and the
+   PCC 7942 fitness and experiment tables.
+
+## Owner report, 2026-10-06, and design round 6
+
+"The data sources for transcript initiation, abundance and protein abundance in
+the working build do not have the proper data sources available; the fitness
+metric category also does not appear." Cause: a type was offered only while a
+dataset of it was selected, and the section listed only the selected datasets of
+a type, so fitness (whose sets are all in the biofilm group, outside the default
+selection) never appeared and most datasets were out of reach from the section.
+Fixed the same day: every type the release has a dataset for is offered; asking
+for a type with none of its datasets selected selects its defaults (shipped
+originals and standard-growth sets, else all of the type); and the section
+lists every dataset of the colouring type with an include checkbox, a pooled
+row and "alone informs" radios, then the other selected datasets by data type.
 
 ## Work
 

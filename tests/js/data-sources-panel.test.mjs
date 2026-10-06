@@ -290,48 +290,56 @@ test('a track carries its ticks and bands and names the value, and the axis labe
   });
 });
 
-test('a type with several selected datasets gets a radio choosing which one informs it', async () => {
+test('the colouring type lists every dataset of it, with inclusion, a pooled row and an alone-informs radio', async () => {
   await withFakeDocument(async (document) => {
     const { host, panel } = mount(document);
-    const informed = [];
+    const informed = []; const selected = [];
     let chosenId = 'GSE9.5';
-    const typeOf = (d) => ({
-      key: `type.${d.record.dataType}.${d.record.platform}`,
-      label: `${d.record.dataType} (${d.record.platform})`,
-    });
+    let selection = ['GSE9.5', 'GSE9.6', 'PXD1.1'];
+    const typeKey = (d) => `type.${d.record.dataType}.${d.record.platform}`;
     const informing = {
-      typeOf,
-      chosen: (key) => panel.datasets.find((d) => typeOf(d).key === key && d.id === chosenId) ?? null,
+      typeOf: (d) => ({ key: typeKey(d), label: `${d.record.dataType} (${d.record.platform})` }),
+      chosen: (key) => panel.datasets.find((d) => typeKey(d) === key && d.id === chosenId) ?? null,
       onInform: (key, id) => { informed.push([key, id]); chosenId = id; },
+      colorTypeKey: 'type.transcriptomics.RNA-seq',
+      allOfType: (key) => panel.datasets.filter((d) => typeKey(d) === key),
+      isSelected: (id) => selection.includes(id),
+      onSelect: (id, on) => { selected.push([id, on]); selection = on ? [...selection, id] : selection.filter((x) => x !== id); },
     };
-    panel.update({
-      selection: ['GSE9.5', 'GSE9.6', 'PXD1.1'], colorMetricKey: 'type.transcriptomics.RNA-seq', informing,
-    });
+    panel.update({ selection, colorMetricKey: 'type.transcriptomics.RNA-seq', informing });
+    // Every RNA-seq dataset of the fixture is listed, included or not.
+    const items = host.querySelectorAll('li.data-sources-item');
+    const includes = host.querySelectorAll('input').filter((input) => input.type === 'checkbox');
+    assert.deepEqual(includes.map((box) => [box.id, box.checked]), [
+      ['ds-include-GSE205444', false], ['ds-include-TAN2018_TSS', false],
+      ['ds-include-GSE9.5', true], ['ds-include-GSE9.6', true],
+    ], 'unselected datasets of the type are offered with an unchecked box');
+    assert.match(host.querySelector('summary').textContent, /2 of 4 for transcriptomics \(RNA-seq\); 3 selected in all/);
     const radios = host.querySelectorAll('input').filter((input) => input.type === 'radio');
     assert.deepEqual(radios.map((r) => [r.id, r.checked]), [
       ['ds-inform-type.transcriptomics.RNA-seq-pooled', false],
       ['ds-inform-type.transcriptomics.RNA-seq-GSE9.5', true],
       ['ds-inform-type.transcriptomics.RNA-seq-GSE9.6', false],
-    ], 'a pooled choice leads; the lone proteomics dataset needs no radio');
-    const items = host.querySelectorAll('li.data-sources-item');
+    ], 'only included datasets get an alone-informs radio');
     assert.ok(items[0].textContent.includes('Pooled: transcriptomics (RNA-seq) over 2 datasets'));
-    assert.ok(items[1].textContent.includes('colouring the map'), 'the informing dataset of the colour type is marked');
-    assert.ok(!items[2].textContent.includes('informs'));
+    assert.ok(host.querySelectorAll('li.data-sources-type').some((li) => li.textContent.includes('Also selected: Proteomics')));
+    // Including another dataset goes through the selection.
+    includes[0].checked = true;
+    includes[0].dispatch('change');
+    assert.deepEqual(selected, [['GSE205444', true]]);
+    // Naming one, then pooling again.
     radios[2].checked = true;
     radios[2].dispatch('change');
     assert.deepEqual(informed, [['type.transcriptomics.RNA-seq', 'GSE9.6']]);
-    panel.update({ informing });
-    const after = host.querySelectorAll('li.data-sources-item');
-    assert.ok(after[2].textContent.includes('colouring the map'));
-    // Choosing the pooled row clears the named dataset.
     radios[0].checked = true;
     radios[0].dispatch('change');
     assert.deepEqual(informed.at(-1), ['type.transcriptomics.RNA-seq', null]);
     chosenId = null;
-    panel.update({ informing });
+    panel.update({ selection, informing });
     assert.ok(host.querySelectorAll('li.data-sources-item')[0].textContent.includes('colouring the map'));
-    // A type that is not the colour says what it informs instead.
-    panel.update({ colorMetricKey: 'gc3', informing });
-    assert.ok(host.querySelectorAll('li.data-sources-item')[0].textContent.includes('informs transcriptomics (RNA-seq)'));
+    // A computed colour lists the selection plainly, with no controls.
+    panel.update({ selection, colorMetricKey: 'gc3', informing: { ...informing, colorTypeKey: null } });
+    assert.equal(host.querySelectorAll('input').length, 0);
+    assert.match(host.querySelector('summary').textContent, /\(\d+ selected\)$/);
   });
 });

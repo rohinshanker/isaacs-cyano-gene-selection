@@ -822,6 +822,11 @@ because the deposits' units differ); a signed fitness pools as the mean of the
 published log2 values. A pooled provenance names every contributing dataset and
 cites each. Datasets measured in an engineered strain sit in the `engineered`
 group of the data selection and are named as such (owner decision, 2026-10-06).
+Every type the release has a dataset for is offered in the selectors; asking
+for a type none of whose datasets is selected selects its defaults (the shipped
+originals and the standard-growth sets, else every dataset of the type), and the
+Data Sources section lists every dataset of the colouring type with an include
+control, a pooled row and an "alone informs" choice (owner report, 2026-10-06).
 
 `meta.pairJudgements` carries the owner's judgements on escalated condition-set
 pairs from `data/expression/pair_judgements.json` (the transcription of the

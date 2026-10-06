@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dataset } from './data-sources-fixture.mjs';
 import {
-  assayKind, buildTypeMetrics, contributingDatasets, defaultInforming, informingDataset, isTypeKey,
-  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  assayKind, buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, defaultInforming,
+  informingDataset, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from '../../site/js/core/type-metrics.js';
 
 function datasets() {
@@ -143,4 +143,14 @@ test('a fitness screen is its own family; abundance and initiation are expressio
   assert.equal(families['type.transcriptomics.rna-seq.abundance'], 'Expression');
   assert.equal(families['type.transcriptomics.rna-seq.initiation'], 'Expression');
   assert.equal(typeLabelFor(screen), 'Gene fitness (RB-TnSeq)');
+});
+
+test('a type asked for with nothing selected starts from its originals and standard sets, else all of it', () => {
+  const all = datasets();
+  const screen = dataset({ id: 'F1', datasetId: 'F1', metricKey: 'fitA', dataType: 'fitness', platform: 'RB-TnSeq', group: 'biofilm' });
+  const ids = (list) => list.map((d) => d.id);
+  assert.deepEqual(ids(defaultDatasetsOfType('type.transcriptomics.rna-seq.abundance', all)), ['GSE205444', 'GSE9.5']);
+  assert.deepEqual(ids(defaultDatasetsOfType('type.transcriptomics.rna-seq.initiation', all)), ['TAN2018_TSS']);
+  assert.deepEqual(ids(defaultDatasetsOfType('type.fitness.rb-tnseq.fitness', [...all, screen])), ['F1'], 'no standard set: every dataset of the type');
+  assert.deepEqual(defaultDatasetsOfType('type.nope', all), []);
 });

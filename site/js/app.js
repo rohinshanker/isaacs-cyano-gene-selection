@@ -81,8 +81,8 @@ import {
   datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import {
-  buildTypeMetrics, contributingDatasets, informingDataset, isTypeKey, normalizeTypeSources,
-  typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isTypeKey,
+  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -1534,6 +1534,15 @@ function dataSourcesState() {
     typeOf: (dataset) => ({ key: typeKeyFor(dataset), label: typeLabelFor(dataset) }),
     chosen: (typeKey) => informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection()),
     onInform: (typeKey, id) => setInforming(typeKey, id),
+    // The colouring type's full dataset list, with inclusion edited in place.
+    colorTypeKey: isTypeKey(state.colorBy) ? state.colorBy : null,
+    allOfType: (typeKey) => typeGroups(context.datasets).get(typeKey)?.datasets ?? [],
+    isSelected: (id) => sourceSelection().includes(id),
+    onSelect: (id, on) => {
+      const current = sourceSelection();
+      setSources(on ? [...current, id] : current.filter((other) => other !== id));
+      announce(`${id} ${on ? 'added to' : 'removed from'} the data selection.`);
+    },
   };
   return { selection: sourceSelection(), colorMetricKey: state.colorBy, annotation, informing };
 }
@@ -1570,10 +1579,23 @@ function metricInScope(metric) {
   // A dataset's own metric is never offered directly: its type is, informed by
   // the dataset chosen under Data Sources (owner decision, 2026-10-06).
   if (context.datasets.some((dataset) => dataset.metricKey === metric.key)) return false;
-  if (metric.isType) {
-    return contributingDatasets(metric.key, state.typeSources, context.datasets, sourceSelection()).length > 0;
-  }
+  // A type is offered whenever the release has a dataset of it; asking for a
+  // type none of whose datasets is selected selects its defaults (owner
+  // report, 2026-10-06: the fitness type was invisible until a set was picked).
+  if (metric.isType) return typeGroups(context.datasets).has(metric.key);
   return true;
+}
+
+/** Select a type's default datasets when a view asks for the type with none selected. */
+function ensureTypeSelected(key) {
+  if (!isTypeKey(key) || !context.datasets?.length) return;
+  if (contributingDatasets(key, state.typeSources, context.datasets, sourceSelection()).length > 0) return;
+  const defaults = defaultDatasetsOfType(key, context.datasets).map((d) => d.id);
+  if (!defaults.length) return;
+  const next = normalizeSelection([...sourceSelection(), ...defaults], context.datasets);
+  state.sources = isDefaultSelection(next, context.datasets) ? [] : next;
+  state.typeSources = normalizeTypeSources(state.typeSources, context.datasets, sourceSelection());
+  for (const metric of context.registry.metrics) if (metric.isType) context.percentiles.delete(metric.key);
 }
 
 /** The registry as the selectors see it: the same lookup, fewer offered metrics. */
@@ -1687,8 +1709,8 @@ function buildColorControls() {
     onChange: ({ colorBy, colorScale }) => {
       state.colorBy = colorBy;
       state.colorScale = colorScale;
-      renderMap();
-      persist();
+      ensureTypeSelected(colorBy);
+      renderAll();
     },
   });
   syncColorScaleControl(colorModel());
@@ -1725,6 +1747,7 @@ function buildAxisSelects() {
     const select = element(`axis-${axis}`);
     const onAxisChange = (value) => {
       state[key] = value;
+      ensureTypeSelected(value);
       syncAxisSourceSelects();
       plot.projectionId = null;
       renderMap();
@@ -2023,6 +2046,11 @@ function normalizeAndApply(decoded) {
   // the per-dataset menus) means that type informed by that dataset.
   adoptLegacyMetricKeys();
   state.typeSources = normalizeTypeSources(state.typeSources, context.datasets, sourceSelection());
+  // A link that colours, plots or filters by a type selects that type's
+  // defaults when it carries no dataset of it.
+  for (const key of [state.colorBy, state.axisX, state.axisY, state.trafficKey, ...Object.keys(state.filters)]) {
+    if (key && context.registry.byKey.has(key)) ensureTypeSelected(key);
+  }
   // A filter or a traffic metric this dataset has no metric for cannot act, so
   // it is dropped rather than carried in the address as if it were in effect.
   state.filters = Object.fromEntries(Object.entries(state.filters)
@@ -2564,6 +2592,7 @@ async function boot() {
     onChange: (filters) => {
       cancelLiveFilters();
       state.filters = filters;
+      for (const key of Object.keys(filters)) ensureTypeSelected(key);
       renderAll();
     },
     onLiveChange: (filters) => applyFiltersLive(filters),
@@ -2591,6 +2620,7 @@ async function boot() {
     onTrafficKeyChange: (key, filters) => {
       state.trafficKey = key;
       state.filters = filters;
+      ensureTypeSelected(key);
       renderAll();
     },
     onTrafficFollowChange: (follow) => {
