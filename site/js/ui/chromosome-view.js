@@ -728,7 +728,9 @@ export class ChromosomeView {
       parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
         + 'Tan 2018 gene-linked start sites on the tick row above each axis, appear once the window '
         + 'is narrow enough to tell them apart, so they fill in as you zoom. The start-site '
-        + 'positions were measured on this assembly and are drawn where that study published them.');
+        + 'positions were measured on this assembly and are drawn where that study published them; '
+        + 'the gene view draws the same sites at the published upstream distance instead, and for '
+        + 'a minority of sites the two placements differ, which that view names per site.');
     }
     return parts.join(' ');
   }

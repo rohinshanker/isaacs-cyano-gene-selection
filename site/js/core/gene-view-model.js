@@ -96,19 +96,35 @@ export function orientedSegments(gene) {
  * own gene model, never recomputed against this release's start. It is drawn as
  * given and labelled as such: silently re-measuring it would invent a
  * coordinate the source never reported.
+ *
+ * The chromosome view draws the same site at its published absolute
+ * `position`, and the two placements can disagree where this release's start
+ * differs from the authors' gene model. `impliedDistanceNt` is the distance
+ * that position implies against the current start, and `placementGapNt` the
+ * disagreement, 0 when both placements coincide; the view labels the gap rather
+ * than choosing a side, because which placement a construct boundary should
+ * follow is the lab's call.
  */
 export function tssMarks(gene) {
   const sites = Array.isArray(gene.tssEvidence) ? gene.tssEvidence : [];
   return sites
     .filter((site) => Number.isFinite(site?.sourceStartDistanceNt))
-    .map((site) => ({
-      id: site.id,
-      offset: -site.sourceStartDistanceNt,
-      distanceNt: site.sourceStartDistanceNt,
-      strand: site.strand ?? null,
-      position: Number.isFinite(site.position) ? site.position : null,
-      replicon: site.replicon ?? null,
-    }))
+    .map((site) => {
+      const position = Number.isFinite(site.position) ? site.position : null;
+      const impliedDistanceNt = position === null ? null
+        : gene.strand === '-' ? position - gene.end : gene.start - position;
+      return {
+        id: site.id,
+        offset: -site.sourceStartDistanceNt,
+        distanceNt: site.sourceStartDistanceNt,
+        impliedDistanceNt,
+        placementGapNt: impliedDistanceNt === null ? null
+          : Math.abs(impliedDistanceNt - site.sourceStartDistanceNt),
+        strand: site.strand ?? null,
+        position,
+        replicon: site.replicon ?? null,
+      };
+    })
     .sort((a, b) => a.offset - b.offset);
 }
 

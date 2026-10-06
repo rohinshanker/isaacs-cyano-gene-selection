@@ -189,6 +189,15 @@ What it draws, and only this:
   against this release's start, and the panel says so beside the drawing.
   Silently remeasuring it would invent a coordinate the source never reported;
   the caveat also repeats that these measure initiation, not abundance.
+  The chromosome view draws the same sites at their published absolute
+  coordinate instead, and the two placements disagree where this release's
+  start differs from the authors' gene model: on the shipped data 236 of 2,432
+  sites, over 178 loci, by 3 to 198 nt, 15 of them with the coordinate inside
+  the current CDS. The panel names the gap per site (`placementGapNt` and
+  `impliedDistanceNt` from `tssMarks()`) in its description and in each mark's
+  title, and takes no side: which placement a construct boundary should follow
+  is row 8 of the lab's biological-decisions list.
+  `tests/js/gene-view-tan-evidence.test.mjs` pins the counts.
 
 A site with no published distance has nowhere to be drawn and is left out. A
 record with no coordinates draws nothing rather than guessing. The SVG carries a

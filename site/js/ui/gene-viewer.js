@@ -85,6 +85,7 @@ export function describeGeneView(model, tssPending = null) {
     parts.push(`${model.tss.length} Tan 2018 start site${model.tss.length === 1 ? '' : 's'} `
       + `upstream at ${distances}, at the distances that study published against its own gene `
       + 'model, not remeasured against this release.');
+    parts.push(placementDivergenceSentence(model.tss));
   } else if (tssPending) {
     // Not loaded is not none: the start-site file has not landed, or could not.
     parts.push(tssPending === 'failed'
@@ -182,11 +183,39 @@ function drawTss(root, model, x) {
     mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: 3 }));
     const title = svg('title');
     title.textContent = `${site.id}: published ${site.distanceNt} nt upstream of the Tan 2018 `
-      + 'gene-model start';
+      + 'gene-model start'
+      + (site.placementGapNt > 0
+        ? `; its published genome coordinate, where the chromosome view draws it, is `
+          + `${site.impliedDistanceNt} nt from this release's start, ${site.placementGapNt} nt away`
+        : '');
     mark.append(title);
     group.append(mark);
   }
   root.append(group);
+}
+
+/**
+ * The sentence that says where this gene's start sites sit in the chromosome
+ * view, which draws the published genome coordinate rather than the published
+ * distance. The two agree for most sites; where they do not, the gap is named
+ * and no side is taken.
+ */
+export function placementDivergenceSentence(sites) {
+  const apart = sites.filter((site) => site.placementGapNt > 0);
+  if (apart.length === 0) {
+    return 'The chromosome view draws the same site'
+      + `${sites.length === 1 ? '' : 's'} at the published genome coordinate, which agrees `
+      + 'with this placement.';
+  }
+  const inside = apart.filter((site) => site.impliedDistanceNt < 0);
+  const gaps = apart.map((site) => `${site.id} by ${site.placementGapNt} nt`).join(', ');
+  return 'The chromosome view draws the published genome coordinate instead, which differs '
+    + `from this placement for ${gaps}`
+    + (inside.length > 0
+      ? `; ${inside.length === 1 ? 'that coordinate falls' : `${inside.length} of those coordinates fall`} `
+        + 'inside the current coding sequence'
+      : '')
+    + '. Which placement a construct boundary should follow is for the lab to decide.';
 }
 
 /** Build the SVG for one view model. Exported for rendered tests. */

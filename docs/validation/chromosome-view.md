@@ -64,7 +64,12 @@ breakpoint rule hides it once the sticky side rail begins. See
    absolute coordinates on the tick row above each axis. The published
    `position` is used as given and is never recomputed against this release's
    annotated start; `sourceStartDistanceNt` is carried beside it. Non-gene-linked
-   Tan features stay in the Regulatory sites tab.
+   Tan features stay in the Regulatory sites tab. The gene view draws the same
+   sites at the published upstream distance instead, and for 236 of the 2,432
+   sites the two placements differ (3 to 198 nt; 15 coordinates fall inside the
+   current CDS). The marker conventions sentence says so, and the gene view
+   names the gap per site; neither view picks a placement, which is the lab's
+   decision.
 
 3. **No sister-strain coordinate, ever.** Coordinates do not transfer between
    strains. Positional evidence from an admitted sister strain reaches the
