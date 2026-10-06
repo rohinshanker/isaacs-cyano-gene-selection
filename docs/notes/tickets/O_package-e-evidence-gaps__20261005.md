@@ -36,7 +36,7 @@ the mockup.
 | 15 of 44 method sources were read from abstracts only | Some support key claims | Supply full texts | Read those with a deposit; see [O_unreadable-literature-workarounds__20261005](O_unreadable-literature-workarounds__20261005.md) item 5 |
 | The 63 condition records were parsed by hand after a keyword pass gave false positives; package D's first automated parse also misread values | The mockup and any future selector read these records | A second person reads a sample against package B | A checker that every number in a record appears in the package B cell it cites, plus a validator for ranges, units and the tag vocabulary |
 | The audit's model read covered 49 of 84 file chunks | The unread files include the comparison and filter views a selector would change | — | A follow-up audit package naming only the 35 chunks, or an in-repository read; the owner chooses |
-| A-01 and A-04 were never confirmed on screen | The audit-fixes ticket requires it before either fix is designed | — | Rendered check at three widths, already item 1 and item 3 of [O_data-use-audit-fixes__20261004](O_data-use-audit-fixes__20261004.md) |
+| A-01 and A-04 were never confirmed on screen | Both confirmed on screen and fixed 2026-10-06, rendered at 375, 768 and 1280 px; the audit-fixes ticket is resolved and its checklist is [data-use-audit-checklist.md](../../validation/data-use-audit-checklist.md) | — | Done |
 
 ## Decisions, 2026-10-05
 
