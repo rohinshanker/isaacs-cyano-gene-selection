@@ -10,6 +10,7 @@ import {
   describeMissingSentence, describeDroppedAxes, Z_LIMIT, MIN_AXES, DEFAULT_AXES,
   measurementLimitNote,
   normalizeCompareAxes,
+  rawZScore, isClamped, countClamped, describeClamped, drawClampBar,
 } from '../../site/js/ui/compare-model.js';
 import { CATEGORICAL } from '../../site/js/ui/colors.js';
 import { readFileSync } from 'node:fs';
@@ -37,6 +38,73 @@ test('z-scores clamp to the drawn range without becoming missing', () => {
   const scale = robustScale([1, 2, 3, 4, 5]);
   assert.equal(zScore(1e9, scale), Z_LIMIT);
   assert.equal(zScore(-1e9, scale), -Z_LIMIT);
+});
+
+test('a clamped value is known as clamped, and its true distance is kept', () => {
+  const scale = robustScale([1, 2, 3, 4, 5]);
+  assert.equal(isClamped(1e9, scale), true);
+  assert.equal(isClamped(-1e9, scale), true);
+  assert.equal(isClamped(3, scale), false);
+  assert.equal(isClamped(NaN, scale), false, 'a missing value is missing, not clamped');
+  assert.ok(rawZScore(1e9, scale) > Z_LIMIT);
+  assert.ok(Number.isNaN(rawZScore(NaN, scale)));
+  assert.ok(Number.isNaN(rawZScore(1, robustScale([]))));
+  // Exactly at the limit is drawn where it is, not pinned.
+  const at = scale.median + Z_LIMIT * scale.spread;
+  assert.equal(isClamped(at, scale), false);
+});
+
+test('clamped values are counted per series, per axis, and in total, and described', () => {
+  const axes = [{ key: 'a' }, { key: 'b' }];
+  const series = [{ id: 'g1', index: 0 }, { id: 'g2', index: 1 }];
+  const flags = { a: [true, false], b: [true, true] };
+  const clamped = countClamped(series, axes, (metric, index) => flags[metric.key][index]);
+  assert.equal(clamped.total, 3);
+  assert.equal(clamped.bySeries.get('g1'), 2);
+  assert.equal(clamped.bySeries.get('g2'), 1);
+  assert.equal(clamped.byAxis.get('b'), 2);
+  assert.equal(clamped.byAxis.get('a'), 1);
+  assert.equal(describeClamped(0), '');
+  assert.match(describeClamped(1), /^1 value lies beyond 3 spreads of the median and is pinned at the rim/);
+  assert.match(describeClamped(1), /its true distance is in the table\.$/);
+  assert.match(describeClamped(3), /^3 values lie beyond 3 spreads of the median and are pinned/);
+  assert.match(describeClamped(3), /their true distance is in the table\.$/);
+});
+
+test('the clamp bar is drawn across the outward direction, through the marker', () => {
+  const calls = [];
+  const context = {
+    beginPath: () => calls.push(['begin']),
+    moveTo: (x, y) => calls.push(['move', Math.round(x), Math.round(y)]),
+    lineTo: (x, y) => calls.push(['line', Math.round(x), Math.round(y)]),
+    stroke: () => calls.push(['stroke']),
+  };
+  // Pushed outward along +x: the bar is vertical through the marker.
+  drawClampBar(context, 100, 50, 5, 0);
+  assert.deepEqual(calls, [['begin'], ['move', 100, 37], ['line', 100, 63], ['stroke']]);
+  calls.length = 0;
+  // Pushed upward (a parallel axis top): the bar is horizontal.
+  drawClampBar(context, 100, 50, 5, -Math.PI / 2);
+  assert.deepEqual(calls, [['begin'], ['move', 87, 50], ['line', 113, 50], ['stroke']]);
+});
+
+test('the shipped measurements have the clamped counts the data-use audit found', () => {
+  const genes = JSON.parse(readFileSync(new URL('../../site/data/genes.json', import.meta.url)));
+  const counts = {};
+  for (const key of ['expression', 'tssInitiation']) {
+    const values = genes.map((gene) => (typeof gene[key] === 'number' ? gene[key] : NaN));
+    const scale = robustScale(values);
+    counts[key] = {
+      finite: values.filter(Number.isFinite).length,
+      clamped: values.filter((value) => isClamped(value, scale)).length,
+    };
+  }
+  // 16.5% and 15.7%: the shares the audit measured (A-01), pinned here so a
+  // change in the data or the clamp is seen in review.
+  assert.deepEqual(counts, {
+    expression: { finite: 2551, clamped: 421 },
+    tssInitiation: { finite: 1727, clamped: 272 },
+  });
 });
 
 test('spread survives outliers and a constant column', () => {

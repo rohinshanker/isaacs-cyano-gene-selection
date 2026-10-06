@@ -1081,6 +1081,7 @@ input[type="range"] { width: 100%; }
 .legend-entry[aria-pressed="true"] { background: var(--accent-soft); border-radius: 4px 4px 0 0; }
 .legend-swatch { vertical-align: middle; width: 38px; height: 14px; flex: none; }
 .legend-missing { color: #6b4100; font-weight: 600; }
+.legend-clamped { color: #4a5560; font-weight: 600; }
 .focus-bar { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin: 0.25rem 0; }
 .focus-bar .chip-button { min-height: 28px; padding: 0.15rem 0.6rem; }
 .axis-unavailable { color: var(--ink-muted); font-size: 0.76rem; }

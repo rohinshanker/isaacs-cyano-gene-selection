@@ -130,10 +130,55 @@ export function robustScale(values) {
  * scale is missing: a missing value must stay missing all the way to the pixel.
  */
 export function zScore(value, scale) {
+  return Math.max(-Z_LIMIT, Math.min(Z_LIMIT, rawZScore(value, scale)));
+}
+
+/** The robust z-score before the clamp; NaN under the same conditions. */
+export function rawZScore(value, scale) {
   if (!Number.isFinite(value) || !Number.isFinite(scale.median) || !Number.isFinite(scale.spread)) {
     return NaN;
   }
-  return Math.max(-Z_LIMIT, Math.min(Z_LIMIT, (value - scale.median) / scale.spread));
+  return (value - scale.median) / scale.spread;
+}
+
+/**
+ * Whether a value lies beyond the clamp, so that it is drawn pinned at the rim
+ * rather than where its z-score would put it. A missing value is not clamped.
+ */
+export function isClamped(value, scale) {
+  const z = rawZScore(value, scale);
+  return Number.isFinite(z) && Math.abs(z) > Z_LIMIT;
+}
+
+/**
+ * How many values each series and each axis have pinned at the rim, in the
+ * same shape as `countMissing`, so the legend and the descriptions can say so.
+ * `clamped(metric, index)` is the caller's test for one value.
+ */
+export function countClamped(series, axes, clamped) {
+  const bySeries = new Map();
+  const byAxis = new Map();
+  let total = 0;
+  for (const entry of series) {
+    let count = 0;
+    for (const metric of axes) {
+      if (!clamped(metric, entry.index)) continue;
+      count += 1;
+      byAxis.set(metric.key, (byAxis.get(metric.key) ?? 0) + 1);
+    }
+    bySeries.set(entry.id, count);
+    total += count;
+  }
+  return { total, bySeries, byAxis };
+}
+
+/** One sentence naming how many values are pinned at the rim, or '' when none. */
+export function describeClamped(count) {
+  if (count === 0) return '';
+  const one = count === 1;
+  return `${pluralise(count, 'value lies', 'values lie')} beyond ${Z_LIMIT} spreads of the median `
+    + `and ${one ? 'is' : 'are'} pinned at the rim, marked with a bar across the marker; `
+    + `${one ? 'its' : 'their'} true distance is in the table.`;
 }
 
 /**
@@ -380,6 +425,22 @@ export function drawMarker(context, marker, x, y, size) {
       context.arc(x, y, s, 0, Math.PI * 2);
       context.fill();
   }
+}
+
+/**
+ * The clamp mark: a short bar through the marker, perpendicular to the
+ * direction the value was pushed back from, so a value pinned at the rim is
+ * never read as one that happens to sit there. `angle` is the outward
+ * direction in canvas radians; the bar is drawn across it.
+ */
+export function drawClampBar(context, x, y, size, angle) {
+  const across = angle + Math.PI / 2;
+  const dx = Math.cos(across) * size * 2.6;
+  const dy = Math.sin(across) * size * 2.6;
+  context.beginPath();
+  context.moveTo(x - dx, y - dy);
+  context.lineTo(x + dx, y + dy);
+  context.stroke();
 }
 
 /**

@@ -94,6 +94,33 @@ test('length controls survive updates, preserving keyboard focus targets', async
   }
 });
 
+test('only CDS cohorts describe a blue/grey split by the length range', () => {
+  const previousDocument = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const host = new FakeElement('div');
+    const explorer = new LengthExplorer(host, { onCohortChange: () => {}, onRangeChange: () => {} });
+    const chart = () => explorer.chartHost.children[0];
+    const svg = () => chart().children[0];
+    const caption = () => chart().children[1];
+    const binTitles = () => svg().children.filter((c) => c.tagName === 'rect')
+      .map((rect) => rect.children[0]?.textContent);
+
+    explorer.update({ inventory, cohortId: 'cds', range: { min: 300, max: null }, mapPassing: 1, mapCount: 2 });
+    assert.match(svg().attributes['aria-label'], /Blue shows loci inside the selected range; grey shows the rest\./);
+    assert.match(caption().textContent, /blue counts loci inside the selected range, grey counts the rest/);
+    assert.ok(binTitles().every((title) => / of \d+ loci within range$/.test(title)));
+
+    explorer.update({ inventory, cohortId: 'annotated', range: { min: 300, max: null }, mapPassing: 1, mapCount: 2 });
+    assert.match(svg().attributes['aria-label'], /All loci are drawn in blue; the length range applies to CDS cohorts only\./);
+    assert.doesNotMatch(svg().attributes['aria-label'], /selected range/);
+    assert.match(caption().textContent, /every locus counts in blue/);
+    assert.ok(binTitles().every((title) => /^Bin \d+: \d+ loci$/.test(title)));
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});
+
 test('missing inventory has a visible empty state', () => {
   const previousDocument = globalThis.document;
   globalThis.document = fakeDocument();
