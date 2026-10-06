@@ -1153,17 +1153,19 @@ function renderAll({ schemeErrors = [] } = {}) {
     },
   });
   if (searchResults) searchResults.refresh();
+  // The comparison and the designer offer measured sources the way the menus
+  // do: only the ones selected under Data Sources.
   comparePanel.update({
     ids: state.shortlist,
     dataset: context.dataset,
-    registry: context.registry,
+    registry: scopedRegistry(),
     tab: state.compareTab,
     axisKeys: compareAxes,
   });
   if (panelDesigner) {
     panelDesigner.update({
       dataset: context.dataset,
-      registry: context.registry,
+      registry: scopedRegistry(),
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
       colorSources: state.colorSources,
