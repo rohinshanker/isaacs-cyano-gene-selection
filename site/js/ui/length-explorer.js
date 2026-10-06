@@ -4,6 +4,7 @@ import {
   LENGTH_COHORTS, cohortValues, countInRange, lengthBins, passingLengthBins,
 } from '../core/length-cohorts.js';
 import { formatCount } from './format.js';
+import { RangeSlider, hasUsableSpread } from './range-slider.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 export const LENGTH_TAB = Object.freeze({
@@ -36,14 +37,24 @@ function svgElement(name, attributes) {
 }
 
 export class LengthExplorer {
-  constructor(host, { onCohortChange, onRangeChange }) {
+  constructor(host, { onCohortChange, onRangeChange, onRangeInput = null, onRangeCommit = null }) {
+    this.onRangeInput = onRangeInput;
+    this.onRangeCommit = onRangeCommit;
+    this.slider = null;
+    this.sliderBounds = null;
     this.host = host;
     this.onCohortChange = onCohortChange;
     this.onRangeChange = onRangeChange;
     this.built = false;
   }
 
-  update({ inventory, cohortId, range, mapPassing, mapCount, pending = null }) {
+  /**
+   * @param {object} state the inventory, cohort, range and map counts.
+   * @param {{live?: boolean}} [options] `live` while a thumb is moving: the
+   *   chart and the counts follow, the chooser, fields and slider are left to
+   *   the gesture.
+   */
+  update({ inventory, cohortId, range, mapPassing, mapCount, pending = null }, { live = false } = {}) {
     if (!inventory) {
       // Still loading, or not loadable, is not "unavailable in this dataset".
       const note = pending ? pendingNote(pending, 'the length inventory')
@@ -56,7 +67,7 @@ export class LengthExplorer {
     if (!this.built) this.build();
     const selected = LENGTH_COHORTS.some((entry) => entry.id === cohortId) ? cohortId : 'annotated';
     const { cohort, values, total, unknown } = cohortValues(inventory, selected);
-    this.select.value = selected;
+    if (!live) this.select.value = selected;
     this.definition.textContent = cohort.field === 'geneSpanNt'
       ? 'Gene span: inclusive RefSeq feature coordinates, including any gaps within the span.'
       : 'CDS length: joined coding segments in nucleotides, including the terminal stop.';
@@ -68,14 +79,48 @@ export class LengthExplorer {
     this.chartHost.replaceChildren(
       this.histogram(values, inventory.qc?.shortCdsBelowNt ?? 75, cohort, range),
     );
-    this.inputs.min.value = range?.min ?? '';
-    this.inputs.max.value = range?.max ?? '';
+    if (!live) {
+      this.inputs.min.value = range?.min ?? '';
+      this.inputs.max.value = range?.max ?? '';
+      this.renderSlider(inventory, cohort, range);
+    }
     this.mapSummary.textContent = `${formatCount(mapPassing)} of ${formatCount(mapCount)} plotted CDSs pass all filters.`;
     const threshold = inventory.qc?.shortCdsBelowNt ?? 75;
     const shortCount = inventory.records.filter((row) => row.cdsLengthNt !== null
       && row.cdsLengthNt < threshold).length;
     this.qc.textContent = `Annotation review flag: CDSs below ${threshold} nt `
       + `(${shortCount} in this release). This is a quality check, not an exclusion rule.`;
+  }
+
+  /**
+   * The draggable length range over the CDS lengths this release records, kept
+   * in step with the two fields. Built once for the inventory's spread and kept
+   * while a thumb is held, so a drag is never interrupted by a rebuild; shown
+   * only for a CDS cohort, which is the only kind the range applies to.
+   */
+  renderSlider(inventory, cohort, range) {
+    this.sliderHost.hidden = cohort.field !== 'cdsLengthNt';
+    const lengths = inventory.records.map((row) => row.cdsLengthNt).filter(Number.isFinite);
+    const lo = Math.min(...lengths); const hi = Math.max(...lengths);
+    if (!hasUsableSpread(lo, hi)) { this.sliderHost.hidden = true; return; }
+    const bounds = `${lo}-${hi}`;
+    const held = this.slider && Object.values(this.slider.thumbs).includes(document.activeElement);
+    if (!this.slider || (this.sliderBounds !== bounds && !held)) {
+      const fieldText = (value) => (value === null ? '' : String(value));
+      this.slider = new RangeSlider({
+        lo, hi, integer: true, idPrefix: 'length-range', label: 'CDS length in nucleotides',
+        format: (value) => `${formatCount(value)} nt`,
+        onInput: (next) => {
+          this.inputs.min.value = fieldText(next.min);
+          this.inputs.max.value = fieldText(next.max);
+          this.onRangeInput?.(next);
+        },
+        onCommit: (next) => this.onRangeCommit?.(next),
+      });
+      this.sliderBounds = bounds;
+      this.sliderHost.replaceChildren(this.slider.element);
+    }
+    this.slider.setRange({ min: range?.min ?? null, max: range?.max ?? null });
   }
 
   build() {
@@ -145,12 +190,16 @@ export class LengthExplorer {
       return wrapper;
     };
     controls.append(makeInput('min', 'At least (nt)'), makeInput('max', 'At most (nt)'));
+    this.sliderHost = document.createElement('div');
+    this.sliderHost.className = 'length-slider-host';
+    this.slider = null;
+    this.sliderBounds = null;
     this.mapSummary = document.createElement('p');
     this.mapSummary.className = 'panel-note';
     this.qc = document.createElement('p');
     this.qc.className = 'panel-note';
     this.host.append(title, intro, chooser, this.definition, this.summary, this.chartHost,
-      rangeHeading, rangeNote, controls, this.mapSummary, this.qc);
+      rangeHeading, rangeNote, this.sliderHost, controls, this.mapSummary, this.qc);
     this.built = true;
   }
 

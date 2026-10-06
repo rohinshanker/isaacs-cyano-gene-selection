@@ -16,6 +16,7 @@ import {
 } from '../core/metric-registry.js';
 import { formatCount, formatExpressionSource, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
+import { RangeSlider, hasUsableSpread } from './range-slider.js';
 import { DEFAULT_ORGANISM } from '../core/organisms.js';
 
 const HISTOGRAM_BINS = 44;
@@ -272,16 +273,21 @@ export class FilterPanel {
     this.renderExceptionFilter(state);
     this.renderRows(state);
 
-    const hidden = state.count - state.passing;
-    this.summary.classList.toggle('hiding', hidden > 0);
-    this.summary.textContent = hidden > 0
-      ? `${formatCount(state.passing)} of ${formatCount(state.count)} genes pass. `
-        + `${formatCount(hidden)} are hidden.`
-      : `All ${formatCount(state.count)} genes pass. No filter is hiding anything.`;
+    this.renderSummary(state.count, state.passing);
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
       && (state.categoryFilter ?? []).length === 0;
+  }
+
+  /** The passing count; also refreshed alone while a filter is being dragged. */
+  renderSummary(count, passing) {
+    const hidden = count - passing;
+    this.summary.classList.toggle('hiding', hidden > 0);
+    this.summary.textContent = hidden > 0
+      ? `${formatCount(passing)} of ${formatCount(count)} genes pass. `
+        + `${formatCount(hidden)} are hidden.`
+      : `All ${formatCount(count)} genes pass. No filter is hiding anything.`;
   }
 
   renderProteinFilter(state) {
@@ -334,9 +340,38 @@ export class FilterPanel {
     this.proteinHost.append(fieldset);
   }
 
+  /**
+   * The range control the reader is holding or stepping, if any: a thumb with
+   * focus or under the pointer inside this panel. While one is live, the host
+   * it sits in is synced in place rather than rebuilt, so the gesture and the
+   * focus survive every intermediate update.
+   */
+  liveControl() {
+    const active = document.activeElement;
+    if (!active || !this.host.contains(active)) return null;
+    if (active.id === 'traffic-threshold') return { host: 'traffic', key: this.trafficKey };
+    if (active.className?.includes?.('range-slider-thumb') && active.dataset?.filterKey) {
+      return { host: 'row', key: active.dataset.filterKey };
+    }
+    return null;
+  }
+
   renderTraffic(state) {
-    this.trafficHost.replaceChildren();
+    // The live check reads the metric the slider stands for, so the default
+    // candidate is resolved first: an update that arrives with no remembered
+    // key must not leave the held slider writing its threshold under none.
     const candidates = this.trafficCandidates();
+    if (candidates.length > 0
+      && (!this.trafficKey || !candidates.some((metric) => metric.key === this.trafficKey))) {
+      this.trafficKey = defaultTrafficCandidate(candidates)?.key ?? null;
+    }
+    const held = this.liveControl();
+    if (held?.host === 'traffic' && this.trafficSync && held.key === this.trafficKey) {
+      this.trafficSync(state);
+      return;
+    }
+    this.trafficSync = null;
+    this.trafficHost.replaceChildren();
     if (candidates.length === 0) {
       const note = document.createElement('p');
       note.className = 'panel-note';
@@ -344,9 +379,6 @@ export class FilterPanel {
         + 'low-traffic threshold is unavailable.';
       this.trafficHost.append(note);
       return;
-    }
-    if (!this.trafficKey || !candidates.some((metric) => metric.key === this.trafficKey)) {
-      this.trafficKey = defaultTrafficCandidate(candidates)?.key ?? null;
     }
 
     const heading = document.createElement('h3');
@@ -469,17 +501,24 @@ export class FilterPanel {
       readout.textContent = trafficThresholdReadout(metric, value, kept, finite.length);
     };
     describe(Number(slider.value));
-    slider.addEventListener('input', () => describe(Number(slider.value)));
-    slider.addEventListener('change', () => {
-      const next = { ...state.filters };
-      const existing = state.filters[this.trafficKey];
+    const thresholdFilters = () => {
+      const next = { ...this.filters };
+      const existing = this.filters[this.trafficKey];
       next[this.trafficKey] = {
         min: Number(slider.value),
         max: existing?.max ?? finite[finite.length - 1] ?? null,
         includeMissing: existing?.includeMissing ?? true,
       };
-      this.handlers.onChange(next);
+      return next;
+    };
+    // Every movement updates the picture; the release records the state.
+    slider.addEventListener('input', () => {
+      describe(Number(slider.value));
+      this.handlers.onLiveChange?.(thresholdFilters());
     });
+    slider.addEventListener('change', () => this.handlers.onChange(thresholdFilters()));
+    // While the slider is held, an update only refreshes its readout.
+    this.trafficSync = () => describe(Number(slider.value));
 
     const quartile = document.createElement('p');
     quartile.className = 'panel-note';
@@ -599,12 +638,22 @@ export class FilterPanel {
   }
 
   renderRows(state) {
-    this.list.replaceChildren();
+    const live = this.liveControl();
+    const kept = live?.host === 'row' ? this.rowSyncs?.get(live.key) : null;
+    const syncs = new Map();
+    const rows = [];
     for (const key of Object.keys(state.filters)) {
       if (key === this.trafficKey) continue;
       const metric = state.registry.byKey.get(key);
       if (!metric) continue;
       const range = state.filters[key];
+      if (kept && key === live.key) {
+        // The row the reader is dragging keeps its element; only its readouts move.
+        kept.sync(range);
+        syncs.set(key, kept);
+        rows.push(kept.row);
+        continue;
+      }
       const values = metricValues(metric, state.count);
       const finite = sortedFinite(values);
 
@@ -654,6 +703,8 @@ export class FilterPanel {
       const step = finite.length > 1
         ? Math.max(1e-6, (finite[finite.length - 1] - finite[0]) / 500)
         : 1;
+      const fieldText = (value) => (value === null ? '' : String(Number(value.toPrecision(6))));
+      const fields = {};
       const makeInput = (bound) => {
         const wrapper = document.createElement('span');
         wrapper.className = 'filter-input';
@@ -664,24 +715,66 @@ export class FilterPanel {
         input.type = 'number';
         input.id = `filter-${key}-${bound}`;
         input.step = metric.integer ? '1' : String(step);
-        input.value = range[bound] === null ? '' : String(Number(range[bound].toPrecision(6)));
+        input.value = fieldText(range[bound]);
         input.addEventListener('change', () => {
-          const next = { ...state.filters };
+          const next = { ...this.filters };
           const parsed = input.value === '' ? null : Number(input.value);
-          next[key] = { ...range, [bound]: Number.isFinite(parsed) ? parsed : null };
+          next[key] = { ...this.filters[key], [bound]: Number.isFinite(parsed) ? parsed : null };
           this.handlers.onChange(next);
         });
+        fields[bound] = input;
         wrapper.append(inputLabel, input);
         return wrapper;
       };
       inputs.append(makeInput('min'), makeInput('max'));
-      row.append(canvas, inputs);
+
+      // The draggable range over the same bounds as the fields. Every movement
+      // redraws the map and the histogram's kept band; the release records it.
+      // The fields stay for an exact value, and a blank field is still no bound.
+      let slider = null;
+      const lo = finite[0]; const hi = finite[finite.length - 1];
+      const describe = (next) => {
+        canvas.setAttribute('aria-label',
+          `Distribution of ${metric.label}. Filter keeps ${formatValue(metric, next.min)} `
+            + `to ${formatValue(metric, next.max)}.`);
+        drawHistogram(canvas, values, next.min, next.max);
+      };
+      const withBounds = (bounds) => ({ ...this.filters[key], min: bounds.min, max: bounds.max });
+      if (hasUsableSpread(lo, hi)) {
+        slider = new RangeSlider({
+          lo, hi, integer: Boolean(metric.integer), idPrefix: `filter-${key}`,
+          label: metric.label, format: (value) => formatValue(metric, value),
+          onInput: (bounds) => {
+            fields.min.value = fieldText(bounds.min);
+            fields.max.value = fieldText(bounds.max);
+            describe(bounds);
+            this.handlers.onLiveChange?.({ ...this.filters, [key]: withBounds(bounds) });
+          },
+          onCommit: (bounds) => this.handlers.onChange({ ...this.filters, [key]: withBounds(bounds) }),
+        });
+        for (const thumb of Object.values(slider.thumbs)) thumb.dataset.filterKey = key;
+        slider.setRange(range);
+        row.append(canvas, slider.element, inputs);
+      } else {
+        row.append(canvas, inputs);
+      }
 
       const missing = state.count - finite.length;
       if (missing > 0) row.append(this.missingControl(state, key, missing, metric));
 
-      this.list.append(row);
+      rows.push(row);
+      syncs.set(key, {
+        row,
+        sync: (next) => {
+          slider?.setRange(next);
+          fields.min.value = fieldText(next.min);
+          fields.max.value = fieldText(next.max);
+          describe(next);
+        },
+      });
       drawHistogram(canvas, values, range.min, range.max);
     }
+    this.rowSyncs = syncs;
+    this.list.replaceChildren(...rows);
   }
 }

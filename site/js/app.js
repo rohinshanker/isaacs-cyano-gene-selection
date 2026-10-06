@@ -1146,6 +1146,65 @@ function renderControlsGeneViewer(index) {
     { tssPending: pendingState(context.dataset, 'tssEvidence'), organism });
 }
 
+/** The filter set with the length range replaced; both bounds open removes it. */
+function lengthFilters(bounds) {
+  const current = state.filters.lengthNt ?? { min: null, max: null, includeMissing: true };
+  const next = { ...state.filters };
+  if (bounds.min === null && bounds.max === null) delete next.lengthNt;
+  else next.lengthNt = { ...current, min: bounds.min, max: bounds.max };
+  return next;
+}
+
+let liveFilterFrame = 0;
+let liveFilterPending = null;
+
+/**
+ * A filter moving under the reader's hand. The newest values are applied at
+ * most once per animation frame: the mask is recomputed and the current view
+ * repainted with it, and the filter panel's passing count follows. Nothing is
+ * rebuilt, announced, or written to the address; the release does that
+ * through the ordinary `onChange` path (owner decision, 2026-10-05: points
+ * switch at once, with no fade).
+ */
+function applyFiltersLive(filters) {
+  liveFilterPending = filters;
+  if (liveFilterFrame) return;
+  liveFilterFrame = requestAnimationFrame(() => {
+    liveFilterFrame = 0;
+    const next = liveFilterPending;
+    liveFilterPending = null;
+    if (!next) return;
+    state.filters = next;
+    renderLiveFilters();
+  });
+}
+
+/** Drop a pending live frame: the committed state is about to render in full. */
+function cancelLiveFilters() {
+  if (liveFilterFrame) cancelAnimationFrame(liveFilterFrame);
+  liveFilterFrame = 0;
+  liveFilterPending = null;
+}
+
+function renderLiveFilters() {
+  computeMask();
+  if (state.panel === CHROMOSOME_TAB.id) {
+    chromosomeView.setFilterMask(context.mask, context.passing);
+  } else if (state.panel === LENGTH_TAB.id) {
+    lengthExplorer.update({
+      inventory: context.dataset.lengthCohorts,
+      cohortId: state.lengthCohort,
+      range: state.filters.lengthNt,
+      mapPassing: context.passing,
+      mapCount: context.dataset.genes.length,
+      pending: pendingState(context.dataset, 'lengthCohorts'),
+    }, { live: true });
+  } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id].includes(state.panel)) {
+    plot.setMask(context.mask);
+  }
+  filterPanel.renderSummary(context.dataset.genes.length, context.passing);
+}
+
 function renderAll({ schemeErrors = [] } = {}) {
   element('reset-selections').disabled = !state.pinnedId && state.shortlist.length === 0;
   computeMask();
@@ -2368,9 +2427,11 @@ async function boot() {
 
   filterPanel = new FilterPanel(element('filters'), {
     onChange: (filters) => {
+      cancelLiveFilters();
       state.filters = filters;
       renderAll();
     },
+    onLiveChange: (filters) => applyFiltersLive(filters),
     onClear: () => {
       Object.assign(state, clearedFilterState());
       renderAll();
@@ -2432,8 +2493,15 @@ async function boot() {
       if (next.min !== null && next.max !== null && next.min > next.max) {
         announce('Minimum length exceeds maximum length; no CDSs pass this range.');
       }
-      if (next.min === null && next.max === null) delete state.filters.lengthNt;
-      else state.filters.lengthNt = next;
+      cancelLiveFilters();
+      state.filters = lengthFilters(next);
+      renderAll();
+    },
+    // The slider's thumbs: every movement redraws, the release records.
+    onRangeInput: (bounds) => applyFiltersLive(lengthFilters(bounds)),
+    onRangeCommit: (bounds) => {
+      cancelLiveFilters();
+      state.filters = lengthFilters(bounds);
       renderAll();
     },
   });

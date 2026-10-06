@@ -8,6 +8,8 @@ class FakeElement {
     this.children = [];
     this.listeners = new Map();
     this.attributes = {};
+    this.style = {};
+    this.dataset = {};
     this.value = '';
     this.validity = { badInput: false };
   }
@@ -116,6 +118,51 @@ test('only CDS cohorts describe a blue/grey split by the length range', () => {
     assert.doesNotMatch(svg().attributes['aria-label'], /selected range/);
     assert.match(caption().textContent, /every locus counts in blue/);
     assert.ok(binTitles().every((title) => /^Bin \d+: \d+ loci$/.test(title)));
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});
+
+test('the length range has a two-thumb slider that reports live and commits on release', () => {
+  const previousDocument = globalThis.document;
+  globalThis.document = fakeDocument();
+  try {
+    const host = new FakeElement('div');
+    const live = []; const committed = []; const changed = [];
+    const explorer = new LengthExplorer(host, {
+      onCohortChange: () => {}, onRangeChange: (bound, value) => changed.push([bound, value]),
+      onRangeInput: (range) => live.push(range), onRangeCommit: (range) => committed.push(range),
+    });
+    const render = (range, extra = {}) => explorer.update(
+      { inventory, cohortId: 'cds', range, mapPassing: 2, mapCount: 2 }, extra);
+    render({ min: null, max: null });
+    const slider = explorer.slider;
+    assert.ok(slider, 'a CDS cohort has a slider');
+    assert.equal(explorer.sliderHost.hidden, false);
+    assert.equal(slider.thumbs.min.min, '201');
+    assert.equal(slider.thumbs.max.max, '1122');
+
+    slider.thumbs.min.value = '300';
+    slider.thumbs.min.listeners.get('input')();
+    assert.deepEqual(live, [{ min: 300, max: null }]);
+    assert.equal(explorer.inputs.min.value, '300', 'the field follows the thumb');
+    assert.deepEqual(committed, []);
+    slider.thumbs.min.listeners.get('change')();
+    assert.deepEqual(committed, [{ min: 300, max: null }]);
+    assert.deepEqual(changed, [], 'the slider never goes through the per-field path');
+
+    // A live update redraws the chart and counts but leaves the controls alone.
+    explorer.inputs.min.value = 'typing';
+    render({ min: 300, max: null }, { live: true });
+    assert.equal(explorer.inputs.min.value, 'typing');
+    assert.equal(explorer.slider, slider);
+    render({ min: 300, max: null });
+    assert.equal(String(explorer.inputs.min.value), '300');
+    assert.equal(explorer.slider, slider, 'the same spread keeps the same slider');
+
+    // A gene-span cohort has no range to drag.
+    explorer.update({ inventory, cohortId: 'annotated', range: { min: null, max: null }, mapPassing: 2, mapCount: 2 });
+    assert.equal(explorer.sliderHost.hidden, true);
   } finally {
     globalThis.document = previousDocument;
   }

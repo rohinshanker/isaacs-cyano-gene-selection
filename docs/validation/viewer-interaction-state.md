@@ -242,6 +242,38 @@ label at the status text's size, keeps a 24 px hit area, its `aria-label`,
 title, and `data-detail-action="unpin"` hook, and focus after unpin lands where
 the reversible-pinning rules above say.
 
+## Filters update live
+
+Owner decision, 2026-10-05: a filter takes effect as it moves, not on release,
+and a point disappears or reappears at once, with no fade.
+
+- **Per frame, while a thumb moves.** Every metric range filter and the CDS
+  length range has a two-thumb slider (`site/js/ui/range-slider.js`: two native
+  range inputs over one track, each thumb with its own accessible name and
+  value text, a thumb at an outer end meaning no bound), and the activity
+  threshold keeps its single slider. Each movement, pointer or arrow key,
+  reports through `onLiveChange`/`onRangeInput`; `applyFiltersLive` in
+  `app.js` keeps only the newest values and applies them once per animation
+  frame: the mask is recomputed, the current view repainted with it (the
+  scatter plot through `setMask`, the chromosome view through
+  `setFilterMask`, the length chart through a `live` update), and the filter
+  panel's passing count, the row's fields, its histogram band and its
+  accessible label follow. Nothing is rebuilt: a panel update that lands
+  mid-gesture syncs the held control in place (`FilterPanel.liveControl`), so
+  pointer capture and keyboard focus survive, and nothing is announced or
+  written to the address.
+- **On release.** The browser's `change` commits the same values through the
+  ordinary `onChange` path: `renderAll`, one `replaceState`, the legend's
+  hidden count, the detail, the comparison, and the panel rebuilt. The value
+  on release is the value applied, and an arrow-key step is a completed
+  gesture of its own.
+- **Fields and thumbs agree both ways.** The *At least* and *At most* fields
+  stay for an exact value and a blank still means no bound; a thumb moves
+  them, and a typed value moves the thumb on commit. The thumbs cannot cross.
+  A metric whose finite values have no spread shows fields only.
+- Tests: `tests/js/range-slider.test.mjs`, `tests/js/filters-live.test.mjs`,
+  and the slider case in `tests/js/length-explorer.test.mjs`.
+
 ## URL and local persistence
 
 The current encoder is `ver=6`. A viewer-generated hash is a complete shareable

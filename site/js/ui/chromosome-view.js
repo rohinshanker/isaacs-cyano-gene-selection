@@ -407,6 +407,18 @@ export class ChromosomeView {
     this.draw();
   }
 
+  /**
+   * A filter moving under the reader's hand: only the mask and the passing
+   * count change, so the brackets, start sites, lanes and controls are kept
+   * and the tracks are simply repainted. `update` still runs on release.
+   */
+  setFilterMask(mask, passing) {
+    if (!this.model?.verified) return;
+    this.model = { ...this.model, mask, passing };
+    this.renderSummaries();
+    this.draw();
+  }
+
   showProblems(problems) {
     this.figure.hidden = true;
     this.unavailable.hidden = false;

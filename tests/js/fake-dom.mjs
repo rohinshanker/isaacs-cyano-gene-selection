@@ -108,6 +108,7 @@ export class FakeElement {
     let fillStyle = '';
     return {
       setTransform: () => {},
+      clearRect: () => { fills.length = 0; },
       get fillStyle() { return fillStyle; },
       set fillStyle(value) { fillStyle = value; },
       fillRect: (x, y, width, height) => fills.push({ x, y, width, height, fill: fillStyle }),
