@@ -645,7 +645,13 @@ hashes and reproduction steps are in
 
 This site-row layer and the `tssInitiation` metric deliberately remain separate.
 The former has 1,789 exact-locus genes and the latter 1,727; their intersection is
-1,317, leaving 472 site-only and 410 score-only loci. No start-distance cutoff is
+1,317, leaving 472 site-only and 410 score-only loci. Each count names its layer:
+`meta.tssEvidenceSource.summary.layer` is `tss_evidence.json`, so its
+`genesWithoutMappedTss` (926) is genes with no site row, and every expression
+metric's `desc` states its coverage "in the `<metricKey>` column of `<payload>`"
+(1,727 of 2,715 in the `tssInitiation` column of `genes.json`).
+`tools/validate_contract.py` pins both numbers against the shipped columns, so a
+count that drifts from its column fails the gate. No start-distance cutoff is
 applied to the site join, and neither layer backfills the other. Detail rows and
 exports must state `mapped site(s); pooled score absent` for the first direction
 and `pooled score; no exact Table S1 site` for the reverse. The exact join audit

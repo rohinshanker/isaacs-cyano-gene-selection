@@ -1399,6 +1399,28 @@ def main() -> int:
                     if isinstance(item, dict)) == 1,
             "TSS site evidence names exactly one pooled-score provenance source",
         )
+        # Two layers count genes differently: the pooled score is a genes.json
+        # column, the site rows are tss_evidence.json. Each coverage statement
+        # names its layer, and each number is the shipped column's own count.
+        def coverage_names_its_column(item):
+            key, payload = item.get("metricKey"), item.get("payload")
+            coverage = item.get("coverage") if isinstance(item.get("coverage"), dict) else {}
+            with_value, total = coverage.get("withValue"), coverage.get("total")
+            definition = (meta.get("metrics") or {}).get(key)
+            if not (isinstance(definition, dict) and isinstance(with_value, int)
+                    and isinstance(total, int) and total == len(genes)):
+                return False
+            if payload == "genes.json" and with_value != sum(
+                    gene.get(key) is not None for gene in genes if isinstance(gene, dict)):
+                return False
+            return (f"available for {with_value:,} of {total:,} genes in the {key} column of "
+                    f"{payload}.") in str(definition.get("desc", ""))
+        report.check(
+            bool(expression_sources) and all(coverage_names_its_column(item)
+                                             for item in expression_sources
+                                             if isinstance(item, dict)),
+            "every expression coverage names its column and payload and matches the shipped column",
+        )
         report.check(
             isinstance(tss_evidence, dict),
             "TSS evidence is an object keyed by current locus tag",
@@ -1420,6 +1442,12 @@ def main() -> int:
                 and len(rows) == summary.get("matchedRows") == 2432
                 and len(tss_evidence) == summary.get("matchedGenes") == 1789,
                 "TSS evidence cardinality matches the pinned Table S1 join",
+            )
+            report.check(
+                isinstance(summary, dict)
+                and summary.get("layer") == "tss_evidence.json"
+                and summary.get("genesWithoutMappedTss") == len(gene_ids - set(tss_evidence)) == 926,
+                "genesWithoutMappedTss names the site-row layer and counts genes absent from it",
             )
             seen = set()
             valid = True
