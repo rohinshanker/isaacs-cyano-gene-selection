@@ -64,9 +64,16 @@ gave two verdicts: merge to local `main`, yes; push, hold until the publication
 decision below. Its four minor findings are closed in `62dc528`, which no
 reviewer has seen.
 
-**Not merged.** A push of `main` deploys the site, and `main` carries other
-unpushed work the owner may want to publish first, so the branch stays apart
-until the owner says to merge. It merges into `main` without conflict.
+**Not merged.** A push of `main` deploys the site, so the branch stays apart
+until the publication decision below. Brought up to date on 2026-10-05 (merge
+of `main` at `858a958`, commit `914b0f7`, plus `5acad55`, which hides the Data
+Sources section for an organism that publishes no measured source): the
+Data Sources feature, the eleven ingested PCC 7942 layers, and the separate
+`expression_layers.json` payload all ride on it. Gates after the merge, both
+organisms: 1,030 JS tests; 455 Python tests passed, 1 skipped; contract
+validator 106 passed for UTEX 2973 and 68 for E. coli; live-metric and manifest
+checks pass; both views rendered with a clean console. It now fast-forwards
+into `main` without conflict.
 
 ## Decided: the `genes.json` size budget
 
