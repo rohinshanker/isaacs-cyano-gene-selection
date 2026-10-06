@@ -18,3 +18,8 @@ data/essentiality/source/*.xlsx binary
 # recorded at intake, so they stay byte-identical to what was returned and are
 # exempt from the whitespace gate rather than reformatted. They remain text.
 docs/notes/handoff/*.tsv -whitespace
+
+# UniProt's accession-to-locus table for PCC 7942 is a retrieved input kept as
+# served: an empty last field leaves a trailing tab on the row, which is its
+# content, not damage. Exempt from the text whitespace gate, not reformatted.
+data/expression/ingest/uniprot_pcc7942_orf_names.tsv -whitespace

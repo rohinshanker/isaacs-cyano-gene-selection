@@ -241,6 +241,20 @@
           ]
         },
         {
+          "id": "russo-2025",
+          "citation": "Russo DA, Schneidmadel FR, Zedler JAZ, et al. Library-free data-independent acquisition mass spectrometry enables comprehensive coverage of the cyanobacterial proteome. Plant Physiology 199, kiaf334 (2025). doi:10.1093/plphys/kiaf334; PRIDE PXD062851.",
+          "url": "https://doi.org/10.1093/plphys/kiaf334",
+          "contribution": "One optional protein-abundance layer: the mean Spectronaut PG.Quantity over the twenty label-free DIA runs of PCC 7942 grown in BG-11H at 30 °C, 50 µmol continuous light and 3% CO₂ (two sample-preparation workflows, four biological replicates), keyed by UniProt accession and mapped to UTEX 2973 through UniProt's ordered-locus names and the one-to-one identifier crosswalk; protein groups naming several accessions are not mapped. The measured organism is PCC 7942, not UTEX 2973. Deposit terms: PRIDE, files CC0; article as published. Reader, columns and condition record are in data/expression/ingest/.",
+          "downloads": [
+            {
+              "filename": "PXD062851_dia.tsv",
+              "repoPath": "data/expression/PXD062851_dia.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD062851_dia.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",
@@ -467,6 +481,13 @@
           "citation": "Wang W, Feng C, Han R, Wang Z, Ye L, Du Z, Wei H, Zhang F, Peng Z, Yang J. trRosettaRNA: automated prediction of RNA 3D structure with transformer network. Nature Communications 14, 7266 (2023). doi:10.1038/s41467-023-42528-4.",
           "url": "https://doi.org/10.1038/s41467-023-42528-4",
           "contribution": "Method paper for trRosettaRNA. The official standalone package documents A3M and custom dot-bracket/CT inputs; its Apache-2.0 code and the separate PyRosetta licence remain external terms.",
+          "downloads": []
+        },
+        {
+          "id": "uniprot-pcc7942",
+          "citation": "The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Research 53, D609–D617 (2025). doi:10.1093/nar/gkae1010. Entries for Synechococcus elongatus PCC 7942 (taxon 1140), retrieved 6 October 2026.",
+          "url": "https://www.uniprot.org/uniprotkb?query=organism_id:1140",
+          "contribution": "UniProt accession to PCC 7942 ordered-locus-name table (2,751 entries, CC BY 4.0), the first step in mapping a protein deposit keyed by UniProt accession onto UTEX 2973 locus tags; entries naming several loci, or loci named by several entries, are dropped. The table is a pinned input beside the ingestion specs, not a product download.",
           "downloads": []
         }
       ]

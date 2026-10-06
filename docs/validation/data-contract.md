@@ -771,6 +771,13 @@ test requires the id to exist. A layer the ingestion tool made
 sample columns, normalisation, mapped and unmapped counts, mapping route), from
 which the metric help derives the layer's method line and citation.
 
+A protein deposit keyed by UniProt accession takes the `uniprot_pcc7942`
+route in `tools/ingest_expression.py`: accession to PCC 7942 ordered-locus name
+through UniProt's own table for taxon 1140, pinned beside the specs, then the
+`pcc7942_old_locus_tag` crosswalk, both steps one-to-one; a protein group naming
+several accessions is dropped and counted. The route is recorded in the source's
+`ingest.mappingRoute` with its matched and unmapped counts.
+
 Each source also names its `payload`. The two original measurements
 (`expression`, `tssInitiation`) ride in `genes.json`; every ingested layer is
 published in `site/data/expression_layers.json`, a tier 3 file the site joins by

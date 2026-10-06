@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on twelve metrics, symmetric log on seven, linear on the rest', async () => {
+test('the shipped release opens logarithmic on thirteen metrics, symmetric log on seven, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -100,14 +100,14 @@ test('the shipped release opens logarithmic on twelve metrics, symmetric log on 
   const keysFor = (scale) => [...chosen]
     .filter(([, value]) => value === scale).map(([key]) => key).sort();
 
-  // Every ingested PCC 7942 layer is skewed enough for the rule. Ten are
+  // Every ingested PCC 7942 layer is skewed enough for the rule. Eleven are
   // strictly positive and open logarithmic; the other five (GSE222067 control,
   // GSE327989, the three GSE89999 layers) report zeros, so they open symmetric log.
   assert.deepEqual(keysFor('log10'), [
     'exprGse104203ClearDay', 'exprGse104203HighLightPulse', 'exprGse104203LowLight', 'exprGse104203ShadePulse',
     'exprGse222067Salt', 'exprGse288532Day', 'exprGse288532Night',
     'exprGse79726Control', 'exprGse79726NMinus', 'exprGse79726NPlus',
-    'expression', 'tssInitiation',
+    'expression', 'protPxd062851Dia', 'tssInitiation',
   ]);
   assert.deepEqual(keysFor('symlog'), [
     'exprGse222067Control', 'exprGse327989Wt',

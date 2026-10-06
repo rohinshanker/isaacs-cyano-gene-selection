@@ -403,7 +403,13 @@ on 2026-10-05, and GSE104203 (4: Low Light, Clear Day, High Light pulse, Shade
 pulse, each the mean of its time points and two replicates) on 2026-10-06.
 GSE104203's processed workbook also carries log2-ratio blocks normalised to the
 Low Light average; those are not abundances and are not used. GSE45762 is
-excluded for contradictory sample labels. The CC0 proteomes are next.
+excluded for contradictory sample labels. Of the CC0 proteomes, PXD062851
+(Russo et al. 2025) shipped on 2026-10-06 as one label-free DIA layer (1,996
+genes; 2,307 protein groups keyed by UniProt accession, mapped through
+UniProt's ordered-locus names for taxon 1140 and then the crosswalk, 80 groups
+unmapped). PXD019731 and PXD074299 deposit no proteome-wide table (identifications
+and peaks; a 30 KB protein list), so they wait on reprocessing; PXD030282's
+search-result archives (66 MB) are the next to open.
 
 ## Deferred source families
 

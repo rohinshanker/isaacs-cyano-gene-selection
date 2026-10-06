@@ -147,7 +147,7 @@ test('the production registry leads with measured UTEX evidence, before Translat
   // original measurements.
   assert.deepEqual(expression.slice(2), dataset.meta.expressionSources.slice(2)
     .map((source) => source.metricKey));
-  assert.equal(expression.length, 17);
+  assert.equal(expression.length, 18);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
   assert.equal(freshViewColorKey(registry, dataset.functionCategories), 'functionCategory');
 });

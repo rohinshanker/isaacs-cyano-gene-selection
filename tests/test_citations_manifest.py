@@ -50,7 +50,7 @@ def test_sections_and_citations_are_complete():
     assert {
         "yu-2015", "ncbi-utex-2973", "tan-2018", "simkovsky-2022",
         "gilliam-2025", "dong-2023", "sato-2026", "choi-2016",
-        "puszynska-2017", "piechura-2017", "ncbi-pcc-7942", "gene-ontology",
+        "puszynska-2017", "piechura-2017", "russo-2025", "ncbi-pcc-7942", "gene-ontology",
         "adomako-2022-essentiality"
     } == {item["id"] for item in sections[0]["items"]}
     assert {
@@ -58,7 +58,7 @@ def test_sections_and_citations_are_complete():
         "coleman-codon-pairs", "deseq2", "umap", "scikit-learn",
         "viennarna", "emscripten", "biopython", "ncbi-genetic-code",
         "numpy", "scipy", "openpyxl", "pandas", "pytest",
-        "typesafe-jev",
+        "typesafe-jev", "uniprot-pcc7942",
     } <= {item["id"] for item in sections[1]["items"]}
     assert all(not item["downloads"] for item in sections[1]["items"])
 

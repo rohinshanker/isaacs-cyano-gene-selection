@@ -1,0 +1,122 @@
+{
+  "dataType": "proteomics",
+  "platform": "LC-MS/MS",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "LC-MS/MS protein abundance (label-free DIA)",
+  "licence": "PRIDE per-file CC0 (ledger decision 2026-10-04); attribute the deposit and the article",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "PXD062851",
+  "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD062851",
+  "citationId": "russo-2025",
+  "citation": {
+    "text": "Russo DA, Schneidmadel FR, Zedler JAZ, et al. Library-free data-independent acquisition mass spectrometry enables comprehensive coverage of the cyanobacterial proteome. Plant Physiol 2025;199:kiaf334.",
+    "url": "https://doi.org/10.1093/plphys/kiaf334",
+    "pmid": "40796368"
+  },
+  "file": {
+    "name": "PXD062851_199_219_DIA_Spectronaut.zip",
+    "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2025/09/PXD062851/199_219_DIA_Spectronaut.zip",
+    "sha256": "68b24e82599115f62966976697af6a41dd54be61fd026b3e173a6d990a5d6789"
+  },
+  "reader": {
+    "format": "tsv",
+    "zipMember": "199_219_DIA_Spectronaut/20250109_140926_20241216_FSc_Russo_199_219_adapt_FASTA_Report_prot_quant.tsv",
+    "idColumn": "PG.ProteinGroups",
+    "idKind": "uniprot_pcc7942"
+  },
+  "units": "Spectronaut PG.Quantity, label-free DIA, as deposited (mean over 20 runs)",
+  "normalization": "as-deposited",
+  "conditionTableRow": 77,
+  "replicates": {
+    "count": 4,
+    "text": "4 biological replicates"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 50,
+      "hi": 50,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "50 µmol photons m-2 s-1, continuous illumination"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": null,
+      "entrained": false,
+      "text": "continuous illumination; lamp type not reported"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 3,
+      "hi": 3,
+      "unit": "%",
+      "text": "bubbled with 3% (v/v) CO2-supplemented air"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11 supplemented with 5 mM HEPES pH 7.5 (BG-11H)"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "liquid culture, bubbled; vessel type not specified"
+    },
+    "phase": {
+      "status": "not reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "growth phase at harvest not reported for the endoproteome samples",
+      "where": ""
+    }
+  },
+  "caveat": "Measured in PCC 7942, not in UTEX 2973. The twenty DIA runs cover two lysis and clean-up workflows (bead beating with SP3; TFA in-solution) of one culture condition and are averaged together; the deposit assigns no run to a workflow. Protein groups naming several accessions are not mapped.",
+  "layers": [
+    {
+      "id": "PXD062851_dia",
+      "metricKey": "protPxd062851Dia",
+      "label": "Protein abundance PXD062851 DIA (PCC 7942)",
+      "conditionSet": "Liquid BG-11H, 30 °C, 50 µmol continuous light, 3% CO2; mean of twenty DIA runs across two sample-preparation workflows",
+      "samples": "DIA runs 199–219 (BB-SP3 and TFA-is endoproteome fractions)",
+      "columns": [
+        "[1] 20241216_nElute_tims1_FSc_Russo_15cm_30min_199_Slot1-01_1_9321.d.PG.Quantity",
+        "[2] 20241216_nElute_tims1_FSc_Russo_15cm_30min_200_Slot1-02_1_9323.d.PG.Quantity",
+        "[3] 20241216_nElute_tims1_FSc_Russo_15cm_30min_201_Slot1-03_1_9324.d.PG.Quantity",
+        "[4] 20241216_nElute_tims1_FSc_Russo_15cm_30min_202_Slot1-04_1_9325.d.PG.Quantity",
+        "[5] 20241216_nElute_tims1_FSc_Russo_15cm_30min_203_Slot1-05_1_9326.d.PG.Quantity",
+        "[6] 20241216_nElute_tims1_FSc_Russo_15cm_30min_204_Slot1-06_1_9334.d.PG.Quantity",
+        "[7] 20241216_nElute_tims1_FSc_Russo_15cm_30min_205_Slot1-13_1_9328.d.PG.Quantity",
+        "[8] 20241216_nElute_tims1_FSc_Russo_15cm_30min_206_Slot1-14_1_9329.d.PG.Quantity",
+        "[9] 20241216_nElute_tims1_FSc_Russo_15cm_30min_207_Slot1-15_1_9335.d.PG.Quantity",
+        "[10] 20241216_nElute_tims1_FSc_Russo_15cm_30min_208_Slot1-16_1_9331.d.PG.Quantity",
+        "[11] 20241216_nElute_tims1_FSc_Russo_15cm_30min_209_Slot1-25_1_9332.d.PG.Quantity",
+        "[12] 20241216_nElute_tims1_FSc_Russo_15cm_30min_210_Slot1-26_1_9333.d.PG.Quantity",
+        "[13] 20241216_nElute_tims1_FSc_Russo_15cm_30min_211_Slot1-27_1_9317.d.PG.Quantity",
+        "[14] 20241216_nElute_tims1_FSc_Russo_15cm_30min_212_Slot1-28_1_9318.d.PG.Quantity",
+        "[15] 20241216_nElute_tims1_FSc_Russo_15cm_30min_213_Slot1-29_1_9319.d.PG.Quantity",
+        "[16] 20241216_nElute_tims1_FSc_Russo_15cm_30min_214_Slot1-30_1_9322.d.PG.Quantity",
+        "[17] 20241216_nElute_tims1_FSc_Russo_15cm_30min_215_Slot1-37_1_9337.d.PG.Quantity",
+        "[18] 20241216_nElute_tims1_FSc_Russo_15cm_30min_216_Slot1-38_1_9339.d.PG.Quantity",
+        "[19] 20241216_nElute_tims1_FSc_Russo_15cm_30min_217_Slot1-39_1_9343.d.PG.Quantity",
+        "[20] 20241216_nElute_tims1_FSc_Russo_15cm_30min_218_Slot1-40_1_9342.d.PG.Quantity"
+      ],
+      "treatments": [],
+      "group": "standard"
+    }
+  ]
+}

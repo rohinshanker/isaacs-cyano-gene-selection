@@ -8,8 +8,11 @@ record; the tool re-downloads the file into `data/interim/expression/` (not
 tracked), refuses a checksum mismatch, averages the layer's samples, and maps
 the study's PCC 7942 identifiers to UTEX 2973 locus tags through the pinned
 identifier crosswalk, one-to-one rows only, exactly as the shipped GSE205444
-table was mapped (see `PROVENANCE.md`). Every `.tsv` here is reproducible from
-its spec; rerun the tool to regenerate it.
+table was mapped (see `PROVENANCE.md`). A protein deposit keyed by UniProt
+accession first passes through `ingest/uniprot_pcc7942_orf_names.tsv`, UniProt's
+accession-to-ordered-locus table for the strain (CC BY 4.0, pinned here), and a
+deposit inside an archive names its member (`reader.zipMember`). Every `.tsv`
+here is reproducible from its spec; rerun the tool to regenerate it.
 
 ## What a layer's value is
 

@@ -235,6 +235,61 @@ def test_a_layer_may_carry_its_own_condition_record_and_table_row(tmp_path):
     assert written[1]["record"]["conditions"]["temperature"]["quote"] == "Grown at 42℃", "the layer's own row supplies its quotes"
 
 
+def test_read_table_opens_a_member_of_a_zip_deposit():
+    import zipfile
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("report/other.tsv", "id\tv\nx\t1\n")
+        archive.writestr("report/prot_quant.tsv", "PG.ProteinGroups\t[1] run.PG.Quantity\nO05161\t12.5\n")
+    header, rows = ingest.read_table(buffer.getvalue(), {"format": "tsv", "idColumn": "PG.ProteinGroups", "zipMember": "report/prot_quant.tsv"})
+    assert header == ["PG.ProteinGroups", "[1] run.PG.Quantity"]
+    assert rows == [["O05161", "12.5"]]
+
+
+def test_uniprot_accessions_map_through_ordered_locus_names_one_to_one(tmp_path):
+    table = tmp_path / "uniprot.tsv"
+    table.write_text(
+        "Entry\tReviewed\tGene Names (ordered locus)\tProtein names\tRefSeq\n"
+        "O05161\treviewed\tSynpcc7942_0001\tA\tWP_1;\n"
+        "O05347\tunreviewed\tSynpcc7942_0002 Synpcc7942_0003\tB\t\n"      # two loci: dropped
+        "O06865\tunreviewed\t\tC\t\n"                                     # no locus
+        "O06866\tunreviewed\tSynpcc7942_0004\tD\t\n"
+        "O06867\tunreviewed\tSynpcc7942_0004\tE\t\n"                      # locus named twice: both dropped
+        "O07345\tunreviewed\tSYNPCC7942_RS00005\tF\t\n",                   # not an old locus tag
+        encoding="utf-8",
+    )
+    names = ingest.load_uniprot_orf_names(table)
+    assert names == {"O05161": "Synpcc7942_0001"}
+    values = {"O05161": 1.0, "O05347": 2.0, "Q31S88;Q31S89": 3.0, "O06866": 4.0, "P99999": 5.0}
+    mapped, unmapped = ingest.through_uniprot(values, names)
+    assert mapped == {"Synpcc7942_0001": 1.0}
+    assert unmapped == 4
+
+
+def test_ingest_routes_a_protein_deposit_through_uniprot(tmp_path):
+    import zipfile
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("prot_quant.tsv", "PG.ProteinGroups\t[1] a.PG.Quantity\t[2] b.PG.Quantity\nO05161\t10\t30\nQ1;Q2\t5\t5\nO06866\tNaN\t8\n")
+    data = buffer.getvalue()
+    uniprot = tmp_path / "uniprot.tsv"
+    uniprot.write_text("Entry\tReviewed\tGene Names (ordered locus)\tProtein names\tRefSeq\nO05161\treviewed\tS1\tA\t\nO06866\treviewed\tS2\tB\t\n".replace("S1", "Synpcc7942_0001").replace("S2", "Synpcc7942_0002"), encoding="utf-8")
+    layers = [{"id": "PXD1_all", "metricKey": "protPxd1", "label": "protein", "conditionSet": "all runs", "samples": "runs 1-2",
+               "columns": ["[1] a.PG.Quantity", "[2] b.PG.Quantity"], "treatments": [], "group": "standard"}]
+    spec = spec_for(tmp_path, data, {"format": "tsv", "idColumn": "PG.ProteinGroups", "idKind": "uniprot_pcc7942", "zipMember": "prot_quant.tsv"}, layers,
+                    dataType="proteomics", platform="LC-MS/MS", normalization="as-deposited")
+    spec["conditions"]["temperature"]["where"] = "GEO growth protocol"
+    manifest = tmp_path / "sources.json"; out = tmp_path / "out"; out.mkdir()
+    written = ingest.ingest(spec, manifest_path=manifest, crosswalk_path=crosswalk_file(tmp_path, [
+        ("U1", "pcc7942_old_locus_tag", "Synpcc7942_0001", ""), ("U2", "pcc7942_old_locus_tag", "Synpcc7942_0002", "")]),
+        interim=tmp_path, conditions_table=conditions_file(tmp_path), out_dir=out, uniprot_table=uniprot)
+    table = (out / "PXD1_all.tsv").read_text(encoding="utf-8").splitlines()
+    assert table == ["locus_tag\tabundance\tsource_gene_id", "U1\t20.0000\tSynpcc7942_0001"], "a NaN sample drops the gene from the mean; the ;-group is ambiguous"
+    info = written[0]["ingest"]
+    assert info["mappedGenes"] == 1 and info["unmappedIdentifiers"] == 1
+    assert info["mappingRoute"].startswith("UniProt accession to ordered locus name in uniprot.tsv, then pcc7942_old_locus_tag")
+
+
 def test_read_table_rejects_unknown_formats_and_missing_headers():
     with pytest.raises(ValueError, match="unknown table format"):
         ingest.read_table(b"x", {"format": "parquet", "idColumn": "id"})

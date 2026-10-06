@@ -105,9 +105,16 @@ Light pulse, Shade pulse; Package B rows 9 to 12), which needed the tool to read
 replicate sheets side by side, to name repeated columns by the block title above
 them (two title rows, the first that has one winning), and to let a layer carry
 its own condition record and table row; the deposit's log2-ratio blocks are not
-abundances and are left out. Seventeen sources ship. Still to ingest: the CC0
-proteomes (PXD019731, PXD030282, PXD062851, PXD074299 first, each a candidate
-row with a per-gene table); GSE45762 is excluded for contradictory sample labels.
+abundances and are left out. PXD062851 followed the same day as the first
+proteomics layer (one DIA layer over twenty runs, Package B row 77), which
+needed a `zipMember` reader and a `uniprot_pcc7942` identifier route: UniProt
+accession to PCC 7942 ordered-locus name through a pinned UniProt table
+(`data/expression/ingest/uniprot_pcc7942_orf_names.tsv`, CC BY 4.0), then the
+old-locus-tag crosswalk, one-to-one at both steps. Eighteen sources ship and
+the Proteomics tab and "Protein abundance (LC-MS/MS)" type are live. Still to
+ingest: PXD030282 (search-result archives); PXD019731 and PXD074299 deposit no
+proteome-wide table and wait on reprocessing; GSE45762 is excluded for
+contradictory sample labels.
 
 The pair judgements are a data file since 2026-10-06
 (`data/expression/pair_judgements.json`, 32 pairs, emitted as

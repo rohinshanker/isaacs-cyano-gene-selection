@@ -39,6 +39,11 @@ DEFAULT_CROSSWALK = ROOT / "data/annotation/releases/GCF_000817325.1-RS_2026_05_
 DEFAULT_INTERIM = ROOT / "data/interim/expression"
 DEFAULT_CONDITIONS = ROOT / "docs/notes/handoff/cyano_package_B_conditions_20261003.tsv"
 ID_RELATIONSHIPS = {"pcc7942_old": "pcc7942_old_locus_tag", "pcc7942_rs": "pcc7942_ortholog"}
+# A protein table keyed by UniProt accession first becomes PCC 7942 ordered
+# locus names through UniProt's own table for the strain, then follows the
+# old-locus-tag route; the table is a pinned input beside the specs.
+UNIPROT_ID_KIND = "uniprot_pcc7942"
+DEFAULT_UNIPROT_TABLE = ROOT / "data/expression/ingest/uniprot_pcc7942_orf_names.tsv"
 AXIS_BY_TABLE_NAME = {
     "temperature": "temperature", "light_intensity": "lightIntensity", "light_regime": "lightRegime",
     "co2": "co2", "medium": "medium", "culture_format": "format", "growth_phase": "phase",
@@ -82,6 +87,11 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     """
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
+    if reader.get("zipMember"):
+        import zipfile  # noqa: PLC0415 - only for archived deposits
+
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            data = archive.read(reader["zipMember"])
     fmt = reader["format"]
     if fmt in ("csv", "tsv"):
         text = data.decode("utf-8-sig")
@@ -222,6 +232,42 @@ def load_crosswalk(path: Path, relationship: str) -> dict[str, str]:
             if len(targets) == 1 and len(reverse[next(iter(targets))]) == 1}
 
 
+def load_uniprot_orf_names(path: Path) -> dict[str, str]:
+    """UniProt accession → PCC 7942 ordered locus name, one-to-one only.
+
+    An entry naming several ordered loci, or a locus named by several entries,
+    is dropped: assigning either side would be a guess, as for the crosswalk.
+    """
+    forward: dict[str, str] = {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            names = row["Gene Names (ordered locus)"].split()
+            if len(names) != 1 or not re.fullmatch(r"Synpcc7942_\d{4}", names[0]):
+                continue
+            forward[row["Entry"]] = names[0]
+    counts: dict[str, int] = {}
+    for locus in forward.values():
+        counts[locus] = counts.get(locus, 0) + 1
+    return {accession: locus for accession, locus in forward.items() if counts[locus] == 1}
+
+
+def through_uniprot(values: Mapping[str, float], orf_names: Mapping[str, str]) -> tuple[dict[str, float], int]:
+    """Re-key a UniProt-accession table by ordered locus name; the count is what did not map.
+
+    A protein group naming several accessions (``;``-joined) is ambiguous and
+    is dropped and counted, as is an accession UniProt gives no single locus.
+    """
+    out: dict[str, float] = {}
+    unmapped = 0
+    for accession, value in values.items():
+        locus = orf_names.get(accession) if ";" not in accession else None
+        if locus is None or locus in out:
+            unmapped += 1
+            continue
+        out[locus] = value
+    return out, unmapped
+
+
 def map_to_utex(values: Mapping[str, float], crosswalk: Mapping[str, str]) -> tuple[dict[str, tuple[float, str]], int]:
     """UTEX locus → (value, source id); the second item counts identifiers that did not map."""
     mapped: dict[str, tuple[float, str]] = {}
@@ -310,12 +356,17 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
 
 
 def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path, interim: Path,
-           conditions_table: Path | None, out_dir: Path) -> list[dict[str, Any]]:
+           conditions_table: Path | None, out_dir: Path,
+           uniprot_table: Path = DEFAULT_UNIPROT_TABLE) -> list[dict[str, Any]]:
     """Run the whole ingestion for one spec and return the manifest entries written."""
     source = spec["file"]
     data = fetch(source["url"], source["sha256"], interim / source["name"])
     header, rows = read_table(data, spec["reader"])
-    crosswalk = load_crosswalk(crosswalk_path, ID_RELATIONSHIPS[spec["reader"]["idKind"]])
+    id_kind = spec["reader"]["idKind"]
+    via_uniprot = id_kind == UNIPROT_ID_KIND
+    relationship = ID_RELATIONSHIPS["pcc7942_old" if via_uniprot else id_kind]
+    crosswalk = load_crosswalk(crosswalk_path, relationship)
+    orf_names = load_uniprot_orf_names(uniprot_table) if via_uniprot else None
     manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else []
     by_id = {entry["id"]: index for index, entry in enumerate(manifest)}
     written = []
@@ -323,7 +374,11 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
         quotes, replicate_quote = condition_quotes(
             conditions_table, layer.get("conditionTableRow", spec.get("conditionTableRow")))
         means = layer_means(header, rows, layer["columns"], spec["normalization"])
+        no_locus = 0
+        if via_uniprot:
+            means, no_locus = through_uniprot(means, orf_names)
         mapped, unmapped = map_to_utex(means, crosswalk)
+        unmapped += no_locus
         if not mapped:
             raise ValueError(f"layer {layer['id']} maps no gene; check idKind and the columns")
         table_name = f"{layer['id']}.tsv"
@@ -349,7 +404,8 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
                 "sourceFile": source["name"], "sourceSha256": source["sha256"], "sourceUrl": source["url"],
                 "columns": layer["columns"], "normalization": spec["normalization"],
                 "mappedGenes": len(mapped), "unmappedIdentifiers": unmapped,
-                "mappingRoute": f"{ID_RELATIONSHIPS[spec['reader']['idKind']]} in {crosswalk_path.name}, one-to-one rows only",
+                "mappingRoute": (f"UniProt accession to ordered locus name in {uniprot_table.name}, then " if via_uniprot else "")
+                + f"{relationship} in {crosswalk_path.name}, one-to-one rows only",
             },
         }
         if layer["id"] in by_id:
@@ -369,11 +425,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--crosswalk", type=Path, default=DEFAULT_CROSSWALK)
     parser.add_argument("--interim", type=Path, default=DEFAULT_INTERIM)
     parser.add_argument("--conditions", type=Path, default=DEFAULT_CONDITIONS)
+    parser.add_argument("--uniprot", type=Path, default=DEFAULT_UNIPROT_TABLE,
+                        help="UniProt accession to ordered-locus table for a protein deposit")
     parser.add_argument("--out-dir", type=Path, default=None, help="where layer tables go (default: beside the manifest)")
     args = parser.parse_args(argv)
     spec = json.loads(args.spec.read_text(encoding="utf-8"))
     written = ingest(spec, manifest_path=args.manifest, crosswalk_path=args.crosswalk, interim=args.interim,
-                     conditions_table=args.conditions, out_dir=args.out_dir or args.manifest.parent)
+                     conditions_table=args.conditions, out_dir=args.out_dir or args.manifest.parent,
+                     uniprot_table=args.uniprot)
     for entry in written:
         info = entry["ingest"]
         print(f"{entry['id']}: {info['mappedGenes']} genes mapped, {info['unmappedIdentifiers']} identifiers unmapped -> {entry['file']}")
