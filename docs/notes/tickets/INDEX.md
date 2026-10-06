@@ -5,7 +5,11 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_condition-column-hover-guides__20261006](O_condition-column-hover-guides__20261006.md) | Hovering a condition-value column extends its value tick marks down the full column, reaching the condition-set count element rather than stopping above it, for easier comparison across rows |
+| [O_instant-hover-hints__20261006](O_instant-hover-hints__20261006.md) | Replace delayed native hints with instant mouse-following hints; clicking dismisses until pointer exit/re-entry; preserve all existing hint text exactly and add no interaction instructions |
+| [O_unify-chromosome-loading__20261006](O_unify-chromosome-loading__20261006.md) | Consolidate all loading under the main chromosome-style bar, including later stages currently shown by a secondary meter; optional small subtext below the bar names the active work, and completion covers the whole load cycle |
 | [A_add-ecoli-organism__20261005](A_add-ecoli-organism__20261005.md) | E. coli K-12 MG1655 (`GCF_000005845.2`) base view shipped 2026-10-06 behind the Cyanobacteria/E. coli selector, attributed to NCBI RefSeq, EcoCyc and Blattner 1997 by owner decision. Open: the owner's SRI notification; richer layers (UniProtKB/GO, PRECISE-1K) under the admission contract; six provisional defaults and the lab questions |
+| [O_ecoli-multiomics-datasets__20261006](O_ecoli-multiomics-datasets__20261006.md) | Owner-requested Claude Science literature review (P-ECOLI-OMICS, pending manual handoff): find and retrieve transcriptomics, proteomics and Ribo-seq sources with many biological replicates per condition, preferably matched across layers; partial multi-omics and similar-condition sources from separate experiments are acceptable fallbacks |
 | [O_regulatory-site-viewer-layers__20260930](O_regulatory-site-viewer-layers__20260930.md) | D1 done 2026-10-02: all 2,432 mapped Tan 2018 sites draw in the gene view, pinned by a test over the shipped data. Remaining: future initiation/termination/regulatory markers and chromosome site-type toggles, preserving source and coordinate semantics; owner questions 1 to 8 unanswered |
 | [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md) | Assess UTEX GtRNAdb/tRNAscan-SE evidence and tRNA identification filter/coloring, reusing completed tRNA validation. D1 answered 2026-09-30: GtRNAdb is the same tool on the same assembly and adds no locus, and its terms remain undetermined. What is left is CS-1 (score semantics, pending) and the UI decision over the 45 known loci; owner question Q3 unanswered |
 | [O_biocyc-pcc-7942-data__20260930](O_biocyc-pcc-7942-data__20260930.md) | Assess BioCyc v30's `SYNEL`, the only Tier 2 curated database among the six strains, as labelled sister-strain evidence. Which assembly `SYNEL` is built on is observed, not determined; owner questions Q2 and Q5 and the source-ledger and admission decisions pending; no pull started |
@@ -32,8 +36,10 @@ their reusable guidance distilled into `docs/validation/`.
 
 ## Pending Claude Science
 
-**Owner decision, 2026-10-05: Claude Science is the last resort, and nothing below
-needs to be sent.** The two CS-1 claims are researched in the repository. Package D
+**Owner decision, 2026-10-05: Claude Science is the default last resort.**
+The owner explicitly requested the E. coli multi-omics review on 2026-10-06;
+P-ECOLI-OMICS below is pending manual handoff and has not been sent.
+The two older CS-1 claims need no dispatch and are researched in the repository. Package D
 returned 2026-10-04 and passed intake 2026-10-06 (offload ticket); the Package B
 correction's ten cells are read as not reported and Package D scored them so,
 which is all the correction changed. Their rows are gone.
@@ -73,5 +79,6 @@ paste 5 ran on a read-only mount and its two files were placed in
 
 | Ticket | Id | Request | Unblocks | Sent | Returned |
 | --- | --- | --- | --- | --- | --- |
+| [O_ecoli-multiomics-datasets__20261006](O_ecoli-multiomics-datasets__20261006.md#p-ecoli-omics-paste-ready-claude-science-handoff) | P-ECOLI-OMICS | Owner-requested E. coli literature/archives sweep for transcriptomics, proteomics and Ribo-seq: quantify biological replication per condition, verify cross-layer sample/condition matching, retrieve shortlisted processed files and recommend matched or independent fallback sources. Pending manual handoff | Evidence for selecting and acquiring experimental E. coli data sources | | |
 | [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md) | CS-1 | Check whether tRNAscan-SE scores support calibrated tRNA-gene probabilities over the 45 Infernal-confirmed tRNA loci on this genome — the population is now known, not an open-ended genome-wide screen; return score semantics and calibration evidence/limits. Planning only; not dispatched | Accurate likelihood-versus-score definition for filtering/coloring | | |
 | [O_rbs-calculator-gene-visualizer__20260930](O_rbs-calculator-gene-visualizer__20260930.md) | CS-1 | Check whether v1.0 translation-initiation predictions have validation applicable to UTEX 2973; return method/validation sources and limitations. Planning only; not dispatched | Biological interpretation before RBS-prediction integration | | |
