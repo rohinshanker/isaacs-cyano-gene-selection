@@ -103,10 +103,23 @@ slides, publisher copyright.
 GSE103704, GSE105774, GSE102914 and GSE18902 move from undetermined to not
 permitted, link-only; PXD036717 stays permitted under its CC0 files.
 
-**Still open.** Work item 5, the 15 abstract-only method sources; the package D
-re-score of the pairs whose cells changed (GSE102914, the five Puszyńska series,
-GSE50920, GSE50922, PXD036717); and the ticket index row, which another session
-holds. The two optional supplements (Singh 2022, Guerreiro 2014) were not
+**Package D re-score, 2026-10-06.** Of the cells the addendum changed, only
+PXD036717's bear on a verdict: every other change turns `not retrieved` into
+`not reported`, which package D already scored as undecidable. Its 19 pairs were
+re-scored against the contract's thresholds and D.7's rules with the new values
+([`cyano_package_D_rescore_20261006.tsv`](../handoff/cyano_package_D_rescore_20261006.tsv),
+SHA-256 `b9b56c092cb2da938e93a61dc716283a8d1910603e0f5c509458af01c4bc8720`, package D's columns plus the original row and verdict): 15
+undecidable pairs become not comparable (light intensity fails on 13, 150 µmol
+against 20 to 500; temperature fails against the 22, 37 and 38 °C partners; the
+diel PXD000510 fails the regime), 1 stays not comparable, 3 stay undecidable
+(PXD023591, PXD027430 and PXD030282's log/stationary set report nothing), and
+none escalates: PXD005105 and PXD030282's cultivation sets each miss narrowly
+on two axes (light 1.5×, CO₂ 2.5×), which is two misses, not one. The
+format-and-phase axis stays undecidable on every pair because PXD036717's OD at
+labeling is not stated.
+
+**Still open.** Work item 5, the 15 abstract-only method sources, and the ticket
+index row, which another session holds. The two optional supplements (Singh 2022, Guerreiro 2014) were not
 supplied and are not needed for any ledger decision.
 
 ## Verification

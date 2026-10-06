@@ -27,3 +27,8 @@ quote match is sufficient ([ticket](../tickets/O_unreadable-literature-workaroun
   ten `<doc>.txt` files regenerated from the drop folder. Result on 2026-10-06:
   70 of 70 quotations matched.
 - Intake and the ledger decisions it changed are recorded in the ticket.
+- Re-score: `cyano_package_D_rescore_20261006.tsv`, SHA-256 `b9b56c092cb2da938e93a61dc716283a8d1910603e0f5c509458af01c4bc8720`, the 19
+  PXD036717 pairs of package D scored again with the addendum's values under the
+  contract thresholds and D.7's rules; two extra columns name the package D row
+  and its earlier verdict. 15 move from undecidable to not comparable, none
+  escalates.
