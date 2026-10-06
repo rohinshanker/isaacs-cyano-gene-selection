@@ -49,9 +49,23 @@ Steps 1, 3 and 4 are done; step 2 remains.
   and never shares a scale with an expression value. Rendered at 1280 px with a
   clean console.
 
-Open: the sweep of the 28 unread GEO transposon/essentiality records (step 2);
-the Fitness family sits after the genome-derived families in the selectors
-because the measured-first ordering reads expression provenance only.
+Step 2, the GEO sweep, done 2026-10-06 with E-utilities against `gds`: the
+2026-09-30 count of 28 was over every entry type (series, samples, platforms;
+50 today with "transposon" and "Tn5" added). Restricted to series, *S.
+elongatus* has three records naming Tn-seq, transposon or essentiality, all
+from the Simkovsky study: GSE205443 (ingested), GSE205444 (the RNA-seq arm,
+shipped earlier) and GSE205445 (their SuperSeries, no data of its own). The
+thirteen series the broader forms reach are expression profiling, one
+ChIP-seq set (GSE114693) and one termination study (GSE309256); none is a
+fitness screen. GEO therefore holds no further condition-resolved fitness for
+this organism. The evident next source is outside GEO: the Fitness Browser's
+PCC 7942 RB-TnSeq compendium (Price lab, Rubin et al. 2015 library across
+many conditions), which needs its terms read and a ledger decision before any
+file is fetched.
+
+Open: the Fitness Browser candidate above; the Fitness family sits after the
+genome-derived families in the selectors because the measured-first ordering
+reads expression provenance only.
 
 ## Work
 
