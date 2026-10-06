@@ -46,6 +46,17 @@ test('the section lists the selection by data type and marks the colouring sourc
   });
 });
 
+test('an organism with no measured source has no Data Sources section', async () => {
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    new DataSourcesPanel(host, { datasets: [], onChange: () => {}, storage: memoryStorage() });
+    assert.equal(host.hidden, true);
+    const { host: shown } = mount(document);
+    assert.equal(shown.hidden, false);
+  });
+});
+
 test('hiding the section is remembered as a convenience, not as link state', async () => {
   await withFakeDocument(async (document) => {
     const { host, storage } = mount(document);

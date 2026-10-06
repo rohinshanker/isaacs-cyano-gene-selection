@@ -244,6 +244,9 @@ export class DataSourcesPanel {
   }
 
   renderSection() {
+    // A dataset with no measured sources at all has nothing to choose among,
+    // so the section stays out of the toolbar rather than offering an empty peek.
+    this.host.hidden = this.datasets.length === 0;
     const chosen = this.selectedDatasets();
     this.summary.textContent = `Data Sources (${chosen.length} selected)`;
     this.list.replaceChildren();
