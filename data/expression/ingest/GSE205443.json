@@ -1,0 +1,724 @@
+{
+  "dataType": "fitness",
+  "platform": "RB-TnSeq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RB-TnSeq gene fitness",
+  "signed": true,
+  "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE205443",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+  "citationId": "simkovsky-2022",
+  "citation": {
+    "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+    "url": "https://doi.org/10.3389/fmicb.2022.899150",
+    "pmid": "35814646"
+  },
+  "file": {
+    "name": "PMC9260433_supplementary.zip",
+    "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+    "sha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db"
+  },
+  "reader": {
+    "format": "xlsx",
+    "zipMember": "Data_Sheet_4.XLSX",
+    "sheet": "2) Gene Fitness and T-values",
+    "idColumn": "Locus ID",
+    "idKind": "pcc7942_old",
+    "blockTitleRow": 5
+  },
+  "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+  "normalization": "as-deposited",
+  "conditionTableRow": 22,
+  "replicates": {
+    "count": null,
+    "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 5,
+      "hi": 5,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "fluorescent",
+      "entrained": false,
+      "text": "low fluorescent light, continuous (photoperiod not stated)"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 3,
+      "hi": 3,
+      "unit": "%",
+      "text": "bubbled with hydrated 3% CO2"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11 with HEPES"
+    },
+    "format": {
+      "status": "reported",
+      "value": "biofilm assay",
+      "text": "triplicate bubbling tubes, 21 days; biofilm assay fractions"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "OD stated",
+      "od": [
+        0.5,
+        0.5
+      ],
+      "odNm": 750,
+      "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+    }
+  },
+  "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+  "layers": [
+    {
+      "id": "GSE205443_e1_tube_biofilmers",
+      "metricKey": "fitGse205443E1TubeBiofilmers",
+      "label": "Fitness GSE205443 exp. 1 tube biofilmers (PCC 7942)",
+      "conditionSet": "Experiment 1, library 1.0: bubbling-tube biofilm fraction after 21 days in fresh BG-11",
+      "samples": "set2IT027 (GSM6212698); pooled triplicate",
+      "columns": [
+        "set2IT027 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 22,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes, 21 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e1_tube_settlers",
+      "metricKey": "fitGse205443E1TubeSettlers",
+      "label": "Fitness GSE205443 exp. 1 tube settlers (PCC 7942)",
+      "conditionSet": "Experiment 1, library 1.0: bubbling-tube settled fraction after 21 days in fresh BG-11",
+      "samples": "set2IT028 (GSM6212699); pooled triplicate",
+      "columns": [
+        "set2IT028 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 22,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes, 21 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_tube_planktonic",
+      "metricKey": "fitGse205443E2TubePlanktonic",
+      "label": "Fitness GSE205443 exp. 2 tube planktonic (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube planktonic fraction after 15 days in fresh BG-11",
+      "samples": "set9IT035 (GSM6212712); pooled triplicate",
+      "columns": [
+        "set9IT035 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_tube_settlers",
+      "metricKey": "fitGse205443E2TubeSettlers",
+      "label": "Fitness GSE205443 exp. 2 tube settlers (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube settled fraction after 15 days in fresh BG-11",
+      "samples": "set9IT036 (GSM6212713); pooled triplicate",
+      "columns": [
+        "set9IT036 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_tube_biofilmers",
+      "metricKey": "fitGse205443E2TubeBiofilmers",
+      "label": "Fitness GSE205443 exp. 2 tube biofilmers (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube biofilm fraction after 15 days in fresh BG-11",
+      "samples": "set9IT037 (GSM6212714); pooled triplicate",
+      "columns": [
+        "set9IT037 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_tube_cm_settlers",
+      "metricKey": "fitGse205443E2TubeCmSettlers",
+      "label": "Fitness GSE205443 exp. 2 tube settlers, conditioned medium (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube settled fraction after 15 days in wild-type conditioned BG-11",
+      "samples": "set9IT039 (GSM6212715); pooled triplicate",
+      "columns": [
+        "set9IT039 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay",
+        "conditioned medium"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": true,
+          "nitrogenAltered": false,
+          "text": "wild-type conditioned BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_tube_cm_biofilmers",
+      "metricKey": "fitGse205443E2TubeCmBiofilmers",
+      "label": "Fitness GSE205443 exp. 2 tube biofilmers, conditioned medium (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube biofilm fraction after 15 days in wild-type conditioned BG-11",
+      "samples": "set9IT040 (GSM6212716); pooled triplicate",
+      "columns": [
+        "set9IT040 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay",
+        "conditioned medium"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": true,
+          "nitrogenAltered": false,
+          "text": "wild-type conditioned BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_flask_biofilmers",
+      "metricKey": "fitGse205443E2FlaskBiofilmers",
+      "label": "Fitness GSE205443 exp. 2 flask biofilmers (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in fresh BG-11",
+      "samples": "set9IT043 (GSM6212717); pooled triplicate",
+      "columns": [
+        "set9IT043 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 24,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "room temperature, value not stated",
+          "where": ""
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "25 ml Pyrex flasks, 5 ml culture, without shaking, 15 days; biofilm fraction"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    },
+    {
+      "id": "GSE205443_e2_flask_cm_biofilmers",
+      "metricKey": "fitGse205443E2FlaskCmBiofilmers",
+      "label": "Fitness GSE205443 exp. 2 flask biofilmers, conditioned medium (PCC 7942)",
+      "conditionSet": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in wild-type conditioned BG-11",
+      "samples": "set9IT045 (GSM6212718); pooled triplicate",
+      "columns": [
+        "set9IT045 :: Fitness"
+      ],
+      "treatments": [
+        "biofilm assay",
+        "conditioned medium"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 24,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "room temperature, value not stated",
+          "where": ""
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": true,
+          "nitrogenAltered": false,
+          "text": "wild-type conditioned BG-11 with HEPES"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "25 ml Pyrex flasks, 5 ml culture, without shaking, 15 days; biofilm fraction"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+        }
+      }
+    }
+  ]
+}

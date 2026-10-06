@@ -144,10 +144,12 @@ test('the production registry leads with measured UTEX evidence, before Translat
   ).map((metric) => metric.key);
   assert.deepEqual(expression.slice(0, 2), ['tssInitiation', 'expression']);
   // The ingested PCC 7942 layers follow in manifest order, after the two
-  // original measurements.
+  // original measurements; a fitness screen is its own family, not Expression.
   assert.deepEqual(expression.slice(2), dataset.meta.expressionSources.slice(2)
+    .filter((source) => source.record.dataType !== 'fitness')
     .map((source) => source.metricKey));
   assert.equal(expression.length, 18);
+  assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 9);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
   assert.equal(freshViewColorKey(registry, dataset.functionCategories), 'functionCategory');
 });

@@ -201,7 +201,10 @@ export function metricHelp(metric, dataset) {
   const name = organism.shortName;
   const known = genes.reduce((sum, _gene, index) => sum + Number.isFinite(metric.read(index)), 0);
   const release = meta.annotationRelease?.releaseId ?? meta.genome?.accession ?? `the pinned ${name} genome`;
-  const expression = isExpressionMetric(metric) && !isExpressionProxyMetric(metric);
+  // A measurement the manifest names: an expression layer, a proteome, or a
+  // fitness screen. Each is explained from its own source, not the genome.
+  const expression = Boolean(metric.provenance?.citationId)
+    || (isExpressionMetric(metric) && !isExpressionProxyMetric(metric));
   const origin = expression
     ? (describeExpressionSource(metric.provenance) ?? 'Expression source is not declared in this dataset.')
     : metric.key === 'expressionProxy'

@@ -2272,5 +2272,1115 @@
       "unmappedIdentifiers": 80,
       "mappingRoute": "UniProt accession to ordered locus name in uniprot_pcc7942_orf_names.tsv, then pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 1, library 1.0: bubbling-tube biofilm fraction after 21 days in fresh BG-11",
+      "samples": "set2IT027 (GSM6212698); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 22,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "split equally into triplicate bubbling tubes, and allowed to form biofilms for 21 days at 30°C and under low fluorescent light",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "allowed to form biofilms for 21 days at 30°C and under low fluorescent light (5 μmol photons m −2 s −1 ) while bubbled with hydrated 3% CO 2",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "allowed to form biofilms for 21 days at 30°C and under low fluorescent light (5 μmol photons m −2 s −1 )",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "while bubbled with hydrated 3% CO 2",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 with HEPES",
+          "quote": "resuspended in 75 ml of BG-11 with HEPES media to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes, 21 days; biofilm assay fractions",
+          "quote": "split equally into triplicate bubbling tubes, and allowed to form biofilms for 21 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment; GEO GSM6212698 growth vessel: bubbling tube"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "The three flasks were pooled to generate a culture with OD 750 of 0.4.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e1_tube_biofilmers",
+    "file": "GSE205443_e1_tube_biofilmers.tsv",
+    "metricKey": "fitGse205443E1TubeBiofilmers",
+    "label": "Fitness GSE205443 exp. 1 tube biofilmers (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 1, library 1.0: bubbling-tube biofilm fraction after 21 days in fresh BG-11",
+    "sha256": "5382abd6cc2f3c48bd8da0d7024e81ae53eb7cbf475f771d2c2b565bbbd801fd",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set2IT027 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 1, library 1.0: bubbling-tube settled fraction after 21 days in fresh BG-11",
+      "samples": "set2IT028 (GSM6212699); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 22,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "split equally into triplicate bubbling tubes, and allowed to form biofilms for 21 days at 30°C and under low fluorescent light",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "allowed to form biofilms for 21 days at 30°C and under low fluorescent light (5 μmol photons m −2 s −1 ) while bubbled with hydrated 3% CO 2",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "allowed to form biofilms for 21 days at 30°C and under low fluorescent light (5 μmol photons m −2 s −1 )",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "while bubbled with hydrated 3% CO 2",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 with HEPES",
+          "quote": "resuspended in 75 ml of BG-11 with HEPES media to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes, 21 days; biofilm assay fractions",
+          "quote": "split equally into triplicate bubbling tubes, and allowed to form biofilms for 21 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment; GEO GSM6212698 growth vessel: bubbling tube"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "The three flasks were pooled to generate a culture with OD 750 of 0.4.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e1_tube_settlers",
+    "file": "GSE205443_e1_tube_settlers.tsv",
+    "metricKey": "fitGse205443E1TubeSettlers",
+    "label": "Fitness GSE205443 exp. 1 tube settlers (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 1, library 1.0: bubbling-tube settled fraction after 21 days in fresh BG-11",
+    "sha256": "704e96e389428503e17bb4c9db5d655dbea2c739ed7dd5f8ab781fc60d557432",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set2IT028 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube planktonic fraction after 15 days in fresh BG-11",
+      "samples": "set9IT035 (GSM6212712); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES",
+          "quote": "Aliquots of the library were centrifuged to pellet cells and resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions",
+          "quote": "Resuspensions were then split into triplicate bubbling tubes containing 25 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_tube_planktonic",
+    "file": "GSE205443_e2_tube_planktonic.tsv",
+    "metricKey": "fitGse205443E2TubePlanktonic",
+    "label": "Fitness GSE205443 exp. 2 tube planktonic (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: bubbling-tube planktonic fraction after 15 days in fresh BG-11",
+    "sha256": "b44129ddfd1f5a7cd335734f6d0301c1fcba08521cc7db0752904c0daba6d342",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT035 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube settled fraction after 15 days in fresh BG-11",
+      "samples": "set9IT036 (GSM6212713); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES",
+          "quote": "Aliquots of the library were centrifuged to pellet cells and resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions",
+          "quote": "Resuspensions were then split into triplicate bubbling tubes containing 25 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_tube_settlers",
+    "file": "GSE205443_e2_tube_settlers.tsv",
+    "metricKey": "fitGse205443E2TubeSettlers",
+    "label": "Fitness GSE205443 exp. 2 tube settlers (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: bubbling-tube settled fraction after 15 days in fresh BG-11",
+    "sha256": "584a0d9cdddfd3a41120ad28c940d459fd5f0208d8214f77437a8122a80ad61c",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT036 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube biofilm fraction after 15 days in fresh BG-11",
+      "samples": "set9IT037 (GSM6212714); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES",
+          "quote": "Aliquots of the library were centrifuged to pellet cells and resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions",
+          "quote": "Resuspensions were then split into triplicate bubbling tubes containing 25 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_tube_biofilmers",
+    "file": "GSE205443_e2_tube_biofilmers.tsv",
+    "metricKey": "fitGse205443E2TubeBiofilmers",
+    "label": "Fitness GSE205443 exp. 2 tube biofilmers (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: bubbling-tube biofilm fraction after 15 days in fresh BG-11",
+    "sha256": "cce387bfe54ee1ba6d2197a058c2ee14785db8b2ed4bf0a9b86010b20766a40f",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT037 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube settled fraction after 15 days in wild-type conditioned BG-11",
+      "samples": "set9IT039 (GSM6212715); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay",
+        "conditioned medium"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": true,
+          "nitrogenAltered": false,
+          "text": "wild-type conditioned BG-11 with HEPES",
+          "quote": "Aliquots of the library were centrifuged to pellet cells and resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions",
+          "quote": "Resuspensions were then split into triplicate bubbling tubes containing 25 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_tube_cm_settlers",
+    "file": "GSE205443_e2_tube_cm_settlers.tsv",
+    "metricKey": "fitGse205443E2TubeCmSettlers",
+    "label": "Fitness GSE205443 exp. 2 tube settlers, conditioned medium (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: bubbling-tube settled fraction after 15 days in wild-type conditioned BG-11",
+    "sha256": "0540f126423388d43f3476a91858acb895488e100bc987194113f88e5d7681fe",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT039 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: bubbling-tube biofilm fraction after 15 days in wild-type conditioned BG-11",
+      "samples": "set9IT040 (GSM6212716); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay",
+        "conditioned medium"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 23,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "bubbled with hydrated 3% CO2",
+          "quote": "Bubbling tube cultures for this experiment were placed under the same conditions as for the first experiment for 15 days to allow biofilms to form.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": true,
+          "nitrogenAltered": false,
+          "text": "wild-type conditioned BG-11 with HEPES",
+          "quote": "Aliquots of the library were centrifuged to pellet cells and resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "triplicate bubbling tubes containing 25 ml culture, 15 days; biofilm assay fractions",
+          "quote": "Resuspensions were then split into triplicate bubbling tubes containing 25 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_tube_cm_biofilmers",
+    "file": "GSE205443_e2_tube_cm_biofilmers.tsv",
+    "metricKey": "fitGse205443E2TubeCmBiofilmers",
+    "label": "Fitness GSE205443 exp. 2 tube biofilmers, conditioned medium (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: bubbling-tube biofilm fraction after 15 days in wild-type conditioned BG-11",
+    "sha256": "b609f284bbd441b8342dfdd13a5b8c210b2597cb879cef812d41453dddccf7a3",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT040 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in fresh BG-11",
+      "samples": "set9IT043 (GSM6212717); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 24,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "room temperature, value not stated",
+          "where": "",
+          "quote": "Flask cultures were incubated under low fluorescent light (5 μmol photons m −2 s −1 ) without shaking at room temperature for 15 days."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Flask cultures were incubated under low fluorescent light (5 μmol photons m −2 s −1 ) without shaking at room temperature for 15 days.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Flask cultures were incubated under low fluorescent light (5 μmol photons m −2 s −1 ) without shaking at room temperature for 15 days.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "fresh BG-11 with HEPES",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "25 ml Pyrex flasks, 5 ml culture, without shaking, 15 days; biofilm fraction",
+          "quote": "or into sterile 25-ml Pyrex glass flasks (# 4980), plugged with cotton balls, containing 5 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_flask_biofilmers",
+    "file": "GSE205443_e2_flask_biofilmers.tsv",
+    "metricKey": "fitGse205443E2FlaskBiofilmers",
+    "label": "Fitness GSE205443 exp. 2 flask biofilmers (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in fresh BG-11",
+    "sha256": "aa1affd86fbe59410881b59d78164167afc4ffb2cd6f574b9b8985e3e829e29c",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT043 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE205443",
+      "dataType": "fitness",
+      "platform": "RB-TnSeq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in wild-type conditioned BG-11",
+      "samples": "set9IT045 (GSM6212718); pooled triplicate",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443",
+      "citation": {
+        "text": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": null,
+        "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction",
+        "where": "paper PMC9260433, RB-TnSeq Experiment"
+      },
+      "treatments": [
+        "biofilm assay",
+        "conditioned medium"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 24,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "room temperature, value not stated",
+          "where": "",
+          "quote": "Flask cultures were incubated under low fluorescent light (5 μmol photons m −2 s −1 ) without shaking at room temperature for 15 days."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 5,
+          "hi": 5,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "low fluorescent light, 5 µmol photons m-2 s-1",
+          "quote": "Flask cultures were incubated under low fluorescent light (5 μmol photons m −2 s −1 ) without shaking at room temperature for 15 days.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": false,
+          "text": "low fluorescent light, continuous (photoperiod not stated)",
+          "quote": "Flask cultures were incubated under low fluorescent light (5 μmol photons m −2 s −1 ) without shaking at room temperature for 15 days.",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": true,
+          "nitrogenAltered": false,
+          "text": "wild-type conditioned BG-11 with HEPES",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "format": {
+          "status": "reported",
+          "value": "biofilm assay",
+          "text": "25 ml Pyrex flasks, 5 ml culture, without shaking, 15 days; biofilm fraction",
+          "quote": "or into sterile 25-ml Pyrex glass flasks (# 4980), plugged with cotton balls, containing 5 ml of culture each",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay",
+          "quote": "resuspended in either fresh or WT conditioned BG-11 media, both with HEPES, to an OD 750 of 0.5",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
+        }
+      }
+    },
+    "id": "GSE205443_e2_flask_cm_biofilmers",
+    "file": "GSE205443_e2_flask_cm_biofilmers.tsv",
+    "metricKey": "fitGse205443E2FlaskCmBiofilmers",
+    "label": "Fitness GSE205443 exp. 2 flask biofilmers, conditioned medium (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RB-TnSeq gene fitness",
+    "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+    "condition": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in wild-type conditioned BG-11",
+    "sha256": "f7d84afc3510ef8dd27a523efa37c9a3fe28c48d1649e4d51cacf6fd01376447",
+    "licence": "Article CC BY 4.0 (Frontiers; ledger precedent of the shipped GSE205444 table); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "simkovsky-2022",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "ingest": {
+      "sourceFile": "PMC9260433_supplementary.zip",
+      "sourceSha256": "97a96ea3c74d5b20de52794f5efd19abd2c9039f57456739fa9db116a97e72db",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9260433/supplementaryFiles",
+      "columns": [
+        "set9IT045 :: Fitness"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 1835,
+      "unmappedIdentifiers": 85,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
   }
 ]

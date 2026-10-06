@@ -409,7 +409,10 @@ genes; 2,307 protein groups keyed by UniProt accession, mapped through
 UniProt's ordered-locus names for taxon 1140 and then the crosswalk, 80 groups
 unmapped). PXD019731 and PXD074299 deposit no proteome-wide table (identifications
 and peaks; a 30 KB protein list), so they wait on reprocessing; PXD030282's
-search-result archives (66 MB) are the next to open.
+search-result archives (66 MB) are the next to open. GSE205443, the study's
+RB-TnSeq biofilm screen, shipped on 2026-10-06 as nine signed fitness layers
+(one per fraction) from the authors' published fitness values in Supplementary
+File S4, under the fitness-screen ticket.
 
 ## Deferred source families
 

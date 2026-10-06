@@ -5,7 +5,7 @@
   the data selection window. Covers `docs/`, `data/`, the pipeline, and `site/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-05
+- **Updated:** 2026-10-06
 
 ## Current state
 
@@ -22,6 +22,36 @@ The site already shows borrowed PCC 7942 essentiality calls from Rubin 2015 unde
 [pcc-essentiality.md](../../validation/pcc-essentiality.md). Those are one
 condition's essential-or-not calls; a fitness screen is a per-condition
 quantitative score. The two stay separate layers.
+
+## Progress, 2026-10-06
+
+Steps 1, 3 and 4 are done; step 2 remains.
+
+- The GEO deposit (`GSE205443_Counts.txt.gz`, 1,919 loci × 25 samples) holds
+  per-gene barcode counts, not fitness; the series record says fitness scores
+  and T-values were generated with the Wetmore et al. 2015 scripts, and the
+  paper publishes them in Supplementary File S4, sheet "2) Gene Fitness and
+  T-values" (one Fitness and T-value column per fraction sample, 1,917 loci
+  evaluated). Those published values are ingested, not recomputed: nine layers,
+  one per fraction (Experiment 1 tube biofilmers and settlers; Experiment 2 tube
+  planktonic, settlers and biofilmers in fresh BG-11, settlers and biofilmers in
+  conditioned medium; flask biofilmers in each), each with its Package B row
+  (22, 23 or 24) and record. T-values are not carried.
+- Admission: spec `data/expression/ingest/GSE205443.json` pins the Europe PMC
+  supplementary archive (SHA-256 `97a96ea3…`, member `Data_Sheet_4.XLSX`),
+  maps `Synpcc7942_` loci through the one-to-one old-locus-tag crosswalk (1,835
+  mapped, 85 unmapped per layer), carries `signed: true`, and the tables ship
+  under the Simkovsky 2022 ledger entry (CC BY 4.0).
+- Display: a fitness source forms the Fitness family with a diverging default
+  scale and the type metric "Gene fitness (RB-TnSeq)"; the data selection peek's
+  Fitness screen tab lists the nine sets; the legend carries the authors'
+  definition as the unit; a fitness value is never offered as a traffic metric
+  and never shares a scale with an expression value. Rendered at 1280 px with a
+  clean console.
+
+Open: the sweep of the 28 unread GEO transposon/essentiality records (step 2);
+the Fitness family sits after the genome-derived families in the selectors
+because the measured-first ordering reads expression provenance only.
 
 ## Work
 

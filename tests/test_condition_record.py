@@ -20,16 +20,17 @@ def test_example_record_is_valid():
 def test_the_shipped_sources_carry_valid_records():
     sources = json.loads((ROOT / "data/expression/sources.json").read_text(encoding="utf-8"))
     by_id = {source["id"]: source for source in sources}
-    assert len(by_id) == len(sources) == 18
+    assert len(by_id) == len(sources) == 27
     for source in sources:
         validate_record(source["record"], source["id"])
     assert by_id["GSE205444"]["record"]["basis"] == "transferred"
     assert by_id["TAN2018_TSS"]["record"]["basis"] == "direct"
     ingested = [source for source in sources if "ingest" in source]
-    assert len(ingested) == 16
+    assert len(ingested) == 25
     assert all(source["record"]["basis"] == "transferred" for source in ingested)
     assert {source["record"]["studyId"] for source in ingested} == {
-        "GSE288532", "GSE222067", "GSE327989", "GSE79726", "GSE89999", "GSE104203", "PXD062851"
+        "GSE288532", "GSE222067", "GSE327989", "GSE79726", "GSE89999", "GSE104203", "PXD062851",
+        "GSE205443",
     }
 
 

@@ -90,15 +90,69 @@
         },
         {
           "id": "simkovsky-2022",
-          "citation": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Frontiers in Microbiology 13, 899150 (2022). doi:10.3389/fmicb.2022.899150; GEO GSE205444.",
+          "citation": "Simkovsky R et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Frontiers in Microbiology 13, 899150 (2022). doi:10.3389/fmicb.2022.899150; GEO GSE205444 (RNA-seq) and GSE205443 (RB-TnSeq).",
           "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205444",
-          "contribution": "The optional RNA-abundance overlay averages the three wild-type, fresh-BG-11, day-one DESeq2-normalized count samples from GSE205444, then maps unambiguous shared protein IDs to UTEX 2973. The measured organism is PCC 7942, not UTEX 2973. The repository TSV is a project-derived mapped table; no dataset-specific GEO redistribution license was located.",
+          "contribution": "The optional RNA-abundance overlay averages the three wild-type, fresh-BG-11, day-one DESeq2-normalized count samples from GSE205444, then maps unambiguous shared protein IDs to UTEX 2973. The measured organism is PCC 7942, not UTEX 2973. The repository TSV is a project-derived mapped table; no dataset-specific GEO redistribution license was located. Nine optional gene-fitness layers come from the same study's RB-TnSeq biofilm assays (GEO GSE205443): the authors' gene fitness values per fraction (log2 ratio of barcode abundance to Time 0, Wetmore et al. 2015) as published in Supplementary File S4, one layer per test-tube or flask fraction in fresh or wild-type conditioned BG-11, mapped to UTEX 2973 through the one-to-one identifier crosswalk; T-values are not carried. A fitness value is signed and is never placed on an expression scale. Article CC BY 4.0.",
           "downloads": [
             {
               "filename": "GSE205444_pcc7942_wt_bg11_day1.tsv",
               "repoPath": "data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv",
               "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv",
               "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE205443_e1_tube_biofilmers.tsv",
+              "repoPath": "data/expression/GSE205443_e1_tube_biofilmers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e1_tube_biofilmers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e1_tube_settlers.tsv",
+              "repoPath": "data/expression/GSE205443_e1_tube_settlers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e1_tube_settlers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_tube_planktonic.tsv",
+              "repoPath": "data/expression/GSE205443_e2_tube_planktonic.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_tube_planktonic.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_tube_settlers.tsv",
+              "repoPath": "data/expression/GSE205443_e2_tube_settlers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_tube_settlers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_tube_biofilmers.tsv",
+              "repoPath": "data/expression/GSE205443_e2_tube_biofilmers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_tube_biofilmers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_tube_cm_settlers.tsv",
+              "repoPath": "data/expression/GSE205443_e2_tube_cm_settlers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_tube_cm_settlers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_tube_cm_biofilmers.tsv",
+              "repoPath": "data/expression/GSE205443_e2_tube_cm_biofilmers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_tube_cm_biofilmers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_flask_biofilmers.tsv",
+              "repoPath": "data/expression/GSE205443_e2_flask_biofilmers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_flask_biofilmers.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "GSE205443_e2_flask_cm_biofilmers.tsv",
+              "repoPath": "data/expression/GSE205443_e2_flask_cm_biofilmers.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE205443_e2_flask_cm_biofilmers.tsv",
+              "kind": "Project-derived mapped fitness table"
             }
           ]
         },
