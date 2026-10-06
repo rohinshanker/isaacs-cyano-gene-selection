@@ -145,7 +145,7 @@ for (const [key, field] of Object.entries(RECOMPUTED)) {
 // that publishes no expression source has nothing to compare and passes as such.
 {
   const expressed = genes.filter((gene) => Number.isFinite(gene.expression));
-  const published = genes.some((gene) => 'expressionPercentile' in gene);
+  const published = genes.some((gene) => Number.isFinite(gene.expressionPercentile));
   const sortedExpression = sortedFinite(expressed.map((gene) => gene.expression));
   let worst = 0;
   let worstGene = null;
