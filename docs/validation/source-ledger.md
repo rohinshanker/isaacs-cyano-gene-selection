@@ -128,22 +128,27 @@ The rules the evidence-based decisions follow:
   BioCyc licence. The notification SRI's terms ask for is the owner's action and
   is recorded in the E. coli ticket when sent.
 - **Undetermined is a decision**: the artifact stays link-only, is not fetched,
-  and is revisited only when the governing text is read.
+  and is revisited only when the governing text is read. Seven were revisited on
+  2026-10-06 from the owner-supplied papers through the package B and C addendum
+  (`docs/notes/handoff/cyano_package_BC_addendum_20261006.md`): the five
+  Puszyńska 2017 series and PXD036717's article are CC BY-NC-ND, Vicente 2019 is
+  publisher copyright, and Vijayan 2009's PMC page shows no open licence.
+  PXD036717 keeps its CC0 file grant; the GEO series become not permitted.
 
 | Artifact | Strain | Decision |
 | --- | --- | --- |
-| GSE102914 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| GSE103462 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| GSE103463 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE102914 | PCC 7942 | not permitted: the article is publisher copyright with no open licence (read 2026-10-06 from the supplied PDF); link-only |
+| GSE103462 | PCC 7942 | not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table; link-only |
+| GSE103463 | PCC 7942 | not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table; link-only |
 | GSE103606 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| GSE103644 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
-| GSE103704 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE103644 | PCC 7942 | not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table; link-only |
+| GSE103704 | PCC 7942 | not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table; link-only |
 | GSE104203 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE104204 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
-| GSE105774 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE105774 | PCC 7942 | not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table; link-only |
 | GSE122841 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE140121 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
-| GSE18902 | PCC 7942 | undetermined: no grant over the files and the article terms were not readable by deposit; link-only until read |
+| GSE18902 | PCC 7942 | not permitted: the PMC article page shows no open licence, only the PMC copyright notice (read 2026-10-06); link-only |
 | GSE205443 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
 | GSE205445 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
 | GSE222067 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
@@ -192,7 +197,7 @@ The rules the evidence-based decisions follow:
 
 Counts: 23 permitted (13 GEO under a CC BY article, 9 PRIDE CC0, 1 PRIDE
 split on PXD005851's Table S1), 8 RefSeq annotations permitted as reproducibility
-inputs, 12 not permitted, 11 undetermined, PXD011485 recorded without an
+inputs, 19 not permitted, 4 undetermined, PXD011485 recorded without an
 admission route, and 2 rejected (the duplicate genome-of-record row and
 PXD010000). A permitted decision on an artifact that package B escalated
 (GSE104204, GSE205443, GSE205445) does not make that artifact admissible as

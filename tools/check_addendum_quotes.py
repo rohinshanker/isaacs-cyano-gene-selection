@@ -8,8 +8,8 @@ supplied or the agents retrieved. The papers stay outside the repository, so
 this check runs against a local directory and its result is recorded in the
 ticket, as the handoff contract asks (``docs/validation/claude-science-handoff.md``).
 
-A quote passes when, after Unicode compatibility normalisation and whitespace
-collapsing on both sides, it is a substring of its document. A composite quote
+A quote passes when, after Unicode compatibility normalisation, removal of
+control characters and whitespace collapsing on both sides, it is a substring of its document. A composite quote
 joins pieces with ``||`` and passes only when every piece does. A quote whose
 location names no document, or a document the directory lacks, fails.
 
@@ -29,7 +29,7 @@ from pathlib import Path
 
 QUOTED_COLUMNS = ("conditions", "replicates", "licence")
 SEGMENT = re.compile(r'\[([^\[\]]*?); quote: "([^"]*)"\]')
-DOC_KEY = re.compile(r"\(([a-z0-9_]+)\)")
+DOC_KEY = re.compile(r"\(([A-Za-z0-9_]+)\)")
 
 
 @dataclass(frozen=True)
@@ -45,8 +45,14 @@ class Finding:
 
 
 def normalise(text: str) -> str:
-    """Compatibility-normalise and collapse whitespace, so a line break or a ligature never fails a match."""
-    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", text)).strip()
+    """Compatibility-normalise, drop control characters and collapse whitespace.
+
+    A line break, a ligature, or the control byte a PDF extraction leaves where
+    a symbol glyph stood never fails a match; a changed word does.
+    """
+    text = unicodedata.normalize("NFKC", text)
+    text = "".join(ch for ch in text if unicodedata.category(ch) != "Cc" or ch.isspace())
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def load_texts(directory: Path) -> dict[str, str]:

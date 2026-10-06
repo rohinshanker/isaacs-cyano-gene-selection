@@ -31,6 +31,8 @@ def texts_dir(tmp_path):
 
 def test_normalise_collapses_whitespace_and_compatibility_forms():
     assert checker.normalise("cool  ﬂuorescent\n light ") == "cool fluorescent light"
+    # A symbol glyph a PDF extraction turns into a control byte is dropped, not kept as a word.
+    assert checker.normalise("at 30\x03 C and 40 mE m\x012 s\x011") == "at 30 C and 40 mE m2 s1"
 
 
 def test_every_quote_is_matched_in_its_named_document(tmp_path):

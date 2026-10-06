@@ -6,7 +6,7 @@
   and, if the owner approves, a reprocessing pilot outside the release.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-05
+- **Updated:** 2026-10-06
 
 ## Current state
 
@@ -32,6 +32,15 @@ MET-02, MET-03, MET-08 to MET-10, NA-01 to NA-04, LIC-01.
    intake.
 3. **Manual: the papers.** Most missing cells are behind the eight unread papers;
    see [O_unreadable-literature-workarounds__20261005](O_unreadable-literature-workarounds__20261005.md).
+   Done for five of them on 2026-10-06: the addendum
+   (`docs/notes/handoff/cyano_package_BC_addendum_20261006.tsv`) fills PXD036717's
+   whole condition set, GSE102914's growth phase and replicates, and the
+   replicate structure of GSE18902, GSE51112 and the Puszyńska series; it
+   settles as "not reported" (read and silent) CO₂ and growth phase for the
+   Puszyńska series, light intensity and CO₂ for GSE102914, and the flask
+   temperature for GSE50920 and GSE50922. Those cells stay undecidable for want
+   of a value the authors never gave; only a depositor reply (item 4) can fill
+   them.
 4. **Manual: write to depositors.** The agents draft, the owner or a labmate sends,
    and a reply is quoted with its date. Nothing is assigned until a reply arrives.
 
