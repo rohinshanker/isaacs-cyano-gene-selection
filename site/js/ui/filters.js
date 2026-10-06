@@ -142,7 +142,9 @@ export class FilterPanel {
    *   onClear: () => void,
    *   onExceptionFilterChange: (mode: string) => void,
    *   onExpressionFilterChange: (mode: string) => void,
-   *   onTrafficKeyChange: (key: string) => void}} handlers
+   *   onTrafficKeyChange: (key: string) => void,
+   *   onTrafficFollowChange?: (follow: boolean) => void,
+   *   onSelectSource?: (dataType: string|null, current: string|null, opener: HTMLElement) => void}} handlers
    */
   constructor(host, handlers) {
     this.host = host;
@@ -232,6 +234,8 @@ export class FilterPanel {
     // remembers from before." `renderTraffic` below picks the default
     // candidate whenever this is falsy.
     this.trafficKey = state.trafficKey;
+    this.colorMetricKey = state.colorMetricKey ?? null;
+    this.followColor = state.followColor !== false;
 
     const active = Object.keys(state.filters);
     const byFamily = new Map();
@@ -346,6 +350,22 @@ export class FilterPanel {
     heading.className = 'traffic-heading';
     heading.textContent = 'Hide low-traffic genes';
 
+    // "Use same source as colouring": on, the threshold judges activity by the
+    // metric colouring the map whenever that metric can stand in for activity;
+    // off, the reader picks the source here, in the chooser below or through
+    // the data selection peek (owner decision, 2026-10-05).
+    const followRow = document.createElement('label');
+    followRow.className = 'checkbox-row traffic-follow';
+    const follow = document.createElement('input');
+    follow.type = 'checkbox';
+    follow.id = 'traffic-follow-colour';
+    follow.checked = this.followColor;
+    follow.addEventListener('change', () => this.handlers.onTrafficFollowChange?.(follow.checked));
+    const followText = document.createElement('span');
+    followText.textContent = 'Use same source as colouring';
+    followRow.append(follow, followText);
+    const colourCandidate = candidates.find((metric) => metric.key === this.colorMetricKey) ?? null;
+
     const chooser = document.createElement('div');
     chooser.className = 'field-row';
     const chooserLabel = document.createElement('label');
@@ -353,6 +373,7 @@ export class FilterPanel {
     chooserLabel.textContent = 'Judge activity by';
     const select = document.createElement('select');
     select.id = 'traffic-metric';
+    select.disabled = this.followColor && Boolean(colourCandidate);
     if (!this.trafficKey) {
       const placeholder = document.createElement('option');
       placeholder.value = '';
@@ -373,7 +394,25 @@ export class FilterPanel {
       this.handlers.onTrafficKeyChange(this.trafficKey, filters);
     });
     chooser.append(chooserLabel, select);
-    this.trafficHost.append(heading, chooser);
+    this.trafficHost.append(heading, followRow);
+    if (this.followColor && !colourCandidate) {
+      const note = document.createElement('p');
+      note.className = 'panel-note';
+      note.textContent = 'The colouring metric is not a measure of gene activity, so the threshold keeps its own source.';
+      this.trafficHost.append(note);
+    }
+    this.trafficHost.append(chooser);
+    if (!(this.followColor && colourCandidate) && this.handlers.onSelectSource) {
+      const pick = document.createElement('button');
+      pick.type = 'button';
+      pick.className = 'chip-button traffic-select-source';
+      pick.textContent = 'Select source';
+      pick.addEventListener('click', () => {
+        const metric = this.registry.byKey.get(this.trafficKey);
+        this.handlers.onSelectSource(metric?.provenance?.record?.dataType ?? null, this.trafficKey, pick);
+      });
+      chooser.append(pick);
+    }
 
     if (!this.trafficKey) {
       const note = document.createElement('p');

@@ -68,6 +68,33 @@ pushed when ready; no interim version with placeholder rows is shipped.
   to them being merged, then"; it is read as "ask first". Nothing merges without
   a recorded judgement, so no merge follows.
 
+### Progress, 2026-10-05
+
+Stages S1 to S4 are built for the two shipped sources and committed on `main`:
+
+- Every entry of `data/expression/sources.json` carries a structured condition
+  `record`, validated by `scripts/condition_record.py` in the pipeline and
+  re-checked independently by the contract validator; `meta.expressionSources`
+  carries it to the site. The pipeline rebuild left `genes.json` byte-identical.
+- `core/data-sources.js` arranges datasets: groups, complete-linkage comparable
+  sets with the owner's judgements, filters, the default selection, study colours.
+- `ui/data-sources.js` renders the section under "Colour by" and the peek; the
+  page behind is inert while it is open, focus is trapped and returned.
+- `app.js` scopes the colour, axis and filter menus to the selected sources, falls
+  back when a chosen metric is deselected, encodes `ds` in the link only when
+  the selection differs from the default, records the selection in exports,
+  shows a per-axis source select when an axis metric's data type has several
+  selected sources, and gives the filters the "Use same source as colouring"
+  toggle with a "Select source" button that opens the peek in single-choice mode.
+- Rendered at 375, 768, 1280 and 1440 px with the peek open and closed, no
+  horizontal overflow, focus returning to the button, console clean.
+
+Not yet done: S1's five gaps are confirmed only where the feature needed them
+(the menus scope; the provenance list and export caveats still read the legacy
+single source); the pair judgements are not yet a data file (`meta.pairJudgements`
+is read when present); the chromosome tab's own colour row has no Data Sources
+section; S5 and S6.
+
 ## Work
 
 | Stage | Work | Depends on |

@@ -12,7 +12,100 @@
     "sha256": "d8a44d3fbeaf5b550dc815f4657cd67fc9180b91549068bbbb2b65ab3637fe57",
     "licence": "GEO/NCBI public repository terms",
     "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study. Use as a rough guide only.",
-    "provenanceDoc": "data/expression/PROVENANCE.md"
+    "provenanceDoc": "data/expression/PROVENANCE.md",
+    "record": {
+      "studyId": "GSE205444",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type, fresh BG-11, day 1 (mean of three replicates)",
+      "samples": "the three wild-type fresh-BG-11 day-1 samples of GSE205444 (SubSeries of GSE205445)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205444",
+      "citation": {
+        "text": "Simkovsky R, et al. Transcriptomic and Phenomic Investigations Reveal Elements in Biofilm Repression and Formation in the Cyanobacterium Synechococcus elongatus PCC 7942. Front Microbiol 2022;13:899150.",
+        "url": "https://doi.org/10.3389/fmicb.2022.899150",
+        "pmid": "35814646"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "triplicate sets of bubbling tubes; the shipped value is the arithmetic mean of the three",
+        "where": "paper PMC9260433, RNA-Seq Experiment section"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 28,
+      "conditions": {
+        "temperature": {
+          "quote": "using fresh starter cultures derived from solid media cultures, at an OD 750 of 0.5 at 30°C and under low light (5–30 μmol photons m −2 s −1 )",
+          "where": "paper PMC9260433, Biofilm Formation Assays section",
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30°C"
+        },
+        "lightIntensity": {
+          "quote": "at an OD 750 of 0.5 at 30°C and under low light (5–30 μmol photons m −2 s −1 ), as described previously ( Sendersky et al., 2017 )",
+          "where": "paper PMC9260433, Biofilm Formation Assays section",
+          "status": "reported",
+          "lo": 5,
+          "hi": 30,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "5–30 μmol photons m-2 s-1 (low light)"
+        },
+        "lightRegime": {
+          "quote": "under low light (5–30 μmol photons m −2 s −1 ), as described previously ( Sendersky et al., 2017 )",
+          "where": "paper PMC9260433, Biofilm Formation Assays section",
+          "status": "reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "low light; spectrum class not specified; continuous versus diel not reported"
+        },
+        "co2": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported for the RNA-seq bubbling-tube cultures"
+        },
+        "medium": {
+          "quote": "Cultures were grown in bubbling tubes for one or four days, as previously describe by Parnasa, et al. (2016).",
+          "where": "GEO GSE205445 group 2 Sample_growth_protocol_ch1",
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 with HEPES, fresh medium"
+        },
+        "format": {
+          "quote": "WT and PilB ::Tn 5 strains were grown for biofilm formation in triplicate sets of bubbling tubes as described previously ( Parnasa et al., 2016 ).",
+          "where": "paper PMC9260433, RNA-Seq Experiment section",
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "bubbling tubes, triplicate sets"
+        },
+        "phase": {
+          "quote": "Samples were taken for RNA extraction from the liquid supernatants 1 and 4 days after inoculation (Days 1 and 4).",
+          "where": "paper PMC9260433, RNA-Seq Experiment section",
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 750,
+          "text": "sampled one day after inoculation from a starter at OD750 0.5"
+        }
+      }
+    }
   },
   {
     "id": "TAN2018_TSS",
@@ -27,6 +120,96 @@
     "sha256": "5ebd8043e70309a2ea04fcec37e475069cb8540397f9d052bd246401aa6325be",
     "licence": "CC BY 4.0",
     "caveat": "Transcription initiation strength, not transcript abundance; genes without an associated TSS are unknown, not zero.",
-    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md"
+    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
+    "record": {
+      "studyId": "PRJNA420395",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "UTEX 2973",
+      "basis": "direct",
+      "conditionSet": "Control, dark, high light and high temperature, pooled (summed mean TSS counts)",
+      "samples": "two replicate cultures per condition, four conditions pooled into one score per gene",
+      "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
+      "citation": {
+        "text": "Tan X, et al. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnol Biofuels 2018;11:218.",
+        "url": "https://doi.org/10.1186/s13068-018-1215-8",
+        "pmid": "30127850"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two replicate cultures per condition",
+        "where": "paper PMC6091082, Methods"
+      },
+      "treatments": [
+        "pooled conditions: control, dark, high light, high temperature"
+      ],
+      "group": "other",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "quote": "Control 33 °C, 50 µmol photons m⁻² s⁻¹ continuous light, 3% CO2; plus high light 1,000 µmol (duration conflicts between Results and Methods); high temperature 45 °C for 30 min; dark for 2 h",
+          "where": "data/expression/TAN2018_TSS_PROVENANCE.md, Conditions row, from the paper's Methods",
+          "status": "conflicting",
+          "lo": 33,
+          "hi": 45,
+          "unit": "°C",
+          "text": "33 °C control, pooled with a 45 °C high-temperature condition (30 min); one score spans both"
+        },
+        "lightIntensity": {
+          "quote": "Control 33 °C, 50 µmol photons m⁻² s⁻¹ continuous light, 3% CO2; plus high light 1,000 µmol (duration conflicts between Results and Methods); high temperature 45 °C for 30 min; dark for 2 h",
+          "where": "data/expression/TAN2018_TSS_PROVENANCE.md, Conditions row, from the paper's Methods",
+          "status": "conflicting",
+          "lo": 50,
+          "hi": 1000,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "50 µmol photons m⁻² s⁻¹ control, pooled with 1,000 µmol high light and a 2 h dark condition; one score spans all"
+        },
+        "lightRegime": {
+          "quote": "Control 33 °C, 50 µmol photons m⁻² s⁻¹ continuous light, 3% CO2; plus high light 1,000 µmol (duration conflicts between Results and Methods); high temperature 45 °C for 30 min; dark for 2 h",
+          "where": "data/expression/TAN2018_TSS_PROVENANCE.md, Conditions row, from the paper's Methods",
+          "status": "conflicting",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "constant illumination in the control, pooled with a 2 h dark condition"
+        },
+        "co2": {
+          "quote": "3% CO2 aeration",
+          "where": "paper PMC6091082, Methods",
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "3% CO2 aeration"
+        },
+        "medium": {
+          "quote": "BG-11",
+          "where": "paper PMC6091082, Methods",
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11"
+        },
+        "format": {
+          "quote": "3% CO2 aeration",
+          "where": "paper PMC6091082, Methods",
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "aerated liquid culture"
+        },
+        "phase": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "growth phase at sampling not recorded in the shipped provenance"
+        }
+      }
+    }
   }
 ]

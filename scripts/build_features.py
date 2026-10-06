@@ -29,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
 from rna_context import folding_context, restore_start_window  # noqa: E402
 from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
+from condition_record import validate_record  # noqa: E402
 
 
 ACCESSION = "GCF_000817325.1"
@@ -104,6 +105,7 @@ DIVERGING_METRICS = {
 }
 
 EXPRESSION_SOURCE_FIELDS = (
+    "record",
     "id",
     "file",
     "metricKey",
@@ -434,6 +436,7 @@ def load_expression_sources(
         )
         claimed_source_ids.add(source_id)
         claimed_metric_keys.add(metric_key)
+        validate_record(source["record"], f"Expression source {source_id}")
 
         file_name = source["file"]
         require(

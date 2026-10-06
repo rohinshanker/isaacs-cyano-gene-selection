@@ -25,6 +25,7 @@ const KEYS = {
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
   categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
   panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc', drawOnTop: 'dt',
+  sources: 'ds',
 };
 
 /**
@@ -60,6 +61,13 @@ const KEYS = {
  * brought the old one back because there is no code left that draws it. What
  * the test asks is only whether an *omitted* field is ambiguous, and this one
  * is not: it has exactly one meaning and no older one to preserve.
+ *
+ * The data-source selection `ds` passes the same test. A hash with no `ds`
+ * means the fresh-view selection: the sources the site shipped before the
+ * Data Sources window existed plus the standard-growth group, which is what an
+ * older link drew, since the colour metric it names is encoded separately and
+ * still colours the map. The field is written only when the selection differs
+ * from that default (owner decision, 2026-10-05).
  */
 export const STATE_VERSION = 6;
 
@@ -115,6 +123,9 @@ export function defaultState() {
     panelOrder: [...DEFAULT_PANEL_ORDER],
     panelCollapsed: [...DEFAULT_PANEL_COLLAPSED],
     drawOnTop: DEFAULT_DRAW_DIRECTION,
+    // Empty means the fresh-view selection; the app resolves it once the
+    // dataset is loaded and the sources are known.
+    sources: [],
   };
 }
 
@@ -282,6 +293,11 @@ export function encodeState(state) {
     const collapsed = normalizeCollapsed(state.panelCollapsed);
     push(KEYS.panelCollapsed, collapsed.length === 0 ? NO_PANELS_COLLAPSED : collapsed.join(','));
   }
+  // The app keeps `sources` empty while the selection is the default, so a
+  // written `ds` always names a selection that differs from the fresh view.
+  if (Array.isArray(state.sources) && state.sources.length > 0) {
+    push(KEYS.sources, state.sources.join(','));
+  }
   return parts.join('&');
 }
 
@@ -380,6 +396,11 @@ export function decodeState(hash) {
   if (values.has(KEYS.panelCollapsed)) {
     const raw = values.get(KEYS.panelCollapsed);
     state.panelCollapsed = raw === NO_PANELS_COLLAPSED ? [] : normalizeCollapsed(raw.split(','));
+  }
+  // Dataset ids are validated against the loaded sources by the app; here only
+  // the shape is read, and an empty or malformed field means the default.
+  if (values.has(KEYS.sources)) {
+    state.sources = values.get(KEYS.sources).split(',').filter((id) => /^[\w.-]+$/.test(id));
   }
   // Version 5 wrote `cm` for the chosen comparison metrics. Those now live in
   // browser storage instead, to keep a shared link readable, so a version 5

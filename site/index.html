@@ -23,6 +23,7 @@
 <link rel="modulepreload" href="js/core/codon-table.js">
 <link rel="modulepreload" href="js/core/conventions.js">
 <link rel="modulepreload" href="js/core/data-files.js">
+<link rel="modulepreload" href="js/core/data-sources.js">
 <link rel="modulepreload" href="js/core/dataset.js">
 <link rel="modulepreload" href="js/core/early-data.js">
 <link rel="modulepreload" href="js/core/export-manifest.js">
@@ -62,6 +63,7 @@
 <link rel="modulepreload" href="js/ui/compare-model.js">
 <link rel="modulepreload" href="js/ui/compare.js">
 <link rel="modulepreload" href="js/ui/confirm-dialog.js">
+<link rel="modulepreload" href="js/ui/data-sources.js">
 <link rel="modulepreload" href="js/ui/draw-direction.js">
 <link rel="modulepreload" href="js/ui/filters.js">
 <link rel="modulepreload" href="js/ui/folding-panel.js">
@@ -518,6 +520,10 @@ if (window.location.protocol === 'file:') {
               <label for="axis-x">X axis</label>
               <select id="axis-x" aria-describedby="axis-note"></select>
             </span>
+            <span class="field-row" id="axis-x-source-row" hidden>
+              <label for="axis-x-source">X source</label>
+              <select id="axis-x-source" aria-describedby="axis-note"></select>
+            </span>
             <span class="field-row">
               <label for="axis-x-scale">X scale</label>
               <select id="axis-x-scale" aria-describedby="axis-note"></select>
@@ -525,6 +531,10 @@ if (window.location.protocol === 'file:') {
             <span class="field-row">
               <label for="axis-y">Y axis</label>
               <select id="axis-y" aria-describedby="axis-note"></select>
+            </span>
+            <span class="field-row" id="axis-y-source-row" hidden>
+              <label for="axis-y-source">Y source</label>
+              <select id="axis-y-source" aria-describedby="axis-note"></select>
             </span>
             <span class="field-row">
               <label for="axis-y-scale">Y scale</label>
@@ -552,6 +562,11 @@ if (window.location.protocol === 'file:') {
             <summary>Colour metric explanation</summary>
             <div class="help-content"></div>
           </details>
+          <!-- Data Sources: which measured datasets the menus above and the
+               filters offer. Rendered by ui/data-sources.js; its peek lists every
+               dataset with its conditions. Sits directly under Colour by by the
+               owner's decision of 2026-10-05. -->
+          <div class="map-toolbar-row data-sources-row" id="data-sources"></div>
           <div class="map-toolbar-row">
             <span class="field-row field-row-grow">
               <label for="gene-search">Find a gene</label>

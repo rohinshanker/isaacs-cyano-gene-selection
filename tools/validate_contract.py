@@ -1293,6 +1293,35 @@ def main() -> int:
             "Tan TSS evidence declares two replicates and no gene-body abundance",
         )
         expression_sources = meta.get("expressionSources", [])
+        # Every measured source states its growth condition axis by axis, with a
+        # status the site reads before it draws anything: a value is never
+        # invented for an axis the source did not report. Re-derived here rather
+        # than imported from the pipeline, like every other check in this file.
+        axes = ("temperature", "lightIntensity", "lightRegime", "co2", "medium", "format", "phase")
+        statuses = ("reported", "not reported", "not retrieved", "conflicting")
+        def record_is_complete(item):
+            record = item.get("record") if isinstance(item, dict) else None
+            conditions = record.get("conditions") if isinstance(record, dict) else None
+            if not isinstance(conditions, dict) or set(conditions) != set(axes):
+                return False
+            for name in axes:
+                axis = conditions[name]
+                if not isinstance(axis, dict) or axis.get("status") not in statuses:
+                    return False
+                if name in ("temperature", "lightIntensity", "co2"):
+                    lo, hi = axis.get("lo"), axis.get("hi")
+                    numeric = all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in (lo, hi))
+                    if axis["status"] == "reported" and not (numeric and lo <= hi):
+                        return False
+                    if axis["status"] in ("not reported", "not retrieved") and (lo, hi) != (None, None):
+                        return False
+            return (record.get("dataType") in ("transcriptomics", "proteomics", "fitness")
+                    and record.get("basis") in ("direct", "transferred")
+                    and isinstance(record.get("treatments"), list))
+        report.check(
+            bool(expression_sources) and all(record_is_complete(item) for item in expression_sources),
+            "every expression source carries a complete structured condition record",
+        )
         pooled_source_id = source.get("pooledScoreSourceId") if isinstance(source, dict) else None
         report.check(
             isinstance(pooled_source_id, str)

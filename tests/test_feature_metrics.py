@@ -10,6 +10,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import feature_metrics as fm
+from condition_record import example_record
 from build_features import (
     S_VALUES,
     add_context,
@@ -221,6 +222,7 @@ def test_joined_cds_segments_preserve_location_order():
 def expression_source(file_name, metric_key, digest):
     """Returns a complete test manifest entry."""
     return {
+        "record": example_record(studyId=metric_key.upper()),
         "id": metric_key.upper(),
         "file": file_name,
         "metricKey": metric_key,
