@@ -1,0 +1,382 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE104203",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104203",
+  "citationId": "piechura-2017",
+  "citation": {
+    "text": "Piechura JR, Amarnath K, O'Shea EK. Natural changes in light interact with circadian regulation at promoters to control gene expression in cyanobacteria. Elife 2017;6:e32032.",
+    "url": "https://doi.org/10.7554/eLife.32032",
+    "pmid": "29239721"
+  },
+  "file": {
+    "name": "GSE104203_Natural_light_RNAseq_processed.xlsx",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE104nnn/GSE104203/suppl/GSE104203_Natural_light_RNAseq_processed.xlsx",
+    "sha256": "f087b345f019b4b88e187e673829a79255cf71046c42cce200516bde654a22ce"
+  },
+  "reader": {
+    "format": "xlsx",
+    "sheets": [
+      "Replicate 1",
+      "Replicate 2"
+    ],
+    "idColumn": "Gene ID",
+    "idKind": "pcc7942_old",
+    "blockTitleRows": [
+      1,
+      3
+    ]
+  },
+  "units": "median- and length-normalised expression as deposited (mean over time points and two replicates)",
+  "normalization": "as-deposited",
+  "replicates": {
+    "count": 2,
+    "text": "2 biological replicates"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 50,
+      "hi": 50,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "constant 50 µmol photons m-2 s-1"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "diel",
+      "photoperiod": "12:12",
+      "spectrumClass": "warm white LED",
+      "entrained": true,
+      "text": "warm white LED array; diel 12 h light / 12 h dark cycle; sampled over the third light period"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 1,
+      "hi": 1,
+      "unit": "%",
+      "text": "1% CO2 in air, constantly bubbled"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11M supplemented with 10 mM HEPES pH 8.0"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "OD stated",
+      "od": [
+        0.3,
+        0.3
+      ],
+      "odNm": 750,
+      "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution"
+    }
+  },
+  "conditionTableRow": 9,
+  "caveat": "Measured in PCC 7942, not in UTEX 2973, under a 12 h light / 12 h dark cycle; each value is the mean over the sampled time points of one light regime and two replicates, which removes the diel time structure the study was designed around. The deposit's log2-ratio blocks are not used.",
+  "layers": [
+    {
+      "id": "GSE104203_low_light",
+      "metricKey": "exprGse104203LowLight",
+      "label": "Expression GSE104203 low light (PCC 7942)",
+      "conditionSet": "Low Light, constant 50 µmol under 12L:12D, mean of eight time points × two replicates",
+      "samples": "Low Light 0.5–12 h since dawn, replicates 1–2 (GSM2792387–GSM2792402)",
+      "columns": [
+        "Low Light expression (median and length normalized data) :: 0.5 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 2 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 4 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 6 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 8 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 9 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 10 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 12 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 0.5 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 2 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 4 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 6 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 8 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 9 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 10 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 12 :: Replicate 2"
+      ],
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 9
+    },
+    {
+      "id": "GSE104203_clear_day",
+      "metricKey": "exprGse104203ClearDay",
+      "label": "Expression GSE104203 clear day (PCC 7942)",
+      "conditionSet": "Clear Day, parabolic natural-light profile to 600 µmol under 12L:12D, mean of eight time points × two replicates",
+      "samples": "Clear Day 0.5–12 h since dawn, replicates 1–2 (GSM2792403–GSM2792418)",
+      "columns": [
+        "Clear Day expression (median and length normalized data) :: 0.5 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 2 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 4 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 6 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 8 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 9 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 10 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 12 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 0.5 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 2 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 4 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 6 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 8 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 9 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 10 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 12 :: Replicate 2"
+      ],
+      "treatments": [
+        "diel time course",
+        "changing light"
+      ],
+      "group": "diel",
+      "conditionTableRow": 10,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 0,
+          "hi": 600,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "light intensity varied parabolically, reaching a maximum of 600 µmol photons m-2 s-1"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark cycle; intensity varies parabolically within the light period, modelled on a measured natural clear-day profile"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution"
+        }
+      }
+    },
+    {
+      "id": "GSE104203_high_light_pulse",
+      "metricKey": "exprGse104203HighLightPulse",
+      "label": "Expression GSE104203 high-light pulse (PCC 7942)",
+      "conditionSet": "High Light pulse, Low Light culture raised 10-fold for 1 h from 8 h after dawn and returned, mean of seven time points × two replicates",
+      "samples": "High Light Pulse 8–10 h since dawn, replicates 1–2 (GSM2792419–GSM2792432)",
+      "columns": [
+        "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 8.25 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 8.5 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 9.25 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 9.5 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 8.25 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 8.5 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 9.25 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 9.5 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+      ],
+      "treatments": [
+        "diel time course",
+        "high light pulse"
+      ],
+      "group": "elevated",
+      "conditionTableRow": 11,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 50,
+          "hi": 500,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "Low Light intensity (50) increased 10-fold for 1 hour, then returned"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark baseline with a 1 h High Light perturbation from 8 h after dawn"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution"
+        }
+      }
+    },
+    {
+      "id": "GSE104203_shade_pulse",
+      "metricKey": "exprGse104203ShadePulse",
+      "label": "Expression GSE104203 shade pulse (PCC 7942)",
+      "conditionSet": "Shade pulse, Clear Day culture lowered 10-fold for 1 h from 8 h after dawn and returned, mean of seven time points × two replicates",
+      "samples": "Shade Pulse 8–10 h since dawn, replicates 1–2 (GSM2792433–GSM2792446)",
+      "columns": [
+        "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 8.25 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 8.5 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 9.25 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 9.5 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 8.25 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 8.5 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 9.25 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 9.5 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+      ],
+      "treatments": [
+        "diel time course",
+        "shade pulse",
+        "changing light"
+      ],
+      "group": "diel",
+      "conditionTableRow": 12,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 0,
+          "hi": 600,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "Clear Day profile divided by 10 for 1 hour, then returned"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark baseline with a 1 h Shade perturbation from 8 h after dawn"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution"
+        }
+      }
+    }
+  ]
+}

@@ -786,7 +786,7 @@ test('the published expression layers are in tier 3 and join the shipped genes',
   assert.equal(DATA_FILE_BY_KEY.expressionLayers.name, 'expression_layers.json');
   const meta = JSON.parse(await site('meta.json'));
   const layered = meta.expressionSources.filter((s) => s.payload === 'expression_layers.json');
-  assert.equal(layered.length, 11);
+  assert.equal(layered.length, 15);
   const payload = JSON.parse(await site('expression_layers.json'));
   assert.deepEqual(Object.keys(payload.layers).sort(), layered.map((s) => s.metricKey).sort());
   const genes = JSON.parse(await site('genes.json'));

@@ -70,6 +70,15 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     The header is the first row holding a cell equal to ``reader['idColumn']``;
     rows above it are comments or titles and are skipped, and the identifier
     column is moved to the front. Gzip is detected by magic bytes, not by name.
+
+    A workbook may spread one table over several sheets (``reader['sheets']``,
+    one per replicate): they are read side by side, joined on the identifier,
+    and each column name takes the sheet name as a suffix. A sheet whose
+    column headers repeat under block titles (``reader['blockTitleRows']``,
+    1-based, in priority order; ``blockTitleRow`` for one) has each header
+    prefixed with the nearest title to its left in the first listed row that
+    has one, so every column has a name of its own:
+    ``<block> :: <header> :: <sheet>``.
     """
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
@@ -77,23 +86,76 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     if fmt in ("csv", "tsv"):
         text = data.decode("utf-8-sig")
         rows = list(csv.reader(io.StringIO(text), delimiter="," if fmt == "csv" else "\t"))
-    elif fmt in ("xlsx", "xls"):
-        import pandas as pd  # noqa: PLC0415 - optional heavy import, only for workbooks
+        return _split_header(rows, reader["idColumn"], _title_rows(reader))
+    if fmt not in ("xlsx", "xls"):
+        raise ValueError(f"unknown table format {fmt!r}")
+    import pandas as pd  # noqa: PLC0415 - optional heavy import, only for workbooks
 
-        frame = pd.read_excel(io.BytesIO(data), sheet_name=reader["sheet"], header=None, dtype=object)
+    sheets = reader.get("sheets") or [reader["sheet"]]
+    joined_header: list[str] = []
+    joined: dict[str, list[str]] = {}
+    order: list[str] = []
+    for sheet in sheets:
+        frame = pd.read_excel(io.BytesIO(data), sheet_name=sheet, header=None, dtype=object)
         rows = [["" if (isinstance(v, float) and v != v) or v is None else str(v) for v in row]
                 for row in frame.itertuples(index=False)]
-    else:
-        raise ValueError(f"unknown table format {fmt!r}")
-    id_column = reader["idColumn"]
+        header, body = _split_header(rows, reader["idColumn"], _title_rows(reader))
+        if len(sheets) == 1:
+            return header, body
+        # A blank header stays blank: an unnamed column is never a sample.
+        names = [f"{name} :: {sheet}" if name else "" for name in header[1:]]
+        if not joined_header:
+            joined_header = [header[0]]
+        joined_header.extend(names)
+        for row in body:
+            identifier = row[0].strip()
+            if identifier not in joined:
+                joined[identifier] = [identifier]
+                order.append(identifier)
+            joined[identifier].extend(row[1:])
+    width = len(joined_header)
+    # An identifier a sheet lacks keeps its row with the missing cells blank.
+    return joined_header, [joined[i] + [""] * (width - len(joined[i])) for i in order]
+
+
+def _title_rows(reader: Mapping[str, Any]) -> list[int]:
+    """The block-title rows a reader names, in priority order; empty for a plain table."""
+    if reader.get("blockTitleRows"):
+        return list(reader["blockTitleRows"])
+    return [reader["blockTitleRow"]] if reader.get("blockTitleRow") else []
+
+
+def _block_titles(rows: list[list[str]], title_rows: list[int], width: int) -> list[str]:
+    """Per column, the nearest block title to its left in the first title row that has one."""
+    carried: list[list[str]] = []
+    for row_number in title_rows:
+        cells = [cell.strip() for cell in rows[row_number - 1]] if row_number - 1 < len(rows) else []
+        current = ""
+        titles = []
+        for position in range(width):
+            if position < len(cells) and cells[position]:
+                current = cells[position]
+            titles.append(current)
+        carried.append(titles)
+    return [next((titles[position] for titles in carried if titles[position]), "") for position in range(width)]
+
+
+def _split_header(rows: list[list[str]], id_column: str, title_rows: list[int]) -> tuple[list[str], list[list[str]]]:
+    """Find the header row, prefix repeated headers with their block title, and front the identifier."""
     for index, row in enumerate(rows):
         header = [cell.strip() for cell in row]
-        if id_column in header:
-            id_index = header.index(id_column)
-            body = [r for r in rows[index + 1:] if len(r) > id_index and r[id_index].strip()]
-            # The identifier is moved to the front so every later step reads column 0.
-            return [header[id_index]] + header[:id_index] + header[id_index + 1:], \
-                [[r[id_index]] + r[:id_index] + r[id_index + 1:] for r in body]
+        if id_column not in header:
+            continue
+        if title_rows:
+            titles = _block_titles(rows, title_rows, len(header))
+            for position, title in enumerate(titles):
+                if title and header[position] and header[position] != id_column:
+                    header[position] = f"{title} :: {header[position]}"
+        id_index = header.index(id_column)
+        body = [r for r in rows[index + 1:] if len(r) > id_index and r[id_index].strip()]
+        # The identifier is moved to the front so every later step reads column 0.
+        return [header[id_index]] + header[:id_index] + header[id_index + 1:], \
+            [[r[id_index]] + r[:id_index] + r[id_index + 1:] for r in body]
     raise ValueError(f"no header row names {id_column!r}")
 
 
@@ -103,6 +165,8 @@ def column_values(header: list[str], rows: list[list[str]], column: str) -> dict
         position = header.index(column)
     except ValueError as error:
         raise ValueError(f"column {column!r} is not in the table") from error
+    if header.count(column) > 1:
+        raise ValueError(f"column {column!r} names {header.count(column)} columns; the table needs block titles")
     values: dict[str, float] = {}
     for row in rows:
         identifier = row[0].strip()
@@ -216,7 +280,8 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
                  replicate_quote: Mapping[str, str]) -> dict[str, Any]:
     """The layer's condition record: the spec's structured axes with the table's quotes attached."""
     conditions: dict[str, Any] = {}
-    for axis, fields in spec["conditions"].items():
+    # A layer may carry its own record where the study's condition sets differ.
+    for axis, fields in layer.get("conditions", spec["conditions"]).items():
         axis_record = dict(fields)
         cited = quotes.get(axis, {})
         axis_record.setdefault("quote", cited.get("quote", ""))
@@ -237,7 +302,7 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
         "replicates": replicates,
         "treatments": list(layer.get("treatments", [])),
         "group": layer["group"],
-        "conditionTableRow": spec.get("conditionTableRow"),
+        "conditionTableRow": layer.get("conditionTableRow", spec.get("conditionTableRow")),
         "conditions": conditions,
     }
     validate_record(record, f"{spec['studyId']} layer {layer['id']}")
@@ -251,11 +316,12 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
     data = fetch(source["url"], source["sha256"], interim / source["name"])
     header, rows = read_table(data, spec["reader"])
     crosswalk = load_crosswalk(crosswalk_path, ID_RELATIONSHIPS[spec["reader"]["idKind"]])
-    quotes, replicate_quote = condition_quotes(conditions_table, spec.get("conditionTableRow"))
     manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else []
     by_id = {entry["id"]: index for index, entry in enumerate(manifest)}
     written = []
     for layer in spec["layers"]:
+        quotes, replicate_quote = condition_quotes(
+            conditions_table, layer.get("conditionTableRow", spec.get("conditionTableRow")))
         means = layer_means(header, rows, layer["columns"], spec["normalization"])
         mapped, unmapped = map_to_utex(means, crosswalk)
         if not mapped:

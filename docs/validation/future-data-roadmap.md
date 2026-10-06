@@ -394,6 +394,17 @@ every download waits on the ledger entry and the mode-and-pin rules.
 | 56 | PCC 7942 | PXD062851 | 1 candidate | candidate | permitted: CC0 over the deposited files; attribute the deposit and the article |
 | 57 | PCC 7942 | PXD074299 | 1 candidate | candidate | permitted: CC0 over the deposited files; attribute the deposit and the article |
 
+**Ingested from the register.** The status column above is the register's
+licence outcome; the layers actually shipped are listed in
+`data/expression/sources.json` (entries with an `ingest` block) and built by
+`tools/ingest_expression.py` from `data/expression/ingest/`. As of 2026-10-06:
+GSE288532 (2 layers), GSE222067 (2), GSE327989 (1), GSE79726 (3), GSE89999 (3)
+on 2026-10-05, and GSE104203 (4: Low Light, Clear Day, High Light pulse, Shade
+pulse, each the mean of its time points and two replicates) on 2026-10-06.
+GSE104203's processed workbook also carries log2-ratio blocks normalised to the
+Low Light average; those are not abundances and are not used. GSE45762 is
+excluded for contradictory sample labels. The CC0 proteomes are next.
+
 ## Deferred source families
 
 Rubin PCC 7942 Dataset S3 stays link-only because its redistribution terms

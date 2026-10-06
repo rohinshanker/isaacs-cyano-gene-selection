@@ -209,6 +209,38 @@
           ]
         },
         {
+          "id": "piechura-2017",
+          "citation": "Piechura JR, Amarnath K, O'Shea EK. Natural changes in light interact with circadian regulation at promoters to control gene expression in cyanobacteria. eLife 6, e32032 (2017). doi:10.7554/eLife.32032; GEO GSE104203.",
+          "url": "https://doi.org/10.7554/eLife.32032",
+          "contribution": "Four optional RNA-abundance layers under a 12 h light / 12 h dark cycle: Low Light (constant 50 µmol), Clear Day (parabolic profile to 600 µmol), a one-hour High Light pulse and a one-hour Shade pulse, as the deposit's median- and length-normalised expression; its log2-ratio blocks are not used. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over the sampled time points and two replicates, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY 4.0. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE104203_low_light.tsv",
+              "repoPath": "data/expression/GSE104203_low_light.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE104203_low_light.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE104203_clear_day.tsv",
+              "repoPath": "data/expression/GSE104203_clear_day.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE104203_clear_day.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE104203_high_light_pulse.tsv",
+              "repoPath": "data/expression/GSE104203_high_light_pulse.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE104203_high_light_pulse.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE104203_shade_pulse.tsv",
+              "repoPath": "data/expression/GSE104203_shade_pulse.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE104203_shade_pulse.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",

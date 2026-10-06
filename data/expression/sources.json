@@ -1588,5 +1588,553 @@
       "unmappedIdentifiers": 164,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
+  },
+  {
+    "record": {
+      "studyId": "GSE104203",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Low Light, constant 50 µmol under 12L:12D, mean of eight time points × two replicates",
+      "samples": "Low Light 0.5–12 h since dawn, replicates 1–2 (GSM2792387–GSM2792402)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104203",
+      "citation": {
+        "text": "Piechura JR, Amarnath K, O'Shea EK. Natural changes in light interact with circadian regulation at promoters to control gene expression in cyanobacteria. Elife 2017;6:e32032.",
+        "url": "https://doi.org/10.7554/eLife.32032",
+        "pmid": "29239721"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "2 biological replicates",
+        "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+      },
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 9,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 8.0 at 30 ∘ C, continuously bubbled with 1% CO 2 in air",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 50,
+          "hi": 50,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "constant 50 µmol photons m-2 s-1",
+          "quote": "a Low Light condition of 50 µmol photons m-2 s-1",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark cycle; sampled over the third light period",
+          "quote": "Cultures were grown in light for 12 hours, followed by 12 hours of darkness, for two cycles, and then sampled over the third light period",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled",
+          "quote": "constantly bubbled with 1% CO2 in air",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 80",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array",
+          "quote": "A single 750 mL cyanobacterial culture in a 150 cm 2 BD Falcon Tissue culture flask (Fisher Scientific) was placed beneath the LED",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution",
+          "quote": "Cultures were maintained at OD750 03 with periodic dilution",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE104203_low_light",
+    "file": "GSE104203_low_light.tsv",
+    "metricKey": "exprGse104203LowLight",
+    "label": "Expression GSE104203 low light (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "median- and length-normalised expression as deposited (mean over time points and two replicates)",
+    "condition": "Low Light, constant 50 µmol under 12L:12D, mean of eight time points × two replicates",
+    "sha256": "818ddf67af2a1a89dbba8d97fd82b27a1490acca2d699d99168733f12d390dda",
+    "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not in UTEX 2973, under a 12 h light / 12 h dark cycle; each value is the mean over the sampled time points of one light regime and two replicates, which removes the diel time structure the study was designed around. The deposit's log2-ratio blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "piechura-2017",
+    "payload": "expression_layers.json",
+    "ingest": {
+      "sourceFile": "GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "sourceSha256": "f087b345f019b4b88e187e673829a79255cf71046c42cce200516bde654a22ce",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE104nnn/GSE104203/suppl/GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "columns": [
+        "Low Light expression (median and length normalized data) :: 0.5 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 2 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 4 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 6 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 8 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 9 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 10 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 12 :: Replicate 1",
+        "Low Light expression (median and length normalized data) :: 0.5 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 2 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 4 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 6 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 8 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 9 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 10 :: Replicate 2",
+        "Low Light expression (median and length normalized data) :: 12 :: Replicate 2"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE104203",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Clear Day, parabolic natural-light profile to 600 µmol under 12L:12D, mean of eight time points × two replicates",
+      "samples": "Clear Day 0.5–12 h since dawn, replicates 1–2 (GSM2792403–GSM2792418)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104203",
+      "citation": {
+        "text": "Piechura JR, Amarnath K, O'Shea EK. Natural changes in light interact with circadian regulation at promoters to control gene expression in cyanobacteria. Elife 2017;6:e32032.",
+        "url": "https://doi.org/10.7554/eLife.32032",
+        "pmid": "29239721"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "2 biological replicates",
+        "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+      },
+      "treatments": [
+        "diel time course",
+        "changing light"
+      ],
+      "group": "diel",
+      "conditionTableRow": 10,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 8.0 at 30 ∘ C, continuously bubbled with 1% CO 2 in air",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 0,
+          "hi": 600,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "light intensity varied parabolically, reaching a maximum of 600 µmol photons m-2 s-1",
+          "quote": "a Clear Day condition where light intensity varied parabolically, reaching a maximum of 600 µmol photons m-2 s-1",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark cycle; intensity varies parabolically within the light period, modelled on a measured natural clear-day profile",
+          "quote": "To define the Clear Day conditions, we used light intensity values measured by the Ground-based Atmospheric Monitoring Instrument Suite, Rooftop Instrument Group on March 23rd, 2013",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled",
+          "quote": "constantly bubbled with 1% CO2 in air",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 80",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array",
+          "quote": "A single 750 mL cyanobacterial culture in a 150 cm 2 BD Falcon Tissue culture flask (Fisher Scientific) was placed beneath the LED",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution",
+          "quote": "Cultures were maintained at OD750 03 with periodic dilution",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE104203_clear_day",
+    "file": "GSE104203_clear_day.tsv",
+    "metricKey": "exprGse104203ClearDay",
+    "label": "Expression GSE104203 clear day (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "median- and length-normalised expression as deposited (mean over time points and two replicates)",
+    "condition": "Clear Day, parabolic natural-light profile to 600 µmol under 12L:12D, mean of eight time points × two replicates",
+    "sha256": "1e9090792a0affaec64eed7302747ed6313b9016ca4434f18b05667d03e8b0d7",
+    "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not in UTEX 2973, under a 12 h light / 12 h dark cycle; each value is the mean over the sampled time points of one light regime and two replicates, which removes the diel time structure the study was designed around. The deposit's log2-ratio blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "piechura-2017",
+    "payload": "expression_layers.json",
+    "ingest": {
+      "sourceFile": "GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "sourceSha256": "f087b345f019b4b88e187e673829a79255cf71046c42cce200516bde654a22ce",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE104nnn/GSE104203/suppl/GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "columns": [
+        "Clear Day expression (median and length normalized data) :: 0.5 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 2 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 4 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 6 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 8 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 9 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 10 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 12 :: Replicate 1",
+        "Clear Day expression (median and length normalized data) :: 0.5 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 2 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 4 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 6 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 8 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 9 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 10 :: Replicate 2",
+        "Clear Day expression (median and length normalized data) :: 12 :: Replicate 2"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE104203",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "High Light pulse, Low Light culture raised 10-fold for 1 h from 8 h after dawn and returned, mean of seven time points × two replicates",
+      "samples": "High Light Pulse 8–10 h since dawn, replicates 1–2 (GSM2792419–GSM2792432)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104203",
+      "citation": {
+        "text": "Piechura JR, Amarnath K, O'Shea EK. Natural changes in light interact with circadian regulation at promoters to control gene expression in cyanobacteria. Elife 2017;6:e32032.",
+        "url": "https://doi.org/10.7554/eLife.32032",
+        "pmid": "29239721"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "2 biological replicates",
+        "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+      },
+      "treatments": [
+        "diel time course",
+        "high light pulse"
+      ],
+      "group": "elevated",
+      "conditionTableRow": 11,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 8.0 at 30 ∘ C, continuously bubbled with 1% CO 2 in air",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 50,
+          "hi": 500,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "Low Light intensity (50) increased 10-fold for 1 hour, then returned",
+          "quote": "we incresed the light intensity of the Low Light culture by 10 fold (High Light pulse)",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark baseline with a 1 h High Light perturbation from 8 h after dawn",
+          "quote": "On the fourth light period at 8 hours after light onset, we incresed the light intensity of the Low Light culture by 10 fold (High Light pulse)",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled",
+          "quote": "constantly bubbled with 1% CO2 in air",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 80",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array",
+          "quote": "A single 750 mL cyanobacterial culture in a 150 cm 2 BD Falcon Tissue culture flask (Fisher Scientific) was placed beneath the LED",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution",
+          "quote": "Cultures were maintained at OD750 03 with periodic dilution",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE104203_high_light_pulse",
+    "file": "GSE104203_high_light_pulse.tsv",
+    "metricKey": "exprGse104203HighLightPulse",
+    "label": "Expression GSE104203 high-light pulse (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "median- and length-normalised expression as deposited (mean over time points and two replicates)",
+    "condition": "High Light pulse, Low Light culture raised 10-fold for 1 h from 8 h after dawn and returned, mean of seven time points × two replicates",
+    "sha256": "3f38b0c5c0b55fdd18e6879ec16c20ae461911142464f840a71b642bcce3116f",
+    "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not in UTEX 2973, under a 12 h light / 12 h dark cycle; each value is the mean over the sampled time points of one light regime and two replicates, which removes the diel time structure the study was designed around. The deposit's log2-ratio blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "piechura-2017",
+    "payload": "expression_layers.json",
+    "ingest": {
+      "sourceFile": "GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "sourceSha256": "f087b345f019b4b88e187e673829a79255cf71046c42cce200516bde654a22ce",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE104nnn/GSE104203/suppl/GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "columns": [
+        "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 8.25 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 8.5 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 9.25 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 9.5 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+        "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 8.25 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 8.5 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 9.25 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 9.5 :: Replicate 2",
+        "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE104203",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Shade pulse, Clear Day culture lowered 10-fold for 1 h from 8 h after dawn and returned, mean of seven time points × two replicates",
+      "samples": "Shade Pulse 8–10 h since dawn, replicates 1–2 (GSM2792433–GSM2792446)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104203",
+      "citation": {
+        "text": "Piechura JR, Amarnath K, O'Shea EK. Natural changes in light interact with circadian regulation at promoters to control gene expression in cyanobacteria. Elife 2017;6:e32032.",
+        "url": "https://doi.org/10.7554/eLife.32032",
+        "pmid": "29239721"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "2 biological replicates",
+        "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+      },
+      "treatments": [
+        "diel time course",
+        "shade pulse",
+        "changing light"
+      ],
+      "group": "diel",
+      "conditionTableRow": 12,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 8.0 at 30 ∘ C, continuously bubbled with 1% CO 2 in air",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 0,
+          "hi": 600,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "Clear Day profile divided by 10 for 1 hour, then returned",
+          "quote": "decreased the light intensity of the Clear Day culture by 10 fold (Shade pulse) for 1 hour prior to returning the cultures to their original culture",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "warm white LED",
+          "entrained": true,
+          "text": "warm white LED array; diel 12 h light / 12 h dark baseline with a 1 h Shade perturbation from 8 h after dawn",
+          "quote": "The Shade pulse condition was defined by dividing the intensity value of our Clear Day profile by 10 fold between 8 and 9 hr after dawn.",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO2 in air, constantly bubbled",
+          "quote": "constantly bubbled with 1% CO2 in air",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M supplemented with 10 mM HEPES pH 8.0",
+          "quote": "BG-11M media supplemented with 10 mM HEPES pH 80",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "750 mL culture in a 150 cm² tissue culture flask beneath an LED array",
+          "quote": "A single 750 mL cyanobacterial culture in a 150 cm 2 BD Falcon Tissue culture flask (Fisher Scientific) was placed beneath the LED",
+          "where": "paper PMC5785211, Methods - Calibrating light conditions"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution",
+          "quote": "Cultures were maintained at OD750 03 with periodic dilution",
+          "where": "GEO GSE104203 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE104203_shade_pulse",
+    "file": "GSE104203_shade_pulse.tsv",
+    "metricKey": "exprGse104203ShadePulse",
+    "label": "Expression GSE104203 shade pulse (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "median- and length-normalised expression as deposited (mean over time points and two replicates)",
+    "condition": "Shade pulse, Clear Day culture lowered 10-fold for 1 h from 8 h after dawn and returned, mean of seven time points × two replicates",
+    "sha256": "ddfc02048d1cb802b58805a48f64ded58d0f6241f4b0a15964bb73c6e740493b",
+    "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not in UTEX 2973, under a 12 h light / 12 h dark cycle; each value is the mean over the sampled time points of one light regime and two replicates, which removes the diel time structure the study was designed around. The deposit's log2-ratio blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "piechura-2017",
+    "payload": "expression_layers.json",
+    "ingest": {
+      "sourceFile": "GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "sourceSha256": "f087b345f019b4b88e187e673829a79255cf71046c42cce200516bde654a22ce",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE104nnn/GSE104203/suppl/GSE104203_Natural_light_RNAseq_processed.xlsx",
+      "columns": [
+        "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 8.25 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 8.5 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 9.25 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 9.5 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+        "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 8.25 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 8.5 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 9.25 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 9.5 :: Replicate 2",
+        "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
   }
 ]

@@ -100,8 +100,14 @@ GSE327989, GSE79726 and GSE89999 ship (`data/expression/INGESTED_SOURCES.md`);
 method and citation from its `ingest` block. Rendered with 13 condition sets:
 five groups, two comparable subgroups under Diel and one under Standard, the
 seven-study legend, colour and filter menus scoped to the five default sources.
-Still to ingest: GSE104203 (eLife workbook with condition blocks in columns) and
-the CC0 proteomes; GSE45762 is excluded for contradictory sample labels.
+GSE104203 followed on 2026-10-06 as four layers (Low Light, Clear Day, High
+Light pulse, Shade pulse; Package B rows 9 to 12), which needed the tool to read
+replicate sheets side by side, to name repeated columns by the block title above
+them (two title rows, the first that has one winning), and to let a layer carry
+its own condition record and table row; the deposit's log2-ratio blocks are not
+abundances and are left out. Seventeen sources ship. Still to ingest: the CC0
+proteomes (PXD019731, PXD030282, PXD062851, PXD074299 first, each a candidate
+row with a per-gene table); GSE45762 is excluded for contradictory sample labels.
 
 The pair judgements are a data file since 2026-10-06
 (`data/expression/pair_judgements.json`, 32 pairs, emitted as

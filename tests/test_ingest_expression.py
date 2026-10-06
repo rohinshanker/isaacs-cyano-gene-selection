@@ -1,5 +1,6 @@
 """Tests for tools/ingest_expression.py, run against small synthetic inputs."""
 
+import copy
 import csv
 import gzip
 import hashlib
@@ -165,6 +166,73 @@ def test_read_table_handles_gzip_tsv_and_workbooks(tmp_path):
     header, rows = ingest.read_table(buffer.getvalue(), {"format": "xlsx", "sheet": "counts", "idColumn": "id"})
     assert header == ["id", "v"]
     assert rows == [["g1", "2.5"], ["g2", ""]]
+
+
+def test_read_table_joins_replicate_sheets_and_prefixes_block_titles():
+    book = openpyxl.Workbook()
+    first = book.active
+    first.title = "Replicate 1"
+    first.append(["", "", "", "", "Pulse block", ""])          # row 1: a title only over the pulse columns
+    first.append([])                                          # row 2
+    first.append(["", "Day block", "", "", "0", "15"])        # row 3: day title; minute offsets under the pulse
+    first.append(["Gene ID", "0.5", "2", "", "8", "8.25"])    # header row
+    first.append(["g1", 1, 2, "", 5, 6])
+    first.append(["g2", 3, 4, "", 7, 8])
+    second = book.create_sheet("Replicate 2")
+    second.append(["", "", "", "", "Pulse block", ""])
+    second.append([])
+    second.append(["", "Day block", "", "", "0", "15"])
+    second.append(["Gene ID", "0.5", "2", "", "8", "8.25"])
+    second.append(["g1", 10, 20, "", 50, 60])
+    buffer = io.BytesIO()
+    book.save(buffer)
+    reader = {"format": "xlsx", "sheets": ["Replicate 1", "Replicate 2"], "idColumn": "Gene ID", "blockTitleRows": [1, 3]}
+    header, rows = ingest.read_table(buffer.getvalue(), reader)
+    assert header == [
+        "Gene ID",
+        "Day block :: 0.5 :: Replicate 1", "Day block :: 2 :: Replicate 1", "",
+        "Pulse block :: 8 :: Replicate 1", "Pulse block :: 8.25 :: Replicate 1",
+        "Day block :: 0.5 :: Replicate 2", "Day block :: 2 :: Replicate 2", "",
+        "Pulse block :: 8 :: Replicate 2", "Pulse block :: 8.25 :: Replicate 2",
+    ]
+    assert rows[0] == ["g1", "1", "2", "", "5", "6", "10", "20", "", "50", "60"]
+    assert rows[1] == ["g2", "3", "4", "", "7", "8", "", "", "", "", ""], "a gene one sheet lacks keeps blank cells there"
+    # One title row still works through the older key, and a single sheet carries no suffix.
+    header, _ = ingest.read_table(buffer.getvalue(), {"format": "xlsx", "sheet": "Replicate 1", "idColumn": "Gene ID", "blockTitleRow": 3})
+    assert header[1] == "Day block :: 0.5"
+    assert header[4] == "0 :: 8", "without the first title row the minute offset is the nearest title"
+
+
+def test_column_values_refuses_a_header_that_names_several_columns():
+    with pytest.raises(ValueError, match="names 2 columns"):
+        ingest.column_values(["id", "a", "a"], [["g1", "1", "2"]], "a")
+
+
+def test_a_layer_may_carry_its_own_condition_record_and_table_row(tmp_path):
+    data = csv_bytes(["locus_tag", "a", "b"], [["S1", "1", "3"]])
+    layers = [
+        {"id": "GSE1_a", "metricKey": "exprGse1A", "label": "a", "conditionSet": "a", "samples": "GSM1",
+         "columns": ["a"], "treatments": [], "group": "standard"},
+        {"id": "GSE1_b", "metricKey": "exprGse1B", "label": "b", "conditionSet": "b", "samples": "GSM2",
+         "columns": ["b"], "treatments": ["high light"], "group": "elevated", "conditionTableRow": 3,
+         "conditions": None},
+    ]
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_old"}, layers)
+    own = copy.deepcopy(spec["conditions"])
+    own["lightIntensity"] = {"status": "reported", "lo": 500, "hi": 500, "unit": "µmol photons m⁻² s⁻¹",
+                             "text": "500", "where": "paper", "quote": "500 µmol"}
+    spec["layers"][1]["conditions"] = own
+    # A third table row, with its own quotes, for the layer that names it.
+    table = conditions_file(tmp_path)
+    with table.open("a", encoding="utf-8", newline="") as handle:
+        csv.writer(handle, delimiter="\t").writerow(["PCC 7942", CONDITIONS.replace("37°C", "42°C").replace("Grown at 37℃", "Grown at 42℃"), REPLICATES])
+    written, _, _ = run(tmp_path, spec, [("U1", "pcc7942_old_locus_tag", "S1", "")], table)
+    assert written[0]["record"]["conditionTableRow"] == 2
+    assert written[0]["record"]["conditions"]["lightIntensity"]["status"] == "not reported"
+    assert written[0]["record"]["conditions"]["temperature"]["quote"] == "Grown at 37℃"
+    assert written[1]["record"]["conditionTableRow"] == 3
+    assert written[1]["record"]["conditions"]["lightIntensity"]["lo"] == 500
+    assert written[1]["record"]["conditions"]["temperature"]["quote"] == "Grown at 42℃", "the layer's own row supplies its quotes"
 
 
 def test_read_table_rejects_unknown_formats_and_missing_headers():

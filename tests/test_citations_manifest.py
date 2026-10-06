@@ -50,7 +50,7 @@ def test_sections_and_citations_are_complete():
     assert {
         "yu-2015", "ncbi-utex-2973", "tan-2018", "simkovsky-2022",
         "gilliam-2025", "dong-2023", "sato-2026", "choi-2016",
-        "puszynska-2017", "ncbi-pcc-7942", "gene-ontology",
+        "puszynska-2017", "piechura-2017", "ncbi-pcc-7942", "gene-ontology",
         "adomako-2022-essentiality"
     } == {item["id"] for item in sections[0]["items"]}
     assert {
