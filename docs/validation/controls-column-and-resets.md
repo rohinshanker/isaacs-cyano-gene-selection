@@ -89,11 +89,11 @@ dragged card, and moving an element in the DOM drops its pointer capture, so
 listeners bound to the handle never receive the release and the drag hangs with
 the order unsaved. Window-level listeners were the fix.
 
-## Every reset asks first
+## Every reset but Reset view asks first
 
-`site/js/ui/confirm-dialog.js` is the single gate. Every reset control in the
-page is wired through `confirmedReset`, so a reset added later cannot skip the
-question by forgetting to ask.
+`site/js/ui/confirm-dialog.js` is the single gate. Every reset control that
+discards something the page cannot give back is wired through `confirmedReset`,
+so a reset added later cannot skip the question by forgetting to ask.
 
 The contract:
 
@@ -113,12 +113,13 @@ The contract:
 - A second question while one is open answers the first as Cancel rather than
   stacking two modals.
 
-Controls currently gated: Reset view, Reset selections, Reset panel widths, Reset
-panel layout, Reset metrics, the chromosome view's own Reset view, and the panel
-designer's Reset settings. A pointer or key shortcut that resets a camera —
-double-click and `0` on the scatter map and on the chromosome track — is
-deliberately not gated: the control is the gate, and a modal on a gesture would
-be noise. The category legend's **Clear category selection** is deliberately not
+Controls currently gated: Reset selections, Reset panel widths, Reset panel
+layout, Reset metrics, and the panel designer's Reset settings. **Reset view is
+the exception**, on the scatter map and in the chromosome view alike, by owner
+decision of 2026-10-05: it acts at once, because a camera framing or a track
+window is recovered by zooming again, and a question before it was noise. The
+pointer and key shortcuts that reset a camera — double-click and `0` on the
+scatter map and on the chromosome track — were never gated for the same reason. The category legend's **Clear category selection** is deliberately not
 gated for the same kind of reason: it clears a filter that is restored by
 clicking the categories again, so a modal would be noise rather than
 protection.
@@ -188,6 +189,15 @@ What it draws, and only this:
   against this release's start, and the panel says so beside the drawing.
   Silently remeasuring it would invent a coordinate the source never reported;
   the caveat also repeats that these measure initiation, not abundance.
+  The chromosome view draws the same sites at their published absolute
+  coordinate instead, and the two placements disagree where this release's
+  start differs from the authors' gene model: on the shipped data 236 of 2,432
+  sites, over 178 loci, by 3 to 198 nt, 15 of them with the coordinate inside
+  the current CDS. The panel names the gap per site (`placementGapNt` and
+  `impliedDistanceNt` from `tssMarks()`) in its description and in each mark's
+  title, and takes no side: which placement a construct boundary should follow
+  is row 8 of the lab's biological-decisions list.
+  `tests/js/gene-view-tan-evidence.test.mjs` pins the counts.
 
 A site with no published distance has nowhere to be drawn and is left out. A
 record with no coordinates draws nothing rather than guessing. The SVG carries a

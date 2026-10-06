@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   mean, stdev, sortedFinite, quantileSorted, medianSorted, percentileRank,
   standardizeColumns, geometricMean,
@@ -32,6 +33,26 @@ test('percentile rank uses the mid-rank convention for ties', () => {
   assert.equal(percentileRank(sorted, 3), 0.9);
   assert.ok(Number.isNaN(percentileRank(sorted, NaN)));
   assert.ok(Number.isNaN(percentileRank(sortedFinite([]), 1)));
+});
+
+test('the shipped expressionPercentile column is the browser mid-rank to within rounding', () => {
+  // The pipeline publishes six decimals, so rounding alone cannot exceed 5e-7;
+  // anything above 1e-6 is a convention the two sides do not share.
+  const genes = JSON.parse(readFileSync(new URL('../../site/data/genes.json', import.meta.url)));
+  const sorted = sortedFinite(genes.map((gene) => gene.expression));
+  const measured = genes.filter((gene) => Number.isFinite(gene.expression));
+  assert.ok(measured.length > 0);
+  assert.equal(measured.length, sorted.length);
+  let worst = 0;
+  for (const gene of measured) {
+    assert.ok(Number.isFinite(gene.expressionPercentile), gene.id);
+    worst = Math.max(worst, Math.abs(percentileRank(sorted, gene.expression) - gene.expressionPercentile));
+  }
+  assert.ok(worst <= 1e-6, `worst difference ${worst}`);
+  assert.ok(measured.every((gene) => gene.expressionPercentile < 1), 'mid-rank never reaches 1');
+  for (const gene of genes) {
+    if (!Number.isFinite(gene.expression)) assert.equal(gene.expressionPercentile, null, gene.id);
+  }
 });
 
 test('standardizing zeroes a constant column instead of dividing by zero', () => {

@@ -1439,6 +1439,47 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
                  "; ".join(problems[:4]))
 
 
+def validate_pair_judgements(meta: dict[str, Any], report: Report) -> None:
+    """Checks the owner's pair judgements the site reads to join or keep apart two condition sets.
+
+    Each names both sides by study and condition-table row and carries one of
+    the four calls; a conditional call states its condition; no pair is judged
+    twice. The list may be empty, which means no judgement, never a default.
+    """
+    judgements = meta.get("pairJudgements")
+    report.check(isinstance(judgements, list), "meta.pairJudgements is a list")
+    if not isinstance(judgements, list):
+        return
+    calls = ("share", "separate", "conditional", "undecided")
+    problems = []
+    seen = set()
+    for item in judgements:
+        if not isinstance(item, dict):
+            problems.append("not an object")
+            continue
+        ends = []
+        for side in ("a", "b"):
+            end = item.get(side)
+            if (not isinstance(end, dict) or not isinstance(end.get("studyId"), str)
+                    or not end["studyId"] or isinstance(end.get("row"), bool)
+                    or not isinstance(end.get("row"), int) or end["row"] <= 0):
+                problems.append(f"pair {item.get('pair')}: side {side} names no study and row")
+                break
+            ends.append(f"{end['studyId']}#{end['row']}")
+        if len(ends) < 2:
+            continue
+        if item.get("call") not in calls:
+            problems.append(f"pair {item.get('pair')}: unknown call {item.get('call')!r}")
+        if item.get("call") == "conditional" and not item.get("condition"):
+            problems.append(f"pair {item.get('pair')}: conditional on nothing")
+        key = tuple(sorted(ends))
+        if key in seen:
+            problems.append(f"pair {item.get('pair')}: judged twice")
+        seen.add(key)
+    report.check(not problems, "every pair judgement names two sides and one known call",
+                 "; ".join(problems[:4]))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--organism", default=None)
@@ -1465,6 +1506,8 @@ def main() -> int:
 
     if isinstance(meta, dict) and isinstance(genes, list):
         validate_expression_layers(data_dir, meta, genes, report)
+    if isinstance(meta, dict):
+        validate_pair_judgements(meta, report)
 
     if meta is not None and isinstance(genes, list):
         # Prefer the data's own declaration over the raw genome. `cdsSegments` is
@@ -1544,6 +1587,28 @@ def main() -> int:
                     if isinstance(item, dict)) == 1,
             "TSS site evidence names exactly one pooled-score provenance source",
         )
+        # Two layers count genes differently: the pooled score is a genes.json
+        # column, the site rows are tss_evidence.json. Each coverage statement
+        # names its layer, and each number is the shipped column's own count.
+        def coverage_names_its_column(item):
+            key, payload = item.get("metricKey"), item.get("payload")
+            coverage = item.get("coverage") if isinstance(item.get("coverage"), dict) else {}
+            with_value, total = coverage.get("withValue"), coverage.get("total")
+            definition = (meta.get("metrics") or {}).get(key)
+            if not (isinstance(definition, dict) and isinstance(with_value, int)
+                    and isinstance(total, int) and total == len(genes)):
+                return False
+            if payload == "genes.json" and with_value != sum(
+                    gene.get(key) is not None for gene in genes if isinstance(gene, dict)):
+                return False
+            return (f"available for {with_value:,} of {total:,} genes in the {key} column of "
+                    f"{payload}.") in str(definition.get("desc", ""))
+        report.check(
+            bool(expression_sources) and all(coverage_names_its_column(item)
+                                             for item in expression_sources
+                                             if isinstance(item, dict)),
+            "every expression coverage names its column and payload and matches the shipped column",
+        )
         report.check(
             isinstance(tss_evidence, dict),
             "TSS evidence is an object keyed by current locus tag",
@@ -1565,6 +1630,12 @@ def main() -> int:
                 and len(rows) == summary.get("matchedRows") == 2432
                 and len(tss_evidence) == summary.get("matchedGenes") == 1789,
                 "TSS evidence cardinality matches the pinned Table S1 join",
+            )
+            report.check(
+                isinstance(summary, dict)
+                and summary.get("layer") == "tss_evidence.json"
+                and summary.get("genesWithoutMappedTss") == len(gene_ids - set(tss_evidence)) == 926,
+                "genesWithoutMappedTss names the site-row layer and counts genes absent from it",
             )
             seen = set()
             valid = True

@@ -41,6 +41,26 @@ visible while a reader scrolls across the wide metric columns. Each table keeps
 a concise screen-reader caption and references the visible guidance with
 `aria-describedby`.
 
+### A clamped value must look clamped
+
+Every axis is a robust z-score clamped to ±3 spreads of the median (`Z_LIMIT`),
+so one extreme value cannot flatten the rest of the chart. On the shipped
+release the clamp is not rare: 421 of 2,551 `expression` values (16.5%) and 272
+of 1,727 `tssInitiation` values (15.7%) lie beyond it, and a reader who saw them
+drawn on the rim would otherwise take them for values that happen to sit there.
+The clamp is a visual encoding and may stay; hiding it may not.
+
+- `isClamped()` and `rawZScore()` in `compare-model.js` keep the true distance;
+  `zScore()` is the only place the clamp is applied.
+- A pinned marker carries a **bar across it**, perpendicular to the direction it
+  was pushed back from: across the spoke on the radar, across the axis in
+  parallel coordinates (`drawClampBar()`).
+- The **count** appears in the chart note, the accessible name, and the legend
+  entry for each affected candidate (" · n at the rim"); the table still shows
+  the raw value, so the true distance is never lost.
+- `tests/js/compare-model.test.mjs` pins the two shipped counts, so a change in
+  the data or the clamp is seen in review rather than discovered in the picture.
+
 ## 2. Ten candidates must stay distinguishable
 
 The lab's target panel is 6 to 10 genes, so 10 is the size that must work, not a

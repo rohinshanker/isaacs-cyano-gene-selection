@@ -1209,17 +1209,19 @@ function renderAll({ schemeErrors = [] } = {}) {
     },
   });
   if (searchResults) searchResults.refresh();
+  // The comparison and the designer offer measured sources the way the menus
+  // do: only the ones selected under Data Sources.
   comparePanel.update({
     ids: state.shortlist,
     dataset: context.dataset,
-    registry: context.registry,
+    registry: scopedRegistry(),
     tab: state.compareTab,
     axisKeys: compareAxes,
   });
   if (panelDesigner) {
     panelDesigner.update({
       dataset: context.dataset,
-      registry: context.registry,
+      registry: scopedRegistry(),
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
       colorSources: state.colorSources,
@@ -2558,18 +2560,14 @@ async function boot() {
   // The source-ledger fetch is optional; a slow response must not delay map boot.
   void citationsLoaded;
 
-  // Every reset asks first. Each one discards something the page cannot give
-  // back: a framing, a shortlist, an arrangement, a set of chosen metrics.
-  confirmedReset(element('reset-view'), {
-    title: 'Reset the map view?',
-    body: 'The map returns to its default zoom and position. Your pinned gene, shortlist, '
-      + 'filters, and recoding scheme are not affected.',
-    confirmLabel: 'Reset view',
-    action: () => {
-      plot.resetFrameStats();
-      plot.resetView();
-      announce('Map view reset.');
-    },
+  // Reset view acts at once, by owner decision of 2026-10-05: a camera framing
+  // is recovered by zooming again, so a question before it was noise. Every
+  // other reset asks first, because each discards something the page cannot
+  // give back: a shortlist, an arrangement, a set of chosen metrics.
+  element('reset-view').addEventListener('click', () => {
+    plot.resetFrameStats();
+    plot.resetView();
+    announce('Map view reset.');
   });
   confirmedReset(element('reset-selections'), {
     title: 'Reset selections?',

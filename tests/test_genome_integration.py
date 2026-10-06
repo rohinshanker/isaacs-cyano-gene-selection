@@ -141,7 +141,7 @@ def test_generated_documents_follow_contract():
     assert "transcription initiation strength" in tss_definition["desc"]
     assert "not transcript abundance" in tss_definition["desc"]
     assert "Tan et al. 2018" in tss_definition["desc"]
-    assert "1,727 of 2,715 genes" in tss_definition["desc"]
+    assert "1,727 of 2,715 genes in the tssInitiation column of genes.json" in tss_definition["desc"]
 
     tss_measured = [gene for gene in genes if gene["tssInitiation"] is not None]
     tss_missing = [gene for gene in genes if gene["tssInitiation"] is None]
@@ -162,6 +162,7 @@ def test_generated_documents_follow_contract():
     assert tss_source["replicatesPerCondition"] == 2
     assert tss_source["isGeneBodyAbundance"] is False
     assert tss_source["summary"] == {
+        "layer": "tss_evidence.json",
         "sourceRows": 2475,
         "matchedRows": 2432,
         "matchedGenes": 1789,

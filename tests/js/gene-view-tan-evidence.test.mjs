@@ -120,7 +120,7 @@ function tally(ids) {
 }
 
 /** The identity a drawn mark carries, which is its `<title>` and nothing else. */
-const MARK_TITLE = /^(.+): published (-?\d+) nt upstream of the Tan 2018 gene-model start$/;
+const MARK_TITLE = /^(.+): published (-?\d+) nt upstream of the Tan 2018 gene-model start(?:; its published genome coordinate, where the chromosome view draws it, is -?\d+ nt from this release's start, \d+ nt away)?$/;
 
 /**
  * One layer of the drawing, by the class it is drawn with, or null when the
@@ -422,5 +422,42 @@ test('the audit rejects a dropped row, a duplicate standing in for one, and a cl
     assert.equal(farModel.tss[0].offset, -50_000);
     assert.equal(fractionOf(farModel.domain, farModel.tss[0].offset), 0);
     assert.deepEqual(auditGeneDrawing(far).problems, []);
+  });
+});
+
+/**
+ * Data-use audit A-02: the gene view draws the published upstream distance and
+ * the chromosome view the published genome coordinate. The two disagree for a
+ * minority of sites, and the viewer must say so per site rather than let a
+ * reader assume one picture is the other. The counts the audit measured are
+ * pinned here so a change in either placement is seen in review.
+ */
+test('the placement divergence between the two views is counted and named per site', () => {
+  const marks = genesWithEvidence().flatMap((gene) => tssMarks(gene));
+  assert.equal(marks.length, 2432);
+  const apart = marks.filter((mark) => mark.placementGapNt > 0);
+  const gaps = apart.map((mark) => mark.placementGapNt).sort((a, b) => a - b);
+  assert.equal(apart.length, 236);
+  assert.equal(gaps[0], 3);
+  assert.equal(gaps[gaps.length - 1], 198);
+  assert.equal(apart.filter((mark) => mark.impliedDistanceNt < 0).length, 15,
+    'published coordinates that fall inside the current CDS');
+
+  // A gene whose coordinate implies a start inside the CDS names the gap and
+  // the lab's decision; one whose placements agree says so in one sentence.
+  const inside = joined('M744_RS04380');
+  const text = describeGeneView(geneViewModel(inside));
+  assert.match(text, /chromosome view draws the published genome coordinate instead, which differs from this placement for gTSS\+849362 by 168 nt; that coordinate falls inside the current coding sequence\. Which placement a construct boundary should follow is for the lab to decide\./);
+  const agreeing = genesWithEvidence().find((gene) => tssMarks(gene).every((mark) => mark.placementGapNt === 0));
+  assert.match(describeGeneView(geneViewModel(agreeing)),
+    /chromosome view draws the same sites? at the published genome coordinate, which agrees with this placement\./);
+
+  // The per-site title carries the same gap, and only where there is one.
+  withFakeDocument((document) => {
+    const titles = (gene) => geneViewSvg(geneViewModel(gene), document)
+      .querySelectorAll('title').map((node) => node.textContent)
+      .filter((title) => title.includes('gTSS'));
+    assert.ok(titles(inside).some((title) => /gTSS\+849362: published 22 nt upstream of the Tan 2018 gene-model start; its published genome coordinate, where the chromosome view draws it, is -146 nt from this release's start, 168 nt away/.test(title)));
+    assert.ok(titles(agreeing).every((title) => !title.includes('chromosome view')));
   });
 });

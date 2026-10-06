@@ -69,7 +69,7 @@ METRIC_DEFINITIONS = {
     "deltaEnc": "Expected ENC minus observed ENC, in codons and centred on zero; positive values mean more codon concentration than the GC3s neutral curve predicts, subject to the ENC family-substitution caveat.",
     "cai": "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and calculated against the 71-gene ribosomal-plus-housekeeping reference set; zero reference counts receive a 0.5 pseudocount and Met and Trp are excluded.",
     "tai": "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and derived from this genome's tRNA gene copies with bacterial wobble penalties; TTA has no cognate tRNA and uses the geometric mean of non-zero codon weights.",
-    "expressionPercentile": "Average-rank percentile of the measured PCC 7942 expression values, in (0, 1]; null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
+    "expressionPercentile": "Mid-rank percentile of the measured PCC 7942 expression values, in (0, 1); null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
     "expressionProxy": "Tie-aware average rank of sqrt(CAI × tAI) across all genes, scaled from 0 to 1; this is a codon-adaptation proxy, not measured transcript or protein abundance.",
     "rareFraction": "Fraction of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to 1 and treats an alternative start codon as translated methionine.",
     "rareCount": "Number of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to the gene's sense-codon length and excludes the terminal stop.",
@@ -521,6 +521,46 @@ def load_annotation_layer(
     return site_evidence, metadata
 
 
+PAIR_CALLS = ("share", "separate", "conditional", "undecided")
+
+
+def load_pair_judgements(path: Path) -> list[dict[str, Any]]:
+    """The owner's judgements on escalated condition-set pairs, for ``meta.pairJudgements``.
+
+    Each names both sides by study and condition-table row, the way the review
+    sheet names them, and one of the four calls the site reads. An absent file
+    means no judgement, never a default call.
+    """
+    if not path.is_file():
+        return []
+    document = json.loads(path.read_text(encoding="utf-8"))
+    require(document.get("schemaVersion") == 1, f"{path.name}: unknown schemaVersion")
+    judgements = document.get("judgements")
+    require(isinstance(judgements, list) and judgements, f"{path.name}: no judgements")
+    seen: set[tuple[str, str]] = set()
+    for item in judgements:
+        for side in ("a", "b"):
+            end = item.get(side)
+            require(
+                isinstance(end, dict) and isinstance(end.get("studyId"), str) and end["studyId"]
+                and isinstance(end.get("row"), int) and end["row"] > 0,
+                f"{path.name}: pair {item.get('pair')} side {side} names no study and row",
+            )
+        require(item.get("call") in PAIR_CALLS, f"{path.name}: pair {item.get('pair')} has an unknown call")
+        require(
+            item["call"] != "conditional" or bool(item.get("condition")),
+            f"{path.name}: pair {item.get('pair')} is conditional on nothing",
+        )
+        key = tuple(sorted((f"{item['a']['studyId']}#{item['a']['row']}", f"{item['b']['studyId']}#{item['b']['row']}")))
+        require(key not in seen, f"{path.name}: pair {key} is judged twice")
+        seen.add(key)
+    return [
+        {"pair": item["pair"], "a": item["a"], "b": item["b"], "call": item["call"],
+         **({"condition": item["condition"]} if item.get("condition") else {})}
+        for item in judgements
+    ]
+
+
 def load_expression_sources(
     directory: Path, existing_metric_keys: Iterable[str] = ()
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
@@ -632,14 +672,19 @@ def load_expression_sources(
 def expression_metric_definition(
     source: Mapping[str, Any], with_value: int, total: int
 ) -> dict[str, str]:
-    """Builds a reader-facing metric definition from manifest provenance."""
+    """Builds a reader-facing metric definition from manifest provenance.
+
+    The coverage names its column and payload, so a count is never mistaken for
+    another layer's (the Tan site rows in ``tss_evidence.json`` count differently).
+    """
     return {
         "label": source["label"],
         "unit": source["units"],
         "desc": (
             f"{source['assay']} measured in {source['organism']} under "
             f"{source['condition']}, reported in {source['units']}; available for "
-            f"{with_value:,} of {total:,} genes. {source['caveat']}"
+            f"{with_value:,} of {total:,} genes in the {source['metricKey']} column of "
+            f"{source['payload']}. {source['caveat']}"
         ),
         "family": "Expression",
         "scale": "sequential",
@@ -673,7 +718,7 @@ def expression_layers_document(
 
 
 def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
-    """Returns average-rank percentiles (rank / N), including ties."""
+    """Returns mid-rank percentiles, (below + ties / 2) / N, the browser's `percentileRank`."""
     ordered = sorted(values.items(), key=lambda item: item[1])
     result = {}
     start = 0
@@ -681,9 +726,9 @@ def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
         end = start + 1
         while end < len(ordered) and ordered[end][1] == ordered[start][1]:
             end += 1
-        average_rank = ((start + 1) + end) / 2
+        mid_rank = start + (end - start) / 2
         for locus, _ in ordered[start:end]:
-            result[locus] = average_rank / len(ordered)
+            result[locus] = mid_rank / len(ordered)
         start = end
     return result
 
@@ -1150,10 +1195,12 @@ def build(
 
     expression_sources: list[dict[str, Any]] = []
     expression_values: dict[str, dict[str, float]] = {}
+    pair_judgements: list[dict[str, Any]] = []
     if organism.has_layer("expression"):
         expression_sources, expression_values = load_expression_sources(
             repository / "data/expression", METRIC_DEFINITIONS
         )
+        pair_judgements = load_pair_judgements(repository / "data/expression/pair_judgements.json")
     sources_by_metric = {source["metricKey"]: source for source in expression_sources}
     primary_expression_source = sources_by_metric.get("expression")
     if organism.has_layer("expression"):
@@ -1455,6 +1502,7 @@ def build(
             if primary_expression_source is not None
             else {}
         ),
+        "pairJudgements": pair_judgements,
         "expressionSources": [
             {
                 **source,
@@ -1485,7 +1533,9 @@ def build(
             },
             "tssDiscoveryMinimumRawReadsInAnyLibrary": 300,
             "isGeneBodyAbundance": False,
-            "summary": tss_summary,
+            # Every count here is over the gene-linked site rows, not the pooled
+            # tssInitiation column, whose coverage its own metric definition names.
+            "summary": {"layer": "tss_evidence.json", **tss_summary},
             "pooledScoreSourceId": "TAN2018_TSS",
         },
         "expressionProxy": {

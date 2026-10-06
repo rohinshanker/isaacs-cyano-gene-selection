@@ -1,0 +1,499 @@
+{
+  "schemaVersion": 1,
+  "source": "docs/validation/AAAA-new-bio-decisions-to-review.md#pair-judgements-from-the-review-sheet",
+  "reviewSheet": "docs/notes/handoff/cyano_escalated_pairs_review_20261005.md",
+  "scoredBy": "docs/notes/handoff/cyano_package_D_pairs_20261004.tsv",
+  "judged": "2026-10-05",
+  "calls": {
+    "share": "the pair may share a comparable set",
+    "separate": "the pair stays apart",
+    "conditional": "shares only while the stated condition holds",
+    "undecided": "the owner has not settled it; treated as apart"
+  },
+  "judgements": [
+    {
+      "pair": 1,
+      "a": {
+        "studyId": "GSE18902",
+        "row": 21
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "co2",
+      "call": "share",
+      "by": "owner",
+      "entry": "may share layer"
+    },
+    {
+      "pair": 2,
+      "a": {
+        "studyId": "GSE225426",
+        "row": 31
+      },
+      "b": {
+        "studyId": "GSE59112",
+        "row": 55
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "may share"
+    },
+    {
+      "pair": 3,
+      "a": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "b": {
+        "studyId": "GSE50908",
+        "row": 46
+      },
+      "narrowAxis": "co2",
+      "call": "share",
+      "by": "owner",
+      "entry": "may share"
+    },
+    {
+      "pair": 4,
+      "a": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "b": {
+        "studyId": "GSE50919",
+        "row": 47
+      },
+      "narrowAxis": "co2",
+      "call": "share",
+      "by": "owner",
+      "entry": "may share"
+    },
+    {
+      "pair": 5,
+      "a": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "b": {
+        "studyId": "GSE52486",
+        "row": 54
+      },
+      "narrowAxis": "co2",
+      "call": "share",
+      "by": "owner",
+      "entry": "may share"
+    },
+    {
+      "pair": 6,
+      "a": {
+        "studyId": "PXD005105",
+        "row": 59
+      },
+      "b": {
+        "studyId": "PXD074299",
+        "row": 78
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "may share"
+    },
+    {
+      "pair": 7,
+      "a": {
+        "studyId": "PXD030282",
+        "row": 72
+      },
+      "b": {
+        "studyId": "PXD062851",
+        "row": 77
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "undecided",
+      "by": "owner",
+      "entry": "maybe - the 75-100 lighting is a bit too distant from 50 lighting as it has changing conditions. note this for future pairs as well, and maybe it can be filed into its own subcategories"
+    },
+    {
+      "pair": 8,
+      "a": {
+        "studyId": "PXD030282",
+        "row": 74
+      },
+      "b": {
+        "studyId": "PXD062851",
+        "row": 77
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "undecided",
+      "by": "extrapolated",
+      "entry": "same two studies and light values as pair 7, so it takes pair 7's entry"
+    },
+    {
+      "pair": 9,
+      "a": {
+        "studyId": "GSE103462",
+        "row": 3
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "mostly fine."
+    },
+    {
+      "pair": 10,
+      "a": {
+        "studyId": "GSE103462",
+        "row": 3
+      },
+      "b": {
+        "studyId": "GSE327989",
+        "row": 40
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine but see if CO2 conditions can be retrieved. if not, take note",
+      "note": "chase the missing CO₂ condition; record it if it cannot be found"
+    },
+    {
+      "pair": 11,
+      "a": {
+        "studyId": "GSE103462",
+        "row": 3
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "extrapolated",
+      "entry": "same values and regime as pairs 14 and 17, which the owner marked fine"
+    },
+    {
+      "pair": 12,
+      "a": {
+        "studyId": "GSE103463",
+        "row": 4
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 13,
+      "a": {
+        "studyId": "GSE103463",
+        "row": 4
+      },
+      "b": {
+        "studyId": "GSE327989",
+        "row": 40
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 14,
+      "a": {
+        "studyId": "GSE103463",
+        "row": 4
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 15,
+      "a": {
+        "studyId": "GSE103644",
+        "row": 7
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 16,
+      "a": {
+        "studyId": "GSE103644",
+        "row": 7
+      },
+      "b": {
+        "studyId": "GSE327989",
+        "row": 40
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 17,
+      "a": {
+        "studyId": "GSE103644",
+        "row": 7
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 18,
+      "a": {
+        "studyId": "GSE103704",
+        "row": 8
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 19,
+      "a": {
+        "studyId": "GSE103704",
+        "row": 8
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 20,
+      "a": {
+        "studyId": "GSE104203",
+        "row": 11
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "co2",
+      "call": "separate",
+      "by": "owner",
+      "entry": "no, changing conditions + different may not be comparable"
+    },
+    {
+      "pair": 21,
+      "a": {
+        "studyId": "GSE104203",
+        "row": 12
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "co2",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 22,
+      "a": {
+        "studyId": "GSE105774",
+        "row": 16
+      },
+      "b": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 23,
+      "a": {
+        "studyId": "GSE105774",
+        "row": 16
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 24,
+      "a": {
+        "studyId": "GSE140121",
+        "row": 19
+      },
+      "b": {
+        "studyId": "GSE327989",
+        "row": 40
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "conditional",
+      "by": "owner",
+      "entry": "fine, as long as the lights arent changing in one and constant on the other",
+      "condition": "the same kind of light regime on both sides"
+    },
+    {
+      "pair": 25,
+      "a": {
+        "studyId": "GSE140121",
+        "row": 20
+      },
+      "b": {
+        "studyId": "GSE327989",
+        "row": 40
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 26,
+      "a": {
+        "studyId": "GSE140121",
+        "row": 19
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "undecided",
+      "by": "owner",
+      "entry": "a bit too far, as 120 is too high. if it lies within 80-90 that is fine, but if not that is too different",
+      "note": "the source reports a range of 80–120 µmol, so the owner's 80–90 condition cannot be checked"
+    },
+    {
+      "pair": 27,
+      "a": {
+        "studyId": "GSE140121",
+        "row": 20
+      },
+      "b": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "undecided",
+      "by": "owner",
+      "entry": "once again very close except for light. see previous",
+      "note": "the source reports a range of 80–120 µmol, so the owner's 80–90 condition cannot be checked"
+    },
+    {
+      "pair": 28,
+      "a": {
+        "studyId": "GSE140121",
+        "row": 19
+      },
+      "b": {
+        "studyId": "GSE59112",
+        "row": 55
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "separate",
+      "by": "owner",
+      "entry": "no, see above"
+    },
+    {
+      "pair": 29,
+      "a": {
+        "studyId": "GSE140121",
+        "row": 20
+      },
+      "b": {
+        "studyId": "GSE59112",
+        "row": 55
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "separate",
+      "by": "owner",
+      "entry": "no"
+    },
+    {
+      "pair": 30,
+      "a": {
+        "studyId": "GSE254350",
+        "row": 37
+      },
+      "b": {
+        "studyId": "GSE89999",
+        "row": 57
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "extrapolated",
+      "entry": "the owner accepted GSE89999 against GSE45762 at 60 µmol (pair 31) and GSE254350 against the circadian array series (pairs 1, 3, 4, 5); the light ratio here is smaller than in pair 31"
+    },
+    {
+      "pair": 31,
+      "a": {
+        "studyId": "GSE45762",
+        "row": 45
+      },
+      "b": {
+        "studyId": "GSE89999",
+        "row": 57
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    },
+    {
+      "pair": 32,
+      "a": {
+        "studyId": "PXD062851",
+        "row": 77
+      },
+      "b": {
+        "studyId": "PXD074299",
+        "row": 78
+      },
+      "narrowAxis": "lightIntensity",
+      "call": "share",
+      "by": "owner",
+      "entry": "fine"
+    }
+  ]
+}

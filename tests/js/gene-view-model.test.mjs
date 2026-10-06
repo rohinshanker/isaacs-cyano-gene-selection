@@ -91,6 +91,19 @@ test('start sites are drawn upstream at the distances the source published', () 
   const marks = tssMarks(gene);
   assert.deepEqual(marks.map((mark) => mark.offset), [-614, -61]);
   assert.equal(marks.length, 2, 'a site with no published distance has nowhere to be drawn');
+  // The published coordinate implies its own distance against this release's
+  // start (4314): 614 agrees exactly, 61 is placed 4253, i.e. 61 nt, so both agree.
+  assert.deepEqual(marks.map((mark) => [mark.impliedDistanceNt, mark.placementGapNt]), [[614, 0], [61, 0]]);
+  const moved = tssMarks({ ...gene, tssEvidence: [
+    { id: 'gTSS+4', sourceStartDistanceNt: 22, strand: '+', position: 4460, replicon: 'CP006471' },
+    { id: 'gTSS+5', sourceStartDistanceNt: 10, strand: '+', position: null },
+  ] });
+  assert.deepEqual(moved.map((mark) => [mark.impliedDistanceNt, mark.placementGapNt]),
+    [[-146, 168], [null, null]], 'a coordinate inside the CDS implies a negative distance');
+  const minus = tssMarks({ ...gene, strand: '-', start: 1000, end: 2000, tssEvidence: [
+    { id: 'gTSS-1', sourceStartDistanceNt: 50, strand: '-', position: 2060, replicon: 'CP006471' },
+  ] });
+  assert.deepEqual([minus[0].impliedDistanceNt, minus[0].placementGapNt], [60, 10]);
   const model = geneViewModel(gene);
   assert.equal(model.domain.min, -614, 'the domain widens to hold the furthest site');
 });

@@ -53,6 +53,10 @@ test('percentiles read as plain rank language', () => {
 
 test('counts, spans, and CSV fields are shaped for reading and for machines', () => {
   assert.equal(formatCount(2711), '2,711');
+  assert.equal(formatCount(0), '0');
+  assert.equal(formatCount(null), MISSING);
+  assert.equal(formatCount(undefined), MISSING);
+  assert.equal(formatCount(NaN), MISSING);
   assert.equal(formatSpan(812345, 813100, '+'), '812,345–813,100 (+)');
   assert.equal(csvField('plain'), 'plain');
   assert.equal(csvField('with,comma'), '"with,comma"');

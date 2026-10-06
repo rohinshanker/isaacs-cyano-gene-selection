@@ -27,7 +27,6 @@ import {
 import {
   EMPHASIS_RANK, describeDrawOrder, normalizeDrawDirection, sortByPaintOrder, topByPaintOrder,
 } from '../core/paint-priority.js';
-import { confirmedReset } from './confirm-dialog.js';
 import { syncScaleSelect } from './scale-select.js';
 import { renderDrawDirection } from './draw-direction.js';
 import { formatCount } from './format.js';
@@ -498,17 +497,10 @@ export class ChromosomeView {
 
     this.zoomIn = this.chip('Zoom in (+)', 'Zoom in', () => this.zoomByCentre(1.6));
     this.zoomOut = this.chip('Zoom out (−)', 'Zoom out', () => this.zoomByCentre(1 / 1.6));
-    // Every reset asks first; see docs/validation/controls-column-and-resets.md.
-    // The double-click and `0` shortcuts stay direct, as the scatter map's do:
-    // a modal on a pointer gesture is noise, and the control is the gate.
-    this.resetButton = this.chip('Reset view', 'Reset the chromosome view');
-    confirmedReset(this.resetButton, {
-      title: 'Reset the chromosome view?',
-      body: 'Every track returns to its full length, discarding the windows you zoomed and '
-        + 'panned to. Your pinned gene, shortlist, filters, and colour are not affected.',
-      confirmLabel: 'Reset view',
-      action: () => this.resetView(),
-    });
+    // Reset view acts at once, like the double-click and `0` shortcuts, by
+    // owner decision of 2026-10-05: a window is recovered by zooming again.
+    // See docs/validation/controls-column-and-resets.md for the resets that ask.
+    this.resetButton = this.chip('Reset view', 'Reset the chromosome view', () => this.resetView());
 
     const showHiddenRow = document.createElement('span');
     showHiddenRow.className = 'checkbox-row';
@@ -749,7 +741,9 @@ export class ChromosomeView {
       parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
         + `${study} gene-linked start sites on the tick row above each axis, appear once the window `
         + 'is narrow enough to tell them apart, so they fill in as you zoom. The start-site '
-        + 'positions were measured on this assembly and are drawn where that study published them.');
+        + 'positions were measured on this assembly and are drawn where that study published them; '
+        + 'the gene view draws the same sites at the published upstream distance instead, and for '
+        + 'a minority of sites the two placements differ, which that view names per site.');
     }
     return parts.join(' ');
   }

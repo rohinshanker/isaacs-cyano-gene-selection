@@ -12,10 +12,11 @@
 
 ## Current state
 
-This ticket is the outward-looking half. Its counterpart,
-[O_claude-science-data-use-audit__20260928](O_claude-science-data-use-audit__20260928.md),
-audits the data already shipped here. Keep them separate: this one returns
-candidate sources, that one returns findings about existing use.
+This ticket is the outward-looking half. Its counterpart, the data-use audit of
+what is already shipped here, is resolved; its reusable walk is
+[data-use-audit-checklist.md](../../validation/data-use-audit-checklist.md).
+Keep them separate: this one returns candidate sources, that one returns
+findings about existing use.
 
 The scan ticket's steps 2 and 3 are a wide literature and repository sweep across six
 strains and seven data types, followed by condition-metadata extraction and pairwise
@@ -27,9 +28,10 @@ Package A returned 2026-09-28 and passed intake with one row sent back; its
 correction returned 2026-10-03 and passed intake 2026-10-04. Packages B and C were
 dispatched 2026-10-02, returned 2026-10-03, and passed intake 2026-10-04, B with
 two rows returned for relabelling, under "Package B intake, 2026-10-04" and
-"Package C intake, 2026-10-04" below. Package D has not been sent; it waits on the
-owner and takes `docs/notes/handoff/cyano_package_B_conditions_20261003.tsv` as
-its input. The licence decisions C's evidence supports are recorded in
+"Package C intake, 2026-10-04" below. Package D was sent by the owner, returned
+2026-10-04 and passed intake 2026-10-06 under "Package D intake, 2026-10-06"
+below: no pair comparable, 32 escalated (all judged by the owner on 2026-10-05),
+178 undecidable, 731 not comparable. The licence decisions C's evidence supports are recorded in
 [source-ledger.md](../../validation/source-ledger.md#licence-decisions-for-the-package-a-candidates-2026-10-04);
 nothing is admitted and nothing has been downloaded. The capability questions that
 gated dispatch were confirmed empirically on 2026-09-28 and are recorded under
@@ -410,6 +412,29 @@ rows, manifest section C of `RET_claude-science-session__20261003.md`.
 [source-ledger.md](../../validation/source-ledger.md#licence-decisions-for-the-package-a-candidates-2026-10-04).
 No file has been downloaded; every download still waits on that ledger entry and
 the roadmap's mode-and-pin rules, and no decision there is an admission.
+
+### Package D intake, 2026-10-06
+
+Sent by the owner after 2026-10-04, returned 2026-10-04. Checked against
+[`cyano_package_D_pairs_20261004.tsv`](../handoff/cyano_package_D_pairs_20261004.tsv),
+SHA-256 `9a45d8384a23ecbf2ea2619043d5610a11d096912020878bd95df59f91ff799c`,
+4,279,541 bytes, 941 data rows, manifest
+[`RET_claude-science-session__20261004.md`](../handoff/RET_claude-science-session__20261004.md).
+
+| Check | Result |
+| --- | --- |
+| Checksums | Recomputed 2026-10-06 on the file in `docs/notes/handoff/`: matches the manifest. The input the return names, `cyano_package_B_conditions_20261003.tsv`, recomputed as `fa65266cd402ae974c072e9ad587bd990773d2df002eb08ed856ba4bca0c750e`, the table accepted at Package B intake: matches. |
+| Identifiers resolve | 42 distinct accessions across `artifact_a`/`artifact_b` (29 GEO, 13 PRIDE), every one an artifact of the accepted Package B table. Every condition set names its Package B row (`row N [name]`); all 1,882 references (941 pairs × 2) resolve to that row's artifact and condition-set name, none mismatched. 60 distinct condition sets appear in pairs; the manifest's 63 scored units include GSE205443's three fitness sets, which share one accession and so form no pair, as D.5 says. |
+| Verdict counts | comparable 0, escalate 32, undecidable 178, not comparable 731; axes passed 0/1/2/3/4/5 of 6 = 127/292/366/134/15/7: all as the manifest's D.2 tables. No duplicate pair. Every escalate and not-comparable row names its marginal or failing axis. GSE122841 is in 55 of the 178 undecidable pairs, as D.3 states. |
+| Quotations | The table quotes no source text of its own; its condition values are Package B's cells carried by row reference, which the row check above covers. The seven nearest misses in D.3 are the six turbidostat array pairs (GSE18902/50908/50919/52486, light regime) and GSE50920–GSE51112 (temperature), present in the table with those axes. |
+| Boundaries | No pair admitted, no threshold set, no escalation resolved by the return. D.6 reports three input observations without altering a cell: the two `not retrieved` rows intake had already caught (treated as not reported, as the queue row directed), row 81's genome-of-record mislabel (an annotation row, excluded from pairing), and mixed OD wavelengths returned as undecidable rather than converted. |
+| Consumption to date | The 32 escalated pairs were already rendered by `tools/pair_review_sheet.py` into `cyano_escalated_pairs_review_20261005.md` and judged by the owner on 2026-10-05 (J10; share/separate/conditional per pair, recorded in AAAA-new-bio-decisions-to-review.md). The OD wavelength point is settled by the owner's J3 (OD₇₃₀ ≈ OD₇₅₀), and the turbidostat light-regime misses by J1 (pass), both decided 2026-10-05, so those undecidable and escalated verdicts are read under the owner's rules, not the return's. |
+
+**Passed.** Nothing in the return is an admission; the pair verdicts are evidence
+for the scan ticket's step 3 and for the Data Sources comparable sets, which
+already read the owner's judgements over them. The 178 undecidable pairs are the
+metadata gap that [O_condition-metadata-gaps__20261005](O_condition-metadata-gaps__20261005.md)
+chases. Package D was the last package; nothing further waits to be sent.
 
 ## Cleanup
 

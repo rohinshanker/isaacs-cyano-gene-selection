@@ -21,6 +21,7 @@ import {
   MIN_AXES, Z_LIMIT, presentRuns,
   countMissing, missingRanks, wrapLabel, describeMissing, describeMissingSentence,
   describeDroppedAxes, pluralise, drawMarker, drawMissingGlyph,
+  isClamped, countClamped, describeClamped, drawClampBar,
 } from './compare-model.js';
 
 const TABS = [
@@ -300,6 +301,11 @@ export class ComparePanel {
     return zScore(metric.read(index), this.scaleFor(metric));
   }
 
+  /** Whether this gene's value on the metric lies beyond the clamp. */
+  clamped(metric, index) {
+    return isClamped(metric.read(index), this.scaleFor(metric));
+  }
+
   render() {
     this.chartHost.classList.toggle('empty', this.state.ids.length === 0);
     TABS.forEach((tab, i) => {
@@ -460,7 +466,7 @@ export class ComparePanel {
     };
   }
 
-  renderLegend(series, missing, brushedOut = new Set()) {
+  renderLegend(series, missing, brushedOut = new Set(), clamped = null) {
     this.legend.replaceChildren();
     for (const entry of series) {
       const item = document.createElement('li');
@@ -482,6 +488,14 @@ export class ComparePanel {
         const note = document.createElement('span');
         note.className = 'legend-missing';
         note.textContent = ` · ${count} missing`;
+        button.append(note);
+      }
+      const pinned = clamped?.bySeries.get(entry.id) ?? 0;
+      if (pinned > 0) {
+        const note = document.createElement('span');
+        note.className = 'legend-clamped';
+        note.textContent = ` · ${pinned} at the rim`;
+        note.title = `${pluralise(pinned, 'value lies', 'values lie')} beyond ${Z_LIMIT} spreads of the median and are drawn pinned at the rim`;
         button.append(note);
       }
       if (entry.repeated) {
@@ -544,12 +558,15 @@ export class ComparePanel {
     const read = (metric, index) => metric.read(index);
     const missing = countMissing(series, axes, read);
     const ranks = missingRanks(series, axes, read);
+    const clamped = countClamped(series, axes, (metric, index) => this.clamped(metric, index));
     this.canvas.setAttribute(
       'aria-label',
       `Radar chart of ${pluralise(series.length, 'shortlisted gene')} across `
         + `${pluralise(axes.length, 'metric')}, `
-        + `z-scored against the genome median. ${describeMissingSentence(missing.total)} `
+        + `z-scored against the genome median and clamped at ${Z_LIMIT} spreads. `
+        + `${describeMissingSentence(missing.total)} `
         + `${missing.total > 0 ? 'Missing values are drawn as gaps with an open cross beyond the outer ring, never at the median. ' : ''}`
+        + `${clamped.total > 0 ? `${describeClamped(clamped.total)} ` : ''}`
         + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
         + 'The same numbers are in the table below.',
     );
@@ -627,6 +644,7 @@ export class ComparePanel {
         const place = ranks.get(metric.key)?.get(entry.id);
         return {
           present,
+          clamped: present && this.clamped(metric, entry.index),
           angle,
           // Several candidates missing one axis fan outward instead of stacking.
           missingRadius: radius + 7 + (place?.rank ?? 0) * MISSING_GLYPH_STEP,
@@ -657,6 +675,8 @@ export class ComparePanel {
       points.forEach((point) => {
         if (point.present) {
           drawMarker(context, entry.marker, point.x, point.y, markerSize);
+          // Pinned at an inner or outer rim: the bar runs across the spoke.
+          if (point.clamped) drawClampBar(context, point.x, point.y, markerSize, point.angle);
         } else {
           const r = point.missingRadius;
           drawMissingGlyph(
@@ -673,9 +693,10 @@ export class ComparePanel {
         ? `${describeMissing(missing.total)}: a gap in the outline and an open cross just past the `
           + 'outer ring mark where a gene has no value; nothing is drawn at the median for it. '
         : 'Every plotted gene has a value on every axis. ')
+      + (clamped.total > 0 ? `${describeClamped(clamped.total)} ` : '')
       + 'Select a legend entry to focus one candidate; select a locus tag in the table to pin it.'
       + this.scrollHint();
-    this.renderLegend(series, missing);
+    this.renderLegend(series, missing, new Set(), clamped);
   }
 
   parallelGeometry(width, height, axisCount) {
@@ -693,12 +714,15 @@ export class ComparePanel {
     const read = (metric, index) => metric.read(index);
     const missing = countMissing(series, axes, read);
     const ranks = missingRanks(series, axes, read);
+    const clamped = countClamped(series, axes, (metric, index) => this.clamped(metric, index));
     this.canvas.setAttribute(
       'aria-label',
       `Parallel coordinates of ${pluralise(series.length, 'shortlisted gene')} across `
         + `${pluralise(axes.length, 'metric')}, `
-        + `z-scored against the genome median. ${describeMissingSentence(missing.total)} `
+        + `z-scored against the genome median and clamped at ${Z_LIMIT} spreads. `
+        + `${describeMissingSentence(missing.total)} `
         + `${missing.total > 0 ? 'Missing values are drawn as a break in the line with an open cross below the axis, never at the median. ' : ''}`
+        + `${clamped.total > 0 ? `${describeClamped(clamped.total)} ` : ''}`
         + `${this.focusId ? `${this.focusId} is focused. ` : ''}`
         + 'The same numbers are in the table below.',
     );
@@ -766,6 +790,7 @@ export class ComparePanel {
         const x = geometry.left + geometry.step * i;
         return {
           present,
+          clamped: present && this.clamped(metric, entry.index),
           x,
           y: present ? this.zToY(z, geometry) : NaN,
           // Candidates missing one axis spread along it rather than stacking.
@@ -790,22 +815,27 @@ export class ComparePanel {
       context.setLineDash([]);
       context.lineWidth = 1.8;
       points.forEach((point) => {
-        if (point.present) drawMarker(context, entry.marker, point.x, point.y, markerSize);
-        else drawMissingGlyph(context, point.missingX, geometry.bottom + 9, MISSING_GLYPH_SIZE);
+        if (point.present) {
+          drawMarker(context, entry.marker, point.x, point.y, markerSize);
+          // Pinned at the top or bottom of the axis: the bar runs across it.
+          if (point.clamped) drawClampBar(context, point.x, point.y, markerSize, -Math.PI / 2);
+        } else {
+          drawMissingGlyph(context, point.missingX, geometry.bottom + 9, MISSING_GLYPH_SIZE);
+        }
       });
       context.globalAlpha = 1;
     }
 
-    const missingText = missing.total > 0
+    const missingText = (missing.total > 0
       ? ` ${describeMissing(missing.total)}: the line breaks and an open cross sits below the axis; `
         + 'a gene with no value on a brushed axis is never kept by that brush.'
-      : '';
+      : '') + (clamped.total > 0 ? ` ${describeClamped(clamped.total)}` : '');
     this.note.textContent = brushed === null
       ? 'Each line is one candidate. Drag up or down on an axis to brush a range; lines outside '
         + `it fade.${missingText} Select a legend entry to focus one candidate.${this.scrollHint()}`
       : `Brushing keeps ${formatCount(brushed.size)} of ${formatCount(series.length)} candidates. `
         + `Drag again to adjust, or use Clear brushes.${missingText}${this.scrollHint()}`;
-    this.renderLegend(series, missing, brushedOut);
+    this.renderLegend(series, missing, brushedOut, clamped);
 
     if (this.brushes.size > 0 && !this.clearBrushButton) {
       this.clearBrushButton = document.createElement('button');

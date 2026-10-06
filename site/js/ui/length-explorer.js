@@ -157,17 +157,22 @@ export class LengthExplorer {
   histogram(values, threshold, cohort, range) {
     const histogram = lengthBins(values);
     const { min, max, bins } = histogram;
+    // Only the CDS-length cohorts answer to the length range; every other
+    // cohort is drawn whole, and its words must not describe a split it lacks.
+    const ranged = cohort.field === 'cdsLengthNt';
     const passed = passingLengthBins(
       values, histogram,
-      cohort.field === 'cdsLengthNt' ? (range?.min ?? null) : null,
-      cohort.field === 'cdsLengthNt' ? (range?.max ?? null) : null,
+      ranged ? (range?.min ?? null) : null,
+      ranged ? (range?.max ?? null) : null,
     );
     const frame = document.createElement('div');
     frame.className = 'length-chart';
     const svg = svgElement('svg', {
       viewBox: '0 0 800 270',
       role: 'img',
-      'aria-label': `Histogram of ${cohort.label.toLowerCase()} in nucleotides; ${bins.length} equal-width bins from ${min ?? 'unknown'} to ${max ?? 'unknown'} nt. Blue shows loci inside the selected range; grey shows the rest.`,
+      'aria-label': `Histogram of ${cohort.label.toLowerCase()} in nucleotides; ${bins.length} equal-width bins from ${min ?? 'unknown'} to ${max ?? 'unknown'} nt.`
+        + (ranged ? ' Blue shows loci inside the selected range; grey shows the rest.'
+          : ' All loci are drawn in blue; the length range applies to CDS cohorts only.'),
     });
     const peak = Math.max(1, ...bins);
     bins.forEach((count, index) => {
@@ -177,7 +182,9 @@ export class LengthExplorer {
         x, y: 215 - height, width: 21, height, fill: '#d8dde3',
       });
       const title = svgElement('title', {});
-      title.textContent = `Bin ${index + 1}: ${passed[index]} of ${count} loci within range`;
+      title.textContent = ranged
+        ? `Bin ${index + 1}: ${passed[index]} of ${count} loci within range`
+        : `Bin ${index + 1}: ${count} loci`;
       bar.append(title);
       svg.append(bar);
       const passingHeight = (passed[index] / peak) * 200;
@@ -211,8 +218,10 @@ export class LengthExplorer {
     frame.append(svg);
     const caption = document.createElement('p');
     caption.className = 'panel-note';
-    caption.textContent = `${bins.length} equal-width bins; blue counts loci inside the selected range, `
-      + `grey counts the rest. The ${threshold} nt marker appears on CDS charts when it falls within the axis.`;
+    caption.textContent = `${bins.length} equal-width bins; `
+      + (ranged ? 'blue counts loci inside the selected range, grey counts the rest. '
+        : 'every locus counts in blue, because the length range applies to CDS cohorts only. ')
+      + `The ${threshold} nt marker appears on CDS charts when it falls within the axis.`;
     frame.append(caption);
     return frame;
   }

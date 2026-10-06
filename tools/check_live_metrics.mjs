@@ -32,6 +32,7 @@ const { loadDataset } = await import(new URL('site/js/core/dataset.js', ROOT));
 const { compileScheme, verifyProteinsUnchanged, PRESETS } =
   await import(new URL('site/js/core/scheme.js', ROOT));
 const { computeLiveMetrics } = await import(new URL('site/js/core/live-metrics.js', ROOT));
+const { percentileRank, sortedFinite } = await import(new URL('site/js/core/stats.js', ROOT));
 
 // Measured independently from the raw NCBI CDS records. See
 // docs/validation/genome-provenance.md and tools/validate_contract.py.
@@ -137,6 +138,26 @@ for (const [key, field] of Object.entries(RECOMPUTED)) {
   note(worst <= TOLERANCES[key],
     `browser and pipeline agree on ${key}`,
     `mean ${(sum / n).toExponential(2)}, worst ${worst.toExponential(2)} at ${worstGene}`);
+}
+
+// The stored expression percentile and the browser's live percentileRank are one
+// quantity under one convention, mid-rank: (below + equal / 2) / n. An organism
+// that publishes no expression source has nothing to compare and passes as such.
+{
+  const expressed = genes.filter((gene) => Number.isFinite(gene.expression));
+  const published = genes.some((gene) => 'expressionPercentile' in gene);
+  const sortedExpression = sortedFinite(expressed.map((gene) => gene.expression));
+  let worst = 0;
+  let worstGene = null;
+  for (const gene of expressed) {
+    const difference = Math.abs(percentileRank(sortedExpression, gene.expression) - gene.expressionPercentile);
+    if (!(difference <= worst)) { worst = difference; worstGene = gene.id; }
+  }
+  note(!published || (expressed.length > 0 && worst <= 1e-6),
+    'browser and pipeline agree on expressionPercentile',
+    published
+      ? `${expressed.length} measured, worst ${worst.toExponential(2)} at ${worstGene}`
+      : 'no expression source is published for this organism');
 }
 
 // The whole-genome scan must stay inside the interaction budget.

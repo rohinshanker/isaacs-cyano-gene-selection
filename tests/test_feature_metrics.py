@@ -20,6 +20,7 @@ from build_features import (
     effective_anticodon,
     exclusion_reason,
     expression_layers_document,
+    expression_metric_definition,
     expression_proxy_scores,
     expression_percentiles,
     gene_pair_metrics,
@@ -276,11 +277,17 @@ def test_expression_manifest_loads_only_selected_sources_and_keeps_nulls(tmp_pat
     assert [source["payload"] for source in sources] == ["genes.json", "genes.json"]
     assert values["expression"].get("a") == 10
     assert values["tssInitiation"].get("a") is None
+    # Mid-rank, (below + ties / 2) / N, matching the browser's percentileRank.
     assert expression_percentiles(values["expression"]) == {
-        "a": pytest.approx(1 / 3),
-        "b": pytest.approx(5 / 6),
-        "c": pytest.approx(5 / 6),
+        "a": pytest.approx(1 / 6),
+        "b": pytest.approx(2 / 3),
+        "c": pytest.approx(2 / 3),
     }
+    # The coverage names its column and payload, so it cannot be read as the
+    # site-row layer's count.
+    tss_desc = expression_metric_definition(sources[1], 1, 3)["desc"]
+    assert "available for 1 of 3 genes in the tssInitiation column of genes.json." in tss_desc
+    assert tss_desc.endswith("genes.json. test caveat")
 
 
 def test_expression_manifest_is_required(tmp_path):
