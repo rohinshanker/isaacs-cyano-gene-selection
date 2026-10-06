@@ -1308,6 +1308,47 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
                  "; ".join(problems[:4]))
 
 
+def validate_pair_judgements(meta: dict[str, Any], report: Report) -> None:
+    """Checks the owner's pair judgements the site reads to join or keep apart two condition sets.
+
+    Each names both sides by study and condition-table row and carries one of
+    the four calls; a conditional call states its condition; no pair is judged
+    twice. The list may be empty, which means no judgement, never a default.
+    """
+    judgements = meta.get("pairJudgements")
+    report.check(isinstance(judgements, list), "meta.pairJudgements is a list")
+    if not isinstance(judgements, list):
+        return
+    calls = ("share", "separate", "conditional", "undecided")
+    problems = []
+    seen = set()
+    for item in judgements:
+        if not isinstance(item, dict):
+            problems.append("not an object")
+            continue
+        ends = []
+        for side in ("a", "b"):
+            end = item.get(side)
+            if (not isinstance(end, dict) or not isinstance(end.get("studyId"), str)
+                    or not end["studyId"] or isinstance(end.get("row"), bool)
+                    or not isinstance(end.get("row"), int) or end["row"] <= 0):
+                problems.append(f"pair {item.get('pair')}: side {side} names no study and row")
+                break
+            ends.append(f"{end['studyId']}#{end['row']}")
+        if len(ends) < 2:
+            continue
+        if item.get("call") not in calls:
+            problems.append(f"pair {item.get('pair')}: unknown call {item.get('call')!r}")
+        if item.get("call") == "conditional" and not item.get("condition"):
+            problems.append(f"pair {item.get('pair')}: conditional on nothing")
+        key = tuple(sorted(ends))
+        if key in seen:
+            problems.append(f"pair {item.get('pair')}: judged twice")
+        seen.add(key)
+    report.check(not problems, "every pair judgement names two sides and one known call",
+                 "; ".join(problems[:4]))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", default="site/data")
@@ -1327,6 +1368,8 @@ def main() -> int:
 
     if isinstance(meta, dict) and isinstance(genes, list):
         validate_expression_layers(args.data_dir, meta, genes, report)
+    if isinstance(meta, dict):
+        validate_pair_judgements(meta, report)
 
     if meta is not None and isinstance(genes, list):
         # Prefer the data's own declaration over the raw genome. `cdsSegments` is

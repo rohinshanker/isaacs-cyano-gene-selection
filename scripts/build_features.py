@@ -389,6 +389,46 @@ def load_annotation_layer(
     return site_evidence, metadata
 
 
+PAIR_CALLS = ("share", "separate", "conditional", "undecided")
+
+
+def load_pair_judgements(path: Path) -> list[dict[str, Any]]:
+    """The owner's judgements on escalated condition-set pairs, for ``meta.pairJudgements``.
+
+    Each names both sides by study and condition-table row, the way the review
+    sheet names them, and one of the four calls the site reads. An absent file
+    means no judgement, never a default call.
+    """
+    if not path.is_file():
+        return []
+    document = json.loads(path.read_text(encoding="utf-8"))
+    require(document.get("schemaVersion") == 1, f"{path.name}: unknown schemaVersion")
+    judgements = document.get("judgements")
+    require(isinstance(judgements, list) and judgements, f"{path.name}: no judgements")
+    seen: set[tuple[str, str]] = set()
+    for item in judgements:
+        for side in ("a", "b"):
+            end = item.get(side)
+            require(
+                isinstance(end, dict) and isinstance(end.get("studyId"), str) and end["studyId"]
+                and isinstance(end.get("row"), int) and end["row"] > 0,
+                f"{path.name}: pair {item.get('pair')} side {side} names no study and row",
+            )
+        require(item.get("call") in PAIR_CALLS, f"{path.name}: pair {item.get('pair')} has an unknown call")
+        require(
+            item["call"] != "conditional" or bool(item.get("condition")),
+            f"{path.name}: pair {item.get('pair')} is conditional on nothing",
+        )
+        key = tuple(sorted((f"{item['a']['studyId']}#{item['a']['row']}", f"{item['b']['studyId']}#{item['b']['row']}")))
+        require(key not in seen, f"{path.name}: pair {key} is judged twice")
+        seen.add(key)
+    return [
+        {"pair": item["pair"], "a": item["a"], "b": item["b"], "call": item["call"],
+         **({"condition": item["condition"]} if item.get("condition") else {})}
+        for item in judgements
+    ]
+
+
 def load_expression_sources(
     directory: Path, existing_metric_keys: Iterable[str] = ()
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
@@ -940,6 +980,7 @@ def build(
     expression_sources, expression_values = load_expression_sources(
         repository / "data/expression", METRIC_DEFINITIONS
     )
+    pair_judgements = load_pair_judgements(repository / "data/expression/pair_judgements.json")
     sources_by_metric = {source["metricKey"]: source for source in expression_sources}
     require(
         "expression" in sources_by_metric,
@@ -1164,6 +1205,7 @@ def build(
             "caveat": primary_expression_source["caveat"],
             "provenanceDoc": primary_expression_source["provenanceDoc"],
         },
+        "pairJudgements": pair_judgements,
         "expressionSources": [
             {
                 **source,

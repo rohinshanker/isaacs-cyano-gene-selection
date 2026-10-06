@@ -757,6 +757,14 @@ waits for the file before the reveal); the validator checks the gene order, the
 layer set, the values, and the coverage, and that no layer value is duplicated in
 `genes.json`.
 
+`meta.pairJudgements` carries the owner's judgements on escalated condition-set
+pairs from `data/expression/pair_judgements.json` (the transcription of the
+2026-10-05 review sheet, three entries extrapolated and marked so). Each names
+both sides by study and condition-table row and one call: `share`, `separate`,
+`conditional` (with its condition), or `undecided`. The site's `comparable()`
+reads a judgement before any threshold; an absent file is no judgement, never a
+default call. The validator checks the shape and that no pair is judged twice.
+
 ### `codon_pca.json`
 
 ```jsonc

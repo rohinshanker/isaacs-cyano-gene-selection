@@ -103,11 +103,19 @@ seven-study legend, colour and filter menus scoped to the five default sources.
 Still to ingest: GSE104203 (eLife workbook with condition blocks in columns) and
 the CC0 proteomes; GSE45762 is excluded for contradictory sample labels.
 
+The pair judgements are a data file since 2026-10-06
+(`data/expression/pair_judgements.json`, 32 pairs, emitted as
+`meta.pairJudgements` and validated on both sides); none of the judged pairs yet
+has both sides ingested, so the shipped comparable sets are still the
+thresholds', and the judgements take effect as those studies land. The eleven
+ingested layers ship apart from `genes.json` in `expression_layers.json`
+(per-dataset loading, tier 3), and the comparison and designer read the scoped
+registry.
+
 Not yet done: S1's five gaps are confirmed only where the feature needed them
 (the menus scope; the provenance list and export caveats still read the legacy
-single source); the pair judgements are not yet a data file (`meta.pairJudgements`
-is read when present); the chromosome tab's own colour row has no Data Sources
-section; S5 and S6.
+single source); the chromosome tab's own colour row has no Data Sources
+section; the rest of S5 (GSE104203, the CC0 proteomes) and S6.
 
 ## Work
 
