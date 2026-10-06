@@ -249,6 +249,21 @@ label at the status text's size, keeps a 24 px hit area, its `aria-label`,
 title, and `data-detail-action="unpin"` hook, and focus after unpin lands where
 the reversible-pinning rules above say.
 
+## Colour by, axes and filters name a data type
+
+Owner decision, 2026-10-06: the Expression entries are types ("Transcript
+abundance (RNA-seq)", "Transcription initiation (RNA-seq)"), each informed by
+one dataset chosen under Data Sources (a radio beside each dataset of a type
+with more than one selected), on the Metric X vs Y source select, or through
+the filters' Select source peek. The type keeps its key when the dataset
+changes; the legend, help and axis note read the informing dataset's unit and
+provenance, the colour scale re-defaults from the new values, and the link
+records the choice as `src=` only where it differs from the default. The
+contract and the key scheme are in
+[data-contract.md](data-contract.md) ("Data-type metrics"); tests in
+`tests/js/type-metrics.test.mjs`, `tests/js/url-state.test.mjs` and
+`tests/js/data-sources-panel.test.mjs`.
+
 ## Filters update live
 
 Owner decision, 2026-10-05: a filter takes effect as it moves, not on release,

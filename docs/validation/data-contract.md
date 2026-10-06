@@ -791,6 +791,23 @@ waits for the file before the reveal); the validator checks the gene order, the
 layer set, the values, and the coverage, and that no layer value is duplicated in
 `genes.json`.
 
+**Data-type metrics (owner decision, 2026-10-06).** The selectors never offer
+a dataset's own metric. They offer one metric per kind of measurement, built in
+the browser by `site/js/core/type-metrics.js` from `meta.expressionSources`: the
+key is `type.<dataType>.<platform>.<kind>` (kind `abundance`, `initiation` from
+an assay naming initiation, or `fitness`), the label names the quantity and the
+platform ("Transcript abundance (RNA-seq)", "Transcription initiation
+(RNA-seq)"), and the metric reads the one dataset that *informs* it at call
+time: its values, unit, description, scale and provenance. The informing dataset
+is the shipped original (GSE205444, TAN2018_TSS) or else the first selected of
+that type, unless the reader chooses another under Data Sources, on an axis
+source select, or through the filters' Select source; the choice rides in the
+link as `src=<type>=<datasetId>` only where it differs from the default. A link
+naming a dataset's own metric (older links, `c=exprGse288532Day`) is read as its
+type informed by that dataset, with the dataset added to the selection. Several
+selected datasets of one type never pool: units differ between deposits and no
+normalisation across them is stated.
+
 `meta.pairJudgements` carries the owner's judgements on escalated condition-set
 pairs from `data/expression/pair_judgements.json` (the transcription of the
 2026-10-05 review sheet, three entries extrapolated and marked so). Each names

@@ -32,6 +32,7 @@ const KEYS = {
   categoryFilter: 'cf', colorSources: 'cs', axisXScale: 'xs', axisYScale: 'ys',
   panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc', drawOnTop: 'dt',
   sources: 'ds',
+  typeSources: 'src',
 };
 
 /**
@@ -132,6 +133,9 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // Empty means the fresh-view selection; the app resolves it once the
     // dataset is loaded and the sources are known.
     sources: [],
+    // Which dataset informs each type metric, where it differs from the default;
+    // empty means the defaults. Resolved by the app against the loaded sources.
+    typeSources: {},
   };
 }
 
@@ -305,6 +309,11 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (Array.isArray(state.sources) && state.sources.length > 0) {
     push(KEYS.sources, state.sources.join(','));
   }
+  // Likewise `src` names only the informing datasets that differ from the default.
+  const informing = Object.entries(state.typeSources ?? {});
+  if (informing.length > 0) {
+    push(KEYS.typeSources, informing.map(([type, id]) => `${type}=${id}`).join(','));
+  }
   return parts.join('&');
 }
 
@@ -409,6 +418,12 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   // the shape is read, and an empty or malformed field means the default.
   if (values.has(KEYS.sources)) {
     state.sources = values.get(KEYS.sources).split(',').filter((id) => /^[\w.-]+$/.test(id));
+  }
+  if (values.has(KEYS.typeSources)) {
+    state.typeSources = Object.fromEntries(values.get(KEYS.typeSources).split(',')
+      .map((pair) => /^(type\.[\w.-]+)=([\w.-]+)$/.exec(pair))
+      .filter(Boolean)
+      .map((match) => [match[1], match[2]]));
   }
   // Version 5 wrote `cm` for the chosen comparison metrics. Those now live in
   // browser storage instead, to keep a shared link readable, so a version 5

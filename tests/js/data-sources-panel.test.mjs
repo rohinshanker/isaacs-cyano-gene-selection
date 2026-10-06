@@ -289,3 +289,39 @@ test('a track carries its ticks and bands and names the value, and the axis labe
     assert.equal(axis.children.filter((child) => child.tagName === 'text').at(-1).getAttribute('text-anchor'), 'end');
   });
 });
+
+test('a type with several selected datasets gets a radio choosing which one informs it', async () => {
+  await withFakeDocument(async (document) => {
+    const { host, panel } = mount(document);
+    const informed = [];
+    let chosenId = 'GSE9.5';
+    const typeOf = (d) => ({
+      key: `type.${d.record.dataType}.${d.record.platform}`,
+      label: `${d.record.dataType} (${d.record.platform})`,
+    });
+    const informing = {
+      typeOf,
+      chosen: (key) => panel.datasets.find((d) => typeOf(d).key === key && d.id === chosenId) ?? null,
+      onInform: (key, id) => { informed.push([key, id]); chosenId = id; },
+    };
+    panel.update({
+      selection: ['GSE9.5', 'GSE9.6', 'PXD1.1'], colorMetricKey: 'type.transcriptomics.RNA-seq', informing,
+    });
+    const radios = host.querySelectorAll('input').filter((input) => input.type === 'radio');
+    assert.deepEqual(radios.map((r) => [r.id, r.checked]),
+      [['ds-inform-type.transcriptomics.RNA-seq-GSE9.5', true], ['ds-inform-type.transcriptomics.RNA-seq-GSE9.6', false]],
+      'the lone proteomics dataset needs no radio');
+    const items = host.querySelectorAll('li.data-sources-item');
+    assert.ok(items[0].textContent.includes('colouring the map'), 'the informing dataset of the colour type is marked');
+    assert.ok(!items[1].textContent.includes('informs'));
+    radios[1].checked = true;
+    radios[1].dispatch('change');
+    assert.deepEqual(informed, [['type.transcriptomics.RNA-seq', 'GSE9.6']]);
+    panel.update({ informing });
+    const after = host.querySelectorAll('li.data-sources-item');
+    assert.ok(after[1].textContent.includes('colouring the map'));
+    // A type that is not the colour says what it informs instead.
+    panel.update({ colorMetricKey: 'gc3', informing });
+    assert.ok(host.querySelectorAll('li.data-sources-item')[1].textContent.includes('informs transcriptomics (RNA-seq)'));
+  });
+});

@@ -246,10 +246,14 @@ export class DataSourcesPanel {
    * data sources too (owner decision, 2026-10-06) and the section shows them
    * in place of the dataset list.
    */
-  update({ selection, colorMetricKey = this.colorMetricKey, annotation = null } = {}) {
+  update({ selection, colorMetricKey = this.colorMetricKey, annotation = null, informing = null } = {}) {
     if (selection) this.selection = normalizeSelection(selection, this.datasets);
     this.colorMetricKey = colorMetricKey;
     this.annotation = annotation;
+    // `{typeOf(dataset) → {key, label}, chosen(typeKey) → dataset|null, onInform(typeKey, id)}`:
+    // which dataset informs each type metric, chosen here when a type has
+    // more than one selected dataset.
+    this.informing = informing;
     this.renderSection();
   }
 
@@ -300,9 +304,28 @@ export class DataSourcesPanel {
       for (const dataset of ofType) {
         const item = el('li', { className: 'data-sources-item' });
         item.dataset.id = dataset.id;
+        const kind = this.informing?.typeOf(dataset) ?? null;
+        const siblings = kind ? ofType.filter((d) => this.informing.typeOf(d).key === kind.key) : [];
+        const informs = kind ? this.informing.chosen(kind.key)?.id === dataset.id : false;
+        if (kind && siblings.length > 1) {
+          // One dataset informs each type metric; the reader picks it here.
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `ds-inform-${kind.key}`;
+          radio.id = `ds-inform-${kind.key}-${dataset.id}`;
+          radio.checked = informs;
+          radio.setAttribute('aria-label', `${dataset.record.studyId} ${dataset.record.conditionSet} informs ${kind.label}`);
+          radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(kind.key, dataset.id); });
+          item.append(radio, ' ');
+        }
         item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
           el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
-        if (dataset.metricKey === this.colorMetricKey) item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
+        if (kind && informs) {
+          item.append(' ', chip(kind.key === this.colorMetricKey ? 'colouring the map' : `informs ${kind.label}`,
+            kind.key === this.colorMetricKey ? 'ds-chip ds-chip-active' : 'ds-chip'));
+        } else if (dataset.metricKey === this.colorMetricKey) {
+          item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
+        }
         this.list.append(item);
       }
     }

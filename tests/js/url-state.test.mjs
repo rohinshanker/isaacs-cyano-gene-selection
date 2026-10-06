@@ -456,3 +456,23 @@ test('the export manifest records the direction the picture was drawn in', () =>
   delete legacy.drawOnTop;
   assert.equal(viewStateOf(legacy).drawOnTop, 'highest');
 });
+
+test('the dataset selection and the informing datasets ride in the link only when they differ from the default', () => {
+  const base = { ...defaultState(), sources: [], typeSources: {} };
+  const hash = encodeState(base);
+  assert.doesNotMatch(hash, /(^|&)ds=/);
+  assert.doesNotMatch(hash, /(^|&)src=/);
+  const chosen = {
+    ...base,
+    sources: ['GSE205444', 'GSE9.5'],
+    typeSources: { 'type.transcriptomics.rna-seq.abundance': 'GSE9.5' },
+  };
+  const encoded = encodeState(chosen);
+  assert.match(encoded, /ds=GSE205444%2CGSE9\.5|ds=GSE205444,GSE9\.5/);
+  const decoded = decodeState(`#${encoded}`);
+  assert.deepEqual(decoded.sources, ['GSE205444', 'GSE9.5']);
+  assert.deepEqual(decoded.typeSources, { 'type.transcriptomics.rna-seq.abundance': 'GSE9.5' });
+  // A malformed pair is dropped without discarding its neighbours.
+  const messy = decodeState('#ver=6&src=type.a.b.c=GSE1,junk,type.x.y.z=PXD1.1,nottype=GSE2');
+  assert.deepEqual(messy.typeSources, { 'type.a.b.c': 'GSE1', 'type.x.y.z': 'PXD1.1' });
+});

@@ -80,6 +80,10 @@ import { DataSourcesPanel } from './ui/data-sources.js';
 import {
   datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
+import {
+  buildTypeMetrics, informingDataset, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor,
+  typeKeyOf, typeLabelFor,
+} from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
@@ -843,6 +847,15 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
 }
 
 /** Grouped options for a Colour by selector, in the registry's own order. */
+/**
+ * A selector entry for a metric. A type metric's unit is whichever dataset
+ * informs it, shown by the legend and the help, so the entry names the type
+ * alone; every other metric carries its unit.
+ */
+function optionLabel(metric) {
+  return metric.unit && !metric.isType ? `${metric.label} (${metric.unit})` : metric.label;
+}
+
 function colorSelectOptions() {
   const options = [];
   if (context.dataset.functionCategories) {
@@ -850,11 +863,7 @@ function colorSelectOptions() {
   }
   for (const family of context.registry.families) {
     for (const metric of familyMetrics(family)) {
-      options.push({
-        group: family,
-        value: metric.key,
-        label: metric.unit ? `${metric.label} (${metric.unit})` : metric.label,
-      });
+      options.push({ group: family, value: metric.key, label: optionLabel(metric) });
     }
   }
   return options;
@@ -1123,7 +1132,7 @@ function renderDetail() {
     isPinned: index >= 0 && index === pinnedIndex()
       && context.hoveredIndex < 0 && context.activeIndex < 0,
     dataset: context.dataset,
-    registry: context.registry,
+    registry: scopedRegistry(),
     percentileOf,
     schemeActive: context.scheme.active,
     live: context.live,
@@ -1259,7 +1268,9 @@ function renderAll({ schemeErrors = [] } = {}) {
       translationalException: state.exceptionFilter,
     },
     filterMask: context.mask,
-    viewState: () => ({ ...viewStateOf(state, organism), dataSources: sourceSelection() }),
+    viewState: () => ({
+      ...viewStateOf(state, organism), dataSources: sourceSelection(), typeSources: state.typeSources,
+    }),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
     schemeActive: Object.keys(state.schemeMap).length > 0,
@@ -1519,7 +1530,12 @@ function dataSourcesState() {
   const annotation = state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories
     ? { toggles: COLOR_SOURCE_TOGGLES, sources: state.colorSources, onToggle: toggleColorSource }
     : null;
-  return { selection: sourceSelection(), colorMetricKey: state.colorBy, annotation };
+  const informing = {
+    typeOf: (dataset) => ({ key: typeKeyFor(dataset), label: typeLabelFor(dataset) }),
+    chosen: (typeKey) => informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection()),
+    onInform: (typeKey, id) => setInforming(typeKey, id),
+  };
+  return { selection: sourceSelection(), colorMetricKey: state.colorBy, annotation, informing };
 }
 
 /** The chromosome tab's own Data Sources section, built once its toolbar exists. */
@@ -1551,8 +1567,13 @@ function sourceSelection() {
  */
 function metricInScope(metric) {
   if (!metric || !context.datasets?.length) return true;
-  const owned = context.datasets.some((dataset) => dataset.metricKey === metric.key);
-  return !owned || selectedMetricKeys(state.sources, context.datasets).has(metric.key);
+  // A dataset's own metric is never offered directly: its type is, informed by
+  // the dataset chosen under Data Sources (owner decision, 2026-10-06).
+  if (context.datasets.some((dataset) => dataset.metricKey === metric.key)) return false;
+  if (metric.isType) {
+    return Boolean(informingDataset(metric.key, state.typeSources, context.datasets, sourceSelection()));
+  }
+  return true;
 }
 
 /** The registry as the selectors see it: the same lookup, fewer offered metrics. */
@@ -1568,6 +1589,7 @@ function scopedRegistry() {
 function setSources(ids) {
   const next = normalizeSelection(ids, context.datasets);
   state.sources = isDefaultSelection(next, context.datasets) ? [] : next;
+  state.typeSources = normalizeTypeSources(state.typeSources, context.datasets, sourceSelection());
   if (!metricInScope(context.registry.byKey.get(state.colorBy))) {
     state.colorBy = freshViewColorKey(scopedRegistry(), context.dataset.functionCategories);
     state.colorScale = null;
@@ -1594,22 +1616,21 @@ function syncAxisSourceSelects() {
   for (const [axis, key] of [['x', 'axisX'], ['y', 'axisY']]) {
     const row = element(`axis-${axis}-source-row`);
     const select = element(`axis-${axis}-source`);
-    const type = dataTypeOfMetric(state[key], context.datasets ?? []);
+    const group = isTypeKey(state[key]) ? typeGroups(context.datasets ?? []).get(state[key]) : null;
     const chosen = new Set(sourceSelection());
-    const candidates = (context.datasets ?? []).filter((dataset) => dataset.record.dataType === type
-      && chosen.has(dataset.id) && context.registry.byKey.has(dataset.metricKey));
-    if (!type || candidates.length < 2) {
+    const candidates = group ? group.datasets.filter((dataset) => chosen.has(dataset.id)) : [];
+    if (candidates.length < 2) {
       row.hidden = true;
       continue;
     }
     select.replaceChildren();
     for (const dataset of candidates) {
       const option = document.createElement('option');
-      option.value = dataset.metricKey;
+      option.value = dataset.id;
       option.textContent = `${dataset.record.studyId} · ${dataset.record.conditionSet}`;
       select.append(option);
     }
-    select.value = state[key];
+    select.value = informingDataset(state[key], state.typeSources, context.datasets, chosen)?.id ?? '';
     row.hidden = false;
   }
 }
@@ -1683,7 +1704,7 @@ function fillAxisSelects() {
       for (const metric of familyMetrics(family)) {
         const option = document.createElement('option');
         option.value = metric.key;
-        option.textContent = metric.unit ? `${metric.label} (${metric.unit})` : metric.label;
+        option.textContent = optionLabel(metric);
         group.append(option);
       }
       if (group.children.length > 0) select.append(group);
@@ -1707,8 +1728,8 @@ function buildAxisSelects() {
     };
     select.addEventListener('change', () => onAxisChange(select.value));
     element(`axis-${axis}-source`).addEventListener('change', (event) => {
-      onAxisChange(event.target.value);
-      element(`axis-${axis}`).value = state[key];
+      // The axis keeps its type; the chosen dataset informs it.
+      setInforming(state[key], event.target.value);
     });
   }
   syncAxisSourceSelects();
@@ -1990,6 +2011,11 @@ function normalizeAndApply(decoded) {
   context.datasets = datasetsFrom(context.dataset.meta);
   state.sources = isDefaultSelection(state.sources, context.datasets)
     ? [] : normalizeSelection(state.sources, context.datasets);
+  installTypeMetrics();
+  // A link that names a dataset's own metric (an older link, or one written by
+  // the per-dataset menus) means that type informed by that dataset.
+  adoptLegacyMetricKeys();
+  state.typeSources = normalizeTypeSources(state.typeSources, context.datasets, sourceSelection());
   // A filter or a traffic metric this dataset has no metric for cannot act, so
   // it is dropped rather than carried in the address as if it were in effect.
   state.filters = Object.fromEntries(Object.entries(state.filters)
@@ -2005,9 +2031,74 @@ function normalizeAndApply(decoded) {
   // — becomes the metric's own default. Resolved here rather than at first paint
   // so a link written before any view renders already records the real scale.
   resolveColorScale();
-  const axes = resolveDefaultMetricAxes(scopedRegistry(), organism.freshAxes);
+  const freshAxes = {
+    x: typeKeyOf(organism.freshAxes.x, context.datasets),
+    y: typeKeyOf(organism.freshAxes.y, context.datasets),
+  };
+  const axes = resolveDefaultMetricAxes(scopedRegistry(), freshAxes);
   if (!metricInScope(context.registry.byKey.get(state.axisX))) state.axisX = axes.x;
   if (!metricInScope(context.registry.byKey.get(state.axisY))) state.axisY = axes.y;
+}
+
+/**
+ * Add the data-type metrics to the registry, once per dataset. Each reads the
+ * dataset that informs its type at call time, so the reader's choice under
+ * Data Sources changes what is drawn without any rebuild.
+ */
+function installTypeMetrics() {
+  const registry = context.registry;
+  if (registry.metrics.some((metric) => metric.isType)) return;
+  const typeMetrics = buildTypeMetrics(context.datasets, {
+    inform: (typeKey) => informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection()),
+    metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+  });
+  // Placed before the first dataset metric so the Expression family keeps its
+  // position in every default order.
+  const first = registry.metrics.findIndex((metric) => metric.family === 'Expression');
+  registry.metrics.splice(first < 0 ? registry.metrics.length : first, 0, ...typeMetrics);
+  for (const metric of typeMetrics) registry.byKey.set(metric.key, metric);
+}
+
+/**
+ * Read a dataset's own metric key out of the view state as its type, informed
+ * by that dataset: the colour, both axes, the traffic metric and the filters.
+ * The dataset joins the selection if the link left it out, so the link still
+ * shows what its author saw.
+ */
+function adoptLegacyMetricKeys() {
+  const adopt = (key) => {
+    const dataset = context.datasets.find((d) => d.metricKey === key);
+    if (!dataset) return key;
+    const typeKey = typeKeyFor(dataset);
+    if (!sourceSelection().includes(dataset.id)) {
+      state.sources = normalizeSelection([...sourceSelection(), dataset.id], context.datasets);
+    }
+    state.typeSources = { ...state.typeSources, [typeKey]: dataset.id };
+    return typeKey;
+  };
+  // Two keys of one type can disagree on the dataset; the colour is what the
+  // reader saw, so it is adopted last and wins.
+  state.filters = Object.fromEntries(Object.entries(state.filters).map(([key, range]) => [adopt(key), range]));
+  if (state.trafficKey) state.trafficKey = adopt(state.trafficKey);
+  state.axisX = adopt(state.axisX);
+  state.axisY = adopt(state.axisY);
+  state.colorBy = adopt(state.colorBy);
+}
+
+/**
+ * Choose the dataset that informs one type metric. The type's cached ranks
+ * and a defaulted colour scale are recomputed from the new values.
+ */
+function setInforming(typeKey, datasetId) {
+  const group = typeGroups(context.datasets).get(typeKey);
+  if (!group) return;
+  const next = { ...state.typeSources, [typeKey]: datasetId };
+  state.typeSources = normalizeTypeSources(next, context.datasets, sourceSelection());
+  context.percentiles.delete(typeKey);
+  if (state.colorBy === typeKey) { state.colorScale = null; resolveColorScale(); }
+  renderAll();
+  const dataset = informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection());
+  announce(`${typeLabelFor(dataset)} now reads ${dataset.record.studyId}: ${dataset.record.conditionSet}.`);
 }
 
 
@@ -2500,12 +2591,17 @@ async function boot() {
       const key = await dataSourcesPanel.open({
         mode: 'single', dataType, current, opener, title: 'Select the source the filter judges activity by',
       });
-      if (!key || key === state.trafficKey) return;
-      const filters = { ...state.filters };
-      if (state.trafficKey) delete filters[state.trafficKey];
-      state.trafficKey = key;
-      state.filters = filters;
-      renderAll();
+      if (!key) return;
+      const dataset = context.datasets.find((d) => d.metricKey === key);
+      if (!dataset) return;
+      const typeKey = typeKeyFor(dataset);
+      if (state.trafficKey !== typeKey) {
+        const filters = { ...state.filters };
+        if (state.trafficKey) delete filters[state.trafficKey];
+        state.trafficKey = typeKey;
+        state.filters = filters;
+      }
+      setInforming(typeKey, dataset.id);
     },
     onProteinFilterChange: (mode) => {
       state.proteinFilter = mode;

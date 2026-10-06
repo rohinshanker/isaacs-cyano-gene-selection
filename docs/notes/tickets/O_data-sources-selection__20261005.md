@@ -138,8 +138,21 @@ function category); under function category it holds the organism's
 annotation-source toggles, directly below "Function category explanation", on
 the map and on the chromosome tab (which has its own section), and the legend no
 longer draws them; its summary and body match the help disclosure's type sizes.
-Rendered at 375 and 1280 px. Decision 1 (type-level Colour by with the informing
-source chosen in the section) is the next step.
+Rendered at 375 and 1280 px.
+
+Done 2026-10-06 for 1: `site/js/core/type-metrics.js` collapses the datasets
+into type metrics (`type.<dataType>.<platform>.<kind>`), each reading the
+dataset that informs it; the selectors offer the types and never a dataset's
+own metric; the informing dataset is chosen by a radio in the section, on the
+axis source select, or through the filters' Select source peek, and rides in
+the link as `src=`; a link naming a dataset's own metric adopts into its type
+with that dataset informing it (the colour wins over a filter of the same
+type). Rendered at 1280 px: the Expression group lists two types, the radio
+switch rewrote the legend's unit and the scale, the axis select and the Select
+source peek both set `src=`, console clean; at 375 px the opened section with
+radios keeps to the column. Still shown as its own entry: "Expression percentile
+(PCC 7942)", a derived rank tied to GSE205444; whether it should become a rank
+over the informing dataset is a follow-up.
 
 Open from this round, asked 2026-10-06: when several datasets of one type are
 selected, does the type metric show one chosen dataset (default: the first
