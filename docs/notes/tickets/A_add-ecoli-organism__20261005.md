@@ -3,7 +3,7 @@
 Scope: Add E. coli as a selectable organism in the visualizer.
 Status: active
 Opened: 2026-10-05
-Updated: 2026-10-05
+Updated: 2026-10-06
 
 ## Current State
 
@@ -64,8 +64,7 @@ gave two verdicts: merge to local `main`, yes; push, hold until the publication
 decision below. Its four minor findings are closed in `62dc528`, which no
 reviewer has seen.
 
-**Not merged.** A push of `main` deploys the site, so the branch stays apart
-until the publication decision below. Brought up to date on 2026-10-05 (merge
+**Merged and deployed 2026-10-06** (see "Remaining"). Before that: Brought up to date on 2026-10-05 (merge
 of `main` at `858a958`, commit `914b0f7`, plus `5acad55`, which hides the Data
 Sources section for an organism that publishes no measured source): the
 Data Sources feature, the eleven ingested PCC 7942 layers, and the separate
@@ -204,8 +203,16 @@ For the base view to ship:
 
 1. Done 2026-10-06: the publication decision, the EcoCyc and Blattner citations,
    and the ledger rule. Open: the owner's notification to SRI.
-2. Merge to `main`, push, and verify the production URL and the first real CI
-   run.
+2. Done 2026-10-06: `feat/ecoli-organism` fast-forwarded into `main` at
+   `8e504db` and pushed. The first two Pages runs failed on the fixture-digest
+   tests alone: the generator's mean codon-pair score differs in its last bit
+   between arm64 (where the pins were taken) and the x64 runner, reproduced in
+   a linux/amd64 node:24 container; the generator now rounds it (`4c93e06`) and
+   run 37491676232 deployed. Live at
+   https://rohinshanker.github.io/isaacs-cyano-gene-selection/?org=ecoli-k12-mg1655:
+   4,287 genes load, the organism selector and the E. coli citations ledger
+   (RefSeq, EcoCyc, Blattner 1997) are served, the Data Sources section stays
+   out of the toolbar, console clean; the UTEX view still loads 2,715 genes.
 
 For the ticket's purpose, richer annotation and supporting data than the
 cyanobacterial view has, which the base view does not yet deliver (it carries
