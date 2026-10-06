@@ -168,7 +168,9 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
       const ids = list.map((metric) => metric.provenance?.id ?? metric.key);
       return {
         ...first,
-        id: `pooled:${ids.join('+')}`,
+        // Spaces, so the id can wrap wherever it is printed; an unbroken token
+        // widened a narrow column once.
+        id: `pooled: ${ids.join(', ')}`,
         pooled: ids,
         isTargetOrganism: list.every((metric) => metric.provenance?.isTargetOrganism === true),
         organism: [...new Set(list.map((metric) => metric.provenance?.organism).filter(Boolean))].join('; '),

@@ -96,7 +96,7 @@ test('a type metric pools its selected datasets by within-dataset rank, or reads
   // Gene 2 is missing from the second dataset, so only the first contributes.
   assert.ok(Math.abs(abundance.read(2) - (5 / 6)) < 1e-12);
   assert.match(abundance.unit, /^pooled percentile across 2 datasets/);
-  assert.equal(abundance.provenance.id, 'pooled:GSE205444+GSE9.5');
+  assert.equal(abundance.provenance.id, 'pooled: GSE205444, GSE9.5');
   assert.deepEqual(abundance.provenance.citationIds, ['a-2022', 'b-2023']);
   assert.match(abundance.provenance.caveat, /ranked within itself before averaging/);
   assert.equal(abundance.scale, 'sequential');
