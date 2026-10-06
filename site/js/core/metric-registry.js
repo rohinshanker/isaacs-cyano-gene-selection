@@ -457,9 +457,14 @@ export function buildMetricRegistry(meta, genes, liveFields) {
   for (const metric of metrics) {
     if (!families.includes(metric.family)) families.push(metric.family);
   }
-  const measuredFamilies = metrics
-    .filter(isNativeMeasuredMetric)
-    .map((metric) => metric.family);
+  // Families of measured evidence lead: this organism's own measurements first,
+  // then every family a manifest dataset's own metric belongs to (a borrowed
+  // fitness screen included), ahead of the computed families. A percentile or
+  // proxy derived from a measurement is not a dataset and promotes nothing.
+  const measuredFamilies = [
+    ...metrics.filter(isNativeMeasuredMetric).map((metric) => metric.family),
+    ...metrics.filter((metric) => expressionSources.has(metric.key)).map((metric) => metric.family),
+  ];
   return {
     metrics,
     byKey,

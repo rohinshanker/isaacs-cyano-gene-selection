@@ -138,6 +138,9 @@ test('the production registry leads with measured UTEX evidence, before Translat
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, dataset.baseline);
 
   assert.equal(registry.families[0], 'Expression');
+  // The borrowed fitness screen is measured evidence too, so its family follows
+  // Expression rather than trailing the computed families.
+  assert.equal(registry.families[1], 'Fitness');
   assert.ok(registry.families.indexOf('Expression') < registry.families.indexOf('Translation'));
   const expression = orderMeasuredFirst(
     registry.metrics.filter((metric) => metric.family === 'Expression'),
