@@ -1,0 +1,341 @@
+"""Tests for tools/ingest_expression.py, run against small synthetic inputs."""
+
+import csv
+import gzip
+import hashlib
+import io
+import json
+import sys
+from pathlib import Path
+
+import openpyxl
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+
+import ingest_expression as ingest  # noqa: E402
+
+CROSSWALK_HEADER = [
+    "subject_locus_tag", "relationship", "object_namespace", "object_id", "seqid",
+    "start", "end", "strand", "mapping_ambiguity", "source", "evidence", "mapping_method",
+]
+CONDITIONS = (
+    "CONDITION SET: control | SAMPLES: GSM1 ;; "
+    'temperature = 37°C [GEO growth protocol; quote: "Grown at 37℃"] ;; '
+    "light_intensity = not reported ;; "
+    'co2 = ambient [paper Methods; quote: "ambient air"] ;; '
+    'medium = BG-11 [GEO growth protocol; quote: "in BG11 liquid medium"] ;; '
+    'culture_format = liquid [GEO growth protocol; quote: "liquid medium"] ;; '
+    'growth_phase = day 4 [paper Methods; quote: "harvested on day 4"] ;; '
+    "unknown_axis = ignored"
+)
+REPLICATES = 'three replicates [paper Methods; quote: "three biological replicates"]'
+
+
+def crosswalk_file(tmp_path, rows):
+    """Write a crosswalk with the real header; rows are (utex, relationship, source, ambiguity)."""
+    path = tmp_path / "crosswalk.tsv"
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, delimiter="\t")
+        writer.writerow(CROSSWALK_HEADER)
+        for utex, relationship, source, ambiguity in rows:
+            writer.writerow([utex, relationship, "x", source, "seq", 1, 2, "+", ambiguity, "s", "", "m"])
+    return path
+
+
+def conditions_file(tmp_path):
+    path = tmp_path / "conditions.tsv"
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, delimiter="\t")
+        writer.writerow(["strain", "conditions", "replicates"])
+        writer.writerow(["other", "CONDITION SET: other", "n/a"])
+        writer.writerow(["PCC 7942", CONDITIONS, REPLICATES])
+    return path
+
+
+def csv_bytes(header, rows, prefix=""):
+    buffer = io.StringIO()
+    buffer.write(prefix)
+    writer = csv.writer(buffer)
+    writer.writerow(header)
+    writer.writerows(rows)
+    return buffer.getvalue().encode("utf-8")
+
+
+def spec_for(tmp_path, data, reader, layers=None, **overrides):
+    target = tmp_path / "deposit.csv"
+    target.write_bytes(data)
+    spec = {
+        "studyId": "GSE1", "dataType": "transcriptomics", "platform": "RNA-seq", "strain": "PCC 7942",
+        "basis": "transferred", "organism": "Synechococcus elongatus PCC 7942",
+        "assay": "RNA-seq transcript abundance", "licence": "CC BY 4.0", "provenanceDoc": "doc.md",
+        "archiveUrl": "https://example.org/GSE1",
+        "citationId": "test-2026",
+        "citation": {"text": "Test 2026", "url": "https://doi.org/10.1/x", "pmid": "1"},
+        "file": {"name": target.name, "url": "https://example.org/deposit.csv", "sha256": ingest.sha256_of(data)},
+        "reader": reader, "units": "mean CPM", "normalization": "cpm", "conditionTableRow": 2,
+        "replicates": {"count": 3, "text": "three replicates"},
+        "conditions": {
+            "temperature": {"status": "reported", "lo": 37, "hi": 37, "unit": "°C", "text": "37 °C"},
+            "lightIntensity": {"status": "not reported", "lo": None, "hi": None,
+                               "unit": "µmol photons m⁻² s⁻¹", "text": "not reported"},
+            "lightRegime": {"status": "not reported", "kind": None, "photoperiod": None,
+                            "spectrumClass": None, "entrained": False, "text": "not reported"},
+            "co2": {"status": "reported", "lo": 0.04, "hi": 0.04, "unit": "%", "text": "ambient air"},
+            "medium": {"status": "reported", "base": "BG-11", "modified": False, "conditioned": False,
+                       "nitrogenAltered": False, "text": "BG-11"},
+            "format": {"status": "reported", "value": "planktonic liquid", "text": "liquid"},
+            "phase": {"status": "reported", "label": None, "od": None, "odNm": None, "text": "day 4"},
+        },
+        "caveat": "Measured in PCC 7942.",
+        "layers": layers or [{
+            "id": "GSE1_control", "metricKey": "exprGse1Control", "label": "Expression GSE1 control",
+            "conditionSet": "control, mean of three", "samples": "GSM1-GSM3",
+            "columns": ["a", "b", "c"], "treatments": [], "group": "standard",
+        }],
+    }
+    spec.update(overrides)
+    return spec
+
+
+def run(tmp_path, spec, crosswalk_rows, conditions=None):
+    manifest = tmp_path / "sources.json"
+    out = tmp_path / "out"
+    out.mkdir(exist_ok=True)
+    written = ingest.ingest(
+        spec, manifest_path=manifest, crosswalk_path=crosswalk_file(tmp_path, crosswalk_rows),
+        interim=tmp_path, conditions_table=conditions, out_dir=out,
+    )
+    return written, manifest, out
+
+
+def test_fetch_reads_a_cached_file_and_refuses_a_checksum_mismatch(tmp_path):
+    target = tmp_path / "cached.bin"
+    target.write_bytes(b"hello")
+    assert ingest.fetch("https://example.org/x", hashlib.sha256(b"hello").hexdigest(), target) == b"hello"
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        ingest.fetch("https://example.org/x", "0" * 64, target)
+
+
+def test_fetch_downloads_once_into_the_interim_directory(tmp_path, monkeypatch):
+    class Response(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    calls = []
+
+    def fake_urlopen(url, timeout):
+        calls.append(url)
+        return Response(b"payload")
+
+    monkeypatch.setattr(ingest.urllib.request, "urlopen", fake_urlopen)
+    target = tmp_path / "nested" / "file.bin"
+    digest = hashlib.sha256(b"payload").hexdigest()
+    assert ingest.fetch("https://example.org/file", digest, target) == b"payload"
+    assert ingest.fetch("https://example.org/file", digest, target) == b"payload"
+    assert calls == ["https://example.org/file"]
+    assert target.read_bytes() == b"payload"
+
+
+def test_read_table_finds_the_header_and_moves_the_identifier_first():
+    data = csv_bytes(["sample", "locus_tag", "note"], [["1", "g1", "x"], ["2", "", "blank id dropped"], ["3", "g3", ""]],
+                     prefix="\ufeff# a title row\n")
+    header, rows = ingest.read_table(data, {"format": "csv", "idColumn": "locus_tag"})
+    assert header == ["locus_tag", "sample", "note"]
+    assert rows == [["g1", "1", "x"], ["g3", "3", ""]]
+
+
+def test_read_table_handles_gzip_tsv_and_workbooks(tmp_path):
+    tsv = gzip.compress(b"id\tv\ng1\t4\n")
+    assert ingest.read_table(tsv, {"format": "tsv", "idColumn": "id"}) == (["id", "v"], [["g1", "4"]])
+
+    book = openpyxl.Workbook()
+    sheet = book.active
+    sheet.title = "counts"
+    sheet.append(["title only"])
+    sheet.append(["v", "id"])
+    sheet.append([2.5, "g1"])
+    sheet.append([None, "g2"])
+    buffer = io.BytesIO()
+    book.save(buffer)
+    header, rows = ingest.read_table(buffer.getvalue(), {"format": "xlsx", "sheet": "counts", "idColumn": "id"})
+    assert header == ["id", "v"]
+    assert rows == [["g1", "2.5"], ["g2", ""]]
+
+
+def test_read_table_rejects_unknown_formats_and_missing_headers():
+    with pytest.raises(ValueError, match="unknown table format"):
+        ingest.read_table(b"x", {"format": "parquet", "idColumn": "id"})
+    with pytest.raises(ValueError, match="no header row names 'id'"):
+        ingest.read_table(b"a,b\n1,2\n", {"format": "csv", "idColumn": "id"})
+
+
+def test_column_values_skips_blanks_and_rejects_bad_cells():
+    header = ["id", "a", "b"]
+    rows = [["g1", "1", "NA"], ["g2", "", "2"], ["g3 ", "3"]]
+    assert ingest.column_values(header, rows, "a") == {"g1": 1.0, "g3": 3.0}
+    assert ingest.column_values(header, rows, "b") == {"g2": 2.0}
+    with pytest.raises(ValueError, match="not in the table"):
+        ingest.column_values(header, rows, "zzz")
+    with pytest.raises(ValueError, match="invalid value"):
+        ingest.column_values(header, [["g1", "-1"]], "a")
+    with pytest.raises(ValueError, match="invalid value"):
+        ingest.column_values(header, [["g1", "inf"]], "a")
+    with pytest.raises(ValueError, match="appears twice"):
+        ingest.column_values(header, [["g1", "1"], ["g1", "2"]], "a")
+
+
+def test_normalise_scales_to_counts_per_million_or_keeps_values():
+    values = {"g1": 1.0, "g2": 3.0}
+    assert ingest.normalise(values, "as-deposited") is values
+    assert ingest.normalise(values, "cpm") == {"g1": 250_000.0, "g2": 750_000.0}
+    with pytest.raises(ValueError, match="no counts"):
+        ingest.normalise({"g1": 0.0}, "cpm")
+    with pytest.raises(ValueError, match="unknown normalization"):
+        ingest.normalise(values, "tpm")
+
+
+def test_layer_means_average_over_shared_identifiers_only():
+    header = ["id", "a", "b"]
+    rows = [["g1", "1", "3"], ["g2", "3", ""], ["g3", "", "1"]]
+    assert ingest.layer_means(header, rows, ["a", "b"], "as-deposited") == {"g1": 2.0}
+    assert ingest.layer_means(header, rows, [], "cpm") == {}
+
+
+def test_load_crosswalk_keeps_one_to_one_rows_only(tmp_path):
+    path = crosswalk_file(tmp_path, [
+        ("U1", "pcc7942_old_locus_tag", "S1", ""),
+        ("U2", "pcc7942_old_locus_tag", "S2", "ambiguous"),
+        ("U3", "pcc7942_old_locus_tag", "S3", ""),
+        ("U4", "pcc7942_old_locus_tag", "S3", ""),
+        ("U5", "pcc7942_old_locus_tag", "S5", ""),
+        ("U5", "pcc7942_old_locus_tag", "S6", ""),
+        ("U7", "pcc7942_ortholog", "S7", ""),
+    ])
+    assert ingest.load_crosswalk(path, "pcc7942_old_locus_tag") == {"S1": "U1"}
+    assert ingest.load_crosswalk(path, "pcc7942_ortholog") == {"S7": "U7"}
+
+
+def test_map_to_utex_counts_unmapped_identifiers():
+    mapped, unmapped = ingest.map_to_utex({"S1": 1.0, "S9": 2.0}, {"S1": "U1"})
+    assert mapped == {"U1": (1.0, "S1")}
+    assert unmapped == 1
+
+
+def test_write_table_uses_the_pipeline_format_and_returns_its_digest(tmp_path):
+    path = tmp_path / "layer.tsv"
+    digest = ingest.write_table(path, {"U2": (2.0, "S2"), "U1": (1.23456, "S1")})
+    content = path.read_text(encoding="utf-8")
+    assert content == "locus_tag\tabundance\tsource_gene_id\nU1\t1.2346\tS1\nU2\t2.0000\tS2\n"
+    assert digest == hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def test_condition_quotes_reads_axis_and_replicate_citations(tmp_path):
+    path = conditions_file(tmp_path)
+    quotes, replicates = ingest.condition_quotes(path, 2)
+    assert quotes == {
+        "temperature": {"quote": "Grown at 37℃", "where": "GEO growth protocol"},
+        "lightIntensity": {"quote": "", "where": ""},
+        "co2": {"quote": "ambient air", "where": "paper Methods"},
+        "medium": {"quote": "in BG11 liquid medium", "where": "GEO growth protocol"},
+        "format": {"quote": "liquid medium", "where": "GEO growth protocol"},
+        "phase": {"quote": "harvested on day 4", "where": "paper Methods"},
+    }
+    assert replicates == {"quote": "three biological replicates", "where": "paper Methods"}
+    assert ingest.condition_quotes(path, 1) == ({}, {"quote": "", "where": ""})
+    assert ingest.condition_quotes(None, 2) == ({}, {})
+    assert ingest.condition_quotes(path, None) == ({}, {})
+    assert ingest.condition_quotes(tmp_path / "missing.tsv", 2) == ({}, {})
+
+
+def test_build_record_attaches_quotes_without_overriding_the_spec(tmp_path):
+    spec = spec_for(tmp_path, b"", {"format": "csv", "idColumn": "id", "idKind": "pcc7942_old"})
+    spec["conditions"]["co2"]["quote"] = "spec quote"
+    quotes, _ = ingest.condition_quotes(conditions_file(tmp_path), 2)
+    record = ingest.build_record(spec, spec["layers"][0], quotes, {"quote": "x", "where": "Methods"})
+    assert record["conditions"]["temperature"]["quote"] == "Grown at 37℃"
+    assert record["conditions"]["temperature"]["where"] == "GEO growth protocol"
+    assert record["conditions"]["co2"]["quote"] == "spec quote"
+    assert record["conditions"]["co2"]["where"] == "paper Methods"
+    assert record["conditions"]["lightIntensity"] == {**spec["conditions"]["lightIntensity"], "quote": "", "where": ""}
+    assert record["replicates"] == {"count": 3, "text": "three replicates", "where": "Methods"}
+    assert record["conditionTableRow"] == 2
+    assert record["treatments"] == []
+    with pytest.raises(ValueError):
+        ingest.build_record(spec, {**spec["layers"][0], "group": "misc"}, {}, {})
+
+
+def test_ingest_writes_layers_and_updates_the_manifest_in_place(tmp_path):
+    data = csv_bytes(["locus_tag", "a", "b", "c", "d"], [
+        ["S1", "10", "20", "30", "1"],
+        ["S2", "90", "80", "70", "1"],
+        ["S3", "0", "0", "0", "1"],   # drops out of the crosswalk below
+    ])
+    layers = [
+        {"id": "GSE1_control", "metricKey": "exprGse1Control", "label": "control", "conditionSet": "control",
+         "samples": "GSM1-3", "columns": ["a", "b", "c"], "treatments": [], "group": "standard"},
+        {"id": "GSE1_salt", "metricKey": "exprGse1Salt", "label": "salt", "conditionSet": "salt",
+         "samples": "GSM4", "columns": ["d"], "treatments": ["salt"], "group": "stress", "caveat": "salt caveat"},
+    ]
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_old"}, layers)
+    rows = [("U1", "pcc7942_old_locus_tag", "S1", ""), ("U2", "pcc7942_old_locus_tag", "S2", "")]
+    written, manifest, out = run(tmp_path, spec, rows, conditions_file(tmp_path))
+
+    assert [entry["id"] for entry in written] == ["GSE1_control", "GSE1_salt"]
+    control = (out / "GSE1_control.tsv").read_text(encoding="utf-8").splitlines()
+    assert control == ["locus_tag\tabundance\tsource_gene_id", "U1\t200000.0000\tS1", "U2\t800000.0000\tS2"]
+    salt = (out / "GSE1_salt.tsv").read_text(encoding="utf-8").splitlines()
+    assert salt == ["locus_tag\tabundance\tsource_gene_id", "U1\t333333.3333\tS1", "U2\t333333.3333\tS2"]
+
+    entry = written[0]
+    assert entry["file"] == "GSE1_control.tsv"
+    assert entry["isTargetOrganism"] is False
+    assert entry["citationId"] == "test-2026"
+    assert entry["condition"] == "control"
+    assert entry["caveat"] == "Measured in PCC 7942."
+    assert written[1]["caveat"] == "salt caveat"
+    assert entry["sha256"] == ingest.sha256_of((out / "GSE1_control.tsv").read_bytes())
+    assert entry["ingest"] == {
+        "sourceFile": "deposit.csv", "sourceSha256": spec["file"]["sha256"], "sourceUrl": spec["file"]["url"],
+        "columns": ["a", "b", "c"], "normalization": "cpm", "mappedGenes": 2, "unmappedIdentifiers": 1,
+        "mappingRoute": "pcc7942_old_locus_tag in crosswalk.tsv, one-to-one rows only",
+    }
+    assert entry["record"]["conditions"]["temperature"]["quote"] == "Grown at 37℃"
+    assert entry["record"]["replicates"]["where"] == "paper Methods"
+    assert [e["id"] for e in json.loads(manifest.read_text(encoding="utf-8"))] == ["GSE1_control", "GSE1_salt"]
+
+    # A second run replaces the existing entries instead of appending duplicates.
+    spec["layers"] = [{**layers[1], "samples": "GSM4 rerun"}]
+    written, manifest, out = run(tmp_path, spec, rows, conditions_file(tmp_path))
+    stored = json.loads(manifest.read_text(encoding="utf-8"))
+    assert [e["id"] for e in stored] == ["GSE1_control", "GSE1_salt"]
+    assert stored[1]["record"]["samples"] == "GSM4 rerun"
+
+
+def test_ingest_refuses_a_layer_that_maps_nothing(tmp_path):
+    data = csv_bytes(["locus_tag", "a", "b", "c"], [["S1", "1", "1", "1"]])
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_rs"})
+    with pytest.raises(ValueError, match="maps no gene"):
+        run(tmp_path, spec, [("U1", "pcc7942_old_locus_tag", "S1", "")])
+
+
+def test_main_runs_a_spec_file_and_reports_each_layer(tmp_path, capsys):
+    data = csv_bytes(["locus_tag", "a", "b", "c"], [["S1", "1", "2", "3"]])
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_old"})
+    spec_path = tmp_path / "spec.json"
+    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+    manifest = tmp_path / "manifest" / "sources.json"
+    manifest.parent.mkdir()
+    crosswalk = crosswalk_file(tmp_path, [("U1", "pcc7942_old_locus_tag", "S1", "")])
+    code = ingest.main([
+        str(spec_path), "--manifest", str(manifest), "--crosswalk", str(crosswalk),
+        "--interim", str(tmp_path), "--conditions", str(conditions_file(tmp_path)),
+    ])
+    assert code == 0
+    assert capsys.readouterr().out == "GSE1_control: 1 genes mapped, 0 identifiers unmapped -> GSE1_control.tsv\n"
+    assert (manifest.parent / "GSE1_control.tsv").is_file()
+    assert json.loads(manifest.read_text(encoding="utf-8"))[0]["record"]["conditionTableRow"] == 2

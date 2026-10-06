@@ -89,6 +89,20 @@ Stages S1 to S4 are built for the two shipped sources and committed on `main`:
 - Rendered at 375, 768, 1280 and 1440 px with the peek open and closed, no
   horizontal overflow, focus returning to the button, console clean.
 
+S5, first pass (2026-10-05): `tools/ingest_expression.py` (tested in
+`tests/test_ingest_expression.py`) turns a spec in `data/expression/ingest/` into
+one layer per condition set: checksum-pinned download, per-sample CPM or
+as-deposited values, replicate means, one-to-one PCC 7942 → UTEX 2973 mapping
+through the pinned crosswalk, the condition record with the Package B quotes, and
+a `citationId` into the ledger. Eleven layers from GSE288532, GSE222067,
+GSE327989, GSE79726 and GSE89999 ship (`data/expression/INGESTED_SOURCES.md`);
+`citations.json` carries the five studies; metric help derives each layer's
+method and citation from its `ingest` block. Rendered with 13 condition sets:
+five groups, two comparable subgroups under Diel and one under Standard, the
+seven-study legend, colour and filter menus scoped to the five default sources.
+Still to ingest: GSE104203 (eLife workbook with condition blocks in columns) and
+the CC0 proteomes; GSE45762 is excluded for contradictory sample labels.
+
 Not yet done: S1's five gaps are confirmed only where the feature needed them
 (the menus scope; the provenance list and export caveats still read the legacy
 single source); the pair judgements are not yet a data file (`meta.pairJudgements`

@@ -724,6 +724,13 @@ Consequences that both the pipeline and the site must honour:
 Dropping a real UTEX 2973 table into the same directory and rerunning the pipeline
 is the only change needed to switch axes; nothing downstream hardcodes this dataset.
 
+Every entry of `data/expression/sources.json` also names `citationId`, the id of its
+row in `site/data/citations.json`; the pipeline rejects an empty one, and the ledger
+test requires the id to exist. A layer the ingestion tool made
+(`tools/ingest_expression.py`) carries an `ingest` block (source file, checksum,
+sample columns, normalisation, mapped and unmapped counts, mapping route), from
+which the metric help derives the layer's method line and citation.
+
 ### `codon_pca.json`
 
 ```jsonc

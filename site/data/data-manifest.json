@@ -9,8 +9,8 @@
       "sha256": "896d01639c9c7c2ea9c2019ea62cd129ec704bfe661ddfe4592e99b653c4de74"
     },
     "citations.json": {
-      "bytes": 27145,
-      "sha256": "d25e4e7500163194b3252644b8ff19474c58b8c6c2913bb8e00a10fd5749f52e"
+      "bytes": 35986,
+      "sha256": "348377955a03de3b2aceff8a15253cf6915bd659d2475c195f3d5f047d4d7b59"
     },
     "codon_pca.json": {
       "bytes": 5327,
@@ -25,8 +25,8 @@
       "sha256": "2ac4661ec3acea118b49c1fab7f4c2a69c91b718a74456f5681d0774f6064a0e"
     },
     "genes.json": {
-      "bytes": 5169989,
-      "sha256": "0d2711ade57d566832e126fe14ccb893ce91d932229118c6873775d356273552"
+      "bytes": 5988811,
+      "sha256": "cdc2cc01b6cb4f36a1242cab5d29c9c445773dcbcca1e07fca5ecfccff990c4e"
     },
     "go-iea-essentiality-v1.json": {
       "bytes": 454699,
@@ -41,8 +41,8 @@
       "sha256": "16362fa4618e5f83c224af33513e9fd71462a625c35525898d5dda6e7dada4df"
     },
     "meta.json": {
-      "bytes": 33292,
-      "sha256": "a536ac35cafd32e0f58602e55542d35189559f71977c3557497b7b3bddc3ef95"
+      "bytes": 90605,
+      "sha256": "9421cf115ea65cc5b26cef3984b2c1cac1fa957dcf8c108bb38a132ffb4ae961"
     },
     "pcc7942-essentiality-v1.json": {
       "bytes": 603979,

@@ -1,0 +1,123 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE222067",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222067",
+  "citationId": "dong-2023",
+  "citation": {
+    "text": "Dong Z et al. Improved salt tolerance of Synechococcus elongatus PCC 7942 by heterologous synthesis of compatible solute ectoine. Front Microbiol 2023;14:1123081.",
+    "url": "https://doi.org/10.3389/fmicb.2023.1123081",
+    "pmid": "36819058"
+  },
+  "file": {
+    "name": "GSE222067_counts.xlsx",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE222nnn/GSE222067/suppl/GSE222067_counts.xlsx",
+    "sha256": "5ac738c5b833e2ce1847f358256c165a16dc9d4e581291d274517c129a09d21d"
+  },
+  "reader": {
+    "format": "xlsx",
+    "sheet": "counts",
+    "idColumn": "locus_tag",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean counts per million (raw read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": 29,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 37,
+      "hi": 37,
+      "unit": "°C",
+      "text": "37°C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 100,
+      "hi": 100,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "approximately 100 μmol photons m−2 s−1"
+    },
+    "lightRegime": {
+      "status": "not reported",
+      "kind": null,
+      "photoperiod": null,
+      "spectrumClass": null,
+      "entrained": false,
+      "text": "spectrum, continuous versus diel, and photoperiod not reported",
+      "where": "",
+      "quote": ""
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported",
+      "where": ""
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG11 liquid medium"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "liquid culture"
+    },
+    "phase": {
+      "status": "reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "day 4 of culture at sampling; OD750 not reported for this time point"
+    }
+  },
+  "caveat": "Measured in PCC 7942 at 37 °C, not in UTEX 2973. Wild-type samples only; the Δsps-ect strain in the same deposit is not shipped.",
+  "layers": [
+    {
+      "id": "GSE222067_wt_0mM_NaCl",
+      "metricKey": "exprGse222067Control",
+      "label": "Expression GSE222067 WT, 0 mM NaCl (PCC 7942)",
+      "conditionSet": "Wild type, 0 mM NaCl control, mean of three replicates",
+      "samples": "WT 0 mM NaCl 1–3 (GSM6914144–GSM6914146)",
+      "columns": [
+        "WT 0 mM NaCl-1_Count",
+        "WT 0 mM NaCl-2_Count",
+        "WT 0 mM NaCl-3_Count"
+      ],
+      "treatments": [],
+      "group": "elevated"
+    },
+    {
+      "id": "GSE222067_wt_300mM_NaCl",
+      "metricKey": "exprGse222067Salt",
+      "label": "Expression GSE222067 WT, 300 mM NaCl (PCC 7942)",
+      "conditionSet": "Wild type, 300 mM NaCl salt stress, mean of three replicates",
+      "samples": "WT 300 mM NaCl 1–3 (GSM6914147–GSM6914149)",
+      "columns": [
+        "WT 300 mM NaCl-1_Count",
+        "WT 300 mM NaCl-2_Count",
+        "WT 300 mM NaCl-3_Count"
+      ],
+      "treatments": [
+        "salt (300 mM NaCl)"
+      ],
+      "group": "elevated"
+    }
+  ]
+}

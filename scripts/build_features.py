@@ -119,6 +119,7 @@ EXPRESSION_SOURCE_FIELDS = (
     "licence",
     "caveat",
     "provenanceDoc",
+    "citationId",
 )
 
 
@@ -437,6 +438,10 @@ def load_expression_sources(
         claimed_source_ids.add(source_id)
         claimed_metric_keys.add(metric_key)
         validate_record(source["record"], f"Expression source {source_id}")
+        require(
+            isinstance(source["citationId"], str) and bool(source["citationId"]),
+            f"Expression source {source_id} names no citation ledger entry",
+        )
 
         file_name = source["file"]
         require(

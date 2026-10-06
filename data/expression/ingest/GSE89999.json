@@ -1,0 +1,145 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 clock-rescue strain (kaiBC under Ptrc)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE89999",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89999",
+  "citationId": "puszynska-2017",
+  "citation": {
+    "text": "Puszynska AM et al. Switching of metabolic programs in response to light availability is an essential function of the cyanobacterial circadian output pathway. Elife 2017;6.",
+    "url": "https://doi.org/10.7554/eLife.23210",
+    "pmid": "28430105"
+  },
+  "file": {
+    "name": "GSE89999_Expression_timecourse.xls.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE89nnn/GSE89999/suppl/GSE89999_Expression_timecourse.xls.gz",
+    "sha256": "2b7185ce24fe24c4fedb8b8ee5ba7149372e8e513ccd4fb8bf2ff7a7b5fef3e4"
+  },
+  "reader": {
+    "format": "xls",
+    "sheet": "Sheet1",
+    "idColumn": "Gene name",
+    "idKind": "pcc7942_old"
+  },
+  "units": "RPKM as deposited (one sample per time point)",
+  "normalization": "as-deposited",
+  "conditionTableRow": 57,
+  "replicates": {
+    "count": null,
+    "text": "one sample per condition and time point; no replicates deposited"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 40,
+      "hi": 40,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "40 μE m-2 s-1"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "diel",
+      "photoperiod": "12:12",
+      "spectrumClass": "cool fluorescent",
+      "entrained": true,
+      "text": "cool fluorescent light; 12 h:12 h light–dark entrainment, then darkness and dawn sampling"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported",
+      "where": ""
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG11 medium"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "liquid culture"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "steady-state",
+      "od": [
+        0.2,
+        0.2
+      ],
+      "odNm": 750,
+      "text": "OD750 held near 0.2"
+    }
+  },
+  "caveat": "Measured in a PCC 7942 clock-rescue strain, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists.",
+  "layers": [
+    {
+      "id": "GSE89999_control_dusk",
+      "metricKey": "exprGse89999Dusk",
+      "label": "Expression GSE89999 dusk ZT12 (PCC 7942)",
+      "conditionSet": "Clock-rescue control at dusk, ZT12, single sample",
+      "samples": "control_duskZT12 (GSM2395359)",
+      "columns": [
+        "control_duskZT12"
+      ],
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "diel"
+    },
+    {
+      "id": "GSE89999_control_darkness",
+      "metricKey": "exprGse89999Dark",
+      "label": "Expression GSE89999 darkness time course (PCC 7942)",
+      "conditionSet": "Clock-rescue control in darkness, mean of eight time points from 5 min to 11 h 50 min",
+      "samples": "control_darkness_5min to control_darkness_11h50min (GSM2395360–GSM2395367)",
+      "columns": [
+        "control_darkness_5min",
+        "control_darkness_15min",
+        "control_darkness_30min",
+        "control_darkness_1h",
+        "control_darkness_2h",
+        "control_darkness_4h",
+        "control_darkness_8h",
+        "control_darkness_11h50min"
+      ],
+      "treatments": [
+        "dark time course"
+      ],
+      "group": "diel"
+    },
+    {
+      "id": "GSE89999_control_dawn",
+      "metricKey": "exprGse89999Dawn",
+      "label": "Expression GSE89999 dawn (PCC 7942)",
+      "conditionSet": "Clock-rescue control after dawn, mean of three time points from 5 to 30 min",
+      "samples": "control_dawn_5min to control_dawn_30min (GSM2395368–GSM2395370)",
+      "columns": [
+        "control_dawn_5min",
+        "control_dawn_15min",
+        "control_dawn_30min"
+      ],
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "diel"
+    }
+  ]
+}

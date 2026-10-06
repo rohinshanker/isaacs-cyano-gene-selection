@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on two metrics, symmetric log on two, linear on the rest', async () => {
+test('the shipped release opens logarithmic on eight metrics, symmetric log on seven, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -100,8 +100,19 @@ test('the shipped release opens logarithmic on two metrics, symmetric log on two
   const keysFor = (scale) => [...chosen]
     .filter(([, value]) => value === scale).map(([key]) => key).sort();
 
-  assert.deepEqual(keysFor('log10'), ['expression', 'tssInitiation']);
-  assert.deepEqual(keysFor('symlog'), ['neighborDownstreamNt', 'neighborUpstreamNt']);
+  // Every ingested PCC 7942 layer is skewed enough for the rule. Six are
+  // strictly positive and open logarithmic; the other five (GSE222067 control,
+  // GSE327989, the three GSE89999 layers) report zeros, so they open symmetric log.
+  assert.deepEqual(keysFor('log10'), [
+    'exprGse222067Salt', 'exprGse288532Day', 'exprGse288532Night',
+    'exprGse79726Control', 'exprGse79726NMinus', 'exprGse79726NPlus',
+    'expression', 'tssInitiation',
+  ]);
+  assert.deepEqual(keysFor('symlog'), [
+    'exprGse222067Control', 'exprGse327989Wt',
+    'exprGse89999Dark', 'exprGse89999Dawn', 'exprGse89999Dusk',
+    'neighborDownstreamNt', 'neighborUpstreamNt',
+  ]);
   assert.deepEqual(keysFor('sqrt'), []);
   assert.deepEqual(keysFor('percentile'), []);
   // Rare codon count is the near miss: 76% of its genes fall in the lowest tenth

@@ -236,6 +236,7 @@ def expression_source(file_name, metric_key, digest):
         "licence": "test licence",
         "caveat": "test caveat",
         "provenanceDoc": "data/expression/test.md",
+        "citationId": "test-citation",
     }
 
 
@@ -305,6 +306,14 @@ def test_expression_manifest_rejects_a_metric_key_collision(tmp_path):
     (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="metricKey collision: cai"):
         load_expression_sources(tmp_path, {"cai"})
+
+
+def test_expression_manifest_rejects_an_empty_citation_id(tmp_path):
+    digest = write_expression_table(tmp_path, "source.tsv", [("a", 10, "s1")])
+    manifest = [expression_source("source.tsv", "exprTest", digest) | {"citationId": ""}]
+    (tmp_path / "sources.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="names no citation ledger entry"):
+        load_expression_sources(tmp_path, set())
 
 
 def test_expression_proxy_is_a_tie_aware_zero_to_one_cai_tai_rank():

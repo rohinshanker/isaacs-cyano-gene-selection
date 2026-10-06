@@ -1,0 +1,150 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 cscB-sps (engineered sucrose-exporting strain)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY 4.0 (ledger decision 2026-10-04); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE288532",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE288532",
+  "citationId": "gilliam-2025",
+  "citation": {
+    "text": "Gilliam A et al. Cyanobacterial circadian regulation enhances bioproduction under subjective nighttime through rewiring of carbon partitioning dynamics, redox balance orchestration, and cell cycle modulation. Microb Cell Fact 2025;24:56.",
+    "url": "https://doi.org/10.1186/s12934-025-02665-5",
+    "pmid": "40055679"
+  },
+  "file": {
+    "name": "GSE288532_rna_seq_counts.csv.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE288nnn/GSE288532/suppl/GSE288532_rna_seq_counts.csv.gz",
+    "sha256": "1a05cb6032c39c37d515ff22148e82ed1c6e8018733d60e56ee198a11ccb66d8"
+  },
+  "reader": {
+    "format": "csv",
+    "idColumn": "locus_tag",
+    "idKind": "pcc7942_rs"
+  },
+  "units": "mean counts per million (raw read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": 38,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates per condition and time point"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 27,
+      "hi": 31,
+      "unit": "°C",
+      "text": "29 ± 2°C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 200,
+      "hi": 200,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "approximately 200 μE m⁻² s⁻¹"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "full-spectrum LED",
+      "entrained": false,
+      "text": "continuous light; full-spectrum LED; sampled across subjective day and subjective night of a circadian free-run"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 2,
+      "hi": 2,
+      "unit": "%",
+      "text": "nitrogen gas containing 2% CO2 (sparged)"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11 medium supplemented with 1 g/L HEPES (pH 8.4)"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "sparged liquid culture"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "steady-state",
+      "od": [
+        0.1,
+        0.1
+      ],
+      "odNm": 750,
+      "text": "OD750 held near 0.1"
+    }
+  },
+  "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB-sps), not wild type, and not in UTEX 2973. Each value is the mean over the time points of one circadian arm.",
+  "layers": [
+    {
+      "id": "GSE288532_subjective_day",
+      "metricKey": "exprGse288532Day",
+      "label": "Expression GSE288532 subjective day (PCC 7942)",
+      "conditionSet": "cscB-sps circadian time course, subjective day (T0 to T16 h), mean of six time points × three replicates",
+      "samples": "L_T0 to L_T16 A/B/C (GSM8769503–GSM8769520)",
+      "columns": [
+        "L_T0_A",
+        "L_T0_B",
+        "L_T0_C",
+        "L_T2_A",
+        "L_T2_B",
+        "L_T2_C",
+        "L_T4_A",
+        "L_T4_B",
+        "L_T4_C",
+        "L_T8_A",
+        "L_T8_B",
+        "L_T8_C",
+        "L_T12_A",
+        "L_T12_B",
+        "L_T12_C",
+        "L_T16_A",
+        "L_T16_B",
+        "L_T16_C"
+      ],
+      "treatments": [
+        "circadian time course",
+        "sucrose export induction"
+      ],
+      "group": "diel"
+    },
+    {
+      "id": "GSE288532_subjective_night",
+      "metricKey": "exprGse288532Night",
+      "label": "Expression GSE288532 subjective night (PCC 7942)",
+      "conditionSet": "cscB-sps circadian time course, subjective night (T0 to T8 h), mean of four time points × three replicates",
+      "samples": "D_T0 to D_T8 A/B/C (GSM8769521–GSM8769532)",
+      "columns": [
+        "D_T0_A",
+        "D_T0_B",
+        "D_T0_C",
+        "D_T2_A",
+        "D_T2_B",
+        "D_T2_C",
+        "D_T4_A",
+        "D_T4_B",
+        "D_T4_C",
+        "D_T8_A",
+        "D_T8_B",
+        "D_T8_C"
+      ],
+      "treatments": [
+        "circadian time course",
+        "sucrose export induction"
+      ],
+      "group": "diel"
+    }
+  ]
+}

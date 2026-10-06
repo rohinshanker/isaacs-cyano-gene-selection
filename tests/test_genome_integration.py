@@ -35,7 +35,8 @@ def test_generated_documents_follow_contract():
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
     assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
-    assert len(meta["metrics"]) == 35
+    # 35 computed metrics plus one expression metric per ingested layer (11).
+    assert len(meta["metrics"]) == 35 + 11
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -111,12 +112,16 @@ def test_generated_documents_follow_contract():
     assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
 
     manifest = json.loads(EXPRESSION_MANIFEST.read_text())
-    assert len(meta["expressionSources"]) == len(manifest) == 2
+    assert len(meta["expressionSources"]) == len(manifest) == 13
     for emitted, selected in zip(meta["expressionSources"], manifest, strict=True):
         assert emitted | selected == emitted
     assert [source["coverage"]["withValue"] for source in meta["expressionSources"]] == [
-        2551,
-        1727,
+        2551, 1727,
+        2615, 2615,  # GSE288532 subjective day / night
+        2550, 2550,  # GSE222067 WT 0 / 300 mM NaCl
+        2505,  # GSE327989 WT day 4
+        2551, 2551, 2551,  # GSE79726 control / N-minus / N-plus
+        2551, 2551, 2551,  # GSE89999 dusk / darkness / dawn
     ]
     assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
     tss_definition = meta["metrics"]["tssInitiation"]
