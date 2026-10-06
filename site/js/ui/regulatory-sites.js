@@ -22,6 +22,9 @@ const COMPARISON_FIELDS = [
   ['High light vs control', 'high_light_log2fc', 'high_light_padj'],
   ['High temperature vs control', 'high_temperature_log2fc', 'high_temperature_padj'],
 ];
+const COMPARISON_LABELS = Object.freeze({
+  dark: 'Dark', high_light: 'High light', high_temperature: 'High temperature',
+});
 
 function formatReads(value) {
   return value === '' ? 'Unknown'
@@ -77,10 +80,12 @@ function siteCard(row, claims, warnings, onShowGene) {
         ? 'Exact current CDS identifier match.' : 'No exact current plotted CDS match.')
     : 'No locus association in the published row.';
   card.append(sourceLink);
-  if (row.source_start_distance_nt) {
+  // Rows carry the distance as text, '' when absent; a published 0 is a distance.
+  const distanceNt = row.source_start_distance_nt === '' ? NaN : Number(row.source_start_distance_nt);
+  if (Number.isFinite(distanceNt)) {
     const distance = document.createElement('p');
     distance.className = 'panel-note';
-    distance.textContent = `${row.source_start_distance_nt} nt from the 2018 start model; `
+    distance.textContent = `${distanceNt} nt from the 2018 start model; `
       + 'this distance was not recalculated against current coordinates.';
     card.append(distance);
   }
@@ -102,7 +107,7 @@ function siteCard(row, claims, warnings, onShowGene) {
     card.append(claimNote);
     card.append(makeTable(`Published potential target: ${claims[0].potential_target_locus}`,
       ['Condition', 'aTSS log2FC', 'gTSS log2FC'], claims.map((claim) => [
-        `${{ dark: 'Dark', high_light: 'High light', high_temperature: 'High temperature' }[claim.comparison]} (≥${claim.source_selection_min_abs_log2fc})`,
+        `${COMPARISON_LABELS[claim.comparison]} (≥${claim.source_selection_min_abs_log2fc})`,
         formatDifferential(claim.atss_log2fc),
         formatDifferential(claim.gtss_log2fc),
       ])));
@@ -110,7 +115,8 @@ function siteCard(row, claims, warnings, onShowGene) {
   for (const sourceWarning of warnings) {
     const warning = document.createElement('p');
     warning.className = 'provenance-warning';
-    warning.textContent = `Source caution — Dark vs control: ${sourceWarning.message}`;
+    warning.textContent = `Source caution — ${COMPARISON_LABELS[sourceWarning.comparison]} vs control: `
+      + sourceWarning.message;
     card.append(warning);
   }
   card.append(makeTable('Raw reads at this start site', ['Condition', 'Culture 1', 'Culture 2'],

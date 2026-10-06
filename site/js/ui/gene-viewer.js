@@ -261,7 +261,7 @@ function factsFor(model) {
     ['Strand', model.strand === '-' ? 'Minus' : 'Plus'],
     ['Coordinates', `${formatCount(model.start)}–${formatCount(model.end)}`],
     ['Length', Number.isFinite(model.lengthNt)
-      ? `${formatCount(model.lengthNt)} nt, ${formatCount(model.lengthCodons ?? 0)} sense codons`
+      ? `${formatCount(model.lengthNt)} nt, ${formatCount(model.lengthCodons)} sense codons`
       : 'Unknown'],
     ['Terminal stop', model.terminalStop ?? 'Unknown'],
   ];

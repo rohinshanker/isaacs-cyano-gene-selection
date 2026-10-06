@@ -73,7 +73,7 @@ METRIC_DEFINITIONS = {
     "deltaEnc": "Expected ENC minus observed ENC, in codons and centred on zero; positive values mean more codon concentration than the GC3s neutral curve predicts, subject to the ENC family-substitution caveat.",
     "cai": "Codon adaptation index (Sharp and Li), ranging from 0 to 1 and calculated against the 71-gene ribosomal-plus-housekeeping reference set; zero reference counts receive a 0.5 pseudocount and Met and Trp are excluded.",
     "tai": "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1 and derived from this genome's tRNA gene copies with bacterial wobble penalties; TTA has no cognate tRNA and uses the geometric mean of non-zero codon weights.",
-    "expressionPercentile": "Average-rank percentile of the measured PCC 7942 expression values, in (0, 1]; null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
+    "expressionPercentile": "Mid-rank percentile of the measured PCC 7942 expression values, in (0, 1); null for unmeasured genes and not interchangeable with the CAI/tAI-derived expression proxy.",
     "expressionProxy": "Tie-aware average rank of sqrt(CAI × tAI) across all genes, scaled from 0 to 1; this is a codon-adaptation proxy, not measured transcript or protein abundance.",
     "rareFraction": "Fraction of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to 1 and treats an alternative start codon as translated methionine.",
     "rareCount": "Number of sense codons whose genome-wide within-amino-acid frequency is below 0.1; ranges from 0 to the gene's sense-codon length and excludes the terminal stop.",
@@ -500,14 +500,19 @@ def load_expression_sources(
 def expression_metric_definition(
     source: Mapping[str, Any], with_value: int, total: int
 ) -> dict[str, str]:
-    """Builds a reader-facing metric definition from manifest provenance."""
+    """Builds a reader-facing metric definition from manifest provenance.
+
+    The coverage names its column and payload, so a count is never mistaken for
+    another layer's (the Tan site rows in ``tss_evidence.json`` count differently).
+    """
     return {
         "label": source["label"],
         "unit": source["units"],
         "desc": (
             f"{source['assay']} measured in {source['organism']} under "
             f"{source['condition']}, reported in {source['units']}; available for "
-            f"{with_value:,} of {total:,} genes. {source['caveat']}"
+            f"{with_value:,} of {total:,} genes in the {source['metricKey']} column of "
+            f"{source['payload']}. {source['caveat']}"
         ),
         "family": "Expression",
         "scale": "sequential",
@@ -541,7 +546,7 @@ def expression_layers_document(
 
 
 def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
-    """Returns average-rank percentiles (rank / N), including ties."""
+    """Returns mid-rank percentiles, (below + ties / 2) / N, the browser's `percentileRank`."""
     ordered = sorted(values.items(), key=lambda item: item[1])
     result = {}
     start = 0
@@ -549,9 +554,9 @@ def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
         end = start + 1
         while end < len(ordered) and ordered[end][1] == ordered[start][1]:
             end += 1
-        average_rank = ((start + 1) + end) / 2
+        mid_rank = start + (end - start) / 2
         for locus, _ in ordered[start:end]:
-            result[locus] = average_rank / len(ordered)
+            result[locus] = mid_rank / len(ordered)
         start = end
     return result
 
@@ -1190,7 +1195,9 @@ def build(
             },
             "tssDiscoveryMinimumRawReadsInAnyLibrary": 300,
             "isGeneBodyAbundance": False,
-            "summary": tss_summary,
+            # Every count here is over the gene-linked site rows, not the pooled
+            # tssInitiation column, whose coverage its own metric definition names.
+            "summary": {"layer": "tss_evidence.json", **tss_summary},
         },
         "expressionProxy": {
             "method": (

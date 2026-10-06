@@ -115,6 +115,34 @@ test('search and paging keep controls stable and expose unmapped sites', () => {
   }
 });
 
+test('site cards name the warning comparison and keep a zero start distance', () => {
+  const previous = globalThis.document;
+  globalThis.document = { createElement: (tag) => new FakeElement(tag) };
+  try {
+    const inventory = structuredClone(data);
+    const row = inventory.rows.find((entry) => entry.tss_id === 'aTSS-1705677');
+    row.source_start_distance_nt = '0';
+    inventory.sourceWarnings.push({
+      tssId: row.tss_id, comparison: 'high_light', message: 'Test caution.',
+    });
+    const host = new FakeElement('div');
+    const panel = new RegulatorySitesPanel(host, { onShowGene: () => {} });
+    panel.update(inventory);
+    panel.search.value = row.tss_id;
+    panel.search.listeners.get('input')();
+    const texts = panel.list.children[0].children.map((child) => child.textContent ?? '');
+    assert.equal(texts.includes('Source caution — High light vs control: Test caution.'), true);
+    assert.equal(texts.some((text) => text.startsWith('0 nt from the 2018 start model; ')
+      && text.includes('not recalculated')), true);
+    row.source_start_distance_nt = '';
+    panel.search.listeners.get('input')();
+    assert.equal(panel.list.children[0].children.some((child) =>
+      child.textContent?.includes('from the 2018 start model')), false);
+  } finally {
+    globalThis.document = previous;
+  }
+});
+
 test('missing regulatory inventory renders its unavailable reason', () => {
   const previous = globalThis.document;
   globalThis.document = { createElement: (tag) => new FakeElement(tag) };

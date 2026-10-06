@@ -49,8 +49,9 @@ export function formatPercentile(fraction) {
   return `${whole}${ordinalSuffix(whole)} pct`;
 }
 
-/** Whole numbers with thousands separators. */
+/** Whole numbers with thousands separators; a missing count is MISSING, not 0. */
 export function formatCount(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return MISSING;
   return Number(value).toLocaleString('en-US');
 }
 
