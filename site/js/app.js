@@ -81,7 +81,7 @@ import {
   datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import {
-  buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isTypeKey,
+  buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
   normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
@@ -1576,9 +1576,10 @@ function sourceSelection() {
  */
 function metricInScope(metric) {
   if (!metric || !context.datasets?.length) return true;
-  // A dataset's own metric is never offered directly: its type is, informed by
-  // the dataset chosen under Data Sources (owner decision, 2026-10-06).
-  if (context.datasets.some((dataset) => dataset.metricKey === metric.key)) return false;
+  // A dataset's own metric, or the percentile derived from that one dataset,
+  // is never offered directly: its type is, informed by the dataset chosen
+  // under Data Sources (owner decision, 2026-10-06).
+  if (isDatasetOwnKey(metric.key, context.datasets)) return false;
   // A type is offered whenever the release has a dataset of it; asking for a
   // type none of whose datasets is selected selects its defaults (owner
   // report, 2026-10-06: the fitness type was invisible until a set was picked).

@@ -134,6 +134,15 @@ export function contributingDatasets(typeKey, typeSources, datasets, selection) 
   return named ? [named] : selectedOfType(group, selection);
 }
 
+/**
+ * Whether a metric key is one dataset's own: its manifest metric, or the
+ * percentile the pipeline derives from that one dataset. Neither is offered
+ * where a type metric stands for the data type (owner decision, 2026-10-06).
+ */
+export function isDatasetOwnKey(key, datasets) {
+  return datasets.some((d) => d.metricKey === key || `${d.metricKey}Percentile` === key);
+}
+
 /** A dataset metric's type key; any other key is returned unchanged. */
 export function typeKeyOf(metricKey, datasets) {
   const dataset = datasets.find((d) => d.metricKey === metricKey);

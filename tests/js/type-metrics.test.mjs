@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { dataset } from './data-sources-fixture.mjs';
 import {
   assayKind, buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, defaultInforming,
-  informingDataset, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  informingDataset, isDatasetOwnKey, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from '../../site/js/core/type-metrics.js';
 
 function datasets() {
@@ -153,4 +153,14 @@ test('a type asked for with nothing selected starts from its originals and stand
   assert.deepEqual(ids(defaultDatasetsOfType('type.transcriptomics.rna-seq.initiation', all)), ['TAN2018_TSS']);
   assert.deepEqual(ids(defaultDatasetsOfType('type.fitness.rb-tnseq.fitness', [...all, screen])), ['F1'], 'no standard set: every dataset of the type');
   assert.deepEqual(defaultDatasetsOfType('type.nope', all), []);
+});
+
+test('a dataset\'s own metric and its derived percentile are both the dataset\'s, a type or a computed metric is not', () => {
+  const all = datasets();
+  assert.equal(isDatasetOwnKey('expression', all), true);
+  assert.equal(isDatasetOwnKey('expressionPercentile', all), true, 'the single-dataset rank is offered through its type instead');
+  assert.equal(isDatasetOwnKey('tssInitiation', all), true);
+  assert.equal(isDatasetOwnKey('type.transcriptomics.rna-seq.abundance', all), false);
+  assert.equal(isDatasetOwnKey('expressionProxy', all), false, 'the codon-adaptation proxy is this genome\'s own');
+  assert.equal(isDatasetOwnKey('gc3', all), false);
 });

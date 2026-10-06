@@ -258,7 +258,10 @@ with more than one selected), on the Metric X vs Y source select, or through
 the filters' Select source peek. The type keeps its key when the dataset
 changes; the legend, help and axis note read the informing dataset's unit and
 provenance, the colour scale re-defaults from the new values, and the link
-records the choice as `src=` only where it differs from the default. The
+records the choice as `src=` only where it differs from the default. A
+dataset's own metric, and the percentile the pipeline derives from that one
+dataset ("Expression percentile (PCC 7942)"), are never offered in these menus:
+the type stands for them, and a pooled type already reads as a percentile. The
 contract and the key scheme are in
 [data-contract.md](data-contract.md) ("Data-type metrics"); tests in
 `tests/js/type-metrics.test.mjs`, `tests/js/url-state.test.mjs` and
