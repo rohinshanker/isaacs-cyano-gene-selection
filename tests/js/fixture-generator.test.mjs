@@ -92,15 +92,16 @@ test('nothing in it carries cyanobacterial provenance', () => {
  *     shasum -a 256 <scratch>/out/*
  *
  * Re-run that to re-establish them after an intended change to the default
- * fixture, and say in the commit why the bytes moved. The digests are bound to
- * one Node major (24, which CI pins): the generator calls Math.log, exp and cos,
- * and V8 versions differ in their last bit, so Node 22 writes different bytes
- * from the same seed.
+ * fixture, and say in the commit why the bytes moved. The digests must be the
+ * same on every platform: the first CI run after the organism merge showed the
+ * mean codon-pair score differing in its last bit between arm64 and x64, so
+ * the generator rounds it; a new float field needs the same care, checked by
+ * generating once under linux/amd64 (for example in a node:24 container).
  */
 const BASELINE_DIGESTS = Object.freeze({
   'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',
   'excluded.json': 'f5812402efd22d2b1fcb41f0c131271ce1a93fff07e3980bbbcd02e4bf0c9cd5',
-  'genes.json': 'aa3bf767a1b7f3055e6f56c1409fd27820970e87065542f0d2cfd0ca92165e8d',
+  'genes.json': 'e68accedf7406ef5dd70a774efff9388cec1ac2341cfc6f2da588263714379df',
   'meta.json': '2b90d84dc5c9e2c327924140d6fd5644d5bf779396fb9dad7e18f279ae8e824a',
 });
 
@@ -139,7 +140,7 @@ test('the expression variant is the one the generator has always written', () =>
     {
       'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',
       'excluded.json': 'f5812402efd22d2b1fcb41f0c131271ce1a93fff07e3980bbbcd02e4bf0c9cd5',
-      'genes.json': '21ce72483dd397a8835f9fe9af31caccb2710ea7c00935e3313b9045a30a2f45',
+      'genes.json': '9e422ce2f28ad73999f2b2a90f0f07690c6f6ff937dd7e065c83aec1f3d5cc67',
       'meta.json': '96aa042183920957383d7eb95d23382ce34bd31a25f66768ece0d39e9899356b',
     },
   );

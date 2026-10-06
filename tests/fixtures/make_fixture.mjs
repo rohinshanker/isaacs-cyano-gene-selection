@@ -760,7 +760,10 @@ function main(args) {
       longestRareRun,
       rampRareCount,
       minLocalTai: Number.isFinite(minLocalTai) ? minLocalTai : null,
-      cps: cpsSum / pairs,
+      // Rounded so the fixture's bytes are the same on every platform: the
+      // unrounded mean differs in its last bit between arm64 and x64, which is
+      // enough to move the digest the generator test pins.
+      cps: Math.round((cpsSum / pairs) * 1e9) / 1e9,
       underrepresentedPairFraction: underrepresented / pairs,
       // A few genes carry no folding energy, so the interface is exercised
       // against the contract's rule that null renders as an em-space, not zero.

@@ -129,10 +129,7 @@ jobs:
           done
           exit "$status"
 
-      # Node 24, the version the fixture digests in
-      # tests/js/fixture-generator.test.mjs were taken with: the generator calls
-      # Math.log, exp and cos, whose last-bit results differ between V8
-      # versions, so the byte pin holds only on one Node major.
+      # Node 24, the major the repository develops on.
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
