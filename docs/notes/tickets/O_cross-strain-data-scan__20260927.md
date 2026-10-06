@@ -686,10 +686,11 @@ Assumptions made to build the prototype, each put to the owner as a question:
 - The colour-blind check failed for the first mockup's green and orange. The
   prototype uses three validated hues; position, not colour, carries the value.
 
-Not started. It waits on the package D and E intake, on the prerequisite gaps that
-intake is to confirm in the code, and on structured condition records for the
-shipped sources. With only the two shipped sources the section and the peek can
-still be built and rendered.
+Moved 2026-10-05 to its own ticket,
+[O_data-sources-selection__20261005](O_data-sources-selection__20261005.md),
+which carries the third round of owner decisions (where a source is chosen in the
+filters, the axes and the projection views; per-study row colours with a legend)
+and the build stages. Step 6 is complete in this ticket when that one ships.
 
 Still to design: placement at each breakpoint, URL-hash encoding, interaction with the
 existing colour, axis, and filter selectors, and what happens to genes missing from
