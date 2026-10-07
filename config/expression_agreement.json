@@ -1,0 +1,2174 @@
+{
+  "schemaVersion": 1,
+  "studies": [
+    {
+      "spec": "data/expression/ingest/GSE103462.json",
+      "specSha256": "781a891bceb95aa6dc2799d229819bd212881fc7ae23a6af4935830192e0d5fc",
+      "layers": [
+        {
+          "id": "GSE103462_wt_subjective_dawn",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE103462_wt_subjective_dawn",
+              "columns": [
+                "wild type replicate 1 dawn",
+                "wild type replicate 2 dawn"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE103462_wt_subjective_dusk",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE103462_wt_subjective_dusk",
+              "columns": [
+                "wild type replicate 1 dusk",
+                "wild type replicate 2 dusk"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE103462_dusk_vs_dawn",
+          "label": "Subjective dusk relative to subjective dawn",
+          "treatment": [
+            "wild type replicate 1 dusk",
+            "wild type replicate 2 dusk"
+          ],
+          "control": [
+            "wild type replicate 1 dawn",
+            "wild type replicate 2 dawn"
+          ],
+          "caveat": "Within-study circadian phase contrast; dawn is a phase baseline, not a simultaneous untreated control. GSE103463 uses an engineered rel- + relA+ background."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE103463.json",
+      "specSha256": "ca5ae3254a7422d03cf4e0c5ef7c64ff308c3b27da6927821a93476e4c2eace7",
+      "layers": [
+        {
+          "id": "GSE103463_rel_relA_subjective_dawn",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE103463_rel_relA_subjective_dawn",
+              "columns": [
+                "spoT- + relA+ replicate 1 dawn",
+                "spoT- + relA+ replicate 2 dawn"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE103463_rel_relA_subjective_dusk",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE103463_rel_relA_subjective_dusk",
+              "columns": [
+                "spoT- + relA+ replicate 1 dusk",
+                "spoT- + relA+ replicate 2 dusk"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE103463_dusk_vs_dawn",
+          "label": "Subjective dusk relative to subjective dawn",
+          "treatment": [
+            "spoT- + relA+ replicate 1 dusk",
+            "spoT- + relA+ replicate 2 dusk"
+          ],
+          "control": [
+            "spoT- + relA+ replicate 1 dawn",
+            "spoT- + relA+ replicate 2 dawn"
+          ],
+          "caveat": "Within-study circadian phase contrast; dawn is a phase baseline, not a simultaneous untreated control. GSE103463 uses an engineered rel- + relA+ background."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE103644.json",
+      "specSha256": "7c22011e6a36f81e1df3f3881ade40bfc0d3441e57daae0aea5d7ac8e1bbabaf",
+      "layers": [
+        {
+          "id": "GSE103644_wt_relA_preinduction",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "wild type + relA+, time = 0",
+              "columns": [
+                "wild type + relA+, time = 0"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE103644_wt_relA_induced",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "wild type + relA+, time = 30 min",
+              "columns": [
+                "wild type + relA+, time = 30 min"
+              ]
+            },
+            {
+              "id": "wild type + relA+, time = 1 h",
+              "columns": [
+                "wild type + relA+, time = 1 h"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE103644_induced_30min",
+          "label": "Theophylline induction 30min relative to pre-induction",
+          "treatment": [
+            "wild type + relA+, time = 30 min"
+          ],
+          "control": [
+            "wild type + relA+, time = 0"
+          ],
+          "caveat": "One sample in each arm; no replicate uncertainty. Time and induction are confounded; engineered inducible relA background."
+        },
+        {
+          "id": "GSE103644_induced_1h",
+          "label": "Theophylline induction 1h relative to pre-induction",
+          "treatment": [
+            "wild type + relA+, time = 1 h"
+          ],
+          "control": [
+            "wild type + relA+, time = 0"
+          ],
+          "caveat": "One sample in each arm; no replicate uncertainty. Time and induction are confounded; engineered inducible relA background."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE103704.json",
+      "specSha256": "59b1a5bc0eeaff2f42e54dd9b6416ce2b40823f111dce258813799d6361ab902",
+      "layers": [
+        {
+          "id": "GSE103704_wt_dusk",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE103704_wt_dusk",
+              "columns": [
+                "wild type replicate 1, dusk",
+                "wild type replicate 2, dusk"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE103704_wt_darkness",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "dark_5min",
+              "columns": [
+                "wild type replicate 1, dark, 5 min",
+                "wild type replicate 2, dark, 5 min"
+              ]
+            },
+            {
+              "id": "dark_15min",
+              "columns": [
+                "wild type replicate 1, dark, 15 min",
+                "wild type replicate 2, dark, 15 min"
+              ]
+            },
+            {
+              "id": "dark_30min",
+              "columns": [
+                "wild type replicate 1, dark, 30 min",
+                "wild type replicate 2, dark, 30 min"
+              ]
+            },
+            {
+              "id": "dark_1h",
+              "columns": [
+                "wild type replicate 1, dark, 1 h",
+                "wild type replicate 2, dark, 1 h"
+              ]
+            },
+            {
+              "id": "dark_2h",
+              "columns": [
+                "wild type replicate 1, dark, 2 h",
+                "wild type replicate 2, dark, 2 h"
+              ]
+            },
+            {
+              "id": "dark_4h",
+              "columns": [
+                "wild type replicate 1, dark, 4 h",
+                "wild type replicate 2, dark, 4 h"
+              ]
+            },
+            {
+              "id": "dark_8h",
+              "columns": [
+                "wild type replicate 1, dark, 8 h",
+                "wild type replicate 2, dark, 8 h"
+              ]
+            },
+            {
+              "id": "dark_12h",
+              "columns": [
+                "wild type replicate 1, dark, 12 h",
+                "wild type replicate 2, dark, 12 h"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE103704_dark_5min",
+          "label": "Darkness 5min relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 5 min",
+            "wild type replicate 2, dark, 5 min"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_15min",
+          "label": "Darkness 15min relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 15 min",
+            "wild type replicate 2, dark, 15 min"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_30min",
+          "label": "Darkness 30min relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 30 min",
+            "wild type replicate 2, dark, 30 min"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_1h",
+          "label": "Darkness 1h relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 1 h",
+            "wild type replicate 2, dark, 1 h"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_2h",
+          "label": "Darkness 2h relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 2 h",
+            "wild type replicate 2, dark, 2 h"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_4h",
+          "label": "Darkness 4h relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 4 h",
+            "wild type replicate 2, dark, 4 h"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_8h",
+          "label": "Darkness 8h relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 8 h",
+            "wild type replicate 2, dark, 8 h"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE103704_dark_12h",
+          "label": "Darkness 12h relative to dusk",
+          "treatment": [
+            "wild type replicate 1, dark, 12 h",
+            "wild type replicate 2, dark, 12 h"
+          ],
+          "control": [
+            "wild type replicate 1, dusk",
+            "wild type replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE104203.json",
+      "specSha256": "c91b100767318fd923f5eabea9a030724bac008283e36f1f4be079f60078b02a",
+      "layers": [
+        {
+          "id": "GSE104203_low_light",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "0.5h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 0.5 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 0.5 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "2h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 2 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 2 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "4h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 4 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 4 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "6h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 6 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 6 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "8h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 8 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 8 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 9 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 9 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "10h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 10 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 10 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "12h",
+              "columns": [
+                "Low Light expression (median and length normalized data) :: 12 :: Replicate 1",
+                "Low Light expression (median and length normalized data) :: 12 :: Replicate 2"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE104203_clear_day",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "0.5h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 0.5 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 0.5 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "2h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 2 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 2 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "4h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 4 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 4 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "6h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 6 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 6 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "8h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 8 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 8 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 9 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 9 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "10h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 10 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 10 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "12h",
+              "columns": [
+                "Clear Day expression (median and length normalized data) :: 12 :: Replicate 1",
+                "Clear Day expression (median and length normalized data) :: 12 :: Replicate 2"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE104203_high_light_pulse",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "8h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "8.25h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 8.25 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 8.25 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "8.5h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 8.5 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 8.5 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9.25h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 9.25 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 9.25 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9.5h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 9.5 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 9.5 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "10h",
+              "columns": [
+                "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+                "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE104203_shade_pulse",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "8h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "8.25h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 8.25 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 8.25 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "8.5h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 8.5 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 8.5 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9.25h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 9.25 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 9.25 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "9.5h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 9.5 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 9.5 :: Replicate 2"
+              ]
+            },
+            {
+              "id": "10h",
+              "columns": [
+                "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+                "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE104203_high_light_8h",
+          "label": "high light pulse at 8h relative to clear day at the same time",
+          "treatment": [
+            "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+            "High Light pulse expression (median and length normalized data) :: 8 :: Replicate 2"
+          ],
+          "control": [
+            "Clear Day expression (median and length normalized data) :: 8 :: Replicate 1",
+            "Clear Day expression (median and length normalized data) :: 8 :: Replicate 2"
+          ],
+          "caveat": "Two biological replicates at a matched sampled time; deposited median/length normalization. The 8h endpoint is pulse onset and can show no response. Intermediate pulse times have no time-matched clear-day column and are not contrasted."
+        },
+        {
+          "id": "GSE104203_high_light_9h",
+          "label": "high light pulse at 9h relative to clear day at the same time",
+          "treatment": [
+            "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+            "High Light pulse expression (median and length normalized data) :: 9 :: Replicate 2"
+          ],
+          "control": [
+            "Clear Day expression (median and length normalized data) :: 9 :: Replicate 1",
+            "Clear Day expression (median and length normalized data) :: 9 :: Replicate 2"
+          ],
+          "caveat": "Two biological replicates at a matched sampled time; deposited median/length normalization. The 8h endpoint is pulse onset and can show no response. Intermediate pulse times have no time-matched clear-day column and are not contrasted."
+        },
+        {
+          "id": "GSE104203_high_light_10h",
+          "label": "high light pulse at 10h relative to clear day at the same time",
+          "treatment": [
+            "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+            "High Light pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+          ],
+          "control": [
+            "Clear Day expression (median and length normalized data) :: 10 :: Replicate 1",
+            "Clear Day expression (median and length normalized data) :: 10 :: Replicate 2"
+          ],
+          "caveat": "Two biological replicates at a matched sampled time; deposited median/length normalization. The 8h endpoint is pulse onset and can show no response. Intermediate pulse times have no time-matched clear-day column and are not contrasted."
+        },
+        {
+          "id": "GSE104203_shade_8h",
+          "label": "shade pulse at 8h relative to clear day at the same time",
+          "treatment": [
+            "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 1",
+            "Shade pulse expression (median and length normalized data) :: 8 :: Replicate 2"
+          ],
+          "control": [
+            "Clear Day expression (median and length normalized data) :: 8 :: Replicate 1",
+            "Clear Day expression (median and length normalized data) :: 8 :: Replicate 2"
+          ],
+          "caveat": "Two biological replicates at a matched sampled time; deposited median/length normalization. The 8h endpoint is pulse onset and can show no response. Intermediate pulse times have no time-matched clear-day column and are not contrasted."
+        },
+        {
+          "id": "GSE104203_shade_9h",
+          "label": "shade pulse at 9h relative to clear day at the same time",
+          "treatment": [
+            "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 1",
+            "Shade pulse expression (median and length normalized data) :: 9 :: Replicate 2"
+          ],
+          "control": [
+            "Clear Day expression (median and length normalized data) :: 9 :: Replicate 1",
+            "Clear Day expression (median and length normalized data) :: 9 :: Replicate 2"
+          ],
+          "caveat": "Two biological replicates at a matched sampled time; deposited median/length normalization. The 8h endpoint is pulse onset and can show no response. Intermediate pulse times have no time-matched clear-day column and are not contrasted."
+        },
+        {
+          "id": "GSE104203_shade_10h",
+          "label": "shade pulse at 10h relative to clear day at the same time",
+          "treatment": [
+            "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 1",
+            "Shade pulse expression (median and length normalized data) :: 10 :: Replicate 2"
+          ],
+          "control": [
+            "Clear Day expression (median and length normalized data) :: 10 :: Replicate 1",
+            "Clear Day expression (median and length normalized data) :: 10 :: Replicate 2"
+          ],
+          "caveat": "Two biological replicates at a matched sampled time; deposited median/length normalization. The 8h endpoint is pulse onset and can show no response. Intermediate pulse times have no time-matched clear-day column and are not contrasted."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE105774.json",
+      "specSha256": "7905ab6293e81f83bcd58e2dd8a6fc808af8eb8d6db13106575d1501b325414b",
+      "layers": [
+        {
+          "id": "GSE105774_rel_relA_dusk",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE105774_rel_relA_dusk",
+              "columns": [
+                "spoT- relA+ replicate 1, dusk",
+                "spoT- relA+ replicate 2, dusk"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE105774_rel_relA_darkness",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "dark_5min",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 5 min",
+                "spoT- relA+ replicate 2, dark, 5 min"
+              ]
+            },
+            {
+              "id": "dark_15min",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 15 min",
+                "spoT- relA+ replicate 2, dark, 15 min"
+              ]
+            },
+            {
+              "id": "dark_30min",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 30 min",
+                "spoT- relA+ replicate 2, dark, 30 min"
+              ]
+            },
+            {
+              "id": "dark_1h",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 1 h",
+                "spoT- relA+ replicate 2, dark, 1 h"
+              ]
+            },
+            {
+              "id": "dark_2h",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 2 h",
+                "spoT- relA+ replicate 2, dark, 2 h"
+              ]
+            },
+            {
+              "id": "dark_4h",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 4 h",
+                "spoT- relA+ replicate 2, dark, 4 h"
+              ]
+            },
+            {
+              "id": "dark_8h",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 8 h",
+                "spoT- relA+ replicate 2, dark, 8 h"
+              ]
+            },
+            {
+              "id": "dark_12h",
+              "columns": [
+                "spoT- relA+ replicate 1, dark, 12 h",
+                "spoT- relA+ replicate 2, dark, 12 h"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE105774_dark_5min",
+          "label": "Darkness 5min relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 5 min",
+            "spoT- relA+ replicate 2, dark, 5 min"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_15min",
+          "label": "Darkness 15min relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 15 min",
+            "spoT- relA+ replicate 2, dark, 15 min"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_30min",
+          "label": "Darkness 30min relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 30 min",
+            "spoT- relA+ replicate 2, dark, 30 min"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_1h",
+          "label": "Darkness 1h relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 1 h",
+            "spoT- relA+ replicate 2, dark, 1 h"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_2h",
+          "label": "Darkness 2h relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 2 h",
+            "spoT- relA+ replicate 2, dark, 2 h"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_4h",
+          "label": "Darkness 4h relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 4 h",
+            "spoT- relA+ replicate 2, dark, 4 h"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_8h",
+          "label": "Darkness 8h relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 8 h",
+            "spoT- relA+ replicate 2, dark, 8 h"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        },
+        {
+          "id": "GSE105774_dark_12h",
+          "label": "Darkness 12h relative to dusk",
+          "treatment": [
+            "spoT- relA+ replicate 1, dark, 12 h",
+            "spoT- relA+ replicate 2, dark, 12 h"
+          ],
+          "control": [
+            "spoT- relA+ replicate 1, dusk",
+            "spoT- relA+ replicate 2, dusk"
+          ],
+          "caveat": "Two biological replicates per exact time point. Dusk is the pre-dark baseline; time and light transition are confounded. GSE105774 uses an engineered rel- relA+ strain."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE222067.json",
+      "specSha256": "6166d5dead963fe667bd2ff5f12d80781df75214b52c61262c40845938512445",
+      "layers": [
+        {
+          "id": "GSE222067_wt_0mM_NaCl",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE222067_wt_0mM_NaCl",
+              "columns": [
+                "WT 0 mM NaCl-1_Count",
+                "WT 0 mM NaCl-2_Count",
+                "WT 0 mM NaCl-3_Count"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE222067_wt_300mM_NaCl",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE222067_wt_300mM_NaCl",
+              "columns": [
+                "WT 300 mM NaCl-1_Count",
+                "WT 300 mM NaCl-2_Count",
+                "WT 300 mM NaCl-3_Count"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE222067_salt",
+          "label": "300 mM NaCl relative to 0 mM NaCl",
+          "treatment": [
+            "WT 300 mM NaCl-1_Count",
+            "WT 300 mM NaCl-2_Count",
+            "WT 300 mM NaCl-3_Count"
+          ],
+          "control": [
+            "WT 0 mM NaCl-1_Count",
+            "WT 0 mM NaCl-2_Count",
+            "WT 0 mM NaCl-3_Count"
+          ],
+          "caveat": "Three biological replicates; per-sample CPM from deposited raw counts. Source condition record applies, without inheriting timing from another study."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE225426.json",
+      "specSha256": "09d5a246e54742e63fabacb88c9fa9089bcfb604d2b0abf20b0e9ec0547856c5",
+      "layers": [
+        {
+          "id": "GSE225426_wt_control",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE225426_wt_control",
+              "columns": [
+                "Raw_count :: Control-A :: A",
+                "Raw_count :: Control-B :: B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE225426_wt_nacl_day1",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE225426_wt_nacl_day1",
+              "columns": [
+                "Raw_count :: NaCl-D1-A :: A",
+                "Raw_count :: NaCl-D1-B :: B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE225426_wt_nacl_day3",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE225426_wt_nacl_day3",
+              "columns": [
+                "Raw_count :: NaCl-D3-A :: A",
+                "Raw_count :: NaCl-D3-B :: B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE225426_wt_streptomycin_day1",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE225426_wt_streptomycin_day1",
+              "columns": [
+                "Raw_count :: Str50-D1-A :: A",
+                "Raw_count :: Str50-D1-B :: B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE225426_wt_streptomycin_day3",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE225426_wt_streptomycin_day3",
+              "columns": [
+                "Raw_count :: Str50-D3-A :: A",
+                "Raw_count :: Str50-D3-B :: B"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE225426_nacl_day1",
+          "label": "nacl day1 relative to day-0 untreated control",
+          "treatment": [
+            "Raw_count :: NaCl-D1-A :: A",
+            "Raw_count :: NaCl-D1-B :: B"
+          ],
+          "control": [
+            "Raw_count :: Control-A :: A",
+            "Raw_count :: Control-B :: B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. The day-0 baseline is not a day-matched untreated control, so elapsed time and treatment are confounded."
+        },
+        {
+          "id": "GSE225426_nacl_day3",
+          "label": "nacl day3 relative to day-0 untreated control",
+          "treatment": [
+            "Raw_count :: NaCl-D3-A :: A",
+            "Raw_count :: NaCl-D3-B :: B"
+          ],
+          "control": [
+            "Raw_count :: Control-A :: A",
+            "Raw_count :: Control-B :: B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. The day-0 baseline is not a day-matched untreated control, so elapsed time and treatment are confounded."
+        },
+        {
+          "id": "GSE225426_streptomycin_day1",
+          "label": "streptomycin day1 relative to day-0 untreated control",
+          "treatment": [
+            "Raw_count :: Str50-D1-A :: A",
+            "Raw_count :: Str50-D1-B :: B"
+          ],
+          "control": [
+            "Raw_count :: Control-A :: A",
+            "Raw_count :: Control-B :: B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. The day-0 baseline is not a day-matched untreated control, so elapsed time and treatment are confounded."
+        },
+        {
+          "id": "GSE225426_streptomycin_day3",
+          "label": "streptomycin day3 relative to day-0 untreated control",
+          "treatment": [
+            "Raw_count :: Str50-D3-A :: A",
+            "Raw_count :: Str50-D3-B :: B"
+          ],
+          "control": [
+            "Raw_count :: Control-A :: A",
+            "Raw_count :: Control-B :: B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. The day-0 baseline is not a day-matched untreated control, so elapsed time and treatment are confounded."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE237858.json",
+      "specSha256": "cc83f030a7ed8d118ab450acafceb9dd872d15eef90bdb18d6e7e421ec63654e",
+      "layers": [
+        {
+          "id": "GSE237858_wt_ll12",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE237858_wt_ll12",
+              "columns": [
+                "WT1",
+                "WT2",
+                "WT3"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": []
+    },
+    {
+      "spec": "data/expression/ingest/GSE252562.json",
+      "specSha256": "f432bd0f12eb3d8dd6faee3616cfe2490d139632d57e946e5378e9e39d888368",
+      "layers": [
+        {
+          "id": "GSE252562_wt_short_1cycle",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE252562_wt_short_1cycle",
+              "columns": [
+                "MJ38",
+                "MJ40",
+                "MJ41"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE252562_wt_short_4cycles",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE252562_wt_short_4cycles",
+              "columns": [
+                "MJ5",
+                "MJ17",
+                "MJ29"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE252562_wt_8cycles_disputed",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE252562_wt_8cycles_disputed",
+              "columns": [
+                "MJ9",
+                "MJ21",
+                "MJ33"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE252562_wt_long_1cycle",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE252562_wt_long_1cycle",
+              "columns": [
+                "MJ2",
+                "MJ14",
+                "MJ26"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE252562_wt_long_4cycles",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE252562_wt_long_4cycles",
+              "columns": [
+                "MJ18",
+                "MJ30",
+                "MJ44"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE252562_wt_long_8cycles",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE252562_wt_long_8cycles",
+              "columns": [
+                "MJ10",
+                "MJ22",
+                "MJ34"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": []
+    },
+    {
+      "spec": "data/expression/ingest/GSE254350.json",
+      "specSha256": "53df3640de4a48ae1bcca3694dd9d0881dc7e8a9af3d5ac9d475bac9e4da086b",
+      "layers": [
+        {
+          "id": "GSE254350_wt_day1",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE254350_wt_day1",
+              "columns": [
+                "Normalized.Counts.WT_D1.Replicate.1",
+                "Normalized.Counts.WT_D1.Replicate.2",
+                "Normalized.Counts.WT_D1.Replicate.3",
+                "Normalized.Counts.WT_D1.Replicate.4"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE254350_wt_day4",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE254350_wt_day4",
+              "columns": [
+                "Normalized.Counts.WT_D4.Replicate.1",
+                "Normalized.Counts.WT_D4.Replicate.2",
+                "Normalized.Counts.WT_D4.Replicate.3",
+                "Normalized.Counts.WT_D4.Replicate.4"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": []
+    },
+    {
+      "spec": "data/expression/ingest/GSE288532.json",
+      "specSha256": "1888159ea142e3954b3482a1da535f72c2e1924e6c154f62fbbb9976ce9ee672",
+      "layers": [
+        {
+          "id": "GSE288532_subjective_day",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "T0",
+              "columns": [
+                "L_T0_A",
+                "L_T0_B",
+                "L_T0_C"
+              ]
+            },
+            {
+              "id": "T2",
+              "columns": [
+                "L_T2_A",
+                "L_T2_B",
+                "L_T2_C"
+              ]
+            },
+            {
+              "id": "T4",
+              "columns": [
+                "L_T4_A",
+                "L_T4_B",
+                "L_T4_C"
+              ]
+            },
+            {
+              "id": "T8",
+              "columns": [
+                "L_T8_A",
+                "L_T8_B",
+                "L_T8_C"
+              ]
+            },
+            {
+              "id": "T12",
+              "columns": [
+                "L_T12_A",
+                "L_T12_B",
+                "L_T12_C"
+              ]
+            },
+            {
+              "id": "T16",
+              "columns": [
+                "L_T16_A",
+                "L_T16_B",
+                "L_T16_C"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE288532_subjective_night",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "T0",
+              "columns": [
+                "D_T0_A",
+                "D_T0_B",
+                "D_T0_C"
+              ]
+            },
+            {
+              "id": "T2",
+              "columns": [
+                "D_T2_A",
+                "D_T2_B",
+                "D_T2_C"
+              ]
+            },
+            {
+              "id": "T4",
+              "columns": [
+                "D_T4_A",
+                "D_T4_B",
+                "D_T4_C"
+              ]
+            },
+            {
+              "id": "T8",
+              "columns": [
+                "D_T8_A",
+                "D_T8_B",
+                "D_T8_C"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": []
+    },
+    {
+      "spec": "data/expression/ingest/GSE311172.json",
+      "specSha256": "0b039c534443ea8ad055af6fbb3b1b2a50498a4264b78b9b56b5c77bb87a82c9",
+      "layers": [
+        {
+          "id": "GSE311172_wt_medium_light_0_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_wt_medium_light_0_o2",
+              "columns": [
+                "WT100-0A",
+                "WT100-0B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE311172_wt_high_light_0_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_wt_high_light_0_o2",
+              "columns": [
+                "WT205-0A",
+                "WT205-0B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE311172_wt_high_light_max_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_wt_high_light_max_o2",
+              "columns": [
+                "WT205-80A",
+                "WT205-80B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE311172_ad1_0_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_ad1_0_o2",
+              "columns": [
+                "AD205-0A",
+                "AD205-0B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE311172_ad1_max_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_ad1_max_o2",
+              "columns": [
+                "AD205-80A",
+                "AD205-80B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE311172_ad2_0_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_ad2_0_o2",
+              "columns": [
+                "AD2-205-0A",
+                "AD2-205-0B"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE311172_ad3_0_o2",
+          "replicateType": "unknown",
+          "strata": [
+            {
+              "id": "GSE311172_ad3_0_o2",
+              "columns": [
+                "AD3-205-0A",
+                "AD3-205-0B"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE311172_wt_oxygen",
+          "label": "wt oxygen relative to its within-population baseline",
+          "treatment": [
+            "WT205-80A",
+            "WT205-80B"
+          ],
+          "control": [
+            "WT205-0A",
+            "WT205-0B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. Each oxygen contrast uses its own population at zero added oxygen under high light. The light contrast uses the unadapted population at zero added oxygen in both arms; oxygen campaign and culture-history confounding remain as recorded in the source."
+        },
+        {
+          "id": "GSE311172_ad1_oxygen",
+          "label": "ad1 oxygen relative to its within-population baseline",
+          "treatment": [
+            "AD205-80A",
+            "AD205-80B"
+          ],
+          "control": [
+            "AD205-0A",
+            "AD205-0B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. Each oxygen contrast uses its own population at zero added oxygen under high light. The light contrast uses the unadapted population at zero added oxygen in both arms; oxygen campaign and culture-history confounding remain as recorded in the source."
+        },
+        {
+          "id": "GSE311172_wt_high_light",
+          "label": "wt high light relative to its within-population baseline",
+          "treatment": [
+            "WT205-0A",
+            "WT205-0B"
+          ],
+          "control": [
+            "WT100-0A",
+            "WT100-0B"
+          ],
+          "caveat": "Two deposited replicates with biological/technical type unstated. Each oxygen contrast uses its own population at zero added oxygen under high light. The light contrast uses the unadapted population at zero added oxygen in both arms; oxygen campaign and culture-history confounding remain as recorded in the source."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE327989.json",
+      "specSha256": "e4ab23ab47a15993e3a9806d4fba744651bdcb20bbfc9ec5a8c704d7b7061176",
+      "layers": [
+        {
+          "id": "GSE327989_wt_day4",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE327989_wt_day4",
+              "columns": [
+                "WT_4d_1 (GE) - TPM",
+                "WT_4d_2_S1 (GE) - TPM",
+                "WT_4d_3_S2 (GE) - TPM"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": []
+    },
+    {
+      "spec": "data/expression/ingest/GSE335065.json",
+      "specSha256": "fe0ff70a1a7b0a2b72bdab1ea640b6b69d5fe02cf3a28258f7b493ad23452fa4",
+      "layers": [
+        {
+          "id": "GSE335065_axenic",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "90h",
+              "columns": [
+                "Se_ax_90_1",
+                "Se_ax_90_2",
+                "Se_ax_90_3"
+              ]
+            },
+            {
+              "id": "140h",
+              "columns": [
+                "Se_ax_140_1",
+                "Se_ax_140_2",
+                "Se_ax_140_3"
+              ]
+            },
+            {
+              "id": "190h",
+              "columns": [
+                "Se_ax_190_1",
+                "Se_ax_190_2",
+                "Se_ax_190_3"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE335065_axenic_mbr",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "90h",
+              "columns": [
+                "Se_ax_mBR_90_1",
+                "Se_ax_mBR_90_2",
+                "Se_ax_mBR_90_3"
+              ]
+            },
+            {
+              "id": "140h",
+              "columns": [
+                "Se_ax_mBR_140_1",
+                "Se_ax_mBR_140_2",
+                "Se_ax_mBR_140_3"
+              ]
+            },
+            {
+              "id": "190h",
+              "columns": [
+                "Se_ax_mBR_190_1",
+                "Se_ax_mBR_190_2",
+                "Se_ax_mBR_190_3"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE335065_coculture_mbr",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "90h",
+              "columns": [
+                "Se_CC_mBR_90_1",
+                "Se_CC_mBR_90_2",
+                "Se_CC_mBR_90_3"
+              ]
+            },
+            {
+              "id": "140h",
+              "columns": [
+                "Se_CC_mBR_140_1",
+                "Se_CC_mBR_140_2",
+                "Se_CC_mBR_140_3"
+              ]
+            },
+            {
+              "id": "190h",
+              "columns": [
+                "Se_CC_mBR_190_1",
+                "Se_CC_mBR_190_2",
+                "Se_CC_mBR_190_3"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE335065_axenic_mbr_vs_axenic_90h",
+          "label": "axenic mbr vs axenic at 90h",
+          "treatment": [
+            "Se_ax_mBR_90_1",
+            "Se_ax_mBR_90_2",
+            "Se_ax_mBR_90_3"
+          ],
+          "control": [
+            "Se_ax_90_1",
+            "Se_ax_90_2",
+            "Se_ax_90_3"
+          ],
+          "caveat": "Three biological replicates at each exact sampled time; engineered cscB+ Δsps strain. Same-time comparisons retain vessel/configuration differences; only the cyanobacterial compartment is used."
+        },
+        {
+          "id": "GSE335065_coculture_vs_axenic_mbr_90h",
+          "label": "coculture vs axenic mbr at 90h",
+          "treatment": [
+            "Se_CC_mBR_90_1",
+            "Se_CC_mBR_90_2",
+            "Se_CC_mBR_90_3"
+          ],
+          "control": [
+            "Se_ax_mBR_90_1",
+            "Se_ax_mBR_90_2",
+            "Se_ax_mBR_90_3"
+          ],
+          "caveat": "Three biological replicates at each exact sampled time; engineered cscB+ Δsps strain. Same-time comparisons retain vessel/configuration differences; only the cyanobacterial compartment is used."
+        },
+        {
+          "id": "GSE335065_axenic_mbr_vs_axenic_140h",
+          "label": "axenic mbr vs axenic at 140h",
+          "treatment": [
+            "Se_ax_mBR_140_1",
+            "Se_ax_mBR_140_2",
+            "Se_ax_mBR_140_3"
+          ],
+          "control": [
+            "Se_ax_140_1",
+            "Se_ax_140_2",
+            "Se_ax_140_3"
+          ],
+          "caveat": "Three biological replicates at each exact sampled time; engineered cscB+ Δsps strain. Same-time comparisons retain vessel/configuration differences; only the cyanobacterial compartment is used."
+        },
+        {
+          "id": "GSE335065_coculture_vs_axenic_mbr_140h",
+          "label": "coculture vs axenic mbr at 140h",
+          "treatment": [
+            "Se_CC_mBR_140_1",
+            "Se_CC_mBR_140_2",
+            "Se_CC_mBR_140_3"
+          ],
+          "control": [
+            "Se_ax_mBR_140_1",
+            "Se_ax_mBR_140_2",
+            "Se_ax_mBR_140_3"
+          ],
+          "caveat": "Three biological replicates at each exact sampled time; engineered cscB+ Δsps strain. Same-time comparisons retain vessel/configuration differences; only the cyanobacterial compartment is used."
+        },
+        {
+          "id": "GSE335065_axenic_mbr_vs_axenic_190h",
+          "label": "axenic mbr vs axenic at 190h",
+          "treatment": [
+            "Se_ax_mBR_190_1",
+            "Se_ax_mBR_190_2",
+            "Se_ax_mBR_190_3"
+          ],
+          "control": [
+            "Se_ax_190_1",
+            "Se_ax_190_2",
+            "Se_ax_190_3"
+          ],
+          "caveat": "Three biological replicates at each exact sampled time; engineered cscB+ Δsps strain. Same-time comparisons retain vessel/configuration differences; only the cyanobacterial compartment is used."
+        },
+        {
+          "id": "GSE335065_coculture_vs_axenic_mbr_190h",
+          "label": "coculture vs axenic mbr at 190h",
+          "treatment": [
+            "Se_CC_mBR_190_1",
+            "Se_CC_mBR_190_2",
+            "Se_CC_mBR_190_3"
+          ],
+          "control": [
+            "Se_ax_mBR_190_1",
+            "Se_ax_mBR_190_2",
+            "Se_ax_mBR_190_3"
+          ],
+          "caveat": "Three biological replicates at each exact sampled time; engineered cscB+ Δsps strain. Same-time comparisons retain vessel/configuration differences; only the cyanobacterial compartment is used."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE51112.json",
+      "specSha256": "a77a0cf791e2c130a1f1a338c94cd57a2182f46bb2b2834a4970d1ba0b652e22",
+      "layers": [
+        {
+          "id": "GSE51112_wt_ll",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "WT ZT 24 Hours",
+              "columns": [
+                "WT ZT 24 Hours"
+              ]
+            },
+            {
+              "id": "WT ZT 28 Hours",
+              "columns": [
+                "WT ZT 28 Hours"
+              ]
+            },
+            {
+              "id": "WT ZT 32 Hours",
+              "columns": [
+                "WT ZT 32 Hours"
+              ]
+            },
+            {
+              "id": "WT ZT 36 Hours",
+              "columns": [
+                "WT ZT 36 Hours"
+              ]
+            },
+            {
+              "id": "WT ZT 40 Hours",
+              "columns": [
+                "WT ZT 40 Hours"
+              ]
+            },
+            {
+              "id": "WT ZT 44 Hours",
+              "columns": [
+                "WT ZT 44 Hours"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE51112_oxd53e_iptg",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "OX-D53E IPTG 0 Hours",
+              "columns": [
+                "OX-D53E IPTG 0 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E IPTG 0.5 Hours",
+              "columns": [
+                "OX-D53E IPTG 0.5 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E IPTG 2 Hours",
+              "columns": [
+                "OX-D53E IPTG 2 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E IPTG 3 Hours",
+              "columns": [
+                "OX-D53E IPTG 3 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E IPTG 6 Hours",
+              "columns": [
+                "OX-D53E IPTG 6 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E IPTG 12 Hours",
+              "columns": [
+                "OX-D53E IPTG 12 Hours"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE51112_oxd53e_no_iptg",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "OX-D53E NO IPTG 0 Hours",
+              "columns": [
+                "OX-D53E NO IPTG 0 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E NO IPTG 3 Hours",
+              "columns": [
+                "OX-D53E NO IPTG 3 Hours"
+              ]
+            },
+            {
+              "id": "OX-D53E NO IPTG 12 Hours",
+              "columns": [
+                "OX-D53E NO IPTG 12 Hours"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE51112_oxempty_iptg",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "OX-Empty IPTG 0 Hours",
+              "columns": [
+                "OX-Empty IPTG 0 Hours"
+              ]
+            },
+            {
+              "id": "OX-Empty IPTG 3 Hours",
+              "columns": [
+                "OX-Empty IPTG 3 Hours"
+              ]
+            },
+            {
+              "id": "OX-Empty IPTG 12 Hours",
+              "columns": [
+                "OX-Empty IPTG 12 Hours"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": []
+    },
+    {
+      "spec": "data/expression/ingest/GSE79726.json",
+      "specSha256": "eb2071589d2f12d4a00d9e0e9e0c568a7f68ee02d54bc0ec2e7aad4588146bbb",
+      "layers": [
+        {
+          "id": "GSE79726_control_24h",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE79726_control_24h",
+              "columns": [
+                "Control 24h rep1",
+                "Control 24h rep2"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE79726_n_minus_48h",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE79726_n_minus_48h",
+              "columns": [
+                "N-minus 48h rep1",
+                "N-minus 48h rep2"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE79726_n_plus_48h",
+          "replicateType": "biological",
+          "strata": [
+            {
+              "id": "GSE79726_n_plus_48h",
+              "columns": [
+                "N-plus 48h rep1",
+                "N-plus 48h rep2"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE79726_nitrogen_withdrawal",
+          "label": "N-minus 48h relative to N-plus 48h",
+          "treatment": [
+            "N-minus 48h rep1",
+            "N-minus 48h rep2"
+          ],
+          "control": [
+            "N-plus 48h rep1",
+            "N-plus 48h rep2"
+          ],
+          "caveat": "Two biological replicates per arm; time-matched nitrogen-replete arm used as control. The 24h control is retained for level statistics but is not the matched control for this contrast."
+        }
+      ]
+    },
+    {
+      "spec": "data/expression/ingest/GSE89999.json",
+      "specSha256": "6c36fba1a318e513cae192f89caa69fb18864665dff2bdf6b594307d2c55f298",
+      "layers": [
+        {
+          "id": "GSE89999_control_dusk",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "control_duskZT12",
+              "columns": [
+                "control_duskZT12"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE89999_control_darkness",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "control_darkness_5min",
+              "columns": [
+                "control_darkness_5min"
+              ]
+            },
+            {
+              "id": "control_darkness_15min",
+              "columns": [
+                "control_darkness_15min"
+              ]
+            },
+            {
+              "id": "control_darkness_30min",
+              "columns": [
+                "control_darkness_30min"
+              ]
+            },
+            {
+              "id": "control_darkness_1h",
+              "columns": [
+                "control_darkness_1h"
+              ]
+            },
+            {
+              "id": "control_darkness_2h",
+              "columns": [
+                "control_darkness_2h"
+              ]
+            },
+            {
+              "id": "control_darkness_4h",
+              "columns": [
+                "control_darkness_4h"
+              ]
+            },
+            {
+              "id": "control_darkness_8h",
+              "columns": [
+                "control_darkness_8h"
+              ]
+            },
+            {
+              "id": "control_darkness_11h50min",
+              "columns": [
+                "control_darkness_11h50min"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "GSE89999_control_dawn",
+          "replicateType": "none",
+          "strata": [
+            {
+              "id": "control_dawn_5min",
+              "columns": [
+                "control_dawn_5min"
+              ]
+            },
+            {
+              "id": "control_dawn_15min",
+              "columns": [
+                "control_dawn_15min"
+              ]
+            },
+            {
+              "id": "control_dawn_30min",
+              "columns": [
+                "control_dawn_30min"
+              ]
+            }
+          ]
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "GSE89999_dark_5min",
+          "label": "Darkness 5min relative to control dusk",
+          "treatment": [
+            "control_darkness_5min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_15min",
+          "label": "Darkness 15min relative to control dusk",
+          "treatment": [
+            "control_darkness_15min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_30min",
+          "label": "Darkness 30min relative to control dusk",
+          "treatment": [
+            "control_darkness_30min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_1h",
+          "label": "Darkness 1h relative to control dusk",
+          "treatment": [
+            "control_darkness_1h"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_2h",
+          "label": "Darkness 2h relative to control dusk",
+          "treatment": [
+            "control_darkness_2h"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_4h",
+          "label": "Darkness 4h relative to control dusk",
+          "treatment": [
+            "control_darkness_4h"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_8h",
+          "label": "Darkness 8h relative to control dusk",
+          "treatment": [
+            "control_darkness_8h"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dark_11h50min",
+          "label": "Darkness 11h50min relative to control dusk",
+          "treatment": [
+            "control_darkness_11h50min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm; no replicate uncertainty. Engineered control carries empty-vector cassette and chloramphenicol; dusk is a pre-dark baseline, with time/light confounding."
+        },
+        {
+          "id": "GSE89999_dawn_5min",
+          "label": "Dawn 5min relative to previous control dusk",
+          "treatment": [
+            "control_dawn_5min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm. Dusk is a previous-phase reference, not a time-matched control; engineered empty-vector background and time/light confounding."
+        },
+        {
+          "id": "GSE89999_dawn_15min",
+          "label": "Dawn 15min relative to previous control dusk",
+          "treatment": [
+            "control_dawn_15min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm. Dusk is a previous-phase reference, not a time-matched control; engineered empty-vector background and time/light confounding."
+        },
+        {
+          "id": "GSE89999_dawn_30min",
+          "label": "Dawn 30min relative to previous control dusk",
+          "treatment": [
+            "control_dawn_30min"
+          ],
+          "control": [
+            "control_duskZT12"
+          ],
+          "caveat": "One sample per arm. Dusk is a previous-phase reference, not a time-matched control; engineered empty-vector background and time/light confounding."
+        }
+      ]
+    }
+  ],
+  "responsePairs": [
+    {
+      "left": "GSE103462_dusk_vs_dawn",
+      "right": "GSE103463_dusk_vs_dawn",
+      "caveat": "Same nominal phases and experiment family, different genotypes (wild type versus engineered complemented rel deletion). Descriptive response comparison; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_5min",
+      "right": "GSE105774_dark_5min",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_15min",
+      "right": "GSE105774_dark_15min",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_30min",
+      "right": "GSE105774_dark_30min",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_1h",
+      "right": "GSE105774_dark_1h",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_2h",
+      "right": "GSE105774_dark_2h",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_4h",
+      "right": "GSE105774_dark_4h",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_8h",
+      "right": "GSE105774_dark_8h",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_12h",
+      "right": "GSE105774_dark_12h",
+      "caveat": "Same nominal darkness endpoint and study family, wild type versus engineered complemented rel deletion. Descriptive response comparison only."
+    },
+    {
+      "left": "GSE103704_dark_5min",
+      "right": "GSE89999_dark_5min",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_5min",
+      "right": "GSE89999_dark_5min",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_15min",
+      "right": "GSE89999_dark_15min",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_15min",
+      "right": "GSE89999_dark_15min",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_30min",
+      "right": "GSE89999_dark_30min",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_30min",
+      "right": "GSE89999_dark_30min",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_1h",
+      "right": "GSE89999_dark_1h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_1h",
+      "right": "GSE89999_dark_1h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_2h",
+      "right": "GSE89999_dark_2h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_2h",
+      "right": "GSE89999_dark_2h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_4h",
+      "right": "GSE89999_dark_4h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_4h",
+      "right": "GSE89999_dark_4h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE103704_dark_8h",
+      "right": "GSE89999_dark_8h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE105774_dark_8h",
+      "right": "GSE89999_dark_8h",
+      "caveat": "Same nominal darkness endpoint across deposits; GSE89999 has one sample per arm and an engineered empty-vector background. Genotype, study and baseline differ; no comparability judgement."
+    },
+    {
+      "left": "GSE222067_salt",
+      "right": "GSE225426_nacl_day1",
+      "caveat": "Salt response compared descriptively across 300 mM and 400 mM NaCl, different experiments and timing. GSE225426 replication type is unstated and uses a day-0 baseline. This pair does not establish matched perturbations or comparable conditions."
+    },
+    {
+      "left": "GSE222067_salt",
+      "right": "GSE225426_nacl_day3",
+      "caveat": "Salt response compared descriptively across 300 mM and 400 mM NaCl, different experiments and timing. GSE225426 replication type is unstated and uses a day-0 baseline. This pair does not establish matched perturbations or comparable conditions."
+    },
+    {
+      "left": "GSE311172_wt_oxygen",
+      "right": "GSE311172_ad1_oxygen",
+      "caveat": "Same nominal oxygen endpoints (0 versus 374% air saturation) in unadapted and adapted population 1; replication type unstated. Adaptation/population and history differ; no comparability judgement."
+    }
+  ]
+}
