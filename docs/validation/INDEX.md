@@ -22,6 +22,7 @@ Reusable contracts and runbooks for this repository.
 | [candidate-comparison-and-export.md](candidate-comparison-and-export.md) | Missing-value integrity, ten distinguishable candidates, colour ramps, metric-scoped expression provenance, and reproducible exports |
 | [annotation-release-readiness.md](annotation-release-readiness.md) | Release manifest, companion-input gates, annotated 16S 3' terminus derivation, ambiguity-preserving crosswalk, annotation evidence, identifier display, GO evidence, and external-source boundaries |
 | [sister-strain-crosswalk.md](sister-strain-crosswalk.md) | Pinned PCC 6311 and PCC 7943 RefSeq releases, exact shared-protein joins, ambiguity preservation, coverage counts, and Chromosome-level unmatched-locus caveat |
+| [rel606-crosswalk.md](rel606-crosswalk.md) | The REL606 to MG1655 ortholog crosswalk for the AG3C series: pinned assemblies, the three tiers and why each abstains, the legacy tag route the AG3C matrices need, and the exact-alignment verification that confirms 3,835 of 3,844 pairs optimal with one genuine miss |
 | [go-term-names.md](go-term-names.md) | Pinned GO name lookup, obsolete source IDs, rebuild checks, and attribution |
 | [function-categories.md](function-categories.md) | Exact lab-reviewed UTEX 2973 function categories, sparse assignments, unknowns, and reproducible build checks |
 | [protein-evidence.md](protein-evidence.md) | Pinned CDS-to-protein reconciliation, PASS00399 admission limits, tested-allele joins, and distinct evidence tiers |

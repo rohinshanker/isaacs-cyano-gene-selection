@@ -22,3 +22,5 @@ data/raw/recoded-ecoli/*.xlsx
 data/raw/recoded-ecoli/source/*
 # Pinned GEO inputs fetched by tools/ingest_ecoli_expression.py
 data/interim/expression-ecoli/
+# Pinned REL606 genome fetched for the ortholog crosswalk
+data/raw/rel606/*.gz
