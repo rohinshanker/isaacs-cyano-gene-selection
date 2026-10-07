@@ -701,3 +701,71 @@ def test_real_subprocess_cli_entry_point():
         assert result.returncode != 0
         assert "unsupported plan schemaVersion" in result.stderr
         assert not failed_output.exists()
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (
+            lambda plan: plan["studies"][0]["layers"][0]["strata"][0]["columns"].append(
+                "t0_r1 :: part_a"),
+            "contains duplicates",
+        ),
+        (
+            lambda plan: plan["studies"][0]["layers"][0].update(id="unknown_layer"),
+            "not an exact spec layer id",
+        ),
+        (
+            lambda plan: plan["studies"][0]["contrasts"][0].update(treatment=["unknown_column"]),
+            "not in an admitted layer",
+        ),
+    ],
+)
+def test_unknown_and_duplicate_sample_scope_is_rejected(fixture, mutate, message):
+    plan = copy.deepcopy(fixture["plan"])
+    mutate(plan)
+    write_plan(fixture, plan)
+    with pytest.raises(ValueError, match=message):
+        build(fixture)
+    assert not fixture["output"].exists()
+
+
+@pytest.mark.parametrize("duplicate", ["layer", "study"])
+def test_duplicate_identity_in_pinned_specs_is_rejected(fixture, duplicate):
+    index = 0 if duplicate == "layer" else 1
+    plan = copy.deepcopy(fixture["plan"])
+    spec_path = fixture["root"] / plan["studies"][index]["spec"]
+    spec = json.loads(spec_path.read_text())
+    if duplicate == "layer":
+        spec["layers"].append(copy.deepcopy(spec["layers"][0]))
+        message = "spec layer ids must be unique"
+    else:
+        spec["studyId"] = "A"
+        message = "listed by more than one spec"
+    spec_path.write_text(json.dumps(spec) + "\n")
+    plan["studies"][index]["specSha256"] = digest(spec_path.read_bytes())
+    write_plan(fixture, plan)
+    with pytest.raises(ValueError, match=message):
+        build(fixture)
+    assert not fixture["output"].exists()
+
+
+def test_missing_crosswalk_preserves_existing_output(fixture):
+    fixture["output"].parent.mkdir(parents=True)
+    fixture["output"].write_text("preserve existing report\n")
+    fixture["crosswalk"].unlink()
+    with pytest.raises(ValueError, match="crosswalk does not exist"):
+        build(fixture)
+    assert fixture["output"].read_text() == "preserve existing report\n"
+
+
+def test_unknown_and_nonfinite_correlation_results(monkeypatch):
+    vector = {"a": 1.0, "b": 2.0, "c": 3.0}
+    with pytest.raises(ValueError, match="unknown correlation kind"):
+        agreement._correlation(vector, vector, "unknown")
+    monkeypatch.setattr(
+        agreement.stats, "spearmanr", lambda *args: type("Result", (), {"statistic": float("nan")})()
+    )
+    assert agreement._correlation(vector, vector, "spearman") == (
+        3, None, "undefined_correlation"
+    )
