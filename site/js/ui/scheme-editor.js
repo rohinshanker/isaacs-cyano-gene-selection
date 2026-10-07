@@ -8,6 +8,7 @@
  */
 import {
   PRESETS, prefillReplacement, recodableCodons, codonOccurrenceCounts,
+  destinationsOf, isDistribution, ROTATION_SIZE, rebalanceShares,
 } from '../core/scheme.js';
 import { formatCount } from './format.js';
 
@@ -251,6 +252,148 @@ export class SchemeEditor {
    * @param {{map: object, highExpressed: boolean, name: string, savedNames: string[],
    *   errors: string[], verification: object|null, stopCodonsPresent: boolean}} state
    */
+  /**
+   * Turn a single replacement into a two-way spread.
+   *
+   * The second destination is the next synonym the scheme keeps, so the result
+   * is valid the moment it is made and the user is never shown an error they
+   * did not cause. Shares start even, with the remainder going to the first
+   * destination so they sum exactly.
+   */
+  splitDestinations(codon, destinations, synonyms) {
+    const targets = new Set(Object.keys(this.currentMap));
+    const first = destinations[0]?.codon;
+    const partner = synonyms.find(
+      (option_) => option_ !== first && option_ !== codon && !targets.has(option_),
+    );
+    if (!partner) return first;
+    const half = Math.floor(ROTATION_SIZE / 2);
+    return [
+      { codon: first, share: ROTATION_SIZE - half },
+      { codon: partner, share: half },
+    ];
+  }
+
+  /**
+   * The advanced settings a spread target opens: one row per destination.
+   *
+   * Each row is a codon and its whole-percent share. The running total is shown
+   * because the scheme is rejected unless the shares sum to a hundred, so the
+   * user can see why before the error appears rather than after.
+   */
+  shareRows(codon, destinations, synonyms) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'target-shares';
+    const total = destinations.reduce((sum, d) => sum + (Number(d.share) || 0), 0);
+    const targets = new Set(Object.keys(this.currentMap));
+
+    const replace = (next) => {
+      this.handlers.onChange({ ...this.currentMap, [codon]: next });
+    };
+
+    destinations.forEach((destination, position) => {
+      const row = document.createElement('div');
+      row.className = 'target-share-row';
+
+      const pick = document.createElement('select');
+      pick.className = 'target-share-codon';
+      pick.setAttribute('aria-label', `Replacement ${position + 1} for ${codon}`);
+      for (const alternative of synonyms) {
+        const taken = destinations.some(
+          (other, i) => i !== position && other.codon === alternative,
+        );
+        if (taken || targets.has(alternative)) continue;
+        pick.append(option(alternative, alternative));
+      }
+      pick.value = destination.codon;
+      pick.addEventListener('change', () => {
+        const next = destinations.map((other, i) => (i === position
+          ? { codon: pick.value, share: other.share } : other));
+        replace(next);
+      });
+
+      const share = document.createElement('input');
+      share.type = 'number';
+      share.className = 'target-share-value';
+      share.min = '1';
+      share.max = String(ROTATION_SIZE);
+      share.step = '1';
+      share.value = String(destination.share);
+      share.setAttribute('aria-label', `Share for ${destination.codon} replacing ${codon}`);
+      share.addEventListener('change', () => {
+        // Rebalanced rather than rejected: a share edit is always a valid
+        // scheme, so the user never sees an error for a state they were
+        // passing through. The field snaps to what was actually applied.
+        replace(rebalanceShares(destinations, position, Number(share.value)));
+      });
+
+      const unit = document.createElement('span');
+      unit.className = 'target-share-unit';
+      unit.textContent = '%';
+
+      const drop = document.createElement('button');
+      drop.type = 'button';
+      drop.className = 'share-remove';
+      drop.textContent = '\u00d7';
+      drop.setAttribute('aria-label', `Remove ${destination.codon} from ${codon}'s spread`);
+      // Removing the second-to-last destination collapses the spread back to a
+      // single replacement rather than leaving a one-entry distribution.
+      drop.disabled = destinations.length <= 2 && position > 1;
+      drop.addEventListener('click', () => {
+        const kept = destinations.filter((_, i) => i !== position);
+        if (kept.length === 1) {
+          replace(kept[0].codon);
+          return;
+        }
+        const missing = ROTATION_SIZE - kept.reduce((sum, d) => sum + d.share, 0);
+        replace(kept.map((d, i) => (i === 0 ? { ...d, share: d.share + missing } : d)));
+      });
+
+      row.append(pick, share, unit, drop);
+      wrapper.append(row);
+    });
+
+    const spare = synonyms.find((alternative) => !destinations.some(
+      (d) => d.codon === alternative,
+    ) && !targets.has(alternative) && alternative !== codon);
+    if (spare) {
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'chip-button';
+      add.textContent = 'Add a replacement';
+      add.addEventListener('click', () => {
+        // The new destination takes its share from the largest existing one, so
+        // the total stays at a hundred without touching the others.
+        const largest = destinations.reduce(
+          (best, d, i) => (d.share > destinations[best].share ? i : best), 0,
+        );
+        const give = Math.floor(destinations[largest].share / 2);
+        if (give < 1) return;
+        const next = destinations.map((d, i) => (i === largest
+          ? { ...d, share: d.share - give } : d));
+        next.push({ codon: spare, share: give });
+        replace(next);
+      });
+      wrapper.append(add);
+    }
+
+    const sum = document.createElement('p');
+    sum.className = total === ROTATION_SIZE ? 'target-share-total' : 'target-share-total warn';
+    sum.textContent = total === ROTATION_SIZE
+      ? `Shares total ${total}%.`
+      : `Shares total ${total}%, and must total ${ROTATION_SIZE}%.`;
+    wrapper.append(sum);
+
+    const note = document.createElement('p');
+    note.className = 'target-share-note';
+    note.textContent = `Occurrences of ${codon} take these replacements in turn, `
+      + 'counting from the start of each gene, so the same scheme always gives the '
+      + 'same sequence. Every replacement keeps the amino acid.';
+    wrapper.append(note);
+
+    return wrapper;
+  }
+
   update(state) {
     this.currentMap = state.map;
     this.highExpressed.checked = state.highExpressed;
@@ -287,23 +430,32 @@ export class SchemeEditor {
       meaning.className = 'target-aa';
       meaning.textContent = `${AA_NAMES[aa] ?? aa} (${aa})`;
 
+      const synonyms = table.synonymsOf(codon);
+      const destinations = destinationsOf(state.map[codon]);
+      const spread = isDistribution(state.map[codon]);
+
       const select = document.createElement('select');
       select.className = 'target-replacement';
       select.setAttribute('aria-label', `Replacement for ${codon}`);
-      for (const alternative of table.synonymsOf(codon)) {
+      for (const alternative of synonyms) {
         select.append(option(
           alternative,
           `${alternative} — ${formatCount(this.codonOccurrences.get(alternative))}`,
         ));
       }
-      select.value = state.map[codon];
-      select.addEventListener('change', () => {
-        this.handlers.onChange({ ...this.currentMap, [codon]: select.value });
-      });
+      // A spread target's single dropdown would have nothing valid to show, so
+      // it is hidden and the share rows below carry the replacements instead.
+      select.hidden = spread;
+      if (!spread) {
+        select.value = destinations[0]?.codon ?? '';
+        select.addEventListener('change', () => {
+          this.handlers.onChange({ ...this.currentMap, [codon]: select.value });
+        });
+      }
 
       const arrow = document.createElement('span');
       arrow.className = 'target-arrow';
-      arrow.textContent = 'becomes';
+      arrow.textContent = spread ? 'is spread over' : 'becomes';
 
       const count = document.createElement('span');
       count.className = occurrences === 0 ? 'target-count warn' : 'target-count';
@@ -325,7 +477,31 @@ export class SchemeEditor {
         this.handlers.onChange(map);
       });
 
-      item.append(heading, meaning, arrow, select, count, remove);
+      // The spread toggle. Switching on splits the current single replacement
+      // with the next synonym the scheme keeps; switching off keeps the largest
+      // share, so neither direction silently invents or discards a destination.
+      const spreadLabel = document.createElement('label');
+      spreadLabel.className = 'target-spread-toggle';
+      const spreadBox = document.createElement('input');
+      spreadBox.type = 'checkbox';
+      spreadBox.checked = spread;
+      spreadBox.disabled = synonyms.length < 2;
+      spreadBox.setAttribute('aria-label', `Spread ${codon} over several replacements`);
+      spreadLabel.append(spreadBox, document.createTextNode('Spread over several codons'));
+      spreadBox.addEventListener('change', () => {
+        this.handlers.onChange({
+          ...this.currentMap,
+          [codon]: spreadBox.checked
+            ? this.splitDestinations(codon, destinations, synonyms)
+            : destinations.reduce((best, d) => (d.share > best.share ? d : best), destinations[0])
+              .codon,
+        });
+      });
+
+      item.append(heading, meaning, arrow, select, count, remove, spreadLabel);
+      if (spread) {
+        item.append(this.shareRows(codon, destinations, synonyms));
+      }
       this.targetList.append(item);
     }
 

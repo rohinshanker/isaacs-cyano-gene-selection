@@ -19,7 +19,9 @@ import { dataFileLabel, firstUnsettled } from './data-files.js';
 import {
   fillTemplate, layerOf, organismById, organismIdentity, organismOf, sourceIds,
 } from './organisms.js';
-import { compileScheme, serializeSchemeMap } from './scheme.js';
+import {
+  compileScheme, serializeSchemeMap, replacementAt, occurrenceCounter,
+} from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
 import { declaredMeasurementSources, expressionBasisOf } from './metric-registry.js';
 import { tssInitiationBasis } from './tss-evidence.js';
@@ -156,15 +158,26 @@ export function recodedSequence(dataset, index, scheme) {
   const { packed, offsets, table, stopCodons } = dataset;
   let wildType = '';
   let recoded = '';
+  // Per-occurrence resolution, counted from the start of this gene and skipping
+  // position zero, which is the same rule the live metrics apply. The exported
+  // sequence must be the sequence those metrics were computed from.
+  const occurrences = occurrenceCounter();
   for (let i = offsets[index]; i < offsets[index + 1]; i += 1) {
     const original = packed[i];
     wildType += table.codons[original];
     const position = i - offsets[index];
-    recoded += table.codons[position === INITIATION_INDEX ? original : scheme.replacement[original]];
+    let replacementIndex = original;
+    if (position !== INITIATION_INDEX) {
+      replacementIndex = replacementAt(scheme, original, occurrences[original]);
+      occurrences[original] += 1;
+    }
+    recoded += table.codons[replacementIndex];
   }
   const stop = stopCodons ? stopCodons[index] : -1;
   const wildTypeStop = stop >= 0 ? table.codons[stop] : null;
-  const recodedStop = stop >= 0 ? table.codons[scheme.replacement[stop]] : null;
+  const recodedStop = stop >= 0
+    ? table.codons[replacementAt(scheme, stop, occurrences[stop])]
+    : null;
   return {
     wildType: wildType + (wildTypeStop ?? ''),
     recoded: recoded + (recodedStop ?? ''),

@@ -6,6 +6,7 @@
  */
 import { gc3FromCounts, encFromCounts, caiFromCounts, taiFromCounts } from './codon-metrics.js';
 import { applyInitiatorConvention } from './conventions.js';
+import { replacementAt, occurrenceCounter } from './scheme.js';
 
 /** Codons per sliding window for local target density. */
 export const WINDOW_CODONS = 50;
@@ -118,7 +119,11 @@ export function computeLiveMetrics(dataset, scheme, options = {}) {
   let maxLength = 0;
   for (let g = 0; g < n; g += 1) maxLength = Math.max(maxLength, offsets[g + 1] - offsets[g]);
   const targetFlags = new Uint8Array(maxLength);
-  const { replacement, isTarget } = scheme;
+  const { isTarget } = scheme;
+  // A distribution resolves per occurrence, so the scan carries a per-codon
+  // counter and resets it at each gene. Reading `scheme.replacement` here would
+  // apply only the dominant destination and under-report the scheme.
+  const occurrences = occurrenceCounter();
   let codonsScanned = 0;
 
   for (let g = 0; g < n; g += 1) {
@@ -126,6 +131,7 @@ export function computeLiveMetrics(dataset, scheme, options = {}) {
     const end = offsets[g + 1];
     const length = end - start;
     counts.fill(0);
+    occurrences.fill(0);
 
     let targetCount = 0;
     let rampCount = 0;
@@ -138,7 +144,14 @@ export function computeLiveMetrics(dataset, scheme, options = {}) {
 
     for (let i = 0; i < length; i += 1) {
       const original = packed[start + i];
-      const recoded = i === INITIATION_INDEX ? original : replacement[original];
+      // Position zero is never recoded, so it consumes no rotation slot either.
+      // Every consumer must follow that rule or an exported recoded sequence
+      // would disagree with the metrics computed from the same scheme.
+      let recoded = original;
+      if (i !== INITIATION_INDEX) {
+        recoded = replacementAt(scheme, original, occurrences[original]);
+        occurrences[original] += 1;
+      }
       counts[recoded] += 1;
       // The codon-pair chain is scored over translated codons, so its first link
       // starts from the initiator rather than the literal start triplet.

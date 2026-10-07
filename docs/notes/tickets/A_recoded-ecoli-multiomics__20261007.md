@@ -216,6 +216,7 @@ commits the build to.
 | Q3 | **Publish both projections, each labelled.** A refit over recoded genes alone, and a projection of recoded genes onto the parent's fixed axes. | Two maps, two validation documents' worth of statements. The shared-axis map must carry, in the interface and not only in a document, that the separation it shows follows from the removed-codon loadings. |
 | Q4 | **Admit the fitness data as a new per-strain data type.** Doubling time, maximum OD600 and the 480 Biolog environments. | The first admitted layer whose row unit is not a gene. It needs its own tab or panel and its own absence semantics; it colours no gene and must not appear able to. |
 | Q5 | **Admit all three Supplementary Data 3 quantities, separately labelled.** Replicate RPKM, log2 fold change, and the translation-efficiency term. | Three distinct bases, never on a shared scale. A fold change cannot ship until its reference strain is evidenced from the methods, which is dependency D4. |
+| Q7 | **Waive the cross-strain coordinate rule for these recoded strains**, since the shared-axis map is for comparison and a recomputed-axes view is always offered. Scoped to these strains and to projection coordinates only. | The shared-axis map is authorised. It must be labelled as the parent's frame, and the recomputed map must stay reachable beside it. The *S. elongatus* sister-strain limit is untouched. |
 | Q6 | **Skip the Claude Science second check.** | The queue row is removed from [INDEX.md](INDEX.md). The replacement map gets two independent in-repository derivations instead, which is what "Derived 2026-10-07" reports. |
 
 ## Derived 2026-10-07
@@ -390,6 +391,162 @@ written here because the diff is likely to answer it without anyone's help. If
 that derivation fails, this ticket gains the draft and
 `AAA-next-steps.md` gains the item.
 
+## Owner-specified interface work, 2026-10-07
+
+Four further requests, recorded with what each depends on. Three of them display
+a property of a recoded organism, so they cannot be rendered until at least one
+recoded organism record exists. The fourth is the scheme model they display and
+is buildable now, so it goes first.
+
+### U1. Distribution schemes in the recoding editor — **shipped 2026-10-07**
+
+Built, tested and rendered. This closes dependency D6 and unblocks U2 and U3.
+
+**The model.** `site/js/core/scheme.js` now accepts a target whose replacement is
+a distribution over several synonymous codons with whole-percent shares that must
+total 100. A distribution resolves **per occurrence**, counted from the start of
+each gene and skipping the start triplet, through a fixed 100-slot rotation that
+spreads the shares rather than blocking them. So the same scheme always gives the
+same sequence, a gene never depends on another gene, and a gene holding three
+occurrences still sees more than one destination. Every destination stays
+synonymous, so `verifyProteinsUnchanged` passes and the protein guarantee is
+unchanged; it now walks the rotation, so it checks every destination rather than
+only the dominant one.
+
+**Backward compatibility.** A single replacement still serializes as `TCG-AGC`,
+so every link written before this keeps its meaning. A distribution serializes as
+`TCG-AGC:60/AGT:40`, ordered by descending share. A malformed entry is skipped
+and a distribution with bad shares is reported by the validator rather than
+silently repaired into a different scheme.
+
+**The consumers.** Three places turn a scheme into recoded codons: the live
+metric scan, the sequence export and the gene sequence close-up. All three now
+resolve per occurrence, and
+`tests/js/scheme-distribution-consistency.test.mjs` holds them to agreeing with
+each other. Before this they read one lookup table and could not disagree; now
+they each walk a rotation, so agreement is tested rather than assumed. A drift
+would show a recoded row that is not the sequence its own numbers describe.
+
+**The editor.** Each target row gains a "Spread over several codons" checkbox.
+Switching on splits the current replacement with the next synonym the scheme
+keeps; switching off keeps the largest share. Neither direction invents or
+discards a destination. A spread target opens one row per destination with its
+codon and its share, a running total, an add control, and a compact remove that
+collapses a two-way spread back to a single replacement.
+
+**A defect found and fixed in rendered testing.** The first build rejected an
+out-of-balance share, so typing 20 into a field that had to total 100 showed an
+error while the controls still displayed the old numbers. Shares are a
+constrained set and an editor should keep them valid rather than scold the user
+for a state they were passing through. `rebalanceShares` now absorbs every edit
+into the other destinations, clamped so each keeps at least one percent, by
+largest remainder so the total is exact. Every control in the panel now produces
+a scheme the validator accepts, which is what the editor tests assert.
+
+Two further defects were found in the same pass and fixed: an existing CSS rule
+matched every descendant icon button and pulled the share rows' remove control
+into the wrong grid column, and the destination dropdowns were clipped by
+repeating occurrence counts the panel already showed.
+
+**Not done here.** The Ec_Syn57 scheme is not yet a shipped preset. Its map is
+derived and recorded above, but a preset also needs the organism it belongs to,
+which is D7.
+
+When editing a scheme, each target codon offers a single replacement codon today.
+The editor gains a per-codon choice to make that target a **distribution** rather
+than one replacement, which opens advanced settings for the share each
+replacement takes. The derivation above is why: the published Ec_Syn57 design
+replaces one serine codon with four different synonyms at different loci, so a
+one-to-one map cannot express it and `validateSchemeMap` cannot represent it.
+
+Requirements:
+
+- A distribution's shares are explicit and must sum to one. Every destination
+  stays synonymous with the target and stays outside the target set, which are
+  the two rules `validateSchemeMap` already enforces per entry and must now
+  enforce per destination.
+- A single-replacement target stays exactly as it is today. The distribution is
+  opt-in per codon, never a migration of existing schemes, and the serialized
+  form stays backward compatible so every existing link keeps its meaning.
+- `verifyProteinsUnchanged` must still pass on a distribution, which it will,
+  because every destination is synonymous. The protein guarantee does not weaken.
+- A distribution needs a deterministic assignment rule to be applied to real
+  sequence at all, since "54% of the time" is not a per-locus instruction. The
+  rule must be stated in the interface and be reproducible from the URL, so the
+  same scheme always produces the same recoded sequence.
+
+### U2. A "Recoded Genome Scheme" panel at the top of the left column
+
+**Blocked on a recoded organism record existing.**
+
+A new left-column panel, appearing above every existing panel and only for a
+recoded organism, which says plainly that the selected dataset comes from a
+recoded organism and names its scheme. For a scheme whose replacement is a
+distribution, the panel says so rather than implying a one-to-one map, which is
+the specific thing the owner asked for.
+
+It carries, per the derivation above: the target codons, the replacement
+distribution per target, the residual count of target codons still present, and
+the strain's segment set. It must not appear for a native organism, and the two
+sweep tests in `organism-isolation.test.mjs` must keep passing, so no sentence in
+it may name another organism.
+
+### U3. Colour by residual target codons
+
+**Blocked on a recoded organism record existing.**
+
+A colour source counting, per gene, how many codons the scheme was supposed to
+remove are still present. The derivation already produces exactly this as
+`data/recoded/ec_syn57_residual_targets.tsv`: 659 codons across 165 genes for the
+full design. Most genes score zero, so the ramp has to make a count of one
+visible rather than losing it against a mass of zeros, and zero must read as
+"recoded as designed" and not as missing data.
+
+It is available only where the organism declares a scheme, and must declare
+itself unavailable rather than showing an empty ramp elsewhere.
+
+### U4. Axes for recoded organisms: recalculated, with a second map that is not
+
+Answered from the pipeline, 2026-10-07. **Every organism's axes are already
+recalculated and nothing is shared.** `scripts/build_features.py` fits the
+`StandardScaler` and the `PCA` on that organism's own RSCU matrix and writes its
+own `codon_pca.json`; the two shipping organisms have entirely different
+loadings for the same codon. So a recoded organism gets its own refitted axes by
+default, which is Q3's first map and needs no new capability.
+
+**Owner decision, 2026-10-07: the cross-strain coordinate rule is explicitly
+waived for the recoded *E. coli* strains.** The shared-axis map exists for
+comparison, and each recoded organism also offers its own recomputed axes, so a
+reader is never confined to the borrowed frame. The waiver is scoped to these
+strains and to projection coordinates. It does not touch genomic positional
+features and does not extend to the *S. elongatus* sister strains, where
+[data-contract.md](../../validation/data-contract.md) limit 1 stands unchanged.
+
+A side agent raised this as a blocker on 2026-10-07. Recorded for accuracy: the
+contract text it cited does not in fact bar this map. Limit 1 reads "a positional
+feature (TSS, TTS, TIS) transfers as a gene-relative offset against a named
+locus, never as an absolute genomic position", which binds genomic coordinates
+and not a projection coordinate, and its stated reason is the UTEX/PCC
+chromosomal inversion. The owner's waiver settles the question under either
+reading, which is why it is recorded rather than argued.
+
+Q3's second map therefore needs new capability, and the obstacles are mechanical
+rather than contractual:
+
+1. `codon_pca.json` publishes `explainedVariance`, `loadings` and `nComponents`
+   only. It does **not** publish the scaler mean and scale, so the parent's
+   standardization cannot be reproduced from what ships. Projecting foreign genes
+   onto those axes requires publishing those 59 means and 59 scales.
+2. The isolation contract reads data only from the organism's own directory, so a
+   recoded organism cannot read its parent's files. The parent's standardization
+   and loadings must therefore be shipped *into* the recoded organism's own
+   directory as a declared, pinned reference projection, labelled as the parent's
+   and never as the recoded organism's own fit.
+
+Until that lands, the honest position is one refitted map per recoded organism.
+The shared-axis map ships when D8 does, labelled as the parent's frame, with the
+recomputed map always reachable beside it.
+
 ## Dependencies
 
 | Id | Prerequisite | Dependent step | Status |
@@ -399,7 +556,9 @@ that derivation fails, this ticket gains the draft and
 | D3 | The Ec_Syn57 target set and replacement distribution | The scheme preset and every per-gene recoded mark | **met 2026-10-07** by `tools/recoded_scheme.py`, two independent derivations in agreement. See "Derived 2026-10-07" |
 | D4 | The reference strain, units, normalisation and identifier namespace of every Supplementary Data 3 column, read from the methods | Any ingestion of a fold-change or translation-efficiency value | **open.** Replicate RPKM does not wait on it; the two derived quantities do |
 | D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open.** The rosters differ between the deposit and the supplements and must be reconciled, not assumed |
-| D6 | A decision on how `site/js/core/scheme.js` represents a distribution rather than a one-to-one map | Adding Ec_Syn57 as a selectable scheme preset | **open.** Finding 1 above; `validateSchemeMap` cannot express the real design today |
+| D6 | A distribution representation in `site/js/core/scheme.js` and its editor | Adding Ec_Syn57 as a selectable scheme preset, and U2's honest description of it | **met 2026-10-07** as U1, shipped with 44 new tests and rendered validation |
+| D7 | At least one recoded organism record, which needs D5 for a per-strain genome or the design genome admitted under Q2 | U2's panel and U3's colour source, and any rendered validation of either | **open.** Both are specified and neither can be rendered until a recoded organism exists |
+| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **open.** U4 above; the refitted map needs none of this |
 
 ## Work plan
 
@@ -468,17 +627,34 @@ untestable; it now takes them as options. A second flaw is also fixed: the desig
 reader silently dropped CDS features carrying neither `gene` nor `locus_tag`,
 which undercounted the design by two features and the residual TAG stops by one.
 
-**Repository gates**, run on the working tree at 2026-10-07 after these changes:
+**Repository gates**, run on the working tree at 2026-10-07 after these changes.
+The counts include concurrent ingestion work by another session in the same
+checkout, so they are higher than this ticket's own contribution.
 
 | Gate | Result |
 | --- | --- |
-| `.venv/bin/python -m pytest -q` | 541 passed, 1 skipped, 36 subtests passed |
-| `npm test` | 1,116 passed, 0 failed |
+| `.venv/bin/python -m pytest -q` | 559 passed, 1 skipped, 36 subtests passed |
+| `npm test` | 1,198 passed, 0 failed |
 | `.venv/bin/python tools/validate_contract.py` | 116 passed, 0 failed, 1 skipped |
+| `npm run check:live-metrics` | every parity and budget check passed; the scan stayed within budget at 19.1 ms for 807,118 codons |
 
-No `site/data` file, release payload or UI module is changed yet, so no rendered
-validation is due. It becomes due with the first projection or panel change, at
-the three widths under the `ui-render-inspect-repair` skill.
+The browser-versus-pipeline parity checks still pass for GC3, CAI, tAI, ENC and
+the codon-pair score, which is what shows the rotation did not disturb the
+single-replacement path every shipped scheme uses.
+
+**Rendered validation for U1**, against the real application served from `site/`
+on a task-scoped port, session `recoded-scheme-u1`:
+
+- A three-way spread driven from the address bar renders its rows, shares,
+  running total and note, with no console message of any kind.
+- Every interaction exercised in the browser: toggle on, toggle off, add a
+  replacement, remove one, and share edits at 1, 20, 99, 500 and -3. Every one
+  produced a valid scheme and no error state.
+- Widths 375, 768, 1280 and 1440, plus 560 and 561 around the breakpoint that
+  was later removed as unnecessary. No document overflow and no element escaping
+  the controls column at any width.
+- The screenshots are what caught the clipped dropdowns and the hijacked remove
+  button; both are fixed and re-captured.
 
 **Boundary.** No dataset is admitted, no ledger row is written, no citation entry
 exists and no value from this source is displayed. The derived tables in
