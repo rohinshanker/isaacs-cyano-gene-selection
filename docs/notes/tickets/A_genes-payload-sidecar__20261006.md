@@ -1,10 +1,10 @@
-# O_genes-payload-sidecar__20261006 — Open
+# A_genes-payload-sidecar__20261006 — Active
 
-- **Scope:** Keep `genes.json` inside its per-gene budget by moving the two
-  largest per-gene fields out of the file the map waits for, and bring the
-  chromosome loading bar back whenever a data file is requested after the first
-  load cycle has settled. Covers `scripts/`, `tools/`, `site/`,
-  `docs/validation/data-contract.md`,
+- **Scope:** Keep `genes.json` inside its per-gene budget by publishing the
+  unused per-gene `rscu` apart from it while the required `codons` stays in the
+  core file, and bring the chromosome loading bar back whenever a data file is
+  requested after the first load cycle has settled. Covers `scripts/`,
+  `tools/`, `site/`, `docs/validation/data-contract.md`,
   `docs/validation/progressive-loading.md`, and their tests.
 - **Status:** active
 - **Opened:** 2026-10-06
@@ -12,10 +12,29 @@
 
 ## Current State
 
-Nothing is implemented. The split the data contract names as the remedy for an
-oversized core payload has never been built, and the budget is nearly spent.
+Both streams have delivered and are integrated on `main`. What remains is one
+confirmation, not implementation.
 
-Measured on the shipped release, 2026-10-06:
+- **Payload, done.** `rscu` ships as per-organism `codon_rscu.json`, integrated
+  at `deeabc3` from DEM-266 result `841477a`. The core payload fell to 1,503
+  bytes per gene for UTEX 2973 and 1,472 for E. coli, against the 2,000-byte
+  budget. The page never requests the sidecar and `site/js` was unchanged.
+  `codons` stays in `genes.json`.
+- **Loading surface, done.** The bar returns for a data file requested after
+  settle, delivered at `a9ccd3b` and `1f7aba4` by the loading stream.
+  `docs/validation/progressive-loading.md` now records `codon_rscu.json` as an
+  offline `geneIds` and `meta.rscuOrder` join that joins no tier, is never
+  requested by the browser, and is excluded from the bar's denominator, with
+  packed `codons` retained in tier 1. The loading stream reported its
+  new-manifest checks passing at four widths in both the no-ledger and
+  unreachable-half failure cases, with one bar, correct stage copy, an
+  actionable retry, and no overflow or console errors, and combined gates of
+  1,116 JavaScript, 116 contract and 494 Python.
+- **Open.** The loading stream's narrow confirmation is active against `06ab535`,
+  which carries the payload merge plus its own review repairs. This ticket
+  resolves on that acceptance.
+
+Measured on the shipped release before the change, 2026-10-06:
 
 | Quantity | UTEX 2973 | E. coli K-12 MG1655 |
 | ---: | ---: | ---: |
@@ -79,13 +98,15 @@ release-blocking, so the next few additions stop a publish until this is done.
    `expression_layers.json` is. Nothing in `site/` requests it, so it joins no
    tier and the browser must not fetch it. `meta.rscuOrder` stays in `meta.json`
    as the column order. Point the three offline readers at the new file.
-2. **Decide `codons` separately and record the decision.** After step 1 the
-   budget is comfortable, so this is a choice rather than a forced move. If it
-   does move, it is a declared tier-1 file, because the page cannot draw
-   scheme-dependent colour without it: its absence reads as loading and never as
-   missing, and no scheme metric, delta, or target count may be drawn, exported,
-   or ranked from a partial decode. Do not move it merely because the contract's
-   original sentence named it.
+2. **Decided 2026-10-07: `codons` stays in `genes.json`.** After step 1 the
+   budget is comfortable, so moving it was a choice rather than a forced move,
+   and it was declined. Its decode, scheme metrics, deltas, target counts,
+   sequence views and exports are unchanged, and no additional required codon
+   file or loading tier was introduced. The reasoning, kept because it governs
+   any future attempt: the page cannot draw scheme-dependent colour without this
+   field, so were it ever moved it would be a declared tier-1 file whose absence
+   reads as loading and never as missing, and no scheme metric, delta or target
+   count may be drawn, exported or ranked from a partial decode.
 3. **Done 2026-10-07, on `main` at `a9ccd3b` and `1f7aba4`.** Delivered by the
    loading stream, which owns this surface. The cycle restarts automatically
    when a settled loader moves to pending, names the exact filename, keeps the
@@ -124,11 +145,13 @@ release-blocking, so the next few additions stop a publish until this is done.
    between the two files.
 6. **Preserve missing-value semantics.** A null stays null in the new file and
    renders as unknown. Loading is not missing, and absent is not zero.
-7. **Amend both contracts in the same patch.** The data contract's size-budget
-   section currently prescribes a remedy that does not exist and names both
-   fields together; it must describe what was actually built. Record the tier,
-   the join, and the bar's return in
-   `docs/validation/progressive-loading.md`.
+7. **Done 2026-10-07, both halves.** The data contract's size-budget section was
+   corrected with the payload merge at `deeabc3`, and
+   `docs/validation/progressive-loading.md` was updated by the loading stream to
+   record the offline join, the absence of a tier or browser request, and the
+   exclusion from the bar's denominator. Original requirement: amend both
+   contracts in the same patch, since the data contract prescribed a remedy that
+   did not exist and named both fields together.
 
 ## Ownership and parallel work
 
