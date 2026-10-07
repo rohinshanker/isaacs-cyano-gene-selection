@@ -13,7 +13,7 @@ import re
 from typing import Any, Mapping
 
 DATA_TYPES = ("transcriptomics", "proteomics", "fitness")
-PLATFORMS = ("RNA-seq", "array", "LC-MS/MS", "RB-TnSeq")
+PLATFORMS = ("RNA-seq", "array", "LC-MS/MS", "RB-TnSeq", "Ribo-seq")
 BASES = ("direct", "transferred")
 STATUSES = ("reported", "not reported", "not retrieved", "conflicting")
 REGIME_KINDS = ("continuous", "diel")
