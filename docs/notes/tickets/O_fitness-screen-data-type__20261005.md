@@ -27,11 +27,11 @@ quantitative score. The two stay separate layers.
 
 Steps 1, 3 and 4 are done; step 2 remains.
 
-- The GEO deposit (`GSE205443_Counts.txt.gz`, 1,919 loci × 25 samples) holds
+- The GEO deposit (`GSE205443_Counts.txt.gz`, 1,920 loci × 25 samples) holds
   per-gene barcode counts, not fitness; the series record says fitness scores
   and T-values were generated with the Wetmore et al. 2015 scripts, and the
   paper publishes them in Supplementary File S4, sheet "2) Gene Fitness and
-  T-values" (one Fitness and T-value column per fraction sample, 1,917 loci
+  T-values" (one Fitness and T-value column per fraction sample, 1,920 loci
   evaluated). Those published values are ingested, not recomputed: nine layers,
   one per fraction (Experiment 1 tube biofilmers and settlers; Experiment 2 tube
   planktonic, settlers and biofilmers in fresh BG-11, settlers and biofilmers in
@@ -96,8 +96,23 @@ text conflating gene fitness with a raw barcode ratio (04); the pooled
 explanation saying one input column while averaging nine (05); the pooled caveat
 dropping the missing-T-value warning (06); the download TSV header naming the
 fitness column `abundance` (07); the counts in this ticket's progress section
-(1,919 and 1,917) against 1,920 loci in both the GEO count file and S4 (08); and
+(1,919 and 1,917) against 1,920 loci in both the GEO count file and S4 (08,
+**corrected 2026-10-07**, see below); and
 the Gene fitness Sources link routed to the RNA-seq arm GSE205444 (09).
+
+### Finding 08 corrected, 2026-10-07
+
+Both counts above now read 1,920. Verified before the edit rather than taken
+from the audit: the GEO count file was re-fetched from
+`https://ftp.ncbi.nlm.nih.gov/geo/series/GSE205nnn/GSE205443/suppl/GSE205443_Counts.txt.gz`
+and parsed with a header-aware reader, giving **1,920 data rows, 1,920 unique
+`Locus ID` values and 25 sample columns** beside the two identifier columns.
+That also reconciles the audit trail with its own 1,835 mapped plus 85 unmapped
+figures, which sum to 1,920.
+
+This finding was not on the fixing session's list of 01 to 07 and 09. The other
+eight remain open and are that session's work; none of them is corrected in the
+merged tree as of this edit.
 
 ## Verification
 

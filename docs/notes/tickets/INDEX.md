@@ -3,6 +3,12 @@
 Live queue of open and active tickets only. Resolved tickets are deleted and
 their reusable guidance distilled into `docs/validation/`.
 
+Closing a ticket is governed by the "Closing a ticket" section of
+[AGENTS.md](../../../AGENTS.md): the owning session closes it, names itself and
+the date, and lists every open finding against the work by identifier. A ticket
+whose audit is unresolved is not closed, and a closure that would lose an open
+finding is reverted rather than argued about.
+
 | Ticket | Scope |
 | --- | --- |
 | [O_loading-bar-header-placement__20261007](O_loading-bar-header-placement__20261007.md) | Open for later: move additional loading progress beneath the top-right Jump to map / Reset panel widths controls; prevent menu resizing and the leftover center-panel gap; assess intervening changes and clarification at resolution |
@@ -14,7 +20,7 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_chromosome-measurement-performance__20261007](O_chromosome-measurement-performance__20261007.md) | Open for later: profile and repair chromosome lag with protein abundance, transcript initiation, and transcript abundance even on defaults, plus the four-transcriptomics-dataset case |
 | [O_chromosome-gene-tab-name-order__20261007](O_chromosome-gene-tab-name-order__20261007.md) | Open for later: rename the tab Chromosome/Gene and place it third, immediately after Metric X vs Y; assess affected-area changes and clarification at resolution |
 | [O_chromosome-viewer-info-collapsed__20261007](O_chromosome-viewer-info-collapsed__20261007.md) | Open for later: collapse the strand/marker explanation, per-replicon information, and coordinate-transfer text into a section such as Chromosome Viewer Info; assess affected-area changes and clarification at resolution |
-| [O_gene-sequence-structural-features__20261007](O_gene-sequence-structural-features__20261007.md) | Open for later: verify Tan initiation start-site display and future structural-feature support in the sequence viewer at the bottom of Chromosome/Gene; existing Tan support and sequence-extent limits need rendered assessment |
+| [O_gene-sequence-structural-features__20261007](O_gene-sequence-structural-features__20261007.md) | Open for later: verify Tan initiation start-site display and future structural-feature support in the sequence viewer at the bottom of Chromosome/Gene; owner request 2026-10-07: determine Shine-Dalgarno / RBS-like sequences per gene and show them in both gene viewers as a predicted `rbs` layer (method decision stays with the RBS Calculator ticket); existing Tan support and sequence-extent limits need rendered assessment |
 | [A_ui-interactivity-batch__20261006](A_ui-interactivity-batch__20261006.md) | Engineering accepted and verified; awaiting the owner’s loading defaults; human clutter marks remain open |
 | [A_loading-scramble-and-progress__20261006](A_loading-scramble-and-progress__20261006.md) | Accepted A/B/C and grouped/continuous previews with truthful progress; owner visual choices pending before production defaults change |
 | [A_pmc-gated-method-papers__20261006](A_pmc-gated-method-papers__20261006.md) | All four papers saved by the owner 2026-10-07 and mapped from their titles to their PMC ids; remaining work is to re-match the comparability memo's claims and clear the abstract-only marks |

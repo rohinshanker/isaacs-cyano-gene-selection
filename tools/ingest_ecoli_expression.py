@@ -359,7 +359,8 @@ def build(report_only: bool = False, out_dir: Path = OUT_DIR) -> int:
     (out_dir / "sources.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
-    (out_dir / "pair_judgements.json").write_text("[]\n", encoding="utf-8")
+    # No pair-judgements file is written. The loader reads an absent file as
+    # "no judgement has been made", which is true, and rejects an empty one.
     print(f"wrote {len(manifest)} layers to {out_dir}")
     return 0
 

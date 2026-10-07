@@ -77,7 +77,8 @@
         "verifiedSpeciesTable": "data/trna/ecoli-k12-mg1655_anticodon_gene_copies.tsv"
       },
       "optionalLayers": [
-        "annotation"
+        "annotation",
+        "expression"
       ],
       "rawDirectory": "data/raw/ecoli-k12-mg1655",
       "outputDirectory": "site/data/organisms/ecoli-k12-mg1655",

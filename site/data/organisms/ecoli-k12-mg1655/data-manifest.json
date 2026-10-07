@@ -20,6 +20,10 @@
       "bytes": 2033,
       "sha256": "c719a056891ee2ba6e412da0066dbbd4061b353586e5c7a47ef7a9c1521a44c9"
     },
+    "expression_layers.json": {
+      "bytes": 774877,
+      "sha256": "a6f1d5f96c87e6b5e689dfe22543f86d9934294b5455e8c3f10504aa65d1785a"
+    },
     "genes.json": {
       "bytes": 6310634,
       "sha256": "348e8b8ccbb9113fb45bbd504fa67092a631e2381c08d377b4452e91ea5ad388"
@@ -29,8 +33,8 @@
       "sha256": "f15a0f0691e4ad9d623cfe4776b348a664b0787d0d7303e0039b35b99c2f8936"
     },
     "meta.json": {
-      "bytes": 22344,
-      "sha256": "1b552caa2c33e1c4ffddc36ac1729b439b3ecfad10b4278b0d56fad994ff6913"
+      "bytes": 151988,
+      "sha256": "48a77b45906728c7b792af1bc10399dd6347f9d1834cea3ecd33670169882801"
     }
   },
   "schemaVersion": 1

@@ -27,7 +27,7 @@ def test_default_and_named_organisms_are_explicit() -> None:
     assert default.path("outputDirectory") == ROOT / "site/data"
     assert ecoli.accession == "GCF_000005845.2"
     assert ecoli.path("rawDirectory") == ROOT / "data/raw/ecoli-k12-mg1655"
-    assert ecoli.optionalLayers == ["annotation"]
+    assert ecoli.optionalLayers == ["annotation", "expression"]
 
 
 def test_unknown_organism_id_fails_loudly() -> None:
@@ -272,17 +272,22 @@ def test_every_organism_configures_its_own_expression_directory():
     assert len(seen) == len(ids)
 
 
-def test_an_organism_without_the_expression_layer_still_declares_its_directory():
-    """The directory is declared whether or not the layer is switched on.
+def test_the_expression_directory_is_declared_and_distinct_per_organism():
+    """Turning the layer on was a one-word configuration change, as intended.
 
-    Turning the layer on must be a one-word change in the configuration, not a
-    code change, so the path has to be there before it is used.
+    The directory is declared whether or not the layer is switched on, which is
+    what let E. coli gain expression without a code change. Each organism reads
+    its own: the measurements are in different strains and join through
+    different crosswalks, so one manifest could never serve both.
     """
     from scripts.organisms import get_organism
 
     ecoli = get_organism("ecoli-k12-mg1655")
-    assert ecoli.has_layer("expression") is False
+    assert ecoli.has_layer("expression") is True
     assert ecoli.path("expressionDirectory").name == "ecoli-k12-mg1655"
+    assert ecoli.path("expressionDirectory") != get_organism("utex2973").path(
+        "expressionDirectory"
+    )
 
 
 def test_an_organism_may_decline_to_name_a_primary_abundance_metric():

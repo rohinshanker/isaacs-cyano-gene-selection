@@ -1639,7 +1639,11 @@ def build(
     }
     if annotation_release is None:
         meta.pop("annotationRelease")
-    if primary_expression_source is None:
+    if not expression_sources:
+        # Keyed on whether any source exists, not on whether one of them is the
+        # primary abundance field. An organism carrying expression only as
+        # joined layers has no primary, and dropping the list would leave its
+        # layers in the payload with nothing in the metadata to find them.
         meta.pop("expressionSources")
     if not organism.has_layer("tss"):
         meta.pop("tssEvidenceSource")
