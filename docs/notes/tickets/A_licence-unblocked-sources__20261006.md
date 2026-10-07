@@ -16,8 +16,8 @@ held link-only for its licence. The ledger and the roadmap register now read
 "permitted with citation" on every row, with the earlier reading kept in
 brackets.
 
-Rows 1, 2 and 5 shipped on 2026-10-07 under the admission contract: 20 RNA-seq
-layers from nine GEO series, each a spec under `data/expression/ingest/` with
+Rows 1 to 5 shipped on 2026-10-07 under the admission contract: 38 RNA-seq
+layers from twelve GEO series, each a spec under `data/expression/ingest/` with
 its deposited file pinned by URL and SHA-256, its condition record from the
 package B row and the 2026-10-06 addendum, a manifest entry with the join audit
 counts, and a citation row offering every layer table for download. Per series:
@@ -33,6 +33,9 @@ counts, and a citation row offering every layer table for download. Per series:
 | GSE254350 | day 1, day 4 | wild type | pilB, sigF1, sigF2 mutants | 2,505 |
 | GSE335065 | axenic, axenic membrane bioreactor, membrane-separated co-culture | cscB+ Δsps (engineered) | mixed co-culture with *R. toruloides* (9 samples) | 2,615 |
 | GSE51112 | WT constant light, OX-D53E +IPTG, OX-D53E −IPTG, OX-Empty +IPTG | wild type and the three RpaA-phosphomimetic arms (engineered) | nothing; the series has four condition sets and all ship | 2,551 |
+| GSE252562 | short day 1 and 4 cycles, long day 1, 4 and 8 cycles, plus one disputed 8-cycle set | wild type | kaiABC knock-out arm | 2,634 |
+| GSE225426 | control, NaCl days 1 and 3, streptomycin days 1 and 3 | wild type | nothing; all five condition sets ship | 2,550 |
+| GSE311172 | seven oxygen endpoints across four populations | cscB+ Δsps and its three adapted populations (engineered) | the intermediate oxygen steps, and five sets whose population GEO and the matrix dispute | 2,615 |
 
 Owner decision, 2026-10-07: for series with no wild-type baseline, the engineered
 strain's data may be shown as long as it is specified that the strain is a
@@ -60,6 +63,26 @@ Decisions taken in this pass, each recorded in the spec's caveat:
 - Row 5, GSE51112, ships all four of its condition sets rather than the wild type
   alone: the three RpaA-phosphomimetic arms are the study's point and are marked
   engineered, under the owner's decision of 2026-10-07.
+- Rows 3 and 4 ship too, reversing the morning's "wait for the depositor"
+  decision on the owner's instruction of 2026-10-07 once the GEO records were
+  re-read: both deposits state their growth conditions in the growth-protocol
+  field, which the earlier query row had not registered. GSE225426 is silent
+  only on the vessel and CO₂, and GSE311172's record is the most complete in the
+  queue. The silent fields are marked `not reported`, which is what the status
+  means for a deposit with no publication: the record is the whole source and it
+  was read in full.
+- GSE252562's disputed eight-cycle set ships with its light regime `conflicting`
+  rather than being dropped or guessed, the status the contract already has for
+  a source that states two different things, as GSE237858's light intensity does.
+  Its other five wild-type sets are unaffected and ship normally.
+- GSE311172's five sets whose adapted population GEO and the deposited matrix
+  label differently are **not** shipped. Which lineage produced the data is the
+  dataset's identity rather than an axis value, and no status covers a disputed
+  genotype. They are listed here and in the owner's email draft so a reply
+  releases them.
+- GSE311172 ships endpoints, not its full oxygen dose series: the two light
+  baselines, the unadapted maximum, and each adapted population's zero-oxygen
+  baseline. The intermediate steps are deposited and recorded, not discarded.
 - The 2026-10-06 addendum's co2 and growth-phase readings for Puszyńska and
   O'Shea 2017 are carried inline in the five specs with their quotes and
   locations; the package B row supplies the other axes' quotes.
@@ -118,7 +141,7 @@ per-gene file package B found; conditions are the package B rows, amended by the
 
 ## Work
 
-1. Rows 1, 2 and 5: done 2026-10-07 (see Current state).
+1. Rows 1 to 5: done 2026-10-07 (see Current state). Row 7 is the only ingestion left in this ticket.
 2. Row 7 as the archives allow: a ratio-to-reference result ships as a signed
    layer listed apart from abundances and labelled as a ratio (owner decision,
    2026-10-07). What the three deposits actually serve, read 2026-10-07 from the
@@ -134,8 +157,11 @@ per-gene file package B found; conditions are the package B rows, amended by the
 3. Row 6: moved out to
    [O_array-expression-reader__20261007](O_array-expression-reader__20261007.md)
    by the owner's decision of 2026-10-07.
-4. Rows 3 and 4 wait on the depositors (owner decision, 2026-10-07). The three
-   emails are drafted in
+4. Rows 3 and 4 are shipped. Their depositor emails survive only as optional
+   upgrades, and the standing fallback for any future row that does depend on a
+   reply is the owner's decision of 2026-10-07: wait four weeks with one
+   follow-up at two, then ship with the unanswered fields marked and the query
+   left on record; nothing is dropped for silence. The three emails are drafted in
    [AAA-next-steps.md](../../validation/AAA-next-steps.md) item 5; a reply, not
    the sending, is what unblocks them, and each reply is recorded in
    [A_condition-metadata-gaps__20261005](A_condition-metadata-gaps__20261005.md)
@@ -157,22 +183,29 @@ Required gates on the isolated docs worktree: `npm test` 1,116 passed;
 skip. This pass changed no application code, release data or browser UI;
 implementation-specific validation remains separate.
 
-Rows 1, 2 and 5, 2026-10-07: `npm test` 1,116 passed; `.venv/bin/python -m
-pytest -q` 498 passed, 1 skipped, 36 subtests (29 ingestion-tool tests, including
-the three new reader rules); `.venv/bin/python tools/validate_contract.py` 116 passed, 0
+Rows 1 to 5, 2026-10-07: `npm test` 1,148 passed; `.venv/bin/python -m
+pytest -q` 559 passed, 1 skipped, 36 subtests (31 ingestion-tool tests, including
+the four new reader rules); `.venv/bin/python tools/validate_contract.py` 116 passed, 0
 failed, 1 declared skip. The join audit counts are in each layer's `ingest`
 block (2,551 genes for the five old-locus-tag workbooks, 164 identifiers
 unmapped; 2,634 for GSE237858 with 135 unmapped, 57 of them `rna-`/novel rows
 outside the pattern; 2,505 for GSE254350 with 279 unmapped, 116 of them
 `predicted RNA` rows; 2,615 for GSE335065 with 146 unmapped, 8 of them pANS
-rows; 2,551 for each GSE51112 layer with 172 unmapped). Every citation download
-resolves to a tracked table (ledger test). The
+rows; 2,551 for each GSE51112 layer with 172 unmapped; 2,634 for each GSE252562
+layer with 147 unmapped; 2,550 for each GSE225426 layer with 111 unmapped; 2,615
+for each GSE311172 layer with 146 unmapped). GSE225426's two-file join was
+checked independently: recomputing one gene's counts-per-million from each
+workbook by hand and averaging reproduces the shipped value to four decimals,
+and the two workbooks have different library sizes, so both were read. Every
+citation download resolves to a tracked table (ledger test). The
 rendered check ran on 2026-10-07 against the built site served from this
 checkout (Playwright, 1280×800, 768×1024 and 375×812): colouring by
-Transcript abundance (RNA-seq) lists 36 datasets, the 20 new rows show their
+Transcript abundance (RNA-seq) lists 54 datasets, all 38 new rows show their
 study id and condition set, the engineered ones carry the "engineered strain"
-chip and the wild-type ones do not, the defaults stay at the four
-standard-growth sets, and the console reports no errors or warnings.
+chip and the wild-type ones do not, the disputed GSE252562 set reads "after 8
+cycles of a photoperiod the deposit labels inconsistently" rather than claiming
+either, the defaults stay at the standard-growth sets, and the console reports
+no errors or warnings.
 
 Remaining rows: the same gates, the join audit counts in each `ingest` block,
 a rendered check of each Data Sources entry and legend, and a citation row

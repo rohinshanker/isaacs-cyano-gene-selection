@@ -6132,5 +6132,2150 @@
       "unmappedIdentifiers": 172,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
+  },
+  {
+    "record": {
+      "studyId": "GSE252562",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 1 short-day cycle (LD8:16), mean of three replicates",
+      "samples": "wild-type 1 cycle LD8:16 replicates 1-3 (GSM8003243-GSM8003245)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+      "citation": {
+        "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+        "url": "https://doi.org/10.1126/science.ado8588",
+        "pmid": "39236161"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype, photoperiod and cycle count",
+        "where": "GEO GSE252562 sample titles"
+      },
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "8:16",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "short day, LD8:16 (8 h light, 16 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    "id": "GSE252562_wt_short_1cycle",
+    "file": "GSE252562_wt_short_1cycle.tsv",
+    "metricKey": "exprGse252562WtShort1",
+    "label": "Expression GSE252562 short day LD8:16, 1 cycle (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type after 1 short-day cycle (LD8:16), mean of three replicates",
+    "sha256": "5f7496666826cf6cfae5a04111ec43830ebd4515404a4917238c314360d9e98b",
+    "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in liquid culture and not in UTEX 2973. Wild-type samples only; the kaiABC knock-out arm of the same deposit is not shipped. The deposited count columns are coded MJ2 to MJ50 and are matched to samples through the GEO !Sample_description field.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "johnson-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE252562_transcript_count_matrix.csv.gz",
+      "sourceSha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+      "columns": [
+        "MJ38",
+        "MJ40",
+        "MJ41"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 147,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE252562",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 4 short-day cycles (LD8:16), mean of three replicates",
+      "samples": "wild-type 4 cycles LD8:16 replicates 1-3 (GSM8003246-GSM8003248)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+      "citation": {
+        "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+        "url": "https://doi.org/10.1126/science.ado8588",
+        "pmid": "39236161"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype, photoperiod and cycle count",
+        "where": "GEO GSE252562 sample titles"
+      },
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "8:16",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "short day, LD8:16 (8 h light, 16 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    "id": "GSE252562_wt_short_4cycles",
+    "file": "GSE252562_wt_short_4cycles.tsv",
+    "metricKey": "exprGse252562WtShort4",
+    "label": "Expression GSE252562 short day LD8:16, 4 cycles (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type after 4 short-day cycles (LD8:16), mean of three replicates",
+    "sha256": "0da5f031c34110fc9f1230a9f51d6c2b301f3d64e03f8ba77ddf2a4abe393c59",
+    "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in liquid culture and not in UTEX 2973. Wild-type samples only; the kaiABC knock-out arm of the same deposit is not shipped. The deposited count columns are coded MJ2 to MJ50 and are matched to samples through the GEO !Sample_description field.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "johnson-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE252562_transcript_count_matrix.csv.gz",
+      "sourceSha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+      "columns": [
+        "MJ5",
+        "MJ17",
+        "MJ29"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 147,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE252562",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 8 cycles of a photoperiod the deposit labels inconsistently, mean of three replicates",
+      "samples": "wild-type 8 cycles replicates 1-3 (GSM8003249-GSM8003251)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+      "citation": {
+        "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+        "url": "https://doi.org/10.1126/science.ado8588",
+        "pmid": "39236161"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype, photoperiod and cycle count",
+        "where": "GEO GSE252562 sample titles"
+      },
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "conflicting",
+          "kind": "diel",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "the deposit states two different photoperiods for these samples: the sample titles say 8 cycles of LD8:16 and the treatment characteristics say 8 cycles of LD16:8; which applies is unresolved",
+          "where": "GEO GSE252562 sample titles against !Sample_characteristics_ch1 for GSM8003249-GSM8003251",
+          "quote": "Synechococcus cells, wild-type, 8 cycles LD8:16, replicate 1 || treatment: 8 cycles of LD16:8"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    "id": "GSE252562_wt_8cycles_disputed",
+    "file": "GSE252562_wt_8cycles_disputed.tsv",
+    "metricKey": "exprGse252562Wt8Disputed",
+    "label": "Expression GSE252562 8 cycles, photoperiod disputed (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type after 8 cycles of a photoperiod the deposit labels inconsistently, mean of three replicates",
+    "sha256": "f68db529fd89f0fe938b4e8f061cf18574a85e13a96f9c00882d894f6748d1bd",
+    "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in UTEX 2973. The deposit contradicts itself on this set's photoperiod: the sample titles say LD8:16 and the treatment characteristics say LD16:8. The light regime is recorded as conflicting and the set is not comparable to either photoperiod until the depositor or the article settles it.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "johnson-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE252562_transcript_count_matrix.csv.gz",
+      "sourceSha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+      "columns": [
+        "MJ9",
+        "MJ21",
+        "MJ33"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 147,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE252562",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 1 long-day cycle (LD16:8), mean of three replicates",
+      "samples": "wild-type 1 cycle LD16:8 replicates 1-3 (GSM8003252-GSM8003254)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+      "citation": {
+        "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+        "url": "https://doi.org/10.1126/science.ado8588",
+        "pmid": "39236161"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype, photoperiod and cycle count",
+        "where": "GEO GSE252562 sample titles"
+      },
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "16:8",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "long day, LD16:8 (16 h light, 8 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    "id": "GSE252562_wt_long_1cycle",
+    "file": "GSE252562_wt_long_1cycle.tsv",
+    "metricKey": "exprGse252562WtLong1",
+    "label": "Expression GSE252562 long day LD16:8, 1 cycle (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type after 1 long-day cycle (LD16:8), mean of three replicates",
+    "sha256": "c179c2f097641aa433725a34ac4c3eabbc59ff2a3de9c775bef09426ef986e61",
+    "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in liquid culture and not in UTEX 2973. Wild-type samples only; the kaiABC knock-out arm of the same deposit is not shipped. The deposited count columns are coded MJ2 to MJ50 and are matched to samples through the GEO !Sample_description field.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "johnson-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE252562_transcript_count_matrix.csv.gz",
+      "sourceSha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+      "columns": [
+        "MJ2",
+        "MJ14",
+        "MJ26"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 147,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE252562",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 4 long-day cycles (LD16:8), mean of three replicates",
+      "samples": "wild-type 4 cycles LD16:8 replicates 1-3 (GSM8003255-GSM8003257)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+      "citation": {
+        "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+        "url": "https://doi.org/10.1126/science.ado8588",
+        "pmid": "39236161"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype, photoperiod and cycle count",
+        "where": "GEO GSE252562 sample titles"
+      },
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "16:8",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "long day, LD16:8 (16 h light, 8 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    "id": "GSE252562_wt_long_4cycles",
+    "file": "GSE252562_wt_long_4cycles.tsv",
+    "metricKey": "exprGse252562WtLong4",
+    "label": "Expression GSE252562 long day LD16:8, 4 cycles (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type after 4 long-day cycles (LD16:8), mean of three replicates",
+    "sha256": "84224359723173c3de0f7ddbea7ff114c4375624ff914364f7e5566ad857665e",
+    "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in liquid culture and not in UTEX 2973. Wild-type samples only; the kaiABC knock-out arm of the same deposit is not shipped. The deposited count columns are coded MJ2 to MJ50 and are matched to samples through the GEO !Sample_description field.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "johnson-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE252562_transcript_count_matrix.csv.gz",
+      "sourceSha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+      "columns": [
+        "MJ18",
+        "MJ30",
+        "MJ44"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 147,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE252562",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 8 long-day cycles (LD16:8), mean of three replicates",
+      "samples": "wild-type 8 cycles LD16:8 replicates 1-3 (GSM8003258-GSM8003260)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+      "citation": {
+        "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+        "url": "https://doi.org/10.1126/science.ado8588",
+        "pmid": "39236161"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype, photoperiod and cycle count",
+        "where": "GEO GSE252562 sample titles"
+      },
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "16:8",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "long day, LD16:8 (16 h light, 8 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    "id": "GSE252562_wt_long_8cycles",
+    "file": "GSE252562_wt_long_8cycles.tsv",
+    "metricKey": "exprGse252562WtLong8",
+    "label": "Expression GSE252562 long day LD16:8, 8 cycles (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type after 8 long-day cycles (LD16:8), mean of three replicates",
+    "sha256": "c4743602c678519209324f32a8a1e20d5c830b3abd09445d13ae51ae9e8fba99",
+    "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in liquid culture and not in UTEX 2973. Wild-type samples only; the kaiABC knock-out arm of the same deposit is not shipped. The deposited count columns are coded MJ2 to MJ50 and are matched to samples through the GEO !Sample_description field.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "johnson-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE252562_transcript_count_matrix.csv.gz",
+      "sourceSha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+      "columns": [
+        "MJ10",
+        "MJ22",
+        "MJ34"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 147,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE225426",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type, untreated control at day 0, mean of two replicates",
+      "samples": "Control A and B (GSM7048518, GSM7048523)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, deposited as workbooks A and B and registered as separate GEO samples; the deposit does not state whether they are biological or technical",
+        "where": "GEO GSE225426 sample list"
+      },
+      "treatments": [],
+      "group": "standard",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 ºC",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 70,
+          "hi": 70,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "70 µE m-2 s-1, continuous cool white fluorescent",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool white fluorescent",
+          "entrained": false,
+          "text": "continuous cool white fluorescent light",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported; the deposit names no CO₂, aeration or bubbling and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "blue-green 11 (BG11) media",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "culture vessel not reported; the deposit names no flask, tube or plate and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampling day stated as day 0, 1 or 3; no OD or growth phase reported",
+          "where": "GEO GSE225426 !Sample_characteristics_ch1",
+          "quote": "time: Day 0"
+        }
+      }
+    },
+    "id": "GSE225426_wt_control",
+    "file": "GSE225426_wt_control.tsv",
+    "metricKey": "exprGse225426Control",
+    "label": "Expression GSE225426 WT control, day 0 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw read counts, scaled per sample)",
+    "condition": "Wild type, untreated control at day 0, mean of two replicates",
+    "sha256": "ba2b2d34986591f7c5508eb3accffa6baf2d2ebea8bfe21799c8a25560d04fc8",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in PCC 7942, not UTEX 2973. The deposit has no publication, so its condition record is what the GEO growth protocol states and no more: the culture vessel and the CO₂ condition are not reported anywhere, and a depositor query is open. Values are the deposited raw counts scaled per sample; the workbook's RPKM and TPM blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse225426-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE225426_Processed_data_A.xlsx; GSE225426_Processed_data_B.xlsx",
+      "sourceSha256": "fb80c2ca62122614ef841b4246c2e16c62c6d31b1781699212e78a4a385ffd84; d9670cb50cd7f143f2bcf06d9ea01a4faa9feb96476386313b44fc83582aa1f8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_A.xlsx; https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_B.xlsx",
+      "columns": [
+        "Raw_count :: Control-A :: A",
+        "Raw_count :: Control-B :: B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2550,
+      "unmappedIdentifiers": 111,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE225426",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 1 day of 0.4 M NaCl stress, mean of two replicates",
+      "samples": "NaCl-D1 A and B (GSM7048519, GSM7048524)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, deposited as workbooks A and B and registered as separate GEO samples; the deposit does not state whether they are biological or technical",
+        "where": "GEO GSE225426 sample list"
+      },
+      "treatments": [
+        "salt (0.4 M NaCl)"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 ºC",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 70,
+          "hi": 70,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "70 µE m-2 s-1, continuous cool white fluorescent",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool white fluorescent",
+          "entrained": false,
+          "text": "continuous cool white fluorescent light",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported; the deposit names no CO₂, aeration or bubbling and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "blue-green 11 (BG11) media",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "culture vessel not reported; the deposit names no flask, tube or plate and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampling day stated as day 0, 1 or 3; no OD or growth phase reported",
+          "where": "GEO GSE225426 !Sample_characteristics_ch1",
+          "quote": "time: Day 0"
+        }
+      }
+    },
+    "id": "GSE225426_wt_nacl_day1",
+    "file": "GSE225426_wt_nacl_day1.tsv",
+    "metricKey": "exprGse225426Nacl1",
+    "label": "Expression GSE225426 WT 0.4 M NaCl, day 1 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw read counts, scaled per sample)",
+    "condition": "Wild type after 1 day of 0.4 M NaCl stress, mean of two replicates",
+    "sha256": "5cd7d1b27f28ce7b64a89e3a17c6ef8fce1ee7c375b483e3413ffaa95dc1faac",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in PCC 7942, not UTEX 2973. The deposit has no publication, so its condition record is what the GEO growth protocol states and no more: the culture vessel and the CO₂ condition are not reported anywhere, and a depositor query is open. Values are the deposited raw counts scaled per sample; the workbook's RPKM and TPM blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse225426-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE225426_Processed_data_A.xlsx; GSE225426_Processed_data_B.xlsx",
+      "sourceSha256": "fb80c2ca62122614ef841b4246c2e16c62c6d31b1781699212e78a4a385ffd84; d9670cb50cd7f143f2bcf06d9ea01a4faa9feb96476386313b44fc83582aa1f8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_A.xlsx; https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_B.xlsx",
+      "columns": [
+        "Raw_count :: NaCl-D1-A :: A",
+        "Raw_count :: NaCl-D1-B :: B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2550,
+      "unmappedIdentifiers": 111,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE225426",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 3 days of 0.4 M NaCl stress, mean of two replicates",
+      "samples": "NaCl-D3 A and B (GSM7048520, GSM7048525)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, deposited as workbooks A and B and registered as separate GEO samples; the deposit does not state whether they are biological or technical",
+        "where": "GEO GSE225426 sample list"
+      },
+      "treatments": [
+        "salt (0.4 M NaCl)"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 ºC",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 70,
+          "hi": 70,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "70 µE m-2 s-1, continuous cool white fluorescent",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool white fluorescent",
+          "entrained": false,
+          "text": "continuous cool white fluorescent light",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported; the deposit names no CO₂, aeration or bubbling and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "blue-green 11 (BG11) media",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "culture vessel not reported; the deposit names no flask, tube or plate and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampling day stated as day 0, 1 or 3; no OD or growth phase reported",
+          "where": "GEO GSE225426 !Sample_characteristics_ch1",
+          "quote": "time: Day 0"
+        }
+      }
+    },
+    "id": "GSE225426_wt_nacl_day3",
+    "file": "GSE225426_wt_nacl_day3.tsv",
+    "metricKey": "exprGse225426Nacl3",
+    "label": "Expression GSE225426 WT 0.4 M NaCl, day 3 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw read counts, scaled per sample)",
+    "condition": "Wild type after 3 days of 0.4 M NaCl stress, mean of two replicates",
+    "sha256": "e10654ef504525556c85804b7d2358ac181eafa40b2b1705f8c279f1ffa3ea4f",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in PCC 7942, not UTEX 2973. The deposit has no publication, so its condition record is what the GEO growth protocol states and no more: the culture vessel and the CO₂ condition are not reported anywhere, and a depositor query is open. Values are the deposited raw counts scaled per sample; the workbook's RPKM and TPM blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse225426-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE225426_Processed_data_A.xlsx; GSE225426_Processed_data_B.xlsx",
+      "sourceSha256": "fb80c2ca62122614ef841b4246c2e16c62c6d31b1781699212e78a4a385ffd84; d9670cb50cd7f143f2bcf06d9ea01a4faa9feb96476386313b44fc83582aa1f8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_A.xlsx; https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_B.xlsx",
+      "columns": [
+        "Raw_count :: NaCl-D3-A :: A",
+        "Raw_count :: NaCl-D3-B :: B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2550,
+      "unmappedIdentifiers": 111,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE225426",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 1 day of 50 mg/L streptomycin stress, mean of two replicates",
+      "samples": "Str50-D1 A and B (GSM7048521, GSM7048526)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, deposited as workbooks A and B and registered as separate GEO samples; the deposit does not state whether they are biological or technical",
+        "where": "GEO GSE225426 sample list"
+      },
+      "treatments": [
+        "streptomycin (50 mg/L)"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 ºC",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 70,
+          "hi": 70,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "70 µE m-2 s-1, continuous cool white fluorescent",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool white fluorescent",
+          "entrained": false,
+          "text": "continuous cool white fluorescent light",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported; the deposit names no CO₂, aeration or bubbling and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "blue-green 11 (BG11) media",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "culture vessel not reported; the deposit names no flask, tube or plate and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampling day stated as day 0, 1 or 3; no OD or growth phase reported",
+          "where": "GEO GSE225426 !Sample_characteristics_ch1",
+          "quote": "time: Day 0"
+        }
+      }
+    },
+    "id": "GSE225426_wt_streptomycin_day1",
+    "file": "GSE225426_wt_streptomycin_day1.tsv",
+    "metricKey": "exprGse225426Str1",
+    "label": "Expression GSE225426 WT 50 mg/L streptomycin, day 1 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw read counts, scaled per sample)",
+    "condition": "Wild type after 1 day of 50 mg/L streptomycin stress, mean of two replicates",
+    "sha256": "d1ff21395f9a27f6c27c417c29571c7deb492bd17a35caee1e9ea17914424037",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in PCC 7942, not UTEX 2973. The deposit has no publication, so its condition record is what the GEO growth protocol states and no more: the culture vessel and the CO₂ condition are not reported anywhere, and a depositor query is open. Values are the deposited raw counts scaled per sample; the workbook's RPKM and TPM blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse225426-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE225426_Processed_data_A.xlsx; GSE225426_Processed_data_B.xlsx",
+      "sourceSha256": "fb80c2ca62122614ef841b4246c2e16c62c6d31b1781699212e78a4a385ffd84; d9670cb50cd7f143f2bcf06d9ea01a4faa9feb96476386313b44fc83582aa1f8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_A.xlsx; https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_B.xlsx",
+      "columns": [
+        "Raw_count :: Str50-D1-A :: A",
+        "Raw_count :: Str50-D1-B :: B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2550,
+      "unmappedIdentifiers": 111,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE225426",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type after 3 days of 50 mg/L streptomycin stress, mean of two replicates",
+      "samples": "Str50-D3 A and B (GSM7048522, GSM7048527)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, deposited as workbooks A and B and registered as separate GEO samples; the deposit does not state whether they are biological or technical",
+        "where": "GEO GSE225426 sample list"
+      },
+      "treatments": [
+        "streptomycin (50 mg/L)"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 ºC",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 70,
+          "hi": 70,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "70 µE m-2 s-1, continuous cool white fluorescent",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool white fluorescent",
+          "entrained": false,
+          "text": "continuous cool white fluorescent light",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported; the deposit names no CO₂, aeration or bubbling and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "blue-green 11 (BG11) media",
+          "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+          "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+        },
+        "format": {
+          "status": "not reported",
+          "value": null,
+          "text": "culture vessel not reported; the deposit names no flask, tube or plate and there is no publication",
+          "where": "",
+          "quote": ""
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampling day stated as day 0, 1 or 3; no OD or growth phase reported",
+          "where": "GEO GSE225426 !Sample_characteristics_ch1",
+          "quote": "time: Day 0"
+        }
+      }
+    },
+    "id": "GSE225426_wt_streptomycin_day3",
+    "file": "GSE225426_wt_streptomycin_day3.tsv",
+    "metricKey": "exprGse225426Str3",
+    "label": "Expression GSE225426 WT 50 mg/L streptomycin, day 3 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw read counts, scaled per sample)",
+    "condition": "Wild type after 3 days of 50 mg/L streptomycin stress, mean of two replicates",
+    "sha256": "f4bb3138d57fe1c3e6535b7b96f6ef14bc2d85b396a0a6d857784517649f26a1",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in PCC 7942, not UTEX 2973. The deposit has no publication, so its condition record is what the GEO growth protocol states and no more: the culture vessel and the CO₂ condition are not reported anywhere, and a depositor query is open. Values are the deposited raw counts scaled per sample; the workbook's RPKM and TPM blocks are not used.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse225426-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE225426_Processed_data_A.xlsx; GSE225426_Processed_data_B.xlsx",
+      "sourceSha256": "fb80c2ca62122614ef841b4246c2e16c62c6d31b1781699212e78a4a385ffd84; d9670cb50cd7f143f2bcf06d9ea01a4faa9feb96476386313b44fc83582aa1f8",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_A.xlsx; https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_B.xlsx",
+      "columns": [
+        "Raw_count :: Str50-D3-A :: A",
+        "Raw_count :: Str50-D3-B :: B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2550,
+      "unmappedIdentifiers": 111,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "basis": "transferred",
+      "conditionSet": "Unadapted CscB/SPS population under medium light with no added oxygen, mean of two replicates",
+      "samples": "WT100-0 A and B (GSM9320574)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "the deposit calls this arm 'medium light' but states no value for it; the one irradiance it gives, 760 µmol photons m⁻² s⁻¹, describes the steady-state cultures",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_wt_medium_light_0_o2",
+    "file": "GSE311172_wt_medium_light_0_o2.tsv",
+    "metricKey": "exprGse311172WtMedium0",
+    "label": "Expression GSE311172 CscB/SPS medium light, 0% O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Unadapted CscB/SPS population under medium light with no added oxygen, mean of two replicates",
+    "sha256": "9e63296635f26fc3ba6afed9cce6899398bf18d696e85939b600038e485aa86a",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "WT100-0A",
+        "WT100-0B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "basis": "transferred",
+      "conditionSet": "Unadapted CscB/SPS population under high light with no added oxygen, mean of two replicates",
+      "samples": "WT205-0 A and B (GSM9320575)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_wt_high_light_0_o2",
+    "file": "GSE311172_wt_high_light_0_o2.tsv",
+    "metricKey": "exprGse311172WtHigh0",
+    "label": "Expression GSE311172 CscB/SPS high light, 0% O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Unadapted CscB/SPS population under high light with no added oxygen, mean of two replicates",
+    "sha256": "b9f29bc17e268f67413817341ea29622eaa4a1f2fef17bebbb8b5851ad87e9a1",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "WT205-0A",
+        "WT205-0B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "basis": "transferred",
+      "conditionSet": "Unadapted CscB/SPS population under high light at the highest oxygen step of its campaign, 374% air saturation, mean of two replicates",
+      "samples": "WT205-80 A and B (GSM9320584)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [
+        "oxidative stress (374% O₂ air saturation)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_wt_high_light_max_o2",
+    "file": "GSE311172_wt_high_light_max_o2.tsv",
+    "metricKey": "exprGse311172WtHighMax",
+    "label": "Expression GSE311172 CscB/SPS high light, maximum O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Unadapted CscB/SPS population under high light at the highest oxygen step of its campaign, 374% air saturation, mean of two replicates",
+    "sha256": "e2d99964492a8cfee2eb48d52b4a8d20a4a360b2a9f1cda72391e80b602c5907",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "WT205-80A",
+        "WT205-80B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 1",
+      "basis": "transferred",
+      "conditionSet": "Adapted population 1 under high light with no added oxygen, mean of two replicates",
+      "samples": "AD205-0 A and B (GSM9320585)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_ad1_0_o2",
+    "file": "GSE311172_ad1_0_o2.tsv",
+    "metricKey": "exprGse311172Ad1Zero",
+    "label": "Expression GSE311172 adapted population 1, 0% O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Adapted population 1 under high light with no added oxygen, mean of two replicates",
+    "sha256": "be94c273d77e67ecd0a1370d5cb7ff56aaa762a376f34c16f57ba2e65826cd45",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "AD205-0A",
+        "AD205-0B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 1",
+      "basis": "transferred",
+      "conditionSet": "Adapted population 1 under high light at 374% oxygen air saturation, mean of two replicates",
+      "samples": "AD205-80 A and B (GSM9320586)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [
+        "oxidative stress (374% O₂ air saturation)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_ad1_max_o2",
+    "file": "GSE311172_ad1_max_o2.tsv",
+    "metricKey": "exprGse311172Ad1Max",
+    "label": "Expression GSE311172 adapted population 1, maximum O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Adapted population 1 under high light at 374% oxygen air saturation, mean of two replicates",
+    "sha256": "abfc239a5bfebcfb4b58e777411e55afce6e61dad0b6add1c4ceb6ca70de0ca6",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "AD205-80A",
+        "AD205-80B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 2",
+      "basis": "transferred",
+      "conditionSet": "Adapted population 2 under high light with no added oxygen, mean of two replicates",
+      "samples": "AD2-205-0 A and B (GSM9320593)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_ad2_0_o2",
+    "file": "GSE311172_ad2_0_o2.tsv",
+    "metricKey": "exprGse311172Ad2Zero",
+    "label": "Expression GSE311172 adapted population 2, 0% O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Adapted population 2 under high light with no added oxygen, mean of two replicates",
+    "sha256": "72df6e2e7a7b9d177a10510652ebecb7b4430e16206591285f0641a706acb73c",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "AD2-205-0A",
+        "AD2-205-0B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE311172",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 3",
+      "basis": "transferred",
+      "conditionSet": "Adapted population 3 under high light with no added oxygen, mean of two replicates",
+      "samples": "AD3-205-0 A and B (GSM9320596)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+      "citation": null,
+      "replicates": {
+        "count": 2,
+        "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+        "where": "GEO GSE311172 deposited count matrix column names"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    "id": "GSE311172_ad3_0_o2",
+    "file": "GSE311172_ad3_0_o2.tsv",
+    "metricKey": "exprGse311172Ad3Zero",
+    "label": "Expression GSE311172 adapted population 3, 0% O₂ (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Adapted population 3 under high light with no added oxygen, mean of two replicates",
+    "sha256": "1f85a14e5e732ed5212f00363b562c717f22306fbb0c8672e42ad3cd845ba7b6",
+    "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "gse311172-deposit",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE311172_rna_seq_counts.csv.gz",
+      "sourceSha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+      "columns": [
+        "AD3-205-0A",
+        "AD3-205-0B"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
   }
 ]

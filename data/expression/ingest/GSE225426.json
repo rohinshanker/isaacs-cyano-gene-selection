@@ -1,0 +1,184 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE225426",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+  "citationId": "gse225426-deposit",
+  "citation": null,
+  "files": [
+    {
+      "name": "GSE225426_Processed_data_A.xlsx",
+      "label": "A",
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_A.xlsx",
+      "sha256": "fb80c2ca62122614ef841b4246c2e16c62c6d31b1781699212e78a4a385ffd84"
+    },
+    {
+      "name": "GSE225426_Processed_data_B.xlsx",
+      "label": "B",
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE225nnn/GSE225426/suppl/GSE225426_Processed_data_B.xlsx",
+      "sha256": "d9670cb50cd7f143f2bcf06d9ea01a4faa9feb96476386313b44fc83582aa1f8"
+    }
+  ],
+  "reader": {
+    "format": "xlsx",
+    "sheet": "Count",
+    "idColumn": "locus_tag",
+    "idKind": "pcc7942_old",
+    "blockTitleRow": 1
+  },
+  "units": "mean counts per million (raw read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": null,
+  "replicates": {
+    "count": 2,
+    "text": "two replicates per condition, deposited as workbooks A and B and registered as separate GEO samples; the deposit does not state whether they are biological or technical",
+    "where": "GEO GSE225426 sample list"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 ºC",
+      "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+      "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 70,
+      "hi": 70,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "70 µE m-2 s-1, continuous cool white fluorescent",
+      "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+      "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "cool white fluorescent",
+      "entrained": false,
+      "text": "continuous cool white fluorescent light",
+      "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+      "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported; the deposit names no CO₂, aeration or bubbling and there is no publication",
+      "where": "",
+      "quote": ""
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "blue-green 11 (BG11) media",
+      "where": "GEO GSE225426 !Sample_growth_protocol_ch1",
+      "quote": "Cyanobacterial cells were photoautotrophically cultured at 30ºC in blue-green 11 (BG11) media under continuous cool white fluorescent light intensity of 70 µE m-2 s-1."
+    },
+    "format": {
+      "status": "not reported",
+      "value": null,
+      "text": "culture vessel not reported; the deposit names no flask, tube or plate and there is no publication",
+      "where": "",
+      "quote": ""
+    },
+    "phase": {
+      "status": "not reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "sampling day stated as day 0, 1 or 3; no OD or growth phase reported",
+      "where": "GEO GSE225426 !Sample_characteristics_ch1",
+      "quote": "time: Day 0"
+    }
+  },
+  "caveat": "Measured in PCC 7942, not UTEX 2973. The deposit has no publication, so its condition record is what the GEO growth protocol states and no more: the culture vessel and the CO₂ condition are not reported anywhere, and a depositor query is open. Values are the deposited raw counts scaled per sample; the workbook's RPKM and TPM blocks are not used.",
+  "layers": [
+    {
+      "id": "GSE225426_wt_control",
+      "metricKey": "exprGse225426Control",
+      "label": "Expression GSE225426 WT control, day 0 (PCC 7942)",
+      "conditionSet": "Wild type, untreated control at day 0, mean of two replicates",
+      "samples": "Control A and B (GSM7048518, GSM7048523)",
+      "columns": [
+        "Raw_count :: Control-A :: A",
+        "Raw_count :: Control-B :: B"
+      ],
+      "treatments": [],
+      "group": "standard"
+    },
+    {
+      "id": "GSE225426_wt_nacl_day1",
+      "metricKey": "exprGse225426Nacl1",
+      "label": "Expression GSE225426 WT 0.4 M NaCl, day 1 (PCC 7942)",
+      "conditionSet": "Wild type after 1 day of 0.4 M NaCl stress, mean of two replicates",
+      "samples": "NaCl-D1 A and B (GSM7048519, GSM7048524)",
+      "columns": [
+        "Raw_count :: NaCl-D1-A :: A",
+        "Raw_count :: NaCl-D1-B :: B"
+      ],
+      "treatments": [
+        "salt (0.4 M NaCl)"
+      ],
+      "group": "stress"
+    },
+    {
+      "id": "GSE225426_wt_nacl_day3",
+      "metricKey": "exprGse225426Nacl3",
+      "label": "Expression GSE225426 WT 0.4 M NaCl, day 3 (PCC 7942)",
+      "conditionSet": "Wild type after 3 days of 0.4 M NaCl stress, mean of two replicates",
+      "samples": "NaCl-D3 A and B (GSM7048520, GSM7048525)",
+      "columns": [
+        "Raw_count :: NaCl-D3-A :: A",
+        "Raw_count :: NaCl-D3-B :: B"
+      ],
+      "treatments": [
+        "salt (0.4 M NaCl)"
+      ],
+      "group": "stress"
+    },
+    {
+      "id": "GSE225426_wt_streptomycin_day1",
+      "metricKey": "exprGse225426Str1",
+      "label": "Expression GSE225426 WT 50 mg/L streptomycin, day 1 (PCC 7942)",
+      "conditionSet": "Wild type after 1 day of 50 mg/L streptomycin stress, mean of two replicates",
+      "samples": "Str50-D1 A and B (GSM7048521, GSM7048526)",
+      "columns": [
+        "Raw_count :: Str50-D1-A :: A",
+        "Raw_count :: Str50-D1-B :: B"
+      ],
+      "treatments": [
+        "streptomycin (50 mg/L)"
+      ],
+      "group": "stress"
+    },
+    {
+      "id": "GSE225426_wt_streptomycin_day3",
+      "metricKey": "exprGse225426Str3",
+      "label": "Expression GSE225426 WT 50 mg/L streptomycin, day 3 (PCC 7942)",
+      "conditionSet": "Wild type after 3 days of 50 mg/L streptomycin stress, mean of two replicates",
+      "samples": "Str50-D3 A and B (GSM7048522, GSM7048527)",
+      "columns": [
+        "Raw_count :: Str50-D3-A :: A",
+        "Raw_count :: Str50-D3-B :: B"
+      ],
+      "treatments": [
+        "streptomycin (50 mg/L)"
+      ],
+      "group": "stress"
+    }
+  ]
+}

@@ -1,0 +1,681 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "No publication; GEO/NCBI public repository terms over the deposit (ledger decision 2026-10-06: permitted with citation)",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE311172",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+  "citationId": "gse311172-deposit",
+  "citation": null,
+  "file": {
+    "name": "GSE311172_rna_seq_counts.csv.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE311nnn/GSE311172/suppl/GSE311172_rna_seq_counts.csv.gz",
+    "sha256": "3101205d5a0536d4b3cb5f0eebbb3d31b612618d7d912b141857f316ce6fe158"
+  },
+  "reader": {
+    "format": "csv",
+    "idColumn": "",
+    "idKind": "pcc7942_rs"
+  },
+  "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": null,
+  "replicates": {
+    "count": 2,
+    "text": "two replicates per condition, the A and B columns of the deposited matrix; the deposit does not state whether they are biological or technical, and GEO registers only the A sample of each pair",
+    "where": "GEO GSE311172 deposited count matrix column names"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C in the steady-state turbidostat",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 760,
+      "hi": 760,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "narrow-band LED (630 and 680 nm)",
+      "entrained": false,
+      "text": "continuous narrow-band LED illumination; no diel cycle reported",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 2,
+      "hi": 2,
+      "unit": "%",
+      "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG11; the maintenance antibiotics were removed before the experiment",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+    },
+    "format": {
+      "status": "reported",
+      "value": "turbidostat photobioreactor",
+      "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+    },
+    "phase": {
+      "status": "reported",
+      "label": "steady-state",
+      "od": [
+        0.08,
+        0.08
+      ],
+      "odNm": 730,
+      "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+      "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+      "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+    }
+  },
+  "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973; the deposit has no publication. Endpoints only, by owner decision of 2026-10-07: the intermediate oxygen steps of each campaign are deposited but not shipped. Five condition sets are not shipped at all because GEO and the deposited matrix disagree on which adapted population they came from. The eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+  "layers": [
+    {
+      "id": "GSE311172_wt_medium_light_0_o2",
+      "metricKey": "exprGse311172WtMedium0",
+      "label": "Expression GSE311172 CscB/SPS medium light, 0% O₂ (PCC 7942)",
+      "conditionSet": "Unadapted CscB/SPS population under medium light with no added oxygen, mean of two replicates",
+      "samples": "WT100-0 A and B (GSM9320574)",
+      "columns": [
+        "WT100-0A",
+        "WT100-0B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "the deposit calls this arm 'medium light' but states no value for it; the one irradiance it gives, 760 µmol photons m⁻² s⁻¹, describes the steady-state cultures",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    {
+      "id": "GSE311172_wt_high_light_0_o2",
+      "metricKey": "exprGse311172WtHigh0",
+      "label": "Expression GSE311172 CscB/SPS high light, 0% O₂ (PCC 7942)",
+      "conditionSet": "Unadapted CscB/SPS population under high light with no added oxygen, mean of two replicates",
+      "samples": "WT205-0 A and B (GSM9320575)",
+      "columns": [
+        "WT205-0A",
+        "WT205-0B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    {
+      "id": "GSE311172_wt_high_light_max_o2",
+      "metricKey": "exprGse311172WtHighMax",
+      "label": "Expression GSE311172 CscB/SPS high light, maximum O₂ (PCC 7942)",
+      "conditionSet": "Unadapted CscB/SPS population under high light at the highest oxygen step of its campaign, 374% air saturation, mean of two replicates",
+      "samples": "WT205-80 A and B (GSM9320584)",
+      "columns": [
+        "WT205-80A",
+        "WT205-80B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "treatments": [
+        "oxidative stress (374% O₂ air saturation)"
+      ],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    {
+      "id": "GSE311172_ad1_0_o2",
+      "metricKey": "exprGse311172Ad1Zero",
+      "label": "Expression GSE311172 adapted population 1, 0% O₂ (PCC 7942)",
+      "conditionSet": "Adapted population 1 under high light with no added oxygen, mean of two replicates",
+      "samples": "AD205-0 A and B (GSM9320585)",
+      "columns": [
+        "AD205-0A",
+        "AD205-0B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 1",
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    {
+      "id": "GSE311172_ad1_max_o2",
+      "metricKey": "exprGse311172Ad1Max",
+      "label": "Expression GSE311172 adapted population 1, maximum O₂ (PCC 7942)",
+      "conditionSet": "Adapted population 1 under high light at 374% oxygen air saturation, mean of two replicates",
+      "samples": "AD205-80 A and B (GSM9320586)",
+      "columns": [
+        "AD205-80A",
+        "AD205-80B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 1",
+      "treatments": [
+        "oxidative stress (374% O₂ air saturation)"
+      ],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    {
+      "id": "GSE311172_ad2_0_o2",
+      "metricKey": "exprGse311172Ad2Zero",
+      "label": "Expression GSE311172 adapted population 2, 0% O₂ (PCC 7942)",
+      "conditionSet": "Adapted population 2 under high light with no added oxygen, mean of two replicates",
+      "samples": "AD2-205-0 A and B (GSM9320593)",
+      "columns": [
+        "AD2-205-0A",
+        "AD2-205-0B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 2",
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    },
+    {
+      "id": "GSE311172_ad3_0_o2",
+      "metricKey": "exprGse311172Ad3Zero",
+      "label": "Expression GSE311172 adapted population 3, 0% O₂ (PCC 7942)",
+      "conditionSet": "Adapted population 3 under high light with no added oxygen, mean of two replicates",
+      "samples": "AD3-205-0 A and B (GSM9320596)",
+      "columns": [
+        "AD3-205-0A",
+        "AD3-205-0B"
+      ],
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain), adapted population 3",
+      "treatments": [],
+      "group": "engineered",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C in the steady-state turbidostat",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 760,
+          "hi": 760,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "760 µmol photons m⁻² s⁻¹ from 630 and 680 nm narrow-band LEDs",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "narrow-band LED (630 and 680 nm)",
+          "entrained": false,
+          "text": "continuous narrow-band LED illumination; no diel cycle reported",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in the sparged gas, held constant as O₂ was raised",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Initial conditions utilized a baseline sparging rate of 2.04 L min⁻¹ with 98:2 N2/CO2 gas mixture. Oxidative stress was implemented through stepwise increases in O2 content while maintaining constant total gas flow and CO2 concentratio, with corresponding N₂ reduction."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11; the maintenance antibiotics were removed before the experiment",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "format": {
+          "status": "reported",
+          "value": "turbidostat photobioreactor",
+          "text": "6.5-L New Brunswick Bioflo 310 fermentors with custom LED photobioreactors, 5.5 L working volume, sparged",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.08,
+            0.08
+          ],
+          "odNm": 730,
+          "text": "steady state held at OD₇₃₀ 0.08 in turbidostat mode",
+          "where": "GEO GSE311172 !Sample_growth_protocol_ch1",
+          "quote": "Steady-state cultures (5.5-L) were maintained in turbidostat mode at OD₇₃₀ of 0.08, with constant conditions of 250 rpm agitation, 30°C, and pH 8.0 (controlled by 2 M NaOH or HCl addition). Illumination was provided at 760 μmol photons m⁻² s⁻¹ using 630 and 680 nm narrow-band LED illuminator chips (Marubeni America Corporation)."
+        }
+      }
+    }
+  ]
+}

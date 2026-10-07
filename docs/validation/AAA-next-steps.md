@@ -143,24 +143,36 @@ Record any reply with its date in
 [O_comparability-lab-judgements__20261005](../notes/tickets/O_comparability-lab-judgements__20261005.md)
 under J2; the agent then settles pair judgement 33.
 
-## 5. Write to three depositors (blocks two ticket rows)
+## 5. Three optional depositor emails (nothing is blocked)
 
-Ticket: [A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md),
-rows 3 and 4, by your decision of 2026-10-07 to wait for the depositors.
+Ticket: [A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md).
 
-**Sending these does not unblock the rows; the replies do.** The question in each
-case is what the condition record must say, so the dataset cannot be ingested
-with the answer left open. Expect a low reply rate and do not hold other work on
-them. If no reply arrives, the standing alternative is to ship each series with
-the disputed axis recorded as `conflicting` or `not reported`, which is a
-decision for you, not a default.
+**All three datasets shipped on 2026-10-07 and nothing waits on these emails.**
+Re-reading the GEO records showed the conditions were in the deposits all along,
+so each series was ingested with what its record states and the few genuinely
+silent fields marked "not reported". A reply would upgrade those fields from
+"not reported" to a quoted value, which also lets the dataset be judged
+comparable to others. Without a reply the data stay published and usable, just
+less comparable. Send these if and when you like.
 
-One cheaper route first: GSE252562's series now cites a publication the earlier
-sweep did not have, Johnson and colleagues, *Science* 385, 1105-1111 (2024),
-PMID 39236161, PMC11473183. It is a photoperiodism paper, so its methods almost
-certainly state which photoperiod each sample had. It is not in the open-access
-subset, so the agents cannot read it, but you can. If its methods settle the
-question, quote it into the ticket and item 5a needs no email at all.
+Standing fallback, your decision of 2026-10-07: where a row does depend on a
+depositor, wait four weeks with one follow-up at two, then ship with the
+unanswered fields marked and the query left recorded. Nothing is dropped for
+silence.
+
+What each email would still buy:
+
+| Email | What it would upgrade |
+| --- | --- |
+| 5a GSE252562 | Which photoperiod the disputed eight-cycle set had; it ships now with its light regime recorded as conflicting |
+| 5b GSE225426 | The culture vessel and the CO₂ condition, neither reported anywhere |
+| 5c GSE311172 | Which adapted population five withheld condition sets came from, and the medium-light irradiance |
+
+A cheaper route for 5a: GSE252562's series cites Jabbur and colleagues,
+*Science* 385, 1105-1111 (2024), PMID 39236161, PMC11473183. It is a
+photoperiodism paper and its methods very likely settle the photoperiod. It sits
+outside the open-access subset, so the agents cannot read it and both the
+full-text and supplementary routes were tried and refused. You can read it.
 
 ### 5a. GSE252562, the photoperiod of six samples
 
@@ -219,6 +231,13 @@ this one needs a route before it can be sent: the "Contact" link on the GEO
 series page reaches the submitter, and BioProject PRJNA1368742 is the other
 handle. Worth a minute to find a named person before sending.
 
+This one has a sharper question than growth conditions. GEO's sample list and
+the deposited count matrix disagree about which adapted population five of the
+condition sets came from: GEO labels three samples AD1 where the matrix column
+says AD2, and two samples AD2 where the matrix says AD3. Those five sets are
+withheld for that reason, so this reply would release real data rather than only
+annotate it.
+
 Subject: Growth conditions for GEO series GSE311172
 
 > Dear colleagues,
@@ -228,11 +247,17 @@ Subject: Growth conditions for GEO series GSE311172
 > conditions, and we would like to include GSE311172, your oxidative-stress and
 > adaptive-evolution time series in the PCC 7942 CscB/SPS strain.
 >
-> The GEO record describes turbidostatic cultivation with manipulated oxygen but
-> does not give the full growth conditions, and we could not find an associated
-> publication. Could you tell us, for the sequenced cultures: the incubation
-> temperature, the light intensity and regime, the CO2 and oxygen set points,
-> the medium, and the number of biological replicates per time point?
+> The growth protocol in the record is unusually complete and we have used it.
+> Two things we could not resolve from the record alone:
+>
+> First, the sample list and the deposited count matrix appear to disagree on
+> which adapted population some samples came from. The samples the series record
+> labels AD1 at 445% O2 air saturation, including the planktonic and biofilm
+> pair, are named AD2 in the matrix columns, and the two labelled AD2 at 468%
+> and 476% are named AD3 in the matrix. Could you confirm which is right?
+>
+> Second, the record distinguishes a medium-light and a high-light arm but gives
+> one irradiance, 760 umol photons m-2 s-1. What was the medium-light value?
 >
 > Any of these you can give is useful; we record the rest as not reported.
 >
@@ -241,7 +266,8 @@ Subject: Growth conditions for GEO series GSE311172
 
 Record each reply, with its date, in
 [A_condition-metadata-gaps__20261005](../notes/tickets/A_condition-metadata-gaps__20261005.md)
-under work item 4; the agents then ingest the series. Note that the query table
+under work item 4; the agents then upgrade the condition record and, for
+GSE311172, ingest the five withheld sets. Note that the query table
 there also asks these depositors for "an explicit reuse statement": that part is
 obsolete since your decision of 2026-10-06 that every source is permitted with
 citation, and the drafts above leave it out.

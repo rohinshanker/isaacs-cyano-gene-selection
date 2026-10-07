@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on twenty-seven metrics, symmetric log on fifteen, linear on the rest', async () => {
+test('the shipped release opens logarithmic on thirty-four metrics, symmetric log on twenty-six, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -101,28 +101,30 @@ test('the shipped release opens logarithmic on twenty-seven metrics, symmetric l
     .filter(([, value]) => value === scale).map(([key]) => key).sort();
 
   // Every ingested PCC 7942 abundance layer is skewed enough for the rule. Of the
-  // 47 ingested layers, 25 are strictly positive and open logarithmic, 13 report
-  // zeros and open symmetric log (GSE222067 control, GSE327989, the three GSE89999
-  // layers, GSE103462 dusk, GSE103463 dawn, GSE103644 pre-induction, GSE105774
-  // dusk and all four GSE51112 layers), and the nine signed fitness layers take a
-  // diverging ramp instead.
+  // 65 ingested layers, 32 are strictly positive and open logarithmic, 24 report a
+  // zero somewhere and open symmetric log, and the nine signed fitness layers take
+  // a diverging ramp instead.
   assert.deepEqual(keysFor('log10'), [
     'exprGse103462WtDawn', 'exprGse103463RelAPlusDusk', 'exprGse103644RelAPlusInduced',
-    'exprGse103704WtDark', 'exprGse103704WtDusk',
-    'exprGse104203ClearDay', 'exprGse104203HighLightPulse', 'exprGse104203LowLight', 'exprGse104203ShadePulse',
-    'exprGse105774RelAPlusDark',
-    'exprGse222067Salt', 'exprGse237858Wt', 'exprGse254350WtDay1', 'exprGse254350WtDay4',
-    'exprGse288532Day', 'exprGse288532Night',
-    'exprGse335065Axenic', 'exprGse335065AxenicMbr', 'exprGse335065CocultureMbr',
-    'exprGse79726Control', 'exprGse79726NMinus', 'exprGse79726NPlus',
-    'expression', 'protPxd030282L1118Log', 'protPxd030282L1118Stationary', 'protPxd062851Dia', 'tssInitiation',
+    'exprGse103704WtDark', 'exprGse103704WtDusk', 'exprGse104203ClearDay',
+    'exprGse104203HighLightPulse', 'exprGse104203LowLight', 'exprGse104203ShadePulse',
+    'exprGse105774RelAPlusDark', 'exprGse222067Salt', 'exprGse225426Nacl1', 'exprGse225426Nacl3',
+    'exprGse225426Str1', 'exprGse225426Str3', 'exprGse237858Wt', 'exprGse254350WtDay1',
+    'exprGse254350WtDay4', 'exprGse288532Day', 'exprGse288532Night', 'exprGse311172Ad1Max',
+    'exprGse311172Ad1Zero', 'exprGse311172WtHighMax', 'exprGse335065Axenic',
+    'exprGse335065AxenicMbr', 'exprGse335065CocultureMbr', 'exprGse79726Control',
+    'exprGse79726NMinus', 'exprGse79726NPlus', 'expression', 'protPxd030282L1118Log',
+    'protPxd030282L1118Stationary', 'protPxd062851Dia', 'tssInitiation'
   ]);
   assert.deepEqual(keysFor('symlog'), [
-    'exprGse103462WtDusk', 'exprGse103463RelAPlusDawn', 'exprGse103644RelAPlusT0', 'exprGse105774RelAPlusDusk',
-    'exprGse222067Control', 'exprGse327989Wt',
-    'exprGse51112OxD53eIptg', 'exprGse51112OxD53eNoIptg', 'exprGse51112OxEmptyIptg', 'exprGse51112WtLl',
-    'exprGse89999Dark', 'exprGse89999Dawn', 'exprGse89999Dusk',
-    'neighborDownstreamNt', 'neighborUpstreamNt',
+    'exprGse103462WtDusk', 'exprGse103463RelAPlusDawn', 'exprGse103644RelAPlusT0',
+    'exprGse105774RelAPlusDusk', 'exprGse222067Control', 'exprGse225426Control',
+    'exprGse252562Wt8Disputed', 'exprGse252562WtLong1', 'exprGse252562WtLong4',
+    'exprGse252562WtLong8', 'exprGse252562WtShort1', 'exprGse252562WtShort4',
+    'exprGse311172Ad2Zero', 'exprGse311172Ad3Zero', 'exprGse311172WtHigh0',
+    'exprGse311172WtMedium0', 'exprGse327989Wt', 'exprGse51112OxD53eIptg',
+    'exprGse51112OxD53eNoIptg', 'exprGse51112OxEmptyIptg', 'exprGse51112WtLl', 'exprGse89999Dark',
+    'exprGse89999Dawn', 'exprGse89999Dusk', 'neighborDownstreamNt', 'neighborUpstreamNt'
   ]);
   assert.deepEqual(keysFor('sqrt'), []);
   assert.deepEqual(keysFor('percentile'), []);

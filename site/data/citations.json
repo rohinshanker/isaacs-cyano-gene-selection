@@ -489,6 +489,138 @@
           ]
         },
         {
+          "id": "johnson-2024",
+          "citation": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 385, 1105–1111 (2024). doi:10.1126/science.ado8588; GEO GSE252562.",
+          "url": "https://doi.org/10.1126/science.ado8588",
+          "contribution": "Six optional RNA-abundance layers for the wild type on solid BG-11 plates, as counts per million from the deposited raw StringTie counts, three replicates each: short days (LD8:16) after one and four cycles, long days (LD16:8) after one, four and eight cycles, and one further eight-cycle set whose photoperiod the deposit labels inconsistently, shipped with its light regime recorded as conflicting. The kaiABC knock-out arm is not shipped. Count columns are coded MJ2 to MJ50 and matched to samples through the GEO sample description field. Deposit terms: GEO/NCBI public repository; the article is all rights reserved, permitted with citation by the owner's decision of 2026-10-06. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE252562_wt_short_1cycle.tsv",
+              "repoPath": "data/expression/GSE252562_wt_short_1cycle.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE252562_wt_short_1cycle.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE252562_wt_short_4cycles.tsv",
+              "repoPath": "data/expression/GSE252562_wt_short_4cycles.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE252562_wt_short_4cycles.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE252562_wt_8cycles_disputed.tsv",
+              "repoPath": "data/expression/GSE252562_wt_8cycles_disputed.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE252562_wt_8cycles_disputed.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE252562_wt_long_1cycle.tsv",
+              "repoPath": "data/expression/GSE252562_wt_long_1cycle.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE252562_wt_long_1cycle.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE252562_wt_long_4cycles.tsv",
+              "repoPath": "data/expression/GSE252562_wt_long_4cycles.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE252562_wt_long_4cycles.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE252562_wt_long_8cycles.tsv",
+              "repoPath": "data/expression/GSE252562_wt_long_8cycles.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE252562_wt_long_8cycles.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "gse225426-deposit",
+          "citation": "Kageyama H et al. Transcriptome analysis of a model cyanobacterium Synechococcus elongatus PCC7942 under salt stress and protein synthesis-inhibiting stress conditions. GEO series GSE225426, Meijo University, deposited 2023; BioProject PRJNA935948. No associated publication.",
+          "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225426",
+          "contribution": "Five optional RNA-abundance layers for the wild type, as counts per million from the deposited raw counts, two replicates each deposited as separate workbooks: an untreated day-0 control, 0.4 M NaCl at days 1 and 3, and 50 mg/L streptomycin at days 1 and 3. The deposit has no publication, so the condition record carries only what its growth protocol states; the culture vessel and the CO2 condition are not reported and a depositor query is open. The workbook's RPKM and TPM blocks are not used. Deposit terms: GEO/NCBI public repository. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE225426_wt_control.tsv",
+              "repoPath": "data/expression/GSE225426_wt_control.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE225426_wt_control.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE225426_wt_nacl_day1.tsv",
+              "repoPath": "data/expression/GSE225426_wt_nacl_day1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE225426_wt_nacl_day1.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE225426_wt_nacl_day3.tsv",
+              "repoPath": "data/expression/GSE225426_wt_nacl_day3.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE225426_wt_nacl_day3.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE225426_wt_streptomycin_day1.tsv",
+              "repoPath": "data/expression/GSE225426_wt_streptomycin_day1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE225426_wt_streptomycin_day1.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE225426_wt_streptomycin_day3.tsv",
+              "repoPath": "data/expression/GSE225426_wt_streptomycin_day3.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE225426_wt_streptomycin_day3.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "gse311172-deposit",
+          "citation": "Predictive Phenomics Initiative, Pacific Northwest National Laboratory. Transcriptional response and adaptive evolution to oxidative stress in Synechococcus elongatus PCC 7942. GEO series GSE311172, deposited 2025; BioProject PRJNA1368742. No associated publication.",
+          "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311172",
+          "contribution": "Seven optional RNA-abundance layers from the engineered sucrose-exporting cscB+ Δsps strain, listed as an engineered strain, as counts per million from the deposited raw Rsubread counts, two replicates each: the unadapted population under medium light and under high light at zero added oxygen and at its maximum oxygen step, and the zero-oxygen baseline of each of the three oxygen-adapted populations. Endpoints only, by owner decision; the intermediate oxygen steps are deposited but not shipped, and five further condition sets are withheld because GEO and the deposited matrix disagree on which adapted population produced them. Deposit terms: GEO/NCBI public repository. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE311172_wt_medium_light_0_o2.tsv",
+              "repoPath": "data/expression/GSE311172_wt_medium_light_0_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_wt_medium_light_0_o2.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE311172_wt_high_light_0_o2.tsv",
+              "repoPath": "data/expression/GSE311172_wt_high_light_0_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_wt_high_light_0_o2.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE311172_wt_high_light_max_o2.tsv",
+              "repoPath": "data/expression/GSE311172_wt_high_light_max_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_wt_high_light_max_o2.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE311172_ad1_0_o2.tsv",
+              "repoPath": "data/expression/GSE311172_ad1_0_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_ad1_0_o2.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE311172_ad1_max_o2.tsv",
+              "repoPath": "data/expression/GSE311172_ad1_max_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_ad1_max_o2.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE311172_ad2_0_o2.tsv",
+              "repoPath": "data/expression/GSE311172_ad2_0_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_ad2_0_o2.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE311172_ad3_0_o2.tsv",
+              "repoPath": "data/expression/GSE311172_ad3_0_o2.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE311172_ad3_0_o2.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",
