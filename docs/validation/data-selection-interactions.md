@@ -25,7 +25,8 @@ Replacing a focused control must restore focus to its equivalent control, or a
 remaining control inside the dialog if its row/filter disappears. Losing focus
 to the document body breaks Escape and the focus trap. Data type tabs have one
 tab stop and support Left/Right, Home and End. The DOM order follows the stacked or side-by-side pane arrangement, and a
-breakpoint change preserves the focused control. Closing returns focus to the
+breakpoint change moves only the footer, retains each pane’s scroll position,
+and keeps the focused control visible after text reflow. Closing returns focus to the
 opener. Returning from source details focuses the source's info button when it
 still exists.
 

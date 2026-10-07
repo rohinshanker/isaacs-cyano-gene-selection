@@ -95,6 +95,20 @@ export class FakeElement {
     this.append(...nodes);
   }
 
+  insertBefore(node, reference) {
+    if (reference !== null && !this.children.includes(reference)) {
+      throw new Error('insertBefore reference is not a child');
+    }
+    if (node === reference) return node;
+    const previous = node.parentNode;
+    if (previous) previous.children = previous.children.filter((child) => child !== node);
+    if (node instanceof FakeElement) node.parent = this;
+    else node.parentNode = this;
+    const index = reference === null ? this.children.length : this.children.indexOf(reference);
+    this.children.splice(index, 0, node);
+    return node;
+  }
+
   /**
    * A 2-D context that records its fills, so a caller drawing a ramp can be
    * checked against the buckets it was given. Any other element, or any other

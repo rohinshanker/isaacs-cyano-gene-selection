@@ -187,8 +187,17 @@ export function arrangePeekBody(body, { list, foot, side }, wide) {
   const order = wide ? [list, side, foot] : [list, foot, side];
   if (order.every((node, index) => body.children[index] === node)) return;
   const active = body.contains(document.activeElement) ? document.activeElement : null;
-  body.replaceChildren(...order);
-  active?.focus({ preventScroll: true });
+  body.insertBefore(foot, wide ? null : side);
+  if (active && document.activeElement !== active) active.focus({ preventScroll: true });
+  const pane = list.contains(active) ? list : side.contains(active) ? side : null;
+  if (!pane || !active?.getBoundingClientRect || !pane.getBoundingClientRect) return;
+  const target = active.getBoundingClientRect();
+  const visible = pane.getBoundingClientRect();
+  // Reflow can move a control below the viewport even without detaching its pane.
+  if (target.top < visible.top) pane.scrollTop += target.top - visible.top;
+  else if (target.bottom > visible.bottom) pane.scrollTop += target.bottom - visible.bottom;
+  if (target.left < visible.left) pane.scrollLeft += target.left - visible.left;
+  else if (target.right > visible.right) pane.scrollLeft += target.right - visible.right;
 }
 
 /** Keep keyboard focus inside a peek when a focused control is replaced. */

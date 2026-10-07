@@ -89,6 +89,7 @@ async (page) => {
     check(await guide.getAttribute('hidden') === '', 'tab change clears guides');
     check(await page.locator('.peek-filter-remove').count() === 0, 'tab change resets per-tab filters');
     await inspect('co2', 'proteomics');
+    await page.getByRole('tab', { name: tabNames[0], exact: true }).click();
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.waitForFunction(() => document.querySelector('.peek-backdrop:not([hidden]) .peek-body').lastElementChild.classList.contains('peek-foot'));
     await page.locator('.peek-backdrop:not([hidden]) .ds-info').first().click();
@@ -100,9 +101,14 @@ async (page) => {
     await lastSideLink.focus(); await page.keyboard.press('Tab');
     check(await page.locator('.peek-done').evaluate((node) => node === document.activeElement), 'wide order: side then footer');
     await lastSideLink.focus();
+    await list.evaluate((node) => { node.scrollTop = 350; });
+    const scrollBefore = await page.locator('.peek-backdrop:not([hidden]) .peek-body').evaluate((node) => ({ list: node.querySelector('.peek-list').scrollTop, side: node.querySelector('.peek-side').scrollTop }));
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.waitForFunction(() => document.querySelector('.peek-backdrop:not([hidden]) .peek-body').children[1].classList.contains('peek-foot'));
     check(await lastSideLink.evaluate((node) => node === document.activeElement), 'resize preserves focus');
+    const scrollAfter = await page.locator('.peek-backdrop:not([hidden]) .peek-body').evaluate((node) => ({ list: node.querySelector('.peek-list').scrollTop, side: node.querySelector('.peek-side').scrollTop }));
+    check(scrollAfter.list > 0 && (scrollBefore.side === 0 || scrollAfter.side > 0), 'resize does not reset pane scroll positions');
+    check(await lastSideLink.evaluate((node) => { const a = node.getBoundingClientRect(); const b = node.closest('.peek-side').getBoundingClientRect(); return a.top >= b.top && a.bottom <= b.bottom; }), 'restored focus stays visible');
     await lastListControl.focus(); await page.keyboard.press('Tab');
     check(await page.locator('.peek-done').evaluate((node) => node === document.activeElement), 'stacked order: list then footer');
     await page.keyboard.press('Tab');

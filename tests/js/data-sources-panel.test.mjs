@@ -433,3 +433,29 @@ test('responsive pane order follows the layout and preserves the focused control
     assert.equal(document.activeElement, document.body, 'outside focus is not stolen');
   });
 });
+
+test('a breakpoint reflow keeps focused content inside its own scroll pane', async () => {
+  await withFakeDocument((document) => {
+    const body = document.createElement('div');
+    const list = document.createElement('div');
+    const foot = document.createElement('div');
+    const side = document.createElement('div');
+    const control = document.createElement('button');
+    side.append(control); body.append(list, foot, side); document.body.append(body);
+    list.scrollTop = 250;
+    side.scrollTop = 50; side.scrollLeft = 50;
+    side.getBoundingClientRect = () => ({ top: 30, bottom: 100, left: 30, right: 100 });
+    control.getBoundingClientRect = () => ({ top: 10, bottom: 20, left: 10, right: 20 });
+    control.focus();
+    arrangePeekBody(body, { list, foot, side }, true);
+    assert.equal(side.scrollTop, 30); assert.equal(side.scrollLeft, 30);
+    assert.equal(list.scrollTop, 250, 'the other pane retains its position');
+    control.getBoundingClientRect = () => ({ top: 90, bottom: 125, left: 90, right: 125 });
+    arrangePeekBody(body, { list, foot, side }, false);
+    assert.equal(side.scrollTop, 55); assert.equal(side.scrollLeft, 55);
+    control.getBoundingClientRect = () => ({ top: 50, bottom: 60, left: 50, right: 60 });
+    arrangePeekBody(body, { list, foot, side }, true);
+    assert.equal(side.scrollTop, 55); assert.equal(side.scrollLeft, 55, 'visible focus does not scroll');
+    assert.equal(document.activeElement, control);
+  });
+});
