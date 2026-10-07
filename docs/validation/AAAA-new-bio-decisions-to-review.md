@@ -257,7 +257,7 @@ stays buried in a detail view. The per-gene view shows 2,432 mapped
 gene-associated TSS rows. A separate Regulatory sites tab already holds antisense,
 internal, and orphan/novel Tan sites. Other proposed site types need admitted
 data. See
-[the regulatory-site layer questions](../notes/tickets/O_regulatory-site-viewer-layers__20260930.md)
+[the regulatory-site layer questions](../notes/tickets/A_regulatory-site-viewer-layers__20260930.md)
 and [the non-gene-linked Tan sites](../../data/expression/TAN2018_TSS_PROVENANCE.md#non-gtss-regulatory-evidence).
 - Reviewer and date:
 - Decision (keep independent layers, or reconcile, and how):

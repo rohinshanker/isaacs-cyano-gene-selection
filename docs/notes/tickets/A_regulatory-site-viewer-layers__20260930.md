@@ -1,9 +1,9 @@
-# O_regulatory-site-viewer-layers__20260930 — Open
+# A_regulatory-site-viewer-layers__20260930 — Active
 
 - **Scope:** Ensure mapped Tan 2018 initiation sites appear in the gene visualizer;
   support future admitted initiation, termination, and regulatory-site markers;
   add site-type visibility toggles in the Chromosome visualizer.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-09-30
 - **Updated:** 2026-10-07
 
@@ -191,6 +191,12 @@ consume these features later; displaying them does not establish recoding effect
    should Reset view, Reset selections, and Clear filters affect them?
 8. What should selecting a site do: inspect metadata, pin an associated gene,
    jump to sequence position, or open the Regulatory sites tab?
+
+## Owner persistence decision, 2026-10-07
+
+Each view keeps an independent visibility setting and remembers it in links.
+This confirms the implementation default and removes the cross-view persistence
+question from current acceptance. Future layers remain gated by admission.
 
 ## Acceptance criteria
 

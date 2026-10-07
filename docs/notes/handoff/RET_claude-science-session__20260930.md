@@ -266,7 +266,7 @@ acronym will return canine genomics. Pin the repository URL and the expansion.
 ### 1.5 The only unblocked in-repo work in the batch is ranked third
 
 Under the repository's own rule — claims gate steps, not tickets —
-[regulatory-site-viewer-layers](../tickets/O_regulatory-site-viewer-layers__20260930.md)
+[regulatory-site-viewer-layers](../tickets/A_regulatory-site-viewer-layers__20260930.md)
 D1 is the only item in the thirteen that needs no claim, no new source, no owner
 decision, and no external access: audit whether every valid mapped Tan 2018 site
 actually renders through `tssMarks()`, and repair the omissions. The ticket

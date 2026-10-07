@@ -99,16 +99,18 @@ unknown. The owner's J1 same-spectrum decision is displayed in its own column an
 does not change the default screen. A known component failure remains decisive
 when another component is unknown.
 
-The 2026-10-07 replay produces 0 comparable, 148 undecidable and 793 not-comparable
-pairs. It contains no `escalate` verdict because the owner rejected a fixed
-narrow-miss boundary. It ranks 142 current gap cells; row 48 temperature remains
-the sole conditional one-cell blocker, alongside but separate from owner judgement
-J2. Package D rows 442, 473 and 725 no longer claim a temporal failure for
-GSE311172: all three have an unknown sampling schedule; rows 442/473 also have an
-unresolved warm-white-versus-narrow-band spectrum comparison, and row 725 has an
-unknown spectrum on the GSE227397 side. The typed GSE227397 overlay records 50
-µmol photons m⁻² s⁻¹ and 12:12 while keeping gas CO₂ unknown; 50 mM NaHCO₃ is not
-converted into a gas percentage.
+The generated current artifacts contain the verdict counts and source pins;
+replay them rather than using counts from an earlier snapshot. There is no
+`escalate` verdict because the owner rejected a fixed narrow-miss boundary.
+Keep unresolved spectrum relationships distinct from genuinely absent fields.
+A typed paper overlay may provide photon flux and photoperiod while gas CO₂
+remains unknown: bicarbonate concentration is not a gas percentage.
+
+Verified source absences and conflicts are accepted unknown outcomes. They do
+not keep the recovery implementation open. Track optional depositor follow-up in
+[the correspondence ticket](../notes/tickets/O_depositor-condition-correspondence__20261007.md),
+where the owner or a labmate sends prepared queries. No source-reported value is
+assigned while waiting for a reply.
 
 ## Archive retrieval and intake
 
