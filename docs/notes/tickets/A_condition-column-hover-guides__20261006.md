@@ -56,7 +56,7 @@ Coordinate with
 
 ## Verification
 
-Focused validation passes for all three axes at 375×812, 768×1024, 1280×800, 1440×900, and 599/601/1319/1321 px. Grouped, flat, filtered (4 of 17), empty, sticky scrolling, tab switch, close, and focus return were exercised. Rendered checks found and repaired a narrow-header overflow and focus loss when controls were replaced. Evidence: `.playwright-cli/cyano-ui-fixes/`; reusable checks: `tools/ui/check_condition_guides.js`. Full integrated gates and independent review remain pending. Acceptance requires:
+Focused validation passes for all three axes at 375×812, 768×1024, 1280×800, 1440×900, and 599/601/1319/1321 px. Grouped, flat, short filtered lists, empty, sticky scrolling, tab switch, close, and focus return were exercised. Rendered checks found and repaired a narrow-header overflow and focus loss when controls were replaced. Evidence: `.playwright-cli/cyano-ui-fixes/`; reusable checks: `tools/ui/check_condition_guides.js`. Review-driven repairs place the count/footer between the list and stacked comparison so the guides do not cross unrelated axes. Header and row tick alignment and maximum-filter layouts pass. Full integrated gates and final review remain pending. Acceptance requires:
 
 - Tests for column entry, movement within the column, switching columns, exit,
   popup closure, and content replacement; verify guide alignment and lower extent

@@ -747,27 +747,48 @@ test('the CSV parser handles the shapes the writer can emit', () => {
   assert.equal(rows[2].b, 'line\nbreak');
 });
 
-test('exports record every condition source and its own caveat, with a legacy fallback', async () => {
+test('exports compact provenance and caveats for contributing measurement columns, with a legacy fallback', async () => {
   const { dataset, registry } = await context();
   const sources = [
-    { id: 'A', organism: 'PCC 7942', condition: 'low light', caveat: 'Abundance in CPM.' },
+    { id: 'A', organism: 'PCC 7942', condition: 'low light', caveat: 'Abundance in CPM.', record: { quote: 'Long source evidence. '.repeat(1000) }, ingest: { sha256: 'pinned-checksum' } },
     { id: 'B', organism: 'UTEX 2973', condition: 'dark', caveat: 'Initiation counts.' },
-    { id: 'C', organism: 'PCC 7942', condition: 'log phase' },
+    { id: 'C', metricKey: 'measurement_C', organism: 'PCC 7942', condition: 'log phase' },
     { id: 'D', caveat: 'Organism not supplied.' },
   ];
-  const withSources = { ...dataset, meta: { ...dataset.meta, expressionSources: sources } };
-  const result = exportFor(withSources, registry, [dataset.genes[0].id], [{ map: {} }]);
-  assert.deepEqual(result.manifest.expressionSources, sources);
-  assert.ok(result.manifest.caveats.includes('Expression (A): Abundance in CPM. Measured in PCC 7942, low light.'));
-  assert.ok(result.manifest.caveats.includes('Expression (B): Initiation counts. Measured in UTEX 2973, dark.'));
-  assert.ok(result.manifest.caveats.includes('Expression (D): Organism not supplied. Measured in an unstated organism.'));
-  assert.ok(!result.manifest.caveats.some((text) => text.startsWith('Expression (C)')));
+  const unused = { id: 'unused', caveat: 'Not a contributing column.' };
+  const withSources = { ...dataset, meta: { ...dataset.meta, expressionSources: [...sources, unused] } };
+  const extra = sources.map((source) => ({ key: `measurement_${source.id}`, source: 'pipeline', label: source.id, unit: 'counts', read: () => 1, provenance: source.id === 'C' ? null : source }));
+  const exportRegistry = { ...registry, metrics: [...registry.metrics, ...extra] };
+  const result = exportFor(withSources, exportRegistry, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(result.manifest.expressionSources.map((source) => source.id), ['A', 'B', 'C', 'D']);
+  assert.ok(result.manifest.expressionSources.every((source) => !('record' in source)));
+  assert.deepEqual(result.manifest.expressionSources[0].ingest, { sha256: 'pinned-checksum' });
+  assert.ok(JSON.stringify(result.manifest.expressionSources).length < 1000);
+  assert.ok(result.manifest.caveats.includes('Measurement (A): Abundance in CPM. Measured in PCC 7942, low light.'));
+  assert.ok(result.manifest.caveats.includes('Measurement (B): Initiation counts. Measured in UTEX 2973, dark.'));
+  assert.ok(result.manifest.caveats.includes('Measurement (D): Organism not supplied. Measured in an unstated organism.'));
+  assert.ok(!result.manifest.caveats.some((text) => text.startsWith('Measurement (C)')));
   const legacyMeta = { ...dataset.meta, expressionSource: { caveat: 'Legacy values.', organismMeasured: 'Legacy organism' } };
   delete legacyMeta.expressionSources;
   const legacy = exportFor({ ...dataset, meta: legacyMeta }, registry, [dataset.genes[0].id], [{ map: {} }]);
   assert.deepEqual(legacy.manifest.expressionSources, [legacyMeta.expressionSource]);
-  assert.ok(legacy.manifest.caveats.includes('Expression: Legacy values. Measured in Legacy organism.'));
+  assert.ok(legacy.manifest.caveats.includes('Measurement: Legacy values. Measured in Legacy organism.'));
   const empty = exportFor({ ...dataset, meta: { ...legacyMeta, expressionSources: [] } }, registry, [dataset.genes[0].id], [{ map: {} }]);
   assert.deepEqual(empty.manifest.expressionSources, []);
-  assert.ok(!empty.manifest.caveats.some((text) => text.startsWith('Expression: Legacy')));
+  assert.ok(!empty.manifest.caveats.some((text) => text.startsWith('Measurement: Legacy')));
+});
+
+
+test('shipped fitness provenance stays a measurement, and a pooled export records its exact contributors', async () => {
+  const { dataset, registry } = await shippedContext();
+  const fitness = dataset.meta.expressionSources.find((source) => source.record.dataType === 'fitness');
+  const exported = exportFor(dataset, { ...registry, metrics: registry.metrics.filter((metric) => metric.key === fitness.metricKey) }, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(exported.manifest.expressionSources.map((source) => source.id), [fitness.id]);
+  assert.ok(exported.manifest.caveats.some((text) => text.startsWith(`Measurement (${fitness.id}):`)));
+  assert.ok(!exported.manifest.caveats.some((text) => text.startsWith('Expression (')));
+  const pair = dataset.meta.expressionSources.slice(0, 2);
+  const metric = { key: 'pooled-test', source: 'pipeline', label: 'Pooled test', read: () => 0.5, unit: 'percentile', provenance: { pooled: pair.map((source) => source.id) } };
+  const pooled = exportFor(dataset, { ...registry, metrics: [metric] }, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(pooled.manifest.expressionSources.map((source) => source.id), pair.map((source) => source.id));
+  assert.ok(pooled.manifest.expressionSources.every((source) => !('record' in source)));
 });

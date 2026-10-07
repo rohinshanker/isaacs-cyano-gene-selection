@@ -8,8 +8,8 @@ comparability do not change when a column is hovered.
 
 `ConditionGuides` aligns its decorative SVG lines with the rendered header's
 ticks, including the logarithmic light scale. Its lower endpoint is the actual
-`.peek-count` bottom, outside the scroll container. This also applies when the
-comparison pane stacks below the list. Clipping follows the visible list's
+`.peek-count` bottom, outside the scroll container. At stacked widths the table footer sits between the list and comparison pane,
+so guides reach the count without crossing unrelated comparison axes. Clipping follows the visible list's
 horizontal bounds. The overlay ignores pointer events and is hidden from
 assistive technology.
 
@@ -31,7 +31,8 @@ still exists.
 At narrow widths the heading and Close button share a row, with wrapping data
 type tabs below. Every tab and Close must remain within the viewport. The wide
 condition table intentionally scrolls horizontally; primary controls stay
-reachable.
+reachable. With every condition filter open, the filter bar scrolls within a quarter
+of the viewport height so the table and completion controls remain usable.
 
 ## Regression checks
 
@@ -50,7 +51,12 @@ playwright-cli -s=<unique-session> run-code --filename=tools/ui/check_condition_
 
 The check captures every condition column at mobile, tablet, desktop and wide
 sizes, and around the 600 and 1320 px breakpoints. It asserts rendered tick
-alignment, the count endpoint, horizontal scrolling, sticky headers, short and
+alignment, the count endpoint, header-to-row alignment, horizontal scrolling, sticky headers, short and
 empty filters, flat/grouped lists, tab changes, Escape/focus restoration, pointer
 transparency and runtime diagnostics. Inspect the screenshots as well as the
 assertions. Keep full repository gates in addition to this focused check.
+
+Measurement provenance shows every declared source in the dataset disclosure.
+Exports carry compact provenance and caveats only for the measurement columns
+written (including each pooled contributor); the detailed condition dossier
+stays in the pinned data artifact. Fitness caveats use the measurement label.

@@ -229,6 +229,19 @@ export function exportFileBase(manifest) {
     + `_${timestampSlug(new Date(manifest.generatedAt))}_${manifest.manifestId.slice(0, 10)}`;
 }
 
+/** Provenance for the measurement columns actually written, without the source dossier. */
+function measurementSourcesForExport(meta, metrics) {
+  const ids = new Set(metrics.flatMap((metric) => {
+    const source = metric.provenance;
+    return Array.isArray(source?.pooled) ? source.pooled : [source?.id ?? source?.accession];
+  }).filter((id) => typeof id === 'string'));
+  const keys = new Set(metrics.map((metric) => metric.key));
+  return declaredMeasurementSources(meta)
+    .filter((source) => !Array.isArray(meta.expressionSources)
+      || ids.has(source.id ?? source.accession) || keys.has(source.metricKey))
+    .map(({ record: _dossier, ...source }) => source);
+}
+
 function caveatsFor(dataset, manifest, organism) {
   const { meta } = dataset;
   const layer = (key) => layerOf(organism, key);
@@ -251,9 +264,9 @@ function caveatsFor(dataset, manifest, organism) {
     'expressionBasis is one of measured, proxy, none, or unrecorded. A proxy is a codon-adaptation '
       + 'rank from this genome and is never written into the expression column.',
   );
-  for (const source of declaredMeasurementSources(meta)) {
+  for (const source of manifest.expressionSources) {
     if (!source.caveat) continue;
-    caveats.push(`Expression${source.id ? ` (${source.id})` : ''}: ${source.caveat} Measured in `
+    caveats.push(`Measurement${source.id ? ` (${source.id})` : ''}: ${source.caveat} Measured in `
       + `${source.organism ?? source.organismMeasured ?? 'an unstated organism'}`
       + `${source.condition ? `, ${source.condition}` : ''}.`);
   }
@@ -493,7 +506,7 @@ export function buildExport({
       loadedGeneCount: genes.length,
     }, undeclared(LAYER_DATASET_KEYS, organism)),
     expressionSource: meta.expressionSource ?? null,
-    expressionSources: declaredMeasurementSources(meta),
+    expressionSources: measurementSourcesForExport(meta, metrics),
     filterState: filterState ?? null,
     viewState: viewState ?? null,
     // Which sources were enabled for category colouring when this file was made.

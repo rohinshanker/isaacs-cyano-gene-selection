@@ -453,11 +453,11 @@ export class DataSourcesPanel {
     const legend = el('div', { className: 'peek-legend' });
     const list = el('div', { className: 'peek-list', attrs: { 'aria-label': 'Datasets' } });
     const side = el('div', { className: 'peek-side', attrs: { 'aria-live': 'polite' } });
-    const body = el('div', { className: 'peek-body', children: [list, side] });
     const count = el('span', { className: 'peek-count' });
     const done = el('button', { className: 'chip-button active peek-done', text: 'Done', attrs: { type: 'button' } });
     const foot = el('div', { className: 'peek-foot', children: [count, done] });
-    dialog.append(head, bar, legend, body, foot);
+    const body = el('div', { className: 'peek-body', children: [list, foot, side] });
+    dialog.append(head, bar, legend, body);
     backdrop.append(dialog);
     document.body.append(backdrop);
 
