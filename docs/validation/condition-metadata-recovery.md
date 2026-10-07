@@ -140,10 +140,11 @@ sampling fields.
 
 The published figures identify IPTG treatment/control groups at 0, 24, 48, 72
 and 96 hours and display three columns per time point and IPTG arm. The stated
-three biological replicates do not establish channel/file/culture assignments or longitudinal
-pairing. Supplemental Table S1 lists selected differential proteins and cannot
-supply a whole-proteome abundance population. The addendum is calibration
-evidence; it does not admit a dataset or change a lab pair judgement.
+three biological replicates do not establish channel/file/culture assignments or
+longitudinal pairing. Supplemental Table S1 lists selected differential proteins
+and cannot supply a whole-proteome abundance population. The addendum is
+calibration evidence; it does not admit a dataset or change a lab pair
+judgement.
 
 Verified source absences and conflicts are accepted unknown outcomes. They do
 not keep the recovery implementation open. Track optional depositor follow-up in
