@@ -9,13 +9,13 @@
 
 ## Current State
 
-Opened at the owner's request; implementation has not started. The owner reports
-that important details currently require holding the mouse over an element for
-one or two seconds. Source inspection confirms HTML `title` attributes and SVG
-`<title>` elements are used for supplementary information. In particular,
-`conditionTrack()` in `site/js/ui/data-sources.js` supplies the formatted range,
-units, and original reported text through an SVG title and an accessible label.
-The reported delay has not been reproduced in a browser for this ticket.
+Implemented on the DEM-257 task branch and awaiting coordinator integration and
+owner acceptance. One delegated controller now converts every existing and
+dynamically added HTML `title` or SVG `<title>` into a body-level instant hint.
+The existing renderers remain the only text sources. The controller follows the
+pointer, suppresses a clicked hint until exit and re-entry, clamps long text,
+preserves accessible descriptions, and clears stale state on removal, hiding,
+scrolling, popup closure, and navigation.
 
 ## Requirements
 
@@ -59,7 +59,46 @@ Coordinate coverage of dataset rows with
 
 ## Verification
 
-Implementation verification is pending. Acceptance requires:
+Implementation verification completed 2026-10-06:
+
+- The pre-change inventory found two static HTML hint attributes, nineteen
+  dynamic HTML hint-writer sites, and seven SVG title-writer sites across
+  controls, gene identity, comparison, dataset conditions, length histograms,
+  gene sequence, and gene/TSS views. None of those source strings was rewritten.
+- Browser checks matched the exact before-source text to the rendered hint for
+  dataset temperature, light and CO2 tracks, including `5–30 µmol. As reported:
+  5–30 μmol photons m-2 s-1 (low light)` and the longer 0–600 µmol reported
+  value, and for a length-histogram bin. Open states contained zero native HTML
+  `title` attributes and zero SVG `<title>` nodes.
+- `tests/js/instant-hints.test.mjs` covers immediate entry and movement,
+  switching triggers, click dismissal and suppression, exit/re-entry, viewport
+  clamping, exact Unicode/numeric text, dynamic updates and removal, popup
+  cleanup, nested and page scrolling, keyboard focus, touch pointer entry, and
+  preservation of underlying clicks and pre-existing accessible descriptions.
+- Rendered the native map/data-selection route at 375×812, 768×1024, and
+  1280×800, and the Lengths route at 1440×900. Checked default, open/closed
+  popup, dataset condition tracks, long and viewport-edge text, source-details
+  activation, mouse suppression/re-entry, keyboard focus, emulated touch
+  pointer entry, nested scrolling, and SVG histogram states. There were no
+  console errors, failed requests, new page-level horizontal overflow, or
+  standalone accessibility-description nodes. Chromium's accessibility tree
+  retained `Source details and citation` as the source button's description.
+- Render evidence:
+  `/Users/Rohin/multica_workspaces_desktop-api.multica.ai/demeter-5df2b7b4e167/dem-257-dbc0eff72afd/worktree/.playwright-cli/dem-257-hints/data-long-hint-mobile-375x812.png`,
+  `.../data-hint-tablet-768x1024.png`,
+  `.../data-light-hint-desktop-1280x800.png`, and
+  `.../length-hint-wide-1440x900.png`. No visual baseline changed.
+- `npm test`: 1,077 passed. `.venv/bin/python -m pytest -q`: 486 passed,
+  1 skipped, 36 subtests passed, using the canonical checkout's pinned ignored
+  raw inputs through temporary links removed after the run.
+  `.venv/bin/python tools/validate_contract.py`: 110 passed, 1 expected spliced-
+  CDS contiguity skip, using the same temporary raw-input linkage.
+- Limitation: real iOS/touch hardware was unavailable; touch pointer behavior
+  was exercised in the unit suite and Chromium. At 375 px the existing data-
+  selection dialog still squeezes its long heading and uses its pre-existing
+  horizontally scrolling table; this patch did not alter that unrelated layout.
+
+Acceptance still requires owner/coordinator review of the delivered patch:
 
 - Inventory the existing hint text before conversion and verify exact equality
   after conversion, including dataset light ranges, units, and reported values.

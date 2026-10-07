@@ -66,6 +66,26 @@ pre {
   border: 0;
 }
 
+/* Immediate replacements for native title hints. The controller writes the
+   position, while this shared surface owns wrapping and pointer transparency. */
+.instant-hint {
+  position: fixed;
+  z-index: 100;
+  width: max-content;
+  max-width: min(32rem, calc(100vw - 16px));
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--ink);
+  box-shadow: var(--shadow);
+  color: var(--surface);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+
 .skip-link {
   position: absolute;
   left: 0.5rem;

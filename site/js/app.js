@@ -98,6 +98,9 @@ import {
 import { LoadProgress } from './ui/load-progress.js';
 import { prefersReducedMotion, resolveLoadTiming } from './ui/load-timing.js';
 import { TextScramble } from './ui/text-scramble.js';
+import { installInstantHints } from './ui/instant-hints.js';
+
+installInstantHints();
 
 /**
  * The organism this address names, known before anything is asked for.
