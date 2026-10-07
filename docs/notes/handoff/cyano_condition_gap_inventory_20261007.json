@@ -1,0 +1,1550 @@
+{
+  "sources": [
+    {
+      "name": "cyano_package_D_pairs_20261004.tsv",
+      "sha256": "9a45d8384a23ecbf2ea2619043d5610a11d096912020878bd95df59f91ff799c"
+    },
+    {
+      "name": "cyano_package_D_rescore_20261006.tsv",
+      "sha256": "b9b56c092cb2da938e93a61dc716283a8d1910603e0f5c509458af01c4bc8720"
+    }
+  ],
+  "reviewed_by": "Codex coordinator, 2026-10-07; all 252 exact field/text judgments inspected against data-contract.md. Availability only, never threshold verdicts or source admission.",
+  "model": "jev-1.13.0",
+  "classification_contract": {
+    "statuses": [
+      "present",
+      "not reported",
+      "not retrieved",
+      "partial",
+      "conflicting",
+      "uncertain"
+    ],
+    "partial": "A required component of the field is absent; source statements limited to other phases do not fill this condition.",
+    "present": "Reported value; not necessarily a comparable value. Continuous light needs no photoperiod, stationary growth needs no OD; OD730/A730 accepted like OD750.",
+    "medium": "Named medium counts as present; an unresolved recipe or nitrogen/carbon comparison remains a screen blocker.",
+    "review": "Use exact values only. No keyword inference at ranking time. The reviewed status wins over the model; preserve conflicts, partial values and uncertainty."
+  },
+  "judgments": [
+    {
+      "field": "co2",
+      "value": "0.04% CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "0.5% CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2 in air",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2 in air (bubbling)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2 in air, bubbled at 500 ml min-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2 in air, bubbled at 500 ml/min",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2 in air, constantly bubbled",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "1% CO2 supplemented air, bubbled",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "10% CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "2% CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "2% CO2 (baseline sparging with 98:2 N2/CO2 gas mixture)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "2% CO2, continuous bubbling",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "2% CO₂ in nitrogen",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "co2",
+      "value": "5% (vol/vol) CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "5% CO2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "5% CO2 bubbling at 50 mL/min",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "500 ml min-1 1% CO2 in air (bubbled)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "co2",
+      "value": "air enriched with 3% CO2 (bubbling)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "bubbled with 3% (v/v) CO2-supplemented air",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "bubbled with 500 ml min-1 1% CO2 in air",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "co2",
+      "value": "nitrogen gas containing 2% CO2 (sparged)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "co2",
+      "value": "not reported",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "not reported as a CO2 regime; atmosphere given only as 'Aerobic'",
+      "status": "not reported",
+      "confidence": 0.9
+    },
+    {
+      "field": "co2",
+      "value": "not reported for RNA-seq growth; separate photobioreactor experiment used 5% CO2 (v/v) and 95% air (v/v)",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "not reported for this specific comparison",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "co2",
+      "value": "not reported in GEO growth protocol; paper RNA-seq section does not specify NaHCO3 supplementation",
+      "status": "not reported",
+      "confidence": 0.98
+    },
+    {
+      "field": "co2",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "1-L Roux bottle, 500 mL culture, coupled to photobioreactor with hydrocarbon absorbent trap",
+      "status": "present",
+      "confidence": 0.84
+    },
+    {
+      "field": "culture_format",
+      "value": "250 mL Erlenmeyer flasks, shaking at 180 rpm, Percival incubator",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "250 mL flasks, then 1-L Roux bottle",
+      "status": "present",
+      "confidence": 0.86
+    },
+    {
+      "field": "culture_format",
+      "value": "31.5 mL aliquots, rotary agitation (100 rpm)",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "culture_format",
+      "value": "400 mL culture in 1 L glass media bottles with Omnifit 3-port caps (vent filter, sampling port, air/CO2 sparge port); large-scale format",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "5 ml liquid culture, no shaking, aerobic atmosphere",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "500 mL flasks containing 100 mL liquid",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "6 liter cylindrical spinner flask (Corning), 3 liter working volume, custom-made turbidostat",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "6 liter cylindrical spinner flask, 4.5 liter working volume, continuous culture apparatus, stirred at 1 rotation per second",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "750 mL culture in a 150 cm2 tissue culture flask beneath an LED",
+      "status": "present",
+      "confidence": 0.75
+    },
+    {
+      "field": "culture_format",
+      "value": "Continuous turbidostat culture in 6.5-L fermentor (5.5-L working volume) with custom LED photobioreactor",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "Maintenance: 1.2 L Roux culture flasks containing 0.4-0.6 L BG-11, stirred at ~200 rpm; Production/sampling experiment: cultures split and grown as three biological replicates of 0.85 L per flask",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "culture_format",
+      "value": "Photobioreactor Multi-Cultivator MC1000, parallel 80-ml cultures",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "culture_format",
+      "value": "Photobioreactor Multi-Cultivator MC1000, parallel 80-ml cultures (continuation of HL cultures)",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "culture_format",
+      "value": "Pyrex tubes under bubbling (liquid, bubbled with gas)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "Tissue culture flasks; initial 200 mL, diluted to 800 mL, with bubbling",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "culture_format",
+      "value": "agar plates",
+      "status": "present",
+      "confidence": 0.93
+    },
+    {
+      "field": "culture_format",
+      "value": "agar plates (BG-11 medium)",
+      "status": "present",
+      "confidence": 0.92
+    },
+    {
+      "field": "culture_format",
+      "value": "custom turbidostat, 6 liter cylindrical spinner flask (Corning), working volume 4.5 liters, stirred at 0.5-1 rotation per second",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "custom turbidostat; 6 liter cylindrical spinner flask (Corning), working volume 4.5 liters, stirred at 0.5-1 rotation per second",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "liquid culture (liquid BG-11 medium); specific vessel/bioreactor type not reported for the transcriptome samples",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "culture_format",
+      "value": "liquid culture (vessel type not specified); main culture inoculated from washed preculture, harvested at OD750 equivalent of 2 (~300 µL cell culture)",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "culture_format",
+      "value": "liquid culture in Erlenmeyer flask, rotary shaker",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "liquid culture in Erlenmeyer flask/microbial lab flasks, shaking",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "culture_format",
+      "value": "liquid culture, 100 ml flask, shaken at 200 rpm",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "liquid shaking culture (200 rpm per growth protocol); RNA samples drawn from 120 mL cultures kept semi-turbidostatically by manual dilution during the time course",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "membrane-separated (2-chamber) bioreactor, ~600 mL vessel; this sample is the S. elongatus compartment, physically separated from the R. toruloides compartment by a membrane but sharing medium",
+      "status": "present",
+      "confidence": 0.65
+    },
+    {
+      "field": "culture_format",
+      "value": "membrane-separated (2-chamber) bioreactor, ~600 mL vessel; this sample is the axenic S. elongatus unit",
+      "status": "present",
+      "confidence": 0.81
+    },
+    {
+      "field": "culture_format",
+      "value": "mixed co-culture bioreactor, ~600 mL vessel; S. elongatus and R. toruloides physically co-located in the same reactor space (no membrane separation)",
+      "status": "present",
+      "confidence": 0.86
+    },
+    {
+      "field": "culture_format",
+      "value": "multicultivator photobioreactor",
+      "status": "present",
+      "confidence": 0.57
+    },
+    {
+      "field": "culture_format",
+      "value": "not reported for this specific comparison",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "not reported for this specific sample subset beyond 'axenic'; sample title lacks 'mBR' tag used for the bioreactor-labelled samples",
+      "status": "not reported",
+      "confidence": 0.7
+    },
+    {
+      "field": "culture_format",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "shake flasks, 120 rpm",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "culture_format",
+      "value": "shaken flasks (150 rpm), Multitron incubator; labeling 30 min in six-well plates under the growing conditions",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "culture_format",
+      "value": "shaking liquid culture, 5 mL harvested per sample",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "shaking liquid culture, 6 ml (GEO); 50 ml (paper Methods, Cyanobacterial strain and growth conditions)",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "culture_format",
+      "value": "tissue culture flasks",
+      "status": "present",
+      "confidence": 0.62
+    },
+    {
+      "field": "culture_format",
+      "value": "tissue culture flasks (liquid culture)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "culture_format",
+      "value": "with shaking (liquid culture implied; vessel/volume not specified)",
+      "status": "uncertain",
+      "confidence": 0.64,
+      "model_status": "present",
+      "review_note": "The cell explicitly labels liquid culture as implied."
+    },
+    {
+      "field": "growth_phase",
+      "value": "A730 adjusted to 0.03 initially; A730 = 0.3-0.35 for exponential phase sampling context",
+      "status": "present",
+      "confidence": 0.76
+    },
+    {
+      "field": "growth_phase",
+      "value": "Day 4 of culture at sampling (after 4 days of 300 mM NaCl treatment); OD750 not reported for this timepoint",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "growth_phase",
+      "value": "Day 4 of culture at sampling; OD750 not reported for this timepoint",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "growth_phase",
+      "value": "Day 4/6/8 (series design indicates mBR/mixed time points of ~90/140/190 hrs); OD750 at harvest not reported",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "growth_phase",
+      "value": "Day 4/6/8, collected at ~90/140/190 hrs; OD750 at harvest not reported",
+      "status": "partial",
+      "confidence": 0.99
+    },
+    {
+      "field": "growth_phase",
+      "value": "Initial inoculation at OD730 ~0.15; IPTG induction (1 mM) after 96h (4 days); RNA-seq samples taken before induction (day 4, ~100h) and 8 days after induction (day 12, ~240h)",
+      "status": "partial",
+      "confidence": 0.93
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730 = 0.3",
+      "status": "partial",
+      "confidence": 0.69
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730 = 0.30–0.35 (at time of H2O2 exposure)",
+      "status": "present",
+      "confidence": 0.53
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730 = 0.8",
+      "status": "partial",
+      "confidence": 0.76
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730 of 0.08 (steady-state turbidostat)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730 ~1.0",
+      "status": "partial",
+      "confidence": 0.74
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730nm adjusted to 0.27 (3.10E8 cells/mL) at start of exposure",
+      "status": "partial",
+      "confidence": 0.4
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD730~1",
+      "status": "partial",
+      "confidence": 0.54
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 0.15 (held constant via two-state controller)",
+      "status": "present",
+      "confidence": 0.66
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 0.2 maintenance dilution; washed/diluted to OD750 0.2 before split; at experimental time 0 adjusted to OD750 0.1 and maintained at ~OD750 0.1 throughout sampling via BG-11 additions",
+      "status": "present",
+      "confidence": 0.75
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 0.3 (kept relatively constant by periodic dilution) at the start of sampling",
+      "status": "present",
+      "confidence": 0.57
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 adjusted to 0.6 at start of LL transfer; harvested at distinct time points over five consecutive days (LL day1-5), no further OD750 values given per day",
+      "status": "partial",
+      "confidence": 0.92
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 initial 0.06, increased to 0.15, then maintained constant at 0.15 throughout entrainment and sampling",
+      "status": "present",
+      "confidence": 0.92
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 maintained at 0.15 (turbidostat, steady-state)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 maintained at 0.3, semi-turbidostatic with periodic dilution",
+      "status": "present",
+      "confidence": 0.92
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 maintained at a constant level of 0.15 (turbidostat steady-state); RNA pooled from 6 timepoints (T=24,28,32,36,40,44 h) to give a time-averaged sample",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 maintained at a constant level of 0.2",
+      "status": "present",
+      "confidence": 0.83
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 maintained near 0.3",
+      "status": "present",
+      "confidence": 0.69
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 not reported for RNA-seq samples; harvested after 12h in constant light (LL) following a single 12h dark pulse",
+      "status": "partial",
+      "confidence": 0.9
+    },
+    {
+      "field": "growth_phase",
+      "value": "OD750 ~0.2 (starting density of 120 mL cultures prior to synchronization and sampling)",
+      "status": "partial",
+      "confidence": 0.41
+    },
+    {
+      "field": "growth_phase",
+      "value": "Starting OD750 = 0.2 at inoculation; harvested after 14 days of growth under GL (no harvest OD750 given)",
+      "status": "partial",
+      "confidence": 1.0
+    },
+    {
+      "field": "growth_phase",
+      "value": "Starting OD750 = 0.2 at inoculation; harvested after 14 days under HL; OD750 of HL culture = 0.6 just before LL transfer",
+      "status": "partial",
+      "confidence": 0.74
+    },
+    {
+      "field": "growth_phase",
+      "value": "cells harvested at OD730 of 1.0 (control, before N+/N- split); RNA-seq samples collected after 24 h of nitrogen starvation / 48h time point per GEO sample titles",
+      "status": "partial",
+      "confidence": 0.42
+    },
+    {
+      "field": "growth_phase",
+      "value": "early stationary phase (OD not reported)",
+      "status": "present",
+      "confidence": 0.94,
+      "model_status": "partial",
+      "review_note": "Stationary phase does not require a harvest OD under the condition contract."
+    },
+    {
+      "field": "growth_phase",
+      "value": "exponential phase cultures at OD730nm = 0.9, diluted to OD730nm = 0.2 at onset of N starvation experiment",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "growth_phase",
+      "value": "exponential phase, A730 = 0.3-0.35 before H2O2 exposure at 7 days",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "growth_phase",
+      "value": "exponential phase; initial OD750 = 0.05 at inoculation; harvested after 4 days of cultivation; OD at harvest not explicitly reported",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "growth_phase",
+      "value": "exponential, kept at OD750 0.3 by daily dilution; OD at labeling not stated",
+      "status": "partial",
+      "confidence": 0.99
+    },
+    {
+      "field": "growth_phase",
+      "value": "log phase vs stationary phase; day 7 described as late growth stage; OD not given",
+      "status": "partial",
+      "confidence": 0.94
+    },
+    {
+      "field": "growth_phase",
+      "value": "log-phase (2-day limonene production during log-phase growth); OD not specified numerically",
+      "status": "partial",
+      "confidence": 0.99
+    },
+    {
+      "field": "growth_phase",
+      "value": "main cultures inoculated at OD750 = 0.4, grown for 4 days, harvested at OD750 equivalent of 2",
+      "status": "partial",
+      "confidence": 0.58
+    },
+    {
+      "field": "growth_phase",
+      "value": "not reported",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "growth_phase",
+      "value": "not reported (OD not specified for this condition set; see separate sets for log/stationary comparison)",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "growth_phase",
+      "value": "not reported (specific OD/day of harvest for proteomics not stated in excerpts)",
+      "status": "not reported",
+      "confidence": 0.95
+    },
+    {
+      "field": "growth_phase",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 1.0
+    },
+    {
+      "field": "growth_phase",
+      "value": "sampled at day 1 (D1) and day 4 (D4) of growth per sample titles; OD750 not reported for RNA-Seq sampling itself (OD750 of 4.0 is reported only for a separate DNA-uptake competence assay, not for RNA-Seq harvest)",
+      "status": "partial",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_intensity",
+      "value": "100 µE m-2 s-1 (µmoles photons m-2 s-1)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "100 μE m-2 s-1 (GEO); 100 μmol photons m−2 s−1 (paper)",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "light_intensity",
+      "value": "100 μE m-2 s-1 (μmoles photons m-2 s-1)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "100-μmol photons m−2 s−1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "20 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "300 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "40 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "400 µmole photon.m-2.s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "40µE m-2 s-1 (samples had been exposed to ~60h of light at this intensity prior to collection; growth protocol separately states ~40µE)",
+      "status": "present",
+      "confidence": 0.89
+    },
+    {
+      "field": "light_intensity",
+      "value": "50 μmol photons m-2 s-1 (continuous illumination, liquid culture)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "50-55 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "500 μmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "60 μmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "60 μmol photons m−2·s−1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "70 µE m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "75 μmol photons m-2 s-1 (flask stage), 100 μmol photons m-2 s-1 (Roux bottle stage)",
+      "status": "present",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_intensity",
+      "value": "760 μmol photons m⁻² s⁻¹",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "80–120 μE m–2 s–1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "Clear Day culture intensity decreased 10-fold for 1 hour, defined by dividing the Clear Day profile by 10 between 8 and 9 hr after dawn",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_intensity",
+      "value": "Low Light culture intensity increased 10-fold for 1 hour, equal to the Clear Day intensity between 8 and 9 hr after dawn",
+      "status": "present",
+      "confidence": 0.64
+    },
+    {
+      "field": "light_intensity",
+      "value": "approximately 100 μmol photons m−2 s−1",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "light_intensity",
+      "value": "approximately 200 μE m⁻² s⁻¹",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "light_intensity",
+      "value": "constant 50 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "light intensity varied parabolically, reaching a maximum of 600 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 0.8
+    },
+    {
+      "field": "light_intensity",
+      "value": "not reported",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "not reported for this specific comparison",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "not reported in GEO growth protocol; paper methods report 50 µmol m−2 s−1",
+      "status": "present",
+      "confidence": 0.59
+    },
+    {
+      "field": "light_intensity",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_intensity",
+      "value": "~150 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "light_intensity",
+      "value": "~200 µmol photons m⁻² s⁻¹",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_intensity",
+      "value": "~25 µmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 0.9
+    },
+    {
+      "field": "light_intensity",
+      "value": "~25 µmol photons m-2 s-1 white light",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_intensity",
+      "value": "~40µE of illumination",
+      "status": "present",
+      "confidence": 0.88
+    },
+    {
+      "field": "light_intensity",
+      "value": "~70 µmol/s·m2",
+      "status": "present",
+      "confidence": 0.92
+    },
+    {
+      "field": "light_intensity",
+      "value": "∼30 μmol photons m −2 s −1",
+      "status": "present",
+      "confidence": 0.93
+    },
+    {
+      "field": "light_intensity",
+      "value": "∼68 μmol photons m-2 s-1",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "light_regime",
+      "value": "LED (630 and 680 nm narrow-band); continuous (turbidostat steady-state); photoperiod not reported",
+      "status": "present",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "LED lighting; spectrum class beyond 'LED' not reported; continuous vs diel not reported; photoperiod not reported",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "Spectrum: LED full spectrum (Monios-L LED Full Spectrum Grow Lights); regime during the sampled experiment: continuous light for both subjective-day and subjective-night cultures ('Both conditions were maintained under continuous light'), not diel; photoperiod during sampling: not applicable (continuous light), though cultures were previously entrained to a 14:10 light-dark cycle (light period 06:00-20:00) for ~6 months prior to the experiment",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_regime",
+      "value": "Spectrum: cool white fluorescent (per general culture conditions, same Methods section). Regime for MS samples: one 12 hr:12 hr light-dark entrainment cycle followed by continuous light (LL, free-run), with samples harvested at 24 h (subjective dawn) and 36 h (subjective dusk) after transition to dark/entrainment. Photoperiod during entrainment: 12 h light : 12 h dark.",
+      "status": "present",
+      "confidence": 0.82
+    },
+    {
+      "field": "light_regime",
+      "value": "constant illumination (continuous); spectrum not reported; photoperiod not reported",
+      "status": "partial",
+      "confidence": 0.9
+    },
+    {
+      "field": "light_regime",
+      "value": "continuous illumination (not diel); spectrum/lamp type not reported; photoperiod: continuous, no dark period mentioned",
+      "status": "partial",
+      "confidence": 0.89
+    },
+    {
+      "field": "light_regime",
+      "value": "continuous illumination (not diel; no photoperiod/dark period stated); spectrum: WL (white light) — specific lamp/spectral source not reported",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "continuous light (LL) during the 24h sampling period, preceded by entrainment with two 12h:12h light-dark cycles; spectrum: cool white fluorescent light (Phillips); entrainment photoperiod 12h:12h, then continuous light",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "continuous light; Sylvania 15 W Gro-Lux fluorescent bulbs",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "light_regime",
+      "value": "continuous light; spectrum not reported; photoperiod: continuous (not diel)",
+      "status": "partial",
+      "confidence": 0.92
+    },
+    {
+      "field": "light_regime",
+      "value": "cool fluorescent light; diel with light/dark cycling: clock rescue cells exposed to two 12h/12h light/dark cycles (12h dark, 12h light, 12h dark) for entrainment; rpaA- clock rescue cells exposed to one 12h light/dark cycle for entrainment; photoperiod 12h light/12h dark",
+      "status": "present",
+      "confidence": 0.93
+    },
+    {
+      "field": "light_regime",
+      "value": "cool fluorescent light; entrained with two 12-h dark pulses separated by 12 h light, then released to constant (continuous) light; diel photoperiod before release = 12 h light/12 h dark cycles",
+      "status": "present",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "cool white fluorescent lamps; continuous illumination (photoperiod not reported)",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "light_regime",
+      "value": "cool white fluorescent; continuous; photoperiod not reported (continuous light stated)",
+      "status": "present",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "not reported",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_regime",
+      "value": "not reported (spectrum/continuity not explicitly restated for the HL intensity condition; continuous white light is only explicitly stated for the 40 µmol pre-experimental phase)",
+      "status": "not reported",
+      "confidence": 0.72
+    },
+    {
+      "field": "light_regime",
+      "value": "not reported (spectrum/continuity not explicitly restated for the LL intensity condition)",
+      "status": "not reported",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "not reported for this specific comparison",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_regime",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum not reported; continuity/photoperiod not reported",
+      "status": "not reported",
+      "confidence": 0.83
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum not reported; continuous vs diel not reported; photoperiod not reported",
+      "status": "not reported",
+      "confidence": 0.92
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum not reported; diel cycle with switching to light/dark; samples harvested at Light 1h, Light 12h, Dark 1h, Dark 12h; paper states 12-h L/D cycle",
+      "status": "partial",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: alternating cool white and plant fluorescent lights; continuous vs diel: not reported; photoperiod: not reported",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: cool fluorescent light (growth protocol); regime: entrainment with two diel light/dark cycles (12h dark, 12h light, 12h dark) followed by release into constant (continuous) light; samples harvested during constant light at subjective dawn (CT=0) and subjective dusk (CT=12h)",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: cool fluorescent light (per growth protocol); regime: cells entrained with two 12h dark/12h light/12h dark cycles, then released into constant light and harvested at subjective dawn and subjective dusk; photoperiod during entrainment: 12h dark/12h light/12h dark, repeated twice, then continuous (constant) light thereafter",
+      "status": "present",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: cool fluorescent light; diel cycle: 12 h light/12 h dark; photoperiod: 12 h light/12 h dark; cells entrained with two additional light/dark cycles (12 h dark, 12 h light, 12 h dark) before sampling at dusk and during the subsequent dark period",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: cool fluorescent light; regime: diel, 12 h light/12 h dark cycle; photoperiod: 12 h light / 12 h dark, with entrainment via two additional light/dark cycles before sampling",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: cool fluorescent light; regime: entrained with two light/dark cycles (12h dark, 12h light, 12h dark) then released into continuous light (LL); photoperiod during sampling: continuous (not reported as a fixed period length after release)",
+      "status": "present",
+      "confidence": 0.93
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: cool fluorescent light; regime: entrainment with two light/dark cycles (12h dark, 12h light, 12h dark) followed by release into constant (continuous) light; induction at subjective dusk (CT = 12 h)",
+      "status": "present",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: fluorescent (class e.g. cool-white vs warm-white not specified); continuous light (LL) as baseline growth condition, with a single 12h dark pulse immediately prior to collection then return to constant light; photoperiod otherwise continuous (no diel cycling stated for these samples)",
+      "status": "present",
+      "confidence": 0.59
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: fluorescent lights (stated for maintenance phase, not explicitly restated for treatment); regime: diel, long-day photoperiod LD16:8 (16h light:8h dark), applied for 1, 4, or 8 cycles",
+      "status": "partial",
+      "confidence": 0.4,
+      "model_status": "present",
+      "review_note": "Lamp stated for maintenance only; treatment spectrum is not explicitly reported."
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: fluorescent lights (stated for maintenance phase, not explicitly restated for treatment); regime: diel, short-day photoperiod LD8:16 (8h light:16h dark), applied for 1, 4, or 8 cycles",
+      "status": "partial",
+      "confidence": 0.41,
+      "model_status": "present",
+      "review_note": "Lamp stated for maintenance only; treatment spectrum is not explicitly reported."
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: incandescent light; continuous vs diel: not reported; photoperiod: not reported",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: not reported; continuous (implied by photoautotrophic multicultivator growth, not explicitly stated); photoperiod: not reported",
+      "status": "uncertain",
+      "confidence": 0.39
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: not reported; continuous vs diel: not reported; photoperiod: not reported",
+      "status": "not reported",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: not reported; continuous/diel: not reported; photoperiod: not reported",
+      "status": "not reported",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: not reported; cycle: diel (light and dark cycles); photoperiod: 12:12-hours",
+      "status": "partial",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: not reported; regime: continuous light (no photoperiod, 24 h light)",
+      "status": "partial",
+      "confidence": 0.9
+    },
+    {
+      "field": "light_regime",
+      "value": "spectrum: white light (fluorescent/LED type not further specified); regime: entrained with two 12h dark/12h light/12h dark cycles then released into continuous light (LL) at T=0, sampled under continuous light thereafter; photoperiod during entrainment: 12 h dark / 12 h light / 12 h dark, repeated twice",
+      "status": "partial",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_regime",
+      "value": "warm white LED array; diel 12 h light / 12 h dark baseline cycle with a 1 hr High Light perturbation starting at 8 hr after dawn on the fourth light period, then return to Low Light",
+      "status": "present",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "warm white LED array; diel 12 h light / 12 h dark baseline cycle with a 1 hr Shade perturbation starting at 8 hr after dawn on the fourth light period, then return to Clear Day",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "light_regime",
+      "value": "warm white LED array; diel 12 h light / 12 h dark cycle; constant (non-varying) intensity throughout each light period",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "light_regime",
+      "value": "warm white LED array; diel 12 h light / 12 h dark cycle; intensity varies parabolically within the light period, modeled on a measured natural clear-day profile",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "light_regime",
+      "value": "white light (spectrum class not further specified); continuous light following two light/dark entrainment cycles; photoperiod of entrainment cycles not reported",
+      "status": "partial",
+      "confidence": 0.94
+    },
+    {
+      "field": "light_regime",
+      "value": "white light (spectrum not otherwise specified); entrained with 2 consecutive 24h light/dark cycles (12h dark, 12h light, 12h dark) then released into continuous light (LL) for sampling from T=24h to T=72h",
+      "status": "partial",
+      "confidence": 0.96
+    },
+    {
+      "field": "light_regime",
+      "value": "white light (spectrum stated only as 'white light'); entrainment with two consecutive 12 h dark / 12 h light / 12 h dark cycles, then released into continuous light at T=0 (no diel cycling during the sampled window T=24-44 h); photoperiod of entrainment = 12h/12h, continuous thereafter",
+      "status": "partial",
+      "confidence": 0.98
+    },
+    {
+      "field": "light_regime",
+      "value": "white light (spectrum); continuous (no dark period stated) — explicitly stated for the pre-experimental/40 µmol culture phase",
+      "status": "partial",
+      "confidence": 0.94
+    },
+    {
+      "field": "medium",
+      "value": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912); nitrogen source and organic carbon not itemised",
+      "status": "present",
+      "confidence": 0.88
+    },
+    {
+      "field": "medium",
+      "value": "BG-11 (plates) + 10µM ZnCl2 (for kaiA induction)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG-11 (plates), no ZnCl2 added",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "medium",
+      "value": "BG-11 media",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG-11 medium (control/N+); nitrogen-free BG-11 medium (N-: no added NaNO3) for starvation",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG-11 medium supplemented with 1 g/L HEPES (pH 8.4, adjusted with NaOH), 25 mg/L chloramphenicol, and 25 mg/L kanamycin (maintenance cultures); antibiotics removed and cells resuspended in fresh BG-11 without antibiotics prior to the production experiment, with 1 mM IPTG added to induce sps/cscB",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG-11 medium supplemented with 5 mM HEPES pH 7.5 (BG-11H medium)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG-11M media supplemented with 10 mM HEPES pH 8.0",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG-11M media, supplemented with 10 mM HEPES-KOH pH 8.0",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 (plus strain-specific antibiotics during initial inoculation: spectinomycin/chloramphenicol for EOC113, or gentamycin/chloramphenicol/kanamycin for EOC339/EOC345/EOC346; antibiotics absent after dilution)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 + 0.09 g/L yeast nitrogen base (w/o amino acids/ammonium sulfate) + 0.264 g/L ammonium sulfate + 0.174 g/L K2HPO4 + 3 g/L HEPES, pH 8.3",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG11 growth medium containing 1.76 M NaNO3 (BG11+N); for N starvation, BG-11 0 (NaNO3 replaced with equimolar NaCl); 10 mM NaNO3 added at 4h to initiate re-synthesis",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG11 liquid medium with 0 mM NaCl (control)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 liquid medium with appropriate combinations of antibiotics",
+      "status": "present",
+      "confidence": 0.89
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium (Sigma) supplemented with 10 mM TES, pH 8.2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium (antibiotics removed prior to experiment)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium (fresh)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium containing 2.5 mM H2O2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium containing 300 mM NaCl (experimental), added for 4 days",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium supplemented with 10 mM TES, pH 8.2",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "BG11 medium with 2.5 mM H2O2 (and 2 mM IPTG for TA induction)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "BG11 with 1 g/L HEPES, pH 8.3",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "EPA Very Soft Water (pH 6.4 ± 0.3), with 5 mg/L Z-COTE, Z-COTE HP1, or ZnCl2 added, or solvent control",
+      "status": "present",
+      "confidence": 0.95
+    },
+    {
+      "field": "medium",
+      "value": "blue-green 11 (BG11) media",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "liquid BG-11 medium, supplemented with 5 µM IPTG",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "mineral medium BG-11",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "modified BG-11 medium (0.0010 g/liter FeNH4 citrate instead of 0.0012 g/liter, citric acid supplemented at 0.00066 g/liter)",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "modified BG-11 medium (as described in Vijayan et al 2009)",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "medium",
+      "value": "modified BG-11 medium (as in Vijayan et al 2009); cells initially inoculated with 5 µg/ml spectinomycin and 5 µg/ml chloramphenicol, then diluted with antibiotic-free modified BG-11",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "modified BG-11 medium described in Vijayan et al 2009",
+      "status": "present",
+      "confidence": 0.98
+    },
+    {
+      "field": "medium",
+      "value": "modified BG-11M liquid medium supplemented with 20 mM HEPES pH 8.0",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "non-buffered BG-11 medium (initial pH = 7.5)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "not reported",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "not reported for this specific comparison",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 0.99
+    },
+    {
+      "field": "medium",
+      "value": "solid BG-11 medium (plates)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "medium",
+      "value": "standard BG11",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "20°C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "22 °C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "29 ± 2°C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "30 °C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "30 ± 2°C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "30 ºC",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "30C",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "temperature",
+      "value": "30°C",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "temperature",
+      "value": "30°C (standard cultivation, as described for strains including newly engineered strains)",
+      "status": "present",
+      "confidence": 0.83
+    },
+    {
+      "field": "temperature",
+      "value": "30º C",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "temperature",
+      "value": "30ºC",
+      "status": "present",
+      "confidence": 0.99
+    },
+    {
+      "field": "temperature",
+      "value": "30ºC (constant)",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "32 °C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "37 °C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "37°C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "38 °C",
+      "status": "present",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)",
+      "status": "partial",
+      "confidence": 0.26
+    },
+    {
+      "field": "temperature",
+      "value": "not reported",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "not reported (30°C is stated only for the preceding 14-day GL/HL culturing phase; not explicitly restated for the LL transfer phase)",
+      "status": "not reported",
+      "confidence": 0.96
+    },
+    {
+      "field": "temperature",
+      "value": "not reported for this specific comparison (general cultivation at 30°C, see other set)",
+      "status": "not reported",
+      "confidence": 1.0
+    },
+    {
+      "field": "temperature",
+      "value": "not retrieved",
+      "status": "not retrieved",
+      "confidence": 1.0
+    }
+  ]
+}
