@@ -90,14 +90,14 @@ def load_pair_judgements_from(document):
         return load_pair_judgements(write(Path(directory), document))
 
 
-def test_the_shipped_meta_carries_the_32_judged_pairs():
+def test_the_shipped_meta_carries_the_33_judged_pairs():
     meta = json.loads((ROOT / "site/data/meta.json").read_text(encoding="utf-8"))
     source = json.loads((ROOT / "data/expression/pair_judgements.json").read_text(encoding="utf-8"))
     judgements = meta["pairJudgements"]
-    assert [j["pair"] for j in judgements] == list(range(1, 33))
+    assert [j["pair"] for j in judgements] == list(range(1, 34))
     assert {j["call"] for j in judgements} == {"share", "separate", "conditional", "undecided"}
     calls = {c: sum(j["call"] == c for j in judgements) for c in ("share", "separate", "conditional", "undecided")}
-    assert calls == {"share": 24, "separate": 3, "conditional": 1, "undecided": 4}
+    assert calls == {"share": 24, "separate": 3, "conditional": 2, "undecided": 4}  # pair 33 is J2, 2026-10-06
     assert [j["call"] for j in source["judgements"]] == [j["call"] for j in judgements]
     assert sum(j["by"] == "extrapolated" for j in source["judgements"]) == 3
     report = Report()

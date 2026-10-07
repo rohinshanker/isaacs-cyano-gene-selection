@@ -449,7 +449,7 @@ The thresholds are now written down. This step applies them and reports the resu
 - Report the agreement statistic between overlapping datasets and show it in the
   interface. A poor fit is displayed, never averaged away.
 - Add a pair whose comparability is genuinely uncertain to rows 13 through 15 of
-  [AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md)
+  [AAAA-new-bio-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md)
   with its assay, both condition sets, and the marginal axis.
 - Keep both source values where two strains disagree at one locus; any resolution is
   a separate `inferred` field naming its rule.
@@ -590,7 +590,7 @@ deleting the view, its loadings table, the audit documentation
 ([pca-length-sensitivity.md](../../validation/pca-length-sensitivity.md)) and its
 script `tools/audit_pca_length.py`, the validation index row, and the reference in
 row 9 of
-[AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md).
+[AAAA-new-bio-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md).
 The recoding-risk, perturbation, and UMAP maps are computed live and are outside this
 decision unless the owner extends it.
 
@@ -738,7 +738,7 @@ Sources peek shows. The dataset and condition selectors (step 6) are built
 under the dedicated ticket. Any source ingested later still needs its own manifest entry, checksum,
 mapping audit with matched, unmatched, and ambiguous counts, contract tests, and
 the sister-strain, condition-comparability, and UTEX 3055 coverage rows of
-[AAA-manual-review-checklist.md](../../validation/AAA-manual-review-checklist.md)
+[release-gate.md](../../validation/release-gate.md)
 checked against the rendered site.
 
 ## Cleanup

@@ -175,7 +175,7 @@ These thresholds decide whether two datasets may share one displayed layer or a
 combined estimate. They are a starting rule derived from the divergence this
 repository already documents, not a literature-established equivalence bound, and
 they are pending lab sign-off in
-[AAA-biological-decisions-to-review.md](AAA-biological-decisions-to-review.md).
+[AAAA-new-bio-decisions-to-review.md](AAAA-new-bio-decisions-to-review.md).
 Two datasets are comparable only when **every** axis the assay responds to agrees.
 
 | Axis | Comparable when | Why this boundary |

@@ -122,7 +122,7 @@ deposit no proteome-wide table; GSE45762 is excluded for contradictory sample
 labels.
 
 The pair judgements are a data file since 2026-10-06
-(`data/expression/pair_judgements.json`, 32 pairs, emitted as
+(`data/expression/pair_judgements.json`, 33 pairs since J2 on 2026-10-06, emitted as
 `meta.pairJudgements` and validated on both sides); none of the judged pairs yet
 has both sides ingested, so the shipped comparable sets are still the
 thresholds', and the judgements take effect as those studies land. The eleven

@@ -243,7 +243,7 @@ same applies here. In particular, a returned package must not:
   returned as an observed one, or TSS initiation counts returned as gene-body
   abundance;
 - resolve a comparability judgment that rows 13 to 15 of
-  [AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md)
+  [AAAA-new-bio-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md)
   reserve for the lab: the thresholds themselves, case-by-case pair comparability,
   and UTEX 3055's closeness per data type; or
 - return a claim without a checkable source.

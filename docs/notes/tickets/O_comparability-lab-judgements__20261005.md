@@ -6,7 +6,7 @@
   small generator under `tools/`. Decides nothing itself.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-06 (J2 decided)
 
 ## Current state
 
@@ -18,7 +18,7 @@ counts were recomputed here 2026-10-05) scored 941 dataset pairs against
 file) found that no cross-study sample pair reaches the within-study replicate band
 and that similar controls agree no better than unrelated pairs. Neither result is a
 verdict: every question below belongs to rows 13 and 14 of
-[AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md).
+[AAAA-new-bio-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md).
 Register rows covered: MET-04 to MET-07, MET-11, OWN-11, OWN-12.
 
 ## Answers so far, 2026-10-05
@@ -32,7 +32,7 @@ the owner's working list, with every question's state, is
 | Id | State |
 | --- | --- |
 | J1 | **Decided: yes, the spectrum class agrees**, so all six pairs among the four series pass every axis. Evidence from the papers the owner supplied. Markson's supplement says the turbidostat cultures were grown "as described previously (Vijayan et al., 2009)"; Vijayan's Methods give "approximately 25 μmol photons m−2 s−1 white light", 1% CO₂, 30 °C, OD₇₅₀ 0.15. One apparatus by the authors' own citation; neither paper names the lamp |
-| J2 | Open. Markson's supplement gives the flask cultures 100 µE cool fluorescent light, 1% CO₂ and OD₇₅₀ near 0.3, and still no temperature; the full article and supplement were read 2026-10-06 and are silent, so the cell is now "not reported" and only the authors can fill it |
+| J2 | **Decided 2026-10-06: displayed together despite the "don't know"**, recorded as conditional pair judgement 33 and marked for later resolution; the authors are asked through AAA-next-steps.md. Markson's article and supplement give the flask cultures light, CO₂, OD₇₅₀ and buffer and no temperature |
 | J3 | Decided: OD₇₃₀ and A₇₃₀ are close enough to OD₇₅₀. In the data contract |
 | J4 | Decided: no fixed boundary; it may be drawn wide, and is revisited if the groups look wrong |
 | J5 | Decided: arrays listed apart by default, with an option to include them under RNA-seq; an array covers only chosen targets |

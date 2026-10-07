@@ -3,7 +3,7 @@
   "source": "docs/validation/AAAA-new-bio-decisions-to-review.md#pair-judgements-from-the-review-sheet",
   "reviewSheet": "docs/notes/handoff/cyano_escalated_pairs_review_20261005.md",
   "scoredBy": "docs/notes/handoff/cyano_package_D_pairs_20261004.tsv",
-  "judged": "2026-10-05",
+  "judged": "2026-10-06",
   "calls": {
     "share": "the pair may share a comparable set",
     "separate": "the pair stays apart",
@@ -494,6 +494,23 @@
       "call": "share",
       "by": "owner",
       "entry": "fine"
+    },
+    {
+      "pair": 33,
+      "a": {
+        "studyId": "GSE50920",
+        "row": 48
+      },
+      "b": {
+        "studyId": "GSE51112",
+        "row": 53
+      },
+      "narrowAxis": "temperature",
+      "call": "conditional",
+      "by": "owner",
+      "entry": "allow them to be displayed together in spite of the don't know, which can be marked for a later resolution",
+      "condition": "GSE50920's flask-culture temperature is unconfirmed (not in Markson 2013's article or supplement); shown together pending the authors' answer, see AAA-next-steps.md",
+      "decided": "2026-10-06"
     }
   ]
 }
