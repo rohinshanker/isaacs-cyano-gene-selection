@@ -442,6 +442,18 @@ and begin the same whole-load cycle for the newly selected organism. The current
 dataset selectors do not issue requests on selection: every selectable layer is
 already one of the staged files, so its progress belongs to the initial cycle.
 
+**Requests after settle reuse this surface.** A loader snapshot that adds a
+pending file, or changes a settled file back to loading, automatically starts
+another cycle. The subtext names the requested filename. Its denominator covers
+the newly pending files and any independent resource still in flight; bytes from
+the previous completed cycle are excluded in both production and review modes.
+The old completion hold cannot hide this work. EOF still waits for validation
+and application, and a failure settles with its existing actionable Retry.
+On-demand fetches outside the staged loader must call `beginResource` before the
+request, report received bytes when measurable, then `settleResource` on success
+or failure. A future lazy dataset selector follows that same contract; changing
+selection alone does not manufacture a loading cycle.
+
 ### Timing
 
 Every tunable is in `LOAD_TIMING` in `site/js/ui/load-timing.js` and nowhere

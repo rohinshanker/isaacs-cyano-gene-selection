@@ -585,7 +585,12 @@ export class LoadProgress {
 
   truthfulSnapshot() {
     const resources = [...this.resources.values()].filter((resource) => resource.cycle === this.cycle);
-    const base = this.resourceOnly ? null : this.snapshot;
+    let base = this.resourceOnly ? null : this.snapshot;
+    if (base && this.blockingKeys !== null) {
+      base = { ...base, files: Object.fromEntries(this.blockingKeys
+        .filter((key) => base.files?.[key])
+        .map((key) => [key, base.files[key]])) };
+    }
     return truthfulProgress(base, resources, [...this.preparationTasks.values()]);
   }
 
@@ -690,6 +695,7 @@ export class LoadProgress {
     const baseSettled = !base || (this.blockingKeys !== null
       ? this.blockingKeys.every((key) => base.files?.[key]?.settled === true)
       : base.settledFiles >= base.totalFiles);
+    const pendingFile = this.blockingKeys?.find((key) => base?.files?.[key]?.settled === false);
     return {
       receivedBytes: settledFiles,
       totalBytes: totalFiles,
@@ -698,7 +704,8 @@ export class LoadProgress {
       totalFiles,
       allSettled: baseSettled && resources.every((resource) => resource.settled),
       currentTier: base?.currentTier ?? null,
-      currentLabel: base?.currentTier ? null : pendingResource?.label
+      currentLabel: pendingFile ? base.files[pendingFile].label ?? this.retryLabel
+        : base?.currentTier ? null : pendingResource?.label
         ?? (baseFraction < 1 ? this.retryLabel : null),
       files: base?.files ?? {},
     };
@@ -746,7 +753,19 @@ export class LoadProgress {
    * after it, the tail.
    */
   update(snapshot) {
+    const newlyPending = this.snapshot ? Object.entries(snapshot.files ?? {})
+      .filter(([key, record]) => record.included !== false && !record.settled
+        && (!this.snapshot.files?.[key] || this.snapshot.files[key].settled
+          || this.snapshot.files[key].included === false))
+      .map(([key]) => key) : [];
     this.snapshot = snapshot;
+    // A lazy dataset/file request can arrive without an explicit Retry click.
+    // Reuse the same cycle machinery, including hold invalidation and joining
+    // independent resources already in flight.
+    if (this.revealed && newlyPending.length > 0) {
+      this.beginRetry(newlyPending, snapshot.files[newlyPending[0]].label);
+      return;
+    }
     if (!this.revealed) {
       this.renderStage();
       this.requestNextFrame();

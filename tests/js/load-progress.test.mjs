@@ -711,6 +711,52 @@ test('a resource with every byte received remains incomplete until it settles', 
   });
 });
 
+for (const mode of [null, 'grouped', 'continuous']) {
+  test(`a newly requested loader file restarts the same surface after settle (${mode ?? 'production'})`, async () => {
+    await withFakeDocument(async (document) => {
+      const retried = [];
+      const { progress, presentation, bar, status, tail } = mount(document,
+        { onRetry: (key) => retried.push(key) }, {
+          review: mode ? { name: 'A', progress: mode } : null, terminalHoldMs: 0,
+        });
+      const file = (label, bytes, received, settled, state = FILE_STATE.READY) => ({
+        label, bytes, receivedBytes: settled ? bytes : received, actualReceivedBytes: received,
+        settled, state, included: true,
+      });
+      const loaded = file('genes.json', 1000, 1000, true);
+      const value = (later = null) => snapshot({
+        receivedBytes: 1000 + (later?.settled ? 200 : later?.receivedBytes ?? 0),
+        totalBytes: later ? 1200 : 1000, settledFiles: later?.settled ? 2 : 1,
+        totalFiles: later ? 2 : 1, currentTier: later && !later.settled ? 3 : null,
+        worksetKnown: true, files: { genes: loaded, ...(later ? { expressionLayers: later } : {}) },
+        preparation: { registered: later ? 2 : 1, completed: later?.settled ? 2 : 1 },
+      });
+      progress.update(value()); progress.reveal(); await progress.finished();
+      assert.equal(presentation.hidden, true);
+      const priorCycle = progress.cycle;
+      progress.update(value(file('expression_layers.json', 200, 50, false, FILE_STATE.LOADING)));
+      assert.equal(progress.cycle, priorCycle + 1);
+      assert.equal(presentation.hidden, false);
+      assert.equal(tail.querySelector('.load-progress'), bar, 'the original bar is reused');
+      assert.equal(status.textContent, 'Loading expression_layers.json');
+      assert.equal(bar.getAttribute('aria-valuenow'), '25', 'old completed bytes leave the new denominator');
+      progress.update(value(file('expression_layers.json', 200, 80, true, FILE_STATE.FAILED)));
+      progress.setFiles(records({ expressionLayers: {
+        state: FILE_STATE.FAILED, error: new Error('HTTP 502'), blockedBy: null,
+      } }));
+      await progress.finished();
+      assert.equal(presentation.hidden, true, 'a failed request settles the cycle');
+      tail.querySelector('li.load-failure').querySelector('button').dispatch('click');
+      assert.deepEqual(retried, ['expressionLayers'], 'the failure retains an actionable retry');
+      progress.update(value(file('expression_layers.json', 200, 0, false, FILE_STATE.LOADING)));
+      assert.equal(presentation.hidden, false, 'a new request after failure starts again');
+      progress.update(value(file('expression_layers.json', 200, 200, true)));
+      await progress.finished();
+      assert.equal(presentation.hidden, true);
+    });
+  });
+}
+
 test('retry retains independent resources and every other unsettled loader file', async () => {
   await withFakeDocument((document) => {
     const { bar, progress } = mount(document);
