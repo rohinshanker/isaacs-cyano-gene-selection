@@ -86,3 +86,19 @@ def test_non_object_inputs_are_named():
     with pytest.raises(ValueError, match="axis medium must be an object"):
         validate_record(record, "t")
     assert len(AXES) == 7
+
+
+def test_gse252562_sampling_temperature_preserves_maintenance_scope():
+    """The public record must not transfer a maintenance value to LD treatment."""
+    root = Path(__file__).resolve().parents[1]
+    spec = json.loads((root / "data/expression/ingest/GSE252562.json").read_text())
+    published = json.loads((root / "data/expression/sources.json").read_text())
+    expected_ids = {layer["id"] for layer in spec["layers"]}
+    records = [row for row in published if row["id"] in expected_ids]
+    assert len(records) == len(expected_ids) == 6
+    for row in records:
+        value = row["record"]["conditions"]["temperature"]
+        assert value["status"] == "not reported"
+        assert value["lo"] is None and value["hi"] is None
+        assert "maintenance30°C" in value["text"]
+        assert "30ºC" in value["quote"]

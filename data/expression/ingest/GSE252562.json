@@ -36,12 +36,12 @@
   },
   "conditions": {
     "temperature": {
-      "status": "reported",
-      "lo": 30,
-      "hi": 30,
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
       "unit": "°C",
-      "text": "constant 30 ºC",
-      "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+      "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+      "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
       "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
     },
     "lightIntensity": {
@@ -118,12 +118,12 @@
       "group": "diel",
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
           "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {
@@ -199,12 +199,12 @@
       "group": "diel",
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
           "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {
@@ -280,12 +280,12 @@
       "group": "diel",
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
           "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {
@@ -362,12 +362,12 @@
       "group": "diel",
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
           "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {
@@ -443,12 +443,12 @@
       "group": "diel",
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
           "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {
@@ -524,12 +524,12 @@
       "group": "diel",
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "text": "LD-cycle sampling temperature not explicitly stated in inspected GEO growth/treatment protocols; maintenance30°C is reported separately.",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
           "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {

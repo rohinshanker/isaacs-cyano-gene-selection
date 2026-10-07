@@ -90,6 +90,7 @@ EVIDENCE_SHA256 = {
     "bc": "aada503cbd79909ec66c2a32344942661ca4a59326313bfccfe8211b1b6f1d3f",
     "archive": "cddad944172d4af90244398806b6f316b3f78d56825da2f7dc890cd56ca16cf5",
     "intake": "5521e9bda63671dfb9c3486a48f2e9ac41c79a4e4f9214f39841c4cbcba566da",
+    "sampling": "3edd71831cb5f6fbf1b01d89ce9e1cb585bf3f534889793db2d2e19df5d1caef",
     "paper": "da29ffb70a90dcf128b027a598c0d3e40611436f7d02d3cd2472bbc0d8aecc6a",
 }
 RECORD_AUDIT_PINS = {
@@ -135,6 +136,16 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
             "I": None,
             "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
         },
+    },
+    35: {
+        "expected_accession": "GSE252562",
+        "expected_source": {"T": [30.0, 30.0], "T_text": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)"},
+        "values": {"T": None, "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."},
+    },
+    36: {
+        "expected_accession": "GSE252562",
+        "expected_source": {"T": [30.0, 30.0], "T_text": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)"},
+        "values": {"T": None, "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."},
     },
     58: {
         "expected_accession": "PXD000510",
@@ -244,6 +255,16 @@ OVERRIDE_AUDIT = {
         "status": "partial",
         "source": "cyano_archive_condition_intake_20261007.tsv CR-020",
         "uncertainty": "Fluorescent lamp is reported; spectrum class is not.",
+    },
+    "35.temperature": {
+        "status": "partial",
+        "source": "cyano_condition_sampling_scope_review_20261007.json GSE252562 growth/treatment protocol qualification; compact row 35 T_text",
+        "uncertainty": "30°C is reported for maintenance, not explicitly for the LD-cycle treatment. Sampling temperature remains unknown; no paper-wide absence claim.",
+    },
+    "36.temperature": {
+        "status": "partial",
+        "source": "cyano_condition_sampling_scope_review_20261007.json GSE252562 growth/treatment protocol qualification; compact row 36 T_text",
+        "uncertainty": "30°C is reported for maintenance, not explicitly for the LD-cycle treatment. Sampling temperature remains unknown; no paper-wide absence claim.",
     },
     "35.light_regime": {
         "status": "conflicting",
@@ -532,10 +553,10 @@ def _format_class(record: dict[str, Any]) -> str | None:
 
 def score_format_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     af, bf = _format_class(a), _format_class(b)
-    if af is None or bf is None:
-        format_result = ("undecidable", "culture format missing")
-    elif af in KNOWN_UNSUPPORTED_FORMATS or bf in KNOWN_UNSUPPORTED_FORMATS:
+    if af in KNOWN_UNSUPPORTED_FORMATS or bf in KNOWN_UNSUPPORTED_FORMATS:
         format_result = ("fail", f"reported format outside default planktonic/biofilm classes: {af} against {bf}")
+    elif af is None or bf is None:
+        format_result = ("undecidable", "culture format missing")
     elif af == bf:
         format_result = ("pass", f"both {af}")
     else:
@@ -919,6 +940,9 @@ def _validate_evidence(inputs: dict[str, Path]) -> None:
             raise ValueError(
                 f"{name} overlay evidence SHA-256 changed: expected {expected}, found {actual}"
             )
+    sampling = json.loads(inputs["sampling"].read_text(encoding="utf-8"))
+    if sampling["source"]["accession"] != "GSE252562" or sampling["source"]["rows"] != [35, 36] or sampling["accepted_decision"]["sampling_temperature"] is not None:
+        raise ValueError("sampling-temperature scope decision changed")
     paper = json.loads(inputs["paper"].read_text(encoding="utf-8"))
     if paper.get("dataset") != "GSE227397" or paper.get("reported_values", {}).get("photon_flux") != 50 or paper.get("reported_values", {}).get("photoperiod") != "12:12":
         raise ValueError("GSE227397 paper overlay evidence changed")
@@ -989,6 +1013,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--manual-supplement", type=Path, required=True)
     parser.add_argument("--paper-addendum", type=Path, required=True)
     parser.add_argument("--pride-check", type=Path, required=True)
+    parser.add_argument("--sampling-scope-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_condition_sampling_scope_review_20261007.json")
     args = parser.parse_args(argv)
     inputs = {
         "bc": args.bc_addendum,
@@ -998,6 +1023,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "paper": args.paper_addendum,
         "pride": args.pride_check,
         "pairs": args.pairs,
+        "sampling": args.sampling_scope_audit,
     }
     _validate_evidence(inputs)
     original = read_table(args.pairs)
@@ -1016,7 +1042,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.pairs, args.historical_rescore, args.historical_inventory, args.records,
         args.owner_judgements, args.bc_addendum, args.archive_addendum,
         args.archive_intake, args.manual_supplement, args.paper_addendum,
-        args.pride_check,
+        args.pride_check, args.sampling_scope_audit,
     ]
     inventory = build_gap_inventory(
         records,

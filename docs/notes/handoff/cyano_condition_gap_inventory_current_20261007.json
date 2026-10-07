@@ -45,6 +45,10 @@
     {
       "name": "cyano_pride_condition_check_20261007.json",
       "sha256": "22385d5be98359c000d94fa61505e5037bb9688358ae0b3be1b0ec956a91ce33"
+    },
+    {
+      "name": "cyano_condition_sampling_scope_review_20261007.json",
+      "sha256": "3edd71831cb5f6fbf1b01d89ce9e1cb585bf3f534889793db2d2e19df5d1caef"
     }
   ],
   "classification_contract": {
@@ -136,6 +140,39 @@
           "status": "partial",
           "source": "cyano_archive_condition_intake_20261007.tsv CR-020",
           "uncertainty": "Fluorescent lamp is reported; spectrum class is not."
+        }
+      }
+    },
+    {
+      "condition_row": 35,
+      "fields": {
+        "T": null,
+        "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."
+      },
+      "audit": {
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_condition_sampling_scope_review_20261007.json GSE252562 growth/treatment protocol qualification; compact row 35 T_text",
+          "uncertainty": "30°C is reported for maintenance, not explicitly for the LD-cycle treatment. Sampling temperature remains unknown; no paper-wide absence claim."
+        },
+        "light_regime": {
+          "status": "conflicting",
+          "source": "cyano_package_B_archive_addendum_20261007.json corrections row 35",
+          "uncertainty": "The aggregate includes six disputed eight-cycle samples, so no unconditional photoperiod; the sampling spectrum class is also unreported."
+        }
+      }
+    },
+    {
+      "condition_row": 36,
+      "fields": {
+        "T": null,
+        "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."
+      },
+      "audit": {
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_condition_sampling_scope_review_20261007.json GSE252562 growth/treatment protocol qualification; compact row 36 T_text",
+          "uncertainty": "30°C is reported for maintenance, not explicitly for the LD-cycle treatment. Sampling temperature remains unknown; no paper-wide absence claim."
         }
       }
     },
@@ -876,6 +913,17 @@
       "condition_row": 35,
       "artifact": "GSE252562",
       "condition_set": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
+      "field": "temperature",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_condition_sampling_scope_review_20261007.json GSE252562 growth/treatment protocol qualification; compact row 35 T_text",
+      "uncertainty": "30°C is reported for maintenance, not explicitly for the LD-cycle treatment. Sampling temperature remains unknown; no paper-wide absence claim.",
+      "historical_value": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)"
+    },
+    {
+      "condition_row": 35,
+      "artifact": "GSE252562",
+      "condition_set": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
       "field": "light_regime",
       "status": "conflicting",
       "value": "schedule=diel; photoperiod=None; spectrum=fluorescent (class not stated)",
@@ -904,6 +952,17 @@
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-014",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not reported"
+    },
+    {
+      "condition_row": 36,
+      "artifact": "GSE252562",
+      "condition_set": "Long-day photoperiod (LD16:8), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
+      "field": "temperature",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_condition_sampling_scope_review_20261007.json GSE252562 growth/treatment protocol qualification; compact row 36 T_text",
+      "uncertainty": "30°C is reported for maintenance, not explicitly for the LD-cycle treatment. Sampling temperature remains unknown; no paper-wide absence claim.",
+      "historical_value": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)"
     },
     {
       "condition_row": 36,

@@ -27,6 +27,7 @@ INTAKE = HANDOFF / "cyano_archive_condition_intake_20261007.tsv"
 MANUAL = HANDOFF / "cyano_archive_condition_manual_supplement_20261007.json"
 PAPER = HANDOFF / "cyano_condition_paper_addendum_20261007.json"
 PRIDE = HANDOFF / "cyano_pride_condition_check_20261007.json"
+SAMPLING = HANDOFF / "cyano_condition_sampling_scope_review_20261007.json"
 SCREEN = HANDOFF / "cyano_condition_pair_screen_current_20261007.tsv"
 INVENTORY = HANDOFF / "cyano_condition_gap_inventory_current_20261007.json"
 RANKING = HANDOFF / "cyano_condition_gap_ranking_current_20261007.tsv"
@@ -176,7 +177,7 @@ def _real_inputs():
     screens = rescore.rescore_pairs(original, historical_rows, records, judgements)
     sources = [
         PAIRS, HISTORICAL_RESCORE, HISTORICAL_INVENTORY, RECORDS, JUDGEMENTS,
-        BC, ARCHIVE, INTAKE, MANUAL, PAPER, PRIDE,
+        BC, ARCHIVE, INTAKE, MANUAL, PAPER, PRIDE, SAMPLING,
     ]
     source_audit = rescore.load_current_source_audit(
         records, MANUAL, INTAKE, PRIDE
@@ -279,6 +280,7 @@ def test_evidence_hash_pin_rejects_changed_source(tmp_path):
             "intake": INTAKE,
             "manual": MANUAL,
             "pride": PRIDE,
+        "sampling": SAMPLING,
             "pairs": PAIRS,
         })
 
@@ -303,6 +305,7 @@ def _evidence_inputs(**updates):
         "intake": INTAKE,
         "manual": MANUAL,
         "pride": PRIDE,
+        "sampling": SAMPLING,
         "pairs": PAIRS,
     }
     inputs.update(updates)
@@ -473,4 +476,24 @@ def test_known_unsupported_format_fails_without_manufacturing_metadata_gap():
     other = record()
     assert rescore.score_format_phase(known, other)[0] == "fail"
     assert rescore._gap_reason(known, "culture_format") is None
-    assert rescore.score_format_phase(known, record(fmt=None))[0] == "undecidable"
+    assert rescore.score_format_phase(known, record(fmt=None))[0] == "fail"
+
+
+def test_maintenance_temperature_is_not_sampling_temperature():
+    records = rescore.load_records(RECORDS)
+    for number in (35, 36):
+        assert records[number]["T"] is None
+        assert "maintenance30°C" in records[number]["T_text"]
+        assert rescore.score_temperature(records[number], record())[0] == "undecidable"
+    screens, inventory, _ = _real_inputs()
+    gaps = {(item["condition_row"], item["field"]): item for item in inventory["gaps"]}
+    for number in (35, 36):
+        assert gaps[(number, "temperature")]["status"] == "partial"
+        assert "sampling_scope_review" in gaps[(number, "temperature")]["source_provenance"]
+
+
+def test_sampling_scope_evidence_is_pinned(tmp_path):
+    changed = tmp_path / "sampling.json"
+    changed.write_text(SAMPLING.read_text()+" ")
+    with pytest.raises(ValueError, match="sampling overlay evidence SHA-256 changed"):
+        rescore._validate_evidence(_evidence_inputs(sampling=changed))

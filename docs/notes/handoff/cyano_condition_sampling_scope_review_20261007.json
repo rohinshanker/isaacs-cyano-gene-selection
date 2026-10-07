@@ -1,0 +1,160 @@
+{
+  "scope": "Reviewed sampling-temperature qualification only; model proposals are not source values or biology. No inference that temperature actually changed.",
+  "date": "2026-10-07",
+  "reviewer": "Coordinator bfdd1b08-1791384632",
+  "model": "jev-1.13.0",
+  "questions": {
+    "actual_35_36": {
+      "type": "choice",
+      "instructions": "Classify ONLY temperature30°C scope in state.cases[0].text. Do not assume an unchanged temperature across distinct stages. Ignore the evaluation expected label when judging; it is metadata for evaluation.",
+      "criteria": {
+        "sampling_supported": "The passage explicitly establishes30°C for experimental/RNA-sampling cultures, or declares a general experimental default covering them.",
+        "maintenance_only": "30°C is supported only for a prior stock or maintenance phase; do not transfer it to the later experimental/sampling phase.",
+        "ambiguous": "The passage lacks or conflicts on the required temperature scope; neither of the first two is established."
+      }
+    },
+    "sampling_control": {
+      "type": "choice",
+      "instructions": "Classify ONLY temperature30°C scope in state.cases[1].text. Do not assume an unchanged temperature across distinct stages. Ignore the evaluation expected label when judging; it is metadata for evaluation.",
+      "criteria": {
+        "sampling_supported": "The passage explicitly establishes30°C for experimental/RNA-sampling cultures, or declares a general experimental default covering them.",
+        "maintenance_only": "30°C is supported only for a prior stock or maintenance phase; do not transfer it to the later experimental/sampling phase.",
+        "ambiguous": "The passage lacks or conflicts on the required temperature scope; neither of the first two is established."
+      }
+    },
+    "prior_then_unknown": {
+      "type": "choice",
+      "instructions": "Classify ONLY temperature30°C scope in state.cases[2].text. Do not assume an unchanged temperature across distinct stages. Ignore the evaluation expected label when judging; it is metadata for evaluation.",
+      "criteria": {
+        "sampling_supported": "The passage explicitly establishes30°C for experimental/RNA-sampling cultures, or declares a general experimental default covering them.",
+        "maintenance_only": "30°C is supported only for a prior stock or maintenance phase; do not transfer it to the later experimental/sampling phase.",
+        "ambiguous": "The passage lacks or conflicts on the required temperature scope; neither of the first two is established."
+      }
+    },
+    "absent": {
+      "type": "choice",
+      "instructions": "Classify ONLY temperature30°C scope in state.cases[3].text. Do not assume an unchanged temperature across distinct stages. Ignore the evaluation expected label when judging; it is metadata for evaluation.",
+      "criteria": {
+        "sampling_supported": "The passage explicitly establishes30°C for experimental/RNA-sampling cultures, or declares a general experimental default covering them.",
+        "maintenance_only": "30°C is supported only for a prior stock or maintenance phase; do not transfer it to the later experimental/sampling phase.",
+        "ambiguous": "The passage lacks or conflicts on the required temperature scope; neither of the first two is established."
+      }
+    },
+    "general_experimental_default": {
+      "type": "choice",
+      "instructions": "Classify ONLY temperature30°C scope in state.cases[4].text. Do not assume an unchanged temperature across distinct stages. Ignore the evaluation expected label when judging; it is metadata for evaluation.",
+      "criteria": {
+        "sampling_supported": "The passage explicitly establishes30°C for experimental/RNA-sampling cultures, or declares a general experimental default covering them.",
+        "maintenance_only": "30°C is supported only for a prior stock or maintenance phase; do not transfer it to the later experimental/sampling phase.",
+        "ambiguous": "The passage lacks or conflicts on the required temperature scope; neither of the first two is established."
+      }
+    }
+  },
+  "evaluation_cases": [
+    {
+      "id": "actual_35_36",
+      "text": "Growth: Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~40µE of illumination with fluorescent lights. Treatment: Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days. Existing reviewed qualifier: constant30ºC is stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase."
+    },
+    {
+      "id": "sampling_control",
+      "text": "RNA-seq cultures were maintained at30°C throughout the LD treatment and harvested at30°C."
+    },
+    {
+      "id": "prior_then_unknown",
+      "text": "Stocks were maintained at30°C; later temperature for the treated cultures was not reported."
+    },
+    {
+      "id": "absent",
+      "text": "Cells were exposed to 8h light and16h dark; temperature was not stated."
+    },
+    {
+      "id": "general_experimental_default",
+      "text": "All experimental cultures, including RNA-seq cultures, were grown at30°C unless stated otherwise. No RNA-seq exception is stated."
+    }
+  ],
+  "answers": {
+    "actual_35_36": {
+      "type": "choice",
+      "choice": "maintenance_only",
+      "confidence": 0.98,
+      "probabilities": {
+        "maintenance_only": 0.99,
+        "ambiguous": 0.01,
+        "sampling_supported": 0.0
+      }
+    },
+    "sampling_control": {
+      "type": "choice",
+      "choice": "sampling_supported",
+      "confidence": 1.0,
+      "probabilities": {
+        "maintenance_only": 0.0,
+        "ambiguous": 0.0,
+        "sampling_supported": 1.0
+      }
+    },
+    "prior_then_unknown": {
+      "type": "choice",
+      "choice": "maintenance_only",
+      "confidence": 1.0,
+      "probabilities": {
+        "maintenance_only": 1.0,
+        "ambiguous": 0.0,
+        "sampling_supported": 0.0
+      }
+    },
+    "absent": {
+      "type": "choice",
+      "choice": "ambiguous",
+      "confidence": 0.98,
+      "probabilities": {
+        "maintenance_only": 0.01,
+        "ambiguous": 0.99,
+        "sampling_supported": 0.0
+      }
+    },
+    "general_experimental_default": {
+      "type": "choice",
+      "choice": "sampling_supported",
+      "confidence": 1.0,
+      "probabilities": {
+        "maintenance_only": 0.0,
+        "ambiguous": 0.0,
+        "sampling_supported": 1.0
+      }
+    }
+  },
+  "evaluation": {
+    "expected": {
+      "actual_35_36": "maintenance_only",
+      "sampling_control": "sampling_supported",
+      "prior_then_unknown": "maintenance_only",
+      "absent": "ambiguous",
+      "general_experimental_default": "sampling_supported"
+    },
+    "matched": 5,
+    "cases": 5,
+    "limits": "Four deliberately contrasted controls plus one actual protocol/previously reviewed qualifier. Small scope check, not a general classifier accuracy estimate. Every adopted source interpretation inspected by coordinator."
+  },
+  "source": {
+    "accession": "GSE252562",
+    "rows": [
+      35,
+      36
+    ],
+    "archive_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+    "where": [
+      "!Sample_growth_protocol_ch1",
+      "!Sample_treatment_protocol_ch1"
+    ],
+    "growth_quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights.",
+    "treatment_quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days.",
+    "records_sha256": "b22ac8edf463d47f134e8e364fe3d82e1dfafbd178aa83cbfacd2dfab91983c8"
+  },
+  "accepted_decision": {
+    "sampling_temperature": null,
+    "status": "partial",
+    "reported_maintenance_temperature_c": 30,
+    "constraint": "Maintenance30°C is retained as a fact about that stage; LD-cycle sampling temperature is unknown in the inspected protocols, as the existing compact record already qualified. Do not transfer the number to the treatment. No paper-wide absence claim."
+  }
+}
