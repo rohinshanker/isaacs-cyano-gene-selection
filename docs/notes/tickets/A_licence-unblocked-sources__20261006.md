@@ -148,8 +148,8 @@ per-gene file package B found; conditions are the package B rows, amended by the
    PRIDE v3 file listings: PXD000510 (Guerreiro 2014) has four `.pride.mztab.gz`
    files, 9 to 21 MB, beside its Mascot result XML, so a TMT reporter-ion table
    is reachable without reprocessing; PXD005105 (Wang 2016) serves one 944 MB
-   `SEARCH.zip` of DTASelect output, which the existing `dtaselect` reader
-   already handles, as PXD030282's was; PXD005851 (the 48-organism acetylation
+   `SEARCH.zip`, which the PRIDE listing labels SEARCH and which this ticket
+   first recorded as DTASelect output; it is not, and the correction is below; PXD005851 (the 48-organism acetylation
    deposit) has six *S. elongatus* runs, three in BG-11 and three in BG-11 with
    NaCl, each with an MS-GF+ `.mzid.gz` of about 80 to 107 MB, which needs an
    mzIdentML reader the repository does not have.
@@ -166,11 +166,50 @@ per-gene file package B found; conditions are the package B rows, amended by the
    study separated. The reporter ions exist only in the 100 raw files, so the
    alternative is reprocessing.
 
-   Revised order: PXD005105 first, since the existing `dtaselect` reader takes
-   its `SEARCH.zip` with no new code; then PXD000510 behind the owner's call on
-   pooled spectral counts; then PXD005851, which needs the mzIdentML reader and
-   is an acetylation study whose six *S. elongatus* runs are identifications
-   rather than abundances.
+   **PXD005105's archive was downloaded and opened on 2026-10-07, and it does
+   not hold DTASelect output.** The 944 MB `SEARCH.zip`
+   (sha256 `e784a02348847eb8f65a906c227a234f3f432b41f2377b77f316cdaf982d7051`,
+   943,594,061 bytes, cached at `data/interim/expression/PXD005105_SEARCH.zip`)
+   contains 118 members and every one is a ProLuCID `.sqt` file. There is no
+   DTASelect filter report, so the existing `dtaselect` reader cannot read it
+   and the earlier claim in this ticket that row 7 needed no new reader code was
+   wrong.
+
+   What `.sqt` holds is unfiltered search output: one `S` line per spectrum,
+   then the top five candidate peptide matches as `M` lines, each followed by
+   its protein locus as an `L` line, with the header declaring
+   `NumOutput 5` and `EnzymeSpecificity No_Enzyme`. The decoys are still in it.
+   In `wild type -1/wt-1.sqt`, of 21,349 spectra the rank-1 match is a
+   `Reverse_` decoy for 10,882 and a target for 11,261, a rank-1 decoy share of
+   49.1%. Counting spectra per protein from this file as deposited would
+   therefore yield a quantity roughly half of which is noise.
+
+   Turning it into abundance means performing the filtering the authors
+   performed with DTASelect and did not deposit: a decoy-based false-discovery
+   threshold, peptide-to-protein assembly, and a uniqueness rule. Those are
+   scientific choices, and the resulting numbers would be ours rather than the
+   depositor's published values, which the admission contract does not allow by
+   default. The deposit offers no alternative: its PRIDE v3 file listing, its
+   FTP directory and its `README.txt` all show exactly two files, `RAW.zip`
+   (8.1 GB of instrument files) and `SEARCH.zip`, with no `generated/`
+   directory and no protein-level table. The NSAF values PRIDE advertises as
+   the quantification method are not in the deposit.
+
+   The archive is nonetheless worth keeping: it covers nine samples, three
+   biological replicates each of the wild type, L1115 and L1118
+   (`wild type -1/wt-1.sqt` through `-13`, and the same for each strain), so it
+   would add the wild-type proteome the release still lacks.
+
+   Row 7 is therefore blocked on owner decisions in all three deposits, and no
+   ordering unblocks it. PXD005105 needs either a decision to do the filtering
+   in-repo and label the result as our derivation, or the paper's supplementary
+   NSAF table, which this session cannot retrieve: PMC5167140 is not open access
+   through the Europe PMC API, and LIT-08 and LIT-09 of
+   `docs/notes/handoff/cyano_blocked_task_register_20261005.tsv` forbid
+   automating around the PMC challenge, changing User-Agent or using a mirror,
+   so it is the owner's browser route. PXD000510 needs the call on pooled
+   spectral counts recorded above. PXD005851 needs the mzIdentML reader and is
+   an identification study.
 
    PXD005105's condition record is ready from package B row 59, the production
    culture the proteomics samples come from: 30 °C, 100 µmol photons m⁻² s⁻¹
