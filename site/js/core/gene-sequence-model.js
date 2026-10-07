@@ -13,8 +13,9 @@
  * No flank is padded, no gap base is invented, and position zero is always
  * translated as methionine and never recoded, per the data contract.
  */
-import { repliconLength } from './chromosome-model.js';
-import { transcriptionPieces, UPSTREAM_CONTEXT_NT } from './gene-view-model.js';
+import { repliconLength, sameReplicon } from './chromosome-model.js';
+import { transcriptionPieces, tssSiteRows, UPSTREAM_CONTEXT_NT } from './gene-view-model.js';
+import { markerCoversPosition, markerSpanNt } from './marker-layers.js';
 import { replacementAt, occurrenceCounter } from './scheme.js';
 
 /** Full residue names, so a one-letter row can be read out in words. */
@@ -227,6 +228,122 @@ export function geneSequenceModel(gene, table, scheme = null) {
   };
 }
 
+/**
+ * The displayed column of every genomic position this strip actually shows.
+ *
+ * Built from the model's own position tables rather than from arithmetic over
+ * the gene's start, so a minus-strand gene, a spliced CDS, an origin-crossing
+ * one and a gene whose upstream context the release does not ship are all
+ * handled by the same lookup: a position is on this strip exactly when the
+ * strip has a base at it. A gene whose segments do not add up to its coding
+ * length has no coordinates at all (`coordinatesKnown` false), and so
+ * contributes no coding columns — the strip would otherwise label a base with
+ * a position it cannot stand behind.
+ *
+ * Coding columns are written after the upstream ones, so a coding base wins
+ * the pathological case of a replicon short enough for the 30 upstream bases
+ * to wrap into the gene itself: the base belongs to the gene's own sequence.
+ *
+ * @returns {Map<number, number>} genomic position to CDS offset.
+ */
+export function sequenceColumns(model) {
+  const columns = new Map();
+  if (!model) return columns;
+  for (const base of model.upstream) {
+    if (Number.isFinite(base.position)) columns.set(base.position, base.offset);
+  }
+  for (const codon of model.codons) {
+    if (!codon.positions) continue;
+    for (const [k, position] of codon.positions.entries()) {
+      if (Number.isFinite(position)) columns.set(position, codon.offset + k);
+    }
+  }
+  return columns;
+}
+
+/**
+ * Where one marker lands on this strip, from its **native genomic coordinate
+ * and nothing else**.
+ *
+ * This is the whole point of marking the close-up. A distance published
+ * against another study's gene model is evidence about that model; using it
+ * here would put a base-resolution mark on a letter the source never named,
+ * because this release's annotated start can differ from the paper's. So the
+ * strip places a marker only where it has a base at the marker's own published
+ * coordinate, and a marker with no such base keeps an explicit unplaceable
+ * state instead of being moved to one.
+ *
+ * An interval is placed over however many of its bases this strip shows, and
+ * says when that is fewer than it covers. A point is placed or it is not.
+ *
+ * @param {object} model the sequence model of the gene on screen.
+ * @param {object} marker a shared marker record.
+ * @param {Map<number, number>} [columns] from {@link sequenceColumns}.
+ * @returns {{status: string, reason: string|null, fromOffset: number|null,
+ *   toOffset: number|null, shownNt: number, spanNt: number|null}}
+ */
+export function markerPlacement(model, marker, columns = sequenceColumns(model)) {
+  const unplaceable = (reason) => ({
+    status: 'unplaceable', reason, fromOffset: null, toOffset: null, shownNt: 0, spanNt: null,
+  });
+  if (!model || !marker) return unplaceable('no-native-coordinate');
+  if (marker.coordinateStatus !== 'mapped') return unplaceable('no-native-coordinate');
+  if (!sameReplicon(marker.replicon, model.replicon)) return unplaceable('other-replicon');
+  const spanNt = markerSpanNt(marker);
+  if (marker.geometry !== 'interval') {
+    const offset = columns.get(marker.position);
+    if (offset === undefined) return unplaceable('outside-shown-sequence');
+    return { status: 'placed', reason: null, fromOffset: offset, toOffset: offset, shownNt: 1, spanNt };
+  }
+  // Walked over the strip's columns rather than the interval's bases: the
+  // strip has at most a few thousand of them whatever the interval's length,
+  // and the membership test is the shared one, so an interval that runs across
+  // the circular origin needs no second rule here.
+  let from = null;
+  let to = null;
+  let shownNt = 0;
+  for (const [position, offset] of columns) {
+    if (!markerCoversPosition(marker, position)) continue;
+    shownNt += 1;
+    if (from === null || offset < from) from = offset;
+    if (to === null || offset > to) to = offset;
+  }
+  if (shownNt === 0) return unplaceable('outside-shown-sequence');
+  return { status: 'placed', reason: null, fromOffset: from, toOffset: to, shownNt, spanNt };
+}
+
+/**
+ * Every marker row one layer publishes for this gene, with where this strip
+ * puts it and where the gene visualizer puts it.
+ *
+ * Built from {@link tssSiteRows}, so no source row and no identifier is lost
+ * on the way here and the two views read one representation. What this adds is
+ * the strip's own placement and, beside it, the offset the published
+ * source-gene-model distance implies — the basis the small gene visualizer
+ * draws. Both are carried and neither is substituted for the other;
+ * `basisGapNt` is how far apart the two bases put the same site, and the
+ * column placement is the authority for what this strip draws.
+ *
+ * Ordered by the column the strip draws at, then by the order the source
+ * published the rows it cannot place; `sort` is stable, so that order holds.
+ */
+export function sequenceMarkers(gene, model) {
+  if (!model) return [];
+  const columns = sequenceColumns(model);
+  return tssSiteRows(gene)
+    .map((row) => {
+      const placement = markerPlacement(model, row, columns);
+      const basisGapNt = placement.status === 'placed' && row.offset !== null
+        ? Math.abs(placement.fromOffset - row.offset) : null;
+      return { ...row, placement, sourceOffset: row.offset, basisGapNt };
+    })
+    .sort((a, b) => {
+      const placed = (row) => row.placement.status === 'placed';
+      if (placed(a) !== placed(b)) return placed(a) ? -1 : 1;
+      return placed(a) ? a.placement.fromOffset - b.placement.fromOffset : 0;
+    });
+}
+
 /** The codon that holds a CDS offset, or null outside the coding sequence. */
 export function codonAtOffset(model, offset) {
   if (!model || !(offset >= 0) || offset >= model.cdsLengthNt) return null;
@@ -240,11 +357,102 @@ export function signedOffset(offset) {
   return offset > 0 ? `+${text}` : `−${text}`;
 }
 
+/** `n site` / `n sites`, with the label the organism's record gives the study. */
+function siteCount(count, label) {
+  return `${count.toLocaleString('en-US')} ${label} start site${count === 1 ? '' : 's'}`;
+}
+
+/**
+ * What this strip is doing about one marker layer, in sentences.
+ *
+ * Six states, kept apart because an empty marker row would otherwise read as a
+ * locus with no start site: the organism publishes no such layer and nothing
+ * is said; the file has not landed or failed; it landed and no row maps to
+ * this locus; rows map and are drawn; rows map and the reader has hidden them;
+ * and rows map but none of their published coordinates is a base this strip
+ * shows, which is neither absence nor a hidden mark.
+ *
+ * The placement basis is stated wherever a mark is drawn. A mark here sits on
+ * the base its source published a coordinate for, which is not in general the
+ * base the small gene visualizer draws it at: that view uses the distance the
+ * study published against its own gene model. Both are true of the same site,
+ * and the sentence says so rather than choosing.
+ *
+ * @param {object} model the sequence model on screen.
+ * @param {{label: string, controlLabel: string, rows: object[],
+ *   visible: boolean, pending: 'loading'|'failed'|null}|null} marks the layer
+ *   on screen, or null when the organism publishes none.
+ */
+export function describeSequenceMarkers(model, marks) {
+  if (!model || !marks) return [];
+  const { label, controlLabel, rows, visible, pending } = marks;
+  if (pending) {
+    return [pending === 'failed'
+      ? `The ${label} start sites could not be loaded, so none is marked on the sequence.`
+      : `The ${label} start sites are still loading, so none is marked on the sequence yet.`];
+  }
+  if (rows.length === 0) {
+    return [`No ${label} start site maps to this locus by exact locus tag.`];
+  }
+  const placed = rows.filter((row) => row.placement.status === 'placed');
+  const elsewhere = rows.length - placed.length;
+  const listed = `${rows.length === 1 ? 'The one' : `All ${rows.length.toLocaleString('en-US')}`} `
+    + `${label} start site${rows.length === 1 ? '' : 's'} published for this locus `
+    + `${rows.length === 1 ? 'is' : 'are'} listed below the strip.`;
+  if (placed.length === 0) {
+    return [`${siteCount(rows.length, label)} ${rows.length === 1 ? 'is' : 'are'} published for `
+      + `this locus, and ${rows.length === 1 ? 'its' : 'none of their'} published genome `
+      + `coordinate${rows.length === 1 ? ' is not' : 's is'} a base this close-up shows, so no `
+      + 'mark is drawn on the sequence. The sites are unchanged, and no mark is placed at a base '
+      + 'their source did not report.', listed];
+  }
+  if (!visible) {
+    return [`${siteCount(placed.length, label)} ${placed.length === 1 ? 'lands' : 'land'} on `
+      + `${placed.length === 1 ? 'a base' : 'bases'} this close-up shows, and its `
+      + `"${controlLabel}" control is off, so no mark is drawn for `
+      + `${placed.length === 1 ? 'it' : 'them'}. The sites, this sequence, its coordinates and `
+      + 'the window shown are unchanged.', listed];
+  }
+  const parts = [];
+  const where = placed
+    .map((row) => `${row.id ?? 'an unidentified row'} at ${signedOffset(row.placement.fromOffset)}`)
+    .join(', ');
+  parts.push(`${siteCount(placed.length, label)} ${placed.length === 1 ? 'is' : 'are'} marked on `
+    + `the sequence at the base each one's own published genome coordinate names: ${where}.`);
+  const apart = placed.filter((row) => row.basisGapNt > 0);
+  if (apart.length > 0) {
+    parts.push(`The gene visualizer draws ${apart.length === 1 ? 'that site' : 'those sites'} `
+      + `against the distance the study published for its own gene model instead, `
+      + `${apart.length === 1 ? 'which is' : 'which are'} `
+      + `${apart.map((row) => `${row.basisGapNt.toLocaleString('en-US')} nt away for ${row.id}`).join(', ')}. `
+      + 'Both coordinates are the source\'s own; which one a construct boundary should follow is '
+      + 'for the lab to decide.');
+  } else {
+    parts.push('The distance the study published against its own gene model puts '
+      + `${placed.length === 1 ? 'it' : 'each of them'} at the same base, so this placement and `
+      + 'the gene visualizer\'s agree.');
+  }
+  if (marks.crowded > 1) {
+    parts.push(`${marks.crowded.toLocaleString('en-US')} of those marks share drawn space at this `
+      + 'zoom, so their heads are not separately readable; zoom in to separate them, and each '
+      + 'one keeps its own nucleotide offset in the list below. Sharing drawn space is where '
+      + 'this zoom puts the heads, not one site and not continuous evidence.');
+  }
+  if (elsewhere > 0) {
+    parts.push(`${elsewhere.toLocaleString('en-US')} further published `
+      + `${elsewhere === 1 ? 'row has a coordinate that is not' : 'rows have coordinates that are not'} `
+      + 'a base this close-up shows, so no mark is drawn for '
+      + `${elsewhere === 1 ? 'it' : 'them'}.`);
+  }
+  parts.push(listed);
+  return parts;
+}
+
 /**
  * One paragraph naming what the close-up shows, for its accessible description.
  * The visible strip is a picture; this is its text equivalent.
  */
-export function describeGeneSequence(model, window = null) {
+export function describeGeneSequence(model, window = null, marks = null) {
   if (!model) return 'No gene is pinned.';
   const identity = model.name ? `${model.id} ${model.name}` : model.id;
   const parts = [];
@@ -279,6 +487,7 @@ export function describeGeneSequence(model, window = null) {
         + `codon${model.scheme.changedCodons === 1 ? '' : 's'}`
         + `${model.scheme.stopChanged ? ', including the terminal stop' : ''}.`);
   }
+  parts.push(...describeSequenceMarkers(model, marks));
   if (window) {
     parts.push(`Showing nucleotides ${signedOffset(window.from)} to ${signedOffset(window.to)}.`);
   }

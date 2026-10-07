@@ -476,3 +476,48 @@ test('the dataset selection and the informing datasets ride in the link only whe
   const messy = decodeState('#ver=6&src=type.a.b.c=GSE1,junk,type.x.y.z=PXD1.1,nottype=GSE2');
   assert.deepEqual(messy.typeSources, { 'type.a.b.c': 'GSE1', 'type.x.y.z': 'PXD1.1' });
 });
+
+test('a fresh view draws every marker layer everywhere and writes no field for it', () => {
+  // The owner's provisional default of 2026-10-07: all current Tan marks
+  // visible, in all four views. An absent `mk` has exactly that one meaning,
+  // which is why it did not bump the encoder version.
+  assert.deepEqual(defaultState().hiddenMarkers, []);
+  assert.doesNotMatch(encodeState(defaultState()), /(^|&)mk=/);
+  assert.equal(STATE_VERSION, 6, 'the hidden marker views did not need a version');
+});
+
+test('each view hides its own marks in a shared link, independently of the others', () => {
+  const hidden = { ...defaultState(), hiddenMarkers: ['tss.sequence', 'tss.chromosome'] };
+  const hash = encodeState(hidden);
+  // Canonical order, so two readers who made the same choice write one link.
+  assert.match(hash, /mk=tss\.chromosome%2Ctss\.sequence/);
+  const decoded = decodeState(`#${hash}`);
+  assert.deepEqual(decoded.hiddenMarkers, ['tss.chromosome', 'tss.sequence']);
+  assert.deepEqual(applyDecoded(defaultState(), decoded).hiddenMarkers,
+    ['tss.chromosome', 'tss.sequence']);
+  // Showing them again writes the field back out of the link.
+  assert.doesNotMatch(encodeState({ ...hidden, hiddenMarkers: [] }), /(^|&)mk=/);
+});
+
+test('a hash with no marker field returns every view to drawing its marks', () => {
+  const decoded = decodeState(`#ver=${STATE_VERSION}&p=native&c=cai`);
+  assert.ok(!Object.hasOwn(decoded, 'hiddenMarkers'));
+  // `applyDecoded` resets first, so a link that does not speak to the marks
+  // shows them rather than leaving the previous reader's choice in place.
+  const target = { ...defaultState(), hiddenMarkers: ['tss.sequence'] };
+  assert.deepEqual(applyDecoded(target, decoded).hiddenMarkers, []);
+});
+
+test('a hand-edited marker field is dropped rather than leaving a view blank', () => {
+  assert.deepEqual(decodeState('#ver=6&mk=tss.nowhere').hiddenMarkers, []);
+  assert.deepEqual(decodeState('#ver=6&mk=notalayer.sequence,tss.sequence').hiddenMarkers,
+    ['tss.sequence'], 'a bad name is dropped without discarding its neighbour');
+  assert.deepEqual(decodeState('#ver=6&mk=').hiddenMarkers, []);
+});
+
+test('the marker visibility is not part of the exported view state', () => {
+  // The manifest records what the plotted numbers are; hiding a mark changes
+  // none of them, and the link is where the picture's own choices live.
+  assert.ok(!Object.hasOwn(viewStateOf({ ...defaultState(), hiddenMarkers: ['tss.sequence'] }),
+    'hiddenMarkers'));
+});

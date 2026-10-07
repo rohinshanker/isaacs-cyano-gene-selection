@@ -11,6 +11,7 @@
  */
 
 import { cdsPieces, repliconLength, wrapsOrigin } from './chromosome-model.js';
+import { markerLayerForKey, markerOf } from './marker-layers.js';
 
 /** Upstream context drawn by default: the contract's own [-30,60) start window. */
 export const UPSTREAM_CONTEXT_NT = 30;
@@ -115,32 +116,37 @@ export function orientedSegments(gene) {
  * carries one and `unrecorded` when it carries none. Neither is a claim about
  * initiation: a published site with no counts in this extract is still a
  * measured site, and is said to be one.
+ *
+ * Each row is a shared marker record — {@link markerOf}, with its geometry,
+ * type, strand, native coordinate, measured-versus-predicted status and
+ * unmapped state — plus the gene-relative fields only a gene-relative track
+ * needs. One representation, so the chromosome view, both gene visualizers and
+ * the sequence close-up cannot disagree about a site; and `drawn` is about this
+ * track alone, since a row's native coordinate can be present while its
+ * published distance is not, and the reverse.
  */
 export function tssSiteRows(gene) {
   const sites = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence : [];
+  const layer = markerLayerForKey('tssEvidence');
   return sites
     .map((site) => {
+      const marker = markerOf(site, layer);
       const distanceNt = Number.isFinite(site?.sourceStartDistanceNt)
         ? site.sourceStartDistanceNt : null;
-      const position = Number.isFinite(site?.position) ? site.position : null;
+      const { position } = marker;
       const impliedDistanceNt = position === null ? null
         : gene.strand === '-' ? position - gene.end : gene.start - position;
-      const readCount = Object.values(site?.rawReads ?? {})
-        .flat()
-        .filter((value) => Number.isFinite(value)).length;
       return {
-        id: site?.id ?? null,
+        ...marker,
+        // The source's own type string under the name this track has always
+        // printed, beside the representation's `typeId` and `typeLabel`.
         type: site?.type ?? null,
         offset: distanceNt === null ? null : -distanceNt,
         distanceNt,
         impliedDistanceNt,
         placementGapNt: impliedDistanceNt === null || distanceNt === null ? null
           : Math.abs(impliedDistanceNt - distanceNt),
-        strand: site?.strand ?? null,
-        position,
-        replicon: site?.replicon ?? null,
-        readCount,
-        evidence: readCount > 0 ? 'measured' : 'unrecorded',
+        evidence: marker.readCount > 0 ? 'measured' : 'unrecorded',
         drawn: distanceNt !== null,
       };
     })

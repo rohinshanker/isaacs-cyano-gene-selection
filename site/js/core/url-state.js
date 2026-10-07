@@ -23,6 +23,7 @@ import {
   normalizePanelOrder, normalizeCollapsed, isDefaultPanelOrder, isDefaultCollapsed,
 } from './left-panels.js';
 import { DRAW_DIRECTIONS, DEFAULT_DRAW_DIRECTION } from './paint-priority.js';
+import { normalizeHiddenMarkers } from './marker-layers.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
@@ -33,6 +34,7 @@ const KEYS = {
   panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc', drawOnTop: 'dt',
   sources: 'ds',
   typeSources: 'src',
+  hiddenMarkers: 'mk',
 };
 
 /**
@@ -75,6 +77,12 @@ const KEYS = {
  * older link drew, since the colour metric it names is encoded separately and
  * still colours the map. The field is written only when the selection differs
  * from that default (owner decision, 2026-10-05).
+ *
+ * The hidden marker views `mk` pass it too. A hash with no `mk` means every
+ * admitted marker layer is drawn in every view, which is the fresh view and
+ * is also what every link written before the field existed drew: the marks
+ * were visible by default then and had no persisted state at all. So an
+ * omitted `mk` has exactly one meaning and no older one to preserve.
  */
 export const STATE_VERSION = 6;
 
@@ -136,6 +144,10 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // Which dataset informs each type metric, where it differs from the default;
     // empty means the defaults. Resolved by the app against the loaded sources.
     typeSources: {},
+    // Which admitted marker layers the reader has hidden, and in which of the
+    // four views. Empty is the fresh view: every mark drawn everywhere. Each
+    // view is its own entry, so one choice never moves another's picture.
+    hiddenMarkers: [],
   };
 }
 
@@ -314,6 +326,11 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (informing.length > 0) {
     push(KEYS.typeSources, informing.map(([type, id]) => `${type}=${id}`).join(','));
   }
+  // Only the views a reader has put marks away in, in the registry's canonical
+  // order, so two readers who made the same choice write the same link. Every
+  // mark visible everywhere writes no field at all.
+  const hiddenMarkers = normalizeHiddenMarkers(state.hiddenMarkers);
+  if (hiddenMarkers.length > 0) push(KEYS.hiddenMarkers, hiddenMarkers.join(','));
   return parts.join('&');
 }
 
@@ -418,6 +435,12 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   // the shape is read, and an empty or malformed field means the default.
   if (values.has(KEYS.sources)) {
     state.sources = values.get(KEYS.sources).split(',').filter((id) => /^[\w.-]+$/.test(id));
+  }
+  // An unknown layer or view name is dropped rather than kept: a hash from a
+  // build that drew a layer this one does not have cannot hide it here, and a
+  // typo must not leave a view permanently blank.
+  if (values.has(KEYS.hiddenMarkers)) {
+    state.hiddenMarkers = normalizeHiddenMarkers(values.get(KEYS.hiddenMarkers).split(','));
   }
   if (values.has(KEYS.typeSources)) {
     state.typeSources = Object.fromEntries(values.get(KEYS.typeSources).split(',')
