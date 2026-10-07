@@ -1,9 +1,9 @@
-# O_instant-hover-hints__20261006 — Open
+# A_instant-hover-hints__20261006 — Active
 
 - **Scope:** Replace delayed native browser/platform hover hints that provide
   additional information across `site/` with instant hints that follow the mouse,
   including dataset light measurements and their exact values.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-06
 - **Updated:** 2026-10-06
 

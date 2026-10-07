@@ -1,9 +1,9 @@
-# O_condition-column-hover-guides__20261006 — Open
+# A_condition-column-hover-guides__20261006 — Active
 
 - **Scope:** Hover guide lines for the condition-value columns in the data
   selection area, extending existing value marks down the full column for easier
   comparison across condition sets.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-06
 - **Updated:** 2026-10-06
 
@@ -40,7 +40,7 @@ This ticket records the requested behavior; no rendered validation has occurred.
    content or intercepting pointer events and clicks. Clear stale guides when
    the data selection popup closes or its content is replaced.
 6. Coordinate with
-   [O_instant-hover-hints__20261006](O_instant-hover-hints__20261006.md): value
+   [A_instant-hover-hints__20261006](A_instant-hover-hints__20261006.md): value
    tooltips and column guides must coexist. Preserve existing hint text exactly
    and add no popup text explaining these hover interactions.
 

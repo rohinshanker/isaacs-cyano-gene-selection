@@ -1,9 +1,9 @@
-# O_unify-chromosome-loading__20261006 — Open
+# A_unify-chromosome-loading__20261006 — Active
 
 - **Scope:** Consolidate the site's loading progress under the main chromosome-style
   bar, including later data stages and subsequent organism or dataset loads.
   Covers `site/`, loading tests, and `docs/validation/progressive-loading.md`.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-06
 - **Updated:** 2026-10-06
 
