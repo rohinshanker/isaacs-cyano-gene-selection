@@ -30,6 +30,7 @@
       "rawDirectory": "data/raw",
       "outputDirectory": "site/data",
       "annotationDirectory": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13",
+      "expressionDirectory": "data/expression",
       "geneCountRange": [
         2650,
         2725
@@ -96,7 +97,8 @@
       "expectedExceptions": {
         "b2891": "ribosomal_slippage"
       },
-      "annotationDirectory": "data/annotation/releases/GCF_000005845.2-UniProtGOA_2026-07-28"
+      "annotationDirectory": "data/annotation/releases/GCF_000005845.2-UniProtGOA_2026-07-28",
+      "expressionDirectory": "data/expression/organisms/ecoli-k12-mg1655"
     }
   }
 }

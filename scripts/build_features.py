@@ -1228,10 +1228,14 @@ def build(
     expression_values: dict[str, dict[str, float]] = {}
     pair_judgements: list[dict[str, Any]] = []
     if organism.has_layer("expression"):
+        # The manifest directory is the organism's, not a fixed path: a second
+        # organism's layers are measured in its own strains and join through its
+        # own crosswalk, so they cannot share one manifest.
+        expression_dir = organism.path("expressionDirectory")
         expression_sources, expression_values = load_expression_sources(
-            repository / "data/expression", METRIC_DEFINITIONS
+            expression_dir, METRIC_DEFINITIONS
         )
-        pair_judgements = load_pair_judgements(repository / "data/expression/pair_judgements.json")
+        pair_judgements = load_pair_judgements(expression_dir / "pair_judgements.json")
     sources_by_metric = {source["metricKey"]: source for source in expression_sources}
     primary_expression_source = sources_by_metric.get("expression")
     if organism.has_layer("expression"):
