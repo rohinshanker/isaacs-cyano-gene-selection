@@ -123,6 +123,7 @@ async (page) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.waitForFunction(() => document.querySelector('.peek-backdrop:not([hidden]) .peek-body').children[1].classList.contains('peek-foot'));
     check(await focusedRow.evaluate((node) => { const r = node.getBoundingClientRect(); return node === document.activeElement && document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === node; }), 'focused row is not behind the sticky header');
+    check(await focusedRow.evaluate((node) => { const row = node.closest('tr'); const r = row.getBoundingClientRect(); const header = node.closest('.peek-list').querySelector('thead th').getBoundingClientRect(); return r.top > header.bottom; }), 'focused row context clears the sticky header');
     await lastListControl.focus(); await page.keyboard.press('Tab');
     check(await page.locator('.peek-done').evaluate((node) => node === document.activeElement), 'stacked order: list then footer');
     await page.keyboard.press('Tab');

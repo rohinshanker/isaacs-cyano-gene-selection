@@ -444,11 +444,12 @@ test('a breakpoint reflow keeps focused content inside its own scroll pane', asy
     side.append(control); body.append(list, foot, side); document.body.append(body);
     list.scrollTop = 250;
     side.scrollTop = 50; side.scrollLeft = 50;
+    side.clientTop = 1; side.clientLeft = 1; side.clientHeight = 68; side.clientWidth = 68;
     side.getBoundingClientRect = () => ({ top: 30, bottom: 100, left: 30, right: 100 });
     control.getBoundingClientRect = () => ({ top: 10, bottom: 20, left: 10, right: 20 });
     control.focus();
     arrangePeekBody(body, { list, foot, side }, true);
-    assert.equal(side.scrollTop, 29); assert.equal(side.scrollLeft, 29);
+    assert.equal(side.scrollTop, 28); assert.equal(side.scrollLeft, 28);
     assert.equal(list.scrollTop, 250, 'the other pane retains its position');
     control.getBoundingClientRect = () => ({ top: 90, bottom: 125, left: 90, right: 125 });
     arrangePeekBody(body, { list, foot, side }, false);
@@ -475,5 +476,25 @@ test('focused list controls stay below the opaque sticky header after reflow', a
     control.focus(); arrangePeekBody(body, { list, foot, side }, false);
     assert.equal(list.scrollTop, 585, 'scrolls sufficiently past the header despite integer rounding');
     assert.equal(document.activeElement, control);
+  });
+});
+
+
+test('focus scrolling exposes row context when it fits, and the control for oversized rows', async () => {
+  await withFakeDocument((document) => {
+    const body = document.createElement('div'), list = document.createElement('div');
+    const foot = document.createElement('div'), side = document.createElement('div');
+    const row = document.createElement('tr'), control = document.createElement('input');
+    row.append(control); list.append(row); body.append(list, side, foot); document.body.append(body);
+    list.scrollTop = 600; list.scrollLeft = 0;
+    list.getBoundingClientRect = () => ({ top: 235, bottom: 500, left: 20, right: 1000 });
+    control.getBoundingClientRect = () => ({ top: 250, bottom: 263, left: 30, right: 43 });
+    control.closest = () => row;
+    row.getBoundingClientRect = () => ({ top: 220, bottom: 295, height: 75 });
+    control.focus(); arrangePeekBody(body, { list, foot, side }, false);
+    assert.equal(list.scrollTop, 584, 'the accession and row content clear the header too');
+    row.getBoundingClientRect = () => ({ top: 100, bottom: 800, height: 700 });
+    arrangePeekBody(body, { list, foot, side }, true);
+    assert.equal(list.scrollTop, 584, 'an oversized row does not hide its already visible control');
   });
 });

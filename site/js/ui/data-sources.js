@@ -201,10 +201,13 @@ export function arrangePeekBody(body, { list, foot, side }, wide) {
   const left = visible.left + (pane.clientLeft ?? 0);
   const right = pane.clientWidth === undefined ? visible.right
     : visible.left + (pane.clientLeft ?? 0) + pane.clientWidth;
+  const row = pane === list ? active.closest?.('tr') : null;
+  const rowBounds = row?.getBoundingClientRect?.();
+  const context = rowBounds && rowBounds.height <= bottom - top ? rowBounds : target;
   // Reflow can move a control below the viewport even without detaching its pane.
   // Leave one pixel inside the usable area to accommodate integer scroll rounding.
-  if (target.top < top) pane.scrollTop = Math.floor(pane.scrollTop + target.top - top - 1);
-  else if (target.bottom > bottom) pane.scrollTop = Math.ceil(pane.scrollTop + target.bottom - bottom + 1);
+  if (context.top < top) pane.scrollTop = Math.floor(pane.scrollTop + context.top - top - 1);
+  else if (context.bottom > bottom) pane.scrollTop = Math.ceil(pane.scrollTop + context.bottom - bottom + 1);
   if (target.left < left) pane.scrollLeft = Math.floor(pane.scrollLeft + target.left - left - 1);
   else if (target.right > right) pane.scrollLeft = Math.ceil(pane.scrollLeft + target.right - right + 1);
 }

@@ -28,7 +28,8 @@ tab stop and support Left/Right, Home and End. The DOM order follows the stacked
 breakpoint change moves only the footer, retains each pane’s scroll position,
 and keeps the focused control visible after text reflow, below the list’s sticky
 header and inside the client scrollport. Scroll corrections round inward to avoid
-fractional clipping. Closing returns focus to the
+fractional clipping. A focused row is exposed in full when it fits; oversized
+rows keep the control visible. Closing returns focus to the
 opener. Returning from source details focuses the source's info button when it
 still exists.
 
