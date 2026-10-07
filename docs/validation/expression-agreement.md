@@ -31,6 +31,15 @@ size is computed over the same retained source features as the admitted layer,
 before crosswalk loss. Calibration output belongs outside `data/` and `site/`.
 Plan, specification, source-file and crosswalk hashes travel with the report.
 
+The frozen [statistics summary](../notes/handoff/cyano_processed_expression_agreement_20261007.json)
+retains all metadata, denominators, correlations and caveats for 18 studies and
+53 layers. Its [replicate ranges](../notes/handoff/cyano_processed_expression_agreement_20261007_replicates.tsv)
+and [response comparisons](../notes/handoff/cyano_processed_expression_agreement_20261007_responses.tsv)
+are also available as tables. The summary explicitly omits the per-gene `means`
+and contrast `vector` fields; the command above regenerates those full vectors.
+It records the implementation checksum and numerical-library versions as well
+as the input pins. Never read an omitted vector as a missing measurement.
+
 ## Level and replicate statistics
 
 Layer means use each admitted layer's exact sample columns and normalization,
@@ -38,6 +47,10 @@ with measurements required in every column. Pairwise level Spearman correlation
 uses only genes measured on both sides, includes measured zeros, and records the
 shared-gene denominator. Spearman uses average ranks for ties. Constant vectors
 or fewer than three shared genes have a null result and an explicit reason.
+The implementation uses SciPy's coefficient fields from
+[spearmanr](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.spearmanr.html)
+and [pearsonr](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.pearsonr.html);
+their returned p-values are not part of this report.
 
 Replicate correlations compare sample columns only within an explicit time and
 condition stratum. The reported minimum, median and maximum are an empirical
