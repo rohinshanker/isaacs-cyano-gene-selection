@@ -151,12 +151,18 @@ only)`. The accessible description says the same count and adds that a cluster
 is where the marks are drawn at this width, not one site and not continuous
 evidence. No row is ever folded into another.
 
+The list is built whether or not the marks are shown, because it is the
+metadata and not the drawing — see
+[the gene visualizer's own show/hide](controls-column-and-resets.md#showing-and-hiding-the-start-site-marks).
+What goes with the marks is every claim about where a mark is: with them hidden
+the note says so and no row carries a cluster label, because there is no cluster
+to be in.
+
 The chromosome view's own overlap answer is different and stays as it was: its
 tick row is dropped whole below 3 px of spacing rather than thinned, and its
 show/hide control is contracted in
 [chromosome-view.md](chromosome-view.md#showing-and-hiding-the-start-site-layer).
-That control is view state and not shared with these marks, which keep their
-default visibility.
+That control is that view's state and governs nothing here.
 
 Coverage is `tests/js/tss-overlap-inspection.test.mjs`, over the shipped
 `site/data/tss_evidence.json` as well as fixtures: the dense locus, both

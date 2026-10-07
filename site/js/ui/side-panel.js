@@ -575,6 +575,12 @@ export class SidePanel {
     // Deliberately in memory and not in the link: it is how one person is
     // reading right now, not part of the view a link reproduces.
     this.disclosureState = new Map();
+    // Whether this column's gene visualizer draws its start-site marks. Kept
+    // here for the same reason and on the same terms as the disclosures above:
+    // the panel is rebuilt for every hover, so the view cannot hold it, and it
+    // is this column's own — the controls column's copy keeps its own, and the
+    // chromosome view's layer control is separate again.
+    this.startSitesVisible = true;
   }
 
   /**
@@ -699,10 +705,6 @@ export class SidePanel {
     actions.append(shortlistButton);
     header.append(actions);
     this.host.append(header);
-    if (focusedAction) {
-      const replacement = this.host.querySelector(`[data-detail-action="${focusedAction}"]`);
-      (replacement ?? this.host).focus({ preventScroll: true });
-    }
 
     // The picture of the gene leads the detail column. It answers "what am I
     // looking at" from coordinates and the release's own measurements, before
@@ -716,10 +718,21 @@ export class SidePanel {
     viewerSummary.textContent = 'Gene visualizer';
     const viewerBody = document.createElement('div');
     renderGeneViewer(viewerBody, gene, {
-      tssPending: pendingState(dataset, 'tssEvidence'), organism,
+      tssPending: pendingState(dataset, 'tssEvidence'),
+      organism,
+      startSitesVisible: this.startSitesVisible,
+      onStartSitesVisibleChange: (visible) => { this.startSitesVisible = visible; },
     });
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
+
+    // Focus is restored here rather than with the header, because the gene
+    // visualizer carries a control too: this is the first point at which every
+    // control a reader could have been holding is back in the tree.
+    if (focusedAction) {
+      const replacement = this.host.querySelector(`[data-detail-action="${focusedAction}"]`);
+      (replacement ?? this.host).focus({ preventScroll: true });
+    }
 
     // Each evidence section below reads a file that may not have landed. Until
     // it has, the section's place is taken by a note that says so: an absent

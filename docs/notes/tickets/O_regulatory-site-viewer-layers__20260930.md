@@ -16,15 +16,18 @@ rather than a fixture. Its counts, case coverage and rendered checks are recorde
 once, under [Verification](#d1-2026-10-02).
 
 **D2, the owner-authorized Tan-only pass, shipped 2026-10-07** and is recorded under
-[D2](#d2-2026-10-07): the chromosome start-site layer now has its own show/hide, and
-every colliding gene-view mark is inspectable in a complete per-row list. The ticket
-stays open. What remains is everything the owner's 2026-10-07 decision deliberately
-left out: the broader site-type taxonomy and its toggles, the shared marker layer for
-future admitted initiation, termination and regulatory features, layer state that is
-shared between views or persisted into a link, and the close-up's missing start-site
-marks. Clarifying questions 1 to 8 still belong to that work; question 4 in
-particular — whether a chromosome layer control should also govern the gene views —
-is what keeps this pass's control view-local.
+[D2](#d2-2026-10-07): the chromosome start-site layer has its own show/hide, each gene
+visualizer has its own, and every colliding gene-view mark is inspectable in a
+complete per-row list. The ticket stays open. What remains is everything the owner's
+2026-10-07 decision deliberately left out: the broader site-type taxonomy and its
+toggles, the shared marker layer for future admitted initiation, termination and
+regulatory features, layer state that is shared between views or persisted into a
+link, and the close-up's missing start-site marks. Clarifying questions 1 to 8 still
+belong to that work. Question 4 — whether a chromosome layer control should also
+govern the gene views — is answered **only for this layer and only as
+independence**: the coordinator's scope check of 2026-10-07 put a control of the
+same name in the gene viewer with its own per-view state, and shared or persisted
+layer state stays future work.
 
 The gene viewer renders Tan TSS evidence through `tssMarks()`, which lives only in
 `site/js/core/gene-view-model.js`. `site/js/ui/gene-viewer.js` draws `model.tss` and
@@ -67,8 +70,9 @@ Implementation plan within that decision:
   visibility. Other Tan features remain in the Regulatory sites view under its
   existing association rules. No new type taxonomy or broader chromosome
   placement is implied.
-- Add an accessible show/hide control for this existing TSS layer. It affects
-  marks only, never gene filtering, scores, ranking or data selection. Reuse the
+- Add an accessible show/hide control for this existing TSS layer, in the
+  chromosome view **and in the gene viewer**, independently. It affects marks
+  only, never gene filtering, scores, ranking or data selection. Reuse the
   current view-state/reset conventions; broader shared/persistent layer state
   can be assessed as an extension rather than holding this pass.
 - Make colliding marks inspectable through a complete list of the represented
@@ -88,12 +92,14 @@ not answered by this display-only scope decision.
 
 **Delivered 2026-10-07.** Every bullet above is implemented and verified; the
 contracts are in
-[chromosome-view.md](../../validation/chromosome-view.md#showing-and-hiding-the-start-site-layer)
+[chromosome-view.md](../../validation/chromosome-view.md#showing-and-hiding-the-start-site-layer),
+[controls-column-and-resets.md](../../validation/controls-column-and-resets.md#showing-and-hiding-the-start-site-marks)
 and
 [viewer-interaction-state.md](../../validation/viewer-interaction-state.md#start-site-marks-that-land-on-each-other),
-and the evidence is under [D2](#d2-2026-10-07). No coordinate basis, default
-visibility, source identity or density rule changed, and no new dataset, type
-taxonomy or persisted state was added.
+and the evidence is under [D2](#d2-2026-10-07) and
+[D2b](#d2b-2026-10-07-the-gene-viewers-own-control). No coordinate basis,
+default visibility, source identity or density rule changed, and no new
+dataset, type taxonomy or persisted state was added.
 
 ## Claude Science claims
 
@@ -214,6 +220,80 @@ index entry checked; `git diff --check` passed. Repository gates passed:
 `npm test` (659 tests), pytest (332 passed, 1 skipped, 24 subtests passed), and
 contract validation (96 passed, 0 failed, 1 declared skip). No rendered behavior
 was validated in that ticket-opening pass.
+
+### D2b, 2026-10-07: the gene viewer's own control
+
+The coordinator's scope check extended the Tan-only visibility control to the gene
+viewer, independently of the chromosome's and without shared or persisted state.
+**Show Tan 2018 start sites** now sits between the picture and the legend in both
+gene-viewer mounts, default visible, built only where there is a mark for it to
+govern: an organism that declares the layer, a file that has landed, and at least
+one published row with a distance. A locus with no mapped site, a locus whose rows
+are all unmapped, the loading and failed states and the E. coli page get no control,
+so hidden stays distinct from absent, loading, failed and unpublished. The contract
+is in
+[controls-column-and-resets.md](../../validation/controls-column-and-resets.md#showing-and-hiding-the-start-site-marks).
+
+It governs marks only. With them hidden the mark group is not built, so there is no
+head, no `<title>`, nothing for a pointer to find where a mark was, and no instant-hint
+description left behind; the legend loses its start-site key. Everything else is
+identical — the domain and the upstream room the furthest site opened, the ruler and
+its labels, the track, codons, splice gap and arrow, the gene's facts, the metric
+table beside it, the shortlist action, the filters and the selection. The complete
+list stays, labelled as the metadata of a picture whose marks are hidden, and no row
+carries a cluster label while there is no cluster to be in. The accessible
+description gains a fifth state that names the control, says what is unchanged, and
+drops every sentence about where a mark is drawn.
+
+The state is each view's own and each caller's to hold, because `renderGeneViewer`
+rebuilds its host on every hover: `controlsStartSitesVisible` in `app.js` and
+`this.startSitesVisible` on the `SidePanel`, each written only where the reader
+changes it, in no link, export or storage. Toggling repaints the whole view and
+carries keyboard focus across it; the detail column's focus restoration moved to
+after the visualizer is appended, which is the first point at which every control a
+reader could be holding is back in the tree.
+
+Tests: `tests/js/gene-view-start-site-visibility.test.mjs` (10 tests, over the
+shipped file and the real `SidePanel`) — the control's identity, placement and
+accessible naming, marks-only against a whole-view fingerprint, the list and its
+note, the choice surviving repeated renders and locus changes including through a
+locus with no control, focus across both the toggle's repaint and the caller's,
+the two mounts deciding separately, both strands, every state that gets no control,
+and a source check that only the two views can write the state. Each contract was
+checked against a mutant that breaks it.
+
+Rendered against the real site (`python3 -m http.server`, port 8379, this worktree,
+server identity confirmed by PID cwd; session `dem-279-gene-viewer-tan`) at 375×812,
+768×1024, 1280×800 and 1440×900, with geometry read back at 375, 480, 768, 959, 960,
+1239, 1240, 1280 and 1440 — the control is present in both mounts at every width,
+13×13 px, unclipped, inside its column, between the picture and the legend, named
+`Show Tan 2018 start sites` through its wrapping label, Tab-reachable before the list
+it points at, with a visible 3 px focus ring. Toggled by Space with a mark's hint
+open: focus stayed on the rebuilt control, the hint closed, 20 marks and their 20
+hint descriptions went, `elementFromPoint` at a former mark returned the bare SVG,
+zero description nodes were left unreferenced, and the other gene viewer kept drawing
+its 20. Held across six keyboard locus changes including loci with no control, a live
+hash application, Reset selections confirmed, the chromosome's Reset view and a tab
+change; a reload returned it to visible, with no hash field and no storage key. The
+inverse configuration — controls column showing, detail column hidden, chromosome
+ticks on — was rendered to show the three controls are independent. The minus-strand
+locus `M744_RS09240` toggles with an identical track and ruler, the E. coli page has
+no control and no Tan copy at all, and the failed state was rendered by serving a
+copy with `tss_evidence.json` removed. No console messages at any point, and no
+failed request. Page overflow was zero at every width except 768, where it is the
+same 3 px `table.metric-table` and sequence-close-up overflow the earlier pass
+reproduced on the baseline commit; no `.gene-view-layer` is among the offenders.
+
+Screenshots and semantic snapshots are under
+`/tmp/cyano-tan-20261007/gene-viewer-control`.
+
+Gates on the final patch: `npm test` 1,142 passed; `.venv/bin/python -m pytest -q`
+494 passed, 1 skipped, 36 subtests; `.venv/bin/python tools/validate_contract.py`
+116 passed, 0 failed, 1 declared skip; `git diff --check` clean.
+
+Not verified here: the loading state's absent control was pinned in unit tests and
+not re-rendered, the failed state standing for both; and nothing outside this
+control was re-rendered, since D2's matrix already covers it.
 
 ### D2, 2026-10-07
 
@@ -337,7 +417,8 @@ does not carry; copy them from the canonical checkout before running the gate th
 
 Still to verify when the rest of the ticket is implemented: the broader Chromosome
 type toggles and the shared marker layer, at the same widths, with mouse, keyboard and
-touch. The existing Tan layer's own control is verified under [D2](#d2-2026-10-07). Check Tan fixtures and source/provenance mappings independently of renderer
+touch. The existing Tan layer's own controls are verified under
+[D2](#d2-2026-10-07) and [D2b](#d2b-2026-10-07-the-gene-viewers-own-control). Check Tan fixtures and source/provenance mappings independently of renderer
 geometry. Run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`.
 

@@ -188,10 +188,11 @@ Four rules hold it:
   disappears from anything because of it.
 - **It is this view's own state**, like its per-replicon windows: not in the URL
   hash, not in browser storage, not in the export manifest, and not shared with
-  the gene visualizer, which keeps drawing its own marks. Owner question 4 of
-  [the regulatory ticket](../notes/tickets/O_regulatory-site-viewer-layers__20260930.md)
-  — whether a chromosome layer control should also govern the gene views — is
-  open, and nothing here answers it.
+  the gene visualizer. Each gene visualizer has a control of the same name and
+  its own state, contracted in
+  [controls-column-and-resets.md](controls-column-and-resets.md#showing-and-hiding-the-start-site-marks);
+  owner decision of 2026-10-07 is that the three are independent, so this one
+  never moves a mark in a gene view and no gene view moves this tick row.
 - **Reset view does not touch it**, exactly as it does not touch Show
   filtered-out genes: Reset view returns the windows and nothing else. A
   rerender syncs the checkbox in place rather than rebuilding it, so a reader

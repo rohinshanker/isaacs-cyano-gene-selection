@@ -1474,6 +1474,18 @@ input[type="range"] { width: 100%; }
 .gene-view-tss line { stroke: #6b4f9e; stroke-width: 1.4; }
 .gene-view-tss circle { fill: #6b4f9e; }
 
+/* The start-site layer's own show/hide. Compact enough to sit between the
+   picture and the legend in a side rail: the label is the row, so the words are
+   part of the hit target, and it wraps rather than pushing the rail wider. */
+.gene-view-layer {
+  align-items: center;
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  flex-wrap: wrap;
+}
+.gene-view-layer input { margin-top: 0; }
+
 .gene-view-legend {
   display: flex;
   flex-wrap: wrap;

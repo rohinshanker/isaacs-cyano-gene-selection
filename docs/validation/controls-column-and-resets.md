@@ -271,6 +271,82 @@ audit function to a row with no published distance, a duplicate standing in for
 an omission, and a site placed past the domain, and require it to reject each
 one, so a clean pass means the audit has teeth rather than nothing to find.
 
+### Showing and hiding the start-site marks
+
+**Show ‹study› start sites** sits between the picture and the legend in each
+gene visualizer, as a `label.checkbox-row.gene-view-layer` wrapping its own
+checkbox. It wraps rather than pairing an `id` with a `for` because this
+component is mounted twice on one page and two elements cannot share an `id`;
+the wrapping label is what names it for a screen reader and makes the words part
+of its hit target. The checkbox carries `data-detail-action="gene-view-start-sites"`,
+exported as `START_SITES_CONTROL`.
+
+It is **built only where there is a mark to govern**: an organism that declares
+a `tssEvidence` layer, a file that has landed, and at least one row of this
+locus with a published distance. A locus with no mapped site, a locus whose rows
+are all unmapped, a file still loading or failed, and the E. coli page therefore
+have no control — offering to hide evidence that is not there would read as a
+promise it could be shown. Because the condition is on the published rows and
+not on the current state, the control does not vanish when a reader unchecks it.
+
+Four rules hold it, matching the chromosome layer control's:
+
+- **Marks only.** Hiding them removes the mark group and nothing else. The
+  domain, the ruler and its labels, the coding track, the splice gap, the
+  codon marks, the arrow, the gene's facts, the metric table beside it, the
+  shortlist action, the filters and the selection are identical before and
+  after; the drawn span still reserves the upstream room the furthest site
+  opened, so the track does not jump. No gene is filtered, no value changes,
+  no dataset selection moves, and the gene record is never written to.
+- **It is each view's own state, held by the view's caller.** `renderGeneViewer`
+  rebuilds its host on every call and both callers call it for every hover, so
+  state kept inside it would last until the next pointer move. The controls
+  column holds `controlsStartSitesVisible` in `app.js` and the detail column
+  holds `this.startSitesVisible` on the `SidePanel`, each written only where the
+  reader changes it. Default **visible**. The two gene viewers and the
+  chromosome view's control are three independent choices.
+- **Nothing resets it and nothing persists it.** It is in no URL field, no
+  export manifest and no browser storage, like the detail column's disclosure
+  memory: it is how one person is reading right now. Reset view, Reset
+  selections, a filter change, a tab change, a locus change and a live link
+  application all leave it where the reader put it — including a locus with no
+  sites and no control in between. A reload returns it to visible.
+- **Keyboard focus survives the redraw.** Toggling repaints the whole view
+  rather than editing the mark group, because the description, the legend key
+  and the list's note each say what the picture is doing and a surgical edit
+  would leave one of them describing the other state. `renderGeneViewer` reads
+  whether its own control held focus before it empties the host and restores it
+  afterwards; the detail column restores focus through the same attribute, from
+  after the visualizer is appended, which is the first point at which every
+  control a reader could have been holding is back in the tree.
+
+**Hidden is a fifth state** in the accessible description, beside no layer,
+still loading, could not load, and none maps here. It names the control that is
+off, says the sites and this gene's coordinates, span and values are unchanged,
+and points at the list. It drops the sentences that describe where marks are
+drawn — the distances, the chromosome-placement comparison and the overlap
+count — because none of them is true of a picture with no marks.
+
+**No stale target.** The mark group is not built at all, so there is no head to
+answer a pointer, no `<title>`, and nothing for `elementFromPoint` to find where
+a mark was; `instant-hints.js` forgets the hint records of the removed marks, so
+no description node outlives them. The legend loses its start-site key, since a
+legend is what is in the picture.
+
+**The list stays** and says the marks are hidden, which is the condition for
+keeping it: it is the metadata rather than the drawing, so a reader who has put
+the marks away can still read what was published. No row carries a cluster
+label while they are hidden, because there is no cluster to be in. The control
+being a control rather than prose is why it coexists with the owner's decision
+against explanatory interface text.
+
+Coverage is `tests/js/gene-view-start-site-visibility.test.mjs`, over the
+shipped file: the control's identity and placement, marks-only against a
+whole-view fingerprint, the list and its note, the choice surviving repeated
+renders and locus changes, focus across both kinds of redraw, the two mounts
+deciding separately, both strands, every state that gets no control, and a
+source check that only the two views can write the state.
+
 ## Opening the help panel keeps its button on screen
 
 The **How to read this** toggle scrolls the page header to the top, not the help
@@ -295,6 +371,12 @@ Rendered checks, which source inspection does not replace:
   Counting nodes in the DOM does not establish that: a mark can be present and
   still have no pixels. `M744_RS01695` carries 20 sites over 769 nt and is the
   densest case the release holds.
+- At the same four widths, in both gene visualizers, toggle **Show ‹study›
+  start sites** and read back the rendered page, not the state: no `circle`
+  under `.gene-view-tss`, no start-site legend key, `elementFromPoint` at a
+  former mark finding the bare SVG, no `[id^=instant-hint-description]` node
+  left without an element referencing it, and the ruler, track and facts
+  unmoved. Then hover a mark first, so the toggle happens with its hint open.
 - At the same four widths, and at 360 px: Colour by and Scale share the first
   toolbar row as two columns with one label placement between them, the scale
   note and then the colour explanation are beneath it, and Find a gene is alone

@@ -1151,6 +1151,18 @@ function renderDetail() {
 }
 
 /**
+ * Whether the controls-column gene visualizer draws its start-site marks.
+ *
+ * This view's own choice, and only this one: the gene detail column's copy
+ * keeps its own, and the chromosome view's layer control is separate again.
+ * Held here because that viewer is redrawn on every hover, so it cannot hold
+ * the choice itself. Deliberately not in `state`: like the panel disclosures
+ * it is how one reader is looking right now, not part of the view a shared
+ * link reproduces, so no reset, filter or link touches it.
+ */
+let controlsStartSitesVisible = true;
+
+/**
  * Draw the controls-column copy of the gene visualizer.
  *
  * Skipped while that panel is collapsed: this runs on every hover, and drawing
@@ -1162,8 +1174,12 @@ function renderControlsGeneViewer(index) {
   if (!body || body.hidden) return;
   const host = body.querySelector('#gene-viewer-controls');
   if (!host) return;
-  renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null,
-    { tssPending: pendingState(context.dataset, 'tssEvidence'), organism });
+  renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null, {
+    tssPending: pendingState(context.dataset, 'tssEvidence'),
+    organism,
+    startSitesVisible: controlsStartSitesVisible,
+    onStartSitesVisibleChange: (visible) => { controlsStartSitesVisible = visible; },
+  });
 }
 
 /** The filter set with the length range replaced; both bounds open removes it. */

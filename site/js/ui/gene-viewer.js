@@ -16,6 +16,12 @@
  * here takes the organism's record and names the study from it; an organism
  * with no such layer is never told that no start site maps to a gene, because
  * nothing was looked for.
+ *
+ * The start-site marks have their own show/hide, independently in each place
+ * this component is mounted. It governs the marks and the text that describes
+ * them, and nothing else: the domain, the ruler, the coding track, this gene's
+ * values, the selection and the genes on screen are what they were, and every
+ * site stays in the list below the picture.
  */
 import { pendingNote } from './loading-note.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
@@ -45,6 +51,27 @@ const MIN_CODON_WIDTH = 5;
  */
 export const TSS_MARK_RADIUS = 3;
 
+/**
+ * The `data-detail-action` value the start-site checkbox carries.
+ *
+ * Both of this component's mounts are rebuilt from scratch — the controls
+ * column on every hover and the gene detail column with the whole panel — so a
+ * control the reader is holding has to be found again afterwards. That is what
+ * the detail column's focus restoration reads, and this view's own repaint
+ * reads the same attribute, so there is one name for the control rather than
+ * one per caller.
+ */
+export const START_SITES_CONTROL = 'gene-view-start-sites';
+
+/**
+ * The checkbox's own label, which the description and the list's note quote.
+ * One source, so a reader told "its Show ... control is off" finds a control
+ * with exactly that name.
+ */
+function startSitesControlLabel(startSites) {
+  return `Show ${startSites.label} start sites`;
+}
+
 function svg(name, attributes = {}) {
   const node = document.createElementNS(SVG_NS, name);
   for (const [key, value] of Object.entries(attributes)) {
@@ -69,8 +96,14 @@ function signedNt(offset) {
  * data to draw. An empty space reads as "measured and nothing found"; that
  * sentence says what is actually the case, which is that nothing is admitted to
  * draw. It is written about admission, not about biology.
+ *
+ * Marks the reader has hidden are a fifth thing to say, distinct from no layer,
+ * still loading, could not load, and none maps here: the sites are admitted,
+ * mapped and landed, and this view is not drawing them. Without that sentence a
+ * picture with no mark would read as the locus having no start site.
  */
-export function describeGeneView(model, tssPending = null, organism = DEFAULT_ORGANISM) {
+export function describeGeneView(model, tssPending = null, organism = DEFAULT_ORGANISM,
+  startSitesVisible = true) {
   if (!model) return 'No gene is selected.';
   const startSites = layerOf(organism, 'tssEvidence');
   const parts = [];
@@ -89,6 +122,19 @@ export function describeGeneView(model, tssPending = null, organism = DEFAULT_OR
   if (!startSites) {
     // No start-site layer exists for this organism, so nothing is said about
     // one: "none maps to this locus" would be a finding nobody made.
+  } else if (model.tss.length > 0 && !startSitesVisible) {
+    parts.push(`${model.tss.length} ${startSites.label} start site${model.tss.length === 1 ? '' : 's'} `
+      + `map${model.tss.length === 1 ? 's' : ''} to this locus, and this view's `
+      + `"${startSitesControlLabel(startSites)}" control is off, so no mark is drawn for `
+      + 'them. The sites are unchanged, and so are this gene\'s coordinates, its drawn span, '
+      + 'its values and which genes are on screen.');
+    // Only once the file has landed, because the list is built on the same
+    // condition: pointing a reader at a list that is not there would be worse
+    // than saying nothing about where to read the sites.
+    if (!tssPending) {
+      parts.push(`Every one of them is listed under "${startSiteListTitle(model.tssSites, startSites)}" `
+        + 'below.');
+    }
   } else if (model.tss.length > 0) {
     const distances = model.tss.map((site) => `${site.distanceNt} nt`).join(', ');
     parts.push(`${model.tss.length} ${startSites.label} start site${model.tss.length === 1 ? '' : 's'} `
@@ -209,8 +255,15 @@ function drawStart(root, x) {
   }));
 }
 
-function drawTss(root, model, x, startSites) {
-  if (!startSites || model.tss.length === 0) return;
+/**
+ * The start-site marks, or nothing at all when the reader has hidden them.
+ *
+ * Hidden means not built: no head, no stem and no `<title>`. A mark left in the
+ * tree at zero opacity would still answer a pointer and still be read out, so
+ * the picture would disagree with itself.
+ */
+function drawTss(root, model, x, startSites, visible) {
+  if (!startSites || !visible || model.tss.length === 0) return;
   const group = svg('g', { class: 'gene-view-tss' });
   for (const site of model.tss) {
     const tx = x(site.offset);
@@ -288,22 +341,24 @@ export function placementDivergenceSentence(sites) {
 }
 
 /** Build the SVG for one view model. Exported for rendered tests. */
-export function geneViewSvg(model, tssPending = null, organism = DEFAULT_ORGANISM) {
+export function geneViewSvg(model, tssPending = null, organism = DEFAULT_ORGANISM,
+  startSitesVisible = true) {
   const root = svg('svg', {
     class: 'gene-view-svg',
     viewBox: `0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`,
     role: 'img',
     preserveAspectRatio: 'xMidYMid meet',
   });
+  const said = describeGeneView(model, tssPending, organism, startSitesVisible);
   const description = svg('desc');
-  description.textContent = describeGeneView(model, tssPending, organism);
+  description.textContent = said;
   root.append(description);
-  root.setAttribute('aria-label', describeGeneView(model, tssPending, organism));
+  root.setAttribute('aria-label', said);
   const x = xScale(model);
   drawRuler(root, model, x);
   drawStart(root, x);
   drawTrack(root, model, x);
-  drawTss(root, model, x, layerOf(organism, 'tssEvidence'));
+  drawTss(root, model, x, layerOf(organism, 'tssEvidence'), startSitesVisible);
   return root;
 }
 
@@ -354,14 +409,21 @@ function siteRowText(row, cluster) {
  * push the rest of this reference view out of a side rail; closed, it adds one
  * line. No row is a control and nothing here changes what is drawn, filtered or
  * ranked.
+ *
+ * It is built whether or not the marks are shown, because it is the metadata
+ * and not the drawing: a reader who has put the marks away can still read what
+ * was published here. What goes with the marks is every claim about where a
+ * mark is — the note says the marks are hidden and no row is labelled with a
+ * cluster, because at that point there is no cluster to be in.
  */
-function startSiteList(model, startSites) {
+function startSiteList(model, startSites, visible) {
   const rows = model.tssSites;
   if (rows.length === 0) return null;
   // Numbered over the overlapping clusters only, which is what the picture
   // shows and what the description counts; a mark drawn clear of its
   // neighbours is in no cluster and says nothing about one.
-  const clusters = startSiteClusters(model).filter((group) => group.length > 1);
+  const clusters = visible
+    ? startSiteClusters(model).filter((group) => group.length > 1) : [];
   const clusterOf = new Map();
   clusters.forEach((group, index) => {
     for (const row of group) {
@@ -382,9 +444,14 @@ function startSiteList(model, startSites) {
   const unmapped = rows.filter((row) => !row.drawn).length;
   note.textContent = `Every row ${startSites.citation} published for this locus, each a measured `
     + 'start site rather than a prediction, at the distance that study published against its own '
-    + 'gene model. Marks closer together than one mark head overlap in the picture; the cluster '
-    + 'numbers below say where this width draws them and group nothing else, so each site keeps '
-    + 'its own coordinate and its own row.'
+    + 'gene model.'
+    + (visible
+      ? ' Marks closer together than one mark head overlap in the picture; the cluster '
+        + 'numbers below say where this width draws them and group nothing else, so each site keeps '
+        + 'its own coordinate and its own row.'
+      : ` The marks are hidden in the picture by this view's "${startSitesControlLabel(startSites)}" `
+        + 'control, so no row says where it is drawn; the rows themselves are unchanged, and hiding '
+        + 'the marks filters no gene and changes no value.')
     + (unmapped > 0
       ? ` ${formatCount(unmapped)} ${unmapped === 1 ? 'row has' : 'rows have'} no published `
         + 'upstream distance and so no mark; the row is kept rather than dropped.'
@@ -403,6 +470,30 @@ function startSiteList(model, startSites) {
   }
   details.append(list);
   return details;
+}
+
+/**
+ * This view's own show/hide for the start-site marks.
+ *
+ * A label wrapping its own checkbox rather than an `id` and a `for`, because
+ * this component is mounted twice on the page — the controls column and the
+ * gene detail column — and two elements cannot share one `id`. The wrapping
+ * label names the checkbox for a screen reader and extends its hit target to
+ * the words, which is what the explicit pair buys elsewhere.
+ *
+ * The state is the caller's, so it survives the caller's next rebuild; the
+ * change is reported up rather than stored here.
+ */
+function startSitesControl(startSites, visible, onChange) {
+  const row = document.createElement('label');
+  row.className = 'checkbox-row gene-view-layer';
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.checked = visible;
+  box.dataset.detailAction = START_SITES_CONTROL;
+  box.addEventListener('change', () => onChange(box.checked));
+  row.append(box, document.createTextNode(` ${startSitesControlLabel(startSites)}`));
+  return { row, box };
 }
 
 function legendRow(items) {
@@ -447,19 +538,34 @@ function factsFor(model) {
  * @param {HTMLElement} host emptied before drawing.
  * @param {object|null} gene a `genes.json` record with `tssEvidence` joined, or
  *   null when nothing is selected.
- * @param {{tssPending?: 'loading'|'failed'|null, organism?: object}} [options]
+ * @param {{tssPending?: 'loading'|'failed'|null, organism?: object,
+ *   startSitesVisible?: boolean,
+ *   onStartSitesVisibleChange?: (visible: boolean) => void}} [options]
  *   `tssPending` is set while the start-site file has not landed, so an empty
  *   track says so instead of reading as a gene with no start site. `organism`
  *   is the record of the organism on screen, the default one when omitted.
+ *   `startSitesVisible` is whether this view draws its start-site marks,
+ *   visible by default, and `onStartSitesVisibleChange` is how the reader's
+ *   change is reported to whoever holds that state.
+ *
+ * The visibility state is the caller's rather than this module's because this
+ * function rebuilds `host` on every call, and both callers call it again for
+ * every hover: anything remembered here would last until the next pointer
+ * move. Each mount keeps its own, which is why there is no state shared
+ * between the two gene viewers or with the chromosome view's own control, and
+ * nothing is written to the address bar or to storage. A caller is expected to
+ * record the reported value and leave this view to redraw itself, not to
+ * re-render in response.
  */
 export function renderGeneViewer(host, gene, {
   tssPending = null, organism = DEFAULT_ORGANISM,
+  startSitesVisible = true, onStartSitesVisibleChange = null,
 } = {}) {
   const startSites = layerOf(organism, 'tssEvidence');
-  host.replaceChildren();
   host.classList.add('gene-view');
   const model = geneViewModel(gene);
   if (!model) {
+    host.replaceChildren();
     const empty = document.createElement('p');
     empty.className = 'panel-note';
     empty.textContent = 'Pin a gene, or move to one with the arrow keys, to draw it here.';
@@ -467,64 +573,106 @@ export function renderGeneViewer(host, gene, {
     return null;
   }
 
-  const heading = document.createElement('p');
-  heading.className = 'gene-view-heading';
-  const identity = document.createElement('strong');
-  identity.textContent = model.name ? `${model.id} ${model.name}` : model.id;
-  heading.append(identity);
-  if (model.product) {
-    const product = document.createElement('span');
-    product.className = 'gene-view-product';
-    product.textContent = model.product;
-    heading.append(document.createElement('br'), product);
-  }
-  host.append(heading, geneViewSvg(model, tssPending, organism));
-  if (startSites && tssPending) {
-    host.append(pendingNote(tssPending, `the ${startSites.fileLabel}`));
-  }
+  /**
+   * Draw this gene with the start-site marks shown or hidden.
+   *
+   * The whole view is rebuilt rather than the mark group alone: the picture's
+   * description, the legend key and the list's note each say what the picture
+   * is doing with the marks, and editing one of them in place would leave the
+   * others describing the other state. What is rebuilt is this host, so the
+   * reader's choice, the gene, its coordinates and its values are untouched —
+   * only the marks and the sentences about them differ between the two calls.
+   */
+  const paint = (visible) => {
+    // Whether the reader is holding this view's control, read before the
+    // rebuild detaches it. The controls column rebuilds through this function,
+    // so the carry-over belongs here; the detail column rebuilds the whole
+    // panel around this view and restores focus by the same attribute.
+    const held = host.contains(document.activeElement)
+      && document.activeElement.dataset?.detailAction === START_SITES_CONTROL;
+    host.replaceChildren();
 
-  const items = [
-    ['gene-view-key-cds', 'Coding sequence'],
-    ['gene-view-key-start', 'Initiation triplet'],
-  ];
-  if (model.terminalStop) items.push(['gene-view-key-stop', 'Terminal stop']);
-  if (startSites && model.tss.length > 0) {
-    items.push(['gene-view-key-tss', `${startSites.label} start site`]);
-  }
-  if (model.spliced) items.push(['gene-view-key-join', 'Splice gap']);
-  host.append(legendRow(items));
+    const heading = document.createElement('p');
+    heading.className = 'gene-view-heading';
+    const identity = document.createElement('strong');
+    identity.textContent = model.name ? `${model.id} ${model.name}` : model.id;
+    heading.append(identity);
+    if (model.product) {
+      const product = document.createElement('span');
+      product.className = 'gene-view-product';
+      product.textContent = model.product;
+      heading.append(document.createElement('br'), product);
+    }
+    host.append(heading, geneViewSvg(model, tssPending, organism, visible));
+    if (startSites && tssPending) {
+      host.append(pendingNote(tssPending, `the ${startSites.fileLabel}`));
+    }
 
-  const scale = document.createElement('p');
-  scale.className = 'panel-note gene-view-scale';
-  scale.textContent = `Drawn in transcription orientation from the annotated start, `
-    + `${signedNt(model.domain.min)} to ${signedNt(model.domain.max)} nucleotides.`;
-  host.append(scale);
+    // Built only where there is a mark to show or hide, which is the one thing
+    // it governs. A control beside a locus with no mapped site, beside a file
+    // still in flight, or on an organism with no such study would offer to
+    // hide evidence that is not there, and would read as a promise that it
+    // could be shown.
+    let toggle = null;
+    if (startSites && model.tss.length > 0) {
+      const control = startSitesControl(startSites, visible, (next) => {
+        onStartSitesVisibleChange?.(next);
+        paint(next);
+      });
+      toggle = control.box;
+      host.append(control.row);
+    }
 
-  if (startSites && model.tss.length > 0) {
-    const caveat = document.createElement('p');
-    caveat.className = 'panel-note';
-    caveat.textContent = `Start-site distances are the values ${startSites.citation} published against `
-      + 'their own gene model. They are not remeasured against this release, whose annotated '
-      + 'start may differ, and they measure initiation rather than transcript abundance.';
-    host.append(caveat);
-  }
+    const items = [
+      ['gene-view-key-cds', 'Coding sequence'],
+      ['gene-view-key-start', 'Initiation triplet'],
+    ];
+    if (model.terminalStop) items.push(['gene-view-key-stop', 'Terminal stop']);
+    // No key for a mark the picture is not drawing: a legend is what is in the
+    // picture, not what could be.
+    if (startSites && visible && model.tss.length > 0) {
+      items.push(['gene-view-key-tss', `${startSites.label} start site`]);
+    }
+    if (model.spliced) items.push(['gene-view-key-join', 'Splice gap']);
+    host.append(legendRow(items));
 
-  // Beneath the caveat that states the distance basis the list reads, and only
-  // once the file has landed: a list built while the join is in flight would
-  // read as this locus's complete set of sites when it is not.
-  if (startSites && !tssPending) {
-    const sites = startSiteList(model, startSites);
-    if (sites) host.append(sites);
-  }
+    const scale = document.createElement('p');
+    scale.className = 'panel-note gene-view-scale';
+    scale.textContent = `Drawn in transcription orientation from the annotated start, `
+      + `${signedNt(model.domain.min)} to ${signedNt(model.domain.max)} nucleotides.`;
+    host.append(scale);
 
-  if (model.spliced) {
-    const spliced = document.createElement('p');
-    spliced.className = 'gene-flag';
-    spliced.textContent = `Discontinuous coding sequence: ${model.segments.length} genomic `
-      + 'segments, so the drawn span is longer than the coding length.';
-    host.append(spliced);
-  }
+    // Stated whether or not the marks are drawn, because it is the basis of
+    // the distances in the list, which is readable either way.
+    if (startSites && model.tss.length > 0) {
+      const caveat = document.createElement('p');
+      caveat.className = 'panel-note';
+      caveat.textContent = `Start-site distances are the values ${startSites.citation} published against `
+        + 'their own gene model. They are not remeasured against this release, whose annotated '
+        + 'start may differ, and they measure initiation rather than transcript abundance.';
+      host.append(caveat);
+    }
 
-  host.append(factsFor(model));
+    // Beneath the caveat that states the distance basis the list reads, and only
+    // once the file has landed: a list built while the join is in flight would
+    // read as this locus's complete set of sites when it is not.
+    if (startSites && !tssPending) {
+      const sites = startSiteList(model, startSites, visible);
+      if (sites) host.append(sites);
+    }
+
+    if (model.spliced) {
+      const spliced = document.createElement('p');
+      spliced.className = 'gene-flag';
+      spliced.textContent = `Discontinuous coding sequence: ${model.segments.length} genomic `
+        + 'segments, so the drawn span is longer than the coding length.';
+      host.append(spliced);
+    }
+
+    host.append(factsFor(model));
+    if (held && toggle) toggle.focus({ preventScroll: true });
+  };
+
+  paint(startSitesVisible);
   return model;
 }
