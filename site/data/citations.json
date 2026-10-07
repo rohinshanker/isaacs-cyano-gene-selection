@@ -673,6 +673,554 @@
               "kind": "Project-derived GO table"
             }
           ]
+        },
+        {
+          "id": "price-2018-fitness-browser",
+          "citation": "Price MN, Wetmore KM, Waters RJ, et al. Mutant phenotypes for thousands of bacterial genes of unknown function. Nature 2018;557:503-509. doi:10.1038/s41586-018-0124-0. Data from the Fitness Browser (https://fit.genomics.lbl.gov/), developed by the Arkin lab, organism SynE (Synechococcus elongatus PCC 7942), mutant library SynE_ML6.",
+          "url": "https://fit.genomics.lbl.gov/cgi-bin/org.cgi?orgId=SynE",
+          "contribution": "Ninety optional gene-fitness layers come from the Fitness Browser's PCC 7942 RB-TnSeq compendium: 129 experiments grouped into one layer per distinct condition and dose, with a condition set run more than once carried as the mean of its experiments and labelled as such. Values are the published signed log2 fitness relative to the Time0 sample, mapped onto UTEX 2973 through the pinned identifier crosswalk and covering 1,774 of 2,715 genes. The method is Wetmore et al., mBio 2015. A fitness value is signed and is never placed on an expression scale, and it is measured in PCC 7942 rather than UTEX 2973. The experiment table records medium, temperature, vessel, aeration and the compound, and records no irradiance, light regime, CO2 or growth phase. The Fitness Browser states no reuse licence; it is used with citation under the owner's decision of 2026-10-06.",
+          "downloads": [
+            {
+              "filename": "FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_078125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_078125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_078125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_15625_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_15625_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_15625_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_3125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_3125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Aluminum_chloride_hydrate_at_0_3125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_BG_11_with_no_added_compound.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_BG_11_with_no_added_compound.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_BG_11_with_no_added_compound.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Bacitracin_at_0_000976563_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Bacitracin_at_0_000976563_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Bacitracin_at_0_000976563_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Benzethonium_chloride_at_0_00078125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Benzethonium_chloride_at_0_00078125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Benzethonium_chloride_at_0_00078125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_03125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_03125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_03125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_0625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_0625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_0625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Ceftazidime_hydrate_at_0_125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Cephalothin_sodium_salt_at_0_00390625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Cephalothin_sodium_salt_at_0_00390625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Cephalothin_sodium_salt_at_0_00390625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Chloramphenicol_at_0_000332031_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Chloramphenicol_at_0_000332031_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Chloramphenicol_at_0_000332031_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Chloramphenicol_at_0_000664063_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Chloramphenicol_at_0_000664063_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Chloramphenicol_at_0_000664063_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Cisplatin_at_0_00625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Cisplatin_at_0_00625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Cisplatin_at_0_00625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Cisplatin_at_0_0125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Cisplatin_at_0_0125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Cisplatin_at_0_0125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Cisplatin_at_0_025_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Cisplatin_at_0_025_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Cisplatin_at_0_025_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Cisplatin_at_0_05_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Cisplatin_at_0_05_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Cisplatin_at_0_05_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Cisplatin_at_0_1_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Cisplatin_at_0_1_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Cisplatin_at_0_1_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_D_Cycloserine_at_0_015625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_D_Cycloserine_at_0_015625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_D_Cycloserine_at_0_015625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_D_Cycloserine_at_0_03125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_D_Cycloserine_at_0_03125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_D_Cycloserine_at_0_03125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_D_Cycloserine_at_0_0625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_D_Cycloserine_at_0_0625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_D_Cycloserine_at_0_0625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Dimethyl_Sulfoxide_at_2_5_vol.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Dimethyl_Sulfoxide_at_2_5_vol.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Dimethyl_Sulfoxide_at_2_5_vol.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Dimethyl_Sulfoxide_at_5_vol.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Dimethyl_Sulfoxide_at_5_vol.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Dimethyl_Sulfoxide_at_5_vol.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Doxycycline_hyclate_at_0_00078125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Doxycycline_hyclate_at_0_00078125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Doxycycline_hyclate_at_0_00078125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Doxycycline_hyclate_at_0_0015625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Doxycycline_hyclate_at_0_0015625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Doxycycline_hyclate_at_0_0015625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_015625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_015625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_015625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_0625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_0625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_0625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_25_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_25_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_25_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_5_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_5_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Fusidic_acid_sodium_salt_at_0_5_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Gentamicin_sulfate_salt_at_0_000488281_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Gentamicin_sulfate_salt_at_0_000488281_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Gentamicin_sulfate_salt_at_0_000488281_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_L_Glutamic_acid_monopotassium_salt_monohydrate_at_8_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_L_Glutamic_acid_monopotassium_salt_monohydrate_at_8_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_L_Glutamic_acid_monopotassium_salt_monohydrate_at_8_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_L_Glutamine_at_8_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_L_Glutamine_at_8_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_L_Glutamine_at_8_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_L_Leucine_at_8_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_L_Leucine_at_8_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_L_Leucine_at_8_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_L_Phenylalanine_at_8_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_L_Phenylalanine_at_8_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_L_Phenylalanine_at_8_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_MreB_Perturbing_Compound_A22_at_0_000341797_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_MreB_Perturbing_Compound_A22_at_0_000341797_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_MreB_Perturbing_Compound_A22_at_0_000341797_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_000976563_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_000976563_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_000976563_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_001953125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_001953125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_001953125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_00390625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_00390625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_00390625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_0078125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_0078125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Nalidixic_acid_sodium_salt_at_0_0078125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_0015625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_0015625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_0015625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_003125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_003125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_003125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_00625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_00625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Phosphomycin_disodium_salt_at_0_00625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_000195313_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_000195313_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_000195313_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_000390625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_000390625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_000390625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_2_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_2_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Polymyxin_B_sulfate_at_0_2_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Rifampicin_at_0_000195313_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Rifampicin_at_0_000195313_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Rifampicin_at_0_000195313_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Rifampicin_at_0_0003125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Rifampicin_at_0_0003125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Rifampicin_at_0_0003125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Rifampicin_at_0_000390625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Rifampicin_at_0_000390625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Rifampicin_at_0_000390625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Rifampicin_at_0_000625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Rifampicin_at_0_000625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Rifampicin_at_0_000625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorate_at_10_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_10_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_10_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorate_at_20_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_20_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_20_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorate_at_2_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_2_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_2_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorate_at_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorate_at_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_0_48828125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_0_48828125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_0_48828125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_0_9765625_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_0_9765625_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_0_9765625_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_15_625_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_15_625_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_15_625_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_1_953125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_1_953125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_1_953125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_250_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_250_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_250_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_31_25_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_31_25_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_31_25_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_3_90625_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_3_90625_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_3_90625_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_62_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_62_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_62_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chloride_at_7_8125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_7_8125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chloride_at_7_8125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorite_at_0_3125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_0_3125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_0_3125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorite_at_0_625_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_0_625_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_0_625_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorite_at_1_25_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_1_25_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_1_25_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorite_at_20_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_20_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_20_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_Chlorite_at_2_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_2_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_Chlorite_at_2_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrate_at_100_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_100_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_100_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrate_at_200_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_200_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_200_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrate_at_25_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_25_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_25_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrate_at_50_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_50_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrate_at_50_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrite_at_10_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_10_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_10_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrite_at_20_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_20_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_20_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrite_at_2_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_2_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_2_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_nitrite_at_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_nitrite_at_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_100_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_100_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_100_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_12_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_12_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_12_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_25_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_25_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_25_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_50_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_50_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Sodium_perchlorate_monohydrate_at_50_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Spectinomycin_dihydrochloride_pentahydrate_at_0_000976563_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Spectinomycin_dihydrochloride_pentahydrate_at_0_000976563_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Spectinomycin_dihydrochloride_pentahydrate_at_0_000976563_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Tetracycline_hydrochloride_at_0_00125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Tetracycline_hydrochloride_at_0_00125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Tetracycline_hydrochloride_at_0_00125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Thallium_I_acetate_at_0_000976563_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_000976563_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_000976563_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Thallium_I_acetate_at_0_001953125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_001953125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_001953125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Thallium_I_acetate_at_0_00390625_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_00390625_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_00390625_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Thallium_I_acetate_at_0_0078125_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_0078125_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Thallium_I_acetate_at_0_0078125_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_Zinc_sulfate_heptahydrate_at_0_01953125_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_Zinc_sulfate_heptahydrate_at_0_01953125_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_Zinc_sulfate_heptahydrate_at_0_01953125_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_benzoic_acid_at_0_29_mg_ml.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_benzoic_acid_at_0_29_mg_ml.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_benzoic_acid_at_0_29_mg_ml.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_sodium_fluoride_at_12_5_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_sodium_fluoride_at_12_5_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_sodium_fluoride_at_12_5_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            },
+            {
+              "filename": "FitnessBrowser_SynE_sodium_fluoride_at_25_mM.tsv",
+              "repoPath": "data/expression/FitnessBrowser_SynE_sodium_fluoride_at_25_mM.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_sodium_fluoride_at_25_mM.tsv",
+              "kind": "Project-derived mapped fitness table"
+            }
+          ]
         }
       ]
     },
