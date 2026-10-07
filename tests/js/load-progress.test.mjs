@@ -291,6 +291,31 @@ test('the halfway review latch waits for measured bytes and falls back when tota
   });
 });
 
+test('a new resource during preparation retains the active cycle and every pending resource', async () => {
+  await withFakeDocument(async (document) => {
+    const { progress } = mount(document, {}, {
+      review: { name: 'A', progress: 'grouped' }, terminalHoldMs: 0,
+    });
+    progress.registerPreparation('view', 'initial view');
+    progress.beginResource('first', { label: 'first.json', totalBytes: 100 });
+    progress.update({ worksetKnown: true, files: { genes: {
+      label: 'genes.json', bytes: 100, actualReceivedBytes: 100,
+      settled: true, state: FILE_STATE.READY, included: true,
+    } }, preparation: { registered: 1, completed: 1 } });
+    progress.updateResource('first', { receivedBytes: 100 });
+    assert.equal(progress.truthfulSnapshot().phase, 'preparing');
+    const activeCycle = progress.cycle;
+    progress.beginResource('second', { label: 'second.json', totalBytes: 100 });
+    assert.equal(progress.cycle, activeCycle, 'EOF cannot begin another cycle before validation settles');
+    assert.equal(progress.resources.get('first').cycle, progress.cycle);
+    progress.completePreparation('view');
+    progress.settleResource('second');
+    assert.equal(progress.truthfulSnapshot().terminal, false, 'first.json still needs validation');
+    progress.settleResource('first'); await progress.finished();
+    assert.equal(progress.truthfulSnapshot().terminal, true);
+  });
+});
+
 test('the bar says which tier is loading, how far, and what the release is', () => {
   assert.equal(describeLoad(null), 'Loading complete, 0%.');
   assert.equal(describeLoad(snapshot({ receivedBytes: 430 })), 'Loading genes, 43%.');

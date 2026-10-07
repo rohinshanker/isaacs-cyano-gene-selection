@@ -635,11 +635,14 @@ export class LoadProgress {
    * that first cycle.
    */
   beginResource(key, { label, totalBytes = null, reportFailure = true } = {}) {
-    const active = [...this.resources.values()].some((resource) => !resource.settled);
-    if ((this.completeHeld && !active) || this.fraction >= 1) {
-      this.resourceOnly = this.completeHeld && !active;
+    const active = [...this.resources.values()].filter((resource) => !resource.settled);
+    // A visually full transfer can still be validating or preparing. Only a
+    // terminal cycle may restart, and its older hold must not hide new work.
+    if (this.completeHeld || this.finishScheduled) {
+      this.resourceOnly = active.length === 0;
       this.blockingKeys = null;
       this.startCycle(this.now());
+      for (const resource of active) resource.cycle = this.cycle;
       this.setFraction(0);
     }
     this.resources.set(key, {
