@@ -152,7 +152,8 @@ test('the production registry leads with measured UTEX evidence, before Translat
     .filter((source) => source.record.dataType !== 'fitness')
     .map((source) => source.metricKey));
   assert.equal(expression.length, 58);
-  assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 9);
+  // Nine GSE205443 biofilm fractions plus the Fitness Browser's 90 condition sets.
+  assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 99);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
   assert.equal(freshViewColorKey(registry, dataset.functionCategories), 'functionCategory');
 });
