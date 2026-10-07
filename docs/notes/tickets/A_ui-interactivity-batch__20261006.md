@@ -3,7 +3,7 @@
 Scope: Coordinate the open UI/interactivity fixes in the canonical Desktop checkout.
 Status: active
 Opened: 2026-10-06
-Updated: 2026-10-06
+Updated: 2026-10-07
 
 ## Current State
 
@@ -17,7 +17,12 @@ count, responsive/keyboard/focus repairs, maximum-filter scrolling, per-source
 provenance with compact contributing-source export summaries, instant exact-text
 hints, one chromosome loading surface, concurrent retry/download bookkeeping,
 truthful completion and persistent failure announcements. Three original UI
-tickets remain Active until final independent confirmation and cleanup.
+tickets remain Active until final independent confirmation and cleanup. Loading
+correctness was approved by DEM-260; a separately verified folding bridge now
+routes the remaining native meter through the chromosome activity surface.
+The last guide focus repair covers responsive DOM order, scroll preservation,
+sticky-header occlusion and fractional scroll rounding; final confirmation is
+active in DEM-259.
 
 Independent reviews DEM-259 (guides/export/hints) and DEM-260 (loading) were
 cancelled during their confirmation passes. Their original findings were repaired;
