@@ -19,14 +19,15 @@
   "file": {
     "name": "fit_organism_SynE.tsv",
     "url": "https://fit.genomics.lbl.gov/cgi-bin/org.cgi?orgId=SynE",
-    "sha256": "4c822bd525a7d45a4f592b45bcc00ba55a5f5440b44eef57afebb511918760bf"
+    "sha256": "4c822bd525a7d45a4f592b45bcc00ba55a5f5440b44eef57afebb511918760bf",
+    "manual": true
   },
   "reader": {
     "format": "tsv",
     "idColumn": "locusId",
     "idKind": "pcc7942_old"
   },
-  "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
+  "units": "weighted and normalized gene fitness on the authors' log2 scale (the weighted average of per-strain log2 count ratios between the end of the experiment and the Time0 sample, with pseudocounts and per-scaffold normalization, Wetmore et al. 2015), as published by the Fitness Browser",
   "normalization": "as-deposited",
   "conditionTableRow": null,
   "replicates": {
