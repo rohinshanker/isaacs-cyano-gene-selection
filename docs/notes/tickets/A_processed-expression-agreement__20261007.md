@@ -15,7 +15,14 @@ Use the owner's J6 rule: level Spearman correlation beside within-condition repl
 
 ## Verification
 
-Pending implementation, focused numerical checks, independent patch review, and repository gates.
+Plan pins and all selected table columns verified against the 19 cached files
+from 18 admitted studies: 53 layers, 52 explicit control-relative contrasts,
+26 response pairs. Each biological stratum matches its specification's replicate
+count. An independent arithmetic/rank calculation predicts 1,378 level pairs
+and 166 within-stratum sample pairs. Implementation delegated to Multica DEM-293
+in its separate project-linked worktree; integration owns the plan and docs.
+
+Pending tool/reference comparison, independent patch review and repository gates.
 
 ## Cleanup
 
