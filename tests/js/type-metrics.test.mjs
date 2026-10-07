@@ -120,8 +120,12 @@ test('a signed fitness type pools as the mean of its values, which share a scale
     dataset({ id: 'F2', datasetId: 'F2', metricKey: 'fitB', dataType: 'fitness', platform: 'RB-TnSeq' }),
   ];
   const byKey = new Map([
-    ['fitA', { key: 'fitA', unit: 'fitness', desc: '', scale: 'diverging', provenance: { id: 'F1' }, read: (i) => [-2, 1][i] }],
-    ['fitB', { key: 'fitB', unit: 'fitness', desc: '', scale: 'diverging', provenance: { id: 'F2' }, read: (i) => [0, NaN][i] }],
+    ['fitA', { key: 'fitA', unit: 'fitness', desc: '', scale: 'diverging',
+      provenance: { id: 'F1', caveat: 'T-values are not carried.', ingest: { columns: ['one'] },
+        record: { studyId: 'GSE1', archiveUrl: 'https://example.org/GSE1' } }, read: (i) => [-2, 1][i] }],
+    ['fitB', { key: 'fitB', unit: 'fitness', desc: '', scale: 'diverging',
+      provenance: { id: 'F2', caveat: 'T-values are not carried.', ingest: { columns: ['two'] },
+        record: { studyId: 'GSE1', archiveUrl: 'https://example.org/GSE1' } }, read: (i) => [0, NaN][i] }],
   ]);
   const [fitness] = buildTypeMetrics(screens, {
     contributing: (key) => contributingDatasets(key, {}, screens, ['F1', 'F2']),
@@ -132,6 +136,11 @@ test('a signed fitness type pools as the mean of its values, which share a scale
   assert.equal(fitness.read(1), 1);
   assert.match(fitness.unit, /^mean gene fitness across 2 condition sets/);
   assert.equal(fitness.scale, 'diverging');
+  assert.equal(fitness.provenance.ingest, undefined, 'a pooled score does not inherit one input column');
+  assert.deepEqual(fitness.provenance.pooling, { kind: 'fitness', datasetCount: 2 });
+  assert.match(fitness.provenance.caveat, /T-values are not carried/);
+  assert.equal(fitness.provenance.caveat.match(/T-values are not carried/g).length, 1);
+  assert.deepEqual(fitness.provenance.sourceLinks, [{ label: 'GSE1', url: 'https://example.org/GSE1' }]);
 });
 
 test('a fitness screen is its own family; abundance and initiation are expression', () => {

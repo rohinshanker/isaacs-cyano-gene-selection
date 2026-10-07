@@ -6,6 +6,10 @@ Values are signed gene-fitness scores on the authors' log2 scale relative to
 Time 0. Preserve negative values and use a diverging ramp. Barcode counts,
 expression abundance and one-condition essentiality calls are different
 quantities and must not be relabelled or pooled as fitness.
+Gene fitness is the authors' weighted, normalized insertion-strain score; it
+must not be described as a raw barcode-count ratio. In the biofilm assay a
+positive score means enrichment of insertion mutants in the fraction, not a
+prediction that increasing the intact gene improves UTEX growth.
 
 ## Pinned sources and joins
 
@@ -39,6 +43,11 @@ labelled biological replicates when the experiment table does not say that.
 The Fitness Browser table supplies temperature, medium and culture format but
 no irradiance, light regime, CO2 or growth phase; these remain explicitly
 unknown and do not prevent displaying the measured score.
+For the biofilm assays, fluorescence does not establish a continuous-light
+schedule. Retain reported preparation stages and vessel identities separately
+from sampling-stage claims. Read methods, figures and captions together when
+assigning replication: one published score column is not a biological replicate
+count, and pooled cultures provide no separately shipped replicate values.
 
 ## Pooling and selection
 
@@ -60,6 +69,12 @@ A grid opened over the selection dialog is the topmost modal: the lower dialog
 is inert, focus stays in the grid, and Escape closes only the grid and returns
 focus to its opener. Closing the outer dialog returns focus to the toolbar.
 Long source identifiers must wrap within provenance notes at narrow widths.
+The calculation disclosure describes the actual number of selected condition
+sets; it must not reuse a single contributor's sample-column count. Preserve
+source-specific limitations, including missing T-values, under pooling, and
+link the fitness archive rather than the study's RNA-seq arm. Fitness is
+explicitly excluded from traffic/activity thresholds, regardless of its label,
+key or descriptive unit text.
 
 ## Reproduction and acceptance
 

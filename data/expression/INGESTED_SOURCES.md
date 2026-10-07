@@ -32,7 +32,18 @@ them in `files` rather than `file`, each with its own checksum and a short
 column takes its file's label as a suffix, exactly as several sheets of one
 workbook are joined (GSE225426, whose two replicates are two workbooks).
 Every `.tsv` here is reproducible from its spec; rerun the tool to regenerate
-it.
+it. Fitness uses a `fitness` numeric column; transcript/protein tables use
+`abundance`. The source's declared data type determines the quantity, including
+whether a negative value is valid.
+
+The Fitness Browser input is manually acquired. Stage the owner's pinned
+`fit_organism_SynE.tsv` and `exp_organism_SynE.txt` in
+`data/interim/expression/`, then run
+`.venv/bin/python tools/build_fitness_browser_spec.py --check` before ingestion.
+Its organism-page URL identifies the resource and is not a downloadable TSV.
+Do not replace a valid cache with an HTML access challenge. See the
+[fitness-source contract](../../docs/validation/fitness-screen-data.md) for pins,
+all 129 experiments in 90 condition sets, exact joins and uncertainty rules.
 
 ## What a layer's value is
 

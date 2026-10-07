@@ -30,7 +30,7 @@ export const UTEX2973 = {
   },
   genomeCitation: { id: 'ncbi-utex-2973', label: 'UTEX 2973 RefSeq release' },
   citationLabels: {
-    'simkovsky-2022': 'PCC 7942 transcriptome',
+    'simkovsky-2022': 'Simkovsky et al. 2022, RNA-seq and RB-TnSeq',
     'tan-2018': 'Tan et al., UTEX TSS',
   },
   searchAliases: {

@@ -40,6 +40,8 @@ const INTEGER_KEYS = new Set([
  * lights up the filter with no code change.
  */
 export function isExpressionMetric(metric) {
+  if (metric.family === 'Fitness' || metric.provenance?.record?.dataType === 'fitness'
+    || metric.key?.startsWith('type.fitness.')) return false;
   if (metric.family && /expression/i.test(metric.family)) return true;
   if (/^(expression|expr|tpm|rpkm|fpkm|rnaSeq|transcript)/i.test(metric.key)) return true;
   return /\b(tpm|rpkm|fpkm|reads per|transcripts per)\b/i.test(metric.unit ?? '');
