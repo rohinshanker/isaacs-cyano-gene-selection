@@ -21,7 +21,7 @@ import {
 } from './organisms.js';
 import { compileScheme, serializeSchemeMap } from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
-import { expressionBasisOf } from './metric-registry.js';
+import { declaredMeasurementSources, expressionBasisOf } from './metric-registry.js';
 import { tssInitiationBasis } from './tss-evidence.js';
 import { metricHelp } from './metric-help.js';
 import { reviewedFunctionLabels } from './function-categories.js';
@@ -251,10 +251,11 @@ function caveatsFor(dataset, manifest, organism) {
     'expressionBasis is one of measured, proxy, none, or unrecorded. A proxy is a codon-adaptation '
       + 'rank from this genome and is never written into the expression column.',
   );
-  if (meta.expressionSource?.caveat) {
-    caveats.push(`Expression: ${meta.expressionSource.caveat} Measured in `
-      + `${meta.expressionSource.organismMeasured ?? 'an unstated organism'}`
-      + `${meta.expressionSource.condition ? `, ${meta.expressionSource.condition}` : ''}.`);
+  for (const source of declaredMeasurementSources(meta)) {
+    if (!source.caveat) continue;
+    caveats.push(`Expression${source.id ? ` (${source.id})` : ''}: ${source.caveat} Measured in `
+      + `${source.organism ?? source.organismMeasured ?? 'an unstated organism'}`
+      + `${source.condition ? `, ${source.condition}` : ''}.`);
   }
   // Each study-bound layer's caveat is the sentence its organism's record
   // gives it, and is written only where that organism declares the layer.
@@ -492,6 +493,7 @@ export function buildExport({
       loadedGeneCount: genes.length,
     }, undeclared(LAYER_DATASET_KEYS, organism)),
     expressionSource: meta.expressionSource ?? null,
+    expressionSources: declaredMeasurementSources(meta),
     filterState: filterState ?? null,
     viewState: viewState ?? null,
     // Which sources were enabled for category colouring when this file was made.

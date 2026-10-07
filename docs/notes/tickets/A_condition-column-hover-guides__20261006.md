@@ -9,13 +9,13 @@
 
 ## Current State
 
-Opened at the owner's request; implementation has not started. In
+Active implementation in the canonical main checkout: rendered tick-aligned guides extend through the footer count. In
 `site/js/ui/data-sources.js`, `conditionAxis()` draws short value tick marks in
 the temperature, light-intensity, and CO₂ column headers. `conditionTrack()`
 places each condition set's values on the corresponding scale. The count text
 (for example, "17 of 17 condition sets shown in this tab") is a separate
 `.peek-count` element in `.peek-foot`, outside the scrollable `.peek-list`.
-This ticket records the requested behavior; no rendered validation has occurred.
+Focused unit and rendered checks pass; final integrated gates and independent review are pending.
 
 ## Requirements
 
@@ -56,7 +56,7 @@ Coordinate with
 
 ## Verification
 
-Implementation verification is pending. Acceptance requires:
+Focused validation passes for all three axes at 375×812, 768×1024, 1280×800, 1440×900, and 599/601/1319/1321 px. Grouped, flat, filtered (4 of 17), empty, sticky scrolling, tab switch, close, and focus return were exercised. Rendered checks found and repaired a narrow-header overflow and focus loss when controls were replaced. Evidence: `.playwright-cli/cyano-ui-fixes/`; reusable checks: `tools/ui/check_condition_guides.js`. Full integrated gates and independent review remain pending. Acceptance requires:
 
 - Tests for column entry, movement within the column, switching columns, exit,
   popup closure, and content replacement; verify guide alignment and lower extent

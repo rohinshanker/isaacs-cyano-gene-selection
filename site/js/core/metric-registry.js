@@ -346,6 +346,12 @@ function normalizeExpressionSource(source) {
   };
 }
 
+/** The current per-condition declarations, with a legacy single-source fallback. */
+export function declaredMeasurementSources(meta) {
+  if (Array.isArray(meta?.expressionSources)) return meta.expressionSources;
+  return meta?.expressionSource ? [meta.expressionSource] : [];
+}
+
 /**
  * A plain-language sentence naming where an expression measurement came from.
  * The interface shows this next to the value rather than in a tooltip, because a

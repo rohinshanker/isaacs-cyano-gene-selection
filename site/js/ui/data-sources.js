@@ -23,6 +23,7 @@ import {
   summariseSet,
 } from '../core/data-sources.js';
 import { renderSourceToggles } from './legend.js';
+import { ConditionGuides } from './condition-guides.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const REGIME_COLOR = Object.freeze({
@@ -172,13 +173,27 @@ function focusables(root) {
   const out = [];
   const walk = (node) => {
     for (const child of node.children ?? []) {
-      if (child.hidden || child.disabled) continue;
+      if (child.hidden || child.disabled || child.getAttribute?.('tabindex') === '-1') continue;
       if (['BUTTON', 'INPUT', 'SELECT', 'A', 'TEXTAREA'].includes(String(child.tagName).toUpperCase())) out.push(child);
       walk(child);
     }
   };
   walk(root);
   return out;
+}
+
+/** Keep keyboard focus inside a peek when a focused control is replaced. */
+function restoreAfterRender(root, fallback) {
+  const active = document.activeElement;
+  if (!root.contains(active)) return () => {};
+  const identity = (node) => `${node.tagName}:${node.getAttribute('aria-label')
+    ?? node.getAttribute('id') ?? node.textContent}`;
+  const key = identity(active);
+  return () => {
+    const controls = focusables(root);
+    (controls.find((node) => identity(node) === key) ?? fallback ?? controls[0])
+      ?.focus({ preventScroll: true });
+  };
 }
 
 /**
@@ -446,11 +461,13 @@ export class DataSourcesPanel {
     backdrop.append(dialog);
     document.body.append(backdrop);
 
-    const peek = { backdrop, dialog, title, tabs, close, bar, legend, list, side, count, done, active: null, state: null };
+    const guides = new ConditionGuides({ dialog, list, count });
+    const peek = { backdrop, dialog, title, tabs, close, bar, legend, list, side, count, done, guides, active: null, state: null };
     peek.settle = (answer) => {
       if (!peek.active) return;
       const { resolve, opener } = peek.active;
       peek.active = null;
+      guides.clear();
       backdrop.hidden = true;
       this.setBackgroundInert(false);
       if (typeof opener?.focus === 'function') opener.focus({ preventScroll: true });
@@ -511,10 +528,11 @@ export class DataSourcesPanel {
 
   renderTabs() {
     const { tabs, state } = this.peek;
+    const restore = restoreAfterRender(tabs);
     tabs.replaceChildren();
     for (const type of DATA_TYPES) {
       const n = this.datasets.filter((d) => d.record.dataType === type.id).length;
-      const tab = el('button', { className: 'chip-button peek-tab', text: `${type.name} (${n})`, attrs: { type: 'button', role: 'tab', 'aria-selected': String(state.type === type.id) } });
+      const tab = el('button', { className: 'chip-button peek-tab', text: `${type.name} (${n})`, attrs: { type: 'button', role: 'tab', tabindex: state.type === type.id ? 0 : -1, 'aria-selected': String(state.type === type.id) } });
       if (state.type === type.id) tab.classList.add('active');
       tab.addEventListener('click', () => {
         state.type = type.id;
@@ -522,12 +540,27 @@ export class DataSourcesPanel {
         state.info = null;
         this.renderPeek();
       });
+      tab.addEventListener('keydown', (event) => {
+        const index = DATA_TYPES.indexOf(type);
+        const next = event.key === 'ArrowRight' ? (index + 1) % DATA_TYPES.length
+          : event.key === 'ArrowLeft' ? (index + DATA_TYPES.length - 1) % DATA_TYPES.length
+            : event.key === 'Home' ? 0 : event.key === 'End' ? DATA_TYPES.length - 1 : null;
+        if (next === null) return;
+        event.preventDefault();
+        state.type = DATA_TYPES[next].id;
+        state.filters = [];
+        state.info = null;
+        this.renderPeek();
+        tabs.querySelector('.active').focus({ preventScroll: true });
+      });
       tabs.append(tab);
     }
+    restore();
   }
 
   renderBar() {
     const { bar, state } = this.peek;
+    const restore = restoreAfterRender(bar);
     bar.replaceChildren();
     const filters = el('div', { className: 'peek-filters' });
     state.filters.forEach((filter, index) => filters.append(this.filterChip(filter, index)));
@@ -560,6 +593,7 @@ export class DataSourcesPanel {
       clear.addEventListener('click', () => { state.selected.clear(); this.renderList(); this.renderSide(); });
       bar.append(all, clear);
     }
+    restore();
   }
 
   filterChip(filter, index) {
@@ -644,7 +678,7 @@ export class DataSourcesPanel {
       dataset.record.platform === 'array' ? 'An array measures a chosen set of targets, not the whole transcriptome' : null);
     id.append(platform);
     const info = el('button', { className: 'ds-info', text: 'i', attrs: { type: 'button', title: 'Source details and citation', 'aria-label': `Source details and citation for ${dataset.record.studyId}: ${dataset.record.conditionSet}` } });
-    info.addEventListener('click', () => { state.info = dataset.id; this.renderSide(); });
+    info.addEventListener('click', () => { state.info = dataset.id; state.infoOpener = info; this.renderSide(); });
     top.append(id, info);
     name.append(top, el('span', { className: 'ds-label', text: dataset.record.conditionSet }));
     row.append(name);
@@ -685,6 +719,8 @@ export class DataSourcesPanel {
 
   renderList() {
     const { list, state, count } = this.peek;
+    const restore = restoreAfterRender(list, this.peek.close);
+    this.peek.guides.clear();
     const shown = this.shownDatasets();
     const colors = studyColors(this.typeDatasets());
     const table = el('table', { className: 'ds-table' });
@@ -693,7 +729,7 @@ export class DataSourcesPanel {
     headRow.append(el('th', { attrs: { scope: 'col' }, children: [el('span', { className: 'visually-hidden', text: 'Show' })] }));
     headRow.append(el('th', { attrs: { scope: 'col' }, text: 'Dataset · condition set' }));
     for (const axis of ['temperature', 'lightIntensity', 'co2']) {
-      headRow.append(el('th', { attrs: { scope: 'col' }, children: [el('span', { text: CONDITION_SCALES[axis].name }), conditionAxis(axis)] }));
+      headRow.append(el('th', { className: 'ds-axis-header', attrs: { scope: 'col', 'data-condition-axis': axis }, children: [el('span', { text: CONDITION_SCALES[axis].name }), conditionAxis(axis)] }));
     }
     for (const text of ['Light regime', 'Medium', 'Format · phase', 'Treatments']) headRow.append(el('th', { attrs: { scope: 'col' }, text }));
     head.append(headRow);
@@ -746,6 +782,7 @@ export class DataSourcesPanel {
     count.textContent = state.mode === 'multi'
       ? `${shown.length} of ${total} condition sets shown in this tab · ${state.selected.size} selected across all tabs`
       : `${shown.length} of ${total} condition sets shown · choose one`;
+    restore();
   }
 
   compareRow(label, sub, node) {
@@ -799,7 +836,11 @@ export class DataSourcesPanel {
   renderInfo(dataset) {
     const { side, state } = this.peek;
     const back = el('button', { className: 'chip-button', text: '← Back to comparison', attrs: { type: 'button' } });
-    back.addEventListener('click', () => { state.info = null; this.renderSide(); });
+    back.addEventListener('click', () => {
+      state.info = null;
+      this.renderSide();
+      (state.infoOpener?.isConnected ? state.infoOpener : this.peek.close).focus({ preventScroll: true });
+    });
     side.append(back);
     const { record } = dataset;
     side.append(el('h3', { className: 'ds-side-title', children: [el('span', { text: `${record.studyId} ` }), chip(record.strain), chip(record.platform)] }));

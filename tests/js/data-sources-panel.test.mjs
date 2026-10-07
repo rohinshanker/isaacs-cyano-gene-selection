@@ -349,3 +349,63 @@ test('the colouring type lists every dataset of it, with inclusion, a pooled row
     assert.match(host.querySelector('summary').textContent, /\(\d+ selected\)$/);
   });
 });
+
+test('tab, row, group and filter replacement keeps focus inside the data selection dialog', async () => {
+  await withFakeDocument((document) => {
+    const { panel } = mount(document);
+    panel.open();
+    const tabs = document.querySelectorAll('.peek-tab');
+    tabs[1].focus();
+    tabs[1].dispatch('click');
+    assert.equal(document.activeElement.textContent, 'Proteomics (1)');
+    assert.equal(document.activeElement.isConnected, true);
+    const box = rowBoxes(document)[0];
+    box.focus();
+    box.checked = true;
+    box.dispatch('change');
+    assert.equal(document.activeElement.getAttribute('aria-label'), box.getAttribute('aria-label'));
+    assert.equal(document.activeElement.isConnected, true);
+    const group = document.querySelector('.ds-group').querySelector('input');
+    group.focus(); group.checked = false; group.dispatch('change');
+    assert.equal(document.activeElement.getAttribute('aria-label'), group.getAttribute('aria-label'));
+    const add = document.querySelector('.peek-add-filter');
+    add.focus(); add.value = 'study'; add.dispatch('change');
+    assert.equal(document.activeElement.getAttribute('aria-label'), 'Add a filter');
+    const remove = document.querySelector('.peek-filter-remove');
+    remove.focus(); remove.dispatch('click');
+    assert.equal(document.activeElement.getAttribute('aria-label'), 'Add a filter');
+    const info = document.querySelector('.ds-info');
+    info.focus(); info.dispatch('click');
+    const back = document.querySelector('.peek-side').querySelector('button');
+    back.focus(); back.dispatch('click');
+    assert.equal(document.activeElement, info);
+    info.dispatch('click');
+    panel.renderList();
+    document.querySelector('.peek-side').querySelector('button').dispatch('click');
+    assert.equal(document.activeElement, panel.peek.close, 'detached info opener falls back inside the dialog');
+    panel.peek.settle(null);
+  });
+});
+
+test('data type tabs use arrow, Home and End keys with one keyboard tab stop', async () => {
+  await withFakeDocument((document) => {
+    const { panel } = mount(document);
+    panel.open();
+    let prevented = 0;
+    const key = (key) => document.querySelectorAll('.peek-tab').find((tab) => tab.hasClass('active')).dispatch('keydown', { key, preventDefault() { prevented++; } });
+    key('ArrowRight'); assert.equal(panel.peek.state.type, 'proteomics');
+    key('End'); assert.equal(panel.peek.state.type, 'fitness');
+    key('ArrowRight'); assert.equal(panel.peek.state.type, 'transcriptomics');
+    key('ArrowLeft'); assert.equal(panel.peek.state.type, 'fitness');
+    key('Home'); assert.equal(panel.peek.state.type, 'transcriptomics');
+    key('Enter'); assert.equal(prevented, 5);
+    assert.equal(document.activeElement, document.querySelectorAll('.peek-tab').find((tab) => tab.hasClass('active')));
+    assert.deepEqual(document.querySelectorAll('.peek-tab').map((tab) => tab.getAttribute('tabindex')), ['0', '-1', '-1']);
+    // A selected row removed by a filter falls back to a remaining dialog control.
+    const box = rowBoxes(document)[0]; box.focus();
+    panel.peek.state.filters = [{ field: 'study', query: 'no-such-study' }];
+    panel.renderList();
+    assert.equal(document.activeElement, panel.peek.close);
+    panel.peek.settle(null);
+  });
+});

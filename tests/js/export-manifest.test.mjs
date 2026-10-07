@@ -746,3 +746,28 @@ test('the CSV parser handles the shapes the writer can emit', () => {
   assert.equal(rows[1].b, 'he said "hi"');
   assert.equal(rows[2].b, 'line\nbreak');
 });
+
+test('exports record every condition source and its own caveat, with a legacy fallback', async () => {
+  const { dataset, registry } = await context();
+  const sources = [
+    { id: 'A', organism: 'PCC 7942', condition: 'low light', caveat: 'Abundance in CPM.' },
+    { id: 'B', organism: 'UTEX 2973', condition: 'dark', caveat: 'Initiation counts.' },
+    { id: 'C', organism: 'PCC 7942', condition: 'log phase' },
+    { id: 'D', caveat: 'Organism not supplied.' },
+  ];
+  const withSources = { ...dataset, meta: { ...dataset.meta, expressionSources: sources } };
+  const result = exportFor(withSources, registry, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(result.manifest.expressionSources, sources);
+  assert.ok(result.manifest.caveats.includes('Expression (A): Abundance in CPM. Measured in PCC 7942, low light.'));
+  assert.ok(result.manifest.caveats.includes('Expression (B): Initiation counts. Measured in UTEX 2973, dark.'));
+  assert.ok(result.manifest.caveats.includes('Expression (D): Organism not supplied. Measured in an unstated organism.'));
+  assert.ok(!result.manifest.caveats.some((text) => text.startsWith('Expression (C)')));
+  const legacyMeta = { ...dataset.meta, expressionSource: { caveat: 'Legacy values.', organismMeasured: 'Legacy organism' } };
+  delete legacyMeta.expressionSources;
+  const legacy = exportFor({ ...dataset, meta: legacyMeta }, registry, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(legacy.manifest.expressionSources, [legacyMeta.expressionSource]);
+  assert.ok(legacy.manifest.caveats.includes('Expression: Legacy values. Measured in Legacy organism.'));
+  const empty = exportFor({ ...dataset, meta: { ...legacyMeta, expressionSources: [] } }, registry, [dataset.genes[0].id], [{ map: {} }]);
+  assert.deepEqual(empty.manifest.expressionSources, []);
+  assert.ok(!empty.manifest.caveats.some((text) => text.startsWith('Expression: Legacy')));
+});

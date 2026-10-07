@@ -229,7 +229,7 @@ the map with its spectral-count unit (576 genes valued).
 
 ## Verification
 
-Not started. Each stage runs the gates:
+UI verification is active. Condition-guide rendered checks cover the Data Selection peek at eight widths and found two repaired defects: mobile tabs/Close overflow and keyboard focus falling to the body after tab or row replacement. Tabs now support arrow/Home/End navigation. The provenance disclosure, dataset provenance and export manifest/caveats now read every per-condition declaration, with legacy single-source fallback. S1’s source readers and S4’s current-release UI are covered. Further data admission, replicate-based agreement statistics and judgement-dependent overlays remain under their original gates. Integrated review is pending. Each stage runs the gates:
 
 ```sh
 npm test

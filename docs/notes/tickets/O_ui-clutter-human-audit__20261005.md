@@ -10,7 +10,7 @@
 
 ## Current state
 
-Opened at the owner's request, for later. It is not started and blocks nothing. The
+Opened at the owner's request, for later. The preparation is complete: 20 renders cover all nine view tabs and Data Selection at desktop/tablet widths, with 211 distinct standing-text entries. The owner/labmate marks remain pending and block only the wording changes. The
 owner's rule, given 2026-10-05: tooltips and explanations are welcome when they
 disturb the interface as little as possible. A small help or info icon opens a
 popover on hover or click; a longer explanation opens in a side or centre peek. The
@@ -31,7 +31,7 @@ once it exists.
 
 ## Verification
 
-Not started. Each applied change is rendered at mobile, tablet and desktop widths
+Prepared packet: [211 entries and 20 renders](../../../.playwright-cli/cyano-ui-fixes/clutter-review.md). Captures use reduced motion so every entry contains its final text. `tools/ui/capture_clutter_review.js` regenerates the inventory from the real app. No wording removals have been applied. Each applied change is rendered at mobile, tablet and desktop widths
 and re-checked by the person who marked it. The gates run after each change.
 
 ## Cleanup

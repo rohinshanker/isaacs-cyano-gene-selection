@@ -37,6 +37,7 @@ import {
 import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
+import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
 import { metricHelp, functionCategoryHelp } from './core/metric-help.js';
 import {
@@ -1964,8 +1965,8 @@ function renderProvenance() {
       + 'so they are scored as unable to decode, as the pipeline does');
   }
 
-  if (provenance.expressionSource) {
-    add('Expression data', formatExpressionSource(provenance.expressionSource));
+  if (provenance.expressionSources.length) {
+    renderMeasurementSources(add('Measurement data', ''), provenance.expressionSources);
   }
   if (provenance.genesWithoutTerminalStop > 0) {
     add('Terminal stops', `${formatCount(provenance.genesWithoutTerminalStop)} genes carry no `

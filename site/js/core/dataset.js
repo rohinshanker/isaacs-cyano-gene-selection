@@ -23,6 +23,7 @@ import {
 } from './conventions.js';
 import { compileScheme } from './scheme.js';
 import { computeLiveMetrics } from './live-metrics.js';
+import { declaredMeasurementSources } from './metric-registry.js';
 import { validateLengthInventory } from './length-cohorts.js';
 import { validateRegulatoryTss } from './regulatory-tss.js';
 import { validateCandidateEvidence } from './candidate-evidence.js';
@@ -231,6 +232,7 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     provenance: {
       genesWithoutTerminalStop: genesWithoutStop,
       expressionSource: meta.expressionSource ?? null,
+      expressionSources: declaredMeasurementSources(meta),
       caiReferenceGenes: referenceGenes,
       caiReferenceFallback,
       taiReport,
