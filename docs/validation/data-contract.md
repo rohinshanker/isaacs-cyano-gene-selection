@@ -125,7 +125,16 @@ Admitted data types, and nothing else:
   marked `signed` in `sources.json` (the loader, the validator and the browser
   then admit negative values; every abundance stays non-negative), it forms the
   `Fitness` metric family with a diverging default scale, and the first such
-  layers are GSE205443's nine fractions, the authors' own fitness values. In every default order the Fitness family follows Expression: the registry promotes the family of every manifest dataset metric after this organism's own measurements and before the computed families (a percentile or proxy derived from a measurement promotes nothing).
+  layers are GSE205443's nine fractions, the authors' own fitness values.
+  The Fitness Browser PCC 7942 compendium adds 90 condition sets covering all
+  129 pinned experiments, pooled with each other by default under the owner's
+  2026-10-07 decision, with a compound-by-dose grid for choosing a subset.
+  GSE205443's fractions remain outside that default pool. See the
+  [fitness source and selection contract](fitness-screen-data.md).
+  In every default order the Fitness family follows Expression: the registry
+  promotes the family of every manifest dataset metric after this organism's
+  own measurements and before the computed families (a percentile or proxy
+  derived from a measurement promotes nothing).
 
 Platform is recorded beside the data type (owner decision 2026-10-05). A
 microarray is a transcriptomics platform and a protein array a proteomics one, but

@@ -142,8 +142,9 @@ def test_generated_documents_follow_contract():
         *([2615] * 7),  # GSE311172 seven oxygen endpoints
         # The Fitness Browser's PCC 7942 RB-TnSeq compendium, one layer per
         # condition set. Every layer joins through the same crosswalk rows, so
-        # every layer covers the same 1,774 genes.
-        *([1774] * 90),
+        # every layer covers the same 1,819 genes, including approved suffix
+        # and plasmid identifiers.
+        *([1819] * 90),
         # PXD000510's four diel identification windows; each covers the
         # proteins its own 6-plex identified, so the counts differ.
         1713, 1797, 1927, 1928,

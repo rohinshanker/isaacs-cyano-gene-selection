@@ -8378,7 +8378,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Aluminum chloride hydrate at 0.078125 mM",
-    "sha256": "9ff235b47cb748dbd8b00f4bb4e71f1097b75168c96248cc4c2b4b09334485cb",
+    "sha256": "98d9d4c08d5a44ee82832f636a8c46a7de3b774f23cf38cdb2005c3c0d32882a",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -8393,8 +8393,8 @@
         "set4IT055 Aluminum chloride 0.078125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -8498,7 +8498,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Aluminum chloride hydrate at 0.15625 mM",
-    "sha256": "9c341a62a4586f0c0cb972588c100edbc59274b4c9fa8e460d293995e1ed2439",
+    "sha256": "02750c05b6f90842cf274bc58a0edb12d9e03a91d1340742f251d59dc5a77141",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -8513,8 +8513,8 @@
         "set4IT054 Aluminum chloride 0.15625 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -8618,7 +8618,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Aluminum chloride hydrate at 0.3125 mM",
-    "sha256": "9e7223bd532ae8d6f726bff943111a2266a7a115d2f06d7ba45f8924e2245385",
+    "sha256": "38e943021280a19680b96beeeddb84b2f3edeb34393668e7c3db48e87eb7dc35",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -8633,8 +8633,8 @@
         "set4IT053 Aluminum chloride 0.3125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -8738,7 +8738,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Bacitracin at 0.000976563 mg/ml",
-    "sha256": "03c5cceb3aa841d68c4526f330fac5607846a693a88fe328456cab0b82303efe",
+    "sha256": "4b251d53ae06fe93d5f159c8a79d6d5b90bf0d9c1ded03b9cc26aa973ee68663",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -8755,8 +8755,8 @@
         "set8IT084 BG11 with Bacitracin 0.0009765625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -8860,7 +8860,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Benzethonium chloride at 0.00078125 mM",
-    "sha256": "803505bcb52ce972eddfc71a235722d55f3fbc26a67132a341cbe4e752e44bcb",
+    "sha256": "32ab1222a9e4b5aeb756d29490502c0e9874feed5bcb1ba95ba7485c226d4f06",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -8875,8 +8875,8 @@
         "set4IT051 Benzethonium chloride 0.00078125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -8980,7 +8980,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Ceftazidime hydrate at 0.03125 mg/ml",
-    "sha256": "d0b4d3052dccf44db6d05560ec07697149003fb5eacb058f99cc58f8c2c44911",
+    "sha256": "df64790988f92aa6d67ed5c20820eb81220bcb5e63c4bad90fef8ed26abf46de",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -8995,8 +8995,8 @@
         "set4IT088 Ceftazidime 0.03125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9100,7 +9100,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Ceftazidime hydrate at 0.0625 mg/ml",
-    "sha256": "8a4a791b91844900e5ffb5ccf770e08109b1444236d8203fb16727efbacec94b",
+    "sha256": "af48500ae6e31c739a23275bd3c412710639771829cbd2c087e387ebe525cbc6",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9115,8 +9115,8 @@
         "set4IT087 Ceftazidime 0.0625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9220,7 +9220,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Ceftazidime hydrate at 0.125 mg/ml",
-    "sha256": "1e029fd006859ab254feaf75748b54c1120a2a09f9123ab951c2a055335e2257",
+    "sha256": "deb931ecb095e84ed13ba6f20263b16395c1ef5d43d93495e65348637b0f437e",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9235,8 +9235,8 @@
         "set4IT086 Ceftazidime 0.125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9340,7 +9340,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Cephalothin sodium salt at 0.00390625 mg/ml",
-    "sha256": "26a886d2e803d93695567c8a47b8db909da0a677f86cf61cfa8dfab80cfa8e75",
+    "sha256": "f86ec8be6af31e0d14fee02408f4e224730cd236f32a91daafda16996f426ce4",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9355,8 +9355,8 @@
         "set4IT073 Cephalothin 0.00390625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9460,7 +9460,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Chloramphenicol at 0.000332031 mg/ml",
-    "sha256": "d6f02d7f7294d61e5cadd811adc5e89c5a7a56e6c8e128709a759187929683cc",
+    "sha256": "ed991a1aab8dad8d41e9c9a805a246a68eec35f1dedf20d65c2f257c2ea8509a",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9475,8 +9475,8 @@
         "set3IT003 Chloramphenicol 0.00033203125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9580,7 +9580,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Chloramphenicol at 0.000664063 mg/ml",
-    "sha256": "c097ffb3a0a1ab862d6e0c9c9ffb7620c45a4d1b4c2559fcb509b97e2739d75e",
+    "sha256": "89e67c66585c638e16072cc7fa2159d935149d2bfce0c3510d806da84e468049",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9595,8 +9595,8 @@
         "set3IT002 Chloramphenicol 0.0006640625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9700,7 +9700,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Cisplatin at 0.00625 mg/ml",
-    "sha256": "725c862ec6625364f53f10acbac778af7c64a9157d229774db54dba859f5f58a",
+    "sha256": "073ae00f60f29b841b5734135825fc08f769d986323af44d2c2ba2d2ce2560cf",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9715,8 +9715,8 @@
         "set3IT022 Cisplatin 0.00625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9820,7 +9820,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Cisplatin at 0.0125 mg/ml",
-    "sha256": "583c829205debd35611f416e7b1d7429f7cb4c1ec3dd73d686af72d2b3d13810",
+    "sha256": "5f2468de57a19b72254aeae63fa9aed8079608a1c45cd441f154f0263f6951e2",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9835,8 +9835,8 @@
         "set7IT041 BG11 with Cisplatin 0.0125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -9940,7 +9940,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Cisplatin at 0.025 mg/ml",
-    "sha256": "72b745bfe18307fa7ef9df1abf770fada852fbc1d224604ddc8e97d2abcc0fa4",
+    "sha256": "7f462d91dde9b0a79f3e22d65fbcdc069976e70f82fcbe4cbcff63435632c604",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -9955,8 +9955,8 @@
         "set7IT040 BG11 with Cisplatin 0.025 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10060,7 +10060,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Cisplatin at 0.05 mg/ml",
-    "sha256": "3ff5b5962b5a6338ad1ec7f770ca325573f17c7142c91fc266d4abb45bdb2c1a",
+    "sha256": "723d838855351565fffd1c0deb9b5e91b3a8a9ea10ff3085b458c7c1f592d066",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10075,8 +10075,8 @@
         "set7IT039 BG11 with Cisplatin 0.05 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10180,7 +10180,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Cisplatin at 0.1 mg/ml",
-    "sha256": "b1dd374eaac59980d9cbfe64a8251d989cdfe51fe360dcab5ebec5bed2759875",
+    "sha256": "9414db88525f54f8626fc2fb73c95158d5326e83cd3c8b6513fe934eb582527d",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10195,8 +10195,8 @@
         "set7IT038 BG11 with Cisplatin 0.1 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10300,7 +10300,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "D-Cycloserine at 0.015625 mg/ml",
-    "sha256": "882088755f02e111ac5d81d0d0256560c9ee70badfe65a0ef6525ca728334b62",
+    "sha256": "505a4640694ea6233ace641bc12279ce4fb372e625bdc641226fe62a9beac952",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10315,8 +10315,8 @@
         "set4IT080 D-Cycloserine 0.015625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10420,7 +10420,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "D-Cycloserine at 0.03125 mg/ml",
-    "sha256": "0302b2dc1db0c1df5447c6bc9912750d38964f2760a08144b50fdd6114cb8f36",
+    "sha256": "5112557222f3a12630ea3def614d7f5319d112ce6f6bc3e076684e4eff65b148",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10435,8 +10435,8 @@
         "set4IT079 D-Cycloserine 0.03125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10540,7 +10540,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "D-Cycloserine at 0.0625 mg/ml",
-    "sha256": "985cac34b3d95e543ac12108bbb98563b579dd8e3ffd7fe9099d20a12ac49ba1",
+    "sha256": "ef424e906aca53fa0d1a145e597f3d23bef9de7701d9dd7c85cc8ddfd12b2672",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10555,8 +10555,8 @@
         "set4IT078 D-Cycloserine 0.0625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10660,7 +10660,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Dimethyl Sulfoxide at 2.5 vol%",
-    "sha256": "35f8152ba35a4bed1ceefb94d0d478f3b2e33e8c868f55c1cfc91ca3bc6d4fa9",
+    "sha256": "0039c56917aa4240ce6e966f59dd09f1ecef9d8bdc090312e80ac5d7f93f50c6",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10675,8 +10675,8 @@
         "set4IT067 Dimethyl Sulfoxide 2.5 vol%"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10780,7 +10780,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Dimethyl Sulfoxide at 5 vol%",
-    "sha256": "47ccc679152f4d0f50cf76ea65401d0e9cf0f940c28fae022ccb04c91259d968",
+    "sha256": "757cdf9a3669fb114373be945aff213d3bc979f17557851f8c0e170242f8d294",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10795,8 +10795,8 @@
         "set4IT066 Dimethyl Sulfoxide 5 vol%"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -10900,7 +10900,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Doxycycline hyclate at 0.00078125 mg/ml",
-    "sha256": "d4fdc03062412ea49ee53bc97c1c4cae92e1cd241e7e3f009afbee01aaeda401",
+    "sha256": "8665aeb8ea4829df5f0ed3ee3e4de7f495c1a81fcb38c70a86a921a4f22af35d",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -10915,8 +10915,8 @@
         "set4IT085 Doxycycline hyclate 0.00078125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11020,7 +11020,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Doxycycline hyclate at 0.0015625 mg/ml",
-    "sha256": "61b0a4b657961c13201d3a0f26b0c77a36391732d3b82b88b981ad5104ca9b7b",
+    "sha256": "1016fc7f01a3f6e9f30617dfc9badc6b4669c5c6a2c16148a4652cdcf95bc257",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11035,8 +11035,8 @@
         "set4IT084 Doxycycline hyclate 0.0015625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11140,7 +11140,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Fusidic acid sodium salt at 0.015625 mg/ml",
-    "sha256": "5b78681afa44f558dffba4384902dd5a20be5443796f2591798f429e8ad31cf3",
+    "sha256": "1c83c4da287a4f683f5933065ae2260a3e003777f66a180c954ddcd2779ffade",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11155,8 +11155,8 @@
         "set4IT065 Fusidic 0.015625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11260,7 +11260,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Fusidic acid sodium salt at 0.0625 mg/ml",
-    "sha256": "4d0ef9275ea16f61457139b00ac7679fd8f488efc221ba3ffa8a9d9778cd32c9",
+    "sha256": "a6e928153e715986b4e1018b7efa670ccab5903d09ba0053c415b77bb0750784",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11275,8 +11275,8 @@
         "set8IT089 BG11 with Fusidic 0.0625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11380,7 +11380,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Fusidic acid sodium salt at 0.125 mg/ml",
-    "sha256": "eaf57aa12dc2ef37442ebd2a2ad58d36e2ed7a6a86ece2f71391e441abf8e31c",
+    "sha256": "43af1156c8e8f363c88f533be95fcfd03ca0309d90b14506c1d052b20b0ffbaf",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11395,8 +11395,8 @@
         "set8IT088 BG11 with Fusidic 0.125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11500,7 +11500,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Fusidic acid sodium salt at 0.25 mg/ml",
-    "sha256": "f66c40390edc76bbd5dcefd916f00bef06c6a748e8f954cc6442d770383c2a5e",
+    "sha256": "87b097218541379bddb0aede381b357165a0fcee4e0fcde9c4334f1700c80847",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11516,8 +11516,8 @@
         "set8IT087 BG11 with Fusidic 0.25 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11621,7 +11621,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Fusidic acid sodium salt at 0.5 mg/ml",
-    "sha256": "9dcbbec34bf97d5a00c114f1c1bf20c192154450f2779bd523619b150ea850bd",
+    "sha256": "a353cdf5f142b66ff9dce1d501591a1a6edaebfcac6da13af04b96ab71299bcd",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11637,8 +11637,8 @@
         "set8IT086 BG11 with Fusidic 0.5 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11742,7 +11742,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Gentamicin sulfate salt at 0.000488281 mg/ml",
-    "sha256": "58e077390cfd29c572aa5b5a63506a53e10d93c8f241233c3c6fed6a64c7fe9b",
+    "sha256": "93a7c14b45dc09eb6658511c43a32484ab85d38bd2554e0fa90050599a3f189d",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11757,8 +11757,8 @@
         "set3IT013 Gentamicin 0.00048828125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11862,7 +11862,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "L-Glutamic acid monopotassium salt monohydrate at 8 mM",
-    "sha256": "abd50af7b850f3c9e76c83f48180af6fcbbba649fb9423519e98223f5920cc1b",
+    "sha256": "6aa89a3255e696130da403f16d0aa9ed59bc641b7db48d02199eddca62200900",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -11879,8 +11879,8 @@
         "set7IT025 L-Glutamic (N)"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -11984,7 +11984,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "L-Glutamine at 8 mM",
-    "sha256": "6f51710202b6d8fa72534742f5f16fd6b6f8b606365b3c9f9adc6bac43405d70",
+    "sha256": "b4a707d565d6f54b476bddd75fb3d6242fbe4c380bb21f624a6c5d0b29f884b2",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12001,8 +12001,8 @@
         "set7IT026 L-Glutamine (N)"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12106,7 +12106,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "L-Leucine at 8 mM",
-    "sha256": "15f416bcb52c9c53eeb44056538a1378b0e654d7c38090aef017e5981e233c48",
+    "sha256": "2a142dfab36a5cd3496a9a72719d7ba4dd3c14204cca950811085b3bc8137f3c",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12123,8 +12123,8 @@
         "set7IT027 L-Leucine (N)"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12228,7 +12228,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "L-Phenylalanine at 8 mM",
-    "sha256": "32f78d908a725e2287c448912659b9e53f4afd694f28648c81696137656d2c72",
+    "sha256": "f71d565e709fa2507f7a9cff108c08d02054bc5f78218a1444c37385cb4efc9e",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12246,8 +12246,8 @@
         "set7IT028 L-Phenylalanine (N)"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12351,7 +12351,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "MreB Perturbing Compound A22 at 0.000341797 mg/ml",
-    "sha256": "d9955329897a8422dd01d8c05b348d65835cb8c4c776af1d82c7059e3d959044",
+    "sha256": "32edcc936d03fbd80356315c1c20229b28e4d569a25eec6084879fbf123a94ce",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12366,8 +12366,8 @@
         "set4IT074 A22 0.000341796875 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12471,7 +12471,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Nalidixic acid sodium salt at 0.000976563 mg/ml",
-    "sha256": "5219ad7b46a6a627df9300a1c80ae30e1c4b2c5ac397103f90509bf17742d939",
+    "sha256": "e1fffdea98617ba2ebb764fe712057549b8741948c5a91e1faaa3db9966a244f",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12486,8 +12486,8 @@
         "set7IT037 BG11 with Nalidixic 0.0009765625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12591,7 +12591,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Nalidixic acid sodium salt at 0.001953125 mg/ml",
-    "sha256": "80397c9666e7f75b8109c8dfc81791ee81eb6bc2da5a15355a7fca2fdebb3b60",
+    "sha256": "9757a2eeaefe4993e1a2018a658223ddd577f3968f7d49e7239b478552784c56",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12606,8 +12606,8 @@
         "set7IT036 BG11 with Nalidixic 0.001953125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12711,7 +12711,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Nalidixic acid sodium salt at 0.00390625 mg/ml",
-    "sha256": "5a7e1467b8f1b466bab9cdbcaaeca5fce377b0acade2f95473fc3d26a9263978",
+    "sha256": "b3e867181904e1b6164fc229aa7ae01ab2c3de014f4e5b799be98bff55a2602f",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12727,8 +12727,8 @@
         "set7IT035 BG11 with Nalidixic 0.00390625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12832,7 +12832,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Nalidixic acid sodium salt at 0.0078125 mg/ml",
-    "sha256": "99450f0c71f28b4cbe18c03d40817c54c8241bca1c73a8b79409e30c81a4b039",
+    "sha256": "2891abd6c2218b7be3680437f6182adf3d1c30c8fce3245c8d9efc9160d2630b",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12848,8 +12848,8 @@
         "set7IT034 BG11 with Nalidixic 0.0078125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -12953,7 +12953,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Phosphomycin disodium salt at 0.0015625 mg/ml",
-    "sha256": "b51db86c60682dc4b6d5adfbadfdb22083c7b31cf631ff0f07b90f51757e063e",
+    "sha256": "c5d1fc9837dc4c25c61a8b2eab59c96bc137e039d48c96849317e23c4d8a5d0a",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -12968,8 +12968,8 @@
         "set4IT059 Phosphomycin 0.0015625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13073,7 +13073,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Phosphomycin disodium salt at 0.003125 mg/ml",
-    "sha256": "5be0db790719f1b3db40ecf61ff8b1e2d48870d65ee027130851d842f846fa1c",
+    "sha256": "97bd94af856db8f160cc024daadbae3579901ed1b492d221ece71a858aab92d3",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13088,8 +13088,8 @@
         "set4IT058 Phosphomycin 0.003125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13193,7 +13193,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Phosphomycin disodium salt at 0.00625 mg/ml",
-    "sha256": "6ec75b62c01e3729d7921f54ccacd4b65d20c77b3e5bdefbf29bb3243add1c1a",
+    "sha256": "1c69d8dae40e4d6bc1c11445aad0aca7a4ae4a6978a2b33fe91275dbcf4ff94f",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13208,8 +13208,8 @@
         "set4IT057 Phosphomycin 0.00625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13313,7 +13313,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Polymyxin B sulfate at 0.000195313 mg/ml",
-    "sha256": "55e5d18a7e386999a1d1e65a021250fc47f074b3b7037b56ab19e93ebfa1893c",
+    "sha256": "bc3ea48f94e6b0dd245494c91992b25efb3dc969b9cb5a3ceb8686e6aa82384c",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13328,8 +13328,8 @@
         "set8IT068 BG11 with Polymyxin B sulfate 0.0001953125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13433,7 +13433,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Polymyxin B sulfate at 0.000390625 mg/ml",
-    "sha256": "5c7383ac685c9a55c3fb2192a7083a4a3737c59f02e23efa7a8bc942055bcdad",
+    "sha256": "8b34671acb9a17b3bc81b1f0cba22557f8a66794a6f432471e0ae715d3784b52",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13448,8 +13448,8 @@
         "set8IT067 BG11 with Polymyxin B sulfate 0.000390625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13553,7 +13553,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Polymyxin B sulfate at 0.2 mg/ml",
-    "sha256": "ae7b3ed28f0005642619887850bf9db77ff51ab2eb10ad2cf1d18a1f3afb14f2",
+    "sha256": "6bd560cd2acf5bddf0de555a8d41118771f4b37e13d3f7850e91ccbc059c44b8",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13568,8 +13568,8 @@
         "set3IT037 Polymyxin B sulfate 0.2 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13673,7 +13673,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Rifampicin at 0.000195313 mg/ml",
-    "sha256": "91cf63c3a9845aa8f507aad1f6dda4e49807ef7c53c7927ece3cfc5a040a387b",
+    "sha256": "c4a3653e8bfb7ed1872606a07926077ca291d16877bad843f6993f79c303e0ed",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13688,8 +13688,8 @@
         "set4IT091 Rifampicin 0.0001953125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13793,7 +13793,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Rifampicin at 0.0003125 mg/ml",
-    "sha256": "2aaf4b6452ba8856f844a627c6a5f3d7f66d61b7c5fda9b7b355b77b65920c29",
+    "sha256": "22ef59c6842f431c8570c1d5a9fb01d73893d121244873d930ecec243548c1ae",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13808,8 +13808,8 @@
         "set4IT093 Rifampicin 0.0003125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -13913,7 +13913,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Rifampicin at 0.000390625 mg/ml",
-    "sha256": "72311ba9f5e6bad1167b141ba377ceb24e9b8a008ecb81fd903995d4500bd4fc",
+    "sha256": "800cf66720213ffdd078e00f51ea60e945d675666d9b11a6f23304e43a7a6a3e",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -13928,8 +13928,8 @@
         "set4IT090 Rifampicin 0.000390625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14033,7 +14033,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Rifampicin at 0.000625 mg/ml",
-    "sha256": "4908e978dfb0db1f4935fc0f29fd4c61986f4e6d6991a30a6433b8773bd64c28",
+    "sha256": "80d6f53ff03304ca005cd17c374488f2a55b8c9f6c414928cd9af6fde001f73a",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14048,8 +14048,8 @@
         "set4IT092 Rifampicin 0.000625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14153,7 +14153,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorate at 2.5 mM",
-    "sha256": "9feb9ba8362f5f9615be9ad3f67d73336f2ed1b136fafddfc3959d435f0297e9",
+    "sha256": "288574f930bd2eef0a619421505a29cbc18edf158364f413ba54ff0d473ad076",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14168,8 +14168,8 @@
         "set8IT056 BG11 with Chlorate 2.5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14273,7 +14273,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorate at 5 mM",
-    "sha256": "92af70ab33b16e930cd27a181979ec5b605231bd752ea66d65e39459da66db6d",
+    "sha256": "823a4800c8d31db983ee56638ee187db01c7a7014f8d7246d20345fc026ff8bf",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14288,8 +14288,8 @@
         "set8IT055 BG11 with Chlorate 5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14393,7 +14393,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorate at 10 mM",
-    "sha256": "7fe7b41b4d65a0c67ea748ec9dd032babe4e69fc30eae9aa6f326cd095ad06c1",
+    "sha256": "c494dbaa3ed7b85b9f4111f0059f6de1458df27398a3f4e745436dc9f55fe58b",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14409,8 +14409,8 @@
         "set8IT054 BG11 with Chlorate 10 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14514,7 +14514,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorate at 20 mM",
-    "sha256": "baa2a0196ad484ce864c80489a8cde41596eebd6d94a6e2601c0339e04bcebfc",
+    "sha256": "b37b4ed37a384d2a148734bf36a346959b52807578434c6eb7048c2f0617ac85",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14530,8 +14530,8 @@
         "set8IT053 BG11 with Chlorate 20 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14635,7 +14635,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 0.48828125 mM",
-    "sha256": "31b4e053d077f72e11ff7c4c08a77f1fbdcb74a2ece14cfda6d6db748c6a471b",
+    "sha256": "33d52ea2ba11bdeeb1fe448a962c1fcfaabcf9fd07d360f284d8fca28b88cd0f",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14650,8 +14650,8 @@
         "set8IT079 BG11 with Chloride 0.48828125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14755,7 +14755,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 0.9765625 mM",
-    "sha256": "077edccef3035af86a1e2d837a072e1ed48ac05ef2990ffab0304009e9aea130",
+    "sha256": "dc920dd4f74b4f686cb745adf330f4faddb14cc22673d4df705302bc9d3ea7bc",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14770,8 +14770,8 @@
         "set8IT078 BG11 with Chloride 0.9765625 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14875,7 +14875,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 1.953125 mM",
-    "sha256": "86f9090c831e150b96894a2b6d970e0928ea4ff1380378e864876e9a65b33bf1",
+    "sha256": "6583c424a106531e4636a96cbbfd3336df84589cb6a821238b536aba0f483699",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -14890,8 +14890,8 @@
         "set8IT077 BG11 with Chloride 1.953125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -14995,7 +14995,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 3.90625 mM",
-    "sha256": "d05c2f90bf5e3a205c9d2d380ee2199f1eb4e573ac5fbf8c9431dd41b0f793b7",
+    "sha256": "393c89313de1e1c9d9270e5a6ec63a24e1bcac5782ab23c37315910cf2998daf",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15010,8 +15010,8 @@
         "set8IT076 BG11 with Chloride 3.90625 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15115,7 +15115,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 7.8125 mM",
-    "sha256": "3f7697023257ac778f4a923bda4766c5126e7b063026f1e332477a79492c2d2f",
+    "sha256": "84cfe5c2cefb7ac43b771ee1d69c0fc79aef5dc01d414c10b0cd291d5afb83cc",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15130,8 +15130,8 @@
         "set8IT075 BG11 with Chloride 7.8125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15235,7 +15235,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 15.625 mM",
-    "sha256": "e133ba182451edf63ca4cd67cdc422e23460189cb603c0418046358173c73a19",
+    "sha256": "4de5361a47b71c4d35d2209c20a0cca2f7bdf9f6638bae28294bb768abf27c11",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15250,8 +15250,8 @@
         "set8IT074 BG11 with Chloride 15.625 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15355,7 +15355,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 31.25 mM",
-    "sha256": "a1c70330a637bf36b254b336c237475732d98ff34e49de84d6f41a94880c6e5c",
+    "sha256": "7812dfdb5d4b5eac35b1cc1fa0de048706bbf7cc0b3e480d15d65466bd3f8dba",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15371,8 +15371,8 @@
         "set8IT073 BG11 with Chloride 31.25 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15476,7 +15476,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 62.5 mM",
-    "sha256": "74a64bf505e80ed357dd4ca914f070651701124f0b91843d8b025ec9bed0b640",
+    "sha256": "8f004132a597e025b1b3e1e042bb4cc701b4b7e734850e77804c51a587028b6d",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15492,8 +15492,8 @@
         "set8IT072 BG11 with Chloride 62.5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15597,7 +15597,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 125 mM",
-    "sha256": "806b8a54bf88f698a9de49e0d2fb6d6586c3198bfb8573ef8079421d6f27667d",
+    "sha256": "f782659959f3006188d773f98a4fce5c615544b7dddbc21c2601f9fb8754b611",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15612,8 +15612,8 @@
         "set8IT071 BG11 with Chloride 125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15717,7 +15717,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chloride at 250 mM",
-    "sha256": "570235981b18a2f972be8f6df4f6b6008c6ee21209266c715252695e91aeba16",
+    "sha256": "573f27f6bb630fe1ca9a979029d2f5c36caa8c6742d89c4c25a1ad79c7fe97d1",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15732,8 +15732,8 @@
         "set8IT070 BG11 with Chloride 250 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15837,7 +15837,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorite at 0.3125 mM",
-    "sha256": "a3f49cb1624190b9127e3f32a1752f0a005d6e5fb0c59a8ca65083f33b0f21fa",
+    "sha256": "2373a428568249b3f744acd6f03de14fa9bc69f457adb6bde1f5940a960a2248",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15852,8 +15852,8 @@
         "set8IT061 BG11 with Chlorite 0.3125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -15957,7 +15957,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorite at 0.625 mM",
-    "sha256": "53d85faa218bd489446ecad39f65c61384ab5cb037ab82223fb845da9bec3b47",
+    "sha256": "9180ff61c76f17d9d4f4df0eb3ae84780e26911b45d33f853d8acc9b8657a585",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -15972,8 +15972,8 @@
         "set8IT060 BG11 with Chlorite 0.625 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16077,7 +16077,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorite at 1.25 mM",
-    "sha256": "5d838c1427829180f002c62c4fa52e9a17081907e5761c8775125b07c26c5851",
+    "sha256": "e972a013858340589dc7b361edf12b7b42c70168426e2271a3b43314003a3379",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16092,8 +16092,8 @@
         "set8IT059 BG11 with Chlorite 1.25 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16197,7 +16197,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorite at 2.5 mM",
-    "sha256": "2450ced04d3b68beacca1a88eef6ae611fd70bff42564cf1813fe5392872dc19",
+    "sha256": "381fef138583533ddbc9051baf4a46ddd0eb1b5603a79f9a7cb29d85381930a1",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16212,8 +16212,8 @@
         "set8IT058 BG11 with Chlorite 2.5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16317,7 +16317,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium Chlorite at 20 mM",
-    "sha256": "25b21128d7ca295f347bd40aaa2a000496dd78c36b0064bc40bfb7801ce475f8",
+    "sha256": "9c7717d9382ac9c0c71da63cf0acb3fbece33abe8a62866562268aedeed127ab",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16332,8 +16332,8 @@
         "set3IT035 Chlorite 20 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16437,7 +16437,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrate at 25 mM",
-    "sha256": "8fb329f3b55f50a74f406c7a6f98cf6c66aab06e0df8447c0fe851ffe12ab84c",
+    "sha256": "d9f7b0db787d4cbbcfae981461d67a3ab270fab3d99fb618027aafdef0b43b08",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16453,8 +16453,8 @@
         "set8IT051 BG11 with nitrate 25 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16558,7 +16558,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrate at 50 mM",
-    "sha256": "fc22479b7017d132a97284bd0015282c7ff68d7b40dc28789570c4a39ca2fb7f",
+    "sha256": "09ee6edbe65554ea25cfb4cb0d52bb5d9a7ce524a5dea6f642128732dfc01b66",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16574,8 +16574,8 @@
         "set8IT050 BG11 with nitrate 50 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16679,7 +16679,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrate at 100 mM",
-    "sha256": "7e4893d50bee600a2a824494a3cc165f71b9c2d51d75cb4fc55e0bbe5149c13a",
+    "sha256": "2be346800c0a990c78e7c95ce1eb9cba7c30023e06ec7081ed2e0705becda561",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16694,8 +16694,8 @@
         "set8IT049 BG11 with nitrate 100 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16799,7 +16799,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrate at 200 mM",
-    "sha256": "bce4aa8eecc03d207754686eb554538bc8e791875040b7339c791d209b6b1ff8",
+    "sha256": "af9020f0b8fb4e96c5b6b0c3b788f97f528045c44b26cc520bf31097e002064d",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16814,8 +16814,8 @@
         "set7IT048 BG11 with nitrate 200 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -16919,7 +16919,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrite at 2.5 mM",
-    "sha256": "2d92cbbd2c0698002a804029ca30ca3c0bae7039b04be3deeff7912dc0914563",
+    "sha256": "1f253a63287c67950675fd2a2e67c11ce6b717d6a48c5dd9140f2c1ee314caf0",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -16934,8 +16934,8 @@
         "set7IT046 BG11 with nitrite 2.5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17039,7 +17039,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrite at 5 mM",
-    "sha256": "ff854c586281d6e07910f9eeee6fd73f4667a8c4312cbf2cc268f4f8529533b2",
+    "sha256": "04f33e3cd2e0e403e4f34437d74ffcfc0a843eb71aabda7a54b66bda135c3e2a",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17055,8 +17055,8 @@
         "set7IT045 BG11 with nitrite 5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17160,7 +17160,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrite at 10 mM",
-    "sha256": "dcaeb190dbd4c7e4dc149a5780c6fb249aef32fb2d21a038d25621e2f1a0e84a",
+    "sha256": "1cfb2a6ad4a5dbd76d3a88b511766c2c3f9a08a3afbdd574f73e159a1f0b7684",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17175,8 +17175,8 @@
         "set3IT026 nitrite 10 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17280,7 +17280,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium nitrite at 20 mM",
-    "sha256": "43084411f7e9a015961bcc055709876285ad2642652b33076fe7d8ec364acdde",
+    "sha256": "8f66f9b357484f8458f5e59b24da7f28c7da4f0d7a7121cbddfdb499bc1c1593",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17295,8 +17295,8 @@
         "set7IT043 BG11 with nitrite 20 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17400,7 +17400,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium perchlorate monohydrate at 12.5 mM",
-    "sha256": "be28d0bb20002a7e99ddbb736193c9e0e2e0cad592833e9f6cfeb727faf56ce9",
+    "sha256": "3d302b9e2f1fc8de53d05de2ff1250bbb80eea6537a9dc82fecc65bc259f95bb",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17415,8 +17415,8 @@
         "set8IT065 BG11 with perchlorate 12.5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17520,7 +17520,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium perchlorate monohydrate at 25 mM",
-    "sha256": "2135f6059904196f362af7a611228c824a574e5791341b6f573bbaca9be3ad23",
+    "sha256": "a36be2f8eea26ad4d0927a5cd4a54ee6da8266609a7da2fe4838cf9c5b043a83",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17535,8 +17535,8 @@
         "set8IT064 BG11 with perchlorate 25 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17640,7 +17640,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium perchlorate monohydrate at 50 mM",
-    "sha256": "337ccef42abc439d98c9d7bc911c9ebeb297e8df6a0f8ac7dc982238ba9ceab0",
+    "sha256": "9a3417e65a44efad7acd3b4ee876e014b51c716ef972c7cd7246b391a34b1c6b",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17655,8 +17655,8 @@
         "set8IT063 BG11 with perchlorate 50 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17760,7 +17760,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Sodium perchlorate monohydrate at 100 mM",
-    "sha256": "1045c64bb9ab1ec109933a88b2623feac3655bc57b0bef17c74bad9565a7f1ce",
+    "sha256": "6e2b4b94c9800077e910521df0187b07d669dcb2156bb3943462cd354bfa8ffd",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17775,8 +17775,8 @@
         "set3IT036 perchlorate 100 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -17880,7 +17880,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Spectinomycin dihydrochloride pentahydrate at 0.000976563 mg/ml",
-    "sha256": "8cfa248e5eff73ece137ebd35014c3f954383cb7113aee6eebb7ece351124cb1",
+    "sha256": "ba904386a01ed5928f20fa62783d5f5ff0c3da4e7bacee846d37bfd7e5c237f6",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -17895,8 +17895,8 @@
         "set3IT007 Spectinomycin 0.0009765625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18000,7 +18000,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Tetracycline hydrochloride at 0.00125 mg/ml",
-    "sha256": "35498c1f670628944bf135799540e82bb60fda905ee9485df7bdbe9d84aef6da",
+    "sha256": "6c503ed1642af5597281bec1b6868e271df492642ed9bb8398ac8ceb87f8a7fa",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18015,8 +18015,8 @@
         "set3IT006 Tetracycline 0.00125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18120,7 +18120,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Thallium(I) acetate at 0.000976563 mg/ml",
-    "sha256": "35101072905bc9ea9ce1ae1ae7464333c44e0b7de28c591a5b82d13f8fb4ec25",
+    "sha256": "ed88ca2f40f5f5800f5f14e86b9790d4329d41d3afa284a2875711848804273b",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18135,8 +18135,8 @@
         "set3IT020 Thallium(I) acetate 0.0009765625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18240,7 +18240,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Thallium(I) acetate at 0.001953125 mg/ml",
-    "sha256": "e79503bbd3962e961a41f4bea44469e4121d2594e5bec28bc16634d00c48086a",
+    "sha256": "99fc6bab16e8beab435a4463ad85d70adcf813cecf6cfb77ae2043f73e31d2ef",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18255,8 +18255,8 @@
         "set3IT019 Thallium(I) acetate 0.001953125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18360,7 +18360,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Thallium(I) acetate at 0.00390625 mg/ml",
-    "sha256": "e550172b9e24b9ccc4a1605fb3b64a68e18133d75d42147dc34680f7db9048cf",
+    "sha256": "f6600ec4097903362e6b27641f9f2ac362d4a66f98aef471c5539655eb1dafb3",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18375,8 +18375,8 @@
         "set3IT018 Thallium(I) acetate 0.00390625 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18480,7 +18480,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Thallium(I) acetate at 0.0078125 mg/ml",
-    "sha256": "7798e64a6594b167cae8ef701d412b0c4ca9fb4a1df032e5c900e4e4b5ac378a",
+    "sha256": "61ee3e8982eb3cd85fab1f417ecc06c9346929150fb49c194410e1c1b0bb7f9d",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18495,8 +18495,8 @@
         "set3IT017 Thallium(I) acetate 0.0078125 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18600,7 +18600,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "Zinc sulfate heptahydrate at 0.01953125 mM",
-    "sha256": "295a87d952dce58566220a465e90dd2b98683d8b5569246de78b8ce75fe4efcb",
+    "sha256": "f40cc2115b18580956c1e44dab55e7899033926525c8cf26b418f39806d25774",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18615,8 +18615,8 @@
         "set3IT024 Zinc 0.01953125 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18720,7 +18720,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "benzoic acid at 0.29 mg/ml",
-    "sha256": "0dcf57ae5e63940718b9984f74d9e38c206b0b75b41da14d28f7e99ca4e47f1a",
+    "sha256": "5f12fffb243226e7e1ec26e3e5971217ee0801ab59e830b635d49ff8638cd50c",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18735,8 +18735,8 @@
         "set4IT056 benzoic 0.29 mg/ml"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18840,7 +18840,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "sodium fluoride at 12.5 mM",
-    "sha256": "cd4d4ce89d7c9c0c3a135bdaafca720e77139738ea350c772bcba624f44dd6be",
+    "sha256": "7baedd60a366de2c7e371c6714db72e7b9021334bbb6b74228ca14f331dc76c7",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18855,8 +18855,8 @@
         "set3IT015 sodium fluoride 12.5 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -18960,7 +18960,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "sodium fluoride at 25 mM",
-    "sha256": "86e4180cb47926f1ded7ae1af8679e49194aa73ad2ef276476c6e1983c4a2554",
+    "sha256": "8d0629c66c0a5afc7d90546789bd782bec01deb1ebbc296c30b4a0defb9a8977",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -18975,8 +18975,8 @@
         "set3IT014 sodium fluoride 25 mM"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },
@@ -19078,7 +19078,7 @@
     "assay": "RB-TnSeq gene fitness",
     "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
     "condition": "BG-11 with no added compound",
-    "sha256": "7d3b932c81fc5eddfcd4f23a62f4656d297402129a879b90e16a89e5a2e0d151",
+    "sha256": "42de232428cd015adda74e4fb8b7b04d013b8d8b9fd4a6117ef219017ce626a6",
     "licence": "The Fitness Browser states no reuse licence on its help page. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the resource and Price et al. 2018 are both cited, as the site asks.",
     "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness relative to the library at Time 0; a fitness value is never placed on an expression scale. The Fitness Browser's T-values and cofitness are not carried, and the experiment table records no irradiance, light regime, CO2 or growth phase.",
     "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
@@ -19110,8 +19110,8 @@
         "set8IT090 BG11"
       ],
       "normalization": "as-deposited",
-      "mappedGenes": 1774,
-      "unmappedIdentifiers": 125,
+      "mappedGenes": 1819,
+      "unmappedIdentifiers": 80,
       "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
   },

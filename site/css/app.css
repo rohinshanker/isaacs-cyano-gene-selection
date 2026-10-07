@@ -554,6 +554,7 @@ input[type="range"] { width: 100%; }
    not take at face value, is marked where it is shown rather than in a tooltip. */
 .provenance-warning {
   font-size: 0.78rem;
+  overflow-wrap: anywhere;
   color: #6b4100;
   background: #fdf3e2;
   border: 1px solid #e3c893;

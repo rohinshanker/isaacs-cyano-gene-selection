@@ -211,7 +211,7 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
         organism: [...new Set(list.map((metric) => metric.provenance?.organism).filter(Boolean))].join('; '),
         condition: `${list.length} datasets pooled: ${list.map((metric) => metric.provenance?.condition ?? metric.key).join(' | ')}`,
         units: signed
-          ? `mean gene fitness across ${list.length} fractions (shared log2 scale)`
+          ? `mean gene fitness across ${list.length} condition sets (shared log2 scale)`
           : `pooled percentile across ${list.length} datasets: mean of each dataset's within-dataset mid-rank, 0 to 1`,
         caveat: 'Pooled by owner decision of 2026-10-06. '
           + (signed ? 'Fitness values share a log2 scale and are averaged as published.'

@@ -3,9 +3,8 @@
  *
  * Ninety condition sets joined the one fitness type that already held nine
  * GSE205443 biofilm fractions. The type pools whatever it is given, so the
- * question these tests pin is what it is given by default: averaging
- * plain-growth fitness, 85 chemical stresses and a biofilm assay would answer
- * none of the three questions.
+ * question these tests pin is its default scope: the owner chose the whole
+ * compendium, and the separate biofilm study stays out of that mean.
  *
  * These read the shipped payload rather than a fixture, because the thing worth
  * protecting is the real default a reader gets.
@@ -50,7 +49,7 @@ test('the compendium still records a stress as a stress, not as standard growth'
   );
 });
 
-test('every stressed condition set is marked as such, so none can become the default', () => {
+test('every condition set retains its reported group under the pooled default', () => {
   const groups = {};
   for (const source of fitness) {
     groups[source.record.group] = (groups[source.record.group] ?? 0) + 1;
@@ -70,12 +69,27 @@ test('every compendium layer is signed and takes a diverging ramp', () => {
 
 test('every compendium layer joins the same genes through the same route', () => {
   const coverage = new Set(compendium.map((s) => s.coverage.withValue));
-  assert.deepEqual([...coverage], [1774], 'one crosswalk, so one coverage');
+  assert.deepEqual([...coverage], [1819], 'one crosswalk, so one coverage');
   for (const source of compendium) {
     assert.equal(source.coverage.total, 2715);
     assert.equal(source.isTargetOrganism, false, 'measured in PCC 7942, not UTEX 2973');
     assert.match(source.ingest.mappingRoute, /^pcc7942_old_locus_tag in identifier-crosswalk/);
     assert.equal(source.ingest.normalization, 'as-deposited');
+  }
+});
+
+test('valid letter-suffix and plasmid identifiers survive the fitness ingest', async () => {
+  const payload = JSON.parse(await readFile(new URL('../../site/data/expression_layers.json', import.meta.url), 'utf8'));
+  const targets = ['M744_RS06585', 'M744_RS13290', 'M744_RS13440'];
+  // Synpcc7942_1912a, Synpcc7942_B2633 and Synpcc7942_B2615 have exact shared
+  // protein crosswalks. Digits-only identifier filters used to discard them.
+  for (const source of compendium) {
+    for (const target of targets) {
+      const index = payload.geneIds.indexOf(target);
+      assert.ok(index >= 0);
+      assert.ok(Number.isFinite(payload.layers[source.metricKey][index]), `${source.id}: ${target}`);
+    }
+    assert.equal(source.ingest.unmappedIdentifiers, 80, 'unmatched sources remain unknown');
   }
 });
 

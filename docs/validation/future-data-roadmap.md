@@ -425,9 +425,11 @@ genes) read from its DTASelect reports; its L1118-against-Lsps archive holds
 only `.sepr` search state and is not readable. GSE205443, the study's
 RB-TnSeq biofilm screen, shipped on 2026-10-06 as nine signed fitness layers
 (one per fraction) from the authors' published fitness values in Supplementary
-File S4, under the fitness-screen ticket. A GEO sweep on 2026-10-06 found no
+File S4, under the [fitness-screen contract](fitness-screen-data.md). A GEO sweep on 2026-10-06 found no
 other transposon or fitness series for *S. elongatus*; the Fitness Browser's
-PCC 7942 compendium is the next candidate, pending its terms.
+PCC 7942 compendium supplies 90 admitted condition sets covering all 129 pinned
+experiments, displayed as a pooled row with a compound-by-dose subset grid.
+Both fitness sources keep their PCC 7942 labels and signed log2 values.
 
 ## Deferred source families
 

@@ -130,7 +130,7 @@ test('a signed fitness type pools as the mean of its values, which share a scale
   assert.equal(fitness.family, 'Fitness');
   assert.equal(fitness.read(0), -1);
   assert.equal(fitness.read(1), 1);
-  assert.match(fitness.unit, /^mean gene fitness across 2 fractions/);
+  assert.match(fitness.unit, /^mean gene fitness across 2 condition sets/);
   assert.equal(fitness.scale, 'diverging');
 });
 
