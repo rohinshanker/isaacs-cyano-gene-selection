@@ -49,6 +49,10 @@
     {
       "name": "cyano_condition_sampling_scope_review_20261007.json",
       "sha256": "3edd71831cb5f6fbf1b01d89ce9e1cb585bf3f534889793db2d2e19df5d1caef"
+    },
+    {
+      "name": "cyano_pxd027430_condition_addendum_20261007.json",
+      "sha256": "bb8311f4b36a2c0bb81377e2d28a3ff219e714e7baff746da1378f605b7e8810"
     }
   ],
   "classification_contract": {
@@ -213,6 +217,66 @@
           "status": "partial",
           "source": "cyano_dataset_condition_records_20261007.json row 61 typed sampling record",
           "uncertainty": "BG-11 is reported, but the nitrogen source is not itemised, so nitrogen-source equivalence remains unresolved."
+        }
+      }
+    },
+    {
+      "condition_row": 71,
+      "fields": {
+        "T": null,
+        "T_text": "30°C routine cultivation; proteomic sampling temperature not restated",
+        "I": null,
+        "I_text": "250 µmol photons m-2 s-1 routine cultivation; proteomic sampling irradiance not restated",
+        "co2": null,
+        "co2_text": "2% (v/v) routine cultivation; proteomic sampling gas percentage not restated",
+        "cont": null,
+        "phot": null,
+        "spec": "fluorescent (class not stated)",
+        "medium": "BG-11",
+        "medium_text": "BG-11 + 1 g/L HEPES, pH 8.3; fresh/conditioned and nitrogen equivalence unresolved",
+        "conditioned": null,
+        "n_altered": null,
+        "fmt": "planktonic liquid",
+        "phase": null,
+        "od": null,
+        "od_nm": null,
+        "replicates": "3 biological replicates for untargeted proteomics (Figure 2A); per-timepoint/per-arm culture and raw-file mapping unresolved"
+      },
+      "audit": {
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.temperature",
+          "uncertainty": "Routine 30°C is known; sampling transfer is not asserted."
+        },
+        "light_intensity": {
+          "status": "partial",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.light_intensity",
+          "uncertainty": "Routine 250 photon flux is known; sampling transfer is not asserted."
+        },
+        "light_regime": {
+          "status": "partial",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.light_regime",
+          "uncertainty": "Fluorescent lamp is reported; continuity, photoperiod and spectrum class remain unknown."
+        },
+        "co2": {
+          "status": "partial",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.co2",
+          "uncertainty": "Routine 2% CO2 is known; sampling transfer is not asserted."
+        },
+        "medium": {
+          "status": "partial",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.medium",
+          "uncertainty": "BG-11 identity is known; conditioned and nitrogen flags remain unresolved."
+        },
+        "culture_format": {
+          "status": "present",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.culture_format",
+          "uncertainty": "Liquid sampling format is supported. Vessel and total culture volume are unknown and do not define a class gap."
+        },
+        "growth_phase": {
+          "status": "partial",
+          "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.growth_phase",
+          "uncertainty": "Daily maintenance OD750~0.3 is known; harvest OD and phase remain unknown."
         }
       }
     },
@@ -1766,10 +1830,10 @@
       "artifact": "PXD027430",
       "condition_set": "not reported",
       "field": "temperature",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling temperature has no reviewed numeric interval.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd027430_condition_addendum_20261007.json field_audit.temperature",
+      "uncertainty": "Routine 30°C is known; sampling transfer is not asserted.",
       "historical_value": "not retrieved"
     },
     {
@@ -1777,10 +1841,10 @@
       "artifact": "PXD027430",
       "condition_set": "not reported",
       "field": "light_intensity",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd027430_condition_addendum_20261007.json field_audit.light_intensity",
+      "uncertainty": "Routine 250 photon flux is known; sampling transfer is not asserted.",
       "historical_value": "not retrieved"
     },
     {
@@ -1788,10 +1852,10 @@
       "artifact": "PXD027430",
       "condition_set": "not reported",
       "field": "light_regime",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling light schedule is unknown.",
+      "status": "partial",
+      "value": "schedule=None; photoperiod=None; spectrum=fluorescent (class not stated)",
+      "source_provenance": "cyano_pxd027430_condition_addendum_20261007.json field_audit.light_regime",
+      "uncertainty": "Fluorescent lamp is reported; continuity, photoperiod and spectrum class remain unknown.",
       "historical_value": "not retrieved"
     },
     {
@@ -1799,10 +1863,10 @@
       "artifact": "PXD027430",
       "condition_set": "not reported",
       "field": "co2",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling gas CO2 percentage is unknown.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd027430_condition_addendum_20261007.json field_audit.co2",
+      "uncertainty": "Routine 2% CO2 is known; sampling transfer is not asserted.",
       "historical_value": "not retrieved"
     },
     {
@@ -1810,21 +1874,10 @@
       "artifact": "PXD027430",
       "condition_set": "not reported",
       "field": "medium",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling medium is unknown.",
-      "historical_value": "not retrieved"
-    },
-    {
-      "condition_row": 71,
-      "artifact": "PXD027430",
-      "condition_set": "not reported",
-      "field": "culture_format",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is unknown.",
+      "status": "partial",
+      "value": "BG-11 + 1 g/L HEPES, pH 8.3; fresh/conditioned and nitrogen equivalence unresolved",
+      "source_provenance": "cyano_pxd027430_condition_addendum_20261007.json field_audit.medium",
+      "uncertainty": "BG-11 identity is known; conditioned and nitrogen flags remain unresolved.",
       "historical_value": "not retrieved"
     },
     {
@@ -1832,10 +1885,10 @@
       "artifact": "PXD027430",
       "condition_set": "not reported",
       "field": "growth_phase",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling phase is unknown.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd027430_condition_addendum_20261007.json field_audit.growth_phase",
+      "uncertainty": "Daily maintenance OD750~0.3 is known; harvest OD and phase remain unknown.",
       "historical_value": "not retrieved"
     },
     {

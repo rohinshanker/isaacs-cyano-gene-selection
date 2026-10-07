@@ -87,7 +87,8 @@ not modify Package D or apply an owner judgement to `default_verdict`.
   --archive-intake docs/notes/handoff/cyano_archive_condition_intake_20261007.tsv \
   --manual-supplement docs/notes/handoff/cyano_archive_condition_manual_supplement_20261007.json \
   --paper-addendum docs/notes/handoff/cyano_condition_paper_addendum_20261007.json \
-  --pride-check docs/notes/handoff/cyano_pride_condition_check_20261007.json
+  --pride-check docs/notes/handoff/cyano_pride_condition_check_20261007.json \
+  --pxd027430-addendum docs/notes/handoff/cyano_pxd027430_condition_addendum_20261007.json
 ```
 
 The replay uses exact IDs and typed numeric intervals. Flux ranges are compared
@@ -120,6 +121,29 @@ The generated current artifacts contain verdict counts and source pins;
 replay them rather than using counts from an earlier snapshot. There is no
 `escalate` verdict because the owner rejected a fixed narrow-miss boundary.
 Bicarbonate concentration is not a gas CO₂ percentage.
+
+Keep the PXD027430 full-text/supplement copies in
+`../calibration/pxd027430-metadata-20261007/source/`, relative to the canonical
+repository. The addendum records their filenames, hashes and exact source
+locators. Minimal quotations are anchors; verify values, units and scope in the
+full pinned passage at the recorded locator. A number matching elsewhere in a
+paper does not change the cited passage or establish a new condition value.
+
+The pinned PXD027430 addendum replaces the seven former access gaps on condition
+row 71 with reviewed source scope. Sampling culture is liquid, so its format
+class is present even though vessel and total culture volume are unknown.
+Routine incubation settings remain in the source text while sampling numeric
+temperature, photon flux and gas CO₂ stay null. Lamp description, medium
+identity and maintenance OD retain their remaining scope gaps. Do not transfer
+measurement irradiance, digestion temperatures or daily dilution OD into
+sampling fields.
+
+The published figures identify IPTG treatment/control groups at 0, 24, 48, 72
+and 96 hours and display three columns per time point and IPTG arm. The stated
+three biological replicates do not establish channel/file/culture assignments or longitudinal
+pairing. Supplemental Table S1 lists selected differential proteins and cannot
+supply a whole-proteome abundance population. The addendum is calibration
+evidence; it does not admit a dataset or change a lab pair judgement.
 
 Verified source absences and conflicts are accepted unknown outcomes. They do
 not keep the recovery implementation open. Track optional depositor follow-up in
