@@ -121,8 +121,9 @@ def verify_input(path: Path, spec: Mapping[str, Any]) -> None:
         raise LayerError(f"{path.name}: expected SHA-256 {spec['sha256']}, got {observed}")
 
 
-def fetch_inputs(input_dir: Path = INPUT_DIR, opener: Any = urllib.request.urlopen) -> list[Path]:
+def fetch_inputs(input_dir: Path | None = None, opener: Any = urllib.request.urlopen) -> list[Path]:
     """Download each missing input, refusing a byte that differs from its pin."""
+    input_dir = input_dir or INPUT_DIR
     written = []
     input_dir.mkdir(parents=True, exist_ok=True)
     for spec in INPUTS.values():

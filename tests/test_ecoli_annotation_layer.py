@@ -194,6 +194,8 @@ def test_main_reports_each_mode(tmp_path, monkeypatch, capsys):
     assert layer.main(["build", "--obo", str(obo)]) == 0
     assert "4 loci, 3 GO relationships, 1 with a curated function" in capsys.readouterr().out
     assert layer.main(["check", "--obo", str(obo)]) == 0
+    # The synthetic inputs are in place, so fetch verifies and downloads nothing.
+    monkeypatch.setattr(layer.urllib.request, "urlopen", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no network")))
     assert layer.main(["fetch"]) == 0
     assert "0 downloaded" in capsys.readouterr().out
     monkeypatch.setattr(layer, "fetch_inputs", lambda: (_ for _ in ()).throw(layer.LayerError("boom")))
