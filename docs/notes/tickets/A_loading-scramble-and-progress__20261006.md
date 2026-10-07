@@ -10,7 +10,7 @@
 
 ## Current State
 
-Owner-review variants are implemented on the DEM-263 task branch. Production
+Owner-review variants are integrated on canonical main. Production
 defaults remain unchanged. Query-only A/B/C selectors compare ready-immediate,
 ready plus a presentation-only 1,000 ms hold, and guarded measured-halfway
 reveal; grouped and continuous displays project the same truthful snapshot.

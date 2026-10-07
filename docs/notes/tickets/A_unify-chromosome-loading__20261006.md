@@ -5,17 +5,23 @@
   Covers `site/`, loading tests, and `docs/validation/progressive-loading.md`.
 - **Status:** active
 - **Opened:** 2026-10-06
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-07
 
 ## Current State
 
-Implemented on the task branch for coordinator review. The same chromosome
+Integrated on canonical main. The same chromosome
 presentation now moves from the shell into the revealed map card and measures
 the complete active cycle. Later tiers, the source ledger, citation downloads,
 organism navigations, and per-file retries no longer create or depend on a
 secondary meter. Concise stage text stays with the bar; failed files remain
 actionable in its host and are announced from a persistent live region after
 the completed progress presentation is hidden.
+
+Requirement 3 of the payload-sidecar ticket is also implemented: a newly pending
+loader file after settle automatically returns this same bar with the filename,
+excluding prior completed bytes while retaining any active resource. The payload
+stream and its manifest regeneration belong to DEM-266; no data pipeline or
+budget changes are part of this stream. Final confirmation is pending.
 
 ## Requirements
 

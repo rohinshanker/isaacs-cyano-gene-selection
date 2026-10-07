@@ -5,12 +5,11 @@
   including dataset light measurements and their exact values.
 - **Status:** active
 - **Opened:** 2026-10-06
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-07
 
 ## Current State
 
-Implemented on the DEM-257 task branch and awaiting coordinator integration and
-owner acceptance. One delegated controller now converts every existing and
+Integrated on canonical main and independently confirmed in DEM-259. One delegated controller now converts every existing and
 dynamically added HTML `title` or SVG `<title>` into a body-level instant hint.
 The existing renderers remain the only text sources. The controller follows the
 pointer, suppresses a clicked hint until exit and re-entry, clamps long text,
