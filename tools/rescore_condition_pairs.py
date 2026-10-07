@@ -94,6 +94,7 @@ EVIDENCE_SHA256 = {
     "sampling": "3edd71831cb5f6fbf1b01d89ce9e1cb585bf3f534889793db2d2e19df5d1caef",
     "paper": "da29ffb70a90dcf128b027a598c0d3e40611436f7d02d3cd2472bbc0d8aecc6a",
     "fitness": "5df3d9ee018ec44bdedfbcabfb40bfebb727b6ecf165ca390a128886c6553f83",
+    "pxd027430": "bb8311f4b36a2c0bb81377e2d28a3ff219e714e7baff746da1378f605b7e8810",
 }
 RECORD_AUDIT_PINS = {
     2: {"acc": "GSE102914", "phase": "OD stated", "od": [0.27, 0.27], "od_nm": 730},
@@ -182,6 +183,49 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
             "medium_text": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912); nitrogen source and organic carbon not itemised",
         },
         "values": {"n_altered": None},
+    },
+    71: {
+        "expected_accession": "PXD027430",
+        "expected_source": {
+            "T": None,
+            "T_text": "not retrieved",
+            "I": None,
+            "I_text": "not retrieved",
+            "co2": None,
+            "co2_text": "not retrieved",
+            "cont": None,
+            "phot": None,
+            "spec": None,
+            "medium": None,
+            "medium_text": "not retrieved",
+            "conditioned": None,
+            "n_altered": None,
+            "fmt": None,
+            "phase": None,
+            "od": None,
+            "od_nm": None,
+            "replicates": "not retrieved [full text not retrievable in this session: PMC9157067 sits outside the Europe PMC open-access subset (ful",
+        },
+        "values": {
+            "T": None,
+            "T_text": "30°C routine cultivation; proteomic sampling temperature not restated",
+            "I": None,
+            "I_text": "250 µmol photons m-2 s-1 routine cultivation; proteomic sampling irradiance not restated",
+            "co2": None,
+            "co2_text": "2% (v/v) routine cultivation; proteomic sampling gas percentage not restated",
+            "cont": None,
+            "phot": None,
+            "spec": "fluorescent (class not stated)",
+            "medium": "BG-11",
+            "medium_text": "BG-11 + 1 g/L HEPES, pH 8.3; fresh/conditioned and nitrogen equivalence unresolved",
+            "conditioned": None,
+            "n_altered": None,
+            "fmt": "planktonic liquid",
+            "phase": None,
+            "od": None,
+            "od_nm": None,
+            "replicates": "3 biological replicates for untargeted proteomics (Figure 2A); per-timepoint/per-arm culture and raw-file mapping unresolved",
+        },
     },
     75: {
         "expected_accession": "PXD036717",
@@ -326,6 +370,41 @@ OVERRIDE_AUDIT = {
         "status": "partial",
         "source": "cyano_dataset_condition_records_20261007.json row 61 typed sampling record",
         "uncertainty": "BG-11 is reported, but the nitrogen source is not itemised, so nitrogen-source equivalence remains unresolved.",
+    },
+    "71.temperature": {
+        "status": "partial",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.temperature",
+        "uncertainty": "Routine 30°C is known; sampling transfer is not asserted.",
+    },
+    "71.light_intensity": {
+        "status": "partial",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.light_intensity",
+        "uncertainty": "Routine 250 photon flux is known; sampling transfer is not asserted.",
+    },
+    "71.light_regime": {
+        "status": "partial",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.light_regime",
+        "uncertainty": "Fluorescent lamp is reported; continuity, photoperiod and spectrum class remain unknown.",
+    },
+    "71.co2": {
+        "status": "partial",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.co2",
+        "uncertainty": "Routine 2% CO2 is known; sampling transfer is not asserted.",
+    },
+    "71.medium": {
+        "status": "partial",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.medium",
+        "uncertainty": "BG-11 identity is known; conditioned and nitrogen flags remain unresolved.",
+    },
+    "71.culture_format": {
+        "status": "present",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.culture_format",
+        "uncertainty": "Liquid sampling format is supported. Vessel and total culture volume are unknown and do not define a class gap.",
+    },
+    "71.growth_phase": {
+        "status": "partial",
+        "source": "cyano_pxd027430_condition_addendum_20261007.json field_audit.growth_phase",
+        "uncertainty": "Daily maintenance OD750~0.3 is known; harvest OD and phase remain unknown.",
     },
     "75.temperature": {
         "status": "present",
@@ -998,6 +1077,26 @@ def _validate_evidence(inputs: dict[str, Path]) -> None:
     paper = json.loads(inputs["paper"].read_text(encoding="utf-8"))
     if paper.get("dataset") != "GSE227397" or paper.get("reported_values", {}).get("photon_flux") != 50 or paper.get("reported_values", {}).get("photoperiod") != "12:12":
         raise ValueError("GSE227397 paper overlay evidence changed")
+    pxd027430 = json.loads(inputs["pxd027430"].read_text(encoding="utf-8"))
+    pxd027430_audit = {}
+    for field in GAP_FIELDS:
+        entry = OVERRIDE_AUDIT.get(f"71.{field}")
+        if entry is None or any(key not in entry for key in ("status", "uncertainty")):
+            raise ValueError(f"PXD027430 condition overlay audit missing {field}")
+        pxd027430_audit[field] = {
+            key: entry[key] for key in ("status", "uncertainty")
+        }
+    expected_pxd027430 = {
+        "dataset": "PXD027430",
+        "condition_row": 71,
+        "typed_updates": RECORD_OVERRIDES[71]["values"],
+        "field_audit": pxd027430_audit,
+    }
+    actual_pxd027430 = {
+        key: pxd027430.get(key) for key in expected_pxd027430
+    }
+    if actual_pxd027430 != expected_pxd027430:
+        raise ValueError("PXD027430 condition overlay evidence changed")
     archive = json.loads(inputs["archive"].read_text(encoding="utf-8"))
     corrections = {int(item["condition_row"]): item for item in archive["corrections"]}
     if corrections.get(35, {}).get("after", {}).get("phot", "missing") is not None:
@@ -1067,6 +1166,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--pride-check", type=Path, required=True)
     parser.add_argument("--sampling-scope-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_condition_sampling_scope_review_20261007.json")
     parser.add_argument("--fitness-sampling-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_gse205443_audit_20261007.md")
+    parser.add_argument("--pxd027430-addendum", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_pxd027430_condition_addendum_20261007.json")
     args = parser.parse_args(argv)
     inputs = {
         "bc": args.bc_addendum,
@@ -1078,6 +1178,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "pairs": args.pairs,
         "sampling": args.sampling_scope_audit,
         "fitness": args.fitness_sampling_audit,
+        "pxd027430": args.pxd027430_addendum,
     }
     _validate_evidence(inputs)
     original = read_table(args.pairs)
@@ -1097,6 +1198,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.owner_judgements, args.bc_addendum, args.archive_addendum,
         args.archive_intake, args.manual_supplement, args.paper_addendum,
         args.pride_check, args.sampling_scope_audit, args.fitness_sampling_audit,
+        args.pxd027430_addendum,
     ]
     inventory = build_gap_inventory(
         records,

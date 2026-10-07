@@ -29,6 +29,7 @@ PAPER = HANDOFF / "cyano_condition_paper_addendum_20261007.json"
 PRIDE = HANDOFF / "cyano_pride_condition_check_20261007.json"
 SAMPLING = HANDOFF / "cyano_condition_sampling_scope_review_20261007.json"
 FITNESS_AUDIT = HANDOFF / "cyano_gse205443_audit_20261007.md"
+PXD027430 = HANDOFF / "cyano_pxd027430_condition_addendum_20261007.json"
 SCREEN = HANDOFF / "cyano_condition_pair_screen_current_20261007.tsv"
 INVENTORY = HANDOFF / "cyano_condition_gap_inventory_current_20261007.json"
 RANKING = HANDOFF / "cyano_condition_gap_ranking_current_20261007.tsv"
@@ -178,7 +179,7 @@ def _real_inputs():
     screens = rescore.rescore_pairs(original, historical_rows, records, judgements)
     sources = [
         PAIRS, HISTORICAL_RESCORE, HISTORICAL_INVENTORY, RECORDS, JUDGEMENTS,
-        BC, ARCHIVE, INTAKE, MANUAL, PAPER, PRIDE, SAMPLING, FITNESS_AUDIT,
+        BC, ARCHIVE, INTAKE, MANUAL, PAPER, PRIDE, SAMPLING, FITNESS_AUDIT, PXD027430,
     ]
     source_audit = rescore.load_current_source_audit(
         records, MANUAL, INTAKE, PRIDE
@@ -271,6 +272,90 @@ def test_real_941_pair_replay_and_targeted_corrections():
     )
 
 
+def test_pxd027430_row71_overlay_is_narrow_and_preserves_replay_contract():
+    package_d_bytes = PAIRS.read_bytes()
+    baseline = read_table(SCREEN)
+    screens, inventory, _ = _real_inputs()
+    records = rescore.load_records(RECORDS)
+    row71 = records[71]
+
+    assert PAIRS.read_bytes() == package_d_bytes
+    assert row71["acc"] == "PXD027430"
+    assert row71["T"] is None and "routine cultivation" in row71["T_text"]
+    assert row71["I"] is None and "routine cultivation" in row71["I_text"]
+    assert row71["co2"] is None and "routine cultivation" in row71["co2_text"]
+    assert (row71["cont"], row71["phot"], row71["spec"]) == (
+        None, None, "fluorescent (class not stated)",
+    )
+    assert (row71["medium"], row71["conditioned"], row71["n_altered"]) == (
+        "BG-11", None, None,
+    )
+    assert (row71["fmt"], row71["phase"], row71["od"], row71["od_nm"]) == (
+        "planktonic liquid", None, None, None,
+    )
+    assert row71["replicates"].startswith("3 biological replicates for untargeted proteomics")
+    assert "per-timepoint/per-arm culture and raw-file mapping unresolved" in row71["replicates"]
+    assert "OD750" not in rescore.condition_set(row71)
+
+    old_statuses = rescore._old_row_statuses(
+        effective_pairs(read_table(PAIRS), [read_table(HISTORICAL_RESCORE)]),
+        load_inventory(HISTORICAL_INVENTORY, [PAIRS, HISTORICAL_RESCORE]),
+    )
+    assert {
+        field: old_statuses[(71, field)][0] for field in rescore.GAP_FIELDS
+    } == {field: "not retrieved" for field in rescore.GAP_FIELDS}
+
+    row71_gaps = {
+        item["field"]: item for item in inventory["gaps"]
+        if item["condition_row"] == 71
+    }
+    assert set(row71_gaps) == set(rescore.GAP_FIELDS) - {"culture_format"}
+    assert {item["status"] for item in row71_gaps.values()} == {"partial"}
+    assert all(
+        item["source_provenance"].startswith(
+            "cyano_pxd027430_condition_addendum_20261007.json field_audit."
+        )
+        for item in row71_gaps.values()
+    )
+    assert row71_gaps["medium"]["value"].startswith("BG-11")
+    assert "spectrum=fluorescent (class not stated)" in row71_gaps["light_regime"]["value"]
+    assert row71_gaps["growth_phase"]["value"] == "partial"
+
+    affected = [
+        row for row in screens
+        if "71" in (row["condition_row_a"], row["condition_row_b"])
+    ]
+    assert affected
+    assert all(row["default_verdict"] != "comparable" for row in affected)
+    assert all(
+        not row[axis].startswith("pass —")
+        for row in affected
+        for axis in rescore.AXES
+    )
+
+    identity_fields = (
+        "data_type", "artifact_a", "artifact_b", "condition_row_a",
+        "condition_row_b", "package_d_row", "package_d_verdict",
+        "historical_effective_verdict",
+    )
+    owner_fields = (
+        "owner_pair_call", "owner_pair_judgement", "owner_spectrum_judgement",
+    )
+    assert [tuple(row[field] for field in identity_fields) for row in screens] == [
+        tuple(row[field] for field in identity_fields) for row in baseline
+    ]
+    assert [tuple(row[field] for field in owner_fields) for row in screens] == [
+        tuple(row[field] for field in owner_fields) for row in baseline
+    ]
+    assert [
+        row for row in screens
+        if "71" not in (row["condition_row_a"], row["condition_row_b"])
+    ] == [
+        row for row in baseline
+        if "71" not in (row["condition_row_a"], row["condition_row_b"])
+    ]
+
+
 def test_evidence_hash_pin_rejects_changed_source(tmp_path):
     paper = json.loads(PAPER.read_text(encoding="utf-8"))
     paper["reported_values"]["photon_flux"] = 51
@@ -312,6 +397,7 @@ def _evidence_inputs(**updates):
         "pride": PRIDE,
         "sampling": SAMPLING,
         "fitness": FITNESS_AUDIT,
+        "pxd027430": PXD027430,
         "pairs": PAIRS,
     }
     inputs.update(updates)
@@ -320,6 +406,68 @@ def _evidence_inputs(**updates):
 
 def test_current_evidence_pins_validate():
     rescore._validate_evidence(_evidence_inputs())
+
+
+def test_pxd027430_checksum_pin_rejects_changed_source(tmp_path):
+    changed = tmp_path / "pxd027430.json"
+    changed.write_text(PXD027430.read_text(encoding="utf-8") + " ", encoding="utf-8")
+    with pytest.raises(ValueError, match="pxd027430 overlay evidence SHA-256 changed"):
+        rescore._validate_evidence(_evidence_inputs(pxd027430=changed))
+
+
+@pytest.mark.parametrize("missing", ["entry", "status", "uncertainty"])
+def test_pxd027430_missing_audit_has_descriptive_error(monkeypatch, missing):
+    audit = deepcopy(rescore.OVERRIDE_AUDIT)
+    if missing == "entry":
+        del audit["71.growth_phase"]
+    else:
+        del audit["71.growth_phase"][missing]
+    monkeypatch.setattr(rescore, "OVERRIDE_AUDIT", audit)
+    with pytest.raises(ValueError, match="PXD027430 condition overlay audit missing growth_phase"):
+        rescore._validate_evidence(_evidence_inputs())
+
+
+@pytest.mark.parametrize(("section", "field", "replacement"), [
+    (None, "dataset", "PXD999999"),
+    (None, "condition_row", 72),
+    ("typed_updates", "fmt", "solid plate"),
+    ("field_audit", "medium", {"status": "present", "uncertainty": "changed"}),
+])
+def test_pxd027430_shape_is_exact_even_after_hash_repin(
+    tmp_path, monkeypatch, section, field, replacement
+):
+    data = json.loads(PXD027430.read_text(encoding="utf-8"))
+    target = data if section is None else data[section]
+    target[field] = replacement
+    changed = tmp_path / "pxd027430.json"
+    changed.write_text(json.dumps(data), encoding="utf-8")
+    hashes = dict(rescore.EVIDENCE_SHA256)
+    hashes["pxd027430"] = rescore.sha256(changed)
+    monkeypatch.setattr(rescore, "EVIDENCE_SHA256", hashes)
+    with pytest.raises(ValueError, match="PXD027430 condition overlay evidence changed"):
+        rescore._validate_evidence(_evidence_inputs(pxd027430=changed))
+
+
+@pytest.mark.parametrize(("mutation", "message"), [
+    ("missing", "override names absent condition row 71"),
+    ("accession", "override row 71 expected accession PXD027430"),
+    ("source", "override row 71 source field T_text changed"),
+])
+def test_pxd027430_record_guard_rejects_missing_wrong_or_changed_source(
+    tmp_path, mutation, message
+):
+    data = json.loads(RECORDS.read_text(encoding="utf-8"))
+    row71 = next(item for item in data if item["row"] == 71)
+    if mutation == "missing":
+        data.remove(row71)
+    elif mutation == "accession":
+        row71["acc"] = "PXD999999"
+    else:
+        row71["T_text"] = "30°C"
+    changed = tmp_path / "records.json"
+    changed.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        rescore.load_records(changed)
 
 
 def test_pxd_overlay_requires_exact_values_after_hash_pin(tmp_path, monkeypatch):
@@ -454,7 +602,8 @@ def test_checked_in_current_artifacts_replay_exactly():
     assert read_table(RANKING) == [{key: str(value) for key, value in row.items()} for row in ranking]
 
 
-def test_cli_writes_all_three_artifacts(tmp_path, capsys, monkeypatch):
+@pytest.mark.parametrize("explicit_addendum", [False, True])
+def test_cli_writes_all_three_artifacts(tmp_path, capsys, monkeypatch, explicit_addendum):
     screen = tmp_path / "screen.tsv"
     inventory = tmp_path / "inventory.json"
     ranking = tmp_path / "ranking.tsv"
@@ -466,10 +615,15 @@ def test_cli_writes_all_three_artifacts(tmp_path, capsys, monkeypatch):
         "--archive-intake", str(INTAKE), "--paper-addendum", str(PAPER),
         "--manual-supplement", str(MANUAL), "--pride-check", str(PRIDE),
     ]
+    if explicit_addendum:
+        args.extend(["--pxd027430-addendum", str(PXD027430)])
     assert rescore.main(args) == 0
     assert len(read_table(screen)) == 941
     assert json.loads(inventory.read_text(encoding="utf-8"))["gaps"]
     assert read_table(ranking)
+    assert screen.read_bytes() == SCREEN.read_bytes()
+    assert inventory.read_bytes() == INVENTORY.read_bytes()
+    assert ranking.read_bytes() == RANKING.read_bytes()
     assert "rescored 941 pairs" in capsys.readouterr().out
     monkeypatch.setattr(sys, "argv", ["rescore_condition_pairs.py", *args])
     with pytest.raises(SystemExit) as result:
