@@ -200,6 +200,28 @@ membrane-separated bioreactors and mixed bioreactors; the timed axenic labels
 do not establish which setup those controls used. Please include culture
 volume/format and harvest growth phase or OD for those samples. Thank you.
 
+### PXD027430 — sampling scope and TMT channel identities
+
+Optional draft for the corresponding author listed in the paper, Daniel C.
+Ducat, `ducatdan@msu.edu`. The owner has deferred sending these queries; this
+draft does not schedule correspondence or block the reviewed metadata intake.
+
+Hello,
+
+We have read your article and supplement for PXD027430. Could you confirm
+whether the routine incubator temperature, irradiance and CO2 settings also
+applied throughout the proteomic time course? Please identify the light/dark
+schedule, harvest OD or phase, vessel and medium-replacement history for those
+samples. We retain the daily back-dilution OD as a maintenance value.
+
+Figure 2D identifies IPTG treatment/control groups and three columns per time
+point and IPTG arm. The printed 0 h arm labels differ from the later-timepoint
+labels within each visual block; could you clarify those baseline assignments?
+Could you map each column and TMT channel to its independent culture, time point
+and deposited file, and clarify any longitudinal sampling or pooling? We are
+preserving the published groups while leaving those assignments unresolved.
+Thank you.
+
 ## Verification
 
 Retain each depositor answer's date, exact sample/column identifiers and source

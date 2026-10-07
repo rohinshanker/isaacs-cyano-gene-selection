@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "dataset": "PXD027430",
+  "condition_row": 71,
+  "paper": {
+    "pmid": "35201348",
+    "pmcid": "PMC9157067",
+    "doi": "10.1093/plphys/kiac065",
+    "url": "https://academic.oup.com/plphys/article/189/2/874/6535719",
+    "public_redirect": "https://oup.silverchair-cdn.com/article-minimal/6535719"
+  },
+  "retrieved": "2026-10-07",
+  "scope": "Calibration metadata only; no source admission, raw-file assignment, locus join or lab pair judgement.",
+  "sources": [
+    {
+      "file": "pride-project.json",
+      "sha256": "e8cd692e31647c3b43b8ee2d439d6e05c3a970d05f7951d2be14162afd097379"
+    },
+    {
+      "file": "publisher-rendered-methods.txt",
+      "sha256": "1b5761c9de5189fb9b6f04381314cd2b928a7449a212112b2cfae7649c276530"
+    },
+    {
+      "file": "publisher-rendered-front.txt",
+      "sha256": "4a9050a0cd4fbe47f94b8797ee29f8b5a06a450cc72b2766b5968e58d2072a14"
+    },
+    {
+      "file": "supplement.pdf",
+      "sha256": "96b98dfde135822305c6b189068257d9eff8d9c0f7c332bc8566c7364e8d462f"
+    },
+    {
+      "file": "supplement-layout.txt",
+      "sha256": "eff8a2025846a71a7cc6bc6218c1d71f585f5fc29e958a1f361bf7aeb087ed91"
+    },
+    {
+      "file": "figure2.jpeg",
+      "sha256": "c2bbaf9f89596d969f6e2671ef7011ecfc47642364012d881119ae240e344cf5"
+    }
+  ],
+  "quotes": [
+    {
+      "quote": "250 μmol photons m^{−2} s^{−1}",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Growth medium and culture conditions; L283"
+    },
+    {
+      "quote": "2% (v/v) CO_{2}",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Growth medium and culture conditions; L283"
+    },
+    {
+      "quote": "OD_{750} ∼0.3",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Growth medium and culture conditions; L284"
+    },
+    {
+      "quote": "50 mL of culture",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Protein extraction; L288"
+    },
+    {
+      "quote": "three biological replicates",
+      "source": "publisher-rendered-front.txt",
+      "where": "Figure 2A caption; L174/L178"
+    },
+    {
+      "quote": "compact fluorescent",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Growth medium and culture conditions; L283"
+    },
+    {
+      "quote": "1 g L^{−1}",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Growth medium and culture conditions; L283"
+    },
+    {
+      "quote": "(HEPES), pH 8.3",
+      "source": "publisher-rendered-methods.txt",
+      "where": "Growth medium and culture conditions; L283"
+    }
+  ],
+  "typed_updates": {
+    "T": null,
+    "T_text": "30°C routine cultivation; proteomic sampling temperature not restated",
+    "I": null,
+    "I_text": "250 µmol photons m-2 s-1 routine cultivation; proteomic sampling irradiance not restated",
+    "co2": null,
+    "co2_text": "2% (v/v) routine cultivation; proteomic sampling gas percentage not restated",
+    "cont": null,
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "medium_text": "BG-11 + 1 g/L HEPES, pH 8.3; fresh/conditioned and nitrogen equivalence unresolved",
+    "conditioned": null,
+    "n_altered": null,
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates for untargeted proteomics (Figure 2A); per-timepoint/per-arm culture and raw-file mapping unresolved"
+  },
+  "field_audit": {
+    "temperature": {
+      "status": "partial",
+      "uncertainty": "Routine 30°C is known; sampling transfer is not asserted."
+    },
+    "light_intensity": {
+      "status": "partial",
+      "uncertainty": "Routine 250 photon flux is known; sampling transfer is not asserted."
+    },
+    "light_regime": {
+      "status": "partial",
+      "uncertainty": "Fluorescent lamp is reported; continuity, photoperiod and spectrum class remain unknown."
+    },
+    "co2": {
+      "status": "partial",
+      "uncertainty": "Routine 2% CO2 is known; sampling transfer is not asserted."
+    },
+    "medium": {
+      "status": "partial",
+      "uncertainty": "BG-11 identity is known; conditioned and nitrogen flags remain unresolved."
+    },
+    "culture_format": {
+      "status": "present",
+      "uncertainty": "Liquid sampling format is supported. Vessel and total culture volume are unknown and do not define a class gap."
+    },
+    "growth_phase": {
+      "status": "partial",
+      "uncertainty": "Daily maintenance OD750~0.3 is known; harvest OD and phase remain unknown."
+    }
+  },
+  "limits": [
+    "Routine incubator settings remain separate from sampled-culture values.",
+    "Maintenance OD and assay illumination/processing temperatures are not sampling values.",
+    "Published IPTG treatment/control groups are identified; biological-culture, channel, file and longitudinal assignments remain unresolved.",
+    "Supplement Table S1 contains selected differential proteins, not a proteome-wide abundance table."
+  ],
+  "experimental_design": {
+    "where": "Main Figure 2D; Supplemental Figure S2, page 3, printed lines 69–75",
+    "timepoint_hours": [
+      0,
+      24,
+      48,
+      72,
+      96
+    ],
+    "group_labels": [
+      "-IPTG",
+      "+IPTG"
+    ],
+    "control_context": "Supplemental Figure S2 identifies the -IPTG proteomic control at 72 h.",
+    "assignment_limit": "Figure columns do not establish culture/channel/file identities or longitudinal pairing.",
+    "displayed_columns_per_timepoint_and_arm": 3,
+    "figure_label_caveat": "The printed 0 h IPTG labels differ from the later-timepoint arm labels within each visual block; do not infer or correct sample assignments from block position."
+  },
+  "quote_policy": "Minimal anchor excerpts; values and scope were checked against the full pinned text at each recorded locator, rather than inferred from the excerpts alone."
+}
