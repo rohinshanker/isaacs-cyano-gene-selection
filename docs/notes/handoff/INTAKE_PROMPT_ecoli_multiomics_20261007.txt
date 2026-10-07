@@ -1,0 +1,119 @@
+INTAKE PROMPT, 2026-10-07: E. coli multi-omics sources and cross-strain crosswalk
+Written by the Claude Science session of 2026-10-07 for the in-repository agents. Ticket:
+docs/notes/tickets/O_ecoli-multiomics-datasets__20261006.md. Two returns, eleven files.
+
+OWNER DECISIONS OF 2026-10-07, given to Claude Science after it returned P-ECOLI-OMICS.
+- Verbatim: "go with the best sources for each. a cross-strain crosswalk is fine if it is
+  feasible."
+- Claude Science found the crosswalk feasible (return 2 below). The selection that follows from
+  the decision, per layer, still has to pass intake:
+  transcript abundance: AG3C mRNA, Caglar 2017 Supplementary Dataset 2 (GSE94117), E. coli B
+    REL606, through the REL606 to MG1655 crosswalk;
+  protein abundance: Schmidt 2016 Table S6 (PXD000498), K-12 BW25113, direct b-numbers, for
+    condition breadth; AG3C protein (Supplementary Dataset 3, PXD005721) as the same-culture
+    companion of the AG3C mRNA; Mori 2021 corrected EV8 if replicate-level protein values are
+    required (Schmidt S6 publishes one value per condition, not one per replicate);
+  ribosome occupancy: Zhang 2022 GSE182100 Ribo-seq with its own RNA-seq, K-12 NCM3722,
+    coordinate join on NC_000913.3;
+  on-strain transcript reference: PRECISE-1K log_tpm_qc.csv, MG1655, direct b-numbers.
+- The decision authorises building toward these sources. It does not admit any of them, settle
+  any licence, or decide how cross-strain values are labelled. Those stay under the contracts
+  named in the ticket's "Work after return".
+
+STEP 0: STATE OF THE TREE
+- The eleven files below and this prompt were written into docs/notes/handoff/ by the Claude
+  Science session on 2026-10-07 at the owner's request, as new untracked files, byte-identical
+  to the saved Claude Science artifacts. Nothing else in the tree was touched and nothing was
+  staged or committed. Claude Science did not run intake on its own returns.
+- Check git status and git log first. Another session may be working in this checkout:
+  re-read a shared file immediately before editing it. Do not commit, stage, or stash unless
+  the owner has said to. Edit only the files this prompt names.
+- Read docs/validation/claude-science-handoff.md ("Intake", "Hard boundaries") before step 1.
+  Refer to ticket and contract text by section heading, never by line number.
+
+FILES, SHA-256 as saved by Claude Science on 2026-10-07
+Return 1, package P-ECOLI-OMICS:
+  ecoli_multiomics_review__20261007.md        13,543 B  9d970cde64c46a887d6d51fbb6c7c8a3a6f4e30cea74c54e123027fd26cd1abf
+  ecoli_multiomics_datasets__20261007.tsv     15,644 B  e58ac89fe9ce760e7fdfe5b99f36add1c03dd476abba6620c5b42dcd19ef469a  19 rows
+  ecoli_multiomics_samples__20261007.tsv     194,441 B  b756f8d30e59ceae3743c25ea43255d803fd8983efe59beaa88e18544a75a029  477 rows
+  ecoli_multiomics_conditions__20261007.tsv   73,200 B  86b0c893d1ef289c12f897d934297b9ad59c0466b8166af346f32874987bcdb6  74 rows
+  ecoli_multiomics_bundles__20261007.tsv       5,958 B  8ead69ab7d9d812eca60797f6e54540b9393ba8e566084945cb000574250a99f  6 rows
+  ecoli_multiomics_files__20261007.tsv        16,734 B  d132a7ea8f2271dcc7d2da0a02a69248bf670896a02a10ae8a026a628a2b1bc9  31 rows
+  ecoli_multiomics_search__20261007.tsv       10,093 B  9a6472fb477cf79a1c390e0aa5d95296896d50b621682ef5287f6e83aeb672af  21 rows
+Return 2, crosswalk feasibility:
+  ecoli_crosswalk_feasibility__20261007.md            10,543 B  a6bfbd82b5e1745f437a262b9f945a6269dd4c6acaf5503b586de88107354a74
+  ecoli_crosswalk_REL606_to_MG1655__20261007.tsv     846,204 B  f00d4aa268a1ac74c0596e752527dc6f3fcc76f1906ef180b9fe0925d0435b6d  4,216 rows
+  ecoli_crosswalk_AG3C_matrix_rows__20261007.tsv     296,848 B  e36ef1837865673305b47595f18c6fe6a34e1236d65770b0063faaea2e8f28c9  4,196 rows
+  ecoli_crosswalk_GSE182100_regions__20261007.tsv    260,185 B  9a0e8d9bebd5220fda3e268bb53d4172be72989b2acbc62029868f4fe3e51b75  4,497 rows
+
+STEP 1: RETURN 1, P-ECOLI-OMICS
+Check, do not accept on a checksum alone:
+- All seven checksums and row counts.
+- Rows F01 to F07 and F23 to F31 of files.tsv carry SHA-256 values. Recompute each on a file
+  this session retrieves itself. F23 to F31 are the quotation sources (four Europe PMC
+  fullTextXML documents, three GEO SOFT records, two PRIDE REST records); live records can
+  change, so a mismatch there means "re-match the quotation", not automatically "fail".
+- Every quotation in review.md and samples.tsv, matched mechanically against those sources.
+- Recompute these counts from the named files; they are the return's main claims about itself:
+  AG3C, from srep45303-s2.csv: 171 cultures, 152 with RNA, 105 with protein, 102 with both;
+    25 conditions with 3 complete mRNA+protein cultures and 2 with 4, across 57 conditions;
+  AG3C culture ids shared by GSE94117 sample titles and PXD005721 + PXD002140 file names: 109
+    (the return flags the 7-culture difference from 102 as unexplained);
+  GSE182100: 72 samples forming 12 conditions x {RNA-seq, Ribo-seq} x 3;
+  PRECISE-1K metadata_qc.csv: MG1655 582 samples, 309 project x condition groups (254 of 2,
+    47 of 1, 7 of 3, 1 of 6); the reference group pools to 33 samples across 12 labels;
+  search.tsv hit totals: PubMed 297, GEO 650, Europe PMC 1,676.
+- The PRIDE licence fields as stated: EBI terms of use for PXD005721, PXD002140, PXD000498 and
+  PXD010126; Creative Commons Public Domain (CC0) for PXD014948.
+- Boundaries: nothing admitted, no licence permission given, no join performed, no lab
+  decision taken.
+- The return declares four deviations at the end of review.md (row granularity of
+  datasets.tsv and conditions.tsv, datasets without per-sample rows, which matrices were
+  retrieved). Hold each cell to the return's own definitions of "not reported", "not
+  retrieved" and "not inspected".
+A failing row is named and returned, not repaired here. A return can pass with rows returned.
+
+STEP 2: RETURN 2, CROSSWALK FEASIBILITY
+- Before opening the three crosswalk tables, build the REL606 to MG1655 crosswalk here from
+  the pinned inputs named in the feasibility file, under the identifier-crosswalk contract
+  (one row per relationship, ambiguity explicit). Then compare against
+  ecoli_crosswalk_REL606_to_MG1655__20261007.tsv. Expected: T1 (identical protein sequence,
+  unique on both sides) agrees exactly at 2,162 pairs, with the same 21 ambiguous rows from
+  three shared sequences. T2/T3 are aligner-dependent; report agreement and name the loci that
+  disagree.
+- Recompute the input checksums in the feasibility file's last table on files retrieved here.
+  The MG1655 GFF and protein FASTA are already in data/raw/ecoli-k12-mg1655/.
+- Check the AG3C route: all 4,196 YP_ accessions resolve to the ECB_ tag in the same row of
+  srep45303-s3.csv; 3,709 rows reach a distinct b-number; 2,007 protein rows carry signal and
+  1,948 of them reach a b-number.
+- Check the GSE182100 route on any count file: a plus-strand region maps by start+1 / end-3, a
+  minus-strand region by start+4 / end, giving 4,128 of 4,497 regions and no region matching
+  two loci.
+Weigh four judgements the return made and says it made. They are the lab's, so record them as
+open and do not adopt them: the T2 thresholds (identity 90%, coverage 0.8) and the T3 class;
+reading the protein matrix value 0.968 as non-detection; Schmidt S6 (breadth, condition means)
+versus Mori EV8 (replicate columns, NCM3722) for protein; and how the data contract's
+"transferred" basis, written for UTEX 2973 loci, applies to an MG1655-native view.
+
+STEP 3: IF BOTH PASS
+- Record the intake (verdict, sources, date, checker) and the owner decision above in the
+  ticket's "Current State" and "Claude Science claims" sections. Change the P-ECOLI-OMICS
+  status from "pending, not sent" to returned 2026-10-07, and update its queue row in
+  docs/notes/tickets/INDEX.md. Ask the owner for the Sent date.
+- Cross-strain transfer is item 2 of "What must not land without a Claude Science claim or
+  package". Add these as claim rows, each pre-grounded by return 2:
+  CS-1: AG3C REL606 mRNA and protein values may appear on MG1655 loci only as transferred
+    values naming REL606, and only for rows that reach a b-number by T1 or T2 (3,676 mRNA
+    rows; T3 adds 33 more if the lab accepts it); the rest have no defensible partner.
+  CS-2: GSE182100 (NCM3722), Schmidt S6 (BW25113) and Mori EV8 (NCM3722) reach MG1655
+    b-numbers with no ortholog inference (coordinates or a b-number column); their values are
+    transferred values naming the K-12 substrain, not MG1655 measurements.
+  CS-3: no ratio across the selected layers other than AG3C mRNA with AG3C protein is a
+    same-culture measurement; Zhang Ribo-seq over Zhang RNA-seq is same-study, culture identity
+    unproven; any other cross-layer ratio is cross-study and cross-strain.
+- Then continue with the ticket's "Work after return", steps 2 to 5: record the selection and
+  its tradeoffs, fetch the selected matrices under pinned versions and checksums, and apply
+  the source ledger, admission contract and identifier-crosswalk contract before integration.
+
+Report back: the verdict for each return, every failing row or count by name, the crosswalk
+agreement figures, and the path and SHA-256 of any file this intake writes.

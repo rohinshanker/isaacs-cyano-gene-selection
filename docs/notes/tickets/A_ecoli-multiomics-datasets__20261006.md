@@ -1,17 +1,18 @@
-# O_ecoli-multiomics-datasets__20261006 — Open
+# A_ecoli-multiomics-datasets__20261006 — Active
 
 Scope: Find and retrieve experimental E. coli transcriptomics, proteomics,
 ribosome-profiling and supporting omics data, prioritising many biological
 replicates and matching growth conditions across layers.
-Status: open
+Status: active
 Opened: 2026-10-06
-Updated: 2026-10-06
+Updated: 2026-10-07
 
 ## Current State
 
 The owner requested a Claude Science literature review on 2026-10-06. Package
-P-ECOLI-OMICS below is prepared and queued for the owner's manual session; it has not
-been sent. This explicit request applies to this review and does not change the
+P-ECOLI-OMICS was sent and **returned on 2026-10-07; intake passed the same day**
+and is recorded below. The ticket is active: the evidence is in, the source
+selection and acquisition are not. This explicit request applies to this review and does not change the
 repository's default of reading accessible sources locally.
 
 The ideal result is RNA-seq, quantitative proteomics and Ribo-seq measured from
@@ -49,7 +50,7 @@ and remove its queue rows. No permanent task history.
 ## Claude Science claims
 
 This is a bounded research work package, P-ECOLI-OMICS, rather than an asserted
-scientific claim. Status: pending, not sent. Its return informs source selection
+scientific claim. Status: **returned 2026-10-07, intake passed** (below). Its return informs source selection
 and acquisition; it does not gate preparation or unrelated organism/UI work.
 Any later scientific dependency must become a separate falsifiable claim with
 its own evidence and intake under the [handoff contract](../../validation/claude-science-handoff.md).
@@ -58,7 +59,9 @@ its own evidence and intake under the [handoff contract](../../validation/claude
 
 Coordinator: interactive Codex session `cyano-ticket-opening`; owner operates
 Claude Science and returns the artifacts for intake.
-Task: `O_ecoli-multiomics-datasets__20261006`, package P-ECOLI-OMICS.
+Task: `O_ecoli-multiomics-datasets__20261006`, package P-ECOLI-OMICS. The
+package text is kept exactly as it was sent, so it still names the ticket by the
+filename it had on 2026-10-06; the ticket became `A_...` when intake passed.
 Canonical repository: `/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection`.
 Baseline: `main` at `ffcb172cfe97c965ee25424febc628ebfdf17cdb`; ticket/queue
 additions and unrelated local work may be present. Read-only repository access
@@ -157,6 +160,86 @@ credential, administrator password, security/privacy approval or app permission,
 tell the owner the exact action, resource and reason; wait for their decision.
 Do not bypass denied/pending approvals. Follow the handoff contract: evidence is
 not licence permission, admission, a locus join or a lab decision.
+
+## P-ECOLI-OMICS result, returned 2026-10-07
+
+**Verdict: supported.** Everything checked in intake reproduced. Two apparent
+failures during checking were mistakes of mine, not of the return, and are
+recorded below so nobody repeats them.
+
+**Returned text:** the twelve artifacts in `docs/notes/handoff/`, named
+`ecoli_multiomics_<artifact>__20261007` and `ecoli_crosswalk_*__20261007`,
+unedited. `ecoli_multiomics_review__20261007.md` is the recommendation; the six
+TSVs carry the evidence (19 datasets, 477 samples, 74 conditions, 6 bundles, 31
+files, 21 search batches), and three further crosswalk tables were returned
+beyond the specified set.
+
+**Intake check:** performed 2026-10-07 by the interactive Claude session
+`cyano-contract-audit`, against the live archives rather than against the
+return's own tables.
+
+| Check | Result |
+| --- | --- |
+| Accessions resolve | **13 of 13** GEO series resolve in `db=gds`; **5 of 5** PRIDE projects answer HTTP 200 with titles matching the studies named |
+| Citations resolve | **13 of 13** PMIDs resolve, and every returned title matches the study the review attributes to it |
+| File checksums | **12 of 16** re-downloaded and re-hashed byte-for-byte identical, with declared byte lengths also exact. The other four are blocked, not wrong; see below |
+| Quotations | **5 of 5** re-matched after normalising whitespace and case |
+| Replicate and pairing counts | every count re-derived independently reproduced exactly; see below |
+
+### Counts re-derived from the sources, not from the return
+
+- **Zhang 2022, GSE182100.** The series matrix holds 72 samples, 36 `RNA-Seq`
+  and 36 `OTHER`, all strain NCM3722. Dropping the one characteristic that
+  encodes the assay, `molecule subtype`, leaves **12 biological conditions of 6
+  samples each**, which is 12 conditions by two layers by three replicates. The
+  review's claim is exact. My first pass reported no condition carrying both
+  layers; that was my error, from treating the assay label as biology.
+- **PRECISE-1K, `metadata_qc.csv`.** SHA-256 recomputed and identical. Filtering
+  the `Strain` column to MG1655 gives **582 samples in 309 project-by-condition
+  groups, distributed 47 ones, 254 twos, 7 threes and 1 six** — every figure the
+  review states. My first pass gave 418 and 211 because I filtered the
+  `Strain Description` column instead, which is the wrong column.
+- **AG3C culture overlap.** Recomputed from the archives: GSE94117 and GSE67402
+  carry 152 and 36 samples, and the `MURI` culture numbers in the two GEO series
+  intersect those in the PRIDE file listings of PXD005721 (816 files) and
+  PXD002140 (107 files) in exactly **109** cultures. This reproduces the
+  review's number, including the discrepancy it flags against the 102 cultures
+  the published matrices use, which the sources it read do not explain.
+
+### Quotations, each re-matched against the retrieved source
+
+| Source | Result |
+| --- | --- |
+| Caglar 2017, PMC5394689, same batch of flasks | exact |
+| Caglar 2017, PMC5394689, three replicates on separate days | exact |
+| Zhang 2022, PMC9624429, three replicates for all 12 conditions | exact |
+| Houser 2015, **PMC4537216**, each replicate on separate days | exact. My first attempt used PMC4529991, which is a different article; the return does not give a wrong id, I guessed one |
+| Schmidt 2016, PMC4888949, 22 conditions in biological triplicates | exact apart from an inline citation marker inside the sentence, which the published text renders as a superscript and a plain-text extraction pulls inline |
+
+### What intake could not verify
+
+Four checksums are unverified because one endpoint stalled, not because anything
+looked wrong. `F02` is the Europe PMC supplementary bundle for PMC5394689, about
+23 MB, and the return itself records that the endpoint ignores its `fileName`
+parameter and serves the whole bundle; the download did not complete in this
+session. `F03`, `F04` and `F05` are members of `F02`, so they wait on it. Those
+three are the AG3C sample table and the two replicate-level matrices, which
+carry the rank-1 bundle's counts of 102 cultures with both layers and 25
+conditions with three. Those specific numbers are therefore **not** independently
+reproduced here, although the 109-culture overlap computed above corroborates the
+design from a different direction. Re-run the checksum pass when the endpoint
+cooperates.
+
+Nothing else in the return was refused or unreachable.
+
+### What the return does not do, and must not be read as doing
+
+Evidence, not admission. No dataset is admitted, no licence is granted, no locus
+join is authorised and no lab decision is settled by this result. The review
+states this itself for the leading bundle: placing AG3C beside a b-number viewer
+needs a documented crosswalk and, under this repository's contract, a cross-strain
+claim, and the return neither performs nor proposes that join. The three
+`ecoli_crosswalk_*` tables are feasibility evidence for it, not the join.
 
 ## Work after return
 
