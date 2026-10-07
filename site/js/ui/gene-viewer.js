@@ -147,6 +147,11 @@ export function describeGeneView(model, tssPending = null, organism = DEFAULT_OR
     parts.push(tssPending === 'failed'
       ? `The ${startSites.label} start sites could not be loaded, so none is drawn.`
       : `The ${startSites.label} start sites are still loading, so none is drawn yet.`);
+  } else if (model.tssSites.length > 0) {
+    parts.push(`${model.tssSites.length} ${startSites.label} source `
+      + `${model.tssSites.length === 1 ? 'row is' : 'rows are'} associated with this locus, `
+      + 'but no valid published upstream distance is available to place a mark on this '
+      + 'gene-relative track. The associated rows remain in the start-site list below.');
   } else {
     parts.push(`No ${startSites.label} start site maps to this locus by exact locus tag.`);
   }
@@ -445,7 +450,7 @@ function startSiteList(model, startSites, visible) {
   note.textContent = `Every row ${startSites.citation} published for this locus, each a measured `
     + 'start site rather than a prediction, at the distance that study published against its own '
     + 'gene model.'
-    + (visible
+    + (model.tss.length === 0 ? '' : visible
       ? ' Marks closer together than one mark head overlap in the picture; the cluster '
         + 'numbers below say where this width draws them and group nothing else, so each site keeps '
         + 'its own coordinate and its own row.'
@@ -563,13 +568,19 @@ export function renderGeneViewer(host, gene, {
 } = {}) {
   const startSites = layerOf(organism, 'tssEvidence');
   host.classList.add('gene-view');
+  host.tabIndex = -1;
+  host.setAttribute('role', 'group');
+  host.setAttribute('aria-label', 'Gene visualizer');
   const model = geneViewModel(gene);
   if (!model) {
+    const held = host.contains(document.activeElement)
+      && document.activeElement.dataset?.detailAction === START_SITES_CONTROL;
     host.replaceChildren();
     const empty = document.createElement('p');
     empty.className = 'panel-note';
     empty.textContent = 'Pin a gene, or move to one with the arrow keys, to draw it here.';
     host.append(empty);
+    if (held) host.focus({ preventScroll: true });
     return null;
   }
 
@@ -670,7 +681,7 @@ export function renderGeneViewer(host, gene, {
     }
 
     host.append(factsFor(model));
-    if (held && toggle) toggle.focus({ preventScroll: true });
+    if (held) (toggle ?? host).focus({ preventScroll: true });
   };
 
   paint(startSitesVisible);

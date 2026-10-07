@@ -328,6 +328,52 @@ test('each mount decides for itself, and holds its own state', async () => {
   });
 });
 
+test('the controls mount retains focus when its checkbox disappears or selection clears', async () => {
+  await withFakeDocument((document) => {
+    const { host, draw } = mount(document, joined(DENSE));
+    control(host).focus();
+    draw(joined(NO_SITES));
+    assert.equal(control(host), null);
+    assert.equal(document.activeElement, host);
+    assert.equal(host.isConnected, true);
+    assert.equal(host.tabIndex, -1);
+    assert.equal(host.getAttribute('role'), 'group');
+    assert.equal(host.getAttribute('aria-label'), 'Gene visualizer');
+    draw(joined(DENSE));
+    assert.equal(document.activeElement, host, 'later redraws retain the stable fallback');
+    control(host).focus();
+    draw(null);
+    assert.equal(document.activeElement, host);
+    assert.equal(control(host), null);
+    assert.match(host.textContent, /Pin a gene/);
+  });
+});
+
+test('unmapped-only evidence is unavailable for drawing, even with a retained hidden preference', async () => {
+  const unmapped = {
+    ...joined(NO_SITES),
+    tssEvidence: [{ id: 'gTSS+9', type: 'gTSS', strand: '+',
+      replicon: 'CP006471', position: 900 }],
+  };
+  await withFakeDocument((document) => {
+    const { host, held, draw } = mount(document, joined(DENSE));
+    toggle(host);
+    draw(unmapped);
+    assert.equal(held.visible, false, 'the view preference is retained');
+    assert.equal(control(host), null);
+    assert.equal(host.querySelectorAll('circle').length, 0);
+    assert.equal(rowTexts(host).length, 1);
+    assert.match(said(host), /1 Tan 2018 source row is associated with this locus/);
+    assert.match(said(host), /no valid published upstream distance is available/);
+    assert.doesNotMatch(said(host), /No Tan 2018 start site maps|control is off/);
+    assert.doesNotMatch(listNote(host), /hidden|Show Tan|overlap in the picture/);
+    assert.match(listNote(host), /no published upstream distance and so no mark/);
+    draw(joined(DENSE));
+    assert.equal(control(host).checked, false);
+    assert.equal(host.querySelectorAll('circle').length, 0);
+  });
+});
+
 test('a minus-strand locus has the control and its own marks, like a plus-strand one', async () => {
   const minus = joined(MINUS);
   assert.equal(minus.strand, '-');
