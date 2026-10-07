@@ -33,7 +33,7 @@ Owner decision, 2026-10-06: leave this ticket open for human marks. Preparation 
 
 ## Verification
 
-Prepared packet: [211 entries and 20 renders](/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection/.playwright-cli/cyano-ui-fixes/clutter-review.md). Captures use reduced motion so every entry contains its final text. `tools/ui/capture_clutter_review.js` regenerates the inventory from the real app. No wording removals have been applied. Each applied change is rendered at mobile, tablet and desktop widths
+Prepared packet: [211 entries and 20 renders](/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection/.playwright-cli/cyano-ui-resume/clutter-review.md). Captures use reduced motion so every entry contains its final text. `tools/ui/capture_clutter_review.js` regenerates the inventory from the real app. No wording removals have been applied. Each applied change is rendered at mobile, tablet and desktop widths
 and re-checked by the person who marked it. The gates run after each change.
 
 ## Cleanup
