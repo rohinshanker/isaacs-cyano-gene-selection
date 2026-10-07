@@ -103,6 +103,15 @@ biological replication remain explicit, so no replicate-band inference follows
 from the plan. The local Docker daemon has 4 CPUs and about 5.8 GiB memory; 48 GiB disk
 is free, below this prepared full-pilot envelope. Cluster execution waits on the compute-backend ticket's configured route/workspace.
 
+Owner decisions recorded by the concurrent ingestion pass, 2026-10-07:
+GSE252562 waits for the depositor's photoperiod reply, and GSE311172/GSE225426
+wait for their depositor replies before admission. Those dependencies move
+here from rows 3 and 4 of the licence-unblocked ticket; sending a query is not
+what unblocks them. The existing questions and public contact details also
+appear in `docs/validation/AAA-next-steps.md` item 5. Other newly ingested
+sources keep their source-appropriate unknowns and caveats; GSE335065's
+axenic vessel remains unstated and GSE237858's flux conflict stays explicit.
+
 ## Work
 
 1. **Automated: rank what is worth chasing.** A script over the package D table

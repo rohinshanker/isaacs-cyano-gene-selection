@@ -796,7 +796,11 @@ DTASelect filter reports instead of a table (`reader.format: dtaselect`, one
 `zipMembers` entry per run) is read protein-line by protein-line into one count
 column per run (`countColumn`, default `Spectrum Count`); a locus of the UniProt
 FASTA form becomes its accession, decoys are dropped, and a layer mean covers
-only the proteins every replicate run identified.
+only the proteins every replicate run identified. A table that lists features
+besides genes or prefixes each locus tag names the identifiers to read
+(`reader.idPattern`, matched whole; the first group, if any, is the identifier):
+rows outside it are dropped and counted as unmapped, never read as duplicates.
+An identifier column the deposit leaves unnamed is named by the empty string.
 
 Each source also names its `payload`. The two original measurements
 (`expression`, `tssInitiation`) ride in `genes.json`; every ingested layer is

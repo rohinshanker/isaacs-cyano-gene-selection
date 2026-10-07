@@ -1,0 +1,124 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 rel- + relA+ (rel deletion complemented with relA)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE103463",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103463",
+  "citationId": "puszynska-2017-ppgpp",
+  "citation": {
+    "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+    "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+    "pmid": "29241543"
+  },
+  "file": {
+    "name": "GSE103463_Expression.xls.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103463/suppl/GSE103463_Expression.xls.gz",
+    "sha256": "45aae486783eb020aa6680982e92be21dd3d734a7168b9297ef060c2bfc01d29"
+  },
+  "reader": {
+    "format": "xls",
+    "sheet": "Sheet1",
+    "idColumn": "Gene name",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean gene expression values normalised with external RNA standards, as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 4,
+  "replicates": {
+    "count": 2,
+    "text": "two biological replicates per genotype and time point"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 40,
+      "hi": 40,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "cool fluorescent",
+      "entrained": true,
+      "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into constant light and sampled at subjective dawn (CT 0) and subjective dusk (CT 12)"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+      "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+      "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG11 medium"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "tissue culture flasks"
+    },
+    "phase": {
+      "status": "not reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+      "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+      "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+    }
+  },
+  "caveat": "Measured in an engineered PCC 7942 strain (the rel deletion complemented with relA), not wild type and not UTEX 2973; the rel- + relAE335Q arm, whose synthetase is inactive, is not shipped. The workbook names the rel deletion spoT-. Values are the depositors' read counts normalised with external RNA standards.",
+  "layers": [
+    {
+      "id": "GSE103463_rel_relA_subjective_dawn",
+      "metricKey": "exprGse103463RelAPlusDawn",
+      "label": "Expression GSE103463 rel- + relA+ subjective dawn CT0 (PCC 7942)",
+      "conditionSet": "rel- + relA+ at subjective dawn (CT 0) in constant light, mean of two replicates",
+      "samples": "rel- + relA+ replicate 1–2 dawn (GSM2771781–GSM2771782); workbook columns spoT- + relA+",
+      "columns": [
+        "spoT- + relA+ replicate 1 dawn",
+        "spoT- + relA+ replicate 2 dawn"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "engineered"
+    },
+    {
+      "id": "GSE103463_rel_relA_subjective_dusk",
+      "metricKey": "exprGse103463RelAPlusDusk",
+      "label": "Expression GSE103463 rel- + relA+ subjective dusk CT12 (PCC 7942)",
+      "conditionSet": "rel- + relA+ at subjective dusk (CT 12) in constant light, mean of two replicates",
+      "samples": "rel- + relA+ replicate 1–2 dusk (GSM2771783–GSM2771784); workbook columns spoT- + relA+",
+      "columns": [
+        "spoT- + relA+ replicate 1 dusk",
+        "spoT- + relA+ replicate 2 dusk"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "engineered"
+    }
+  ]
+}

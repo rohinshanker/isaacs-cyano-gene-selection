@@ -1,0 +1,109 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE237858",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237858",
+  "citationId": "xu-2024",
+  "citation": {
+    "text": "Xu Y, Jabbur ML, Mori T, Young JD, Johnson CH. Clocking out and letting go to unleash green biotech applications in a photosynthetic host. Proc Natl Acad Sci U S A 2024;121(21):e2318690121.",
+    "url": "https://doi.org/10.1073/pnas.2318690121",
+    "pmid": "38739791"
+  },
+  "file": {
+    "name": "GSE237858_transcript_count_matrix.csv.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE237nnn/GSE237858/suppl/GSE237858_transcript_count_matrix.csv.gz",
+    "sha256": "fa0b911453e31c9198eee5b8e4f7186526b3bdab19cd5b02dc7dc30223e04e94"
+  },
+  "reader": {
+    "format": "csv",
+    "idColumn": "transcript_id",
+    "idKind": "pcc7942_rs",
+    "idPattern": "gene-(SYNPCC7942_RS\\d+)"
+  },
+  "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": 33,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates per genotype"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "constant 30 ºC"
+    },
+    "lightIntensity": {
+      "status": "conflicting",
+      "lo": 40,
+      "hi": 50,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "~40 µE in the GEO growth protocol; 50 µmol photons m⁻² s⁻¹ cool-white fluorescent in the article's general Methods; the record does not say which applies to the sequenced cultures",
+      "where": "GEO GSE237858 !Sample_growth_protocol_ch1; Xu et al. 2024 Methods (package B row 33, unresolved conflict)"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "fluorescent",
+      "entrained": true,
+      "text": "constant fluorescent light; one 12 h dark pulse immediately before 12 h of constant light at collection; no diel cycling"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported",
+      "where": "GEO GSE237858 and Xu et al. 2024 (PMC11127020), checked by package B",
+      "quote": ""
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11 agar plates, no ZnCl₂ added"
+    },
+    "format": {
+      "status": "reported",
+      "value": "agar plate",
+      "text": "plates of BG-11"
+    },
+    "phase": {
+      "status": "reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "collected after 12 h in constant light following a 12 h dark pulse, after 3 days of growth on plates; OD not reported"
+    }
+  },
+  "caveat": "Measured in PCC 7942 on BG-11 agar plates, not in liquid culture and not in UTEX 2973; wild type without ZnCl₂ only, the labA knock-out and the zinc-induced kaiA strains are not shipped. The GEO growth protocol (~40) and the article's Methods (50 µmol photons m⁻² s⁻¹) disagree on light intensity.",
+  "layers": [
+    {
+      "id": "GSE237858_wt_ll12",
+      "metricKey": "exprGse237858Wt",
+      "label": "Expression GSE237858 WT, 12 h constant light after dark pulse (PCC 7942)",
+      "conditionSet": "Wild type on BG-11 plates, 12 h after a 12 h dark pulse in constant light, mean of three replicates",
+      "samples": "WT replicate 1–3 (GSM7655427–GSM7655429)",
+      "columns": [
+        "WT1",
+        "WT2",
+        "WT3"
+      ],
+      "treatments": [
+        "12 h dark pulse, then 12 h constant light"
+      ],
+      "group": "other"
+    }
+  ]
+}

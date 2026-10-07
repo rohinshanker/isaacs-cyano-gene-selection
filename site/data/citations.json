@@ -329,6 +329,166 @@
           ]
         },
         {
+          "id": "puszynska-2017-ppgpp",
+          "citation": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Reports 21, 3155–3165 (2017). doi:10.1016/j.celrep.2017.11.067; GEO GSE103462, GSE103463, GSE103644, GSE103704, GSE105774.",
+          "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+          "contribution": "Ten optional RNA-abundance layers from five GEO series of one study, each the mean of its sample columns as deposited (read counts normalised with external RNA standards; RPM for GSE103644): the wild type at subjective dawn and dusk in constant light (GSE103462) and at dusk and through a darkness time course under 12 h light/12 h dark (GSE103704); the rel deletion complemented with relA under the same two regimes (GSE103463, GSE105774, listed as an engineered strain); and the wild type carrying an inducible relA before and after theophylline induction (GSE103644, single samples). The rel- and relAE335Q arms are not shipped. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY-NC-ND 4.0, permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE103462_wt_subjective_dawn.tsv",
+              "repoPath": "data/expression/GSE103462_wt_subjective_dawn.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103462_wt_subjective_dawn.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103462_wt_subjective_dusk.tsv",
+              "repoPath": "data/expression/GSE103462_wt_subjective_dusk.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103462_wt_subjective_dusk.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103463_rel_relA_subjective_dawn.tsv",
+              "repoPath": "data/expression/GSE103463_rel_relA_subjective_dawn.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103463_rel_relA_subjective_dawn.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103463_rel_relA_subjective_dusk.tsv",
+              "repoPath": "data/expression/GSE103463_rel_relA_subjective_dusk.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103463_rel_relA_subjective_dusk.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103644_wt_relA_preinduction.tsv",
+              "repoPath": "data/expression/GSE103644_wt_relA_preinduction.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103644_wt_relA_preinduction.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103644_wt_relA_induced.tsv",
+              "repoPath": "data/expression/GSE103644_wt_relA_induced.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103644_wt_relA_induced.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103704_wt_dusk.tsv",
+              "repoPath": "data/expression/GSE103704_wt_dusk.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103704_wt_dusk.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE103704_wt_darkness.tsv",
+              "repoPath": "data/expression/GSE103704_wt_darkness.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE103704_wt_darkness.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE105774_rel_relA_dusk.tsv",
+              "repoPath": "data/expression/GSE105774_rel_relA_dusk.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE105774_rel_relA_dusk.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE105774_rel_relA_darkness.tsv",
+              "repoPath": "data/expression/GSE105774_rel_relA_darkness.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE105774_rel_relA_darkness.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "xu-2024",
+          "citation": "Xu Y, Jabbur ML, Mori T, Young JD, Johnson CH. Clocking out and letting go to unleash green biotech applications in a photosynthetic host. Proceedings of the National Academy of Sciences 121, e2318690121 (2024). doi:10.1073/pnas.2318690121; GEO GSE237858.",
+          "url": "https://doi.org/10.1073/pnas.2318690121",
+          "contribution": "One optional RNA-abundance layer for the wild type grown on BG-11 agar plates and collected 12 h into constant light after a 12 h dark pulse (three replicates), as mean counts per million from the deposited raw StringTie counts; only the gene-prefixed locus tags of the count matrix are read. The labA knock-out and zinc-induced kaiA strains are not shipped, and the GEO growth protocol and the article disagree on light intensity (~40 versus 50 µmol photons m⁻² s⁻¹). The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY-NC-ND 4.0, permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE237858_wt_ll12.tsv",
+              "repoPath": "data/expression/GSE237858_wt_ll12.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE237858_wt_ll12.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "suban-2024",
+          "citation": "Suban S, Yemini S, Shor A, Waldman Ben-Asher H, Yaron O, Karako-Lampert S, Sendersky E, Golden SS, Schwarz R. A cyanobacterial sigma factor F controls biofilm-promoting genes through intra- and intercellular pathways. Biofilm 8, 100217 (2024). doi:10.1016/j.bioflm.2024.100217; GEO GSE254350.",
+          "url": "https://doi.org/10.1016/j.bioflm.2024.100217",
+          "contribution": "Two optional RNA-abundance layers for the wild type in bubbled tubes on day 1 and day 4 (four replicates each), as the mean of the deposited DESeq2-normalised counts. The wild type is the planktonic, biofilm-suppressed control of a biofilm study; the pilB, sigF1 and sigF2 mutants are not shipped, and the workbook's 'predicted RNA' rows carry no locus tag and are not read. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY-NC-ND 4.0, permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE254350_wt_day1.tsv",
+              "repoPath": "data/expression/GSE254350_wt_day1.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE254350_wt_day1.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE254350_wt_day4.tsv",
+              "repoPath": "data/expression/GSE254350_wt_day4.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE254350_wt_day4.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "bohutskyi-2024",
+          "citation": "Bohutskyi P, Pomraning KR, Jenkins JP, Kim YM, Poirier BC, Betenbaugh MJ, Magnuson JK. Mixed and membrane-separated culturing of synthetic cyanobacteria-yeast consortia reveals metabolic cross-talk mimicking natural cyanolichens. Scientific Reports 14, 25303 (2024). doi:10.1038/s41598-024-74743-4; GEO GSE335065.",
+          "url": "https://doi.org/10.1038/s41598-024-74743-4",
+          "contribution": "Three optional RNA-abundance layers from the engineered sucrose-exporting cscB+ Δsps strain (listed as an engineered strain), each the mean of days 4, 6 and 8 in three replicates, as counts per million from the deposited raw Rsubread counts: the axenic control, the axenic culture in the membrane-separated bioreactor, and the S. elongatus compartment of the membrane-separated co-culture with Rhodotorula toruloides. The nine mixed co-culture samples sequenced together with the yeast are not shipped. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article CC BY-NC-ND 4.0, permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE335065_axenic.tsv",
+              "repoPath": "data/expression/GSE335065_axenic.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE335065_axenic.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE335065_axenic_mbr.tsv",
+              "repoPath": "data/expression/GSE335065_axenic_mbr.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE335065_axenic_mbr.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE335065_coculture_mbr.tsv",
+              "repoPath": "data/expression/GSE335065_coculture_mbr.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE335065_coculture_mbr.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
+          "id": "markson-2013",
+          "citation": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 155, 1396–1408 (2013). doi:10.1016/j.cell.2013.11.005; GEO GSE51112.",
+          "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+          "contribution": "Four optional RNA-abundance layers, each the mean of its time points as deposited (median-normalised and ORF-length-normalised values): the wild type across six circadian time points in continuous light, and three layers from the clock-deleted RpaA phosphomimetic strains, which are listed as engineered strains — OX-D53E with and without IPTG and the empty-vector control. One sample per time point, so no replicate band exists. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article © 2013 Elsevier Inc., permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE51112_wt_ll.tsv",
+              "repoPath": "data/expression/GSE51112_wt_ll.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_wt_ll.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE51112_oxd53e_iptg.tsv",
+              "repoPath": "data/expression/GSE51112_oxd53e_iptg.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxd53e_iptg.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE51112_oxd53e_no_iptg.tsv",
+              "repoPath": "data/expression/GSE51112_oxd53e_no_iptg.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxd53e_no_iptg.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE51112_oxempty_iptg.tsv",
+              "repoPath": "data/expression/GSE51112_oxempty_iptg.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxempty_iptg.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",

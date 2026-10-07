@@ -104,7 +104,7 @@ GSE103644, GSE103704, GSE105774, GSE102914 and GSE18902 moved from undetermined
 to not permitted, link-only, and PXD036717 stayed permitted under its CC0 files.
 Superseded the same day: the owner withdrew the distribution rule (every source
 is permitted with citation), so all seven are permitted and queued in
-[O_licence-unblocked-sources__20261006](O_licence-unblocked-sources__20261006.md).
+[A_licence-unblocked-sources__20261006](A_licence-unblocked-sources__20261006.md).
 
 **Package D re-score, 2026-10-06.** Of the cells the addendum changed, only
 PXD036717's bear on a verdict: every other change turns `not retrieved` into

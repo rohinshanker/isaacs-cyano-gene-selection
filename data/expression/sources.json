@@ -3630,5 +3630,2507 @@
       "unmappedIdentifiers": 31,
       "mappingRoute": "UniProt accession to ordered locus name in uniprot_pcc7942_orf_names.tsv, then pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
+  },
+  {
+    "record": {
+      "studyId": "GSE103462",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type at subjective dawn (CT 0) in constant light, mean of two replicates",
+      "samples": "wild type replicate 1–2 dawn (GSM2771773–GSM2771774)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103462",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE103462 sample list (group 1)"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 3,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "in BG11 medium at 30 °C.",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into constant light and sampled at subjective dawn (CT 0) and subjective dusk (CT 12)",
+          "quote": "under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1) in BG11 medium at 30 °C. || Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment. Cells were released into constant light and harvested by filtering and freezing in liquid-nitrogen at subjective dawn and subjective dusk, and stored in -80º C.",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "in BG11 medium at 30 °C",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "grown in tissue culture flasks",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103462_wt_subjective_dawn",
+    "file": "GSE103462_wt_subjective_dawn.tsv",
+    "metricKey": "exprGse103462WtDawn",
+    "label": "Expression GSE103462 WT subjective dawn CT0 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards, as deposited",
+    "condition": "Wild type at subjective dawn (CT 0) in constant light, mean of two replicates",
+    "sha256": "7d72e1be39ac18f3ebb1fadf296914b2cb9ff5055a24f56f20850a51d6824f24",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973; wild-type samples only, the rel- strain in the same deposit is not shipped. Values are the depositors' read counts normalised with external RNA standards, not a library-size scaling.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103462_Expression.xls.gz",
+      "sourceSha256": "cb5b67e54918f4cef09d8412824d03dd82a7a477811767829b00196f066e9053",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103462/suppl/GSE103462_Expression.xls.gz",
+      "columns": [
+        "wild type replicate 1 dawn",
+        "wild type replicate 2 dawn"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103462",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type at subjective dusk (CT 12) in constant light, mean of two replicates",
+      "samples": "wild type replicate 1–2 dusk (GSM2771775–GSM2771776)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103462",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE103462 sample list (group 1)"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 3,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "in BG11 medium at 30 °C.",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into constant light and sampled at subjective dawn (CT 0) and subjective dusk (CT 12)",
+          "quote": "under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1) in BG11 medium at 30 °C. || Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment. Cells were released into constant light and harvested by filtering and freezing in liquid-nitrogen at subjective dawn and subjective dusk, and stored in -80º C.",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "in BG11 medium at 30 °C",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "grown in tissue culture flasks",
+          "where": "GEO GSE103462 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103462_wt_subjective_dusk",
+    "file": "GSE103462_wt_subjective_dusk.tsv",
+    "metricKey": "exprGse103462WtDusk",
+    "label": "Expression GSE103462 WT subjective dusk CT12 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards, as deposited",
+    "condition": "Wild type at subjective dusk (CT 12) in constant light, mean of two replicates",
+    "sha256": "e31b547357909cd4ff7b3f26d1773551258e642f1904d3a9c666dbe536292df1",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973; wild-type samples only, the rel- strain in the same deposit is not shipped. Values are the depositors' read counts normalised with external RNA standards, not a library-size scaling.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103462_Expression.xls.gz",
+      "sourceSha256": "cb5b67e54918f4cef09d8412824d03dd82a7a477811767829b00196f066e9053",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103462/suppl/GSE103462_Expression.xls.gz",
+      "columns": [
+        "wild type replicate 1 dusk",
+        "wild type replicate 2 dusk"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103463",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 rel- + relA+ (rel deletion complemented with relA)",
+      "basis": "transferred",
+      "conditionSet": "rel- + relA+ at subjective dawn (CT 0) in constant light, mean of two replicates",
+      "samples": "rel- + relA+ replicate 1–2 dawn (GSM2771781–GSM2771782); workbook columns spoT- + relA+",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103463",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE103463 sample titles, group 1 (e.g. GSM2771781 vs GSM2771782)"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 4,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "at 30 °C.",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into constant light and sampled at subjective dawn (CT 0) and subjective dusk (CT 12)",
+          "quote": "Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment. Cells were released into constant light and harvested by filtering and freezing in liquid-nitrogen at subjective dawn and subjective dusk, and stored in -80º C.",
+          "where": "GEO GSE103463 !Sample_treatment_protocol_ch1 (group 1); spectrum descriptor from !Sample_growth_protocol_ch1"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "BG11 medium",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "grown in tissue culture flasks",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103463_rel_relA_subjective_dawn",
+    "file": "GSE103463_rel_relA_subjective_dawn.tsv",
+    "metricKey": "exprGse103463RelAPlusDawn",
+    "label": "Expression GSE103463 rel- + relA+ subjective dawn CT0 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards, as deposited",
+    "condition": "rel- + relA+ at subjective dawn (CT 0) in constant light, mean of two replicates",
+    "sha256": "5da9f78232c7346484dcdd93fb9b418cb5d5320e919767e79a5e86e1f7a15b7d",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain (the rel deletion complemented with relA), not wild type and not UTEX 2973; the rel- + relAE335Q arm, whose synthetase is inactive, is not shipped. The workbook names the rel deletion spoT-. Values are the depositors' read counts normalised with external RNA standards.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103463_Expression.xls.gz",
+      "sourceSha256": "45aae486783eb020aa6680982e92be21dd3d734a7168b9297ef060c2bfc01d29",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103463/suppl/GSE103463_Expression.xls.gz",
+      "columns": [
+        "spoT- + relA+ replicate 1 dawn",
+        "spoT- + relA+ replicate 2 dawn"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103463",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 rel- + relA+ (rel deletion complemented with relA)",
+      "basis": "transferred",
+      "conditionSet": "rel- + relA+ at subjective dusk (CT 12) in constant light, mean of two replicates",
+      "samples": "rel- + relA+ replicate 1–2 dusk (GSM2771783–GSM2771784); workbook columns spoT- + relA+",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103463",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE103463 sample titles, group 1 (e.g. GSM2771781 vs GSM2771782)"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 4,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "at 30 °C.",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into constant light and sampled at subjective dawn (CT 0) and subjective dusk (CT 12)",
+          "quote": "Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment. Cells were released into constant light and harvested by filtering and freezing in liquid-nitrogen at subjective dawn and subjective dusk, and stored in -80º C.",
+          "where": "GEO GSE103463 !Sample_treatment_protocol_ch1 (group 1); spectrum descriptor from !Sample_growth_protocol_ch1"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "BG11 medium",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "grown in tissue culture flasks",
+          "where": "GEO GSE103463 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103463_rel_relA_subjective_dusk",
+    "file": "GSE103463_rel_relA_subjective_dusk.tsv",
+    "metricKey": "exprGse103463RelAPlusDusk",
+    "label": "Expression GSE103463 rel- + relA+ subjective dusk CT12 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards, as deposited",
+    "condition": "rel- + relA+ at subjective dusk (CT 12) in constant light, mean of two replicates",
+    "sha256": "d43354e4af54d1869115b1f6425d6f1fcb66a67c6645d9bfb42975e93fe9f3b9",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain (the rel deletion complemented with relA), not wild type and not UTEX 2973; the rel- + relAE335Q arm, whose synthetase is inactive, is not shipped. The workbook names the rel deletion spoT-. Values are the depositors' read counts normalised with external RNA standards.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103463_Expression.xls.gz",
+      "sourceSha256": "45aae486783eb020aa6680982e92be21dd3d734a7168b9297ef060c2bfc01d29",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103463/suppl/GSE103463_Expression.xls.gz",
+      "columns": [
+        "spoT- + relA+ replicate 1 dusk",
+        "spoT- + relA+ replicate 2 dusk"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103644",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 wild type + relA+ (theophylline-inducible relA construct)",
+      "basis": "transferred",
+      "conditionSet": "Wild type + relA+ at subjective dusk before theophylline induction (time 0), single sample",
+      "samples": "wild type + relA+ time = 0 (GSM2777217)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103644",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one sample per genotype and time point; no replicates deposited",
+        "where": "GEO GSE103644 sample list (group 1)"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 7,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "in BG11 medium at 30 °C.",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1) in BG11 medium",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, released into constant light and induced with 1.6 mM theophylline at subjective dusk (CT 12)",
+          "quote": "Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment. Cells were released into constant light, induced with 1.6 mM theophylline at subjective dusk (CT = 12 h)",
+          "where": "GEO GSE103644 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "in BG11 medium at 30 °C.",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "Cell cultures were grown in tissue culture flasks under illumination with cool fluorescent light",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103644_wt_relA_preinduction",
+    "file": "GSE103644_wt_relA_preinduction.tsv",
+    "metricKey": "exprGse103644RelAPlusT0",
+    "label": "Expression GSE103644 WT + relA+ pre-induction (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean RPM (reads per million) as deposited",
+    "condition": "Wild type + relA+ at subjective dusk before theophylline induction (time 0), single sample",
+    "sha256": "9508290c7c120b489e2a142c502426d9f716800b829941cb66336ffc16e8f6f4",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain carrying a theophylline-inducible relA construct, not plain wild type and not UTEX 2973; the wild type + relAE335Q arm, whose synthetase is inactive, is not shipped. One sample per time point, so no replicate band exists.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103644_Expression.xls.gz",
+      "sourceSha256": "206c19a7198919b08fddc10eff6e100ec41c1faa5a4b0a74bbee0bb2310178d2",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103644/suppl/GSE103644_Expression.xls.gz",
+      "columns": [
+        "wild type + relA+, time = 0"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103644",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 wild type + relA+ (theophylline-inducible relA construct)",
+      "basis": "transferred",
+      "conditionSet": "Wild type + relA+ after 1.6 mM theophylline induction of relA at subjective dusk, mean of the 30 min and 1 h samples",
+      "samples": "wild type + relA+ time = 30 min and 1 h (GSM2777218–GSM2777219)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103644",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one sample per genotype and time point; no replicates deposited",
+        "where": "GEO GSE103644 sample list (group 1)"
+      },
+      "treatments": [
+        "theophylline induction (1.6 mM) of relA",
+        "circadian time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 7,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "in BG11 medium at 30 °C.",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1) in BG11 medium",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, released into constant light and induced with 1.6 mM theophylline at subjective dusk (CT 12)",
+          "quote": "Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment. Cells were released into constant light, induced with 1.6 mM theophylline at subjective dusk (CT = 12 h)",
+          "where": "GEO GSE103644 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "in BG11 medium at 30 °C.",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "Cell cultures were grown in tissue culture flasks under illumination with cool fluorescent light",
+          "where": "GEO GSE103644 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103644_wt_relA_induced",
+    "file": "GSE103644_wt_relA_induced.tsv",
+    "metricKey": "exprGse103644RelAPlusInduced",
+    "label": "Expression GSE103644 WT + relA+ theophylline-induced (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean RPM (reads per million) as deposited",
+    "condition": "Wild type + relA+ after 1.6 mM theophylline induction of relA at subjective dusk, mean of the 30 min and 1 h samples",
+    "sha256": "120d9ad29581f612aa24a0388fd839d108eeb8eaa68dfd2f80aa49e08061ae69",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain carrying a theophylline-inducible relA construct, not plain wild type and not UTEX 2973; the wild type + relAE335Q arm, whose synthetase is inactive, is not shipped. One sample per time point, so no replicate band exists.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103644_Expression.xls.gz",
+      "sourceSha256": "206c19a7198919b08fddc10eff6e100ec41c1faa5a4b0a74bbee0bb2310178d2",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103644/suppl/GSE103644_Expression.xls.gz",
+      "columns": [
+        "wild type + relA+, time = 30 min",
+        "wild type + relA+, time = 1 h"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103704",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type at dusk under 12 h light/12 h dark, mean of two replicates",
+      "samples": "wild type replicate 1–2, dusk (GSM2779437, GSM2779455)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103704",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE103704 sample list (group 1)"
+      },
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 8,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C.",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "During light periods cells were under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1).",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "12 h light/12 h dark with cool fluorescent light during the light periods; entrained by two further light/dark cycles, then sampled at dusk and through the dark period",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C. During light periods cells were under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1).",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C.",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C.",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103704_wt_dusk",
+    "file": "GSE103704_wt_dusk.tsv",
+    "metricKey": "exprGse103704WtDusk",
+    "label": "Expression GSE103704 WT dusk, light/dark (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards, as deposited",
+    "condition": "Wild type at dusk under 12 h light/12 h dark, mean of two replicates",
+    "sha256": "08b5400b65c1d3cd04c546c1aca8b7659ed3f9e96bf1fe36ce81221c4c2cedff",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973; wild-type samples only, the rel- strain in the same deposit is not shipped. The darkness layer averages eight time points, which removes the time structure the study was designed around. Values are the depositors' read counts normalised with external RNA standards.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103704_Expression.xls.gz",
+      "sourceSha256": "5590b33195dedad2277f24989e1d063b661537144771f161ad73ced6d2fd0015",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103704/suppl/GSE103704_Expression.xls.gz",
+      "columns": [
+        "wild type replicate 1, dusk",
+        "wild type replicate 2, dusk"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE103704",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type in darkness, mean of eight time points from 5 min to 12 h in two replicates (16 samples)",
+      "samples": "wild type replicate 1–2, dark 5 min to 12 h (GSM2779438–GSM2779445, GSM2779456–GSM2779463)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103704",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE103704 sample list (group 1)"
+      },
+      "treatments": [
+        "dark time course",
+        "diel time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 8,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C.",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "During light periods cells were under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1).",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "12 h light/12 h dark with cool fluorescent light during the light periods; entrained by two further light/dark cycles, then sampled at dusk and through the dark period",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C. During light periods cells were under illumination with cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1).",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C.",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "Cell cultures were grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C.",
+          "where": "GEO GSE103704 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE103704_wt_darkness",
+    "file": "GSE103704_wt_darkness.tsv",
+    "metricKey": "exprGse103704WtDark",
+    "label": "Expression GSE103704 WT darkness time course (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards, as deposited",
+    "condition": "Wild type in darkness, mean of eight time points from 5 min to 12 h in two replicates (16 samples)",
+    "sha256": "dcbc6e9a4fddc64aa3a7754e81f1e5d446c9fde6dfe8430d04fdfe410b04f11d",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973; wild-type samples only, the rel- strain in the same deposit is not shipped. The darkness layer averages eight time points, which removes the time structure the study was designed around. Values are the depositors' read counts normalised with external RNA standards.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE103704_Expression.xls.gz",
+      "sourceSha256": "5590b33195dedad2277f24989e1d063b661537144771f161ad73ced6d2fd0015",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103704/suppl/GSE103704_Expression.xls.gz",
+      "columns": [
+        "wild type replicate 1, dark, 5 min",
+        "wild type replicate 1, dark, 15 min",
+        "wild type replicate 1, dark, 30 min",
+        "wild type replicate 1, dark, 1 h",
+        "wild type replicate 1, dark, 2 h",
+        "wild type replicate 1, dark, 4 h",
+        "wild type replicate 1, dark, 8 h",
+        "wild type replicate 1, dark, 12 h",
+        "wild type replicate 2, dark, 5 min",
+        "wild type replicate 2, dark, 15 min",
+        "wild type replicate 2, dark, 30 min",
+        "wild type replicate 2, dark, 1 h",
+        "wild type replicate 2, dark, 2 h",
+        "wild type replicate 2, dark, 4 h",
+        "wild type replicate 2, dark, 8 h",
+        "wild type replicate 2, dark, 12 h"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE105774",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 rel- relA+ (rel deletion complemented with relA)",
+      "basis": "transferred",
+      "conditionSet": "rel- relA+ at dusk under 12 h light/12 h dark, mean of two replicates",
+      "samples": "rel- relA+ replicate 1–2, dusk (GSM2827746, GSM2827764); workbook columns spoT- relA+",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE105774",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE105774 sample list (group 1)"
+      },
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 16,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "BG11 medium at 30 °C",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "12 h light/12 h dark with cool fluorescent light during the light periods; entrained by two further light/dark cycles, then sampled at dusk and through the dark period",
+          "quote": "grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C. During light periods cells were under illumination with cool fluorescent light at 40 μE m-2 s-1",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "in BG11 medium at 30 °C",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "Cell cultures were grown in tissue culture flasks",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE105774_rel_relA_dusk",
+    "file": "GSE105774_rel_relA_dusk.tsv",
+    "metricKey": "exprGse105774RelAPlusDusk",
+    "label": "Expression GSE105774 rel- relA+ dusk, light/dark (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards and cell number, as deposited",
+    "condition": "rel- relA+ at dusk under 12 h light/12 h dark, mean of two replicates",
+    "sha256": "61ff30da9dbb455ce787b09a07116bc8a0d34add07f6d6ccc53cb3276d90ea1c",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain (the rel deletion complemented with relA), not wild type and not UTEX 2973; the rel- relAE335Q arm, whose synthetase is inactive, is not shipped. The workbook names the rel deletion spoT-. The darkness layer averages eight time points. Values are the depositors' read counts normalised with external RNA standards and cell number.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE105774_Expression.xls.gz",
+      "sourceSha256": "05389b7e7207338ad179ba5a05f8edbd4d0f4518434c1762338cc07ed24e337d",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE105nnn/GSE105774/suppl/GSE105774_Expression.xls.gz",
+      "columns": [
+        "spoT- relA+ replicate 1, dusk",
+        "spoT- relA+ replicate 2, dusk"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE105774",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 rel- relA+ (rel deletion complemented with relA)",
+      "basis": "transferred",
+      "conditionSet": "rel- relA+ in darkness, mean of eight time points from 5 min to 12 h in two replicates (16 samples)",
+      "samples": "rel- relA+ replicate 1–2, dark 5 min to 12 h (GSM2827747–GSM2827754, GSM2827765–GSM2827772); workbook columns spoT- relA+",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE105774",
+      "citation": {
+        "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+        "pmid": "29241543"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two biological replicates per genotype and time point",
+        "where": "GEO GSE105774 sample list (group 1)"
+      },
+      "treatments": [
+        "dark time course",
+        "diel time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 16,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "BG11 medium at 30 °C",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "cool fluorescent light at 40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "12 h light/12 h dark with cool fluorescent light during the light periods; entrained by two further light/dark cycles, then sampled at dusk and through the dark period",
+          "quote": "grown in tissue culture flasks in 12 h light/ 12 h dark conditions in BG11 medium at 30 °C. During light periods cells were under illumination with cool fluorescent light at 40 μE m-2 s-1",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+          "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+          "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG11 medium",
+          "quote": "in BG11 medium at 30 °C",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks",
+          "quote": "Cell cultures were grown in tissue culture flasks",
+          "where": "GEO GSE105774 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+          "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+          "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+        }
+      }
+    },
+    "id": "GSE105774_rel_relA_darkness",
+    "file": "GSE105774_rel_relA_darkness.tsv",
+    "metricKey": "exprGse105774RelAPlusDark",
+    "label": "Expression GSE105774 rel- relA+ darkness time course (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean gene expression values normalised with external RNA standards and cell number, as deposited",
+    "condition": "rel- relA+ in darkness, mean of eight time points from 5 min to 12 h in two replicates (16 samples)",
+    "sha256": "06170402e7532a9454360557b7f0170c8bdf9ef9eb765fe5a209063cd75546b1",
+    "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain (the rel deletion complemented with relA), not wild type and not UTEX 2973; the rel- relAE335Q arm, whose synthetase is inactive, is not shipped. The workbook names the rel deletion spoT-. The darkness layer averages eight time points. Values are the depositors' read counts normalised with external RNA standards and cell number.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "puszynska-2017-ppgpp",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE105774_Expression.xls.gz",
+      "sourceSha256": "05389b7e7207338ad179ba5a05f8edbd4d0f4518434c1762338cc07ed24e337d",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE105nnn/GSE105774/suppl/GSE105774_Expression.xls.gz",
+      "columns": [
+        "spoT- relA+ replicate 1, dark, 5 min",
+        "spoT- relA+ replicate 1, dark, 15 min",
+        "spoT- relA+ replicate 1, dark, 30 min",
+        "spoT- relA+ replicate 1, dark, 1 h",
+        "spoT- relA+ replicate 1, dark, 2 h",
+        "spoT- relA+ replicate 1, dark, 4 h",
+        "spoT- relA+ replicate 1, dark, 8 h",
+        "spoT- relA+ replicate 1, dark, 12 h",
+        "spoT- relA+ replicate 2, dark, 5 min",
+        "spoT- relA+ replicate 2, dark, 15 min",
+        "spoT- relA+ replicate 2, dark, 30 min",
+        "spoT- relA+ replicate 2, dark, 1 h",
+        "spoT- relA+ replicate 2, dark, 2 h",
+        "spoT- relA+ replicate 2, dark, 4 h",
+        "spoT- relA+ replicate 2, dark, 8 h",
+        "spoT- relA+ replicate 2, dark, 12 h"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 164,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE237858",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type on BG-11 plates, 12 h after a 12 h dark pulse in constant light, mean of three replicates",
+      "samples": "WT replicate 1–3 (GSM7655427–GSM7655429)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE237858",
+      "citation": {
+        "text": "Xu Y, Jabbur ML, Mori T, Young JD, Johnson CH. Clocking out and letting go to unleash green biotech applications in a photosynthetic host. Proc Natl Acad Sci U S A 2024;121(21):e2318690121.",
+        "url": "https://doi.org/10.1073/pnas.2318690121",
+        "pmid": "38739791"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per genotype",
+        "where": "paper PMID 38739791 (PMC11127020), Methods: RNA Preparation and RNA-seq Analysis"
+      },
+      "treatments": [
+        "12 h dark pulse, then 12 h constant light"
+      ],
+      "group": "other",
+      "conditionTableRow": 33,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights.",
+          "where": "GEO GSE237858 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "conflicting",
+          "lo": 40,
+          "hi": 50,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE in the GEO growth protocol; 50 µmol photons m⁻² s⁻¹ cool-white fluorescent in the article's general Methods; the record does not say which applies to the sequenced cultures",
+          "where": "GEO GSE237858 !Sample_growth_protocol_ch1; Xu et al. 2024 Methods (package B row 33, unresolved conflict)",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "constant fluorescent light; one 12 h dark pulse immediately before 12 h of constant light at collection; no diel cycling",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights.",
+          "where": "GEO GSE237858 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "GEO GSE237858 and Xu et al. 2024 (PMC11127020), checked by package B",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 agar plates, no ZnCl₂ added",
+          "quote": "the other 6 samples (3 of wild-type and 3 of labA-KO) were not given ZnCl2 and were instead just transferred to dark for 12h.",
+          "where": "GEO GSE237858 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of BG-11",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights.",
+          "where": "GEO GSE237858 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected after 12 h in constant light following a 12 h dark pulse, after 3 days of growth on plates; OD not reported",
+          "quote": "collected after 12h in LL (with one 12h dark pulse before)",
+          "where": "GEO GSE237858 sample characteristics field, e.g. GSM7655427 (group 1)"
+        }
+      }
+    },
+    "id": "GSE237858_wt_ll12",
+    "file": "GSE237858_wt_ll12.tsv",
+    "metricKey": "exprGse237858Wt",
+    "label": "Expression GSE237858 WT, 12 h constant light after dark pulse (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+    "condition": "Wild type on BG-11 plates, 12 h after a 12 h dark pulse in constant light, mean of three replicates",
+    "sha256": "913279edd6c77ba91d4b3a3497ace6675921e93acec4235c65e2cd8525de1a8b",
+    "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942 on BG-11 agar plates, not in liquid culture and not in UTEX 2973; wild type without ZnCl₂ only, the labA knock-out and the zinc-induced kaiA strains are not shipped. The GEO growth protocol (~40) and the article's Methods (50 µmol photons m⁻² s⁻¹) disagree on light intensity.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "xu-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE237858_transcript_count_matrix.csv.gz",
+      "sourceSha256": "fa0b911453e31c9198eee5b8e4f7186526b3bdab19cd5b02dc7dc30223e04e94",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE237nnn/GSE237858/suppl/GSE237858_transcript_count_matrix.csv.gz",
+      "columns": [
+        "WT1",
+        "WT2",
+        "WT3"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2634,
+      "unmappedIdentifiers": 135,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE254350",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type in bubbled tubes on day 1, mean of four replicates",
+      "samples": "WT_D1_rep1–4 (GSM8039423, GSM8039426, GSM8039427, GSM8039429)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254350",
+      "citation": {
+        "text": "Suban S, Yemini S, Shor A, Waldman Ben-Asher H, Yaron O, Karako-Lampert S, Sendersky E, Golden SS, Schwarz R. A cyanobacterial sigma factor F controls biofilm-promoting genes through intra- and intercellular pathways. Biofilm 2024;8:100217.",
+        "url": "https://doi.org/10.1016/j.bioflm.2024.100217",
+        "pmid": "39188729"
+      },
+      "replicates": {
+        "count": 4,
+        "text": "four biological replicates per genotype and day",
+        "where": "GEO GSE254350 sample list"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 37,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown at 30 °C in Pyrex tubes under bubbling with air enriched with 3 % CO 2 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "∼30 μmol photons m⁻² s⁻¹, incandescent",
+          "quote": "Incandescent light was provided at flux of ∼30 μmol photons m −2 s −1 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "incandescent",
+          "entrained": false,
+          "text": "incandescent light; continuous versus diel and photoperiod not reported",
+          "where": "Suban et al. 2024 (PMC11345509), Methods 3.1",
+          "quote": "Incandescent light was provided at flux of ∼30 μmol photons m −2 s −1 ."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "air enriched with 3% CO₂, bubbled",
+          "quote": "Cultures were grown at 30 °C in Pyrex tubes under bubbling with air enriched with 3 % CO 2 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "mineral medium BG-11",
+          "quote": "S. elongatus PCC 7942, an obligatory photoautotroph, and all derived strains were grown in mineral medium BG-11 as described",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "Pyrex tubes bubbled with CO₂-enriched air",
+          "quote": "Cultures were grown at 30 °C in Pyrex tubes under bubbling with air enriched with 3 % CO 2 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampled on day 1 of growth (sample titles D1); OD750 not reported for the RNA-seq sampling",
+          "where": "GEO GSE254350 sample titles, e.g. GSM8039423 WT_D1_rep1",
+          "quote": "WT_D1_rep1"
+        }
+      }
+    },
+    "id": "GSE254350_wt_day1",
+    "file": "GSE254350_wt_day1.tsv",
+    "metricKey": "exprGse254350WtDay1",
+    "label": "Expression GSE254350 WT day 1 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean DESeq2-normalised counts as deposited",
+    "condition": "Wild type in bubbled tubes on day 1, mean of four replicates",
+    "sha256": "015397135453bcd6b65eb269af0e5b99ac12291c3d66a62ca3af10ef371ca416",
+    "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study: the wild type is the planktonic, biofilm-suppressed control, and the pilB, sigF1 and sigF2 mutants are not shipped. Values are the depositors' DESeq2-normalised counts; the 116 'predicted RNA' rows of the workbook carry no locus tag and are not read.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "suban-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE254350_normalized_counts.xlsx",
+      "sourceSha256": "8041107907e20fd9fdb63539bc94a2249ef924457f614914ad031631c8d11f38",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE254nnn/GSE254350/suppl/GSE254350_normalized_counts.xlsx",
+      "columns": [
+        "Normalized.Counts.WT_D1.Replicate.1",
+        "Normalized.Counts.WT_D1.Replicate.2",
+        "Normalized.Counts.WT_D1.Replicate.3",
+        "Normalized.Counts.WT_D1.Replicate.4"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2505,
+      "unmappedIdentifiers": 279,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE254350",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type in bubbled tubes on day 4, mean of four replicates",
+      "samples": "WT_D4_rep1–4 (GSM8039424, GSM8039425, GSM8039428, GSM8039430)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254350",
+      "citation": {
+        "text": "Suban S, Yemini S, Shor A, Waldman Ben-Asher H, Yaron O, Karako-Lampert S, Sendersky E, Golden SS, Schwarz R. A cyanobacterial sigma factor F controls biofilm-promoting genes through intra- and intercellular pathways. Biofilm 2024;8:100217.",
+        "url": "https://doi.org/10.1016/j.bioflm.2024.100217",
+        "pmid": "39188729"
+      },
+      "replicates": {
+        "count": 4,
+        "text": "four biological replicates per genotype and day",
+        "where": "GEO GSE254350 sample list"
+      },
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditionTableRow": 37,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown at 30 °C in Pyrex tubes under bubbling with air enriched with 3 % CO 2 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "∼30 μmol photons m⁻² s⁻¹, incandescent",
+          "quote": "Incandescent light was provided at flux of ∼30 μmol photons m −2 s −1 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "incandescent",
+          "entrained": false,
+          "text": "incandescent light; continuous versus diel and photoperiod not reported",
+          "where": "Suban et al. 2024 (PMC11345509), Methods 3.1",
+          "quote": "Incandescent light was provided at flux of ∼30 μmol photons m −2 s −1 ."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "air enriched with 3% CO₂, bubbled",
+          "quote": "Cultures were grown at 30 °C in Pyrex tubes under bubbling with air enriched with 3 % CO 2 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "mineral medium BG-11",
+          "quote": "S. elongatus PCC 7942, an obligatory photoautotroph, and all derived strains were grown in mineral medium BG-11 as described",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "Pyrex tubes bubbled with CO₂-enriched air",
+          "quote": "Cultures were grown at 30 °C in Pyrex tubes under bubbling with air enriched with 3 % CO 2 .",
+          "where": "paper PMC11345509, Methods 3.1"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampled on day 4 of growth (sample titles D4); OD750 not reported for the RNA-seq sampling",
+          "where": "GEO GSE254350 sample titles, e.g. GSM8039424 WT_D4_rep1",
+          "quote": "WT_D4_rep1"
+        }
+      }
+    },
+    "id": "GSE254350_wt_day4",
+    "file": "GSE254350_wt_day4.tsv",
+    "metricKey": "exprGse254350WtDay4",
+    "label": "Expression GSE254350 WT day 4 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean DESeq2-normalised counts as deposited",
+    "condition": "Wild type in bubbled tubes on day 4, mean of four replicates",
+    "sha256": "afb8300692320e6e649821340e5cf9da5fae1b61b3d3446b90de1fba00ad1275",
+    "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study: the wild type is the planktonic, biofilm-suppressed control, and the pilB, sigF1 and sigF2 mutants are not shipped. Values are the depositors' DESeq2-normalised counts; the 116 'predicted RNA' rows of the workbook carry no locus tag and are not read.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "suban-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE254350_normalized_counts.xlsx",
+      "sourceSha256": "8041107907e20fd9fdb63539bc94a2249ef924457f614914ad031631c8d11f38",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE254nnn/GSE254350/suppl/GSE254350_normalized_counts.xlsx",
+      "columns": [
+        "Normalized.Counts.WT_D4.Replicate.1",
+        "Normalized.Counts.WT_D4.Replicate.2",
+        "Normalized.Counts.WT_D4.Replicate.3",
+        "Normalized.Counts.WT_D4.Replicate.4"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2505,
+      "unmappedIdentifiers": 279,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE335065",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "basis": "transferred",
+      "conditionSet": "Axenic control culture, mean of days 4, 6 and 8 in three replicates (9 samples)",
+      "samples": "Se_ax_90/140/190_1–3 (GSM9805331–GSM9805339)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE335065",
+      "citation": {
+        "text": "Bohutskyi P, Pomraning KR, Jenkins JP, Kim YM, Poirier BC, Betenbaugh MJ, Magnuson JK. Mixed and membrane-separated culturing of synthetic cyanobacteria-yeast consortia reveals metabolic cross-talk mimicking natural cyanolichens. Sci Rep 2024;14(1):25303.",
+        "url": "https://doi.org/10.1038/s41598-024-74743-4",
+        "pmid": "39455633"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per configuration and time point",
+        "where": "GEO GSE335065 group 1 sample list"
+      },
+      "treatments": [
+        "growth time course (days 4, 6, 8)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 41,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 28,
+          "hi": 32,
+          "unit": "°C",
+          "text": "30 ± 2 °C",
+          "quote": "grown at 30 ± 2°C with 2% CO₂ in nitrogen under ~200 µmol photons m⁻² s⁻¹ provided by LED lighting",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 200,
+          "hi": 200,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~200 µmol photons m⁻² s⁻¹, LED lighting",
+          "quote": "under ~200 µmol photons m⁻² s⁻¹ provided by LED lighting",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "LED",
+          "entrained": false,
+          "text": "LED lighting; continuous versus diel and photoperiod not reported",
+          "where": "GEO GSE335065 !Sample_growth_protocol_ch1",
+          "quote": "provided by LED lighting"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in nitrogen",
+          "quote": "with 2% CO₂ in nitrogen under ~200 µmol photons m⁻² s⁻¹",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "BG11 with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L K₂HPO₄ and 3 g/L HEPES, pH 8.3",
+          "quote": "BG11 medium supplemented with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L potassium phosphate dibasic, and 3 g/L HEPES (pH 8.3)",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "days 4, 6 and 8 of culture (~90, ~140 and ~190 h); OD750 at harvest not reported",
+          "quote": "treatment: S.e axenic control day 4",
+          "where": "GEO GSE335065 group 1 sample characteristics (GSM9805331)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "stirred culture (~200 rpm, PTFE stir bars); the vessel of the axenic control is not stated",
+          "where": "GEO GSE335065 !Sample_growth_protocol_ch1",
+          "quote": "Cultures were mixed at ~200 rpm using PTFE magnetic stir bars in BG11 medium"
+        }
+      }
+    },
+    "id": "GSE335065_axenic",
+    "file": "GSE335065_axenic.tsv",
+    "metricKey": "exprGse335065Axenic",
+    "label": "Expression GSE335065 cscB+ Δsps axenic (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Axenic control culture, mean of days 4, 6 and 8 in three replicates (9 samples)",
+    "sha256": "d1e2ec345f3f1dd6304238366bdb8958baf5e75e9cfc88f86aab480a4c6495cd",
+    "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973. The nine mixed co-culture samples (Se_Rt_CC, GSM9805358–GSM9805366), sequenced together with Rhodotorula toruloides, are not shipped. Each layer averages days 4, 6 and 8, which removes the time course; the eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "bohutskyi-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE335065_rna_seq_counts_092726.csv.gz",
+      "sourceSha256": "7140bbd04de93a0cb3ecf8e6adab9b6f76492872350d6fac71e09fd2a98ae447",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE335nnn/GSE335065/suppl/GSE335065_rna_seq_counts_092726.csv.gz",
+      "columns": [
+        "Se_ax_90_1",
+        "Se_ax_90_2",
+        "Se_ax_90_3",
+        "Se_ax_140_1",
+        "Se_ax_140_2",
+        "Se_ax_140_3",
+        "Se_ax_190_1",
+        "Se_ax_190_2",
+        "Se_ax_190_3"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE335065",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "basis": "transferred",
+      "conditionSet": "Axenic culture in the membrane-separated bioreactor, mean of days 4, 6 and 8 in three replicates (9 samples)",
+      "samples": "Se_ax_mBR_90/140/190_1–3 (GSM9805340–GSM9805348)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE335065",
+      "citation": {
+        "text": "Bohutskyi P, Pomraning KR, Jenkins JP, Kim YM, Poirier BC, Betenbaugh MJ, Magnuson JK. Mixed and membrane-separated culturing of synthetic cyanobacteria-yeast consortia reveals metabolic cross-talk mimicking natural cyanolichens. Sci Rep 2024;14(1):25303.",
+        "url": "https://doi.org/10.1038/s41598-024-74743-4",
+        "pmid": "39455633"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per configuration and time point",
+        "where": "GEO GSE335065 !Series_overall_design"
+      },
+      "treatments": [
+        "membrane bioreactor",
+        "growth time course (days 4, 6, 8)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 42,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 28,
+          "hi": 32,
+          "unit": "°C",
+          "text": "30 ± 2 °C",
+          "quote": "grown at 30 ± 2°C with 2% CO₂ in nitrogen under ~200 µmol photons m⁻² s⁻¹ provided by LED lighting",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 200,
+          "hi": 200,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~200 µmol photons m⁻² s⁻¹, LED lighting",
+          "quote": "under ~200 µmol photons m⁻² s⁻¹ provided by LED lighting",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "LED",
+          "entrained": false,
+          "text": "LED lighting; continuous versus diel and photoperiod not reported",
+          "where": "GEO GSE335065 !Sample_growth_protocol_ch1",
+          "quote": "provided by LED lighting"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in nitrogen",
+          "quote": "with 2% CO₂ in nitrogen under ~200 µmol photons m⁻² s⁻¹",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "BG11 with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L K₂HPO₄ and 3 g/L HEPES, pH 8.3",
+          "quote": "BG11 medium supplemented with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L potassium phosphate dibasic, and 3 g/L HEPES (pH 8.3)",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "days 4, 6 and 8 of culture (~90, ~140 and ~190 h); OD750 at harvest not reported",
+          "quote": "Membrane bioreactor and mixed co-culture bioreactor samples were collected at ~90, ~140, and ~190 hrs.",
+          "where": "GEO GSE335065 group 1 !Sample_treatment_protocol_ch1"
+        },
+        "format": {
+          "status": "reported",
+          "value": "membrane bioreactor",
+          "text": "membrane-separated two-chamber bioreactor, ~600 mL; the axenic S. elongatus unit",
+          "quote": "Bioreactor experiments used membrane-separated (2-chamber mBR) and mixed co-culture configurations in ~600 mL vessels.",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        }
+      }
+    },
+    "id": "GSE335065_axenic_mbr",
+    "file": "GSE335065_axenic_mbr.tsv",
+    "metricKey": "exprGse335065AxenicMbr",
+    "label": "Expression GSE335065 cscB+ Δsps axenic, membrane bioreactor (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "Axenic culture in the membrane-separated bioreactor, mean of days 4, 6 and 8 in three replicates (9 samples)",
+    "sha256": "fa05a01963ee4259891f4c47b2b1bb91cc5434ae9e90671e66ef24f82106a0c2",
+    "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973. The nine mixed co-culture samples (Se_Rt_CC, GSM9805358–GSM9805366), sequenced together with Rhodotorula toruloides, are not shipped. Each layer averages days 4, 6 and 8, which removes the time course; the eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "bohutskyi-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE335065_rna_seq_counts_092726.csv.gz",
+      "sourceSha256": "7140bbd04de93a0cb3ecf8e6adab9b6f76492872350d6fac71e09fd2a98ae447",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE335nnn/GSE335065/suppl/GSE335065_rna_seq_counts_092726.csv.gz",
+      "columns": [
+        "Se_ax_mBR_90_1",
+        "Se_ax_mBR_90_2",
+        "Se_ax_mBR_90_3",
+        "Se_ax_mBR_140_1",
+        "Se_ax_mBR_140_2",
+        "Se_ax_mBR_140_3",
+        "Se_ax_mBR_190_1",
+        "Se_ax_mBR_190_2",
+        "Se_ax_mBR_190_3"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE335065",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+      "basis": "transferred",
+      "conditionSet": "S. elongatus compartment of the membrane-separated co-culture with R. toruloides, mean of days 4, 6 and 8 in three replicates (9 samples)",
+      "samples": "Se_CC_mBR_90/140/190_1–3 (GSM9805349–GSM9805357)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE335065",
+      "citation": {
+        "text": "Bohutskyi P, Pomraning KR, Jenkins JP, Kim YM, Poirier BC, Betenbaugh MJ, Magnuson JK. Mixed and membrane-separated culturing of synthetic cyanobacteria-yeast consortia reveals metabolic cross-talk mimicking natural cyanolichens. Sci Rep 2024;14(1):25303.",
+        "url": "https://doi.org/10.1038/s41598-024-74743-4",
+        "pmid": "39455633"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "three biological replicates per configuration and time point",
+        "where": "GEO GSE335065 !Series_overall_design"
+      },
+      "treatments": [
+        "membrane-separated co-culture with Rhodotorula toruloides",
+        "growth time course (days 4, 6, 8)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 43,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 28,
+          "hi": 32,
+          "unit": "°C",
+          "text": "30 ± 2 °C",
+          "quote": "grown at 30 ± 2°C with 2% CO₂ in nitrogen under ~200 µmol photons m⁻² s⁻¹ provided by LED lighting",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 200,
+          "hi": 200,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~200 µmol photons m⁻² s⁻¹, LED lighting",
+          "quote": "under ~200 µmol photons m⁻² s⁻¹ provided by LED lighting",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "LED",
+          "entrained": false,
+          "text": "LED lighting; continuous versus diel and photoperiod not reported",
+          "where": "GEO GSE335065 !Sample_growth_protocol_ch1",
+          "quote": "provided by LED lighting"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in nitrogen",
+          "quote": "with 2% CO₂ in nitrogen under ~200 µmol photons m⁻² s⁻¹",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "BG11 with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L K₂HPO₄ and 3 g/L HEPES, pH 8.3",
+          "quote": "BG11 medium supplemented with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L potassium phosphate dibasic, and 3 g/L HEPES (pH 8.3)",
+          "where": "GEO GSE335065 group 1 !Sample_growth_protocol_ch1"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "days 4, 6 and 8 of culture (~90, ~140 and ~190 h); OD750 at harvest not reported",
+          "quote": "Membrane bioreactor and mixed co-culture bioreactor samples were collected at ~90, ~140, and ~190 hrs.",
+          "where": "GEO GSE335065 group 1 !Sample_treatment_protocol_ch1"
+        },
+        "format": {
+          "status": "reported",
+          "value": "membrane bioreactor",
+          "text": "membrane-separated two-chamber bioreactor, ~600 mL; the S. elongatus compartment, separated from R. toruloides by a membrane but sharing medium",
+          "quote": "membrane-separated bioreactor (~600 mL) where the two organisms were physically separated by a membrane but shared a common medium",
+          "where": "GEO GSE335065 !Series_overall_design"
+        }
+      }
+    },
+    "id": "GSE335065_coculture_mbr",
+    "file": "GSE335065_coculture_mbr.tsv",
+    "metricKey": "exprGse335065CocultureMbr",
+    "label": "Expression GSE335065 cscB+ Δsps, membrane-separated co-culture (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+    "condition": "S. elongatus compartment of the membrane-separated co-culture with R. toruloides, mean of days 4, 6 and 8 in three replicates (9 samples)",
+    "sha256": "27528ccaa6ebe00d8a19b8e1602491121db2d2dfd0ce92339d5b2fa0ec5b20c3",
+    "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973. The nine mixed co-culture samples (Se_Rt_CC, GSM9805358–GSM9805366), sequenced together with Rhodotorula toruloides, are not shipped. Each layer averages days 4, 6 and 8, which removes the time course; the eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "bohutskyi-2024",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE335065_rna_seq_counts_092726.csv.gz",
+      "sourceSha256": "7140bbd04de93a0cb3ecf8e6adab9b6f76492872350d6fac71e09fd2a98ae447",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE335nnn/GSE335065/suppl/GSE335065_rna_seq_counts_092726.csv.gz",
+      "columns": [
+        "Se_CC_mBR_90_1",
+        "Se_CC_mBR_90_2",
+        "Se_CC_mBR_90_3",
+        "Se_CC_mBR_140_1",
+        "Se_CC_mBR_140_2",
+        "Se_CC_mBR_140_3",
+        "Se_CC_mBR_190_1",
+        "Se_CC_mBR_190_2",
+        "Se_CC_mBR_190_3"
+      ],
+      "normalization": "cpm",
+      "mappedGenes": 2615,
+      "unmappedIdentifiers": 146,
+      "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type (EOC113) in continuous light, mean of six time points from ZT 24 to ZT 44 h",
+      "samples": "WT culture, ZT 24–44 hours (GSM1238982–GSM1238987)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_wt_ll",
+    "file": "GSE51112_wt_ll.tsv",
+    "metricKey": "exprGse51112WtLl",
+    "label": "Expression GSE51112 WT constant light ZT24–44 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "Wild type (EOC113) in continuous light, mean of six time points from ZT 24 to ZT 44 h",
+    "sha256": "6c4674d6f359a4a0f615b428207ea346baec824c5af2c48b5654a0df4e38ee1c",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973; one sample per time point, so no replicate band exists, and the six circadian time points are averaged, which removes the rhythm the study was designed around.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "WT ZT 24 Hours",
+        "WT ZT 28 Hours",
+        "WT ZT 32 Hours",
+        "WT ZT 36 Hours",
+        "WT ZT 40 Hours",
+        "WT ZT 44 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)",
+      "basis": "transferred",
+      "conditionSet": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) after IPTG, mean of six time points from 0 to 12 h",
+      "samples": "OX-D53E + IPTG, 0–12 hours (GSM1238988–GSM1238993)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "IPTG induction of RpaA D53E",
+        "induction time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_oxd53e_iptg",
+    "file": "GSE51112_oxd53e_iptg.tsv",
+    "metricKey": "exprGse51112OxD53eIptg",
+    "label": "Expression GSE51112 OX-D53E + IPTG (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) after IPTG, mean of six time points from 0 to 12 h",
+    "sha256": "137fed30382a7274768d7cb95a96f04bcd05ef4731c9bb801e98a3e482495330",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "OX-D53E IPTG 0 Hours",
+        "OX-D53E IPTG 0.5 Hours",
+        "OX-D53E IPTG 2 Hours",
+        "OX-D53E IPTG 3 Hours",
+        "OX-D53E IPTG 6 Hours",
+        "OX-D53E IPTG 12 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)",
+      "basis": "transferred",
+      "conditionSet": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) without IPTG, mean of three time points from 0 to 12 h",
+      "samples": "OX-D53E - IPTG, 0–12 hours (GSM1238994–GSM1238996)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "induction time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_oxd53e_no_iptg",
+    "file": "GSE51112_oxd53e_no_iptg.tsv",
+    "metricKey": "exprGse51112OxD53eNoIptg",
+    "label": "Expression GSE51112 OX-D53E − IPTG (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) without IPTG, mean of three time points from 0 to 12 h",
+    "sha256": "318efe84c94e5d65b75677b4c2887f68faaf2ba04fd6e28f69c09e3df7120ab6",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "OX-D53E NO IPTG 0 Hours",
+        "OX-D53E NO IPTG 3 Hours",
+        "OX-D53E NO IPTG 12 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339)",
+      "basis": "transferred",
+      "conditionSet": "OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339) after IPTG, mean of three time points from 0 to 12 h",
+      "samples": "OX-Empty + IPTG, 0–12 hours (GSM1238997–GSM1238999)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "IPTG induction (empty vector)",
+        "induction time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_oxempty_iptg",
+    "file": "GSE51112_oxempty_iptg.tsv",
+    "metricKey": "exprGse51112OxEmptyIptg",
+    "label": "Expression GSE51112 OX-Empty + IPTG (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339) after IPTG, mean of three time points from 0 to 12 h",
+    "sha256": "6fbfd318305bfe128f9bed01f35e8c94bc7716e3e7d87b21be29ac5f99c859d6",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "OX-Empty IPTG 0 Hours",
+        "OX-Empty IPTG 3 Hours",
+        "OX-Empty IPTG 12 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
   }
 ]

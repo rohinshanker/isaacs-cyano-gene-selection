@@ -93,7 +93,7 @@ The licence facts stay recorded in the package C table and in each row's note so
 that the attribution is right and the history is visible; the admission contract
 (manifest entry, checksum pin, documented join, condition record) still governs
 what is shown. Everything the earlier rules kept back is queued for ingestion in
-[O_licence-unblocked-sources__20261006](../notes/tickets/O_licence-unblocked-sources__20261006.md).
+[A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md).
 Two matters are access terms, not distribution, and are unchanged: BioCyc's and
 KEGG's own terms govern how their pages and APIs are read (the owner signs in to
 BioCyc in person), and SRI's open-database terms ask for the attribution
@@ -129,14 +129,14 @@ record:
 | Artifact | Strain | Decision |
 | --- | --- | --- |
 | GSE102914 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is publisher copyright with no open licence (read 2026-10-06 from the supplied PDF)) |
-| GSE103462 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table) |
-| GSE103463 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table) |
+| GSE103462 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table); ingested 2026-10-07 as 2 layers, wild type subjective dawn and dusk |
+| GSE103463 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table); ingested 2026-10-07 as 2 layers, rel- + relA+ subjective dawn and dusk, listed as an engineered strain |
 | GSE103606 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was undetermined: no grant over the files and the article terms were not readable by deposit) |
-| GSE103644 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table) |
-| GSE103704 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table) |
+| GSE103644 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table); ingested 2026-10-07 as 2 layers, wild type + relA+ before and after theophylline induction, listed as an engineered strain |
+| GSE103704 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table); ingested 2026-10-07 as 2 layers, wild type dusk and darkness time course |
 | GSE104203 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE104204 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
-| GSE105774 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table) |
+| GSE105774 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND (read 2026-10-06 from the supplied PDF), which excludes a derived table); ingested 2026-10-07 as 2 layers, rel- relA+ dusk and darkness time course, listed as an engineered strain |
 | GSE122841 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE140121 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
 | GSE18902 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the PMC article page shows no open licence, only the PMC copyright notice (read 2026-10-06)) |
@@ -145,19 +145,19 @@ record:
 | GSE222067 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE225426 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was undetermined: no grant over the files and no article) |
 | GSE227397 | Synechococcus elongatus | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| GSE237858 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND, which excludes a derived table) |
+| GSE237858 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND, which excludes a derived table); ingested 2026-10-07 as 1 layer, wild type 12 h after a dark pulse |
 | GSE252562 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
-| GSE254350 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND, which excludes a derived table) |
+| GSE254350 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND, which excludes a derived table); ingested 2026-10-07 as 2 layers, wild type day 1 and day 4 |
 | GSE288532 | Synechococcus elongatus | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE311172 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was undetermined: no grant over the files and no article) |
 | GSE327989 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
-| GSE335065 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND, which excludes a derived table) |
+| GSE335065 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: the article is CC BY-NC-ND, which excludes a derived table); ingested 2026-10-07 as 3 layers, axenic, axenic membrane bioreactor and membrane-separated co-culture, listed as an engineered strain; the mixed co-culture samples are not shipped |
 | GSE45762 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | GSE50908 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE50919 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE50920 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE50922 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
-| GSE51112 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
+| GSE51112 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only); ingested 2026-10-07 as 4 layers, the wild-type circadian course and the three RpaA-phosphomimetic arms, the latter listed as engineered strains |
 | GSE52486 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE59112 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE79726 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |

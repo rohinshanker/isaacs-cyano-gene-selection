@@ -2,7 +2,7 @@
 
 - **Analyst:** claude-evidence-analyst, run of 2026-10-07 (UTC retrievals 14:59 to 15:18).
 - **Coordinator:** interactive Codex agent-deck session bfdd1b08-1791384632 (cyano-general-ticket-closing).
-- **Parent ticket:** `docs/notes/tickets/O_condition-metadata-gaps__20261005.md`, work item 2.
+- **Parent ticket:** `docs/notes/tickets/A_condition-metadata-gaps__20261005.md`, work item 2.
 - **Worktree:** `/Users/Rohin/multica_workspaces_desktop-api.multica.ai/demeter-5df2b7b4e167/dem-280-e449c0e66276/worktree`, branch `agent/claude-evidence-analyst/dem-280`, baseline `357379f4ff7307c40791bf140aef6ae905bfc1fb` (worktree baseline commit `9396e45`). **No file in the repository was changed and no commit was made**; every deliverable sits under `/tmp/cyano-condition-20261007` as the handoff directed.
 - **Boundary:** archive attributes are evidence, not resolved conditions. Nothing here admits a source, edits release data, decides a licence, or sends a query. Values below enter only as package B addendum candidates through the coordinator's intake.
 

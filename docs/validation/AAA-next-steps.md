@@ -143,7 +143,110 @@ Record any reply with its date in
 [O_comparability-lab-judgements__20261005](../notes/tickets/O_comparability-lab-judgements__20261005.md)
 under J2; the agent then settles pair judgement 33.
 
-## 5. Where the depositor queries are
+## 5. Write to three depositors (blocks two ticket rows)
+
+Ticket: [A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md),
+rows 3 and 4, by your decision of 2026-10-07 to wait for the depositors.
+
+**Sending these does not unblock the rows; the replies do.** The question in each
+case is what the condition record must say, so the dataset cannot be ingested
+with the answer left open. Expect a low reply rate and do not hold other work on
+them. If no reply arrives, the standing alternative is to ship each series with
+the disputed axis recorded as `conflicting` or `not reported`, which is a
+decision for you, not a default.
+
+One cheaper route first: GSE252562's series now cites a publication the earlier
+sweep did not have, Johnson and colleagues, *Science* 385, 1105-1111 (2024),
+PMID 39236161, PMC11473183. It is a photoperiodism paper, so its methods almost
+certainly state which photoperiod each sample had. It is not in the open-access
+subset, so the agents cannot read it, but you can. If its methods settle the
+question, quote it into the ticket and item 5a needs no email at all.
+
+### 5a. GSE252562, the photoperiod of six samples
+
+Recipient: Carl Hirschie Johnson, Vanderbilt University,
+`carl.h.johnson@vanderbilt.edu` (the GEO submitter contact for the series).
+
+Subject: Photoperiod of six samples in GEO series GSE252562
+
+> Dear Professor Johnson,
+>
+> We are building a public research resource in the Isaacs lab at Yale that
+> compares published Synechococcus elongatus expression datasets by their growth
+> conditions, and we are including GSE252562 from your photoperiodism work.
+>
+> In that series, six samples are titled `LD8:16` while their sample
+> characteristics field records `LD16:8`. We cannot tell from the record which
+> photoperiod those cultures actually had, and we would rather not guess.
+>
+> Could you confirm which is correct for those six samples? If the published
+> methods already settle it, a pointer to the relevant section is just as
+> useful.
+>
+> Thank you for your time,
+> [name, Isaacs lab, Yale University]
+
+### 5b. GSE225426, growth conditions
+
+Recipient: Hakuto Kageyama, Meijo University, `kageyama@meijo-u.ac.jp`.
+
+Subject: Growth conditions for GEO series GSE225426
+
+> Dear Dr Kageyama,
+>
+> We are building a public research resource in the Isaacs lab at Yale that
+> compares published Synechococcus elongatus expression datasets by their growth
+> conditions, and we would like to include GSE225426, your transcriptome
+> analysis of PCC 7942 under salt and protein-synthesis-inhibiting stress.
+>
+> The GEO record does not state the growth conditions, and we could not find an
+> associated publication. So that we describe the data accurately rather than
+> leaving the fields blank, could you tell us, for the sequenced cultures: the
+> incubation temperature, the light intensity and whether light was continuous
+> or on a light-dark cycle, the CO2 condition if any, the medium, the culture
+> vessel, and the number of biological replicates per condition?
+>
+> Any of these you can give is useful; we record the rest as not reported.
+>
+> Thank you for your time,
+> [name, Isaacs lab, Yale University]
+
+### 5c. GSE311172, growth conditions
+
+Recipient: the Predictive Phenomics Initiative, Pacific Northwest National
+Laboratory, Richland WA. **GEO publishes no contact email for this series**, so
+this one needs a route before it can be sent: the "Contact" link on the GEO
+series page reaches the submitter, and BioProject PRJNA1368742 is the other
+handle. Worth a minute to find a named person before sending.
+
+Subject: Growth conditions for GEO series GSE311172
+
+> Dear colleagues,
+>
+> We are building a public research resource in the Isaacs lab at Yale that
+> compares published Synechococcus elongatus expression datasets by their growth
+> conditions, and we would like to include GSE311172, your oxidative-stress and
+> adaptive-evolution time series in the PCC 7942 CscB/SPS strain.
+>
+> The GEO record describes turbidostatic cultivation with manipulated oxygen but
+> does not give the full growth conditions, and we could not find an associated
+> publication. Could you tell us, for the sequenced cultures: the incubation
+> temperature, the light intensity and regime, the CO2 and oxygen set points,
+> the medium, and the number of biological replicates per time point?
+>
+> Any of these you can give is useful; we record the rest as not reported.
+>
+> Thank you for your time,
+> [name, Isaacs lab, Yale University]
+
+Record each reply, with its date, in
+[A_condition-metadata-gaps__20261005](../notes/tickets/A_condition-metadata-gaps__20261005.md)
+under work item 4; the agents then ingest the series. Note that the query table
+there also asks these depositors for "an explicit reuse statement": that part is
+obsolete since your decision of 2026-10-06 that every source is permitted with
+citation, and the drafts above leave it out.
+
+## 6. Where the other depositor queries are
 
 The eight depositor questions (GSE122841, GSE252562, GSE45762, GSE237858 and
 GSE227397, GSE225426, GSE311172 and PXD023591, GSE140121 and GSE327989, and the

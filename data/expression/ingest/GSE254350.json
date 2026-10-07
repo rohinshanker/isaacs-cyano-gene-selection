@@ -1,0 +1,182 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE254350",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254350",
+  "citationId": "suban-2024",
+  "citation": {
+    "text": "Suban S, Yemini S, Shor A, Waldman Ben-Asher H, Yaron O, Karako-Lampert S, Sendersky E, Golden SS, Schwarz R. A cyanobacterial sigma factor F controls biofilm-promoting genes through intra- and intercellular pathways. Biofilm 2024;8:100217.",
+    "url": "https://doi.org/10.1016/j.bioflm.2024.100217",
+    "pmid": "39188729"
+  },
+  "file": {
+    "name": "GSE254350_normalized_counts.xlsx",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE254nnn/GSE254350/suppl/GSE254350_normalized_counts.xlsx",
+    "sha256": "8041107907e20fd9fdb63539bc94a2249ef924457f614914ad031631c8d11f38"
+  },
+  "reader": {
+    "format": "xlsx",
+    "sheet": "normalized_counts",
+    "idColumn": "Synonym",
+    "idKind": "pcc7942_old",
+    "idPattern": "Synpcc7942_\\d{4}"
+  },
+  "units": "mean DESeq2-normalised counts as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 37,
+  "replicates": {
+    "count": 4,
+    "text": "four biological replicates per genotype and day"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "∼30 μmol photons m⁻² s⁻¹, incandescent"
+    },
+    "lightRegime": {
+      "status": "not reported",
+      "kind": null,
+      "photoperiod": null,
+      "spectrumClass": "incandescent",
+      "entrained": false,
+      "text": "incandescent light; continuous versus diel and photoperiod not reported",
+      "where": "Suban et al. 2024 (PMC11345509), Methods 3.1"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 3,
+      "hi": 3,
+      "unit": "%",
+      "text": "air enriched with 3% CO₂, bubbled"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "mineral medium BG-11"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "Pyrex tubes bubbled with CO₂-enriched air"
+    },
+    "phase": {
+      "status": "reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "sampled on day 1 of growth (sample titles D1); OD750 not reported for the RNA-seq sampling",
+      "where": "GEO GSE254350 sample titles, e.g. GSM8039423 WT_D1_rep1",
+      "quote": "WT_D1_rep1"
+    }
+  },
+  "caveat": "Measured in PCC 7942, not UTEX 2973, in a biofilm study: the wild type is the planktonic, biofilm-suppressed control, and the pilB, sigF1 and sigF2 mutants are not shipped. Values are the depositors' DESeq2-normalised counts; the 116 'predicted RNA' rows of the workbook carry no locus tag and are not read.",
+  "layers": [
+    {
+      "id": "GSE254350_wt_day1",
+      "metricKey": "exprGse254350WtDay1",
+      "label": "Expression GSE254350 WT day 1 (PCC 7942)",
+      "conditionSet": "Wild type in bubbled tubes on day 1, mean of four replicates",
+      "samples": "WT_D1_rep1–4 (GSM8039423, GSM8039426, GSM8039427, GSM8039429)",
+      "columns": [
+        "Normalized.Counts.WT_D1.Replicate.1",
+        "Normalized.Counts.WT_D1.Replicate.2",
+        "Normalized.Counts.WT_D1.Replicate.3",
+        "Normalized.Counts.WT_D1.Replicate.4"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm"
+    },
+    {
+      "id": "GSE254350_wt_day4",
+      "metricKey": "exprGse254350WtDay4",
+      "label": "Expression GSE254350 WT day 4 (PCC 7942)",
+      "conditionSet": "Wild type in bubbled tubes on day 4, mean of four replicates",
+      "samples": "WT_D4_rep1–4 (GSM8039424, GSM8039425, GSM8039428, GSM8039430)",
+      "columns": [
+        "Normalized.Counts.WT_D4.Replicate.1",
+        "Normalized.Counts.WT_D4.Replicate.2",
+        "Normalized.Counts.WT_D4.Replicate.3",
+        "Normalized.Counts.WT_D4.Replicate.4"
+      ],
+      "treatments": [
+        "biofilm assay"
+      ],
+      "group": "biofilm",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "∼30 μmol photons m⁻² s⁻¹, incandescent"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "incandescent",
+          "entrained": false,
+          "text": "incandescent light; continuous versus diel and photoperiod not reported",
+          "where": "Suban et al. 2024 (PMC11345509), Methods 3.1"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "air enriched with 3% CO₂, bubbled"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "mineral medium BG-11"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "Pyrex tubes bubbled with CO₂-enriched air"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "sampled on day 4 of growth (sample titles D4); OD750 not reported for the RNA-seq sampling",
+          "where": "GEO GSE254350 sample titles, e.g. GSM8039424 WT_D4_rep1",
+          "quote": "WT_D4_rep1"
+        }
+      }
+    }
+  ]
+}

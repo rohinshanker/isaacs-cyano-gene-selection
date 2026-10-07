@@ -203,6 +203,37 @@ def test_read_table_joins_replicate_sheets_and_prefixes_block_titles():
     assert header[4] == "0 :: 8", "without the first title row the minute offset is the nearest title"
 
 
+def test_read_table_accepts_an_unnamed_identifier_column():
+    data = csv_bytes(["", "Se_ax_90_1", "Se_ax_90_2"], [["SYNPCC7942_RS00005", "16290", "17761"], ["", "1", "2"]])
+    header, rows = ingest.read_table(data, {"format": "csv", "idColumn": ""})
+    assert header == ["", "Se_ax_90_1", "Se_ax_90_2"]
+    assert rows == [["SYNPCC7942_RS00005", "16290", "17761"]], "a row with no identifier is dropped"
+
+
+def test_select_identifiers_keeps_pattern_matches_and_names_them_by_the_group():
+    rows = [["gene-SYNPCC7942_RS13335", "1"], ["rna-SYNPCC7942_RS00445", "2"], ["MSTRG.17.1", "3"], [" gene-SYNPCC7942_RS13640 ", "4"]]
+    assert ingest.select_identifiers(rows, None) == (rows, 0)
+    kept, dropped = ingest.select_identifiers(rows, r"gene-(SYNPCC7942_RS\d+)")
+    assert kept == [["SYNPCC7942_RS13335", "1"], ["SYNPCC7942_RS13640", "4"]]
+    assert dropped == 2
+    # Without a group the whole match is the identifier, and a repeated
+    # non-gene label is dropped before it could be read as a duplicate.
+    kept, dropped = ingest.select_identifiers(
+        [["Synpcc7942_0001", "1"], ["predicted RNA", "2"], ["predicted RNA", "3"]], r"Synpcc7942_\d{4}")
+    assert kept == [["Synpcc7942_0001", "1"]]
+    assert dropped == 2
+
+
+def test_ingest_counts_identifiers_outside_the_pattern_as_unmapped(tmp_path):
+    data = csv_bytes(["transcript_id", "a", "b", "c"], [
+        ["gene-S1", "10", "20", "30"], ["rna-S1", "1", "1", "1"], ["MSTRG.1.1", "1", "1", "1"]])
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "transcript_id", "idKind": "pcc7942_rs", "idPattern": r"gene-(S\d+)"})
+    written, _, out = run(tmp_path, spec, [("U1", "pcc7942_ortholog", "S1", "")], conditions_file(tmp_path))
+    assert (out / "GSE1_control.tsv").read_text(encoding="utf-8").splitlines()[1] == "U1\t1000000.0000\tS1"
+    assert written[0]["ingest"]["mappedGenes"] == 1
+    assert written[0]["ingest"]["unmappedIdentifiers"] == 2, "the rna- and MSTRG rows"
+
+
 def test_column_values_refuses_a_header_that_names_several_columns():
     with pytest.raises(ValueError, match="names 2 columns"):
         ingest.column_values(["id", "a", "a"], [["g1", "1", "2"]], "a")
@@ -233,6 +264,21 @@ def test_a_layer_may_carry_its_own_condition_record_and_table_row(tmp_path):
     assert written[1]["record"]["conditionTableRow"] == 3
     assert written[1]["record"]["conditions"]["lightIntensity"]["lo"] == 500
     assert written[1]["record"]["conditions"]["temperature"]["quote"] == "Grown at 42℃", "the layer's own row supplies its quotes"
+
+
+def test_a_layer_may_name_its_own_strain(tmp_path):
+    """One deposit may hold several genotypes; the record names the layer's own."""
+    data = csv_bytes(["locus_tag", "a", "b"], [["S1", "1", "3"]])
+    layers = [
+        {"id": "GSE1_wt", "metricKey": "exprGse1Wt", "label": "wt", "conditionSet": "wild type", "samples": "GSM1",
+         "columns": ["a"], "treatments": [], "group": "standard"},
+        {"id": "GSE1_mutant", "metricKey": "exprGse1Mutant", "label": "mutant", "conditionSet": "mutant", "samples": "GSM2",
+         "columns": ["b"], "treatments": [], "group": "engineered", "strain": "PCC 7942 OX-D53E"},
+    ]
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_old"}, layers)
+    written, _, _ = run(tmp_path, spec, [("U1", "pcc7942_old_locus_tag", "S1", "")], conditions_file(tmp_path))
+    assert written[0]["record"]["strain"] == "PCC 7942", "a layer that names no strain keeps the spec's"
+    assert written[1]["record"]["strain"] == "PCC 7942 OX-D53E"
 
 
 def test_read_table_opens_a_member_of_a_zip_deposit():
