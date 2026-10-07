@@ -24,6 +24,10 @@ REQUIRED_FIELDS = {
     "caiReferenceRule",
     "caiReferenceMethod",
     "caiReferenceDescription",
+    "expressionDirectory",
+    # May be null: an organism whose expression is entirely optional joined
+    # layers has no single abundance field, so it names no primary metric.
+    "primaryExpressionMetric",
     "trnaSpecialCases",
     "optionalLayers",
     "rawDirectory",

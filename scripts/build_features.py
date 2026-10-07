@@ -1237,13 +1237,21 @@ def build(
         )
         pair_judgements = load_pair_judgements(expression_dir / "pair_judgements.json")
     sources_by_metric = {source["metricKey"]: source for source in expression_sources}
-    primary_expression_source = sources_by_metric.get("expression")
-    if organism.has_layer("expression"):
+    # An organism may carry a primary abundance field in genes.json, which drives
+    # the expression percentile and the expressionBasis contract, or it may carry
+    # expression only as optional joined layers. The second kind names no primary
+    # metric, and requiring one would block it for no reason.
+    primary_metric = organism.primaryExpressionMetric
+    primary_expression_source = (
+        sources_by_metric.get(primary_metric) if primary_metric else None
+    )
+    if organism.has_layer("expression") and primary_metric:
         require(
             primary_expression_source is not None,
-            "Expression source manifest must select the primary abundance metric 'expression'",
+            "Expression source manifest must select the primary abundance metric "
+            f"{primary_metric!r}",
         )
-    expression = expression_values.get("expression", {})
+    expression = expression_values.get(primary_metric, {}) if primary_metric else {}
     percentiles = expression_percentiles(expression)
 
     sequences = [gene["sequence"] for gene in included]

@@ -283,3 +283,29 @@ def test_an_organism_without_the_expression_layer_still_declares_its_directory()
     ecoli = get_organism("ecoli-k12-mg1655")
     assert ecoli.has_layer("expression") is False
     assert ecoli.path("expressionDirectory").name == "ecoli-k12-mg1655"
+
+
+def test_an_organism_may_decline_to_name_a_primary_abundance_metric():
+    """Expression as joined layers only is a legitimate shape.
+
+    The cyanobacterium carries one abundance value per gene in its core payload,
+    which drives the expression percentile and the basis contract. An organism
+    whose expression arrives entirely as optional joined layers has no such
+    field, and requiring one would block it for no reason.
+    """
+    from scripts.organisms import get_organism
+
+    assert get_organism("utex2973").primaryExpressionMetric == "expression"
+    assert get_organism("ecoli-k12-mg1655").primaryExpressionMetric is None
+
+
+def test_the_primary_metric_field_is_required_of_every_organism():
+    """Declining a primary is explicit, never an omission."""
+    import json
+
+    from scripts.organisms import CONFIG_PATH, REQUIRED_FIELDS
+
+    assert "primaryExpressionMetric" in REQUIRED_FIELDS
+    assert "expressionDirectory" in REQUIRED_FIELDS
+    for values in json.loads(CONFIG_PATH.read_text(encoding="utf-8"))["organisms"].values():
+        assert "primaryExpressionMetric" in values
