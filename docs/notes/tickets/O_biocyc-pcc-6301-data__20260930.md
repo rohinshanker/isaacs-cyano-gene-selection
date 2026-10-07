@@ -4,7 +4,7 @@
   data for PCC 6301 as explicitly labelled sister-strain evidence for UTEX 2973.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 

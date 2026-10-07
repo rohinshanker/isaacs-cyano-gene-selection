@@ -4,7 +4,7 @@
   pinned RefSeq annotation; select useful additions before planning any data pull.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 

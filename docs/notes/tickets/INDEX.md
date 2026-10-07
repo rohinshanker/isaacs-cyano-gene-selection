@@ -44,10 +44,7 @@ their reusable guidance distilled into `docs/validation/`.
 **Owner decision, 2026-10-05: Claude Science is the default last resort.**
 The owner explicitly requested the E. coli multi-omics review on 2026-10-06;
 P-ECOLI-OMICS below is pending manual handoff and has not been sent.
-The two older CS-1 claims need no dispatch and are researched in the repository. Package D
-returned 2026-10-04 and passed intake 2026-10-06 (offload ticket); the Package B
-correction's ten cells are read as not reported and Package D scored them so,
-which is all the correction changed. Their rows are gone.
+The two older CS-1 claims need no dispatch and are researched in the repository.
 
 Items the owner takes to the next Claude Science session, per
 [claude-science-handoff.md](../../validation/claude-science-handoff.md). Agents add a
@@ -63,10 +60,6 @@ Read that before starting any row below.
 that date. Read
 [`docs/notes/handoff/RET_claude-science-session__20260930.md`](../handoff/RET_claude-science-session__20260930.md)
 before starting work on any ticket opened 2026-09-30.
-
-All six pastes sent against the offload ticket have returned and passed intake;
-the crosswalk second check result is recorded in the
-[scan ticket](O_cross-strain-data-scan__20260927.md#crosswalk-second-check-result-returned-2026-10-04).
 
 | Ticket | Id | Request | Unblocks | Sent | Returned |
 | --- | --- | --- | --- | --- | --- |
