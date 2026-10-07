@@ -672,8 +672,14 @@ def load_expression_sources(
                 value = float(row["abundance"])
                 # A fitness score is signed (loss below zero, gain above); every
                 # abundance is not. The source says which it is.
+                # Two different reasons a value may be negative, and they want
+                # different ramps. `signed` is a quantity centred on zero, like a
+                # fitness log-ratio, and takes a diverging ramp. `logScale` is an
+                # ordinary one-sided abundance expressed in logs, where a negative
+                # is simply a value below one unit and zero is not a midpoint.
+                allows_negative = source.get("signed") is True or source.get("logScale") is True
                 require(
-                    math.isfinite(value) and (value >= 0 or source.get("signed") is True),
+                    math.isfinite(value) and (value >= 0 or allows_negative),
                     f"Invalid value for {locus} in expression source {source_id}: {value}",
                 )
                 values[locus] = value
@@ -700,7 +706,8 @@ def expression_metric_definition(
             f"{source['payload']}. {source['caveat']}"
         ),
         # A fitness screen is its own family and centres on zero, by owner
-        # decision of 2026-10-05; an abundance is a one-sided ramp.
+        # decision of 2026-10-05; an abundance is a one-sided ramp, including a
+        # log-scaled one whose low values happen to be negative.
         "family": "Fitness" if source["record"]["dataType"] == "fitness" else "Expression",
         "scale": "diverging" if source.get("signed") else "sequential",
         "missingPolicy": MISSING_POLICY,

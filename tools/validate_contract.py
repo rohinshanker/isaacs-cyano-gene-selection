@@ -1422,10 +1422,14 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
         if not isinstance(column, list) or len(column) != len(gene_rows):
             problems.append(f"{source['metricKey']}: not one entry per gene")
             continue
-        signed = source.get("signed") is True
+        # A value may be negative for two different reasons: a signed quantity
+        # centred on zero, or an ordinary abundance expressed in logs where a
+        # negative simply means below one unit. Both are legitimate; neither is
+        # a licence for the other's ramp.
+        may_be_negative = source.get("signed") is True or source.get("logScale") is True
         bad = [v for v in column if v is not None
                and (isinstance(v, bool) or not isinstance(v, (int, float))
-                    or not math.isfinite(v) or (v < 0 and not signed))]
+                    or not math.isfinite(v) or (v < 0 and not may_be_negative))]
         if bad:
             problems.append(f"{source['metricKey']}: {len(bad)} invalid values, e.g. {bad[:3]}")
         with_value = sum(v is not None for v in column)

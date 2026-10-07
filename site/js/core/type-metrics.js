@@ -49,9 +49,13 @@ export function typeLabelFor(dataset) {
   const kind = assayKind(dataset);
   const quantity = kind === 'initiation' ? 'Transcription initiation'
     : kind === 'fitness' ? 'Gene fitness'
-      : dataType === 'proteomics' ? 'Protein abundance'
-        : dataType === 'transcriptomics' ? 'Transcript abundance'
-          : `${dataType} measurement`;
+      // Ribosome profiling reads as transcriptomics because it sequences RNA,
+      // but what it counts is footprints on a transcript. Naming that
+      // abundance would promise the reader a different measurement.
+      : kind === 'occupancy' ? 'Ribosome occupancy'
+        : dataType === 'proteomics' ? 'Protein abundance'
+          : dataType === 'transcriptomics' ? 'Transcript abundance'
+            : `${dataType} measurement`;
   return `${quantity} (${platform})`;
 }
 

@@ -377,8 +377,12 @@ export const DATA_APPLIERS = Object.freeze({
       for (let index = 0; index < column.length; index += 1) {
         const value = column[index];
         if (value === null) continue;
-        // A fitness score is signed; an abundance is not. The source says which.
-        if (typeof value !== 'number' || !Number.isFinite(value) || (value < 0 && source.signed !== true)) {
+        // Two reasons a value may be negative, and the source says which. A
+        // fitness score is signed and centres on zero; a log-scaled abundance
+        // is one-sided and a negative simply means below one unit. Neither
+        // licenses the other's ramp, but both are real values.
+        const mayBeNegative = source.signed === true || source.logScale === true;
+        if (typeof value !== 'number' || !Number.isFinite(value) || (value < 0 && !mayBeNegative)) {
           throw new Error(`expression_layers.json has an invalid value for ${source.metricKey}`);
         }
         genes[index][source.metricKey] = value;

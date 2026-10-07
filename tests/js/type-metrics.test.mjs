@@ -190,3 +190,25 @@ test('a dataset\'s own metric and its derived percentile are both the dataset\'s
   assert.equal(isDatasetOwnKey('expressionProxy', all), false, 'the codon-adaptation proxy is this genome\'s own');
   assert.equal(isDatasetOwnKey('gc3', all), false);
 });
+
+test('a ribosome profiling type is named occupancy, not abundance', () => {
+  const footprints = dataset({
+    id: 'FP1', datasetId: 'FP1', metricKey: 'riboFp1',
+    dataType: 'transcriptomics', platform: 'Ribo-seq',
+  });
+  footprints.source.assay = 'ribosome profiling';
+  // It sequences RNA, so it reads as transcriptomics, but what it counts is
+  // footprints. Calling that transcript abundance would promise the reader a
+  // measurement the data does not make.
+  assert.equal(assayKind(footprints), 'occupancy');
+  assert.equal(typeLabelFor(footprints), 'Ribosome occupancy (Ribo-seq)');
+  assert.equal(typeKeyFor(footprints), 'type.transcriptomics.ribo-seq.occupancy');
+
+  const transcripts = dataset({
+    id: 'R1', datasetId: 'R1', metricKey: 'exprR1',
+    dataType: 'transcriptomics', platform: 'RNA-seq',
+  });
+  assert.equal(typeLabelFor(transcripts), 'Transcript abundance (RNA-seq)');
+  assert.notEqual(typeKeyFor(footprints), typeKeyFor(transcripts),
+    'the two must not pool');
+});

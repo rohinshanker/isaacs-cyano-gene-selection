@@ -135,7 +135,11 @@ def test_the_shipped_layers_are_paired_and_internally_uniform():
     manifest = Path(ingest.OUT_DIR) / "sources.json"
     if not manifest.is_file():
         pytest.skip("the E. coli layers have not been built in this tree")
-    sources = json.loads(manifest.read_text(encoding="utf-8"))
+    # The manifest now carries other studies too, so scope to this one.
+    sources = [
+        s for s in json.loads(manifest.read_text(encoding="utf-8"))
+        if s["record"]["studyId"] == "GSE182100"
+    ]
     assert len(sources) == 24
 
     platforms = {s["record"]["platform"] for s in sources}
@@ -168,7 +172,10 @@ def test_a_footprint_layer_never_claims_to_be_protein_abundance():
     manifest = Path(ingest.OUT_DIR) / "sources.json"
     if not manifest.is_file():
         pytest.skip("the E. coli layers have not been built in this tree")
-    sources = json.loads(manifest.read_text(encoding="utf-8"))
+    sources = [
+        s for s in json.loads(manifest.read_text(encoding="utf-8"))
+        if s["record"]["studyId"] == "GSE182100"
+    ]
     footprints = [s for s in sources if s["record"]["platform"] == "Ribo-seq"]
     assert footprints
     for source in footprints:
