@@ -43,6 +43,9 @@ async (page) => {
     check((await page.evaluate(() => performance.getEntriesByType('resource').filter((r) => r.name.endsWith('.wasm')).length)) === 0,
       'engine must load lazily');
     await fold.click();
+    await page.getByRole('progressbar').waitFor();
+    check(await page.getByRole('progressbar').count() === 1,
+      'folding must use the single chromosome progressbar');
     await page.waitForFunction(() => document.querySelector('[data-fold-status]').textContent.startsWith('Finished'));
     check((await status.innerText()).includes('10 succeeded, 0 failed'), 'ten genes must fold');
     await fold.click();
@@ -134,12 +137,12 @@ async (page) => {
       semanticSnapshot = await region.ariaSnapshot();
     }
     await page.setViewportSize({ width: 375, height: 812 });
-    await region.locator('summary').click();
+    await region.locator('summary').first().click();
     check((await region.innerText()).includes('Shared bases in overlapping neighbors can change.'), 'tutorial describes shared-base edits');
     await region.screenshot({ path: `${artifacts}/tutorial-mobile.png` });
-    await region.locator('summary').focus();
+    await region.locator('summary').first().focus();
     await page.keyboard.press('Enter');
-    check(!await region.locator('details').evaluate((element) => element.open), 'tutorial keyboard collapse');
+    check(!await region.locator('details').first().evaluate((element) => element.open), 'tutorial keyboard collapse');
 
     // Delay actual engine response so loading and cancellation can be inspected.
     await reload();
@@ -147,15 +150,39 @@ async (page) => {
     await page.route('**/vienna.wasm', async (route) => { await gate; await route.continue().catch(() => {}); });
     await fold.click();
     await page.waitForFunction(() => !document.querySelector('[data-fold-cancel]').hidden);
-    await region.screenshot({ path: `${artifacts}/loading-mobile.png` });
+    for (const [width, height] of [[375, 812], [768, 1024], [1280, 800], [1440, 900]]) {
+      await page.setViewportSize({ width, height });
+      check(await page.getByRole('progressbar').count() === 1,
+        `delayed engine loading must not add a second progressbar at ${width}`);
+      check((await status.innerText()).includes('Preparing local engine for Syn61'),
+        `delayed engine status must retain the exact scheme at ${width}`);
+      check(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        `delayed folding must not cause horizontal overflow at ${width}`);
+      await page.screenshot({ path: `${artifacts}/loading-${width}.png`, fullPage: true });
+    }
     check(await fold.isDisabled(), 'duplicate action disabled while busy');
     expectedFailure = true; // Worker termination can abort the in-flight engine download.
     await page.getByRole('button', { name: 'Cancel folding', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('[data-fold-status]').textContent.startsWith('Cancelled'));
     release();
     await page.unroute('**/vienna.wasm');
-    await region.screenshot({ path: `${artifacts}/cancelled-mobile.png` });
     check(!await fold.isDisabled(), 'cancel permits retry');
+    for (const [width, height] of [[375, 812], [768, 1024], [1280, 800], [1440, 900]]) {
+      await page.setViewportSize({ width, height });
+      check(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        `cancelled folding must not cause horizontal overflow at ${width}`);
+      await page.screenshot({ path: `${artifacts}/cancelled-${width}.png`, fullPage: true });
+    }
+    await fold.click();
+    await page.waitForFunction(() => document.querySelector('[data-fold-status]').textContent.startsWith('Finished'));
+    check((await status.innerText()).includes('10 succeeded, 0 failed'), 'retry after cancellation must complete');
+    for (const [width, height] of [[375, 812], [768, 1024], [1280, 800], [1440, 900]]) {
+      await page.setViewportSize({ width, height });
+      check(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        `retry result must not cause horizontal overflow at ${width}`);
+      await page.screenshot({ path: `${artifacts}/cancel-retry-${width}.png`, fullPage: true });
+    }
+    await page.setViewportSize({ width: 375, height: 812 });
 
     // Network unavailable on first request: no stale or invented MFE values.
     await reload();
@@ -171,19 +198,41 @@ async (page) => {
     await region.screenshot({ path: `${artifacts}/offline-mobile.png` });
     expectedFailure = false;
 
-    // Corrupt exactly one gene's context, preserving the real nine other results.
-    await page.route('**/data/genes.json', async (route) => {
+    // Corrupt exactly one gene's context under a correspondingly updated
+    // manifest entry, preserving the real nine other results while keeping the
+    // loader's integrity gate active.
+    const corruptedGenes = await page.evaluate(async (target) => {
+      const genes = await (await fetch('data/genes.json')).json();
+      delete genes.find((gene) => gene.id === target).rnaContext;
+      const body = JSON.stringify(genes);
+      const bytes = new TextEncoder().encode(body);
+      const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+      return {
+        body,
+        bytes: bytes.length,
+        sha256: [...digest].map((value) => value.toString(16).padStart(2, '0')).join(''),
+      };
+    }, ids[0]);
+    await page.route('**/data/data-manifest.json*', async (route) => {
       const response = await route.fetch();
-      const genes = await response.json();
-      delete genes.find((gene) => gene.id === ids[0]).rnaContext;
-      await route.fulfill({ response, json: genes });
+      const manifest = await response.json();
+      manifest.files['genes.json'] = {
+        bytes: corruptedGenes.bytes,
+        sha256: corruptedGenes.sha256,
+      };
+      await route.fulfill({ response, json: manifest });
+    });
+    await page.route('**/data/genes.json*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({ response, body: corruptedGenes.body });
     });
     await reload();
     await fold.click();
     await page.waitForFunction(() => document.querySelector('[data-fold-status]').textContent.startsWith('Finished'));
     check((await status.innerText()).includes('9 succeeded, 1 failed'), 'partial failure retains good results');
     await region.screenshot({ path: `${artifacts}/partial-mobile.png` });
-    await page.unroute('**/data/genes.json');
+    await page.unroute('**/data/genes.json*');
+    await page.unroute('**/data/data-manifest.json*');
 
     // Unsupported environment is explicit; no permanently disabled action.
     await reload();
@@ -193,6 +242,8 @@ async (page) => {
     await page.waitForFunction(() => document.querySelector('[data-fold-status]').textContent.includes('requires WebAssembly'));
     await region.screenshot({ path: `${artifacts}/unsupported-mobile.png` });
     check(!await fold.isDisabled(), 'unsupported reports an actionable explanation');
+    check(!(await page.locator('.load-failures').innerText()).includes('RNA folding'),
+      'folding errors stay actionable in the folding panel without a duplicate loading error');
     await reload();
     await fold.waitFor();
     await page.getByRole('button', { name: 'Clear shortlist', exact: true }).click();
@@ -212,20 +263,24 @@ async (page) => {
     await search.fill('rubisco');
     await resultButton('Pin M744_RS09005 in the gene panel').click();
     check((await hashList('g')).includes('M744_RS09005'), 'first pointer Pin click must commit');
-    check(await focusedLabel() === 'Pin M744_RS09005 in the gene panel', 'Pin refresh preserves focus');
+    check(await focusedLabel() === 'Unpin M744_RS09005 from the gene panel. Product: form I ribulose bisphosphate carboxylase large subunit',
+      'Pin refresh preserves focus on the now-reversible action');
     await search.fill('M744_RS09005');
     await resultButton('Add M744_RS09005 to the shortlist').click();
     check((await hashList('l')).includes('M744_RS09005'), 'first pointer Shortlist click must commit');
-    check(await focusedLabel() === 'Pin M744_RS09005 in the gene panel', 'disabled Shortlist returns focus to Pin');
+    check(await focusedLabel() === 'Remove M744_RS09005 from the shortlist. Product: form I ribulose bisphosphate carboxylase large subunit',
+      'Shortlist refresh preserves focus on the now-reversible action');
     await search.fill('rubisco');
     await resultButton('Pin M744_RS09000 in the gene panel').focus();
     await page.keyboard.press('Enter');
     check((await hashList('g')).includes('M744_RS09000'), 'keyboard Pin must commit');
-    check(await focusedLabel() === 'Pin M744_RS09000 in the gene panel', 'keyboard Pin preserves focus');
+    check(await focusedLabel() === 'Unpin M744_RS09000 from the gene panel. Product: ribulose bisphosphate carboxylase small subunit',
+      'keyboard Pin preserves focus on the now-reversible action');
     await resultButton('Add M744_RS09000 to the shortlist').focus();
     await page.keyboard.press('Enter');
     check((await hashList('l')).includes('M744_RS09000'), 'keyboard Shortlist must commit');
-    check(await focusedLabel() === 'Pin M744_RS09000 in the gene panel', 'keyboard Shortlist keeps row focus');
+    check(await focusedLabel() === 'Remove M744_RS09000 from the shortlist. Product: ribulose bisphosphate carboxylase small subunit',
+      'keyboard Shortlist preserves focus on the now-reversible action');
     const searchInteractions = 'first-click Pin/Shortlist and keyboard focus passed';
 
     const lifecycle = await page.evaluate(async () => {
@@ -244,7 +299,17 @@ async (page) => {
           return new Promise((yes, no) => { resolve = yes; reject = no; });
         },
       };
-      const panel = new FoldingPanel(host, client);
+      const activities = [];
+      const runActivity = async (label, operation) => {
+        const activity = { label, settled: false };
+        activities.push(activity);
+        try {
+          return await operation();
+        } finally {
+          activity.settled = true;
+        }
+      };
+      const panel = new FoldingPanel(host, client, runActivity);
       const state = { ids: ['gene'], dataset: {}, schemes: { active: { map: {}, name: '' } } };
       panel.update(state);
       const first = panel.run();
@@ -266,8 +331,35 @@ async (page) => {
       resolve({ results: [], cancelled: false });
       await third;
       if (!panel.status.textContent.includes('identity map')) throw new Error('identity scheme not labelled');
+      if (activities.length !== 3 || activities.some((activity) => !activity.settled)) {
+        throw new Error('folding activities did not settle exactly once per real request');
+      }
+      if (activities.some((activity) => activity.label !== 'RNA folding')) {
+        throw new Error('folding activity label changed');
+      }
+      panel.rosetta.onRecord({
+        locus: 'gene', form: 'wild-type', schemeName: 'identity', region: 'start',
+        sequenceHash: 'hash', formats: ['fasta'],
+      });
+      if (panel.handoffs().length !== 1) throw new Error('folding hand-off record was not retained');
       host.remove();
-      return 'duplicate, changed-input cancellation, stale progress/success/error, and missing optional scheme passed';
+      const standaloneHost = document.createElement('section');
+      document.body.append(standaloneHost);
+      const standalone = new FoldingPanel(standaloneHost, {
+        running: false,
+        cancel() {},
+        async run({ onProgress }) {
+          onProgress({ phase: 'folding', completed: 1, total: 1, results: [] });
+          return { results: [], cancelled: false };
+        },
+      });
+      standalone.update(state);
+      await standalone.run();
+      if (!standalone.status.textContent.startsWith('Finished')) {
+        throw new Error('standalone activity passthrough failed');
+      }
+      standaloneHost.remove();
+      return 'duplicate, changed-input cancellation, stale progress/success/error, activity cleanup, standalone passthrough, and missing optional scheme passed';
     });
     coverage.push(...await page.coverage.stopJSCoverage());
     coverageActive = false;
@@ -299,6 +391,7 @@ async (page) => {
     release();
     await page.context().setOffline(false);
     await page.unroute('**/vienna.wasm');
-    await page.unroute('**/data/genes.json');
+    await page.unroute('**/data/genes.json*');
+    await page.unroute('**/data/data-manifest.json*');
   }
 }

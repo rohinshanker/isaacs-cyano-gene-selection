@@ -62,7 +62,8 @@ test('browser gate releases coverage after navigation or assertion failure', asy
     await assert.rejects(runInNewContext(source)(page),
       navigationFails ? /injected navigation failure/ : /fold action must be enabled/);
     assert.deepEqual(cleanup, ['start', 'stop', ['offline', false],
-      ['unroute', '**/vienna.wasm'], ['unroute', '**/data/genes.json']]);
+      ['unroute', '**/vienna.wasm'], ['unroute', '**/data/genes.json*'],
+      ['unroute', '**/data/data-manifest.json*']]);
   }
 });
 

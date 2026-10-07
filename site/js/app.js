@@ -178,6 +178,7 @@ let pendingMapJump = false;
 /** The staged load in progress, its progress surfaces, and what has landed since the last render. */
 let staged = null;
 let loadProgress = null;
+let foldingActivityId = 0;
 const landed = new Set();
 let landingFlush = false;
 /** True once the page has been built on tier 1 and can take a re-render. */
@@ -2779,6 +2780,19 @@ async function boot() {
     onSelect: (id) => {
       const index = context.dataset.indexById.get(id);
       if (index !== undefined) setPinned(index);
+    },
+    runActivity: async (label, operation) => {
+      const key = `rna-folding:${++foldingActivityId}`;
+      loadProgress.beginResource(key, { label, reportFailure: false });
+      try {
+        const result = await operation();
+        loadProgress.settleResource(key, FILE_STATE.READY);
+        return result;
+      } catch (error) {
+        // The folding panel owns its actionable explanation and retry control.
+        loadProgress.settleResource(key, FILE_STATE.FAILED, error);
+        throw error;
+      }
     },
   });
 

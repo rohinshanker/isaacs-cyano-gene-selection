@@ -9,9 +9,16 @@ export function foldInputsInvalidateResult(previousSignature, nextSignature, has
 
 /** A compact on-demand calculation with a captured, visible scheme identity. */
 export class FoldingPanel {
-  constructor(host, client = new FoldingClient()) {
+  /**
+   * @param {HTMLElement} host
+   * @param {FoldingClient} client
+   * @param {(label: string, operation: () => Promise<object>) => Promise<object>} runActivity
+   *   Optional bridge to the application's shared loading presentation.
+   */
+  constructor(host, client = new FoldingClient(), runActivity = (_label, operation) => operation()) {
     this.host = host;
     this.client = client;
+    this.runActivity = runActivity;
     this.generation = 0;
     host.className = 'folding-panel';
     host.innerHTML = `<div class="button-row">
@@ -26,13 +33,11 @@ export class FoldingPanel {
       <p class="panel-note">ViennaRNA 2.7.2 · Turner 2004 · 37 °C · dangles 2 · salt 1.021 M · GU and lonely pairs allowed · minimum loop 3 · no G-quadruplexes. <a href="vendor/viennarna/PROVENANCE.md">Engine source, license, and build</a>. Credit: ViennaRNA authors and the Institute for Theoretical Chemistry, University of Vienna.</p>
     </details>
     <p class="panel-note" role="status" aria-live="polite" data-fold-status></p>
-    <progress aria-label="RNA folding progress" hidden></progress>
     <div data-fold-results></div>
     <section data-rosetta-host></section>`;
     this.button = host.querySelector('#fold-button');
     this.cancelButton = host.querySelector('[data-fold-cancel]');
     this.status = host.querySelector('[data-fold-status]');
-    this.progress = host.querySelector('progress');
     this.results = host.querySelector('[data-fold-results]');
     this.handoffRecords = new Map();
     this.rosetta = new RosettaHandoffPanel(host.querySelector('[data-rosetta-host]'), {
@@ -63,7 +68,6 @@ export class FoldingPanel {
   setBusy(busy) {
     this.button.disabled = busy || this.state.ids.length === 0;
     this.cancelButton.hidden = !busy;
-    this.progress.hidden = !busy;
     this.host.setAttribute('aria-busy', String(busy));
   }
 
@@ -102,18 +106,17 @@ export class FoldingPanel {
     const active = schemes?.active ?? { name: '', map: {} };
     const label = `${active.name || 'Active scheme'} (${serializeSchemeMap(active.map) || 'identity map'})`;
     this.results.replaceChildren();
-    this.progress.value = 0;
-    this.progress.max = ids.length;
     this.setBusy(true);
     try {
-      const report = await this.client.run({ dataset, ids, map: active.map, onProgress: (event) => {
-        if (generation !== this.generation) return;
-        this.progress.value = event.completed;
-        this.status.textContent = event.phase === 'loading'
-          ? `Preparing local engine for ${label}… First use downloads the engine from this site.`
-          : `${event.completed}/${event.total} genes processed for ${label}.`;
-        this.renderResults(event.results);
-      } });
+      const report = await this.runActivity('RNA folding', () => this.client.run({
+        dataset, ids, map: active.map, onProgress: (event) => {
+          if (generation !== this.generation) return;
+          this.status.textContent = event.phase === 'loading'
+            ? `Preparing local engine for ${label}… First use downloads the engine from this site.`
+            : `${event.completed}/${event.total} genes processed for ${label}.`;
+          this.renderResults(event.results);
+        },
+      }));
       if (generation !== this.generation) return;
       this.renderResults(report.results);
       const failed = report.results.filter((result) => result.error).length;

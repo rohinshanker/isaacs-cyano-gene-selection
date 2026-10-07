@@ -294,8 +294,11 @@ The dataset keeps its byte-accurate manifest fraction; when unlike resources are
 combined, each resource is one file-equivalent alongside the dataset's file
 equivalents. A newly discovered resource therefore extends the denominator
 before it can settle, and the cycle cannot report 100% while that work remains.
-Once a cycle has completed, a citation download or a per-file retry starts a
-fresh chromosome cycle rather than moving a completed bar backwards.
+Once a cycle has completed, a citation download, an on-demand RNA-folding run,
+or a per-file retry starts a fresh chromosome cycle rather than moving a
+completed bar backwards. Folding is an unknown-byte activity: the bar never
+mislabels its completed/total gene counts as bytes, while the folding panel's
+persistent status reports those real counts and the exact active scheme.
 
 Received bytes are not completion. A response whose last byte has arrived stays
 below 100% until its validation and apply step settles; the same rule applies to
@@ -431,9 +434,10 @@ connection. An intro still running when they land takes the colours up itself.
 **The same chromosome continues after reveal**, with small subtext naming the
 active tier or resource. Its host reserves the same height after completion, so
 the map controls do not jump when the presentation hides. A failure remains in
-that host with its message and Retry. Citation source downloads use the same
-resource API and start a fresh chromosome cycle; the download row remains the
-actionable fallback if that request fails. Organism changes are full navigations
+that host with its message and Retry. Citation source downloads and on-demand
+RNA folding use the same resource API and start a fresh chromosome cycle; their
+own panels remain the actionable fallback if a request fails, so those resources
+do not duplicate errors in the loading host. Organism changes are full navigations
 and begin the same whole-load cycle for the newly selected organism. The current
 dataset selectors do not issue requests on selection: every selectable layer is
 already one of the staged files, so its progress belongs to the initial cycle.

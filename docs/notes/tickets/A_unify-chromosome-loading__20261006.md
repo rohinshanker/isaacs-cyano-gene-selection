@@ -54,6 +54,34 @@ the completed progress presentation is hidden.
 
 ## Verification
 
+DEM-265 on-demand RNA-folding follow-up, 2026-10-06:
+
+- RNA folding now joins the chromosome presentation as an unknown-byte resource;
+  the panel retains the exact scheme identity, completed/total counts, Fold/Cancel,
+  cached results, input-change cancellation, error text, and results, but creates no
+  native `<progress>` meter. Each real request has a unique activity key and settles
+  on success, cancellation, or error; folding errors remain actionable only in the
+  folding panel.
+- `npm test`: 1,093 passed. `.venv/bin/python -m pytest -q`: 486 passed,
+  1 skipped, 36 subtests passed. `.venv/bin/python tools/validate_contract.py`:
+  110 passed, 1 declared spliced-CDS contiguity skip. The isolated worktree used
+  temporary links to the canonical checkout's pinned raw inputs; every link was
+  removed after the gates.
+- `node tools/build_module_preloads.mjs --check`,
+  `node tools/build_load_bar.mjs --check`, and
+  `.venv/bin/python tools/build_data_manifest.py check`: passed.
+- Real Chromium at `http://127.0.0.1:8792/site/` exercised cold delayed WASM,
+  completion and ten cache hits, cancellation followed by a successful retry,
+  offline and partial failures, unsupported and empty states, input-change
+  cancellation, duplicate prevention, stale success/error suppression, activity
+  cleanup, and standalone passthrough. At 375x812, 768x1024, 1280x800, and
+  1440x900 the delayed engine had exactly one accessible progressbar, the status
+  retained the exact Syn61 scheme, and no state introduced horizontal overflow.
+  Browser/Python parity was exact over all 32 cases, the console/runtime diagnostic
+  list and folding-panel uncovered-line list were empty, and no visual baseline
+  changed. Render evidence is preserved outside the managed worktree under
+  `.playwright-cli/dem-265-folding-8792/` in the canonical checkout.
+
 DEM-261 post-review accessibility verification, 2026-10-06:
 
 - The failed-file regression verifies that the post-reveal live region remains

@@ -32,7 +32,8 @@ export class ShortlistPanel {
   /**
    * @param {HTMLElement} host
    * @param {{onRemove: (id: string) => void, onClear: () => void,
-   *   onSelect: (id: string) => void}} handlers
+   *   onSelect: (id: string) => void,
+   *   runActivity?: (label: string, operation: () => Promise<object>) => Promise<object>}} handlers
    */
   constructor(host, handlers) {
     this.host = host;
@@ -77,7 +78,7 @@ export class ShortlistPanel {
 
     const foldHost = document.createElement('section');
     foldHost.setAttribute('aria-label', 'On-demand RNA folding');
-    this.folding = new FoldingPanel(foldHost);
+    this.folding = new FoldingPanel(foldHost, undefined, this.handlers.runActivity);
 
     actions.append(this.exportButton, this.clearButton);
     this.status = document.createElement('p');
