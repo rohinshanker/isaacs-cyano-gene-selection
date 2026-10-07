@@ -498,6 +498,7 @@ def test_reported_held_phase_and_unresolved_nitrogen_do_not_pass_defaults():
     records = rescore.load_records(RECORDS)
     assert records[61]["n_altered"] is None
     assert rescore.score_medium(records[61], record())[0] == "undecidable"
+    assert rescore._gap_reason(records[61], "medium") is not None
     held = record(phase="steady-state (held)", od=[0.3, 0.3])
     assert rescore._score_phase(held, held)[0] == "undecidable"
     assert rescore._gap_reason(held, "growth_phase") is None

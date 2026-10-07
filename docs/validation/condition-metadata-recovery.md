@@ -100,9 +100,11 @@ decisive when another component is unknown.
 Only explicitly named exponential sampling phases compare by overlapping OD;
 stationary compares only with stationary and needs no OD. A reported
 `steady-state (held)` label is preserved, but the default contract defines no
-equivalence for it, so any comparison involving it is undecidable. A bare OD
-preserves its numeric value but does not establish the phase. Stock, maintenance
-or dilution OD is never transferred into sampling. Comparable culture classes are planktonic and biofilm.
+equivalence for it, so no comparison involving it can pass the default: the
+phase judgement is always undecidable, while the combined axis or pair can still
+fail decisively on format or another axis. A bare OD preserves its numeric value
+but does not establish the phase. Stock, maintenance or dilution OD is never
+transferred into sampling. Comparable culture classes are planktonic and biofilm.
 Reported formats outside those classes remain labelled as reported and cannot
 pass the default. Overrides bind exact row/accession and source values, with
 manual evidence pinned by hash. Unreviewed type labels and uncovered gap statuses

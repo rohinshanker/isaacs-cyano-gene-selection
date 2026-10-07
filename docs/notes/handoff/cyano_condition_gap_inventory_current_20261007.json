@@ -208,7 +208,13 @@
       "fields": {
         "n_altered": null
       },
-      "audit": {}
+      "audit": {
+        "medium": {
+          "status": "partial",
+          "source": "cyano_dataset_condition_records_20261007.json row 61 typed sampling record",
+          "uncertainty": "BG-11 is reported, but the nitrogen source is not itemised, so nitrogen-source equivalence remains unresolved."
+        }
+      }
     },
     {
       "condition_row": 75,
@@ -1446,6 +1452,17 @@
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 61; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not reported as a CO2 regime; atmosphere given only as 'Aerobic'"
+    },
+    {
+      "condition_row": 61,
+      "artifact": "PXD005851",
+      "condition_set": "S. elongatus PCC 7942 arm of the 48-organism acetylation survey",
+      "field": "medium",
+      "status": "partial",
+      "value": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912); nitrogen source and organic carbon not itemised",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 61 typed sampling record",
+      "uncertainty": "BG-11 is reported, but the nitrogen source is not itemised, so nitrogen-source equivalence remains unresolved.",
+      "historical_value": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912); nitrogen source and organic carbon not itemised"
     },
     {
       "condition_row": 62,

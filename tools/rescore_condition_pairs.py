@@ -306,6 +306,11 @@ OVERRIDE_AUDIT = {
         "source": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
         "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported.",
     },
+    "61.medium": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 61 typed sampling record",
+        "uncertainty": "BG-11 is reported, but the nitrogen source is not itemised, so nitrogen-source equivalence remains unresolved.",
+    },
     "75.temperature": {
         "status": "present",
         "source": "cyano_package_BC_addendum_20261006.tsv PXD036717 temperature",
@@ -726,7 +731,11 @@ def _gap_reason(record: dict[str, Any], field: str) -> str | None:
     if field == "co2":
         return None if record.get("co2") is not None else "Sampling gas CO2 percentage is unknown."
     if field == "medium":
-        return None if record.get("medium") is not None else "Sampling medium is unknown."
+        if record.get("medium") is None:
+            return "Sampling medium is unknown."
+        if record.get("conditioned") is None or record.get("n_altered") is None:
+            return "Fresh-medium or nitrogen-source equivalence remains unresolved."
+        return None
     if field == "culture_format":
         return None if _format_class(record) is not None else "Sampling culture format is unknown."
     if field == "growth_phase":
