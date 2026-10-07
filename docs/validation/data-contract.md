@@ -706,6 +706,46 @@ exports must state `mapped site(s); pooled score absent` for the first direction
 and `pooled score; no exact Table S1 site` for the reverse. The exact join audit
 and stable examples are in `data/expression/TAN2018_TSS_PROVENANCE.md`.
 
+### The shared marker representation
+
+Every admitted positional feature reaches a view through one record shape,
+`core/marker-layers.js`, so no two views can describe the same site
+differently. The record exists to keep three things apart that a looser shape
+would merge.
+
+**Geometry is explicit.** A feature is a `point` or an `interval`, and an
+interval needs both ends. One end alone is an unmapped interval, never a point
+at the end it has, because the missing end is not zero and not the other end.
+An interval whose end precedes its start runs across the circular origin and is
+measured around the replicon; without a known replicon length it is not
+measured at all.
+
+**Coordinate bases are carried together and never converted.** A native genomic
+coordinate measured on this assembly may go on a genomic axis or on a sequence
+column. A distance published against another gene model is gene-relative
+evidence and places a mark on a gene-relative track only. A view that draws one
+basis names the other and the gap between them; neither is re-measured into the
+other, which is the same rule "Coordinates never transfer" states for
+sister-strain features.
+
+**What was measured and what landed are separate fields.** `measurement` is
+whether the source measured the feature or predicted it — a row's own value
+wins, otherwise the layer's statement about its rows, and null where neither
+says, which is read as neither answer. `coordinateStatus` is whether the record
+carries a usable native coordinate; a row without one is kept and marked
+unmapped, never dropped, because a dropped row is indistinguishable from a row
+the study never published. Read counts are a third thing again: a published
+site with no counts in an extract is still a measured site.
+
+`MARKER_TYPES` is a representation vocabulary and admits nothing. TSS and TIS
+are separate entries and must stay separate: transcription initiation and
+translation initiation are different measurements at different positions. A
+type having an entry there puts no data behind it — an organism's own record
+declares which layers exist, and only a declared layer whose file has landed
+with a row to govern can be offered a reader a control. The one admitted marker
+layer today is the Tan 2018 `tssEvidence` extract, whose gTSS rows are measured
+points.
+
 `regulatory_tss.json` separately publishes the 2,333 non-gTSS Table S1 rows
 (antisense, internal, and orphan or novel). It preserves every feature's own
 coordinate, strand, source locus, raw cultures, and reported condition

@@ -296,6 +296,80 @@ upstream edge, −32: at a 1,440 px viewport it measures 732 px, about 672 drawa
 and some 56 nucleotides. A gene with no shipped upstream context opens at −2
 either way.
 
+## Admitted marker layers on the sequence
+
+An admitted positional feature is marked in a row **above the ruler**, each mark
+on the base its own published genome coordinate names. The shared record every
+view reads is `core/marker-layers.js`; what is specific to this view is that at
+one letter per column the coordinate basis stops being a nuance.
+
+**The native coordinate places the mark, and nothing else does.** The small gene
+visualizer draws each Tan 2018 site at the distance the study published against
+**its own** gene model, which is the evidence that study reported. This release's
+annotated start can differ from that model, and at base resolution a distance
+measured against the other model points at the wrong letter. So this strip looks
+the site's own `position` up in a map of the genomic position of every base it
+shows (`sequenceColumns`), built from the model's own position tables rather than
+from arithmetic over the gene's start — which is what makes a minus-strand gene, a
+spliced CDS and an origin-crossing one fall out of one lookup. A coordinate the
+strip has no base for is **not** moved to one.
+
+Both bases are carried and neither is substituted for the other. Each mark's
+description, each list row and the accessible description name the other
+placement and the gap between them, and take no side: which placement a construct
+boundary should follow is the lab's call. In the shipped file 869 of the 2,432
+published rows land on a base this strip shows, across 853 genes, and **63 of
+them disagree with the published distance** — `M744_RS00920`, the one spliced gene
+with a site, by 67 nt, and `M744_RS08390` by 87 nt onto a base inside the current
+coding sequence. The drawn gap always equals the `placementGapNt` the gene view
+already reports; the column map is the authority where they could differ.
+
+**Point and interval both place.** A point occupies one column. An interval
+occupies the columns this strip shows of it, says in its description when that is
+fewer than it covers, and is never extended to an edge to look complete; an
+interval missing one end is an unmapped interval, not a point at the end it has.
+
+**A row the strip cannot place is kept, with its reason.** 1,563 of the shipped
+rows are published further upstream than the 30 bases the release ships, so no
+mark is drawn for them; the list says so in those words. The three reasons are
+distinct and none of them is absence: `no-native-coordinate`, `other-replicon`,
+and `outside-shown-sequence`. A gene whose segments do not add up to its coding
+length has no coordinate for any base, so it places nothing — the same reason it
+already shows no genomic coordinates.
+
+**The marker row is reserved by the data, not by the reader.** It is 16 px tall
+whenever this locus has a placeable mark and the layer has landed, whether or not
+the marks are shown, so hiding them moves no letter; the gutter stops naming the
+row when nothing is drawn in it, because a labelled empty band would read as a
+locus with no start site. A locus with no placeable row reserves nothing.
+
+**Crowding is a fact about the zoom.** Two heads closer than one head width
+(`MARKER_HEAD_PX`) share drawn space, grouped by single linkage over the drawn
+axis — the same rule the small visualizer uses, except that this strip has no
+viewBox scaling, so the threshold is a real pixel count at the current zoom and
+not a constant of the picture. A crowded head is outlined and says so, the
+accessible description counts them and says the grouping is display only, and
+zooming in separates them. Nothing is merged, dropped or moved: two rows on one
+base keep two marks, two descriptions and two rows.
+
+**The show/hide and the list.** **Show ‹study› start sites** sits between the
+strip and the instructions and is built only where there is a mark to govern — a
+declared layer, a landed file, and at least one placeable row. A file in flight or
+failed puts a note there instead and builds no list, so hidden stays distinct from
+absent, loading, failed and unplaceable. Hiding removes the whole mark group: no
+head, no stem, no outlined column, no `<title>` and nothing for `elementFromPoint`
+to find. The complete list below the strip stays either way, because it is the
+metadata and not the drawing; it is the keyboard and touch path, since a pointer
+hint answers for whichever head is on top. The choice is `tss.sequence` in
+`state.hiddenMarkers`, independent of the other three views and carried in a link
+under [the `mk` contract](viewer-interaction-state.md#marker-layer-visibility-rides-in-mk).
+
+**Six states the description tells apart**, so an empty row never reads as
+absence: no such layer for this organism and nothing said at all; the file still
+loading; the file failed; landed with no row for this locus by exact locus tag;
+rows placed and drawn; rows placed and hidden by the named control; and rows
+published whose coordinates are not bases this strip shows.
+
 ## Every letter names its row
 
 Base letters carry their own classes, `gene-sequence-letter-original` and
@@ -349,6 +423,22 @@ Unit coverage:
   2,510 for `M744_RS13290` and 7,830 for `M744_RS13620`.
 - `tests/js/codon-table.test.mjs`: `decode` throwing on an unknown symbol, which is
   what makes a corrupt `codons` string yield no model.
+- `tests/js/sequence-start-sites.test.mjs`: the column map over both strands, a
+  splice gap, a gene with no shipped upstream context and an origin-crossing
+  gene; point and interval placement including a clipped interval and one
+  across a splice gap; an audit over the shipped file that every published row
+  reaches the list exactly once, that 869 place and 1,563 do not, and that the
+  drawn gap equals the gene view's `placementGapNt` on all 869; the 63
+  disagreeing rows drawn at their own coordinate; the six description states;
+  marks-only hiding against a whole-view fingerprint; focus across the repaint;
+  the caller owning the choice through a link, a reload and a locus with no
+  control; crowding at a fitted zoom and its separation when zoomed in; and two
+  rows on one base keeping both marks.
+- `tests/js/marker-layers.test.mjs`: the shared representation — TSS and TIS
+  distinct, every type's geometry, a point row, an interval needing both ends,
+  an unmapped row kept with every field it carries, circular coverage and spans,
+  the per-organism layer registry, availability, and the four independent
+  visibilities with their canonical order.
 
 Rendered validation is required for any change to this view, and source
 inspection does not substitute for it. Serve `site/` over HTTP, open the
@@ -382,6 +472,15 @@ Chromosome tab, and check at **375, 768, 1280 and 1440 px** wide:
   replicon;
 - the keyboard path alone: focus the strip and drive zoom, pan, Home and End with
   no pointer;
+- an admitted marker layer, at every width: the marks on the columns their
+  coordinates name with the row reserved above the ruler, a disagreeing locus
+  (`M744_RS00920`) drawn at its own base and not at the published distance, a
+  locus whose rows are all unplaceable (`M744_RS09240`) with no control and the
+  rows still listed, Tab from the strip to the control and Space to hide, a tap
+  on the control's words, `elementFromPoint` at a former mark returning the bare
+  SVG with the strip's height unchanged, the hidden choice surviving a reload in
+  `mk` while the other three views keep their marks, and an organism with no
+  such layer saying nothing about a start site;
 - `document.documentElement.scrollWidth <= innerWidth` in every state, with the
   SVG inside the strip at 375 px;
 - a clean browser console.

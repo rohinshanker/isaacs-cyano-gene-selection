@@ -186,17 +186,24 @@ Four rules hold it:
   mask, the passing count, every CDS bar, the colour, the ranking and every
   dataset selection exactly as they were. It is not a filter, and no gene
   disappears from anything because of it.
-- **It is this view's own state**, like its per-replicon windows: not in the URL
-  hash, not in browser storage, not in the export manifest, and not shared with
-  the gene visualizer. Each gene visualizer has a control of the same name and
-  its own state, contracted in
-  [controls-column-and-resets.md](controls-column-and-resets.md#showing-and-hiding-the-start-site-marks);
-  owner decision of 2026-10-07 is that the three are independent, so this one
-  never moves a mark in a gene view and no gene view moves this tick row.
-- **Reset view does not touch it**, exactly as it does not touch Show
-  filtered-out genes: Reset view returns the windows and nothing else. A
-  rerender syncs the checkbox in place rather than rebuilding it, so a reader
-  holding it keeps keyboard focus and pointer capture.
+- **It is this view's own choice, and the application holds it.** The choice
+  arrives as `showStartSites` on the model and leaves through
+  `onStartSitesVisibleChange`; `app.js` keeps it in `state.hiddenMarkers` under
+  the key `tss.chromosome`, so a shared link carries it and a reload restores
+  it. The view adopts the field whenever the model carries one and keeps its
+  last value when a hand-built receiver omits it. Each gene visualizer and the
+  sequence close-up have a control of the same name and their own key, under
+  [the marker-layer contract](controls-column-and-resets.md#showing-and-hiding-the-start-site-marks);
+  owner decision of 2026-10-07 is that the four are independent, so this one
+  never moves a mark in another view and no other view moves this tick row.
+  Changing it repaints this view rather than waiting to be re-rendered, so the
+  checkbox keeps keyboard focus and pointer capture; the handler records the
+  choice and writes the link.
+- **No reset touches it**, exactly as none touches Show filtered-out genes:
+  Reset view returns the windows, Reset selections the pin and the shortlist,
+  Clear all filters the filter channels, and Reset panel layout the column's
+  order. A rerender syncs the checkbox in place rather than rebuilding it, so a
+  reader holding it keeps keyboard focus and pointer capture.
 - **The density rule is unchanged in both directions.** Showing the layer at a
   zoom where the ticks would merge draws nothing, exactly as before the control
   existed; hiding it at a zoom where they fit draws nothing either.

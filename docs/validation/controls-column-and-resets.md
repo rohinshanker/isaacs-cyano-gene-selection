@@ -289,6 +289,14 @@ have no control — offering to hide evidence that is not there would read as a
 promise it could be shown. Because the condition is on the published rows and
 not on the current state, the control does not vanish when a reader unchecks it.
 
+The same control, under the same name, is also in the chromosome view and in
+the sequence close-up. **Four views, four independent choices**, which is the
+owner's provisional default of 2026-10-07: the chromosome axis, the gene
+visualizer in the controls column, the gene visualizer in the gene detail
+column, and the sequence close-up answer different questions at different
+scales, so putting marks away in one never moves another's picture. A shared
+representation is not a shared selection.
+
 Four rules hold it, matching the chromosome layer control's:
 
 - **Marks only.** Hiding them removes the mark group and nothing else. The
@@ -298,19 +306,28 @@ Four rules hold it, matching the chromosome layer control's:
   after; the drawn span still reserves the upstream room the furthest site
   opened, so the track does not jump. No gene is filtered, no value changes,
   no dataset selection moves, and the gene record is never written to.
-- **It is each view's own state, held by the view's caller.** `renderGeneViewer`
-  rebuilds its host on every call and both callers call it for every hover, so
-  state kept inside it would last until the next pointer move. The controls
-  column holds `controlsStartSitesVisible` in `app.js` and the detail column
-  holds `this.startSitesVisible` on the `SidePanel`, each written only where the
-  reader changes it. Default **visible**. The two gene viewers and the
-  chromosome view's control are three independent choices.
-- **Nothing resets it and nothing persists it.** It is in no URL field, no
-  export manifest and no browser storage, like the detail column's disclosure
-  memory: it is how one person is reading right now. Reset view, Reset
-  selections, a filter change, a tab change, a locus change and a live link
-  application all leave it where the reader put it — including a locus with no
-  sites and no control in between. A reload returns it to visible.
+- **It is each view's own state, and the application holds it.**
+  `renderGeneViewer` rebuilds its host on every call and both callers call it
+  for every hover, so state kept inside it would last until the next pointer
+  move. The one field is `state.hiddenMarkers`, a canonically ordered list of
+  the `‹layer›.‹view›` keys a reader has hidden — `markerVisible` reads it and
+  `withMarkerVisible` writes it, both in `core/marker-layers.js`, and `app.js`
+  is the only caller that writes the field. Empty is the fresh view: every mark
+  drawn in every view. The controls column passes
+  `markersVisibleIn('gene-controls')` into `renderGeneViewer` and the detail
+  column passes `markersVisibleIn('gene-detail')` into `SidePanel.update`,
+  which adopts it; each reports a reader's change back through
+  `onStartSitesVisibleChange`.
+- **A link carries it, and no reset clears it.** `mk` in the hash is the only
+  persistence — no browser storage, and not the export manifest, which records
+  what the plotted numbers are and no mark changes one. A shared link, a
+  reload and a live hash all reach the picture; a link with no `mk` returns
+  every view to drawing its marks. Reset view (the camera), Reset selections
+  (the pin and the shortlist), Clear all filters (the filter channels) and
+  Reset panel layout (the column's order) all leave it where the reader put it
+  — as do a filter change, a tab change, a locus change and a locus with no
+  sites and no control in between. Hiding marks is coupled to no filter, no
+  score, no ranking and no dataset selection in either direction.
 - **Keyboard focus survives the redraw.** Toggling repaints the whole view
   rather than editing the mark group, because the description, the legend key
   and the list's note each say what the picture is doing and a surgical edit
@@ -344,8 +361,14 @@ Coverage is `tests/js/gene-view-start-site-visibility.test.mjs`, over the
 shipped file: the control's identity and placement, marks-only against a
 whole-view fingerprint, the list and its note, the choice surviving repeated
 renders and locus changes, focus across both kinds of redraw, the two mounts
-deciding separately, both strands, every state that gets no control, and a
-source check that only the two views can write the state.
+deciding separately, both strands, every state that gets no control, a source
+check that one helper pair reads and writes the field, and that no reset
+clears it. The field itself is covered in `tests/js/marker-layers.test.mjs`
+(independence, canonical order, unknown keys dropped) and
+`tests/js/url-state.test.mjs` (`mk` round trip, absent means visible, the
+export manifest leaves it out); the chromosome view's and the sequence
+close-up's own ends are in `tests/js/chromosome-view.test.mjs` and
+`tests/js/sequence-start-sites.test.mjs`.
 
 ## Opening the help panel keeps its button on screen
 

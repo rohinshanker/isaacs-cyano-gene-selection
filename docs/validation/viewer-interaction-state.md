@@ -388,7 +388,8 @@ round trip.
 Not every new field needs a version. A version number earns its place only where
 the **absence** of a field has to mean two different things to two readers, as an
 omitted `ax`/`ay` does. The per-axis scales `xs`/`ys` and the colour scale `csc`
-and the draw direction `dt` are all absent-means-the-default fields, so none of
+and the draw direction `dt` and the hidden marker views `mk` are all
+absent-means-the-default fields, so none of
 them bumped the encoder: an omitted `xs`/`ys` has only ever meant linear, an
 omitted `dt` means highest on top and has never meant anything else, and an
 omitted `csc` means the
@@ -400,6 +401,33 @@ records which scale its author saw; a function-category colour has no scale and
 writes no field. A `csc` naming a scale the metric cannot take resolves to that
 metric's default, and the visible control and the URL correct themselves to
 match — the same self-healing rule `xs`/`ys` follow.
+
+### Marker-layer visibility rides in `mk`
+
+`mk` lists the `‹layer›.‹view›` keys whose marks a reader has hidden, in the
+canonical registry order of `core/marker-layers.js` — so two readers who made
+the same choice in a different order write the same link. The four views are
+`chromosome`, `gene-controls`, `gene-detail` and `sequence`, each its own
+choice by owner decision of 2026-10-07; the one admitted layer today is `tss`.
+An **absent `mk` means every mark is drawn in every view**, which is the fresh
+view and also what every link written before the field existed drew, so it
+needs no version bump and no migration branch. The field is written only when
+something is hidden, so a plain view keeps a plain link. An unknown layer or
+view name is dropped on decode rather than kept: a hash from a build with
+another layer cannot blank a view here, and a typo must not leave one
+permanently empty.
+
+It is coupled to nothing. No filter, score, ranking or dataset selection reads
+or writes it, and none of the four resets clears it — Reset view is the camera,
+Reset selections the pin and the shortlist, Clear all filters the filter
+channels, Reset panel layout the column's order. It is not in the export
+manifest either: the manifest records what the plotted numbers are, and hiding
+a mark changes none of them. The per-view behaviour each control answers for is
+in
+[controls-column-and-resets.md](controls-column-and-resets.md#showing-and-hiding-the-start-site-marks),
+[chromosome-view.md](chromosome-view.md#showing-and-hiding-the-start-site-layer)
+and
+[gene-sequence-closeup.md](gene-sequence-closeup.md#admitted-marker-layers-on-the-sequence).
 
 Before applying a decoded snapshot, all state fields reset to fresh defaults;
 omitted default-valued fields therefore cannot leak from the prior view. One
