@@ -9,8 +9,8 @@
       "sha256": "896d01639c9c7c2ea9c2019ea62cd129ec704bfe661ddfe4592e99b653c4de74"
     },
     "citations.json": {
-      "bytes": 115596,
-      "sha256": "a776433c27ba4cd5cabb0d584b31f47b9a7ae31a9970cfcf7bd0eba1a77e088f"
+      "bytes": 119249,
+      "sha256": "da73224ed70849738cdacbef0722f31d22cd2975aabe9fc30adcd5ca3422d37c"
     },
     "codon_pca.json": {
       "bytes": 5327,
@@ -25,8 +25,8 @@
       "sha256": "41ff2d44a0fb08242cdc6282401f51e3c677cd3ccd75757aa9b2e4cabe98cd06"
     },
     "expression_layers.json": {
-      "bytes": 2869540,
-      "sha256": "1a5b6f6ffe1b365af4d0d0cda2726055205dc531336663318cc221bc00075671"
+      "bytes": 2950627,
+      "sha256": "879f58c251419f838f01a8ff46098f026c3def8d09bbf4e2429417ef2e57f56e"
     },
     "function-categories-v1.json": {
       "bytes": 7250,
@@ -49,8 +49,8 @@
       "sha256": "16362fa4618e5f83c224af33513e9fd71462a625c35525898d5dda6e7dada4df"
     },
     "meta.json": {
-      "bytes": 916273,
-      "sha256": "957718f9d3080b47139c8470e721d5b37bfba9fbdf69824d3e69d20b35804c9e"
+      "bytes": 960324,
+      "sha256": "6d9d0b58d63e56642a5e6652b8906f13377b20becfc548a398da8c8ddab463e2"
     },
     "pcc7942-essentiality-v1.json": {
       "bytes": 603979,

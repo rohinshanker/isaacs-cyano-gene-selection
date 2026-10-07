@@ -1,0 +1,376 @@
+{
+  "dataType": "proteomics",
+  "platform": "LC-MS/MS",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "LC-MS/MS protein identification, spectral counting from the deposit's PRIDE-filtered mzTab",
+  "signed": false,
+  "licence": "PRIDE/ProteomeXchange public-repository terms; no per-file notice located. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the deposit and Guerreiro et al. 2014 are both cited.",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "PXD000510",
+  "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD000510",
+  "citationId": "guerreiro-2014",
+  "citation": {
+    "text": "Guerreiro AC, Benevento M, Lehmann R, van Breukelen B, Post H, Giansanti P, Maarten Altelaar AF, Axmann IM, Heck AJ. Daily rhythms in the cyanobacterium Synechococcus elongatus probed by high-resolution mass spectrometry-based proteomics reveals a small defined set of cyclic proteins. Mol Cell Proteomics 2014;13(8):2042-2055. PRIDE PXD000510.",
+    "url": "https://doi.org/10.1074/mcp.M113.035840",
+    "pmid": "24677030"
+  },
+  "files": [
+    {
+      "name": "PXD000510_F293816_2-10.pride.mztab.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2014/04/PXD000510/generated/F293816_2-10.dat-pride-filtered.pride.mztab.gz",
+      "sha256": "fc6840227983f04b9c90687b0a93800c9fefba1285686de8a95cd9ed4ccaddc3",
+      "label": "LD6.5-14.5"
+    },
+    {
+      "name": "PXD000510_F293851_13-22.pride.mztab.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2014/04/PXD000510/generated/F293851_13-22.dat-pride-filtered.pride.mztab.gz",
+      "sha256": "d0be3385e7b7c0582cf276a6644786a50c8e98606807c106eeb41e640ae0e713",
+      "label": "LD17.5-26.5"
+    },
+    {
+      "name": "PXD000510_F293918_26-34.pride.mztab.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2014/04/PXD000510/generated/F293918_26-34.dat-pride-filtered.pride.mztab.gz",
+      "sha256": "daf98197e66c0352b2be7b5c1f061f05444f5678d35f79fa249dc21036a5a628",
+      "label": "LD30.5-38.5"
+    },
+    {
+      "name": "PXD000510_F293939_37-46.pride.mztab.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2014/04/PXD000510/generated/F293939_37-46.dat-pride-filtered.pride.mztab.gz",
+      "sha256": "b11861c96eabc756706eea3d0aaef00e9325907d6518b59db50e279c127b5d23",
+      "label": "LD41.5-50.5"
+    }
+  ],
+  "reader": {
+    "format": "mztab",
+    "idColumn": "accession",
+    "idKind": "uniprot_pcc7942",
+    "countColumn": "num_psms_ms_run[1]"
+  },
+  "units": "identified peptide-spectrum matches per million matches in the run (spectral counting), not TMT reporter-ion abundance",
+  "normalization": "cpm",
+  "conditionTableRow": 58,
+  "replicates": {
+    "count": null,
+    "text": "one TMT 6-plex per layer, its six channels being six sampling times inside that layer's window; the deposit's identification-only results do not separate the channels, so a layer has no replicate structure of its own"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "not retrieved",
+      "lo": null,
+      "hi": null,
+      "unit": "°C",
+      "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+    },
+    "lightIntensity": {
+      "status": "not retrieved",
+      "lo": null,
+      "hi": null,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "diel",
+      "photoperiod": "12:12",
+      "spectrumClass": null,
+      "entrained": true,
+      "text": "12:12 h light/dark cycles over 48 h; spectrum not reported"
+    },
+    "co2": {
+      "status": "not retrieved",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+    },
+    "medium": {
+      "status": "not retrieved",
+      "base": null,
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+    },
+    "format": {
+      "status": "not retrieved",
+      "value": null,
+      "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+    },
+    "phase": {
+      "status": "not retrieved",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+    }
+  },
+  "caveat": "A spectral count, not an abundance, and not the study's own measurement. The deposit's generated mzTab files are mzTab-type Identification and carry no reporter-ion column, so the TMT 6-plex channels that resolved the time points are absent from the deposited results and exist only in the raw files. Each layer is therefore the pooled identification evidence of one 6-plex, covering the window its own metadata names, and the diel time resolution the study was designed around is lost. Shipped as pooled spectral counts by owner decision of 2026-10-07. Counting spectra measures abundance only coarsely and favours long and readily ionised proteins. Measured in PCC 7942, not UTEX 2973, and keyed by UniProt accession through UniProt's ordered-locus names and the one-to-one crosswalk.",
+  "layers": [
+    {
+      "id": "PXD000510_ld_6_5_to_14_5",
+      "metricKey": "protPxd000510Ld65To145",
+      "label": "Protein identification PXD000510 diel 6.5-14.5 h (PCC 7942)",
+      "conditionSet": "Diel 12:12 light/dark, hours 6.5 to 14.5 of a 48 h time course; one TMT 6-plex pooled over its six sampling times",
+      "samples": "F293816_2-10.dat-pride-filtered, the deposit's generated mzTab for the LD6.5-14.5 6-plex",
+      "columns": [
+        "num_psms :: LD6.5-14.5"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 58,
+      "conditions": {
+        "temperature": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightIntensity": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "12:12 h light/dark cycles over 48 h; spectrum not reported"
+        },
+        "co2": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "medium": {
+          "status": "not retrieved",
+          "base": null,
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "format": {
+          "status": "not retrieved",
+          "value": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "phase": {
+          "status": "not retrieved",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        }
+      }
+    },
+    {
+      "id": "PXD000510_ld_17_5_to_26_5",
+      "metricKey": "protPxd000510Ld175To265",
+      "label": "Protein identification PXD000510 diel 17.5-26.5 h (PCC 7942)",
+      "conditionSet": "Diel 12:12 light/dark, hours 17.5 to 26.5 of a 48 h time course; one TMT 6-plex pooled over its six sampling times",
+      "samples": "F293851_13-22.dat-pride-filtered, the deposit's generated mzTab for the LD17.5-26.5 6-plex",
+      "columns": [
+        "num_psms :: LD17.5-26.5"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 58,
+      "conditions": {
+        "temperature": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightIntensity": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "12:12 h light/dark cycles over 48 h; spectrum not reported"
+        },
+        "co2": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "medium": {
+          "status": "not retrieved",
+          "base": null,
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "format": {
+          "status": "not retrieved",
+          "value": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "phase": {
+          "status": "not retrieved",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        }
+      }
+    },
+    {
+      "id": "PXD000510_ld_30_5_to_38_5",
+      "metricKey": "protPxd000510Ld305To385",
+      "label": "Protein identification PXD000510 diel 30.5-38.5 h (PCC 7942)",
+      "conditionSet": "Diel 12:12 light/dark, hours 30.5 to 38.5 of a 48 h time course; one TMT 6-plex pooled over its six sampling times",
+      "samples": "F293918_26-34.dat-pride-filtered, the deposit's generated mzTab for the LD30.5-38.5 6-plex",
+      "columns": [
+        "num_psms :: LD30.5-38.5"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 58,
+      "conditions": {
+        "temperature": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightIntensity": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "12:12 h light/dark cycles over 48 h; spectrum not reported"
+        },
+        "co2": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "medium": {
+          "status": "not retrieved",
+          "base": null,
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "format": {
+          "status": "not retrieved",
+          "value": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "phase": {
+          "status": "not retrieved",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        }
+      }
+    },
+    {
+      "id": "PXD000510_ld_41_5_to_50_5",
+      "metricKey": "protPxd000510Ld415To505",
+      "label": "Protein identification PXD000510 diel 41.5-50.5 h (PCC 7942)",
+      "conditionSet": "Diel 12:12 light/dark, hours 41.5 to 50.5 of a 48 h time course; one TMT 6-plex pooled over its six sampling times",
+      "samples": "F293939_37-46.dat-pride-filtered, the deposit's generated mzTab for the LD41.5-50.5 6-plex",
+      "columns": [
+        "num_psms :: LD41.5-50.5"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 58,
+      "conditions": {
+        "temperature": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightIntensity": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "12:12",
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "12:12 h light/dark cycles over 48 h; spectrum not reported"
+        },
+        "co2": {
+          "status": "not retrieved",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "medium": {
+          "status": "not retrieved",
+          "base": null,
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "format": {
+          "status": "not retrieved",
+          "value": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        },
+        "phase": {
+          "status": "not retrieved",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "not retrieved: the deposit's own records do not state it, and the linked paper (PMID 24677030, PMC4125736) sits outside the Europe PMC open-access subset, so its Methods could not be read in-repo (Package B row 58)"
+        }
+      }
+    }
+  ]
+}

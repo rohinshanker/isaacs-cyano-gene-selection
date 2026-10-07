@@ -614,3 +614,74 @@ def test_read_dtaselect_names_what_is_wrong():
         ingest.read_dtaselect(dtaselect_archive({"a.txt": dtaselect_report([("P13530_PHCA_SYNE7", 5), ("P13530_OTHER_SYNE7", 6)])}), ["a.txt"])
     with pytest.raises(ValueError, match="a.txt: no protein lines"):
         ingest.read_dtaselect(dtaselect_archive({"a.txt": dtaselect_report([("Reverse_P13530_PHCA_SYNE7", 5)])}), ["a.txt"])
+
+
+MZTAB_PRH = ("PRH\taccession\tdescription\tnum_psms_ms_run[1]\tnum_peptides_distinct_ms_run[1]"
+             "\topt_global_cv_PRIDE:0000303_Decoy_hit")
+
+
+def mztab_file(proteins, *, header=MZTAB_PRH, metadata=True):
+    """An mzTab identification file: metadata, the protein table, then a PSM section."""
+    lines = []
+    if metadata:
+        lines += ["MTD\tmzTab-version\t1.0", "MTD\tmzTab-type\tIdentification",
+                  "MTD\tsample[1]-description\tS. elongatus LD6.5-14.5", "COM\ta comment"]
+    lines.append(header)
+    for accession, psms, distinct, decoy in proteins:
+        lines.append(f"PRT\t{accession}\tsome protein\t{psms}\t{distinct}\t{decoy}")
+    # A PSM section follows the protein table and must never be read as protein rows.
+    lines += ["PSH\tsequence\tPSM_ID\taccession", "PSM\tPEPTIDEK\t1\tO05161"]
+    return "\n".join(lines).encode("utf-8")
+
+
+def test_read_mztab_tables_psm_counts_by_accession():
+    data = mztab_file([
+        ("O05161", 62, 16, 0),
+        ("Q31RN1", 4, 2, 1),          # flagged a decoy hit
+        ("O06865", 73, 21, 0),
+        ("O32463", "null", 0, 0),     # no count to read
+        ("", 5, 1, 0),                # no accession to key on
+    ])
+    header, rows = ingest.read_table(data, {"format": "mztab"})
+    assert header == ["accession", "num_psms"]
+    assert rows == [["O05161", "62"], ["O06865", "73"]], \
+        "decoys, countless rows and the metadata and PSM sections are all left out"
+    means = ingest.layer_means(header, rows, ["num_psms"], "cpm")
+    assert means == {"O05161": 62 / 135 * 1_000_000, "O06865": 73 / 135 * 1_000_000}, \
+        "cpm scales over the proteins the run reports"
+    # Gzip is detected by magic bytes, as for every other format.
+    gzipped, _ = ingest.read_table(gzip.compress(data), {"format": "mztab"})
+    assert gzipped == header
+    # A different count column can be named.
+    _, distinct = ingest.read_table(data, {"format": "mztab", "countColumn": "num_peptides_distinct_ms_run[1]"})
+    assert distinct == [["O05161", "16"], ["O06865", "21"], ["O32463", "0"]], \
+        "a row is dropped for the column being read, so O32463 returns once that column has a value"
+
+
+def test_read_mztab_joins_one_file_per_window_under_its_label():
+    parts = []
+    for label, proteins in (("LD6.5-14.5", [("O05161", 62, 16, 0)]),
+                            ("LD17.5-26.5", [("O05161", 90, 20, 0), ("O06865", 7, 3, 0)])):
+        header, rows = ingest.read_table(mztab_file(proteins), {"format": "mztab"})
+        parts.append((label, header, rows))
+    header, rows = ingest.join_tables(parts)
+    assert header == ["accession", "num_psms :: LD6.5-14.5", "num_psms :: LD17.5-26.5"]
+    assert rows == [["O05161", "62", "90"], ["O06865", "", "7"]], \
+        "a window that did not identify a protein leaves a blank, not a zero"
+    # Each layer reads only its own window's column.
+    assert ingest.layer_means(header, rows, ["num_psms :: LD6.5-14.5"], "cpm") == {"O05161": 1_000_000.0}
+
+
+def test_read_mztab_names_what_is_wrong():
+    with pytest.raises(ValueError, match="holds no PRH protein header"):
+        ingest.read_mztab(b"MTD\tmzTab-version\t1.0\n")
+    with pytest.raises(ValueError, match="names no accession column"):
+        ingest.read_mztab(mztab_file([], header="PRH\tdescription\tnum_psms_ms_run[1]"))
+    with pytest.raises(ValueError, match="names no 'num_psms_ms_run\\[1\\]' column"):
+        ingest.read_mztab(mztab_file([], header="PRH\taccession\tdescription\tnum_psms"))
+    with pytest.raises(ValueError, match="PRT row appears before its PRH header"):
+        ingest.read_mztab(b"PRT\tO05161\tsome protein\t62\t16\t0\n")
+    with pytest.raises(ValueError, match="narrower than its PRH header"):
+        ingest.read_mztab(b"\n".join([MZTAB_PRH.encode(), b"PRT\tO05161\t62"]))
+    with pytest.raises(ValueError, match="names 'O05161' twice"):
+        ingest.read_mztab(mztab_file([("O05161", 62, 16, 0), ("O05161", 7, 2, 0)]))

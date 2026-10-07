@@ -20,17 +20,17 @@ def test_example_record_is_valid():
 def test_the_shipped_sources_carry_valid_records():
     sources = json.loads((ROOT / "data/expression/sources.json").read_text(encoding="utf-8"))
     by_id = {source["id"]: source for source in sources}
-    assert len(by_id) == len(sources) == 157
+    assert len(by_id) == len(sources) == 161
     for source in sources:
         validate_record(source["record"], source["id"])
     assert by_id["GSE205444"]["record"]["basis"] == "transferred"
     assert by_id["TAN2018_TSS"]["record"]["basis"] == "direct"
     ingested = [source for source in sources if "ingest" in source]
-    assert len(ingested) == 155
+    assert len(ingested) == 159
     assert all(source["record"]["basis"] == "transferred" for source in ingested)
     assert {source["record"]["studyId"] for source in ingested} == {
         "GSE288532", "GSE222067", "GSE327989", "GSE79726", "GSE89999", "GSE104203", "PXD062851",
-        "GSE205443", "PXD030282",
+        "GSE205443", "PXD030282", "PXD000510",
         "GSE103462", "GSE103463", "GSE103644", "GSE103704", "GSE105774", "GSE237858", "GSE254350", "GSE335065",
         "GSE51112", "GSE252562", "GSE225426", "GSE311172",
         "FitnessBrowser_SynE",
