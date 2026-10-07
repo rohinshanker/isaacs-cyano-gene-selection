@@ -127,6 +127,8 @@ def test_overlay_rejects_duplicate_rows_pairs_and_wrong_pair():
         gaps.effective_pairs([pair(), pair()], [])
     with pytest.raises(ValueError, match="different pair"):
         gaps.effective_pairs([pair()], [[{**overlay, "artifact_b": "other"}]])
+    with pytest.raises(ValueError, match="different pair"):
+        gaps.effective_pairs([pair()], [[{**overlay, "data_type": "proteomics"}]])
 
 
 def test_overlay_rejects_conflicting_condition_revisions_and_latest_wins():
@@ -149,6 +151,7 @@ def test_inventory_requires_exact_pins_review_and_unique_valid_values(tmp_path):
     mutations = [
         (lambda d: d.update(sources=[]), "pins differ"),
         (lambda d: d.update(reviewed_by=""), "named reviewer"),
+        (lambda d: d.update(classification_contract={"statuses": ["bad"]}), "status contract"),
         (lambda d: d["judgments"].append(d["judgments"][0]), "duplicate or invalid"),
         (lambda d: d["judgments"][0].update(field="bad"), "duplicate or invalid"),
         (lambda d: d["judgments"][0].update(status="bad"), "duplicate or invalid"),
@@ -166,7 +169,8 @@ def test_reject_missing_unreviewed_and_unknown_inputs():
     row["condition_set_a"] += " ;; unexpected=x"
     with pytest.raises(ValueError, match="missing or unexpected"):
         gaps.cell_values([row])
-    for states in [{}, {**inventory([pair()]), ("co2", ""): "bad"}]:
+    for states in [{}, {**inventory([pair()]), ("co2", ""): "bad"},
+                   {**inventory([pair()]), ("co2", "old value"): "present"}]:
         with pytest.raises(ValueError, match="cover exactly"):
             gaps.rank_gaps([pair()], states)
     for row, message in [(pair(verdict="bad"), "invalid verdict"),
@@ -183,6 +187,7 @@ def test_cli_and_script_entry_point_write_reproducible_tsv(tmp_path, monkeypatch
     out = tmp_path / "rank.tsv"
     args = [str(table), str(path), str(out)]
     assert gaps.main(args) == 0
+    assert b"\r" not in out.read_bytes()
     assert gaps.read_table(out)[0]["last_blocker_pairs"] == "1"
     assert "ranked 1 gaps across 1 pairs; 1 undecidable" in capsys.readouterr().out
     monkeypatch.setattr(sys, "argv", ["rank_condition_gaps.py", *args])
@@ -201,7 +206,7 @@ def test_checked_in_package_d_inventory_and_ranking_are_current():
     assert stored == [{k: str(v) for k, v in r.items()} for r in result]
     assert len(rows) == 941
     assert sum(r["verdict"] == "undecidable" for r in rows) == 163
-    assert len(result) == 141
+    assert len(result) == 142
     assert sum(r["last_blocker_pairs"] for r in result) == 1
     assert (result[0]["condition_row"], result[0]["field"]) == (48, "temperature")
     assert {r["undecidable_pairs"] for r in result if r["condition_row"] == 17} == {30}

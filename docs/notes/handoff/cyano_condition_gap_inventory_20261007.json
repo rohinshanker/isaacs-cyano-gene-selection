@@ -23,7 +23,7 @@
     "partial": "A required component of the field is absent; source statements limited to other phases do not fill this condition.",
     "present": "Reported value; not necessarily a comparable value. Continuous light needs no photoperiod, stationary growth needs no OD; OD730/A730 accepted like OD750.",
     "medium": "Named medium counts as present; an unresolved recipe or nitrogen/carbon comparison remains a screen blocker.",
-    "review": "Use exact values only. No keyword inference at ranking time. The reviewed status wins over the model; preserve conflicts, partial values and uncertainty."
+    "review": "All values reviewed; exact values only. Five model overrides use the contract. Bare OD without named phase/maintenance is partial; volume disagreement does not erase agreement on liquid format. No keyword inference at ranking time. Screening availability is not source admission."
   },
   "judgments": [
     {
@@ -414,7 +414,8 @@
       "field": "culture_format",
       "value": "shaking liquid culture, 6 ml (GEO); 50 ml (paper Methods, Cyanobacterial strain and growth conditions)",
       "status": "present",
-      "confidence": 0.94
+      "confidence": 0.94,
+      "review_note": "Both sources explicitly describe shaking liquid culture, so this format field is present. The conflicting volumes remain in the verbatim cell; no volume value is selected."
     },
     {
       "field": "culture_format",
@@ -481,8 +482,10 @@
     {
       "field": "growth_phase",
       "value": "OD730 = 0.30–0.35 (at time of H2O2 exposure)",
-      "status": "present",
-      "confidence": 0.53
+      "status": "partial",
+      "confidence": 0.53,
+      "model_status": "present",
+      "review_note": "Bare harvest/exposure OD does not explicitly name exponential or stationary phase; use the same availability rule as other bare OD730 snapshots."
     },
     {
       "field": "growth_phase",

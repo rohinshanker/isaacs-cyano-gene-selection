@@ -106,6 +106,8 @@ def load_inventory(path: Path, sources: Sequence[Path]) -> dict[tuple[str, str],
         raise ValueError("inventory source pins differ from input tables")
     if not data.get("reviewed_by"):
         raise ValueError("inventory needs a named reviewer")
+    if "classification_contract" in data and data["classification_contract"].get("statuses") != list(STATUSES):
+        raise ValueError("inventory status contract differs from ranking vocabulary")
     statuses: dict[tuple[str, str], str] = {}
     for entry in data["judgments"]:
         key = (entry["field"], entry["value"])
@@ -190,7 +192,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     rows = effective_pairs(read_table(args.pairs), [read_table(p) for p in args.rescore])
     result = rank_gaps(rows, load_inventory(args.inventory, sources))
     with args.output.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=OUTPUT_FIELDS, delimiter="\t")
+        writer = csv.DictWriter(stream, fieldnames=OUTPUT_FIELDS, delimiter="\t",
+                                lineterminator="\n")
         writer.writeheader()
         writer.writerows(result)
     print(f"ranked {len(result)} gaps across {len(rows)} pairs; "
