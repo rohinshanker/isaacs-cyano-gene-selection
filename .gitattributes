@@ -24,3 +24,6 @@ docs/notes/handoff/*.tsv -whitespace
 # content, not damage. Exempt from the text whitespace gate, not reformatted.
 data/expression/ingest/uniprot_pcc7942_orf_names.tsv -whitespace
 data/annotation/releases/*/go-annotations-v1.tsv -whitespace
+# A row for an ambiguous locus names no partner, so its trailing fields are
+# legitimately empty and the whitespace check must not read them as lint.
+data/annotation/rel606-mg1655-crosswalk-v1.tsv -whitespace
