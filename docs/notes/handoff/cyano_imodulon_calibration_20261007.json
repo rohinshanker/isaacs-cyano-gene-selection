@@ -1,0 +1,87 @@
+{
+  "repository": "https://github.com/AnnieYuan21/S.elongatus-iModulons",
+  "commit": "0284d6ec9911388c7ca98e2770b0cdb0738394be",
+  "retrieval_date": "2026-10-07",
+  "scope": "Approved calibration download; not admitted, mapped or published.",
+  "files": [
+    {
+      "path": "README.md",
+      "url": "https://raw.githubusercontent.com/AnnieYuan21/S.elongatus-iModulons/0284d6ec9911388c7ca98e2770b0cdb0738394be/README.md",
+      "bytes": 1362,
+      "sha256": "e57def7698b4958fe830a4f8eec51ab9bb0acb3238c815bb3eb01cb44a431996",
+      "retrieved": "2026-10-07T15:06:21.197997+00:00",
+      "local_path": "/tmp/cyano-condition-calibration-20261007/README.md"
+    },
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/AnnieYuan21/S.elongatus-iModulons/0284d6ec9911388c7ca98e2770b0cdb0738394be/LICENSE",
+      "bytes": 1068,
+      "sha256": "fa758ca86e23c957f6bec861a5cac5b93e5af30c821138cd41ad6141430e909e",
+      "retrieved": "2026-10-07T15:06:21.181684+00:00",
+      "local_path": "/tmp/cyano-condition-calibration-20261007/LICENSE"
+    },
+    {
+      "path": "data/processed_data/log_tpm.csv",
+      "url": "https://raw.githubusercontent.com/AnnieYuan21/S.elongatus-iModulons/0284d6ec9911388c7ca98e2770b0cdb0738394be/data/processed_data/log_tpm.csv",
+      "bytes": 14429290,
+      "sha256": "66538747225699f277de09ec26d778d3c33a6d8e347b027a5d9f4842cad4072e",
+      "retrieved": "2026-10-07T15:06:22.135737+00:00",
+      "local_path": "/tmp/cyano-condition-calibration-20261007/data/processed_data/log_tpm.csv"
+    },
+    {
+      "path": "data/processed_data/log_tpm_norm.csv",
+      "url": "https://raw.githubusercontent.com/AnnieYuan21/S.elongatus-iModulons/0284d6ec9911388c7ca98e2770b0cdb0738394be/data/processed_data/log_tpm_norm.csv",
+      "bytes": 15425674,
+      "sha256": "70370d9bd384a4f7bd52af6165d51fe9f8ba307da687ab7514815f029e079f0c",
+      "retrieved": "2026-10-07T15:06:23.044156+00:00",
+      "local_path": "/tmp/cyano-condition-calibration-20261007/data/processed_data/log_tpm_norm.csv"
+    },
+    {
+      "path": "data/processed_data/metadata.tsv",
+      "url": "https://raw.githubusercontent.com/AnnieYuan21/S.elongatus-iModulons/0284d6ec9911388c7ca98e2770b0cdb0738394be/data/processed_data/metadata.tsv",
+      "bytes": 242815,
+      "sha256": "53a1e84fbeb949f56f926c5b7eb4042191f3dc2c25809b5a7d871080d3e3797a",
+      "retrieved": "2026-10-07T15:06:21.441816+00:00",
+      "local_path": "/tmp/cyano-condition-calibration-20261007/data/processed_data/metadata.tsv"
+    },
+    {
+      "path": "data/processed_data/gene_info.csv",
+      "url": "https://raw.githubusercontent.com/AnnieYuan21/S.elongatus-iModulons/0284d6ec9911388c7ca98e2770b0cdb0738394be/data/processed_data/gene_info.csv",
+      "bytes": 352975,
+      "sha256": "ed545e344aae2cc94341bb631c1982894fa7251bd21e0fe59ab2d8d54d32c5ee",
+      "retrieved": "2026-10-07T15:06:21.874641+00:00",
+      "local_path": "/tmp/cyano-condition-calibration-20261007/data/processed_data/gene_info.csv"
+    }
+  ],
+  "verification": {
+    "log_tpm.csv": {
+      "genes": 2669,
+      "profiles": 300,
+      "unique_gene_ids": true,
+      "unique_profile_ids": true,
+      "all_values_finite": true,
+      "metadata_column_set_exact": true
+    },
+    "log_tpm_norm.csv": {
+      "genes": 2669,
+      "profiles": 300,
+      "unique_gene_ids": true,
+      "unique_profile_ids": true,
+      "all_values_finite": true,
+      "metadata_column_set_exact": true
+    },
+    "gene_info": {
+      "rows": 2669,
+      "namespace_overlap_with_matrix": 2669,
+      "join_by_row_order_permitted": false
+    },
+    "metadata": {
+      "samples": 300,
+      "projects": 29,
+      "project_condition_pairs": 161,
+      "run_accessions_nonempty": 291,
+      "profiles_without_run_accession": 9
+    },
+    "scope": "Calibration only, outside release. Exact Experiment IDs reconcile the matrix columns and metadata. Gene-info and matrix have the same mixed locus-ID set in different order; no UTEX join performed."
+  }
+}

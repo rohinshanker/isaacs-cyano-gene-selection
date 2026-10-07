@@ -5,6 +5,7 @@ Reusable contracts and runbooks for this repository.
 | Document | Covers |
 | --- | --- |
 | [data-contract.md](data-contract.md) | Frozen `site/data/*.json` interface, cross-organism evidence transfer and uncertainty rules, admitted *S. elongatus* sister strains, their data types and condition-comparability thresholds, separate Tan 2018 gTSS evidence, missing-value semantics, annotation-source blank-field views, and the per-gene core-payload budget with the rule for splitting a field out of it and the `codon_rscu.json` sidecar it produced |
+| [condition-metadata-recovery.md](condition-metadata-recovery.md) | Reviewed gap ranking, public sample/run evidence intake, depositor replies, compendium integrity and raw-read pilot prerequisites |
 | [Tan 2018 TSS provenance](../../data/expression/TAN2018_TSS_PROVENANCE.md) | Reproducing pinned gTSS and non-gTSS Table S1 extracts, exact-locus mapping, missingness, and interpretation boundaries |
 | [genome-provenance.md](genome-provenance.md) | Reacquiring and re-verifying the UTEX 2973 genome, and the wrong-accession trap |
 | [metric-convention-parity.md](metric-convention-parity.md) | Keeping the browser's recomputed CAI, tAI, ENC, GC3, codon-pair score and mid-rank expression percentile equal to the pipeline's |

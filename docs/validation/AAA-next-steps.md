@@ -148,7 +148,7 @@ under J2; the agent then settles pair judgement 33.
 The eight depositor questions (GSE122841, GSE252562, GSE45762, GSE237858 and
 GSE227397, GSE225426, GSE311172 and PXD023591, GSE140121 and GSE327989, and the
 turbidostat lamp above) are the table under work item 4 of
-[O_condition-metadata-gaps__20261005](../notes/tickets/O_condition-metadata-gaps__20261005.md).
+[A_condition-metadata-gaps__20261005](../notes/tickets/A_condition-metadata-gaps__20261005.md).
 Each row is one record and the exact ask; the GEO contact for a series is on its
 GEO page under "Contact name". A reply is quoted with its date and enters through
 the addendum route (`tools/check_addendum_quotes.py`).

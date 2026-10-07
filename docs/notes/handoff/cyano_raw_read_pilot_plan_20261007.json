@@ -1,0 +1,268 @@
+{
+  "series": "GSE122841",
+  "retrieval_date": "2026-10-07",
+  "state": "Prepared; raw reads not downloaded; pipeline not executed.",
+  "samples": [
+    {
+      "gsm": "GSM3486865",
+      "condition": "WT_Normal",
+      "biosample": "SAMN10463699",
+      "sra_sample": "SRS4072650",
+      "experiment": "SRX5055969",
+      "run": "SRR8237705",
+      "layout": "PAIRED",
+      "platform": "ILLUMINA",
+      "biological_replicate_count": null,
+      "replication_status": "One deposited sample/experiment/run per condition; triplicate versus four samples unresolved.",
+      "fastq_files": [
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/005/SRR8237705/SRR8237705_1.fastq.gz",
+          "expected_md5": "c247e1d871e6bcafc329d1d1d37e7e53",
+          "expected_bytes": 862765630,
+          "downloaded": false
+        },
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/005/SRR8237705/SRR8237705_2.fastq.gz",
+          "expected_md5": "5f6540c476f77b4987547eeb08afae89",
+          "expected_bytes": 879091184,
+          "downloaded": false
+        }
+      ]
+    },
+    {
+      "gsm": "GSM3486866",
+      "condition": "WT_Stressed",
+      "biosample": "SAMN10463698",
+      "sra_sample": "SRS4072651",
+      "experiment": "SRX5055970",
+      "run": "SRR8237706",
+      "layout": "PAIRED",
+      "platform": "ILLUMINA",
+      "biological_replicate_count": null,
+      "replication_status": "One deposited sample/experiment/run per condition; triplicate versus four samples unresolved.",
+      "fastq_files": [
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/006/SRR8237706/SRR8237706_1.fastq.gz",
+          "expected_md5": "732ed8403600dbde3fa529ec165bbf0b",
+          "expected_bytes": 839715446,
+          "downloaded": false
+        },
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/006/SRR8237706/SRR8237706_2.fastq.gz",
+          "expected_md5": "7a32e418bace391ca29b3fb8cf7a6df6",
+          "expected_bytes": 854712324,
+          "downloaded": false
+        }
+      ]
+    },
+    {
+      "gsm": "GSM3486867",
+      "condition": "OT_Normal",
+      "biosample": "SAMN10463697",
+      "sra_sample": "SRS4072652",
+      "experiment": "SRX5055971",
+      "run": "SRR8237707",
+      "layout": "PAIRED",
+      "platform": "ILLUMINA",
+      "biological_replicate_count": null,
+      "replication_status": "One deposited sample/experiment/run per condition; triplicate versus four samples unresolved.",
+      "fastq_files": [
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/007/SRR8237707/SRR8237707_1.fastq.gz",
+          "expected_md5": "0c3b31e29e7f3136c5001d9b736abc25",
+          "expected_bytes": 808464049,
+          "downloaded": false
+        },
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/007/SRR8237707/SRR8237707_2.fastq.gz",
+          "expected_md5": "10ba256be82bab4451520d195406ad02",
+          "expected_bytes": 820647420,
+          "downloaded": false
+        }
+      ]
+    },
+    {
+      "gsm": "GSM3486868",
+      "condition": "OT_Stressed",
+      "biosample": "SAMN10463696",
+      "sra_sample": "SRS4072653",
+      "experiment": "SRX5055972",
+      "run": "SRR8237708",
+      "layout": "PAIRED",
+      "platform": "ILLUMINA",
+      "biological_replicate_count": null,
+      "replication_status": "One deposited sample/experiment/run per condition; triplicate versus four samples unresolved.",
+      "fastq_files": [
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/008/SRR8237708/SRR8237708_1.fastq.gz",
+          "expected_md5": "65f77cd4c27cb75bc511ce924ea0be95",
+          "expected_bytes": 765837533,
+          "downloaded": false
+        },
+        {
+          "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/008/SRR8237708/SRR8237708_2.fastq.gz",
+          "expected_md5": "01a7300f10a9c13247294a052091040a",
+          "expected_bytes": 784320321,
+          "downloaded": false
+        }
+      ]
+    }
+  ],
+  "fastq_archive_metadata": {
+    "url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRP170141&result=read_run&fields=run_accession,experiment_accession,secondary_sample_accession,sample_alias,library_layout,library_strategy,fastq_ftp,fastq_md5,fastq_bytes,read_count&format=tsv",
+    "sha256": "06c0f27b86519a049abbb8cf06c09d43e4f16eb0d2eecf60228a052924db98ce",
+    "retrieval_date": "2026-10-07"
+  },
+  "reference": {
+    "assembly": "GCF_000012525.1",
+    "replicons": [
+      "NC_007595.1",
+      "NC_007604.1"
+    ],
+    "files": [
+      {
+        "name": "GCF_000012525.1_ASM1252v1_genomic.fna.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1/GCF_000012525.1_ASM1252v1_genomic.fna.gz",
+        "sha256": "8d6304e54d3f6576b2d0b10e27a700f4f9442617de3cda47970b0c6fc6ed1615",
+        "bytes": 814760
+      },
+      {
+        "name": "GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+        "sha256": "eb26d58bcd1f1448d16c5c2566e405edd559d198e79e33831fc945c559382c40",
+        "bytes": 238918,
+        "source": "Canonical pinned crosswalk GFF, copied byte-for-byte"
+      }
+    ]
+  },
+  "pipeline": {
+    "repository": "https://github.com/SBRG/iModulonMiner",
+    "commit": "825963daaad599d509b8130af3480b6573870bb0",
+    "path": "2_process_data",
+    "nextflow_version": "22.10.0",
+    "files": [
+      {
+        "path": "2_process_data/README.md",
+        "sha256": "beef774f2f9feca215f9724cbe30f8a16cad79b0e32c41d59bb6a45a3f6f81f8"
+      },
+      {
+        "path": "2_process_data/conf/docker.config",
+        "sha256": "f308b0b35c071b36ae1d63512c9deca4f447e7f09cfbec2fb77b0cb9df3d3e28"
+      },
+      {
+        "path": "2_process_data/conf/local.config",
+        "sha256": "857c4c650fb48bf5b62accf8f8db42e60802d2e0d0d72f3ab0ed84d557abbcea"
+      },
+      {
+        "path": "2_process_data/conf/user.config",
+        "sha256": "c29c5c266d19b921b8e8d3590e42826b2c053d609541e9768fc08720c518c8ee"
+      },
+      {
+        "path": "2_process_data/main.nf",
+        "sha256": "97796b433ee53830c3ad99bf84ef1e339d7c014e43e8b1e060c482de53d44e39"
+      },
+      {
+        "path": "2_process_data/nextflow.config",
+        "sha256": "70a837e0dc766f15dd5b14f4fdfa6f969ee468ea754fcbb28d87208f7ef9a62b"
+      },
+      {
+        "path": "2_process_data/nextflow_environment.yml",
+        "sha256": "7b1a206561fb1a21d26ebe4c99b3026712f25bb509f380236e96a91fdd0fd9f3"
+      }
+    ],
+    "containers": [
+      {
+        "image": "ayyuan/fasterq-dump:1.0",
+        "digest": "sha256:7e6562a4d47c40e972c4e4bb058973347f1a9eb987478f38becb00585d714a52",
+        "immutable": "ayyuan/fasterq-dump@sha256:7e6562a4d47c40e972c4e4bb058973347f1a9eb987478f38becb00585d714a52",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "quay.io/biocontainers/trim-galore:0.6.5--0",
+        "digest": "sha256:832922db210896d98c29462539c5b86c139f6f346a3443187bb2e68b6075d3f0",
+        "immutable": "quay.io/biocontainers/trim-galore@sha256:832922db210896d98c29462539c5b86c139f6f346a3443187bb2e68b6075d3f0",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "quay.io/biocontainers/bowtie:1.2.3--py37hc9558a2_0",
+        "digest": "sha256:ca3a9bf4561a2c3936b5965efdd5f5b1e6584c75b3eb7f89907fd1233f576073",
+        "immutable": "quay.io/biocontainers/bowtie@sha256:ca3a9bf4561a2c3936b5965efdd5f5b1e6584c75b3eb7f89907fd1233f576073",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "quay.io/biocontainers/rseqc:3.0.1--py37h516909a_1",
+        "digest": "sha256:837221f4cb062588b8c7951d59a51f06237563eaef17af965de2fdc68f7e8f18",
+        "immutable": "quay.io/biocontainers/rseqc@sha256:837221f4cb062588b8c7951d59a51f06237563eaef17af965de2fdc68f7e8f18",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "quay.io/biocontainers/bedops:2.4.37--hc9558a2_0",
+        "digest": "sha256:9251e79112a4750dd0e75896a72011f7119200db95d8df5ac2e9693b78cae1ea",
+        "immutable": "quay.io/biocontainers/bedops@sha256:9251e79112a4750dd0e75896a72011f7119200db95d8df5ac2e9693b78cae1ea",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "meono/multiqc_modulome:1.11",
+        "digest": "sha256:7536aab8f2ff7e50dd46764bb0cf4ea1a81d1ad054a0393791f9816d577f162d",
+        "immutable": "meono/multiqc_modulome@sha256:7536aab8f2ff7e50dd46764bb0cf4ea1a81d1ad054a0393791f9816d577f162d",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "quay.io/biocontainers/subread:2.0.1--hed695b0_0",
+        "digest": "sha256:ccee1f6ebb924fd0b3b6db646a51dabc905697aa25be132386dd490c2318286c",
+        "immutable": "quay.io/biocontainers/subread@sha256:ccee1f6ebb924fd0b3b6db646a51dabc905697aa25be132386dd490c2318286c",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "avsastry/biopython:1.0",
+        "digest": "sha256:32d2b848bb725980a38e5e7aaa2fd4980fe6eebc229050be5c3b4f0e4a175aaf",
+        "immutable": "avsastry/biopython@sha256:32d2b848bb725980a38e5e7aaa2fd4980fe6eebc229050be5c3b4f0e4a175aaf",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      },
+      {
+        "image": "quay.io/biocontainers/samtools:1.6--h9dace67_6",
+        "digest": "sha256:8635c15d6cd6e44a585a450ad3246e02ec8951fb2427c3a2d11f4716c55786eb",
+        "immutable": "quay.io/biocontainers/samtools@sha256:8635c15d6cd6e44a585a450ad3246e02ec8951fb2427c3a2d11f4716c55786eb",
+        "retrieved": "2026-10-07",
+        "status": "pinned"
+      }
+    ],
+    "version_evidence": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11420160/fullTextXML",
+      "location": "Methods, Data Processing",
+      "retrieved": "2026-10-07",
+      "sha256": "e9428e75ac5db3beaa87f41d6a68d2c8e184ef38f34d46f6c1bed9fdf01a4a53",
+      "quote": "All samples were processed with a standardized RNA-seq processing pipeline using NextFlow v22.10.0",
+      "quote_match": "passed after whitespace normalization"
+    }
+  },
+  "resources": {
+    "executor": "local pilot or cluster after compute-backend D1b",
+    "max_parallel_large_tasks": 1,
+    "large_task_cpus": 8,
+    "large_task_memory_gb": 8,
+    "workspace_minimum_free_gb": 80,
+    "wall_time_limit_hours": 12,
+    "resource_basis": "Planning envelope from upstream local profile, 6.62 GB compressed input and transient uncompressed/alignment files; not measured."
+  },
+  "acceptance": {
+    "identity": "Four GSM/BioSample/SRX/SRR identities, eight paired FASTQ files; exact matching reference replicon set.",
+    "integrity": "Check downloaded FASTQ expected bytes and MD5, then compute SHA256 before processing. Refuse changed bytes.",
+    "strand": "Use upstream RSeQC inference, preserve proportions and featureCounts orientation; kit label alone never chooses strand.",
+    "outputs": "Trim/FastQC, Bowtie summary, RSeQC, featureCounts counts/assignment summaries, separate log-TPM, MultiQC, Nextflow trace/report; checksum all artifacts.",
+    "inference": "QC/count-table pilot until biological replication resolved. No replicate band, significance, biological equivalence or UTEX mapping."
+  },
+  "execution_dependencies": [
+    "Nextflow 22.10.0 absent; compatible Java runtime not verified.",
+    "Container architecture compatibility and pipeline execution untested; registry manifests are pinned, not execution-validated.",
+    "Bouchet route/workspace/allocation/access await compute-backend D1b. Local Docker responding does not establish a runnable cluster job."
+  ]
+}

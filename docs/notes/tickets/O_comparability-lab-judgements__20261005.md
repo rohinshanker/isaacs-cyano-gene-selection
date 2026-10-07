@@ -56,7 +56,7 @@ valid answer and keeps the pair or rule as it is.
 | J5 | Are array and RNA-seq one transcriptomics data type or two? | D.5, last paragraph | The top-level groups of any dataset selector |
 | J6 | What counts as data evidence that two datasets are one condition: distribution similarity, level correlation against each study's replicate band, or agreement of fold changes against each study's own control? | Pilot figure `cyano_comparability_pilot_20261005.png`, panels a to e; pilot write-up "Answer for the architecture" | Decision D1 of the 2026-10-04 instruction and the statistic any viewer shows |
 | J7 | The literature search found no numerical comparability threshold. Does the lab set one under row 13, or judge pairs case by case with no pass mark? | Methods memo, "Open gaps" | Whether row 13 stays a threshold table |
-| J8 | No cross-study sample pair reaches the replicate band (0 of 7,812), and study identity explains about a third of the variance. Is cross-study pooling of expression levels off the table unless the data are reprocessed uniformly? | Pilot, "Where cross-study pairs fall" | Whether to spend compute on reprocessing; see [O_condition-metadata-gaps__20261005](O_condition-metadata-gaps__20261005.md) |
+| J8 | No cross-study sample pair reaches the replicate band (0 of 7,812), and study identity explains about a third of the variance. Is cross-study pooling of expression levels off the table unless the data are reprocessed uniformly? | Pilot, "Where cross-study pairs fall" | Whether to spend compute on reprocessing; see [A_condition-metadata-gaps__20261005](A_condition-metadata-gaps__20261005.md) |
 | J9 | Is condition-resolved fitness (RB-TnSeq, GSE205443) a wanted data type? | Package B intake; scan ticket result of 2026-10-04 | A new data type and its own ticket, or the rows leave the programme |
 | J10 | The 32 escalated pairs, one by one: may each share a layer? | Package D table, rows with verdict `escalate` | Row 14 entries |
 
@@ -77,7 +77,7 @@ valid answer and keeps the pair or rule as it is.
   open from a link and answer in place. It sends package metadata to an external
   host, so it is built only on the owner's say-so.
 - **Ask outside the lab.** For J1 and J2 the authors are the source. Drafts for the
-  owner to send are in [O_condition-metadata-gaps__20261005](O_condition-metadata-gaps__20261005.md).
+  owner to send are in [A_condition-metadata-gaps__20261005](A_condition-metadata-gaps__20261005.md).
 
 The review sheet was generated 2026-10-05 at the owner's request, ahead of the
 formal intake record, after the mechanical checks named above passed. The shared
