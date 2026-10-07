@@ -265,12 +265,13 @@ export class InstantHints {
 
   focusIn(event) {
     const trigger = this.triggerAt(event.target);
-    if (trigger) this.show(trigger, this.elementPointer(trigger));
+    if (trigger && !this.suppressed.has(trigger)) this.show(trigger, this.elementPointer(trigger));
   }
 
   focusOut(event) {
     const trigger = this.triggerAt(event.target);
     if (!trigger || (event.relatedTarget && trigger.contains(event.relatedTarget))) return;
+    if (this.hovered !== trigger) this.suppressed.delete(trigger);
     if (this.active?.trigger === trigger) this.hide();
   }
 

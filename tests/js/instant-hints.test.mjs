@@ -151,6 +151,28 @@ test('switching triggers, keyboard focus, touch, scroll, and navigation share cl
   assert.equal(hints.tooltip.hidden, true);
 });
 
+test('focus changes preserve click suppression during a pointer visit and rearm keyboard visits', () => {
+  const { page, view } = fixture();
+  const trigger = box(new FakeElement('button'));
+  trigger.setAttribute('title', 'Exact hint');
+  page.body.append(trigger);
+  const hints = installInstantHints(page, view, FakeObserver);
+  page.emit('pointerover', { target: trigger, clientX: 30, clientY: 30 });
+  page.emit('click', { target: trigger });
+  page.emit('focusout', { target: trigger });
+  page.emit('focusin', { target: trigger });
+  assert.equal(hints.tooltip.hidden, true, 'refocusing cannot restore a dismissed hint while hovered');
+  page.emit('pointerout', { target: trigger });
+  page.emit('focusin', { target: trigger });
+  assert.equal(hints.tooltip.hidden, false);
+  page.emit('click', { target: trigger });
+  assert.equal(hints.tooltip.hidden, true);
+  page.emit('focusout', { target: trigger });
+  page.emit('focusin', { target: trigger });
+  assert.equal(hints.tooltip.hidden, false, 'leaving and returning to keyboard focus starts a new visit');
+  hints.destroy();
+});
+
 test('dynamic titles update exactly, clear their own description only, and removed popups leave no hint', () => {
   const { page, view } = fixture();
   const popup = box(new FakeElement('div'));
