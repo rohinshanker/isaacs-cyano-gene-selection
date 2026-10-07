@@ -83,7 +83,7 @@ const LEGACY_PREFERRED = ['GSE205444', 'TAN2018_TSS'];
  * selects that condition. Pooling never reaches across studies, so the
  * GSE205443 biofilm fractions stay out of this mean.
  */
-const DEFAULT_POOLED_STUDIES = ['FitnessBrowser_SynE'];
+export const DEFAULT_POOLED_STUDIES = ['FitnessBrowser_SynE'];
 
 /**
  * The datasets a type starts with when the reader asks for it while none of

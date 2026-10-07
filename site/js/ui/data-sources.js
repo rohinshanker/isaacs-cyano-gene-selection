@@ -13,14 +13,21 @@
  * The same peek, in single-choice mode, is how the filters, the axes and the
  * projection views pick a source of their own (owner decision, 2026-10-05).
  *
+ * A study that ships more condition sets than a reader can scan, such as the
+ * Fitness Browser's 90, is a compendium: it shows as one row, pooled over all
+ * of its sets, and "Choose conditions" opens a second peek stacked over the
+ * first holding a grid of checkboxes, compound down the side and dose across
+ * (owner decision, 2026-10-07). Peeks are a stack, not a pair: whichever is
+ * topmost owns focus and Escape, and everything under it is inert.
+ *
  * Nothing drawn here decides comparability: the rows and subgroups are the
  * condition record arranged by `core/data-sources.js`, and an unreported axis is
  * drawn as missing, never as zero.
  */
 import {
-  CONDITION_SCALES, DATA_TYPES, FILTER_FIELDS, conditionRange, dataTypeOfMetric, emptyFilter,
-  formatRange, groupDatasets, normalizeSelection, passesFilters, regimeOf, studyColors,
-  summariseSet,
+  CONDITION_SCALES, DATA_TYPES, FILTER_FIELDS, compendiumStudies, conditionGrid, conditionRange,
+  dataTypeOfMetric, emptyFilter, formatRange, groupDatasets, normalizeSelection, passesFilters,
+  regimeOf, studyColors, summariseSet,
 } from '../core/data-sources.js';
 import { renderSourceToggles } from './legend.js';
 import { ConditionGuides } from './condition-guides.js';
@@ -247,6 +254,10 @@ export class DataSourcesPanel {
     this.annotation = null;
     this.hidden = this.readHidden();
     this.peek = null;
+    this.gridPeek = null;
+    /** Open modals, outermost first; the last entry owns focus and Escape. */
+    this.modals = [];
+    this.compendia = compendiumStudies(datasets);
     this.build();
   }
 
@@ -367,7 +378,7 @@ export class DataSourcesPanel {
         if (!named) row.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
         this.list.append(row);
       }
-      for (const dataset of forType) {
+      const renderOne = (dataset) => {
         rendered.add(dataset.id);
         const item = el('li', { className: 'data-sources-item' });
         item.dataset.id = dataset.id;
@@ -395,7 +406,17 @@ export class DataSourcesPanel {
           item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
         }
         this.list.append(item);
-      }
+      };
+      // A compendium is one row here too, by owner decision of 2026-10-07: its
+      // 90 condition sets are pooled and a reader who wants a subset opens the
+      // grid rather than scrolling ninety checkboxes in the toolbar.
+      this.walkCollapsed(forType, {
+        onOne: renderOne,
+        onGroup: (study, members) => {
+          members.forEach((d) => rendered.add(d.id));
+          this.list.append(this.compendiumItem(study, members, chosenIds, kindLabel));
+        },
+      });
     }
 
     // Everything else selected, by data type, as a record of the selection.
@@ -407,19 +428,62 @@ export class DataSourcesPanel {
       const ofType = rest.filter((d) => d.record.dataType === type.id);
       if (!ofType.length) continue;
       this.list.append(el('li', { className: 'data-sources-type', text: colorType ? `Also selected: ${type.name}` : type.name }));
-      for (const dataset of ofType) {
-        const item = el('li', { className: 'data-sources-item' });
-        item.dataset.id = dataset.id;
-        item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
-          el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
-        if (dataset.record.group === 'engineered') item.append(' ', chip('engineered strain', 'ds-chip'));
-        if (dataset.metricKey === this.colorMetricKey) item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
-        this.list.append(item);
-      }
+      this.walkCollapsed(ofType, {
+        onOne: (dataset) => {
+          const item = el('li', { className: 'data-sources-item' });
+          item.dataset.id = dataset.id;
+          item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
+            el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
+          if (dataset.record.group === 'engineered') item.append(' ', chip('engineered strain', 'ds-chip'));
+          if (dataset.metricKey === this.colorMetricKey) item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
+          this.list.append(item);
+        },
+        onGroup: (study, members) => {
+          const item = el('li', { className: 'data-sources-item data-sources-compendium' });
+          item.dataset.study = study;
+          item.append(el('span', { className: 'data-sources-acc', text: study }), ' ',
+            el('span', { className: 'data-sources-label', text: `${members.length} condition sets, pooled` }));
+          this.list.append(item);
+        },
+      });
     }
     this.details.hidden = this.hidden;
     this.hideButton.textContent = this.hidden ? 'Show Data Sources' : 'Hide';
     this.hideButton.setAttribute('aria-expanded', String(!this.hidden));
+  }
+
+  /**
+   * The compendium's single row in the Data Sources section: one include box
+   * covering every condition set it ships, a note of how many are in, and the
+   * button that opens the grid. It carries no "alone informs" radio, because a
+   * pooled compendium is not one dataset to promote.
+   */
+  compendiumItem(study, members, chosenIds, kindLabel) {
+    const ids = members.map((d) => d.id);
+    const on = ids.filter((id) => chosenIds.has(id)).length;
+    const item = el('li', { className: 'data-sources-item data-sources-compendium' });
+    item.dataset.study = study;
+    const include = document.createElement('input');
+    include.type = 'checkbox';
+    include.id = `ds-include-${study}`;
+    include.checked = on === ids.length;
+    include.indeterminate = on > 0 && on < ids.length;
+    include.setAttribute('aria-label', `Include all ${members.length} conditions of ${study} for ${kindLabel}`);
+    include.addEventListener('change', () => {
+      ids.forEach((id) => this.informing.onSelect(id, include.checked));
+    });
+    item.append(include, ' ',
+      el('span', { className: 'data-sources-acc', text: study }), ' ',
+      el('span', { className: 'data-sources-label', text: `${members.length} condition sets, pooled` }));
+    item.append(' ', chip(on === ids.length ? 'all conditions' : `${on} of ${members.length}`, 'ds-chip'));
+    const choose = el('button', { className: 'chip-button ds-choose', text: 'Choose conditions', attrs: { type: 'button' } });
+    choose.addEventListener('click', async () => {
+      const picked = await this.openGrid(study, members, { chosen: ids.filter((id) => chosenIds.has(id)), opener: choose });
+      if (!picked) return;
+      ids.forEach((id) => this.informing.onSelect(id, picked.has(id)));
+    });
+    item.append(' ', choose);
+    return item;
   }
 
   /**
@@ -448,8 +512,7 @@ export class DataSourcesPanel {
     peek.title.textContent = title ?? (mode === 'multi' ? 'Data selection' : 'Select a source');
     peek.done.textContent = mode === 'multi' ? 'Done' : 'Use this source';
     this.renderPeek();
-    peek.backdrop.hidden = false;
-    this.setBackgroundInert(true);
+    this.pushModal(peek);
     const opening = opener ?? (typeof document.activeElement?.focus === 'function' ? document.activeElement : null);
     return new Promise((resolve) => {
       peek.active = { resolve, opener: opening };
@@ -457,11 +520,25 @@ export class DataSourcesPanel {
     });
   }
 
-  /** Every top-level region but the peek is inert while it is open. */
-  setBackgroundInert(on) {
+  /**
+   * Apply the modal stack to the document.
+   *
+   * With any modal open, every top-level region that is not one of their
+   * backdrops is inert. Within the stack only the topmost dialog is live: the
+   * ones beneath it are inert too, so Tab and the screen reader stay in the
+   * peek the reader is actually looking at, while their backdrops keep dimming
+   * the page. With nothing open the page is handed back untouched.
+   */
+  applyModals() {
+    const open = this.modals;
+    const backdrops = new Set(open.map((modal) => modal.backdrop));
     for (const node of document.body.children ?? []) {
-      if (node === this.peek.backdrop) continue;
-      if (on) {
+      if (backdrops.has(node)) {
+        node.removeAttribute?.('inert');
+        node.removeAttribute?.('aria-hidden');
+        continue;
+      }
+      if (open.length) {
         node.setAttribute('inert', '');
         node.setAttribute('aria-hidden', 'true');
       } else {
@@ -469,6 +546,36 @@ export class DataSourcesPanel {
         node.removeAttribute?.('aria-hidden');
       }
     }
+    open.forEach((modal, index) => {
+      const topmost = index === open.length - 1;
+      if (topmost) {
+        modal.dialog.removeAttribute?.('inert');
+        modal.dialog.removeAttribute?.('aria-hidden');
+      } else {
+        modal.dialog.setAttribute('inert', '');
+        modal.dialog.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  /** Put a modal on top of the stack and show it. */
+  pushModal(modal) {
+    if (!this.modals.includes(modal)) this.modals.push(modal);
+    modal.backdrop.hidden = false;
+    this.applyModals();
+  }
+
+  /** Take a modal off the stack and hide it, whatever its position. */
+  popModal(modal) {
+    const at = this.modals.indexOf(modal);
+    if (at >= 0) this.modals.splice(at, 1);
+    modal.backdrop.hidden = true;
+    this.applyModals();
+  }
+
+  /** True while this modal is the one the reader is working in. */
+  isTopModal(modal) {
+    return this.modals[this.modals.length - 1] === modal;
   }
 
   buildPeek() {
@@ -504,15 +611,18 @@ export class DataSourcesPanel {
       const { resolve, opener } = peek.active;
       peek.active = null;
       guides.clear();
-      backdrop.hidden = true;
-      this.setBackgroundInert(false);
+      this.popModal(peek);
       if (typeof opener?.focus === 'function') opener.focus({ preventScroll: true });
       resolve(answer);
     };
     close.addEventListener('click', () => peek.settle(null));
     done.addEventListener('click', () => this.finish());
-    backdrop.addEventListener('pointerdown', (event) => { if (event.target === backdrop) peek.settle(null); });
+    backdrop.addEventListener('pointerdown', (event) => {
+      if (event.target === backdrop && this.isTopModal(peek)) peek.settle(null);
+    });
     dialog.addEventListener('keydown', (event) => {
+      // A peek stacked on top owns the keyboard until it closes.
+      if (!this.isTopModal(peek)) return;
       if (event.key === 'Escape') { event.preventDefault(); peek.settle(null); return; }
       if (event.key !== 'Tab') return;
       const order = focusables(dialog);
@@ -524,6 +634,171 @@ export class DataSourcesPanel {
       else if (!event.shiftKey && (index === -1 || index === order.length - 1)) { event.preventDefault(); first.focus(); }
     });
     return peek;
+  }
+
+  /** The compendium a dataset belongs to, or null for an ordinary study. */
+  compendiumOf(dataset) {
+    const study = dataset.record.studyId;
+    return this.compendia.has(study) ? study : null;
+  }
+
+  /**
+   * Walk a list of datasets in order, handing each compendium to `onGroup`
+   * once, at the position of its first member, and every other dataset to
+   * `onOne`. Order is otherwise preserved, so a collapsed study sits where its
+   * rows would have started rather than being hoisted somewhere else.
+   */
+  walkCollapsed(datasets, { onOne, onGroup }) {
+    const members = new Map();
+    for (const dataset of datasets) {
+      const study = this.compendiumOf(dataset);
+      if (!study) continue;
+      if (!members.has(study)) members.set(study, []);
+      members.get(study).push(dataset);
+    }
+    const done = new Set();
+    for (const dataset of datasets) {
+      const study = this.compendiumOf(dataset);
+      if (!study) { onOne(dataset); continue; }
+      if (done.has(study)) continue;
+      done.add(study);
+      onGroup(study, members.get(study));
+    }
+  }
+
+  /**
+   * Build the stacked grid peek once. It is a second modal over the data
+   * selection, not a replacement for it: the selection stays on screen behind,
+   * dimmed and inert, and closing this one hands the reader back to it.
+   */
+  buildGridPeek() {
+    const backdrop = el('div', { className: 'peek-backdrop peek-backdrop-stacked' });
+    backdrop.hidden = true;
+    const dialog = el('div', { className: 'peek condition-grid', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'condition-grid-title' } });
+    const title = el('h2', { className: 'peek-title', text: 'Choose conditions', attrs: { id: 'condition-grid-title' } });
+    const close = el('button', { className: 'chip-button peek-close', text: 'Close', attrs: { type: 'button', 'aria-label': 'Close the condition grid' } });
+    const head = el('div', { className: 'peek-head', children: [title, close] });
+    const note = el('p', { className: 'cg-note' });
+    const bar = el('div', { className: 'cg-bar' });
+    const body = el('div', { className: 'cg-body', attrs: { 'aria-label': 'Conditions by compound and dose' } });
+    const count = el('span', { className: 'peek-count' });
+    const done = el('button', { className: 'chip-button active peek-done', text: 'Done', attrs: { type: 'button' } });
+    const foot = el('div', { className: 'peek-foot', children: [count, done] });
+    dialog.append(head, note, bar, body, foot);
+    backdrop.append(dialog);
+    document.body.append(backdrop);
+
+    const grid = { backdrop, dialog, title, note, bar, body, count, done, close, active: null, state: null };
+    grid.settle = (answer) => {
+      if (!grid.active) return;
+      const { resolve, opener } = grid.active;
+      grid.active = null;
+      this.popModal(grid);
+      if (typeof opener?.focus === 'function') opener.focus({ preventScroll: true });
+      resolve(answer);
+    };
+    close.addEventListener('click', () => grid.settle(null));
+    done.addEventListener('click', () => {
+      const chosen = new Set(grid.state.chosen);
+      grid.settle(chosen);
+    });
+    backdrop.addEventListener('pointerdown', (event) => {
+      if (event.target === backdrop && this.isTopModal(grid)) grid.settle(null);
+    });
+    dialog.addEventListener('keydown', (event) => {
+      if (!this.isTopModal(grid)) return;
+      if (event.key === 'Escape') { event.preventDefault(); grid.settle(null); return; }
+      if (event.key !== 'Tab') return;
+      const order = focusables(dialog);
+      if (!order.length) return;
+      const index = order.indexOf(document.activeElement);
+      const first = order[0];
+      const last = order[order.length - 1];
+      if (event.shiftKey && index <= 0) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (index === -1 || index === order.length - 1)) { event.preventDefault(); first.focus(); }
+    });
+    return grid;
+  }
+
+  /**
+   * Open the grid over whatever is already open and resolve to the chosen ids,
+   * or to null if the reader backed out.
+   *
+   * @returns {Promise<Set<string>|null>}
+   */
+  openGrid(study, members, { chosen, opener = null } = {}) {
+    if (!this.gridPeek) this.gridPeek = this.buildGridPeek();
+    const grid = this.gridPeek;
+    if (grid.active) grid.settle(null);
+    grid.state = { study, members, layout: conditionGrid(members), chosen: new Set(chosen) };
+    grid.title.textContent = `${study}: choose conditions`;
+    this.renderGrid();
+    this.pushModal(grid);
+    return new Promise((resolve) => {
+      grid.active = { resolve, opener: opener ?? (typeof document.activeElement?.focus === 'function' ? document.activeElement : null) };
+      grid.close.focus();
+    });
+  }
+
+  /** One checkbox per condition: compound down the side, dose across. */
+  renderGrid() {
+    const grid = this.gridPeek;
+    const { members, layout, chosen } = grid.state;
+    const restore = restoreAfterRender(grid.body, grid.close);
+    grid.note.textContent = `${members.length} conditions from one study. Rows are compounds, columns are the doses that compound was tested at, so a row is as wide as that compound has doses.`;
+
+    grid.bar.replaceChildren();
+    const all = el('button', { className: 'chip-button', text: 'Select all', attrs: { type: 'button' } });
+    all.addEventListener('click', () => { members.forEach((d) => chosen.add(d.id)); this.renderGrid(); });
+    const none = el('button', { className: 'chip-button', text: 'Clear all', attrs: { type: 'button' } });
+    none.addEventListener('click', () => { chosen.clear(); this.renderGrid(); });
+    grid.bar.append(all, none);
+
+    const cell = (dataset, label) => {
+      const wrap = el('label', { className: chosen.has(dataset.id) ? 'cg-cell cg-on' : 'cg-cell' });
+      const box = el('input', { attrs: { type: 'checkbox', 'aria-label': `${dataset.record.conditionSet}` } });
+      box.checked = chosen.has(dataset.id);
+      box.addEventListener('change', () => {
+        if (box.checked) chosen.add(dataset.id); else chosen.delete(dataset.id);
+        this.renderGrid();
+      });
+      wrap.append(box, el('span', { className: 'cg-dose', text: label }));
+      return wrap;
+    };
+
+    const table = el('div', { className: 'cg-grid' });
+    for (const row of layout.compounds) {
+      const line = el('div', { className: 'cg-row' });
+      const on = row.cells.filter((c) => chosen.has(c.dataset.id)).length;
+      const head = el('div', { className: 'cg-rowhead' });
+      const box = el('input', { attrs: { type: 'checkbox', 'aria-label': `Select every dose of ${row.compound}` } });
+      box.checked = on === row.cells.length;
+      box.indeterminate = on > 0 && on < row.cells.length;
+      box.addEventListener('change', () => {
+        row.cells.forEach((c) => (box.checked ? chosen.add(c.dataset.id) : chosen.delete(c.dataset.id)));
+        this.renderGrid();
+      });
+      head.append(box, el('span', { className: 'cg-compound', text: row.compound }));
+      line.append(head);
+      const cells = el('div', { className: 'cg-cells' });
+      row.cells.forEach((c) => cells.append(cell(c.dataset, c.dose)));
+      line.append(cells);
+      table.append(line);
+    }
+    if (layout.loose.length) {
+      const line = el('div', { className: 'cg-row cg-row-loose' });
+      line.append(el('div', { className: 'cg-rowhead', children: [el('span', { className: 'cg-compound', text: 'No added compound' })] }));
+      const cells = el('div', { className: 'cg-cells' });
+      layout.loose.forEach((d) => cells.append(cell(d, d.record.conditionSet)));
+      line.append(cells);
+      table.append(line);
+    }
+    grid.body.replaceChildren(table);
+    const picked = members.filter((d) => chosen.has(d.id)).length;
+    grid.count.textContent = picked === members.length
+      ? `All ${members.length} conditions selected, pooled`
+      : `${picked} of ${members.length} conditions selected`;
+    restore();
   }
 
   /** Done: hand the edited selection out, or the one chosen source. */
@@ -727,6 +1002,49 @@ export class DataSourcesPanel {
     return row;
   }
 
+  /**
+   * One row standing for a whole compendium: a checkbox that takes all of its
+   * conditions in or out, and a button opening the grid for a subset. The
+   * condition columns are not drawn, because a row covering 90 condition sets
+   * has no single temperature or medium to show.
+   */
+  compendiumRowFor(study, members, colors) {
+    const { state } = this.peek;
+    const ids = members.map((d) => d.id);
+    const on = ids.filter((id) => state.selected.has(id)).length;
+    const row = el('tr', { className: on ? 'ds-compendium ds-selected' : 'ds-compendium' });
+    row.dataset.study = study;
+    row.style.borderLeft = `4px solid ${colors.get(study)}`;
+    const box = el('input', { attrs: { type: 'checkbox', 'aria-label': `Show all ${members.length} conditions of ${study}` } });
+    box.checked = on === ids.length;
+    box.indeterminate = on > 0 && on < ids.length;
+    box.addEventListener('change', () => {
+      ids.forEach((id) => (box.checked ? state.selected.add(id) : state.selected.delete(id)));
+      this.renderList();
+      if (!state.info) this.renderSide();
+    });
+    row.append(el('td', { children: [box] }));
+    const name = el('td', { className: 'ds-name', attrs: { colspan: 8 } });
+    const top = el('div', { className: 'ds-name-top' });
+    const first = members[0];
+    top.append(el('span', { className: 'ds-name-id', children: [
+      el('span', { className: 'ds-acc', text: study }), ' ', chip(first.record.strain), chip(first.record.platform),
+    ] }));
+    name.append(top);
+    name.append(el('span', { className: 'ds-label', text: `${members.length} condition sets, pooled. ${on} selected.` }));
+    const choose = el('button', { className: 'chip-button ds-choose', text: 'Choose conditions', attrs: { type: 'button' } });
+    choose.addEventListener('click', async () => {
+      const picked = await this.openGrid(study, members, { chosen: ids.filter((id) => state.selected.has(id)), opener: choose });
+      if (!picked) return;
+      ids.forEach((id) => (picked.has(id) ? state.selected.add(id) : state.selected.delete(id)));
+      this.renderList();
+      if (!state.info) this.renderSide();
+    });
+    name.append(choose);
+    row.append(name);
+    return row;
+  }
+
   selectAllBox(datasets, name) {
     const { state } = this.peek;
     const ids = datasets.map((d) => d.id);
@@ -770,12 +1088,24 @@ export class DataSourcesPanel {
     for (const text of ['Light regime', 'Medium', 'Format · phase', 'Treatments']) headRow.append(el('th', { attrs: { scope: 'col' }, text }));
     head.append(headRow);
     const body = el('tbody');
+    // A compendium is collapsed before grouping, not inside it: its condition
+    // sets fall in several groups at once, so collapsing per group would draw
+    // one row per group instead of the single row the owner asked for.
+    const pooled = new Map();
+    const rest = [];
+    for (const dataset of shown) {
+      const study = this.compendiumOf(dataset);
+      if (!study) { rest.push(dataset); continue; }
+      if (!pooled.has(study)) pooled.set(study, []);
+      pooled.get(study).push(dataset);
+    }
+    for (const [study, members] of pooled) body.append(this.compendiumRowFor(study, members, colors));
     if (!shown.length) {
       body.append(el('tr', { children: [el('td', { className: 'ds-empty', text: 'No dataset matches the filters.', attrs: { colspan: 9 } })] }));
     } else if (state.flat) {
-      shown.forEach((d) => body.append(this.rowFor(d, colors)));
-    } else {
-      for (const group of groupDatasets(shown, { judgements: this.judgements })) {
+      rest.forEach((d) => body.append(this.rowFor(d, colors)));
+    } else if (rest.length) {
+      for (const group of groupDatasets(rest, { judgements: this.judgements })) {
         const studies = new Set(group.datasets.map((d) => d.record.studyId)).size;
         const selected = group.datasets.filter((d) => state.selected.has(d.id)).length;
         body.append(this.headerRow('ds-group', {
@@ -784,7 +1114,8 @@ export class DataSourcesPanel {
           rule: group.rule,
           note: `${group.datasets.length} condition set${group.datasets.length === 1 ? '' : 's'} · ${studies} stud${studies === 1 ? 'y' : 'ies'} · ${selected} selected`,
         }));
-        if (!group.split) { group.datasets.forEach((d) => body.append(this.rowFor(d, colors))); continue; }
+        const emit = (datasets) => datasets.forEach((d) => body.append(this.rowFor(d, colors)));
+        if (!group.split) { emit(group.datasets); continue; }
         group.sets.forEach((set, index) => {
           const name = `Comparable set ${index + 1}`;
           body.append(this.headerRow('ds-subgroup', {
@@ -792,11 +1123,11 @@ export class DataSourcesPanel {
             title: name,
             rule: `${set.length} condition sets · ${summariseSet(set)}`,
           }));
-          set.forEach((d) => body.append(this.rowFor(d, colors)));
+          emit(set);
         });
         if (group.singles.length) {
           body.append(this.headerRow('ds-subgroup', { title: 'No comparable partner in this group', rule: `${group.singles.length} condition set${group.singles.length === 1 ? '' : 's'}, each chosen on its own` }));
-          group.singles.forEach((d) => body.append(this.rowFor(d, colors)));
+          emit(group.singles);
         }
       }
     }
