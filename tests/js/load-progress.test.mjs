@@ -247,6 +247,50 @@ test('review rendering removes aria-valuenow during real preparation', async () 
   });
 });
 
+test('the halfway review latch waits for measured bytes and falls back when totals are unknown', async () => {
+  await withFakeDocument(async (document) => {
+    const measured = mount(document, {}, {
+      review: { name: 'C', progress: 'continuous' }, terminalHoldMs: 0,
+    }).progress;
+    const exactSnapshot = (actualReceivedBytes) => ({
+      worksetKnown: true,
+      files: {
+        genes: {
+          label: 'genes.json', bytes: 100, actualReceivedBytes,
+          settled: false, state: FILE_STATE.LOADING, included: true,
+        },
+      },
+      preparation: { registered: 1, completed: 0, currentLabel: 'genes.json' },
+    });
+    measured.update(exactSnapshot(49));
+    let reached = null;
+    const halfway = measured.whenTransferAtLeast(0.5).then((value) => { reached = value; });
+    await Promise.resolve();
+    assert.equal(reached, null, '49 measured bytes cannot satisfy a 50-byte latch');
+    measured.update(exactSnapshot(50));
+    await halfway;
+    assert.equal(reached, true);
+
+    const unknown = mount(document, {}, {
+      review: { name: 'C', progress: 'grouped' }, terminalHoldMs: 0,
+    }).progress;
+    const unknownSnapshot = (worksetKnown) => ({
+      worksetKnown,
+      files: {
+        genes: {
+          label: 'genes.json', bytes: 0, actualReceivedBytes: 0,
+          settled: false, state: FILE_STATE.LOADING, included: true,
+        },
+      },
+      preparation: { registered: 1, completed: 0, currentLabel: 'genes.json' },
+    });
+    unknown.update(unknownSnapshot(false));
+    const fallback = unknown.whenTransferAtLeast(0.5);
+    unknown.update(unknownSnapshot(true));
+    assert.equal(await fallback, false, 'unknown totals use the ordinary readiness gate');
+  });
+});
+
 test('the bar says which tier is loading, how far, and what the release is', () => {
   assert.equal(describeLoad(null), 'Loading complete, 0%.');
   assert.equal(describeLoad(snapshot({ receivedBytes: 430 })), 'Loading genes, 43%.');

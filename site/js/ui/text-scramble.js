@@ -44,16 +44,10 @@
  * over. That is what makes it affordable over the few hundred text nodes the
  * loaded page has.
  *
- * ## CSS for the coordinator to consider
- *
- * The animation itself needs no CSS. One consequence of it does: a string shows
- * only `front` characters, so a long paragraph starts as a short flipping trail
- * and grows, and a container sized by its text will jump as lines appear.
- * Reserve the height of the containers that hold long prose, which is the same
- * no-layout-shift rule the shell already follows. Do not key that height off
- * `[aria-busy="true"]`: the hold is now per owner element, so that selector
- * matches every button, label and control that is animating, and a minimum
- * height on those would be worse than the shift it prevents.
+ * A review-timed run reserves each coherent prose block's measured height and
+ * each control's measured width before shortening its visible string. That
+ * keeps the final geometry in normal flow without broad CSS keyed to
+ * `[aria-busy="true"]`, which also matches every short-lived button and label.
  *
  * The opt-outs are attributes and a class that already exist, so nothing new is
  * needed for them: `hidden`, `.visually-hidden`, and `data-no-scramble` on any

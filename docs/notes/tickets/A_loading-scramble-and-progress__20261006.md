@@ -144,6 +144,48 @@ link, validation link, whitespace, `git diff --check`, `npm test` (1,086 passed)
 `.venv/bin/python tools/validate_contract.py` (110 passed, 1 skipped). These check
 the current working tree; animation changes and owner visual review are pending.
 
+### DEM-263 implementation evidence — 2026-10-07
+
+The real application passed a 24-scenario A/B/C × grouped/continuous matrix at
+375×812, 768×1024, 1280×800, and 1440×900, distributed across uncached slow
+(300 kB/s, 150 ms), uncached moderate (750 kB/s, 80 ms), uncached local, and
+cache-enabled repeat navigation. Each measured scenario used a unique query tag
+to force a fresh document navigation; cached scenarios separately captured the
+warm-up and measured navigation starts, marks, and errors while retaining the
+asset cache. The earlier hash-reuse run is quarantined as diagnostic-only and is
+not part of this evidence. Every corrected scenario ended with one progressbar,
+zero horizontal overflow, zero failures, no residual `aria-busy` or `inert`
+elements, and no captured page, console, or request errors. Reveal frames and
+settled full-page frames were inspected at all four widths; mobile, tablet,
+desktop, and wide layouts retained their normal geometry while the coherent
+blocks settled.
+
+Representative timing confirms the distinct gates: A revealed about 0.3 s
+after core preparation; B revealed about 1.2 s after core, preserving its
+1,000 ms presentation hold; C reached the measured 50% transfer point before
+reveal and still waited for core/readiness. At 4× CPU slowdown, the mobile
+C/continuous help interaction completed in 176 ms while longer text was still
+settling. Slow A runs recorded later landed content receiving bounded local
+reveals without keeping controls inert at completion.
+
+The real-app regression helper also passed citation downloads at all four
+widths, persistent failure announcement and retry recovery, reduced motion, a
+chromosome deep link, and the E. coli organism with no unexpected runtime
+errors. Three review videos and a C/continuous trace accompany the frame set.
+The evidence bundle is preserved outside the managed worktree under the
+canonical checkout's ignored `.playwright-cli/cyano-ui-fixes/dem263-resume/`
+directory.
+
+Final gates on the exact patch passed: `npm test` (1,100 passed), canonical
+`.venv/bin/python -m pytest -q` (486 passed, 1 skipped, 36 subtests passed),
+canonical `.venv/bin/python tools/validate_contract.py` (110 passed, 1 skipped),
+`tools/build_data_manifest.py check`, `tools/build_module_preloads.mjs --check`,
+`tools/build_load_bar.mjs --check`, and the focused manifest/preload/loading-shell
+tests (36 passed). Nine temporary symlinks to the canonical pinned raw inputs
+were used only for the Python gates and removed afterward. The visual choice
+between A/B/C and grouped/continuous remains open for the owner; production
+defaults are unchanged.
+
 ## Cleanup
 
 On acceptance of the implementation and owner's visual choice, resolve the
