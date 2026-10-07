@@ -728,6 +728,7 @@ export class LoadProgress {
 
   /** Start a new visible cycle for one or more loader files being retried. */
   beginRetry(keys, label = 'data') {
+    const wasResourceOnly = this.resourceOnly;
     this.resourceOnly = false;
     this.retryLabel = label;
     const pendingKeys = Object.entries(this.snapshot?.files ?? {})
@@ -740,8 +741,8 @@ export class LoadProgress {
       this.startCycle(this.now());
       for (const resource of activeResources) resource.cycle = this.cycle;
       this.setFraction(0);
-    } else if (this.blockingKeys !== null) {
-      this.blockingKeys = [...new Set([...this.blockingKeys, ...keys, ...pendingKeys])];
+    } else if (this.blockingKeys !== null || wasResourceOnly) {
+      this.blockingKeys = [...new Set([...(this.blockingKeys ?? []), ...keys, ...pendingKeys])];
     }
     this.renderStage();
     this.requestNextFrame();

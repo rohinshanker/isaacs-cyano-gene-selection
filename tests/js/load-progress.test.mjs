@@ -753,6 +753,15 @@ for (const mode of [null, 'grouped', 'continuous']) {
       progress.update(value(file('expression_layers.json', 200, 200, true)));
       await progress.finished();
       assert.equal(presentation.hidden, true);
+      progress.beginResource('download', { label: 'source.tsv', totalBytes: 200 });
+      const sharedCycle = progress.cycle;
+      progress.update(value(file('expression_layers.json', 200, 0, false, FILE_STATE.LOADING)));
+      assert.equal(progress.cycle, sharedCycle, 'a late file joins an active independent request');
+      assert.equal(bar.getAttribute('aria-valuenow'), '0', 'neither old cycle supplies completion credit');
+      progress.update(value(file('expression_layers.json', 200, 200, true)));
+      assert.equal(presentation.hidden, false, 'the independent request still keeps the cycle open');
+      progress.settleResource('download'); await progress.finished();
+      assert.equal(presentation.hidden, true);
     });
   });
 }
