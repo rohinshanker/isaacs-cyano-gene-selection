@@ -216,19 +216,47 @@ return's own tables.
 | Houser 2015, **PMC4537216**, each replicate on separate days | exact. My first attempt used PMC4529991, which is a different article; the return does not give a wrong id, I guessed one |
 | Schmidt 2016, PMC4888949, 22 conditions in biological triplicates | exact apart from an inline citation marker inside the sentence, which the published text renders as a superscript and a plain-text extraction pulls inline |
 
-### What intake could not verify
+### The one checksum that does not reproduce, and why it is not an error
 
-Four checksums are unverified because one endpoint stalled, not because anything
-looked wrong. `F02` is the Europe PMC supplementary bundle for PMC5394689, about
-23 MB, and the return itself records that the endpoint ignores its `fileName`
-parameter and serves the whole bundle; the download did not complete in this
-session. `F03`, `F04` and `F05` are members of `F02`, so they wait on it. Those
-three are the AG3C sample table and the two replicate-level matrices, which
-carry the rank-1 bundle's counts of 102 cultures with both layers and 25
-conditions with three. Those specific numbers are therefore **not** independently
-reproduced here, although the 109-culture overlap computed above corroborates the
-design from a different direction. Re-run the checksum pass when the endpoint
-cooperates.
+`F02` is the Europe PMC supplementary bundle for PMC5394689. On re-download its
+byte length is exactly the declared 23,122,877, but its SHA-256 differs.
+
+The cause is the endpoint, not the return. The archive's entries carry the
+timestamp of the request rather than of the files, so Europe PMC assembles the
+ZIP afresh each time and its digest changes while its contents do not. A
+container checksum from that endpoint is therefore **not reproducible by
+anyone**, including the session that recorded it. The three members are what
+carry the data, and all three match byte-for-byte:
+
+| Member | Bytes | Result |
+| --- | ---: | --- |
+| `srep45303-s2.csv`, the sample table | 33,095 | exact |
+| `srep45303-s3.csv`, the mRNA matrix | 11,074,929 | exact |
+| `srep45303-s4.csv`, the protein matrix | 7,732,680 | exact |
+
+Final checksum tally: **15 of 16 exact, and the sixteenth explained.** A future
+pin of this source should checksum the members and record the container by byte
+length only.
+
+### The AG3C counts, re-derived from the sample table
+
+With `F03` in hand the leading bundle's own numbers reproduce:
+
+| Claim | Re-derived |
+| --- | --- |
+| 171 cultures listed | 171 |
+| 152 with RNA data | 152 |
+| 105 with protein data | 105 |
+| **102 with both** | **102** |
+| 25 conditions with three complete mRNA and protein cultures, 2 with four | 25 and 2, grouping by time point, carbon source, magnesium and sodium |
+
+The separate figure of 57 conditions is not that grouping and does not come from
+this table; it is the GEO condition set, which the return states plainly in its
+own datasets row and carries as 57 rows in `ecoli_multiomics_conditions__20261007.tsv`.
+Grouping the sample table by the key that yields 25 and 2 gives 61, not 57, which
+is why the two numbers must not be read as counting the same thing. A third
+attempt at a grouping key of mine reproduced 57 but not the replication split;
+the return's distinction between the two is correct and mine was the confusion.
 
 Nothing else in the return was refused or unreachable.
 
