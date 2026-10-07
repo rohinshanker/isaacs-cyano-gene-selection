@@ -51,7 +51,7 @@ def test_sections_and_citations_are_complete():
         "yu-2015", "ncbi-utex-2973", "tan-2018", "simkovsky-2022",
         "gilliam-2025", "dong-2023", "sato-2026", "choi-2016",
         "puszynska-2017", "piechura-2017", "russo-2025", "li-2022", "ncbi-pcc-7942", "gene-ontology",
-        "adomako-2022-essentiality", "puszynska-2017-ppgpp", "xu-2024", "suban-2024", "bohutskyi-2024",
+        "adomako-2022-essentiality", "puszynska-2017-ppgpp", "xu-2024", "suban-2024", "bohutskyi-2024", "markson-2013",
     } == {item["id"] for item in sections[0]["items"]}
     assert {
         "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",

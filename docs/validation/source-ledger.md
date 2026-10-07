@@ -157,7 +157,7 @@ record:
 | GSE50919 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE50920 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE50922 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
-| GSE51112 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
+| GSE51112 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only); ingested 2026-10-07 as 4 layers, the wild-type circadian course and the three RpaA-phosphomimetic arms, the latter listed as engineered strains |
 | GSE52486 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE59112 | PCC 7942 | permitted: cite the deposit and the article (owner decision 2026-10-06; was not permitted: no grant over the files and the article is all rights reserved or text-mining only) |
 | GSE79726 | PCC 7942 | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |

@@ -457,6 +457,38 @@
           ]
         },
         {
+          "id": "markson-2013",
+          "citation": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 155, 1396–1408 (2013). doi:10.1016/j.cell.2013.11.005; GEO GSE51112.",
+          "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+          "contribution": "Four optional RNA-abundance layers, each the mean of its time points as deposited (median-normalised and ORF-length-normalised values): the wild type across six circadian time points in continuous light, and three layers from the clock-deleted RpaA phosphomimetic strains, which are listed as engineered strains — OX-D53E with and without IPTG and the empty-vector control. One sample per time point, so no replicate band exists. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article © 2013 Elsevier Inc., permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "downloads": [
+            {
+              "filename": "GSE51112_wt_ll.tsv",
+              "repoPath": "data/expression/GSE51112_wt_ll.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_wt_ll.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE51112_oxd53e_iptg.tsv",
+              "repoPath": "data/expression/GSE51112_oxd53e_iptg.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxd53e_iptg.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE51112_oxd53e_no_iptg.tsv",
+              "repoPath": "data/expression/GSE51112_oxd53e_no_iptg.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxd53e_no_iptg.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE51112_oxempty_iptg.tsv",
+              "repoPath": "data/expression/GSE51112_oxempty_iptg.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxempty_iptg.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "adomako-2022-essentiality",
           "citation": "Adomako M et al. Comparative Genomics of Synechococcus elongatus Explains the Phenotypic Diversity of the Strains. mBio 13, e00862-22 (2022). doi:10.1128/mbio.00862-22; Data Set S1. PCC 7942 essentiality calls in this workbook derive from Rubin BE et al., Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015), doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1128/mbio.00862-22",

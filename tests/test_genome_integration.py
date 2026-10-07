@@ -35,8 +35,8 @@ def test_generated_documents_follow_contract():
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
     assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
-    # 35 computed metrics plus one metric per ingested layer (43: 31 expression, three protein, nine fitness).
-    assert len(meta["metrics"]) == 35 + 43
+    # 35 computed metrics plus one metric per ingested layer (47: 35 expression, three protein, nine fitness).
+    assert len(meta["metrics"]) == 35 + 47
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -112,7 +112,7 @@ def test_generated_documents_follow_contract():
     assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
 
     manifest = json.loads(EXPRESSION_MANIFEST.read_text())
-    assert len(meta["expressionSources"]) == len(manifest) == 45
+    assert len(meta["expressionSources"]) == len(manifest) == 49
     for emitted, selected in zip(meta["expressionSources"], manifest, strict=True):
         assert emitted | selected == emitted
     assert [source["coverage"]["withValue"] for source in meta["expressionSources"]] == [
@@ -134,13 +134,14 @@ def test_generated_documents_follow_contract():
         2634,  # GSE237858 WT, 12 h constant light after a dark pulse
         2505, 2505,  # GSE254350 WT day 1 / day 4
         2615, 2615, 2615,  # GSE335065 axenic / axenic membrane bioreactor / membrane-separated co-culture
+        2551, 2551, 2551, 2551,  # GSE51112 WT constant light / OX-D53E +IPTG / OX-D53E -IPTG / OX-Empty +IPTG
     ]
     assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
     # The two original measurements ride in genes.json; every ingested layer is
     # published apart, joined by locus tag, so the gene file keeps its budget.
     layered = [s for s in meta["expressionSources"] if s["payload"] == "expression_layers.json"]
     assert [s["payload"] for s in meta["expressionSources"][:2]] == ["genes.json", "genes.json"]
-    assert len(layered) == 43
+    assert len(layered) == 47
     layers = json.loads((DATA / "expression_layers.json").read_text())
     assert layers["geneIds"] == [gene["id"] for gene in genes]
     assert set(layers["layers"]) == {s["metricKey"] for s in layered}

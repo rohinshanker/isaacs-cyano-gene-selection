@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on twenty-seven metrics, symmetric log on eleven, linear on the rest', async () => {
+test('the shipped release opens logarithmic on twenty-seven metrics, symmetric log on fifteen, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -100,10 +100,12 @@ test('the shipped release opens logarithmic on twenty-seven metrics, symmetric l
   const keysFor = (scale) => [...chosen]
     .filter(([, value]) => value === scale).map(([key]) => key).sort();
 
-  // Every ingested PCC 7942 layer is skewed enough for the rule. Twenty-five are
-  // strictly positive and open logarithmic; the other nine (GSE222067 control,
-  // GSE327989, the three GSE89999 layers, GSE103462 dusk, GSE103463 dawn,
-  // GSE103644 pre-induction, GSE105774 dusk) report zeros, so they open symmetric log.
+  // Every ingested PCC 7942 abundance layer is skewed enough for the rule. Of the
+  // 47 ingested layers, 25 are strictly positive and open logarithmic, 13 report
+  // zeros and open symmetric log (GSE222067 control, GSE327989, the three GSE89999
+  // layers, GSE103462 dusk, GSE103463 dawn, GSE103644 pre-induction, GSE105774
+  // dusk and all four GSE51112 layers), and the nine signed fitness layers take a
+  // diverging ramp instead.
   assert.deepEqual(keysFor('log10'), [
     'exprGse103462WtDawn', 'exprGse103463RelAPlusDusk', 'exprGse103644RelAPlusInduced',
     'exprGse103704WtDark', 'exprGse103704WtDusk',
@@ -118,6 +120,7 @@ test('the shipped release opens logarithmic on twenty-seven metrics, symmetric l
   assert.deepEqual(keysFor('symlog'), [
     'exprGse103462WtDusk', 'exprGse103463RelAPlusDawn', 'exprGse103644RelAPlusT0', 'exprGse105774RelAPlusDusk',
     'exprGse222067Control', 'exprGse327989Wt',
+    'exprGse51112OxD53eIptg', 'exprGse51112OxD53eNoIptg', 'exprGse51112OxEmptyIptg', 'exprGse51112WtLl',
     'exprGse89999Dark', 'exprGse89999Dawn', 'exprGse89999Dusk',
     'neighborDownstreamNt', 'neighborUpstreamNt',
   ]);

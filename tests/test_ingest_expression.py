@@ -266,6 +266,21 @@ def test_a_layer_may_carry_its_own_condition_record_and_table_row(tmp_path):
     assert written[1]["record"]["conditions"]["temperature"]["quote"] == "Grown at 42℃", "the layer's own row supplies its quotes"
 
 
+def test_a_layer_may_name_its_own_strain(tmp_path):
+    """One deposit may hold several genotypes; the record names the layer's own."""
+    data = csv_bytes(["locus_tag", "a", "b"], [["S1", "1", "3"]])
+    layers = [
+        {"id": "GSE1_wt", "metricKey": "exprGse1Wt", "label": "wt", "conditionSet": "wild type", "samples": "GSM1",
+         "columns": ["a"], "treatments": [], "group": "standard"},
+        {"id": "GSE1_mutant", "metricKey": "exprGse1Mutant", "label": "mutant", "conditionSet": "mutant", "samples": "GSM2",
+         "columns": ["b"], "treatments": [], "group": "engineered", "strain": "PCC 7942 OX-D53E"},
+    ]
+    spec = spec_for(tmp_path, data, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_old"}, layers)
+    written, _, _ = run(tmp_path, spec, [("U1", "pcc7942_old_locus_tag", "S1", "")], conditions_file(tmp_path))
+    assert written[0]["record"]["strain"] == "PCC 7942", "a layer that names no strain keeps the spec's"
+    assert written[1]["record"]["strain"] == "PCC 7942 OX-D53E"
+
+
 def test_read_table_opens_a_member_of_a_zip_deposit():
     import zipfile
     buffer = io.BytesIO()

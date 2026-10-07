@@ -5624,5 +5624,513 @@
       "unmappedIdentifiers": 146,
       "mappingRoute": "pcc7942_ortholog in identifier-crosswalk-v1.tsv, one-to-one rows only"
     }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942",
+      "basis": "transferred",
+      "conditionSet": "Wild type (EOC113) in continuous light, mean of six time points from ZT 24 to ZT 44 h",
+      "samples": "WT culture, ZT 24–44 hours (GSM1238982–GSM1238987)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_wt_ll",
+    "file": "GSE51112_wt_ll.tsv",
+    "metricKey": "exprGse51112WtLl",
+    "label": "Expression GSE51112 WT constant light ZT24–44 (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "Wild type (EOC113) in continuous light, mean of six time points from ZT 24 to ZT 44 h",
+    "sha256": "6c4674d6f359a4a0f615b428207ea346baec824c5af2c48b5654a0df4e38ee1c",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in PCC 7942, not UTEX 2973; one sample per time point, so no replicate band exists, and the six circadian time points are averaged, which removes the rhythm the study was designed around.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "WT ZT 24 Hours",
+        "WT ZT 28 Hours",
+        "WT ZT 32 Hours",
+        "WT ZT 36 Hours",
+        "WT ZT 40 Hours",
+        "WT ZT 44 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)",
+      "basis": "transferred",
+      "conditionSet": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) after IPTG, mean of six time points from 0 to 12 h",
+      "samples": "OX-D53E + IPTG, 0–12 hours (GSM1238988–GSM1238993)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "IPTG induction of RpaA D53E",
+        "induction time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_oxd53e_iptg",
+    "file": "GSE51112_oxd53e_iptg.tsv",
+    "metricKey": "exprGse51112OxD53eIptg",
+    "label": "Expression GSE51112 OX-D53E + IPTG (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) after IPTG, mean of six time points from 0 to 12 h",
+    "sha256": "137fed30382a7274768d7cb95a96f04bcd05ef4731c9bb801e98a3e482495330",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "OX-D53E IPTG 0 Hours",
+        "OX-D53E IPTG 0.5 Hours",
+        "OX-D53E IPTG 2 Hours",
+        "OX-D53E IPTG 3 Hours",
+        "OX-D53E IPTG 6 Hours",
+        "OX-D53E IPTG 12 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)",
+      "basis": "transferred",
+      "conditionSet": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) without IPTG, mean of three time points from 0 to 12 h",
+      "samples": "OX-D53E - IPTG, 0–12 hours (GSM1238994–GSM1238996)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "induction time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_oxd53e_no_iptg",
+    "file": "GSE51112_oxd53e_no_iptg.tsv",
+    "metricKey": "exprGse51112OxD53eNoIptg",
+    "label": "Expression GSE51112 OX-D53E − IPTG (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) without IPTG, mean of three time points from 0 to 12 h",
+    "sha256": "318efe84c94e5d65b75677b4c2887f68faaf2ba04fd6e28f69c09e3df7120ab6",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "OX-D53E NO IPTG 0 Hours",
+        "OX-D53E NO IPTG 3 Hours",
+        "OX-D53E NO IPTG 12 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE51112",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "PCC 7942 OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339)",
+      "basis": "transferred",
+      "conditionSet": "OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339) after IPTG, mean of three time points from 0 to 12 h",
+      "samples": "OX-Empty + IPTG, 0–12 hours (GSM1238997–GSM1238999)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+      "citation": {
+        "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "replicates": {
+        "count": null,
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+      },
+      "treatments": [
+        "IPTG induction (empty vector)",
+        "induction time course"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 53,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "30 °C",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100,
+          "hi": 100,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+          "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1,
+          "hi": 1,
+          "unit": "%",
+          "text": "1% CO₂ in air, bubbled",
+          "quote": "Cultures were grown with bubbling of 1% CO2 in air at 30°C while illuminated with 100 μE m-2 s-1 (μmoles photons m-2 s-1) of cool fluorescent light.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution",
+          "quote": "200 mL of BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 in the presence of 2 ug/mL spectinomycin and 5 ug/mL chloramphenicol (EOC 113) or 2 ug/mL gentamycin, 5 ug/mL chloramphenicol, and 7.5 ug/mL kanamycin",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "tissue culture flasks, 800 mL, bubbled",
+          "quote": "After initial inoculation, cells were diluted in 800 mL of BG-11M with HEPES in the absence of antibiotics with bubbling.",
+          "where": "GEO GSE51112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "OD stated",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD750 held near 0.3 by periodic dilution through the experiment",
+          "quote": "cells were diluted to an OD750 of 0.3. This OD was kept relatively constant throughout the experiment by periodic dilution with warm BG-11M + 10 mM HEPES pH 8.0.",
+          "where": "GEO GSE51112 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      }
+    },
+    "id": "GSE51112_oxempty_iptg",
+    "file": "GSE51112_oxempty_iptg.tsv",
+    "metricKey": "exprGse51112OxEmptyIptg",
+    "label": "Expression GSE51112 OX-Empty + IPTG (PCC 7942)",
+    "organism": "Synechococcus elongatus PCC 7942",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq transcript abundance",
+    "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+    "condition": "OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339) after IPTG, mean of three time points from 0 to 12 h",
+    "sha256": "6fbfd318305bfe128f9bed01f35e8c94bc7716e3e7d87b21be29ac5f99c859d6",
+    "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+    "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+    "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+    "citationId": "markson-2013",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE51112_RNAseq_ProcessedData.txt.gz",
+      "sourceSha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+      "columns": [
+        "OX-Empty IPTG 0 Hours",
+        "OX-Empty IPTG 3 Hours",
+        "OX-Empty IPTG 12 Hours"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 2551,
+      "unmappedIdentifiers": 172,
+      "mappingRoute": "pcc7942_old_locus_tag in identifier-crosswalk-v1.tsv, one-to-one rows only"
+    }
   }
 ]

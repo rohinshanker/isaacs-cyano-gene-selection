@@ -16,8 +16,8 @@ held link-only for its licence. The ledger and the roadmap register now read
 "permitted with citation" on every row, with the earlier reading kept in
 brackets.
 
-Rows 1 and 2 shipped on 2026-10-07 under the admission contract: 16 RNA-seq
-layers from eight GEO series, each a spec under `data/expression/ingest/` with
+Rows 1, 2 and 5 shipped on 2026-10-07 under the admission contract: 20 RNA-seq
+layers from nine GEO series, each a spec under `data/expression/ingest/` with
 its deposited file pinned by URL and SHA-256, its condition record from the
 package B row and the 2026-10-06 addendum, a manifest entry with the join audit
 counts, and a citation row offering every layer table for download. Per series:
@@ -32,6 +32,7 @@ counts, and a citation row offering every layer table for download. Per series:
 | GSE237858 | 12 h constant light after a dark pulse | wild type, no ZnCl₂ | labA-KO, kaiA-Ex | 2,634 |
 | GSE254350 | day 1, day 4 | wild type | pilB, sigF1, sigF2 mutants | 2,505 |
 | GSE335065 | axenic, axenic membrane bioreactor, membrane-separated co-culture | cscB+ Δsps (engineered) | mixed co-culture with *R. toruloides* (9 samples) | 2,615 |
+| GSE51112 | WT constant light, OX-D53E +IPTG, OX-D53E −IPTG, OX-Empty +IPTG | wild type and the three RpaA-phosphomimetic arms (engineered) | nothing; the series has four condition sets and all ship | 2,551 |
 
 Owner decision, 2026-10-07: for series with no wild-type baseline, the engineered
 strain's data may be shown as long as it is specified that the strain is a
@@ -53,7 +54,12 @@ Decisions taken in this pass, each recorded in the spec's caveat:
   as GSE205444 does: it is the planktonic control of a biofilm assay.
 - Two reader rules were added to `tools/ingest_expression.py` and distilled into
   `docs/validation/data-contract.md`: `reader.idPattern` (feature prefixes and
-  non-gene rows, counted as unmapped) and an unnamed identifier column.
+  non-gene rows, counted as unmapped) and an unnamed identifier column. A third
+  followed with row 5: a layer may name its own strain (`layer.strain`), because
+  GSE51112 holds the wild type and three engineered arms in one deposit.
+- Row 5, GSE51112, ships all four of its condition sets rather than the wild type
+  alone: the three RpaA-phosphomimetic arms are the study's point and are marked
+  engineered, under the owner's decision of 2026-10-07.
 - The 2026-10-06 addendum's co2 and growth-phase readings for Puszyńska and
   O'Shea 2017 are carried inline in the five specs with their quotes and
   locations; the package B row supplies the other axes' quotes.
@@ -72,6 +78,25 @@ and 9 are deferred to
 This does not hold ingestion of rows 1 to 7 or alter their citation/admission
 requirements. The review covers download discovery and provenance, not a new
 licence decision.
+
+## Owner decisions, 2026-10-07 (remaining rows)
+
+Asked and answered 2026-10-07 so the ticket can close:
+
+- Row 3, GSE252562 (LD8:16 titles against LD16:8 characteristics): wait for
+  the depositor. The row moves to the condition-gaps ticket, which owns the
+  query; it ships when the reply is recorded.
+- Row 4, GSE311172 and GSE225426 (no article): wait for the depositor replies.
+  Same move.
+- Row 6, arrays: split into their own ticket
+  ([O_array-expression-reader__20261007](O_array-expression-reader__20261007.md)):
+  the array reader, its normalisation and dye-swap policy, and the separate
+  array platform listing (J5).
+- Row 7, PRIDE deposits: a ratio-to-reference result is acceptable as a signed
+  layer listed apart from abundances and labelled as a ratio in Data Sources,
+  alongside any spectral-count or intensity table the files give.
+- Row 5, GSE51112: ships here; its engineered arms (OX-D53E, OX-Empty) ship
+  marked as engineered under the decision above.
 
 ## Sources unblocked
 
@@ -93,13 +118,32 @@ per-gene file package B found; conditions are the package B rows, amended by the
 
 ## Work
 
-1. Rows 1 and 2: done 2026-10-07 (see Current state).
-2. Row 5, then row 7 as the archives allow.
-3. Row 6: an array reader (per-probe to per-gene mean, deposited normalisation
-   kept) and the "array" platform listed apart in Data Sources.
-4. Rows 3 and 4 as their condition questions resolve. Rows 8 and 9 await the
-   separate owner review; do not add original-file downloads or catalogue fields
-   as part of this ingestion pass.
+1. Rows 1, 2 and 5: done 2026-10-07 (see Current state).
+2. Row 7 as the archives allow: a ratio-to-reference result ships as a signed
+   layer listed apart from abundances and labelled as a ratio (owner decision,
+   2026-10-07). What the three deposits actually serve, read 2026-10-07 from the
+   PRIDE v3 file listings: PXD000510 (Guerreiro 2014) has four `.pride.mztab.gz`
+   files, 9 to 21 MB, beside its Mascot result XML, so a TMT reporter-ion table
+   is reachable without reprocessing; PXD005105 (Wang 2016) serves one 944 MB
+   `SEARCH.zip` of DTASelect output, which the existing `dtaselect` reader
+   already handles, as PXD030282's was; PXD005851 (the 48-organism acetylation
+   deposit) has six *S. elongatus* runs, three in BG-11 and three in BG-11 with
+   NaCl, each with an MS-GF+ `.mzid.gz` of about 80 to 107 MB, which needs an
+   mzIdentML reader the repository does not have. Order: PXD000510, PXD005105,
+   then PXD005851.
+3. Row 6: moved out to
+   [O_array-expression-reader__20261007](O_array-expression-reader__20261007.md)
+   by the owner's decision of 2026-10-07.
+4. Rows 3 and 4 wait on the depositors (owner decision, 2026-10-07). The three
+   emails are drafted in
+   [AAA-next-steps.md](../../validation/AAA-next-steps.md) item 5; a reply, not
+   the sending, is what unblocks them, and each reply is recorded in
+   [O_condition-metadata-gaps__20261005](O_condition-metadata-gaps__20261005.md)
+   work item 4. GSE252562 has a cheaper route first: its series now cites
+   PMID 39236161 (PMC11473183), outside the open-access subset and unreadable by
+   the agents, whose methods likely settle the photoperiod. Rows 8 and 9 await
+   the separate owner review; do not add original-file downloads or catalogue
+   fields as part of this ingestion pass.
 5. Keep the ledger and the roadmap register's bracketed history accurate as
    each lands.
 
@@ -113,21 +157,22 @@ Required gates on the isolated docs worktree: `npm test` 1,116 passed;
 skip. This pass changed no application code, release data or browser UI;
 implementation-specific validation remains separate.
 
-Rows 1 and 2, 2026-10-07: `npm test` passed; `.venv/bin/python -m pytest -q`
-497 passed, 1 skipped, 36 subtests (28 ingestion-tool tests, including the two
-new reader rules); `.venv/bin/python tools/validate_contract.py` 116 passed, 0
+Rows 1, 2 and 5, 2026-10-07: `npm test` 1,116 passed; `.venv/bin/python -m
+pytest -q` 498 passed, 1 skipped, 36 subtests (29 ingestion-tool tests, including
+the three new reader rules); `.venv/bin/python tools/validate_contract.py` 116 passed, 0
 failed, 1 declared skip. The join audit counts are in each layer's `ingest`
 block (2,551 genes for the five old-locus-tag workbooks, 164 identifiers
 unmapped; 2,634 for GSE237858 with 135 unmapped, 57 of them `rna-`/novel rows
 outside the pattern; 2,505 for GSE254350 with 279 unmapped, 116 of them
 `predicted RNA` rows; 2,615 for GSE335065 with 146 unmapped, 8 of them pANS
-rows). Every citation download resolves to a tracked table (ledger test). The
+rows; 2,551 for each GSE51112 layer with 172 unmapped). Every citation download
+resolves to a tracked table (ledger test). The
 rendered check ran on 2026-10-07 against the built site served from this
 checkout (Playwright, 1280×800, 768×1024 and 375×812): colouring by
-Transcript abundance (RNA-seq) lists 32 datasets, the 16 new rows show their
+Transcript abundance (RNA-seq) lists 36 datasets, the 20 new rows show their
 study id and condition set, the engineered ones carry the "engineered strain"
-chip, the defaults stay at the four standard-growth sets, and the console is
-clean.
+chip and the wild-type ones do not, the defaults stay at the four
+standard-growth sets, and the console reports no errors or warnings.
 
 Remaining rows: the same gates, the join audit counts in each `ingest` block,
 a rendered check of each Data Sources entry and legend, and a citation row

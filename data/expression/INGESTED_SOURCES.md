@@ -50,8 +50,10 @@ wherever it is shown, and none is pooled with another without a recorded lab
 judgement. A layer measured in an engineered derivative (PXD030282's
 limonene-producing L1118, GSE288532's and GSE335065's cscB-sps, GSE89999's
 clock rescue, GSE103463's and GSE105774's complemented rel deletion, GSE103644's
-inducible relA) is listed under "Engineered strain" and its record names the
-strain.
+inducible relA, GSE51112's RpaA-phosphomimetic and empty-vector arms) is listed
+under "Engineered strain" and its record names the strain. Where one deposit
+holds several genotypes, a layer names its own strain (`layer.strain`), as
+GSE51112's four layers do.
 
 Regenerate:
 

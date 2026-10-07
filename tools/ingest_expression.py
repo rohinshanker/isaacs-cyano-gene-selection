@@ -423,7 +423,8 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
                  replicate_quote: Mapping[str, str]) -> dict[str, Any]:
     """The layer's condition record: the spec's structured axes with the table's quotes attached."""
     conditions: dict[str, Any] = {}
-    # A layer may carry its own record where the study's condition sets differ.
+    # A layer may carry its own record where the study's condition sets differ,
+    # and its own strain where one deposit holds several genotypes.
     for axis, fields in layer.get("conditions", spec["conditions"]).items():
         axis_record = dict(fields)
         cited = quotes.get(axis, {})
@@ -436,7 +437,7 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
         "studyId": spec["studyId"],
         "dataType": spec["dataType"],
         "platform": spec["platform"],
-        "strain": spec["strain"],
+        "strain": layer.get("strain", spec["strain"]),
         "basis": spec["basis"],
         "conditionSet": layer["conditionSet"],
         "samples": layer["samples"],

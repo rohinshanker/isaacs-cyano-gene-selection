@@ -1,0 +1,172 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article © 2013 Elsevier Inc., all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE51112",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE51112",
+  "citationId": "markson-2013",
+  "citation": {
+    "text": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 2013;155(6):1396-1408.",
+    "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+    "pmid": "24315105"
+  },
+  "file": {
+    "name": "GSE51112_RNAseq_ProcessedData.txt.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51112/suppl/GSE51112_RNAseq_ProcessedData.txt.gz",
+    "sha256": "e842954b1b2f7f2909860e6f56e4f7f4b4daf89780d70ff82451b03ce893f8ac"
+  },
+  "reader": {
+    "format": "tsv",
+    "idColumn": "Gene ID",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean median-normalised, ORF-length-normalised expression values as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 53,
+  "replicates": {
+    "count": null,
+    "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 100,
+      "hi": 100,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "100 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "cool fluorescent",
+      "entrained": true,
+      "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, then released into continuous light",
+      "where": "GEO GSE51112 !Sample_treatment_protocol_ch1; Markson et al. 2013 Supplemental Information, Extended Experimental Procedures, Cell Culture (read in full 2026-10-06; package B/C addendum)",
+      "quote": "cultures were grown in tissue culture flasks illuminated with 100 mE m-2 s-1 (mmoles photons m-2 s-1) of cool fluorescent light and bubbled continuously with 1% CO2 in air, with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium. Medium was supplemented with 10 mM HEPES-KOH pH 8.0 maintain the pH."
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 1,
+      "hi": 1,
+      "unit": "%",
+      "text": "1% CO₂ in air, bubbled"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11M with 10 mM HEPES-KOH pH 8.0; strain-specific antibiotics at inoculation only, absent after dilution"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "tissue culture flasks, 800 mL, bubbled"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "OD stated",
+      "od": [
+        0.3,
+        0.3
+      ],
+      "odNm": 750,
+      "text": "OD750 held near 0.3 by periodic dilution through the experiment"
+    }
+  },
+  "caveat": "Measured in PCC 7942, not UTEX 2973; one sample per time point, so no replicate band exists, and the six circadian time points are averaged, which removes the rhythm the study was designed around.",
+  "layers": [
+    {
+      "id": "GSE51112_wt_ll",
+      "metricKey": "exprGse51112WtLl",
+      "label": "Expression GSE51112 WT constant light ZT24–44 (PCC 7942)",
+      "conditionSet": "Wild type (EOC113) in continuous light, mean of six time points from ZT 24 to ZT 44 h",
+      "samples": "WT culture, ZT 24–44 hours (GSM1238982–GSM1238987)",
+      "columns": [
+        "WT ZT 24 Hours",
+        "WT ZT 28 Hours",
+        "WT ZT 32 Hours",
+        "WT ZT 36 Hours",
+        "WT ZT 40 Hours",
+        "WT ZT 44 Hours"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "diel"
+    },
+    {
+      "id": "GSE51112_oxd53e_iptg",
+      "metricKey": "exprGse51112OxD53eIptg",
+      "label": "Expression GSE51112 OX-D53E + IPTG (PCC 7942)",
+      "conditionSet": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) after IPTG, mean of six time points from 0 to 12 h",
+      "samples": "OX-D53E + IPTG, 0–12 hours (GSM1238988–GSM1238993)",
+      "columns": [
+        "OX-D53E IPTG 0 Hours",
+        "OX-D53E IPTG 0.5 Hours",
+        "OX-D53E IPTG 2 Hours",
+        "OX-D53E IPTG 3 Hours",
+        "OX-D53E IPTG 6 Hours",
+        "OX-D53E IPTG 12 Hours"
+      ],
+      "treatments": [
+        "IPTG induction of RpaA D53E",
+        "induction time course"
+      ],
+      "group": "engineered",
+      "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+      "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)"
+    },
+    {
+      "id": "GSE51112_oxd53e_no_iptg",
+      "metricKey": "exprGse51112OxD53eNoIptg",
+      "label": "Expression GSE51112 OX-D53E − IPTG (PCC 7942)",
+      "conditionSet": "OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346) without IPTG, mean of three time points from 0 to 12 h",
+      "samples": "OX-D53E - IPTG, 0–12 hours (GSM1238994–GSM1238996)",
+      "columns": [
+        "OX-D53E NO IPTG 0 Hours",
+        "OX-D53E NO IPTG 3 Hours",
+        "OX-D53E NO IPTG 12 Hours"
+      ],
+      "treatments": [
+        "induction time course"
+      ],
+      "group": "engineered",
+      "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+      "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)"
+    },
+    {
+      "id": "GSE51112_oxempty_iptg",
+      "metricKey": "exprGse51112OxEmptyIptg",
+      "label": "Expression GSE51112 OX-Empty + IPTG (PCC 7942)",
+      "conditionSet": "OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339) after IPTG, mean of three time points from 0 to 12 h",
+      "samples": "OX-Empty + IPTG, 0–12 hours (GSM1238997–GSM1238999)",
+      "columns": [
+        "OX-Empty IPTG 0 Hours",
+        "OX-Empty IPTG 3 Hours",
+        "OX-Empty IPTG 12 Hours"
+      ],
+      "treatments": [
+        "IPTG induction (empty vector)",
+        "induction time course"
+      ],
+      "group": "engineered",
+      "caveat": "Measured in an engineered PCC 7942 strain lacking rpaA and kaiBC with an IPTG-inducible construct, not wild type and not UTEX 2973; one sample per time point, so no replicate band exists, and time points are averaged.",
+      "strain": "PCC 7942 OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339)"
+    }
+  ]
+}

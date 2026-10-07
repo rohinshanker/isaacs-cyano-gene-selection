@@ -366,7 +366,7 @@ above, and every download waits on the manifest entry and the mode-and-pin rules
 | 27 | PCC 7942 | GSE50919 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 28 | PCC 7942 | GSE50920 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 29 | PCC 7942 | GSE50922 | 4 escalate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
-| 30 | PCC 7942 | GSE51112 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 30 | PCC 7942 | GSE51112 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 31 | PCC 7942 | GSE52486 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 32 | PCC 7942 | GSE59112 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 33 | PCC 7942 | GSE79726 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
@@ -409,7 +409,10 @@ per-gene table landed as 16 layers: GSE103462 (2), GSE103463 (2), GSE103644
 (2), GSE103704 (2) and GSE105774 (2) from Puszyńska and O'Shea 2017, GSE237858
 (1), GSE254350 (2) and GSE335065 (3, the mixed co-culture arm held out); each
 is the control or wild-type genotype of its series, and an engineered
-background is listed as such. GSE45762 is
+background is listed as such. GSE51112 (Markson et al. 2013) followed the
+same day as 4 layers: the wild-type circadian course and the three
+RpaA-phosphomimetic arms, which are engineered. Its deposit is one
+median- and ORF-length-normalised table with one sample per time point. GSE45762 is
 excluded for contradictory sample labels. Of the CC0 proteomes, PXD062851
 (Russo et al. 2025) shipped on 2026-10-06 as one label-free DIA layer (1,996
 genes; 2,307 protein groups keyed by UniProt accession, mapped through
