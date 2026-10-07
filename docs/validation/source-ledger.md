@@ -51,6 +51,23 @@ sequence or returned model becomes project provenance automatically. Keep the
 external server terms and privacy setting separate from the standalone Apache-2.0
 code and the separate PyRosetta licence.
 
+## Fitness-screen sources
+
+| Artifact | Attribution and admission basis |
+| --- | --- |
+| GSE205443, Supplementary File S4 of Simkovsky et al. 2022, `Data_Sheet_4.XLSX` | Article CC BY 4.0; cite Simkovsky et al., DOI `10.3389/fmicb.2022.899150`, PMID 35814646. Use the nine published fitness columns, not the deposited barcode counts. The ingest spec pins the supplementary archive and its member. |
+| Fitness Browser PCC 7942 (`SynE`), owner's saved fitness and experiment tables | The saved Help page gives the score semantics but no data reuse licence; its freely available code statement is not a data licence. Admitted with citation under the owner's 2026-10-06 decision. Cite the [Fitness Browser organism page](https://fit.genomics.lbl.gov/cgi-bin/org.cgi?orgId=SynE), Price et al. 2018, DOI `10.1038/s41586-018-0124-0`, and the Wetmore et al. 2015 RB-TnSeq method, DOI `10.1128/mBio.00306-15`. |
+
+The Fitness Browser fitness-table SHA-256 is
+`4c822bd525a7d45a4f592b45bcc00ba55a5f5440b44eef57afebb511918760bf`;
+the experiment-table SHA-256 is
+`00ea2bdee7d7b5679120e58a7f718d4cb08621ed99e1b832ede061167343fda7`.
+Preserve both pins and the private original-download boundary. The public
+citation entry `price-2018-fitness-browser` names the resource and the paper;
+the layer units attribute the Wetmore et al. fitness calculation. Follow
+[fitness-screen-data.md](fitness-screen-data.md) for the layer, missingness,
+join and pooling contracts. Permission evidence does not change those contracts.
+
 ## Licence decisions for the package A candidates, 2026-10-04
 
 Recorded at intake of Claude Science package C

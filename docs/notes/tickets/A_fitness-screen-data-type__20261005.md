@@ -1,13 +1,21 @@
-# O_fitness-screen-data-type__20261005 — Open
+# A_fitness-screen-data-type__20261005 — Active
 
 - **Scope:** Bring condition-resolved fitness screens, starting with the PCC 7942
   RB-TnSeq deposits, into the site as a data type of their own, in their own tab of
   the data selection window. Covers `docs/`, `data/`, the pipeline, and `site/`.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-07
 
 ## Current state
+
+Completion acceptance is active in an isolated worktree based on `4a2a4c0`.
+The release already contains nine GSE205443 fractions and 90 Fitness Browser
+condition sets covering all 129 experiments. Independent source/payload review,
+rendered controls and required gates are being checked before closure. No new
+source admission is planned. PRIDE, recoded E. coli, condition recovery and raw
+pilot work retain their existing owners. The earlier progress below predates
+the completed compendium implementation and is being reconciled.
 
 Opened on the owner's decision of 2026-10-05 that fitness screens are wanted, in
 their own tab; the [data contract](../../validation/data-contract.md#sister-strains-admitted-for-utex-2973-data)

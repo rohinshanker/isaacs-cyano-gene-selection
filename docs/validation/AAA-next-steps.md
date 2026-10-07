@@ -8,8 +8,8 @@ item is removed here.
 
 **Done on 2026-10-07 and removed from this list.** The Fitness Browser pages and
 PCC 7942 tables are saved in the private drop folder and verified complete, so
-[A_fitness-browser-access__20261006](../notes/tickets/A_fitness-browser-access__20261006.md)
-is unblocked. All four PMC method papers are saved, filed under paper titles,
+[fitness-screen source and selection contract](fitness-screen-data.md)
+records their pins and admission. All four PMC method papers are saved, filed under paper titles,
 and mapped to their PMC ids in
 [A_pmc-gated-method-papers__20261006](../notes/tickets/A_pmc-gated-method-papers__20261006.md).
 The SRI notification about EcoCyc-derived content was sent, recorded in
