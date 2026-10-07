@@ -31,6 +31,7 @@ from organisms import OrganismConfig, get_organism  # noqa: E402
 from rna_context import folding_context, restore_start_window  # noqa: E402
 from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
 from condition_record import validate_record  # noqa: E402
+import expression_table  # noqa: E402
 
 
 OPERON_GAP = 100
@@ -656,20 +657,25 @@ def load_expression_sources(
             f"expected {source['sha256']}, got {observed_sha256}",
         )
 
+        # The value column is named after the declared quantity, so a fitness
+        # table cannot be loaded as an abundance or the reverse.
+        expected_header = expression_table.header(source["record"]["dataType"])
         with table_path.open(encoding="utf-8", newline="") as handle:
             rows = csv.DictReader(handle, delimiter="\t")
             require(
-                rows.fieldnames == ["locus_tag", "abundance", "source_gene_id"],
-                f"Unexpected expression columns in {file_name}: {rows.fieldnames}",
+                rows.fieldnames == expected_header,
+                f"Unexpected expression columns in {file_name}: {rows.fieldnames}; "
+                f"a {source['record']['dataType']} table must have {expected_header}",
             )
+            value_field = expected_header[1]
             values: dict[str, float] = {}
             for row in rows:
-                locus = row["locus_tag"]
+                locus = row[expression_table.LOCUS_COLUMN]
                 require(
                     locus not in values,
                     f"Duplicate locus_tag {locus} in expression source {source_id}",
                 )
-                value = float(row["abundance"])
+                value = float(row[value_field])
                 # A fitness score is signed (loss below zero, gain above); every
                 # abundance is not. The source says which it is.
                 require(

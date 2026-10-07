@@ -364,6 +364,10 @@ def build_spec() -> dict[str, Any]:
             "name": "fit_organism_SynE.tsv",
             "url": ORGANISM_PAGE,
             "sha256": FITNESS_SHA256,
+            # The organism page answers an automated client with a bot check, so
+            # the ingest tool must not request it: a missing staged table is a
+            # hard stop, not a download (tools/ingest_expression.py fetch).
+            "manual": True,
         },
         "reader": {
             "format": "tsv",
@@ -371,9 +375,10 @@ def build_spec() -> dict[str, Any]:
             "idKind": "pcc7942_old",
         },
         "units": (
-            "gene fitness (log2 ratio of barcode abundance at the end of the "
-            "experiment to the Time0 sample, Wetmore et al. 2015), as published by "
-            "the Fitness Browser"
+            "weighted and normalized gene fitness on the authors' log2 scale (the "
+            "weighted average of per-strain log2 count ratios between the end of the "
+            "experiment and the Time0 sample, with pseudocounts and per-scaffold "
+            "normalization, Wetmore et al. 2015), as published by the Fitness Browser"
         ),
         "normalization": "as-deposited",
         "conditionTableRow": None,
