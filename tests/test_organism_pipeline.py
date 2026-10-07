@@ -243,3 +243,43 @@ def test_built_at_is_the_only_meta_normalization() -> None:
     changed = b'{"schemaVersion":1,"builtAt":"new","geneCount":3}\n'
     assert check_utex_build_identity.normalized_meta(candidate, published) == published
     assert check_utex_build_identity.normalized_meta(changed, published) != published
+
+
+def test_every_organism_configures_its_own_expression_directory():
+    """A second organism's layers cannot share the first organism's manifest.
+
+    Expression layers are measured in particular strains and join through a
+    particular crosswalk, so the manifest is a property of the organism. Before
+    this was configurable the build read one fixed path, which would have made
+    an E. coli build read the cyanobacterial manifest and try to join PCC 7942
+    locus tags onto b-numbers.
+    """
+    import json
+
+    from scripts.organisms import CONFIG_PATH, get_organism
+
+    ids = sorted(json.loads(CONFIG_PATH.read_text(encoding="utf-8"))["organisms"])
+    assert len(ids) >= 2, "the point of the field is a second organism"
+
+    seen = {}
+    for organism_id in ids:
+        directory = get_organism(organism_id).path("expressionDirectory")
+        assert directory.is_absolute()
+        seen[directory] = organism_id
+
+    # No two organisms may share a directory, or one would publish the other's
+    # measurements under its own gene identifiers.
+    assert len(seen) == len(ids)
+
+
+def test_an_organism_without_the_expression_layer_still_declares_its_directory():
+    """The directory is declared whether or not the layer is switched on.
+
+    Turning the layer on must be a one-word change in the configuration, not a
+    code change, so the path has to be there before it is used.
+    """
+    from scripts.organisms import get_organism
+
+    ecoli = get_organism("ecoli-k12-mg1655")
+    assert ecoli.has_layer("expression") is False
+    assert ecoli.path("expressionDirectory").name == "ecoli-k12-mg1655"

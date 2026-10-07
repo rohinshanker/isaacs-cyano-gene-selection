@@ -34,14 +34,25 @@ An isolated worktree may link its cache files to the canonical checkout: those
 bytes are checked by the same pins. Source names must be plain filenames, and
 the output cannot overwrite a source through either its name or a link alias.
 
-The frozen [statistics summary](../notes/handoff/cyano_processed_expression_agreement_20261007.json)
+The [current statistics summary](../notes/handoff/cyano_processed_expression_agreement_current_20261007.json)
 retains all metadata, denominators, correlations and caveats for 18 studies and
-53 layers. Its [replicate ranges](../notes/handoff/cyano_processed_expression_agreement_20261007_replicates.tsv)
+53 layers. It carries the accepted sampling-temperature corrections: GSE237858
+and GSE252562 state maintenance at 30°C, but do not establish that temperature
+for the sampled cultures. The sampling values stay `not reported` with the
+maintenance quotation preserved. Its [replicate ranges](../notes/handoff/cyano_processed_expression_agreement_20261007_replicates.tsv)
 and [response comparisons](../notes/handoff/cyano_processed_expression_agreement_20261007_responses.tsv)
 are also available as tables. The summary explicitly omits the per-gene `means`
 and contrast `vector` fields; the command above regenerates those full vectors.
 It records the implementation checksum and numerical-library versions as well
 as the input pins. Never read an omitted vector as a missing measurement.
+
+The [original frozen summary](../notes/handoff/cyano_processed_expression_agreement_20261007.json)
+preserves the earlier metadata snapshot and its original pins. Use the current
+summary for condition interpretation. The corrections change seven layer
+metadata records; every quantitative statistic and both table projections remain
+identical. To reproduce the original snapshot, use an isolated checkout of
+`6645de58a040973dfc5fec5e787cf11c2c006a4a` with the same pinned cache and numerical
+library versions. The command above regenerates the current snapshot.
 
 ## Level and replicate statistics
 
