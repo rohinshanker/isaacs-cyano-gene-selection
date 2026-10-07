@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import expression_table
 import feature_metrics as fm
 from condition_record import example_record
 from build_features import (
@@ -243,13 +244,20 @@ def expression_source(file_name, metric_key, digest):
     }
 
 
-def write_expression_table(directory, file_name, rows):
-    """Writes a small source table and returns its SHA-256 digest."""
-    content = "locus_tag\tabundance\tsource_gene_id\n" + "".join(
+def write_expression_table(directory, file_name, rows, data_type="transcriptomics"):
+    """Writes a small source table under its declared header and returns its SHA-256."""
+    content = expression_table.header_line(data_type) + "\n" + "".join(
         f"{locus}\t{value}\t{source_id}\n" for locus, value, source_id in rows
     )
     (directory / file_name).write_text(content, encoding="utf-8")
     return hashlib.sha256(content.encode()).hexdigest()
+
+
+def fitness_source(file_name, metric_key, digest):
+    """A manifest entry for a signed fitness layer."""
+    source = expression_source(file_name, metric_key, digest)
+    source["record"] = {**source["record"], "dataType": "fitness", "platform": "RB-TnSeq"}
+    return source
 
 
 def test_expression_manifest_loads_only_selected_sources_and_keeps_nulls(tmp_path):
@@ -319,21 +327,50 @@ def test_expression_manifest_rejects_a_metric_key_collision(tmp_path):
         load_expression_sources(tmp_path, {"cai"})
 
 
+def test_a_table_must_head_its_values_with_the_declared_quantity(tmp_path):
+    """A mislabelled download is refused at load, in both directions.
+
+    Reading a signed, normalized fitness score as an abundance (or the reverse)
+    misreads every row, so the header and the declared ``dataType`` must agree.
+    """
+    abundance_digest = write_expression_table(tmp_path, "mislabelled.tsv", [("a", 1.0, "s1")])
+    as_fitness = fitness_source("mislabelled.tsv", "fitTest", abundance_digest)
+    (tmp_path / "sources.json").write_text(json.dumps([as_fitness]), encoding="utf-8")
+    with pytest.raises(ValueError, match="a fitness table must have"):
+        load_expression_sources(tmp_path, set())
+
+    fitness_digest = write_expression_table(tmp_path, "typed.tsv", [("a", 1.0, "s1")], "fitness")
+    as_abundance = expression_source("typed.tsv", "exprTest", fitness_digest)
+    (tmp_path / "sources.json").write_text(json.dumps([as_abundance]), encoding="utf-8")
+    with pytest.raises(ValueError, match="a transcriptomics table must have"):
+        load_expression_sources(tmp_path, set())
+
+    # Each read under its own header, and nothing else changes.
+    (tmp_path / "sources.json").write_text(json.dumps([
+        fitness_source("typed.tsv", "fitTest", fitness_digest),
+        expression_source("mislabelled.tsv", "exprTest", abundance_digest),
+    ]), encoding="utf-8")
+    _, values = load_expression_sources(tmp_path, set())
+    assert values == {"fitTest": {"a": 1.0}, "exprTest": {"a": 1.0}}
+
+
 def test_a_signed_source_may_carry_negative_values_and_an_abundance_may_not(tmp_path):
-    digest = write_expression_table(tmp_path, "fit.tsv", [("a", -1.5, "s1"), ("b", 0.25, "s2")])
-    unsigned = expression_source("fit.tsv", "fitTest", digest)
+    abundance_digest = write_expression_table(tmp_path, "abundance.tsv", [("a", -1.5, "s1")])
+    unsigned = expression_source("abundance.tsv", "exprTest", abundance_digest)
     (tmp_path / "sources.json").write_text(json.dumps([unsigned]), encoding="utf-8")
     with pytest.raises(ValueError, match="Invalid value for a"):
         load_expression_sources(tmp_path, set())
-    signed = {**unsigned, "signed": True}
-    signed["record"] = {**signed["record"], "dataType": "fitness", "platform": "RB-TnSeq"}
+
+    digest = write_expression_table(
+        tmp_path, "fit.tsv", [("a", -1.5, "s1"), ("b", 0.0, "s2"), ("c", 0.25, "s3")], "fitness")
+    signed = {**fitness_source("fit.tsv", "fitTest", digest), "signed": True}
     (tmp_path / "sources.json").write_text(json.dumps([signed]), encoding="utf-8")
     sources, values = load_expression_sources(tmp_path, set())
-    assert values["fitTest"] == {"a": -1.5, "b": 0.25}
+    # Loss, exact no-change and gain all survive the load.
+    assert values["fitTest"] == {"a": -1.5, "b": 0.0, "c": 0.25}
     assert sources[0]["signed"] is True
     # A fitness record is signed by default and forms its own diverging family.
-    implied = {**unsigned}
-    implied["record"] = {**implied["record"], "dataType": "fitness", "platform": "RB-TnSeq"}
+    implied = fitness_source("fit.tsv", "fitTest", digest)
     (tmp_path / "sources.json").write_text(json.dumps([implied]), encoding="utf-8")
     sources, _ = load_expression_sources(tmp_path, set())
     assert sources[0]["signed"] is True

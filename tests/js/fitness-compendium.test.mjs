@@ -63,7 +63,7 @@ test('every compendium layer is signed and takes a diverging ramp', () => {
     assert.equal(meta.metrics[source.metricKey].scale, 'diverging');
     // A log2 ratio against Time0 is centred on zero, so a sequential or
     // logarithmic ramp would hide the sign that carries the meaning.
-    assert.match(source.units, /log2 ratio/);
+    assert.match(source.units, /log2/);
   }
 });
 

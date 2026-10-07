@@ -96,6 +96,25 @@ export function renderMetricHelp(details, model, manifest, organism = DEFAULT_OR
   if (model.reading) list.append(definitionRow('How to weigh it', model.reading));
   body.replaceChildren(list);
   appendCitations(body, model.citations, manifest, organism);
+  if (model.sourceLinks?.length) {
+    const sources = document.createElement('p');
+    sources.className = 'panel-note';
+    sources.append('Data records: ');
+    model.sourceLinks.forEach((source, index) => {
+      if (index > 0) sources.append('; ');
+      if (typeof source.url !== 'string' || !/^https?:\/\//.test(source.url)) {
+        sources.append(source.label);
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = source.url;
+      link.textContent = source.label;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      sources.append(link);
+    });
+    body.append(sources);
+  }
 }
 
 /** As {@link renderMetricHelp}, for a map's feature list. */

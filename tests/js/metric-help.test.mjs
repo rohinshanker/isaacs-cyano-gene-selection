@@ -6,6 +6,8 @@ import { LIVE_METRICS } from '../../site/js/core/live-metrics.js';
 import { metricHelp, methodKeys } from '../../site/js/core/metric-help.js';
 import { projectionHelp } from '../../site/js/core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from '../../site/js/ui/metric-help.js';
+import { buildTypeMetrics } from '../../site/js/core/type-metrics.js';
+import { datasetsFrom } from '../../site/js/core/data-sources.js';
 
 const file = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const meta = file('../../site/data/meta.json');
@@ -161,6 +163,43 @@ function detailsElement() {
   details.open = true;
   return details;
 }
+
+test('pooled fitness explains every contributor and links the fitness archive', () => {
+  const all = datasetsFrom(meta);
+  const biofilm = all.filter((source) => source.record.studyId === 'GSE205443');
+  const compendium = all.filter((source) => source.record.studyId === 'FitnessBrowser_SynE');
+  const helpFor = (members) => {
+    const [metric] = buildTypeMetrics(members, { contributing: () => members,
+      metricOf: (source) => registry.byKey.get(source.metricKey), geneCount: genes.length });
+    return metricHelp(metric, dataset);
+  };
+  const biofilmHelp = helpFor(biofilm);
+  assert.match(biofilmHelp.method, /mean of 9 selected condition-set gene-fitness values/);
+  assert.match(biofilmHelp.method, /equal weight/);
+  assert.doesNotMatch(biofilmHelp.method, /mean of 1 deposited/);
+  assert.match(biofilmHelp.origin, /T-values/);
+  assert.deepEqual(biofilmHelp.sourceLinks, [{ label: 'GSE205443',
+    url: 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443' }]);
+  assert.match(helpFor(compendium).origin, /2026-10-07/);
+  const previous = globalThis.document;
+  globalThis.document = { createElement: (tag) => new FakeElement(tag) };
+  try {
+    const details = detailsElement();
+    renderMetricHelp(details, biofilmHelp, citations);
+    const archiveLink = details.body.children.at(-1).children.find((node) => node.tagName === 'a');
+    assert.equal(archiveLink.href, biofilmHelp.sourceLinks[0].url);
+    assert.equal(archiveLink.textContent, 'GSE205443');
+    assert.equal(archiveLink.rel, 'noopener noreferrer');
+    renderMetricHelp(details, { ...biofilmHelp, sourceLinks: [
+      { label: 'unavailable record', url: 'javascript:alert(1)' },
+      { label: 'missing record' },
+    ] }, citations);
+    assert.equal(details.body.children.at(-1).children.filter((node) => node.tagName === 'a').length, 0);
+    assert.ok(details.body.children.at(-1).children.includes('unavailable record'));
+  } finally {
+    globalThis.document = previous;
+  }
+});
 
 test('help renderers preserve open disclosure and update selected content', () => {
   const previous = globalThis.document;

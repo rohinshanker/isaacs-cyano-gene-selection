@@ -29,12 +29,13 @@
     "idKind": "pcc7942_old",
     "blockTitleRow": 5
   },
-  "units": "gene fitness (log2 ratio of barcode abundance in the fraction to Time 0, Wetmore et al. 2015), as published in Supplementary File S4",
+  "units": "weighted and normalized gene fitness on the authors' log2 scale (the weighted average of per-strain log2 count ratios between the fraction and the Time 0 sample, with pseudocounts and per-scaffold normalization, Wetmore et al. 2015), as published in Supplementary File S4",
   "normalization": "as-deposited",
   "conditionTableRow": 22,
   "replicates": {
     "count": null,
-    "text": "triplicate tubes pooled before DNA extraction; one fitness value per fraction"
+    "text": "Triplicate bubbling tubes per condition, with the triplicate samples pooled prior to DNA extraction; the deposit publishes one Fitness column per fraction, so the shipped score is that pooled measurement and not a per-replicate value. No replicate count is read off the table's columns.",
+    "where": "paper PMC9260433, RB-TnSeq Experiment section and Figure 3A caption"
   },
   "conditions": {
     "temperature": {
@@ -52,12 +53,12 @@
       "text": "low fluorescent light, 5 µmol photons m-2 s-1"
     },
     "lightRegime": {
-      "status": "reported",
-      "kind": "continuous",
+      "status": "not reported",
+      "kind": null,
       "photoperiod": null,
       "spectrumClass": "fluorescent",
       "entrained": false,
-      "text": "low fluorescent light, continuous (photoperiod not stated)"
+      "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
     },
     "co2": {
       "status": "reported",
@@ -87,7 +88,7 @@
         0.5
       ],
       "odNm": 750,
-      "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+      "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
     }
   },
   "caveat": "Measured in a PCC 7942 RB-TnSeq library, not in UTEX 2973, as a signed gene fitness in a biofilm assay fraction relative to the library at Time 0; the authors' T-values are not carried, and a fitness value is never placed on an expression scale.",
@@ -122,12 +123,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -157,7 +158,9 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported",
+          "quote": "The pelleted cells were resuspended in 75 ml of BG-11 with HEPES media to an OD 750 of 0.5, split equally into triplicate bubbling tubes",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
         }
       }
     },
@@ -191,12 +194,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -226,7 +229,9 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported",
+          "quote": "The pelleted cells were resuspended in 75 ml of BG-11 with HEPES media to an OD 750 of 0.5, split equally into triplicate bubbling tubes",
+          "where": "paper PMC9260433, RB-TnSeq Experiment"
         }
       }
     },
@@ -260,12 +265,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -295,7 +300,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     },
@@ -329,12 +334,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -364,7 +369,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     },
@@ -398,12 +403,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -433,7 +438,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     },
@@ -468,12 +473,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -503,7 +508,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     },
@@ -538,12 +543,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "reported",
@@ -573,7 +578,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     },
@@ -582,7 +587,12 @@
       "metricKey": "fitGse205443E2FlaskBiofilmers",
       "label": "Fitness GSE205443 exp. 2 flask biofilmers (PCC 7942)",
       "conditionSet": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in fresh BG-11",
-      "samples": "set9IT043 (GSM6212717); pooled triplicate",
+      "samples": "set9IT043 (GSM6212717); pooled fraction samples, flask count not stated",
+      "replicates": {
+        "count": null,
+        "text": "Stationary 25-ml Pyrex flasks holding 5 ml of culture each, with the fraction samples pooled prior to DNA extraction; the paper states no flask count per condition. The deposit publishes one Fitness column per fraction, so the shipped score is that pooled measurement and not a per-replicate value.",
+        "where": "paper PMC9260433, RB-TnSeq Experiment section and Figure 3A caption"
+      },
       "columns": [
         "set9IT043 :: Fitness"
       ],
@@ -608,12 +618,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "not reported",
@@ -644,7 +654,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     },
@@ -653,7 +663,12 @@
       "metricKey": "fitGse205443E2FlaskCmBiofilmers",
       "label": "Fitness GSE205443 exp. 2 flask biofilmers, conditioned medium (PCC 7942)",
       "conditionSet": "Experiment 2, library 2.0: flask biofilm fraction after 15 days in wild-type conditioned BG-11",
-      "samples": "set9IT045 (GSM6212718); pooled triplicate",
+      "samples": "set9IT045 (GSM6212718); pooled fraction samples, flask count not stated",
+      "replicates": {
+        "count": null,
+        "text": "Stationary 25-ml Pyrex flasks holding 5 ml of culture each, with the fraction samples pooled prior to DNA extraction; the paper states no flask count per condition. The deposit publishes one Fitness column per fraction, so the shipped score is that pooled measurement and not a per-replicate value.",
+        "where": "paper PMC9260433, RB-TnSeq Experiment section and Figure 3A caption"
+      },
       "columns": [
         "set9IT045 :: Fitness"
       ],
@@ -680,12 +695,12 @@
           "text": "low fluorescent light, 5 µmol photons m-2 s-1"
         },
         "lightRegime": {
-          "status": "reported",
-          "kind": "continuous",
+          "status": "not reported",
+          "kind": null,
           "photoperiod": null,
           "spectrumClass": "fluorescent",
           "entrained": false,
-          "text": "low fluorescent light, continuous (photoperiod not stated)"
+          "text": "low fluorescent light; continuous versus diel and photoperiod not reported"
         },
         "co2": {
           "status": "not reported",
@@ -716,7 +731,7 @@
             0.5
           ],
           "odNm": 750,
-          "text": "resuspended to OD750 0.5 at the start of the biofilm assay"
+          "text": "resuspended to OD750 0.5 at the start of the biofilm assay; the harvested fraction's growth phase is not reported"
         }
       }
     }

@@ -93,6 +93,7 @@ EVIDENCE_SHA256 = {
     "intake": "5521e9bda63671dfb9c3486a48f2e9ac41c79a4e4f9214f39841c4cbcba566da",
     "sampling": "3edd71831cb5f6fbf1b01d89ce9e1cb585bf3f534889793db2d2e19df5d1caef",
     "paper": "da29ffb70a90dcf128b027a598c0d3e40611436f7d02d3cd2472bbc0d8aecc6a",
+    "fitness": "5df3d9ee018ec44bdedfbcabfb40bfebb727b6ecf165ca390a128886c6553f83",
     "pxd027430": "bb8311f4b36a2c0bb81377e2d28a3ff219e714e7baff746da1378f605b7e8810",
 }
 RECORD_AUDIT_PINS = {
@@ -105,6 +106,21 @@ RECORD_AUDIT_PINS = {
 # These are typed intake decisions, not text parsing.  Each source is pinned in
 # the generated audit, and tests verify the expected evidence entry still exists.
 RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
+    22: {
+        "expected_accession": "GSE205443",
+        "expected_source": {"cont": "continuous", "phase": "OD stated", "od": [0.5, 0.5]},
+        "values": {"cont": None, "phot": None, "phase": None, "od": None},
+    },
+    23: {
+        "expected_accession": "GSE205443",
+        "expected_source": {"cont": "continuous", "phase": "OD stated", "od": [0.5, 0.5]},
+        "values": {"cont": None, "phot": None, "phase": None, "od": None},
+    },
+    24: {
+        "expected_accession": "GSE205443",
+        "expected_source": {"cont": "continuous", "phase": "OD stated", "od": [0.5, 0.5]},
+        "values": {"cont": None, "phot": None, "phase": None, "od": None},
+    },
     10: {
         "expected_accession": "GSE104203",
         "expected_source": {"I": [600.0, 600.0]},
@@ -242,23 +258,23 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
 OVERRIDE_AUDIT = {
     "22.light_regime": {
         "status": "partial",
-        "source": "cyano_dataset_condition_records_20261007.json row 22; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
-        "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+        "source": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+        "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods.",
     },
     "22.growth_phase": {
         "status": "partial",
-        "source": "cyano_dataset_condition_records_20261007.json row 22 typed sampling record",
-        "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+        "source": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+        "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
     },
     "23.light_regime": {
         "status": "partial",
-        "source": "cyano_dataset_condition_records_20261007.json row 23; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
-        "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+        "source": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+        "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods.",
     },
     "23.growth_phase": {
         "status": "partial",
-        "source": "cyano_dataset_condition_records_20261007.json row 23 typed sampling record",
-        "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+        "source": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+        "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
     },
     "24.temperature": {
         "status": "partial",
@@ -267,13 +283,13 @@ OVERRIDE_AUDIT = {
     },
     "24.light_regime": {
         "status": "partial",
-        "source": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
-        "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+        "source": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+        "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods.",
     },
     "24.growth_phase": {
         "status": "partial",
-        "source": "cyano_dataset_condition_records_20261007.json row 24 typed sampling record",
-        "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+        "source": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+        "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
     },
     "10.light_intensity": {
         "status": "partial",
@@ -1149,6 +1165,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--paper-addendum", type=Path, required=True)
     parser.add_argument("--pride-check", type=Path, required=True)
     parser.add_argument("--sampling-scope-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_condition_sampling_scope_review_20261007.json")
+    parser.add_argument("--fitness-sampling-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_gse205443_audit_20261007.md")
     parser.add_argument("--pxd027430-addendum", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_pxd027430_condition_addendum_20261007.json")
     args = parser.parse_args(argv)
     inputs = {
@@ -1160,6 +1177,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "pride": args.pride_check,
         "pairs": args.pairs,
         "sampling": args.sampling_scope_audit,
+        "fitness": args.fitness_sampling_audit,
         "pxd027430": args.pxd027430_addendum,
     }
     _validate_evidence(inputs)
@@ -1179,7 +1197,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.pairs, args.historical_rescore, args.historical_inventory, args.records,
         args.owner_judgements, args.bc_addendum, args.archive_addendum,
         args.archive_intake, args.manual_supplement, args.paper_addendum,
-        args.pride_check, args.sampling_scope_audit,
+        args.pride_check, args.sampling_scope_audit, args.fitness_sampling_audit,
         args.pxd027430_addendum,
     ]
     inventory = build_gap_inventory(

@@ -32,6 +32,7 @@ from typing import Any, Mapping
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from condition_record import validate_record  # noqa: E402
+from expression_table import header_line  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "data/expression/sources.json"
@@ -58,18 +59,43 @@ def sha256_of(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def fetch(url: str, expected_sha256: str, target: Path) -> bytes:
-    """Return the file's bytes, downloading once and refusing a checksum mismatch."""
+def fetch(url: str, expected_sha256: str, target: Path, *, manual: bool = False) -> bytes:
+    """Return the file's bytes, downloading once and refusing a checksum mismatch.
+
+    A source the deposit will not serve to an automated client is declared
+    ``manual``: the owner saves it by hand and an agent stages it at ``target``.
+    A missing manual file is a hard stop naming the path, never a request to
+    ``url`` — that address answers a bot with an HTML challenge, whose bytes
+    would otherwise land in the staging directory as the pinned input.
+
+    A file already staged is never replaced, because it may be the owner's only
+    copy, and a download is cached only once its checksum matches.
+    """
     if target.is_file():
         data = target.read_bytes()
-    else:
-        with urllib.request.urlopen(url, timeout=120) as response:  # noqa: S310 - pinned https URL
-            data = response.read()
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(data)
+        observed = sha256_of(data)
+        if observed != expected_sha256:
+            raise ValueError(
+                f"checksum mismatch for {target.name}: expected {expected_sha256}, "
+                f"got {observed}; the staged file at {target} was left as it is"
+            )
+        return data
+    if manual:
+        raise ValueError(
+            f"{target} is missing and {target.name} is a manually staged input. "
+            f"Stage the owner's download there (SHA-256 {expected_sha256}); "
+            f"{url} is not fetched for it."
+        )
+    with urllib.request.urlopen(url, timeout=120) as response:  # noqa: S310 - pinned https URL
+        data = response.read()
     observed = sha256_of(data)
     if observed != expected_sha256:
-        raise ValueError(f"checksum mismatch for {target.name}: expected {expected_sha256}, got {observed}")
+        raise ValueError(
+            f"checksum mismatch for {target.name}: expected {expected_sha256}, "
+            f"got {observed}; the download was not cached"
+        )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(data)
     return data
 
 
@@ -534,9 +560,13 @@ def map_to_utex(values: Mapping[str, float], crosswalk: Mapping[str, str]) -> tu
     return mapped, unmapped
 
 
-def write_table(path: Path, mapped: Mapping[str, tuple[float, str]]) -> str:
-    """Write the pipeline's three-column table and return its SHA-256."""
-    lines = ["locus_tag\tabundance\tsource_gene_id"]
+def write_table(path: Path, mapped: Mapping[str, tuple[float, str]], data_type: str) -> str:
+    """Write the pipeline's three-column table and return its SHA-256.
+
+    ``data_type`` names the value column, so a fitness table is never
+    downloaded under an abundance header (``scripts/expression_table.py``).
+    """
+    lines = [header_line(data_type)]
     for locus in sorted(mapped):
         value, source = mapped[locus]
         lines.append(f"{locus}\t{value:.4f}\t{source}")
@@ -580,6 +610,7 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
     """The layer's condition record: the spec's structured axes with the table's quotes attached."""
     conditions: dict[str, Any] = {}
     # A layer may carry its own record where the study's condition sets differ,
+    # its own replicate description where one deposit mixes culture formats,
     # and its own strain where one deposit holds several genotypes.
     for axis, fields in layer.get("conditions", spec["conditions"]).items():
         axis_record = dict(fields)
@@ -587,7 +618,7 @@ def build_record(spec: Mapping[str, Any], layer: Mapping[str, Any], quotes: Mapp
         axis_record.setdefault("quote", cited.get("quote", ""))
         axis_record.setdefault("where", cited.get("where", ""))
         conditions[axis] = axis_record
-    replicates = dict(spec["replicates"])
+    replicates = dict(layer.get("replicates", spec["replicates"]))
     replicates.setdefault("where", replicate_quote.get("where", ""))
     record = {
         "studyId": spec["studyId"],
@@ -616,7 +647,8 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
     sources = spec.get("files") or [spec["file"]]
     parts = []
     for source in sources:
-        data = fetch(source["url"], source["sha256"], interim / source["name"])
+        data = fetch(source["url"], source["sha256"], interim / source["name"],
+                     manual=bool(source.get("manual")))
         header, body = read_table(data, spec["reader"])
         parts.append((source.get("label") or Path(source["name"]).stem, header, body))
     header, rows = parts[0][1:] if len(parts) == 1 else join_tables(parts)
@@ -642,7 +674,7 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
         if not mapped:
             raise ValueError(f"layer {layer['id']} maps no gene; check idKind and the columns")
         table_name = f"{layer['id']}.tsv"
-        digest = write_table(out_dir / table_name, mapped)
+        digest = write_table(out_dir / table_name, mapped, spec["dataType"])
         entry = {
             "record": build_record(spec, layer, quotes, replicate_quote),
             "id": layer["id"],

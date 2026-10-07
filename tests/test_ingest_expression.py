@@ -117,9 +117,11 @@ def test_fetch_reads_a_cached_file_and_refuses_a_checksum_mismatch(tmp_path):
     assert ingest.fetch("https://example.org/x", hashlib.sha256(b"hello").hexdigest(), target) == b"hello"
     with pytest.raises(ValueError, match="checksum mismatch"):
         ingest.fetch("https://example.org/x", "0" * 64, target)
+    assert target.read_bytes() == b"hello", "a mismatch never rewrites a staged file"
 
 
-def test_fetch_downloads_once_into_the_interim_directory(tmp_path, monkeypatch):
+def fake_urlopen_factory(payload, calls):
+    """A stand-in for urlopen that records the addresses it was asked for."""
     class Response(io.BytesIO):
         def __enter__(self):
             return self
@@ -127,13 +129,51 @@ def test_fetch_downloads_once_into_the_interim_directory(tmp_path, monkeypatch):
         def __exit__(self, *exc):
             return False
 
-    calls = []
-
     def fake_urlopen(url, timeout):
         calls.append(url)
-        return Response(b"payload")
+        return Response(payload)
 
-    monkeypatch.setattr(ingest.urllib.request, "urlopen", fake_urlopen)
+    return fake_urlopen
+
+
+def test_fetch_never_requests_a_manually_staged_input(tmp_path, monkeypatch):
+    """The Fitness Browser answers a client with a bot check, not the table.
+
+    A missing manual input must stop with the path to stage, because requesting
+    the organism page would cache its HTML challenge as the pinned dataset.
+    """
+    calls = []
+    monkeypatch.setattr(ingest.urllib.request, "urlopen",
+                        fake_urlopen_factory(b"<html>bot check</html>", calls))
+    target = tmp_path / "interim" / "fit_organism_SynE.tsv"
+    digest = hashlib.sha256(b"real table").hexdigest()
+    with pytest.raises(ValueError, match="manually staged input"):
+        ingest.fetch("https://fit.genomics.lbl.gov/x", digest, target, manual=True)
+    assert calls == [], "no request is made for a manual input"
+    assert not target.exists() and not target.parent.exists(), "nothing is cached"
+
+    # Staged by the owner, it is read without a request.
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"real table")
+    assert ingest.fetch("https://fit.genomics.lbl.gov/x", digest, target, manual=True) == b"real table"
+    assert calls == []
+
+
+def test_fetch_caches_a_download_only_after_its_checksum_matches(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(ingest.urllib.request, "urlopen",
+                        fake_urlopen_factory(b"<html>bot check</html>", calls))
+    target = tmp_path / "interim" / "file.bin"
+    with pytest.raises(ValueError, match="the download was not cached"):
+        ingest.fetch("https://example.org/file", "0" * 64, target)
+    assert calls == ["https://example.org/file"]
+    assert not target.exists(), "a failed download must not become the pinned input"
+
+
+def test_fetch_downloads_once_into_the_interim_directory(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(ingest.urllib.request, "urlopen",
+                        fake_urlopen_factory(b"payload", calls))
     target = tmp_path / "nested" / "file.bin"
     digest = hashlib.sha256(b"payload").hexdigest()
     assert ingest.fetch("https://example.org/file", digest, target) == b"payload"
@@ -254,8 +294,10 @@ def test_fitness_browser_reader_keeps_exact_suffix_and_plasmid_joins(tmp_path):
         ("U4", "pcc7942_old_locus_tag", "Synpcc7942_B9998", "ambiguous"),
     ]
     written, _, out = run(tmp_path, spec, crosswalk, conditions_file(tmp_path))
+    # A fitness spec heads its values with the fitness column, and the negative
+    # and zero scores pass through untouched.
     assert (out / "GSE1_control.tsv").read_text().splitlines() == [
-        "locus_tag\tabundance\tsource_gene_id",
+        "locus_tag\tfitness\tsource_gene_id",
         "U1\t2.0000\tSynpcc7942_0001",
         "U2\t-2.0000\tSynpcc7942_1912a",
         "U3\t0.0000\tSynpcc7942_B2633",
@@ -294,6 +336,26 @@ def test_a_layer_may_carry_its_own_condition_record_and_table_row(tmp_path):
     assert written[1]["record"]["conditionTableRow"] == 3
     assert written[1]["record"]["conditions"]["lightIntensity"]["lo"] == 500
     assert written[1]["record"]["conditions"]["temperature"]["quote"] == "Grown at 42℃", "the layer's own row supplies its quotes"
+
+
+def test_a_layer_may_describe_its_own_replicates(tmp_path):
+    """One deposit can mix culture formats, so the replicate description is per layer.
+
+    The layer's text is used as written and still takes the condition table's
+    location, and a layer that says nothing keeps the study-wide description.
+    """
+    spec = spec_for(tmp_path, b"", {"format": "csv", "idColumn": "id", "idKind": "pcc7942_old"})
+    quotes, replicate_quote = ingest.condition_quotes(conditions_file(tmp_path), 2)
+    shared = ingest.build_record(spec, spec["layers"][0], quotes, replicate_quote)
+    assert shared["replicates"] == {
+        "count": 3, "text": "three replicates", "where": "paper Methods"}
+
+    own = {**spec["layers"][0],
+           "replicates": {"count": None, "text": "vessel count not stated"}}
+    record = ingest.build_record(spec, own, quotes, replicate_quote)
+    assert record["replicates"] == {
+        "count": None, "text": "vessel count not stated", "where": "paper Methods"}
+    assert spec["replicates"] == {"count": 3, "text": "three replicates"}, "the spec is not mutated"
 
 
 def test_join_tables_joins_parts_on_the_identifier_and_labels_their_columns():
@@ -475,10 +537,22 @@ def test_map_to_utex_counts_unmapped_identifiers():
 
 def test_write_table_uses_the_pipeline_format_and_returns_its_digest(tmp_path):
     path = tmp_path / "layer.tsv"
-    digest = ingest.write_table(path, {"U2": (2.0, "S2"), "U1": (1.23456, "S1")})
+    digest = ingest.write_table(path, {"U2": (2.0, "S2"), "U1": (1.23456, "S1")}, "transcriptomics")
     content = path.read_text(encoding="utf-8")
     assert content == "locus_tag\tabundance\tsource_gene_id\nU1\t1.2346\tS1\nU2\t2.0000\tS2\n"
     assert digest == hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def test_write_table_names_a_fitness_column_and_keeps_signs_and_zero(tmp_path):
+    """The downloaded field says what it holds; a negative or zero score is written as it is."""
+    path = tmp_path / "fit.tsv"
+    ingest.write_table(path, {"U1": (-1.25, "S1"), "U2": (0.0, "S2"), "U3": (2.5, "S3")}, "fitness")
+    assert path.read_text(encoding="utf-8").splitlines() == [
+        "locus_tag\tfitness\tsource_gene_id",
+        "U1\t-1.2500\tS1", "U2\t0.0000\tS2", "U3\t2.5000\tS3",
+    ]
+    with pytest.raises(ValueError, match="no value column is defined"):
+        ingest.write_table(tmp_path / "x.tsv", {"U1": (1.0, "S1")}, "metabolomics")
 
 
 def test_condition_quotes_reads_axis_and_replicate_citations(tmp_path):

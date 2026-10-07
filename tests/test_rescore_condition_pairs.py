@@ -28,6 +28,7 @@ MANUAL = HANDOFF / "cyano_archive_condition_manual_supplement_20261007.json"
 PAPER = HANDOFF / "cyano_condition_paper_addendum_20261007.json"
 PRIDE = HANDOFF / "cyano_pride_condition_check_20261007.json"
 SAMPLING = HANDOFF / "cyano_condition_sampling_scope_review_20261007.json"
+FITNESS_AUDIT = HANDOFF / "cyano_gse205443_audit_20261007.md"
 PXD027430 = HANDOFF / "cyano_pxd027430_condition_addendum_20261007.json"
 SCREEN = HANDOFF / "cyano_condition_pair_screen_current_20261007.tsv"
 INVENTORY = HANDOFF / "cyano_condition_gap_inventory_current_20261007.json"
@@ -178,7 +179,7 @@ def _real_inputs():
     screens = rescore.rescore_pairs(original, historical_rows, records, judgements)
     sources = [
         PAIRS, HISTORICAL_RESCORE, HISTORICAL_INVENTORY, RECORDS, JUDGEMENTS,
-        BC, ARCHIVE, INTAKE, MANUAL, PAPER, PRIDE, SAMPLING, PXD027430,
+        BC, ARCHIVE, INTAKE, MANUAL, PAPER, PRIDE, SAMPLING, FITNESS_AUDIT, PXD027430,
     ]
     source_audit = rescore.load_current_source_audit(
         records, MANUAL, INTAKE, PRIDE
@@ -369,6 +370,7 @@ def test_evidence_hash_pin_rejects_changed_source(tmp_path):
             "manual": MANUAL,
             "pride": PRIDE,
         "sampling": SAMPLING,
+        "fitness": FITNESS_AUDIT,
             "pairs": PAIRS,
         })
 
@@ -394,6 +396,7 @@ def _evidence_inputs(**updates):
         "manual": MANUAL,
         "pride": PRIDE,
         "sampling": SAMPLING,
+        "fitness": FITNESS_AUDIT,
         "pxd027430": PXD027430,
         "pairs": PAIRS,
     }
@@ -665,3 +668,29 @@ def test_sampling_scope_evidence_is_pinned(tmp_path):
     changed.write_text(SAMPLING.read_text()+" ")
     with pytest.raises(ValueError, match="sampling overlay evidence SHA-256 changed"):
         rescore._validate_evidence(_evidence_inputs(sampling=changed))
+
+
+def test_fitness_schedule_and_inoculum_do_not_become_sampling_claims(tmp_path):
+    records = rescore.load_records(RECORDS)
+    for number in (22, 23, 24):
+        value = records[number]
+        assert value["cont"] is None
+        assert value["phase"] is None and value["od"] is None
+        assert rescore.score_light_regime(value, record())[0] == "undecidable"
+        assert rescore._score_phase(value, record())[0] == "undecidable"
+        assert "unknown schedule" in rescore.condition_set(value)
+        assert "OD750 0.5" not in rescore.condition_set(value)
+    changed = tmp_path / "fitness-audit.md"
+    changed.write_text(FITNESS_AUDIT.read_text()+" ")
+    with pytest.raises(ValueError, match="fitness overlay evidence SHA-256 changed"):
+        rescore._validate_evidence(_evidence_inputs(fitness=changed))
+
+
+def test_fitness_preparation_explanation_does_not_leak_to_other_sources():
+    value = record(row=2, acc="GSE102914", phase="OD stated", od=[0.27, 0.27], od_nm=730)
+    assert rescore._gap_reason(value, "growth_phase") == "A numeric OD is reported without an explicit sampling phase."
+    _, inventory, _ = _real_inputs()
+    affected = {2, 17, 18, 32, 62, 63, 64, 65, 68, 76, 77}
+    for item in inventory["gaps"]:
+        if item["condition_row"] in affected:
+            assert "OD750 0.5 describes assay inoculation" not in json.dumps(item)

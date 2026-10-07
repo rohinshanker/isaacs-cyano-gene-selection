@@ -203,24 +203,36 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
     const current = () => contributing(group.key).map((dataset) => metricOf(dataset) ?? null).filter(Boolean);
     const one = () => { const list = current(); return list.length === 1 ? list[0] : null; };
     const pooledProvenance = (list) => {
-      const first = list[0].provenance ?? {};
+      const { ingest: _firstIngest, ...first } = list[0].provenance ?? {};
       const ids = list.map((metric) => metric.provenance?.id ?? metric.key);
+      const sourceCaveats = [...new Set(list.map((metric) => metric.provenance?.caveat).filter(Boolean))];
+      const defaultCompendium = contributing(group.key).every(
+        (dataset) => DEFAULT_POOLED_STUDIES.includes(dataset.record?.studyId),
+      );
       return {
         ...first,
         // Spaces, so the id can wrap wherever it is printed; an unbroken token
         // widened a narrow column once.
         id: `pooled: ${ids.join(', ')}`,
         pooled: ids,
+        pooling: { kind: signed ? 'fitness' : 'percentile', datasetCount: list.length },
+        sourceLinks: [...new Map(list.flatMap((metric) => {
+          const provenance = metric.provenance;
+          const record = provenance?.record;
+          return record?.archiveUrl
+            ? [[record.archiveUrl, { label: record.studyId ?? provenance.id, url: record.archiveUrl }]] : [];
+        })).values()],
         isTargetOrganism: list.every((metric) => metric.provenance?.isTargetOrganism === true),
         organism: [...new Set(list.map((metric) => metric.provenance?.organism).filter(Boolean))].join('; '),
         condition: `${list.length} datasets pooled: ${list.map((metric) => metric.provenance?.condition ?? metric.key).join(' | ')}`,
         units: signed
           ? `mean gene fitness across ${list.length} condition sets (shared log2 scale)`
           : `pooled percentile across ${list.length} datasets: mean of each dataset's within-dataset mid-rank, 0 to 1`,
-        caveat: 'Pooled by owner decision of 2026-10-06. '
+        caveat: `Pooled by owner decision of ${defaultCompendium ? '2026-10-07' : '2026-10-06'}. `
           + (signed ? 'Fitness values share a log2 scale and are averaged as published.'
             : 'The deposits report different units, so each is ranked within itself before averaging; the pooled value is a rank, not an abundance.')
-          + ' Choose one dataset under Data Sources to read its own values.',
+          + ' Choose one dataset under Data Sources to read its own values.'
+          + (sourceCaveats.length ? ` ${sourceCaveats.join(' ')}` : ''),
         citationIds: [...new Set(list.map((metric) => metric.provenance?.citationId).filter(Boolean))],
       };
     };

@@ -48,6 +48,9 @@ from collections import OrderedDict, defaultdict
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from expression_table import header  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 INTERIM = ROOT / "data/interim/expression-ecoli"
 RAW_TAR = INTERIM / "GSE182100_RAW.tar"
@@ -66,6 +69,11 @@ RAW_URL = (
     "GSE182100_RAW.tar"
 )
 WHERE = "GEO GSE182100 series matrix, retrieved 2026-10-07"
+
+#: Both layer kinds are sequencing over RNA, so both are transcriptomics; the
+#: platform and the assay kind are what keep footprints from pooling with
+#: transcript counts. The type also names the published value column.
+DATA_TYPE = "transcriptomics"
 
 #: The characteristic that names the assay rather than the biology. Grouping
 #: without removing it would split every condition in two and hide that the two
@@ -352,7 +360,9 @@ def build(report_only: bool = False, out_dir: Path = OUT_DIR) -> int:
         table = out_dir / f"{layer['id']}.tsv"
         with table.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
-            writer.writerow(["locus_tag", "abundance", "source_gene_id"])
+            # The declared type names the value column, so writer and reader
+            # agree through scripts/expression_table.py.
+            writer.writerow(header(DATA_TYPE))
             for gene in sorted(layer["values"]):
                 writer.writerow([gene, f"{layer['values'][gene]:.4f}", gene])
         manifest.append(manifest_entry(layer, table))
@@ -375,10 +385,7 @@ def manifest_entry(layer: dict[str, Any], table: Path) -> dict[str, Any]:
     return {
         "record": {
             "studyId": "GSE182100",
-            # Both are sequencing over RNA, so both are transcriptomics; the
-            # platform and the assay kind are what keep footprints from pooling
-            # with transcript counts.
-            "dataType": "transcriptomics",
+            "dataType": DATA_TYPE,
             "platform": "RNA-seq" if kind == "transcript" else "Ribo-seq",
             "strain": "NCM3722",
             "basis": "transferred",

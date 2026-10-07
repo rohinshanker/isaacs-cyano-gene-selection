@@ -94,6 +94,18 @@ const METHODS_CITATIONS = Object.freeze({
  * rather than from a hand-written line per layer.
  */
 function ingestedMethod(provenance) {
+  const pooling = provenance?.pooling;
+  if (pooling) {
+    return pooling.kind === 'fitness'
+      ? `Arithmetic mean of ${pooling.datasetCount} selected condition-set gene-fitness values on their published log2 scale. `
+        + 'Each condition set keeps its own declared sample-column averaging and source mapping; '
+        + 'condition sets receive equal weight, regardless of their experiment count. '
+        + 'Missing contributor values are skipped; a gene with no contributing value remains unknown. '
+        + 'The authors’ fitness calculation is not recomputed, and no unmatched locus is imputed.'
+      : `Mean of ${pooling.datasetCount} selected datasets’ within-dataset mid-rank percentiles. `
+        + 'Each dataset is ranked using its own finite values before averaging. Missing contributor values '
+        + 'are skipped; a gene with no contributing value remains unknown. This is a pooled rank, not abundance.';
+  }
   const ingest = provenance?.ingest;
   if (!ingest) return null;
   const columns = ingest.columns?.length ?? 0;
@@ -223,6 +235,10 @@ export function metricHelp(metric, dataset) {
     coverage: `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
     reading: readingNote(metric, dataset, formatCount),
     limits: shortLimits(metric, dataset, formatCount),
+    sourceLinks: metric.provenance?.sourceLinks
+      ?? (metric.provenance?.record?.archiveUrl
+        ? [{ label: metric.provenance.record.studyId ?? metric.provenance.id,
+          url: metric.provenance.record.archiveUrl }] : []),
     citations: [...(METHODS_CITATIONS[metric.key]
       ?? (expression ? (metric.provenance?.citationIds
         ?? (metric.provenance?.citationId ? [metric.provenance.citationId] : [])) : [])),

@@ -51,6 +51,10 @@
       "sha256": "3edd71831cb5f6fbf1b01d89ce9e1cb585bf3f534889793db2d2e19df5d1caef"
     },
     {
+      "name": "cyano_gse205443_audit_20261007.md",
+      "sha256": "5df3d9ee018ec44bdedfbcabfb40bfebb727b6ecf165ca390a128886c6553f83"
+    },
+    {
       "name": "cyano_pxd027430_condition_addendum_20261007.json",
       "sha256": "bb8311f4b36a2c0bb81377e2d28a3ff219e714e7baff746da1378f605b7e8810"
     }
@@ -77,6 +81,74 @@
           "status": "partial",
           "source": "cyano_dataset_condition_records_20261007.json row 10",
           "uncertainty": "A parabolic profile with a reported peak is not treated as constant 600 flux."
+        }
+      }
+    },
+    {
+      "condition_row": 22,
+      "fields": {
+        "cont": null,
+        "phot": null,
+        "phase": null,
+        "od": null
+      },
+      "audit": {
+        "light_regime": {
+          "status": "partial",
+          "source": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+          "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods."
+        },
+        "growth_phase": {
+          "status": "partial",
+          "source": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+          "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown."
+        }
+      }
+    },
+    {
+      "condition_row": 23,
+      "fields": {
+        "cont": null,
+        "phot": null,
+        "phase": null,
+        "od": null
+      },
+      "audit": {
+        "light_regime": {
+          "status": "partial",
+          "source": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+          "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods."
+        },
+        "growth_phase": {
+          "status": "partial",
+          "source": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+          "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown."
+        }
+      }
+    },
+    {
+      "condition_row": 24,
+      "fields": {
+        "cont": null,
+        "phot": null,
+        "phase": null,
+        "od": null
+      },
+      "audit": {
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
+          "uncertainty": "Room temperature is reported without a reviewed numeric sampling interval."
+        },
+        "light_regime": {
+          "status": "partial",
+          "source": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+          "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods."
+        },
+        "growth_phase": {
+          "status": "partial",
+          "source": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+          "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown."
         }
       }
     },
@@ -698,9 +770,9 @@
       "condition_set": "Experiment 1 RB-TnSeq library v1.0 - bubbling tube biofilm formation (fresh BG-11)",
       "field": "light_regime",
       "status": "partial",
-      "value": "schedule=continuous; photoperiod=None; spectrum=fluorescent (class not stated)",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 22; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
-      "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+      "value": "schedule=None; photoperiod=None; spectrum=fluorescent (class not stated)",
+      "source_provenance": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+      "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods.",
       "historical_value": ""
     },
     {
@@ -709,9 +781,9 @@
       "condition_set": "Experiment 1 RB-TnSeq library v1.0 - bubbling tube biofilm formation (fresh BG-11)",
       "field": "growth_phase",
       "status": "partial",
-      "value": "OD stated; OD750 0.5",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 22 typed sampling record",
-      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "value": "partial",
+      "source_provenance": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
       "historical_value": ""
     },
     {
@@ -720,9 +792,9 @@
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - bubbling tube biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "light_regime",
       "status": "partial",
-      "value": "schedule=continuous; photoperiod=None; spectrum=fluorescent (class not stated)",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 23; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
-      "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+      "value": "schedule=None; photoperiod=None; spectrum=fluorescent (class not stated)",
+      "source_provenance": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+      "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods.",
       "historical_value": ""
     },
     {
@@ -731,9 +803,9 @@
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - bubbling tube biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "growth_phase",
       "status": "partial",
-      "value": "OD stated; OD750 0.5",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 23 typed sampling record",
-      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "value": "partial",
+      "source_provenance": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
       "historical_value": ""
     },
     {
@@ -753,9 +825,9 @@
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - flask biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "light_regime",
       "status": "partial",
-      "value": "schedule=continuous; photoperiod=None; spectrum=fluorescent (class not stated)",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
-      "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+      "value": "schedule=None; photoperiod=None; spectrum=fluorescent (class not stated)",
+      "source_provenance": "cyano_gse205443_audit_20261007.md finding01; PMC9260433 sec7 illumination scope; supersedes CR-153 continuous-light interpretation",
+      "uncertainty": "Fluorescent illumination is reported, but its schedule and spectrum class are not established by PMC9260433 Methods.",
       "historical_value": ""
     },
     {
@@ -775,9 +847,9 @@
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - flask biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "growth_phase",
       "status": "partial",
-      "value": "OD stated; OD750 0.5",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24 typed sampling record",
-      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "value": "partial",
+      "source_provenance": "cyano_gse205443_audit_20261007.md finding03; PMC9260433 sec7 preparation/sampling boundary",
+      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
       "historical_value": ""
     },
     {

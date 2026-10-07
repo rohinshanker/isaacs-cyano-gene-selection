@@ -51,6 +51,17 @@ test('an expression metric is recognised by family, by name, and by unit', () =>
   assert.equal(isExpressionMetric({ key: 'gc3', unit: 'fraction', family: 'Base composition' }), false);
 });
 
+test('declared fitness cannot become a traffic metric through its name or unit', () => {
+  for (const declaration of [
+    { family: 'Fitness' },
+    { provenance: { record: { dataType: 'fitness' } } },
+    { key: 'type.fitness.rb-tnseq.fitness' },
+  ]) {
+    assert.equal(isExpressionMetric({ key: 'transcriptFitness', unit: 'reads per mutant',
+      family: 'Expression', ...declaration }), false);
+  }
+});
+
 test('expression labels distinguish native, borrowed, proxy, and unknown sources', () => {
   assert.equal(expressionSourceScope({
     key: 'tssInitiation', family: 'Expression', provenance: { isTargetOrganism: true },
