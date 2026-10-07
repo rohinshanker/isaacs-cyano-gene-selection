@@ -173,7 +173,8 @@ export function truthfulProgress(snapshot, resources = [], preparationTasks = []
       settled: record.settled === true,
       state: record.state ?? (record.settled ? FILE_STATE.READY : FILE_STATE.LOADING),
     }));
-  const resourceGroups = resources.map((resource) => ({
+  const resourceGroups = resources.filter((resource) => resource.state !== FILE_STATE.ABSENT)
+    .map((resource) => ({
     key: resource.key,
     label: resource.label,
     bytes: Number.isFinite(resource.totalBytes) && resource.totalBytes > 0
@@ -189,7 +190,9 @@ export function truthfulProgress(snapshot, resources = [], preparationTasks = []
       : (group.settled ? 1 : 0);
   }
   const worksetKnown = snapshot ? snapshot.worksetKnown === true : true;
-  const allSettled = groups.length > 0 && groups.every((group) => group.settled);
+  const registered = groups.length > 0 || resources.length > 0
+    || Object.keys(snapshot?.files ?? {}).length > 0;
+  const allSettled = registered && groups.every((group) => group.settled);
   const failures = groups.filter((group) => group.state === FILE_STATE.FAILED);
   const loaderPreparation = snapshot?.preparation ?? { registered: 0, completed: 0 };
   const preparation = {
@@ -608,21 +611,34 @@ export class LoadProgress {
     if (this.revealed) this.renderTail();
   }
 
-  /** Resolve true at measured byte halfway, false when byte totals are unavailable. */
+  /** Measured threshold result; null means transfers can still reach it. */
+  transferThresholdResult(projection, fraction) {
+    if (!projection.exactBytes) {
+      return this.snapshot?.worksetKnown || this.resourceOnly || projection.terminal ? false : null;
+    }
+    const total = projection.groups.reduce((sum, group) => sum + group.bytes, 0);
+    const received = projection.groups.reduce((sum, group) => (
+      sum + Math.min(group.actualReceivedBytes, group.bytes)
+    ), 0);
+    if (total > 0 && received / total >= fraction) return true;
+    return projection.terminal ? false : null;
+  }
+
+  /** Resolve true at measured halfway, false for unknown or unreachable work. */
   whenTransferAtLeast(fraction) {
     if (!this.review) return Promise.resolve(true);
     const projection = this.truthfulSnapshot();
-    if (projection.exactBytes && (projection.fraction ?? 1) >= fraction) return Promise.resolve(true);
-    if (this.snapshot?.worksetKnown && !projection.exactBytes) return Promise.resolve(false);
+    const result = this.transferThresholdResult(projection, fraction);
+    if (result !== null) return Promise.resolve(result);
     return new Promise((resolve) => this.transferWaiters.push({ fraction, resolve }));
   }
 
   resolveTransferWaiters(projection) {
     const pending = [];
     for (const waiter of this.transferWaiters) {
-      if (projection.exactBytes && (projection.fraction ?? 1) >= waiter.fraction) waiter.resolve(true);
-      else if (this.snapshot?.worksetKnown && !projection.exactBytes) waiter.resolve(false);
-      else pending.push(waiter);
+      const result = this.transferThresholdResult(projection, waiter.fraction);
+      if (result === null) pending.push(waiter);
+      else waiter.resolve(result);
     }
     this.transferWaiters = pending;
   }

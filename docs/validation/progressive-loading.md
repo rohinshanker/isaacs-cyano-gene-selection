@@ -507,7 +507,7 @@ Invalid or absent selectors fall back to production behavior.
 | --- | --- |
 | A | Core, URL context, promoted dependencies, initial view, then a clean animation frame |
 | B | The same gate, followed by a presentation-only 1,000 ms hold; requests continue and progress does not advance on the timer |
-| C | A measured received-byte fraction of at least 50%, plus every A readiness condition; unknown totals fall back to A |
+| C | A measured received-byte fraction of at least 50%, plus every A readiness condition; unknown totals or terminal failures making halfway unreachable fall back to A |
 
 Both progress modes consume one snapshot. With a manifest, transfer progress is
 the sum of actual decoded bytes received divided by the sum of bytes published
@@ -515,6 +515,11 @@ in the active cycle, including measurable independent resources. Manifest-absent
 files are excluded. Settlement never fabricates bytes. Without byte totals the
 display uses terminal files over registered files; while the work set is still
 open it is an activity state with no `aria-valuenow`.
+
+The halfway gate compares received bytes directly, including partial failed
+transfers. A terminal error's settled percentage never counts as transfer.
+If failure makes halfway unreachable, the gate releases to readiness so the
+usable page and its actionable error remain available.
 
 Once all known bytes have arrived but validation, application, context, state,
 initial-view, or final-geometry tasks remain, the same chromosome switches to a

@@ -224,6 +224,21 @@ test('truthful unknown-size progress uses honest file counts and excludes absent
   assert.equal(projection.groups.some((group) => group.key === 'absent'), false);
 });
 
+test('an absent independent file adds no transfer weight or unknown size', () => {
+  const absent = {key:'citations',label:'source ledger',totalBytes:null,receivedBytes:0,
+    settled:true,state:FILE_STATE.ABSENT};
+  const projection = truthfulProgress({worksetKnown:true,files:{genes:{
+    label:'genes.json',bytes:100,actualReceivedBytes:50,settled:false,
+    state:FILE_STATE.LOADING,included:true,
+  }}}, [absent]);
+  assert.equal(projection.exactBytes, true, 'a non-requested file has no unknown transfer length');
+  assert.equal(projection.fraction, 0.5);
+  assert.equal(projection.groups.length, 1);
+  const empty = truthfulProgress(null, [absent]);
+  assert.equal(empty.terminal, true, 'an absence-only request still settles');
+  assert.equal(empty.groups.length, 0);
+});
+
 test('review rendering removes aria-valuenow during real preparation', async () => {
   await withFakeDocument((document) => {
     const { bar, status, progress } = mount(document, {}, {
@@ -313,6 +328,25 @@ test('a new resource during preparation retains the active cycle and every pendi
     assert.equal(progress.truthfulSnapshot().terminal, false, 'first.json still needs validation');
     progress.settleResource('first'); await progress.finished();
     assert.equal(progress.truthfulSnapshot().terminal, true);
+  });
+});
+
+test('the halfway latch uses received bytes in failed cycles and releases an unreachable threshold', async () => {
+  await withFakeDocument(async (document) => {
+    const { progress } = mount(document, {}, {
+      review: { name: 'C', progress: 'continuous' }, terminalHoldMs: 0,
+    });
+    const value = (state, received) => ({worksetKnown: true, files: {
+      genes: {label:'genes.json',bytes:100,actualReceivedBytes:100,settled:true,state:FILE_STATE.READY,included:true},
+      later: {label:'later.json',bytes:900,actualReceivedBytes:received,settled:state!==FILE_STATE.LOADING,state,included:true},
+    }, preparation:{registered:2,completed:state===FILE_STATE.LOADING ? 1 : 2}});
+    progress.update(value(FILE_STATE.LOADING, 0));
+    const pending = progress.whenTransferAtLeast(0.5);
+    progress.update(value(FILE_STATE.FAILED, 0));
+    assert.equal(await pending, false, 'terminal failure releases the readiness fallback without inventing bytes');
+    assert.equal(await progress.whenTransferAtLeast(0.5), false, '100% settled with errors is only 10% transferred');
+    progress.update(value(FILE_STATE.FAILED, 500));
+    assert.equal(await progress.whenTransferAtLeast(0.5), true, 'measured halfway remains true despite a later failure');
   });
 });
 

@@ -2975,6 +2975,8 @@ async function boot() {
   if (loadReview?.reveal === 'half') {
     // A measured halfway point is only an additional latch. Core, URL context,
     // promoted dependencies, and the prepared initial view remain mandatory.
+    // An unknown or unreachable transfer threshold releases to readiness;
+    // failure remains actionable after the page is revealed.
     await Promise.all([ready, loadProgress.whenTransferAtLeast(0.5)]);
   } else {
     await ready;
