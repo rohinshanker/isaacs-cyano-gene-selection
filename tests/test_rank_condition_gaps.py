@@ -34,6 +34,7 @@ def pin(path, sources, statuses):
         "sources": [{"name": s.name, "sha256": hashlib.sha256(s.read_bytes()).hexdigest()}
                     for s in sources],
         "reviewed_by": "test reviewer",
+        "classification_contract": {"statuses": list(gaps.STATUSES)},
         "judgments": [{"field": f, "value": v, "status": s}
                       for (f, v), s in statuses.items()],
     }))
@@ -148,9 +149,14 @@ def test_inventory_requires_exact_pins_review_and_unique_valid_values(tmp_path):
     pin(path, [table], inventory([pair()]))
     original = json.loads(path.read_text())
     assert gaps.load_inventory(path, [table]) == inventory([pair()])
+    reordered = json.loads(json.dumps(original))
+    reordered["classification_contract"]["statuses"].reverse()
+    path.write_text(json.dumps(reordered))
+    assert gaps.load_inventory(path, [table]) == inventory([pair()])
     mutations = [
         (lambda d: d.update(sources=[]), "pins differ"),
         (lambda d: d.update(reviewed_by=""), "named reviewer"),
+        (lambda d: d.pop("classification_contract"), "status contract"),
         (lambda d: d.update(classification_contract={"statuses": ["bad"]}), "status contract"),
         (lambda d: d["judgments"].append(d["judgments"][0]), "duplicate or invalid"),
         (lambda d: d["judgments"][0].update(field="bad"), "duplicate or invalid"),

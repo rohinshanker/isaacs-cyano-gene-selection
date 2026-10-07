@@ -106,7 +106,9 @@ def load_inventory(path: Path, sources: Sequence[Path]) -> dict[tuple[str, str],
         raise ValueError("inventory source pins differ from input tables")
     if not data.get("reviewed_by"):
         raise ValueError("inventory needs a named reviewer")
-    if "classification_contract" in data and data["classification_contract"].get("statuses") != list(STATUSES):
+    vocabulary = data.get("classification_contract", {}).get("statuses")
+    if (not isinstance(vocabulary, list) or len(vocabulary) != len(STATUSES)
+            or set(vocabulary) != set(STATUSES)):
         raise ValueError("inventory status contract differs from ranking vocabulary")
     statuses: dict[tuple[str, str], str] = {}
     for entry in data["judgments"]:

@@ -23,7 +23,7 @@
     "partial": "A required component of the field is absent; source statements limited to other phases do not fill this condition.",
     "present": "Reported value; not necessarily a comparable value. Continuous light needs no photoperiod, stationary growth needs no OD; OD730/A730 accepted like OD750.",
     "medium": "Named medium counts as present; an unresolved recipe or nitrogen/carbon comparison remains a screen blocker.",
-    "review": "All values reviewed; exact values only. Five model overrides use the contract. Bare OD without named phase/maintenance is partial; volume disagreement does not erase agreement on liquid format. No keyword inference at ranking time. Screening availability is not source admission."
+    "review": "All values reviewed; exact values only. Five model overrides use the contract. Bare OD without named phase or maintenance is partial. Explicitly missing sampling/labeling OD remains partial even when phase and an earlier/maintenance OD are stated. Volume disagreement does not erase agreement on liquid format. No keyword inference at ranking time. Availability is not source admission."
   },
   "judgments": [
     {
@@ -637,7 +637,8 @@
       "field": "growth_phase",
       "value": "exponential, kept at OD750 0.3 by daily dilution; OD at labeling not stated",
       "status": "partial",
-      "confidence": 0.99
+      "confidence": 0.99,
+      "review_note": "Keep partial because the cell explicitly distinguishes the maintenance OD from the unstated labeling OD. Do not drop the labeling-density caveat or infer that a maintained OD proves the sample density."
     },
     {
       "field": "growth_phase",
