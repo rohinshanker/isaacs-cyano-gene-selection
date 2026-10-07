@@ -188,8 +188,8 @@ per-gene file package B found; conditions are the package B rows, amended by the
    left on record; nothing is dropped for silence. The three emails are drafted in
    [AAA-next-steps.md](../../validation/AAA-next-steps.md) item 5; a reply, not
    the sending, is what unblocks them, and each reply is recorded in
-   [A_condition-metadata-gaps__20261005](A_condition-metadata-gaps__20261005.md)
-   work item 4. GSE252562 has a cheaper route first: its series now cites
+   [O_depositor-condition-correspondence__20261007](O_depositor-condition-correspondence__20261007.md).
+   GSE252562 has a cheaper route first: its series now cites
    PMID 39236161 (PMC11473183), outside the open-access subset and unreadable by
    the agents, whose methods likely settle the photoperiod. Rows 8 and 9 await
    the separate owner review; do not add original-file downloads or catalogue

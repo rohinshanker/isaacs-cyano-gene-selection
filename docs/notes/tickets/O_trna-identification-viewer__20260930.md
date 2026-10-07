@@ -110,7 +110,7 @@ Related: [cross-strain scan](O_cross-strain-data-scan__20260927.md) and
 the [pinned gene's sequence close-up](../../validation/gene-sequence-closeup.md)
 may inspect tRNA sequences if its feature population is extended. Coordinate
 feature rendering
-with [viewer layers](A_regulatory-site-viewer-layers__20260930.md), while keeping
+with [the shared marker representation](../../validation/data-contract.md#the-shared-marker-representation), while keeping
 tRNA genes distinct from regulatory sites. No whole-ticket dependency is imposed.
 
 ### D1 result, O_trna-identification-viewer, returned 2026-09-30

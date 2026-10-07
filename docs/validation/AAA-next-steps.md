@@ -145,8 +145,8 @@ Subject: Growth conditions for GEO series GSE311172
 > [name, Isaacs lab, Yale University]
 
 Record each reply, with its date, in
-[A_condition-metadata-gaps__20261005](../notes/tickets/A_condition-metadata-gaps__20261005.md)
-under work item 4; the agents then upgrade the condition record and, for
+[the depositor-correspondence ticket](../notes/tickets/O_depositor-condition-correspondence__20261007.md);
+the agents then upgrade the condition record and, for
 GSE311172, ingest the five withheld sets. Note that the query table
 there also asks these depositors for "an explicit reuse statement": that part is
 obsolete since your decision of 2026-10-06 that every source is permitted with
@@ -156,9 +156,8 @@ citation, and the drafts above leave it out.
 
 **Your decision, 2026-10-07: you are not going to do this work for now.**
 
-The eight depositor questions stay on record, unasked, in the table under work
-item 4 of
-[A_condition-metadata-gaps__20261005](../notes/tickets/A_condition-metadata-gaps__20261005.md).
+The depositor questions stay on record, unasked, in
+[the correspondence ticket](../notes/tickets/O_depositor-condition-correspondence__20261007.md).
 Nothing in the release waits on them: every affected value is already published
 as reported, not reported, or conflicting, according to what its source
 actually says.

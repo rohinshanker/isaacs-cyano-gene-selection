@@ -433,8 +433,9 @@ SHA-256 `9a45d8384a23ecbf2ea2619043d5610a11d096912020878bd95df59f91ff799c`,
 **Passed.** Nothing in the return is an admission; the pair verdicts are evidence
 for the scan ticket's step 3 and for the Data Sources comparable sets, which
 already read the owner's judgements over them. The 178 undecidable pairs are the
-metadata gap that [A_condition-metadata-gaps__20261005](A_condition-metadata-gaps__20261005.md)
-chases. Package D was the last package; nothing further waits to be sent.
+metadata gaps whose recovery contract is
+[condition-metadata-recovery.md](../../validation/condition-metadata-recovery.md).
+Package D was the last package; nothing further waits to be sent.
 
 ## Cleanup
 

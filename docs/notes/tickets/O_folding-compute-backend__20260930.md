@@ -75,10 +75,11 @@ Do not assume cluster login nodes can host the website or execute folding jobs.
 
 Next preparation can define a reproducible workspace/bootstrap plan and the
 information to collect for each access route without logging in. Execution on
-Bouchet waits on D1b. The raw-read reprocessing pilot in
-[A_condition-metadata-gaps__20261005](A_condition-metadata-gaps__20261005.md)
-shares the setup dependency, not this ticket's folding-method choices. No
-unverified fallback-device specification fills a Bouchet setup gap.
+Bouchet waits on D1b. The raw-read reprocessing pilot is executing locally under
+[its own active ticket](A_raw-read-pilot-execution__20261007.md); a future move
+of that work to Bouchet would share the setup dependency, not this ticket's
+folding-method choices. No unverified fallback-device specification fills a
+Bouchet setup gap.
 
 Return a workload/host matrix covering algorithm/version, CPU/GPU requirements,
 memory and model storage, supported runtime and architecture, queue wait, execution

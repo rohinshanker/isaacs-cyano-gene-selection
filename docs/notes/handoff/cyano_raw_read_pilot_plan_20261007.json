@@ -1,7 +1,7 @@
 {
   "series": "GSE122841",
   "retrieval_date": "2026-10-07",
-  "state": "Prepared; raw reads not downloaded; pipeline not executed.",
+  "state": "Preparation complete; all eight raw reads are integrity-verified and the separate four-library execution is active. No complete four-library result is claimed.",
   "samples": [
     {
       "gsm": "GSM3486865",
@@ -19,13 +19,15 @@
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/005/SRR8237705/SRR8237705_1.fastq.gz",
           "expected_md5": "c247e1d871e6bcafc329d1d1d37e7e53",
           "expected_bytes": 862765630,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "ca3362d3306c89d396d42caad72d6aef0edbf88f3b4cd9a29a305f6f94c6ce82"
         },
         {
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/005/SRR8237705/SRR8237705_2.fastq.gz",
           "expected_md5": "5f6540c476f77b4987547eeb08afae89",
           "expected_bytes": 879091184,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "c8e1b38a35bad82f26398ce10d64be56446f99e747045eb6e1e5240c62051fd7"
         }
       ]
     },
@@ -45,13 +47,15 @@
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/006/SRR8237706/SRR8237706_1.fastq.gz",
           "expected_md5": "732ed8403600dbde3fa529ec165bbf0b",
           "expected_bytes": 839715446,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "35bf0e37a849181a73ce85594dea0348e806309b71914a291dd4fc70d204ac57"
         },
         {
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/006/SRR8237706/SRR8237706_2.fastq.gz",
           "expected_md5": "7a32e418bace391ca29b3fb8cf7a6df6",
           "expected_bytes": 854712324,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "af693daf5f5f9e1ae38c59952f6f43a068e58073c8211064cb5d8bb50acfd92d"
         }
       ]
     },
@@ -71,13 +75,15 @@
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/007/SRR8237707/SRR8237707_1.fastq.gz",
           "expected_md5": "0c3b31e29e7f3136c5001d9b736abc25",
           "expected_bytes": 808464049,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "e3648390f4599391a0873ba0e8d255207d3e1bc253bca2b0d4841b1fd8c19836"
         },
         {
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/007/SRR8237707/SRR8237707_2.fastq.gz",
           "expected_md5": "10ba256be82bab4451520d195406ad02",
           "expected_bytes": 820647420,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "f698f3b7efa7739e323c86158b8bcec410dfe1178f830dfdc12be489086096cf"
         }
       ]
     },
@@ -97,13 +103,15 @@
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/008/SRR8237708/SRR8237708_1.fastq.gz",
           "expected_md5": "65f77cd4c27cb75bc511ce924ea0be95",
           "expected_bytes": 765837533,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "b5a93e8a9b92308b9424f0c26004804cf544c39204505bc67c2ad83910fa4196"
         },
         {
           "url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR823/008/SRR8237708/SRR8237708_2.fastq.gz",
           "expected_md5": "01a7300f10a9c13247294a052091040a",
           "expected_bytes": 784320321,
-          "downloaded": false
+          "downloaded": true,
+          "sha256": "161d8d2e230294a91a50b61061eb9a2f3e9a5a440334c8a3fd890d4934c998ac"
         }
       ]
     }
@@ -251,7 +259,15 @@
     "large_task_memory_gb": 8,
     "workspace_minimum_free_gb": 80,
     "wall_time_limit_hours": 12,
-    "resource_basis": "Planning envelope from upstream local profile, 6.62 GB compressed input and transient uncompressed/alignment files; not measured."
+    "resource_basis": "Historical planning envelope from the upstream local profile, 6.62 GB compressed input and transient uncompressed/alignment files; not measured.",
+    "active_local_configuration": {
+      "executor": "local",
+      "queue_size": 1,
+      "cpus_per_process": 2,
+      "memory_gb_per_process": 2,
+      "container_runtime": "Docker with pinned linux/amd64 images on an arm64 host",
+      "status": "Validated by the complete synthetic pipeline and the bounded 100,000-read real-data probe; not a measured full-run peak."
+    }
   },
   "acceptance": {
     "identity": "Four GSM/BioSample/SRX/SRR identities, eight paired FASTQ files; exact matching reference replicon set.",
@@ -261,11 +277,15 @@
     "inference": "QC/count-table pilot until biological replication resolved. No replicate band, significance, biological equivalence or UTEX mapping."
   },
   "execution_dependencies": [
-    "Nextflow 22.10.0 absent; compatible Java runtime not verified.",
-    "Container architecture compatibility and pipeline execution untested; registry manifests are pinned, not execution-validated.",
-    "Bouchet route/workspace/allocation/access await compute-backend D1b. Local Docker responding does not establish a runnable cluster job.",
-    "Observed local disk free 48 GiB and Docker 4 CPUs/about 5.8 GiB memory do not meet the prepared 80 GB scratch, 8 CPU/8 GB envelope. No shared Docker configuration changed."
+    "The four-library real-data execution remains active and must finish before QC, count, per-gene, trace and report artifacts can be accepted as complete."
   ],
+  "execution_state": {
+    "workspace": "/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/calibration/cyano-raw-pilot-20261007",
+    "input_integrity": "All eight FASTQ files match the recorded byte counts and MD5 values and have recorded SHA-256 values; all four run reports and metadata files are present.",
+    "toolchain": "Amazon Corretto Java 11 with task-local Nextflow 22.10.0",
+    "technical_validation": "The complete synthetic pipeline passed with all nine pinned containers; a bounded 100,000-read real-data probe also passed.",
+    "real_execution": "Active on the first full library. Four-library final QC, count and per-gene outputs are not yet complete."
+  },
   "execution_host_observation": {
     "date": "2026-10-07",
     "filesystem_free_gib": 48,

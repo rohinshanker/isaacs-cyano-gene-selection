@@ -266,13 +266,13 @@ acronym will return canine genomics. Pin the repository URL and the expansion.
 ### 1.5 The only unblocked in-repo work in the batch is ranked third
 
 Under the repository's own rule — claims gate steps, not tickets —
-[regulatory-site-viewer-layers](../tickets/A_regulatory-site-viewer-layers__20260930.md)
-D1 is the only item in the thirteen that needs no claim, no new source, no owner
+[the subsequent regulatory-site viewer validation](../../validation/viewer-interaction-state.md#start-site-marks-that-land-on-each-other)
+records the item in the thirteen that needed no claim, no new source, no owner
 decision, and no external access: audit whether every valid mapped Tan 2018 site
-actually renders through `tssMarks()`, and repair the omissions. The ticket
-states plainly that no rendered completeness check has been performed. That is a
-possible live defect in shipped evidence display, and it is ranked below two
-tickets that cannot move at all.
+actually rendered through `tssMarks()`, and repair any omissions. At the time of
+this return no rendered completeness check had been performed, so this was a
+possible live defect in shipped evidence display ranked below two tickets that
+could not move at all.
 
 [pinned-gene-sequence-viewer](../tickets/O_pinned-gene-sequence-viewer__20260930.md)
 is the second-most actionable: also claim-free, gated only on owner answers to
