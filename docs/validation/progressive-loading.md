@@ -71,7 +71,7 @@ Tiers say what the page waits for and what it draws first.
 | --- | --- | --- |
 | 1 | `meta.json`, `genes.json`, `function-categories-v1.json` | Usable: every map's points, the chromosome view, selectors, search by locus and product, registry filters, the shortlist |
 | 2 | `annotations.json`, `candidate_evidence.json`, `source-derived-categories-v1.json`, `length_cohorts.json`, `codon_pca.json`, `excluded.json` | Coloured by function category; protein filter; loadings |
-| 3 | `tss_evidence.json`, `go-iea-essentiality-v1.json`, `go-term-names-v1.json` | Complete in gene detail, the gene visualizer, and the chromosome tick row |
+| 3 | `tss_evidence.json`, `expression_layers.json`, `go-iea-essentiality-v1.json`, `go-term-names-v1.json` | Complete in gene detail, condition-resolved measurements, the gene visualizer, and the chromosome tick row |
 | 4 | `regulatory_tss.json` | Complete on the Regulatory sites tab |
 
 `citations.json` is outside the tiers. Its own loader asks for it at start-up,
@@ -94,6 +94,14 @@ failed is `failed` with a message naming the file it was waiting on, and its
 **`pcc7942-essentiality-v1.json` is published and never fetched.** It is an input
 to `candidate_evidence.json`. It is in the manifest, because the manifest lists
 everything published, and in no tier.
+
+**`codon_rscu.json` is published and never fetched.** This per-organism offline
+sidecar carries `{schemaVersion, geneIds, rscu}`; its `geneIds` must match the
+adjacent `genes.json` order, and its columns follow `meta.rscuOrder`. It has no
+`DATA_FILES` entry, tier, or browser join. The manifest includes its byte size
+and digest, but the bar's denominator excludes it because the browser does not
+request it. Packed `codons` remain in the tier-1 `genes.json`. The offline join
+and coverage gates are in the [data contract](data-contract.md#codon_rscujson).
 
 **`annotations.json` and `tss_evidence.json` are required when `meta.json`
 declares them**, which the shipped one does. Their absence is that file's
@@ -507,14 +515,16 @@ Invalid or absent selectors fall back to production behavior.
 | --- | --- |
 | A | Core, URL context, promoted dependencies, initial view, then a clean animation frame |
 | B | The same gate, followed by a presentation-only 1,000 ms hold; requests continue and progress does not advance on the timer |
-| C | A measured received-byte fraction of at least 50%, plus every A readiness condition; unknown totals or terminal failures making halfway unreachable fall back to A |
+| C | A measured received-byte fraction of at least 50%, plus every A readiness condition; no measurable byte total or terminal failures making halfway unreachable fall back to A |
 
-Both progress modes consume one snapshot. With a manifest, transfer progress is
-the sum of actual decoded bytes received divided by the sum of bytes published
-in the active cycle, including measurable independent resources. Manifest-absent
-files are excluded. Settlement never fabricates bytes. Without byte totals the
-display uses terminal files over registered files; while the work set is still
-open it is an activity state with no `aria-valuenow`.
+Both progress modes consume one snapshot. Transfer progress is actual bytes
+received over published bytes for the size-known files in the active cycle,
+including measurable independent resources. Unsized work retains its own file
+count and activity state; it never discards known byte progress. Once the known
+bytes arrive, unsized pending work keeps the same bar active without a numeric
+claim. Manifest-absent files and resources are excluded. Settlement never
+fabricates bytes. If no file has a byte total, the display uses terminal files
+over registered files. An undiscovered work set has no `aria-valuenow`.
 
 The halfway gate compares received bytes directly, including partial failed
 transfers. A terminal error's settled percentage never counts as transfer.
@@ -524,10 +534,14 @@ usable page and its actionable error remain available.
 Once all known bytes have arrived but validation, application, context, state,
 initial-view, or final-geometry tasks remain, the same chromosome switches to a
 named Preparing activity state. Preparation is completed registered tasks over
-registered tasks; it is not assigned byte weight. A failed cycle terminates as
-an error with Retry rather than announcing success. Grouped mode gives each
-file or independent resource a stable byte-weighted slot (equal slots without
-sizes); continuous mode sums the same actual bytes. Neither review path calls
+registered tasks; it is not assigned byte weight. Activity gently pulses the
+existing track without advancing its completed extent, and reduced motion
+disables that animation. The status is excluded from text scrambling. Initial
+tiers retain their approved organism-specific wording; post-settle requests
+name the file. A failed cycle preserves the received-byte extent, removes its
+numeric completion claim, and terminates with Retry. Grouped mode gives known
+files byte-weighted slots (equal file slots only when none has a size);
+continuous mode sums the same known bytes. Neither review path calls
 `loadSchedule()`.
 
 Review mode also enables a coherent-block scramble curve through 1, 12, 40, and
@@ -560,7 +574,7 @@ cached runs. CPU 4× slowdown is a responsiveness check, not a source of progres
 | S1 | Skeleton placeholders | Approved, then superseded by the owner's empty shell; loading notes stand in for evidence after the reveal |
 | S2 | Preload hints | Approved. Built as an early inline fetch plus module preloads, which starts tier 1 before the script is parsed without depending on how a browser matches a preload to a `fetch` |
 | S3 | Cache keyed on the release | Approved. Keyed on each file's content digest, not `meta.builtAt` |
-| S4 | Split `genes.json` | Declined; a pipeline and contract change that would need its own ticket |
+| S4 | Split `genes.json` | The original broad split was declined; a later payload ticket moved unused per-gene RSCU to `codon_rscu.json`. Packed codons remain in the core file. |
 | S5 | Release identity early | Approved. In the bar's value text throughout its shell and post-reveal positions |
 | S6 | Per-file retry | Approved |
 | S7 | Streamed map drawing | Declined; conflicts with validating the file whole |

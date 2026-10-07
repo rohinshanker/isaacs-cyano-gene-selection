@@ -50,9 +50,14 @@ test('the stylesheet hides text, not structure, while loading', async () => {
   assert.ok(!/load-tail-(?:meter|fill)/.test(css), 'there is no secondary progress meter');
   // A segment just appears: the owner asked for no expand animation, since
   // easing each one in made the blocky load read as fluid again.
-  const genes = css.slice(css.indexOf('.load-gene {'), css.indexOf('/* After the reveal'));
+  const genes = [...css.matchAll(/\.load-gene(?:\.is-on)? \{[^}]*\}/g)]
+    .map((match) => match[0]).join('\n');
   assert.match(genes, /\.load-gene \{ fill: #dfe5ea; \}\s*\.load-gene\.is-on \{ fill: var\(--gene\); \}/);
   assert.ok(!/transition|transform|animation/.test(genes), 'no segment is eased, grown, or faded in');
+  const track = /\.load-chromosome \{[^}]*\}/.exec(css)[0];
+  assert.ok(!/transition|transform|animation/.test(track), 'the ordinary track has no activity animation');
+  assert.match(css, /\.load-progress\.is-activity \.load-chromosome \{ animation: load-activity-pulse/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.load-progress\.is-activity \.load-chromosome \{ animation: none/);
 });
 
 test('the reveal waits for its own files while the one bar measures the whole cycle', async () => {

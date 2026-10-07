@@ -173,16 +173,17 @@ export function truthfulProgress(snapshot, resources = [], preparationTasks = []
       settled: record.settled === true,
       state: record.state ?? (record.settled ? FILE_STATE.READY : FILE_STATE.LOADING),
     }));
-  const resourceGroups = resources.filter((resource) => resource.state !== FILE_STATE.ABSENT)
+  const resourceGroups = resources
+    .filter((resource) => resource.state !== FILE_STATE.ABSENT)
     .map((resource) => ({
-    key: resource.key,
-    label: resource.label,
-    bytes: Number.isFinite(resource.totalBytes) && resource.totalBytes > 0
-      ? resource.totalBytes : null,
-    actualReceivedBytes: Math.max(0, resource.receivedBytes ?? 0),
-    settled: resource.settled === true,
-    state: resource.state,
-  }));
+      key: resource.key,
+      label: resource.label,
+      bytes: Number.isFinite(resource.totalBytes) && resource.totalBytes > 0
+        ? resource.totalBytes : null,
+      actualReceivedBytes: Math.max(0, resource.receivedBytes ?? 0),
+      settled: resource.settled === true,
+      state: resource.state,
+    }));
   const groups = [...baseGroups, ...resourceGroups];
   for (const group of groups) {
     group.progress = group.bytes
@@ -206,61 +207,65 @@ export function truthfulProgress(snapshot, resources = [], preparationTasks = []
   const preparationComplete = preparation.completed >= preparation.registered;
   const terminal = allSettled && (failures.length > 0 || preparationComplete);
   const current = groups.find((group) => !group.settled);
+  const known = groups.filter((group) => group.bytes !== null);
+  const unknown = groups.filter((group) => group.bytes === null);
+  const totalBytes = known.reduce((sum, group) => sum + group.bytes, 0);
+  const actualReceivedBytes = known.reduce((sum, group) => (
+    sum + Math.min(group.actualReceivedBytes, group.bytes)
+  ), 0);
+  const knownFraction = totalBytes > 0 ? actualReceivedBytes / totalBytes : null;
+  const unknownPending = unknown.filter((group) => !group.settled);
+  const transfer = {
+    exactBytes: totalBytes > 0, actualReceivedBytes, totalBytes, knownFraction,
+    unknownFiles: unknown.length, pendingUnknownFiles: unknownPending.length,
+    settledFiles: groups.filter((group) => group.settled).length, totalFiles: groups.length,
+  };
+  const common = { groups, failures, preparation, ...transfer };
 
   if (terminal && failures.length > 0) {
     return {
-      phase: 'error', fraction: 1, terminal: true, groups, failures, preparation,
-      label: 'Loading finished with errors', exactBytes: groups.every((group) => group.bytes !== null),
+      ...common, phase: 'error', fraction: knownFraction ?? 1, terminal: true,
+      label: 'Loading finished with errors',
     };
   }
-
   if (!worksetKnown) {
     return {
-      phase: 'discovering', fraction: null, terminal: false, groups, failures, preparation,
+      ...common, phase: 'discovering', fraction: null, terminal: false,
       label: 'Discovering published data', exactBytes: false,
     };
   }
-
-  const allLengthsKnown = groups.length > 0 && groups.every((group) => group.bytes !== null);
-  if (allLengthsKnown) {
-    const totalBytes = groups.reduce((sum, group) => sum + group.bytes, 0);
-    const actualReceivedBytes = groups.reduce((sum, group) => (
-      sum + Math.min(group.actualReceivedBytes, group.bytes)
-    ), 0);
-    if (actualReceivedBytes < totalBytes) {
+  if (knownFraction !== null) {
+    if (knownFraction < 1) {
       return {
-        phase: 'transfer', fraction: actualReceivedBytes / totalBytes, terminal: false,
-        groups, failures, preparation, label: current?.label ?? 'published data', exactBytes: true,
-        actualReceivedBytes, totalBytes,
+        ...common, phase: 'transfer', fraction: knownFraction, terminal: false,
+        label: current?.label ?? 'published data',
+      };
+    }
+    if (unknownPending.length > 0) {
+      return {
+        ...common, phase: 'activity', fraction: null, terminal: false,
+        label: unknownPending[0].label,
       };
     }
     if (!terminal) {
       return {
-        phase: 'preparing', fraction: null, terminal: false, groups, failures, preparation,
-        label: preparation.currentLabel ?? current?.label ?? 'loaded data', exactBytes: true,
-        actualReceivedBytes, totalBytes,
+        ...common, phase: 'preparing', fraction: null, terminal: false,
+        label: preparation.currentLabel ?? current?.label ?? 'loaded data',
       };
     }
-  } else if (!terminal) {
-    const settled = groups.filter((group) => group.settled).length;
+  } else if (allSettled && !preparationComplete) {
     return {
-      phase: 'transfer', fraction: groups.length > 0 ? settled / groups.length : null,
-      terminal: false, groups, failures, preparation,
-      label: current?.label ?? 'data files', exactBytes: false,
-      settledFiles: settled, totalFiles: groups.length,
+      ...common, phase: 'preparing', fraction: null, terminal: false,
+      label: preparation.currentLabel ?? 'loaded data',
+    };
+  } else if (!terminal) {
+    return {
+      ...common, phase: 'transfer', fraction: groups.length > 0
+        ? transfer.settledFiles / groups.length : null,
+      terminal: false, label: current?.label ?? 'data files',
     };
   }
-
-  return {
-    phase: failures.length > 0 ? 'error' : 'ready',
-    fraction: 1,
-    terminal,
-    groups,
-    failures,
-    preparation,
-    label: failures.length > 0 ? 'Loading finished with errors' : 'Ready',
-    exactBytes: allLengthsKnown,
-  };
+  return { ...common, phase: 'ready', fraction: 1, terminal, label: 'Ready' };
 }
 
 /** The release and its size, once `meta.json` has landed; empty before. */
@@ -370,6 +375,7 @@ export class LoadProgress {
       this.presentation.append(this.status);
     }
     this.status.setAttribute('role', 'status');
+    this.status.setAttribute('data-no-scramble', '');
     this.buildTail();
     this.startCycle(0);
   }
@@ -516,11 +522,13 @@ export class LoadProgress {
   /** Render grouped or continuous projections of the same truthful snapshot. */
   renderTruthfulStage() {
     const projection = this.truthfulSnapshot();
-    this.bar.classList.toggle('is-activity', projection.fraction === null);
+    const label = this.progressLabel(projection);
+    this.bar.classList.toggle('is-activity', projection.fraction === null
+      || projection.pendingUnknownFiles > 0);
     if (projection.fraction === null) {
       // The byte phase may already be visually full; an indeterminate
       // preparation phase removes the numeric claim without moving backwards.
-      this.setFraction(projection.phase === 'preparing' ? 1 : 0);
+      this.setFraction(projection.phase === 'preparing' || projection.knownFraction === 1 ? 1 : 0);
     } else if (this.review.progress === 'grouped') this.setGrouped(projection.groups);
     else this.setFraction(projection.fraction);
 
@@ -531,24 +539,32 @@ export class LoadProgress {
       description = status;
     } else if (projection.phase === 'preparing') {
       const { completed, registered } = projection.preparation;
-      status = `Preparing ${projection.label}`;
+      status = `Preparing ${label}`;
       description = `${status}. ${completed} of ${registered} preparation tasks complete.`;
     } else if (projection.phase === 'error') {
       status = projection.label;
       description = `${status}. Retry the failed data below.`;
+    } else if (projection.phase === 'activity') {
+      status = `Loading ${label}`;
+      description = `${status}. Received all known bytes; this file has no published size.`;
     } else if (projection.phase === 'ready') {
       status = 'Loading complete';
       description = `${status}.${describeIdentity(this.identity) ? ` ${describeIdentity(this.identity)}.` : ''}`;
     } else if (projection.exactBytes) {
-      const percent = Math.round(projection.fraction * 100);
-      status = `Loading ${projection.label}`;
-      description = `${status}, ${percent}% of published bytes received.`;
+      const percent = Math.floor(projection.fraction * 100);
+      status = `Loading ${label}`;
+      const remaining = projection.pendingUnknownFiles;
+      description = `${status}, ${percent}% of known published bytes received.`
+        + (remaining > 0 ? ` ${remaining} file${remaining === 1 ? '' : 's'} with no published size still loading.` : '');
     } else {
-      status = `Loading ${projection.label}`;
+      status = `Loading ${label}`;
       description = `${status}, ${projection.settledFiles} of ${projection.totalFiles} files settled.`;
     }
     this.status.textContent = status;
-    this.setAria(projection.fraction, description);
+    const numeric = projection.phase === 'error' ? null
+      : (projection.phase === 'transfer' && projection.exactBytes
+        ? Math.floor(projection.fraction * 100) / 100 : projection.fraction);
+    this.setAria(numeric, description);
     this.resolveTransferWaiters(projection);
     if (!projection.terminal || this.completeHeld || this.finishScheduled) return;
     this.finishScheduled = true;
@@ -561,13 +577,26 @@ export class LoadProgress {
     }, this.terminalHoldMs);
   }
 
+  /** Initial tiers keep their approved wording; later requests name the file. */
+  progressLabel(projection) {
+    if (this.resourceOnly || this.blockingKeys !== null) return projection.label;
+    const file = DATA_FILES.find((entry) => entry.name === projection.label);
+    if (!file) return projection.label;
+    if (projection.phase === 'transfer' && this.snapshot?.currentTier) {
+      return this.tierLabels[this.snapshot.currentTier] ?? dataFileLabel(file, this.organism);
+    }
+    return dataFileLabel(file, this.organism);
+  }
+
   /** Stable slots weighted by published bytes, or equally when sizes are unknown. */
   setGrouped(groups) {
     if (groups.length === 0) {
       this.setFraction(0);
       return;
     }
-    const byteWeighted = groups.every((group) => group.bytes !== null);
+    const measured = groups.filter((group) => group.bytes !== null);
+    const byteWeighted = measured.length > 0;
+    groups = byteWeighted ? measured : groups;
     const weights = groups.map((group) => (byteWeighted ? group.bytes : 1));
     const total = weights.reduce((sum, weight) => sum + weight, 0);
     let start = 0;

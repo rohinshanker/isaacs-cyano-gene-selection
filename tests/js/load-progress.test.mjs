@@ -239,6 +239,58 @@ test('an absent independent file adds no transfer weight or unknown size', () =>
   assert.equal(empty.groups.length, 0);
 });
 
+test('mixed-size work preserves measured bytes while unknown work and preparation remain pending', () => {
+  const file = {label:'genes.json',bytes:100,actualReceivedBytes:50,
+    settled:false,state:FILE_STATE.LOADING,included:true};
+  const resource = {key:'download',label:'source.tsv',totalBytes:null,receivedBytes:20,
+    settled:false,state:FILE_STATE.LOADING};
+  const base = {worksetKnown:true,files:{genes:file}};
+  const partial = truthfulProgress(base, [resource]);
+  assert.equal(partial.exactBytes, true);
+  assert.equal(partial.totalBytes, 100);
+  assert.equal(partial.fraction, 0.5, 'an unsized transfer does not discard known byte progress');
+  assert.equal(partial.pendingUnknownFiles, 1);
+  file.actualReceivedBytes = 100;
+  const waiting = truthfulProgress(base, [resource]);
+  assert.equal(waiting.phase, 'activity');assert.equal(waiting.fraction, null);
+  assert.equal(waiting.label, 'source.tsv');assert.equal(waiting.terminal, false);
+  resource.settled = true;resource.state = FILE_STATE.READY;
+  assert.equal(truthfulProgress(base,[resource]).phase,'preparing');
+  file.settled = true;file.state = FILE_STATE.READY;
+  assert.equal(truthfulProgress(base,[resource]).terminal,true);
+  const allUnknown = truthfulProgress({worksetKnown:true,files:{}},[resource],
+    [{key:'apply',label:'initial view',completed:false}]);
+  assert.equal(allUnknown.phase,'preparing');assert.equal(allUnknown.fraction,null);
+});
+
+for (const mode of ['grouped','continuous']) {
+  test(`mixed-size drawing and errors keep the same measured extent (${mode})`, async () => {
+    await withFakeDocument(async document => {
+      const {progress,bar,status}=mount(document,{}, {review:{name:'C',progress:mode},terminalHoldMs:0});
+      progress.beginResource('download',{label:'source.tsv'});
+      const value=(received,state=FILE_STATE.LOADING)=>({worksetKnown:true,currentTier:1,
+        files:{genes:{label:'genes.json',bytes:100,actualReceivedBytes:received,
+          settled:state!==FILE_STATE.LOADING,state,included:true}}});
+      progress.update(value(50));
+      assert.equal(bar.getAttribute('aria-valuenow'),'50');
+      assert.equal(bar.querySelectorAll('rect.load-gene').filter(mark=>mark.hasClass('is-on')).length,
+        loadBarGenes().filter(gene=>gene.at<=0.5).length);
+      assert.match(bar.getAttribute('aria-valuetext'),/known published bytes.*no published size/);
+      assert.equal(await progress.whenTransferAtLeast(0.5),true);
+      assert.equal(bar.hasClass('is-activity'),true);
+      assert.equal(status.textContent,'Loading genes');
+      assert.equal(status.getAttribute('data-no-scramble'),'');
+      progress.settleResource('download');
+      progress.update(value(50,FILE_STATE.FAILED));
+      await progress.finished();
+      assert.equal(bar.getAttribute('aria-valuenow'),null, 'an error is not a transferred 100%');
+      assert.match(bar.getAttribute('aria-valuetext'),/finished with errors/);
+      assert.equal(bar.querySelectorAll('rect.load-gene').filter(mark=>mark.hasClass('is-on')).length,
+        loadBarGenes().filter(gene=>gene.at<=0.5).length);
+    });
+  });
+}
+
 test('review rendering removes aria-valuenow during real preparation', async () => {
   await withFakeDocument((document) => {
     const { bar, status, progress } = mount(document, {}, {

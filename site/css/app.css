@@ -214,6 +214,12 @@ pre {
    load read as fluid again. */
 .load-gene { fill: #dfe5ea; }
 .load-gene.is-on { fill: var(--gene); }
+/* Activity changes no completed extent or number; it only marks ongoing work. */
+.load-progress.is-activity .load-chromosome { animation: load-activity-pulse 1.2s ease-in-out infinite alternate; }
+@keyframes load-activity-pulse { from { opacity: 0.45; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .load-progress.is-activity .load-chromosome { animation: none; opacity: 0.65; }
+}
 
 /* After the reveal the same chromosome presentation continues in the map card.
    It stays in normal flow, with a reserved minimum height, so progress settling
