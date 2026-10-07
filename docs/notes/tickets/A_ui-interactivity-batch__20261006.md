@@ -1,74 +1,47 @@
 # A_ui-interactivity-batch__20261006 — Active
 
-Scope: Coordinate open UI/interactivity fixes in the canonical Desktop checkout.
+Scope: Complete open UI/interactivity work and coordinate the owner's remaining loading choice.
 Status: active
 Opened: 2026-10-06
 Updated: 2026-10-07
 
 ## Current State
 
-Work is resumed on `main` in
+All authorized engineering repairs are integrated on canonical `main` in
 `/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection`.
-Committed fixes include condition guides reaching the count, responsive reading
-order and visible row focus, maximum-filter scrolling, source provenance and
-compact export summaries, exact-text instant hints, and a single chromosome bar
-for staged files, downloads, retries and RNA folding. Post-settle file requests
-start another cycle on that same surface; concurrent work excludes old-cycle
-bytes. No changes have been pushed or deployed.
+Guides, exact-text instant hints and unified chromosome loading are accepted
+and their tickets cleaned up. Data Selection's responsive/focus/filter and
+provenance/export repairs are accepted; data-admission and statistical stages
+remain in that feature's own ticket. The payload coordinator integrated the
+RSCU sidecar and closed its ticket after loading acceptance. No pushes or
+publication have occurred.
 
-The guide and instant-hint tickets are resolved and cleaned up. Original loading
-correctness was accepted by DEM-260. DEM-259 confirmed the
-last row-focus repair at `d5efb53`; all guide/export/hint findings are accepted.
-DEM-267 requested five animation/progress repairs. They are integrated at
-`06ab535`: production late-reveal guard, batched effective reservations,
-retained known bytes alongside unsized work, visible reduced-motion-aware
-activity, readable stage/status copy and partial error extents. Related repairs
-cover post-settle requests, concurrent preparation, and failure-safe halfway
-readiness. Final bounded DEM-267 confirmation is active on that exact tree.
-
-The animation implementation is integrated. The owner's reveal choice (A/B/C)
-and progress choice (grouped/continuous) remain pending; production defaults
-stay unchanged. The review packet and six live URLs are in
-`.playwright-cli/cyano-ui-resume/animation/owner-choice.md`, served at port 8786.
-Valid 24-scenario evidence is under `cyano-ui-fixes/dem263-resume/matrix/`;
-`matrix-invalid-hashnav/` is diagnostic-only and excluded.
-
-The human clutter audit stays open for marks, as explicitly requested. Its
-refreshed 20-render/211-entry packet is under `cyano-ui-resume/`. Data Sources
-and scientific UI extensions retain their recorded admission and owner gates.
-The payload sidecar is owned by `cyano-contract-audit`/DEM-266. This stream must
-not edit its payload, pipeline, budget or size contract; verify manifest-related
-loading against its integrated `deeabc3`/`5a1075b` result. The contract records
-the offline sidecar join/no-tier/no-fetch rule. That coordinator holds only the
-payload and unify rows in `tickets/INDEX.md`;
-other UI rows follow normal cleanup.
+Only the owner's A/B/C reveal and grouped/continuous progress choice remain
+in this batch. The accepted query-only implementation, URLs and final evidence
+are recorded in `A_loading-scramble-and-progress__20261006.md`. Apply the choice
+when supplied; production defaults remain unchanged. The human clutter ticket
+stays open for keep/move/merge/remove marks, as explicitly requested; its
+refreshed 20-render/211-entry packet is in the ignored `cyano-ui-resume/` folder.
+Scientific extensions retain their original evidence and owner-decision gates.
 
 ## Verification
 
-Combined gates: JavaScript 1,116 passed; Python 494 passed, 1 skipped,
-36 subtests; contract 116 passed, 1 skipped. Full gates pass against the integrated repair tree. Focused loading contracts
-and real-host activity, missing-ledger and unreachable-half cases pass; post-settle, concurrent-resource and preparation loading tests: 37 passed (42 including loading-shell contracts).
-Rendered guide/focus states pass at 375/768/1280/1440 and 599/601/1319/1321,
-with no runtime errors. Real post-settle requests return the one chromosome bar
-and name the file at all four widths; completion, failure/retry, reduced motion,
-chromosome deep link and E. coli navigation pass in production and A/grouped.
-Real iOS hardware was not available.
+Combined JavaScript 1,116 passed; Python 494 passed, 1 skip, 36 subtests;
+contract 116 passed, 1 skip. Generated manifest/preload/load-bar checks pass.
+DEM-259 accepted guides/focus/exports/hints; DEM-267 approved the complete loading
+and animation repairs on `06ab535`. Final 24-preview matrix passes all four
+widths with one bar, no overflow, runtime errors, final busy/inert state or
+sidecar request. Post-settle loading, failures/retry, reduced motion and
+organism changes pass. Real iOS hardware was unavailable.
 
-Artifacts: `.playwright-cli/cyano-ui-resume/`, particularly
-`guides-row-context-report.json`, `final-focused-tests.log`,
-`late-cycle-tests.log`, `late-default-report.json`, `late-requests-report.json`,
-`combined-npm.log`, `combined-pytest.log`, `combined-contract.log`,
-`activity-report.json`, `c-fallbacks-report.json`, and `scramble-repair/`.
-The final fresh-document 24-case preview matrix is in progress under
-`final-matrix/`; its report is `final-matrix-report.json`. Original and folding evidence
-remain under `.playwright-cli/cyano-ui-fixes/` and `.playwright-cli/dem-265-folding-8792/`.
-Reusable UI checks live under `tools/ui/`; use a unique browser session and
-verified server with an absolute ignored `uiArtifacts` directory.
+Evidence: `.playwright-cli/cyano-ui-resume/`, with the review packet at
+`animation/owner-choice.md` and final reports/tests named in the animation ticket.
+Server port 8786 serves canonical `site/`; root browser session is
+`cyano-ui-resume`. Task workers are finished. No visual reference baseline changed.
 
 ## Cleanup
 
-Resolve accepted original UI tickets after final confirmation and gates. Keep
-reusable rules in the existing validation documents and complete the normal
-R-rename/status/verification/deletion lifecycle, coordinating INDEX removals
-with its owner. Animation remains active until the owner's visual choice is
-applied and verified. Keep the clutter audit open for human marks.
+After the owner's loading choices are applied and verified, resolve the remaining
+animation ticket and this coordinator ticket using the normal lifecycle. Keep
+only reusable contracts in validation docs and keep the human clutter audit open
+for marks. Do not resume broad discovery or duplicate accepted implementation.

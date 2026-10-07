@@ -537,8 +537,8 @@ named Preparing activity state. Preparation is completed registered tasks over
 registered tasks; it is not assigned byte weight. Activity gently pulses the
 existing track without advancing its completed extent, and reduced motion
 disables that animation. The status is excluded from text scrambling. Initial
-tiers retain their approved organism-specific wording; post-settle requests
-name the file. A failed cycle preserves the received-byte extent, removes its
+tiers retain their approved organism-specific wording; post-settle requests,
+including Retry, name the file. Failure actions retain their friendly labels. A failed cycle preserves the received-byte extent, removes its
 numeric completion claim, and terminates with Retry. Grouped mode gives known
 files byte-weighted slots (equal file slots only when none has a size);
 continuous mode sums the same known bytes. Neither review path calls
