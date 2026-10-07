@@ -5,7 +5,6 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_processed-expression-agreement__20261007](A_processed-expression-agreement__20261007.md) | Reproduce sample-level and control-relative agreement from admitted RNA-seq processed tables; isolated from PRIDE ingestion and raw reprocessing |
 | [A_ui-interactivity-batch__20261006](A_ui-interactivity-batch__20261006.md) | Engineering accepted and verified; awaiting the owner’s loading defaults; human clutter marks remain open |
 | [A_loading-scramble-and-progress__20261006](A_loading-scramble-and-progress__20261006.md) | Accepted A/B/C and grouped/continuous previews with truthful progress; owner visual choices pending before production defaults change |
 | [O_fitness-browser-access__20261006](O_fitness-browser-access__20261006.md) | Admit the Fitness Browser PCC 7942 RB-TnSeq compendium once the owner saves its terms and tables past the bot check (AAA-next-steps.md item 1) |
