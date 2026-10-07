@@ -2,8 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
-  normalizeCitationsManifest, loadCitationsManifest, fetchCitationBlob, CITATIONS_TAB,
+  CitationsPanel, CITATIONS_TAB, citationDownloadResourceKey, fetchCitationBlob,
+  loadCitationsManifest, normalizeCitationsManifest,
 } from '../../site/js/ui/citations.js';
+import { withFakeDocument } from './fake-dom.mjs';
 
 /** An in-test fixture standing in for `data/citations.json`, per the contract:
  * `{sections: [{id, title, description, items: [{id, citation, url, contribution,
@@ -151,6 +153,34 @@ test('download fetch reports HTTP and network failures', async () => {
     /HTTP 404/,
   );
   await assert.rejects(fetchCitationBlob(download, throwingFetch('offline')), /offline/);
+});
+
+test('concurrent controls for one URL receive distinct progress identities', async () => {
+  assert.notEqual(
+    citationDownloadResourceKey({ url: 'https://example.test/source.tsv' }, 1),
+    citationDownloadResourceKey({ url: 'https://example.test/source.tsv' }, 2),
+  );
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    const requests = [];
+    const panel = new CitationsPanel(host, {
+      fetchDownload: async (download, requestId) => {
+        requests.push({ download, requestId });
+        throw new Error('held failure');
+      },
+    });
+    const shared = { filename: 'source.tsv', url: 'https://example.test/source.tsv' };
+    panel.render({ sections: [{
+      id: 'same-source', title: 'Same source', items: [
+        { id: 'first', citation: 'First', downloads: [shared] },
+        { id: 'second', citation: 'Second', downloads: [shared] },
+      ],
+    }] });
+    for (const button of host.querySelectorAll('button')) button.dispatch('click');
+    await Promise.resolve();
+    assert.deepEqual(requests.map(({ requestId }) => requestId), [1, 2]);
+    assert.deepEqual(requests.map(({ download }) => download.url), [shared.url, shared.url]);
+  });
 });
 
 test('optional item and download fields normalize missing values to null, not undefined', () => {

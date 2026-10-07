@@ -293,6 +293,15 @@ before it can settle, and the cycle cannot report 100% while that work remains.
 Once a cycle has completed, a citation download or a per-file retry starts a
 fresh chromosome cycle rather than moving a completed bar backwards.
 
+Received bytes are not completion. A response whose last byte has arrived stays
+below 100% until its validation and apply step settles; the same rule applies to
+independent resources. Failed and absent work is settled work, so it may complete
+the cycle while its actionable state remains visible. Per-file retries extend an
+active cycle without dropping another pending file or independent resource. A
+retry begun during the completed-bar hold invalidates that older hold, so its
+callback cannot hide newly pending work. Each citation-download click has its
+own progress identity, including simultaneous controls that request the same URL.
+
 The URL still decides readiness: `promotedFileKeys` names later files whose
 content the initial view needs before reveal. That readiness gate does not
 change what the bar measures.
@@ -325,6 +334,9 @@ minimum (`loadProgress.ready()`). Neither wait delays a request. `revealPage`
 removes `is-loading`, shows the sections below the workspace, and moves the same
 chromosome presentation from the empty grid to the reserved progress host at
 the top of the map card. Later tiers continue there; no second meter is built.
+The uneven-block clock continues after that move, so a fast later resource or
+retry completes its minimum schedule and hold without needing another network
+progress event.
 The page was built while the shell hid it, so the reveal only uncovers it; the
 canvases are measured then, because they were built inside a frame that was not
 displayed. The shell status line is hidden at the same moment; the bar and its

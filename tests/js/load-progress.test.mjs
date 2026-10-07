@@ -12,10 +12,14 @@ import { withFakeDocument } from './fake-dom.mjs';
 const IDENTITY = { releaseId: 'GCF_000817325.1-RS_2026_05_13', geneCount: 2715 };
 
 function snapshot(overrides = {}) {
-  return {
+  const value = {
     receivedBytes: 0, totalBytes: 1000, exact: true, settledFiles: 0, totalFiles: 13,
     currentTier: 1, tiers: {}, elapsedMs: 0, ...overrides,
   };
+  if (!Object.hasOwn(overrides, 'settledFiles') && value.receivedBytes >= value.totalBytes) {
+    value.settledFiles = value.totalFiles;
+  }
+  return value;
 }
 
 function mount(document, handlers = {}, options = {}) {
@@ -150,7 +154,15 @@ test('progress is bytes against the manifest, or files when sizes are unknown', 
   assert.equal(loadFraction(snapshot({ files }), ['missing']), 0,
     'an absent key contributes neither bytes nor a settled file');
   assert.equal(loadFraction(snapshot({ files }), []), 0);
-  assert.equal(loadFraction(snapshot({ files: { genes: { receivedBytes: 200, bytes: 100 } } }), ['genes']), 1);
+  assert.equal(loadFraction(snapshot({
+    files: { genes: { receivedBytes: 200, bytes: 100, settled: true } },
+  }), ['genes']), 1);
+  assert.equal(loadFraction(snapshot({
+    receivedBytes: 1000, settledFiles: 12,
+  })), 0.99, 'received bytes cannot complete work that has not settled');
+  assert.equal(loadFraction(snapshot({
+    files: { genes: { receivedBytes: 100, bytes: 100, settled: false } },
+  }), ['genes']), 0.99, 'per-file validation and apply must settle before completion');
 });
 
 test('the bar says which tier is loading, how far, and what the release is', () => {
@@ -291,23 +303,37 @@ test('zero minimum requests no frames and finishes with real progress immediatel
   });
 });
 
-test('reveal stops the frame loop, and restart creates a new timed cycle', async () => {
-  await withFakeDocument((document) => {
+test('a fast post-reveal resource completes its nonzero-minimum schedule without another update', async () => {
+  await withFakeDocument(async (document) => {
     const manual = clock();
-    const { progress } = mount(document, {}, {
-      minimumMs: 1500, now: manual.now, requestFrame: manual.requestFrame,
-    });
-    const first = progress.finished();
-    assert.equal(manual.requested, 1);
-    progress.reveal();
-    manual.advance(100);
-    assert.equal(manual.requested, 1, 'the queued callback requested no successor after reveal');
-    progress.restart();
-    assert.notEqual(progress.finished(), first);
-    assert.equal(manual.requested, 2);
-    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
-    manual.advance(loadSchedule(1500).at(-1).atMs - 1);
-    assert.ok(progress.fraction < 1, 'restart measures its minimum from the restart time');
+    const previousTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (callback, delay) => manual.setTimeout(callback, delay);
+    try {
+      const { progress } = mount(document, {}, {
+        minimumMs: 50, now: manual.now, requestFrame: manual.requestFrame,
+      });
+      progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+      manual.advance(50);
+      manual.advance(FULL_HOLD_MS);
+      await progress.finished();
+      progress.reveal();
+
+      progress.beginResource('download', { label: 'source.tsv', reportFailure: false });
+      const second = progress.finished();
+      progress.settleResource('download');
+      assert.equal(progress.fraction, 0, 'the fresh schedule begins at its first block');
+      assert.ok(manual.waiting > 0, 'the revealed presentation retains a clock frame');
+      manual.advance(100);
+      assert.equal(progress.fraction, 1, 'the clock alone advances a fast settled resource');
+      assert.equal(manual.waiting, 0);
+      assert.equal(progress.completeHeld, false, 'the full bar still receives its hold');
+      manual.advance(FULL_HOLD_MS);
+      await second;
+      assert.equal(progress.completeHeld, true);
+      assert.equal(progress.presentation.hidden, true);
+    } finally {
+      globalThis.setTimeout = previousTimeout;
+    }
   });
 });
 
@@ -403,6 +429,39 @@ test('after reveal the chromosome bar names later files and then hides without a
   });
 });
 
+test('complete response bytes stay visibly and accessibly incomplete until the file settles', async () => {
+  await withFakeDocument((document) => {
+    const { bar, progress } = mount(document);
+    const pendingFile = (receivedBytes) => snapshot({
+      receivedBytes,
+      settledFiles: 12,
+      currentTier: 4,
+      files: {
+        regulatoryTss: { receivedBytes: receivedBytes === 999 ? 99 : 100, bytes: 100, settled: false },
+      },
+    });
+    progress.update(pendingFile(999));
+    assert.equal(progress.fraction, 0.99);
+    assert.equal(bar.getAttribute('aria-valuenow'), '99');
+    assert.equal(bar.getAttribute('aria-valuetext'), 'Loading regulatory sites, 99%.');
+
+    progress.reveal();
+    progress.update(pendingFile(1000));
+    assert.equal(progress.presentation.hidden, false);
+    assert.equal(progress.completeHeld, false);
+    assert.equal(bar.getAttribute('aria-valuenow'), '99');
+
+    progress.update(snapshot({
+      receivedBytes: 1000,
+      settledFiles: 13,
+      currentTier: null,
+      files: { regulatoryTss: { receivedBytes: 100, bytes: 100, settled: true } },
+    }));
+    assert.equal(bar.getAttribute('aria-valuenow'), '100');
+    assert.equal(progress.presentation.hidden, true);
+  });
+});
+
 test('a file that could not be loaded stays listed with a Retry, and a blocked one without', async () => {
   await withFakeDocument((document) => {
     const retried = [];
@@ -489,6 +548,104 @@ test('a discovered resource keeps the whole cycle below complete and supplies th
     assert.equal(tail.querySelector('p').textContent, 'Loading source ledger');
     progress.settleResource('citations');
     assert.equal(bar.getAttribute('aria-valuenow'), '100');
+  });
+});
+
+test('a resource with every byte received remains incomplete until it settles', async () => {
+  await withFakeDocument((document) => {
+    const { bar, progress } = mount(document);
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    progress.reveal();
+    progress.beginResource('download', { label: 'source.tsv', totalBytes: 20 });
+    progress.updateResource('download', { receivedBytes: 20 });
+    assert.equal(bar.getAttribute('aria-valuenow'), '99');
+    assert.equal(progress.completeHeld, false);
+    assert.equal(progress.presentation.hidden, false);
+    progress.settleResource('download');
+    assert.equal(bar.getAttribute('aria-valuenow'), '100');
+    assert.equal(progress.presentation.hidden, true);
+  });
+});
+
+test('retry retains independent resources and every other unsettled loader file', async () => {
+  await withFakeDocument((document) => {
+    const { bar, progress } = mount(document);
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    progress.reveal();
+    progress.beginResource('download', { label: 'source.tsv' });
+    progress.update(snapshot({
+      receivedBytes: 980,
+      settledFiles: 11,
+      currentTier: 2,
+      files: {
+        candidateEvidence: { receivedBytes: 80, bytes: 100, settled: false },
+        regulatoryTss: { receivedBytes: 100, bytes: 100, settled: false },
+      },
+    }));
+    const cycle = progress.cycle;
+    progress.beginRetry(['candidateEvidence'], 'candidate evidence');
+    assert.equal(progress.cycle, cycle, 'an active cycle is extended instead of replaced');
+
+    progress.update(snapshot({
+      receivedBytes: 1000,
+      settledFiles: 12,
+      currentTier: 4,
+      files: {
+        candidateEvidence: { receivedBytes: 100, bytes: 100, settled: true },
+        regulatoryTss: { receivedBytes: 100, bytes: 100, settled: false },
+      },
+    }));
+    progress.settleResource('download');
+    assert.equal(bar.getAttribute('aria-valuenow'), '99',
+      'the unrelated unsettled file remains part of the cycle');
+    assert.equal(progress.presentation.hidden, false);
+
+    progress.update(snapshot({
+      receivedBytes: 1000,
+      settledFiles: 13,
+      currentTier: null,
+      files: {
+        candidateEvidence: { receivedBytes: 100, bytes: 100, settled: true },
+        regulatoryTss: { receivedBytes: 100, bytes: 100, settled: true },
+      },
+    }));
+    assert.equal(bar.getAttribute('aria-valuenow'), '100');
+    assert.equal(progress.presentation.hidden, true);
+  });
+});
+
+test('a completion-hold callback cannot finish a newly pending retry cycle', async () => {
+  await withFakeDocument(async (document) => {
+    const manual = clock();
+    const previousTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (callback, delay) => manual.setTimeout(callback, delay);
+    try {
+      const { progress } = mount(document, {}, {
+        minimumMs: 50, now: manual.now, requestFrame: manual.requestFrame,
+      });
+      progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+      manual.advance(50);
+      assert.equal(progress.finishScheduled, true);
+      progress.reveal();
+
+      progress.update(snapshot({
+        receivedBytes: 900,
+        settledFiles: 12,
+        currentTier: 4,
+        files: { regulatoryTss: { receivedBytes: 0, bytes: 100, settled: false } },
+      }));
+      progress.beginRetry(['regulatoryTss'], 'regulatory sites');
+      const retryCycle = progress.cycle;
+      manual.advance(FULL_HOLD_MS);
+      await Promise.resolve();
+      assert.equal(progress.cycle, retryCycle);
+      assert.equal(progress.completeHeld, false);
+      assert.equal(progress.presentation.hidden, false,
+        'the hold from the preceding cycle was invalidated');
+      assert.ok(progress.fraction < 1);
+    } finally {
+      globalThis.setTimeout = previousTimeout;
+    }
   });
 });
 

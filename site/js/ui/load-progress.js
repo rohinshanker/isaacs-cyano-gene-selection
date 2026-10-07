@@ -26,6 +26,9 @@ export const LOAD_BAR_GENES = 132;
 /** The full bar is held this long before the page replaces it, so it is seen. */
 export const FULL_HOLD_MS = 150;
 
+/** Never round unsettled work up to the completed, 100% state. */
+const UNSETTLED_MAX_FRACTION = 0.99;
+
 /** A small deterministic generator, so the bar is the same picture on every load. */
 function lcg(seed) {
   let state = seed >>> 0;
@@ -138,12 +141,17 @@ export function loadFraction(snapshot, keys = null) {
     const fraction = snapshot.exact && totalBytes > 0
       ? records.reduce((sum, record) => sum + (record?.receivedBytes ?? 0), 0) / totalBytes
       : (keys.length > 0 ? records.filter((record) => record?.settled).length / keys.length : 0);
-    return clampFraction(fraction);
+    const allSettled = records.every((record) => record?.settled === true);
+    return Math.min(clampFraction(fraction), allSettled ? 1 : UNSETTLED_MAX_FRACTION);
   }
   const fraction = snapshot.exact && snapshot.totalBytes > 0
     ? snapshot.receivedBytes / snapshot.totalBytes
     : (snapshot.totalFiles > 0 ? snapshot.settledFiles / snapshot.totalFiles : 0);
-  return clampFraction(fraction);
+  const allSettled = snapshot.allSettled ?? (
+    Number.isFinite(snapshot.settledFiles) && Number.isFinite(snapshot.totalFiles)
+      ? snapshot.settledFiles >= snapshot.totalFiles : true
+  );
+  return Math.min(clampFraction(fraction), allSettled ? 1 : UNSETTLED_MAX_FRACTION);
 }
 
 /** The release and its size, once `meta.json` has landed; empty before. */
@@ -325,14 +333,13 @@ export class LoadProgress {
   }
 
   requestNextFrame() {
-    if (this.minimumMs === 0 || this.revealed || this.fraction >= 1 || this.framePending) return;
+    if (this.minimumMs === 0 || this.fraction >= 1 || this.framePending) return;
     const cycle = this.cycle;
     const version = this.frameVersion;
     this.framePending = true;
     this.requestFrame(() => {
       if (cycle !== this.cycle || version !== this.frameVersion) return;
       this.framePending = false;
-      if (this.revealed) return;
       this.renderStage();
       this.requestNextFrame();
     });
@@ -438,12 +445,16 @@ export class LoadProgress {
     const settledFiles = (baseFiles * baseFraction)
       + resources.reduce((sum, resource) => sum + resourceFraction(resource), 0);
     const pendingResource = resources.find((resource) => !resource.settled);
+    const baseSettled = !base || (this.blockingKeys !== null
+      ? this.blockingKeys.every((key) => base.files?.[key]?.settled === true)
+      : base.settledFiles >= base.totalFiles);
     return {
       receivedBytes: settledFiles,
       totalBytes: totalFiles,
       exact: false,
       settledFiles,
       totalFiles,
+      allSettled: baseSettled && resources.every((resource) => resource.settled),
       currentTier: base?.currentTier ?? null,
       currentLabel: base?.currentTier ? null : pendingResource?.label
         ?? (baseFraction < 1 ? this.retryLabel : null),
@@ -470,10 +481,21 @@ export class LoadProgress {
   beginRetry(keys, label = 'data') {
     this.resourceOnly = false;
     this.retryLabel = label;
-    this.blockingKeys = [...keys];
-    this.startCycle(this.now());
-    this.setFraction(0);
+    const pendingKeys = Object.entries(this.snapshot?.files ?? {})
+      .filter(([, record]) => !record?.settled)
+      .map(([key]) => key);
+    const cycleWasFinishing = this.finishScheduled || this.completeHeld || this.fraction >= 1;
+    if (cycleWasFinishing) {
+      const activeResources = [...this.resources.values()].filter((resource) => !resource.settled);
+      this.blockingKeys = [...new Set([...keys, ...pendingKeys])];
+      this.startCycle(this.now());
+      for (const resource of activeResources) resource.cycle = this.cycle;
+      this.setFraction(0);
+    } else if (this.blockingKeys !== null) {
+      this.blockingKeys = [...new Set([...this.blockingKeys, ...keys, ...pendingKeys])];
+    }
     this.renderStage();
+    this.requestNextFrame();
     if (this.revealed) this.renderTail();
   }
 
@@ -493,13 +515,12 @@ export class LoadProgress {
   /** The empty shell gives way to the page; later files continue under the tail. */
   reveal() {
     this.revealed = true;
-    this.frameVersion += 1;
-    this.framePending = false;
     this.presentation.remove();
     this.failures.remove();
     this.tail.append(this.presentation, this.failures);
     this.stage.hidden = true;
     this.renderTail();
+    this.requestNextFrame();
   }
 
   /** Put the stage back for a whole-dataset retry. */

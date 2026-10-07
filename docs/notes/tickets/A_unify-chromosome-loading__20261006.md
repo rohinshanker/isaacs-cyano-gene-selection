@@ -53,6 +53,29 @@ actionable in its host.
 
 ## Verification
 
+DEM-261 repair verification, 2026-10-06:
+
+- Deterministic regressions cover exact 999/1000 and 1000/unsettled snapshots,
+  full-byte independent resources, post-reveal nonzero-minimum scheduling, stale
+  completion holds, retry overlap with another loader file and independent
+  resource, and concurrent same-URL citation controls.
+- `npm test`: 1,090 passed.
+- `.venv/bin/python -m pytest -q`: 486 passed, 1 skipped, 36 subtests passed.
+  The isolated worktree used temporary links to the canonical checkout's
+  environment and pinned ignored raw inputs; all links were removed afterward.
+- `.venv/bin/python tools/validate_contract.py`: 110 passed, 1 declared
+  spliced-CDS contiguity skip, using the same temporary inputs.
+- `node tools/build_module_preloads.mjs --check`,
+  `node tools/build_load_bar.mjs --check`, and
+  `.venv/bin/python tools/build_data_manifest.py check`: passed.
+- Real Chromium at `http://127.0.0.1:8787/`: held the regulatory tier under
+  default motion at 375x812, 768x1024, 1280x800, and 1440x900; each viewport
+  had exactly one progressbar, `aria-valuenow=88`, matching “Loading regulatory
+  sites” value text, and no horizontal overflow. Fast mocked citation and retry
+  cycles completed from the clock alone while respecting the default minimum;
+  forced HTTP 503/retry and reduced-motion states recovered. There were no page
+  errors or unexpected console errors. Visual baselines were not changed.
+
 Implementation verification completed:
 
 - `npm test`: 1,069 passed.

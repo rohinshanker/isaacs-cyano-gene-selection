@@ -32,7 +32,8 @@ import {
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
 import {
-  CITATIONS_TAB, CitationsPanel, citationsBlurb, fetchCitationBlob, loadCitationsManifest,
+  CITATIONS_TAB, CitationsPanel, citationDownloadResourceKey, citationsBlurb, fetchCitationBlob,
+  loadCitationsManifest,
 } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
@@ -2819,8 +2820,8 @@ async function boot() {
   });
 
   citationsPanel = new CitationsPanel(element('citations-view'), {
-    fetchDownload: async (download) => {
-      const key = `citation-download:${download.url}`;
+    fetchDownload: async (download, requestId) => {
+      const key = citationDownloadResourceKey(download, requestId);
       loadProgress.beginResource(key, { label: download.filename, reportFailure: false });
       try {
         const blob = await fetchCitationBlob(download);

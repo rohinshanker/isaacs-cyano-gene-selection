@@ -134,15 +134,21 @@ export async function fetchCitationBlob(download, fetchImpl = fetch) {
   return response.blob();
 }
 
+/** A distinct progress identity for every click, even when two controls share a URL. */
+export function citationDownloadResourceKey(download, requestId) {
+  return `citation-download:${requestId}:${download.url}`;
+}
+
 /** Renders the sanitized manifest into `host`. DOM-only; kept apart from the fetch and the shape check above so those stay unit-testable without a DOM. */
 export class CitationsPanel {
   /**
    * @param {HTMLElement} host
-   * @param {{fetchDownload?: (download: object) => Promise<Blob>}} handlers
+   * @param {{fetchDownload?: (download: object, requestId: number) => Promise<Blob>}} handlers
    */
   constructor(host, { fetchDownload = fetchCitationBlob } = {}) {
     this.host = host;
     this.fetchDownload = fetchDownload;
+    this.downloadRequestId = 0;
   }
 
   /**
@@ -249,7 +255,7 @@ export class CitationsPanel {
       button.disabled = true;
       status.textContent = `Downloading ${download.filename}…`;
       try {
-        const blob = await this.fetchDownload(download);
+        const blob = await this.fetchDownload(download, ++this.downloadRequestId);
         const objectUrl = URL.createObjectURL(blob);
         try {
           const anchor = document.createElement('a');
