@@ -4,7 +4,7 @@
   data for PCC 7942 as explicitly labelled sister-strain evidence for UTEX 2973.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 
@@ -36,7 +36,7 @@ is evidence, not data admission, licence permission, or a lab decision.
 | D5 | Applicable strain/data-type and condition-comparability contracts, with provenance and evidence basis retained | Integrate and display selected data |
 
 Related: [cross-strain scan](O_cross-strain-data-scan__20260927.md) and
-[Claude Science offload](O_claude-science-offload__20260927.md). Reuse their
+the [Claude Science handoff contract](../../validation/claude-science-handoff.md#what-claude-science-is-for-this-repository). Reuse their
 findings; this ticket owns BioCyc-specific work rather than a duplicate general
 literature scan. A whole-ticket completion dependency is not imposed.
 

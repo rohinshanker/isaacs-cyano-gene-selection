@@ -29,7 +29,6 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_biocyc-pcc-7943-data__20260930](O_biocyc-pcc-7943-data__20260930.md) | BioCyc v30 has no PCC 7943 database. Kept open pending owner questions Q1 and Q2 on whether the strain has a comparative use and what ticket shape to keep; no pull started |
 | [O_biocyc-utex-3055-data__20260930](O_biocyc-utex-3055-data__20260930.md) | BioCyc v30 has no UTEX 3055 database. Kept open pending owner questions Q1 and Q2, including whether its greater divergence is useful as an outgroup; no pull started |
 | [O_cross-strain-data-scan__20260927](O_cross-strain-data-scan__20260927.md) | Package B's condition metadata is in; the crosswalk second check returned 2026-10-04 and agrees on every count, lifting the hold on PCC 6311/7943 sources (none exists yet). Pair scoring done through package D (intake 2026-10-06) and the owner's judgements; extend the gene viewer with sister-strain overlays (gated on data that is not admitted) and flanking-neighbour context; design the dataset and condition selectors |
-| [O_claude-science-offload__20260927](O_claude-science-offload__20260927.md) | Hand the cross-strain sweep to Claude Science as packages A to D under a fixed return format and the evidence-not-admission boundary. All four have returned and passed intake (A corrected, B, C on 2026-10-04; D on 2026-10-06: 0 comparable, 32 escalated and owner-judged, 178 undecidable, 731 not); licence decisions are in the source ledger. Remaining: cleanup only |
 | [O_comparability-lab-judgements__20261005](O_comparability-lab-judgements__20261005.md) | Ten scientific judgement questions from packages D and E, J1 to J10. The owner decided all but two on 2026-10-05. J10 is with the owner as a generated review sheet of the 32 escalated pairs; J2 is open and minor |
 | [O_unreadable-literature-workarounds__20261005](O_unreadable-literature-workarounds__20261005.md) | Eight papers Claude Science could not read. Five are readable by the agents from the PMC article page, probed 2026-10-05; the owner supplied the other five with supplements the same day, in a private drop folder outside the repository. An in-repository extraction with a mechanical quote match counts as verified. Next: the addendum to packages B and C |
 | [O_gated-pages-and-accounts__20261005](O_gated-pages-and-accounts__20261005.md) | Sources refused by a CAPTCHA, a script-rendered page, metering, or a missing account: which a browser render solves, which need an email for terms, and BioCyc, where the owner signs in to their own account in an opened browser and an agent reads the wanted pages with the owner present |
@@ -45,10 +44,7 @@ their reusable guidance distilled into `docs/validation/`.
 **Owner decision, 2026-10-05: Claude Science is the default last resort.**
 The owner explicitly requested the E. coli multi-omics review on 2026-10-06;
 P-ECOLI-OMICS below is pending manual handoff and has not been sent.
-The two older CS-1 claims need no dispatch and are researched in the repository. Package D
-returned 2026-10-04 and passed intake 2026-10-06 (offload ticket); the Package B
-correction's ten cells are read as not reported and Package D scored them so,
-which is all the correction changed. Their rows are gone.
+The two older CS-1 claims need no dispatch and are researched in the repository.
 
 Items the owner takes to the next Claude Science session, per
 [claude-science-handoff.md](../../validation/claude-science-handoff.md). Agents add a
@@ -64,24 +60,6 @@ Read that before starting any row below.
 that date. Read
 [`docs/notes/handoff/RET_claude-science-session__20260930.md`](../handoff/RET_claude-science-session__20260930.md)
 before starting work on any ticket opened 2026-09-30.
-
-Paste-ready text for the rows that went out is in
-[`docs/notes/handoff/SEND_claude-science-session__20261002.md`](../handoff/SEND_claude-science-session__20261002.md).
-
-**All six pastes have returned and passed intake.** The manifest for pastes 1 to
-4 is
-[`docs/notes/handoff/RET_claude-science-session__20261003.md`](../handoff/RET_claude-science-session__20261003.md);
-paste 5 ran on a read-only mount and its two files were placed in
-`docs/notes/handoff/` by the owner; paste 6 (package D) returned as
-[`RET_claude-science-session__20261004.md`](../handoff/RET_claude-science-session__20261004.md).
-
-| Paste | Queue row | Sent | Returned | Intake recorded in |
-| --- | --- | --- | --- | --- |
-| 1 | Package B | 2026-10-02 | 2026-10-03 | [offload ticket](O_claude-science-offload__20260927.md#package-b-intake-2026-10-04); passed, data rows 31 and 70 returned for relabelling |
-| 2 | Package C | 2026-10-02 | 2026-10-03 | [offload ticket](O_claude-science-offload__20260927.md#package-c-intake-2026-10-04); passed |
-| 4 | Package A correction | 2026-10-02 | 2026-10-03 | [offload ticket](O_claude-science-offload__20260927.md#package-a-correction-intake-2026-10-04); passed |
-| 5 | Crosswalk second check | 2026-10-02 | 2026-10-04 | [scan ticket](O_cross-strain-data-scan__20260927.md#crosswalk-second-check-result-returned-2026-10-04); passed, all four sides agree |
-| 6 | Package D | by the owner | 2026-10-04 | [offload ticket](O_claude-science-offload__20260927.md#package-d-intake-2026-10-06); passed, 32 escalations already judged by the owner |
 
 | Ticket | Id | Request | Unblocks | Sent | Returned |
 | --- | --- | --- | --- | --- | --- |
