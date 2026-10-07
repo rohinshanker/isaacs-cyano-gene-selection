@@ -1642,6 +1642,40 @@ input[type="range"] { width: 100%; }
 .gene-sequence-junctions text { fill: var(--ink-muted); font-family: var(--font); }
 .gene-sequence-selection { margin: 0; font-size: 0.85rem; }
 
+/* Marker layers above the ruler. The same purple the gene visualizer and the
+   chromosome tick row use, so one layer reads as one layer in all three. A head
+   sits over the base its own published coordinate names, and the outlined
+   column underneath is what ties the two together: the outline is a ring rather
+   than a fill so the letter beneath it stays legible. */
+.gene-sequence-markers .gene-sequence-marker-head { fill: #6b4f9e; }
+.gene-sequence-markers .gene-sequence-marker-span {
+  fill: #6b4f9e;
+  fill-opacity: 0.35;
+  stroke: #6b4f9e;
+  stroke-width: 1;
+}
+.gene-sequence-markers .gene-sequence-marker-stem { stroke: #6b4f9e; stroke-width: 1.2; }
+.gene-sequence-markers .gene-sequence-marker-column {
+  fill: none;
+  stroke: #6b4f9e;
+  stroke-width: 1.6;
+}
+/* A head sharing drawn space with another is outlined, so the picture says a
+   cluster is there rather than leaving one head to stand for several. */
+.gene-sequence-marker-shared .gene-sequence-marker-head { stroke: var(--surface); stroke-width: 1; }
+
+/* The marker layer's own show/hide, between the strip and its readout. */
+.gene-sequence-marker-row:empty { display: none; }
+.gene-sequence-layer {
+  align-items: center;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  flex-wrap: wrap;
+}
+.gene-sequence-layer input { margin-top: 0; }
+.gene-sequence-sites summary { font-weight: 600; font-size: 0.82rem; }
+
 @media (prefers-reduced-motion: reduce) {
   .panel-caret { transition: none; }
 }
