@@ -1,17 +1,11 @@
 /**
- * The loading presentation's progress surfaces.
+ * The loading presentation's one progress surface.
  *
- * Two of them, for the two phases of a staged load:
- *
- * - **The chromosome bar**, over an empty grid in the map frame, while the page
- *   is an empty shell. It is drawn like the chromosome track: an axis with
- *   genes above and below it, and the genes load in from left to right as the
- *   data arrives. It reports real progress, and it is the only thing in the
- *   centre of the page until the reveal.
- * - **The tail**, a slim line at the top of the map card after the reveal,
- *   while the later files are still landing. It never blocks the page. A file
- *   that could not be loaded stays listed here with a Retry control, so one
- *   failed request does not cost the visit.
+ * The chromosome bar begins over the empty grid, then the same DOM presentation
+ * moves to the top of the map card when the usable page is revealed. Later
+ * tiers and independently fetched resources therefore continue the same load
+ * instead of apparently starting a second one. Failed files remain below it
+ * with Retry controls, so one failed request does not cost the visit.
  *
  * The genes on the bar are decoration with a real meaning: how many are lit is
  * the fraction loaded. They are not the release's genes, which have not
@@ -165,7 +159,8 @@ export function describeIdentity(identity) {
 export function describeLoad(snapshot, identity = null, keys = null, tierLabels = TIER_LABELS) {
   const percent = Math.round(loadFraction(snapshot, keys) * 100);
   const tier = snapshot?.currentTier ? tierLabels[snapshot.currentTier] : null;
-  const what = tier ? `Loading ${tier}` : 'Loading complete';
+  const what = snapshot?.currentLabel
+    ? `Loading ${snapshot.currentLabel}` : (tier ? `Loading ${tier}` : 'Loading complete');
   const who = describeIdentity(identity);
   return `${what}, ${percent}%.${who ? ` ${who}.` : ''}`;
 }
@@ -200,16 +195,17 @@ function svg(name, attributes = {}) {
 
 export class LoadProgress {
   /**
-   * @param {{stage: HTMLElement, bar: HTMLElement, tail: HTMLElement}} elements
-   *   the loading stage that holds the grid and the bar, the bar's own
-   *   `progressbar` element, and the tail shown after the reveal.
+   * @param {{stage: HTMLElement, presentation?: HTMLElement, bar: HTMLElement,
+   *   status?: HTMLElement, tail: HTMLElement}} elements the loading stage,
+   *   the movable chromosome presentation, its progressbar and stage text, and
+   *   the host that receives that same presentation after the reveal.
    * @param {{onRetry?: (key: string) => void}} handlers
    * @param {{minimumMs?: number, now?: () => number, requestFrame?: Function,
    *   tierLabels?: Record<number, string>, organism?: object}} [options]
    *   `tierLabels` and `organism` word the tiers and the files for the organism
    *   on screen; both default to the default organism's.
    */
-  constructor({ stage, bar, tail }, handlers = {}, {
+  constructor({ stage, presentation = null, bar, status = null, tail }, handlers = {}, {
     minimumMs = 0,
     now = () => performance.now(),
     requestFrame = (callback) => requestAnimationFrame(callback),
@@ -219,7 +215,9 @@ export class LoadProgress {
     this.tierLabels = tierLabels;
     this.organism = organism;
     this.stage = stage;
+    this.presentation = presentation ?? bar;
     this.bar = bar;
+    this.status = status;
     this.tail = tail;
     this.handlers = handlers;
     this.minimumMs = Number.isFinite(minimumMs) ? Math.max(0, minimumMs) : 0;
@@ -230,12 +228,21 @@ export class LoadProgress {
     this.identity = null;
     this.revealed = false;
     this.snapshot = null;
+    this.resources = new Map();
+    this.resourceOnly = false;
+    this.retryLabel = null;
     this.framePending = false;
     this.frameVersion = 0;
     this.cycle = 0;
     this.startedAt = 0;
     this.genes = loadBarGenes();
     this.buildBar();
+    if (!this.status) {
+      this.status = document.createElement('p');
+      this.status.className = 'load-progress-status';
+      this.presentation.append(this.status);
+    }
+    this.status.setAttribute('role', 'status');
     this.buildTail();
     this.startCycle(0);
   }
@@ -270,17 +277,9 @@ export class LoadProgress {
   }
 
   buildTail() {
-    this.tailStatus = document.createElement('p');
-    this.tailStatus.className = 'load-tail-status';
-    this.tailStatus.setAttribute('role', 'status');
-    this.tailMeter = document.createElement('div');
-    this.tailMeter.className = 'load-tail-meter';
-    this.tailFill = document.createElement('div');
-    this.tailFill.className = 'load-tail-fill';
-    this.tailMeter.append(this.tailFill);
     this.failures = document.createElement('ul');
     this.failures.className = 'load-failures';
-    this.tail.replaceChildren(this.tailStatus, this.tailMeter, this.failures);
+    this.tail.replaceChildren(this.failures);
     this.tail.hidden = true;
   }
 
@@ -306,8 +305,18 @@ export class LoadProgress {
     this.startedAt = startedAt;
     this.framePending = false;
     this.finishScheduled = false;
+    this.completeHeld = false;
+    this.readyPromise = new Promise((resolve) => {
+      if (this.minimumMs === 0) resolve();
+      else setTimeout(resolve, this.minimumMs);
+    });
     this.finishedPromise = new Promise((resolve) => { this.resolveFinished = resolve; });
     this.requestNextFrame();
+  }
+
+  /** Promise fulfilled once the presentation minimum has elapsed. */
+  ready() {
+    return this.readyPromise;
   }
 
   /** Promise fulfilled after this cycle has shown and held its complete bar. */
@@ -330,19 +339,25 @@ export class LoadProgress {
   }
 
   renderStage() {
-    const real = loadFraction(this.snapshot, this.blockingKeys);
+    const combined = this.combinedSnapshot();
+    const real = loadFraction(combined);
     const elapsed = this.now() - this.startedAt;
     const displayed = displayedFraction(real, elapsed, this.schedule);
     this.setFraction(displayed);
-    this.setAria(real,
-      describeLoad(this.snapshot, this.identity, this.blockingKeys, this.tierLabels));
+    const description = describeLoad(combined, this.identity, null, this.tierLabels);
+    this.setAria(real, description);
+    const stage = combined?.currentLabel
+      ?? (combined?.currentTier ? this.tierLabels[combined.currentTier] : null);
+    this.status.textContent = stage ? `Loading ${stage}` : (real >= 1 ? 'Loading complete' : 'Loading data');
     if (displayed < 1) return;
     // There may be a callback already queued when an update reaches full.
     // Invalidate it so reaching full stops the loop immediately.
     this.frameVersion += 1;
     this.framePending = false;
     if (this.minimumMs === 0) {
+      this.completeHeld = true;
       this.resolveFinished();
+      if (this.revealed) this.renderTail();
       return;
     }
     if (this.finishScheduled) return;
@@ -354,8 +369,86 @@ export class LoadProgress {
     // lets it be seen, or the rest of the minimum.
     const remaining = this.startedAt + this.minimumMs - this.now();
     setTimeout(() => {
-      if (cycle === this.cycle) this.resolveFinished();
+      if (cycle === this.cycle) {
+        this.completeHeld = true;
+        this.resolveFinished();
+        if (this.revealed) this.renderTail();
+      }
     }, Math.max(FULL_HOLD_MS, remaining));
+  }
+
+  /**
+   * Fold independently fetched work into the active cycle.
+   *
+   * A resource begun after a completed cycle starts a fresh presentation. The
+   * initial source ledger is begun before dataset progress arrives and joins
+   * that first cycle.
+   */
+  beginResource(key, { label, totalBytes = null, reportFailure = true } = {}) {
+    const active = [...this.resources.values()].some((resource) => !resource.settled);
+    if ((this.completeHeld && !active) || this.fraction >= 1) {
+      this.resourceOnly = this.completeHeld && !active;
+      this.blockingKeys = null;
+      this.startCycle(this.now());
+      this.setFraction(0);
+    }
+    this.resources.set(key, {
+      key, label: label ?? key, totalBytes: Number.isFinite(totalBytes) ? totalBytes : null,
+      receivedBytes: 0, settled: false, state: FILE_STATE.LOADING, error: null,
+      reportFailure, cycle: this.cycle,
+    });
+    this.renderStage();
+    if (this.revealed) this.renderTail();
+  }
+
+  updateResource(key, { receivedBytes, totalBytes } = {}) {
+    const resource = this.resources.get(key);
+    if (!resource) return;
+    if (Number.isFinite(receivedBytes)) resource.receivedBytes = Math.max(0, receivedBytes);
+    if (Number.isFinite(totalBytes)) resource.totalBytes = Math.max(0, totalBytes);
+    this.renderStage();
+    if (this.revealed) this.renderTail();
+  }
+
+  settleResource(key, state = FILE_STATE.READY, error = null) {
+    const resource = this.resources.get(key);
+    if (!resource) return;
+    resource.state = state;
+    resource.error = error;
+    resource.settled = true;
+    if (resource.totalBytes !== null) resource.receivedBytes = resource.totalBytes;
+    this.renderStage();
+    this.requestNextFrame();
+    if (this.revealed) this.renderTail();
+  }
+
+  /** The loader and the resources in this presentation cycle as one snapshot. */
+  combinedSnapshot() {
+    const resources = [...this.resources.values()].filter((resource) => resource.cycle === this.cycle);
+    const base = this.resourceOnly ? null : this.snapshot;
+    if (!base && resources.length === 0) return null;
+    const baseFraction = loadFraction(base, this.blockingKeys);
+    const baseFiles = base ? (this.blockingKeys?.length ?? base.totalFiles ?? 1) : 0;
+    const resourceFraction = (resource) => {
+      if (resource.settled) return 1;
+      if (resource.totalBytes > 0) return clampFraction(resource.receivedBytes / resource.totalBytes);
+      return 0;
+    };
+    const totalFiles = baseFiles + resources.length;
+    const settledFiles = (baseFiles * baseFraction)
+      + resources.reduce((sum, resource) => sum + resourceFraction(resource), 0);
+    const pendingResource = resources.find((resource) => !resource.settled);
+    return {
+      receivedBytes: settledFiles,
+      totalBytes: totalFiles,
+      exact: false,
+      settledFiles,
+      totalFiles,
+      currentTier: base?.currentTier ?? null,
+      currentLabel: base?.currentTier ? null : pendingResource?.label
+        ?? (baseFraction < 1 ? this.retryLabel : null),
+      files: base?.files ?? {},
+    };
   }
 
   /** The release's name and gene count, reported once tier 1 has been built. */
@@ -371,6 +464,17 @@ export class LoadProgress {
       this.renderStage();
       this.requestNextFrame();
     }
+  }
+
+  /** Start a new visible cycle for one or more loader files being retried. */
+  beginRetry(keys, label = 'data') {
+    this.resourceOnly = false;
+    this.retryLabel = label;
+    this.blockingKeys = [...keys];
+    this.startCycle(this.now());
+    this.setFraction(0);
+    this.renderStage();
+    if (this.revealed) this.renderTail();
   }
 
   /**
@@ -391,6 +495,9 @@ export class LoadProgress {
     this.revealed = true;
     this.frameVersion += 1;
     this.framePending = false;
+    this.presentation.remove();
+    this.failures.remove();
+    this.tail.append(this.presentation, this.failures);
     this.stage.hidden = true;
     this.renderTail();
   }
@@ -399,6 +506,11 @@ export class LoadProgress {
   restart() {
     this.revealed = false;
     this.snapshot = null;
+    this.resources.clear();
+    this.resourceOnly = false;
+    this.retryLabel = null;
+    this.presentation.remove();
+    this.stage.append(this.presentation);
     this.stage.hidden = false;
     this.tail.hidden = true;
     this.setFraction(0);
@@ -416,21 +528,38 @@ export class LoadProgress {
   }
 
   renderTail() {
-    const snapshot = this.snapshot ?? null;
+    const snapshot = this.combinedSnapshot();
     const failed = DATA_FILES.filter((file) => this.files?.[file.key]?.state === FILE_STATE.FAILED);
-    const loading = snapshot?.currentTier ?? null;
-    this.tail.hidden = loading === null && failed.length === 0;
-    // Loading alone, the tail overlays the card's padding and moves nothing.
-    // A failure takes a place in the flow, for its message and its Retry.
-    this.tail.classList.toggle('has-failures', failed.length > 0);
+    const resourceFailures = [...this.resources.values()].filter((resource) => (
+      resource.state === FILE_STATE.FAILED && resource.reportFailure
+    ));
+    const loading = loadFraction(snapshot) < 1 || !this.completeHeld;
+    this.tail.hidden = false;
+    this.tail.classList.toggle('has-failures', failed.length + resourceFailures.length > 0);
+    this.presentation.hidden = !loading;
     if (this.tail.hidden) return;
-    const who = describeIdentity(this.identity);
-    this.tailStatus.textContent = loading !== null
-      ? `${who ? `${who}. ` : ''}Still loading ${this.tierLabels[loading]}.`
-      : `${formatCount(failed.length)} data file${failed.length === 1 ? '' : 's'} could not be loaded.`;
-    this.tailMeter.hidden = loading === null;
-    this.tailFill.style.width = `${(loadFraction(snapshot) * 100).toFixed(1)}%`;
-    this.failures.replaceChildren(...failed.map((file) => this.failureRow(file)));
+    if (loading) this.renderStage();
+    this.failures.replaceChildren(
+      ...failed.map((file) => this.failureRow(file)),
+      ...resourceFailures.map((resource) => this.resourceFailureRow(resource)),
+    );
+  }
+
+  resourceFailureRow(resource) {
+    const row = document.createElement('li');
+    row.className = 'load-failure';
+    row.dataset.fileKey = resource.key;
+    const text = document.createElement('span');
+    text.textContent = `${resource.label}: ${resource.error?.message ?? 'could not be loaded'}`;
+    row.append(text);
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'chip-button';
+    retry.textContent = 'Retry';
+    retry.setAttribute('aria-label', `Retry loading ${resource.label}`);
+    retry.addEventListener('click', () => this.handlers.onRetry?.(resource.key));
+    row.append(retry);
+    return row;
   }
 
   failureRow(file) {

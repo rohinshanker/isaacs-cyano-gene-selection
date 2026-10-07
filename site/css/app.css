@@ -171,7 +171,20 @@ pre {
     linear-gradient(to bottom, var(--line) 1px, transparent 1px);
   background-size: 12.5% 20%;
 }
-.load-progress { position: relative; width: min(80%, 34rem); }
+.load-progress-presentation {
+  position: relative;
+  display: grid;
+  gap: 0.25rem;
+  width: min(80%, 34rem);
+}
+.load-progress { width: 100%; }
+.load-progress-status {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  text-align: center;
+}
 .load-chromosome { display: block; width: 100%; height: 44px; overflow: visible; }
 .load-chromosome-axis { stroke: #536774; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 /* The whole track is there from the first paint, faint and neutral, so the bar
@@ -182,39 +195,23 @@ pre {
 .load-gene { fill: #dfe5ea; }
 .load-gene.is-on { fill: var(--gene); }
 
-/* After the reveal: later files still landing, and any that could not load.
-   While files are only loading the tail lies over the map card's own top
-   padding, out of the flow: it appears and leaves without moving the map by a
-   pixel, which matters because it leaves while the visitor is already working.
-   A failure needs room for its message and its Retry, so only then does it take
-   a place in the flow. */
+/* After the reveal the same chromosome presentation continues in the map card.
+   It stays in normal flow, with a reserved minimum height, so progress settling
+   does not move the controls below it. Failures remain here with their Retry. */
 #map-section { position: relative; }
 .load-tail {
-  position: absolute;
-  inset: 0 0 auto 0;
   display: grid;
-  gap: 1px;
-  font-size: 0.66rem;
-  line-height: 1;
+  place-items: center;
+  gap: 0.3rem;
+  min-height: 3.75rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
   color: var(--ink-muted);
-  pointer-events: none;
-}
-.load-tail-status { margin: 0; padding: 0 1rem; order: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.load-tail-meter {
-  height: 3px;
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: var(--line);
-  overflow: hidden;
 }
 .load-tail.has-failures {
-  position: static;
-  gap: 0.3rem;
-  font-size: 0.8rem;
-  line-height: inherit;
-  pointer-events: auto;
+  place-items: stretch;
 }
-.load-tail.has-failures .load-tail-status { padding: 0; order: 0; white-space: normal; }
-.load-tail-fill { height: 100%; background: var(--accent); transition: width 200ms linear; }
+.load-tail .load-progress-presentation { width: min(100%, 34rem); }
 .load-failures { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
 .load-failure { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--danger); }
 .load-failure .chip-button { min-height: 28px; padding: 0.1rem 0.6rem; }
@@ -227,7 +224,6 @@ pre {
 @keyframes evidence-pulse { 50% { opacity: 0.55; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .load-tail-fill { transition: none; }
   .evidence-pending[data-pending="loading"] { animation: none; }
 }
 

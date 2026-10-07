@@ -20,10 +20,19 @@ function snapshot(overrides = {}) {
 
 function mount(document, handlers = {}, options = {}) {
   const stage = document.createElement('div');
+  const presentation = document.createElement('div');
+  presentation.className = 'load-progress-presentation';
   const bar = document.createElement('div');
+  bar.className = 'load-progress';
+  const status = document.createElement('p');
+  status.className = 'load-progress-status';
   const tail = document.createElement('div');
-  stage.append(bar);
-  return { stage, bar, tail, progress: new LoadProgress({ stage, bar, tail }, handlers, options) };
+  presentation.append(bar, status);
+  stage.append(presentation);
+  return {
+    stage, presentation, bar, status, tail,
+    progress: new LoadProgress({ stage, presentation, bar, status, tail }, handlers, options),
+  };
 }
 
 /** A frame and timeout queue advanced by hand. */
@@ -249,10 +258,9 @@ test('the genes lag while assistive technology reports real blocking progress', 
   });
 });
 
-test('blocking files fill the stage while the tail continues to measure everything', async () => {
-  await withFakeDocument(async (document) => {
+test('the same chromosome bar continues to measure the whole load after reveal', async () => {
+  await withFakeDocument((document) => {
     const { bar, tail, progress } = mount(document);
-    progress.setBlocking(['genes', 'meta']);
     progress.update(snapshot({
       receivedBytes: 250,
       files: {
@@ -261,12 +269,12 @@ test('blocking files fill the stage while the tail continues to measure everythi
         later: { receivedBytes: 100, bytes: 850, settled: false },
       },
     }));
-    assert.equal(bar.getAttribute('aria-valuenow'), '100');
-    assert.equal(bar.querySelectorAll('rect.load-gene').every((mark) => mark.hasClass('is-on')), true);
-    await progress.finished();
+    assert.equal(bar.getAttribute('aria-valuenow'), '25');
     progress.reveal();
-    assert.equal(tail.querySelector('div.load-tail-fill').style.width, '25.0%',
-      'the post-reveal tail remains whole-load progress');
+    assert.equal(progress.presentation.parentNode, tail,
+      'the original chromosome presentation moves; no second meter is made');
+    assert.equal(tail.querySelectorAll('.load-progress').length, 1);
+    assert.equal(bar.getAttribute('aria-valuenow'), '25');
   });
 });
 
@@ -372,7 +380,7 @@ test('the bar is a progressbar whose genes light from left to right as data arri
   });
 });
 
-test('after the reveal the tail reports later files without blocking, then leaves', async () => {
+test('after reveal the chromosome bar names later files and then hides without another meter', async () => {
   await withFakeDocument((document) => {
     const { stage, tail, progress } = mount(document);
     progress.setIdentity(IDENTITY);
@@ -382,15 +390,16 @@ test('after the reveal the tail reports later files without blocking, then leave
     progress.reveal();
     assert.equal(stage.hidden, true, 'the stage gives way to the map');
     assert.equal(tail.hidden, false);
-    assert.ok(!tail.hasClass('has-failures'), 'loading alone, the tail overlays and moves nothing');
-    assert.equal(tail.querySelector('p').textContent,
-      'Release GCF_000817325.1-RS_2026_05_13, 2,715 genes. Still loading function categories and filters.');
+    assert.ok(!tail.hasClass('has-failures'));
+    assert.equal(tail.querySelector('p').textContent, 'Loading function categories and filters');
     assert.equal(tail.querySelector('p').getAttribute('role'), 'status');
-    assert.equal(tail.querySelector('div.load-tail-fill').style.width, '60.0%');
+    assert.equal(tail.querySelector('.load-progress'), progress.bar);
+    assert.equal(progress.bar.getAttribute('aria-valuenow'), '60');
+    assert.equal(tail.querySelector('div.load-tail-meter'), null);
     progress.update(snapshot({ receivedBytes: 900, currentTier: 4 }));
-    assert.match(tail.querySelector('p').textContent, /Still loading regulatory sites\.$/);
+    assert.equal(tail.querySelector('p').textContent, 'Loading regulatory sites');
     progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
-    assert.equal(tail.hidden, true, 'everything landed and nothing failed');
+    assert.equal(progress.presentation.hidden, true, 'the reserved host remains but the finished bar leaves');
   });
 });
 
@@ -400,7 +409,7 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
     const { tail, progress } = mount(document, { onRetry: (key) => retried.push(key) });
     progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
     progress.reveal();
-    assert.equal(tail.hidden, true);
+    assert.equal(progress.presentation.hidden, true);
     progress.setFiles(records({
       candidateEvidence: {
         state: FILE_STATE.FAILED, error: new Error('could not read candidate_evidence.json: HTTP 502'),
@@ -415,8 +424,7 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
     }));
     assert.equal(tail.hidden, false);
     assert.ok(tail.hasClass('has-failures'), 'a failure takes room in the flow for its Retry');
-    assert.equal(tail.querySelector('p').textContent, '3 data files could not be loaded.');
-    assert.equal(tail.querySelector('div.load-tail-meter').hidden, true);
+    assert.equal(tail.querySelector('div.load-tail-meter'), null);
     const rows = tail.querySelectorAll('li.load-failure');
     assert.deepEqual(rows.map((row) => row.dataset.fileKey),
       ['candidateEvidence', 'sourceDerivedCategories', 'excluded']);
@@ -429,11 +437,11 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
     buttons[0].dispatch('click');
     assert.deepEqual(retried, ['candidateEvidence']);
 
-    // One failure reads in the singular; with none left the tail goes away.
+    // With none left the reserved host remains and carries no failure.
     progress.setFiles(records({ excluded: { state: FILE_STATE.FAILED, error: null, blockedBy: null } }));
-    assert.equal(tail.querySelector('p').textContent, '1 data file could not be loaded.');
+    assert.equal(tail.querySelectorAll('li.load-failure').length, 1);
     progress.setFiles(records());
-    assert.equal(tail.hidden, true);
+    assert.equal(tail.hidden, false);
     assert.ok(!tail.hasClass('has-failures'));
   });
 });
@@ -460,13 +468,42 @@ test('the tail and the bar name files and tiers for the organism on screen', asy
     assert.equal(other.bar.getAttribute('aria-valuetext'), 'Loading annotation and filters, 40%.');
     other.progress.reveal();
     other.progress.setFiles(records());
-    assert.equal(other.tail.querySelector('p').textContent, 'Still loading annotation and filters.');
+    assert.equal(other.tail.querySelector('p').textContent, 'Loading annotation and filters');
     other.progress.setFiles(failedStartSites());
     other.progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
     const plain = other.tail.querySelector('li.load-failure');
     assert.equal(plain.querySelector('span').textContent, 'Start sites: could not be loaded');
     assert.equal(plain.querySelector('button').getAttribute('aria-label'), 'Retry loading start sites');
     assert.ok(!/Tan|function categor/.test(other.tail.textContent));
+  });
+});
+
+test('a discovered resource keeps the whole cycle below complete and supplies the stage text', async () => {
+  await withFakeDocument((document) => {
+    const { bar, tail, progress } = mount(document);
+    progress.beginResource('citations', { label: 'source ledger', totalBytes: 20 });
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    assert.ok(Number(bar.getAttribute('aria-valuenow')) < 100);
+    assert.match(bar.getAttribute('aria-valuetext'), /Loading source ledger/);
+    progress.reveal();
+    assert.equal(tail.querySelector('p').textContent, 'Loading source ledger');
+    progress.settleResource('citations');
+    assert.equal(bar.getAttribute('aria-valuenow'), '100');
+  });
+});
+
+test('a resource started after completion gets a fresh chromosome cycle', async () => {
+  await withFakeDocument((document) => {
+    const { bar, progress } = mount(document);
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    progress.reveal();
+    assert.equal(progress.presentation.hidden, true);
+    progress.beginResource('download', { label: 'source.tsv', reportFailure: false });
+    assert.equal(progress.presentation.hidden, false);
+    assert.equal(bar.getAttribute('aria-valuenow'), '0');
+    assert.equal(progress.status.textContent, 'Loading source.tsv');
+    progress.settleResource('download');
+    assert.equal(bar.getAttribute('aria-valuenow'), '100');
   });
 });
 

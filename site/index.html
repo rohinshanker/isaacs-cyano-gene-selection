@@ -397,9 +397,10 @@ if (window.location.protocol === 'file:') {
            ui/load-progress.js lights its genes as the data arrives. -->
       <div id="load-stage" class="load-stage">
         <div class="load-grid" aria-hidden="true"></div>
-        <div id="load-progress" class="load-progress" role="progressbar"
-             aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-             aria-valuetext="Loading genes, 0%.">
+        <div id="load-progress-presentation" class="load-progress-presentation">
+          <div id="load-progress" class="load-progress" role="progressbar"
+               aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+               aria-valuetext="Loading genes, 0%.">
           <svg class="load-chromosome" viewBox="0 0 600 44" preserveAspectRatio="none"
                aria-hidden="true" focusable="false">
             <line class="load-chromosome-axis" x1="0" x2="600" y1="22" y2="22"></line>
@@ -540,10 +541,12 @@ if (window.location.protocol === 'file:') {
             <rect class="load-gene" x="595.34" y="25" width="4.66" height="15" style="--gene: #009e73"></rect>
             <!-- load-bar:end -->
           </svg>
+          </div>
+          <p id="load-progress-status" class="load-progress-status" role="status">Loading genes</p>
         </div>
       </div>
-      <!-- After the reveal, while later files are still landing, and the place a
-           file that could not be loaded is listed with its Retry control. -->
+      <!-- The same chromosome presentation moves here after the reveal. This is
+           also where a failed file stays listed with its Retry control. -->
       <div id="load-tail" class="load-tail" hidden></div>
       <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map views and sources"></div>
       <p class="panel-blurb" id="panel-blurb"></p>

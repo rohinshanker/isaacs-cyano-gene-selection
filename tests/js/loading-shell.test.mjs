@@ -27,6 +27,8 @@ test('the page opens as an empty shell with the stage in the map frame', async (
   assert.match(html, /<div class="load-grid" aria-hidden="true"><\/div>/);
   assert.match(html, /id="load-progress" class="load-progress" role="progressbar"\s+aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"\s+aria-valuetext="Loading genes, 0%\."/,
     'the bar has a value text before any script runs');
+  assert.match(html, /id="load-progress-status" class="load-progress-status" role="status">Loading genes<\/p>/,
+    'concise visible stage text ships with the bar');
   assert.match(html, /<line class="load-chromosome-axis"/, 'the axis is drawn before any script runs');
   assert.match(html, /<div id="load-tail" class="load-tail" hidden><\/div>/);
   // The shell shows no text, so its status line is for assistive technology
@@ -45,7 +47,7 @@ test('the stylesheet hides text, not structure, while loading', async () => {
   // The stage is the map canvas's own box.
   const canvasHost = /\.canvas-host \{[^}]*height: (clamp\([^;]+\));/.exec(css)[1];
   assert.ok(block.includes(`height: ${canvasHost};`), 'the grid stands where the map will');
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.load-tail-fill \{ transition: none; \}/);
+  assert.ok(!/load-tail-(?:meter|fill)/.test(css), 'there is no secondary progress meter');
   // A segment just appears: the owner asked for no expand animation, since
   // easing each one in made the blocky load read as fluid again.
   const genes = css.slice(css.indexOf('.load-gene {'), css.indexOf('/* After the reveal'));
@@ -53,17 +55,19 @@ test('the stylesheet hides text, not structure, while loading', async () => {
   assert.ok(!/transition|transform|animation/.test(genes), 'no segment is eased, grown, or faded in');
 });
 
-test('the reveal waits for the minimum bar time and for a link\'s own files', async () => {
+test('the reveal waits for its own files while the one bar measures the whole cycle', async () => {
   const source = await read('js/app.js');
+  const progressSource = await read('js/ui/load-progress.js');
   const boot = source.slice(source.indexOf('async function boot()'));
   // Presentation is skipped under reduced motion: the bar has no minimum then.
   assert.match(boot, /minimumMs: reducedMotion \? 0 : loadTiming\.minimumBarMs,/);
-  // The files this visit waits for are read from the link before any data
-  // arrives, so the bar measures them from its first frame. The link is read
-  // under the organism the address names.
-  assert.match(boot, /const requested = defaultState\(organism\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash, organism\), organism\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(\[\.\.\.CORE_FILE_KEYS, \.\.\.promoted\]\);/);
-  // The reveal waits for those files, and then for the bar to finish.
-  assert.match(boot, /await load\.when\(promoted\);\s*await loadProgress\.finished\(\);\s*revealPage\(\);/);
+  // The link is read under the organism the address names, while progress is
+  // explicitly whole-cycle and includes the independently fetched ledger.
+  assert.match(boot, /const requested = defaultState\(organism\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash, organism\), organism\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(null\);\s*loadProgress\.beginResource\('citations'/);
+  // The reveal waits for the view's files and the minimum, not false 100%; the
+  // same bar moves into the revealed page and continues.
+  assert.match(boot, /await load\.when\(promoted\);\s*await loadProgress\.ready\(\);\s*revealPage\(\);/);
+  assert.match(progressSource, /this\.tail\.append\(this\.presentation, this\.failures\)/);
   const order = ['renderAll();\n  booted = true;', 'flushLandings();', 'revealPage();',
     'if (pendingMapJump) jumpToMap();'];
   let from = 0;

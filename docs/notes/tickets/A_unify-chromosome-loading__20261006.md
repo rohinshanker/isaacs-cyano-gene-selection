@@ -9,12 +9,12 @@
 
 ## Current State
 
-Opened at the owner's request. The owner reports a secondary loading bar appearing
-after the chromosome bar finishes. Source inspection confirms that
-`site/js/ui/load-progress.js` switches from the chromosome bar to a separate slim
-"tail" meter after the page reveal, while later files continue loading. This
-sequence has not been reproduced in a browser for this ticket. Implementation
-has not started.
+Implemented on the task branch for coordinator review. The same chromosome
+presentation now moves from the shell into the revealed map card and measures
+the complete active cycle. Later tiers, the source ledger, citation downloads,
+organism navigations, and per-file retries no longer create or depend on a
+secondary meter. Concise stage text stays with the bar; failed files remain
+actionable in its host.
 
 ## Requirements
 
@@ -53,7 +53,36 @@ has not started.
 
 ## Verification
 
-Implementation verification is pending. Acceptance requires:
+Implementation verification completed:
+
+- `npm test`: 1,069 passed.
+- `.venv/bin/python -m pytest -q`: 486 passed, 1 skipped, 36 subtests passed.
+  The isolated worktree omits pinned ignored `data/raw` inputs, so the run used
+  temporary links to the canonical checkout's byte-identical files; the links
+  were removed after the gate.
+- `.venv/bin/python tools/validate_contract.py`: 110 passed, 1 declared spliced-CDS
+  contiguity skip, using the same temporary pinned-input links.
+- `node tools/build_module_preloads.mjs --check`,
+  `node tools/build_load_bar.mjs --check`, and
+  `.venv/bin/python tools/build_data_manifest.py check`: passed.
+- Real Chromium at `http://127.0.0.1:8767/`: inspected initial throttled load,
+  early reveal with later tiers active, settled/fast cached, chromosome deep
+  link, reduced motion, E. coli navigation, forced `excluded.json` HTTP 503 and
+  successful Retry, and two concurrent citation downloads. At 375x812,
+  768x1024, 1280x800, and 1440x900 there was exactly one progressbar and no
+  horizontal overflow. The console was clean except for the deliberately
+  injected 503 in the failure fixture. Accessible value and visible stage text
+  agreed in every sampled state.
+- Render evidence is under
+  `.playwright-cli/dem-256-loading/`: `loading-mobile-375.png`,
+  `loading-tablet-768.png`, `loading-desktop-1280.png`,
+  `loading-wide-1440.png`, `revealed-bar-mobile-375.png`,
+  `failure-tablet-768.png`, `retry-recovered-tablet-768.png`,
+  `reduced-motion-mobile-375.png`, `deep-link-tablet-768.png`,
+  `organism-ecoli-desktop-1280.png`, and
+  `citation-download-desktop-1280.png`.
+
+Acceptance coverage now includes:
 
 - Tests covering progress across early and later stages, concurrent loads,
   completion, failed/absent files, retry, and organism/dataset transitions.

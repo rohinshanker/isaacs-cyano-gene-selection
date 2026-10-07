@@ -136,9 +136,13 @@ export async function fetchCitationBlob(download, fetchImpl = fetch) {
 
 /** Renders the sanitized manifest into `host`. DOM-only; kept apart from the fetch and the shape check above so those stay unit-testable without a DOM. */
 export class CitationsPanel {
-  /** @param {HTMLElement} host */
-  constructor(host) {
+  /**
+   * @param {HTMLElement} host
+   * @param {{fetchDownload?: (download: object) => Promise<Blob>}} handlers
+   */
+  constructor(host, { fetchDownload = fetchCitationBlob } = {}) {
     this.host = host;
+    this.fetchDownload = fetchDownload;
   }
 
   /**
@@ -245,7 +249,7 @@ export class CitationsPanel {
       button.disabled = true;
       status.textContent = `Downloading ${download.filename}…`;
       try {
-        const blob = await fetchCitationBlob(download);
+        const blob = await this.fetchDownload(download);
         const objectUrl = URL.createObjectURL(blob);
         try {
           const anchor = document.createElement('a');

@@ -32,7 +32,7 @@ import {
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
 import {
-  CITATIONS_TAB, CitationsPanel, citationsBlurb, loadCitationsManifest,
+  CITATIONS_TAB, CitationsPanel, citationsBlurb, fetchCitationBlob, loadCitationsManifest,
 } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
@@ -614,6 +614,7 @@ let compareAxes = null;
 // `undefined` while the manifest fetch is in flight, `null` once it resolves
 // to nothing usable, otherwise the sanitized `{sections: [...]}` document.
 let citationsManifest;
+let retryCitations = null;
 let timingHandle = 0;
 
 function updateTiming() {
@@ -2293,6 +2294,7 @@ function flushLandings() {
 /** Ask again for one later file that could not be loaded. */
 function retryFile(key) {
   if (!staged?.retry(key)) return;
+  loadProgress.beginRetry([key], dataFileLabel(DATA_FILE_BY_KEY[key], organism));
   loadProgress.setFiles(staged.files);
   renderAll();
   announce(`Retrying ${dataFileLabel(DATA_FILE_BY_KEY[key], organism)}.`);
@@ -2393,19 +2395,20 @@ function logLoadTimings() {
 async function boot() {
   // The minimum bar time is presentation, so reduced motion has none.
   loadProgress ??= new LoadProgress({
-    stage: element('load-stage'), bar: element('load-progress'), tail: element('load-tail'),
-  }, { onRetry: (key) => retryFile(key) }, {
+    stage: element('load-stage'), presentation: element('load-progress-presentation'),
+    bar: element('load-progress'), status: element('load-progress-status'), tail: element('load-tail'),
+  }, { onRetry: (key) => (key === 'citations' ? retryCitations?.() : retryFile(key)) }, {
     minimumMs: reducedMotion ? 0 : loadTiming.minimumBarMs,
     tierLabels: tierLabelsFor(organism),
     organism,
   });
-  // What this visit waits for, read from the link before any data arrives: the
-  // tier 1 files and whatever the view it opens onto reads. The bar fills over
-  // exactly these, so it is full when the page is ready and not before.
+  // The link decides when the usable page may be revealed. The bar measures the
+  // whole cycle, so later tiers continue in the same chromosome presentation.
   const requested = defaultState(organism);
   applyDecoded(requested, decodeState(window.location.hash, organism), organism);
   const promoted = promotedFileKeys(requested);
-  loadProgress.setBlocking([...CORE_FILE_KEYS, ...promoted]);
+  loadProgress.setBlocking(null);
+  loadProgress.beginResource('citations', { label: 'source ledger' });
   // The page's inline script has already asked for the manifest and the tier 1
   // files; this hands those requests to the loader instead of repeating them.
   const fetchImpl = adoptingFetch(window.__cyanoEarlyData, (url, init) => fetch(url, init));
@@ -2424,17 +2427,36 @@ async function boot() {
   // Started beside the dataset so both are in flight together; a missing or
   // broken manifest must never hold up the map. It is addressed through the
   // content manifest like every other data file.
-  const citationsFetch = async () => {
-    const manifest = await load.manifest;
-    const entry = manifest?.files.get('citations.json') ?? null;
-    // The manifest lists everything this deployment publishes, so a ledger it
-    // does not list is absent and needs no request to find that out.
-    if (manifest && !entry) return new Response(null, { status: 404 });
-    const request = dataRequest(dataBase, 'citations.json', entry, 4);
-    return fetchImpl(request.url, request.init);
-  };
-  const citationsLoaded = loadCitationsManifest({ baseUrl: dataBase, fetchImpl: citationsFetch })
-    .then((manifest) => {
+  const loadCitations = async () => {
+    let published = true;
+    let loadError = null;
+    const citationsFetch = async () => {
+      const manifest = await load.manifest;
+      const entry = manifest?.files.get('citations.json') ?? null;
+      // The manifest lists everything this deployment publishes, so a ledger it
+      // does not list is absent and needs no request to find that out.
+      if (manifest && !entry) {
+        published = false;
+        return new Response(null, { status: 404 });
+      }
+      if (entry) loadProgress.updateResource('citations', { totalBytes: entry.bytes });
+      const request = dataRequest(dataBase, 'citations.json', entry, 4);
+      try {
+        const response = await fetchImpl(request.url, request.init);
+        if (!response.ok) loadError = new Error(`could not read citations.json: HTTP ${response.status}`);
+        return response;
+      } catch (error) {
+        loadError = new Error(`could not read citations.json: ${error.message}`, { cause: error });
+        throw error;
+      }
+    };
+    const manifest = await loadCitationsManifest({ baseUrl: dataBase, fetchImpl: citationsFetch });
+    if (manifest === null && published && !loadError) {
+      loadError = new Error('citations.json is not a valid source ledger');
+    }
+    loadProgress.settleResource('citations', manifest !== null
+      ? FILE_STATE.READY : (published ? FILE_STATE.FAILED : FILE_STATE.ABSENT), loadError);
+    if (manifest !== null) {
       citationsManifest = manifest;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) renderCitationsTab(manifest);
       if (context.dataset && PANELS.some((panel) => panel.id === state.panel)) {
@@ -2446,11 +2468,17 @@ async function boot() {
       if (context.dataset && chromosomeView && state.panel === CHROMOSOME_TAB.id) {
         renderColorHelp(chromosomeView.colourHelpElement());
       }
-    })
-    .catch(() => {
+    } else {
       citationsManifest = null;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) renderCitationsTab(null);
-    });
+    }
+    return manifest;
+  };
+  retryCitations = () => {
+    loadProgress.beginResource('citations', { label: 'source ledger' });
+    void loadCitations();
+  };
+  const citationsLoaded = loadCitations();
 
   let dataset;
   try {
@@ -2787,7 +2815,20 @@ async function boot() {
     },
   });
 
-  citationsPanel = new CitationsPanel(element('citations-view'));
+  citationsPanel = new CitationsPanel(element('citations-view'), {
+    fetchDownload: async (download) => {
+      const key = `citation-download:${download.url}`;
+      loadProgress.beginResource(key, { label: download.filename, reportFailure: false });
+      try {
+        const blob = await fetchCitationBlob(download);
+        loadProgress.settleResource(key, FILE_STATE.READY);
+        return blob;
+      } catch (error) {
+        loadProgress.settleResource(key, FILE_STATE.FAILED, error);
+        throw error;
+      }
+    },
+  });
 
   buildPanelTabs();
   updatePanelTabs();
@@ -2880,10 +2921,9 @@ async function boot() {
     .filter((key) => !promoted.includes(key));
   if (promotedByMetric.length > 0) {
     promoted.push(...promotedByMetric);
-    loadProgress.setBlocking([...CORE_FILE_KEYS, ...promoted]);
   }
   await load.when(promoted);
-  await loadProgress.finished();
+  await loadProgress.ready();
   revealPage();
   if (pendingMapJump) jumpToMap();
   announce(organismRecognised
