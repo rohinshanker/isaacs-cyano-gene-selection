@@ -4,7 +4,7 @@
   pinned RefSeq annotation; select useful additions before planning any data pull.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 
@@ -95,10 +95,10 @@ or an identifier join; D3 through D5 still apply before any value is used.
 | D5 | Pass evidence, provenance, and admission checks under existing contracts | Ship any data or derived display |
 
 Coordinate research with the
-[cross-strain scan](O_cross-strain-data-scan__20260927.md) and
-[Claude Science offload](O_claude-science-offload__20260927.md), reusing existing
-findings instead of repeating requests. This ticket owns BioCyc-specific
-assessment; it does not require completion of either whole ticket.
+[cross-strain scan](O_cross-strain-data-scan__20260927.md) and the
+[Claude Science handoff contract](../../validation/claude-science-handoff.md#what-claude-science-is-for-this-repository),
+reusing existing findings instead of repeating requests. This ticket owns
+BioCyc-specific assessment; it does not require completion of the scan ticket.
 
 The five sister-strain BioCyc tickets can assess availability independently.
 They depend only on relevant shared decisions and source contracts established

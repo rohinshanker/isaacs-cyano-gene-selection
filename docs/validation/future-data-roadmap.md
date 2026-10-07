@@ -222,8 +222,7 @@ offline download over a live request from the static site.
 ### Package A candidate register, 2026-09-28
 
 The 57 candidates below passed intake from the Claude Science package A sweep
-across the six admitted strains and seven admitted data types (intake recorded in
-the offload ticket while it is open; source table
+across the six admitted strains and seven admitted data types (source table
 `docs/notes/handoff/cyano_package_A_candidates_20260928.tsv`, SHA-256
 `d6f456174fd10cb4cd265a342134de5e5de0d6580ebc0c93fc1d8b149073001f`). They are
 candidates, not admitted sources. Packages B and C returned 2026-10-03 and passed

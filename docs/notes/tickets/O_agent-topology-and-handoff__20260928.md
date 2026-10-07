@@ -9,7 +9,7 @@
   interface, not a repository change.
 - **Status:** open
 - **Opened:** 2026-09-28
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current state
 
@@ -40,8 +40,9 @@ this repository.
 
 **`CYANO_EVIDENCE_SCOUT`** — runs offload packages A, B, C, and D. Sweeps literature
 and repositories across the six admitted strains and the seven admitted data types;
-returns one row per candidate in the offload ticket's required format, rejected rows
-included. Never decides admission or licence permission, never invents a locus join.
+returns candidate rows (rejected rows included) or comparison-pair rows under the
+[package return schema](../../validation/claude-science-handoff.md#return-format).
+Never decides admission or licence permission, never invents a locus join.
 Needs the omics-archive, PubMed, literature-graph, genes-and-ontologies,
 protein-annotation, and genome connectors.
 

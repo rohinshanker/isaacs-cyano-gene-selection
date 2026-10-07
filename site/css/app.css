@@ -1775,6 +1775,37 @@ input[type="range"] { width: 100%; }
 .ds-empty { padding: 1.2rem; color: var(--ink-muted); }
 .ds-study-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; padding: 0.6rem 0.9rem 0.9rem; font-size: 0.78rem; color: var(--ink-muted); border-top: 1px solid var(--line); }
 .ds-study-legend-title { font-weight: 600; width: 100%; }
+/* A compendium's single row, and the grid peek stacked over the selection. */
+.ds-compendium td.ds-name { padding-bottom: 0.5rem; }
+.ds-compendium .ds-label { display: block; margin: 0.15rem 0 0.35rem; color: var(--ink-muted); }
+.ds-choose { margin-left: 0; }
+.data-sources-compendium { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+
+/* The stacked peek sits above the one it was opened from. */
+.peek-backdrop-stacked { z-index: 60; background: rgba(27, 39, 51, 0.35); }
+.peek.condition-grid { width: min(1040px, 94vw); height: min(760px, 88vh); }
+.cg-note { margin: 0; padding: 0.5rem 0.9rem 0; color: var(--ink-muted); font-size: 0.8rem; }
+.cg-bar { display: flex; gap: 0.5rem; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--line); }
+.cg-body { flex: 1; min-height: 0; overflow: auto; padding: 0.4rem 0.9rem 0.9rem; }
+.cg-grid { display: flex; flex-direction: column; }
+/* Compound down the side, its doses across; rows are ragged because each
+   compound was tested at its own number of doses and padding would invent
+   cells that no experiment ran. */
+.cg-row { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: 0.5rem; align-items: start; padding: 0.35rem 0; border-top: 1px solid var(--line); }
+.cg-row:first-child { border-top: 0; }
+.cg-rowhead { display: flex; gap: 0.4rem; align-items: baseline; }
+.cg-rowhead input { margin: 0; flex: 0 0 auto; }
+.cg-compound { overflow-wrap: anywhere; font-weight: 600; font-size: 0.8rem; }
+.cg-cells { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.cg-cell { display: inline-flex; gap: 0.3rem; align-items: center; padding: 0.2rem 0.45rem; border: 1px solid var(--line); border-radius: 6px; font-size: 0.78rem; cursor: pointer; background: var(--surface); }
+.cg-cell input { margin: 0; }
+.cg-cell.cg-on { border-color: var(--accent, #2a78d6); background: var(--surface-sunken); }
+.cg-dose { white-space: nowrap; }
+.cg-row-loose .cg-dose { white-space: normal; }
+@media (max-width: 700px) {
+  .cg-row { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+}
+
 .ds-cmp-row { display: grid; grid-template-columns: 104px 1fr; gap: 0.4rem; align-items: center; padding: 0.1rem 0; font-size: 0.8rem; }
 .ds-cmp-who { overflow-wrap: anywhere; color: var(--ink-muted); }
 .ds-cmp-who small { display: block; font-size: 0.7rem; }

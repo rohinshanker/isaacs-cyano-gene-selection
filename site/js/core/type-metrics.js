@@ -69,13 +69,35 @@ export function typeGroups(datasets) {
 const LEGACY_PREFERRED = ['GSE205444', 'TAN2018_TSS'];
 
 /**
+ * Studies whose condition sets pool with each other by default.
+ *
+ * A screen designed as one sweep is read as one sweep: the reader who has
+ * chosen nothing gets the whole compendium rather than one arbitrary arm of it.
+ * Listing the study here rather than marking its conditions `standard` keeps
+ * each condition record truthful, so a chemical stress is still recorded as a
+ * stress everywhere else in the interface.
+ *
+ * Owner decision, 2026-10-07, for the Fitness Browser compendium. The cost is
+ * stated plainly because it is real: a gene harmed by one compound out of
+ * ninety is diluted in the pooled mean and reads as unaffected until the reader
+ * selects that condition. Pooling never reaches across studies, so the
+ * GSE205443 biofilm fractions stay out of this mean.
+ */
+export const DEFAULT_POOLED_STUDIES = ['FitnessBrowser_SynE'];
+
+/**
  * The datasets a type starts with when the reader asks for it while none of
- * its datasets is selected: the shipped originals and the standard-growth
- * sets, or every dataset of the type when it has none of those.
+ * its datasets is selected: the shipped originals, the standard-growth sets and
+ * any default-pooled study present, or every dataset of the type when it has
+ * none of those.
  */
 export function defaultDatasetsOfType(typeKey, datasets) {
   const group = typeGroups(datasets).get(typeKey);
   if (!group) return [];
+  const pooled = group.datasets.filter(
+    (d) => DEFAULT_POOLED_STUDIES.includes(d.record?.studyId),
+  );
+  if (pooled.length) return pooled;
   const preferred = group.datasets.filter((d) => LEGACY_PREFERRED.includes(d.id) || d.record.group === 'standard');
   return preferred.length ? preferred : group.datasets;
 }

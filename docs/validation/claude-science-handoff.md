@@ -58,8 +58,7 @@ probes run from a session with this repository mounted:
   that is left alone: no User-Agent spoofing, no mirror, no archive proxy. It is not
   needed, see the next bullet.
 - **Per-file supplements and their licence legends come from Europe PMC**, which is
-  the route that matters for licence questions and was confirmed on the case the
-  offload ticket is built around. For `PMC9239245` (Adomako 2022):
+  the route confirmed for `PMC9239245` (Adomako 2022):
   `…/europepmc/webservices/rest/PMC9239245/supplementaryFiles` returns the 25
   publisher-deposited files, and `mbio.00862-22-s0001.xlsx` came back
   **byte-identical** to the copy pinned at
@@ -105,63 +104,45 @@ on it, and update this section with the date when an answer changes.
 
 ## What goes to Claude Science at all
 
-The split is not about which agent is cleverer. It is about what each side can
-reach, and it has one rule: **Claude Science handles what is true outside this
-repository; the agents here handle what is true inside it.**
+Agents first try the source routes their runtime actually exposes. A direct
+read verifies a quotation when its source, location, retrieval date and checksum
+are recorded and the quoted text is matched mechanically. Search results alone
+do not verify a claim. When no accessible route supplies the needed evidence,
+or the owner requests an independent check, prepare a bounded manual handoff.
+Recheck the required capability before dispatch; previous probes do not promise
+access in a new session.
 
-| Capability | Claude Science | Agents here |
-| --- | --- | --- |
-| Working tree, gates, Playwright renders at three widths | possible, wasteful | **yes — this is the job** |
-| PubMed, Europe PMC, OpenAlex; full text by deposit | **yes, first-class** | no |
-| GEO, SRA, ENA, ArrayExpress/BioStudies, PRIDE, ProteomeXchange, PeptideAtlas, MassIVE, Zenodo, Figshare | **yes** | no |
-| Supplement files with SHA-256, and per-file licence legends | **yes** | no |
-| Reading a source paper against the code that displays it | **yes** | no — cannot read the paper |
-| Branches, commits, ticket bookkeeping, distillation | no | **yes** |
+<a id="second-checking-not-just-fetching"></a>
 
-Work that needs both is split at that boundary, never shared. In particular the
-crosswalk build, the chromosome tab, and the dataset selectors are entirely in-repo
-work and wait on no claim; only the sister-strain overlay *data* does.
+Crosswalk construction, UI, builds, tests, ticket bookkeeping and admission
+checks stay in the repository. A source-access gap holds only the step that
+needs that source, not these independent tasks. Independent checkers should
+rederive results from pinned inputs without sharing the implementation; use
+Claude Science for a second check only through the owner under the rule above.
 
-### Second-checking, not just fetching
+<a id="what-must-not-land-without-a-claude-science-claim-or-package"></a>
 
-This repository already runs two checkers that deliberately do not share code with
-the pipeline. The same logic extends across agents: when a crosswalk or derived join
-is built here, Claude Science is the independent second checker — it fetches the
-pinned releases itself and re-derives the matched, unmatched, and ambiguous counts
-without reading the implementation, then reports agreement or names the disagreeing
-loci. It does not edit the crosswalk. This is the highest-value use of the round
-trip after the sweeps themselves, because it is the one check no amount of in-repo
-testing can perform.
+### What requires verified source evidence
 
-### What must not land without a Claude Science claim or package
-
-Derived from this repository's own contracts. Each is a claim row, or an
-escalation to the lab where a ticket reserves it:
-
-1. Admitting any new source. Licence evidence, checksum, condition metadata, and
-   mapping route all rest on an upstream record no agent here can reach.
-2. Transferring any value across strains, and placing any sister-strain
-   coordinate on this genome's axis, which the data contract forbids outright.
-   Building a crosswalk from pinned RefSeq releases is in-repo work; what crosses
-   it is the claim.
-3. Changing what a displayed value *means*: its basis label, caveat, units, or
-   the sentence beside it. Meaning is fixed by the source, and reading the source
-   is the other side of the line.
-4. Changing the denominator, normalization, or percentile population of a metric
+1. Admitting a new source: identify its files, checksums, source terms, condition
+   metadata and mapping route under the admission contract and source ledger.
+2. Transferring values across strains: use an approved exact crosswalk and retain
+   the evidence basis. Sister-strain coordinates remain on their own genome;
+   source verification never permits placing them on the UTEX axis.
+3. Changing a value's meaning, basis label, caveat, units or explanatory text.
+4. Changing the denominator, normalization or percentile population of a metric
    derived from an external source. A ramp's visual encoding is UI work.
-5. Prose that raises the support claimed for an external source or removes a
-   caveat: README, `meta.json` descriptions, map blurbs, legends, accessible
-   descriptions. Adding a caveat or weakening a claim lands freely.
+5. Raising the support claimed for an external source or removing a caveat.
+   Adding a caveat or weakening a claim may proceed without a new source claim.
 
-Deleting a user-facing view or its audit trail is an owner decision, not a
-Claude Science question, and is tracked where the view's ticket records it.
+Evidence may come from a verified direct read or an accepted returned package.
+Only an unresolved claim that needs a manual handoff enters the pending queue.
+Standing owner decisions and accepted evidence remain valid; this list does not
+request permission again or require another Claude Science dispatch.
 
-Everything else lands here on the agents' own judgment: refactors, layout, tests,
-fixture generation, performance, accessibility markup, build and deploy, and any
-change whose correctness the gates fully decide.
-
-Amended 2026-09-28 after the agent-team review recorded in the topology ticket;
-the owner has not yet ratified the list.
+Deleting a user-facing view or its audit trail remains an owner decision, tracked
+in the view's ticket. Refactors, layout, tests, performance and accessibility work
+proceed wherever their correctness does not depend on an unresolved source claim.
 
 ## The rule: claims gate work, not tickets
 
@@ -170,14 +151,14 @@ A ticket is never blocked as a whole on Claude Science. Split it:
 - **Claim-independent work** proceeds here immediately: scaffolding, tests, data
   plumbing, UI, refactors, and anything whose correctness does not rest on a
   scientific claim.
-- **Claim-dependent work** waits only on the specific claim it rests on. The ticket
-  names that claim in its claims block, and the dependent step names the claim id.
+- **Claim-dependent work** needs verified evidence for the specific claim it
+  rests on. Try a direct read first. If a manual handoff is still needed, the
+  ticket's claims block and the dependent step name that claim id.
 
-An agent that finds a step depends on an unverified scientific claim writes the
-claim into the ticket's claims block, does everything else, and reports the block
-by claim id. It does not guess, and it does not treat its own literature search as
-verification. It may, and should, pre-ground the claim with its own best evidence
-so that the Claude Science round trip is confirmation rather than discovery.
+Record the accessible sources and failed retrieval routes for an unresolved
+claim, complete every independent step, and report the remaining dependency by
+claim id. Do not guess a missing value or mistake search results for a verified
+quotation. A verified direct read needs no further Claude Science round trip.
 
 ## The claims block
 
@@ -236,10 +217,45 @@ next action is a Claude Science answer says so: "Blocked on CS-2".
 Bounded research with a fixed return shape, such as a literature sweep or an audit
 of shipped data, is a work package rather than a claim. A package is a complete
 handoff: coordinator, ticket, scope, acceptance criteria, exact return format with
-one row per item, hard boundaries, and no permitted child work outside scope. The
-offload and audit tickets are the reference shapes. A package is dispatched only
-after the capability its acceptance criteria depend on is confirmed above; where a
-capability is absent, the package is narrowed and says so in every row.
+one row per item, hard boundaries, and no permitted child work outside scope. A
+package is dispatched only after the capability its acceptance criteria depend on
+is confirmed above; where a capability is absent, the package is narrowed and says
+so in every row.
+
+### Return format
+
+A sweep, condition-metadata, or licence package returns one row per **candidate**
+artifact, with these columns. A study with several sampled condition sets gets
+one explicit row per set; name the set and sample scope in `conditions`.
+Identify maintenance cultures and inocula separately from sampled material.
+
+| Column | Content |
+| --- | --- |
+| `strain` | The organism as the study names it, plus its culture-collection identifier if the study gives one. |
+| `assay` | Data type and the method (for example dRNA-seq, Rend-seq, Term-seq, ribo-seq, LC-MS/MS). |
+| `conditions` | One value per comparability axis, each with its source location, or "not reported". |
+| `replicates` | Biological replicate count per condition, with the source location; "not stated" where the study does not say. |
+| `build` | Genome assembly and annotation release the study used, as the study states it. |
+| `licence` | The governing licence for the artifact and the quoted evidence with its location; a recommendation, never a permission. |
+| `artifact` | Immutable artifact identifier and accession: DOI, GEO/SRA/PRIDE accession, supplement filename and version, or commit-addressed repository path. |
+| `checksum` | SHA-256 of any file actually retrieved, with the retrieval date; empty when nothing was retrieved. |
+| `per_gene_table` | Whether a per-gene table exists and which file holds it; "none found" otherwise. |
+| `mapping_route` | The identifier namespace the table is keyed by and which documented route could join it; never a per-locus mapping. |
+| `status` | `candidate`, `rejected`, or `escalate`, with the reason. |
+| `source` | A checkable citation for every claim in the row. |
+
+A **pair-comparability** package instead returns one row per **pair**, scoring
+candidates already extracted by the table above against each other: the same
+`artifact`-identified members, `pass`, `fail` or `undecidable` per comparability
+axis, and an overall
+verdict of `comparable`, `escalate` (the marginal axis and both condition sets, for
+the lab), `undecidable` (a not-reported value on an axis the assay responds to,
+never scored as a pass), or `not comparable`. Rejected candidates stay in the
+candidate-level table with their reason. Pair rows identify both condition sets
+and their pinned source-table rows, carry both source cells, and record the
+failing or marginal axis and axes-passed count. These are default metadata
+screens; keep lab judgements separate and attributed. A screen never admits or
+merges a pair, and does not assign a pass mark to statistical agreement.
 
 ## Hard boundaries
 
@@ -255,7 +271,7 @@ These hold for claims and packages alike:
   [identifier-crosswalk contract](annotation-release-readiness.md#identifier-crosswalk-contract).
 - **No prediction reported as measurement.**
 - **No lab decision.** The rows of
-  [AAA-biological-decisions-to-review.md](AAA-biological-decisions-to-review.md)
+  [AAAA-new-bio-decisions-to-review.md](AAAA-new-bio-decisions-to-review.md)
   stay with the lab. Claude Science may add evidence to a row, not settle it.
 - **No fixes.** A package that audits this repository returns findings; each
   accepted finding becomes its own change with its own review.

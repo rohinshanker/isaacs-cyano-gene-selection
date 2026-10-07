@@ -30,14 +30,24 @@ test('the compendium ships ninety condition sets alongside the nine biofilm frac
   assert.equal(typeLabelFor(compendium[0]), 'Gene fitness (RB-TnSeq)');
 });
 
-test('the fitness type defaults to plain growth, not to a pool of ninety-nine', () => {
+test('the fitness type defaults to the whole compendium, and to nothing else', () => {
+  // Owner decision, 2026-10-07: the ninety condition sets pool with each other
+  // by default. The boundary that still matters is the study: pooling must not
+  // reach across to the biofilm fractions, which answer a different question.
   const chosen = defaultDatasetsOfType(FITNESS_TYPE, layered);
-  assert.equal(chosen.length, 1, 'one default, not an average across conditions');
-  assert.equal(chosen[0].record.group, 'standard');
-  assert.equal(chosen[0].id, 'FitnessBrowser_SynE_BG_11_with_no_added_compound');
-  // The rule that produces this is group === 'standard'. Exactly one dataset of
-  // this type may claim it, or the default silently becomes an average again.
+  assert.equal(chosen.length, 90);
+  assert.deepEqual(new Set(chosen.map((d) => d.record.studyId)), new Set(['FitnessBrowser_SynE']));
+  assert.equal(chosen.filter((d) => d.record.studyId === 'GSE205443').length, 0);
+});
+
+test('the compendium still records a stress as a stress, not as standard growth', () => {
+  // The default is expressed by study, not by relabelling conditions, so the
+  // condition records stay truthful everywhere else in the interface.
   assert.equal(fitness.filter((s) => s.record.group === 'standard').length, 1);
+  assert.equal(
+    compendium.find((s) => s.record.group === 'standard').id,
+    'FitnessBrowser_SynE_BG_11_with_no_added_compound',
+  );
 });
 
 test('every stressed condition set is marked as such, so none can become the default', () => {

@@ -8,7 +8,7 @@
   `site/`.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-10-04
+- **Updated:** 2026-10-07
 
 ## Current state
 
@@ -45,22 +45,15 @@ and see what every study measured about it.
 
 ### Who does which step
 
-Fixed 2026-09-28 in
-[claude-science-handoff.md](../../validation/claude-science-handoff.md), which also
-fixes the claims mechanism every gated step uses. In short: steps **2 and 3** are Claude
-Science's, because their truth lives outside this repository and it has the archive
-and literature reach to establish it — the four packages are specified in
-[the offload ticket](O_claude-science-offload__20260927.md#work-packages). Steps
-**1, 4, 5, and 6** are the in-repo coding agents', and none of them waits on the scan:
-the crosswalk build is a pipeline job against pinned RefSeq releases, and the
-chromosome tab and the selectors are UI work whose design decisions are already
-recorded below. Sister-strain overlay *data* waits on step 2; the tab that will draw
-it does not.
+Use the [handoff contract](../../validation/claude-science-handoff.md#what-goes-to-claude-science-at-all):
+agents verify accessible source evidence directly; Claude Science is the owner's
+manual last resort or requested independent check. Source sweeps and condition
+scoring use the [package return format](../../validation/claude-science-handoff.md#return-format).
 
-The crosswalk is the one step that gets a second pair of eyes: once built, Claude
-Science re-derives the matched, unmatched, and ambiguous counts from the pinned
-releases independently, in the same spirit as the two existing checkers that
-deliberately do not share code with the pipeline.
+The crosswalk, gene viewer, chromosome tab and selectors are repository work.
+Their implementation does not wait on the source sweep; only an overlay's data
+waits on its admission evidence. Crosswalks require an independent rederivation
+from the pinned releases, without sharing the implementation.
 
 ### 1. Build the PCC 6311 and PCC 7943 crosswalk
 
@@ -313,7 +306,7 @@ unverified.
 
 #### Result, 2026-09-28
 
-Package A returned and passed intake (recorded in the offload ticket). The 57
+Package A returned and passed intake. The 57
 accepted candidates are in the
 [package A candidate register](../../validation/future-data-roadmap.md#package-a-candidate-register-2026-09-28);
 promotion to a ranked entry waits on packages B and C. Three findings change the
@@ -378,16 +371,15 @@ and the deposit's coverage files and still needs the paper read.
 Checked and unchanged: GEO holds no UTEX 2973 series and no series for PCC 11801,
 PCC 11802, UTEX 3055 or UTEX 3154; all 49 GEO series for the organism were already
 in the sweep. SRA holds 18 UTEX 2973 experiments, 17 of them Tan 2018 and one a
-genome resequencing project. The BioStudies free-text search the offload ticket
-asked for is now done: 18 ArrayExpress entries, 17 of them mirrors of GEO series
+genome resequencing project. The BioStudies free-text search is now done: 18 ArrayExpress entries, 17 of them mirrors of GEO series
 already known.
 
 #### Result, 2026-10-04
 
 Packages B and C returned 2026-10-03 and passed intake 2026-10-04, B with two
 rows returned for relabelling; the package A correction returned 2026-10-03 and
-passed; details in the
-[offload ticket](O_claude-science-offload__20260927.md#package-b-intake-2026-10-04).
+passed; the two corrections are detailed in
+[`RET_claude-science-session__20261003.md`](../handoff/RET_claude-science-session__20261003.md#b2-the-two-intake-corrections-checked).
 Condition metadata is in `cyano_package_B_conditions_20261003.tsv` (88 rows, one
 per condition set), licence evidence in `cyano_package_C_licences_20261003.tsv`,
 and the per-artifact licence decisions in
@@ -724,11 +716,13 @@ and desktop widths: [chromosome-view.md](../../validation/chromosome-view.md).
 **Verified 2026-10-04.** The crosswalk's independent Claude Science second check
 returned and agrees on every count and every ambiguous locus (results block under
 step 1), so PCC 6311 and PCC 7943 sources are no longer held back by this
-ticket; none exists yet. Packages B and C passed intake; their checks are
-recorded in the offload ticket.
+ticket; none exists yet. Packages B and C passed intake; their source evidence is
+in the [returned manifest](../handoff/RET_claude-science-session__20261003.md),
+with reusable checks in the [intake contract](../../validation/claude-science-handoff.md#intake).
 
 **Pair scoring (step 3)**: package D returned 2026-10-04 and passed intake
-2026-10-06 (offload ticket, "Package D intake, 2026-10-06"): 0 of 941 pairs
+2026-10-06; its [returned manifest](../handoff/RET_claude-science-session__20261004.md)
+pins the source table: 0 of 941 pairs
 comparable on the thresholds alone, 32 escalated and all judged by the owner on
 2026-10-05, 178 undecidable for missing metadata, 731 not comparable. Under the
 owner's 2026-10-05 decisions (thresholds a default screen; J1, J3, J4, J10) the

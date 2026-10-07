@@ -11,7 +11,7 @@
  * value for an axis a record does not report: an unreported axis neither passes
  * nor fails a comparison, and is drawn as missing, never as zero.
  */
-import { isTypeKey, typeKeyFor } from './type-metrics.js';
+import { DEFAULT_POOLED_STUDIES, isTypeKey, typeKeyFor } from './type-metrics.js';
 
 /** The three condition axes drawn as tracks, on one shared scale each. */
 export const CONDITION_SCALES = Object.freeze({
@@ -294,16 +294,85 @@ export function passesFilters(dataset, filters) {
 }
 
 /**
+ * A compendium is one study that ships far more condition sets than a reader
+ * can scan as rows: the Fitness Browser's PCC 7942 panel is 90. By owner
+ * decision of 2026-10-07 such a study collapses to a single row in the data
+ * selection, pooled over all of its sets, and a reader who wants a subset
+ * opens a grid instead of scrolling a list.
+ *
+ * The threshold is deliberately a count, not a list of study ids, so a study
+ * that grows past it collapses without anyone editing this file.
+ */
+export const COMPENDIUM_MIN_SETS = 12;
+
+/** Study id → its datasets, for every study shipping at least `min` of them. */
+export function compendiumStudies(datasets, min = COMPENDIUM_MIN_SETS) {
+  const byStudy = new Map();
+  for (const dataset of datasets) {
+    const study = dataset.record.studyId;
+    if (!byStudy.has(study)) byStudy.set(study, []);
+    byStudy.get(study).push(dataset);
+  }
+  return new Map([...byStudy].filter(([, members]) => members.length >= min));
+}
+
+// "Rifampicin at 0.000625 mg/ml" → compound and dose. A set that names no dose
+// ("BG-11 with no added compound") is not forced into the grid.
+const DOSED = /^(.*?)\s+at\s+([\d.]+\s*\S.*)$/;
+
+const doseValue = (text) => {
+  const match = /[\d.]+/.exec(text);
+  return match ? Number.parseFloat(match[0]) : Number.NaN;
+};
+
+/**
+ * Lay a compendium's condition sets out as a grid: one row per compound, its
+ * doses across in ascending order, with everything that names no dose kept
+ * aside. Rows are ragged by design, because the deposits test different
+ * numbers of doses per compound and padding them would invent cells.
+ */
+export function conditionGrid(datasets) {
+  const rows = new Map();
+  const loose = [];
+  for (const dataset of datasets) {
+    const match = DOSED.exec(dataset.record.conditionSet.trim());
+    if (!match) { loose.push(dataset); continue; }
+    const [, compound, dose] = match;
+    if (!rows.has(compound)) rows.set(compound, []);
+    rows.get(compound).push({ dataset, dose: dose.trim() });
+  }
+  const compounds = [...rows]
+    .map(([compound, cells]) => ({
+      compound,
+      cells: cells.sort((a, b) => doseValue(a.dose) - doseValue(b.dose) || a.dose.localeCompare(b.dose)),
+    }))
+    .sort((a, b) => a.compound.localeCompare(b.compound));
+  return {
+    compounds,
+    loose: loose.sort((a, b) => a.record.conditionSet.localeCompare(b.record.conditionSet)),
+    width: compounds.reduce((most, row) => Math.max(most, row.cells.length), 0),
+  };
+}
+
+/**
  * The fresh-view selection: the standard-growth group plus every dataset the
  * site shipped before the window existed, so an old link shows what it showed
  * before (owner decision, 2026-10-05). The shipped set is recognised by the
  * two legacy metric keys rather than listed here, so a rebuild that renames a
  * source does not silently change the default.
+ *
+ * A default-pooled study comes in whole (owner decision, 2026-10-07): all 90
+ * Fitness Browser conditions are selected, so what a fresh reader sees is the
+ * pooled mean the single collapsed row stands for, not the one set of the
+ * ninety that happens to be plain growth. The study list is imported from
+ * `type-metrics.js` rather than copied, so this rule and the type's own
+ * default cannot drift apart.
  */
 export function defaultSelection(datasets) {
   const legacy = new Set(['expression', 'tssInitiation']);
+  const pooled = new Set(DEFAULT_POOLED_STUDIES);
   return datasets
-    .filter((d) => d.record.group === 'standard' || legacy.has(d.metricKey))
+    .filter((d) => d.record.group === 'standard' || legacy.has(d.metricKey) || pooled.has(d.record.studyId))
     .map((d) => d.id)
     .sort();
 }
