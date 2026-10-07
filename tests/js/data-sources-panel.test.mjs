@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { withFakeDocument } from './fake-dom.mjs';
 import { dataset } from './data-sources-fixture.mjs';
-import { DataSourcesPanel, HIDDEN_STORAGE_KEY, conditionAxis, conditionTrack } from '../../site/js/ui/data-sources.js';
+import { DataSourcesPanel, HIDDEN_STORAGE_KEY, arrangePeekBody, conditionAxis, conditionTrack } from '../../site/js/ui/data-sources.js';
 
 const unreported = { status: 'not reported', lo: null, hi: null, where: '' };
 
@@ -407,5 +407,29 @@ test('data type tabs use arrow, Home and End keys with one keyboard tab stop', a
     panel.renderList();
     assert.equal(document.activeElement, panel.peek.close);
     panel.peek.settle(null);
+  });
+});
+
+test('responsive pane order follows the layout and preserves the focused control', async () => {
+  await withFakeDocument((document) => {
+    const body = document.createElement('div');
+    const list = document.createElement('div');
+    const foot = document.createElement('div');
+    const side = document.createElement('div');
+    const control = document.createElement('button');
+    side.append(control); body.append(list, foot, side); document.body.append(body);
+    control.focus();
+    arrangePeekBody(body, { list, foot, side }, true);
+    assert.deepEqual(body.children, [list, side, foot]);
+    assert.equal(document.activeElement, control);
+    const children = body.children;
+    arrangePeekBody(body, { list, foot, side }, true);
+    assert.equal(body.children, children, 'unchanged layout does not detach its nodes');
+    arrangePeekBody(body, { list, foot, side }, false);
+    assert.deepEqual(body.children, [list, foot, side]);
+    assert.equal(document.activeElement, control);
+    document.body.focus();
+    arrangePeekBody(body, { list, foot, side }, true);
+    assert.equal(document.activeElement, document.body, 'outside focus is not stolen');
   });
 });

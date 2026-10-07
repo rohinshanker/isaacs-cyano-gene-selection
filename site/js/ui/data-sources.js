@@ -182,6 +182,15 @@ function focusables(root) {
   return out;
 }
 
+/** Match reading/focus order to the two responsive pane arrangements. */
+export function arrangePeekBody(body, { list, foot, side }, wide) {
+  const order = wide ? [list, side, foot] : [list, foot, side];
+  if (order.every((node, index) => body.children[index] === node)) return;
+  const active = body.contains(document.activeElement) ? document.activeElement : null;
+  body.replaceChildren(...order);
+  active?.focus({ preventScroll: true });
+}
+
 /** Keep keyboard focus inside a peek when a focused control is replaced. */
 function restoreAfterRender(root, fallback) {
   const active = document.activeElement;
@@ -457,6 +466,12 @@ export class DataSourcesPanel {
     const done = el('button', { className: 'chip-button active peek-done', text: 'Done', attrs: { type: 'button' } });
     const foot = el('div', { className: 'peek-foot', children: [count, done] });
     const body = el('div', { className: 'peek-body', children: [list, foot, side] });
+    const stacked = globalThis.window?.matchMedia?.('(max-width: 1320px)');
+    const arrange = () => arrangePeekBody(body, { list, foot, side },
+      stacked ? !stacked.matches : (globalThis.window?.innerWidth ?? 0) > 1320);
+    if (stacked?.addEventListener) stacked.addEventListener('change', arrange);
+    else globalThis.window?.addEventListener?.('resize', arrange);
+    arrange();
     dialog.append(head, bar, legend, body);
     backdrop.append(dialog);
     document.body.append(backdrop);
