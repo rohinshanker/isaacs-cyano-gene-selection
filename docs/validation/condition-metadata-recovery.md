@@ -64,6 +64,52 @@ refreshed wherever that source row appears. Unchanged pair screens remain their
 recorded results until explicitly rescored. Lab judgements are never inferred
 from default screen results.
 
+## Replaying the current screen
+
+`tools/rescore_condition_pairs.py` is the canonical deterministic replay. It uses
+the immutable 941 Package D pair identities, the reviewed compact condition
+records, accepted addenda and the separate owner-judgement file. It writes a
+current screen, a per-cell provenance/uncertainty inventory and a ranking. It does
+not modify Package D or apply an owner judgement to `default_verdict`.
+
+```sh
+.venv/bin/python tools/rescore_condition_pairs.py \
+  docs/notes/handoff/cyano_package_D_pairs_20261004.tsv \
+  docs/notes/handoff/cyano_condition_gap_inventory_20261007.json \
+  docs/notes/handoff/cyano_dataset_condition_records_20261007.json \
+  data/expression/pair_judgements.json \
+  docs/notes/handoff/cyano_condition_pair_screen_current_20261007.tsv \
+  docs/notes/handoff/cyano_condition_gap_inventory_current_20261007.json \
+  docs/notes/handoff/cyano_condition_gap_ranking_current_20261007.tsv \
+  --historical-rescore docs/notes/handoff/cyano_package_D_rescore_20261006.tsv \
+  --bc-addendum docs/notes/handoff/cyano_package_BC_addendum_20261006.tsv \
+  --archive-addendum docs/notes/handoff/cyano_package_B_archive_addendum_20261007.json \
+  --archive-intake docs/notes/handoff/cyano_archive_condition_intake_20261007.tsv \
+  --manual-supplement docs/notes/handoff/cyano_archive_condition_manual_supplement_20261007.json \
+  --paper-addendum docs/notes/handoff/cyano_condition_paper_addendum_20261007.json \
+  --pride-check docs/notes/handoff/cyano_pride_condition_check_20261007.json
+```
+
+The replay uses exact IDs and typed numeric intervals. Flux ranges are compared
+as complete ranges, and a profile reported only by its peak is unknown rather
+than a constant at that peak. The only cross-description spectrum failure is the
+explicit `full-spectrum` against `narrow-band` opposition. Identical reviewed
+classes pass; different lamp descriptions without an explicit class relation are
+unknown. The owner's J1 same-spectrum decision is displayed in its own column and
+does not change the default screen. A known component failure remains decisive
+when another component is unknown.
+
+The 2026-10-07 replay produces 0 comparable, 148 undecidable and 793 not-comparable
+pairs. It contains no `escalate` verdict because the owner rejected a fixed
+narrow-miss boundary. It ranks 142 current gap cells; row 48 temperature remains
+the sole conditional one-cell blocker, alongside but separate from owner judgement
+J2. Package D rows 442, 473 and 725 no longer claim a temporal failure for
+GSE311172: all three have an unknown sampling schedule; rows 442/473 also have an
+unresolved warm-white-versus-narrow-band spectrum comparison, and row 725 has an
+unknown spectrum on the GSE227397 side. The typed GSE227397 overlay records 50
+µmol photons m⁻² s⁻¹ and 12:12 while keeping gas CO₂ unknown; 50 mM NaHCO₃ is not
+converted into a gas percentage.
+
 ## Archive retrieval and intake
 
 1. Fetch the full GEO SOFT record. Follow its exact BioSample, SRA and BioProject
