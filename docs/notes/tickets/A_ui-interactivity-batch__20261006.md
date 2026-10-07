@@ -34,6 +34,10 @@ cherry-pick it blindly to main. Resume in an isolated worktree, inspect its diff
 and last tests, finish rendering/validation, then obtain the owner's visual
 choice before changing production defaults. The managed worktree was removed.
 A scoped binary patch and full run trace are saved under the artifact directory.
+Focused WIP tests passed, and a first A/grouped desktop trace was captured; the
+full variant matrix and full gates were not completed. WIP query selectors are
+`load-review=a|b|c` and `load-progress=grouped|continuous` (with `load-log` for
+measurement). These are preview selectors, not approved production defaults.
 
 The owner explicitly leaves [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md)
 open for human marks. Its screenshot/text packet was prepared; final refresh was
