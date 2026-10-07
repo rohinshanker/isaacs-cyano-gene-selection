@@ -11,7 +11,8 @@ Engineering is implemented, integrated on `main`, and accepted by independent
 DEM-267 review of `06ab535`. The owner's visual choice remains pending.
 Production retains its previously selected 1,500 ms minimum, block schedule and
 50-letter/s text timing. The alternatives are query-only and do not change
-analysis hashes or saved state. Nothing has been pushed or deployed.
+analysis hashes or saved state. The owner authorized publication of completed
+engineering commits on main; the visual defaults remain undecided.
 
 The review packet with all six live URLs is in the canonical ignored directory
 `.playwright-cli/cyano-ui-resume/animation/owner-choice.md`. The canonical site is

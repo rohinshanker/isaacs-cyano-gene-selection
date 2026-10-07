@@ -13,8 +13,8 @@ Guides, exact-text instant hints and unified chromosome loading are accepted
 and their tickets cleaned up. Data Selection's responsive/focus/filter and
 provenance/export repairs are accepted; data-admission and statistical stages
 remain in that feature's own ticket. The payload coordinator integrated the
-RSCU sidecar and closed its ticket after loading acceptance. No pushes or
-publication have occurred.
+RSCU sidecar and closed its ticket after loading acceptance. The owner authorized
+publication of completed engineering commits on main.
 
 Only the owner's A/B/C reveal and grouped/continuous progress choice remain
 in this batch. The accepted query-only implementation, URLs and final evidence
