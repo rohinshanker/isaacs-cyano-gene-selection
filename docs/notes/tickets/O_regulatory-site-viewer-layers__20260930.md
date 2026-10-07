@@ -452,3 +452,10 @@ and 36 subtests; contract 116 passed, 0 failed, 1 declared skip. Transient evide
 For render integrity, use a fresh browser context or pass-through routing to
 ensure changed modules are fetched: the test browser reused an older panel
 module despite an ordinary reload. No application caching policy was changed.
+
+Final integration with canonical `080738e` preserves the concurrent 20-layer
+RNA-seq ingestion and recoded E. coli work. Merged gates: `npm test` 1,148
+passed; pytest 557 passed, 1 skipped, 36 subtests; contract 116 passed,
+0 failed, 1 declared skip. The merged render repeated the eight viewport
+widths without overflow, retained all 20 dense-locus marks and independent
+keyboard visibility, and reported no runtime errors.

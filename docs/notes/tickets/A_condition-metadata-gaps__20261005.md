@@ -393,3 +393,10 @@ similar study.
 On resolution, distil the depositor-query and addendum routine into
 [claude-science-handoff.md](../../validation/claude-science-handoff.md), update
 `validation/INDEX.md` if its row changes, then delete this ticket and its index row.
+
+Final integration with canonical `080738e` preserves the concurrent 20-layer
+RNA-seq ingestion and recoded E. coli work. Merged gates: `npm test` 1,148
+passed; pytest 557 passed, 1 skipped, 36 subtests; contract 116 passed,
+0 failed, 1 declared skip. The merged render repeated the eight viewport
+widths without overflow, retained all 20 dense-locus marks and independent
+keyboard visibility, and reported no runtime errors.
