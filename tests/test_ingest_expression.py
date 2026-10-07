@@ -266,6 +266,45 @@ def test_a_layer_may_carry_its_own_condition_record_and_table_row(tmp_path):
     assert written[1]["record"]["conditions"]["temperature"]["quote"] == "Grown at 42℃", "the layer's own row supplies its quotes"
 
 
+def test_join_tables_joins_parts_on_the_identifier_and_labels_their_columns():
+    parts = [
+        ("A", ["id", "ctrl", ""], [["g1", "1", "x"], ["g2", "2", "x"]]),
+        ("B", ["id", "ctrl"], [["g1", "10"], ["g3", "30"]]),
+    ]
+    header, rows = ingest.join_tables(parts)
+    assert header == ["id", "ctrl :: A", "", "ctrl :: B"], "an unnamed column stays unnamed"
+    assert rows == [
+        ["g1", "1", "x", "10"],
+        ["g2", "2", "x", ""],      # part B does not list g2
+        ["g3", "", "", "30"],      # part A does not list g3
+    ]
+
+
+def test_ingest_joins_several_deposited_files_into_one_layer(tmp_path):
+    """A deposit that splits its replicates over two files averages across both."""
+    first = csv_bytes(["locus_tag", "ctrl"], [["S1", "10"], ["S2", "90"]])
+    second = csv_bytes(["locus_tag", "ctrl"], [["S1", "30"], ["S2", "70"]])
+    (tmp_path / "part_A.csv").write_bytes(first)
+    (tmp_path / "part_B.csv").write_bytes(second)
+    layers = [{"id": "GSE1_control", "metricKey": "exprGse1Control", "label": "control",
+               "conditionSet": "control, mean of two replicate files", "samples": "GSM1-2",
+               "columns": ["ctrl :: part_A", "ctrl :: part_B"], "treatments": [], "group": "standard"}]
+    spec = spec_for(tmp_path, first, {"format": "csv", "idColumn": "locus_tag", "idKind": "pcc7942_old"}, layers,
+                    normalization="as-deposited")
+    del spec["file"]
+    spec["files"] = [
+        {"name": "part_A.csv", "url": "https://example.org/a.csv", "sha256": ingest.sha256_of(first)},
+        {"name": "part_B.csv", "url": "https://example.org/b.csv", "sha256": ingest.sha256_of(second)},
+    ]
+    written, _, out = run(tmp_path, spec, [("U1", "pcc7942_old_locus_tag", "S1", ""),
+                                           ("U2", "pcc7942_old_locus_tag", "S2", "")], conditions_file(tmp_path))
+    assert (out / "GSE1_control.tsv").read_text(encoding="utf-8").splitlines() == [
+        "locus_tag\tabundance\tsource_gene_id", "U1\t20.0000\tS1", "U2\t80.0000\tS2"]
+    info = written[0]["ingest"]
+    assert info["sourceFile"] == "part_A.csv; part_B.csv"
+    assert info["sourceSha256"] == f"{ingest.sha256_of(first)}; {ingest.sha256_of(second)}"
+
+
 def test_a_layer_may_name_its_own_strain(tmp_path):
     """One deposit may hold several genotypes; the record names the layer's own."""
     data = csv_bytes(["locus_tag", "a", "b"], [["S1", "1", "3"]])

@@ -352,13 +352,13 @@ above, and every download waits on the manifest entry and the mode-and-pin rules
 | 13 | PCC 7942 | GSE205443 | 3 escalate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
 | 14 | PCC 7942 | GSE205445 | 4 escalate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
 | 15 | PCC 7942 | GSE222067 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 16 | PCC 7942 | GSE225426 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 16 | PCC 7942 | GSE225426 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
 | 17 | Synechococcus elongatus | GSE227397 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 18 | PCC 7942 | GSE237858 | 2 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
-| 19 | PCC 7942 | GSE252562 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 19 | PCC 7942 | GSE252562 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 20 | PCC 7942 | GSE254350 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 21 | Synechococcus elongatus | GSE288532 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 22 | PCC 7942 | GSE311172 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 22 | PCC 7942 | GSE311172 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
 | 23 | PCC 7942 | GSE327989 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
 | 24 | PCC 7942 | GSE335065 | 4 escalate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 25 | PCC 7942 | GSE45762 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
@@ -412,7 +412,8 @@ is the control or wild-type genotype of its series, and an engineered
 background is listed as such. GSE51112 (Markson et al. 2013) followed the
 same day as 4 layers: the wild-type circadian course and the three
 RpaA-phosphomimetic arms, which are engineered. Its deposit is one
-median- and ORF-length-normalised table with one sample per time point. GSE45762 is
+median- and ORF-length-normalised table with one sample per time point.
+The last three register rows with a per-gene table followed the same day: GSE252562 (6 wild-type photoperiod sets, one of them with a disputed photoperiod), GSE225426 (5) and GSE311172 (7 oxygen endpoints of an engineered strain). With those, every RNA-seq row of the register that deposits a per-gene table is ingested; what remains are the raw-only arrays, now [their own ticket](../notes/tickets/O_array-expression-reader__20261007.md), and the PRIDE deposits that serve no proteome-wide table. GSE45762 is
 excluded for contradictory sample labels. Of the CC0 proteomes, PXD062851
 (Russo et al. 2025) shipped on 2026-10-06 as one label-free DIA layer (1,996
 genes; 2,307 protein groups keyed by UniProt accession, mapped through

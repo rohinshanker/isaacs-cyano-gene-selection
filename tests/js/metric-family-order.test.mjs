@@ -151,7 +151,7 @@ test('the production registry leads with measured UTEX evidence, before Translat
   assert.deepEqual(expression.slice(2), dataset.meta.expressionSources.slice(2)
     .filter((source) => source.record.dataType !== 'fitness')
     .map((source) => source.metricKey));
-  assert.equal(expression.length, 40);
+  assert.equal(expression.length, 58);
   assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 9);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
   assert.equal(freshViewColorKey(registry, dataset.functionCategories), 'functionCategory');

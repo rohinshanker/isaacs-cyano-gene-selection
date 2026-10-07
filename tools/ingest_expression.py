@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Turn a deposited per-gene table into expression source layers for the build.
 
-One spec file describes one deposited study: where its table is, how to read
-it, which columns belong to which condition layer, and the structured condition
+One spec file describes one deposited study: where its table is (``file``, or
+``files`` where the deposit splits its replicates over several), how to read it, which columns belong to which condition layer, and the structured condition
 record every layer carries. The tool verifies the download against its pinned
 checksum, averages each layer's samples, maps the study's PCC 7942 identifiers
 to UTEX 2973 locus tags through the pinned identifier crosswalk, writes one TSV
@@ -134,6 +134,36 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
             joined[identifier].extend(row[1:])
     width = len(joined_header)
     # An identifier a sheet lacks keeps its row with the missing cells blank.
+    return joined_header, [joined[i] + [""] * (width - len(joined[i])) for i in order]
+
+
+def join_tables(parts: list[tuple[str, list[str], list[list[str]]]]) -> tuple[list[str], list[list[str]]]:
+    """Join tables read side by side, suffixing each column with its part's label.
+
+    One deposit may split its replicates over several files, as one workbook may
+    split them over several sheets. The parts are joined on the identifier, every
+    column is renamed ``<header> :: <label>`` so no two parts collide, and an
+    identifier a part lacks keeps its row with that part's cells blank. A blank
+    header stays blank: an unnamed column is never a sample.
+    """
+    joined_header: list[str] = []
+    joined: dict[str, list[str]] = {}
+    order: list[str] = []
+    for label, header, body in parts:
+        names = [f"{name} :: {label}" if name else "" for name in header[1:]]
+        if not joined_header:
+            joined_header = [header[0]]
+        joined_header.extend(names)
+        width_before = len(joined_header) - len(names)
+        for row in body:
+            identifier = row[0].strip()
+            if identifier not in joined:
+                joined[identifier] = [identifier]
+                order.append(identifier)
+            # Pad any part that did not list this identifier before extending.
+            joined[identifier] += [""] * (width_before - len(joined[identifier]))
+            joined[identifier].extend(row[1:])
+    width = len(joined_header)
     return joined_header, [joined[i] + [""] * (width - len(joined[i])) for i in order]
 
 
@@ -457,9 +487,13 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
            conditions_table: Path | None, out_dir: Path,
            uniprot_table: Path = DEFAULT_UNIPROT_TABLE) -> list[dict[str, Any]]:
     """Run the whole ingestion for one spec and return the manifest entries written."""
-    source = spec["file"]
-    data = fetch(source["url"], source["sha256"], interim / source["name"])
-    header, rows = read_table(data, spec["reader"])
+    sources = spec.get("files") or [spec["file"]]
+    parts = []
+    for source in sources:
+        data = fetch(source["url"], source["sha256"], interim / source["name"])
+        header, body = read_table(data, spec["reader"])
+        parts.append((source.get("label") or Path(source["name"]).stem, header, body))
+    header, rows = parts[0][1:] if len(parts) == 1 else join_tables(parts)
     rows, outside_pattern = select_identifiers(rows, spec["reader"].get("idPattern"))
     id_kind = spec["reader"]["idKind"]
     via_uniprot = id_kind == UNIPROT_ID_KIND
@@ -502,7 +536,9 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
             "payload": "expression_layers.json",
             "signed": spec.get("signed", spec["dataType"] == "fitness"),
             "ingest": {
-                "sourceFile": source["name"], "sourceSha256": source["sha256"], "sourceUrl": source["url"],
+                "sourceFile": "; ".join(f["name"] for f in sources),
+                "sourceSha256": "; ".join(f["sha256"] for f in sources),
+                "sourceUrl": "; ".join(f["url"] for f in sources),
                 "columns": layer["columns"], "normalization": spec["normalization"],
                 "mappedGenes": len(mapped), "unmappedIdentifiers": unmapped,
                 "mappingRoute": (f"UniProt accession to ordered locus name in {uniprot_table.name}, then " if via_uniprot else "")

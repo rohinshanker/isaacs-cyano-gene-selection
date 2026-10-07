@@ -1,0 +1,592 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article all rights reserved (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE252562",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252562",
+  "citationId": "johnson-2024",
+  "citation": {
+    "text": "Jabbur ML, Dani C, Zhang Y, Johnson CH. Bacteria can anticipate the seasons: photoperiodism in cyanobacteria. Science 2024;385(6713):1105-1111.",
+    "url": "https://doi.org/10.1126/science.ado8588",
+    "pmid": "39236161"
+  },
+  "file": {
+    "name": "GSE252562_transcript_count_matrix.csv.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE252nnn/GSE252562/suppl/GSE252562_transcript_count_matrix.csv.gz",
+    "sha256": "0144405c615fedd3071db2b2a18d8a2a50cb374e9605e03a6d4d021d0330dfa8"
+  },
+  "reader": {
+    "format": "csv",
+    "idColumn": "transcript_id",
+    "idKind": "pcc7942_rs",
+    "idPattern": "gene-(SYNPCC7942_RS\\d+)"
+  },
+  "units": "mean counts per million (raw StringTie read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": null,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates per genotype, photoperiod and cycle count",
+    "where": "GEO GSE252562 sample titles"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "constant 30 ºC",
+      "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+      "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 40,
+      "hi": 40,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "~40 µE of fluorescent illumination",
+      "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+      "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "diel",
+      "photoperiod": "8:16",
+      "spectrumClass": "fluorescent",
+      "entrained": true,
+      "text": "short day, LD8:16 (8 h light, 16 h darkness), on plates after constant-light maintenance",
+      "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+      "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported",
+      "where": "",
+      "quote": ""
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "solid BG-11 plates",
+      "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+      "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+    },
+    "format": {
+      "status": "reported",
+      "value": "agar plate",
+      "text": "plates of solid BG-11 media",
+      "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+      "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+    },
+    "phase": {
+      "status": "not reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+      "where": "GEO GSE252562 !Sample_characteristics_ch1",
+      "quote": "time: collected 1h before midday of their respective photoperiod"
+    }
+  },
+  "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in liquid culture and not in UTEX 2973. Wild-type samples only; the kaiABC knock-out arm of the same deposit is not shipped. The deposited count columns are coded MJ2 to MJ50 and are matched to samples through the GEO !Sample_description field.",
+  "layers": [
+    {
+      "id": "GSE252562_wt_short_1cycle",
+      "metricKey": "exprGse252562WtShort1",
+      "label": "Expression GSE252562 short day LD8:16, 1 cycle (PCC 7942)",
+      "conditionSet": "Wild type after 1 short-day cycle (LD8:16), mean of three replicates",
+      "samples": "wild-type 1 cycle LD8:16 replicates 1-3 (GSM8003243-GSM8003245)",
+      "columns": [
+        "MJ38",
+        "MJ40",
+        "MJ41"
+      ],
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "8:16",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "short day, LD8:16 (8 h light, 16 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    {
+      "id": "GSE252562_wt_short_4cycles",
+      "metricKey": "exprGse252562WtShort4",
+      "label": "Expression GSE252562 short day LD8:16, 4 cycles (PCC 7942)",
+      "conditionSet": "Wild type after 4 short-day cycles (LD8:16), mean of three replicates",
+      "samples": "wild-type 4 cycles LD8:16 replicates 1-3 (GSM8003246-GSM8003248)",
+      "columns": [
+        "MJ5",
+        "MJ17",
+        "MJ29"
+      ],
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "8:16",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "short day, LD8:16 (8 h light, 16 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    {
+      "id": "GSE252562_wt_8cycles_disputed",
+      "metricKey": "exprGse252562Wt8Disputed",
+      "label": "Expression GSE252562 8 cycles, photoperiod disputed (PCC 7942)",
+      "conditionSet": "Wild type after 8 cycles of a photoperiod the deposit labels inconsistently, mean of three replicates",
+      "samples": "wild-type 8 cycles replicates 1-3 (GSM8003249-GSM8003251)",
+      "columns": [
+        "MJ9",
+        "MJ21",
+        "MJ33"
+      ],
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "conflicting",
+          "kind": "diel",
+          "photoperiod": null,
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "the deposit states two different photoperiods for these samples: the sample titles say 8 cycles of LD8:16 and the treatment characteristics say 8 cycles of LD16:8; which applies is unresolved",
+          "where": "GEO GSE252562 sample titles against !Sample_characteristics_ch1 for GSM8003249-GSM8003251",
+          "quote": "Synechococcus cells, wild-type, 8 cycles LD8:16, replicate 1 || treatment: 8 cycles of LD16:8"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      },
+      "caveat": "Measured in PCC 7942 on solid BG-11 plates, not in UTEX 2973. The deposit contradicts itself on this set's photoperiod: the sample titles say LD8:16 and the treatment characteristics say LD16:8. The light regime is recorded as conflicting and the set is not comparable to either photoperiod until the depositor or the article settles it."
+    },
+    {
+      "id": "GSE252562_wt_long_1cycle",
+      "metricKey": "exprGse252562WtLong1",
+      "label": "Expression GSE252562 long day LD16:8, 1 cycle (PCC 7942)",
+      "conditionSet": "Wild type after 1 long-day cycle (LD16:8), mean of three replicates",
+      "samples": "wild-type 1 cycle LD16:8 replicates 1-3 (GSM8003252-GSM8003254)",
+      "columns": [
+        "MJ2",
+        "MJ14",
+        "MJ26"
+      ],
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "16:8",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "long day, LD16:8 (16 h light, 8 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    {
+      "id": "GSE252562_wt_long_4cycles",
+      "metricKey": "exprGse252562WtLong4",
+      "label": "Expression GSE252562 long day LD16:8, 4 cycles (PCC 7942)",
+      "conditionSet": "Wild type after 4 long-day cycles (LD16:8), mean of three replicates",
+      "samples": "wild-type 4 cycles LD16:8 replicates 1-3 (GSM8003255-GSM8003257)",
+      "columns": [
+        "MJ18",
+        "MJ30",
+        "MJ44"
+      ],
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "16:8",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "long day, LD16:8 (16 h light, 8 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    },
+    {
+      "id": "GSE252562_wt_long_8cycles",
+      "metricKey": "exprGse252562WtLong8",
+      "label": "Expression GSE252562 long day LD16:8, 8 cycles (PCC 7942)",
+      "conditionSet": "Wild type after 8 long-day cycles (LD16:8), mean of three replicates",
+      "samples": "wild-type 8 cycles LD16:8 replicates 1-3 (GSM8003258-GSM8003260)",
+      "columns": [
+        "MJ10",
+        "MJ22",
+        "MJ34"
+      ],
+      "treatments": [
+        "photoperiod treatment"
+      ],
+      "group": "diel",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30,
+          "hi": 30,
+          "unit": "°C",
+          "text": "constant 30 ºC",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 40,
+          "hi": 40,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~40 µE of fluorescent illumination",
+          "where": "GEO GSE252562 !Sample_growth_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "diel",
+          "photoperiod": "16:8",
+          "spectrumClass": "fluorescent",
+          "entrained": true,
+          "text": "long day, LD16:8 (16 h light, 8 h darkness), on plates after constant-light maintenance",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not reported",
+          "where": "",
+          "quote": ""
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "solid BG-11 plates",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "format": {
+          "status": "reported",
+          "value": "agar plate",
+          "text": "plates of solid BG-11 media",
+          "where": "GEO GSE252562 !Sample_treatment_protocol_ch1",
+          "quote": "Prior to collection, cells were grown in plates containing solid BG-11 media for different amounts of LD cycles, being exposed to either short (LD8:16; 8h of light, 16h of darkness) or long (LD16:8) days."
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "collected one hour before midday of the sample's photoperiod, after about 60 h of light in total; no OD or growth phase reported",
+          "where": "GEO GSE252562 !Sample_characteristics_ch1",
+          "quote": "time: collected 1h before midday of their respective photoperiod"
+        }
+      }
+    }
+  ]
+}

@@ -801,6 +801,11 @@ besides genes or prefixes each locus tag names the identifiers to read
 (`reader.idPattern`, matched whole; the first group, if any, is the identifier):
 rows outside it are dropped and counted as unmapped, never read as duplicates.
 An identifier column the deposit leaves unnamed is named by the empty string.
+A deposit that splits its replicates over several files names them in `files`
+rather than `file`, each checksum-pinned and labelled; they are joined on the
+identifier and each column takes its file's label as a suffix, as several
+sheets of one workbook already are. The manifest's `ingest.sourceFile` and
+`sourceSha256` then list every file, semicolon-separated.
 
 Each source also names its `payload`. The two original measurements
 (`expression`, `tssInitiation`) ride in `genes.json`; every ingested layer is

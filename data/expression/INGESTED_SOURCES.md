@@ -25,7 +25,12 @@ is the identifier the crosswalk reads): GSE237858 reads `gene-` features and
 leaves its `rna-` and novel-transcript rows, GSE254350 reads `Synpcc7942_`
 synonyms and leaves its 116 `predicted RNA` rows, and every row outside the
 pattern is counted among the layer's unmapped identifiers. An identifier
-column the deposit leaves unnamed (GSE335065) is named by the empty string.
+column the deposit leaves unnamed (GSE335065 and GSE311172) is named by the
+empty string. A deposit that splits its replicates over several files names
+them in `files` rather than `file`, each with its own checksum and a short
+`label`; they are read side by side, joined on the identifier, and every
+column takes its file's label as a suffix, exactly as several sheets of one
+workbook are joined (GSE225426, whose two replicates are two workbooks).
 Every `.tsv` here is reproducible from its spec; rerun the tool to regenerate
 it.
 
@@ -50,7 +55,8 @@ wherever it is shown, and none is pooled with another without a recorded lab
 judgement. A layer measured in an engineered derivative (PXD030282's
 limonene-producing L1118, GSE288532's and GSE335065's cscB-sps, GSE89999's
 clock rescue, GSE103463's and GSE105774's complemented rel deletion, GSE103644's
-inducible relA, GSE51112's RpaA-phosphomimetic and empty-vector arms) is listed
+inducible relA, GSE51112's RpaA-phosphomimetic and empty-vector arms,
+GSE311172's oxygen-adapted populations) is listed
 under "Engineered strain" and its record names the strain. Where one deposit
 holds several genotypes, a layer names its own strain (`layer.strain`), as
 GSE51112's four layers do.
