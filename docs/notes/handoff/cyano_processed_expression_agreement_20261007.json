@@ -878,7 +878,7 @@
     "path": "tools/expression_agreement.py",
     "python": "3.12.4",
     "scipy": "1.18.1",
-    "sha256": "7e80b621a1dac5a64b1013a7e21599475bf2cc3ff30d26a9e59e382896bee062"
+    "sha256": "e1a1976ac5af4db33a0de3e984b458f0d45d5438a8e9470d58996c12ac5eb41b"
   },
   "inputs": {
     "crosswalk": {

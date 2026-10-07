@@ -769,3 +769,27 @@ def test_unknown_and_nonfinite_correlation_results(monkeypatch):
     assert agreement._correlation(vector, vector, "spearman") == (
         3, None, "undefined_correlation"
     )
+
+
+def test_pinned_symlink_cache_reproduces_report_and_protects_input(fixture):
+    original = build(fixture)
+    linked_cache = fixture["root"].parent / "linked-cache"
+    linked_cache.mkdir()
+    for source in fixture["interim"].iterdir():
+        (linked_cache / source.name).symlink_to(source)
+    fixture["interim"] = linked_cache
+    assert build(fixture) == original
+
+    # Output aliases must still protect the actual source behind the cache link.
+    source = linked_cache / "part_a.csv"
+    before = source.read_bytes()
+    fixture["output"] = source.resolve()
+    with pytest.raises(ValueError, match="overwrite an input"):
+        build(fixture)
+    assert source.read_bytes() == before
+
+
+@pytest.mark.parametrize("name", [".", "..", "/absolute.csv", "nested/file.csv", "nested\\file.csv"])
+def test_cache_names_reject_traversal_and_path_components(tmp_path, name):
+    with pytest.raises(ValueError, match="escapes the interim directory"):
+        agreement._source_target(tmp_path, name)

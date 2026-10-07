@@ -304,10 +304,10 @@ def _sources(spec: Mapping[str, Any]) -> list[Mapping[str, Any]]:
 
 
 def _source_target(interim: Path, name: str) -> Path:
-    target = (interim / name).resolve()
-    if not target.is_relative_to(interim.resolve()):
+    """Keep source names inside the cache while permitting pinned file links."""
+    if Path(name).name != name or name in {".", ".."} or "\\" in name:
         raise ValueError(f"source file name {name!r} escapes the interim directory")
-    return target
+    return interim / name
 
 
 def _read_study_table(
@@ -582,7 +582,7 @@ def _validate_output_path(
     inputs = {plan_path.resolve(), crosswalk_path.resolve()}
     inputs.update(study.spec_path.resolve() for study in studies)
     for study in studies:
-        inputs.update(_source_target(interim, source["name"]) for source in _sources(study.spec))
+        inputs.update(_source_target(interim, source["name"]).resolve() for source in _sources(study.spec))
     if output in inputs:
         raise ValueError("output path would overwrite an input")
     return output

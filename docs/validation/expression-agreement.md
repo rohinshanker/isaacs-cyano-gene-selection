@@ -30,6 +30,9 @@ crosswalk. Ambiguous mappings and absent measurements remain absent. CPM library
 size is computed over the same retained source features as the admitted layer,
 before crosswalk loss. Calibration output belongs outside `data/` and `site/`.
 Plan, specification, source-file and crosswalk hashes travel with the report.
+An isolated worktree may link its cache files to the canonical checkout: those
+bytes are checked by the same pins. Source names must be plain filenames, and
+the output cannot overwrite a source through either its name or a link alias.
 
 The frozen [statistics summary](../notes/handoff/cyano_processed_expression_agreement_20261007.json)
 retains all metadata, denominators, correlations and caveats for 18 studies and
@@ -75,6 +78,10 @@ sample, and both means must be strictly positive. There is no pseudocount.
 Report the measured intersection, positive-gene count and number excluded for
 zero means. This is an unshrunk descriptive log ratio; it is not a differential
 expression test or a shrunken effect estimate.
+For numerical reproduction, preserve the specified `log2(treatment / control)`
+formulation. Algebraically equivalent log subtraction can reorder near-tied
+responses through floating-point rounding and slightly change their Spearman
+coefficient; it does not change the biological interpretation.
 
 Only the plan's explicit response pairs are compared. Spearman, Pearson and
 response sign agreement use shared finite responses. Sign agreement excludes a
