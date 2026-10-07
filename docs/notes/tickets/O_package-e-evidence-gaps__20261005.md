@@ -6,7 +6,7 @@
   files. Covers `docs/` and, if approved, a re-implementation outside the release.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-05
+- **Updated:** 2026-10-07
 
 ## Current state
 
@@ -29,13 +29,13 @@ the mockup.
 
 | Gap | Why it matters | Manual workaround | Automated workaround |
 | --- | --- | --- | --- |
-| The pilot names `pilot_code.tar.gz`; it was not delivered | The 10,440-pair file cannot be regenerated, so the figure rests on trust in one run | Owner saves the archive from the Claude Science session into `docs/notes/handoff/` | The agents re-implement the pilot from its written method and its seven checksummed GEO files, as an independent second check. Needs the owner's yes to download those seven tables for calibration |
+| The pilot names `pilot_code.tar.gz`; it was not delivered | The 10,440-pair file cannot be regenerated, so the figure rests on trust in one run | Owner saves the archive from the Claude Science session into `docs/notes/handoff/` | The agents re-implement the pilot from its written method and its seven checksummed GEO files, as an independent second check. Calibration downloads already approved 2026-10-05; keep them outside the release |
 | AUROCs carry no confidence intervals; sample pairs are not independent | A reader cannot tell 0.94 from 0.90 | — | A bootstrap that resamples samples, not pairs, in the re-implementation |
 | The one cross-study result that works, fold-change agreement, rests on two contrast pairs from two studies | It is the statistic the design proposes to rely on | Labmates name further matched perturbations they know of in these series | Extend to every control-and-treatment contrast once uniformly processed values exist; see [O_condition-metadata-gaps__20261005](O_condition-metadata-gaps__20261005.md) item 6 |
 | GSE45762 was dropped because its labels contradict themselves | One of seven tables lost | Ask the submitter; drafted under the metadata ticket | — |
 | 15 of 44 method sources were read from abstracts only | Some support key claims | Supply full texts | Read those with a deposit; see [O_unreadable-literature-workarounds__20261005](O_unreadable-literature-workarounds__20261005.md) item 5 |
 | The 63 condition records were parsed by hand after a keyword pass gave false positives; package D's first automated parse also misread values | The mockup and any future selector read these records | A second person reads a sample against package B | A checker that every number in a record appears in the package B cell it cites, plus a validator for ranges, units and the tag vocabulary |
-| The audit's model read covered 49 of 84 file chunks | The unread files include the comparison and filter views a selector would change | — | A follow-up audit package naming only the 35 chunks, or an in-repository read; the owner chooses |
+| The audit's model read covered 49 of 84 file chunks | The unread files include the comparison and filter views a selector would change | — | Read the 35 chunks in the repository, as the owner decided 2026-10-05 |
 | A-01 and A-04 were never confirmed on screen | Both confirmed on screen and fixed 2026-10-06, rendered at 375, 768 and 1280 px; the audit-fixes ticket is resolved and its checklist is [data-use-audit-checklist.md](../../validation/data-use-audit-checklist.md) | — | Done |
 
 ## Decisions, 2026-10-05
@@ -50,6 +50,14 @@ the mockup.
   `docs/notes/handoff/` as evidence.
 
 ## Verification
+
+Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
+main-queue membership and local-link checks passed; `git diff --check` was clean.
+Required gates on the isolated docs worktree: `npm test` 1,116 passed;
+`.venv/bin/python -m pytest -q` 494 passed, 1 skipped, 36 subtests;
+`.venv/bin/python tools/validate_contract.py` 116 passed, 0 failed, 1 declared
+skip. This pass changed no application code, release data or browser UI;
+implementation-specific validation remains separate.
 
 Not started, except the mockup render recorded above. A re-implementation counts as
 agreement only if it reproduces the pair counts by class and the headline statistics

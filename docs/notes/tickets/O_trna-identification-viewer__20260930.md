@@ -6,7 +6,7 @@
   pinned local tRNAscan-SE runs.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 
@@ -45,11 +45,28 @@ The strain in scope is *Synechococcus* sp. UTEX 2973, RefSeq assembly
 runs on its GenBank counterpart `GCA_000817325.1`. Both runs read 48 first-pass
 candidates and confirm 45.
 
+## Owner review scope, 2026-10-07
+
+The owner requested a detailed first-version proposal whose only pending action
+is their reading it. That proposal is ready in
+[O_review-trna-viewer__20261007](O_review-trna-viewer__20261007.md): a separate
+chromosome track, searchable locus list and inspection panel over the **44
+RefSeq-annotated loci plus the one additional predicted pseudogene candidate**
+already held in the pinned comparison. The candidate is explicitly distinguished
+and excluded from the existing copy-count model.
+
+The review has no scientific, access or compute dependency. After the owner
+records that they have read it, implementation proceeds here against the reviewed
+specification and its stated defaults. No new GtRNAdb artifact, tRNAscan-SE run,
+probability label, confidence threshold, secondary-structure screen or tAI change
+is required for this bounded version. The broader questions and CS-1 below apply
+only to later additions; they do not hold this review or its first-version work.
+
 ## Claude Science claims
 
 | Id | Claim | Why the work depends on it | Answer that unblocks | Evidence expected | Pre-grounding | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| CS-1 | A tRNAscan-SE score can be mapped to a calibrated probability of tRNA-gene identity in the evaluation population selected for this feature, now known to be the 45 Infernal-confirmed tRNA loci on this genome rather than an open-ended genome-wide screen. | Labelling numeric coloring/filtering as “likelihood” or probability rather than a tool score or evidence category. | Supported with a validated calibration and its domain, or refuted/uncheckable so the proposed metric uses accurately labelled scores/categories instead. | Resolvable score definitions and applicable calibration/evaluation evidence, including target population and limitations. | Existing validation establishes computational plausibility and concordance, not calibrated probabilities, expression, or charging. | pending |
+| CS-1 | A tRNAscan-SE score can be mapped to a calibrated probability of tRNA-gene identity in the evaluation population selected for this feature, now known to be the 45 Infernal-confirmed tRNA loci on this genome rather than an open-ended genome-wide screen. | A future numeric coloring/filtering option labelled “likelihood” or probability; not the bounded viewer or its owner review. | Supported with a validated calibration and its domain, or refuted/uncheckable so the proposed metric uses accurately labelled scores/categories instead. | Resolvable score definitions and applicable calibration/evaluation evidence, including target population and limitations. | Existing validation establishes computational plausibility and concordance, not calibrated probabilities, expression, or charging. | pending; future scoring option only |
 
 Follow [Claude Science handoff](../../validation/claude-science-handoff.md) for
 external source, licence, and scientific-semantic evidence. A new GtRNAdb artifact
@@ -61,10 +78,10 @@ current claim is queued for later; no dispatch is authorized by opening this tic
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Existing run/annotation inventory and GtRNAdb identity/release comparison | Identify genuinely new evidence without repeating completed work |
-| D2 | Owner decisions on feature population and display below | Define data schema and filtering/coloring target |
-| D3 | Source/score semantics (CS-1 if probability is intended), licences, and provenance | Approve metric labels and admit selected external artifacts |
+| D2 | Owner reads the complete first-version proposal linked above; broader choices below are reserved for extensions | Implement the bounded existing-evidence viewer |
+| D3 | Source/score semantics (CS-1 only for a future probability option), licences, and provenance | Approve future metric labels and admit new external artifacts; no new artifact is needed for the first version |
 | D4 | Exact sequence/coordinate mapping for each admitted strain and release | Place or associate tRNA features correctly |
-| D5 | Approved metric, thresholds, and UI contracts | Implement filtering/coloring and visualization |
+| D5 | Reviewed initial UI/data contract; no metric threshold in the first version. Any future metric/threshold needs its own evidence | Implement the bounded viewer, then assess separately requested extensions |
 
 Assess annotated tRNA genes, additional predicted loci, low-confidence or
 pseudogene calls, and any overlaps with plotted CDSs as distinct states. Decide
@@ -157,6 +174,14 @@ FASTA — plus the identity of the three first-pass candidates Infernal dropped.
   conflicting, both-strand, overlapping, and unmatched features.
 
 ## Verification
+
+Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
+main-queue membership and local-link checks passed; `git diff --check` was clean.
+Required gates on the isolated docs worktree: `npm test` 1,116 passed;
+`.venv/bin/python -m pytest -q` 494 passed, 1 skipped, 36 subtests;
+`.venv/bin/python tools/validate_contract.py` 116 passed, 0 failed, 1 declared
+skip. This pass changed no application code, release data or browser UI;
+implementation-specific validation remains separate.
 
 Ticket creation verified 2026-09-30: duplicate-check findings, fields, dependency
 links, live index entry, and CS-1 queue row checked; `git diff --check` passed.

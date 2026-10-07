@@ -6,7 +6,7 @@
   and, if the owner approves, a reprocessing pilot outside the release.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-07
 
 ## Current state
 
@@ -65,14 +65,18 @@ MET-02, MET-03, MET-08 to MET-10, NA-01 to NA-04, LIC-01.
      profiles processed by one pipeline, in a repository under an MIT licence. It
      would give uniformly processed values for many of these series without any
      compute here, and would also test whether the pilot's study effect is
-     biology or pipeline. It is not admitted; using it for calibration needs the
-     same owner decision as the pilot's downloads.
+     biology or pipeline. It is not admitted; calibration downloads were approved on
+     2026-10-05 in the source ledger. Calibration does not admit it.
    - Supplementary tables of the papers, where a licence covers them, as with
      PXD005851's Table S1.
    - Uniform reprocessing from raw reads. **Approved by the owner 2026-10-05.**
-     Which machine runs it is still the open compute question in
-     [O_folding-compute-backend__20260930](O_folding-compute-backend__20260930.md);
-     a pilot on one series can start on whatever machine is at hand.
+     **Compute update, 2026-10-07:** Bouchet is available to the owner, but the
+     Spinup/OOD choice and cluster agents/workspace are not set up. Cluster
+     execution waits on D1b in
+     [O_folding-compute-backend__20260930](O_folding-compute-backend__20260930.md).
+     Prepare the pinned input/pipeline/job plan independently; do not claim a
+     runnable cluster workspace yet. A one-series pilot can still use an
+     available local machine under the existing approval.
 7. **Eleven sources with no metadata at all yet.** Nine series the first sweep
    mislabelled as ChIP-seq and two it never saw, listed in the scan ticket's
    correction of 2026-10-05. Each needs its conditions extracted and its licence
@@ -84,6 +88,14 @@ MET-02, MET-03, MET-08 to MET-10, NA-01 to NA-04, LIC-01.
    owner's scope decision and is not reopened here.
 
 ## Verification
+
+Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
+main-queue membership and local-link checks passed; `git diff --check` was clean.
+Required gates on the isolated docs worktree: `npm test` 1,116 passed;
+`.venv/bin/python -m pytest -q` 494 passed, 1 skipped, 36 subtests;
+`.venv/bin/python tools/validate_contract.py` 116 passed, 0 failed, 1 declared
+skip. This pass changed no application code, release data or browser UI;
+implementation-specific validation remains separate.
 
 Not started. Every filled value carries a quote and location or a dated reply, enters
 as an addendum through intake, and triggers a re-score of the affected pairs. A lab

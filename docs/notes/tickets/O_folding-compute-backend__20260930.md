@@ -6,15 +6,22 @@
   requirements before implementation.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 
-The owner expects Bouchet access soon; access is not assumed to be active.
+**Owner update, 2026-10-07:** "yale bouchet cluster is available to me, but i
+have not yet decided on whether to use a spinup or OOD, nor have i setup local
+agents/workspace there".
+
+Personal Bouchet access is therefore available by owner attestation. The
+Spinup/OOD choice and cluster agent/workspace setup remain open. Neither route
+is selected or assessed as equivalent here; no agent login, allocation/quota,
+automated submission route or website-service permission has been verified.
 The lab Mac mini and owner's Jetson Orin Nano are candidate fallbacks, with exact
 hardware, availability, software compatibility, and connectivity unverified.
-No cluster login, job submission, device setup, deployment, or administrator
-contact is requested in this ticket-opening pass.
+This update records availability; no cluster login, job submission, software
+installation or deployment has been performed.
 
 Preliminary official reference:
 [YCRC Bouchet documentation](https://docs.ycrc.yale.edu/clusters/bouchet/), consulted
@@ -53,7 +60,8 @@ settled by scientific inference. Gate only the dependent method or host.
 
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
-| D1 | Active Bouchet account/allocation and verified allowed automation, network, and service-use routes | Test cluster submission and select a deployment topology |
+| D1a | Personal Bouchet access: available per owner, 2026-10-07; not independently exercised | Access availability is no longer the owner question |
+| D1b | Spinup/OOD choice, cluster agent/workspace setup, allocation/quotas, agent access and verified allowed automation/network/service-use routes remain open | Run cluster benchmarks, submit jobs and select a deployment topology |
 | D2 | Exact Mac mini/Jetson specifications, ownership permission, availability, OS/runtime, and connectivity | Establish each fallback's supported workloads |
 | D3 | Selected algorithms, code/model/data licences, inputs, and representative workload sizes | Estimate resources and benchmark methods on candidate hosts |
 | D4 | Audience, latency, privacy, availability, and budget decisions below | Define service and job lifecycle contracts |
@@ -64,6 +72,13 @@ website API that submits/polls jobs through an approved route. Consider an
 outbound worker/pull-queue design for lab devices where appropriate. These are
 architecture candidates, not selected services or permission to expose a machine.
 Do not assume cluster login nodes can host the website or execute folding jobs.
+
+Next preparation can define a reproducible workspace/bootstrap plan and the
+information to collect for each access route without logging in. Execution on
+Bouchet waits on D1b. The raw-read reprocessing pilot in
+[O_condition-metadata-gaps__20261005](O_condition-metadata-gaps__20261005.md)
+shares the setup dependency, not this ticket's folding-method choices. No
+unverified fallback-device specification fills a Bouchet setup gap.
 
 Return a workload/host matrix covering algorithm/version, CPU/GPU requirements,
 memory and model storage, supported runtime and architecture, queue wait, execution
@@ -105,15 +120,17 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
    or genome-scale studies? What input sizes and request volume are expected?
 3. Is the website compute feature private to you/the lab or available to external
    visitors? Who may submit jobs, and whose allocation pays for cluster work?
-4. What Bouchet allocation and automated submission mechanism will be available,
-   and what do YCRC rules allow for a website-connected research service?
+4. Personal Bouchet access is available, answered 2026-10-07. Which Spinup/OOD
+   route will be used, how will the cluster agents/workspace be set up, what
+   allocation/quotas and automated submission mechanism are available, and what
+   do YCRC rules allow for a website-connected research service?
 5. What Mac mini model, RAM, storage, and availability are available? What Jetson
    RAM/storage, software stack, and power/network availability can be relied on?
    Record each device's CPU architecture explicitly, since the x86-only binary
    above makes it a gating answer rather than a detail.
-   Q8, raised by the 2026-09-30 return; unanswered: "Should this ticket wait for
-   Bouchet, or should the Mac mini and Jetson be specified and benchmarked first so
-   the cluster is an addition rather than a prerequisite?"
+   Q8's earlier premise that Bouchet access is unavailable is superseded by the
+   2026-10-07 update. No fallback-first benchmarking decision was supplied; the
+   remaining cluster prerequisite is its route/workspace setup under D1b.
 6. What waiting time is acceptable? Should fallback be manually selected or
    automatic under explicit queue-delay, outage, and capacity rules?
 7. May sequences and results leave the browser and move among these hosts? What
@@ -135,6 +152,14 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
   host outage, retries, duplicate prevention, cancellation, and stale results.
 
 ## Verification
+
+Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
+main-queue membership and local-link checks passed; `git diff --check` was clean.
+Required gates on the isolated docs worktree: `npm test` 1,116 passed;
+`.venv/bin/python -m pytest -q` 494 passed, 1 skipped, 36 subtests;
+`.venv/bin/python tools/validate_contract.py` 116 passed, 0 failed, 1 declared
+skip. This pass changed no application code, release data or browser UI;
+implementation-specific validation remains separate.
 
 Ticket creation verified 2026-09-30: fields, links, dependencies, questions, and
 index entry checked; `git diff --check` passed. Repository gates passed:

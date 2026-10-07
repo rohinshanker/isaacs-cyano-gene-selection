@@ -5,7 +5,7 @@
   add site-type visibility toggles in the Chromosome visualizer.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-07
 
 ## Current State
 
@@ -15,7 +15,8 @@ nothing needed repair, and the audit now runs on every test run over the shipped
 rather than a fixture. Its counts, case coverage and rendered checks are recorded
 once, under [Verification](#d1-2026-10-02). The rest of the ticket has not started:
 the chromosome site-type toggles, the shared marker layer, and the overlap-readability
-item below are all open.
+item below are all open. The owner fixed the next implementation scope on
+2026-10-07; see the bounded plan below.
 
 The gene viewer renders Tan TSS evidence through `tssMarks()`, which lives only in
 `site/js/core/gene-view-model.js`. `site/js/ui/gene-viewer.js` draws `model.tss` and
@@ -26,8 +27,8 @@ and D1 kept it that way.
 tightest marks sit 2.3 px apart as 5.1 px circles, so the heads overlap into a
 cluster. Every mark is still drawn and each keeps its own `<title>`, so no evidence
 is lost, but the cluster is not separately readable. That is the "preserve readable
-markers when sites overlap" item under Required behavior, which needs the owner's
-answer to clarifying question 6 before a design.
+markers when sites overlap" item under Required behavior, included in the
+owner-authorized Tan-only pass below.
 
 `site/js/ui/chromosome-view.js` hides **all** start-site ticks in a band when
 `sites.length * MIN_TSS_SPACING_PX > band.width`, with `MIN_TSS_SPACING_PX = 3`
@@ -41,6 +42,39 @@ The existing chromosome contract places native gene-linked Tan sites at their
 published absolute positions, while non-gene-linked features remain in the
 Regulatory sites tab. The requested type toggles and any expanded chromosome
 coverage need an explicit revision of that display contract during implementation.
+
+## Tan-only implementation scope, owner decision 2026-10-07
+
+The owner answered "sure" to starting with the **existing admitted Tan TSS
+sites, including overlap inspection and visibility controls, before adding other
+site types**. The next pass can proceed as code/UI work with no new scientific
+interpretation or source admission.
+
+Implementation plan within that decision:
+
+- Use the current mapped gene-linked Tan marks and native chromosome ticks,
+  preserving their published position/distance bases and current default
+  visibility. Other Tan features remain in the Regulatory sites view under its
+  existing association rules. No new type taxonomy or broader chromosome
+  placement is implied.
+- Add an accessible show/hide control for this existing TSS layer. It affects
+  marks only, never gene filtering, scores, ranking or data selection. Reuse the
+  current view-state/reset conventions; broader shared/persistent layer state
+  can be assessed as an extension rather than holding this pass.
+- Make colliding marks inspectable through a complete list of the represented
+  sites, retaining every source row and its identity. Their anchors keep their
+  exact coordinates; any display grouping must be labelled and must not imply
+  one biological site or continuous evidence. Preserve the current chromosome
+  overview density rule unless a separately validated presentation replaces it.
+- Keep source, strand, source coordinate basis and evidence status reachable
+  through pointer, touch and keyboard inspection. Check the known dense
+  `M744_RS01695` case and both strands in rendered tests.
+
+These are implementation choices within the confirmed scope, not additional
+owner answers. Questions 1 to 8 below remain useful for later type expansion or
+new interactions; they are not prerequisites for faithful Tan visibility and
+overlap inspection. The separate recoding-effect metric's site-type question is
+not answered by this display-only scope decision.
 
 ## Claude Science claims
 
@@ -76,7 +110,7 @@ this ticket is activated.
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Existing Tan evidence/provenance and current rendering audit | Fix any Tan marker omissions now, without waiting on new data |
-| D2 | Owner decisions on type taxonomy, defaults, scope, and persistence | Implement chromosome toggles and marker semantics |
+| D2 | Initial scope decided 2026-10-07: existing Tan TSS visibility and overlap inspection; retain current coordinate/default conventions | Implement the Tan-only pass; broader taxonomy/persistence decisions apply to extensions |
 | D3 | Shared feature representation with explicit point/interval coordinates, association, source, and evidence basis | Integrate future feature types consistently |
 | D4 | Per-dataset admission, source semantics, licence, mapping, and condition checks | Display each new source; the generic marker UI does not wait on all sources |
 
@@ -147,6 +181,14 @@ consume these features later; displaying them does not establish recoding effect
   selection, overlap, optional datasets, and persistence if approved.
 
 ## Verification
+
+Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
+main-queue membership and local-link checks passed; `git diff --check` was clean.
+Required gates on the isolated docs worktree: `npm test` 1,116 passed;
+`.venv/bin/python -m pytest -q` 494 passed, 1 skipped, 36 subtests;
+`.venv/bin/python tools/validate_contract.py` 116 passed, 0 failed, 1 declared
+skip. This pass changed no application code, release data or browser UI;
+implementation-specific validation remains separate.
 
 Ticket creation verified 2026-09-30: fields, local links, dependencies, and live
 index entry checked; `git diff --check` passed. Repository gates passed:
