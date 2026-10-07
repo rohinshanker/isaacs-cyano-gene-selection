@@ -108,11 +108,15 @@ export class LeftPanels {
   }
 
   render() {
+    const focused = document.activeElement;
+    const focusedEntry = [...this.cards.values()]
+      .find((entry) => entry.card.contains(focused));
     for (const id of this.order) {
       const entry = this.cards.get(id);
       if (!entry) continue;
       // Appending in order is what reorders the column: each append moves the
-      // existing node rather than copying it, so listeners and focus survive.
+      // existing node rather than copying it, so its listeners survive.
+      // Browsers can drop focus during that move; restore it after layout.
       this.column.append(entry.card);
     }
     const positions = this.order.filter((id) => this.cards.has(id));
@@ -127,6 +131,11 @@ export class LeftPanels {
       entry.card.dataset.panelPosition = String(index + 1);
       entry.toggle.title = collapsed ? `Expand ${entry.title}` : `Collapse ${entry.title}`;
     });
+    if (focusedEntry && focused.isConnected) {
+      const concealed = focusedEntry.body.hidden && focusedEntry.body.contains(focused);
+      const target = concealed || focused.disabled ? focusedEntry.toggle : focused;
+      if (document.activeElement !== target) target.focus({ preventScroll: true });
+    }
   }
 
   emit() {
