@@ -155,6 +155,32 @@ test('a type asked for with nothing selected starts from its originals and stand
   assert.deepEqual(defaultDatasetsOfType('type.nope', all), []);
 });
 
+test('a default-pooled study wins the default, and does not drag in other studies', () => {
+  const all = datasets();
+  const pooled = (id, group) => dataset({
+    id, datasetId: id, metricKey: id, dataType: 'fitness', platform: 'RB-TnSeq',
+    group, studyId: 'FitnessBrowser_SynE',
+  });
+  const biofilm = dataset({
+    id: 'B1', datasetId: 'B1', metricKey: 'fitB1', dataType: 'fitness',
+    platform: 'RB-TnSeq', group: 'biofilm', studyId: 'GSE205443',
+  });
+  const standard = dataset({
+    id: 'S1', datasetId: 'S1', metricKey: 'fitS1', dataType: 'fitness',
+    platform: 'RB-TnSeq', group: 'standard', studyId: 'GSE205443',
+  });
+  const ids = (list) => list.map((d) => d.id).sort();
+  const withPool = [...all, biofilm, standard, pooled('P1', 'stress'), pooled('P2', 'standard')];
+  // The pooled study takes the default whole, including its stress arms, and
+  // the other study's standard set does not join it.
+  assert.deepEqual(ids(defaultDatasetsOfType('type.fitness.rb-tnseq.fitness', withPool)), ['P1', 'P2']);
+  // Without that study the older rule still applies.
+  assert.deepEqual(
+    ids(defaultDatasetsOfType('type.fitness.rb-tnseq.fitness', [...all, biofilm, standard])),
+    ['S1'],
+  );
+});
+
 test('a dataset\'s own metric and its derived percentile are both the dataset\'s, a type or a computed metric is not', () => {
   const all = datasets();
   assert.equal(isDatasetOwnKey('expression', all), true);
