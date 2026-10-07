@@ -754,3 +754,53 @@ test('a gene with no coordinates at all places nothing and says why', () => {
   assert.equal(row.placement.status, 'unplaceable');
   assert.equal(row.placement.reason, 'outside-shown-sequence');
 });
+
+test('a native coordinate places a mark even where the published distance is missing', () => {
+  // The two mappings are independent in both directions. The gene visualizer
+  // needs the published distance and draws nothing without one; this strip
+  // needs the native coordinate and does not read the distance at all. A row
+  // carrying one and not the other is therefore drawn in exactly one view, and
+  // listed in both.
+  const gene = joined('M744_RS01695');
+  const distanceless = {
+    ...gene,
+    tssEvidence: [{
+      id: 'gTSS+320187', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187,
+      sourceStartDistanceNt: null,
+    }],
+  };
+  const [row] = sequenceMarkers(distanceless, modelOf(distanceless));
+  assert.equal(row.placement.status, 'placed');
+  assert.equal(row.placement.fromOffset, -15);
+  assert.equal(row.distanceNt, null);
+  assert.equal(row.drawn, false, 'the gene visualizer has no offset to draw it at');
+  assert.equal(row.basisGapNt, null, 'and so there is no gap between two bases');
+
+  // And the reverse: a published distance with no coordinate draws on the
+  // gene-relative track and nowhere here.
+  const positionless = {
+    ...gene,
+    tssEvidence: [{
+      id: 'gTSS+320187', type: 'gTSS', replicon: 'CP006471', strand: '+', position: null,
+      sourceStartDistanceNt: 15,
+    }],
+  };
+  const [other] = sequenceMarkers(positionless, modelOf(positionless));
+  assert.equal(other.drawn, true);
+  assert.equal(other.placement.reason, 'no-native-coordinate');
+});
+
+test('selecting a codon while the marks are hidden leaves them hidden', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, joined('M744_RS09575'), { markersVisible: false });
+    assert.equal(markGroups(view).length, 0);
+    view.selectCodon(0);
+    assert.equal(markGroups(view).length, 0, 'a redraw does not bring back a hidden mark');
+    assert.match(view.selection.textContent, /^Codon 1: initiation triplet/);
+    assert.equal(toggleOf(view).checked, false);
+    // And the camera controls redraw the same way.
+    view.fitGene();
+    assert.equal(markGroups(view).length, 0);
+    assert.equal(view.rowLayout().markers, 0, 'the row is still reserved by the data');
+  });
+});
