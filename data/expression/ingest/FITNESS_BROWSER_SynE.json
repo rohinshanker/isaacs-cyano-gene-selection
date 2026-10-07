@@ -24,8 +24,7 @@
   "reader": {
     "format": "tsv",
     "idColumn": "locusId",
-    "idKind": "pcc7942_old",
-    "idPattern": "^Synpcc7942_\\d+$"
+    "idKind": "pcc7942_old"
   },
   "units": "gene fitness (log2 ratio of barcode abundance at the end of the experiment to the Time0 sample, Wetmore et al. 2015), as published by the Fitness Browser",
   "normalization": "as-deposited",

@@ -234,6 +234,36 @@ def test_ingest_counts_identifiers_outside_the_pattern_as_unmapped(tmp_path):
     assert written[0]["ingest"]["unmappedIdentifiers"] == 2, "the rna- and MSTRG rows"
 
 
+def test_fitness_browser_reader_keeps_exact_suffix_and_plasmid_joins(tmp_path):
+    """The production reader must accept every namespace form in its crosswalk."""
+    production = json.loads((ROOT / "data/expression/ingest/FITNESS_BROWSER_SynE.json").read_text())
+    data = csv_bytes(["locusId", "a", "b", "c"], [
+        ["Synpcc7942_0001", "1", "2", "3"],
+        ["Synpcc7942_1912a", "-3", "-2", "-1"],
+        ["Synpcc7942_B2633", "0", "0", "0"],
+        ["Synpcc7942_B9999", "9", "9", "9"],
+        ["Synpcc7942_B9998", "9", "9", "9"],
+    ])
+    reader = {**production["reader"], "format": "csv"}
+    spec = spec_for(tmp_path, data, reader, dataType="fitness", platform="RB-TnSeq", signed=True,
+                    normalization="as-deposited")
+    crosswalk = [
+        ("U1", "pcc7942_old_locus_tag", "Synpcc7942_0001", ""),
+        ("U2", "pcc7942_old_locus_tag", "Synpcc7942_1912a", ""),
+        ("U3", "pcc7942_old_locus_tag", "Synpcc7942_B2633", ""),
+        ("U4", "pcc7942_old_locus_tag", "Synpcc7942_B9998", "ambiguous"),
+    ]
+    written, _, out = run(tmp_path, spec, crosswalk, conditions_file(tmp_path))
+    assert (out / "GSE1_control.tsv").read_text().splitlines() == [
+        "locus_tag\tabundance\tsource_gene_id",
+        "U1\t2.0000\tSynpcc7942_0001",
+        "U2\t-2.0000\tSynpcc7942_1912a",
+        "U3\t0.0000\tSynpcc7942_B2633",
+    ]
+    assert written[0]["ingest"]["mappedGenes"] == 3
+    assert written[0]["ingest"]["unmappedIdentifiers"] == 2
+
+
 def test_column_values_refuses_a_header_that_names_several_columns():
     with pytest.raises(ValueError, match="names 2 columns"):
         ingest.column_values(["id", "a", "a"], [["g1", "1", "2"]], "a")

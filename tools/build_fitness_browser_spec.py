@@ -369,7 +369,6 @@ def build_spec() -> dict[str, Any]:
             "format": "tsv",
             "idColumn": "locusId",
             "idKind": "pcc7942_old",
-            "idPattern": "^Synpcc7942_\\d+$",
         },
         "units": (
             "gene fitness (log2 ratio of barcode abundance at the end of the "
