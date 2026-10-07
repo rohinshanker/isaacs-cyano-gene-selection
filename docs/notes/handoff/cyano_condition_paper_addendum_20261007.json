@@ -1,0 +1,21 @@
+{
+  "dataset": "GSE227397",
+  "source_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10365998/fullTextXML",
+  "retrieval_date": "2026-10-07",
+  "snapshot_sha256": "efa172d6c2bd36435e312432313446b0202ad5b1070389b10a87befb28b0f8a2",
+  "scope": "Methods: Cyanobacteria strains and growth condition; RNA-seq section identifies GSE227397. General growth protocol applies to WT and delta-xpk cultures; gas CO2 and lamp class remain unreported here.",
+  "quotes": [
+    "under a 12-h L/D cycle",
+    "supplemented with 50 mM NaHCO3",
+    "light intensity 50 µmol m−2 s−1",
+    "under accession no. GSE227397"
+  ],
+  "quote_match": "All four pieces matched mechanically after whitespace normalization.",
+  "reported_values": {
+    "photoperiod": "12:12",
+    "photon_flux": 50,
+    "photon_flux_unit": "µmol m−2 s−1",
+    "medium_supplement": "50 mM NaHCO3"
+  },
+  "limits": "The general growth section reports the bicarbonate supplement; the RNA-seq subsection does not restate it. Retain this location/scope. NaHCO3 is not a gas CO2 percentage. No source admission or pair-equivalence ruling."
+}

@@ -40,11 +40,46 @@ Inputs and output:
 - `docs/notes/handoff/cyano_condition_gap_inventory_20261007.json`;
 - `docs/notes/handoff/cyano_condition_gap_ranking_20261007.tsv`.
 
-Public archive retrieval is running as DEM-280 and the Tan display pass as
-DEM-279, coordinated by agent-deck session bfdd1b08-1791384632. The archive
-worker writes only its dossier/source cache outside the release. Source intake,
-updated condition records and rescoring wait on checked results, not on the
-whole ticket. The public-compendium calibration download is done under the
+The archive sweep is complete: 43 GEO series plus PRIDE/ArrayExpress records,
+287 retrievals, and 180 candidate rows with 93 quoted passages. Independent
+intake re-fetched 80 sources and re-matched all 93 quotations. It accepted
+148 corrected/scoped statements, held 29 and rejected 3 proposed values;
+these are evidence decisions, not source admission. The reviewer caught a
+100 mE-to-micro-unit conversion, overstated ChIP replication, stress-only
+medium transferred to controls, and several sampling/OD scope errors.
+
+Artifacts are `cyano_archive_condition_candidates_20261007.*`, the preserved
+analyst dossier, `cyano_archive_condition_intake_20261007.*`, and the scoped
+`cyano_package_B_archive_addendum_20261007.json`. The corrected retrieval
+catalogue points the obsolete SAMD/SAMN misresolution at its retained wrong
+response; all 287 current path/hash associations match their files. The
+coordinator additionally read the 24 model-only negative cells and accepted
+only narrow series/protocol/characteristic-field absence statements in
+`cyano_archive_condition_manual_supplement_20261007.json`; no statement is
+extended to unread papers. PXD023591 was checked separately and provides no
+culture-condition fill; its 37/45°C protocol temperatures are digestion,
+not growth. No depositor messages were sent.
+
+`cyano_dataset_condition_records_20261007.json` replaces the working compact
+snapshot for new work: GSE311172 continuity is unknown, GSE252562's mixed
+short-day aggregate has no unconditional photoperiod, and GSE237858's
+reported fluorescent lamp description is restored without inventing spectrum
+equivalence. The archive/paper flux disagreement stays open. All 39 GSE311172
+pair screens need to withdraw inferred temporal comparisons; rows 442, 473 and
+725 require independent spectrum screening, with no replacement pass/fail
+invented. The row-35 GSE252562 aggregate also needs explicit migration or
+rescoring before use. The ranking above remains the pinned historical pair
+snapshot, not a claim that these newly reviewed conditions have already been
+fully rescored or admitted.
+
+The GSE227397 paper was directly retrieved and quoted/matched: its general
+growth Methods state the 12-h L/D cycle, 50 photon flux and 50 mM NaHCO3
+supplement, while the RNA-seq section names the deposit. This narrows the
+archive-only photoperiod hold; the bicarbonate is not a gas CO2 percentage.
+The location/scope and SHA-256 are in
+`cyano_condition_paper_addendum_20261007.json`.
+
+The public-compendium calibration download is done under the
 existing approval:
 `cyano_imodulon_calibration_20261007.json` pins commit and file hashes. Both
 2,669-by-300 matrices have unique gene/profile IDs, finite values and exact
@@ -65,8 +100,8 @@ digests. The job envelope is 8 CPU/8 GB per large task, one large task at once,
 measured runtime. Nextflow 22.10.0 is the paper's version and is not installed
 here. Neither raw files nor a job were run. Strand inference and unresolved
 biological replication remain explicit, so no replicate-band inference follows
-from the plan. The local Docker daemon responds; cluster execution
-waits on the compute-backend ticket's configured route/workspace.
+from the plan. The local Docker daemon has 4 CPUs and about 5.8 GiB memory; 48 GiB disk
+is free, below this prepared full-pilot envelope. Cluster execution waits on the compute-backend ticket's configured route/workspace.
 
 ## Work
 
@@ -275,6 +310,50 @@ lamp/spectrum at RNA harvest where these were not reported. Thank you.
 Each draft is addressed to its corresponding study's submitter. No messages
 have been sent.
 
+### Additional depositor drafts from intake
+
+**GSE114693 — flux units, assay-specific replication and the missing WT arm**
+
+Hello,
+
+The GSE114693 growth protocol writes 100 mE and mmoles photons. Could you
+confirm the intended numerical photon flux and unit for the RNA-seq cultures?
+Please also map biological cultures to the RNA-seq and ChIP samples separately:
+the RNA-seq records have two biological labels, while each ChIP time point has
+only label 1. The design mentions WT RNA-seq, but no deposited RNA-seq sample
+is labelled WT; which samples or accession provide that arm? Thank you.
+
+**GSE311172 — adapted-population column identity**
+
+Hello,
+
+In addition to the growth conditions requested above, could you map every
+processed-count column to its GSM/SRX/SRR and adapted-population identity?
+Seven listed positions contain five discrepant population prefixes between
+the GEO labels and the A/B count matrix. Please identify the correct labels
+and confirm that the two runs per experiment are technical runs of one
+library, rather than independent biological cultures. Thank you.
+
+**E-MEXP-1657 — unit spelling and paired-array culture provenance**
+
+Hello,
+
+Could you confirm the photon-flux unit in E-MEXP-1657's growth protocol and
+provide the culture-to-array mapping for its 11 paired two-colour arrays?
+Please distinguish the with/without-iron source channels, dye orientations,
+independent cultures and any splits of one culture. The SDRF repeats rows
+for derived files, so we do not count those as additional cultures. Thank you.
+
+**GSE335065 — timed axenic controls and experimental setup**
+
+Hello,
+
+Could you map the nine Se_ax_90/140/190 samples to their actual experimental
+setup and independent cultures? The series includes tube perturbations,
+membrane-separated bioreactors and mixed bioreactors; the timed axenic labels
+do not establish which setup those controls used. Please include culture
+volume/format and harvest growth phase or OD for those samples. Thank you.
+
 ## Verification
 
 Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
@@ -288,10 +367,12 @@ implementation-specific validation remains separate.
 Focused ranking verification: 16 tests passed, including the actual 941-pair
 table, checked-in output replay, source-pin failures, both-side and format/phase
 gaps, unresolved comparisons, duplicate/invalid overlays and exact cell review.
-Independent review of commit `bdb4b15` (DEM-281) accepted the logic and
-returned an output line-ending fix, a bare-OD consistency correction and two
-mutation-test gaps; all are corrected and the fix is returning for confirmation. Final combined
-repository gates and archive intake remain to be recorded.
+Independent review (DEM-281) accepted the final ranking source at `5fcd66d`
+after the output line-ending, bare-OD consistency and vocabulary checks were
+repaired. Its suggested two additional vocabulary tests were added; all 16
+focused tests pass. Final combined repository gates passed: `npm test` 1,148; pytest 510 passed,
+1 skipped and 36 subtests; contract 116 passed, 0 failed, 1 declared skip.
+Archive intake and the remaining field-specific limits are recorded above.
 
 Every filled value carries a quote and location or a dated reply, enters
 as an addendum through intake, and triggers a re-score of the affected pairs. A lab

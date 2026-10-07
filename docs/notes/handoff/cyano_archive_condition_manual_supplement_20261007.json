@@ -1,0 +1,458 @@
+[
+  {
+    "row_id": "CR-157",
+    "dataset": "GSE102914",
+    "field": "light_intensity",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 2 (Zn/ZnO-ENM exposure incubation (5 h, condition at )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE102914&targ=all&form=text&view=full",
+    "snapshot_sha256": "8ec0b093fe68cd6595a76d07d8abaee9b0729ca93fcde0e0cb5c8ee494e74c30",
+    "statement": "The required light_intensity value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-158",
+    "dataset": "GSE102914",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 2 (Zn/ZnO-ENM exposure incubation (5 h, condition at )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE102914&targ=all&form=text&view=full",
+    "snapshot_sha256": "8ec0b093fe68cd6595a76d07d8abaee9b0729ca93fcde0e0cb5c8ee494e74c30",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-159",
+    "dataset": "GSE102914",
+    "field": "light_spectrum",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 2 (Zn/ZnO-ENM exposure incubation (5 h, condition at )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE102914&targ=all&form=text&view=full",
+    "snapshot_sha256": "8ec0b093fe68cd6595a76d07d8abaee9b0729ca93fcde0e0cb5c8ee494e74c30",
+    "statement": "The required light_spectrum value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-160",
+    "dataset": "GSE103462",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 3 (BG11, 30°C, cool fluorescent light 40 µE, entraine)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103462&targ=all&form=text&view=full",
+    "snapshot_sha256": "3f9e41621e63ddd4b89d25b56e25c2fa12821e1f4084ec91bc1432e00a1af709",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-161",
+    "dataset": "GSE103462",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 3 (BG11, 30°C, cool fluorescent light 40 µE, entraine)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103462&targ=all&form=text&view=full",
+    "snapshot_sha256": "3f9e41621e63ddd4b89d25b56e25c2fa12821e1f4084ec91bc1432e00a1af709",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-162",
+    "dataset": "GSE103463",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 4 (Synchronized constant-light growth conditions (all)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103463&targ=all&form=text&view=full",
+    "snapshot_sha256": "94c97c0452ed2ffbb437c12d9c973c26a2d9d0b340b7c59a5ff84b0793efb23e",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-163",
+    "dataset": "GSE103463",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 4 (Synchronized constant-light growth conditions (all)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103463&targ=all&form=text&view=full",
+    "snapshot_sha256": "94c97c0452ed2ffbb437c12d9c973c26a2d9d0b340b7c59a5ff84b0793efb23e",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-164",
+    "dataset": "GSE103644",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 7 (BG11, 30°C, 40 μE cool fluorescent light, entrainm)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103644&targ=all&form=text&view=full",
+    "snapshot_sha256": "4f4ec290e38a69d6777b1832eecffd729e73b561bc96e4f3bb7079a7aa2ac2ed",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-165",
+    "dataset": "GSE103644",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 7 (BG11, 30°C, 40 μE cool fluorescent light, entrainm)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103644&targ=all&form=text&view=full",
+    "snapshot_sha256": "4f4ec290e38a69d6777b1832eecffd729e73b561bc96e4f3bb7079a7aa2ac2ed",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-166",
+    "dataset": "GSE103704",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 8 (BG11, 30°C, 12h light/12h dark, cool fluorescent 4)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103704&targ=all&form=text&view=full",
+    "snapshot_sha256": "f07fbb5cbb00ac5f013d2fda535b8f438a05a3aab56ad7a460363419de32e4fb",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-167",
+    "dataset": "GSE103704",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 8 (BG11, 30°C, 12h light/12h dark, cool fluorescent 4)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103704&targ=all&form=text&view=full",
+    "snapshot_sha256": "f07fbb5cbb00ac5f013d2fda535b8f438a05a3aab56ad7a460363419de32e4fb",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-168",
+    "dataset": "GSE105774",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 16 (BG11, 30°C, 12h/12h light-dark cycle with cool flu)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE105774&targ=all&form=text&view=full",
+    "snapshot_sha256": "bda64264b7b70cbc058e9dbb26e0c7f762bbc7e507523e1bbc23be17f7c31506",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-169",
+    "dataset": "GSE105774",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 16 (BG11, 30°C, 12h/12h light-dark cycle with cool flu)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE105774&targ=all&form=text&view=full",
+    "snapshot_sha256": "bda64264b7b70cbc058e9dbb26e0c7f762bbc7e507523e1bbc23be17f7c31506",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-170",
+    "dataset": "GSE222067",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 29 (0 mM NaCl control (WT and Syn7942/Δsps-ect)); row 30 (300 mM NaCl salt-stress treatment (WT and Syn7942/)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222067&targ=all&form=text&view=full",
+    "snapshot_sha256": "3c09cae803c70b77b3b02ab1eeb59be4599f0b7da8e585d70573fe4332548076",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-171",
+    "dataset": "GSE222067",
+    "field": "light_spectrum",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 29 (0 mM NaCl control (WT and Syn7942/Δsps-ect)); row 30 (300 mM NaCl salt-stress treatment (WT and Syn7942/)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222067&targ=all&form=text&view=full",
+    "snapshot_sha256": "3c09cae803c70b77b3b02ab1eeb59be4599f0b7da8e585d70573fe4332548076",
+    "statement": "The required light_spectrum value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-172",
+    "dataset": "GSE222067",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 29 (0 mM NaCl control (WT and Syn7942/Δsps-ect)); row 30 (300 mM NaCl salt-stress treatment (WT and Syn7942/)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222067&targ=all&form=text&view=full",
+    "snapshot_sha256": "3c09cae803c70b77b3b02ab1eeb59be4599f0b7da8e585d70573fe4332548076",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-173",
+    "dataset": "GSE254350",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 37 (Liquid bubbled culture conditions (RNA-Seq samples)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254350&targ=all&form=text&view=full",
+    "snapshot_sha256": "628e1ac5466f85e47895fd04a710e14b64334d29ddbf7792a6ddbb69dc6fe780",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-174",
+    "dataset": "GSE335065",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 41 (Axenic S. elongatus, non-mBR-tagged control (Se_ax); row 42 (Axenic S. elongatus within membrane bioreactor (Se); row 43 (S. elongatus unit of membrane-separated co-culture); row 44 (Mixed co-culture of S. elongatus + R. toruloides ()",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE335065&targ=all&form=text&view=full",
+    "snapshot_sha256": "a633c9dec86bc8d3d7ea51affe6502e8ed71a04ea6e0d57efe4a1f67a9417f19",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-175",
+    "dataset": "GSE59112",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 55 (Standard LL growth / 12h:12h entrainment prior to )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE59112&targ=all&form=text&view=full",
+    "snapshot_sha256": "bb29c5bbd97a3f4a02145470e03ffc9457c94d7bbcf6ee10f176775e31a5095d",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-176",
+    "dataset": "GSE59112",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 55 (Standard LL growth / 12h:12h entrainment prior to )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE59112&targ=all&form=text&view=full",
+    "snapshot_sha256": "bb29c5bbd97a3f4a02145470e03ffc9457c94d7bbcf6ee10f176775e31a5095d",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-177",
+    "dataset": "GSE79726",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 56 (Control N+ 24h (initial growth before split) / N+ )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79726&targ=all&form=text&view=full",
+    "snapshot_sha256": "4831cd46189d56379a4f53566bc30de3bf3107b1ff712fab194ee05f4268797a",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-178",
+    "dataset": "GSE79726",
+    "field": "light_spectrum",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 56 (Control N+ 24h (initial growth before split) / N+ )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79726&targ=all&form=text&view=full",
+    "snapshot_sha256": "4831cd46189d56379a4f53566bc30de3bf3107b1ff712fab194ee05f4268797a",
+    "statement": "The required light_spectrum value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-179",
+    "dataset": "GSE79726",
+    "field": "growth_phase",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 56 (Control N+ 24h (initial growth before split) / N+ )",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79726&targ=all&form=text&view=full",
+    "snapshot_sha256": "4831cd46189d56379a4f53566bc30de3bf3107b1ff712fab194ee05f4268797a",
+    "statement": "The required growth_phase value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  },
+  {
+    "row_id": "CR-180",
+    "dataset": "GSE89999",
+    "field": "co2",
+    "decision": "accept only as narrow archive-field evidence",
+    "scope": "package B row 57 (RNA-seq samples: clock rescue and rpaA- clock resc)",
+    "reviewer": "Codex coordinator",
+    "date": "2026-10-07",
+    "fields_read": [
+      "Series_summary",
+      "Series_overall_design",
+      "Sample_growth_protocol_ch1",
+      "Sample_treatment_protocol_ch1",
+      "Sample_characteristics_ch1"
+    ],
+    "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE89999&targ=all&form=text&view=full",
+    "snapshot_sha256": "d9245066da03a052be5181b3dbc679b9ccf502d4e701f27585ec0d12d3dc7977",
+    "statement": "The required co2 value for the sampled condition is not stated in the inspected series/protocol/characteristic fields. Initial/exposure OD or elapsed time do not establish harvest phase; light-cycle timing does not establish lamp spectrum or photon flux. This does not establish absence in other archive fields or papers and does not downgrade prior accepted methods evidence."
+  }
+]

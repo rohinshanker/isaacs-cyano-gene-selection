@@ -1,0 +1,2233 @@
+[
+  {
+    "row": 2,
+    "acc": "GSE102914",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Zn/ZnO-ENM exposure incubation (5 h, condition at sampling for array)",
+    "T": [
+      20.0,
+      20.0
+    ],
+    "T_text": "20°C",
+    "I": null,
+    "I_text": "not retrieved",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "EPA Very Soft Water",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "EPA Very Soft Water (pH 6.4 ± 0.3), with 5 mg/L Z-COTE, Z-COTE HP1, or ZnCl2 added, or solvent control",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.27,
+      0.27
+    ],
+    "od_nm": 730,
+    "replicates": "4 replicates for each condition [GEO GSE102914 !Sample_treatment_protocol_ch1 (group 1); quote: \"with 4 replicates for e",
+    "treatments": [
+      "zinc / ZnO exposure",
+      "20 °C exposure medium"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 3,
+    "acc": "GSE103462",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "BG11, 30°C, cool fluorescent light 40 µE, entrained then constant light",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "continuous (after diel entrainment)",
+    "phot": null,
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated as an explicit replicate-count sentence; 2 samples labeled \"replicate 1\" and \"replicate 2\" per genotype/timep",
+    "treatments": [],
+    "group": "standard"
+  },
+  {
+    "row": 4,
+    "acc": "GSE103463",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Synchronized constant-light growth conditions (all samples, group 1)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "continuous (after diel entrainment)",
+    "phot": null,
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated as an explicit number; 2 replicate samples listed per genotype/time-point combination in GEO sample list [GEO",
+    "treatments": [],
+    "group": "standard"
+  },
+  {
+    "row": 7,
+    "acc": "GSE103644",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "BG11, 30°C, 40 μE cool fluorescent light, entrainment then constant light with theophylline induction",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "continuous (after diel entrainment)",
+    "phot": null,
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated; 1 sample per genotype/time-point condition in GEO sample list [GEO GSE103644 sample list (group 1); quote: \"",
+    "treatments": [
+      "theophylline induction"
+    ],
+    "group": "standard"
+  },
+  {
+    "row": 8,
+    "acc": "GSE103704",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "BG11, 30°C, 12h light/12h dark, cool fluorescent 40 µE, flask culture - WT and rel- strain",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated; N samples per condition in GEO sample list (2 biological replicates labeled 'replicate 1' and 'replicate 2' ",
+    "treatments": [
+      "dark time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 9,
+    "acc": "GSE104203",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Low Light (continuous 12L:12D baseline)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      50.0,
+      50.0
+    ],
+    "I_text": "constant 50 µmol photons m-2 s-1",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air, constantly bubbled",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "warm white LED",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11M media supplemented with 10 mM HEPES pH 8.0",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 750,
+    "replicates": "2 biological replicates [GEO GSE104203 !Sample_growth_protocol_ch1 (group 1); quote: \"The experiment was repeated twice ",
+    "treatments": [],
+    "group": "diel"
+  },
+  {
+    "row": 10,
+    "acc": "GSE104203",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Clear Day (continuous 12L:12D, parabolic natural-light profile)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      600.0,
+      600.0
+    ],
+    "I_text": "light intensity varied parabolically, reaching a maximum of 600 µmol photons m-2 s-1",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air, constantly bubbled",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "warm white LED",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11M media supplemented with 10 mM HEPES pH 8.0",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 750,
+    "replicates": "2 biological replicates [GEO GSE104203 !Sample_growth_protocol_ch1 (group 1); quote: \"The experiment was repeated twice ",
+    "treatments": [
+      "natural light profile"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 11,
+    "acc": "GSE104203",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "High Light pulse (10-fold increase applied to Low Light-acclimated culture)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": null,
+    "I_text": "Low Light culture intensity increased 10-fold for 1 hour, equal to the Clear Day intensity between 8 and 9 hr after dawn",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air, constantly bubbled",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "warm white LED",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11M media supplemented with 10 mM HEPES pH 8.0",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 750,
+    "replicates": "2 biological replicates [GEO GSE104203 !Sample_growth_protocol_ch1 (group 1); quote: \"The experiment was repeated twice ",
+    "treatments": [
+      "high-light pulse"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 12,
+    "acc": "GSE104203",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Shade pulse (10-fold decrease applied to Clear Day-acclimated culture)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": null,
+    "I_text": "Clear Day culture intensity decreased 10-fold for 1 hour, defined by dividing the Clear Day profile by 10 between 8 and 9 hr after dawn",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air, constantly bubbled",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "warm white LED",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11M media supplemented with 10 mM HEPES pH 8.0",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 750,
+    "replicates": "2 biological replicates [GEO GSE104203 !Sample_growth_protocol_ch1 (group 1); quote: \"The experiment was repeated twice ",
+    "treatments": [
+      "shade pulse"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 16,
+    "acc": "GSE105774",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "BG11, 30°C, 12h/12h light-dark cycle with cool fluorescent light",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated; 2 samples per condition (replicate 1 and replicate 2) in GEO sample list [GEO GSE105774 sample list (group 1",
+    "treatments": [
+      "dark time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 17,
+    "acc": "GSE122841",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Normal growth condition (no H2O2)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 ºC",
+    "I": null,
+    "I_text": "not reported",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": null,
+    "conditioned": null,
+    "n_altered": null,
+    "medium_text": "not reported",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 730,
+    "replicates": "not stated; 1 sample per condition in GEO sample list [GEO GSE122841 sample list (group 1); quote: \"GSM3486865 | WT_Norm",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 18,
+    "acc": "GSE122841",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "H2O2 oxidative stress (2.5 mM, 2 days)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 ºC",
+    "I": null,
+    "I_text": "not reported",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium containing 2.5 mM H2O2",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.3,
+      0.35
+    ],
+    "od_nm": 730,
+    "replicates": "not stated; 1 sample per condition in GEO sample list [GEO GSE122841 sample list (group 1); quote: \"GSM3486866 | WT_Stre",
+    "treatments": [
+      "oxidative (H2O2)"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 19,
+    "acc": "GSE140121",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Normal condition RNA-seq samples (WT Normal, TA Normal)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      80.0,
+      120.0
+    ],
+    "I_text": "80–120 μE m–2 s–1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": "exponential",
+    "od": [
+      0.3,
+      0.35
+    ],
+    "od_nm": 730,
+    "replicates": "triplicate (paired-end sequencing) [GEO GSE140121 Series_overall_design; quote: \"Cyanobacterial mRNA profiles of normal ",
+    "treatments": [],
+    "group": "standard"
+  },
+  {
+    "row": 20,
+    "acc": "GSE140121",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "H2O2-stressed RNA-seq samples (WT Stressed, TA Stressed)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      80.0,
+      120.0
+    ],
+    "I_text": "80–120 μE m–2 s–1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium with 2.5 mM H2O2 (and 2 mM IPTG for TA induction)",
+    "fmt": "planktonic liquid",
+    "phase": "exponential",
+    "od": [
+      0.3,
+      0.35
+    ],
+    "od_nm": 730,
+    "replicates": "triplicate (paired-end sequencing) [GEO GSE140121 Series_overall_design; quote: \"Cyanobacterial mRNA profiles of normal ",
+    "treatments": [
+      "oxidative (H2O2)",
+      "IPTG induction"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 21,
+    "acc": "GSE18902",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Continuous culture growth conditions (shared by circadian time-course and novobiocin treatment experiments)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30º C",
+    "I": [
+      25.0,
+      25.0
+    ],
+    "I_text": "~25 µmol photons m-2 s-1 white light",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air, bubbled at 500 ml/min",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "modified BG-11 medium (0.0010 g/liter FeNH4 citrate instead of 0.0012 g/liter, citric acid supplemented at 0.00066 g/liter)",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.15,
+      0.15
+    ],
+    "od_nm": 750,
+    "replicates": "not retrieved [full text not retrievable in this session: PMC2799730 sits outside the Europe PMC open-access subset (ful",
+    "treatments": [
+      "novobiocin (subset)"
+    ],
+    "group": "standard"
+  },
+  {
+    "row": 22,
+    "acc": "GSE205443",
+    "dtype": "fitness screen (RB-TnSeq)",
+    "strain": "PCC 7942",
+    "label": "Experiment 1 RB-TnSeq library v1.0 - bubbling tube biofilm formation (fresh BG-11)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      5.0,
+      5.0
+    ],
+    "I_text": "5 μmol photons m-2 s-1",
+    "co2": 3.0,
+    "co2_text": "3% CO2 (bubbled, hydrated)",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 with HEPES",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.5,
+      0.5
+    ],
+    "od_nm": 750,
+    "replicates": "triplicate bubbling tubes (biological replicates pooled prior to DNA extraction) [paper PMC9260433, RB-TnSeq Experiment;",
+    "treatments": [
+      "biofilm assay"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 23,
+    "acc": "GSE205443",
+    "dtype": "fitness screen (RB-TnSeq)",
+    "strain": "PCC 7942",
+    "label": "Experiment 2 RB-TnSeq library v2.0 - bubbling tube biofilm formation (fresh BG-11 or Conditioned Media)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      5.0,
+      5.0
+    ],
+    "I_text": "5 μmol photons m-2 s-1",
+    "co2": 3.0,
+    "co2_text": "3% CO2 (bubbled, hydrated), same conditions as experiment 1",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": true,
+    "n_altered": false,
+    "medium_text": "fresh BG-11 with HEPES or WT conditioned BG-11 media with HEPES",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.5,
+      0.5
+    ],
+    "od_nm": 750,
+    "replicates": "triplicate bubbling tubes (biological replicates pooled prior to DNA extraction) [paper PMC9260433, RB-TnSeq Experiment;",
+    "treatments": [
+      "biofilm assay",
+      "conditioned medium (subset)"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 24,
+    "acc": "GSE205443",
+    "dtype": "fitness screen (RB-TnSeq)",
+    "strain": "PCC 7942",
+    "label": "Experiment 2 RB-TnSeq library v2.0 - flask biofilm formation (fresh BG-11 or Conditioned Media)",
+    "T": null,
+    "T_text": "room temperature",
+    "I": [
+      5.0,
+      5.0
+    ],
+    "I_text": "5 μmol photons m-2 s-1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": true,
+    "n_altered": false,
+    "medium_text": "fresh BG-11 with HEPES or WT conditioned BG-11 media with HEPES",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.5,
+      0.5
+    ],
+    "od_nm": 750,
+    "replicates": "not stated for flask format directly; same resuspended pooled library split across vessels [paper PMC9260433, RB-TnSeq E",
+    "treatments": [
+      "biofilm assay",
+      "conditioned medium (subset)"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 29,
+    "acc": "GSE222067",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "0 mM NaCl control (WT and Syn7942/Δsps-ect)",
+    "T": [
+      37.0,
+      37.0
+    ],
+    "T_text": "37°C",
+    "I": [
+      100.0,
+      100.0
+    ],
+    "I_text": "approximately 100 μmol photons m−2 s−1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 liquid medium with 0 mM NaCl (control)",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "three biological replicates [paper PMC9932913, Methods - Transcriptomic analysis; quote: \"Each sample had three biologic",
+    "treatments": [],
+    "group": "elevated"
+  },
+  {
+    "row": 30,
+    "acc": "GSE222067",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "300 mM NaCl salt-stress treatment (WT and Syn7942/Δsps-ect)",
+    "T": [
+      37.0,
+      37.0
+    ],
+    "T_text": "37°C",
+    "I": [
+      100.0,
+      100.0
+    ],
+    "I_text": "approximately 100 μmol photons m−2 s−1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium containing 300 mM NaCl (experimental), added for 4 days",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "three biological replicates [paper PMC9932913, Methods - Transcriptomic analysis; quote: \"Each sample had three biologic",
+    "treatments": [
+      "salt (300 mM NaCl)"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 31,
+    "acc": "GSE225426",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Standard BG11 photoautotrophic growth prior to/at time of salt or streptomycin stress sampling",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30ºC",
+    "I": [
+      70.0,
+      70.0
+    ],
+    "I_text": "70 µE m-2 s-1",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "cool white fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "blue-green 11 (BG11) media",
+    "fmt": null,
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated; 2 samples per condition (A, B) in GEO sample list [GEO GSE225426 sample table (group 1); quote: \"GSM7048518 ",
+    "treatments": [
+      "salt or streptomycin stress"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 32,
+    "acc": "GSE227397",
+    "dtype": "transcriptomics",
+    "strain": "Synechococcus elongatus",
+    "label": "RNA-seq WT and del(xpk), 4 timepoints, 12-h L/D cycle (GSE227397 RNA-seq samples)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": null,
+    "I_text": "not reported in GEO growth protocol; paper methods report 50 µmol m−2 s−1",
+    "co2": null,
+    "co2_text": "not reported in GEO growth protocol; paper RNA-seq section does not specify NaHCO3 supplementation",
+    "cont": "diel",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "standard BG11",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      1.0,
+      1.0
+    ],
+    "od_nm": 730,
+    "replicates": "3 biological replicates per genotype per timepoint (stated) [GEO GSE227397 !Sample_growth_protocol_ch1 (group 1); quote:",
+    "treatments": [
+      "diel time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 33,
+    "acc": "GSE237858",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30ºC (constant)",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "~40µE of illumination",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 (plates), no ZnCl2 added",
+    "fmt": "solid plate",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per genotype condition (stated) [paper PMID 38739791 (PMC11127020), Methods: RNA Preparation and",
+    "treatments": [],
+    "group": "other",
+    "archiveReview": {
+      "intakeIds": [
+        "CR-019"
+      ],
+      "constraint": "Lamp description restored from accepted Package B and re-fetched GEO; no spectrum-class equivalence or resolution of archive/paper photon-flux disagreement."
+    }
+  },
+  {
+    "row": 34,
+    "acc": "GSE237858",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30ºC (constant)",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "~40µE of illumination",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 (plates) + 10µM ZnCl2 (for kaiA induction)",
+    "fmt": "solid plate",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per genotype condition (stated) [paper PMID 38739791 (PMC11127020), Methods: RNA Preparation and",
+    "treatments": [
+      "ZnCl2 induction"
+    ],
+    "group": "other",
+    "archiveReview": {
+      "intakeIds": [
+        "CR-019"
+      ],
+      "constraint": "Lamp description restored from accepted Package B and re-fetched GEO; no spectrum-class equivalence or resolution of archive/paper photon-flux disagreement."
+    }
+  },
+  {
+    "row": 35,
+    "acc": "GSE252562",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40µE m-2 s-1 (samples had been exposed to ~60h of light at this intensity prior to collection; growth protocol separately states ~40µE)",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "diel",
+    "phot": null,
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "solid BG-11 medium (plates)",
+    "fmt": "solid plate",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per condition for RNA-seq [paper PMC11473183, Fig. 4 legend (panel A); quote: \"Diagram showing t",
+    "treatments": [
+      "short-day photoperiod"
+    ],
+    "group": "diel",
+    "archiveReview": {
+      "intakeIds": [
+        "CR-008",
+        "CR-009",
+        "CR-010",
+        "CR-011"
+      ],
+      "constraint": "Aggregate includes 12 unambiguous short-day 1/4-cycle samples and 6 contested eight-cycle samples GSM8003249-3251/3267-3269. No unconditional photoperiod; do not transfer contested samples to the long-day condition."
+    }
+  },
+  {
+    "row": 36,
+    "acc": "GSE252562",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Long-day photoperiod (LD16:8), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40µE m-2 s-1 (samples had been exposed to ~60h of light at this intensity prior to collection; growth protocol separately states ~40µE)",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "diel",
+    "phot": "16:8",
+    "spec": "fluorescent (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "solid BG-11 medium (plates)",
+    "fmt": "solid plate",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per condition for RNA-seq [paper PMC11473183, Fig. 4 legend (panel A); quote: \"Diagram showing t",
+    "treatments": [
+      "long-day photoperiod"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 37,
+    "acc": "GSE254350",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Liquid bubbled culture conditions (RNA-Seq samples: WT, pilB::Tn5, sigF1::Mu, sigF2-mutant at D1 and D4)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      30.0,
+      30.0
+    ],
+    "I_text": "∼30 μmol photons m −2 s −1",
+    "co2": 3.0,
+    "co2_text": "air enriched with 3% CO2 (bubbling)",
+    "cont": null,
+    "phot": null,
+    "spec": "incandescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "mineral medium BG-11",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "4 biological replicates per genotype per day (rep1-4), as named in sample titles [GEO GSE254350 sample list; quote: \"GSM",
+    "treatments": [
+      "biofilm mutants"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 38,
+    "acc": "GSE288532",
+    "dtype": "transcriptomics",
+    "strain": "Synechococcus elongatus",
+    "label": "cscB/SPS sucrose-production circadian time-course (continuous light, both subjective day and night groups)",
+    "T": [
+      27.0,
+      31.0
+    ],
+    "T_text": "29 ± 2°C",
+    "I": [
+      200.0,
+      200.0
+    ],
+    "I_text": "approximately 200 μE m⁻² s⁻¹",
+    "co2": 2.0,
+    "co2_text": "nitrogen gas containing 2% CO2 (sparged)",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "full-spectrum LED",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 medium supplemented with 1 g/L HEPES (pH 8.4, adjusted with NaOH), 25 mg/L chloramphenicol, and 25 mg/L kanamycin (maintenance cultures); antibiotics removed and cells resuspended in fresh BG-11 without antibiotics prior to the production experiment, with 1 mM IPTG added to induce sps/cscB",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.1,
+      0.1
+    ],
+    "od_nm": 750,
+    "replicates": "three biological replicates per condition/time point [GEO GSE288532 !Sample_treatment_protocol_ch1 (group 1); also paper",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 39,
+    "acc": "GSE311172",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Steady-state turbidostat culture, all RNA-seq samples",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      760.0,
+      760.0
+    ],
+    "I_text": "760 μmol photons m⁻² s⁻¹",
+    "co2": 2.0,
+    "co2_text": "2% CO2 (baseline sparging with 98:2 N2/CO2 gas mixture)",
+    "cont": null,
+    "phot": null,
+    "spec": "narrow-band LED 630/680 nm",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium (antibiotics removed prior to experiment)",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.08,
+      0.08
+    ],
+    "od_nm": 730,
+    "replicates": "23 deposited samples/experiments, each with 2 technical SRA runs; independent biological-culture count is not reported. Population-prefix discrepancies in the count matrix remain unresolved.",
+    "treatments": [
+      "O2 saturation varied"
+    ],
+    "group": "elevated",
+    "archiveReview": {
+      "intakeIds": [
+        "CR-032",
+        "CR-033",
+        "CR-034"
+      ],
+      "constraint": "Continuous cultivation is not evidence of continuous illumination; keep unknown schedule and the count-column identity conflict."
+    }
+  },
+  {
+    "row": 40,
+    "acc": "GSE327989",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Standard RNA-seq growth condition (WT and FDBR-expressing strains, Day4 harvest)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      60.0,
+      60.0
+    ],
+    "I_text": "60 μmol photons m−2·s−1",
+    "co2": 2.0,
+    "co2_text": "2% CO2, continuous bubbling",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "liquid BG-11 medium, supplemented with 5 µM IPTG",
+    "fmt": "planktonic liquid",
+    "phase": "exponential",
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per strain [GEO GSE327989 Series_overall_design; quote: \"Three biological replicates were analyz",
+    "treatments": [
+      "IPTG induction"
+    ],
+    "group": "standard"
+  },
+  {
+    "row": 41,
+    "acc": "GSE335065",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Axenic S. elongatus, non-mBR-tagged control (Se_ax_*)",
+    "T": [
+      28.0,
+      32.0
+    ],
+    "T_text": "30 ± 2°C",
+    "I": [
+      200.0,
+      200.0
+    ],
+    "I_text": "~200 µmol photons m⁻² s⁻¹",
+    "co2": 2.0,
+    "co2_text": "2% CO₂ in nitrogen",
+    "cont": null,
+    "phot": null,
+    "spec": "LED (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": true,
+    "medium_text": "BG11 + 0.09 g/L yeast nitrogen base (w/o amino acids/ammonium sulfate) + 0.264 g/L ammonium sulfate + 0.174 g/L K2HPO4 + 3 g/L HEPES, pH 8.3",
+    "fmt": null,
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated as a stated replicate count for this subset; 3 samples per condition (_1,_2,_3) in GEO sample list [GEO GSE33",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 42,
+    "acc": "GSE335065",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Axenic S. elongatus within membrane bioreactor (Se_ax_mBR_*)",
+    "T": [
+      28.0,
+      32.0
+    ],
+    "T_text": "30 ± 2°C",
+    "I": [
+      200.0,
+      200.0
+    ],
+    "I_text": "~200 µmol photons m⁻² s⁻¹",
+    "co2": 2.0,
+    "co2_text": "2% CO₂ in nitrogen",
+    "cont": null,
+    "phot": null,
+    "spec": "LED (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": true,
+    "medium_text": "BG11 + 0.09 g/L yeast nitrogen base (w/o amino acids/ammonium sulfate) + 0.264 g/L ammonium sulfate + 0.174 g/L K2HPO4 + 3 g/L HEPES, pH 8.3",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per time point stated for the mBR experiment [GEO GSE335065 !Series_overall_design; quote: \"memb",
+    "treatments": [
+      "membrane bioreactor"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 43,
+    "acc": "GSE335065",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "S. elongatus unit of membrane-separated co-culture bioreactor (Se_CC_mBR_*)",
+    "T": [
+      28.0,
+      32.0
+    ],
+    "T_text": "30 ± 2°C",
+    "I": [
+      200.0,
+      200.0
+    ],
+    "I_text": "~200 µmol photons m⁻² s⁻¹",
+    "co2": 2.0,
+    "co2_text": "2% CO₂ in nitrogen",
+    "cont": null,
+    "phot": null,
+    "spec": "LED (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": true,
+    "medium_text": "BG11 + 0.09 g/L yeast nitrogen base (w/o amino acids/ammonium sulfate) + 0.264 g/L ammonium sulfate + 0.174 g/L K2HPO4 + 3 g/L HEPES, pH 8.3",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per time point stated for the mBR experiment [GEO GSE335065 !Series_overall_design; quote: \"memb",
+    "treatments": [
+      "membrane-separated co-culture"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 44,
+    "acc": "GSE335065",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Mixed co-culture of S. elongatus + R. toruloides (Se_Rt_CC_*)",
+    "T": [
+      28.0,
+      32.0
+    ],
+    "T_text": "30 ± 2°C",
+    "I": [
+      200.0,
+      200.0
+    ],
+    "I_text": "~200 µmol photons m⁻² s⁻¹",
+    "co2": 2.0,
+    "co2_text": "2% CO₂ in nitrogen",
+    "cont": null,
+    "phot": null,
+    "spec": "LED (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": true,
+    "medium_text": "BG11 + 0.09 g/L yeast nitrogen base (w/o amino acids/ammonium sulfate) + 0.264 g/L ammonium sulfate + 0.174 g/L K2HPO4 + 3 g/L HEPES, pH 8.3",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not explicitly stated as a replicate count for the mixed configuration (overall design says 'sampled at the same time po",
+    "treatments": [
+      "mixed co-culture"
+    ],
+    "group": "biofilm"
+  },
+  {
+    "row": 45,
+    "acc": "GSE45762",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Standard BG-11 large-scale FFA production cultivation (all strains, all time points)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      60.0,
+      60.0
+    ],
+    "I_text": "60 μmol photons m-2 s-1",
+    "co2": 1.0,
+    "co2_text": "1% CO2 supplemented air, bubbled",
+    "cont": null,
+    "phot": null,
+    "spec": "mixed fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 media",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "3 biological replicates per strain/time point, except SE02 at 100h which had only 2 replicates [GEO GSE45762 !Series_ove",
+    "treatments": [
+      "IPTG induction"
+    ],
+    "group": "other"
+  },
+  {
+    "row": 46,
+    "acc": "GSE50908",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "ΔrpaA turbidostat continuous-light timecourse (LL 24-72h)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30º C",
+    "I": [
+      25.0,
+      25.0
+    ],
+    "I_text": "~25 µmol photons m-2 s-1 white light",
+    "co2": 1.0,
+    "co2_text": "bubbled with 500 ml min-1 1% CO2 in air",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "modified BG-11 medium described in Vijayan et al 2009",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.15,
+      0.15
+    ],
+    "od_nm": 750,
+    "replicates": "not stated; 1 sample per timepoint in GEO sample list (labeled rep1) [GEO GSE50908 sample list (group 1); quote: \"GSM123",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 47,
+    "acc": "GSE50919",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Turbidostat continuous-light culture, WT and ΔrpaA pooled timepoints",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30º C",
+    "I": [
+      25.0,
+      25.0
+    ],
+    "I_text": "~25 µmol photons m-2 s-1",
+    "co2": 1.0,
+    "co2_text": "500 ml min-1 1% CO2 in air (bubbled)",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "modified BG-11 medium (as in Vijayan et al 2009); cells initially inoculated with 5 µg/ml spectinomycin and 5 µg/ml chloramphenicol, then diluted with antibiotic-free modified BG-11",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.15,
+      0.15
+    ],
+    "od_nm": 750,
+    "replicates": "not retrieved [full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (ful",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 48,
+    "acc": "GSE50920",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "BG-11M, 100 µE cool fluorescent light, 1% CO2, 24-68h timecourse (both strains + pool)",
+    "T": null,
+    "T_text": "not retrieved",
+    "I": [
+      100.0,
+      100.0
+    ],
+    "I_text": "100 µE m-2 s-1 (µmoles photons m-2 s-1)",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air",
+    "cont": "continuous (after diel entrainment)",
+    "phot": null,
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11M media, supplemented with 10 mM HEPES-KOH pH 8.0",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 750,
+    "replicates": "not stated; 2 samples per condition in GEO sample list [GEO GSE50920 sample list (group 1); quote: \"GSM1232428 | rpaA-cl",
+    "treatments": [
+      "circadian time course",
+      "IPTG induction"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 53,
+    "acc": "GSE51112",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Standard BG-11M, 30°C, 100 μE cool fluorescent light, 1% CO2 (all strains/timepoints)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      100.0,
+      100.0
+    ],
+    "I_text": "100 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air (bubbling)",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11M supplemented with 10 mM HEPES-KOH pH 8.0 (plus strain-specific antibiotics during initial inoculation: spectinomycin/chloramphenicol for EOC113, or gentamycin/chloramphenicol/kanamycin for EOC339/EOC345/EOC346; antibiotics absent after dilution)",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.3,
+      0.3
+    ],
+    "od_nm": 750,
+    "replicates": "not retrieved [full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (ful",
+    "treatments": [
+      "IPTG induction"
+    ],
+    "group": "standard"
+  },
+  {
+    "row": 54,
+    "acc": "GSE52486",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "WT LL circadian timecourse (turbidostat, continuous light after entrainment)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30º C",
+    "I": [
+      25.0,
+      25.0
+    ],
+    "I_text": "~25 µmol photons m-2 s-1",
+    "co2": 1.0,
+    "co2_text": "1% CO2 in air, bubbled at 500 ml min-1",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "modified BG-11 medium (as described in Vijayan et al 2009)",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.15,
+      0.15
+    ],
+    "od_nm": 750,
+    "replicates": "not stated; 1 sample per timepoint in GEO sample list [GEO GSE52486 sample list (group 1); quote: \"GSM1267750 | WT_LL_36",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 55,
+    "acc": "GSE59112",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Standard LL growth / 12h:12h entrainment prior to microarray sampling",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30C",
+    "I": [
+      50.0,
+      55.0
+    ],
+    "I_text": "50-55 µmol photons m-2 s-1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous (after diel entrainment)",
+    "phot": null,
+    "spec": "cool white fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "modified BG-11M liquid medium supplemented with 20 mM HEPES pH 8.0",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated; 12 samples total = 2 genotypes × 6 timepoints, 1 sample per genotype/timepoint in GEO sample list (no biolog",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 56,
+    "acc": "GSE79726",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "Control N+ 24h (initial growth before split) / N+ and N- 48h RNA-seq samples",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      100.0,
+      100.0
+    ],
+    "I_text": "100 μE m-2 s-1 (GEO); 100 μmol photons m−2 s−1 (paper)",
+    "co2": null,
+    "co2_text": "not reported for RNA-seq growth; separate photobioreactor experiment used 5% CO2 (v/v) and 95% air (v/v)",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": true,
+    "medium_text": "BG-11 medium (control/N+); nitrogen-free BG-11 medium (N-: no added NaNO3) for starvation",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "biological duplicate samples (2 per condition) [paper PMC4973221, Methods: Cyanobacterial strain and growth conditions; ",
+    "treatments": [
+      "nitrogen starvation (subset)"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 57,
+    "acc": "GSE89999",
+    "dtype": "transcriptomics",
+    "strain": "PCC 7942",
+    "label": "RNA-seq samples: clock rescue and rpaA- clock rescue strains, light/dark entrainment time course",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 μE m-2 s-1 (μmoles photons m-2 s-1)",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "cool fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": "steady-state (held)",
+    "od": [
+      0.2,
+      0.2
+    ],
+    "od_nm": 750,
+    "replicates": "not reported [checked: GEO GSE89999; PMID 28430105; PMC5400509; doi:10.7554/elife.23210]",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 58,
+    "acc": "PXD000510",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
+    "T": null,
+    "T_text": "not retrieved",
+    "I": null,
+    "I_text": "not retrieved",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": "diel",
+    "phot": null,
+    "spec": null,
+    "medium": null,
+    "conditioned": null,
+    "n_altered": null,
+    "medium_text": "not retrieved",
+    "fmt": null,
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not retrieved [full text not retrievable in this session: PMC4125736 sits outside the Europe PMC open-access subset (ful",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  },
+  {
+    "row": 59,
+    "acc": "PXD005105",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "WT vs L1118 proteomics growth condition (1-L Roux bottle, production culture)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      100.0,
+      100.0
+    ],
+    "I_text": "100-μmol photons m−2 s−1",
+    "co2": 5.0,
+    "co2_text": "5% (vol/vol) CO2",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "cool white fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium (Sigma) supplemented with 10 mM TES, pH 8.2",
+    "fmt": "planktonic liquid",
+    "phase": "exponential",
+    "od": null,
+    "od_nm": null,
+    "replicates": "triplicates (biological) [paper PMC5167140, Methods; quote: \"Cyanobacterial cells (500 mL) were grown in triplicates in ",
+    "treatments": [
+      "limonene production"
+    ],
+    "group": "standard"
+  },
+  {
+    "row": 61,
+    "acc": "PXD005851",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "S. elongatus PCC 7942 arm of the 48-organism acetylation survey",
+    "T": [
+      22.0,
+      22.0
+    ],
+    "T_text": "22 °C",
+    "I": null,
+    "I_text": "not reported",
+    "co2": null,
+    "co2_text": "not reported as a CO2 regime; atmosphere given only as 'Aerobic'",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912); nitrogen source and organic carbon not itemised",
+    "fmt": "planktonic liquid",
+    "phase": "stationary",
+    "od": null,
+    "od_nm": null,
+    "replicates": "not reported [checked: PRIDE PXD005851; PMID 29184018; PMC5705920; doi:10.1128/mbio.01894-17]",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 62,
+    "acc": "PXD011485",
+    "dtype": "proteomics",
+    "strain": "PCC 11801",
+    "label": "0.04% CO2 (ambient, iTRAQ 114)",
+    "T": [
+      38.0,
+      38.0
+    ],
+    "T_text": "38 °C",
+    "I": [
+      400.0,
+      400.0
+    ],
+    "I_text": "400 µmole photon.m-2.s-1",
+    "co2": 0.04,
+    "co2_text": "0.04% CO2",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "non-buffered BG-11 medium (initial pH = 7.5)",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.8,
+      0.8
+    ],
+    "od_nm": 730,
+    "replicates": "3 biological replicates [PRIDE PXD011485 sampleProcessingProtocol; quote: \"Three independent biological replicates for e",
+    "treatments": [
+      "ambient CO2"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 63,
+    "acc": "PXD011485",
+    "dtype": "proteomics",
+    "strain": "PCC 11801",
+    "label": "0.5% CO2 (iTRAQ 115)",
+    "T": [
+      38.0,
+      38.0
+    ],
+    "T_text": "38 °C",
+    "I": [
+      400.0,
+      400.0
+    ],
+    "I_text": "400 µmole photon.m-2.s-1",
+    "co2": 0.5,
+    "co2_text": "0.5% CO2",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "non-buffered BG-11 medium (initial pH = 7.5)",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.8,
+      0.8
+    ],
+    "od_nm": 730,
+    "replicates": "3 biological replicates [PRIDE PXD011485 sampleProcessingProtocol; quote: \"Three independent biological replicates for e",
+    "treatments": [
+      "0.5% CO2"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 64,
+    "acc": "PXD011485",
+    "dtype": "proteomics",
+    "strain": "PCC 11801",
+    "label": "1% CO2 (iTRAQ 116)",
+    "T": [
+      38.0,
+      38.0
+    ],
+    "T_text": "38 °C",
+    "I": [
+      400.0,
+      400.0
+    ],
+    "I_text": "400 µmole photon.m-2.s-1",
+    "co2": 1.0,
+    "co2_text": "1% CO2",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "non-buffered BG-11 medium (initial pH = 7.5)",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.8,
+      0.8
+    ],
+    "od_nm": 730,
+    "replicates": "3 biological replicates [PRIDE PXD011485 sampleProcessingProtocol; quote: \"Three independent biological replicates for e",
+    "treatments": [
+      "1% CO2"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 65,
+    "acc": "PXD011485",
+    "dtype": "proteomics",
+    "strain": "PCC 11801",
+    "label": "10% CO2 (iTRAQ 117)",
+    "T": [
+      38.0,
+      38.0
+    ],
+    "T_text": "38 °C",
+    "I": [
+      400.0,
+      400.0
+    ],
+    "I_text": "400 µmole photon.m-2.s-1",
+    "co2": 10.0,
+    "co2_text": "10% CO2",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "non-buffered BG-11 medium (initial pH = 7.5)",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.8,
+      0.8
+    ],
+    "od_nm": 730,
+    "replicates": "3 biological replicates [PRIDE PXD011485 sampleProcessingProtocol; quote: \"Three independent biological replicates for e",
+    "treatments": [
+      "10% CO2"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 66,
+    "acc": "PXD014590",
+    "dtype": "proteomics",
+    "strain": "UTEX 2973",
+    "label": "N-starvation degradation and re-synthesis time course (UTEX 2973), growth/culture conditions",
+    "T": [
+      37.0,
+      37.0
+    ],
+    "T_text": "37 °C",
+    "I": [
+      500.0,
+      500.0
+    ],
+    "I_text": "500 μmol photons m-2 s-1",
+    "co2": 5.0,
+    "co2_text": "5% CO2",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": true,
+    "medium_text": "BG11 growth medium containing 1.76 M NaNO3 (BG11+N); for N starvation, BG-11 0 (NaNO3 replaced with equimolar NaCl); 10 mM NaNO3 added at 4h to initiate re-synthesis",
+    "fmt": "planktonic liquid",
+    "phase": "exponential",
+    "od": null,
+    "od_nm": null,
+    "replicates": "three biological replicates [paper PMC6722726, Section 2.2 Nitrogen Starvation Conditions; quote: \"Samples were collecte",
+    "treatments": [
+      "nitrogen starvation and resupply"
+    ],
+    "group": "elevated"
+  },
+  {
+    "row": 67,
+    "acc": "PXD019731",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "Growth light (GL) condition",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      40.0,
+      40.0
+    ],
+    "I_text": "40 µmol photons m-2 s-1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous",
+    "phot": null,
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "Three biologically independent experiments [paper, Fig. 3 legend; quote: \"Transparent symbols represent three independen",
+    "treatments": [],
+    "group": "standard"
+  },
+  {
+    "row": 68,
+    "acc": "PXD019731",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "High light (HL) condition",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      300.0,
+      300.0
+    ],
+    "I_text": "300 µmol photons m-2 s-1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      0.6,
+      0.6
+    ],
+    "od_nm": 750,
+    "replicates": "Three biologically independent experiments [paper, Fig. 3 legend; quote: \"Transparent symbols represent three independen",
+    "treatments": [
+      "high light"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 69,
+    "acc": "PXD019731",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "Low light (LL) recovery condition, days 1-5 post HL-to-LL transfer",
+    "T": null,
+    "T_text": "not reported (30°C is stated only for the preceding 14-day GL/HL culturing phase; not explicitly restated for the LL transfer phase)",
+    "I": [
+      20.0,
+      20.0
+    ],
+    "I_text": "20 µmol photons m-2 s-1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium (fresh)",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "Three biologically independent experiments [paper, Fig. 3 legend; quote: \"Transparent symbols represent three independen",
+    "treatments": [
+      "low-light recovery"
+    ],
+    "group": "stress"
+  },
+  {
+    "row": 70,
+    "acc": "PXD023591",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "All samples (growth conditions not described in available metadata)",
+    "T": null,
+    "T_text": "not retrieved",
+    "I": null,
+    "I_text": "not retrieved",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": null,
+    "conditioned": null,
+    "n_altered": null,
+    "medium_text": "not retrieved",
+    "fmt": null,
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated; 3 samples per condition in PRIDE sample labeling list [PRIDE PXD023591 sampleProcessingProtocol, TMT Labelin",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 71,
+    "acc": "PXD027430",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "not reported",
+    "T": null,
+    "T_text": "not retrieved",
+    "I": null,
+    "I_text": "not retrieved",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": null,
+    "conditioned": null,
+    "n_altered": null,
+    "medium_text": "not retrieved",
+    "fmt": null,
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not retrieved [full text not retrievable in this session: PMC9157067 sits outside the Europe PMC open-access subset (ful",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 72,
+    "acc": "PXD030282",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "Standard growth/cultivation condition (L1118 and engineered strains, flask/Roux bottle stage)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      75.0,
+      100.0
+    ],
+    "I_text": "75 μmol photons m-2 s-1 (flask stage), 100 μmol photons m-2 s-1 (Roux bottle stage)",
+    "co2": 5.0,
+    "co2_text": "5% CO2 bubbling at 50 mL/min",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium supplemented with 10 mM TES, pH 8.2",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "three biological replicates [PRIDE PXD030282 sampleProcessingProtocol; also paper PMC10521692 Methods 2.5; quote: \"Sampl",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 73,
+    "acc": "PXD030282",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
+    "T": null,
+    "T_text": "not reported for this specific comparison (general cultivation at 30°C, see other set)",
+    "I": null,
+    "I_text": "not reported for this specific comparison",
+    "co2": null,
+    "co2_text": "not reported for this specific comparison",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": null,
+    "conditioned": null,
+    "n_altered": null,
+    "medium_text": "not reported for this specific comparison",
+    "fmt": null,
+    "phase": "two phases in one set",
+    "od": null,
+    "od_nm": null,
+    "replicates": "three biological replicates [PRIDE PXD030282 sampleProcessingProtocol; also paper PMC10521692 Methods 2.5; quote: \"Sampl",
+    "treatments": [
+      "log vs stationary"
+    ],
+    "group": "other"
+  },
+  {
+    "row": 74,
+    "acc": "PXD030282",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "L1118 vs sucrose mutant Lsps comparative proteomics",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C (standard cultivation, as described for strains including newly engineered strains)",
+    "I": [
+      75.0,
+      100.0
+    ],
+    "I_text": "75 μmol photons m-2 s-1 (flask stage), 100 μmol photons m-2 s-1 (Roux bottle stage)",
+    "co2": 5.0,
+    "co2_text": "5% CO2 bubbling at 50 mL/min",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium supplemented with 10 mM TES, pH 8.2",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "three biological replicates [PRIDE PXD030282 sampleProcessingProtocol; also paper PMC10521692 Methods 2.5; quote: \"Sampl",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 75,
+    "acc": "PXD036717",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "APEX2 proximity-labeling cultures (CscB-SPS and Protein-APEX2 samples)",
+    "T": null,
+    "T_text": "not retrieved",
+    "I": null,
+    "I_text": "not retrieved",
+    "co2": null,
+    "co2_text": "not retrieved",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 medium (mentioned in context of resuspending cells with biotin-phenol prior to labeling, not explicitly stated as the standard growth medium)",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "not stated as an explicit number; evidence uses the word 'both' when referring to CscB-SPS and Protein-APEX2 replicates,",
+    "treatments": [
+      "APEX2 labelling"
+    ],
+    "group": "other"
+  },
+  {
+    "row": 76,
+    "acc": "PXD044412",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "Cyanobacterial photoautotrophic growth (BG-11, 1% CO2, ~70 µmol light)",
+    "T": null,
+    "T_text": "not reported",
+    "I": [
+      70.0,
+      70.0
+    ],
+    "I_text": "~70 µmol/s·m2",
+    "co2": 1.0,
+    "co2_text": "1% CO2",
+    "cont": null,
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 media",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      1.0,
+      1.0
+    ],
+    "od_nm": 730,
+    "replicates": "four biological replicate cultivations, pooled before harvest [paper PMC10507043, Methods (Cultivations and harvest); qu",
+    "treatments": [],
+    "group": "other"
+  },
+  {
+    "row": 77,
+    "acc": "PXD062851",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "Liquid BG-11H culture, 30°C, 50 µmol photons m-2 s-1, 3% CO2 (both BB-SP3 and TFA-is endoproteome samples)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30 °C",
+    "I": [
+      50.0,
+      50.0
+    ],
+    "I_text": "50 μmol photons m-2 s-1 (continuous illumination, liquid culture)",
+    "co2": 3.0,
+    "co2_text": "bubbled with 3% (v/v) CO2-supplemented air",
+    "cont": "continuous",
+    "phot": null,
+    "spec": null,
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG-11 medium supplemented with 5 mM HEPES pH 7.5 (BG-11H medium)",
+    "fmt": "planktonic liquid",
+    "phase": "OD stated",
+    "od": [
+      2.0,
+      2.0
+    ],
+    "od_nm": 750,
+    "replicates": "4 biological replicates [paper PMC12415867, Bioinformatic and statistical analysis; quote: \"All experiments were perform",
+    "treatments": [],
+    "group": "standard"
+  },
+  {
+    "row": 78,
+    "acc": "PXD074299",
+    "dtype": "proteomics",
+    "strain": "PCC 7942",
+    "label": "Circadian free-run culture for MS protein-condensation fractionation (subjective dawn/dusk, supernatant+pellet, TMT, both replicates)",
+    "T": [
+      30.0,
+      30.0
+    ],
+    "T_text": "30°C",
+    "I": [
+      68.0,
+      68.0
+    ],
+    "I_text": "∼68 μmol photons m-2 s-1",
+    "co2": null,
+    "co2_text": "not reported",
+    "cont": "continuous (after diel entrainment)",
+    "phot": null,
+    "spec": "cool white fluorescent",
+    "medium": "BG-11",
+    "conditioned": false,
+    "n_altered": false,
+    "medium_text": "BG11 liquid medium with appropriate combinations of antibiotics",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "2 biological replicates [PRIDE PXD074299 dataProcessingProtocol; quote: \"To correct for possible systematic batch effect",
+    "treatments": [
+      "circadian time course"
+    ],
+    "group": "diel"
+  }
+]

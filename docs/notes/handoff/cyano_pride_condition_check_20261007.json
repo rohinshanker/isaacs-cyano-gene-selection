@@ -1,0 +1,49 @@
+{
+  "dataset": "PXD023591",
+  "retrievals": [
+    {
+      "url": "https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD023591",
+      "path": "/tmp/cyano-condition-extra-20261007/project.json",
+      "sha256": "cbff23eef3db2e153ae82f1ea642dd75942fa2f10fbde5f2e377be85a5f6c904",
+      "retrieved": "2026-10-07",
+      "bytes": 7511
+    },
+    {
+      "url": "https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD023591/files?page=0&pageSize=100",
+      "path": "/tmp/cyano-condition-extra-20261007/files.json",
+      "sha256": "35bdf9b3371528f1b41fb2bda599f567bc5ac78100978441281eff0da5335730",
+      "retrieved": "2026-10-07",
+      "bytes": 3547
+    }
+  ],
+  "read_fields": [
+    "projectDescription",
+    "sampleProcessingProtocol",
+    "dataProcessingProtocol",
+    "sampleAttributes",
+    "references",
+    "license"
+  ],
+  "scope": "Protocol temperatures are peptide digestion/processing, not culture conditions. No culture growth-condition fill from these fields. Publication references are empty, not proof of no publication.",
+  "sample_labels_quote": "2Hr Induced 1  126 2Hr Induced 2  128C 2Hr Induced 3  129C",
+  "quote_match": "Exact sampleProcessingProtocol substring matched",
+  "biological_replication": "Unknown; numbered TMT labels do not establish independent culture count.",
+  "files": [
+    {
+      "name": "Ducat_-_Sakkos_TMT10_Fully_Tryptic_Data_20191016.sf3",
+      "archive_category": "RAW",
+      "bytes": 32658432
+    },
+    {
+      "name": "hf2019103123.mzid_hf2019103123.MGF",
+      "archive_category": "PEAK",
+      "bytes": 68340447
+    },
+    {
+      "name": "hf2019103123.mzid.gz",
+      "archive_category": "RESULT",
+      "bytes": 23619576
+    }
+  ],
+  "file_scope": "Three files listed; no raw or processed payload downloaded. Scaffold sf3 and mzIdentML/peak files need separate extraction assessment; no tabular per-gene quantity asserted."
+}

@@ -401,3 +401,21 @@ Rendered checks, which source inspection does not replace:
 - Choose comparison metrics, reload the page, and confirm they return while the
   link stays free of them.
 - Read the browser console: zero errors and zero warnings.
+
+## Focus when a start-site control disappears
+
+The gene viewer is a labelled, programmatically focusable group. If a redraw
+removes its focused start-site checkbox because the next locus has no drawable
+mark or selection is cleared, focus returns to that stable group. A retained
+hidden preference never describes unmapped-only rows as hidden evidence: the
+list retains the associated rows and the SVG states that their published
+upstream distances are unavailable.
+
+Applying a live link can reparent the controls-column cards before redrawing
+the viewer. Moving an existing DOM subtree can drop browser focus even when
+its event listeners survive. `LeftPanels.render` captures the focused element
+and restores it after layout, or selects the panel heading when that element
+becomes concealed or disabled. Check the actual live-link path as well as a
+component-only repaint. Regressions are pinned in
+`tests/js/left-panels-focus.test.mjs` and
+`tests/js/gene-view-start-site-visibility.test.mjs`.

@@ -428,3 +428,27 @@ On completion, rename the ticket/H1 to resolved and record final validation.
 Distill reusable marker, coordinate, layer-state, and rendered-validation contracts
 into `docs/validation/`, update its index, then delete the resolved ticket and
 remove its live queue entries. Do not retain task history.
+
+### Coordinator integration verification, 2026-10-07
+
+The exact UI review found and repaired two additional edge cases: a removed
+controls-column checkbox lost focus, and unmapped-only associated rows were
+labelled as hidden. The component now retains focus on its labelled group and
+states unavailable distance; the shared panel renderer also restores focus
+across actual DOM reparenting by a live link. Component and real-browser
+regressions cover both no-site and no-selection transitions. The earlier
+3 px tablet overflow is repaired by letting the existing numeric unit span
+wrap at every width.
+
+The combined application was rendered at 375x812, 768x1024, 1280x800,
+1440x900 and 959/960/1239/1240-pixel breakpoint edges. The dense locus draws
+20 marks with no page overflow; keyboard hiding removes those 20 detail marks,
+retains the other mount's 20 marks and the full labelled list, and preserves
+focus. An unmapped-only fixture retains its row without a hide control or an
+absence claim. Independent fix review accepted `e4b4350`; no actionable UI findings remain.
+Final combined gates: `npm test` 1,148 passed; pytest 510 passed, 1 skipped
+and 36 subtests; contract 116 passed, 0 failed, 1 declared skip. Transient evidence: `/tmp/cyano-tan-integrated-20261007`.
+
+For render integrity, use a fresh browser context or pass-through routing to
+ensure changed modules are fetched: the test browser reused an older panel
+module despite an ordinary reload. No application caching policy was changed.

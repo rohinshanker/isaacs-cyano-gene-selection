@@ -27,7 +27,10 @@ The ranking preserves not reported, not retrieved, partial, conflicting and
 uncertain fields. Reported values can still fail a comparison. A named medium
 is present even when a recipe comparison remains unresolved. Continuous light
 needs no diel photoperiod, stationary phase needs no OD, and OD730/A730 is
-accepted like OD750 under the owner's condition contract.
+accepted like OD750 under the owner's condition contract. A cell that explicitly
+says the sampling/labeling OD is missing remains partial even when an earlier
+maintenance OD and phase are stated; preserve that caveat rather than assuming
+the same density at every processing step.
 
 `all_pairs` counts a cell's reach across the entire snapshot;
 `undecidable_pairs` counts its reach among undecidable pairs. Both count each

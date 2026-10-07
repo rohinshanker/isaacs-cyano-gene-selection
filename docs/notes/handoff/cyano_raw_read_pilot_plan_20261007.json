@@ -263,6 +263,19 @@
   "execution_dependencies": [
     "Nextflow 22.10.0 absent; compatible Java runtime not verified.",
     "Container architecture compatibility and pipeline execution untested; registry manifests are pinned, not execution-validated.",
-    "Bouchet route/workspace/allocation/access await compute-backend D1b. Local Docker responding does not establish a runnable cluster job."
-  ]
+    "Bouchet route/workspace/allocation/access await compute-backend D1b. Local Docker responding does not establish a runnable cluster job.",
+    "Observed local disk free 48 GiB and Docker 4 CPUs/about 5.8 GiB memory do not meet the prepared 80 GB scratch, 8 CPU/8 GB envelope. No shared Docker configuration changed."
+  ],
+  "execution_host_observation": {
+    "date": "2026-10-07",
+    "filesystem_free_gib": 48,
+    "docker_cpus": 4,
+    "docker_memory_bytes": 6197448704,
+    "docker_architecture": "aarch64",
+    "fits_prepared_resource_envelope": false,
+    "commands": [
+      "df -h /Users/Rohin /tmp",
+      "docker info --format '{{json .NCPU}} {{json .MemTotal}} {{json .Architecture}} {{json .DockerRootDir}}'"
+    ]
+  }
 }
