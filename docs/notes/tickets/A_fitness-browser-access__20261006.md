@@ -51,6 +51,44 @@ same one GSE311172 raised: 129 experiments is far too many selectable layers,
 so which conditions become layers, and whether the t-score table gates them,
 is a judgement call before any code runs.
 
+## Owner design decision, 2026-10-07: pool by default, grid to subset
+
+Taken after a parallel session had already ingested the compendium as **90
+layers, one per compound and dose**, staged but not committed. That is the
+granularity question answered differently from how it was about to be put to the
+owner, so the owner settled the presentation instead:
+
+- **Default: the 90 are pooled and appear as one checkbox**, not 90 rows. The
+  Data Sources list gains a single Fitness Browser entry, which keeps the list
+  readable and matches the clutter audit in
+  [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md).
+- **Selecting a subset stays possible.** A control on that single row opens a
+  **second peek, stacked over the data-selection peek**, for choosing which of
+  the 90 inform the metric.
+- **That second peek is a grid of checkboxes, not a list of rows**, with the
+  conditions laid out by what distinguishes them.
+
+Why a grid fits this particular compendium, measured from the staged manifest on
+2026-10-07: the 90 layers are **34 compounds** crossed with dose. Fourteen
+compounds have a single dose, four have two, five have three, seven have four,
+three have five and one has ten. So the natural grid is **compound down the
+side, dose across**, at most ten columns and usually five or fewer, ragged on
+the right. Compound names run to 46 characters, which suits a left-hand label
+column; the full condition strings run to 63, which is what makes 90 list rows
+unwieldy and a grid legible. The single BG-11 no-compound control and the four
+remaining non-dose conditions sit apart from the grid rather than forcing an
+empty column.
+
+**Implementation note for whoever builds it.** `site/js/ui/data-sources.js`
+currently holds exactly one peek: `this.peek` is built once and appended to
+`document.body` with its own backdrop, `aria-modal`, focus trap and Escape
+handling, all written for a single instance. Stacking a second peek over it is
+the real work here, not the grid: the modal machinery has to become stack-aware
+so focus, Escape and the backdrop act on the topmost peek. Group and subgroup
+header rows already exist, but they are row-based and do not give a grid.
+
+Not yet built. The ingestion itself belongs to the session that staged it.
+
 ## Current state
 
 The owner decided on 2026-10-06 to proceed with the Fitness Browser
