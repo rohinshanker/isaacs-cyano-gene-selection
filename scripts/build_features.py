@@ -108,6 +108,13 @@ GENES_PAYLOAD = "genes.json"
 LAYERS_PAYLOAD = "expression_layers.json"
 PAYLOADS = (GENES_PAYLOAD, LAYERS_PAYLOAD)
 
+# The per-gene RSCU vectors, 59 floats each and a fifth of the core payload.
+# Nothing in the browser reads one: the native codon PCA is fitted here and
+# ships as codon_pca.json, and the site only reads meta.rscuOrder for its
+# feature labels. They therefore ride in their own payload, keyed to the
+# genes.json gene order the way expression_layers.json is.
+RSCU_PAYLOAD = "codon_rscu.json"
+
 EXPRESSION_SOURCE_FIELDS = (
     "record",
     "id",
@@ -725,6 +732,22 @@ def expression_layers_document(
     }
 
 
+def codon_rscu_document(genes: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """The separate RSCU payload: one vector per gene, in genes.json order.
+
+    ``geneIds`` repeats the gene order so a reader can refuse a payload built
+    from a different gene file, and the column order is ``meta.rscuOrder``,
+    which stays in ``meta.json`` and is not repeated here. A value is never
+    missing: an absent amino-acid family contributes zeros by the pipeline's
+    stated convention, so a null would be a vector that could not be computed.
+    """
+    return {
+        "schemaVersion": 1,
+        "geneIds": [gene["id"] for gene in genes],
+        "rscu": [gene["rscu"] for gene in genes],
+    }
+
+
 def expression_percentiles(values: Mapping[str, float]) -> dict[str, float]:
     """Returns mid-rank percentiles, (below + ties / 2) / N, the browser's `percentileRank`."""
     ordered = sorted(values.items(), key=lambda item: item[1])
@@ -1313,6 +1336,11 @@ def build(
     coordinates = pca.transform(scaled_rscu)
     for gene, point in zip(genes, coordinates, strict=True):
         gene["codonPca"] = point.tolist()
+    # The fit above is the last reader of the vectors, and it reads the matrix in
+    # memory, so they leave the file the map waits for from here on.
+    codon_rscu = codon_rscu_document(genes)
+    for gene in genes:
+        del gene["rscu"]
     risk_fields = [
         "gc", "gc1", "gc2", "gc3", "enc", "cai", "tai", "rareFraction",
         "longestRareRun", "minLocalTai", "cps", "underrepresentedPairFraction",
@@ -1609,6 +1637,7 @@ def build(
         "excluded.json": excluded,
         "meta.json": meta,
         "codon_pca.json": codon_pca,
+        RSCU_PAYLOAD: codon_rscu,
     }
     if organism.has_layer("tss"):
         documents["tss_evidence.json"] = tss_evidence

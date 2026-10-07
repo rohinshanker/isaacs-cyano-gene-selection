@@ -12,13 +12,17 @@
       "bytes": 5330,
       "sha256": "e10f7a08938f1692ca0683a41e615f73e67bee93771f5c1a150733bca939f919"
     },
+    "codon_rscu.json": {
+      "bytes": 1736346,
+      "sha256": "64b412d48ad3f8c3031954268e303430abe6c4696bc341cc118842a2dbd91095"
+    },
     "excluded.json": {
       "bytes": 2033,
       "sha256": "c719a056891ee2ba6e412da0066dbbd4061b353586e5c7a47ef7a9c1521a44c9"
     },
     "genes.json": {
-      "bytes": 8042652,
-      "sha256": "171ecc78e98a44d6d00b1f143eefa1efe5b2094164d935122840a6bfbbdac2b2"
+      "bytes": 6310634,
+      "sha256": "348e8b8ccbb9113fb45bbd504fa67092a631e2381c08d377b4452e91ea5ad388"
     },
     "go-term-names-v1.json": {
       "bytes": 462101,
@@ -26,7 +30,7 @@
     },
     "meta.json": {
       "bytes": 22344,
-      "sha256": "919d7d4e108de0321f737bebc66c7fafc0ace0adde00316b95cbb2c1818276a5"
+      "sha256": "1b552caa2c33e1c4ffddc36ac1729b439b3ecfad10b4278b0d56fad994ff6913"
     }
   },
   "schemaVersion": 1

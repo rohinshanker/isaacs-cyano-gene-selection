@@ -101,11 +101,14 @@ test('the file registry orders dependencies before their dependents', () => {
 test('the site fetches every registered file and nothing the registry omits', async () => {
   const published = JSON.parse(await site(DATA_MANIFEST_NAME)).files;
   for (const file of DATA_FILES) assert.ok(published[file.name], `${file.name} is published`);
-  // Published but never fetched by the page: citations has its own loader, and
-  // the PCC 7942 table is an input to candidate_evidence.json, read by no module.
+  // Published but never fetched by the page: citations has its own loader, the
+  // PCC 7942 table is an input to candidate_evidence.json, read by no module,
+  // and the per-gene RSCU vectors have no browser consumer at all — the site
+  // reads only meta.rscuOrder, so the payload joins no tier and is not counted
+  // in the loading bar's denominator.
   const registered = new Set(DATA_FILES.map((file) => file.name));
   assert.deepEqual(Object.keys(published).filter((name) => !registered.has(name)).sort(),
-    ['citations.json', 'pcc7942-essentiality-v1.json']);
+    ['citations.json', 'codon_rscu.json', 'pcc7942-essentiality-v1.json']);
 });
 
 test('a manifest is used only when every entry is well formed', () => {

@@ -187,6 +187,12 @@ def validate(raw_dir: Path, data_dir: Path, sample_size: int = 30) -> dict[str, 
     genes = json.loads((data_dir / "genes.json").read_text())
     meta = json.loads((data_dir / "meta.json").read_text())
     excluded = json.loads((data_dir / "excluded.json").read_text())
+    # The per-gene RSCU vectors ride in their own payload, keyed to the
+    # genes.json gene order, so a stale file cannot be checked against a
+    # rebuilt gene set.
+    codon_rscu = json.loads((data_dir / "codon_rscu.json").read_text())
+    if codon_rscu["geneIds"] != [gene["id"] for gene in genes]:
+        raise ValueError("codon_rscu.json was built from a different gene file")
     raw = _raw_records(raw_dir)
     proteins = _proteins(raw_dir)
     terminal_stops: collections.Counter[str] = collections.Counter()
@@ -210,10 +216,10 @@ def validate(raw_dir: Path, data_dir: Path, sample_size: int = 30) -> dict[str, 
     cai_weights = independent_cai_weights(reference_sequences)
     tai_weights = independent_tai_weights(data_dir)
     indexes = np.linspace(0, len(genes) - 1, sample_size, dtype=int)
-    sample = [genes[index] for index in indexes]
     observed = {"enc": [], "cai": [], "tai": [], "rscu": []}
     expected = {"enc": [], "cai": [], "tai": [], "rscu": []}
-    for gene in sample:
+    for index in indexes:
+        gene = genes[index]
         sequence = raw[gene["id"]]["sequence"]
         observed["enc"].append(gene["enc"])
         expected["enc"].append(independent_enc(sequence))
@@ -221,7 +227,7 @@ def validate(raw_dir: Path, data_dir: Path, sample_size: int = 30) -> dict[str, 
         expected["cai"].append(independent_cai(sequence, cai_weights))
         observed["tai"].append(gene["tai"])
         expected["tai"].append(independent_tai(sequence, tai_weights))
-        observed["rscu"].extend(gene["rscu"])
+        observed["rscu"].extend(codon_rscu["rscu"][index])
         expected["rscu"].extend(independent_rscu(sequence))
     result: dict[str, float | int] = {
         "sampleSize": sample_size,

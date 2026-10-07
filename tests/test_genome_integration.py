@@ -79,7 +79,7 @@ def test_generated_documents_follow_contract():
         "longestRareRun", "rampRareCount", "minLocalTai", "cps",
         "underrepresentedPairFraction", "mfeStart", "mfeFirst100", "minLocalGc",
         "maxLocalGc", "gc5prime", "neighborUpstreamNt", "neighborDownstreamNt",
-        "overlapsNeighbor", "operonId", "operonPosition", "operonSize", "rscu",
+        "overlapsNeighbor", "operonId", "operonPosition", "operonSize",
         "expression", "expressionPercentile", "expressionProxy", "expressionBasis",
         "expressionSourceId", "codonPca", "riskUmap", "codons",
         "terminalStop", "translationalException", "cdsSegments",
@@ -141,6 +141,16 @@ def test_generated_documents_follow_contract():
         column = layers["layers"][source["metricKey"]]
         assert len(column) == 2715
         assert sum(value is not None for value in column) == source["coverage"]["withValue"]
+    # The per-gene RSCU vectors ride apart too, and nothing in the browser reads
+    # one: the site only needs meta.rscuOrder as the column order.
+    codon_rscu = json.loads((DATA / "codon_rscu.json").read_text())
+    assert codon_rscu["schemaVersion"] == 1
+    assert codon_rscu["geneIds"] == [gene["id"] for gene in genes]
+    assert len(codon_rscu["rscu"]) == 2715
+    assert all(len(vector) == 59 for vector in codon_rscu["rscu"])
+    assert all(value >= 0 for vector in codon_rscu["rscu"] for value in vector)
+    assert all("rscu" not in gene for gene in genes)
+
     tss_definition = meta["metrics"]["tssInitiation"]
     assert "transcription initiation strength" in tss_definition["desc"]
     assert "not transcript abundance" in tss_definition["desc"]

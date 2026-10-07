@@ -54,9 +54,16 @@ def audit(data_dir: Path, seed: int = 2973, replicates: int = 20) -> dict[str, o
         meta = json.load(handle)
     with (data_dir / "codon_pca.json").open(encoding="utf-8") as handle:
         published = json.load(handle)
+    # The per-gene vectors ride apart from genes.json; the column order stays in
+    # meta.rscuOrder and the payload repeats the gene order so a stale file
+    # cannot be joined to a rebuilt gene set.
+    with (data_dir / "codon_rscu.json").open(encoding="utf-8") as handle:
+        rscu = json.load(handle)
     if meta["rscuOrder"] != list(fm.RSCU_ORDER):
         raise ValueError("site RSCU order differs from the pipeline convention")
-    x = np.asarray([gene["rscu"] for gene in genes], dtype=float)
+    if rscu["geneIds"] != [gene["id"] for gene in genes]:
+        raise ValueError("codon_rscu.json was built from a different gene file")
+    x = np.asarray(rscu["rscu"], dtype=float)
     length = np.asarray([gene["lengthNt"] for gene in genes], dtype=float)
     scores = np.asarray([gene["codonPca"][:2] for gene in genes], dtype=float)
     if x.shape != (len(genes), 59) or not np.isfinite(x).all():

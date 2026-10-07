@@ -39,6 +39,11 @@ STOP_CODONS = ("TAA", "TAG", "TGA")
 # Owner decision, 2026-10-05: the core payload is budgeted per gene, so the gate
 # scales with an organism's gene count and still catches growth in the schema.
 GENES_JSON_BYTES_PER_GENE = 2_000
+# Where the per-gene RSCU vectors are published. Nothing in the browser reads
+# one, so they ride apart from the file the map waits for; the column order
+# stays in meta.rscuOrder. Named here rather than imported from the pipeline,
+# like every other expectation in this file.
+RSCU_PAYLOAD = "codon_rscu.json"
 
 # Public compatibility names used by focused validator tests and small local
 # tools. Their values remain the historical default organism; organism-aware
@@ -94,7 +99,7 @@ REQUIRED_GENE_FIELDS = (
     "minLocalGc", "maxLocalGc", "gc5prime",
     "neighborUpstreamNt", "neighborDownstreamNt", "overlapsNeighbor",
     "operonId", "operonPosition", "operonSize",
-    "rscu", "codonPca", "riskUmap", "codons",
+    "codonPca", "riskUmap", "codons",
     "terminalStop", "translationalException", "cdsSegments", "rnaContext",
 )
 
@@ -566,14 +571,12 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
 
     symbol_to_codon = {e["sym"]: e["codon"] for e in meta.get("codonAlphabet", [])
                        if isinstance(e, dict) and "sym" in e and "codon" in e}
-    rscu_len = len(meta.get("rscuOrder") or [])
 
     missing_fields: dict[str, int] = {}
     range_problems: list[str] = []
     length_problems: list[str] = []
     codon_char_problems: list[str] = []
     stop_in_body: list[str] = []
-    rscu_problems: list[str] = []
     umap_problems: list[str] = []
     composition_problems: list[str] = []
     coordinate_problems: list[str] = []
@@ -626,12 +629,6 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
                     f"{gid}: lengthNt={length_nt} != (lengthCodons+1)*3="
                     f"{(length_codons + 1) * 3}")
 
-        rscu = gene.get("rscu")
-        if rscu_len and (not isinstance(rscu, list) or len(rscu) != rscu_len):
-            rscu_problems.append(
-                f"{gid}: rscu length {len(rscu) if isinstance(rscu, list) else type(rscu)}"
-                f" != {rscu_len}")
-
         umap = gene.get("riskUmap")
         if not isinstance(umap, list) or len(umap) != 2:
             umap_problems.append(f"{gid}: riskUmap is not a 2-element array")
@@ -672,8 +669,6 @@ def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
                  f"{len(codon_char_problems)} problems, e.g. {codon_char_problems[:3]}")
     report.check(not stop_in_body, "codon strings contain no internal stop codons",
                  f"{len(stop_in_body)} problems, e.g. {stop_in_body[:3]}")
-    report.check(not rscu_problems, "rscu vectors match meta.rscuOrder length",
-                 f"{len(rscu_problems)} problems, e.g. {rscu_problems[:3]}")
     report.check(not umap_problems, "riskUmap is a 2-element array everywhere",
                  f"{len(umap_problems)} problems, e.g. {umap_problems[:3]}")
     report.check(not composition_problems, "third-position composition sums correctly",
@@ -1441,6 +1436,67 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
                  "; ".join(problems[:4]))
 
 
+def validate_codon_rscu(data_dir: str, meta: dict[str, Any], genes: list[Any],
+                        report: Report) -> None:
+    """Checks the separate RSCU payload against genes.json and meta.rscuOrder.
+
+    Per-gene RSCU has no browser consumer, so it rides apart from the file the
+    map waits for and no value is duplicated: the payload repeats the gene order
+    so a stale file cannot be joined, every vector has one column per
+    ``meta.rscuOrder`` codon, a value is a finite non-negative number or null,
+    and no vector is left behind in ``genes.json``. Coverage is complete by the
+    pipeline's convention that an absent amino-acid family contributes zeros, so
+    a null here would be a vector that could not be computed.
+    """
+    gene_rows = [g for g in genes if isinstance(g, dict)]
+    report.check(
+        not any("rscu" in g for g in gene_rows),
+        "no per-gene rscu vector rides in genes.json",
+    )
+    payload = load_json(os.path.join(data_dir, RSCU_PAYLOAD), report)
+    if not isinstance(payload, dict):
+        report.fail(f"{RSCU_PAYLOAD} is an object")
+        return
+    report.check(payload.get("schemaVersion") == 1, f"{RSCU_PAYLOAD} declares schema 1")
+    report.check(
+        payload.get("geneIds") == [g.get("id") for g in gene_rows],
+        f"{RSCU_PAYLOAD} geneIds repeats the genes.json order exactly",
+    )
+    order = meta.get("rscuOrder")
+    columns = len(order) if isinstance(order, list) else 0
+    vectors = payload.get("rscu")
+    present = len(vectors) if isinstance(vectors, list) else 0
+    if not report.check(
+        isinstance(vectors, list) and present == len(gene_rows),
+        f"{RSCU_PAYLOAD} has one RSCU vector per gene: {present:,} for "
+        f"{len(gene_rows):,} genes",
+    ):
+        return
+    wrong_width = [
+        i for i, vector in enumerate(vectors)
+        if not isinstance(vector, list) or len(vector) != columns
+    ]
+    report.check(
+        columns > 0 and not wrong_width,
+        f"every RSCU vector has one column per meta.rscuOrder codon ({columns})",
+        f"{len(wrong_width)} vectors differ, e.g. at index {wrong_width[:3]}",
+    )
+    invalid = [
+        value for vector in vectors if isinstance(vector, list) for value in vector
+        if value is not None
+        and (isinstance(value, bool) or not isinstance(value, (int, float))
+             or not math.isfinite(value) or value < 0)
+    ]
+    report.check(not invalid, "every RSCU value is a finite non-negative number or null",
+                 f"{len(invalid)} invalid, e.g. {invalid[:3]}")
+    complete = sum(isinstance(vector, list) and all(value is not None for value in vector)
+                   for vector in vectors)
+    report.check(
+        complete == len(gene_rows),
+        f"every gene has a complete RSCU vector: {complete:,} of {len(gene_rows):,}",
+    )
+
+
 def validate_pair_judgements(meta: dict[str, Any], report: Report) -> None:
     """Checks the owner's pair judgements the site reads to join or keep apart two condition sets.
 
@@ -1508,6 +1564,7 @@ def main() -> int:
 
     if isinstance(meta, dict) and isinstance(genes, list):
         validate_expression_layers(data_dir, meta, genes, report)
+        validate_codon_rscu(data_dir, meta, genes, report)
     if isinstance(meta, dict):
         validate_pair_judgements(meta, report)
 

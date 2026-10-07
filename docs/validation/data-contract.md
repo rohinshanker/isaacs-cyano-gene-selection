@@ -633,7 +633,6 @@ when the recoding scheme changes.
   "expressionProxy": 0.63,       // CAI/tAI-derived rank in 0..1; the documented fallback
   "expressionSourceId": "GSE205444",  // which dataset supplied a measured value
 
-  "rscu": [1.02, 0.41, ...],     // 59 floats, order = meta.rscuOrder
   "codonPca": [ -2.14, 0.88, 1.03, ... ],  // first 6 PCs of native codon space
   "riskUmap": [ 4.21, -1.09 ],   // baseline UMAP, target-independent features only
   "codons": "MKTAQ..."           // packed codon string, lengthCodons chars
@@ -863,6 +862,40 @@ default call. The validator checks the shape and that no pair is judged twice.
 }
 ```
 
+### `codon_rscu.json`
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "geneIds": [ "M744_RS00005", ... ],   // repeats the genes.json order exactly
+  "rscu": [ [1.02, 0.41, ...], ... ]    // one 59-float vector per gene
+}
+```
+
+The per-gene relative synonymous codon use, published apart from `genes.json`
+and joined to it by position the way `expression_layers.json` is. `geneIds`
+repeats the gene order so a payload built from a different gene file cannot be
+joined, and the column order is `meta.rscuOrder`, which stays in `meta.json` and
+is not repeated here. No value appears in both files.
+
+**The site never reads a per-gene vector, so this file joins no tier and the
+page does not request it.** Its only browser-side relative is
+`meta.rscuOrder`, read for the native projection's feature labels. The native
+codon PCA is fitted in the pipeline from the in-memory matrix and ships as
+`codon_pca.json`; the offline readers are `tools/validate_contract.py`,
+`tools/audit_pca_length.py`, and `scripts/check_feature_consistency.py`, each of
+which refuses a payload whose `geneIds` do not match the gene file beside it.
+`site/js/core/data-files.js` therefore has no entry for it, which is what keeps
+it out of the loading bar's denominator; the content manifest still describes it,
+because the manifest describes the directory.
+
+A value is a finite non-negative number. The pipeline's absent-family convention
+contributes zeros for an amino acid a gene does not use, so a null here would be
+a vector that could not be computed, and the validator fails on one rather than
+reading it as zero. The file is per organism, written into that organism's own
+release root, and an organism that publishes no `genes.json` publishes no vectors
+either.
+
 ### `excluded.json`
 
 ```jsonc
@@ -935,23 +968,37 @@ is the file the map waits for. It stays at or below **2,000 bytes per plotted
 gene, uncompressed**, for every organism; the validator computes the
 limit from the file's own gene count. Relationship-heavy `annotations.json` and
 `tss_evidence.json` are separate payloads joined by locus tag, and GitHub Pages
-serves them compressed. If a core file exceeds the budget, move `rscu` and
-`codons` into a separate lazily-fetched file rather than dropping precision.
+serves them compressed.
+
+The remedy when a core file approaches the budget is to move a field the map does
+not wait for into its own joined payload, never to drop precision. A field with
+no browser consumer moves transparently: the per-gene RSCU vectors went to
+[`codon_rscu.json`](#codon_rscujson), which joins no tier and the page never
+requests, and that alone returned about 400 bytes per gene for both organisms.
+A field the page does read is a different decision, because the payload then
+joins a declared tier and its absence has to read as loading rather than as
+missing. The packed `codons` field is on the critical path — `buildCoreDataset`
+decodes every gene to build the scheme-metric arrays — and owner decision of
+2026-10-07 keeps it in `genes.json` with its current decode, scheme metrics,
+deltas, target counts, sequence views, and exports unchanged.
 
 Owner decision, 2026-10-05: the budget is per gene, replacing a fixed
 6,291,456 bytes set when the only organism had 2,715 genes. The measurements
-behind it:
+behind it, before and after the RSCU split:
 
 | | UTEX 2973 | E. coli K-12 MG1655 |
 | --- | ---: | ---: |
 | plotted genes | 2,715 | 4,287 |
-| `genes.json`, bytes | 5,169,989 | 8,042,652 |
-| bytes per gene | 1,904 | 1,876 |
+| `genes.json`, bytes, with `rscu` | 5,169,989 | 8,042,652 |
+| bytes per gene, with `rscu` | 1,904 | 1,876 |
+| `genes.json`, bytes | 4,079,627 | 6,310,634 |
+| bytes per gene | 1,503 | 1,472 |
 | limit, bytes | 5,430,000 | 8,574,000 |
-| gzip, bytes | 1,614,825 | 2,534,207 |
+| gzip, bytes | 1,304,912 | 2,038,599 |
+| `codon_rscu.json`, bytes | 1,112,123 | 1,736,346 |
 
 The gzip row is `gzip -n -9 -c genes.json | wc -c` with Apple gzip 479 on the
-files whose SHA-256 begin `0d2711ade57d` and `171ecc78e98a`.
+files whose SHA-256 begin `d87acf792efb` and `348e8b8ccbb9`.
 
 The two organisms cost the same per gene, so E. coli's larger file is gene
 count, not schema growth, and a per-gene gate still catches the latter. What the
@@ -959,8 +1006,9 @@ decision accepts: the first load of a larger genome takes proportionally longer.
 The documented slow-link profile in
 [progressive-loading.md](progressive-loading.md) gives a usable map at 9.1 s for
 UTEX 2973 and scales to roughly 14 s for E. coli; that E. coli figure is an
-estimate, not a measurement. The sidecar remains the remedy if a core file
-outgrows the per-gene budget.
+estimate, not a measurement, and neither has been re-measured against the
+smaller core file. A further joined payload remains the remedy if a core file
+outgrows the per-gene budget again.
 
 ## Length cohort inventory
 
