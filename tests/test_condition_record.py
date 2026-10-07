@@ -101,7 +101,7 @@ def test_gse252562_sampling_temperature_preserves_maintenance_scope():
         value = row["record"]["conditions"]["temperature"]
         assert value["status"] == "not reported"
         assert value["lo"] is None and value["hi"] is None
-        assert "maintenance30°C" in value["text"]
+        assert "maintenance at 30°C" in value["text"]
         assert "30ºC" in value["quote"]
 
 

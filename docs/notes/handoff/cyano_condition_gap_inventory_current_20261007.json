@@ -161,7 +161,7 @@
       "condition_row": 35,
       "fields": {
         "T": null,
-        "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."
+        "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance at 30°C is reported separately."
       },
       "audit": {
         "temperature": {
@@ -180,7 +180,7 @@
       "condition_row": 36,
       "fields": {
         "T": null,
-        "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."
+        "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance at 30°C is reported separately."
       },
       "audit": {
         "temperature": {

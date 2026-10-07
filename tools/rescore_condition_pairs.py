@@ -145,12 +145,12 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
     35: {
         "expected_accession": "GSE252562",
         "expected_source": {"T": [30.0, 30.0], "T_text": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)"},
-        "values": {"T": None, "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."},
+        "values": {"T": None, "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance at 30°C is reported separately."},
     },
     36: {
         "expected_accession": "GSE252562",
         "expected_source": {"T": [30.0, 30.0], "T_text": "constant 30ºC (stated for growth/maintenance; not explicitly restated for the LD-cycle treatment phase)"},
-        "values": {"T": None, "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance30°C is reported separately."},
+        "values": {"T": None, "T_text": "Sampling temperature unknown in inspected LD-cycle protocols; maintenance at 30°C is reported separately."},
     },
     58: {
         "expected_accession": "PXD000510",
