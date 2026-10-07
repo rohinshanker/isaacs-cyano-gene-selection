@@ -1511,6 +1511,17 @@ input[type="range"] { width: 100%; }
 
 .gene-view-facts dt { color: var(--ink-muted); }
 .gene-view-facts dd { margin: 0; }
+.gene-view-sites summary { font-weight: 600; font-size: 0.82rem; }
+.gene-view-site-rows {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+}
+.gene-view-site-rows li { overflow-wrap: anywhere; }
+.gene-view-site-id { font-family: var(--mono); color: var(--ink); }
 
 /* Sequence close-up, at the foot of the chromosome tab ------------------ */
 

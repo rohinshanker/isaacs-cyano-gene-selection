@@ -752,6 +752,96 @@ function tickGenes(count) {
   });
 }
 
+/** The tick row's own paint calls in one frame, which is what the layer draws. */
+function tickRowOps(view, frame) {
+  const { layout } = view.bands()[0];
+  return frame.filter((op) => op.op === 'moveTo' && Math.abs(op.y - (layout.tssTop + 1)) < 0.001);
+}
+
+test('the start-site layer has its own show/hide, and it governs marks and nothing else', () => {
+  const mounted = mount({ genes: tickGenes(20) });
+  try {
+    const { view, flush, ops } = mounted;
+    assert.equal(tickRowOps(view, ops).length, 20);
+    assert.equal(view.startSitesToggle.checked, true, 'the layer opens visible');
+    const { passing, mask } = view.model;
+
+    // Driven through the control a reader uses, not the method behind it.
+    view.startSitesToggle.checked = false;
+    view.startSitesToggle.dispatch('change');
+    const hidden = flush();
+    assert.equal(tickRowOps(view, hidden).length, 0, 'no tick is painted while the layer is hidden');
+    // Marks only. The CDS bars are still painted, the filter mask and the
+    // passing count are the objects they were, and the sites are still joined:
+    // hiding a layer is not a filter, a ranking, or a data selection.
+    assert.ok(hidden.some((op) => op.op === 'fillRect'), 'the CDS bars are still drawn');
+    assert.equal(view.model.passing, passing);
+    assert.equal(view.model.mask, mask);
+    assert.equal(view.layers.get(CHROMOSOME).tss.length, 20);
+    // A hidden layer leaves no stale target: the tick row answers as it does
+    // when the sites are drawn, which is that nothing there is selectable.
+    assert.equal(view.hitTest(200, view.bands()[0].layout.tssTop + 1), -1);
+
+    view.startSitesToggle.checked = true;
+    view.startSitesToggle.dispatch('change');
+    const shown = flush();
+    assert.equal(tickRowOps(view, shown).length, 20, 'every tick returns, at its own position');
+    assert.deepEqual(tickRowOps(view, shown).map((op) => op.x), tickRowOps(view, ops).map((op) => op.x));
+  } finally {
+    mounted.restore();
+  }
+});
+
+test('the control does not override the density rule in either direction', () => {
+  // The rule is the view's, and the reader's choice is theirs: showing the
+  // layer at a zoom where the ticks would merge draws nothing, exactly as it
+  // did before the control existed.
+  const measured = mount({ genes: tickGenes(1) });
+  const { width } = measured.view.bands()[0];
+  measured.restore();
+  const crowded = mount({ genes: tickGenes(Math.floor(width / MIN_TSS_SPACING_PX) + 1) });
+  try {
+    const { view, flush, ops } = crowded;
+    assert.equal(tickRowOps(view, ops).length, 0);
+    view.setStartSitesVisible(false);
+    assert.equal(tickRowOps(view, flush()).length, 0);
+    view.setStartSitesVisible(true);
+    assert.equal(tickRowOps(view, flush()).length, 0, 'showing the layer does not thin the row in');
+  } finally {
+    crowded.restore();
+  }
+});
+
+test('Reset view moves the camera only, so a hidden start-site layer stays hidden', () => {
+  const mounted = mount({ genes: tickGenes(20) });
+  try {
+    const { view, flush } = mounted;
+    const track = view.primaryTrack();
+    view.setStartSitesVisible(false);
+    view.zoomBand(view.bands()[0], 4, 1_000_000);
+    flush();
+    const zoomed = view.windowFor(track);
+    assert.ok(zoomed.to - zoomed.from + 1 < track.lengthBp, 'the camera moved');
+
+    view.resetView();
+    const frame = flush();
+    assert.deepEqual(view.windowFor(track), { from: 1, to: track.lengthBp });
+    assert.equal(view.showStartSites, false,
+      'Reset view returns the windows and keeps every other view choice, as it does Show filtered-out genes');
+    assert.equal(tickRowOps(view, frame).length, 0);
+
+    // A rerender from the app syncs the control in place rather than rebuilding
+    // it, so a reader who is holding it keeps keyboard focus and pointer capture.
+    const toggle = view.startSitesToggle;
+    view.update(view.model);
+    flush();
+    assert.equal(view.startSitesToggle, toggle);
+    assert.equal(toggle.checked, false);
+  } finally {
+    mounted.restore();
+  }
+});
+
 test('the start-site row is drawn while every tick fits, and dropped one tick past that', () => {
   // The previous test holds the two ends of the rule, a whole chromosome against
   // a zoomed window. This one holds the threshold itself, which is the band's own
@@ -1131,7 +1221,12 @@ test('Scale sits beside Colour by, offers every scale, and disables the ones wit
     assert.deepEqual(viewRow.children.slice(0, 3).map((child) => child.textContent),
       ['Zoom in (+)', 'Zoom out (−)', 'Reset view']);
     assert.equal(viewRow.children[3].children[0], view.showHidden);
-    assert.equal(viewRow.children.length, 4, 'and no field shares the button row');
+    // The two visibility checkboxes follow the buttons on the same row; what
+    // this count holds is that no Colour by or Scale *field* wrapped into it,
+    // which is what the flat toolbar used to do at 375 px.
+    assert.equal(viewRow.children[4].children[0], view.startSitesToggle);
+    assert.equal(viewRow.children[4].children[1].textContent, 'Show Tan 2018 start sites');
+    assert.equal(viewRow.children.length, 5, 'and no field shares the button row');
     // The figure itself no longer carries the explanation: it lives in the
     // toolbar, directly beneath the row whose metric it explains.
     assert.equal(view.figure.children[1], view.windowReadout);
@@ -2401,6 +2496,10 @@ test('an organism with no start-site layer gets no tick row and no copy-number c
     assert.equal(view.model.verified, true);
     assert.deepEqual(view.model.tracks.map((track) => track.accession), ['NC_000913.3']);
     assert.deepEqual(view.layers.get('NC_000913.3').tss, []);
+    // No layer, so no control for it: a show/hide for a row that can never fill
+    // would offer evidence nobody admitted for this organism.
+    assert.equal(view.startSitesToggle, undefined);
+    assert.equal(view.figure.children[0].children[4].children.length, 4);
     // The conventions note says nothing of a tick row that will never fill.
     assert.ok(!/start site/i.test(view.markerNote.textContent));
     assert.match(view.markerNote.textContent, /Operon brackets .* fill in as you zoom\./);

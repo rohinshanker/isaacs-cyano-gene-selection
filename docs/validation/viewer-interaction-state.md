@@ -114,6 +114,56 @@ checkbox, keyboard focus stays on the checkbox after the legend rebuilds, and
 hover, click, and multi-select filtering act on the resolved category; see
 [source-derived-categories.md](source-derived-categories.md).
 
+## Start-site marks that land on each other
+
+The gene visualizer draws every mapped start site at the distance its study
+published, so a dense locus draws a cluster of overlapping heads:
+`M744_RS01695`'s tightest marks are 2.7 view units apart as 6-unit circles. The
+anchors are the evidence, so nothing is moved, thinned, merged or dropped to
+make room. What makes the cluster readable is a list, not a different picture.
+
+**The complete list.** `tssSiteRows` in `core/gene-view-model.js` carries every
+published row of a gene, and the viewer renders one row per source row inside a
+closed `details.gene-view-sites` disclosure beneath the distance caveat, titled
+with the study and the row count. Each row carries its identifier, the type it
+was published as, its strand, its replicon and published coordinate, the
+distance published against that study's own gene model, the disagreement with
+its own coordinate where there is one, and whether the row records condition
+read counts. A field the row does not carry says so and is never filled in from
+a neighbour. A row with **no published distance** has no mark and stays in the
+list, stated as unmapped: dropping it from both would make it indistinguishable
+from a row nobody published.
+
+The list is what a touch or keyboard reader has, and it is why it exists: a
+`<title>` on a head needs a pointer and resolves to whichever head is on top, so
+it cannot answer which site is which inside a cluster. The disclosure takes
+focus and its rows are plain text in drawn order. It is built only for an
+organism that declares the layer, and only once the file has landed — a list
+built mid-join would read as the locus's complete set of sites.
+
+**Grouping is display only.** `overlapGroups` links marks that are less than one
+drawn head apart, by single linkage so a chain is one cluster. Two marks closer
+than a head overlap at every rendered width and two a head apart at none,
+because the viewBox scales the head and the gap by the same factor. Every mark
+joins exactly one group, groups are numbered over the overlapping ones only, and
+each affected row says it is `drawn in overlapping cluster N of M … (display
+only)`. The accessible description says the same count and adds that a cluster
+is where the marks are drawn at this width, not one site and not continuous
+evidence. No row is ever folded into another.
+
+The chromosome view's own overlap answer is different and stays as it was: its
+tick row is dropped whole below 3 px of spacing rather than thinned, and its
+show/hide control is contracted in
+[chromosome-view.md](chromosome-view.md#showing-and-hiding-the-start-site-layer).
+That control is view state and not shared with these marks, which keep their
+default visibility.
+
+Coverage is `tests/js/tss-overlap-inspection.test.mjs`, over the shipped
+`site/data/tss_evidence.json` as well as fixtures: the dense locus, both
+strands, a site-only gene, unmapped and malformed rows, the loading and failed
+states, an organism with no layer, the linkage rule at exactly one head width,
+and a per-gene audit that every shipped row reaches the list exactly once.
+
 ## Which mark is seen where they overlap
 
 At 2,715 CDSs many marks land on the same pixels, so something has to be on top

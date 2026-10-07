@@ -13,22 +13,32 @@ Opened during the owner's ticket-planning session. D1, the completeness audit of
 mapped Tan 2018 sites, is done: every shipped site reaches the drawing faithfully,
 nothing needed repair, and the audit now runs on every test run over the shipped file
 rather than a fixture. Its counts, case coverage and rendered checks are recorded
-once, under [Verification](#d1-2026-10-02). The rest of the ticket has not started:
-the chromosome site-type toggles, the shared marker layer, and the overlap-readability
-item below are all open. The owner fixed the next implementation scope on
-2026-10-07; see the bounded plan below.
+once, under [Verification](#d1-2026-10-02).
+
+**D2, the owner-authorized Tan-only pass, shipped 2026-10-07** and is recorded under
+[D2](#d2-2026-10-07): the chromosome start-site layer now has its own show/hide, and
+every colliding gene-view mark is inspectable in a complete per-row list. The ticket
+stays open. What remains is everything the owner's 2026-10-07 decision deliberately
+left out: the broader site-type taxonomy and its toggles, the shared marker layer for
+future admitted initiation, termination and regulatory features, layer state that is
+shared between views or persisted into a link, and the close-up's missing start-site
+marks. Clarifying questions 1 to 8 still belong to that work; question 4 in
+particular — whether a chromosome layer control should also govern the gene views —
+is what keeps this pass's control view-local.
 
 The gene viewer renders Tan TSS evidence through `tssMarks()`, which lives only in
 `site/js/core/gene-view-model.js`. `site/js/ui/gene-viewer.js` draws `model.tss` and
 derives nothing of its own, so there is one path from the evidence file to a mark
 and D1 kept it that way.
 
-**Found, not repaired, and not D1's scope:** at desktop widths `M744_RS01695`'s
-tightest marks sit 2.3 px apart as 5.1 px circles, so the heads overlap into a
-cluster. Every mark is still drawn and each keeps its own `<title>`, so no evidence
-is lost, but the cluster is not separately readable. That is the "preserve readable
-markers when sites overlap" item under Required behavior, included in the
-owner-authorized Tan-only pass below.
+**Found by D1, addressed by D2:** at desktop widths `M744_RS01695`'s tightest marks
+sit 2.3 px apart as 5.1 px circles, so the heads overlap into a cluster. Every mark is
+still drawn and each keeps its own `<title>`, so no evidence is lost, but the cluster
+is not separately readable. The marks were not moved — their published distances are
+the evidence — so the cluster is still drawn as a cluster; what D2 added is the
+complete per-row list beneath the picture that says which site is which, and the
+labelling that names a cluster as a fact about the drawing. That is the "preserve
+readable markers when sites overlap" item under Required behavior.
 
 `site/js/ui/chromosome-view.js` hides **all** start-site ticks in a band when
 `sites.length * MIN_TSS_SPACING_PX > band.width`, with `MIN_TSS_SPACING_PX = 3`
@@ -76,6 +86,15 @@ new interactions; they are not prerequisites for faithful Tan visibility and
 overlap inspection. The separate recoding-effect metric's site-type question is
 not answered by this display-only scope decision.
 
+**Delivered 2026-10-07.** Every bullet above is implemented and verified; the
+contracts are in
+[chromosome-view.md](../../validation/chromosome-view.md#showing-and-hiding-the-start-site-layer)
+and
+[viewer-interaction-state.md](../../validation/viewer-interaction-state.md#start-site-marks-that-land-on-each-other),
+and the evidence is under [D2](#d2-2026-10-07). No coordinate basis, default
+visibility, source identity or density rule changed, and no new dataset, type
+taxonomy or persisted state was added.
+
 ## Claude Science claims
 
 None for auditing and faithfully rendering existing admitted Tan evidence or
@@ -110,7 +129,7 @@ this ticket is activated.
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Existing Tan evidence/provenance and current rendering audit | Fix any Tan marker omissions now, without waiting on new data |
-| D2 | Initial scope decided 2026-10-07: existing Tan TSS visibility and overlap inspection; retain current coordinate/default conventions | Implement the Tan-only pass; broader taxonomy/persistence decisions apply to extensions |
+| D2 | Initial scope decided 2026-10-07: existing Tan TSS visibility and overlap inspection; retain current coordinate/default conventions | Tan-only pass implemented and verified 2026-10-07; broader taxonomy/persistence decisions apply to extensions |
 | D3 | Shared feature representation with explicit point/interval coordinates, association, source, and evidence basis | Integrate future feature types consistently |
 | D4 | Per-dataset admission, source semantics, licence, mapping, and condition checks | Display each new source; the generic marker UI does not wait on all sources |
 
@@ -196,6 +215,73 @@ index entry checked; `git diff --check` passed. Repository gates passed:
 contract validation (96 passed, 0 failed, 1 declared skip). No rendered behavior
 was validated in that ticket-opening pass.
 
+### D2, 2026-10-07
+
+The owner-authorized Tan-only pass. Two surfaces, neither of which changes what is
+drawn where.
+
+**The chromosome start-site layer has its own show/hide.** `Show Tan 2018 start
+sites` sits beside `Show filtered-out genes` on the view-button row and is built only
+for an organism that declares a `tssEvidence` layer, so the E. coli page has neither
+the control nor the row. It governs the tick row and nothing else: with the layer
+hidden the filter mask and the passing count are the objects they were, every CDS bar
+is still painted, and the joined sites are still on the model. It is this view's own
+state — no URL field, no storage, no export field — and **Reset view does not touch
+it**, exactly as it does not touch Show filtered-out genes. The 3 px density rule is
+unchanged in both directions: showing the layer where the ticks would merge still
+draws nothing. The conventions note now distinguishes four states rather than three,
+hidden among them, because an unexplained empty row would read as a genome with no
+start sites.
+
+**Every colliding mark is inspectable.** The marks keep their published distances, so
+`M744_RS01695`'s cluster is still drawn as a cluster — the crowding Current State
+named is explained, not repaired by moving a mark. Beneath the picture a closed
+disclosure, `Tan 2018 start sites (20)`, lists one row per published source row with
+its identifier, type, strand, replicon and published coordinate, the published
+upstream distance, the placement gap where the chromosome's coordinate disagrees, and
+whether the row records condition read counts. Rows that share drawn space carry
+`drawn in overlapping cluster N of M … (display only)`; the grouping is single
+linkage at exactly one drawn mark head, which is the width at which two heads overlap
+at every rendered size and at none above it. A row with no published distance has no
+mark and is kept in the list as explicitly unmapped. The list is the keyboard and
+touch path: a `<title>` needs a pointer and answers for whichever head is on top.
+
+Tests: `tests/js/tss-overlap-inspection.test.mjs` (13 tests — the dense locus over the
+shipped file, both strands, a site-only gene, a pooled score inventing no row, an
+unmapped row, a malformed row that borrows nothing from its neighbour, the loading and
+failed states, an organism with no layer, the linkage rule at exactly one head width,
+and a per-gene audit that all 2,432 shipped rows reach the list exactly once), plus the
+chromosome control, density-rule and Reset-view cases in
+`tests/js/chromosome-view.test.mjs` and the fourth conventions state in
+`tests/js/loading-states.test.mjs`.
+
+Rendered with the UI render/inspect/repair skill against the real site
+(`python -m http.server`, port 8279, this worktree) at 375×812, 768×1024, 1280×800 and
+1440×900, on the Chromosome tab and on a scatter tab, pinning `M744_RS01695` (20 sites,
+densest) and `M744_RS09240` (minus strand), and on the E. coli page. Both gene-viewer
+mount points — the controls rail and the gene detail card — carry the list, each with
+all 20 rows, none clipped at any width. The canvas was read back with `getImageData`:
+with the layer shown the tick colour occupies 119 columns at a 160 kb window, and with
+it hidden zero pixels of that colour remain while 20,345 painted pixels and the window
+readout are unchanged. Toggling by Tab and Space keeps focus on the checkbox, and the
+hash gains no field. Reset view returned every track to its full length and left the
+layer hidden. `document.documentElement.scrollWidth <= innerWidth` at 375, 1280 and
+1440; at 768 the page is 3 px wide, which the baseline commit `7f10b69` reproduces
+exactly with no control and no list present — a pre-existing `table.metric-table`
+overflow in the gene detail, not this pass's and not repaired here. No console errors
+on any route; the single warning was raised by the `getImageData` probe itself.
+Screenshots and semantic snapshots are under `/tmp/cyano-tan-20261007`.
+
+Gates on the final patch: `npm test` 1,132 passed; `.venv/bin/python -m pytest -q` 494
+passed, 1 skipped, 36 subtests; `.venv/bin/python tools/validate_contract.py` 116
+passed, 0 failed, 1 declared skip. A fresh worktree needs the canonical `.venv` and the
+gitignored `data/raw/GCF_000817325.1_*` release inputs copied in before the pytest gate
+will run.
+
+Not verified here, and not in this pass's scope: the broader site-type toggles and the
+shared marker layer, any layer state shared between views or carried in a link, and the
+sequence close-up's missing start-site marks.
+
 ### D1, 2026-10-02
 
 `tests/js/gene-view-tan-evidence.test.mjs` runs the audit over the shipped
@@ -249,9 +335,9 @@ contract validation 98 passed with 0 failed and 1 declared skip. The pytest run 
 the gitignored `data/raw/GCF_000817325.1_*` release inputs, which a fresh worktree
 does not carry; copy them from the canonical checkout before running the gate there.
 
-Still to verify when the rest of the ticket is implemented: the Chromosome type
-toggles and the shared marker layer, at the same widths, with mouse, keyboard and
-touch. Check Tan fixtures and source/provenance mappings independently of renderer
+Still to verify when the rest of the ticket is implemented: the broader Chromosome
+type toggles and the shared marker layer, at the same widths, with mouse, keyboard and
+touch. The existing Tan layer's own control is verified under [D2](#d2-2026-10-07). Check Tan fixtures and source/provenance mappings independently of renderer
 geometry. Run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`.
 

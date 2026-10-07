@@ -327,6 +327,11 @@ export class ChromosomeView {
     this.organism = organism;
     /** The organism's start-site study, or null when it publishes none. */
     this.startSites = layerOf(organism, 'tssEvidence');
+    // Whether that layer's tick row is drawn. View state of this view, like
+    // its per-replicon windows: it changes no value, no filter and no
+    // selection, so it is not in the shared state, the link or the export, and
+    // it is not reset by Reset view, which moves the camera and nothing else.
+    this.showStartSites = true;
     this.built = false;
     this.model = null;
     this.windows = new Map();
@@ -529,6 +534,27 @@ export class ChromosomeView {
 
     viewRow.append(this.zoomIn, this.zoomOut, this.resetButton, showHiddenRow);
 
+    // The start-site layer's own show/hide, beside the other visibility
+    // checkbox and built only for an organism that publishes the layer: a
+    // control for a row that can never fill would be a promise of evidence
+    // nobody admitted. It governs these marks and nothing else — no gene is
+    // filtered, no value changes, no dataset selection moves.
+    if (this.startSites) {
+      const startSitesRow = document.createElement('span');
+      startSitesRow.className = 'checkbox-row';
+      this.startSitesToggle = document.createElement('input');
+      this.startSitesToggle.type = 'checkbox';
+      this.startSitesToggle.id = 'chromosome-show-start-sites';
+      this.startSitesToggle.addEventListener('change', () => {
+        this.setStartSitesVisible(this.startSitesToggle.checked);
+      });
+      const startSitesLabel = document.createElement('label');
+      startSitesLabel.htmlFor = 'chromosome-show-start-sites';
+      startSitesLabel.textContent = `Show ${this.startSites.label} start sites`;
+      startSitesRow.append(this.startSitesToggle, startSitesLabel);
+      viewRow.append(startSitesRow);
+    }
+
     this.colourHelp = document.createElement('details');
     this.colourHelp.className = 'method-help';
     this.colourHelp.id = 'chromosome-colour-help';
@@ -668,6 +694,7 @@ export class ChromosomeView {
     syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl, this.scaleNotice);
     this.syncDrawDirection();
     this.showHidden.checked = showHidden;
+    if (this.startSitesToggle) this.startSitesToggle.checked = this.showStartSites;
     this.detailJump.hidden = !this.model.hasSelection;
   }
 
@@ -759,6 +786,15 @@ export class ChromosomeView {
             + 'each axis is empty.'
           : `The ${study} gene-linked start sites are still loading, so the tick row above `
             + 'each axis is empty for now.'));
+    } else if (!this.showStartSites) {
+      // Hidden by the reader, which is a fourth state and not one of the other
+      // three: the file has landed, the sites are unchanged, and the row is
+      // empty because the control says so. Left unsaid, an empty row would read
+      // as a genome with no start sites, which is the thing this view must
+      // never imply.
+      parts.push(`${brackets} The ${study} gene-linked start sites are hidden by `
+        + `“Show ${study} start sites”, so the tick row above each axis is empty; the sites `
+        + 'themselves are unchanged, and no CDS is filtered by hiding them.');
     } else {
       parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
         + `${study} gene-linked start sites on the tick row above each axis, appear once the window `
@@ -1336,8 +1372,13 @@ export class ChromosomeView {
    * whole-chromosome zoom 2,413 of them over a few hundred pixels merge into a
    * solid bar, which reads as continuous evidence across the genome rather than
    * as the discrete start sites it is.
+   *
+   * Hidden outright when the reader turns the layer off; see
+   * {@link ChromosomeView#setStartSitesVisible}. The density rule below is
+   * unchanged by that control in either direction.
    */
   paintTss(ctx, band) {
+    if (!this.showStartSites) return;
     const { layout, scale } = band;
     const sites = (this.layers.get(band.track.accession)?.tss ?? [])
       .filter((site) => site.position >= band.window.from && site.position <= band.window.to);
@@ -1558,7 +1599,28 @@ export class ChromosomeView {
   }
 
   /**
-   * Every track back to its full extent. Selections and filters are untouched.
+   * Show or hide the start-site tick row.
+   *
+   * Repaints and rewrites the conventions note, so the note says the row is
+   * hidden rather than leaving an empty row to read as a genome with no start
+   * sites. Nothing is rebuilt, so the checkbox keeps pointer capture and
+   * keyboard focus across the change.
+   */
+  setStartSitesVisible(visible) {
+    const next = Boolean(visible);
+    if (this.showStartSites === next) return;
+    this.showStartSites = next;
+    if (this.startSitesToggle) this.startSitesToggle.checked = next;
+    if (!this.model?.verified) return;
+    this.renderSummaries();
+    this.draw();
+    this.handlers.onAnnounce?.(`${this.startSites.label} start sites `
+      + `${next ? 'shown' : 'hidden'} on the chromosome view.`);
+  }
+
+  /**
+   * Every track back to its full extent. Selections, filters and the
+   * visibility checkboxes are untouched: this control is the camera's.
    * A reset that comes from applying a shared link is silent, because the caller
    * announces the larger change it is part of.
    */

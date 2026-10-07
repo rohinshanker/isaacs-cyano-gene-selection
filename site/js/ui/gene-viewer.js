@@ -19,7 +19,9 @@
  */
 import { pendingNote } from './loading-note.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
-import { geneViewModel, fractionOf, ticksFor } from '../core/gene-view-model.js';
+import {
+  geneViewModel, fractionOf, overlapGroups, ticksFor,
+} from '../core/gene-view-model.js';
 import { formatCount } from './format.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -33,6 +35,15 @@ const TSS_Y = 26;
 const RULER_Y = 74;
 /** Smallest drawn width for a three-nucleotide mark, in view units. */
 const MIN_CODON_WIDTH = 5;
+/**
+ * Radius of one start-site head, in view units.
+ *
+ * Exported because it is also what decides whether two heads share drawn
+ * space: the viewBox scales the head and the gap between two heads by the same
+ * factor, so two marks less than a diameter apart here overlap at every
+ * rendered width, and more than a diameter apart at none.
+ */
+export const TSS_MARK_RADIUS = 3;
 
 function svg(name, attributes = {}) {
   const node = document.createElementNS(SVG_NS, name);
@@ -84,6 +95,7 @@ export function describeGeneView(model, tssPending = null, organism = DEFAULT_OR
       + `upstream at ${distances}, at the distances that study published against its own gene `
       + 'model, not remeasured against this release.');
     parts.push(placementDivergenceSentence(model.tss));
+    parts.push(...overlapSentences(model, startSites));
   } else if (tssPending) {
     // Not loaded is not none: the start-site file has not landed, or could not.
     parts.push(tssPending === 'failed'
@@ -98,6 +110,32 @@ export function describeGeneView(model, tssPending = null, organism = DEFAULT_OR
   // standing right next to it.
   if (!tssPending) parts.push(organism.copy.noAdmittedTrackData);
   return parts.join(' ');
+}
+
+/**
+ * Drawn position of one nucleotide offset, in view units.
+ *
+ * The one scale the picture, its description and the start-site list all read,
+ * so none of them can describe a mark somewhere the drawing did not put it.
+ */
+function xScale(model) {
+  const inner = VIEW_WIDTH - MARGIN_X * 2;
+  return (offset) => MARGIN_X + fractionOf(model.domain, offset) * inner;
+}
+
+/**
+ * This gene's start-site marks grouped by the drawn space they share.
+ *
+ * Display only, and labelled as such wherever it is shown: the marks keep
+ * their own coordinates and every site keeps its own row in the list below the
+ * picture. A group never stands for one site or for continuous evidence.
+ */
+export function startSiteClusters(model) {
+  // Grouped over the published rows, not over the marks projected from them,
+  // so a group member is the row the list prints and two rows that share an
+  // identifier cannot be labelled as each other.
+  const drawn = model.tssSites.filter((row) => row.drawn);
+  return overlapGroups(drawn, xScale(model), TSS_MARK_RADIUS * 2);
 }
 
 function drawRuler(root, model, x) {
@@ -178,7 +216,7 @@ function drawTss(root, model, x, startSites) {
     const tx = x(site.offset);
     const mark = svg('g');
     mark.append(svg('line', { x1: tx, x2: tx, y1: TSS_Y, y2: TRACK_Y - 2 }));
-    mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: 3 }));
+    mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: TSS_MARK_RADIUS }));
     const title = svg('title');
     title.textContent = `${site.id}: published ${site.distanceNt} nt upstream of the `
       + `${startSites.label} gene-model start`
@@ -190,6 +228,39 @@ function drawTss(root, model, x, startSites) {
     group.append(mark);
   }
   root.append(group);
+}
+
+/**
+ * The start-site list's own title, so the description, the summary and the
+ * sentence that points a reader at the list cannot name different things.
+ *
+ * It counts published rows rather than drawn marks, because a row with no
+ * published distance has no mark and is in the list all the same.
+ */
+function startSiteListTitle(rows, startSites) {
+  return `${startSites.label} start sites (${formatCount(rows.length)})`;
+}
+
+/**
+ * What the picture does about start-site marks that land on each other, and
+ * where each of them can still be read.
+ *
+ * Nothing is dropped, thinned or merged to make room: the marks stay at the
+ * distances their study published, so a dense locus draws a cluster of
+ * overlapping heads. A `<title>` cannot answer "which site is which" there —
+ * it needs a pointer and resolves to whichever head is on top — so the
+ * sentence points at the list that can, and says what a cluster is and is not.
+ */
+function overlapSentences(model, startSites) {
+  const clusters = startSiteClusters(model).filter((group) => group.length > 1);
+  if (clusters.length === 0) return [];
+  const crowded = clusters.reduce((total, group) => total + group.length, 0);
+  return [`${crowded} of those marks share drawn space in ${clusters.length} overlapping `
+    + `${clusters.length === 1 ? 'cluster' : 'clusters'}, so their heads are not separately `
+    + 'readable in the picture. Every site is listed on its own row, with its identifier, '
+    + 'strand, published coordinate and published distance, under '
+    + `"${startSiteListTitle(model.tssSites, startSites)}" below. A cluster is where the `
+    + 'marks are drawn at this width, not one site and not continuous evidence.'];
 }
 
 /**
@@ -228,13 +299,110 @@ export function geneViewSvg(model, tssPending = null, organism = DEFAULT_ORGANIS
   description.textContent = describeGeneView(model, tssPending, organism);
   root.append(description);
   root.setAttribute('aria-label', describeGeneView(model, tssPending, organism));
-  const inner = VIEW_WIDTH - MARGIN_X * 2;
-  const x = (offset) => MARGIN_X + fractionOf(model.domain, offset) * inner;
+  const x = xScale(model);
   drawRuler(root, model, x);
   drawStart(root, x);
   drawTrack(root, model, x);
   drawTss(root, model, x, layerOf(organism, 'tssEvidence'));
   return root;
+}
+
+/**
+ * One row of the start-site list, as a reader reads it.
+ *
+ * Every field comes from the source row: its identifier, the site type it was
+ * published as, its strand, the replicon and coordinate the study measured it
+ * at, the distance it published against its own gene model, the disagreement
+ * with its own coordinate where there is one, what the row records, and where
+ * this width draws it. A field the row does not carry says so; none is filled
+ * in from a neighbour.
+ */
+function siteRowText(row, cluster) {
+  const parts = [];
+  parts.push(row.type ?? 'site type not recorded');
+  parts.push(row.strand === '+' || row.strand === '-'
+    ? `${row.strand === '-' ? 'minus' : 'plus'} strand` : 'strand not recorded');
+  parts.push(row.position === null
+    ? 'no published genome coordinate'
+    : `${row.replicon ?? 'replicon not recorded'} ${formatCount(row.position)}`);
+  parts.push(row.distanceNt === null
+    ? 'no published upstream distance, so no mark is drawn'
+    : `published ${formatCount(row.distanceNt)} nt upstream of the published gene-model start`);
+  if (row.placementGapNt > 0) {
+    parts.push(`its coordinate is ${formatCount(row.impliedDistanceNt)} nt from this release's `
+      + `start, ${formatCount(row.placementGapNt)} nt from where this view draws it`);
+  }
+  parts.push(row.evidence === 'measured'
+    ? `measured site, ${formatCount(row.readCount)} condition read `
+      + `${row.readCount === 1 ? 'count' : 'counts'} in this row`
+    : 'measured site, no condition read count in this row');
+  if (cluster) parts.push(cluster);
+  return parts.join(' · ');
+}
+
+/**
+ * The complete start-site list for one gene: every published row, drawn or not.
+ *
+ * This is how a colliding mark stays inspectable. The picture keeps each mark
+ * at its own published distance, so at `M744_RS01695` twenty heads overlap into
+ * a cluster, and the `<title>` on a head needs a pointer and answers for
+ * whichever head is on top. One row per source row answers for all of them, by
+ * pointer, by touch and by keyboard: the disclosure takes focus, and its rows
+ * are plain text that reads in order.
+ *
+ * It is a disclosure rather than an always-open list because twenty rows would
+ * push the rest of this reference view out of a side rail; closed, it adds one
+ * line. No row is a control and nothing here changes what is drawn, filtered or
+ * ranked.
+ */
+function startSiteList(model, startSites) {
+  const rows = model.tssSites;
+  if (rows.length === 0) return null;
+  // Numbered over the overlapping clusters only, which is what the picture
+  // shows and what the description counts; a mark drawn clear of its
+  // neighbours is in no cluster and says nothing about one.
+  const clusters = startSiteClusters(model).filter((group) => group.length > 1);
+  const clusterOf = new Map();
+  clusters.forEach((group, index) => {
+    for (const row of group) {
+      clusterOf.set(row, `drawn in overlapping cluster ${index + 1} of `
+        + `${clusters.length}, with ${group.length - 1} other `
+        + `${group.length === 2 ? 'site' : 'sites'} (display only)`);
+    }
+  });
+
+  const details = document.createElement('details');
+  details.className = 'method-help gene-view-sites';
+  const summary = document.createElement('summary');
+  summary.textContent = startSiteListTitle(rows, startSites);
+  details.append(summary);
+
+  const note = document.createElement('p');
+  note.className = 'panel-note';
+  const unmapped = rows.filter((row) => !row.drawn).length;
+  note.textContent = `Every row ${startSites.citation} published for this locus, each a measured `
+    + 'start site rather than a prediction, at the distance that study published against its own '
+    + 'gene model. Marks closer together than one mark head overlap in the picture; the cluster '
+    + 'numbers below say where this width draws them and group nothing else, so each site keeps '
+    + 'its own coordinate and its own row.'
+    + (unmapped > 0
+      ? ` ${formatCount(unmapped)} ${unmapped === 1 ? 'row has' : 'rows have'} no published `
+        + 'upstream distance and so no mark; the row is kept rather than dropped.'
+      : '');
+  details.append(note);
+
+  const list = document.createElement('ol');
+  list.className = 'gene-view-site-rows';
+  for (const row of rows) {
+    const item = document.createElement('li');
+    const id = document.createElement('span');
+    id.className = 'gene-view-site-id';
+    id.textContent = row.id ?? 'identifier not recorded';
+    item.append(id, document.createTextNode(` · ${siteRowText(row, clusterOf.get(row))}`));
+    list.append(item);
+  }
+  details.append(list);
+  return details;
 }
 
 function legendRow(items) {
@@ -339,6 +507,14 @@ export function renderGeneViewer(host, gene, {
       + 'their own gene model. They are not remeasured against this release, whose annotated '
       + 'start may differ, and they measure initiation rather than transcript abundance.';
     host.append(caveat);
+  }
+
+  // Beneath the caveat that states the distance basis the list reads, and only
+  // once the file has landed: a list built while the join is in flight would
+  // read as this locus's complete set of sites when it is not.
+  if (startSites && !tssPending) {
+    const sites = startSiteList(model, startSites);
+    if (sites) host.append(sites);
   }
 
   if (model.spliced) {

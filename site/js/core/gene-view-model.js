@@ -90,7 +90,7 @@ export function orientedSegments(gene) {
 }
 
 /**
- * Published Tan 2018 start sites as upstream offsets.
+ * Every published Tan 2018 start-site row of one gene, drawn or not.
  *
  * `sourceStartDistanceNt` is the distance the authors published against their
  * own gene model, never recomputed against this release's start. It is drawn as
@@ -104,28 +104,100 @@ export function orientedSegments(gene) {
  * disagreement, 0 when both placements coincide; the view labels the gap rather
  * than choosing a side, because which placement a construct boundary should
  * follow is the lab's call.
+ *
+ * A row with no published distance has no offset to draw at, so it carries
+ * `drawn: false` and stays in this list. Dropping it here as well as from the
+ * drawing would make an unmapped row indistinguishable from one the study never
+ * published, which is the one thing an inspection list must not do.
+ *
+ * `readCount` is how many finite condition read counts the row itself carries,
+ * over whatever conditions it reports; `evidence` is `measured` while it
+ * carries one and `unrecorded` when it carries none. Neither is a claim about
+ * initiation: a published site with no counts in this extract is still a
+ * measured site, and is said to be one.
  */
-export function tssMarks(gene) {
-  const sites = Array.isArray(gene.tssEvidence) ? gene.tssEvidence : [];
+export function tssSiteRows(gene) {
+  const sites = Array.isArray(gene?.tssEvidence) ? gene.tssEvidence : [];
   return sites
-    .filter((site) => Number.isFinite(site?.sourceStartDistanceNt))
     .map((site) => {
-      const position = Number.isFinite(site.position) ? site.position : null;
+      const distanceNt = Number.isFinite(site?.sourceStartDistanceNt)
+        ? site.sourceStartDistanceNt : null;
+      const position = Number.isFinite(site?.position) ? site.position : null;
       const impliedDistanceNt = position === null ? null
         : gene.strand === '-' ? position - gene.end : gene.start - position;
+      const readCount = Object.values(site?.rawReads ?? {})
+        .flat()
+        .filter((value) => Number.isFinite(value)).length;
       return {
-        id: site.id,
-        offset: -site.sourceStartDistanceNt,
-        distanceNt: site.sourceStartDistanceNt,
+        id: site?.id ?? null,
+        type: site?.type ?? null,
+        offset: distanceNt === null ? null : -distanceNt,
+        distanceNt,
         impliedDistanceNt,
-        placementGapNt: impliedDistanceNt === null ? null
-          : Math.abs(impliedDistanceNt - site.sourceStartDistanceNt),
-        strand: site.strand ?? null,
+        placementGapNt: impliedDistanceNt === null || distanceNt === null ? null
+          : Math.abs(impliedDistanceNt - distanceNt),
+        strand: site?.strand ?? null,
         position,
-        replicon: site.replicon ?? null,
+        replicon: site?.replicon ?? null,
+        readCount,
+        evidence: readCount > 0 ? 'measured' : 'unrecorded',
+        drawn: distanceNt !== null,
       };
     })
-    .sort((a, b) => a.offset - b.offset);
+    // Drawn rows in drawn order, then the rows with nowhere to be drawn in the
+    // order the source published them; `sort` is stable, so that order holds.
+    .sort((a, b) => {
+      if (a.drawn !== b.drawn) return a.drawn ? -1 : 1;
+      return a.drawn ? a.offset - b.offset : 0;
+    });
+}
+
+/**
+ * The start-site marks the track can place, in drawn order.
+ *
+ * The drawable rows of {@link tssSiteRows}, projected onto the fields a mark
+ * is drawn and titled from. The inspection list reads the rows themselves, so
+ * the two cannot disagree about a site.
+ */
+export function tssMarks(gene) {
+  return tssSiteRows(gene)
+    .filter((row) => row.drawn)
+    .map(({
+      id, offset, distanceNt, impliedDistanceNt, placementGapNt, strand, position, replicon,
+    }) => ({
+      id, offset, distanceNt, impliedDistanceNt, placementGapNt, strand, position, replicon,
+    }));
+}
+
+/**
+ * Marks that share drawn space, grouped by single linkage, in drawn order.
+ *
+ * Two marks less than `minSeparation` apart on the drawn axis overlap at every
+ * rendered size, because the viewBox scales the gap and the mark head by the
+ * same factor. A run of such pairs is one visual cluster even where its two
+ * ends are further apart than that, which is why this links rather than
+ * buckets: `M744_RS01695`'s tightest marks are 2.7 units apart in a chain of
+ * 6-unit heads.
+ *
+ * Every mark joins exactly one group and groups keep drawn order, so a caller
+ * can label each mark with where it is drawn and lose none of them. A group is
+ * a fact about the picture at this width and never a claim that one biological
+ * site, or one continuous stretch of evidence, is behind it.
+ *
+ * @param {{offset: number}[]} marks in ascending offset.
+ * @param {(offset: number) => number} xOf drawn position of one offset.
+ * @param {number} minSeparation the drawn width one mark head covers.
+ */
+export function overlapGroups(marks, xOf, minSeparation) {
+  const groups = [];
+  let previous = null;
+  for (const mark of marks) {
+    const x = xOf(mark.offset);
+    if (previous === null || Math.abs(x - previous) >= minSeparation) groups.push([]);
+    groups[groups.length - 1].push(mark);
+    previous = x;
+  }
+  return groups;
 }
 
 /**
@@ -138,6 +210,7 @@ export function geneViewModel(gene) {
   if (!gene || !Number.isFinite(gene.start) || !Number.isFinite(gene.end)) return null;
   const segments = orientedSegments(gene);
   const codingEnd = segments[segments.length - 1].to;
+  const sites = tssSiteRows(gene);
   const marks = tssMarks(gene);
   const furthestUpstream = marks.length > 0 ? -marks[0].offset : 0;
   const upstream = Math.max(MIN_UPSTREAM_NT, UPSTREAM_CONTEXT_NT, furthestUpstream);
@@ -185,6 +258,9 @@ export function geneViewModel(gene) {
     segments,
     codons,
     tss: marks,
+    // Every published row, including any with no distance to be drawn at, so
+    // the inspection list can hold them while the drawing cannot.
+    tssSites: sites,
     domain,
     upstreamContextNt: UPSTREAM_CONTEXT_NT,
   };

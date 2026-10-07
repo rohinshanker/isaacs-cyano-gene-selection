@@ -172,6 +172,43 @@ a smaller tick count instead works through round 1/2/5 steps and drops a narrow
 axis from five labels straight to one. All ticks on one axis share a unit
 (`axisUnit`), so a ruler never reads "500.0 kb" beside "1.00 Mb".
 
+### Showing and hiding the start-site layer
+
+**Show ‹study› start sites** (`#chromosome-show-start-sites`), beside **Show
+filtered-out genes** on the view-button row, governs the tick row and nothing
+else. It is built only for an organism whose record declares a `tssEvidence`
+layer, because a control for a row that can never fill would offer evidence
+nobody admitted.
+
+Four rules hold it:
+
+- **Marks only.** Hiding the layer repaints the tick row and leaves the filter
+  mask, the passing count, every CDS bar, the colour, the ranking and every
+  dataset selection exactly as they were. It is not a filter, and no gene
+  disappears from anything because of it.
+- **It is this view's own state**, like its per-replicon windows: not in the URL
+  hash, not in browser storage, not in the export manifest, and not shared with
+  the gene visualizer, which keeps drawing its own marks. Owner question 4 of
+  [the regulatory ticket](../notes/tickets/O_regulatory-site-viewer-layers__20260930.md)
+  — whether a chromosome layer control should also govern the gene views — is
+  open, and nothing here answers it.
+- **Reset view does not touch it**, exactly as it does not touch Show
+  filtered-out genes: Reset view returns the windows and nothing else. A
+  rerender syncs the checkbox in place rather than rebuilding it, so a reader
+  holding it keeps keyboard focus and pointer capture.
+- **The density rule is unchanged in both directions.** Showing the layer at a
+  zoom where the ticks would merge draws nothing, exactly as before the control
+  existed; hiding it at a zoom where they fit draws nothing either.
+
+**Hidden is a fourth state.** The conventions note distinguishes a layer the
+organism does not publish, one whose file is still loading, one whose file
+failed, and one the reader hid — for the last it says the sites themselves are
+unchanged and that no CDS is filtered by hiding them. An unexplained empty tick
+row would read as a genome with no start sites, which is the claim this view
+must never make. A hidden layer leaves no stale interactive target: the tick row
+has none when the sites are drawn either, and the whole tab panel is `hidden`
+while another tab is active.
+
 **The drawing is measured on the canvas.** `resize` reads the canvas's own
 box, never the host's. The host carries a border and padding the canvas does
 not, so its border box is about 10 px wider, and `pointerPosition` reads every
@@ -498,7 +535,13 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
 - a filter active, with the filtered-out CDSs grey and the counts in the note
   matching;
 - Function category colour, including a legend hover preview;
-- a zoomed chromosome window, where operon brackets and start sites appear;
+- a zoomed chromosome window, where operon brackets and start sites appear, then
+  uncheck **Show ‹study› start sites** and read the canvas back with
+  `getImageData`: no pixel of the tick colour remains, the CDS bars and the
+  window are untouched, the conventions note says the layer is hidden, and the
+  hash gains no field. Press **Reset view** and confirm the windows return and
+  the layer stays hidden; reach the checkbox by Tab and toggle it with Space,
+  confirming focus stays on it across the repaint;
 - a plasmid zoomed independently, leaving the chromosome window unchanged;
 - at 1440 px, click the centre of a CDS at the far right of the chromosome at
   whole-genome zoom and confirm the gene detail names that CDS, not its

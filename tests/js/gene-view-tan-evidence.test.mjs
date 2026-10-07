@@ -99,7 +99,7 @@ test('the absence reaches the accessible description and adds no visible text', 
       assert.match(svg.querySelector('desc').textContent, ABSENCE);
       // Everything outside the SVG is what a sighted reader reads. The owner
       // rejected explanatory interface text, so the statement stays out of it:
-      // no note, no legend row, no badge, no disclosure button.
+      // no note, no legend row, no badge, and no disclosure opening on it.
       const visible = host.children
         .filter((child) => child.tagName !== 'svg')
         .map((child) => child.textContent)
@@ -107,7 +107,16 @@ test('the absence reaches the accessible description and adds no visible text', 
       assert.doesNotMatch(visible, ABSENCE);
       assert.doesNotMatch(visible, /is admitted for this strain/);
       assert.equal(host.querySelectorAll('button').length, 0);
-      assert.equal(host.querySelectorAll('details').length, 0);
+      // The one disclosure this view has is the start-site list the owner asked
+      // for on 2026-10-07, built only for a gene that has sites to list; it
+      // carries none of this statement, open or closed.
+      for (const disclosure of host.querySelectorAll('details')) {
+        assert.ok(disclosure.hasClass('gene-view-sites'));
+        assert.ok(!disclosure.open);
+        assert.doesNotMatch(disclosure.textContent, ABSENCE);
+        assert.doesNotMatch(disclosure.textContent, /is admitted for this strain/);
+      }
+      assert.equal(host.querySelectorAll('details').length, id === WITH_SITES ? 1 : 0);
     }
   });
 });
