@@ -493,32 +493,63 @@ test('the gene detail column keeps the choice and the focus through its own rebu
   });
 });
 
-test('the choice is held in memory by each view, and by nothing else', async () => {
-  // It is one reader's current view of one panel, like the disclosures beside
-  // it: nothing resets it because nothing else owns it, and it is in no link,
-  // no export and no storage. Checked over the source, because the point is
-  // which code can write it at all.
+test('each view reports its choice up and reads it back from the one shared field', async () => {
+  // The choice is shareable state: `state.hiddenMarkers` holds it, a link
+  // carries it and a reload restores it, so it reaches a view through the same
+  // render that carries the pin and the filters, and leaves it through a
+  // handler. Checked over the source, because the point is which code can
+  // write it at all: a view that kept its own copy would drift from the link.
   const app = await readFile(new URL('../../site/js/app.js', import.meta.url), 'utf8');
   const panel = await readFile(new URL('../../site/js/ui/side-panel.js', import.meta.url), 'utf8');
-  const urlState = await readFile(new URL('../../site/js/core/url-state.js', import.meta.url), 'utf8');
+  const viewer = await readFile(new URL('../../site/js/ui/gene-viewer.js', import.meta.url), 'utf8');
   const manifest = await readFile(
     new URL('../../site/js/core/export-manifest.js', import.meta.url), 'utf8',
   );
 
-  assert.match(app, /let controlsStartSitesVisible = true;/);
-  assert.equal((app.match(/controlsStartSitesVisible\s*=[^=]/g) ?? []).length, 2,
-    'written where it is declared and where the reader changes it, and nowhere else');
-  assert.match(app, /onStartSitesVisibleChange: \(visible\) => \{ controlsStartSitesVisible = visible; \}/);
-  assert.match(panel, /this\.startSitesVisible = true;/);
-  assert.equal((panel.match(/this\.startSitesVisible\s*=[^=]/g) ?? []).length, 2);
-  assert.match(panel, /onStartSitesVisibleChange: \(visible\) => \{ this\.startSitesVisible = visible; \}/);
+  // One pair of helpers reads and writes the field, so a fifth view cannot
+  // invent a fifth way to store the same choice.
+  assert.equal((app.match(/state\.hiddenMarkers\s*=[^=]/g) ?? []).length, 1,
+    'written in exactly one place, the helper that records a reader\'s change');
+  assert.match(app, /function setMarkersVisibleIn\(viewId, visible, layerId = 'tss'\) \{/);
+  assert.match(app, /state\.hiddenMarkers = withMarkerVisible\(state\.hiddenMarkers, layerId, viewId, visible\);/);
+  assert.match(app, /persist\(\);/);
+  // Each of the four views, named once as a reader and once as a writer.
+  for (const view of ['gene-controls', 'gene-detail', 'chromosome', 'sequence']) {
+    assert.match(app, new RegExp(`markersVisibleIn\\('${view}'\\)`), `${view} reads the field`);
+    assert.match(app, new RegExp(`setMarkersVisibleIn\\('${view}',`), `${view} writes the field`);
+  }
 
-  // Not a field of the shared view state, so no reset, filter, link or export
-  // can carry it or clear it.
-  assert.ok(!/startSitesVisible|showStartSites/.test(urlState));
-  assert.ok(!/startSitesVisible|showStartSites/.test(manifest));
-  assert.ok(!/state\.startSitesVisible|state\.showStartSites/.test(app));
-  assert.ok(!/localStorage|sessionStorage/.test(
-    (await readFile(new URL('../../site/js/ui/gene-viewer.js', import.meta.url), 'utf8')),
-  ));
+  // The gene visualizer itself still stores nothing: it is rebuilt on every
+  // hover, so a choice kept there would last until the next pointer move.
+  assert.ok(!/localStorage|sessionStorage/.test(viewer));
+  assert.match(panel, /this\.startSitesVisible = state\.startSitesVisible;/);
+  assert.match(panel, /this\.handlers\.onStartSitesVisibleChange\?\.\(visible\);/);
+
+  // The link is the only persistence. No browser storage holds it, and the
+  // export manifest, which records the numbers a figure was made from, does
+  // not: hiding a mark changes no value it reports.
+  assert.ok(!/hiddenMarkers|startSitesVisible|showStartSites/.test(manifest));
+  assert.ok(!/STORAGE_\w+\s*,\s*state\.hiddenMarkers|hiddenMarkers\)/.test(app));
+});
+
+test('no reset clears the choice, and every reset still does its own job', async () => {
+  // Reset view is the camera, Reset selections is the pin and the shortlist,
+  // Clear all filters is the filter channels, and Reset panel layout is the
+  // column's order. None of them is a visibility control, so none of them may
+  // touch the field; a reader who put a layer away does not get it back by
+  // reframing a picture.
+  const urlState = await readFile(new URL('../../site/js/core/url-state.js', import.meta.url), 'utf8');
+  const { clearSelections, resetPanelLayout, defaultState } = await import('../../site/js/core/url-state.js');
+
+  for (const name of ['clearSelections', 'resetPanelLayout']) {
+    const body = urlState.slice(urlState.indexOf(`export function ${name}(`));
+    assert.ok(!body.slice(0, body.indexOf('\n}')).includes('hiddenMarkers'),
+      `${name} does not touch the marker visibility`);
+  }
+  const hidden = ['tss.chromosome', 'tss.sequence'];
+  const afterSelections = clearSelections({ ...defaultState(), hiddenMarkers: hidden });
+  assert.deepEqual(afterSelections.hiddenMarkers, hidden);
+  assert.equal(afterSelections.pinnedId, null);
+  const afterLayout = resetPanelLayout({ ...defaultState(), hiddenMarkers: hidden });
+  assert.deepEqual(afterLayout.hiddenMarkers, hidden);
 });

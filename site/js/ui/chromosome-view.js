@@ -327,10 +327,13 @@ export class ChromosomeView {
     this.organism = organism;
     /** The organism's start-site study, or null when it publishes none. */
     this.startSites = layerOf(organism, 'tssEvidence');
-    // Whether that layer's tick row is drawn. View state of this view, like
-    // its per-replicon windows: it changes no value, no filter and no
-    // selection, so it is not in the shared state, the link or the export, and
-    // it is not reset by Reset view, which moves the camera and nothing else.
+    // Whether that layer's tick row is drawn. It changes no value, no filter
+    // and no selection, and Reset view does not touch it — that control is the
+    // camera's, as it is for Show filtered-out genes. It is the reader's choice
+    // about what the picture contains, so the caller owns it and a shared link
+    // carries it; `update` adopts whatever the caller last recorded, and this
+    // view's own choice is independent of the two gene visualizers' and the
+    // sequence close-up's.
     this.showStartSites = true;
     this.built = false;
     this.model = null;
@@ -371,6 +374,10 @@ export class ChromosomeView {
   update(model) {
     if (!this.built) this.build();
     this.model = model;
+    // The caller's record of this view's start-site choice, so a shared link,
+    // a reload and a live hash all reach the tick row. Omitted leaves the last
+    // value, which is what a receiver built by hand shows.
+    if (typeof model.showStartSites === 'boolean') this.showStartSites = model.showStartSites;
     if (!model.verified) {
       this.showProblems(model.problems);
       return;
@@ -1604,13 +1611,16 @@ export class ChromosomeView {
    * Repaints and rewrites the conventions note, so the note says the row is
    * hidden rather than leaving an empty row to read as a genome with no start
    * sites. Nothing is rebuilt, so the checkbox keeps pointer capture and
-   * keyboard focus across the change.
+   * keyboard focus across the change; the choice is reported to whoever holds
+   * it afterwards, which is why this view repaints rather than waiting to be
+   * re-rendered.
    */
   setStartSitesVisible(visible) {
     const next = Boolean(visible);
     if (this.showStartSites === next) return;
     this.showStartSites = next;
     if (this.startSitesToggle) this.startSitesToggle.checked = next;
+    this.handlers.onStartSitesVisibleChange?.(next);
     if (!this.model?.verified) return;
     this.renderSummaries();
     this.draw();

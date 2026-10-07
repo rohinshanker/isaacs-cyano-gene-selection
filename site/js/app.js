@@ -29,6 +29,7 @@ import {
   encodeState, decodeState, defaultState, applyDecoded, clearSelections, viewStateOf,
   resetPanelLayout,
 } from './core/url-state.js';
+import { markerVisible, withMarkerVisible } from './core/marker-layers.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
 import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
 import {
@@ -1089,6 +1090,7 @@ function renderChromosomeView() {
     categoryFilterLabels: selectedCategoryLabels(),
     hasSelection: pinnedIndex() >= 0 || context.activeIndex >= 0 || context.hoveredIndex >= 0,
     tssPending: pendingState(context.dataset, 'tssEvidence'),
+    showStartSites: markersVisibleIn('chromosome'),
   });
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
@@ -1099,6 +1101,7 @@ function renderChromosomeView() {
   // keyboard preview, and re-renders only when that gene or the scheme changes.
   geneSequenceView ??= new GeneSequenceView(chromosomeView.sequenceElement(), {
     onAnnounce: (message) => announce(message),
+    onMarkersVisibleChange: (visible) => setMarkersVisibleIn('sequence', visible),
   });
   const pinned = pinnedIndex();
   geneSequenceView.update({
@@ -1106,6 +1109,9 @@ function renderChromosomeView() {
     table: context.dataset.table,
     scheme: context.scheme,
     schemeVersion: context.schemeVersion,
+    organism,
+    markerPending: pendingState(context.dataset, 'tssEvidence'),
+    markersVisible: markersVisibleIn('sequence'),
   });
   // The toolbar exists once the view has rendered, so its section follows.
   chromosomeDataSources()?.update(dataSourcesState());
@@ -1146,21 +1152,30 @@ function renderDetail() {
     live: context.live,
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
     colorSources: state.colorSources,
+    startSitesVisible: markersVisibleIn('gene-detail'),
   });
   renderControlsGeneViewer(index);
 }
 
 /**
- * Whether the controls-column gene visualizer draws its start-site marks.
+ * Whether one marker layer's marks are drawn in one of the four views.
  *
- * This view's own choice, and only this one: the gene detail column's copy
- * keeps its own, and the chromosome view's layer control is separate again.
- * Held here because that viewer is redrawn on every hover, so it cannot hold
- * the choice itself. Deliberately not in `state`: like the panel disclosures
- * it is how one reader is looking right now, not part of the view a shared
- * link reproduces, so no reset, filter or link touches it.
+ * Four independent choices over one shared representation: the chromosome
+ * axis, the two gene visualizers and the sequence close-up answer different
+ * questions at different scales, so hiding marks in one never moves another's
+ * picture. The state is `state.hiddenMarkers`, which a shared link carries and
+ * a reload restores, and which no reset, filter, score or source selection
+ * touches.
  */
-let controlsStartSitesVisible = true;
+function markersVisibleIn(viewId, layerId = 'tss') {
+  return markerVisible(state.hiddenMarkers, layerId, viewId);
+}
+
+/** Record one view's choice and write it into the address bar. */
+function setMarkersVisibleIn(viewId, visible, layerId = 'tss') {
+  state.hiddenMarkers = withMarkerVisible(state.hiddenMarkers, layerId, viewId, visible);
+  persist();
+}
 
 /**
  * Draw the controls-column copy of the gene visualizer.
@@ -1177,8 +1192,8 @@ function renderControlsGeneViewer(index) {
   renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null, {
     tssPending: pendingState(context.dataset, 'tssEvidence'),
     organism,
-    startSitesVisible: controlsStartSitesVisible,
-    onStartSitesVisibleChange: (visible) => { controlsStartSitesVisible = visible; },
+    startSitesVisible: markersVisibleIn('gene-controls'),
+    onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-controls', visible),
   });
 }
 
@@ -2793,6 +2808,10 @@ async function boot() {
       syncSharedControls();
       renderAll();
     },
+    // The view has already repainted its own tick row and kept the reader's
+    // focus on the checkbox, so this records the choice and writes the link
+    // rather than re-rendering over the top of it.
+    onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('chromosome', visible),
     onDetailJump: () => jumpToDetail(),
     onAnnounce: announce,
   }, { organism });
@@ -2811,6 +2830,7 @@ async function boot() {
   sidePanel = new SidePanel(element('detail'), {
     onShortlistToggle: (index) => toggleShortlist(index),
     onUnpin: () => setPinned(-1),
+    onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-detail', visible),
   });
 
   shortlistPanel = new ShortlistPanel(element('shortlist'), {

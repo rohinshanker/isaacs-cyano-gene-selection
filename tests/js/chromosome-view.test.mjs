@@ -380,7 +380,7 @@ function viewModel({
   genes = GENES, meta = META, mask = null, showHidden = true,
   categoryFilterLabels = [], colorScale = 'log10', categorical = false,
   drawOnTop = 'highest', pinned = -1, hovered = -1, active = -1, shortlist = new Set(),
-  categoryOf = null, derivedOf = null,
+  categoryOf = null, derivedOf = null, showStartSites = undefined,
 } = {}) {
   const colorMode = { colorScale, categorical, categoryOf, derivedOf };
   const colors = colorModel(genes, colorMode);
@@ -415,6 +415,7 @@ function viewModel({
     total: genes.length,
     categoryFilterLabels,
     hasSelection: false,
+    showStartSites,
   };
 }
 
@@ -2537,5 +2538,50 @@ test('the default organism still draws its start sites and states its copy numbe
     assert.match(view.markerNote.textContent, /Tan 2018 gene-linked start sites on the tick row/);
   } finally {
     restore();
+  }
+});
+
+test('the start-site layer takes its visibility from the caller, so a link reaches the tick row', () => {
+  // The choice is shareable state the application holds, not this view's
+  // private memory: a shared link, a reload and a live hash all arrive as a
+  // field on the model, exactly as Show filtered-out genes does.
+  const opened = mount({ genes: tickGenes(20), showStartSites: false });
+  try {
+    const { view, ops } = opened;
+    assert.equal(view.showStartSites, false, 'the first paint already has the layer hidden');
+    assert.equal(view.startSitesToggle.checked, false);
+    assert.equal(tickRowOps(view, ops).length, 0);
+  } finally {
+    opened.restore();
+  }
+
+  const reported = [];
+  const mounted = mount({
+    genes: tickGenes(20),
+    handlers: { onStartSitesVisibleChange: (visible) => reported.push(visible) },
+  });
+  try {
+    const { view, flush } = mounted;
+    assert.equal(view.showStartSites, true, 'and opens visible when the caller says nothing else');
+
+    // A reader's change is reported up once, and the view repaints itself
+    // rather than waiting to be re-rendered, so the checkbox keeps focus.
+    const toggle = view.startSitesToggle;
+    toggle.checked = false;
+    toggle.dispatch('change');
+    assert.deepEqual(reported, [false]);
+    assert.equal(tickRowOps(view, flush()).length, 0);
+    assert.equal(view.startSitesToggle, toggle, 'the control itself was never rebuilt');
+
+    // A later render carrying the recorded choice changes nothing, and one
+    // carrying the other value follows it.
+    view.update(viewModel({ genes: tickGenes(20), showStartSites: false }));
+    assert.equal(tickRowOps(view, flush()).length, 0);
+    assert.deepEqual(reported, [false], 'reading the state is not a change to report');
+    view.update(viewModel({ genes: tickGenes(20), showStartSites: true }));
+    assert.equal(tickRowOps(view, flush()).length, 20);
+    assert.equal(view.startSitesToggle.checked, true);
+  } finally {
+    mounted.restore();
   }
 });

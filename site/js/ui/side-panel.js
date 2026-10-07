@@ -575,11 +575,13 @@ export class SidePanel {
     // Deliberately in memory and not in the link: it is how one person is
     // reading right now, not part of the view a link reproduces.
     this.disclosureState = new Map();
-    // Whether this column's gene visualizer draws its start-site marks. Kept
-    // here for the same reason and on the same terms as the disclosures above:
-    // the panel is rebuilt for every hover, so the view cannot hold it, and it
-    // is this column's own — the controls column's copy keeps its own, and the
-    // chromosome view's layer control is separate again.
+    // Whether this column's gene visualizer draws its start-site marks. The
+    // panel is rebuilt for every hover, so the view cannot hold it; unlike the
+    // disclosures above, it is a reader's choice about what the picture
+    // contains, so the caller owns it, a link carries it, and `update` adopts
+    // whatever the caller last recorded. Visible until then. It is this
+    // column's own: the controls column's copy, the chromosome view's layer
+    // control and the sequence close-up's are three separate choices.
     this.startSitesVisible = true;
   }
 
@@ -606,6 +608,11 @@ export class SidePanel {
   update(state) {
     const { index, dataset } = state;
     const organism = organismOf(dataset);
+    // The caller's record of this column's choice, so a shared link, a reload
+    // and a live hash all reach the picture. Omitted leaves the last value.
+    if (typeof state.startSitesVisible === 'boolean') {
+      this.startSitesVisible = state.startSitesVisible;
+    }
     const focusedAction = this.host.contains(document.activeElement)
       ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();
@@ -721,7 +728,10 @@ export class SidePanel {
       tssPending: pendingState(dataset, 'tssEvidence'),
       organism,
       startSitesVisible: this.startSitesVisible,
-      onStartSitesVisibleChange: (visible) => { this.startSitesVisible = visible; },
+      onStartSitesVisibleChange: (visible) => {
+        this.startSitesVisible = visible;
+        this.handlers.onStartSitesVisibleChange?.(visible);
+      },
     });
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
