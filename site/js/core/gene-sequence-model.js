@@ -15,6 +15,7 @@
  */
 import { repliconLength } from './chromosome-model.js';
 import { transcriptionPieces, UPSTREAM_CONTEXT_NT } from './gene-view-model.js';
+import { replacementAt, occurrenceCounter } from './scheme.js';
 
 /** Full residue names, so a one-letter row can be read out in words. */
 export const AMINO_ACID_NAMES = Object.freeze({
@@ -149,16 +150,24 @@ export function geneSequenceModel(gene, table, scheme = null) {
   const hasStop = stopIndex >= 0 && table.isStop[stopIndex] === 1;
   const codonCount = indices.length + (hasStop ? 1 : 0);
   const cdsLengthNt = codonCount * 3;
-  const active = Boolean(scheme?.active) && scheme.replacement instanceof Uint8Array;
+  const active = Boolean(scheme?.active) && scheme.rotation instanceof Uint8Array;
   const positions = genomicPositions(gene, cdsLengthNt);
   const junctions = junctionsOf(gene);
   const upstream = upstreamContext(gene, junctions);
 
   const codons = [];
   let changedCodons = 0;
+  // Per-occurrence resolution over this gene, skipping the start triplet, which
+  // is the rule the live metrics and the sequence export both follow. The drawn
+  // recoded row has to be the sequence those numbers describe.
+  const occurrences = occurrenceCounter();
   const codonAt = (index, sequenceIndex, kind) => {
     const codon = table.codons[sequenceIndex];
-    const replacementIndex = active && kind !== 'start' ? scheme.replacement[sequenceIndex] : sequenceIndex;
+    let replacementIndex = sequenceIndex;
+    if (active && kind !== 'start') {
+      replacementIndex = replacementAt(scheme, sequenceIndex, occurrences[sequenceIndex]);
+      occurrences[sequenceIndex] += 1;
+    }
     const recoded = active ? table.codons[replacementIndex] : null;
     const changed = active && replacementIndex !== sequenceIndex;
     if (changed) changedCodons += 1;
