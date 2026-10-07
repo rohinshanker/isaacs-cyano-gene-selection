@@ -771,7 +771,9 @@ verify it with `python3 tools/regulatory_tss.py check`.
 ## Expression, and why it is not the default
 
 `expression` is loaded from `data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv`,
-a three-column `locus_tag`, `abundance`, `source_gene_id` table. The pipeline joins
+a three-column `locus_tag`, quantity, `source_gene_id` table. The quantity column
+is `fitness` for declared fitness data and `abundance` for transcript/protein
+layers; mismatched or ambiguous headers are rejected. The pipeline joins
 it by locus tag and writes `null` for the 164 genes with no value.
 
 **This measurement is from *S. elongatus* PCC 7942, not UTEX 2973**, comes from a
