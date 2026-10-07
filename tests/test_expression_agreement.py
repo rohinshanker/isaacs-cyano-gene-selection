@@ -793,3 +793,40 @@ def test_pinned_symlink_cache_reproduces_report_and_protects_input(fixture):
 def test_cache_names_reject_traversal_and_path_components(tmp_path, name):
     with pytest.raises(ValueError, match="escapes the interim directory"):
         agreement._source_target(tmp_path, name)
+
+
+def test_current_calibration_plan_pins_match_the_shipped_source_specs():
+    _, studies = agreement.load_and_validate_plan(
+        agreement.ROOT / "config" / "expression_agreement.json"
+    )
+    assert {study.spec["studyId"] for study in studies} >= {"GSE237858", "GSE252562"}
+
+
+def test_current_summary_preserves_sampling_temperature_corrections_and_source_pins():
+    root = agreement.ROOT
+    plan_path = root / "config" / "expression_agreement.json"
+    _, studies = agreement.load_and_validate_plan(plan_path)
+    summary = json.loads((
+        root / "docs/notes/handoff/cyano_processed_expression_agreement_current_20261007.json"
+    ).read_text())
+    assert summary["inputs"]["plan"]["sha256"] == digest(plan_path.read_bytes())
+    assert summary["implementation"]["sha256"] == digest(
+        (root / "tools/expression_agreement.py").read_bytes()
+    )
+    summary_pins = {spec["path"]: spec["sha256"] for spec in summary["inputs"]["specs"]}
+    assert summary_pins == {study.spec_relative: study.spec_sha256 for study in studies}
+    by_layer = {layer["id"]: layer for layer in summary["layers"]}
+    corrected_layers = 0
+    for study in studies:
+        if study.spec["studyId"] not in {"GSE237858", "GSE252562"}:
+            continue
+        for layer in study.spec["layers"]:
+            expected = layer.get("conditions", {}).get(
+                "temperature", study.spec["conditions"]["temperature"]
+            )
+            actual = by_layer[layer["id"]]["conditions"]["temperature"]
+            assert actual == expected
+            assert actual["status"] == "not reported"
+            assert actual["lo"] is None and actual["hi"] is None
+            corrected_layers += 1
+    assert corrected_layers == 7
