@@ -376,6 +376,7 @@ export class TextScramble {
     this.generations.clear();
     const holds = new Map();
     const records = [];
+    const reservationCandidates = [];
     const startedAt = this.now();
     const list = (Array.isArray(roots) ? roots : [roots]).filter(Boolean);
     list.forEach((root, rootIndex) => {
@@ -416,10 +417,12 @@ export class TextScramble {
         });
         offset += original.length;
         }
-        this.reserve(group.element);
+        reservationCandidates.push({ element: group.element, root });
       }
     });
     if (records.length === 0) return Promise.resolve();
+
+    this.reserve(reservationCandidates);
 
     this.records = records;
     this.holds = [...holds.values()];
@@ -453,6 +456,7 @@ export class TextScramble {
     const list = (Array.isArray(roots) ? roots : [roots]).filter(Boolean);
     const liveKeys = new Set(this.records.filter((record) => record.live).map((record) => record.key));
     const added = [];
+    const reservationCandidates = [];
     const now = this.now();
     list.forEach((root, rootIndex) => {
       for (const group of this.groupTargets(collectScrambleTargets(root))) {
@@ -493,10 +497,11 @@ export class TextScramble {
           this.records.push(record);
           added.push(record);
         }
-        this.reserve(group.element);
+        reservationCandidates.push({ element: group.element, root });
       }
     });
     if (added.length > 0) {
+      this.reserve(reservationCandidates);
       if (!wasActive) {
         // This local landing run is intentionally independent of the already
         // completed page reveal; callers do not need to await decoration.
@@ -552,19 +557,56 @@ export class TextScramble {
     return hold;
   }
 
-  reserve(element) {
-    if (!Array.isArray(this.timing.durationAnchors) || this.reservations.has(element)
-      || typeof element.getBoundingClientRect !== 'function' || !element.style) return;
-    const rect = element.getBoundingClientRect();
-    const control = ['input', 'textarea', 'select', 'button'].includes(tagOf(element));
-    const property = control ? 'minWidth' : 'minHeight';
-    const value = element.style[property] ?? '';
-    if ((control ? rect.width : rect.height) > 0) {
-      // A responsive reflow can give the control a narrower container while
-      // its text is still settling. Keep the reservation inside that space.
-      element.style[property] = control ? `min(${rect.width}px, 100%)` : `${rect.height}px`;
+  reserve(candidates) {
+    if (!Array.isArray(this.timing.durationAnchors)) return;
+    const unique = new Map();
+    for (const candidate of candidates) {
+      const reservation = this.reservationTarget(candidate.element, candidate.root);
+      if (reservation && !this.reservations.has(reservation.element)) {
+        unique.set(reservation.element, reservation);
+      }
+    }
+
+    // Read every final rectangle before the first style write. Interleaving
+    // these two phases forces one synchronous layout per coherent group.
+    const measured = [];
+    for (const { element, property } of unique.values()) {
+      const rect = element.getBoundingClientRect();
+      const size = property === 'minWidth' ? rect.width : rect.height;
+      if (size > 0) measured.push({
+        element, property, size, value: element.style[property] ?? '',
+      });
+    }
+    for (const { element, property, size, value } of measured) {
+      // A responsive reflow can give a control a narrower container while its
+      // text is settling. Keep the reservation inside that available space.
+      element.style[property] = property === 'minWidth'
+        ? `min(${size}px, 100%)` : `${size}px`;
       this.reservations.set(element, { property, value });
     }
+  }
+
+  /** An element where the requested minimum size affects normal flow. */
+  reservationTarget(element, root) {
+    const control = ['input', 'textarea', 'select', 'button'].includes(tagOf(element));
+    if (control) return this.reservable(element, 'minWidth');
+    let current = element;
+    while (current) {
+      const display = typeof globalThis.getComputedStyle === 'function'
+        ? globalThis.getComputedStyle(current).display
+        : current.style?.display ?? '';
+      const ineffective = display === 'inline' || display.startsWith('table-')
+        || display === 'contents' || display === 'none';
+      if (!ineffective) return this.reservable(current, 'minHeight');
+      if (current === root) break;
+      current = current.parentNode?.nodeType === ELEMENT_NODE ? current.parentNode : null;
+    }
+    return null;
+  }
+
+  reservable(element, property) {
+    if (!element?.style || typeof element.getBoundingClientRect !== 'function') return null;
+    return { element, property };
   }
 
   /** Stop now and restore every string and every owner. Idempotent. */

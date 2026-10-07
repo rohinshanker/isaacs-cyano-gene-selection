@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import {
   SCRAMBLE_LETTERS, TextScramble, collectScrambleNodes, collectScrambleTargets,
   flipInterval, scrambleDuration, scrambleProgress,
@@ -290,6 +291,79 @@ test('new landing content gets one local reveal after the page reveal has finish
 
     scramble.refresh(root);
     assert.equal(scramble.active, false, 'the same generation is not decorated twice');
+  });
+});
+
+test('production landings cannot refresh the review-only scramble', async () => {
+  const app = await readFile(new URL('../../site/js/app.js', import.meta.url), 'utf8');
+  const flush = app.slice(app.indexOf('function flushLandings()'),
+    app.indexOf('/** Ask again for one later file'));
+  assert.match(flush, /if \(loadReview && revealed && !reducedMotion\) \{/,
+    'without an explicit review selector, a late landing cannot make controls busy or inert');
+});
+
+test('run and refresh batch unique geometry reads before writes and reserve effective flow boxes', async () => {
+  await withFakeDocument(async (document) => {
+    const clock = frameClock();
+    const timing = { ...FAST, durationAnchors: [[1, 250], [160, 1000]] };
+    const events = [];
+    const trackedStyle = (name, initial) => new Proxy(initial, {
+      set(target, property, value) {
+        if (property === 'minHeight' || property === 'minWidth') events.push(`write:${name}`);
+        target[property] = value;
+        return true;
+      },
+    });
+    const rectangle = (name, width, height) => () => {
+      events.push(`read:${name}`);
+      return { width, height };
+    };
+
+    const root = document.createElement('main');
+    root.style.display = 'block';
+    const paragraph = document.createElement('p');
+    paragraph.style = trackedStyle('paragraph', { display: 'block', minHeight: '2rem' });
+    paragraph.getBoundingClientRect = rectangle('paragraph', 300, 42);
+    paragraph.append('Evidence ');
+    const link = document.createElement('a');
+    link.style.display = 'inline';
+    link.getBoundingClientRect = rectangle('link', 80, 18);
+    link.append('details');
+    paragraph.append(link);
+
+    const table = document.createElement('table');
+    table.style = trackedStyle('table', { display: 'table', minHeight: '3rem' });
+    table.getBoundingClientRect = rectangle('table', 300, 56);
+    const row = document.createElement('tr'); row.style.display = 'table-row';
+    const cell = document.createElement('th'); cell.style.display = 'table-cell';
+    cell.getBoundingClientRect = rectangle('cell', 120, 28);
+    cell.append('Metric'); row.append(cell); table.append(row);
+    root.append(paragraph, table); document.body.append(root);
+
+    const scramble = new TextScramble({ timing, now: clock.now,
+      requestFrame: clock.requestFrame, cancelFrame: clock.cancelFrame });
+    scramble.run(root);
+    assert.deepEqual(events, [
+      'read:paragraph', 'read:table', 'write:paragraph', 'write:table',
+    ], 'duplicate and ineffective groups resolve before one read phase and one write phase');
+    assert.equal(link.style.minHeight, undefined, 'display:inline does not receive an ineffective minimum');
+    assert.equal(cell.style.minHeight, undefined, 'table-* boxes do not receive ineffective minimums');
+    assert.equal(paragraph.style.minHeight, '42px');
+    assert.equal(table.style.minHeight, '56px');
+    scramble.cancel();
+    assert.equal(paragraph.style.minHeight, '2rem');
+    assert.equal(table.style.minHeight, '3rem');
+
+    paragraph.children[0].data = 'New evidence ';
+    cell.children[0].data = 'Updated metric';
+    events.length = 0;
+    scramble.refresh(root);
+    assert.deepEqual(events, [
+      'read:paragraph', 'read:table', 'write:paragraph', 'write:table',
+    ], 'a landing refresh uses the same batched reservation pass');
+    scramble.cancel();
+    assert.equal(paragraph.style.minHeight, '2rem');
+    assert.equal(table.style.minHeight, '3rem');
   });
 });
 

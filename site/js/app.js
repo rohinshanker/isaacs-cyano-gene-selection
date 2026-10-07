@@ -2288,7 +2288,7 @@ function flushLandings() {
   }
   loadProgress.setFiles(staged.files);
   renderAll();
-  if (revealed && !reducedMotion) {
+  if (loadReview && revealed && !reducedMotion) {
     // Data landings may replace whole panels. Preserve the original deadline
     // for unchanged content and give genuinely new content one local reveal.
     textScramble.refresh(scrambleRoots());
