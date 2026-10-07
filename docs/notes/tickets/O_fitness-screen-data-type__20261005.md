@@ -5,7 +5,7 @@
   the data selection window. Covers `docs/`, `data/`, the pipeline, and `site/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-07
 
 ## Current state
 
@@ -79,6 +79,25 @@ reads expression provenance only.
 4. Give fitness its own tab in the data selection window, with its own units and
    legend. A fitness value never shares a scale, a layer, or a combined estimate
    with an expression value.
+
+## Data-use audit, 2026-10-07
+
+The nine shipped layers were audited by the Multica `codex-data-auditor` role
+(DEM-299, the role's first bounded exercise); the full report with retrieval
+hashes is
+[cyano_gse205443_audit_20261007.md](../handoff/cyano_gse205443_audit_20261007.md).
+All 16,515 shipped values match Supplementary File S4 after four-decimal
+rounding, the nine TSV checksums match `sources.json`, and sign is retained.
+Nine label, provenance and documentation findings await acceptance, each as its
+own change: continuous light asserted as reported when the paper states no
+photoperiod (01); replicate text asserting endpoint pooling and calling flasks
+tubes (02); the Experiment 1 OD quote supporting the wrong stage (03); the unit
+text conflating gene fitness with a raw barcode ratio (04); the pooled
+explanation saying one input column while averaging nine (05); the pooled caveat
+dropping the missing-T-value warning (06); the download TSV header naming the
+fitness column `abundance` (07); the counts in this ticket's progress section
+(1,919 and 1,917) against 1,920 loci in both the GEO count file and S4 (08); and
+the Gene fitness Sources link routed to the RNA-seq arm GSE205444 (09).
 
 ## Verification
 
