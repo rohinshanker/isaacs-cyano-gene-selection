@@ -47,3 +47,8 @@ The handoff's “25 remaining negative cells” conflates coverage counts: the d
 Access: the browser tool's GSE252562 HTML view returned a browser-check page; it was not solved. The standard public GEO text endpoint used by the dossier returned the actual record normally and matched its hash. No credential or privileged access was used. Missing instructions: canonical/coordinator `AGENTS.override.md` and `CLAUDE.md`; canonical active-ticket filename was absent, but the coordinator's active ticket and INDEX were read.
 
 No code/UI gates were run, as expressly excluded by this read-only assignment. The coordinator owns implementation and final gates. The four reviewed files still match the exact assigned commit even though the coordinator worktree advanced during this review; unrelated changes were not reviewed or modified.
+
+Canonical analyst narrative has only its extra terminal blank line removed for
+the whitespace gate. The immutable reviewed original remains at commit
+`103304b` and `/tmp/cyano-condition-20261007/dossier.md`; candidate JSON/TSV and
+all source quotations are unchanged.
