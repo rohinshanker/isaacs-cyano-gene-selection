@@ -685,3 +685,59 @@ def test_read_mztab_names_what_is_wrong():
         ingest.read_mztab(b"\n".join([MZTAB_PRH.encode(), b"PRT\tO05161\t62"]))
     with pytest.raises(ValueError, match="names 'O05161' twice"):
         ingest.read_mztab(mztab_file([("O05161", 62, 16, 0), ("O05161", 7, 2, 0)]))
+
+
+MZID_NS = "http://psidev.info/psi/pi/mzIdentML/1.1"
+
+
+def mzid_file(matches, *, proteins=(("DBSeq1", "sp|P06539|PHCB_SYNE7"), ("DBSeq2", "tr|Q31ML1|Q31ML1_SYNE7")),
+              evidence=(("PepEv_1", "DBSeq1", "false"), ("PepEv_2", "DBSeq2", "false"),
+                        ("PepEv_D", "DBSeq1", "true"))):
+    """A small MS-GF+ mzIdentML 1.1 file; each match is (refs, rank, pass, qvalue)."""
+    parts = [f'<?xml version="1.0" encoding="UTF-8"?>', f'<MzIdentML xmlns="{MZID_NS}" version="1.1.0">',
+             "<SequenceCollection>"]
+    for seq_id, accession in proteins:
+        parts.append(f'<DBSequence id="{seq_id}" accession="{accession}"/>')
+    for ev_id, seq_ref, decoy in evidence:
+        parts.append(f'<PeptideEvidence id="{ev_id}" dBSequence_ref="{seq_ref}" isDecoy="{decoy}"/>')
+    parts.append("</SequenceCollection><AnalysisData><SpectrumIdentificationList>")
+    for index, (refs, rank, passes, qvalue) in enumerate(matches):
+        parts.append(f'<SpectrumIdentificationResult id="SIR_{index}">')
+        parts.append(f'<SpectrumIdentificationItem rank="{rank}" passThreshold="{passes}" id="SII_{index}">')
+        for ref in refs:
+            parts.append(f'<PeptideEvidenceRef peptideEvidence_ref="{ref}"/>')
+        if qvalue is not None:
+            parts.append(f'<cvParam cvRef="PSI-MS" accession="MS:1002054" name="MS-GF:QValue" value="{qvalue}"/>')
+        parts.append("</SpectrumIdentificationItem></SpectrumIdentificationResult>")
+    parts.append("</SpectrumIdentificationList></AnalysisData></MzIdentML>")
+    return "".join(parts).encode("utf-8")
+
+
+def test_read_mzidentml_counts_unique_rank_one_matches_per_protein():
+    data = mzid_file([
+        ((["PepEv_1"]), "1", "true", "0.0"),            # counts for P06539
+        ((["PepEv_1"]), "1", "true", "0.001"),          # counts for P06539
+        ((["PepEv_2"]), "1", "true", "0.0"),            # counts for Q31ML1
+        ((["PepEv_1", "PepEv_2"]), "1", "true", "0.0"),  # shared peptide, counted for neither
+        ((["PepEv_1"]), "2", "true", "0.0"),            # not rank 1
+        ((["PepEv_1"]), "1", "false", "0.0"),           # did not pass the search threshold
+        ((["PepEv_1"]), "1", "true", "0.5"),            # above the q-value ceiling
+        ((["PepEv_1"]), "1", "true", None),             # no q-value reported
+        ((["PepEv_D"]), "1", "true", "0.0"),            # decoy evidence only
+    ])
+    header, rows = ingest.read_table(data, {"format": "mzidentml"})
+    assert header == ["accession", "psm_count"]
+    assert rows == [["P06539", "2"], ["Q31ML1", "1"]], \
+        "sp|/tr| accessions are reduced to the UniProt accession, and only unique rank-1 matches count"
+    # A looser ceiling admits the 0.5 match; the shared one still counts for neither.
+    _, loose = ingest.read_table(data, {"format": "mzidentml", "qValueMax": 0.6})
+    assert loose == [["P06539", "3"], ["Q31ML1", "1"]]
+    # Gzip is detected by magic bytes, as for every other format.
+    assert ingest.read_table(gzip.compress(data), {"format": "mzidentml"})[1] == rows
+
+
+def test_read_mzidentml_names_what_is_wrong():
+    with pytest.raises(ValueError, match="lists no DBSequence"):
+        ingest.read_mzidentml(f'<MzIdentML xmlns="{MZID_NS}" version="1.1.0"/>'.encode())
+    with pytest.raises(ValueError, match="no rank-1 match at q <= 0.01"):
+        ingest.read_mzidentml(mzid_file([((["PepEv_1"]), "1", "true", "0.9")]))

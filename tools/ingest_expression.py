@@ -90,8 +90,9 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     prefixed with the nearest title to its left in the first listed row that
     has one, so every column has a name of its own:
     ``<block> :: <header> :: <sheet>``. A search-engine deposit of DTASelect
-    reports (``format: dtaselect``) is read by ``read_dtaselect`` instead, and
-    an mzTab protein table (``format: mztab``) by ``read_mztab``.
+    reports (``format: dtaselect``) is read by ``read_dtaselect`` instead, an
+    mzTab protein table (``format: mztab``) by ``read_mztab``, and an mzIdentML
+    search result (``format: mzidentml``) by ``read_mzidentml``.
     """
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
@@ -99,6 +100,8 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
         return read_dtaselect(data, reader["zipMembers"], reader.get("countColumn", "Spectrum Count"))
     if reader["format"] == "mztab":
         return read_mztab(data, reader.get("countColumn", "num_psms_ms_run[1]"))
+    if reader["format"] == "mzidentml":
+        return read_mzidentml(data, reader.get("qValueMax", MZID_DEFAULT_QVALUE_MAX))
     if reader.get("zipMember"):
         import zipfile  # noqa: PLC0415 - only for archived deposits
 
@@ -199,6 +202,74 @@ def read_dtaselect(data: bytes, members: list[str], count_column: str = "Spectru
         order.extend(identifier for identifier in counts[stem] if identifier not in order)
     rows = [[identifier] + [counts[stem].get(identifier, "") for stem in columns] for identifier in order]
     return ["Locus"] + columns, rows
+
+
+MZID_NS = "{http://psidev.info/psi/pi/mzIdentML/1.1}"
+MZID_QVALUE = "MS:1002054"
+MZID_DEFAULT_QVALUE_MAX = 0.01
+
+
+def _mzid_accession(accession: str) -> str:
+    """``sp|Q03513|CCMM_SYNE7`` to ``Q03513``; anything else is returned unchanged."""
+    parts = accession.split("|")
+    return parts[1] if len(parts) >= 3 else accession
+
+
+def read_mzidentml(data: bytes, q_value_max: float = MZID_DEFAULT_QVALUE_MAX) -> tuple[list[str], list[list[str]]]:
+    """Read an mzIdentML search result into an accession column and a PSM count.
+
+    An mzIdentML file lists each protein as a ``DBSequence``, each
+    peptide-to-protein assignment as a ``PeptideEvidence`` carrying ``isDecoy``,
+    and each spectrum match as a ``SpectrumIdentificationItem``. A match counts
+    once for a protein only when it is rank 1, passes the search's own
+    threshold, has an ``MS-GF:QValue`` at or below ``q_value_max``, and all of
+    its non-decoy evidence names that one protein. A match whose peptide is
+    shared between proteins is left out rather than counted for each, which
+    would inflate every protein it touches; a match with only decoy evidence is
+    left out too. The count is therefore unique-peptide spectrum matches, and it
+    is a coarse identification measure, not an abundance.
+
+    The file is parsed as a stream, because a deposited search result is tens of
+    millions of lines and does not fit in memory as a tree.
+    """
+    from xml.etree import ElementTree  # noqa: PLC0415 - only for mzIdentML deposits
+
+    proteins: dict[str, str] = {}
+    evidence: dict[str, tuple[str, bool]] = {}
+    counts: dict[str, int] = {}
+    order: list[str] = []
+    source = io.BytesIO(gzip.decompress(data) if data[:2] == b"\x1f\x8b" else data)
+    for _event, element in ElementTree.iterparse(source, events=("end",)):
+        if element.tag == MZID_NS + "DBSequence":
+            proteins[element.get("id")] = _mzid_accession(element.get("accession", ""))
+        elif element.tag == MZID_NS + "PeptideEvidence":
+            evidence[element.get("id")] = (element.get("dBSequence_ref", ""),
+                                           element.get("isDecoy") == "true")
+        elif element.tag == MZID_NS + "SpectrumIdentificationItem":
+            if element.get("rank") == "1" and element.get("passThreshold") == "true":
+                q_value = next((float(cv.get("value", "nan"))
+                                for cv in element.findall(MZID_NS + "cvParam")
+                                if cv.get("accession") == MZID_QVALUE), None)
+                if q_value is not None and q_value <= q_value_max:
+                    named = {evidence[ref][0]
+                             for reference in element.findall(MZID_NS + "PeptideEvidenceRef")
+                             for ref in [reference.get("peptideEvidence_ref")]
+                             if ref in evidence and not evidence[ref][1]}
+                    if len(named) == 1:
+                        accession = proteins.get(next(iter(named)), "")
+                        if accession:
+                            if accession not in counts:
+                                counts[accession] = 0
+                                order.append(accession)
+                            counts[accession] += 1
+        else:
+            continue
+        element.clear()
+    if not proteins:
+        raise ValueError("mzIdentML file lists no DBSequence; is it mzIdentML 1.1?")
+    if not counts:
+        raise ValueError(f"mzIdentML file has no rank-1 match at q <= {q_value_max}")
+    return ["accession", "psm_count"], [[accession, str(counts[accession])] for accession in order]
 
 
 MZTAB_DECOY_COLUMN = "opt_global_cv_PRIDE:0000303_Decoy_hit"

@@ -1,0 +1,258 @@
+{
+  "dataType": "proteomics",
+  "platform": "LC-MS/MS",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "LC-MS/MS protein identification, unique-peptide spectrum counting from the deposit's MS-GF+ mzIdentML",
+  "signed": false,
+  "licence": "PRIDE project licence field reads 'EBI terms of use', a no-additional-restriction statement rather than a grant; the article is CC BY 4.0. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the deposit and Nakayasu et al. 2017 are both cited.",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "PXD005851",
+  "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD005851",
+  "citationId": "nakayasu-2017",
+  "citation": {
+    "text": "Nakayasu ES, Burnet MC, Walukiewicz HE, et al. Ancient Regulatory Role of Lysine Acetylation in Central Metabolism. mBio 2017;8(6):e01894-17. PRIDE PXD005851, the Synechococcus elongatus PCC 7942 arm of a 48-organism survey.",
+    "url": "https://doi.org/10.1128/mBio.01894-17",
+    "pmid": "29184018"
+  },
+  "files": [
+    {
+      "name": "PXD005851_Biodiversity_S_elongatus_BG11_aerobic_1_14July16_Pippin_16-05-01_msgfplus.mzid.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/10/PXD005851/Biodiversity_S_elongatus_BG11_aerobic_1_14July16_Pippin_16-05-01_msgfplus.mzid.gz",
+      "sha256": "ed47abd389bff4708ac3bd204ba0b752b3b565724014ebaf6040f67431740a07",
+      "label": "BG11-1"
+    },
+    {
+      "name": "PXD005851_Biodiversity_S_elongatus_BG11_aerobic_2_14July16_Pippin_16-05-01_msgfplus.mzid.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/10/PXD005851/Biodiversity_S_elongatus_BG11_aerobic_2_14July16_Pippin_16-05-01_msgfplus.mzid.gz",
+      "sha256": "cdeded90dd7da0dad3175f0afead9715956cc55d3525544d6e7426e33c35044b",
+      "label": "BG11-2"
+    },
+    {
+      "name": "PXD005851_Biodiversity_S_elongatus_BG11_aerobic_3_14July16_Pippin_16-05-01_msgfplus.mzid.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/10/PXD005851/Biodiversity_S_elongatus_BG11_aerobic_3_14July16_Pippin_16-05-01_msgfplus.mzid.gz",
+      "sha256": "609f3df4166c5ab45f40fe2581230bfcd85764fcac8b384259f0903642662d91",
+      "label": "BG11-3"
+    },
+    {
+      "name": "PXD005851_Biodiversity_S_elongatus_BG11NaCl_aerobic_1_05Oct16_Pippin_16-05-06_msgfplus.mzid.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/10/PXD005851/Biodiversity_S_elongatus_BG11NaCl_aerobic_1_05Oct16_Pippin_16-05-06_msgfplus.mzid.gz",
+      "sha256": "6c1db657d44fa38cc74b2f73819dccc53cb24dd3e344a6a4360489eed3e0b773",
+      "label": "BG11NaCl-1"
+    },
+    {
+      "name": "PXD005851_Biodiversity_S_elongatus_BG11NaCl_aerobic_2_05Oct16_Pippin_16-05-06_msgfplus.mzid.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/10/PXD005851/Biodiversity_S_elongatus_BG11NaCl_aerobic_2_05Oct16_Pippin_16-05-06_msgfplus.mzid.gz",
+      "sha256": "f0d0a6e45a35e622d5d99f593fdf485ca5388db3aff079db707b7e14df5a5944",
+      "label": "BG11NaCl-2"
+    },
+    {
+      "name": "PXD005851_Biodiversity_S_elongatus_BG11NaCl_aerobic_3_05Oct16_Pippin_16-05-06_msgfplus.mzid.gz",
+      "url": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2017/10/PXD005851/Biodiversity_S_elongatus_BG11NaCl_aerobic_3_05Oct16_Pippin_16-05-06_msgfplus.mzid.gz",
+      "sha256": "a52a226629a77e8d6a29249cba0b4da0cee31cffa65cd16b544f4ac5f94a5970",
+      "label": "BG11NaCl-3"
+    }
+  ],
+  "reader": {
+    "format": "mzidentml",
+    "idColumn": "accession",
+    "idKind": "uniprot_pcc7942",
+    "qValueMax": 0.01
+  },
+  "units": "unique-peptide spectrum matches per million such matches in the run, mean of three biological replicates",
+  "normalization": "cpm",
+  "conditionTableRow": 61,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates per medium"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 22.0,
+      "hi": 22.0,
+      "unit": "°C",
+      "text": "22 °C"
+    },
+    "lightIntensity": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "no irradiance is given; the survey's growth table records temperature, shaking, atmosphere and medium only"
+    },
+    "lightRegime": {
+      "status": "not reported",
+      "kind": null,
+      "photoperiod": null,
+      "spectrumClass": null,
+      "entrained": false,
+      "text": "continuity, photoperiod and spectrum not reported for any of the 48 organisms"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "no CO₂ regime is given; the atmosphere is recorded only as aerobic"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912)"
+    },
+    "format": {
+      "status": "reported",
+      "value": "5 mL liquid culture, no shaking, aerobic",
+      "text": "5 mL of medium in an unshaken aerobic culture"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "stationary",
+      "od": null,
+      "odNm": null,
+      "text": "early stationary phase; no optical density is given"
+    }
+  },
+  "caveat": "An identification count, not an abundance, and the deposit's own search output rather than a published table: the article's supplement reports per-organism totals and a glycolytic-enzyme table, never a per-protein value for this organism. Counts are rank-1 MS-GF+ matches at q <= 0.01 whose peptide is unique to one protein; a spectrum whose peptide is shared between proteins is counted for neither, and decoys are dropped. Spectral counting measures abundance only coarsely and favours long and readily ionised proteins. A protein has a value only where all three replicates identified it. The survey grew every organism once to early stationary phase at its own listed conditions, and 22 °C unshaken is well below this organism's usual cultivation, so these layers are not comparable to the 30 °C datasets without care. Measured in PCC 7942, not UTEX 2973, and keyed by UniProt accession through UniProt's ordered-locus names and the one-to-one crosswalk.",
+  "layers": [
+    {
+      "id": "PXD005851_bg11",
+      "metricKey": "protPxd005851Bg11",
+      "label": "Protein identification PXD005851 BG-11 (PCC 7942)",
+      "conditionSet": "BG-11, 22 °C, unshaken aerobic 5 mL culture to early stationary phase; mean of three replicate runs",
+      "samples": "Biodiversity_S_elongatus_BG11_aerobic_1/2/3_14July16_Pippin_16-05-01 (MS-GF+ mzIdentML)",
+      "columns": [
+        "psm_count :: BG11-1",
+        "psm_count :: BG11-2",
+        "psm_count :: BG11-3"
+      ],
+      "treatments": [],
+      "group": "other",
+      "conditionTableRow": 61,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 22.0,
+          "hi": 22.0,
+          "unit": "°C",
+          "text": "22 °C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "no irradiance is given; the survey's growth table records temperature, shaking, atmosphere and medium only"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "continuity, photoperiod and spectrum not reported for any of the 48 organisms"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "no CO₂ regime is given; the atmosphere is recorded only as aerobic"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "5 mL liquid culture, no shaking, aerobic",
+          "text": "5 mL of medium in an unshaken aerobic culture"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "stationary",
+          "od": null,
+          "odNm": null,
+          "text": "early stationary phase; no optical density is given"
+        }
+      }
+    },
+    {
+      "id": "PXD005851_bg11_nacl",
+      "metricKey": "protPxd005851Bg11Nacl",
+      "label": "Protein identification PXD005851 BG-11 with NaCl (PCC 7942)",
+      "conditionSet": "BG-11 with sodium chloride at an unreported concentration, 22 °C, unshaken aerobic 5 mL culture to early stationary phase; mean of three replicate runs",
+      "samples": "Biodiversity_S_elongatus_BG11NaCl_aerobic_1/2/3_05Oct16_Pippin_16-05-06 (MS-GF+ mzIdentML)",
+      "columns": [
+        "psm_count :: BG11NaCl-1",
+        "psm_count :: BG11NaCl-2",
+        "psm_count :: BG11NaCl-3"
+      ],
+      "treatments": [
+        "sodium chloride"
+      ],
+      "group": "stress",
+      "conditionTableRow": 61,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 22.0,
+          "hi": 22.0,
+          "unit": "°C",
+          "text": "22 °C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "no irradiance is given; the survey's growth table records temperature, shaking, atmosphere and medium only"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "continuity, photoperiod and spectrum not reported for any of the 48 organisms"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "no CO₂ regime is given; the atmosphere is recorded only as aerobic"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "ATCC 616 Medium BG-11 for Blue-Green Algae with sodium chloride added; the amount is not reported. The deposited run names distinguish a BG11 and a BG11NaCl set, but the article describes one growth condition per organism and its Table S1 gives only the plain BG-11 row, so the salt concentration is nowhere stated"
+        },
+        "format": {
+          "status": "reported",
+          "value": "5 mL liquid culture, no shaking, aerobic",
+          "text": "5 mL of medium in an unshaken aerobic culture"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "stationary",
+          "od": null,
+          "odNm": null,
+          "text": "early stationary phase; no optical density is given"
+        }
+      }
+    }
+  ]
+}
