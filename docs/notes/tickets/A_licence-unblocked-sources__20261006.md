@@ -152,8 +152,32 @@ per-gene file package B found; conditions are the package B rows, amended by the
    already handles, as PXD030282's was; PXD005851 (the 48-organism acetylation
    deposit) has six *S. elongatus* runs, three in BG-11 and three in BG-11 with
    NaCl, each with an MS-GF+ `.mzid.gz` of about 80 to 107 MB, which needs an
-   mzIdentML reader the repository does not have. Order: PXD000510, PXD005105,
-   then PXD005851.
+   mzIdentML reader the repository does not have.
+
+   **Read on 2026-10-07, which changes the order.** PXD000510's generated mzTab
+   files are `mzTab-type Identification`, not quantification: the protein table
+   carries accession, scores, `num_psms_ms_run[1]` and coverage, and no
+   reporter-ion or abundance column at all. The TMT 6-plex time resolution the
+   study was designed around is therefore absent from the deposited results, and
+   each file pools the time points of one 6-plex. Only a per-run PSM count is
+   recoverable, which would be a spectral-count layer over a pooled mixture, in
+   the shape the shipped PXD030282 layers already take. That is a judgement for
+   the owner, not a default, because the layer would average time points the
+   study separated. The reporter ions exist only in the 100 raw files, so the
+   alternative is reprocessing.
+
+   Revised order: PXD005105 first, since the existing `dtaselect` reader takes
+   its `SEARCH.zip` with no new code; then PXD000510 behind the owner's call on
+   pooled spectral counts; then PXD005851, which needs the mzIdentML reader and
+   is an acetylation study whose six *S. elongatus* runs are identifications
+   rather than abundances.
+
+   PXD005105's condition record is ready from package B row 59, the production
+   culture the proteomics samples come from: 30 °C, 100 µmol photons m⁻² s⁻¹
+   from cool white fluorescent lamps, continuous, 5% CO₂, BG-11 with 10 mM TES
+   at pH 8.2, 500 mL in a 1-L Roux bottle, log phase, three biological
+   replicates. It would add a wild-type proteome, which the release does not yet
+   have, alongside the L1118 strain already shipped from PXD030282.
 3. Row 6: moved out to
    [O_array-expression-reader__20261007](O_array-expression-reader__20261007.md)
    by the owner's decision of 2026-10-07.
