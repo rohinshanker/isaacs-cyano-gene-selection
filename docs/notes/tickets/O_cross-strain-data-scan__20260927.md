@@ -49,8 +49,10 @@ Fixed 2026-09-28 in
 [claude-science-handoff.md](../../validation/claude-science-handoff.md), which also
 fixes the claims mechanism every gated step uses. In short: steps **2 and 3** are Claude
 Science's, because their truth lives outside this repository and it has the archive
-and literature reach to establish it — the four packages are specified in
-[the offload ticket](O_claude-science-offload__20260927.md#work-packages). Steps
+and literature reach to establish it — the four packages followed the return
+format in
+[claude-science-handoff.md](../../validation/claude-science-handoff.md#return-format).
+Steps
 **1, 4, 5, and 6** are the in-repo coding agents', and none of them waits on the scan:
 the crosswalk build is a pipeline job against pinned RefSeq releases, and the
 chromosome tab and the selectors are UI work whose design decisions are already
@@ -386,8 +388,8 @@ already known.
 
 Packages B and C returned 2026-10-03 and passed intake 2026-10-04, B with two
 rows returned for relabelling; the package A correction returned 2026-10-03 and
-passed; details in the
-[offload ticket](O_claude-science-offload__20260927.md#package-b-intake-2026-10-04).
+passed; the two corrections are detailed in
+[`RET_claude-science-session__20261003.md`](../handoff/RET_claude-science-session__20261003.md#b2-the-two-intake-corrections-checked).
 Condition metadata is in `cyano_package_B_conditions_20261003.tsv` (88 rows, one
 per condition set), licence evidence in `cyano_package_C_licences_20261003.tsv`,
 and the per-artifact licence decisions in

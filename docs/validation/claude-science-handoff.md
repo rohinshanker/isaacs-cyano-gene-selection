@@ -236,10 +236,39 @@ next action is a Claude Science answer says so: "Blocked on CS-2".
 Bounded research with a fixed return shape, such as a literature sweep or an audit
 of shipped data, is a work package rather than a claim. A package is a complete
 handoff: coordinator, ticket, scope, acceptance criteria, exact return format with
-one row per item, hard boundaries, and no permitted child work outside scope. The
-offload and audit tickets are the reference shapes. A package is dispatched only
-after the capability its acceptance criteria depend on is confirmed above; where a
-capability is absent, the package is narrowed and says so in every row.
+one row per item, hard boundaries, and no permitted child work outside scope. A
+package is dispatched only after the capability its acceptance criteria depend on
+is confirmed above; where a capability is absent, the package is narrowed and says
+so in every row.
+
+### Return format
+
+A sweep, condition-metadata, or licence package returns one row per **candidate**
+artifact, with these columns:
+
+| Column | Content |
+| --- | --- |
+| `strain` | The organism as the study names it, plus its culture-collection identifier if the study gives one. |
+| `assay` | Data type and the method (for example dRNA-seq, Rend-seq, Term-seq, ribo-seq, LC-MS/MS). |
+| `conditions` | One value per comparability axis, each with its source location, or "not reported". |
+| `replicates` | Biological replicate count per condition, with the source location; "not stated" where the study does not say. |
+| `build` | Genome assembly and annotation release the study used, as the study states it. |
+| `licence` | The governing licence for the artifact and the quoted evidence with its location; a recommendation, never a permission. |
+| `artifact` | Immutable artifact identifier and accession: DOI, GEO/SRA/PRIDE accession, supplement filename and version, or commit-addressed repository path. |
+| `checksum` | SHA-256 of any file actually retrieved, with the retrieval date; empty when nothing was retrieved. |
+| `per_gene_table` | Whether a per-gene table exists and which file holds it; "none found" otherwise. |
+| `mapping_route` | The identifier namespace the table is keyed by and which documented route could join it; never a per-locus mapping. |
+| `status` | `candidate`, `rejected`, or `escalate`, with the reason. |
+| `source` | A checkable citation for every claim in the row. |
+
+A **pair-comparability** package instead returns one row per **pair**, scoring
+candidates already extracted by the table above against each other: the same
+`artifact`-identified members, a pass/fail per comparability axis, and an overall
+verdict of `comparable`, `escalate` (the marginal axis and both condition sets, for
+the lab), `undecidable` (a not-reported value on an axis the assay responds to,
+never scored as a pass), or `not comparable`. Rejected candidates stay in the
+candidate-level table with their reason, so the record of everything considered,
+rejects included, is complete at both grains.
 
 ## Hard boundaries
 
