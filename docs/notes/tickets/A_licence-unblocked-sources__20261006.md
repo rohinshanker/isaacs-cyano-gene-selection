@@ -200,16 +200,41 @@ per-gene file package B found; conditions are the package B rows, amended by the
    (`wild type -1/wt-1.sqt` through `-13`, and the same for each strain), so it
    would add the wild-type proteome the release still lacks.
 
-   Row 7 is therefore blocked on owner decisions in all three deposits, and no
-   ordering unblocks it. PXD005105 needs either a decision to do the filtering
-   in-repo and label the result as our derivation, or the paper's supplementary
-   NSAF table, which this session cannot retrieve: PMC5167140 is not open access
-   through the Europe PMC API, and LIT-08 and LIT-09 of
-   `docs/notes/handoff/cyano_blocked_task_register_20261005.tsv` forbid
-   automating around the PMC challenge, changing User-Agent or using a mirror,
-   so it is the owner's browser route. PXD000510 needs the call on pooled
-   spectral counts recorded above. PXD005851 needs the mzIdentML reader and is
-   an identification study.
+   **The owner decided all three on 2026-10-07.**
+
+   *PXD000510 ships, and did:* four layers, on the decision to accept pooled
+   spectral counts. Each deposited mzTab is one TMT 6-plex and names its own
+   window, so the layers are hours 6.5-14.5, 17.5-26.5, 30.5-38.5 and 41.5-50.5
+   rather than one undifferentiated pool, though the resolution within each
+   window is still lost. Shipped in `acde6c8` with a new `mztab` reader;
+   coverage 1713, 1797, 1927 and 1928 genes.
+
+   *PXD005105 waits on the owner:* the decision was to ship the paper's
+   published NSAF values rather than derive our own, so the blocker is the
+   supplementary table of PMC5167140. This session cannot retrieve it: the
+   record is not open access through the Europe PMC API, and LIT-08 and LIT-09
+   of `docs/notes/handoff/cyano_blocked_task_register_20261005.tsv` forbid
+   automating around the PMC challenge, changing User-Agent or using a mirror.
+   Recorded as item 7 of `docs/validation/AAA-next-steps.md`.
+
+   *PXD005851 ships by its own search output, and this ticket's "Table S1
+   route" was wrong.* The supplement of PMC5705920 was downloaded and read on
+   2026-10-07: Table S1 is the 95-row per-organism growth table that the
+   condition record already uses, Table S2 gives only per-organism totals (for
+   this organism, 18,444 peptides and 1,698 proteins at 0.29% protein FDR),
+   Table S3 is a 59-row glycolytic-enzyme acetylation table and Table S4 is
+   nine rows. No per-protein value for *S. elongatus* is published anywhere, so
+   the deposit's six MS-GF+ `.mzid.gz` files are the only route and the owner
+   chose to build the reader. `read_mzidentml` and the spec are in `7c9ba28`;
+   the ingestion is held until the fitness release is integrated.
+
+   Two things about PXD005851 to carry forward. The counting rule is a choice
+   and is stated in the caveat: rank-1 matches at MS-GF:QValue <= 0.01 whose
+   peptide is unique to one protein, with a shared peptide counted for neither
+   protein rather than for each. And the runs split into BG11 and BG11NaCl
+   sets while the article describes one growth condition per organism and its
+   Table S1 carries only the plain BG-11 row, so the salt concentration is
+   nowhere stated and the NaCl layer records it as not reported.
 
    PXD005105's condition record is ready from package B row 59, the production
    culture the proteomics samples come from: 30 °C, 100 µmol photons m⁻² s⁻¹
