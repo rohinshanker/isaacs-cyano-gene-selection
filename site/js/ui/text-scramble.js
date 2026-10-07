@@ -560,7 +560,9 @@ export class TextScramble {
     const property = control ? 'minWidth' : 'minHeight';
     const value = element.style[property] ?? '';
     if ((control ? rect.width : rect.height) > 0) {
-      element.style[property] = `${control ? rect.width : rect.height}px`;
+      // A responsive reflow can give the control a narrower container while
+      // its text is still settling. Keep the reservation inside that space.
+      element.style[property] = control ? `min(${rect.width}px, 100%)` : `${rect.height}px`;
       this.reservations.set(element, { property, value });
     }
   }

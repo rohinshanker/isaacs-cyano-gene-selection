@@ -293,6 +293,30 @@ test('new landing content gets one local reveal after the page reveal has finish
   });
 });
 
+test('review geometry reservations adapt to the container and restore existing styles', async () => {
+  await withFakeDocument(async (document) => {
+    const clock = frameClock();
+    const timing = { ...FAST, durationAnchors: [[1, 250], [160, 1000]] };
+    const { root, block } = mount(document, 'Long control label', { tag: 'button' });
+    block.style = { minWidth: '2rem' };
+    block.getBoundingClientRect = () => ({ width: 301, height: 30 });
+    const paragraph = document.createElement('p'); paragraph.append('Long paragraph');
+    paragraph.style = { minHeight: '1rem' };
+    paragraph.getBoundingClientRect = () => ({ width: 301, height: 55 });
+    root.append(paragraph);
+    const scramble = new TextScramble({ timing, now: clock.now,
+      requestFrame: clock.requestFrame, cancelFrame: clock.cancelFrame });
+    const done = scramble.run(root);
+    assert.equal(block.style.minWidth, 'min(301px, 100%)');
+    assert.equal(paragraph.style.minHeight, '55px');
+    clock.advance(1000); await done;
+    assert.equal(block.style.minWidth, '2rem');
+    assert.equal(paragraph.style.minHeight, '1rem');
+    scramble.run(root); scramble.cancel();
+    assert.equal(block.style.minWidth, '2rem', 'cancellation also restores the reservation');
+  });
+});
+
 test('a length or a duration of zero resolves at once instead of dividing by zero', () => {
   const edges = [
     TIMING,
