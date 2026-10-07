@@ -140,10 +140,37 @@ async (page) => {
     } finally {
       await fresh.close();
     }
+    await openSelection();
+    const poolBox = row.locator('input[type=checkbox]');
+    await poolBox.check();
+    await poolBox.uncheck();
+    const fractions = await mainPeek.locator('tr[data-id]').evaluateAll((nodes) => nodes.map((node) => node.dataset.id));
+    check(fractions.length === 9, 'nine biofilm fraction rows');
+    for (const id of fractions) await mainPeek.locator(`tr[data-id="${id}"] input[type=checkbox]`).check();
+    check(await mainPeek.locator('tr[data-id]').evaluateAll((nodes) => nodes.every((node) =>
+      node.children[5].textContent.includes('not reported'))), 'biofilm schedule remains unknown');
+    await mainPeek.getByRole('button', { name: 'Done', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 9 condition sets'));
+    await page.locator('#colour-help summary').click();
+    const explanation = page.locator('#colour-help');
+    const method = await explanation.innerText();
+    check(method.includes('mean of 9 selected condition-set gene-fitness values'), 'nine-fraction pooled calculation');
+    check(!method.includes('mean of 1 deposited sample column'), 'pooled calculation does not reuse one input');
+    check(method.includes('T-values'), 'pooled statistical caveat retained');
+    check(await explanation.getByRole('link', { name: 'GSE205443', exact: true }).getAttribute('href')
+      === 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE205443', 'fitness archive link');
+    check(await explanation.locator('a[href*="GSE205444"]').count() === 0, 'fitness explanation has no RNA-only link');
+    for (const [width, height] of sizes) {
+      await page.setViewportSize({ width, height });
+      await explanation.scrollIntoViewIfNeeded();
+      evidence.push(await layout(`biofilm-method-${width}`));
+      await page.screenshot({ path: `${root}/biofilm-method-${width}.png` });
+    }
     check(errors.length === 0, `runtime diagnostics: ${errors.join('; ')}`);
     return { ok: true, sharedUrl, evidence, errors,
       states: ['pooled-default', 'biofilm-separate', 'stacked-grid', 'empty', 'single',
-        'all', 'compound', 'dose-subset', 'link-restored', 'closed', 'keyboard-focus'] };
+        'all', 'compound', 'dose-subset', 'link-restored', 'closed', 'keyboard-focus',
+        'biofilm-only', 'pooled-method', 'statistical-caveat', 'fitness-source-link'] };
   } finally {
     page.off('pageerror', onError);
     page.off('console', onConsole);
