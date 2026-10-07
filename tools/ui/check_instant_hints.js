@@ -65,10 +65,12 @@ async (page) => {
     await page.keyboard.press('Escape');
     check(!await hint.isVisible(), 'popup closure clears hint');
     await page.getByRole('tab', { name: 'Lengths', exact: true }).click();
-    const lengthHint = page.locator('#length-view svg rect').first();
+    const lengthHint = page.locator('#length-view svg rect').nth(1);
     check(await lengthHint.count() > 0, 'length histogram exists');
     if (await lengthHint.count()) {
       await lengthHint.hover();
+      const expected = await lengthHint.evaluate((node) => (node.getAttribute('aria-describedby') ?? '').split(/\s+/).map((id) => document.getElementById(id)?.textContent ?? '').join(''));
+      check(expected && await hint.textContent() === expected, 'exact length-bin hint');
       await page.screenshot({ path: `${root}/integrated-lengths-1440.png` });
     }
     check(errors.length === 0, `runtime errors: ${errors.join('; ')}`);
