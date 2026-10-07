@@ -18,7 +18,8 @@ The question to the O'Shea lab about the flask-culture temperature was sent,
 recorded under J2 in
 [O_comparability-lab-judgements__20261005](../notes/tickets/O_comparability-lab-judgements__20261005.md).
 
-Two items remain, both deferred by you rather than blocked.
+Three items remain. Items 5 and 6 are deferred by you rather than blocked;
+item 7 is new on 2026-10-07 and it does block a dataset.
 
 ## 5. Three optional depositor emails, saved for later
 
@@ -168,6 +169,45 @@ would require contacting the depositors. A reader looking at a condition the
 site shows as unknown should be able to tell that it is unknown because the
 source never stated it and only the depositor could settle it, rather than
 because the project did not look. This belongs with the condition-metadata and
-Data Sources work, and is recorded for the session that owns it; it is the last
-open item on this list and the only one that is an agent's job rather than
-yours.
+Data Sources work, and is recorded for the session that owns it; it is the only
+item on this list that is an agent's job rather than yours.
+
+## 7. The PNAS limonene paper's supplementary protein table
+
+**New on 2026-10-07, and this one blocks real data.** Your decision that day was
+to ship PXD005105 from the paper's published values rather than have the agents
+derive their own, so this is the step that unblocks it.
+
+Ticket: [A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md), row 7.
+
+**What is needed:** the supplementary material of *Enhanced limonene production
+in cyanobacteria reveals photosynthesis limitations*, PNAS 2016;113(50), PMID
+27911807, PMC5167140, doi:10.1073/pnas.1613340113. The table wanted is the
+proteomics one, reporting NSAF or equivalent per-protein values for the wild
+type and the limonene strains. Saving it to the private drop folder is enough;
+the agents read it from there.
+
+**Why the agents cannot get it.** The PRIDE deposit holds exactly two files, an
+8.1 GB `RAW.zip` and a 944 MB `SEARCH.zip`, confirmed against the PRIDE v3
+listing, the FTP directory and the deposit's own `README.txt`. The search
+archive was downloaded and opened on 2026-10-07 and holds 118 unfiltered
+ProLuCID `.sqt` files rather than the authors' DTASelect output, with the decoys
+still in them: in one file, 10,882 of 21,349 top-ranked matches are
+reversed-sequence decoys, a 49% false-discovery rate, so counting them as
+deposited would give a quantity about half of which is noise. The filtering the
+authors performed was never deposited. PMC5167140 is not open access through the
+Europe PMC API, and LIT-08 and LIT-09 of the blocked-task register forbid
+working around the PMC challenge, changing User-Agent or using a mirror, so a
+person reading it in a browser is the route.
+
+**What it buys:** a wild-type proteome, which the release still does not have.
+The deposit covers nine samples, three biological replicates each of the wild
+type, L1115 and L1118, where the only proteomics strain shipped so far is the
+engineered L1118 from a different deposit. The condition record is already
+written and waiting, and the archive is cached with its checksum recorded in the
+ticket, so nothing needs downloading again.
+
+**If the table does not exist or is not usable,** say so and the fallback is the
+option you did not take on 2026-10-07: have the agents do the false-discovery
+filtering themselves and label the layer as this project's own derivation rather
+than the depositors' published values.
