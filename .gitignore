@@ -16,3 +16,7 @@ data/protein-evidence/source/
 .pytest_cache/
 .playwright-cli/
 .artifacts/rna-folding/
+# Publisher-deposited recoded E. coli inputs fetched by tools/fetch_recoded_ecoli.py
+data/raw/recoded-ecoli/*.gb
+data/raw/recoded-ecoli/*.xlsx
+data/raw/recoded-ecoli/source/*

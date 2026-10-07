@@ -1,4 +1,4 @@
-# O_recoded-ecoli-multiomics__20261007 — Open
+# A_recoded-ecoli-multiomics__20261007 — Active
 
 - **Scope:** Admit the measured datasets from Nyerges et al., *Nature
   Communications* 2026 (PMID 42331836), which profile partially recoded
@@ -7,22 +7,23 @@
   maps are fitted on native codon usage, generate the codon projection the
   recoded sequences need, and carry each sample's recoding scheme beside every
   value it produces.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-07
 - **Updated:** 2026-10-07
 
 Opened at the owner's request on 2026-10-07, with a Claude Science handoff asked
-for. **The handoff turned out not to be needed for access.** Every dataset the
-request named is public and was retrieved in full by this session; see
-"Accessibility, settled" below. The package in this ticket was therefore
-rewritten as an independent second check of what the in-repository read already
-established, which is the other case the handoff contract allows. The owner may
-reasonably decline it.
+for. **The handoff was not needed and the owner withdrew it the same day.** Every
+dataset the request named is public and was retrieved in full; see
+"Accessibility, settled" below. The scheme derivation it would have confirmed was
+done here instead, twice and independently; see "Derived 2026-10-07".
 
 This is the first source in the repository whose organisms are recoded rather
 than native, so it is also the first that tests whether the viewer's codon
 metrics and projections mean anything when the codon table they describe is a
 design input.
+
+All six owner questions were answered on 2026-10-07 and are recorded under
+"Decided 2026-10-07". Work has begun; the ticket is active.
 
 ## Current State
 
@@ -203,7 +204,107 @@ required** to display this source. Reprocessing stays available as an
 independent check or to add strains the supplement omits, and it would be the
 first admitted source to want it.
 
-## The problem this ticket has to decide first
+## Decided 2026-10-07
+
+The owner answered all six questions. Each answer is recorded with what it
+commits the build to.
+
+| Id | Decision | What it commits |
+| --- | --- | --- |
+| Q1 | **One organism record per profiled genome.** Six records: `MDS42`, `DH10B`, the three profiled recoded segment-set strains and `Syn61∆3 ev5`. | The isolation contract is unchanged. Each record gets its own data directory, genome of record, fixed projection and storage keys. No strain dimension is added inside a record, and no map mixes two strains. |
+| Q2 | **A design file is admissible as a genome of record, pinned by checksum, and so is a per-strain genome derived from it by segment substitution.** | `Ec_Syn57.gb` is admitted pinned by SHA-256. A derived per-strain genome must be reproducible from pinned inputs and carry its own checksum. This is the first derived genome of record here, so the admission contract needs the rule written into it. |
+| Q3 | **Publish both projections, each labelled.** A refit over recoded genes alone, and a projection of recoded genes onto the parent's fixed axes. | Two maps, two validation documents' worth of statements. The shared-axis map must carry, in the interface and not only in a document, that the separation it shows follows from the removed-codon loadings. |
+| Q4 | **Admit the fitness data as a new per-strain data type.** Doubling time, maximum OD600 and the 480 Biolog environments. | The first admitted layer whose row unit is not a gene. It needs its own tab or panel and its own absence semantics; it colours no gene and must not appear able to. |
+| Q5 | **Admit all three Supplementary Data 3 quantities, separately labelled.** Replicate RPKM, log2 fold change, and the translation-efficiency term. | Three distinct bases, never on a shared scale. A fold change cannot ship until its reference strain is evidenced from the methods, which is dependency D4. |
+| Q6 | **Skip the Claude Science second check.** | The queue row is removed from [INDEX.md](INDEX.md). The replacement map gets two independent in-repository derivations instead, which is what "Derived 2026-10-07" reports. |
+
+## Derived 2026-10-07
+
+The paper says seven codons were removed. Which seven, and what replaced them,
+is now established from sequence rather than from prose, by
+`tools/recoded_scheme.py`. The article was not an input to either derivation; it
+is the cross-check.
+
+Both derivations pair a recoded coding sequence against its native counterpart
+in the pinned MG1655 assembly `GCF_000005845.2` by gene symbol, and accept the
+pair only when the two have equal length and translate to the same protein. That
+refusal matters: without it a different allele or gene model would be reported as
+recoding. Pairing against MG1655 rather than MDS42 is defensible because MDS42 is
+a reduced-genome derivative of MG1655 and the retained genes are the ones that
+pair, and the design's 3,973,902 bp length is consistent with an MDS42 parent
+rather than the 4,641,652 bp MG1655. The identical-protein requirement is what
+makes the pairing safe rather than the strain label.
+
+**Derivation 1, genome-wide.** 3,490 of the design's 3,640 CDS paired. A codon is
+a scheme target when its *retention* — its count in the design over its count in
+the native pair set — collapses. The observed separation is not marginal:
+
+| Codon | Amino acid | Native | Design | Retention |
+| --- | --- | ---: | ---: | ---: |
+| AGC | Ser | 17,764 | 50 | 0.0028 |
+| AGT | Ser | 9,198 | 36 | 0.0039 |
+| TTA | Leu | 15,193 | 82 | 0.0054 |
+| TTG | Leu | 15,404 | 110 | 0.0071 |
+| AGA | Arg | 1,618 | 27 | 0.0167 |
+| AGG | Arg | 890 | 15 | 0.0169 |
+| *GTC* | *Val* | *17,189* | *16,389* | *0.9535* |
+
+The seventh target is the amber stop TAG, and it is **derived, not asserted**. A
+stop cannot be judged on body-codon retention, so it is judged on terminal-stop
+share instead: the design's CDS end in TAA 2,476 times and TGA 1,145 times, and
+TAG only 14 times, a 0.39% share, and TAG occurs zero times as an internal
+codon. The derived table carries all seven targets with a `basis` column naming
+which of the two tests each one passed, so a reader never has to reconcile a
+six-row target set against a seven-codon scheme.
+
+GTC is the next codon after the six, at retention 0.9535. The gap between the
+highest target and the lowest non-target is a factor of **57**, so the 0.05
+threshold in the tool is a calibration rather than a guess, and any threshold
+between 0.017 and 0.95 returns the same set. Substitutions below GTC — GTC itself
+at 913, CAG at 495, GAG at 384 — are the design's incidental refactoring, not the
+scheme.
+
+**Derivation 2, the supplied variants.** 45 of the 73 individually recoded gene
+sequences in Supplementary Data 1 paired; the other 28 differ from MG1655 in
+protein or length, which is expected for an MDS42-derived design. Over those 45,
+505 of 552 substitutions (91.5%) fall on the same six sense codons, in the same
+destination order, and **zero target codons remain** inside them. The two
+derivations agree on the target set.
+
+### Three findings that change the design
+
+1. **The scheme is not a codon-to-codon map.** Every target has several
+   destinations: AGC goes to TCA 54.2% of the time, TCT 22.4%, TCC 11.9% and TCG
+   11.6%; TTA and TTG both go mostly to CTT and CTA. `validateSchemeMap` in
+   `site/js/core/scheme.js` models a scheme as one codon mapped to one codon, so
+   **the Ec_Syn57 scheme cannot be expressed as a preset in the current model**.
+   Either the model gains a distribution, or the preset declares target codons
+   with a stated representative replacement and says that is what it is. This is
+   a property of the published design, not a gap in the derivation.
+2. **The design is not finished recoding itself.** 165 genes still carry 659
+   target codons, and 14 CDS still end in TAG. Any sentence saying a strain is
+   free of a codon is false as stated and must be replaced by the measured
+   residual count. The article makes the same point in prose; this is the
+   per-gene list behind it.
+3. **Ec_Syn57 and Syn61 are in direct conflict.** TCA and TCG, the two serine
+   codons Syn61 removes, are the *destinations* Ec_Syn57 prefers: the design
+   contains 23,021 TCA and 13,547 TCG internal codons. A gene recoded for
+   Ec_Syn57 is therefore *more* forbidden under Syn61, not less. Any interface
+   offering both schemes has to make that visible rather than presenting them as
+   points on one scale.
+
+Reproduce with:
+
+```sh
+tools/fetch_recoded_ecoli.py --verify-only   # confirm the pinned inputs
+tools/recoded_scheme.py                      # write the four derived tables
+```
+
+The derived tables land in `data/recoded/`: per-codon retention, the substitution
+distributions from both derivations, the residual target codons per gene, and
+every gene that could not be paired with its reason.
+
+## The problem this ticket had to decide first, and how it was decided
 
 The viewer's published native map is a PCA of 59 relative synonymous codon use
 values per CDS, fitted and standardized across that organism's own genes and
@@ -215,10 +316,16 @@ along the removed-codon loadings with near-certainty, and that separation would
 be a restatement of the design file, not a measurement.
 
 The owner asked for a new PCA map where the codon composition differs. It does
-differ, and `Ec_Syn57.gb` supplies the recoded sequence to build it from. The
-open question is what the map is fitted on and what it is allowed to claim,
-which is Q3. Fix that before building: a map that silently recovers the recoding
-scheme and is then read as a biological result is the failure mode to avoid.
+differ, and `Ec_Syn57.gb` supplies the recoded sequence to build it from.
+
+**Decided (Q3): both maps ship, each labelled.** A refit over recoded genes
+alone, and a projection of recoded genes onto the parent's fixed axes. The
+shared-axis map states in the interface, not only in a validation document, that
+its separation follows from the removed-codon loadings. The derivation above
+makes that concrete rather than theoretical: six sense codons fall to between
+0.3% and 1.7% retention, so the loadings on those six carry the split. A map that
+silently recovered the recoding scheme and was then read as a biological result
+was the failure mode to avoid, and the label is what avoids it.
 
 Three further structural facts constrain the answer.
 
@@ -248,152 +355,26 @@ recoding against a real one.
 
 ## Owner questions
 
-Answers here, not research, gate the build.
-
-| Id | Question | Why it cannot be decided by an agent |
-| --- | --- | --- |
-| Q1 | Does each profiled strain become its own organism record with its own `?org=` address, data directory and fixed projection, or does one record carry the strains as selectable variants? | The isolation contract gives one assembly and one projection per record; carrying several strains in one record changes that contract. |
-| Q2 | Is `Ec_Syn57.gb` admissible as a genome of record, given it is a publisher-deposited design file and not a RefSeq release? And is a per-strain genome derived from it by segment substitution admissible? | Every genome of record so far is a pinned RefSeq release. The admission contract does not cover a design file or a derived one. |
-| Q3 | For the new projection: refit the RSCU PCA on recoded genes alone, project recoded genes onto the parent's fixed axes, or publish both? What sentence does the map carry about the fact that it recovers the recoding scheme? | This decides what the map asserts. No evidence settles it. |
-| Q4 | Are the fitness results admissible when their row unit is one strain, or one strain and one environment, with no per-gene value? | Every admitted layer to date is per gene. A per-strain layer is a new data type and a new tab question, as the fitness screens were in [O_fitness-screen-data-type__20261005](O_fitness-screen-data-type__20261005.md). |
-| Q5 | Do RPKM values, log2 fold changes against MDS42 and a translation-efficiency term enter as expression layers, and under which basis labels? | Changing what a displayed value means is reserved; these are three different quantities and the viewer's expression layers were not built for fold changes against another strain. |
-| Q6 | Is the Claude Science second check below worth sending, now that access is settled and the package would only re-derive what the agents here already read? | The handoff contract allows a second check at the owner's request; whether this one earns the round trip is the owner's call. |
+All six were answered on 2026-10-07; the answers and what each commits are in
+"Decided 2026-10-07" above. No owner question is outstanding. The remaining
+blockers are evidence and build work, listed under "Dependencies".
 
 ## Claude Science claims
 
-No falsifiable scientific claim is asserted here. P-RECODED-CHECK below is an
-independent second check, not a discovery errand, because the sources it covers
-were all reached from this repository on 2026-10-07. It is **queued but
-explicitly optional**, pending Q6. Its return would confirm or contradict the
-inventory above; it admits nothing, settles none of Q1 to Q6 and authorises no
-coordinate join. Add a ticket-local claim row if a later step comes to rest on a
-specific scientific assumption, and queue it in [INDEX.md](INDEX.md).
+**None, and none pending.** No falsifiable scientific claim is asserted here.
+The package drafted on 2026-10-07 as P-RECODED-CHECK was withdrawn the same day
+by owner decision Q6, and its row is removed from the Pending Claude Science
+queue in [INDEX.md](INDEX.md). The id is retired and is not reused.
 
-## P-RECODED-CHECK: paste-ready Claude Science handoff
+The reasoning is recorded because the handoff contract makes Claude Science a
+last resort: every source this ticket needs was reached from this repository, and
+the one derivation a second opinion would have covered — the codon replacement
+map — was instead derived twice here from independent inputs, with the two
+results agreeing. See "Derived 2026-10-07".
 
-Coordinator: interactive Claude session `cyano-contract-audit`; the owner
-operates Claude Science and returns the artifacts for intake.
-Task: `O_recoded-ecoli-multiomics__20261007`, package P-RECODED-CHECK.
-Canonical repository:
-`/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection`.
-Baseline: `main` at `f590c5b3004d17cda74d46c000ca20f7d59e9794`; ticket and index
-additions and unrelated local work may be present. Read-only repository access
-is sufficient. Return the files below to the owner. Do not edit code, release
-data, tickets or other working-tree files. No child delegation.
-
-**This is a second check.** The agents in this repository already retrieved the
-article, the Europe PMC supplementary bundle, the Source Data archive, the SRA
-run table and the MassIVE record on 2026-10-07, and their findings are in this
-ticket's "Current State". Do not read that section before fetching. Fetch the
-sources yourself, derive the answers independently, and only then compare.
-Report agreement or name the specific disagreement with your evidence. A
-confirmation is a useful result here; so is a contradiction.
-
-### 1. Re-derive the inventory independently
-
-- Retrieve the Europe PMC supplementary bundle for `PMC13287592` and the Source
-  Data archive inside it. Report every member with its exact name, byte length
-  and SHA-256, and report `Ec_Syn57.gb`'s sequence length, topology, and `CDS`
-  and `gene` feature counts.
-- For each of Supplementary Data 1 to 7, report its sheet names, the row and
-  column counts per sheet, and the column headers. State for each sheet what its
-  row unit is and what the values are, in the source's own words where it gives
-  them.
-- Confirm or contradict that per-gene replicate-level RNA-seq and Ribo-seq values
-  are deposited, and that no GEO or ArrayExpress record exists for this study.
-  Bound any negative finding to your recorded search.
-- Report the MassIVE project's file tree: whether processed protein or peptide
-  quantification tables are deposited or only raw and search outputs, the search
-  engine and reference database used, and the per-file terms. Confirm the
-  ProteomeXchange accession.
-
-### 2. The recoding schemes, exactly
-
-This is the part the viewer needs most and the part the supplements may only
-imply.
-
-- For Ec_Syn57, return the **codon-to-codon replacement map**: each removed
-  codon, the codon that replaced it, and the amino acid both encode. State
-  whether the map is a single global map or context-dependent, and if
-  replacement varied by locus, return the rule and the exceptions. Name the
-  seven removed codons explicitly and the tRNA genes and release factor removed
-  with them. If the map is only recoverable by diffing `Ec_Syn57.gb` against the
-  parent annotation, say so and report the observed replacement frequencies
-  instead of inventing a rule.
-- Do the same for Syn61∆3's three removed codons, so the repository's existing
-  `syn61` preset can be checked against the source.
-- Return the **segment set per strain**: which Ec_Syn57 segments each strain
-  carries, their coordinates on the parent genome, the parent strain, and the
-  recoded genome fraction. Reconcile the strain rosters in SRA, Supplementary
-  Data 2 and Supplementary Data 5, and map the article's "Strain 1" to
-  "Strain 6" labels onto the SRA sample names and the supplement sheet names.
-- Return the article's counts of **unassigned or forbidden codons remaining** in
-  Syn61 and Syn57, the genes they sit in, and the annotation errors the
-  reannotation corrected, including the `tadA` start-codon case. These bound any
-  claim that a strain is fully recoded for a codon.
-
-### 3. Samples, replicates and conditions
-
-- For every run in `PRJNA1088510`, return one row: run and experiment
-  accessions, BioSample, sample name, strain and segment set, library strategy,
-  selection and layout, platform and model, spots, bases, size and release date.
-  Group RNA-seq and Ribo-seq rows into replicate-matched pairs and prove the
-  pairing from sample identifiers and methods text, not from a shared study.
-- Count independent biological replicates per strain and per layer, and state
-  which strains have all of transcriptome, translatome and proteome.
-- Return the growth and harvest condition per profiled sample: medium recipe,
-  carbon source, temperature, aeration, vessel, phase or OD at harvest, harvest
-  method, and for Ribo-seq the inhibitor treatment and library protocol. Give the
-  source location for each value. Use `not reported` only after reading the
-  methods, and distinguish it from `not retrieved`.
-- State what each Supplementary Data 3 value is measured against: which strain is
-  the reference for every fold change, how RPKM was computed, which annotation
-  and assembly the counts are keyed to, and whether the gene identifiers are the
-  parent's or the recoded design's. **The repository cannot display a fold change
-  without knowing its reference strain**, so this is the highest-value item in
-  the package.
-- For the proteome, separate protein abundance from synthesis rate, and keep the
-  cryptic-ORF peptide search distinct from the quantified proteome.
-- For the fitness data, state the readout and units of the Biolog `Max Height`
-  column, what the comparison against MDS42 does to the value, how many
-  replicates stand behind each well, and the units of the article's per-strain
-  fitness scores.
-
-### 4. Return artifacts
-
-UTF-8 TSV with stable IDs plus a Markdown summary, named
-`recoded_ecoli_<artifact>__YYYYMMDD`, for owner intake into
-`docs/notes/handoff/`:
-
-| Artifact | Row unit and required fields |
-| --- | --- |
-| `review.md` | Search bounds; your independent inventory; then an explicit agreement-or-disagreement verdict against this ticket's "Current State", item by item; every limitation that bears on displaying these values |
-| `schemes.tsv` | One codon per scheme: scheme id, removed codon, replacement codon, amino acid, global or context-dependent, exceptions, source location and quotation |
-| `strains.tsv` | One strain: article label, SRA sample name, supplement sheet name, parent strain, segment set, recoded genome fraction, remaining forbidden codons, doubling time and fitness score where reported, layers measured, source location |
-| `runs.tsv` | One SRA run: the fields in section 3, plus replicate id and the RNA/Ribo pairing group with its evidence |
-| `conditions.tsv` | One condition: the growth and harvest fields above, source location per value, missingness status |
-| `files.tsv` | One artifact: deposit, exact URL or accession, filename or member or sheet, version, raw/processed/metadata type, byte length, retrieval date, SHA-256, retrieval status, quoted artifact-level terms and their location, access restrictions |
-| `values.tsv` | One column of each Supplementary Data sheet the viewer might display: sheet, header, quantity, units, reference strain, normalisation, annotation and identifier namespace, and the source sentence that establishes it |
-| `search.tsv` | One query or screening batch: date, database, exact query, hits returned and screened, inclusion and exclusion reasons, limits |
-
-Attach the retrieved members, or give exact retrieval instructions if
-attachments are unavailable. Cite each important count, scheme entry and
-condition value with a short quotation, its source location, the retrieval date
-and a checksum.
-
-**Acceptance:** the seven-codon replacement map is returned entry by entry with
-its source, or its absence from the record is demonstrated; every strain's
-segment set and parent are named and the three rosters reconciled; replicate
-counts and RNA/Ribo pairing are evidenced per strain; the reference strain,
-units and identifier namespace of every displayable column are established; and
-the verdict against this ticket's inventory is explicit rather than implied.
-
-Public or owner-provided access only. Before any step needing a credential this
-session does not hold, an administrator password, a security or privacy
-approval, or an application permission, tell the owner the exact action, the
-resource and the reason, then wait for their decision. Do not work around a
-denied or pending approval. Evidence is not licence permission, not admission,
-not a locus join and not a lab decision.
+If a later step comes to rest on a specific scientific assumption that cannot be
+checked from a source reachable here, add a ticket-local falsifiable claim row
+and queue it.
 
 ## If the owner wants to spend one email
 
@@ -411,27 +392,29 @@ that derivation fails, this ticket gains the draft and
 
 ## Dependencies
 
-| Id | Prerequisite | Dependent step | Completion condition |
+| Id | Prerequisite | Dependent step | Status |
 | --- | --- | --- | --- |
-| D1 | Owner answers Q1 and Q2 | Decide where the recoded strains live and what pins their genome | Owner fixes the record shape and the genome-of-record rule |
-| D2 | Owner answers Q3 | Build the new codon projection | Owner approves the fit basis and the sentence the map carries |
-| D3 | Owner answers Q5 | Ingest the Supplementary Data 3 columns as layers | Owner fixes which quantities enter and under which basis labels |
-| D4 | The reference strain, units and namespace of every displayable column are established, by in-repo reading or by P-RECODED-CHECK | Any ingestion of a fold-change or translation-efficiency value | Recorded here with source location and date |
+| D1 | Owner answers Q1 and Q2 | Create the six organism records and pin their genomes | **met 2026-10-07.** One record per profiled genome; design and derived genomes admissible, pinned by checksum |
+| D2 | Owner answers Q3 | Build the two codon projections | **met 2026-10-07.** Refit and shared-axis projection, both labelled |
+| D3 | The Ec_Syn57 target set and replacement distribution | The scheme preset and every per-gene recoded mark | **met 2026-10-07** by `tools/recoded_scheme.py`, two independent derivations in agreement. See "Derived 2026-10-07" |
+| D4 | The reference strain, units, normalisation and identifier namespace of every Supplementary Data 3 column, read from the methods | Any ingestion of a fold-change or translation-efficiency value | **open.** Replicate RPKM does not wait on it; the two derived quantities do |
+| D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open.** The rosters differ between the deposit and the supplements and must be reconciled, not assumed |
+| D6 | A decision on how `site/js/core/scheme.js` represents a distribution rather than a one-to-one map | Adding Ec_Syn57 as a selectable scheme preset | **open.** Finding 1 above; `validateSchemeMap` cannot express the real design today |
 
-## Work after return, or straight away if the package is declined
+## Work plan
 
-Steps 1 to 6 do not wait on Claude Science. Only the second-check verdict does.
+Step 2 is done. Nothing here waits on Claude Science.
 
 1. Pin the Source Data archive and the sheets to be used, recording byte length
    and SHA-256 for each, and establish from the methods the reference strain,
    units, normalisation, annotation and identifier namespace of every column
    intended for display. Record the source location for each. Do not ingest a
    fold change whose reference strain is not evidenced.
-2. Derive the Ec_Syn57 codon-to-codon replacement map by diffing the design's
-   CDS features against the parent annotation, and check it against the 73
-   recoded variant sequences in Supplementary Data 1, which are an independent
-   witness to the same map. Report the replacement frequencies and every
-   exception rather than asserting a single rule.
+2. **Done 2026-10-07.** Derive the replacement map by diffing the design's CDS
+   features against the native annotation, and check it against the 73 recoded
+   variant sequences, which are an independent witness. Both derivations agree
+   on the seven targets; the replacement is a distribution, not a rule, and is
+   reported as one. `tools/recoded_scheme.py` with 43 tests.
 3. Check the derived Syn61 scheme against the existing `syn61` preset in
    `site/js/core/scheme.js`. Correct the preset or record agreement. Add the
    Ec_Syn57 scheme as a preset only once its map is verified entry by entry,
@@ -452,37 +435,54 @@ Steps 1 to 6 do not wait on Claude Science. Only the second-check verdict does.
    export and accessible description that shows a value from this source names
    the strain's scheme and its segment set. Treat a view that shows a recoded
    value without its scheme as a defect, not a polish item.
-7. Intake any returned second check: resolve every accession, recompute
-   checksums, mechanically re-match quotations, and record the verdict, the
-   sources, the date and the checker here. Update the queue row in
-   [INDEX.md](INDEX.md).
-8. Ship tests with every pipeline and module change, and run the repository
+7. Ship tests with every pipeline and module change, and run the repository
    gates. Any resulting UI work also needs rendered validation at the three
    widths under the `ui-render-inspect-repair` skill; source inspection does not
    close it.
 
 ## Verification
 
-Ticket creation verified 2026-10-07 by the interactive Claude session
-`cyano-contract-audit`: filename and H1 identifiers match, the status fields are
-present, every relative link resolves to an existing file or anchor, and the two
-queue entries in [INDEX.md](INDEX.md) were added.
+**Sources.** Every source fact in "Current State" was read from the named
+endpoint on 2026-10-07. The Europe PMC bundle and the Source Data archive were
+downloaded and opened, their byte lengths and SHA-256 values computed from the
+retrieved files, and the sheet names, dimensions and column headers read from
+the workbooks. `Ec_Syn57.gb`'s length, topology and feature counts were counted
+from the record. Three bundle members (`MOESM2`, `MOESM4`, `MOESM5`),
+`MOESM6_ESM.xlsx`, the MassIVE file tree, the Zenodo deposit and `PRJNA481586`
+were **not** inspected, and the tables say so rather than implying otherwise.
 
-Every source fact above was read from the named endpoint on 2026-10-07. The
-Europe PMC bundle and the Source Data archive were downloaded and opened, their
-byte lengths and SHA-256 values computed from the retrieved files, and the sheet
-names, dimensions and column headers read from the workbooks themselves. The
-`Ec_Syn57.gb` length, topology and feature counts were counted from the record.
-Three bundle members (`MOESM2`, `MOESM4`, `MOESM5`), `MOESM6_ESM.xlsx`, the
-MassIVE file tree, the Zenodo deposit and `PRJNA481586` were **not** inspected,
-and the tables say so rather than implying otherwise. The retrieved copies live
-in a session scratchpad outside the repository and are not committed; the `curl`
-command and the checksums above are what makes the read reproducible.
+**Pinned inputs.** `tools/fetch_recoded_ecoli.py --verify-only` passes: four
+members verified against pinned byte length and SHA-256 in
+`data/raw/recoded-ecoli`, which is gitignored as a large publisher input in the
+manner of the other genome inputs. A changed digest is a hard failure, not a
+warning.
 
-This change touches documentation only. No code, release data or `site/data`
-file is modified, so no repository gate's result changes; the gates were not
-re-run for a docs-only addition. No scientific finding, dataset, locus join or
-licence permission is admitted by opening this ticket.
+**Derivation.** `tools/recoded_scheme.py` ships with
+`tests/test_recoded_scheme.py`, 43 tests over synthetic fixtures covering every
+function and every branch, including each pairing-rejection reason, the
+threshold and ordering behaviour of target detection, both empty branches of the
+retention gap, and the command line writing and not writing. A flaw found while
+testing is fixed rather than worked around: `main` bound its input paths as
+default arguments, so it could not be pointed at other inputs and was therefore
+untestable; it now takes them as options. A second flaw is also fixed: the design
+reader silently dropped CDS features carrying neither `gene` nor `locus_tag`,
+which undercounted the design by two features and the residual TAG stops by one.
+
+**Repository gates**, run on the working tree at 2026-10-07 after these changes:
+
+| Gate | Result |
+| --- | --- |
+| `.venv/bin/python -m pytest -q` | 541 passed, 1 skipped, 36 subtests passed |
+| `npm test` | 1,116 passed, 0 failed |
+| `.venv/bin/python tools/validate_contract.py` | 116 passed, 0 failed, 1 skipped |
+
+No `site/data` file, release payload or UI module is changed yet, so no rendered
+validation is due. It becomes due with the first projection or panel change, at
+the three widths under the `ui-render-inspect-repair` skill.
+
+**Boundary.** No dataset is admitted, no ledger row is written, no citation entry
+exists and no value from this source is displayed. The derived tables in
+`data/recoded/` are evidence for the decisions above, not a published layer.
 
 ## Cleanup
 

@@ -1,0 +1,179 @@
+source	gene	reason
+genome_wide	ampD	translations differ
+genome_wide	yadW	translations differ
+genome_wide	yafU	no native gene of that symbol
+genome_wide	yafF	no native gene of that symbol
+genome_wide	lpcA	no native gene of that symbol
+genome_wide	yafK	no native gene of that symbol
+genome_wide	lfhA	no native gene of that symbol
+genome_wide	lafU	no native gene of that symbol
+genome_wide	ykfJ	no native gene of that symbol
+genome_wide	prfH	no native gene of that symbol
+genome_wide	crl	no native gene of that symbol
+genome_wide	ykfN	no native gene of that symbol
+genome_wide	yahD	translations differ
+genome_wide	yahH	length 297 against native 321
+genome_wide	cynS	translations differ
+genome_wide	ykiA	no native gene of that symbol
+genome_wide	atl	no native gene of that symbol
+genome_wide	ybbW	no native gene of that symbol
+genome_wide	ybdO	no native gene of that symbol
+genome_wide	ybeM	no native gene of that symbol
+genome_wide	ybfG	no native gene of that symbol
+genome_wide	ybfK	no native gene of that symbol
+genome_wide	mntS	length 108 against native 129
+genome_wide	ybjT	translations differ
+genome_wide	ycbK	no native gene of that symbol
+genome_wide	asnS	translations differ
+genome_wide	yccT	no native gene of that symbol
+genome_wide	ymdG	length 123 against native 27
+genome_wide	efeU	no native gene of that symbol
+genome_wide	opgH	length 36 against native 2544
+genome_wide	yceA	no native gene of that symbol
+genome_wide	ycgI	no native gene of that symbol
+genome_wide	ymgM	translations differ
+genome_wide	chaA	translations differ
+genome_wide	insZ	no native gene of that symbol
+genome_wide	yciV	no native gene of that symbol
+genome_wide	ymiA	length 165 against native 141
+genome_wide	ycjV	no native gene of that symbol
+genome_wide	ymjB	no native gene of that symbol
+genome_wide	gapC	no native gene of that symbol
+genome_wide	insQ	length 1149 against native 1209
+genome_wide	yncD	no native gene of that symbol
+genome_wide	unnamed_cds_24835	no native gene of that symbol
+genome_wide	yddJ	no native gene of that symbol
+genome_wide	fdnG	translations differ
+genome_wide	yddW	no native gene of that symbol
+genome_wide	yneL	no native gene of that symbol
+genome_wide	yneO	no native gene of that symbol
+genome_wide	yneJ	no native gene of that symbol
+genome_wide	ynfK	no native gene of that symbol
+genome_wide	ynhF	no native gene of that symbol
+genome_wide	ydhB	no native gene of that symbol
+genome_wide	ydhC	no native gene of that symbol
+genome_wide	ribC	translations differ
+genome_wide	ydiU	no native gene of that symbol
+genome_wide	ydiV	no native gene of that symbol
+genome_wide	arpB	no native gene of that symbol
+genome_wide	yoaL	length 210 against native 159
+genome_wide	yebS	no native gene of that symbol
+genome_wide	yebT	no native gene of that symbol
+genome_wide	yecU	translations differ
+genome_wide	yedR	no native gene of that symbol
+genome_wide	yedS	no native gene of that symbol
+genome_wide	yedX	no native gene of that symbol
+genome_wide	yeeJ	length 7077 against native 7020
+genome_wide	yeeL	no native gene of that symbol
+genome_wide	yeeD	no native gene of that symbol
+genome_wide	yeeE	no native gene of that symbol
+genome_wide	pphC	length 765 against native 762
+genome_wide	mdtQ	no native gene of that symbol
+genome_wide	yejM	no native gene of that symbol
+genome_wide	yojO	translations differ
+genome_wide	yfaS	no native gene of that symbol
+genome_wide	yfaH	no native gene of that symbol
+genome_wide	ypaA	no native gene of that symbol
+genome_wide	dedD	translations differ
+genome_wide	folC	translations differ
+genome_wide	yfcU	no native gene of that symbol
+genome_wide	ypdK	translations differ
+genome_wide	ypdA	no native gene of that symbol
+genome_wide	ypdB	no native gene of that symbol
+genome_wide	unnamed_cds_45375	no native gene of that symbol
+genome_wide	rseD	translations differ
+genome_wide	yfiP	no native gene of that symbol
+genome_wide	pgeF	no native gene of that symbol
+genome_wide	csiR	no native gene of that symbol
+genome_wide	ygaY	no native gene of that symbol
+genome_wide	yqaA	translations differ
+genome_wide	hycH	translations differ
+genome_wide	yqcG	translations differ
+genome_wide	ygeF	no native gene of that symbol
+genome_wide	pbl	no native gene of that symbol
+genome_wide	ygeK	no native gene of that symbol
+genome_wide	ygeR	no native gene of that symbol
+genome_wide	yqfA	no native gene of that symbol
+genome_wide	yqfI	translations differ
+genome_wide	yqfE	no native gene of that symbol
+genome_wide	ygfI	no native gene of that symbol
+genome_wide	rsmE	translations differ
+genome_wide	yggW	no native gene of that symbol
+genome_wide	trmI	no native gene of that symbol
+genome_wide	yghX	no native gene of that symbol
+genome_wide	ygiA	no native gene of that symbol
+genome_wide	ygiB	translations differ
+genome_wide	yqiD	translations differ
+genome_wide	rfaE	no native gene of that symbol
+genome_wide	agaW	no native gene of that symbol
+genome_wide	agaA	no native gene of that symbol
+genome_wide	yraP	no native gene of that symbol
+genome_wide	yhbT	no native gene of that symbol
+genome_wide	yhbU	no native gene of that symbol
+genome_wide	yhbV	no native gene of that symbol
+genome_wide	yhcH	no native gene of that symbol
+genome_wide	mreD	translations differ
+genome_wide	yhdW	no native gene of that symbol
+genome_wide	glpR	no native gene of that symbol
+genome_wide	yhiL	no native gene of that symbol
+genome_wide	yhjC	no native gene of that symbol
+genome_wide	bcsQ	no native gene of that symbol
+genome_wide	hokA	length 30 against native 153
+genome_wide	yiaJ	no native gene of that symbol
+genome_wide	waaJ	length 945 against native 1017
+genome_wide	dut	length 456 against native 459
+genome_wide	rph	translations differ
+genome_wide	glvG	no native gene of that symbol
+genome_wide	ilvG	no native gene of that symbol
+genome_wide	yifN	no native gene of that symbol
+genome_wide	rfe	no native gene of that symbol
+genome_wide	rffT	no native gene of that symbol
+genome_wide	yifK	no native gene of that symbol
+genome_wide	yzcX	length 72 against native 486
+genome_wide	yifL	no native gene of that symbol
+genome_wide	yihW	no native gene of that symbol
+genome_wide	yiiD	no native gene of that symbol
+genome_wide	fdoG	translations differ
+genome_wide	secE	translations differ
+genome_wide	yjbI	no native gene of that symbol
+genome_wide	yjbS	translations differ
+genome_wide	fdhF	translations differ
+genome_wide	phnE	no native gene of that symbol
+genome_wide	crfC	no native gene of that symbol
+genome_wide	yjcZ	no native gene of that symbol
+genome_wide	yjdC	no native gene of that symbol
+genome_wide	ytfA	no native gene of that symbol
+genome_wide	ytfI	translations differ
+genome_wide	ytfL	no native gene of that symbol
+genome_wide	pmbA	no native gene of that symbol
+genome_wide	pepA	translations differ
+genome_wide	yjjV	translations differ
+genome_wide	yjjJ	no native gene of that symbol
+supplied_variants	pdeK	translations differ
+supplied_variants	gsiA	translations differ
+supplied_variants	mltF	translations differ
+supplied_variants	ychO	translations differ
+supplied_variants	ilvG	no native gene of that symbol
+supplied_variants	waaJ	length 945 against native 1017
+supplied_variants	rph	translations differ
+supplied_variants	ygiB	translations differ
+supplied_variants	glvG	no native gene of that symbol
+supplied_variants	yihA	translations differ
+supplied_variants	agaW	no native gene of that symbol
+supplied_variants	ykiA	no native gene of that symbol
+supplied_variants	yfiM	translations differ
+supplied_variants	glpR	no native gene of that symbol
+supplied_variants	yifN	no native gene of that symbol
+supplied_variants	yoaL	length 210 against native 159
+supplied_variants	ymgM	translations differ
+supplied_variants	yjbI	no native gene of that symbol
+supplied_variants	ymiA	length 165 against native 141
+supplied_variants	rseD	translations differ
+supplied_variants	gapC	no native gene of that symbol
+supplied_variants	efeU	no native gene of that symbol
+supplied_variants	mntS	length 108 against native 129
+supplied_variants	yqfI	translations differ
+supplied_variants	yadW	translations differ
+supplied_variants	ykfN	no native gene of that symbol
+supplied_variants	hokA	length 30 against native 153
+supplied_variants	bcsQ	no native gene of that symbol
