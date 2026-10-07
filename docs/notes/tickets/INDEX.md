@@ -5,7 +5,7 @@ their reusable guidance distilled into `docs/validation/`.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_ui-interactivity-batch__20261006](A_ui-interactivity-batch__20261006.md) | Paused by owner: committed UI fixes, pending final review, and preserved animation-variant WIP; resume instructions and validation |
+| [A_ui-interactivity-batch__20261006](A_ui-interactivity-batch__20261006.md) | Resumed: committed UI fixes, final confirmation, and completion of preserved animation variants; coordination and validation |
 | [A_loading-scramble-and-progress__20261006](A_loading-scramble-and-progress__20261006.md) | Make ATCG reveals visible across short and long text blocks; compare a roughly one-second preparation window and a halfway reveal, ensure stage subtext and truthful file/content progress, and propose loading animation ontologies for the owner's throttled-network review |
 | [O_fitness-browser-access__20261006](O_fitness-browser-access__20261006.md) | Admit the Fitness Browser PCC 7942 RB-TnSeq compendium once the owner saves its terms and tables past the bot check (AAA-next-steps.md item 1) |
 | [O_pmc-gated-method-papers__20261006](O_pmc-gated-method-papers__20261006.md) | Read the four PMC-deposited method papers once the owner saves them past PMC's proof-of-work check (AAA-next-steps.md item 2); nothing in the data waits on it |

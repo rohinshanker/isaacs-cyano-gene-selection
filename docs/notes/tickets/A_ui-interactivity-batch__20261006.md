@@ -7,8 +7,9 @@ Updated: 2026-10-06
 
 ## Current State
 
-Paused at the owner's explicit request. No workers, task browser or task servers
-remain running. Nothing has been pushed or deployed. Resume only when requested.
+Resumed at the owner's request. Final confirmation of the original interaction
+fixes and completion of the preserved animation variants are active. Nothing has
+been pushed or deployed.
 Canonical repository: `/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection`, branch `main`.
 
 Implemented and committed through `966dc85`: condition guides reaching the actual
