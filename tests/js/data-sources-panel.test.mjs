@@ -448,7 +448,7 @@ test('a breakpoint reflow keeps focused content inside its own scroll pane', asy
     control.getBoundingClientRect = () => ({ top: 10, bottom: 20, left: 10, right: 20 });
     control.focus();
     arrangePeekBody(body, { list, foot, side }, true);
-    assert.equal(side.scrollTop, 30); assert.equal(side.scrollLeft, 30);
+    assert.equal(side.scrollTop, 29); assert.equal(side.scrollLeft, 29);
     assert.equal(list.scrollTop, 250, 'the other pane retains its position');
     control.getBoundingClientRect = () => ({ top: 90, bottom: 125, left: 90, right: 125 });
     arrangePeekBody(body, { list, foot, side }, false);
@@ -456,6 +456,24 @@ test('a breakpoint reflow keeps focused content inside its own scroll pane', asy
     control.getBoundingClientRect = () => ({ top: 50, bottom: 60, left: 50, right: 60 });
     arrangePeekBody(body, { list, foot, side }, true);
     assert.equal(side.scrollTop, 55); assert.equal(side.scrollLeft, 55, 'visible focus does not scroll');
+    assert.equal(document.activeElement, control);
+  });
+});
+
+
+test('focused list controls stay below the opaque sticky header after reflow', async () => {
+  await withFakeDocument((document) => {
+    const body = document.createElement('div'), list = document.createElement('div');
+    const foot = document.createElement('div'), side = document.createElement('div');
+    const head = document.createElement('thead'), th = document.createElement('th');
+    const control = document.createElement('input');
+    head.append(th); list.append(head, control); body.append(list, side, foot); document.body.append(body);
+    list.scrollTop = 600; list.scrollLeft = 0;
+    list.getBoundingClientRect = () => ({ top: 167.2, bottom: 498, left: 20, right: 1000 });
+    th.getBoundingClientRect = () => ({ bottom: 235.2 });
+    control.getBoundingClientRect = () => ({ top: 221.4, bottom: 234.4, left: 30, right: 43 });
+    control.focus(); arrangePeekBody(body, { list, foot, side }, false);
+    assert.equal(list.scrollTop, 585, 'scrolls sufficiently past the header despite integer rounding');
     assert.equal(document.activeElement, control);
   });
 });

@@ -109,6 +109,20 @@ async (page) => {
     const scrollAfter = await page.locator('.peek-backdrop:not([hidden]) .peek-body').evaluate((node) => ({ list: node.querySelector('.peek-list').scrollTop, side: node.querySelector('.peek-side').scrollTop }));
     check(scrollAfter.list > 0 && (scrollBefore.side === 0 || scrollAfter.side > 0), 'resize does not reset pane scroll positions');
     check(await lastSideLink.evaluate((node) => { const a = node.getBoundingClientRect(); const b = node.closest('.peek-side').getBoundingClientRect(); return a.top >= b.top && a.bottom <= b.bottom; }), 'restored focus stays visible');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.waitForFunction(() => document.querySelector('.peek-backdrop:not([hidden]) .peek-body').lastElementChild.classList.contains('peek-foot'));
+    await list.evaluate((node) => { node.scrollTop = 600; });
+    const checkboxIndex = await list.locator('tr[data-id] input').evaluateAll((nodes) => nodes.findIndex((node) => {
+      const a = node.getBoundingClientRect(); const pane = node.closest('.peek-list');
+      const h = pane.querySelector('thead th').getBoundingClientRect(); const b = pane.getBoundingClientRect();
+      return a.top > h.bottom + 2 && a.bottom < b.bottom;
+    }));
+    check(checkboxIndex >= 0, 'scrolled list has a visible row control');
+    const focusedRow = list.locator('tr[data-id] input').nth(checkboxIndex);
+    await focusedRow.focus();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.waitForFunction(() => document.querySelector('.peek-backdrop:not([hidden]) .peek-body').children[1].classList.contains('peek-foot'));
+    check(await focusedRow.evaluate((node) => { const r = node.getBoundingClientRect(); return node === document.activeElement && document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === node; }), 'focused row is not behind the sticky header');
     await lastListControl.focus(); await page.keyboard.press('Tab');
     check(await page.locator('.peek-done').evaluate((node) => node === document.activeElement), 'stacked order: list then footer');
     await page.keyboard.press('Tab');

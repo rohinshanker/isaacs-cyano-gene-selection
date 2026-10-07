@@ -193,11 +193,20 @@ export function arrangePeekBody(body, { list, foot, side }, wide) {
   if (!pane || !active?.getBoundingClientRect || !pane.getBoundingClientRect) return;
   const target = active.getBoundingClientRect();
   const visible = pane.getBoundingClientRect();
+  const header = pane === list ? list.querySelector('thead')?.querySelector('th') : null;
+  const top = Math.max(visible.top + (pane.clientTop ?? 0),
+    header?.getBoundingClientRect?.().bottom ?? visible.top);
+  const bottom = pane.clientHeight === undefined ? visible.bottom
+    : visible.top + (pane.clientTop ?? 0) + pane.clientHeight;
+  const left = visible.left + (pane.clientLeft ?? 0);
+  const right = pane.clientWidth === undefined ? visible.right
+    : visible.left + (pane.clientLeft ?? 0) + pane.clientWidth;
   // Reflow can move a control below the viewport even without detaching its pane.
-  if (target.top < visible.top) pane.scrollTop += target.top - visible.top;
-  else if (target.bottom > visible.bottom) pane.scrollTop += target.bottom - visible.bottom;
-  if (target.left < visible.left) pane.scrollLeft += target.left - visible.left;
-  else if (target.right > visible.right) pane.scrollLeft += target.right - visible.right;
+  // Leave one pixel inside the usable area to accommodate integer scroll rounding.
+  if (target.top < top) pane.scrollTop = Math.floor(pane.scrollTop + target.top - top - 1);
+  else if (target.bottom > bottom) pane.scrollTop = Math.ceil(pane.scrollTop + target.bottom - bottom + 1);
+  if (target.left < left) pane.scrollLeft = Math.floor(pane.scrollLeft + target.left - left - 1);
+  else if (target.right > right) pane.scrollLeft = Math.ceil(pane.scrollLeft + target.right - right + 1);
 }
 
 /** Keep keyboard focus inside a peek when a focused control is replaced. */
