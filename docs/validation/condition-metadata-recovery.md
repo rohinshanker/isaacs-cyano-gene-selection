@@ -97,14 +97,22 @@ reviewed classes fail, and a missing class stays unknown. Owner J1 is displayed
 separately and never mutates the default screen. A known component failure remains
 decisive when another component is unknown.
 
-Only explicitly named exponential/held sampling phases compare by overlapping
-OD. A bare OD preserves its numeric value but does not establish the phase;
-stationary sampling needs no OD. Stock, maintenance or dilution OD is never
-transferred into sampling. Comparable culture classes are planktonic and biofilm.
+Only explicitly named exponential sampling phases compare by overlapping OD;
+stationary compares only with stationary and needs no OD. A reported
+`steady-state (held)` label is preserved, but the default contract defines no
+equivalence for it, so any comparison involving it is undecidable. A bare OD
+preserves its numeric value but does not establish the phase. Stock, maintenance
+or dilution OD is never transferred into sampling. Comparable culture classes are planktonic and biofilm.
 Reported formats outside those classes remain labelled as reported and cannot
 pass the default. Overrides bind exact row/accession and source values, with
 manual evidence pinned by hash. Unreviewed type labels and uncovered gap statuses
 are errors, and a `present` audit entry cannot describe a remaining gap.
+
+A temperature interval must sit wholly inside one named regime before it can
+pass; merely overlapping a regime is insufficient. Medium comparison requires
+reviewed fresh/conditioned and nitrogen-source flags. An unresolved flag stays
+unknown. The current typed record has no separate organic-carbon flag, so prose
+that does not itemise organic carbon cannot silently establish its absence.
 
 The generated current artifacts contain verdict counts and source pins;
 replay them rather than using counts from an earlier snapshot. There is no

@@ -4898,13 +4898,13 @@
       "conditionTableRow": 33,
       "conditions": {
         "temperature": {
-          "status": "reported",
-          "lo": 30,
-          "hi": 30,
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
           "unit": "°C",
-          "text": "constant 30 ºC",
-          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights.",
-          "where": "GEO GSE237858 !Sample_growth_protocol_ch1 (group 1)"
+          "text": "Sampling temperature after the dark-pulse treatment is not stated; maintenance at 30°C is reported separately.",
+          "where": "GEO GSE237858 !Sample_growth_protocol_ch1 and !Sample_treatment_protocol_ch1",
+          "quote": "Cells were maintained in plates of BG-11 and grown in constant light and constant 30ºC, under ~ 40µE of illumination with fluorescent lights."
         },
         "lightIntensity": {
           "status": "conflicting",

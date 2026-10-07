@@ -62,7 +62,7 @@ def record(**updates):
 
 
 @pytest.mark.parametrize(("left", "right", "expected"), [
-    ([27.0, 31.0], [30.0, 30.0], "pass"),
+    ([27.0, 31.0], [30.0, 30.0], "fail"),
     ([28.0, 32.0], [30.0, 30.0], "pass"),
     ([30.0, 30.0], [37.0, 37.0], "fail"),
     ([25.0, 25.0], [25.0, 25.0], "fail"),
@@ -133,8 +133,8 @@ def test_medium_requires_all_typed_flags(updates, expected):
 
 
 @pytest.mark.parametrize(("left", "right", "expected"), [
-    ({"phase": "exponential", "od": [0.2, 0.3], "od_nm": 730}, {"phase": "steady-state (held)", "od": [0.25, 0.4], "od_nm": 750}, "pass"),
-    ({"phase": "exponential", "od": [0.1, 0.2]}, {"phase": "steady-state (held)", "od": [0.3, 0.4]}, "fail"),
+    ({"phase": "exponential", "od": [0.2, 0.3], "od_nm": 730}, {"phase": "steady-state (held)", "od": [0.25, 0.4], "od_nm": 750}, "undecidable"),
+    ({"phase": "steady-state (held)", "od": [0.1, 0.2]}, {"phase": "steady-state (held)", "od": [0.1, 0.2]}, "undecidable"),
     ({"phase": "stationary", "od": None}, {"phase": "stationary", "od": None}, "pass"),
     ({"phase": "stationary", "od": None}, {"phase": "exponential"}, "fail"),
     ({"phase": "OD stated", "od": [0.2, 0.3]}, {"phase": "OD stated", "od": [0.2, 0.3]}, "undecidable"),
@@ -224,9 +224,12 @@ def test_real_941_pair_replay_and_targeted_corrections():
     assert row35 and all(not row["light_regime"].startswith("pass —") for row in row35)
     row33 = [row for row in screens if "33" in (row["condition_row_a"], row["condition_row_b"])]
     assert row33 and all(row["light_intensity"].startswith("undecidable —") for row in row33)
+    assert all(row["temperature"].startswith("undecidable —") for row in row33)
 
     gaps = {(item["condition_row"], item["field"]): item for item in inventory["gaps"]}
     assert gaps[(33, "light_intensity")]["status"] == "conflicting"
+    assert gaps[(33, "temperature")]["status"] == "partial"
+    assert gaps[(34, "temperature")]["status"] == "partial"
     assert gaps[(35, "light_regime")]["status"] == "conflicting"
     assert "spectrum class" in gaps[(35, "light_regime")]["uncertainty"]
     # A reported plate format is known, even though the default forbids it.
@@ -481,15 +484,23 @@ def test_known_unsupported_format_fails_without_manufacturing_metadata_gap():
 
 def test_maintenance_temperature_is_not_sampling_temperature():
     records = rescore.load_records(RECORDS)
-    for number in (35, 36):
+    for number in (33, 34, 35, 36):
         assert records[number]["T"] is None
-        assert "maintenance30°C" in records[number]["T_text"]
+        assert "maintenance" in records[number]["T_text"]
         assert rescore.score_temperature(records[number], record())[0] == "undecidable"
     screens, inventory, _ = _real_inputs()
     gaps = {(item["condition_row"], item["field"]): item for item in inventory["gaps"]}
-    for number in (35, 36):
+    for number in (33, 34, 35, 36):
         assert gaps[(number, "temperature")]["status"] == "partial"
-        assert "sampling_scope_review" in gaps[(number, "temperature")]["source_provenance"]
+
+
+def test_reported_held_phase_and_unresolved_nitrogen_do_not_pass_defaults():
+    records = rescore.load_records(RECORDS)
+    assert records[61]["n_altered"] is None
+    assert rescore.score_medium(records[61], record())[0] == "undecidable"
+    held = record(phase="steady-state (held)", od=[0.3, 0.3])
+    assert rescore._score_phase(held, held)[0] == "undecidable"
+    assert rescore._gap_reason(held, "growth_phase") is None
 
 
 def test_sampling_scope_evidence_is_pinned(tmp_path):

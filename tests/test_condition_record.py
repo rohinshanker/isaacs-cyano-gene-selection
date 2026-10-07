@@ -103,3 +103,19 @@ def test_gse252562_sampling_temperature_preserves_maintenance_scope():
         assert value["lo"] is None and value["hi"] is None
         assert "maintenance30°C" in value["text"]
         assert "30ºC" in value["quote"]
+
+
+def test_gse237858_sampling_temperature_preserves_maintenance_scope():
+    """A plate-maintenance value must not transfer across the dark-pulse treatment."""
+    root = Path(__file__).resolve().parents[1]
+    spec = json.loads((root / "data/expression/ingest/GSE237858.json").read_text())
+    published = json.loads((root / "data/expression/sources.json").read_text())
+    expected_ids = {layer["id"] for layer in spec["layers"]}
+    records = [row for row in published if row["id"] in expected_ids]
+    assert len(records) == len(expected_ids) == 1
+    for source in (spec, *(row["record"] for row in records)):
+        value = source["conditions"]["temperature"]
+        assert value["status"] == "not reported"
+        assert value["lo"] is None and value["hi"] is None
+        assert "maintenance at 30°C" in value["text"]
+        assert "constant 30ºC" in value["quote"]

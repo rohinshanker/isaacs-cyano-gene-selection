@@ -71,7 +71,8 @@ CONTINUITY = {
     "continuous (after diel entrainment)": "continuous",
     "diel": "diel",
 }
-KNOWN_PHASES = {"exponential", "steady-state (held)"}
+KNOWN_PHASES = {"exponential"}
+KNOWN_UNSUPPORTED_PHASES = {"steady-state (held)"}
 UNKNOWN_PHASES = {None, "OD stated", "two phases in one set"}
 FORMAT_CLASSES = {
     "planktonic liquid": "planktonic",
@@ -123,16 +124,20 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
     },
     33: {
         "expected_accession": "GSE237858",
-        "expected_source": {"I": [40.0, 40.0], "spec": "fluorescent (class not stated)"},
+        "expected_source": {"T": [30.0, 30.0], "T_text": "30ºC (constant)", "I": [40.0, 40.0], "spec": "fluorescent (class not stated)"},
         "values": {
+            "T": None,
+            "T_text": "Sampling temperature unknown after the dark-pulse treatment; maintenance 30°C is reported separately.",
             "I": None,
             "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
         },
     },
     34: {
         "expected_accession": "GSE237858",
-        "expected_source": {"I": [40.0, 40.0], "spec": "fluorescent (class not stated)"},
+        "expected_source": {"T": [30.0, 30.0], "T_text": "30ºC (constant)", "I": [40.0, 40.0], "spec": "fluorescent (class not stated)"},
         "values": {
+            "T": None,
+            "T_text": "Sampling temperature unknown after the dark-pulse treatment; maintenance 30°C is reported separately.",
             "I": None,
             "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
         },
@@ -151,6 +156,16 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
         "expected_accession": "PXD000510",
         "expected_source": {"cont": "diel", "phot": None, "spec": None},
         "values": {"phot": "12:12"},
+    },
+    61: {
+        "expected_accession": "PXD005851",
+        "expected_source": {
+            "medium": "BG-11",
+            "conditioned": False,
+            "n_altered": False,
+            "medium_text": "ATCC 616 Medium BG-11 for Blue-Green Algae (strain source ATCC 33912); nitrogen source and organic carbon not itemised",
+        },
+        "values": {"n_altered": None},
     },
     75: {
         "expected_accession": "PXD036717",
@@ -241,10 +256,20 @@ OVERRIDE_AUDIT = {
         "source": "cyano_archive_condition_intake_20261007.tsv CR-019",
         "uncertainty": "Archive ~40 µE conflicts with the accepted paper branch; no sample-specific value chosen.",
     },
+    "33.temperature": {
+        "status": "partial",
+        "source": "cyano_archive_condition_intake_20261007.tsv CR-019; compact row 33 maintenance/sampling scope",
+        "uncertainty": "30°C is reported for plate maintenance/growth before the dark-pulse treatment; sampling temperature remains unknown.",
+    },
     "34.light_intensity": {
         "status": "conflicting",
         "source": "cyano_archive_condition_intake_20261007.tsv CR-019",
         "uncertainty": "Archive ~40 µE conflicts with the accepted paper branch; no sample-specific value chosen.",
+    },
+    "34.temperature": {
+        "status": "partial",
+        "source": "cyano_archive_condition_intake_20261007.tsv CR-019; compact row 34 maintenance/sampling scope",
+        "uncertainty": "30°C is reported for plate maintenance/growth before the dark-pulse treatment; sampling temperature remains unknown.",
     },
     "33.light_regime": {
         "status": "partial",
@@ -402,7 +427,7 @@ def _interval_distance(a: list[float], b: list[float]) -> float:
 
 def _temperature_regime(value: list[float]) -> str | None:
     regimes = {"standard": (28.0, 32.0), "elevated": (36.0, 40.0)}
-    hits = [name for name, (low, high) in regimes.items() if value[1] >= low and value[0] <= high]
+    hits = [name for name, (low, high) in regimes.items() if value[0] >= low and value[1] <= high]
     return hits[0] if len(hits) == 1 else None
 
 
@@ -517,24 +542,26 @@ def score_medium(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     if a.get("medium") != "BG-11" or b.get("medium") != "BG-11":
         return "fail", "both sides are not BG-11"
     if a.get("n_altered") or b.get("n_altered"):
-        return "fail", "nitrogen source is altered or unresolved"
+        return "fail", "nitrogen source is altered"
     return "pass", "BG-11, unconditioned, unchanged nitrogen-source flag"
 
 
 def _score_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     ap, bp = a.get("phase"), b.get("phase")
     for phase in (ap, bp):
-        if phase not in KNOWN_PHASES | {"stationary"} | UNKNOWN_PHASES:
+        if phase not in KNOWN_PHASES | KNOWN_UNSUPPORTED_PHASES | {"stationary"} | UNKNOWN_PHASES:
             raise ValueError(f"unreviewed sampling phase: {phase!r}")
     if ap in UNKNOWN_PHASES or bp in UNKNOWN_PHASES:
         return "undecidable", "sampling phase missing, unnamed, or aggregates two phases"
+    if ap in KNOWN_UNSUPPORTED_PHASES or bp in KNOWN_UNSUPPORTED_PHASES:
+        return "undecidable", "reported steady-state (held) phase has no default equivalence rule"
     if ap == bp == "stationary":
         return "pass", "both stationary; OD not required"
     if "stationary" in (ap, bp):
         return "fail", f"stationary against {bp if ap == 'stationary' else ap}"
     ao, bo = a.get("od"), b.get("od")
     if ao is None or bo is None:
-        return "undecidable", "exponential/held phase lacks sampling OD on one or both sides"
+        return "undecidable", "exponential phase lacks sampling OD on one or both sides"
     if _interval_distance(ao, bo) == 0:
         return "pass", "sampling OD ranges overlap (OD730/A730/OD750 accepted)"
     return "fail", f"sampling OD ranges do not overlap: {ao} vs {bo}"
@@ -704,13 +731,13 @@ def _gap_reason(record: dict[str, Any], field: str) -> str | None:
         return None if _format_class(record) is not None else "Sampling culture format is unknown."
     if field == "growth_phase":
         phase = record.get("phase")
-        if phase not in KNOWN_PHASES | {"stationary"} | UNKNOWN_PHASES:
+        if phase not in KNOWN_PHASES | KNOWN_UNSUPPORTED_PHASES | {"stationary"} | UNKNOWN_PHASES:
             raise ValueError(f"unreviewed sampling phase: {phase!r}")
         if phase is None:
             return "Sampling phase is unknown."
         if phase == "OD stated":
             return "A numeric OD is reported without an explicit sampling phase."
-        if phase == "stationary":
+        if phase == "stationary" or phase in KNOWN_UNSUPPORTED_PHASES:
             return None
         if phase == "two phases in one set":
             return "One condition set aggregates two phases."

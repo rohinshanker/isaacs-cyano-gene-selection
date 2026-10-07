@@ -108,6 +108,8 @@
     {
       "condition_row": 33,
       "fields": {
+        "T": null,
+        "T_text": "Sampling temperature unknown after the dark-pulse treatment; maintenance 30°C is reported separately.",
         "I": null,
         "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value"
       },
@@ -116,6 +118,11 @@
           "status": "conflicting",
           "source": "cyano_archive_condition_intake_20261007.tsv CR-019",
           "uncertainty": "Archive ~40 µE conflicts with the accepted paper branch; no sample-specific value chosen."
+        },
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_archive_condition_intake_20261007.tsv CR-019; compact row 33 maintenance/sampling scope",
+          "uncertainty": "30°C is reported for plate maintenance/growth before the dark-pulse treatment; sampling temperature remains unknown."
         },
         "light_regime": {
           "status": "partial",
@@ -127,6 +134,8 @@
     {
       "condition_row": 34,
       "fields": {
+        "T": null,
+        "T_text": "Sampling temperature unknown after the dark-pulse treatment; maintenance 30°C is reported separately.",
         "I": null,
         "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value"
       },
@@ -135,6 +144,11 @@
           "status": "conflicting",
           "source": "cyano_archive_condition_intake_20261007.tsv CR-019",
           "uncertainty": "Archive ~40 µE conflicts with the accepted paper branch; no sample-specific value chosen."
+        },
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_archive_condition_intake_20261007.tsv CR-019; compact row 34 maintenance/sampling scope",
+          "uncertainty": "30°C is reported for plate maintenance/growth before the dark-pulse treatment; sampling temperature remains unknown."
         },
         "light_regime": {
           "status": "partial",
@@ -188,6 +202,13 @@
           "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported."
         }
       }
+    },
+    {
+      "condition_row": 61,
+      "fields": {
+        "n_altered": null
+      },
+      "audit": {}
     },
     {
       "condition_row": 75,
@@ -825,6 +846,17 @@
       "condition_row": 33,
       "artifact": "GSE237858",
       "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
+      "field": "temperature",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-019; compact row 33 maintenance/sampling scope",
+      "uncertainty": "30°C is reported for plate maintenance/growth before the dark-pulse treatment; sampling temperature remains unknown.",
+      "historical_value": "30ºC (constant)"
+    },
+    {
+      "condition_row": 33,
+      "artifact": "GSE237858",
+      "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
       "field": "light_intensity",
       "status": "conflicting",
       "value": "conflicting",
@@ -864,6 +896,17 @@
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-022",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "OD750 not reported for RNA-seq samples; harvested after 12h in constant light (LL) following a single 12h dark pulse"
+    },
+    {
+      "condition_row": 34,
+      "artifact": "GSE237858",
+      "condition_set": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
+      "field": "temperature",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-019; compact row 34 maintenance/sampling scope",
+      "uncertainty": "30°C is reported for plate maintenance/growth before the dark-pulse treatment; sampling temperature remains unknown.",
+      "historical_value": "30ºC (constant)"
     },
     {
       "condition_row": 34,
