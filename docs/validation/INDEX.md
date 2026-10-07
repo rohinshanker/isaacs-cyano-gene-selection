@@ -12,7 +12,7 @@ Reusable contracts and runbooks for this repository.
 | [metric-explanations.md](metric-explanations.md) | Exact map feature matrices, selected-colour calculation/source/citation disclosure, and export parity |
 | [pca-length-sensitivity.md](pca-length-sensitivity.md) | Fixed native RSCU PCA, length/sparsity audit, within-gene downsampling, and reproducible sensitivity checks |
 | [instant-hints.md](instant-hints.md) | Exact native-title replacement, pointer/focus suppression, accessible descriptions, viewport clamping and rendered checks |
-| [data-selection-interactions.md](data-selection-interactions.md) | Condition guide alignment and footer extent, focus preservation, keyboard tabs, responsive peek header and rendered regression checks |
+| [data-selection-interactions.md](data-selection-interactions.md) | Condition guide alignment and count/footer extent, responsive reading order, pane scroll and visible row focus, keyboard tabs, maximum-filter layout and rendered regression checks |
 | [explicit-metric-axes.md](explicit-metric-axes.md) | Direct numeric X/Y plotting, measured-evidence fresh-view axes, the one shared value-scale module and why the axes offer a subset of it, independent canvas scales, missing pairs, URL, and export state |
 | [trna-annotation-validation.md](trna-annotation-validation.md) | Reproducing the pinned tRNAscan-SE comparison, 44-locus concordance, anticodon conventions, and computational-evidence limits |
 | [cai-reference-set.md](cai-reference-set.md) | Deterministic 71-locus CAI reference convention, blinded Jev audit, disagreement review, and change policy |

@@ -16,12 +16,14 @@ for staged files, downloads, retries and RNA folding. Post-settle file requests
 start another cycle on that same surface; concurrent work excludes old-cycle
 bytes. No changes have been pushed or deployed.
 
-Original loading correctness was accepted by DEM-260. DEM-259 is confirming the
-last row-focus repair at `d5efb53`; other guide/export/hint findings were accepted.
+The guide and instant-hint tickets are resolved and cleaned up. Original loading
+correctness was accepted by DEM-260. DEM-259 confirmed the
+last row-focus repair at `d5efb53`; all guide/export/hint findings are accepted.
 DEM-267 independently reviews the completed query-only animation variants.
 `e410150` additionally constrains animation width reservations during responsive
-reflow; `a9ccd3b` and `1f7aba4` cover post-settle loader requests. Confirm those
-small follow-up commits on the final combined tree before resolving loading.
+reflow; `a9ccd3b` and `1f7aba4` cover post-settle loader requests. `a454d2f` prevents a new resource during preparation from dropping pending
+resources. Confirm the loading follow-up commits on the final combined tree
+before resolving loading.
 
 The animation implementation is integrated. The owner's reveal choice (A/B/C)
 and progress choice (grouped/continuous) remain pending; production defaults
@@ -35,15 +37,14 @@ refreshed 20-render/211-entry packet is under `cyano-ui-resume/`. Data Sources
 and scientific UI extensions retain their recorded admission and owner gates.
 The payload sidecar is owned by `cyano-contract-audit`/DEM-266. This stream must
 not edit its payload, pipeline, budget or size contract; verify manifest-related
-loading after that coordinator integrates its result. That coordinator owns
-`tickets/INDEX.md`, including cleanup row removals.
+loading after that coordinator integrates its result. That coordinator holds only the payload and unify rows in `tickets/INDEX.md`;
+other UI rows follow normal cleanup.
 
 ## Verification
 
-Combined gates: JavaScript 1,108 passed; Python 486 passed, 1 skipped,
-36 subtests; contract 110 passed, 1 skipped. Final full gates are being checked
-against the final follow-up tree. Focused interaction/scramble/loading tests:
-83 passed; post-settle and concurrent-resource loading tests: 31 passed.
+Combined gates: JavaScript 1,109 passed; Python 486 passed, 1 skipped,
+36 subtests; contract 110 passed, 1 skipped. Full gates pass against the final follow-up tree. Focused interaction/scramble/loading tests:
+83 passed; post-settle, concurrent-resource and preparation loading tests: 32 passed.
 Rendered guide/focus states pass at 375/768/1280/1440 and 599/601/1319/1321,
 with no runtime errors. Real post-settle requests return the one chromosome bar
 and name the file at all four widths; completion, failure/retry, reduced motion,
