@@ -155,8 +155,8 @@ def test_phase_rejects_unreviewed_named_phase_even_with_overlapping_od():
     ({"fmt": "biofilm"}, {"fmt": "biofilm"}, "pass"),
     ({"fmt": "biofilm"}, {}, "fail"),
     ({"fmt": None}, {}, "undecidable"),
-    ({"fmt": "solid plate"}, {}, "undecidable"),
-    ({"fmt": "solid plate"}, {"fmt": "solid plate"}, "undecidable"),
+    ({"fmt": "solid plate"}, {}, "fail"),
+    ({"fmt": "solid plate"}, {"fmt": "solid plate"}, "fail"),
 ])
 def test_format_combines_with_phase_result(left, right, expected):
     assert rescore.score_format_phase(record(**left), record(**right))[0] == expected
@@ -228,8 +228,9 @@ def test_real_941_pair_replay_and_targeted_corrections():
     assert gaps[(33, "light_intensity")]["status"] == "conflicting"
     assert gaps[(35, "light_regime")]["status"] == "conflicting"
     assert "spectrum class" in gaps[(35, "light_regime")]["uncertainty"]
-    assert gaps[(35, "culture_format")]["status"] == "partial"
-    assert gaps[(35, "culture_format")]["value"] == "solid plate"
+    # A reported plate format is known, even though the default forbids it.
+    assert (35, "culture_format") not in gaps
+    assert all(row["culture_format_and_phase"].startswith("fail —") for row in row35)
     assert gaps[(39, "light_regime")]["status"] == "partial"
     assert gaps[(58, "light_regime")]["status"] == "partial"
     assert "photoperiod=12:12" in gaps[(58, "light_regime")]["value"]
@@ -465,3 +466,11 @@ def test_cli_writes_all_three_artifacts(tmp_path, capsys, monkeypatch):
     with pytest.raises(SystemExit) as result:
         runpy.run_path(str(ROOT / "tools" / "rescore_condition_pairs.py"), run_name="__main__")
     assert result.value.code == 0
+
+
+def test_known_unsupported_format_fails_without_manufacturing_metadata_gap():
+    known = record(fmt="solid plate", phase=None, od=None)
+    other = record()
+    assert rescore.score_format_phase(known, other)[0] == "fail"
+    assert rescore._gap_reason(known, "culture_format") is None
+    assert rescore.score_format_phase(known, record(fmt=None))[0] == "undecidable"

@@ -737,7 +737,7 @@
       "status": "not reported",
       "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-028",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "uncertainty": "Sampling culture format is unknown.",
       "historical_value": "not retrieved"
     },
     {
@@ -821,17 +821,6 @@
       "condition_row": 33,
       "artifact": "GSE237858",
       "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
-      "field": "culture_format",
-      "status": "partial",
-      "value": "solid plate",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 33; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
-      "historical_value": "agar plates (BG-11 medium)"
-    },
-    {
-      "condition_row": 33,
-      "artifact": "GSE237858",
-      "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
       "field": "growth_phase",
       "status": "not reported",
       "value": "not reported",
@@ -876,17 +865,6 @@
       "condition_row": 34,
       "artifact": "GSE237858",
       "condition_set": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
-      "field": "culture_format",
-      "status": "partial",
-      "value": "solid plate",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 34; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
-      "historical_value": "agar plates (BG-11 medium)"
-    },
-    {
-      "condition_row": 34,
-      "artifact": "GSE237858",
-      "condition_set": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
       "field": "growth_phase",
       "status": "not reported",
       "value": "not reported",
@@ -920,17 +898,6 @@
       "condition_row": 35,
       "artifact": "GSE252562",
       "condition_set": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
-      "field": "culture_format",
-      "status": "partial",
-      "value": "solid plate",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 35; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
-      "historical_value": "agar plates"
-    },
-    {
-      "condition_row": 35,
-      "artifact": "GSE252562",
-      "condition_set": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
       "field": "growth_phase",
       "status": "not reported",
       "value": "not reported",
@@ -959,17 +926,6 @@
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-013",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not reported"
-    },
-    {
-      "condition_row": 36,
-      "artifact": "GSE252562",
-      "condition_set": "Long-day photoperiod (LD16:8), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
-      "field": "culture_format",
-      "status": "partial",
-      "value": "solid plate",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 36; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
-      "historical_value": "agar plates"
     },
     {
       "condition_row": 36,
@@ -1056,7 +1012,7 @@
       "status": "not reported",
       "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 41; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "uncertainty": "Sampling culture format is unknown.",
       "historical_value": "not reported for this specific sample subset beyond 'axenic'; sample title lacks 'mBR' tag used for the bioreactor-labelled samples"
     },
     {
@@ -1331,7 +1287,7 @@
       "status": "not retrieved",
       "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "uncertainty": "Sampling culture format is unknown.",
       "historical_value": "not retrieved"
     },
     {
@@ -1672,7 +1628,7 @@
       "status": "not reported",
       "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "uncertainty": "Sampling culture format is unknown.",
       "historical_value": "not retrieved"
     },
     {
@@ -1749,7 +1705,7 @@
       "status": "not retrieved",
       "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "uncertainty": "Sampling culture format is unknown.",
       "historical_value": "not retrieved"
     },
     {
@@ -1848,7 +1804,7 @@
       "status": "not reported",
       "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "uncertainty": "Sampling culture format is unknown.",
       "historical_value": "not reported for this specific comparison"
     },
     {

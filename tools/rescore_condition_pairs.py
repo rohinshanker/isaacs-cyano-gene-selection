@@ -77,7 +77,7 @@ FORMAT_CLASSES = {
     "planktonic liquid": "planktonic",
     "biofilm": "biofilm",
 }
-UNSUPPORTED_FORMATS = {None, "solid plate"}
+KNOWN_UNSUPPORTED_FORMATS = {"solid plate"}
 GAP_STATUSES = ("not reported", "not retrieved", "partial", "conflicting", "uncertain")
 J1_ACCESSION_ROWS = {
     "GSE18902": 21,
@@ -521,8 +521,10 @@ def _score_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
 
 def _format_class(record: dict[str, Any]) -> str | None:
     value = record.get("fmt")
-    if value in UNSUPPORTED_FORMATS:
+    if value is None:
         return None
+    if value in KNOWN_UNSUPPORTED_FORMATS:
+        return value
     if value not in FORMAT_CLASSES:
         raise ValueError(f"unreviewed culture format: {value!r}")
     return FORMAT_CLASSES[value]
@@ -531,7 +533,9 @@ def _format_class(record: dict[str, Any]) -> str | None:
 def score_format_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     af, bf = _format_class(a), _format_class(b)
     if af is None or bf is None:
-        format_result = ("undecidable", "culture format missing or outside the allowed planktonic/biofilm classes")
+        format_result = ("undecidable", "culture format missing")
+    elif af in KNOWN_UNSUPPORTED_FORMATS or bf in KNOWN_UNSUPPORTED_FORMATS:
+        format_result = ("fail", f"reported format outside default planktonic/biofilm classes: {af} against {bf}")
     elif af == bf:
         format_result = ("pass", f"both {af}")
     else:
@@ -676,7 +680,7 @@ def _gap_reason(record: dict[str, Any], field: str) -> str | None:
     if field == "medium":
         return None if record.get("medium") is not None else "Sampling medium is unknown."
     if field == "culture_format":
-        return None if _format_class(record) is not None else "Sampling culture format is missing or outside the allowed planktonic/biofilm classes."
+        return None if _format_class(record) is not None else "Sampling culture format is unknown."
     if field == "growth_phase":
         phase = record.get("phase")
         if phase not in KNOWN_PHASES | {"stationary"} | UNKNOWN_PHASES:
