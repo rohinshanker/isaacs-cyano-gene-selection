@@ -16,6 +16,17 @@ ready plus a presentation-only 1,000 ms hold, and guarded measured-halfway
 reveal; grouped and continuous displays project the same truthful snapshot.
 The visual choice remains open for the owner, as requested.
 
+All five DEM-267 review findings are repaired at `06ab535`; bounded independent
+confirmation is active. Production late landings are excluded from the new
+scramble. Reservations batch geometry reads and writes onto effective flow
+boxes. Known-byte progress survives unsized work, preparation has a real
+activity treatment, status text stays readable, and initial stage copy retains
+organism-aware wording. Terminal failures preserve received extents and the
+halfway latch releases to actionable readiness when the threshold is unreachable.
+The payload sidecar is integrated; it is published but not requested or weighted.
+Final 24-case evidence and the owner's choice remain pending.
+
+
 The review scramble groups inline fragments into coherent blocks and uses
 1/12/40/160-character anchors at 250/350/600/1,000 ms, capped at 1,000 ms.
 Controls remain atomic. Landing-driven replacements inherit the original
