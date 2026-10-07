@@ -97,7 +97,7 @@ import {
   THRESHOLDS as DERIVED_THRESHOLDS,
 } from './core/source-derived-categories.js';
 import { LoadProgress } from './ui/load-progress.js';
-import { prefersReducedMotion, resolveLoadTiming } from './ui/load-timing.js';
+import { prefersReducedMotion, resolveLoadReview, resolveLoadTiming } from './ui/load-timing.js';
 import { TextScramble } from './ui/text-scramble.js';
 import { installInstantHints } from './ui/instant-hints.js';
 
@@ -186,6 +186,7 @@ let booted = false;
 /** True once the empty shell has given way to the page. */
 let revealed = false;
 const loadTiming = resolveLoadTiming(window.location.search);
+const loadReview = resolveLoadReview(window.location.search);
 const reducedMotion = prefersReducedMotion(window);
 const textScramble = new TextScramble({ timing: loadTiming.scramble });
 
@@ -2287,6 +2288,11 @@ function flushLandings() {
   }
   loadProgress.setFiles(staged.files);
   renderAll();
+  if (revealed && !reducedMotion) {
+    // Data landings may replace whole panels. Preserve the original deadline
+    // for unchanged content and give genuinely new content one local reveal.
+    textScramble.refresh(scrambleRoots());
+  }
   // The categories arrived after the points had already appeared in the
   // not-loaded colour: let them take their real colours the way the intro does,
   // rather than all at once. An intro still running picks the colours up itself.
@@ -2322,6 +2328,7 @@ function revealPage() {
   // are real only now, so the first true picture is drawn here.
   workspaceResizer?.update();
   renderAll();
+  loadProgress.completePreparation('final-geometry');
   // The status line said the data was loading, to assistive technology only.
   // It is no longer true, so it leaves; a failure would have replaced it.
   element('load-status').hidden = true;
@@ -2344,16 +2351,28 @@ function revealPage() {
 function startTextReveal() {
   if (reducedMotion) return;
   try {
-    textScramble.run([
-      document.querySelector('.site-header'), element('main'), element('compare-section'),
-      element('panel-section'), element('site-footer'),
-    ]);
+    textScramble.run(scrambleRoots());
   } catch (error) {
     // The animation is decoration over real text. If it cannot run, the text
     // must still be there: cancelling restores every node it had touched.
     textScramble.cancel();
     console.error(error);
   }
+}
+
+function scrambleRoots() {
+  return [
+    document.querySelector('.site-header'), element('main'), element('compare-section'),
+    element('panel-section'), element('site-footer'),
+  ];
+}
+
+/** Yield all synchronous preparation and begin the reveal on a clean frame. */
+function cleanRevealFrame() {
+  return new Promise((resolve) => requestAnimationFrame((time) => {
+    performance.mark('cyano:reveal-frame');
+    resolve(time);
+  }));
 }
 
 /** Whether the tab on screen is one of the scatter maps. */
@@ -2406,7 +2425,15 @@ async function boot() {
     minimumMs: reducedMotion ? 0 : loadTiming.minimumBarMs,
     tierLabels: tierLabelsFor(organism),
     organism,
+    review: loadReview,
+    terminalHoldMs: reducedMotion || loadReview?.name === 'B' ? 0 : 150,
   });
+  for (const [key, label] of [
+    ['context', 'data context'],
+    ['state', 'view state'],
+    ['initial-view', 'initial view'],
+    ['final-geometry', 'final geometry'],
+  ]) loadProgress.registerPreparation(key, label);
   // The link decides when the usable page may be revealed. The bar measures the
   // whole cycle, so later tiers continue in the same chromosome presentation.
   const requested = defaultState(organism);
@@ -2493,6 +2520,7 @@ async function boot() {
     return;
   }
   performance.mark('cyano:core');
+  performance.mark('cyano:prepare-start');
   context.dataset = dataset;
   applyGeneCount(document, dataset.genes.length);
   loadProgress.setIdentity({
@@ -2503,8 +2531,10 @@ async function boot() {
   context.exceptionCount = dataset.genes
     .filter((gene) => Boolean(gene.translationalException)).length;
   context.basisCounts = expressionBasisCounts(dataset.genes);
+  loadProgress.completePreparation('context');
 
   normalizeAndApply(decodeState(window.location.hash, organism));
+  loadProgress.completePreparation('state');
 
   plot = new ScatterPlot(element('map-canvas'), {
     onHover: (index) => {
@@ -2928,6 +2958,7 @@ async function boot() {
   window.addEventListener('popstate', applyLiveHash);
 
   renderAll();
+  loadProgress.completePreparation('initial-view');
   booted = true;
   flushLandings();
 
@@ -2940,8 +2971,19 @@ async function boot() {
   if (promotedByMetric.length > 0) {
     promoted.push(...promotedByMetric);
   }
-  await load.when(promoted);
-  await loadProgress.ready();
+  const ready = load.when(promoted);
+  if (loadReview?.reveal === 'half') {
+    // A measured halfway point is only an additional latch. Core, URL context,
+    // promoted dependencies, and the prepared initial view remain mandatory.
+    await Promise.all([ready, loadProgress.whenTransferAtLeast(0.5)]);
+  } else {
+    await ready;
+  }
+  if (!loadReview) await loadProgress.ready();
+  if (loadReview?.holdMs > 0 && !reducedMotion) {
+    await new Promise((resolve) => setTimeout(resolve, loadReview.holdMs));
+  }
+  await cleanRevealFrame();
   revealPage();
   if (pendingMapJump) jumpToMap();
   announce(organismRecognised

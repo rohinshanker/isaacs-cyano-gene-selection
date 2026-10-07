@@ -6,15 +6,30 @@
   network throttling.
 - **Status:** active
 - **Opened:** 2026-10-06
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-07
 
 ## Current State
 
-The owner reports that after the loading bar finishes, most text settles too
-quickly to see its ATCG animation, while one large block takes much longer.
-Architecture and owner-review variant preparation are active. The three prior
-interaction fixes are being completed in parallel; the visual choice remains
-open for the owner, as requested.
+Owner-review variants are implemented on the DEM-263 task branch. Production
+defaults remain unchanged. Query-only A/B/C selectors compare ready-immediate,
+ready plus a presentation-only 1,000 ms hold, and guarded measured-halfway
+reveal; grouped and continuous displays project the same truthful snapshot.
+The visual choice remains open for the owner, as requested.
+
+The review scramble groups inline fragments into coherent blocks and uses
+1/12/40/160-character anchors at 250/350/600/1,000 ms, capped at 1,000 ms.
+Controls remain atomic. Landing-driven replacements inherit the original
+deadline when unchanged, while genuinely new late content receives one bounded
+local reveal and ordinary rerenders do not restart the whole page.
+
+The staged-loader snapshot now exposes actual received bytes separately from
+legacy settlement credit, manifest-published membership, honest unknown-size
+file counts, and completed registered validation/application tasks. The review
+presentation switches from transfer units to an indeterminate named Preparing
+phase, removes `aria-valuenow`, and reports failures as terminal errors with the
+existing Retry actions. Context, state, initial-view, and final-geometry work
+are registered as real preparation tasks. No timed schedule advances either
+truthful review display.
 
 Source inspection: `revealPage()` in `site/js/app.js` reveals the page and starts
 `TextScramble`. `scrambleProgress()` in `site/js/ui/text-scramble.js` currently
@@ -93,7 +108,12 @@ add the hybrid activity treatment if actual stalls otherwise look frozen.
 
 ## Verification
 
-Implementation verification is pending. Acceptance requires:
+Focused automated verification passes for the balanced duration curve, coherent
+inline blocks, replacement inheritance, post-completion local reveals, exact
+restoration, review query parsing, actual-byte versus settlement accounting,
+EOF-before-validation, unknown totals, manifest-absent exclusion, preparation
+semantics, terminal failure, and reveal orchestration. Full gates and real-app
+render evidence are recorded below when complete. Acceptance requires:
 
 - Tests for perceptible short/medium/long timing, exact final text, block coverage,
   rerenders/cancellation, reduced motion, and the selected reveal trigger.

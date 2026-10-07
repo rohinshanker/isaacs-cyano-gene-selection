@@ -313,7 +313,7 @@ The URL still decides readiness: `promotedFileKeys` names later files whose
 content the initial view needs before reveal. That readiness gate does not
 change what the bar measures.
 
-**It fills in uneven blocks, with pauses, over at least 1.5 seconds.** The
+**The production default fills in uneven blocks, with pauses, over at least 1.5 seconds.** The
 owner's decision: "1.5s, but have the load look a bit like a natural load rather
 than a streamline (have it pause/jump and have a load a bit more blockily)".
 `loadSchedule` lays the minimum out as 7 to 12 steps, each a moment and the
@@ -483,6 +483,58 @@ own window. The default frame functions of the scramble and of the bar are
 therefore wrapped, not passed by reference, and a test for each mimics the
 browser's check to hold that: the first version of the scramble passed every
 injected-clock test and stopped the real page with no text on it.
+
+### Owner-review variants
+
+The alternatives below are query-only and do not change the approved production
+defaults. `load-review=a`, `b`, or `c` enables the shared truthful state model;
+`load-progress=grouped` or `continuous` chooses only how that state is drawn.
+Invalid or absent selectors fall back to production behavior.
+
+| Variant | Gate |
+| --- | --- |
+| A | Core, URL context, promoted dependencies, initial view, then a clean animation frame |
+| B | The same gate, followed by a presentation-only 1,000 ms hold; requests continue and progress does not advance on the timer |
+| C | A measured received-byte fraction of at least 50%, plus every A readiness condition; unknown totals fall back to A |
+
+Both progress modes consume one snapshot. With a manifest, transfer progress is
+the sum of actual decoded bytes received divided by the sum of bytes published
+in the active cycle, including measurable independent resources. Manifest-absent
+files are excluded. Settlement never fabricates bytes. Without byte totals the
+display uses terminal files over registered files; while the work set is still
+open it is an activity state with no `aria-valuenow`.
+
+Once all known bytes have arrived but validation, application, context, state,
+initial-view, or final-geometry tasks remain, the same chromosome switches to a
+named Preparing activity state. Preparation is completed registered tasks over
+registered tasks; it is not assigned byte weight. A failed cycle terminates as
+an error with Retry rather than announcing success. Grouped mode gives each
+file or independent resource a stable byte-weighted slot (equal slots without
+sizes); continuous mode sums the same actual bytes. Neither review path calls
+`loadSchedule()`.
+
+Review mode also enables a coherent-block scramble curve through 1, 12, 40, and
+160 characters at 250, 350, 600, and 1,000 ms, capped at 1,000 ms. Inline text
+in a paragraph, heading, or label shares a front; controls remain atomic and
+release after their own duration. Final block height and control width are
+reserved while text is short. Landing-driven replacements with unchanged
+content inherit the original deadline; new landing content receives one local
+bounded reveal, and a user rerender does not restart page-wide decoration.
+
+Repeatable comparison URLs (append an organism/hash as needed):
+
+```text
+/?load-review=a&load-progress=grouped&load-log
+/?load-review=a&load-progress=continuous&load-log
+/?load-review=b&load-progress=grouped&load-log
+/?load-review=b&load-progress=continuous&load-log
+/?load-review=c&load-progress=grouped&load-log
+/?load-review=c&load-progress=continuous&load-log
+```
+
+Use DevTools network profiles of 750 kB/s with 80 ms latency and 300 kB/s with
+150 ms latency, with cache disabled for fresh runs and enabled for the paired
+cached runs. CPU 4× slowdown is a responsiveness check, not a source of progress.
 
 ## Decisions on the original suggestions
 

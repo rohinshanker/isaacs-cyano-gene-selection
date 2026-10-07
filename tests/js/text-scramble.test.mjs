@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SCRAMBLE_LETTERS, TextScramble, collectScrambleNodes, collectScrambleTargets,
-  flipInterval, scrambleProgress,
+  flipInterval, scrambleDuration, scrambleProgress,
 } from '../../site/js/ui/text-scramble.js';
 import { LOAD_TIMING } from '../../site/js/ui/load-timing.js';
 import { FakeElement, FakeNode, withFakeDocument } from './fake-dom.mjs';
@@ -205,6 +205,92 @@ test('the default reveal keeps short text at 50 letters per second and caps long
       { front: length, resolved: length, done: true },
       `${length} characters finish at their natural duration or the 2.5-second cap`);
   }
+});
+
+test('the balanced review curve hits every anchor, interpolates, and caps at one second', () => {
+  const timing = {
+    ...TIMING,
+    durationAnchors: [[1, 250], [12, 350], [40, 600], [160, 1000]],
+  };
+  for (const [length, duration] of timing.durationAnchors) {
+    assert.equal(scrambleDuration(length, timing), duration);
+    assert.equal(scrambleProgress(length, duration - 1, timing).done, false);
+    assert.equal(scrambleProgress(length, duration, timing).done, true);
+  }
+  assert.equal(scrambleDuration(26, timing), 475);
+  assert.equal(scrambleDuration(1000, timing), 1000);
+});
+
+test('inline fragments share one coherent review deadline and late replacements do not restart it', async () => {
+  await withFakeDocument(async (document) => {
+    const clock = frameClock();
+    const timing = {
+      ...FAST,
+      leadLetters: 0,
+      durationAnchors: [[1, 250], [12, 350], [40, 600], [160, 1000]],
+    };
+    const root = document.createElement('div');
+    const paragraph = document.createElement('p');
+    const first = document.createTextNode('Alpha ');
+    const strong = document.createElement('strong');
+    const second = document.createTextNode('beta');
+    strong.append(second);
+    paragraph.append(first, strong);
+    root.append(paragraph);
+    document.body.append(root);
+    const scramble = new TextScramble({
+      timing, random: () => 0, now: clock.now,
+      requestFrame: clock.requestFrame, cancelFrame: clock.cancelFrame,
+    });
+    const done = scramble.run(root);
+    assert.equal(first.data, '', 'the coherent block starts at its first inline fragment');
+    assert.equal(second.data, '', 'a later inline fragment waits for the shared front');
+    clock.advance(100);
+    assert.ok(first.data.length > 0);
+    assert.equal(second.data, '', 'inline fragments do not animate as unrelated simultaneous strings');
+
+    const replacement = document.createElement('p');
+    replacement.append('Alpha ');
+    const replacementStrong = document.createElement('strong');
+    replacementStrong.append('beta');
+    replacement.append(replacementStrong);
+    root.replaceChildren(replacement);
+    scramble.refresh(root);
+    clock.advance(300);
+    await done;
+    assert.equal(replacement.textContent, 'Alpha beta', 'unchanged replacement inherits the first deadline');
+    assert.equal(scramble.active, false);
+  });
+});
+
+test('new landing content gets one local reveal after the page reveal has finished', async () => {
+  await withFakeDocument(async (document) => {
+    const clock = frameClock();
+    const timing = {
+      ...FAST,
+      durationAnchors: [[1, 250], [12, 350], [40, 600], [160, 1000]],
+    };
+    const { root, node } = mount(document, 'Ready');
+    const scramble = new TextScramble({
+      timing, random: () => 0, now: clock.now,
+      requestFrame: clock.requestFrame, cancelFrame: clock.cancelFrame,
+    });
+    const initial = scramble.run(root);
+    clock.advance(400);
+    await initial;
+    assert.equal(scramble.active, false);
+
+    node.data = 'New evidence ready';
+    scramble.refresh(root);
+    assert.equal(scramble.active, true, 'new content starts a bounded local run');
+    assert.notEqual(node.data, 'New evidence ready');
+    clock.advance(1000);
+    assert.equal(node.data, 'New evidence ready');
+    assert.equal(scramble.active, false);
+
+    scramble.refresh(root);
+    assert.equal(scramble.active, false, 'the same generation is not decorated twice');
+  });
 });
 
 test('a length or a duration of zero resolves at once instead of dividing by zero', () => {

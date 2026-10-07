@@ -154,6 +154,112 @@ export function loadFraction(snapshot, keys = null) {
   return Math.min(clampFraction(fraction), allSettled ? 1 : UNSETTLED_MAX_FRACTION);
 }
 
+/**
+ * Phase-local, truthful progress for the owner-review variants.
+ *
+ * Settlement credit is deliberately absent from byte progress. Once every
+ * published byte has arrived but validation/application remains, the same
+ * presentation becomes an indeterminate Preparing phase instead of calling
+ * the whole cycle 100% complete.
+ */
+export function truthfulProgress(snapshot, resources = [], preparationTasks = []) {
+  const baseGroups = Object.entries(snapshot?.files ?? {})
+    .filter(([, record]) => record.included !== false)
+    .map(([key, record]) => ({
+      key,
+      label: record.label ?? key,
+      bytes: Number.isFinite(record.bytes) && record.bytes > 0 ? record.bytes : null,
+      actualReceivedBytes: Math.max(0, record.actualReceivedBytes ?? 0),
+      settled: record.settled === true,
+      state: record.state ?? (record.settled ? FILE_STATE.READY : FILE_STATE.LOADING),
+    }));
+  const resourceGroups = resources.map((resource) => ({
+    key: resource.key,
+    label: resource.label,
+    bytes: Number.isFinite(resource.totalBytes) && resource.totalBytes > 0
+      ? resource.totalBytes : null,
+    actualReceivedBytes: Math.max(0, resource.receivedBytes ?? 0),
+    settled: resource.settled === true,
+    state: resource.state,
+  }));
+  const groups = [...baseGroups, ...resourceGroups];
+  for (const group of groups) {
+    group.progress = group.bytes
+      ? clampFraction(group.actualReceivedBytes / group.bytes)
+      : (group.settled ? 1 : 0);
+  }
+  const worksetKnown = snapshot ? snapshot.worksetKnown === true : true;
+  const allSettled = groups.length > 0 && groups.every((group) => group.settled);
+  const failures = groups.filter((group) => group.state === FILE_STATE.FAILED);
+  const loaderPreparation = snapshot?.preparation ?? { registered: 0, completed: 0 };
+  const preparation = {
+    registered: loaderPreparation.registered
+      + preparationTasks.length,
+    completed: loaderPreparation.completed
+      + preparationTasks.filter((task) => task.completed).length,
+    currentLabel: preparationTasks.find((task) => !task.completed)?.label
+      ?? loaderPreparation.currentLabel ?? null,
+  };
+  const preparationComplete = preparation.completed >= preparation.registered;
+  const terminal = allSettled && (failures.length > 0 || preparationComplete);
+  const current = groups.find((group) => !group.settled);
+
+  if (terminal && failures.length > 0) {
+    return {
+      phase: 'error', fraction: 1, terminal: true, groups, failures, preparation,
+      label: 'Loading finished with errors', exactBytes: groups.every((group) => group.bytes !== null),
+    };
+  }
+
+  if (!worksetKnown) {
+    return {
+      phase: 'discovering', fraction: null, terminal: false, groups, failures, preparation,
+      label: 'Discovering published data', exactBytes: false,
+    };
+  }
+
+  const allLengthsKnown = groups.length > 0 && groups.every((group) => group.bytes !== null);
+  if (allLengthsKnown) {
+    const totalBytes = groups.reduce((sum, group) => sum + group.bytes, 0);
+    const actualReceivedBytes = groups.reduce((sum, group) => (
+      sum + Math.min(group.actualReceivedBytes, group.bytes)
+    ), 0);
+    if (actualReceivedBytes < totalBytes) {
+      return {
+        phase: 'transfer', fraction: actualReceivedBytes / totalBytes, terminal: false,
+        groups, failures, preparation, label: current?.label ?? 'published data', exactBytes: true,
+        actualReceivedBytes, totalBytes,
+      };
+    }
+    if (!terminal) {
+      return {
+        phase: 'preparing', fraction: null, terminal: false, groups, failures, preparation,
+        label: preparation.currentLabel ?? current?.label ?? 'loaded data', exactBytes: true,
+        actualReceivedBytes, totalBytes,
+      };
+    }
+  } else if (!terminal) {
+    const settled = groups.filter((group) => group.settled).length;
+    return {
+      phase: 'transfer', fraction: groups.length > 0 ? settled / groups.length : null,
+      terminal: false, groups, failures, preparation,
+      label: current?.label ?? 'data files', exactBytes: false,
+      settledFiles: settled, totalFiles: groups.length,
+    };
+  }
+
+  return {
+    phase: failures.length > 0 ? 'error' : 'ready',
+    fraction: 1,
+    terminal,
+    groups,
+    failures,
+    preparation,
+    label: failures.length > 0 ? 'Loading finished with errors' : 'Ready',
+    exactBytes: allLengthsKnown,
+  };
+}
+
 /** The release and its size, once `meta.json` has landed; empty before. */
 export function describeIdentity(identity) {
   if (!identity) return '';
@@ -219,11 +325,19 @@ export class LoadProgress {
     requestFrame = (callback) => requestAnimationFrame(callback),
     tierLabels = TIER_LABELS,
     organism = undefined,
+    review = null,
+    terminalHoldMs = 0,
   } = {}) {
     this.tierLabels = tierLabels;
     this.organism = organism;
+    this.review = review;
+    this.terminalHoldMs = Math.max(0, terminalHoldMs);
     this.stage = stage;
     this.presentation = presentation ?? bar;
+    if (this.review) {
+      this.presentation.dataset.reviewVariant = this.review.name;
+      this.presentation.dataset.progressMode = this.review.progress;
+    }
     this.bar = bar;
     this.status = status;
     this.tail = tail;
@@ -237,6 +351,8 @@ export class LoadProgress {
     this.revealed = false;
     this.snapshot = null;
     this.resources = new Map();
+    this.preparationTasks = new Map();
+    this.transferWaiters = [];
     this.resourceOnly = false;
     this.retryLabel = null;
     this.framePending = false;
@@ -307,7 +423,8 @@ export class LoadProgress {
 
   /** Report real progress even when the decorative genes are deliberately behind it. */
   setAria(fraction, text) {
-    this.bar.setAttribute('aria-valuenow', String(Math.round(fraction * 100)));
+    if (fraction === null) this.bar.removeAttribute('aria-valuenow');
+    else this.bar.setAttribute('aria-valuenow', String(Math.round(fraction * 100)));
     this.bar.setAttribute('aria-valuetext', text);
   }
 
@@ -338,7 +455,7 @@ export class LoadProgress {
   }
 
   requestNextFrame() {
-    if (this.minimumMs === 0 || this.fraction >= 1 || this.framePending) return;
+    if (this.review || this.minimumMs === 0 || this.fraction >= 1 || this.framePending) return;
     const cycle = this.cycle;
     const version = this.frameVersion;
     this.framePending = true;
@@ -351,6 +468,10 @@ export class LoadProgress {
   }
 
   renderStage() {
+    if (this.review) {
+      this.renderTruthfulStage();
+      return;
+    }
     const combined = this.combinedSnapshot();
     const real = loadFraction(combined);
     const elapsed = this.now() - this.startedAt;
@@ -387,6 +508,118 @@ export class LoadProgress {
         if (this.revealed) this.renderTail();
       }
     }, Math.max(FULL_HOLD_MS, remaining));
+  }
+
+  /** Render grouped or continuous projections of the same truthful snapshot. */
+  renderTruthfulStage() {
+    const projection = this.truthfulSnapshot();
+    this.bar.classList.toggle('is-activity', projection.fraction === null);
+    if (projection.fraction === null) {
+      // The byte phase may already be visually full; an indeterminate
+      // preparation phase removes the numeric claim without moving backwards.
+      this.setFraction(projection.phase === 'preparing' ? 1 : 0);
+    } else if (this.review.progress === 'grouped') this.setGrouped(projection.groups);
+    else this.setFraction(projection.fraction);
+
+    let description;
+    let status;
+    if (projection.phase === 'discovering') {
+      status = 'Discovering published data';
+      description = status;
+    } else if (projection.phase === 'preparing') {
+      const { completed, registered } = projection.preparation;
+      status = `Preparing ${projection.label}`;
+      description = `${status}. ${completed} of ${registered} preparation tasks complete.`;
+    } else if (projection.phase === 'error') {
+      status = projection.label;
+      description = `${status}. Retry the failed data below.`;
+    } else if (projection.phase === 'ready') {
+      status = 'Loading complete';
+      description = `${status}.${describeIdentity(this.identity) ? ` ${describeIdentity(this.identity)}.` : ''}`;
+    } else if (projection.exactBytes) {
+      const percent = Math.round(projection.fraction * 100);
+      status = `Loading ${projection.label}`;
+      description = `${status}, ${percent}% of published bytes received.`;
+    } else {
+      status = `Loading ${projection.label}`;
+      description = `${status}, ${projection.settledFiles} of ${projection.totalFiles} files settled.`;
+    }
+    this.status.textContent = status;
+    this.setAria(projection.fraction, description);
+    this.resolveTransferWaiters(projection);
+    if (!projection.terminal || this.completeHeld || this.finishScheduled) return;
+    this.finishScheduled = true;
+    const cycle = this.cycle;
+    setTimeout(() => {
+      if (cycle !== this.cycle) return;
+      this.completeHeld = true;
+      this.resolveFinished();
+      if (this.revealed) this.renderTail();
+    }, this.terminalHoldMs);
+  }
+
+  /** Stable slots weighted by published bytes, or equally when sizes are unknown. */
+  setGrouped(groups) {
+    if (groups.length === 0) {
+      this.setFraction(0);
+      return;
+    }
+    const byteWeighted = groups.every((group) => group.bytes !== null);
+    const weights = groups.map((group) => (byteWeighted ? group.bytes : 1));
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    let start = 0;
+    const slots = groups.map((group, index) => {
+      const end = start + weights[index] / total;
+      const slot = { start, end, progress: group.progress };
+      start = end;
+      return slot;
+    });
+    this.marks.forEach((mark, index) => {
+      const at = this.genes[index].at;
+      const slot = slots.find((candidate) => at <= candidate.end) ?? slots.at(-1);
+      const local = (at - slot.start) / Math.max(Number.EPSILON, slot.end - slot.start);
+      mark.classList.toggle('is-on', local <= slot.progress);
+    });
+    this.fraction = groups.reduce((sum, group, index) => sum + group.progress * weights[index], 0) / total;
+  }
+
+  truthfulSnapshot() {
+    const resources = [...this.resources.values()].filter((resource) => resource.cycle === this.cycle);
+    const base = this.resourceOnly ? null : this.snapshot;
+    return truthfulProgress(base, resources, [...this.preparationTasks.values()]);
+  }
+
+  registerPreparation(key, label) {
+    if (!this.review || this.preparationTasks.has(key)) return;
+    this.preparationTasks.set(key, { key, label, completed: false });
+    this.renderStage();
+  }
+
+  completePreparation(key) {
+    const task = this.preparationTasks.get(key);
+    if (!task || task.completed) return;
+    task.completed = true;
+    this.renderStage();
+    if (this.revealed) this.renderTail();
+  }
+
+  /** Resolve true at measured byte halfway, false when byte totals are unavailable. */
+  whenTransferAtLeast(fraction) {
+    if (!this.review) return Promise.resolve(true);
+    const projection = this.truthfulSnapshot();
+    if (projection.exactBytes && (projection.fraction ?? 1) >= fraction) return Promise.resolve(true);
+    if (this.snapshot?.worksetKnown && !projection.exactBytes) return Promise.resolve(false);
+    return new Promise((resolve) => this.transferWaiters.push({ fraction, resolve }));
+  }
+
+  resolveTransferWaiters(projection) {
+    const pending = [];
+    for (const waiter of this.transferWaiters) {
+      if (projection.exactBytes && (projection.fraction ?? 1) >= waiter.fraction) waiter.resolve(true);
+      else if (this.snapshot?.worksetKnown && !projection.exactBytes) waiter.resolve(false);
+      else pending.push(waiter);
+    }
+    this.transferWaiters = pending;
   }
 
   /**
@@ -428,7 +661,11 @@ export class LoadProgress {
     resource.state = state;
     resource.error = error;
     resource.settled = true;
-    if (resource.totalBytes !== null) resource.receivedBytes = resource.totalBytes;
+    // A successful parser/validator can only settle after EOF. Failures retain
+    // their actual partial byte count rather than receiving settlement credit.
+    if (state === FILE_STATE.READY && resource.totalBytes !== null) {
+      resource.receivedBytes = resource.totalBytes;
+    }
     this.renderStage();
     this.requestNextFrame();
     if (this.revealed) this.renderTail();
@@ -559,7 +796,9 @@ export class LoadProgress {
     const resourceFailures = [...this.resources.values()].filter((resource) => (
       resource.state === FILE_STATE.FAILED && resource.reportFailure
     ));
-    const loading = loadFraction(snapshot) < 1 || !this.completeHeld;
+    const loading = this.review
+      ? !this.truthfulSnapshot().terminal || !this.completeHeld
+      : loadFraction(snapshot) < 1 || !this.completeHeld;
     this.tail.hidden = false;
     this.tail.classList.toggle('has-failures', failed.length + resourceFailures.length > 0);
     this.presentation.hidden = !loading;

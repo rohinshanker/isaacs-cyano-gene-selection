@@ -64,11 +64,14 @@ test('the reveal waits for its own files while the one bar measures the whole cy
   // The link is read under the organism the address names, while progress is
   // explicitly whole-cycle and includes the independently fetched ledger.
   assert.match(boot, /const requested = defaultState\(organism\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash, organism\), organism\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(null\);\s*loadProgress\.beginResource\('citations'/);
-  // The reveal waits for the view's files and the minimum, not false 100%; the
-  // same bar moves into the revealed page and continues.
-  assert.match(boot, /await load\.when\(promoted\);\s*await loadProgress\.ready\(\);\s*revealPage\(\);/);
+  // Review C adds a measured-byte latch but cannot bypass the same readiness
+  // promise. Production retains its approved presentation minimum.
+  assert.match(boot, /const ready = load\.when\(promoted\);/);
+  assert.match(boot, /loadReview\?\.reveal === 'half'[\s\S]*Promise\.all\(\[ready, loadProgress\.whenTransferAtLeast\(0\.5\)\]\)/);
+  assert.match(boot, /if \(!loadReview\) await loadProgress\.ready\(\);/);
+  assert.match(boot, /await cleanRevealFrame\(\);\s*revealPage\(\);/);
   assert.match(progressSource, /this\.tail\.append\(this\.presentation, this\.failures\)/);
-  const order = ['renderAll();\n  booted = true;', 'flushLandings();', 'revealPage();',
+  const order = ['renderAll();\n  loadProgress.completePreparation(\'initial-view\');\n  booted = true;', 'flushLandings();', 'revealPage();',
     'if (pendingMapJump) jumpToMap();'];
   let from = 0;
   for (const step of order) {
@@ -88,6 +91,8 @@ test('the reveal waits for its own files while the one bar measures the whole cy
   assert.match(reveal, /startMapIntro\(loadTiming\.mapIntro\);\s*startTextReveal\(\);/);
   assert.match(source, /function startMapIntro\(\{ appearMs, colourMs \}\) \{\s*if \(reducedMotion \|\| !mapTabActive\(\)\) return;/);
   assert.match(source, /function startTextReveal\(\) \{\s*if \(reducedMotion\) return;/);
+  assert.match(source, /textScramble\.refresh\(scrambleRoots\(\)\)/,
+    'landing replacements join the active reveal without restarting it');
 });
 
 test('a link is opened onto its own data: what each view promotes', async () => {

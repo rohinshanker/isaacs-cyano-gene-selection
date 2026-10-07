@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FULL_HOLD_MS, LOAD_BAR_GENES, LOAD_BAR_VIEW, LoadProgress, describeIdentity, describeLoad,
-  displayedFraction, loadBarGenes, loadFraction, loadGeneAttributes, loadSchedule,
+  displayedFraction, loadBarGenes, loadFraction, loadGeneAttributes, loadSchedule, truthfulProgress,
 } from '../../site/js/ui/load-progress.js';
 import { DATA_FILES, FILE_STATE, tierLabelsFor } from '../../site/js/core/data-files.js';
 import { organismById } from '../../site/js/core/organisms.js';
@@ -163,6 +163,88 @@ test('progress is bytes against the manifest, or files when sizes are unknown', 
   assert.equal(loadFraction(snapshot({
     files: { genes: { receivedBytes: 100, bytes: 100, settled: false } },
   }), ['genes']), 0.99, 'per-file validation and apply must settle before completion');
+});
+
+test('truthful review progress separates received bytes, preparation, and terminal errors', () => {
+  const file = (overrides = {}) => ({
+    label: 'genes.json', bytes: 100, actualReceivedBytes: 0, settled: false,
+    state: FILE_STATE.LOADING, included: true, ...overrides,
+  });
+  const base = (record, overrides = {}) => ({
+    worksetKnown: true,
+    files: { genes: record },
+    preparation: { registered: 1, completed: record.settled ? 1 : 0, currentLabel: 'genes.json' },
+    ...overrides,
+  });
+
+  const half = truthfulProgress(base(file({ actualReceivedBytes: 50 })));
+  assert.equal(half.phase, 'transfer');
+  assert.equal(half.fraction, 0.5);
+  assert.equal(half.actualReceivedBytes, 50);
+
+  const eof = truthfulProgress(base(file({ actualReceivedBytes: 100 })));
+  assert.equal(eof.phase, 'preparing', 'EOF is not validation/application completion');
+  assert.equal(eof.fraction, null, 'preparation has no invented byte percentage');
+
+  const failed = truthfulProgress(base(file({
+    actualReceivedBytes: 40, settled: true, state: FILE_STATE.FAILED,
+  })));
+  assert.equal(failed.phase, 'error');
+  assert.equal(failed.terminal, true);
+  assert.equal(failed.groups[0].actualReceivedBytes, 40,
+    'settlement never fabricates the missing sixty bytes');
+
+  const discovering = truthfulProgress(base(file(), { worksetKnown: false }));
+  assert.equal(discovering.phase, 'discovering');
+  assert.equal(discovering.fraction, null);
+});
+
+test('truthful unknown-size progress uses honest file counts and excludes absent manifest entries', () => {
+  const projection = truthfulProgress({
+    worksetKnown: true,
+    files: {
+      first: {
+        label: 'first.json', bytes: 0, actualReceivedBytes: 8, settled: true,
+        state: FILE_STATE.READY, included: true,
+      },
+      second: {
+        label: 'second.json', bytes: 0, actualReceivedBytes: 0, settled: false,
+        state: FILE_STATE.LOADING, included: true,
+      },
+      absent: {
+        label: 'absent.json', bytes: 0, actualReceivedBytes: 0, settled: true,
+        state: FILE_STATE.ABSENT, included: false,
+      },
+    },
+    preparation: { registered: 2, completed: 1, currentLabel: 'second.json' },
+  });
+  assert.equal(projection.exactBytes, false);
+  assert.equal(projection.fraction, 0.5);
+  assert.equal(projection.totalFiles, 2);
+  assert.equal(projection.groups.some((group) => group.key === 'absent'), false);
+});
+
+test('review rendering removes aria-valuenow during real preparation', async () => {
+  await withFakeDocument((document) => {
+    const { bar, status, progress } = mount(document, {}, {
+      review: { name: 'A', progress: 'continuous' }, terminalHoldMs: 0,
+    });
+    progress.registerPreparation('view', 'initial view');
+    progress.update({
+      worksetKnown: true,
+      files: {
+        genes: {
+          label: 'genes.json', bytes: 100, actualReceivedBytes: 100,
+          settled: false, state: FILE_STATE.LOADING, included: true,
+        },
+      },
+      preparation: { registered: 1, completed: 0, currentLabel: 'genes.json' },
+    });
+    assert.equal(bar.getAttribute('aria-valuenow'), null);
+    assert.match(status.textContent, /^Preparing /);
+    assert.equal(bar.querySelectorAll('rect.load-gene').every((mark) => mark.hasClass('is-on')), true,
+      'the finished transfer extent stays visible while its numeric meaning changes');
+  });
 });
 
 test('the bar says which tier is loading, how far, and what the release is', () => {

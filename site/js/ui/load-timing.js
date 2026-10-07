@@ -37,6 +37,40 @@ export const LOAD_TIMING = Object.freeze({
   }),
 });
 
+/** Query-only loading variants prepared for owner review. */
+export const LOAD_REVIEW = Object.freeze({
+  variants: Object.freeze({
+    a: Object.freeze({ reveal: 'ready', holdMs: 0 }),
+    b: Object.freeze({ reveal: 'ready', holdMs: 1000 }),
+    c: Object.freeze({ reveal: 'half', holdMs: 0 }),
+  }),
+  progressModes: Object.freeze(['grouped', 'continuous']),
+  /** Balanced coherent-block deadlines: 1/12/40/160 characters. */
+  scrambleAnchors: Object.freeze([
+    Object.freeze([1, 250]),
+    Object.freeze([12, 350]),
+    Object.freeze([40, 600]),
+    Object.freeze([160, 1000]),
+  ]),
+});
+
+/**
+ * Resolve an explicitly requested owner-review comparison.
+ *
+ * No selector means no review mode: production keeps its approved reveal,
+ * progress schedule, and text timing until the owner chooses a replacement.
+ */
+export function resolveLoadReview(search = '') {
+  const parameters = new URLSearchParams(search);
+  const name = parameters.get('load-review')?.toLowerCase() ?? '';
+  const variant = LOAD_REVIEW.variants[name];
+  if (!variant) return null;
+  const requestedMode = parameters.get('load-progress')?.toLowerCase() ?? '';
+  const progress = LOAD_REVIEW.progressModes.includes(requestedMode)
+    ? requestedMode : LOAD_REVIEW.progressModes[0];
+  return Object.freeze({ name: name.toUpperCase(), progress, ...variant });
+}
+
 /** Query parameter for each tunable, and where it lands. */
 const OVERRIDES = Object.freeze([
   ['load-min', null, 'minimumBarMs'],
@@ -68,9 +102,13 @@ export const LOAD_TIMING_PARAMETERS = Object.freeze(OVERRIDES.map(([name]) => na
  */
 export function resolveLoadTiming(search = '') {
   const parameters = new URLSearchParams(search);
+  const review = resolveLoadReview(search);
   const timing = {
-    minimumBarMs: LOAD_TIMING.minimumBarMs,
-    scramble: { ...LOAD_TIMING.scramble },
+    minimumBarMs: review ? 0 : LOAD_TIMING.minimumBarMs,
+    scramble: {
+      ...LOAD_TIMING.scramble,
+      ...(review ? { durationAnchors: LOAD_REVIEW.scrambleAnchors.map(([length, ms]) => [length, ms]) } : {}),
+    },
     mapIntro: { ...LOAD_TIMING.mapIntro },
   };
   for (const [name, group, key] of OVERRIDES) {

@@ -564,6 +564,7 @@ export function loadDatasetStaged({
     };
   }
   let manifestValue = null;
+  let manifestSettled = false;
   let dataset = null;
 
   // One gate per later tier, opened by `releaseTiers` below.
@@ -605,12 +606,19 @@ export function loadDatasetStaged({
   const snapshot = () => {
     let receivedBytes = 0;
     let totalBytes = 0;
+    let actualReceivedBytes = 0;
+    let publishedBytes = 0;
     let settledFiles = 0;
+    let registeredFiles = 0;
+    let completedPreparation = 0;
     const tiers = {};
     const perFile = {};
     for (const file of DATA_FILES) {
       const record = files[file.key];
       const settled = record.state !== FILE_STATE.LOADING;
+      const manifestEntry = manifestValue?.files.get(file.name) ?? null;
+      const included = published(file) && (!manifestValue || manifestEntry !== null
+        || record.state === FILE_STATE.FAILED);
       const tier = (tiers[file.tier] ??= { settled: 0, total: 0 });
       tier.total += 1;
       if (settled) {
@@ -623,12 +631,42 @@ export function loadDatasetStaged({
       // published, or that failed, must not hold the bar short of full.
       const received = settled ? size : Math.min(record.receivedBytes, size || Infinity);
       receivedBytes += received;
-      perFile[file.key] = { receivedBytes: received, bytes: size, settled };
+      const actual = included ? Math.min(record.receivedBytes, size || Infinity) : 0;
+      if (included) {
+        registeredFiles += 1;
+        if (settled) completedPreparation += 1;
+        actualReceivedBytes += actual;
+        publishedBytes += size;
+      }
+      perFile[file.key] = {
+        receivedBytes: received,
+        actualReceivedBytes: actual,
+        bytes: size,
+        settled,
+        state: record.state,
+        included,
+        label: file.name,
+      };
     }
     const pending = DATA_FILES.find((file) => files[file.key].state === FILE_STATE.LOADING);
     return {
       receivedBytes,
       totalBytes,
+      // Truthful transfer counters never turn settlement into bytes. These are
+      // separate from the legacy presentation counters above on purpose.
+      actualReceivedBytes,
+      publishedBytes,
+      worksetKnown: manifestSettled,
+      registeredFiles,
+      allTransfersComplete: manifestSettled && Object.values(perFile)
+        .filter((record) => record.included)
+        .every((record) => (record.bytes > 0
+          ? record.actualReceivedBytes >= record.bytes : record.settled)),
+      preparation: {
+        registered: registeredFiles,
+        completed: completedPreparation,
+        currentLabel: Object.values(perFile).find((record) => record.included && !record.settled)?.label ?? null,
+      },
       // Sizes are exact only when the manifest supplied them up front.
       exact: manifestValue !== null,
       settledFiles,
@@ -663,6 +701,7 @@ export function loadDatasetStaged({
     } catch {
       manifestValue = null;
     }
+    manifestSettled = true;
     if (manifestValue) {
       for (const file of DATA_FILES) {
         files[file.key].bytes = published(file)

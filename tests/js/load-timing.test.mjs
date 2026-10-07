@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  LOAD_TIMING, LOAD_TIMING_PARAMETERS, MAX_OVERRIDE, prefersReducedMotion, resolveLoadTiming,
+  LOAD_REVIEW, LOAD_TIMING, LOAD_TIMING_PARAMETERS, MAX_OVERRIDE, prefersReducedMotion,
+  resolveLoadReview, resolveLoadTiming,
 } from '../../site/js/ui/load-timing.js';
 
 test('the defaults are the owner-selected times, with a 2.5-second text cap', () => {
@@ -57,6 +58,27 @@ test('an override that is not a usable number leaves the default in place', () =
       LOAD_TIMING.minimumBarMs, JSON.stringify(bad));
   }
   assert.equal(resolveLoadTiming(`?load-min=${MAX_OVERRIDE}`).minimumBarMs, MAX_OVERRIDE);
+});
+
+test('owner-review selectors are explicit and leave production defaults untouched', () => {
+  assert.equal(resolveLoadReview(''), null);
+  assert.equal(resolveLoadReview('?load-review=unknown'), null);
+  assert.deepEqual(resolveLoadReview('?load-review=a&load-progress=continuous'), {
+    name: 'A', reveal: 'ready', holdMs: 0, progress: 'continuous',
+  });
+  assert.deepEqual(resolveLoadReview('?load-review=b'), {
+    name: 'B', reveal: 'ready', holdMs: 1000, progress: 'grouped',
+  });
+  assert.deepEqual(resolveLoadReview('?load-review=c&load-progress=bad'), {
+    name: 'C', reveal: 'half', holdMs: 0, progress: 'grouped',
+  });
+  const review = resolveLoadTiming('?load-review=a');
+  assert.equal(review.minimumBarMs, 0, 'truthful review paths do not use the timed jump schedule');
+  assert.deepEqual(review.scramble.durationAnchors, LOAD_REVIEW.scrambleAnchors);
+  assert.equal(resolveLoadTiming('').scramble.durationAnchors, undefined,
+    'balanced timing is not an unapproved production default');
+  assert.equal(resolveLoadTiming('?load-review=a&load-min=400').minimumBarMs, 400,
+    'an explicit tuning override remains available during review');
 });
 
 test('reduced motion is read from the media query, and its absence means no preference', () => {

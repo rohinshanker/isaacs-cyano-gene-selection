@@ -224,6 +224,11 @@ test('with a manifest every file is keyed by content and unlisted ones are not r
   assert.equal(snapshot.totalBytes,
     Object.values(bodies).reduce((total, text) => total + Buffer.byteLength(text), 0));
   assert.equal(snapshot.settledFiles, snapshot.totalFiles);
+  assert.equal(snapshot.actualReceivedBytes, snapshot.publishedBytes);
+  assert.equal(snapshot.worksetKnown, true);
+  assert.equal(snapshot.preparation.completed, snapshot.preparation.registered);
+  assert.equal(snapshot.files.codonPca.included, false,
+    'a manifest-declared absent file is outside the truthful denominator');
 });
 
 test('without a manifest every file is asked for by name and revalidated', async () => {
@@ -253,12 +258,14 @@ test('progress counts decoded bytes against the manifest as a file streams in', 
   assert.ok(seen.length > 3);
   assert.ok(seen.every((snapshot) => snapshot.totalBytes === total && snapshot.exact));
   assert.ok(seen.every((snapshot) => snapshot.receivedBytes <= total));
+  assert.ok(seen.every((snapshot) => snapshot.actualReceivedBytes <= total));
   for (let i = 1; i < seen.length; i += 1) {
     assert.ok(seen[i].receivedBytes >= seen[i - 1].receivedBytes, 'progress never runs backwards');
   }
   assert.ok(seen.some((snapshot) => snapshot.receivedBytes > 0 && snapshot.receivedBytes < total),
     'a partial state was reported, not only empty and full');
   assert.equal(seen.at(-1).receivedBytes, total);
+  assert.equal(seen.at(-1).actualReceivedBytes, total);
   assert.equal(seen[0].tiers[1].total, 3);
   assert.ok(Number.isFinite(seen.at(-1).elapsedMs));
 });

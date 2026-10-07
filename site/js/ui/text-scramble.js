@@ -68,6 +68,12 @@ const SKIP_ELEMENTS = new Set([
   'script', 'style', 'noscript', 'textarea', 'option', 'title', 'svg', 'canvas',
 ]);
 
+/** Inline descendants of these elements reveal as one readable block. */
+const COHERENT_BLOCKS = new Set([
+  'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'label', 'legend', 'li', 'dt', 'dd',
+  'button', 'a', 'summary', 'figcaption', 'th', 'td',
+]);
+
 /**
  * The attributes an owner element carries while its own text flips, so no reader
  * follows along.
@@ -118,11 +124,35 @@ const tagOf = (element) => element.tagName.toLowerCase();
  *   maxDurationMs: number}} timing
  * @returns {{front: number, resolved: number, done: boolean}}
  */
+export function scrambleDuration(length, timing) {
+  const total = Math.max(0, Math.trunc(length));
+  const anchors = timing.durationAnchors;
+  if (Array.isArray(anchors) && anchors.length > 0) {
+    if (total <= 0) return 0;
+    const points = anchors
+      .map(([characters, milliseconds]) => [Number(characters), Number(milliseconds)])
+      .filter(([characters, milliseconds]) => characters > 0 && milliseconds >= 0)
+      .sort((a, b) => a[0] - b[0]);
+    if (points.length === 0) return 0;
+    if (total <= points[0][0]) return points[0][1];
+    for (let index = 1; index < points.length; index += 1) {
+      const [rightLength, rightMs] = points[index];
+      if (total > rightLength) continue;
+      const [leftLength, leftMs] = points[index - 1];
+      const share = (total - leftLength) / (rightLength - leftLength);
+      return leftMs + share * (rightMs - leftMs);
+    }
+    return points.at(-1)[1];
+  }
+  const naturalMs = timing.lockLettersPerSecond > 0
+    ? (total / timing.lockLettersPerSecond) * 1000 : Infinity;
+  return Math.min(naturalMs, Math.max(0, timing.maxDurationMs));
+}
+
 export function scrambleProgress(length, elapsedMs, timing) {
   const total = Math.max(0, Math.trunc(length));
   const lead = Math.max(0, Math.trunc(timing.leadLetters));
-  const naturalMs = (total / timing.lockLettersPerSecond) * 1000;
-  const durationMs = Math.min(naturalMs, Math.max(0, timing.maxDurationMs));
+  const durationMs = scrambleDuration(total, timing);
   // An empty text, or a duration tuned to nothing, has already arrived; dividing
   // by that zero is the one way this arithmetic could produce NaN.
   if (!(durationMs > 0)) return { front: total, resolved: total, done: true };
@@ -205,11 +235,12 @@ function shownOption(select) {
  */
 
 /** A text node, animated in place, held by the element it sits in. */
-function textTarget(node, owner) {
+function textTarget(node, owner, group) {
   return {
     kind: 'text',
     node,
     owner,
+    group,
     read: () => node.data,
     write: (text) => { node.data = text; },
     connected: () => node.isConnected !== false,
@@ -221,6 +252,7 @@ function placeholderTarget(control) {
   return {
     kind: 'placeholder',
     owner: control,
+    group: control,
     read: () => control.getAttribute('placeholder'),
     write: (text) => control.setAttribute('placeholder', text),
     connected: () => control.isConnected !== false,
@@ -232,6 +264,7 @@ function optionTarget(select, option) {
   return {
     kind: 'option',
     owner: select,
+    group: select,
     read: () => option.textContent,
     write: (text) => { option.textContent = text; },
     connected: () => option.isConnected !== false,
@@ -253,10 +286,10 @@ function optionTarget(select, option) {
  */
 export function collectScrambleTargets(root) {
   const found = [];
-  const walk = (element) => {
+  const walk = (element, coherent = COHERENT_BLOCKS.has(tagOf(element)) ? element : null) => {
     for (const node of element.childNodes) {
       if (node.nodeType === TEXT_NODE) {
-        if (hasText(node.data)) found.push(textTarget(node, element));
+        if (hasText(node.data)) found.push(textTarget(node, element, coherent ?? element));
         continue;
       }
       if (node.nodeType !== ELEMENT_NODE || optsOutOfScramble(node)) continue;
@@ -271,7 +304,9 @@ export function collectScrambleTargets(root) {
         }
         continue;
       }
-      if (!skipsScramble(node)) walk(node);
+      if (!skipsScramble(node)) {
+        walk(node, COHERENT_BLOCKS.has(tag) ? node : coherent);
+      }
     }
   };
   walk(root);
@@ -322,6 +357,10 @@ export class TextScramble {
     this.records = [];
     this.frame = null;
     this.startedAt = 0;
+    /** Reservations keep final prose/control geometry while visual text is short. */
+    this.reservations = new Map();
+    /** Structural identities let landing-driven replacements inherit deadlines. */
+    this.generations = new Map();
     /** The running promise's resolve; holding one is what makes a run active. */
     this.settle = null;
   }
@@ -340,10 +379,17 @@ export class TextScramble {
    */
   run(roots) {
     if (this.active) this.cancel();
+    this.generations.clear();
     const holds = new Map();
     const records = [];
-    for (const root of (Array.isArray(roots) ? roots : [roots]).filter(Boolean)) {
-      for (const target of collectScrambleTargets(root)) {
+    const startedAt = this.now();
+    const list = (Array.isArray(roots) ? roots : [roots]).filter(Boolean);
+    list.forEach((root, rootIndex) => {
+      const targets = collectScrambleTargets(root);
+      const groups = this.groupTargets(targets);
+      for (const group of groups) {
+        let offset = 0;
+        for (const target of group.targets) {
         const original = target.read();
         let hold = holds.get(target.owner);
         if (hold === undefined) {
@@ -360,6 +406,9 @@ export class TextScramble {
           target,
           hold,
           original,
+          key: this.targetKey(target, root, rootIndex),
+          group: { length: group.length, startedAt },
+          offset,
           /** What each position shows while it is still flipping. */
           letters: new Array(original.length),
           /** When each flipping position is next due to flip, in elapsed ms. */
@@ -371,20 +420,155 @@ export class TextScramble {
           written: original,
           live: true,
         });
+        offset += original.length;
+        }
+        this.reserve(group.element);
       }
-    }
+    });
     if (records.length === 0) return Promise.resolve();
 
     this.records = records;
     this.holds = [...holds.values()];
+    for (const record of records) {
+      this.generations.set(record.key, {
+        original: record.original, startedAt: record.group.startedAt,
+      });
+    }
     for (const { element } of this.holds) {
       for (const name of BUSY_ATTRIBUTES) element.setAttribute(name, 'true');
     }
     const promise = new Promise((resolve) => { this.settle = resolve; });
-    this.startedAt = this.now();
+    this.startedAt = startedAt;
     // Frame zero runs now, so the full text is never on screen for a frame.
     this.step();
     return promise;
+  }
+
+  /**
+   * Animate content replaced by a data landing without restarting the page.
+   * Unchanged structural targets keep their original deadline; genuinely new
+   * content receives one bounded local reveal beginning now.
+   */
+  refresh(roots) {
+    const wasActive = this.active;
+    if (wasActive) {
+      for (const record of this.records) {
+        if (record.live && !record.target.connected()) this.restore(record);
+      }
+    }
+    const list = (Array.isArray(roots) ? roots : [roots]).filter(Boolean);
+    const liveKeys = new Set(this.records.filter((record) => record.live).map((record) => record.key));
+    const added = [];
+    const now = this.now();
+    list.forEach((root, rootIndex) => {
+      for (const group of this.groupTargets(collectScrambleTargets(root))) {
+        let groupOffset = 0;
+        const candidates = group.targets.map((target) => {
+          const original = target.read();
+          const candidate = {
+            target, original, key: this.targetKey(target, root, rootIndex), offset: groupOffset,
+          };
+          groupOffset += original.length;
+          return candidate;
+        }).filter(({ key, original }) => {
+          if (liveKeys.has(key)) return false;
+          const previous = this.generations.get(key);
+          return wasActive || previous?.original !== original;
+        });
+        if (candidates.length === 0) continue;
+        const inherited = candidates.map(({ key, original }) => {
+          const previous = this.generations.get(key);
+          return previous?.original === original ? previous.startedAt : null;
+        });
+        const groupStartedAt = inherited.every((value) => value !== null)
+          ? Math.min(...inherited) : now;
+        for (const candidate of candidates) {
+          const hold = this.holdFor(candidate.target.owner);
+          hold.pending += 1;
+          const record = {
+            ...candidate,
+            hold,
+            group: { length: group.length, startedAt: groupStartedAt },
+            letters: new Array(candidate.original.length),
+            flipAt: new Array(candidate.original.length),
+            front: -1, resolved: -1, written: candidate.original, live: true,
+          };
+          this.generations.set(candidate.key, {
+            original: candidate.original, startedAt: groupStartedAt,
+          });
+          this.records.push(record);
+          added.push(record);
+        }
+        this.reserve(group.element);
+      }
+    });
+    if (added.length > 0) {
+      if (!wasActive) {
+        // This local landing run is intentionally independent of the already
+        // completed page reveal; callers do not need to await decoration.
+        new Promise((resolve) => { this.settle = resolve; });
+      }
+      if (this.frame !== null) this.cancelFrame(this.frame);
+      this.step();
+    }
+  }
+
+  /** Coherent blocks in review mode; legacy timing retains per-target behavior. */
+  groupTargets(targets) {
+    if (!Array.isArray(this.timing.durationAnchors)) {
+      return targets.map((target) => ({
+        element: target.owner, targets: [target], length: target.read().length,
+      }));
+    }
+    const groups = new Map();
+    for (const target of targets) {
+      const group = groups.get(target.group) ?? { element: target.group, targets: [], length: 0 };
+      group.targets.push(target);
+      group.length += target.read().length;
+      groups.set(target.group, group);
+    }
+    return [...groups.values()];
+  }
+
+  /** Stable enough across render replacement, scoped to one reveal root. */
+  targetKey(target, root, rootIndex) {
+    const node = target.kind === 'text' ? target.node : target.owner;
+    const parts = [];
+    let current = node;
+    while (current && current !== root) {
+      const parent = current.parentNode;
+      if (!parent) break;
+      parts.push(Array.prototype.indexOf.call(parent.childNodes, current));
+      current = parent;
+    }
+    return `${rootIndex}:${target.kind}:${parts.reverse().join('.')}`;
+  }
+
+  holdFor(element) {
+    let hold = this.holds.find((candidate) => candidate.element === element && !candidate.released);
+    if (hold) return hold;
+    hold = {
+      element,
+      saved: BUSY_ATTRIBUTES.map((name) => [name, element.getAttribute(name)]),
+      pending: 0,
+      released: false,
+    };
+    this.holds.push(hold);
+    for (const name of BUSY_ATTRIBUTES) element.setAttribute(name, 'true');
+    return hold;
+  }
+
+  reserve(element) {
+    if (!Array.isArray(this.timing.durationAnchors) || this.reservations.has(element)
+      || typeof element.getBoundingClientRect !== 'function' || !element.style) return;
+    const rect = element.getBoundingClientRect();
+    const control = ['input', 'textarea', 'select', 'button'].includes(tagOf(element));
+    const property = control ? 'minWidth' : 'minHeight';
+    const value = element.style[property] ?? '';
+    if ((control ? rect.width : rect.height) > 0) {
+      element.style[property] = `${control ? rect.width : rect.height}px`;
+      this.reservations.set(element, { property, value });
+    }
   }
 
   /** Stop now and restore every string and every owner. Idempotent. */
@@ -397,10 +581,10 @@ export class TextScramble {
   /** One frame for every target, then another frame or the end of the run. */
   step() {
     this.frame = null;
-    const elapsedMs = this.now() - this.startedAt;
+    const now = this.now();
     let pending = 0;
     for (const record of this.records) {
-      if (record.live && this.advance(record, elapsedMs)) pending += 1;
+      if (record.live && this.advance(record, now - record.group.startedAt)) pending += 1;
     }
     if (pending === 0) this.conclude();
     else this.frame = this.requestFrame(() => this.step());
@@ -425,7 +609,10 @@ export class TextScramble {
       return false;
     }
 
-    const { front, resolved, done } = scrambleProgress(original.length, elapsedMs, this.timing);
+    const progress = scrambleProgress(record.group.length, elapsedMs, this.timing);
+    const front = clamp(progress.front - record.offset, 0, original.length);
+    const resolved = clamp(progress.resolved - record.offset, 0, original.length);
+    const done = resolved === original.length;
     let changed = front !== record.front || resolved !== record.resolved;
     record.front = front;
     record.resolved = resolved;
@@ -504,10 +691,14 @@ export class TextScramble {
     // A hold whose targets all locked is already free; cancelling is what can
     // leave one standing, and no owner may keep these attributes after a run.
     for (const hold of this.holds) this.free(hold);
+    for (const [element, { property, value }] of this.reservations) {
+      element.style[property] = value;
+    }
     const settle = this.settle;
     this.settle = null;
     this.records = [];
     this.holds = [];
+    this.reservations.clear();
     settle();
   }
 }
