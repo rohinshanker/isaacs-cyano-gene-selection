@@ -158,6 +158,10 @@ def test_inventory_requires_exact_pins_review_and_unique_valid_values(tmp_path):
         (lambda d: d.update(reviewed_by=""), "named reviewer"),
         (lambda d: d.pop("classification_contract"), "status contract"),
         (lambda d: d.update(classification_contract={"statuses": ["bad"]}), "status contract"),
+        (lambda d: d.update(classification_contract={
+            "statuses": list(gaps.STATUSES)[:5] + ["bad"]}), "status contract"),
+        (lambda d: d.update(classification_contract={
+            "statuses": list(gaps.STATUSES) + ["present"]}), "status contract"),
         (lambda d: d["judgments"].append(d["judgments"][0]), "duplicate or invalid"),
         (lambda d: d["judgments"][0].update(field="bad"), "duplicate or invalid"),
         (lambda d: d["judgments"][0].update(status="bad"), "duplicate or invalid"),
