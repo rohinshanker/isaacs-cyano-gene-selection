@@ -949,6 +949,7 @@ input[type="range"] { width: 100%; }
 .numeric.up { color: #0a6b3d; }
 .numeric.down { color: var(--danger); }
 .row-unit { color: var(--ink-muted); font-weight: 400; font-size: 0.72rem; }
+.metric-table td.numeric .row-unit { white-space: normal; }
 
 .metric-group { border-bottom: 1px solid var(--line); }
 .metric-group summary { cursor: pointer; font-weight: 600; font-size: 0.85rem; padding: 0.35rem 0; }
@@ -1023,7 +1024,6 @@ input[type="range"] { width: 100%; }
     column-gap: 0.65rem;
     border-bottom: 1px solid var(--line);
   }
-  .metric-table td.numeric .row-unit { white-space: normal; }
   .metric-table th,
   .metric-table td { min-width: 0; border-bottom: 0; }
   .metric-table td.numeric { grid-column: 2; }
