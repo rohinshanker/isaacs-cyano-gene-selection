@@ -317,7 +317,19 @@ strip has no base for is **not** moved to one.
 Both bases are carried and neither is substituted for the other. Each mark's
 description, each list row and the accessible description name the other
 placement and the gap between them, and take no side: which placement a construct
-boundary should follow is the lab's call. In the shipped file 869 of the 2,432
+boundary should follow is the lab's call.
+
+**Agreement is only ever claimed about a comparison that exists.** `basisGapNt`
+is null where there is none — a row this strip cannot place, or a row that
+publishes no distance against the study's own gene model — and null is never read
+as a gap of zero. A row carrying a native coordinate and no distance is marked
+here, drawn nowhere else, and said out loud as exactly that: the mark, the list
+row, the list's note and the accessible description state that the other mapping
+is not published, that the gene visualizer draws no mark for it, and that there
+is nothing to compare. No distance is derived from the coordinate, or a
+coordinate from a distance, to make one. Where several rows are placed, the
+sentences name which rows agree, which disagree and by how much, and which carry
+only one mapping. In the shipped file 869 of the 2,432
 published rows land on a base this strip shows, across 853 genes, and **63 of
 them disagree with the published distance** — `M744_RS00920`, the one spliced gene
 with a site, by 67 nt, and `M744_RS08390` by 87 nt onto a base inside the current
@@ -328,6 +340,23 @@ already reports; the column map is the authority where they could differ.
 occupies the columns this strip shows of it, says in its description when that is
 fewer than it covers, and is never extended to an edge to look complete; an
 interval missing one end is an unmapped interval, not a point at the end it has.
+
+**The covered columns are what is drawn, not the range around them.**
+`markerPlacement` returns `runs`: the contiguous stretches of columns the
+interval actually covers, in ascending order, from the one shared membership test
+(`markerCoversPosition`). `fromOffset` and `toOffset` are only the envelope
+around those runs, for the window and crowding tests that ask roughly where a
+mark is. The two differ whenever the covered columns are **disjoint** — an
+interval whose end precedes its start runs across the circular origin, and a
+window on this side of the origin then shows two separate stretches of it with
+uncovered bases between. The renderer draws one span, one stem and one outlined
+column **per run**, so no outline ever sits on a base the source did not cover;
+the mark and its list row say how many stretches there are and that the bases
+between them are not covered. `M744_RS01695` with `CP006471:320212..320206` is
+the pinned case: 253 covered bases in runs `−30..+4` and `+10..+227`, not the 258
+columns between the ends, and offsets `+5..+9` stay unpainted while their letters
+stay on screen. One row is still one mark with one identity and one description:
+separate outlines are how coverage is drawn and never two sites.
 
 **A row the strip cannot place is kept, with its reason.** 1,563 of the shipped
 rows are published further upstream than the 30 bases the release ships, so no
@@ -363,6 +392,34 @@ metadata and not the drawing; it is the keyboard and touch path, since a pointer
 hint answers for whichever head is on top. The choice is `tss.sequence` in
 `state.hiddenMarkers`, independent of the other three views and carried in a link
 under [the `mk` contract](viewer-interaction-state.md#marker-layer-visibility-rides-in-mk).
+
+**Keyboard focus survives every one of those transitions.** The control and the
+list are rebuilt on every render, and every unrelated change to the page is a
+render: a recompiled scheme, another view's marker visibility, a hover elsewhere.
+So this view reads, before it rebuilds, whether the reader is standing inside its
+own control host or its own list host — scoped to those hosts, because a view
+that moved focus when *someone else* held it would take the reader out of what
+they were using. The checkbox is restored by identity where it still exists.
+Where it does not — the layer still loading, the layer failed, an organism with
+no such layer, a locus whose rows this window has no base for, or nothing pinned
+at all — focus goes to the labelled part of this view that survived: the strip
+(`role="group"`, "Sequence close-up"), or, when the whole figure is hidden
+because nothing is pinned, the view's own host (`role="group"`, `tabIndex -1`,
+"Gene sequence close-up"), which carries the note saying why there is nothing to
+show. If this view is hidden altogether, the nearest visible ancestor that is
+already labelled and already takes focus does; nothing is made focusable or
+labelled to find a target, and where there is none focus is left where it is.
+
+The site list is **built once and only refilled**. Its `<details>`, its
+`<summary>`, its note and its `<ol>` keep their identity for the life of the
+view, so an open disclosure stays open and a reader on its summary stays there
+across any rerender; a locus with no rows hides it and empties it rather than
+leaving the last gene's rows behind a summary, and focus is carried out of it the
+same way. This is a browser-only contract: a fake document leaves
+`document.activeElement` pointing at a detached node, so a unit test can assert
+focus "survived" a rebuild that in a browser dropped it to `<body>`. The unit
+suite pins where focus is *put* and the disclosure's identity and state;
+`tools/ui/check_sequence_markers.js` is what proves it in a real browser.
 
 **Six states the description tells apart**, so an empty row never reads as
 absence: no such layer for this organism and nothing said at all; the file still
@@ -432,8 +489,15 @@ Unit coverage:
   disagreeing rows drawn at their own coordinate; the six description states;
   marks-only hiding against a whole-view fingerprint; focus across the repaint;
   the caller owning the choice through a link, a reload and a locus with no
-  control; crowding at a fitted zoom and its separation when zoomed in; and two
-  rows on one base keeping both marks.
+  control; crowding at a fitted zoom and its separation when zoomed in; two
+  rows on one base keeping both marks; an origin-wrapping interval's disjoint
+  covered runs checked against the shared membership test position by position,
+  one outline per run with the excluded bases left unpainted, and a contiguous
+  interval and a point still drawing one run each; agreement claimed only for an
+  available comparison equal to zero, with the native-only row's missing
+  mapping named in the mark, the row and the description; and focus across every
+  transition that takes the control away, the open list keeping its node, its
+  state and its focus across a rerender, and focus outside the view left alone.
 - `tests/js/marker-layers.test.mjs`: the shared representation — TSS and TIS
   distinct, every type's geometry, a point row, an interval needing both ends,
   an unmapped row kept with every field it carries, circular coverage and spans,
@@ -484,6 +548,35 @@ Chromosome tab, and check at **375, 768, 1280 and 1440 px** wide:
 - `document.documentElement.scrollWidth <= innerWidth` in every state, with the
   SVG inside the strip at 375 px;
 - a clean browser console.
+
+`tools/ui/check_sequence_markers.js` runs the marker part of that list, and is
+what the focus contract is proved by:
+
+```sh
+playwright-cli -s=<unique-session> open \
+  "http://127.0.0.1:<port>/index.html?uiArtifacts=<absolute dir>"
+playwright-cli -s=<unique-session> run-code --filename=tools/ui/check_sequence_markers.js
+```
+
+It checks focus across the transitions that take the control away, the open
+disclosure's identity, state and focus across an unrelated rerender, the keyboard
+and link path, that focus outside the view is left alone, and zero page overflow
+with every outline inside the strip at 375, 768, 960, 1240, 1280 and 1440 px.
+Two things it needs to be given:
+
+- **Touch.** A context without touch cannot tap, so the tap is skipped and
+  reported as skipped rather than passed. Run the file a second time in a touch
+  session (`open --mobile`) to cover it, and read `touchTapChecked` in the result.
+- **Data the shipped file has no row for.** Every shipped row carries both
+  mappings and no admitted layer publishes an interval, so pass
+  `&uiFixture=<base url of a copy of site/>` whose `data/tss_evidence.json` gives
+  one locus a native-coordinate-only row and an origin-wrapping interval (with
+  that file's `bytes` and `sha256` updated in `data/data-manifest.json`). That
+  leg checks the two outlines, the gap over the uncovered bases with their
+  letters still drawn, and that no description claims an agreement. Browser-only
+  detail: `instant-hints.js` moves every SVG `<title>` into a description node,
+  so a mark's own text is read through its `aria-describedby`, not from a
+  `<title>` child.
 
 The published site pins `color-scheme: light`, so a dark operating-system
 preference renders it identically; emulating dark is still part of the check and

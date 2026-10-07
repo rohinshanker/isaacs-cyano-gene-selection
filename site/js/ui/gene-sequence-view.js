@@ -32,7 +32,7 @@
  */
 import {
   codonAtOffset, describeGeneSequence, describeSequenceMarkers, geneSequenceModel,
-  sequenceMarkers, signedOffset,
+  placementRangesText, sequenceMarkers, signedOffset,
 } from '../core/gene-sequence-model.js';
 import { overlapGroups, tickStep, ticksFor } from '../core/gene-view-model.js';
 import { markerLayersOf, markerSpanNt } from '../core/marker-layers.js';
@@ -107,6 +107,32 @@ function text(x, y, content, attributes = {}) {
   const node = svg('text', { x, y, ...attributes });
   node.textContent = content;
   return node;
+}
+
+/** Whether a node is in the document and no ancestor has it hidden. */
+function visibleAndConnected(node) {
+  if (!node?.isConnected) return false;
+  for (let at = node; at && at.nodeType === 1; at = at.parentNode) {
+    if (at.hidden) return false;
+  }
+  return true;
+}
+
+/**
+ * The nearest visible ancestor that is already labelled and already takes
+ * focus, for the case where this whole view is hidden.
+ *
+ * Nothing is made focusable and nothing is labelled here: a view does not
+ * change another view's nodes to find somewhere to put focus. Null when there
+ * is no such ancestor, which leaves focus where it is.
+ */
+function labelledFocusableAncestor(node) {
+  for (let at = node?.parentNode; at && at.nodeType === 1; at = at.parentNode) {
+    const labelled = at.getAttribute('aria-label') || at.getAttribute('aria-labelledby');
+    const focusable = typeof at.tabIndex === 'number' && at.tabIndex >= 0;
+    if (labelled && focusable && visibleAndConnected(at)) return at;
+  }
+  return null;
 }
 
 function element(tag, className, textContent) {
@@ -301,6 +327,13 @@ export class GeneSequenceView {
   build() {
     this.host.replaceChildren();
     this.host.classList.add('gene-sequence');
+    // A labelled region this view can put focus on when the node a reader was
+    // holding stops existing, the same contract the gene visualizer's host
+    // keeps. It is the surviving fallback with nothing pinned, where the strip
+    // itself is hidden, and it carries the note that says so.
+    this.host.tabIndex = -1;
+    this.host.setAttribute('role', 'group');
+    this.host.setAttribute('aria-label', 'Gene sequence close-up');
 
     this.empty = element('p', 'panel-note', 'Pin a gene to read its sequence here.');
 
@@ -335,6 +368,20 @@ export class GeneSequenceView {
     // went with the whole figure could not be found again after a repaint.
     this.markerControlHost = element('div', 'gene-sequence-marker-row');
     this.markerListHost = element('div');
+
+    // The disclosure itself is built once and only ever refilled, never
+    // replaced. A reader who opened it is holding an open/closed state and
+    // possibly keyboard focus on its summary, and both belong to them: any
+    // unrelated change to the page re-renders this view, so a rebuilt
+    // `<details>` would close under their hand and drop their focus. Only its
+    // contents say which gene and which rows, so only its contents change.
+    this.markerDetails = element('details', 'method-help gene-sequence-sites');
+    this.markerSummary = document.createElement('summary');
+    this.markerNote = element('p', 'panel-note');
+    this.markerRowList = element('ol', 'gene-view-site-rows');
+    this.markerDetails.append(this.markerSummary, this.markerNote, this.markerRowList);
+    this.markerDetails.hidden = true;
+    this.markerListHost.append(this.markerDetails);
 
     this.selection = element('p', 'gene-sequence-selection');
     this.selection.setAttribute('role', 'status');
@@ -381,9 +428,11 @@ export class GeneSequenceView {
     if (!model) {
       this.strip.replaceChildren();
       this.readout.textContent = '';
-      this.markerControlHost.replaceChildren();
-      this.markerListHost.replaceChildren();
-      this.markerToggle = null;
+      // Through the same writers as any other render, so a reader holding the
+      // control or the open list when the gene is unpinned lands on this
+      // view's labelled host rather than on the document body.
+      this.writeMarkerControl();
+      this.writeMarkerList();
       this.writeSelection();
       return;
     }
@@ -414,16 +463,19 @@ export class GeneSequenceView {
    */
   writeMarkerControl() {
     const host = this.markerControlHost;
-    const held = this.markerToggle !== null && this.markerToggle !== undefined
-      && host.contains(document.activeElement);
+    const held = this.heldIn(host);
     host.replaceChildren();
     this.markerToggle = null;
-    if (!this.markerLayer) return;
-    if (this.markerPending) {
-      host.append(pendingNote(this.markerPending, `the ${this.markerLayer.fileLabel}`));
+    if (!this.markerLayer || this.markerPending || !this.markerRowShown()) {
+      if (this.markerLayer && this.markerPending) {
+        host.append(pendingNote(this.markerPending, `the ${this.markerLayer.fileLabel}`));
+      }
+      // Loading, failed, no landed layer and no placeable row all take the
+      // control away while the reader may be standing on it. Each is a state
+      // this view is in, not a reason to drop them back to the document.
+      this.carryFocus(held);
       return;
     }
-    if (!this.markerRowShown()) return;
     const row = document.createElement('label');
     row.className = 'checkbox-row gene-sequence-layer';
     const box = document.createElement('input');
@@ -435,6 +487,37 @@ export class GeneSequenceView {
     host.append(row);
     this.markerToggle = box;
     if (held) box.focus({ preventScroll: true });
+  }
+
+  /**
+   * Whether the reader is standing on something inside one of this view's own
+   * hosts, read before a rebuild detaches it.
+   *
+   * Scoped to the host on purpose: a render runs on every unrelated change to
+   * the page, and a view that moved focus because *someone else* had it would
+   * take the reader out of whatever they were actually using.
+   */
+  heldIn(host) {
+    const active = document.activeElement;
+    return Boolean(active) && active !== document.body && host.contains(active);
+  }
+
+  /**
+   * Put focus on the labelled part of this view that survived the rebuild.
+   *
+   * The strip first: it is focusable, it is labelled "Sequence close-up", and
+   * it is what the reader was reading beside the control. With nothing pinned
+   * the whole figure is hidden, so the view's own host takes it, carrying the
+   * note that says why there is nothing to show. If this view is hidden
+   * altogether the nearest visible labelled ancestor that already takes focus
+   * does, and if there is none, focus is left exactly where it is rather than
+   * moved somewhere arbitrary.
+   */
+  carryFocus(held) {
+    if (!held) return;
+    const target = [this.strip, this.host].find((node) => visibleAndConnected(node))
+      ?? labelledFocusableAncestor(this.host);
+    target?.focus({ preventScroll: true });
   }
 
   /**
@@ -452,34 +535,36 @@ export class GeneSequenceView {
    * filtered or ranked.
    */
   writeMarkerList() {
-    const host = this.markerListHost;
-    host.replaceChildren();
-    if (!this.markerLayer || this.markerPending || this.markerRows.length === 0) return;
+    const details = this.markerDetails;
+    const held = this.heldIn(this.markerListHost);
+    if (!this.markerLayer || this.markerPending || this.markerRows.length === 0) {
+      // Hidden rather than removed, so the node a reader opened and may be
+      // standing on keeps its identity and its open state for the next locus
+      // that has rows. Its own contents go, because a hidden list still
+      // holding the last gene's rows would be read out on the way back.
+      details.hidden = true;
+      this.markerSummary.textContent = '';
+      this.markerNote.textContent = '';
+      this.markerRowList.replaceChildren();
+      this.carryFocus(held);
+      return;
+    }
     const layer = this.markerLayer;
-    const details = document.createElement('details');
-    details.className = 'method-help gene-sequence-sites';
-    const summary = document.createElement('summary');
-    summary.textContent = `${layer.label} start sites (${formatCount(this.markerRows.length)})`;
-    details.append(summary);
-
-    const note = element('p', 'panel-note');
-    note.textContent = describeSequenceMarkers(this.model, this.markerDescription()).join(' ')
+    details.hidden = false;
+    this.markerSummary.textContent = `${layer.label} start sites `
+      + `(${formatCount(this.markerRows.length)})`;
+    this.markerNote.textContent =
+      describeSequenceMarkers(this.model, this.markerDescription()).join(' ')
       + ` Each row is as ${layer.citation} published it. A mark on this strip sits on the base `
       + 'that row\'s own published genome coordinate names; the gene visualizer draws the same '
       + 'row at the distance the study published against its own gene model, and a row says how '
-      + 'far apart the two put it.';
-    details.append(note);
-
-    const list = document.createElement('ol');
-    list.className = 'gene-view-site-rows';
-    for (const row of this.markerRows) {
+      + 'far apart the two put it, or that one of the two mappings is not published.';
+    this.markerRowList.replaceChildren(...this.markerRows.map((row) => {
       const item = document.createElement('li');
       const id = element('span', 'gene-view-site-id', row.id ?? 'identifier not recorded');
       item.append(id, document.createTextNode(` · ${this.markerRowText(row)}`));
-      list.append(item);
-    }
-    details.append(list);
-    host.append(details);
+      return item;
+    }));
   }
 
   /**
@@ -524,11 +609,13 @@ export class GeneSequenceView {
     const { placement } = row;
     if (placement.status === 'placed') {
       parts.push(row.geometry === 'interval'
-        ? `marked here over ${signedOffset(placement.fromOffset)} to `
-          + `${signedOffset(placement.toOffset)}`
+        ? `marked here over ${placementRangesText(placement)}`
+          + (placement.runs.length > 1
+            ? `, ${formatCount(placement.runs.length)} separate stretches with the bases between `
+              + 'them not covered' : '')
           + (placement.shownNt < span
             ? `, ${formatCount(placement.shownNt)} of its ${formatCount(span)} bases shown` : '')
-        : `marked here at ${signedOffset(placement.fromOffset)}`);
+        : `marked here at ${placementRangesText(placement)}`);
     } else if (placement.reason === 'other-replicon') {
       parts.push('measured on another replicon than this gene, so no mark is drawn here');
     } else if (placement.reason === 'no-native-coordinate') {
@@ -939,9 +1026,15 @@ export class GeneSequenceView {
    * `<title>`. A mark left in the tree at zero opacity would still answer a
    * pointer and still be read out, so the picture would disagree with itself.
    *
-   * A point marker names one column; an interval spans the columns this strip
-   * shows of it, and says in its `<title>` when that is fewer than it covers.
-   * Neither is moved to make room: the outlined column underneath is what ties
+   * A point marker names one column; an interval is drawn over each contiguous
+   * stretch of columns this strip shows of it, separately, and says in its
+   * `<title>` when that is fewer bases than it covers. The stretches are what
+   * is drawn rather than the range around them, because an interval crossing
+   * the circular origin of a short replicon can cover two stretches with
+   * uncovered bases between: one bar across the whole range would outline
+   * bases the source never reported.
+   *
+   * Nothing is moved to make room: the outlined column underneath is what ties
    * a head to the letter it is about, which is also how two heads sharing
    * space stay tellable apart at a closer zoom.
    */
@@ -951,33 +1044,34 @@ export class GeneSequenceView {
     const top = rows.markers + 2;
     const bottom = rows.markers + MARKER_ROW_HEIGHT - 3;
     for (const row of crowding.drawn) {
-      const { fromOffset, toOffset } = row.placement;
-      const left = x(fromOffset);
-      const right = x(toOffset + 1);
-      const centre = (left + right) / 2;
       const shared = crowding.sharedWith.get(row) ?? 0;
       const classes = ['gene-sequence-marker'];
       if (shared > 0) classes.push('gene-sequence-marker-shared');
       const mark = svg('g', { class: classes.join(' '), 'data-marker-id': row.id ?? '' });
-      if (row.geometry === 'interval') {
-        mark.append(svg('rect', {
-          class: 'gene-sequence-marker-span',
-          x: left, y: top, width: Math.max(2, right - left), height: bottom - top,
+      for (const run of row.placement.runs) {
+        const left = x(run.fromOffset);
+        const right = x(run.toOffset + 1);
+        const centre = (left + right) / 2;
+        if (row.geometry === 'interval') {
+          mark.append(svg('rect', {
+            class: 'gene-sequence-marker-span',
+            x: left, y: top, width: Math.max(2, right - left), height: bottom - top,
+          }));
+        } else {
+          mark.append(svg('path', {
+            class: 'gene-sequence-marker-head',
+            d: `M ${centre - MARKER_HEAD_PX / 2} ${top} L ${centre + MARKER_HEAD_PX / 2} ${top} `
+              + `L ${centre} ${bottom} Z`,
+          }));
+        }
+        mark.append(svg('line', {
+          class: 'gene-sequence-marker-stem', x1: centre, x2: centre, y1: bottom, y2: rows.bases,
         }));
-      } else {
-        mark.append(svg('path', {
-          class: 'gene-sequence-marker-head',
-          d: `M ${centre - MARKER_HEAD_PX / 2} ${top} L ${centre + MARKER_HEAD_PX / 2} ${top} `
-            + `L ${centre} ${bottom} Z`,
+        mark.append(svg('rect', {
+          class: 'gene-sequence-marker-column',
+          x: left, y: rows.bases, width: Math.max(1, right - left), height: ROW_HEIGHT,
         }));
       }
-      mark.append(svg('line', {
-        class: 'gene-sequence-marker-stem', x1: centre, x2: centre, y1: bottom, y2: rows.bases,
-      }));
-      mark.append(svg('rect', {
-        class: 'gene-sequence-marker-column',
-        x: left, y: rows.bases, width: Math.max(1, right - left), height: ROW_HEIGHT,
-      }));
       const title = svg('title');
       title.textContent = this.describeMarker(row, shared);
       mark.append(title);
@@ -989,20 +1083,26 @@ export class GeneSequenceView {
   /** What one mark says about itself to a pointer. */
   describeMarker(row, shared = 0) {
     const { placement } = row;
-    const where = row.geometry === 'interval'
-      ? `${signedOffset(placement.fromOffset)} to ${signedOffset(placement.toOffset)}`
-      : signedOffset(placement.fromOffset);
     const parts = [`${row.id ?? 'An unidentified row'}: `
-      + `${row.typeLabel ?? row.type ?? 'site'} marked at ${where}, the `
+      + `${row.typeLabel ?? row.type ?? 'site'} marked at ${placementRangesText(placement)}, the `
       + `${row.geometry === 'interval' ? 'bases' : 'base'} its own published genome coordinate `
       + `${formatCount(row.position)}`
       + (row.geometry === 'interval' ? ` to ${formatCount(row.endPosition)}` : '')
       + ` names, not remeasured from a distance.`];
+    if (placement.runs.length > 1) {
+      parts.push(`Its covered bases reach this close-up in `
+        + `${formatCount(placement.runs.length)} separate stretches, and the bases between them `
+        + 'are outside what it covers, so each stretch is outlined on its own.');
+    }
     if (row.geometry === 'interval' && placement.shownNt < placement.spanNt) {
       parts.push(`${formatCount(placement.shownNt)} of its ${formatCount(placement.spanNt)} `
         + 'bases are inside this close-up.');
     }
-    if (row.distanceNt !== null) {
+    if (row.distanceNt === null) {
+      parts.push('No distance against the study\'s own gene model is published for this row, so '
+        + 'the gene visualizer draws no mark for it and there is nothing to compare this base '
+        + 'with.');
+    } else {
       parts.push(row.basisGapNt === 0
         ? `The ${formatCount(row.distanceNt)} nt upstream distance the study published against `
           + 'its own gene model puts it at this same base, where the gene visualizer draws it.'

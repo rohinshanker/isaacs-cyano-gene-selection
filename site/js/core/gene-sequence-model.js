@@ -276,15 +276,30 @@ export function sequenceColumns(model) {
  * An interval is placed over however many of its bases this strip shows, and
  * says when that is fewer than it covers. A point is placed or it is not.
  *
+ * `runs` is the authority for what may be drawn: the contiguous stretches of
+ * columns the marker actually covers, in ascending order. `fromOffset` and
+ * `toOffset` are only the envelope around them, kept for the window and
+ * crowding tests that ask where a mark roughly is. The two differ whenever the
+ * covered columns are disjoint — an interval running across the circular
+ * origin of a replicon this strip shows twice over, for one — and drawing the
+ * envelope there would outline bases the source never covered.
+ *
  * @param {object} model the sequence model of the gene on screen.
  * @param {object} marker a shared marker record.
  * @param {Map<number, number>} [columns] from {@link sequenceColumns}.
  * @returns {{status: string, reason: string|null, fromOffset: number|null,
- *   toOffset: number|null, shownNt: number, spanNt: number|null}}
+ *   toOffset: number|null, shownNt: number, spanNt: number|null,
+ *   runs: {fromOffset: number, toOffset: number, shownNt: number}[]}}
  */
 export function markerPlacement(model, marker, columns = sequenceColumns(model)) {
   const unplaceable = (reason) => ({
-    status: 'unplaceable', reason, fromOffset: null, toOffset: null, shownNt: 0, spanNt: null,
+    status: 'unplaceable',
+    reason,
+    fromOffset: null,
+    toOffset: null,
+    shownNt: 0,
+    spanNt: null,
+    runs: [],
   });
   if (!model || !marker) return unplaceable('no-native-coordinate');
   if (marker.coordinateStatus !== 'mapped') return unplaceable('no-native-coordinate');
@@ -293,23 +308,59 @@ export function markerPlacement(model, marker, columns = sequenceColumns(model))
   if (marker.geometry !== 'interval') {
     const offset = columns.get(marker.position);
     if (offset === undefined) return unplaceable('outside-shown-sequence');
-    return { status: 'placed', reason: null, fromOffset: offset, toOffset: offset, shownNt: 1, spanNt };
+    return {
+      status: 'placed',
+      reason: null,
+      fromOffset: offset,
+      toOffset: offset,
+      shownNt: 1,
+      spanNt,
+      runs: [{ fromOffset: offset, toOffset: offset, shownNt: 1 }],
+    };
   }
   // Walked over the strip's columns rather than the interval's bases: the
   // strip has at most a few thousand of them whatever the interval's length,
   // and the membership test is the shared one, so an interval that runs across
   // the circular origin needs no second rule here.
-  let from = null;
-  let to = null;
-  let shownNt = 0;
+  const covered = [];
   for (const [position, offset] of columns) {
-    if (!markerCoversPosition(marker, position)) continue;
-    shownNt += 1;
-    if (from === null || offset < from) from = offset;
-    if (to === null || offset > to) to = offset;
+    if (markerCoversPosition(marker, position)) covered.push(offset);
   }
-  if (shownNt === 0) return unplaceable('outside-shown-sequence');
-  return { status: 'placed', reason: null, fromOffset: from, toOffset: to, shownNt, spanNt };
+  if (covered.length === 0) return unplaceable('outside-shown-sequence');
+  // Sorted rather than trusted: the column map is built upstream-first and a
+  // run has to be contiguous in the order the strip draws, whatever order the
+  // positions arrived in.
+  covered.sort((a, b) => a - b);
+  const runs = [];
+  for (const offset of covered) {
+    const last = runs[runs.length - 1];
+    if (last && offset <= last.toOffset + 1) last.toOffset = Math.max(last.toOffset, offset);
+    else runs.push({ fromOffset: offset, toOffset: offset });
+  }
+  return {
+    status: 'placed',
+    reason: null,
+    fromOffset: covered[0],
+    toOffset: covered[covered.length - 1],
+    shownNt: covered.length,
+    spanNt,
+    runs: runs.map((run) => ({ ...run, shownNt: run.toOffset - run.fromOffset + 1 })),
+  };
+}
+
+/**
+ * The covered stretches of one placement, as a reader reads them: a single
+ * range for the ordinary case, and every stretch named where they are disjoint
+ * so no sentence implies the bases between them are covered.
+ */
+export function placementRangesText(placement) {
+  const runs = placement?.runs ?? [];
+  if (runs.length === 0) return '';
+  const ranges = runs.map((run) => (run.fromOffset === run.toOffset
+    ? signedOffset(run.fromOffset)
+    : `${signedOffset(run.fromOffset)} to ${signedOffset(run.toOffset)}`));
+  if (ranges.length === 1) return ranges[0];
+  return `${ranges.slice(0, -1).join(', ')} and ${ranges[ranges.length - 1]}`;
 }
 
 /**
@@ -322,7 +373,9 @@ export function markerPlacement(model, marker, columns = sequenceColumns(model))
  * source-gene-model distance implies — the basis the small gene visualizer
  * draws. Both are carried and neither is substituted for the other;
  * `basisGapNt` is how far apart the two bases put the same site, and the
- * column placement is the authority for what this strip draws.
+ * column placement is the authority for what this strip draws. It is null
+ * where there is no comparison to make — a row this strip cannot place, or a
+ * row that publishes no distance — which is never the same as a gap of zero.
  *
  * Ordered by the column the strip draws at, then by the order the source
  * published the rows it cannot place; `sort` is stable, so that order holds.
@@ -357,6 +410,13 @@ export function signedOffset(offset) {
   return offset > 0 ? `+${text}` : `−${text}`;
 }
 
+/** The rows named by their own identifiers, for a sentence about some of them. */
+function names(rows) {
+  const ids = rows.map((row) => row.id ?? 'an unidentified row');
+  if (ids.length === 1) return ids[0];
+  return `${ids.slice(0, -1).join(', ')} and ${ids[ids.length - 1]}`;
+}
+
 /** `n site` / `n sites`, with the label the organism's record gives the study. */
 function siteCount(count, label) {
   return `${count.toLocaleString('en-US')} ${label} start site${count === 1 ? '' : 's'}`;
@@ -376,7 +436,9 @@ function siteCount(count, label) {
  * the base its source published a coordinate for, which is not in general the
  * base the small gene visualizer draws it at: that view uses the distance the
  * study published against its own gene model. Both are true of the same site,
- * and the sentence says so rather than choosing.
+ * and the sentence says so rather than choosing. Where a row carries only one
+ * of the two mappings, that is said too: a missing distance is no comparison,
+ * and must not be read out as the two views agreeing.
  *
  * @param {object} model the sequence model on screen.
  * @param {{label: string, controlLabel: string, rows: object[],
@@ -419,7 +481,14 @@ export function describeSequenceMarkers(model, marks) {
     .join(', ');
   parts.push(`${siteCount(placed.length, label)} ${placed.length === 1 ? 'is' : 'are'} marked on `
     + `the sequence at the base each one's own published genome coordinate names: ${where}.`);
-  const apart = placed.filter((row) => row.basisGapNt > 0);
+  // Agreement is a claim about a comparison, so it is made only where there is
+  // one: a row with no published distance has nothing to compare, and reading
+  // its absent distance as "the same base" would invent the study's agreement
+  // with an annotation it never saw.
+  const comparable = placed.filter((row) => row.basisGapNt !== null);
+  const apart = comparable.filter((row) => row.basisGapNt > 0);
+  const together = comparable.filter((row) => row.basisGapNt === 0);
+  const unmatched = placed.filter((row) => row.basisGapNt === null);
   if (apart.length > 0) {
     parts.push(`The gene visualizer draws ${apart.length === 1 ? 'that site' : 'those sites'} `
       + `against the distance the study published for its own gene model instead, `
@@ -427,10 +496,24 @@ export function describeSequenceMarkers(model, marks) {
       + `${apart.map((row) => `${row.basisGapNt.toLocaleString('en-US')} nt away for ${row.id}`).join(', ')}. `
       + 'Both coordinates are the source\'s own; which one a construct boundary should follow is '
       + 'for the lab to decide.');
-  } else {
-    parts.push('The distance the study published against its own gene model puts '
-      + `${placed.length === 1 ? 'it' : 'each of them'} at the same base, so this placement and `
-      + 'the gene visualizer\'s agree.');
+  }
+  if (together.length > 0) {
+    const all = together.length === placed.length;
+    const one = together.length === 1;
+    parts.push(`The distance the study published against its own gene model puts `
+      + `${all ? (one ? 'it' : 'each of them') : names(together)} at the same base, so `
+      + `${all ? (one ? 'this placement' : 'these placements') : (one ? 'that placement' : 'those placements')} `
+      + 'and the gene visualizer\'s agree.');
+  }
+  if (unmatched.length > 0) {
+    parts.push(`${unmatched.length === placed.length
+      ? (placed.length === 1 ? 'That site' : 'Those sites')
+      : names(unmatched)} ${unmatched.length === 1 ? 'has' : 'have'} no distance published `
+      + 'against the study\'s own gene model, so the gene visualizer draws no mark for '
+      + `${unmatched.length === 1 ? 'it' : 'them'} and there is nothing to compare this `
+      + `${unmatched.length === 1 ? 'placement' : 'placements'} with. The `
+      + `${unmatched.length === 1 ? 'row is' : 'rows are'} kept as published, and no distance `
+      + 'is derived from the coordinate to stand in for one.');
   }
   if (marks.crowded > 1) {
     parts.push(`${marks.crowded.toLocaleString('en-US')} of those marks share drawn space at this `

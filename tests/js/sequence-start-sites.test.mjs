@@ -32,7 +32,7 @@ import {
 import {
   describeSequenceMarkers, geneSequenceModel, markerPlacement, sequenceColumns, sequenceMarkers,
 } from '../../site/js/core/gene-sequence-model.js';
-import { markerLayerForKey, markerOf } from '../../site/js/core/marker-layers.js';
+import { markerCoversPosition, markerLayerForKey, markerOf } from '../../site/js/core/marker-layers.js';
 import { CodonTable } from '../../site/js/core/codon-table.js';
 import { DEFAULT_ORGANISM, organismById } from '../../site/js/core/organisms.js';
 import { withFakeDocument } from './fake-dom.mjs';
@@ -802,5 +802,359 @@ test('selecting a codon while the marks are hidden leaves them hidden', async ()
     view.fitGene();
     assert.equal(markGroups(view).length, 0);
     assert.equal(view.rowLayout().markers, 0, 'the row is still reserved by the data');
+  });
+});
+
+/* ----------------------------------------------- disjoint covered stretches */
+
+test('an interval that wraps the origin covers disjoint runs, and only those', () => {
+  // The chromosome is circular, so an interval whose end precedes its start
+  // runs across base 1 — and a strip showing a window on *this* side of the
+  // origin then shows two separate stretches of it, with uncovered bases in
+  // between. `M744_RS01695` starts at 320,202, so 320,212..320,206 covers the
+  // 30 upstream bases and the first five coding bases, skips 320,207..320,211
+  // (offsets +5 to +9), and resumes at 320,212.
+  const gene = joined('M744_RS01695');
+  assert.equal(gene.start, 320202);
+  const model = modelOf(gene);
+  const wrapping = markerOf({
+    id: 'wrap', type: 'promoter', replicon: 'CP006471', strand: '+',
+    position: 320212, endPosition: 320206,
+  }, TAN);
+  const placement = markerPlacement(model, wrapping);
+  assert.equal(placement.status, 'placed');
+  assert.deepEqual(placement.runs, [
+    { fromOffset: -30, toOffset: 4, shownNt: 35 },
+    { fromOffset: 10, toOffset: 227, shownNt: 218 },
+  ]);
+  assert.equal(placement.shownNt, 253, 'which is 35 + 218, not the 258 between the ends');
+  assert.deepEqual([placement.fromOffset, placement.toOffset], [-30, 227],
+    'the envelope is kept for the window and crowding tests, and is wider than the coverage');
+
+  // The runs are exactly the covered columns, checked against the shared
+  // membership test rather than against the arithmetic that produced them.
+  const columns = sequenceColumns(model);
+  const inRuns = new Set(placement.runs
+    .flatMap(({ fromOffset, toOffset }) => Array.from(
+      { length: toOffset - fromOffset + 1 }, (_, k) => fromOffset + k)));
+  const covered = [...columns]
+    .filter(([position]) => markerCoversPosition(wrapping, position))
+    .map(([, offset]) => offset);
+  assert.deepEqual([...inRuns].sort((a, b) => a - b), covered.sort((a, b) => a - b));
+  for (const [position, offset] of columns) {
+    assert.equal(inRuns.has(offset), markerCoversPosition(wrapping, position),
+      `offset ${offset} at ${position}`);
+  }
+  assert.deepEqual([5, 6, 7, 8, 9].filter((offset) => inRuns.has(offset)), [],
+    'the five excluded bases are in no run');
+});
+
+test('the minus strand counts its runs the same way, and a splice gap makes none', () => {
+  // The excluded band is contiguous in genomic coordinates, so on a
+  // minus-strand gene it is contiguous in columns too — counted down instead of
+  // up. `M744_RS09575` ends at 1,923,832, which is its offset zero.
+  const minus = joined('M744_RS09575');
+  assert.equal(minus.strand, '-');
+  const wrapping = markerOf({
+    id: 'wrap-minus', type: 'promoter', replicon: 'CP006471', strand: '-',
+    position: 1923828, endPosition: 1923822,
+  }, TAN);
+  const model = modelOf(minus);
+  const placement = markerPlacement(model, wrapping);
+  assert.deepEqual(placement.runs, [
+    { fromOffset: -30, toOffset: 4, shownNt: 35 },
+    { fromOffset: 10, toOffset: 1799, shownNt: 1790 },
+  ]);
+  assert.equal(placement.shownNt, 1825);
+  const columns = sequenceColumns(model);
+  const excluded = [...columns]
+    .filter(([position, offset]) => offset >= placement.fromOffset
+      && offset <= placement.toOffset && !markerCoversPosition(wrapping, position))
+    .map(([, offset]) => offset)
+    .sort((a, b) => a - b);
+  assert.deepEqual(excluded, [5, 6, 7, 8, 9], 'and they are the bases between the runs');
+
+  // A splice gap removes genomic bases, not columns: the columns either side of
+  // it are consecutive, so an interval across it is one run and not two.
+  const spliced = joined('M744_RS00920');
+  const across = markerOf({
+    id: 'P-4', type: 'promoter', replicon: 'CP006471', strand: '+',
+    position: 169690, endPosition: 169696,
+  }, TAN);
+  assert.deepEqual(markerPlacement(modelOf(spliced), across).runs,
+    [{ fromOffset: 69, toOffset: 74, shownNt: 6 }]);
+});
+
+test('a wrapping interval draws one outline per covered run, over no excluded base', async () => {
+  await withFakeDocument(async (document) => {
+    const gene = joined('M744_RS01695');
+    const { view } = mount(document, {
+      ...gene,
+      tssEvidence: [{
+        id: 'wrap', type: 'promoter', replicon: 'CP006471', strand: '+',
+        position: 320212, endPosition: 320206,
+      }],
+    });
+    const [mark] = markGroups(view);
+    const { from, perNt } = view.camera;
+    const x = (offset) => LABEL_WIDTH + (offset - from) * perNt;
+    const runs = [[-30, 5], [10, 228]];
+    for (const selector of ['rect.gene-sequence-marker-span', 'rect.gene-sequence-marker-column']) {
+      const drawn = mark.querySelectorAll(selector)
+        .map((node) => [Number(node.attributes.x), Number(node.attributes.width)])
+        .sort((a, b) => a[0] - b[0]);
+      assert.equal(drawn.length, 2, `${selector} is drawn once per covered run`);
+      drawn.forEach(([left, width], index) => {
+        const [fromOffset, pastEnd] = runs[index];
+        assert.ok(Math.abs(left - x(fromOffset)) < 1e-9, `${selector} starts at the run`);
+        assert.ok(Math.abs(width - (pastEnd - fromOffset) * perNt) < 1e-9,
+          `${selector} is as wide as the run and no wider`);
+      });
+      // Nothing is painted over the five bases the interval does not cover.
+      for (const offset of [5, 6, 7, 8, 9]) {
+        const centre = x(offset) + perNt / 2;
+        assert.ok(drawn.every(([left, width]) => centre < left || centre > left + width),
+          `${selector} leaves offset ${offset} alone`);
+      }
+    }
+    // One mark, one identity, one description: the separate outlines are how
+    // the coverage is drawn and never two sites.
+    assert.equal(markGroups(view).length, 1);
+    assert.equal(mark.querySelectorAll('title').length, 1);
+    assert.match(mark.querySelector('title').textContent,
+      /^wrap: promoter marked at −30 to \+4 and \+10 to \+227, the bases its own published genome coordinate 320,212 to 320,206 names, not remeasured from a distance\. Its covered bases reach this close-up in 2 separate stretches, and the bases between them are outside what it covers, so each stretch is outlined on its own\./);
+    assert.match(siteRows(view)[0].textContent,
+      /marked here over −30 to \+4 and \+10 to \+227, 2 separate stretches with the bases between them not covered, 253 of its 2,690,413 bases shown/);
+  });
+});
+
+test('a contiguous interval and a point still draw one run each', async () => {
+  await withFakeDocument(async (document) => {
+    // The disjoint case must not cost the ordinary one an extra outline.
+    const gene = joined('M744_RS01695');
+    const { view } = mount(document, {
+      ...gene,
+      tssEvidence: [
+        {
+          id: 'P-1', type: 'promoter', replicon: 'CP006471', strand: '+',
+          position: gene.start - 10, endPosition: gene.start + 4,
+        },
+        {
+          id: 'gTSS+320187', type: 'gTSS', replicon: 'CP006471', strand: '+',
+          position: 320187, sourceStartDistanceNt: 15,
+        },
+      ],
+    });
+    for (const mark of markGroups(view)) {
+      assert.equal(mark.querySelectorAll('rect.gene-sequence-marker-column').length, 1);
+      assert.equal(mark.querySelectorAll('line.gene-sequence-marker-stem').length, 1);
+      assert.doesNotMatch(mark.querySelector('title').textContent, /separate stretches/);
+    }
+    assert.deepEqual(
+      rowsOf({ ...gene, tssEvidence: [{ id: 'P-1', type: 'promoter', replicon: 'CP006471', strand: '+', position: gene.start - 10, endPosition: gene.start + 4 }] })[0]
+        .placement.runs,
+      [{ fromOffset: -10, toOffset: 4, shownNt: 15 }],
+    );
+  });
+});
+
+/* ------------------------------------------- the other mapping, or its lack */
+
+test('agreement is claimed only where there is a distance to compare', async () => {
+  const gene = joined('M744_RS01695');
+  const rowAt = (overrides) => ({
+    id: 'gTSS+320187', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187,
+    ...overrides,
+  });
+  const describe = (tssEvidence) => {
+    const subject = { ...gene, tssEvidence };
+    const model = modelOf(subject);
+    return describeSequenceMarkers(model, {
+      label: 'Tan 2018',
+      controlLabel: 'Show Tan 2018 start sites',
+      rows: sequenceMarkers(subject, model),
+      visible: true,
+      pending: null,
+    }).join(' ');
+  };
+
+  // A row with no published distance is placed here and nowhere else, so
+  // there is no second base and nothing to agree with. Reading its absent
+  // distance as "the same base" would credit the study with an agreement
+  // about an annotation it never saw.
+  const nativeOnly = describe([rowAt({ sourceStartDistanceNt: null })]);
+  assert.doesNotMatch(nativeOnly, /the same base/);
+  assert.doesNotMatch(nativeOnly, /agree/);
+  assert.match(nativeOnly, /That site has no distance published against the study's own gene model, so the gene visualizer draws no mark for it and there is nothing to compare this placement with\./);
+  assert.match(nativeOnly, /The row is kept as published, and no distance is derived from the coordinate to stand in for one\./);
+
+  // A distance that lands on the same base still says they agree.
+  assert.match(describe([rowAt({ sourceStartDistanceNt: 15 })]),
+    /puts it at the same base, so this placement and the gene visualizer's agree\./);
+  // And one that does not still names the gap, unchanged.
+  assert.match(describe([rowAt({ sourceStartDistanceNt: 40 })]),
+    /25 nt away for gTSS\+320187/);
+
+  // Mixed: each row is accounted for by name, and the agreement sentence
+  // covers only the row it is true of.
+  const mixed = describe([
+    rowAt({ id: 'agreeing', sourceStartDistanceNt: 15 }),
+    rowAt({ id: 'apart', position: 320186, sourceStartDistanceNt: 40 }),
+    rowAt({ id: 'native-only', position: 320185, sourceStartDistanceNt: null }),
+  ]);
+  assert.match(mixed, /24 nt away for apart/);
+  assert.match(mixed, /puts agreeing at the same base, so that placement and the gene visualizer's agree\./);
+  assert.match(mixed, /native-only has no distance published against the study's own gene model/);
+  assert.doesNotMatch(mixed, /puts each of them at the same base/);
+});
+
+test('a mark and its row say which mappings the row publishes', async () => {
+  await withFakeDocument(async (document) => {
+    const gene = joined('M744_RS01695');
+    const { view } = mount(document, {
+      ...gene,
+      tssEvidence: [{
+        id: 'native-only', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187,
+        sourceStartDistanceNt: null,
+      }],
+    });
+    const title = markGroups(view)[0].querySelector('title').textContent;
+    assert.match(title, /No distance against the study's own gene model is published for this row, so the gene visualizer draws no mark for it and there is nothing to compare this base with\./);
+    assert.doesNotMatch(title, /same base/);
+    assert.match(siteRows(view)[0].textContent,
+      /marked here at −15 · no published upstream distance, so the gene visualizer draws no mark either/);
+    assert.doesNotMatch(descriptionOf(view), /agree/);
+  });
+});
+
+/* -------------------------------------------- focus across every transition */
+
+/**
+ * The labelled thing focus landed on, or null.
+ *
+ * Named by its accessible label rather than by node identity, because what the
+ * contract owes a reader is somewhere labelled that survived — not a
+ * particular element.
+ */
+function focusedLabel(document) {
+  const active = document.activeElement;
+  if (!active) return null;
+  return active.getAttribute?.('aria-label') ?? null;
+}
+
+const relabel = (gene) => ({
+  gene, table, scheme: null, organism: DEFAULT_ORGANISM,
+});
+
+test('the control taking focus with it leaves the reader on the labelled strip', async () => {
+  await withFakeDocument(async (document) => {
+    // `M744_RS09240` publishes rows and this strip can place none of them, so
+    // the control goes while the reader is standing on it. Every other way the
+    // control can disappear ends in the same place.
+    const { view } = mount(document, joined('M744_RS09575'));
+    const transitions = [
+      ['a locus whose rows are all off this window', { ...relabel(joined('M744_RS09240')), schemeVersion: 2 }],
+      ['the layer still loading', { ...relabel(joined('M744_RS09575')), schemeVersion: 3, markerPending: 'loading' }],
+      ['the layer failed', { ...relabel(joined('M744_RS09575')), schemeVersion: 4, markerPending: 'failed' }],
+      ['an organism with no such layer', { ...relabel(joined('M744_RS09575')), schemeVersion: 5, organism: ECOLI }],
+    ];
+    for (const [what, input] of transitions) {
+      view.update({ ...relabel(joined('M744_RS09575')), schemeVersion: 1 });
+      const toggle = toggleOf(view);
+      assert.ok(toggle, `${what}: the control is there to be held first`);
+      toggle.focus();
+      view.update(input);
+      assert.equal(toggleOf(view), null, `${what}: the control is gone`);
+      assert.equal(document.activeElement, view.strip, `${what}: focus is on the strip`);
+      assert.equal(focusedLabel(document), 'Sequence close-up',
+        `${what}: and the strip says what it is`);
+    }
+  });
+});
+
+test('unpinning the gene leaves the reader on this view, not on the document', async () => {
+  await withFakeDocument(async (document) => {
+    const { view, host } = mount(document, joined('M744_RS09575'));
+    toggleOf(view).focus();
+    view.update({ gene: null, table, scheme: null, schemeVersion: 9, organism: DEFAULT_ORGANISM });
+    // The strip is inside the hidden figure, so the fallback is the view's own
+    // host — which is labelled, takes focus, and holds the note that says
+    // there is nothing pinned.
+    assert.equal(view.figure.hidden, true);
+    assert.equal(document.activeElement, host);
+    assert.equal(focusedLabel(document), 'Gene sequence close-up');
+    assert.equal(host.tabIndex, -1, 'focusable on purpose, and not in the Tab order');
+    assert.equal(view.empty.hidden, false);
+  });
+});
+
+test('the open site list keeps its identity, its state and its focus across a rerender', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, joined('M744_RS09575'));
+    const details = view.markerListHost.querySelector('details');
+    const summary = details.querySelector('summary');
+    details.open = true;
+    summary.focus();
+
+    // Any unrelated change to the page re-renders this view — another view's
+    // marker visibility, a recompiled scheme, a hover somewhere else. None of
+    // them is a reason to close what the reader opened.
+    for (const schemeVersion of [2, 3]) {
+      view.update({ ...relabel(joined('M744_RS09575')), schemeVersion });
+      assert.equal(view.markerListHost.querySelector('details'), details, 'the same disclosure');
+      assert.equal(details.querySelector('summary'), summary);
+      assert.equal(details.open, true, 'still open');
+      assert.equal(document.activeElement, summary, 'and still focused');
+      assert.equal(details.hidden, false);
+    }
+    // Its contents do follow the locus, and the rows are the new gene's.
+    view.update({ ...relabel(joined('M744_RS01695')), schemeVersion: 4 });
+    assert.equal(view.markerListHost.querySelector('details'), details);
+    assert.equal(details.open, true);
+    assert.equal(siteRows(view).length, joined('M744_RS01695').tssEvidence.length);
+
+    // A locus with no rows hides it and empties it, rather than leaving the
+    // last gene's rows behind a closed summary; focus comes back to the strip.
+    summary.focus();
+    view.update({ ...relabel(joined('M744_RS00010')), schemeVersion: 5 });
+    assert.equal(details.hidden, true);
+    assert.equal(siteRows(view).length, 0);
+    assert.equal(document.activeElement, view.strip);
+    assert.equal(focusedLabel(document), 'Sequence close-up');
+  });
+});
+
+test('toggling the marks leaves the open list open and the control focused', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, joined('M744_RS09575'));
+    const details = view.markerListHost.querySelector('details');
+    details.open = true;
+    const toggle = toggleOf(view);
+    toggle.focus();
+    toggle.checked = false;
+    toggle.dispatch('change');
+    assert.equal(document.activeElement, toggle, 'the checkbox is not rebuilt');
+    assert.equal(view.markerListHost.querySelector('details'), details);
+    assert.equal(details.open, true, 'hiding the marks does not close the list');
+    assert.match(view.markerNote.textContent, /control is off, so no mark is drawn/);
+    assert.equal(siteRows(view).length, 2, 'and every row is still listed');
+  });
+});
+
+test('focus outside this view is left where the reader put it', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, joined('M744_RS09575'));
+    const elsewhere = document.createElement('button');
+    elsewhere.setAttribute('aria-label', 'Somewhere else entirely');
+    document.body.append(elsewhere);
+    elsewhere.focus();
+    // Every transition that would have moved focus had the reader been inside
+    // this view: the control goes, the list goes, the gene goes.
+    view.update({ ...relabel(joined('M744_RS09240')), schemeVersion: 2 });
+    view.update({ ...relabel(joined('M744_RS09575')), schemeVersion: 3, markerPending: 'loading' });
+    view.update({ gene: null, table, scheme: null, schemeVersion: 4, organism: DEFAULT_ORGANISM });
+    assert.equal(document.activeElement, elsewhere);
+    assert.notEqual(view.strip.focused, true, 'the strip was never asked to take focus');
+    assert.notEqual(view.host.focused, true);
   });
 });
