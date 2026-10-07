@@ -18,8 +18,16 @@ only the protein lines are taken, each run becomes one count column named by
 its file stem (`countColumn`, default `Spectrum Count`), a locus of the UniProt
 FASTA form `ACCESSION_ENTRY_ORGANISM` becomes its accession, reversed-sequence
 decoys are dropped, and a contaminant or introduced gene keeps its name and
-does not map. Every `.tsv` here is reproducible from its spec; rerun the tool
-to regenerate it.
+does not map. A table that lists features besides genes, or wraps each locus
+tag in a feature prefix, names the identifiers to read (`reader.idPattern`, a
+regular expression the whole identifier must match; its first group, if any,
+is the identifier the crosswalk reads): GSE237858 reads `gene-` features and
+leaves its `rna-` and novel-transcript rows, GSE254350 reads `Synpcc7942_`
+synonyms and leaves its 116 `predicted RNA` rows, and every row outside the
+pattern is counted among the layer's unmapped identifiers. An identifier
+column the deposit leaves unnamed (GSE335065) is named by the empty string.
+Every `.tsv` here is reproducible from its spec; rerun the tool to regenerate
+it.
 
 ## What a layer's value is
 
@@ -40,8 +48,10 @@ layer's `conditionSet` says so. None of these layers is UTEX 2973 data: every
 one is a transfer from PCC 7942 under the sister-strain rules, labelled as such
 wherever it is shown, and none is pooled with another without a recorded lab
 judgement. A layer measured in an engineered derivative (PXD030282's
-limonene-producing L1118, GSE288532's cscB-sps, GSE89999's clock rescue) is
-listed under "Engineered strain" and its record names the strain.
+limonene-producing L1118, GSE288532's and GSE335065's cscB-sps, GSE89999's
+clock rescue, GSE103463's and GSE105774's complemented rel deletion, GSE103644's
+inducible relA) is listed under "Engineered strain" and its record names the
+strain.
 
 Regenerate:
 

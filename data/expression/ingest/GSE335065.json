@@ -1,0 +1,266 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 cscB+ Δsps (sucrose-exporting CscB/SPS strain)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY-NC-ND 4.0 (ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE335065",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE335065",
+  "citationId": "bohutskyi-2024",
+  "citation": {
+    "text": "Bohutskyi P, Pomraning KR, Jenkins JP, Kim YM, Poirier BC, Betenbaugh MJ, Magnuson JK. Mixed and membrane-separated culturing of synthetic cyanobacteria-yeast consortia reveals metabolic cross-talk mimicking natural cyanolichens. Sci Rep 2024;14(1):25303.",
+    "url": "https://doi.org/10.1038/s41598-024-74743-4",
+    "pmid": "39455633"
+  },
+  "file": {
+    "name": "GSE335065_rna_seq_counts_092726.csv.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE335nnn/GSE335065/suppl/GSE335065_rna_seq_counts_092726.csv.gz",
+    "sha256": "7140bbd04de93a0cb3ecf8e6adab9b6f76492872350d6fac71e09fd2a98ae447"
+  },
+  "reader": {
+    "format": "csv",
+    "idColumn": "",
+    "idKind": "pcc7942_rs"
+  },
+  "units": "mean counts per million (raw Rsubread read counts, scaled per sample)",
+  "normalization": "cpm",
+  "conditionTableRow": 41,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates per configuration and time point"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 28,
+      "hi": 32,
+      "unit": "°C",
+      "text": "30 ± 2 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 200,
+      "hi": 200,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "~200 µmol photons m⁻² s⁻¹, LED lighting"
+    },
+    "lightRegime": {
+      "status": "not reported",
+      "kind": null,
+      "photoperiod": null,
+      "spectrumClass": "LED",
+      "entrained": false,
+      "text": "LED lighting; continuous versus diel and photoperiod not reported",
+      "where": "GEO GSE335065 !Sample_growth_protocol_ch1"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 2,
+      "hi": 2,
+      "unit": "%",
+      "text": "2% CO₂ in nitrogen"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": true,
+      "text": "BG11 with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L K₂HPO₄ and 3 g/L HEPES, pH 8.3"
+    },
+    "phase": {
+      "status": "reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "days 4, 6 and 8 of culture (~90, ~140 and ~190 h); OD750 at harvest not reported"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "stirred culture (~200 rpm, PTFE stir bars); the vessel of the axenic control is not stated",
+      "where": "GEO GSE335065 !Sample_growth_protocol_ch1",
+      "quote": "Cultures were mixed at ~200 rpm using PTFE magnetic stir bars in BG11 medium"
+    }
+  },
+  "caveat": "Measured in an engineered sucrose-exporting PCC 7942 strain (cscB+ Δsps), not wild type and not UTEX 2973. The nine mixed co-culture samples (Se_Rt_CC, GSM9805358–GSM9805366), sequenced together with Rhodotorula toruloides, are not shipped. Each layer averages days 4, 6 and 8, which removes the time course; the eight pANS plasmid rows (HTX97_RS) have no UTEX counterpart.",
+  "layers": [
+    {
+      "id": "GSE335065_axenic",
+      "metricKey": "exprGse335065Axenic",
+      "label": "Expression GSE335065 cscB+ Δsps axenic (PCC 7942)",
+      "conditionSet": "Axenic control culture, mean of days 4, 6 and 8 in three replicates (9 samples)",
+      "samples": "Se_ax_90/140/190_1–3 (GSM9805331–GSM9805339)",
+      "columns": [
+        "Se_ax_90_1",
+        "Se_ax_90_2",
+        "Se_ax_90_3",
+        "Se_ax_140_1",
+        "Se_ax_140_2",
+        "Se_ax_140_3",
+        "Se_ax_190_1",
+        "Se_ax_190_2",
+        "Se_ax_190_3"
+      ],
+      "treatments": [
+        "growth time course (days 4, 6, 8)"
+      ],
+      "group": "engineered"
+    },
+    {
+      "id": "GSE335065_axenic_mbr",
+      "metricKey": "exprGse335065AxenicMbr",
+      "label": "Expression GSE335065 cscB+ Δsps axenic, membrane bioreactor (PCC 7942)",
+      "conditionSet": "Axenic culture in the membrane-separated bioreactor, mean of days 4, 6 and 8 in three replicates (9 samples)",
+      "samples": "Se_ax_mBR_90/140/190_1–3 (GSM9805340–GSM9805348)",
+      "columns": [
+        "Se_ax_mBR_90_1",
+        "Se_ax_mBR_90_2",
+        "Se_ax_mBR_90_3",
+        "Se_ax_mBR_140_1",
+        "Se_ax_mBR_140_2",
+        "Se_ax_mBR_140_3",
+        "Se_ax_mBR_190_1",
+        "Se_ax_mBR_190_2",
+        "Se_ax_mBR_190_3"
+      ],
+      "treatments": [
+        "membrane bioreactor",
+        "growth time course (days 4, 6, 8)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 42,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 28,
+          "hi": 32,
+          "unit": "°C",
+          "text": "30 ± 2 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 200,
+          "hi": 200,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~200 µmol photons m⁻² s⁻¹, LED lighting"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "LED",
+          "entrained": false,
+          "text": "LED lighting; continuous versus diel and photoperiod not reported",
+          "where": "GEO GSE335065 !Sample_growth_protocol_ch1"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in nitrogen"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "BG11 with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L K₂HPO₄ and 3 g/L HEPES, pH 8.3"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "days 4, 6 and 8 of culture (~90, ~140 and ~190 h); OD750 at harvest not reported"
+        },
+        "format": {
+          "status": "reported",
+          "value": "membrane bioreactor",
+          "text": "membrane-separated two-chamber bioreactor, ~600 mL; the axenic S. elongatus unit"
+        }
+      }
+    },
+    {
+      "id": "GSE335065_coculture_mbr",
+      "metricKey": "exprGse335065CocultureMbr",
+      "label": "Expression GSE335065 cscB+ Δsps, membrane-separated co-culture (PCC 7942)",
+      "conditionSet": "S. elongatus compartment of the membrane-separated co-culture with R. toruloides, mean of days 4, 6 and 8 in three replicates (9 samples)",
+      "samples": "Se_CC_mBR_90/140/190_1–3 (GSM9805349–GSM9805357)",
+      "columns": [
+        "Se_CC_mBR_90_1",
+        "Se_CC_mBR_90_2",
+        "Se_CC_mBR_90_3",
+        "Se_CC_mBR_140_1",
+        "Se_CC_mBR_140_2",
+        "Se_CC_mBR_140_3",
+        "Se_CC_mBR_190_1",
+        "Se_CC_mBR_190_2",
+        "Se_CC_mBR_190_3"
+      ],
+      "treatments": [
+        "membrane-separated co-culture with Rhodotorula toruloides",
+        "growth time course (days 4, 6, 8)"
+      ],
+      "group": "engineered",
+      "conditionTableRow": 43,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 28,
+          "hi": 32,
+          "unit": "°C",
+          "text": "30 ± 2 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 200,
+          "hi": 200,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~200 µmol photons m⁻² s⁻¹, LED lighting"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": "LED",
+          "entrained": false,
+          "text": "LED lighting; continuous versus diel and photoperiod not reported",
+          "where": "GEO GSE335065 !Sample_growth_protocol_ch1"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 2,
+          "hi": 2,
+          "unit": "%",
+          "text": "2% CO₂ in nitrogen"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "BG11 with 0.09 g/L yeast nitrogen base (without amino acids and ammonium sulfate), 0.264 g/L ammonium sulfate, 0.174 g/L K₂HPO₄ and 3 g/L HEPES, pH 8.3"
+        },
+        "phase": {
+          "status": "reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "days 4, 6 and 8 of culture (~90, ~140 and ~190 h); OD750 at harvest not reported"
+        },
+        "format": {
+          "status": "reported",
+          "value": "membrane bioreactor",
+          "text": "membrane-separated two-chamber bioreactor, ~600 mL; the S. elongatus compartment, separated from R. toruloides by a membrane but sharing medium"
+        }
+      }
+    }
+  ]
+}

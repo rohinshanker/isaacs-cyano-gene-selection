@@ -338,14 +338,14 @@ above, and every download waits on the manifest entry and the mode-and-pin rules
 | # | Strain | Artifact | B | C | Licence decision (ledger) |
 | --- | --- | --- | --- | --- | --- |
 | 1 | PCC 7942 | GSE102914 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
-| 2 | PCC 7942 | GSE103462 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
-| 3 | PCC 7942 | GSE103463 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 2 | PCC 7942 | GSE103462 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
+| 3 | PCC 7942 | GSE103463 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
 | 4 | PCC 7942 | GSE103606 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
-| 5 | PCC 7942 | GSE103644 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
-| 6 | PCC 7942 | GSE103704 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 5 | PCC 7942 | GSE103644 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
+| 6 | PCC 7942 | GSE103704 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
 | 7 | PCC 7942 | GSE104203 | 4 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 8 | PCC 7942 | GSE104204 | 3 escalate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; the row is escalated in B and not admissible as returned |
-| 9 | PCC 7942 | GSE105774 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
+| 9 | PCC 7942 | GSE105774 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined); ingested 2026-10-07 |
 | 10 | PCC 7942 | GSE122841 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 11 | PCC 7942 | GSE140121 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
 | 12 | PCC 7942 | GSE18902 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was undetermined) |
@@ -354,13 +354,13 @@ above, and every download waits on the manifest entry and the mode-and-pin rules
 | 15 | PCC 7942 | GSE222067 | 2 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 16 | PCC 7942 | GSE225426 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 17 | Synechococcus elongatus | GSE227397 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
-| 18 | PCC 7942 | GSE237858 | 2 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 18 | PCC 7942 | GSE237858 | 2 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 19 | PCC 7942 | GSE252562 | 2 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
-| 20 | PCC 7942 | GSE254350 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 20 | PCC 7942 | GSE254350 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 21 | Synechococcus elongatus | GSE288532 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 22 | PCC 7942 | GSE311172 | 1 candidate | candidate | permitted with citation (owner decision 2026-10-06; was undetermined) |
 | 23 | PCC 7942 | GSE327989 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed; conditional on the indirect article association B reports |
-| 24 | PCC 7942 | GSE335065 | 4 escalate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted) |
+| 24 | PCC 7942 | GSE335065 | 4 escalate | candidate | permitted with citation (owner decision 2026-10-06; was not permitted); ingested 2026-10-07 |
 | 25 | PCC 7942 | GSE45762 | 1 candidate | candidate | permitted: derived per-gene table with attribution under the article's CC BY licence; GEO file fetched at build, checksum-pinned, not committed |
 | 26 | PCC 7942 | GSE50908 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
 | 27 | PCC 7942 | GSE50919 | 1 candidate | escalate | permitted with citation (owner decision 2026-10-06; was not permitted) |
@@ -403,7 +403,13 @@ GSE288532 (2 layers), GSE222067 (2), GSE327989 (1), GSE79726 (3), GSE89999 (3)
 on 2026-10-05, and GSE104203 (4: Low Light, Clear Day, High Light pulse, Shade
 pulse, each the mean of its time points and two replicates) on 2026-10-06.
 GSE104203's processed workbook also carries log2-ratio blocks normalised to the
-Low Light average; those are not abundances and are not used. GSE45762 is
+Low Light average; those are not abundances and are not used. On 2026-10-07,
+under the withdrawn distribution rule, the register's RNA-seq rows with a
+per-gene table landed as 16 layers: GSE103462 (2), GSE103463 (2), GSE103644
+(2), GSE103704 (2) and GSE105774 (2) from Puszyńska and O'Shea 2017, GSE237858
+(1), GSE254350 (2) and GSE335065 (3, the mixed co-culture arm held out); each
+is the control or wild-type genotype of its series, and an engineered
+background is listed as such. GSE45762 is
 excluded for contradictory sample labels. Of the CC0 proteomes, PXD062851
 (Russo et al. 2025) shipped on 2026-10-06 as one label-free DIA layer (1,996
 genes; 2,307 protein groups keyed by UniProt accession, mapped through

@@ -1,0 +1,124 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 wild type + relA+ (theophylline-inducible relA construct)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE103644",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103644",
+  "citationId": "puszynska-2017-ppgpp",
+  "citation": {
+    "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+    "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+    "pmid": "29241543"
+  },
+  "file": {
+    "name": "GSE103644_Expression.xls.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103644/suppl/GSE103644_Expression.xls.gz",
+    "sha256": "206c19a7198919b08fddc10eff6e100ec41c1faa5a4b0a74bbee0bb2310178d2"
+  },
+  "reader": {
+    "format": "xls",
+    "sheet": "Sheet1",
+    "idColumn": "Gene name",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean RPM (reads per million) as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 7,
+  "replicates": {
+    "count": null,
+    "text": "one sample per genotype and time point; no replicates deposited"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 40,
+      "hi": 40,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "cool fluorescent",
+      "entrained": true,
+      "text": "cool fluorescent light; entrained by two 12 h dark/12 h light cycles, released into constant light and induced with 1.6 mM theophylline at subjective dusk (CT 12)"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+      "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+      "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG11 medium"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "tissue culture flasks"
+    },
+    "phase": {
+      "status": "not reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+      "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+      "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+    }
+  },
+  "caveat": "Measured in an engineered PCC 7942 strain carrying a theophylline-inducible relA construct, not plain wild type and not UTEX 2973; the wild type + relAE335Q arm, whose synthetase is inactive, is not shipped. One sample per time point, so no replicate band exists.",
+  "layers": [
+    {
+      "id": "GSE103644_wt_relA_preinduction",
+      "metricKey": "exprGse103644RelAPlusT0",
+      "label": "Expression GSE103644 WT + relA+ pre-induction (PCC 7942)",
+      "conditionSet": "Wild type + relA+ at subjective dusk before theophylline induction (time 0), single sample",
+      "samples": "wild type + relA+ time = 0 (GSM2777217)",
+      "columns": [
+        "wild type + relA+, time = 0"
+      ],
+      "treatments": [
+        "circadian time course"
+      ],
+      "group": "engineered"
+    },
+    {
+      "id": "GSE103644_wt_relA_induced",
+      "metricKey": "exprGse103644RelAPlusInduced",
+      "label": "Expression GSE103644 WT + relA+ theophylline-induced (PCC 7942)",
+      "conditionSet": "Wild type + relA+ after 1.6 mM theophylline induction of relA at subjective dusk, mean of the 30 min and 1 h samples",
+      "samples": "wild type + relA+ time = 30 min and 1 h (GSM2777218–GSM2777219)",
+      "columns": [
+        "wild type + relA+, time = 30 min",
+        "wild type + relA+, time = 1 h"
+      ],
+      "treatments": [
+        "theophylline induction (1.6 mM) of relA",
+        "circadian time course"
+      ],
+      "group": "engineered"
+    }
+  ]
+}

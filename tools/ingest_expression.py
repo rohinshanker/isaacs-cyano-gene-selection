@@ -78,7 +78,9 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
 
     The header is the first row holding a cell equal to ``reader['idColumn']``;
     rows above it are comments or titles and are skipped, and the identifier
-    column is moved to the front. Gzip is detected by magic bytes, not by name.
+    column is moved to the front. An identifier column the deposit leaves
+    unnamed is named by the empty string. Gzip is detected by magic bytes, not
+    by name.
 
     A workbook may spread one table over several sheets (``reader['sheets']``,
     one per replicate): they are read side by side, joined on the identifier,
@@ -234,6 +236,29 @@ def _split_header(rows: list[list[str]], id_column: str, title_rows: list[int]) 
         return [header[id_index]] + header[:id_index] + header[id_index + 1:], \
             [[r[id_index]] + r[:id_index] + r[id_index + 1:] for r in body]
     raise ValueError(f"no header row names {id_column!r}")
+
+
+def select_identifiers(rows: list[list[str]], pattern: str | None) -> tuple[list[list[str]], int]:
+    """Keep the rows whose identifier matches ``pattern`` and name each by its first group.
+
+    A deposit may list features that are not genes (``predicted RNA`` rows, novel
+    transcripts) or wrap every locus tag in a feature prefix (``gene-``). A row
+    outside the pattern is dropped and counted as an identifier that did not
+    map; a capture group names the identifier the crosswalk reads. Without a
+    pattern every row is kept as it is.
+    """
+    if not pattern:
+        return rows, 0
+    regex = re.compile(pattern)
+    kept: list[list[str]] = []
+    dropped = 0
+    for row in rows:
+        match = regex.fullmatch(row[0].strip())
+        if match is None:
+            dropped += 1
+            continue
+        kept.append([match.group(1) if regex.groups else match.group(0)] + row[1:])
+    return kept, dropped
 
 
 def column_values(header: list[str], rows: list[list[str]], column: str, *, signed: bool = False) -> dict[str, float]:
@@ -434,6 +459,7 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
     source = spec["file"]
     data = fetch(source["url"], source["sha256"], interim / source["name"])
     header, rows = read_table(data, spec["reader"])
+    rows, outside_pattern = select_identifiers(rows, spec["reader"].get("idPattern"))
     id_kind = spec["reader"]["idKind"]
     via_uniprot = id_kind == UNIPROT_ID_KIND
     relationship = ID_RELATIONSHIPS["pcc7942_old" if via_uniprot else id_kind]
@@ -451,7 +477,7 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
         if via_uniprot:
             means, no_locus = through_uniprot(means, orf_names)
         mapped, unmapped = map_to_utex(means, crosswalk)
-        unmapped += no_locus
+        unmapped += no_locus + outside_pattern
         if not mapped:
             raise ValueError(f"layer {layer['id']} maps no gene; check idKind and the columns")
         table_name = f"{layer['id']}.tsv"

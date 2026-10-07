@@ -1,0 +1,139 @@
+{
+  "dataType": "transcriptomics",
+  "platform": "RNA-seq",
+  "strain": "PCC 7942 rel- relA+ (rel deletion complemented with relA)",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "RNA-seq transcript abundance",
+  "licence": "Article CC BY-NC-ND 4.0 (read 2026-10-06 from the supplied PDF; ledger decision 2026-10-06: permitted with citation, the distribution rule being withdrawn); GEO/NCBI public repository terms over the deposit",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "GSE105774",
+  "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE105774",
+  "citationId": "puszynska-2017-ppgpp",
+  "citation": {
+    "text": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Rep 2017;21(11):3155-3165.",
+    "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
+    "pmid": "29241543"
+  },
+  "file": {
+    "name": "GSE105774_Expression.xls.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE105nnn/GSE105774/suppl/GSE105774_Expression.xls.gz",
+    "sha256": "05389b7e7207338ad179ba5a05f8edbd4d0f4518434c1762338cc07ed24e337d"
+  },
+  "reader": {
+    "format": "xls",
+    "sheet": "Sheet1",
+    "idColumn": "Gene name",
+    "idKind": "pcc7942_old"
+  },
+  "units": "mean gene expression values normalised with external RNA standards and cell number, as deposited",
+  "normalization": "as-deposited",
+  "conditionTableRow": 16,
+  "replicates": {
+    "count": 2,
+    "text": "two biological replicates per genotype and time point"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30,
+      "hi": 30,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 40,
+      "hi": 40,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "40 μE m-2 s-1 (μmoles photons m-2 s-1), cool fluorescent light"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "diel",
+      "photoperiod": "12:12",
+      "spectrumClass": "cool fluorescent",
+      "entrained": true,
+      "text": "12 h light/12 h dark with cool fluorescent light during the light periods; entrained by two further light/dark cycles, then sampled at dusk and through the dark period"
+    },
+    "co2": {
+      "status": "not reported",
+      "lo": null,
+      "hi": null,
+      "unit": "%",
+      "text": "not reported: the article and its supplement name medium, temperature, light and entrainment only, with no CO₂, aeration or bubbling statement",
+      "where": "Puszynska and O'Shea 2017, Experimental Procedures, Cell Culture (article and supplement read in full 2026-10-06; package B/C addendum)",
+      "quote": "Cell cultures of wild-type and mutant cells were grown in BG-11 medium at 30 C under illumination with cool fluorescent light at 40 mE m2 s1 (micromoles of photons per square meters per second) unless indicated otherwise in figure legends."
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": false,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG11 medium"
+    },
+    "format": {
+      "status": "reported",
+      "value": "planktonic liquid",
+      "text": "tissue culture flasks"
+    },
+    "phase": {
+      "status": "not reported",
+      "label": null,
+      "od": null,
+      "odNm": null,
+      "text": "not reported as an OD or a growth phase at harvest; Table S6 lists the number of cells harvested per sample",
+      "where": "Puszynska and O'Shea 2017, Table S6 workbook mmc7 (read 2026-10-06; package B/C addendum)",
+      "quote": "Strain | Conditions | Time point | Cell number || Wild type | Light | dawn, replicate 1 | 868335000 || Light | dawn, replicate 2 | 868335000"
+    }
+  },
+  "caveat": "Measured in an engineered PCC 7942 strain (the rel deletion complemented with relA), not wild type and not UTEX 2973; the rel- relAE335Q arm, whose synthetase is inactive, is not shipped. The workbook names the rel deletion spoT-. The darkness layer averages eight time points. Values are the depositors' read counts normalised with external RNA standards and cell number.",
+  "layers": [
+    {
+      "id": "GSE105774_rel_relA_dusk",
+      "metricKey": "exprGse105774RelAPlusDusk",
+      "label": "Expression GSE105774 rel- relA+ dusk, light/dark (PCC 7942)",
+      "conditionSet": "rel- relA+ at dusk under 12 h light/12 h dark, mean of two replicates",
+      "samples": "rel- relA+ replicate 1–2, dusk (GSM2827746, GSM2827764); workbook columns spoT- relA+",
+      "columns": [
+        "spoT- relA+ replicate 1, dusk",
+        "spoT- relA+ replicate 2, dusk"
+      ],
+      "treatments": [
+        "diel time course"
+      ],
+      "group": "engineered"
+    },
+    {
+      "id": "GSE105774_rel_relA_darkness",
+      "metricKey": "exprGse105774RelAPlusDark",
+      "label": "Expression GSE105774 rel- relA+ darkness time course (PCC 7942)",
+      "conditionSet": "rel- relA+ in darkness, mean of eight time points from 5 min to 12 h in two replicates (16 samples)",
+      "samples": "rel- relA+ replicate 1–2, dark 5 min to 12 h (GSM2827747–GSM2827754, GSM2827765–GSM2827772); workbook columns spoT- relA+",
+      "columns": [
+        "spoT- relA+ replicate 1, dark, 5 min",
+        "spoT- relA+ replicate 1, dark, 15 min",
+        "spoT- relA+ replicate 1, dark, 30 min",
+        "spoT- relA+ replicate 1, dark, 1 h",
+        "spoT- relA+ replicate 1, dark, 2 h",
+        "spoT- relA+ replicate 1, dark, 4 h",
+        "spoT- relA+ replicate 1, dark, 8 h",
+        "spoT- relA+ replicate 1, dark, 12 h",
+        "spoT- relA+ replicate 2, dark, 5 min",
+        "spoT- relA+ replicate 2, dark, 15 min",
+        "spoT- relA+ replicate 2, dark, 30 min",
+        "spoT- relA+ replicate 2, dark, 1 h",
+        "spoT- relA+ replicate 2, dark, 2 h",
+        "spoT- relA+ replicate 2, dark, 4 h",
+        "spoT- relA+ replicate 2, dark, 8 h",
+        "spoT- relA+ replicate 2, dark, 12 h"
+      ],
+      "treatments": [
+        "dark time course",
+        "diel time course"
+      ],
+      "group": "engineered"
+    }
+  ]
+}
