@@ -119,10 +119,20 @@ checks stay in the repository. A source-access gap holds only the step that
 needs that source, not these independent tasks. Independent checkers should
 rederive results from pinned inputs without sharing the implementation; use
 Claude Science for a second check only through the owner under the rule above.
+The data-use audit, which reads shipped values, their deriving and labelling
+code, the validation documents and the primary sources together and returns
+one finding per overstatement, runs in the repository through the Multica
+`codex-data-auditor` role (created 2026-10-07, read-only, no fixes); its
+findings enter as separate changes, each with its own review. A crosswalk
+second check is a bounded package against a read-only role whose scope line
+forbids reading the implementation, not a role of its own.
 
 <a id="what-must-not-land-without-a-claude-science-claim-or-package"></a>
 
 ### What requires verified source evidence
+
+Ratified by the owner on 2026-10-07 as the five triggers below, reduced from
+six and two of them narrowed by the 2026-09-28 agent-team review.
 
 1. Admitting a new source: identify its files, checksums, source terms, condition
    metadata and mapping route under the admission contract and source ledger.

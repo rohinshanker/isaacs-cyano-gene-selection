@@ -329,6 +329,38 @@
           ]
         },
         {
+          "id": "guerreiro-2014",
+          "citation": "Guerreiro AC, Benevento M, Lehmann R, van Breukelen B, Post H, Giansanti P, Maarten Altelaar AF, Axmann IM, Heck AJ. Daily rhythms in the cyanobacterium Synechococcus elongatus probed by high-resolution mass spectrometry-based proteomics reveals a small defined set of cyclic proteins. Molecular & Cellular Proteomics 2014;13(8):2042-2055. doi:10.1074/mcp.M113.035840; PRIDE PXD000510.",
+          "url": "https://doi.org/10.1074/mcp.M113.035840",
+          "contribution": "Four optional protein-identification layers, listed under Diel: identified peptide-spectrum matches per protein, scaled per run to matches per million, from the deposit's four PRIDE-filtered mzTab files, one per TMT 6-plex, covering hours 6.5-14.5, 17.5-26.5, 30.5-38.5 and 41.5-50.5 of a 48-hour 12:12 light/dark time course. These are spectral counts, not the study's TMT quantification: the deposited mzTab files are mzTab-type Identification and carry no reporter-ion column, so the six channels that resolved the time points within each window are absent from the deposited results and exist only in the raw files. Each layer is therefore the pooled identification evidence of one 6-plex and the study's diel time resolution is lost; shipped on that basis by owner decision of 2026-10-07. Spectral counting measures abundance only coarsely and favours long and readily ionised proteins. Keyed by UniProt accession and mapped to UTEX 2973 through UniProt's ordered-locus names and the one-to-one identifier crosswalk; decoy-flagged entries are dropped and entries without a one-to-one route do not map. The measured organism is PCC 7942, not UTEX 2973. The deposit states a 12:12 light/dark cycle; temperature, light intensity, CO2, medium, culture format and growth phase are not retrieved, because the linked article sits outside the Europe PMC open-access subset and its Methods could not be read. Deposit terms: PRIDE/ProteomeXchange public-repository terms; article as published. Reader, files and condition records are in data/expression/ingest/.",
+          "downloads": [
+            {
+              "filename": "PXD000510_ld_6_5_to_14_5.tsv",
+              "repoPath": "data/expression/PXD000510_ld_6_5_to_14_5.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD000510_ld_6_5_to_14_5.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "PXD000510_ld_17_5_to_26_5.tsv",
+              "repoPath": "data/expression/PXD000510_ld_17_5_to_26_5.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD000510_ld_17_5_to_26_5.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "PXD000510_ld_30_5_to_38_5.tsv",
+              "repoPath": "data/expression/PXD000510_ld_30_5_to_38_5.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD000510_ld_30_5_to_38_5.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "PXD000510_ld_41_5_to_50_5.tsv",
+              "repoPath": "data/expression/PXD000510_ld_41_5_to_50_5.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD000510_ld_41_5_to_50_5.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "puszynska-2017-ppgpp",
           "citation": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Reports 21, 3155–3165 (2017). doi:10.1016/j.celrep.2017.11.067; GEO GSE103462, GSE103463, GSE103644, GSE103704, GSE105774.",
           "url": "https://doi.org/10.1016/j.celrep.2017.11.067",

@@ -45,7 +45,6 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_package-e-evidence-gaps__20261005](O_package-e-evidence-gaps__20261005.md) | Gaps in the package E evidence: undelivered pilot code, no confidence intervals, a two-contrast result, hand-parsed condition records, 35 unread audit chunks. The mockup render is done and recorded there |
 | [O_data-sources-selection__20261005](O_data-sources-selection__20261005.md) | Build the Data Sources feature: the section below "Color by", the data selection peek with groups, subgroups, filters and per-row source details, the source controls in filters, axes and projection views, structured condition records, and per-dataset loading. Design fixed by the owner 2026-10-05; prototype done; build in progress on main |
 | [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md) | Prepared: 20 desktop/tablet renders and the numbered text inventory. Owner decision 2026-10-06: leave open for human keep/move/merge/remove marks, then agents apply them |
-| [O_agent-topology-and-handoff__20260928](O_agent-topology-and-handoff__20260928.md) | Owner-side half of the Claude Science topology: which agent profiles to create in that account and their loadouts, and ratification of the mandatory-validation trigger list. The mechanism lives in [claude-science-handoff.md](../../validation/claude-science-handoff.md) |
 
 ## Pending Claude Science
 

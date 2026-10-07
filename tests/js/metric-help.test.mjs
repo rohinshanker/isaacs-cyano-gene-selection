@@ -19,12 +19,12 @@ const live = Object.fromEntries(LIVE_METRICS.map((metric) =>
 const registry = buildMetricRegistry(meta, genes, live);
 const dataset = { meta, genes, codonPca };
 
-test('all 208 selectable metrics have a calculation, origin, missingness and real citations', () => {
-  assert.equal(registry.metrics.length, 208);
+test('all 212 selectable metrics have a calculation, origin, missingness and real citations', () => {
+  assert.equal(registry.metrics.length, 212);
   // Hand-written method lines cover every metric except the layers the
   // ingestion tool made, whose method is derived from their provenance.
   const ingested = registry.metrics.filter((metric) => metric.provenance?.ingest);
-  assert.equal(ingested.length, 155);
+  assert.equal(ingested.length, 159);
   assert.deepEqual(new Set(methodKeys()), new Set(registry.metrics
     .filter((metric) => !metric.provenance?.ingest).map((metric) => metric.key)));
   for (const metric of ingested) {

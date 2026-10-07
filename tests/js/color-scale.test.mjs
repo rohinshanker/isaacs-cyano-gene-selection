@@ -101,9 +101,10 @@ test('the shipped release opens logarithmic on thirty-four metrics, symmetric lo
     .filter(([, value]) => value === scale).map(([key]) => key).sort();
 
   // Every ingested PCC 7942 abundance layer is skewed enough for the rule. Of the
-  // 65 ingested layers, 32 are strictly positive and open logarithmic, 24 report a
+  // 69 ingested layers, 36 are strictly positive and open logarithmic, 24 report a
   // zero somewhere and open symmetric log, and the nine signed fitness layers take
-  // a diverging ramp instead.
+  // a diverging ramp instead. PXD000510's four diel windows are spectral counts of
+  // at least one match, so none reaches zero and all four open logarithmic.
   assert.deepEqual(keysFor('log10'), [
     'exprGse103462WtDawn', 'exprGse103463RelAPlusDusk', 'exprGse103644RelAPlusInduced',
     'exprGse103704WtDark', 'exprGse103704WtDusk', 'exprGse104203ClearDay',
@@ -113,7 +114,9 @@ test('the shipped release opens logarithmic on thirty-four metrics, symmetric lo
     'exprGse254350WtDay4', 'exprGse288532Day', 'exprGse288532Night', 'exprGse311172Ad1Max',
     'exprGse311172Ad1Zero', 'exprGse311172WtHighMax', 'exprGse335065Axenic',
     'exprGse335065AxenicMbr', 'exprGse335065CocultureMbr', 'exprGse79726Control',
-    'exprGse79726NMinus', 'exprGse79726NPlus', 'expression', 'protPxd030282L1118Log',
+    'exprGse79726NMinus', 'exprGse79726NPlus', 'expression',
+    'protPxd000510Ld175To265', 'protPxd000510Ld305To385', 'protPxd000510Ld415To505',
+    'protPxd000510Ld65To145', 'protPxd030282L1118Log',
     'protPxd030282L1118Stationary', 'protPxd062851Dia', 'tssInitiation'
   ]);
   assert.deepEqual(keysFor('symlog'), [

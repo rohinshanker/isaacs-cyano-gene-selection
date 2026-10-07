@@ -23,6 +23,10 @@ import { percentileRank, sortedFinite } from './stats.js';
 export function assayKind(dataset) {
   if (dataset?.record?.dataType === 'fitness') return 'fitness';
   if (/initiation/i.test(dataset?.source?.assay ?? '')) return 'initiation';
+  // Ribosome profiling counts footprints on a transcript. That is occupancy,
+  // not abundance, and pooling it with transcript counts would average two
+  // different measurements of the same gene.
+  if (/ribosome profiling/i.test(dataset?.source?.assay ?? '')) return 'occupancy';
   return 'abundance';
 }
 

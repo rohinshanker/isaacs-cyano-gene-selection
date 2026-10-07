@@ -1,0 +1,2930 @@
+[
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "carbon limitation, growth rate 0.1 h-1, chemostat",
+      "samples": "GSM5518452 (E. coli RNA-seq - WT C-lim 0.1 rep1); GSM5518453 (E. coli RNA-seq - WT C-lim 0.1 rep2); GSM5518454 (E. coli RNA-seq - WT C-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "carbon limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "carbon limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_RNA",
+    "file": "GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+    "metricKey": "exprEcCarbonLimitationGrowthRate01H1Chemostat",
+    "label": "Transcript carbon limitation, growth rate 0.1 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "carbon limitation, growth rate 0.1 h-1, chemostat",
+    "sha256": "c624ea130a39477b67188283b24a6d6d80f0fe5f0368d6f450e04cd41bb21df8",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518452",
+        "GSM5518453",
+        "GSM5518454"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "carbon limitation, growth rate 0.6 h-1, chemostat",
+      "samples": "GSM5518455 (E. coli RNA-seq - WT C-lim 0.6 rep1); GSM5518456 (E. coli RNA-seq - WT C-lim 0.6 rep2); GSM5518457 (E. coli RNA-seq - WT C-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "carbon limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "carbon limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_RNA",
+    "file": "GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+    "metricKey": "exprEcCarbonLimitationGrowthRate06H1Chemostat",
+    "label": "Transcript carbon limitation, growth rate 0.6 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "carbon limitation, growth rate 0.6 h-1, chemostat",
+    "sha256": "4154852cbae384931a4524df4cd7caf32cc1bbfb20aedf1045c1201159b68613",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518455",
+        "GSM5518456",
+        "GSM5518457"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.1 h-1, chemostat",
+      "samples": "GSM5518458 (E. coli RNA-seq - WT N-lim 0.1 rep1); GSM5518459 (E. coli RNA-seq - WT N-lim 0.1 rep2); GSM5518460 (E. coli RNA-seq - WT N-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_RNA",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+    "metricKey": "exprEcNitrogenLimitationGrowthRate01H1Chemostat",
+    "label": "Transcript nitrogen limitation, growth rate 0.1 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.1 h-1, chemostat",
+    "sha256": "17a30c4c1f379b7bc84cf439e8f3675106ae00f230074599417d0203b9e53688",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518458",
+        "GSM5518459",
+        "GSM5518460"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.6 h-1, chemostat",
+      "samples": "GSM5518461 (E. coli RNA-seq - WT N-lim 0.6 rep1); GSM5518462 (E. coli RNA-seq - WT N-lim 0.6 rep2); GSM5518463 (E. coli RNA-seq - WT N-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_RNA",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+    "metricKey": "exprEcNitrogenLimitationGrowthRate06H1Chemostat",
+    "label": "Transcript nitrogen limitation, growth rate 0.6 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.6 h-1, chemostat",
+    "sha256": "141a0914178c9b55a09bfda58306a7d1df3578f75ec875cc025c4deedf360144",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518461",
+        "GSM5518462",
+        "GSM5518463"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "phosphate limitation, growth rate 0.1 h-1, chemostat",
+      "samples": "GSM5518464 (E. coli RNA-seq - WT P-lim 0.1 rep1); GSM5518465 (E. coli RNA-seq - WT P-lim 0.1 rep2); GSM5518466 (E. coli RNA-seq - WT P-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "phosphate limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "phosphate limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_RNA",
+    "file": "GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+    "metricKey": "exprEcPhosphateLimitationGrowthRate01H1Chemostat",
+    "label": "Transcript phosphate limitation, growth rate 0.1 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "phosphate limitation, growth rate 0.1 h-1, chemostat",
+    "sha256": "da75ccb8803e170735ac0f12a0678cc43304ab93945462dfa865295d6d0c661b",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518464",
+        "GSM5518465",
+        "GSM5518466"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "phosphate limitation, growth rate 0.6 h-1, chemostat",
+      "samples": "GSM5518467 (E. coli RNA-seq - WT P-lim 0.6 rep1); GSM5518468 (E. coli RNA-seq - WT P-lim 0.6 rep2); GSM5518469 (E. coli RNA-seq - WT P-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "phosphate limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "phosphate limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_RNA",
+    "file": "GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+    "metricKey": "exprEcPhosphateLimitationGrowthRate06H1Chemostat",
+    "label": "Transcript phosphate limitation, growth rate 0.6 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "phosphate limitation, growth rate 0.6 h-1, chemostat",
+    "sha256": "146c1b73447e1a9cba50e1043184f9013d59f139c055f250c576c827f8a46376",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518467",
+        "GSM5518468",
+        "GSM5518469"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "glucose minimal, growth rate 0.9 h-1, batch culture",
+      "samples": "GSM5518470 (E. coli RNA-seq - WT M 0.9 rep1); GSM5518471 (E. coli RNA-seq - WT M 0.9 rep2); GSM5518472 (E. coli RNA-seq - WT M 0.9 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "glucose minimal"
+      ],
+      "group": "standard",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "glucose minimal",
+          "quote": "strain: NCM3722; growth rate: 0.9 h-1; genotype: wild type; treatment: glucose minimal; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "batch culture",
+          "text": "batch culture",
+          "quote": "strain: NCM3722; growth rate: 0.9 h-1; genotype: wild type; treatment: glucose minimal; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "exponential",
+          "od": null,
+          "odNm": null,
+          "text": "batch culture, growth rate 0.9 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.9 h-1; genotype: wild type; treatment: glucose minimal; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_RNA",
+    "file": "GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_RNA.tsv",
+    "metricKey": "exprEcGlucoseMinimalGrowthRate09H1BatchCulture",
+    "label": "Transcript glucose minimal, growth rate 0.9 h-1, batch culture (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "glucose minimal, growth rate 0.9 h-1, batch culture",
+    "sha256": "b794cc0658b2a3f9545edb08bb89debcc031e46e2a92f854430b6ae4860ab3c0",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518470",
+        "GSM5518471",
+        "GSM5518472"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "defined rich MOPS, growth rate 1.8 h-1, batch culture",
+      "samples": "GSM5518473 (E. coli RNA-seq - WT G 1.8 rep1); GSM5518474 (E. coli RNA-seq - WT G 1.8 rep2); GSM5518475 (E. coli RNA-seq - WT G 1.8 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "defined rich MOPS"
+      ],
+      "group": "standard",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "defined rich MOPS",
+          "quote": "strain: NCM3722; growth rate: 1.8 h-1; genotype: wild type; treatment: defined rich MOPS; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "batch culture",
+          "text": "batch culture",
+          "quote": "strain: NCM3722; growth rate: 1.8 h-1; genotype: wild type; treatment: defined rich MOPS; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "exponential",
+          "od": null,
+          "odNm": null,
+          "text": "batch culture, growth rate 1.8 h-1",
+          "quote": "strain: NCM3722; growth rate: 1.8 h-1; genotype: wild type; treatment: defined rich MOPS; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_RNA",
+    "file": "GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_RNA.tsv",
+    "metricKey": "exprEcDefinedRichMOPSGrowthRate18H1BatchCulture",
+    "label": "Transcript defined rich MOPS, growth rate 1.8 h-1, batch culture (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "defined rich MOPS, growth rate 1.8 h-1, batch culture",
+    "sha256": "997d2b1d8f42080a62f4fb10347c05f7a9521bee9bfd8afee3ec0525dcde39d5",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518473",
+        "GSM5518474",
+        "GSM5518475"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.1 h-1, delta_rplA, chemostat",
+      "samples": "GSM5518476 (E. coli RNA-seq - ΔrplA N-lim 0.1 rep1); GSM5518477 (E. coli RNA-seq - ΔrplA N-lim 0.1 rep2); GSM5518478 (E. coli RNA-seq - ΔrplA N-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_RNA",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_RNA.tsv",
+    "metricKey": "exprEcNitrogenLimitationGrowthRate01H1DeltaRplAChemostat",
+    "label": "Transcript nitrogen limitation, growth rate 0.1 h-1, delta_rplA, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.1 h-1, delta_rplA, chemostat",
+    "sha256": "2810b1e04a697f778e00dab6f9a80197a56e0776c5b25960ddcc2bab221041c6",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518476",
+        "GSM5518477",
+        "GSM5518478"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.6 h-1, delta_rplA, chemostat",
+      "samples": "GSM5518479 (E. coli RNA-seq - ΔrplA N-lim 0.6 rep1); GSM5518480 (E. coli RNA-seq - ΔrplA N-lim 0.6 rep2); GSM5518481 (E. coli RNA-seq - ΔrplA N-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_RNA",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_RNA.tsv",
+    "metricKey": "exprEcNitrogenLimitationGrowthRate06H1DeltaRplAChemostat",
+    "label": "Transcript nitrogen limitation, growth rate 0.6 h-1, delta_rplA, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.6 h-1, delta_rplA, chemostat",
+    "sha256": "b24c840c5ae9b7f755681ad259a814408785351d5fdb1da56ec397325589ebf1",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518479",
+        "GSM5518480",
+        "GSM5518481"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "Leucine limitation, growth rate 0.1 h-1, delta_leuB, chemostat",
+      "samples": "GSM5518482 (E. coli RNA-seq - ΔleuB Leu-lim 0.1 rep1); GSM5518483 (E. coli RNA-seq - ΔleuB Leu-lim 0.1 rep2); GSM5518484 (E. coli RNA-seq - ΔleuB Leu-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "Leucine limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "Leucine limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_RNA",
+    "file": "GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_RNA.tsv",
+    "metricKey": "exprEcLeucineLimitationGrowthRate01H1DeltaLeuBChemostat",
+    "label": "Transcript Leucine limitation, growth rate 0.1 h-1, delta_leuB, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "Leucine limitation, growth rate 0.1 h-1, delta_leuB, chemostat",
+    "sha256": "4f322aae0db03ceba3f6fbad2b89c59d5932feec1dc94cbf7d48be5c0badd950",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518482",
+        "GSM5518483",
+        "GSM5518484"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "Leucine limitation, growth rate 0.6 h-1, delta_leuB, chemostat",
+      "samples": "GSM5518485 (E. coli RNA-seq - ΔleuB Leu-lim 0.6 rep1); GSM5518486 (E. coli RNA-seq - ΔleuB Leu-lim 0.6 rep2); GSM5518487 (E. coli RNA-seq - ΔleuB Leu-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "Leucine limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "Leucine limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_RNA",
+    "file": "GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_RNA.tsv",
+    "metricKey": "exprEcLeucineLimitationGrowthRate06H1DeltaLeuBChemostat",
+    "label": "Transcript Leucine limitation, growth rate 0.6 h-1, delta_leuB, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "RNA-seq",
+    "units": "RPKM over the gene's counted region, as deposited",
+    "condition": "Leucine limitation, growth rate 0.6 h-1, delta_leuB, chemostat",
+    "sha256": "378d2f6cf41eb4fa17cdd19d51c7795fd4457671367649862282063de760420d",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518485",
+        "GSM5518486",
+        "GSM5518487"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "carbon limitation, growth rate 0.1 h-1, chemostat",
+      "samples": "GSM5518488 (E. coli Ribo-seq - WT C-lim 0.1 rep1); GSM5518489 (E. coli Ribo-seq - WT C-lim 0.1 rep2); GSM5518490 (E. coli Ribo-seq - WT C-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "carbon limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "carbon limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_FP",
+    "file": "GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+    "metricKey": "riboEcCarbonLimitationGrowthRate01H1Chemostat",
+    "label": "Ribosome occupancy carbon limitation, growth rate 0.1 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "carbon limitation, growth rate 0.1 h-1, chemostat",
+    "sha256": "26968399bbe3f64be2fcacd014413e85845ec2f3d9b5868e4b547dc30065eb87",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518488",
+        "GSM5518489",
+        "GSM5518490"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "carbon limitation, growth rate 0.6 h-1, chemostat",
+      "samples": "GSM5518491 (E. coli Ribo-seq - WT C-lim 0.6 rep1); GSM5518492 (E. coli Ribo-seq - WT C-lim 0.6 rep2); GSM5518493 (E. coli Ribo-seq - WT C-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "carbon limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "carbon limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: carbon limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_FP",
+    "file": "GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+    "metricKey": "riboEcCarbonLimitationGrowthRate06H1Chemostat",
+    "label": "Ribosome occupancy carbon limitation, growth rate 0.6 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "carbon limitation, growth rate 0.6 h-1, chemostat",
+    "sha256": "11971c43be47c5080839d05df0d73c215f409fd9801c93fdf06a234caad354ff",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518491",
+        "GSM5518492",
+        "GSM5518493"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.1 h-1, chemostat",
+      "samples": "GSM5518494 (E. coli Ribo-seq - WT N-lim 0.1 rep1); GSM5518495 (E. coli Ribo-seq - WT N-lim 0.1 rep2); GSM5518496 (E. coli Ribo-seq - WT N-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_FP",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+    "metricKey": "riboEcNitrogenLimitationGrowthRate01H1Chemostat",
+    "label": "Ribosome occupancy nitrogen limitation, growth rate 0.1 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.1 h-1, chemostat",
+    "sha256": "475743cb215e208ba51fc0873c9ed02c2d929f65b710c5ba62cf0610ba57693b",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518494",
+        "GSM5518495",
+        "GSM5518496"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.6 h-1, chemostat",
+      "samples": "GSM5518497 (E. coli Ribo-seq - WT N-lim 0.6 rep1); GSM5518498 (E. coli Ribo-seq - WT N-lim 0.6 rep2); GSM5518499 (E. coli Ribo-seq - WT N-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_FP",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+    "metricKey": "riboEcNitrogenLimitationGrowthRate06H1Chemostat",
+    "label": "Ribosome occupancy nitrogen limitation, growth rate 0.6 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.6 h-1, chemostat",
+    "sha256": "f0b3a8082c4e532c0e7d0313b2ae19ca98a4d291fff7560403d12b10d8241530",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518497",
+        "GSM5518498",
+        "GSM5518499"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "phosphate limitation, growth rate 0.1 h-1, chemostat",
+      "samples": "GSM5518500 (E. coli Ribo-seq - WT P-lim 0.1 rep1); GSM5518501 (E. coli Ribo-seq - WT P-lim 0.1 rep2); GSM5518502 (E. coli Ribo-seq - WT P-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "phosphate limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "phosphate limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_FP",
+    "file": "GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+    "metricKey": "riboEcPhosphateLimitationGrowthRate01H1Chemostat",
+    "label": "Ribosome occupancy phosphate limitation, growth rate 0.1 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "phosphate limitation, growth rate 0.1 h-1, chemostat",
+    "sha256": "9c3520563356ab93a3b836224758bb16a535bd0405a99c35e8a7f1695b8de9d5",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518500",
+        "GSM5518501",
+        "GSM5518502"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "phosphate limitation, growth rate 0.6 h-1, chemostat",
+      "samples": "GSM5518503 (E. coli Ribo-seq - WT P-lim 0.6 rep1); GSM5518504 (E. coli Ribo-seq - WT P-lim 0.6 rep2); GSM5518505 (E. coli Ribo-seq - WT P-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "phosphate limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "phosphate limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: wild type; treatment: phosphate limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_FP",
+    "file": "GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+    "metricKey": "riboEcPhosphateLimitationGrowthRate06H1Chemostat",
+    "label": "Ribosome occupancy phosphate limitation, growth rate 0.6 h-1, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "phosphate limitation, growth rate 0.6 h-1, chemostat",
+    "sha256": "ef62a9d636084686bdfbf8bd6edf7e7d4f3a28ec7ec8a45381af4242cd24670a",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518503",
+        "GSM5518504",
+        "GSM5518505"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "glucose minimal, growth rate 0.9 h-1, batch culture",
+      "samples": "GSM5518506 (E. coli Ribo-seq - WT M 0.9 rep1); GSM5518507 (E. coli Ribo-seq - WT M 0.9 rep2); GSM5518508 (E. coli Ribo-seq - WT M 0.9 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "glucose minimal"
+      ],
+      "group": "standard",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "glucose minimal",
+          "quote": "strain: NCM3722; growth rate: 0.9 h-1; genotype: wild type; treatment: glucose minimal; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "batch culture",
+          "text": "batch culture",
+          "quote": "strain: NCM3722; growth rate: 0.9 h-1; genotype: wild type; treatment: glucose minimal; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "exponential",
+          "od": null,
+          "odNm": null,
+          "text": "batch culture, growth rate 0.9 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.9 h-1; genotype: wild type; treatment: glucose minimal; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_FP",
+    "file": "GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_FP.tsv",
+    "metricKey": "riboEcGlucoseMinimalGrowthRate09H1BatchCulture",
+    "label": "Ribosome occupancy glucose minimal, growth rate 0.9 h-1, batch culture (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "glucose minimal, growth rate 0.9 h-1, batch culture",
+    "sha256": "541699669b86a56774852950d309d4a48978c1d73ed30290f9e3b95dbc84fecb",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518506",
+        "GSM5518507",
+        "GSM5518508"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "defined rich MOPS, growth rate 1.8 h-1, batch culture",
+      "samples": "GSM5518509 (E. coli Ribo-seq - WT G 1.8 rep1); GSM5518510 (E. coli Ribo-seq - WT G 1.8 rep2); GSM5518511 (E. coli Ribo-seq - WT G 1.8 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "defined rich MOPS"
+      ],
+      "group": "standard",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "defined rich MOPS",
+          "quote": "strain: NCM3722; growth rate: 1.8 h-1; genotype: wild type; treatment: defined rich MOPS; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "batch culture",
+          "text": "batch culture",
+          "quote": "strain: NCM3722; growth rate: 1.8 h-1; genotype: wild type; treatment: defined rich MOPS; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "exponential",
+          "od": null,
+          "odNm": null,
+          "text": "batch culture, growth rate 1.8 h-1",
+          "quote": "strain: NCM3722; growth rate: 1.8 h-1; genotype: wild type; treatment: defined rich MOPS; culture method: batch culture",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_FP",
+    "file": "GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_FP.tsv",
+    "metricKey": "riboEcDefinedRichMOPSGrowthRate18H1BatchCulture",
+    "label": "Ribosome occupancy defined rich MOPS, growth rate 1.8 h-1, batch culture (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "defined rich MOPS, growth rate 1.8 h-1, batch culture",
+    "sha256": "57b2e672a06800c6827326c0c2b860e71130c5a2d8fafc73580ce08366d1137a",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518509",
+        "GSM5518510",
+        "GSM5518511"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.1 h-1, delta_rplA, chemostat",
+      "samples": "GSM5518512 (E. coli Ribo-seq - ΔrplA N-lim 0.1 rep1); GSM5518513 (E. coli Ribo-seq - ΔrplA N-lim 0.1 rep2); GSM5518514 (E. coli Ribo-seq - ΔrplA N-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_FP",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_FP.tsv",
+    "metricKey": "riboEcNitrogenLimitationGrowthRate01H1DeltaRplAChemostat",
+    "label": "Ribosome occupancy nitrogen limitation, growth rate 0.1 h-1, delta_rplA, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.1 h-1, delta_rplA, chemostat",
+    "sha256": "40bf4f63165dbaae2f52f290d4d47ac829d8ede81702fa5932c212bbe7024c12",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518512",
+        "GSM5518513",
+        "GSM5518514"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "nitrogen limitation, growth rate 0.6 h-1, delta_rplA, chemostat",
+      "samples": "GSM5518515 (E. coli Ribo-seq - ΔrplA N-lim 0.6 rep1); GSM5518516 (E. coli Ribo-seq - ΔrplA N-lim 0.6 rep2); GSM5518517 (E. coli Ribo-seq - ΔrplA N-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "nitrogen limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": true,
+          "text": "nitrogen limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_rplA; treatment: nitrogen limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_FP",
+    "file": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_FP.tsv",
+    "metricKey": "riboEcNitrogenLimitationGrowthRate06H1DeltaRplAChemostat",
+    "label": "Ribosome occupancy nitrogen limitation, growth rate 0.6 h-1, delta_rplA, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "nitrogen limitation, growth rate 0.6 h-1, delta_rplA, chemostat",
+    "sha256": "dfe869f5d0874f5f8cce03b71128f9250512721e7c7924c785074e10ff07187c",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518515",
+        "GSM5518516",
+        "GSM5518517"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "Leucine limitation, growth rate 0.1 h-1, delta_leuB, chemostat",
+      "samples": "GSM5518518 (E. coli Ribo-seq - ΔleuB Leu-lim 0.1 rep1); GSM5518519 (E. coli Ribo-seq - ΔleuB Leu-lim 0.1 rep2); GSM5518520 (E. coli Ribo-seq - ΔleuB Leu-lim 0.1 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "Leucine limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "Leucine limitation",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.1 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.1 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_FP",
+    "file": "GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_FP.tsv",
+    "metricKey": "riboEcLeucineLimitationGrowthRate01H1DeltaLeuBChemostat",
+    "label": "Ribosome occupancy Leucine limitation, growth rate 0.1 h-1, delta_leuB, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "Leucine limitation, growth rate 0.1 h-1, delta_leuB, chemostat",
+    "sha256": "84a9d4b35381a07d37bfa517c54d4877abaffea96e6c7b58e6c9ecadb2542d65",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518518",
+        "GSM5518519",
+        "GSM5518520"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  },
+  {
+    "record": {
+      "studyId": "GSE182100",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "NCM3722",
+      "basis": "transferred",
+      "conditionSet": "Leucine limitation, growth rate 0.6 h-1, delta_leuB, chemostat",
+      "samples": "GSM5518521 (E. coli Ribo-seq - ΔleuB Leu-lim 0.6 rep1); GSM5518522 (E. coli Ribo-seq - ΔleuB Leu-lim 0.6 rep2); GSM5518523 (E. coli Ribo-seq - ΔleuB Leu-lim 0.6 rep3)",
+      "archiveUrl": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE182100",
+      "citation": {
+        "text": "Zhang H, Dai X, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022; 18(10):e1010641.",
+        "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+        "pmid": "36264977"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "3 biological replicates; the deposit does not state whether the transcript and footprint libraries of one replicate came from one culture",
+        "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+      },
+      "treatments": [
+        "Leucine limitation"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "text": "the deposit records no temperature",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "the deposit records no irradiance, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "the deposit records no light regime, and light is not a parameter of this experiment",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "the deposit records no CO2 concentration",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "MOPS",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "Leucine limitation",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "format": {
+          "status": "reported",
+          "value": "chemostat",
+          "text": "chemostat",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": null,
+          "odNm": null,
+          "text": "chemostat, growth rate 0.6 h-1",
+          "quote": "strain: NCM3722; growth rate: 0.6 h-1; genotype: delta_leuB; treatment: Leucine limitation; culture method: chemostat",
+          "where": "GEO GSE182100 series matrix, retrieved 2026-10-07"
+        }
+      }
+    },
+    "id": "GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_FP",
+    "file": "GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_FP.tsv",
+    "metricKey": "riboEcLeucineLimitationGrowthRate06H1DeltaLeuBChemostat",
+    "label": "Ribosome occupancy Leucine limitation, growth rate 0.6 h-1, delta_leuB, chemostat (NCM3722)",
+    "organism": "Escherichia coli NCM3722",
+    "isTargetOrganism": false,
+    "assay": "ribosome profiling",
+    "units": "ribosome-footprint RPKM over the gene's counted region, as deposited",
+    "condition": "Leucine limitation, growth rate 0.6 h-1, delta_leuB, chemostat",
+    "sha256": "1922cb7200368ddcee38c20d4ad32ed0d10740cdfae1ec93727d979f2d5725fd",
+    "licence": "GEO/NCBI public repository terms over the deposit; the article is PLOS Computational Biology, CC BY 4.0. Cited, not claimed.",
+    "caveat": "Measured in Escherichia coli NCM3722, a K-12 strain but not the MG1655 shown on this page. Counts are the depositor's own, already expressed on NC_000913.3 and joined by exact gene span, so no ortholog crosswalk is involved. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale.",
+    "provenanceDoc": "data/expression/organisms/ecoli-k12-mg1655/INGESTED_SOURCES.md",
+    "citationId": "zhang-2022-translation",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "ingest": {
+      "sourceFile": "GSE182100_RAW.tar",
+      "sourceSha256": "75f1581fac48bf1e65860a673eafef49a5fa4b427103ea624f25da55d1be9467",
+      "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE182nnn/GSE182100/suppl/GSE182100_RAW.tar",
+      "columns": [
+        "GSM5518521",
+        "GSM5518522",
+        "GSM5518523"
+      ],
+      "normalization": "as-deposited",
+      "mappedGenes": 4110,
+      "unmappedIdentifiers": 0,
+      "mappingRoute": "exact gene span on NC_000913.3 after undoing --add_three, strand-aware; no ortholog crosswalk"
+    }
+  }
+]

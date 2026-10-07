@@ -20,3 +20,5 @@ data/protein-evidence/source/
 data/raw/recoded-ecoli/*.gb
 data/raw/recoded-ecoli/*.xlsx
 data/raw/recoded-ecoli/source/*
+# Pinned GEO inputs fetched by tools/ingest_ecoli_expression.py
+data/interim/expression-ecoli/

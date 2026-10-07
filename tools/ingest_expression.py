@@ -90,12 +90,15 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     prefixed with the nearest title to its left in the first listed row that
     has one, so every column has a name of its own:
     ``<block> :: <header> :: <sheet>``. A search-engine deposit of DTASelect
-    reports (``format: dtaselect``) is read by ``read_dtaselect`` instead.
+    reports (``format: dtaselect``) is read by ``read_dtaselect`` instead, and
+    an mzTab protein table (``format: mztab``) by ``read_mztab``.
     """
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
     if reader["format"] == "dtaselect":
         return read_dtaselect(data, reader["zipMembers"], reader.get("countColumn", "Spectrum Count"))
+    if reader["format"] == "mztab":
+        return read_mztab(data, reader.get("countColumn", "num_psms_ms_run[1]"))
     if reader.get("zipMember"):
         import zipfile  # noqa: PLC0415 - only for archived deposits
 
@@ -196,6 +199,58 @@ def read_dtaselect(data: bytes, members: list[str], count_column: str = "Spectru
         order.extend(identifier for identifier in counts[stem] if identifier not in order)
     rows = [[identifier] + [counts[stem].get(identifier, "") for stem in columns] for identifier in order]
     return ["Locus"] + columns, rows
+
+
+MZTAB_DECOY_COLUMN = "opt_global_cv_PRIDE:0000303_Decoy_hit"
+
+
+def read_mztab(data: bytes, count_column: str = "num_psms_ms_run[1]") -> tuple[list[str], list[list[str]]]:
+    """Read an mzTab protein table into an accession column and one count column.
+
+    An mzTab file carries its protein table as a ``PRH`` header row followed by
+    one ``PRT`` row per protein (mzTab 1.0 section 6.2); the metadata, peptide
+    and PSM sections are skipped. A row the file flags as a decoy hit in
+    ``opt_global_cv_PRIDE:0000303_Decoy_hit`` is dropped, so a deposit that
+    still carries decoys cannot inflate a count, and a protein whose count cell
+    is empty or ``null`` is left out rather than read as zero.
+
+    The count column is named plainly in the returned header, because a spec
+    reading several mzTab files joins them and suffixes each column with its
+    file's label.
+    """
+    text = data.decode("utf-8-sig")
+    header: list[str] | None = None
+    out: list[list[str]] = []
+    seen: set[str] = set()
+    for line in text.splitlines():
+        if line.startswith("PRH\t"):
+            header = line.split("\t")
+            if "accession" not in header:
+                raise ValueError("mzTab PRH header names no accession column")
+            if count_column not in header:
+                raise ValueError(f"mzTab PRH header names no {count_column!r} column")
+            continue
+        if not line.startswith("PRT\t"):
+            continue
+        if header is None:
+            raise ValueError("mzTab PRT row appears before its PRH header")
+        fields = line.split("\t")
+        if len(fields) < len(header):
+            raise ValueError("mzTab PRT row is narrower than its PRH header")
+        if MZTAB_DECOY_COLUMN in header and fields[header.index(MZTAB_DECOY_COLUMN)] in ("1", "true", "TRUE"):
+            continue
+        accession = fields[header.index("accession")].strip()
+        count = fields[header.index(count_column)].strip()
+        if not accession or count in ("", "null"):
+            continue
+        # One accession twice would silently keep only one of its counts.
+        if accession in seen:
+            raise ValueError(f"mzTab protein table names {accession!r} twice")
+        seen.add(accession)
+        out.append([accession, count])
+    if header is None:
+        raise ValueError("mzTab file holds no PRH protein header")
+    return ["accession", "num_psms"], out
 
 
 def _dtaselect_counts(text: str, count_column: str, member: str) -> dict[str, str]:
