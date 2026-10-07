@@ -530,3 +530,13 @@ def test_fitness_schedule_and_inoculum_do_not_become_sampling_claims(tmp_path):
     changed.write_text(FITNESS_AUDIT.read_text()+" ")
     with pytest.raises(ValueError, match="fitness overlay evidence SHA-256 changed"):
         rescore._validate_evidence(_evidence_inputs(fitness=changed))
+
+
+def test_fitness_preparation_explanation_does_not_leak_to_other_sources():
+    value = record(row=2, acc="GSE102914", phase="OD stated", od=[0.27, 0.27], od_nm=730)
+    assert rescore._gap_reason(value, "growth_phase") == "A numeric OD is reported without an explicit sampling phase."
+    _, inventory, _ = _real_inputs()
+    affected = {2, 17, 18, 32, 62, 63, 64, 65, 68, 76, 77}
+    for item in inventory["gaps"]:
+        if item["condition_row"] in affected:
+            assert "OD750 0.5 describes assay inoculation" not in json.dumps(item)

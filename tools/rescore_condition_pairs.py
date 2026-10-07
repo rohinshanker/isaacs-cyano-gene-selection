@@ -761,7 +761,7 @@ def _gap_reason(record: dict[str, Any], field: str) -> str | None:
         if phase is None:
             return "Sampling phase is unknown."
         if phase == "OD stated":
-            return "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown."
+            return "A numeric OD is reported without an explicit sampling phase."
         if phase == "stationary" or phase in KNOWN_UNSUPPORTED_PHASES:
             return None
         if phase == "two phases in one set":

@@ -400,7 +400,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.27",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 2; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730nm adjusted to 0.27 (3.10E8 cells/mL) at start of exposure"
     },
     {
@@ -598,7 +598,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.3",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 17; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 = 0.3"
     },
     {
@@ -642,7 +642,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.3–0.35",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 18; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 = 0.30–0.35 (at time of H2O2 exposure)"
     },
     {
@@ -917,7 +917,7 @@
       "status": "partial",
       "value": "OD stated; OD730 1",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 32; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730~1"
     },
     {
@@ -1555,7 +1555,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.8",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 62; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 = 0.8"
     },
     {
@@ -1577,7 +1577,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.8",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 63; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 = 0.8"
     },
     {
@@ -1599,7 +1599,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.8",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 64; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 = 0.8"
     },
     {
@@ -1621,7 +1621,7 @@
       "status": "partial",
       "value": "OD stated; OD730 0.8",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 65; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 = 0.8"
     },
     {
@@ -1709,7 +1709,7 @@
       "status": "partial",
       "value": "OD stated; OD750 0.6",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 68; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "Starting OD750 = 0.2 at inoculation; harvested after 14 days under HL; OD750 of HL culture = 0.6 just before LL transfer"
     },
     {
@@ -2083,7 +2083,7 @@
       "status": "partial",
       "value": "OD stated; OD730 1",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 76; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "OD730 ~1.0"
     },
     {
@@ -2105,7 +2105,7 @@
       "status": "partial",
       "value": "OD stated; OD750 2",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 77; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "OD750 0.5 describes assay inoculation, not the harvested fraction; sampling phase and sampling OD remain unknown.",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": "main cultures inoculated at OD750 = 0.4, grown for 4 days, harvested at OD750 equivalent of 2"
     },
     {
