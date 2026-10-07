@@ -42,7 +42,7 @@ async (page) => {
   try {
     await page.goto('about:blank');
     await page.goto(`${base}#ver=6&c=type.fitness.rb-tnseq.fitness&pc=none`);
-    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 90 fractions'));
+    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 90 condition sets'));
     check(await page.locator('#legend .provenance-warning').innerText()
       .then((text) => text.includes('1,819 of 2,715')), 'recovered gene coverage reaches the visible metric');
     for (const [width, height] of sizes) {
@@ -104,10 +104,10 @@ async (page) => {
     await grid.getByRole('button', { name: 'Done', exact: true }).click();
     check(await row.innerText().then((text) => text.includes('2 selected')), 'subset returns to selection draft');
     await mainPeek.getByRole('button', { name: 'Done', exact: true }).click();
-    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 2 fractions'));
+    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 2 condition sets'));
     const sharedUrl = page.url();
     await page.reload();
-    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 2 fractions'));
+    await page.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 2 condition sets'));
     await openSelection();
     check(await row.innerText().then((text) => text.includes('2 selected')), 'link restores exact subset');
     await chooser.click();
@@ -126,7 +126,7 @@ async (page) => {
       restored.on('requestfailed', onRequest);
       await restored.emulateMedia({ reducedMotion: 'reduce' });
       await restored.goto(sharedUrl);
-      await restored.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 2 fractions'));
+      await restored.waitForFunction(() => document.querySelector('#legend')?.textContent.includes('across 2 condition sets'));
       await restored.locator('#data-sources summary').click();
       await restored.locator('#data-sources .data-sources-change').click();
       await restored.getByRole('tab', { name: 'Fitness screen (99)', exact: true }).click();

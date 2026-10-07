@@ -3,9 +3,8 @@
  *
  * Ninety condition sets joined the one fitness type that already held nine
  * GSE205443 biofilm fractions. The type pools whatever it is given, so the
- * question these tests pin is what it is given by default: averaging
- * plain-growth fitness, 85 chemical stresses and a biofilm assay would answer
- * none of the three questions.
+ * question these tests pin is its default scope: the owner chose the whole
+ * compendium, and the separate biofilm study stays out of that mean.
  *
  * These read the shipped payload rather than a fixture, because the thing worth
  * protecting is the real default a reader gets.
@@ -50,7 +49,7 @@ test('the compendium still records a stress as a stress, not as standard growth'
   );
 });
 
-test('every stressed condition set is marked as such, so none can become the default', () => {
+test('every condition set retains its reported group under the pooled default', () => {
   const groups = {};
   for (const source of fitness) {
     groups[source.record.group] = (groups[source.record.group] ?? 0) + 1;
