@@ -47,7 +47,6 @@ their reusable guidance distilled into `docs/validation/`.
 | [O_data-sources-selection__20261005](O_data-sources-selection__20261005.md) | Build the Data Sources feature: the section below "Color by", the data selection peek with groups, subgroups, filters and per-row source details, the source controls in filters, axes and projection views, structured condition records, and per-dataset loading. Design fixed by the owner 2026-10-05; prototype done; build in progress on main |
 | [O_fitness-screen-data-type__20261005](O_fitness-screen-data-type__20261005.md) | Condition-resolved fitness screens as their own data type and tab, admitted by owner decision 2026-10-05. GSE205443 shipped 2026-10-06 as nine signed fitness layers (the authors' published values, one per biofilm-assay fraction) in the Fitness family and the Fitness screen tab; open: the sweep of 28 unread GEO transposon/essentiality records |
 | [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md) | Prepared: 20 desktop/tablet renders and the numbered text inventory. Owner decision 2026-10-06: leave open for human keep/move/merge/remove marks, then agents apply them |
-| [O_agent-topology-and-handoff__20260928](O_agent-topology-and-handoff__20260928.md) | Owner-side half of the Claude Science topology: which agent profiles to create in that account and their loadouts, and ratification of the mandatory-validation trigger list. The mechanism lives in [claude-science-handoff.md](../../validation/claude-science-handoff.md) |
 
 ## Pending Claude Science
 
