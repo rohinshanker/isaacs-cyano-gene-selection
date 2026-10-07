@@ -9,6 +9,8 @@ data/raw/**/*.gz
 data/raw/**/*.txt
 !data/raw/*/
 !data/raw/**/md5checksums.txt
+# Pinned annotation inputs fetched by tools/ecoli_annotation_layer.py
+data/raw/**/annotation/*
 data/interim/
 data/protein-evidence/source/
 .pytest_cache/

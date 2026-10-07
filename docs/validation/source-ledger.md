@@ -165,6 +165,8 @@ record:
 | GCF_022984195.1 | PCC 6301 | permitted: cite NCBI RefSeq, and the named curator source where NCBI names one (owner decision 2026-10-06; was a reproducibility input only) |
 | GCF_000010065.1 | PCC 6301 | permitted: cite NCBI RefSeq, and the named curator source where NCBI names one (owner decision 2026-10-06; was a reproducibility input only) |
 | GCF_000817325.1 | PCC 6301 | rejected: duplicate of the genome of record; no decision |
+| UniProtKB UP000000625 | E. coli K-12 MG1655 | permitted: cite UniProtKB (CC BY 4.0); curated function and GO join for the E. coli annotation layer, admitted 2026-10-06 |
+| UniProt-GOA 18.E_coli_MG1655.goa | E. coli K-12 MG1655 | permitted: cite the Gene Ontology Consortium (CC BY 4.0); evidence-coded GO relationships for the E. coli annotation layer, admitted 2026-10-06 |
 | GCF_022984265.1 | PCC 6311 | permitted: cite NCBI RefSeq, and the named curator source where NCBI names one (owner decision 2026-10-06; was a reproducibility input only) |
 | GCF_030544905.1 | PCC 7942 | permitted: cite NCBI RefSeq, and the named curator source where NCBI names one (owner decision 2026-10-06; was a reproducibility input only) |
 | GCF_000012525.1 | PCC 7942 | permitted: cite NCBI RefSeq, and the named curator source where NCBI names one (owner decision 2026-10-06; was a reproducibility input only) |

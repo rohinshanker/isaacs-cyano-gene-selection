@@ -117,6 +117,15 @@ function annotationDisclosure(gene, meta, goTerms) {
     labelledList('Replicon', [model.replicon]),
     labelledList('Annotation method', model.methods),
     labelledList('Inference', model.inferences),
+  );
+  if (model.curatedFunction) {
+    const curated = model.curatedFunction;
+    list.append(
+      labelledList('UniProtKB entry', [curated.heading, curated.proteinName].filter(Boolean)),
+      labelledList('Curated function (UniProtKB)', curated.functions),
+    );
+  }
+  list.append(
     labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
     labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
     labelledList('GO relationships', model.go.map((entry) => entry.text)),

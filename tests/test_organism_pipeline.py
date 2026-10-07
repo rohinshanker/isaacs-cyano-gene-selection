@@ -27,7 +27,7 @@ def test_default_and_named_organisms_are_explicit() -> None:
     assert default.path("outputDirectory") == ROOT / "site/data"
     assert ecoli.accession == "GCF_000005845.2"
     assert ecoli.path("rawDirectory") == ROOT / "data/raw/ecoli-k12-mg1655"
-    assert ecoli.optionalLayers == []
+    assert ecoli.optionalLayers == ["annotation"]
 
 
 def test_unknown_organism_id_fails_loudly() -> None:

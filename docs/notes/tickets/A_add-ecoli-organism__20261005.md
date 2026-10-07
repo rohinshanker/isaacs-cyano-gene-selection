@@ -223,9 +223,20 @@ genome-derived metrics only):
 4. For each admitted source, the admission contract: a manifest entry, checksum
    pin, the documented join to `b`-number locus tags with matched, unmatched,
    and ambiguous counts, the organism record's layer declaration, and contract
-   and UI tests. The first candidates need no further permission step:
-   UniProtKB function and GO (CC BY 4.0), then PRECISE-1K transcript abundance
-   (MIT over the files).
+   and UI tests. **UniProtKB function and GO shipped 2026-10-06** (owner: proceed
+   with the suggested path) as the E. coli `annotation` layer:
+   `tools/ecoli_annotation_layer.py` pins UniProtKB proteome UP000000625 (4,403
+   reviewed entries; 4,384 loci joined through the ordered locus name, one
+   entry naming two loci carried to both with its ambiguity) and the UniProt-GOA
+   file 18.E_coli_MG1655.goa (54,437 rows; 54,409 joined, 4 rows whose
+   accession names no locus, 24 naming a locus the GFF lacks), writes the
+   release under `data/annotation/releases/GCF_000005845.2-UniProtGOA_2026-07-28/`
+   and the organism's GO-name lookup from the pinned 2026-05-19 ontology (all
+   4,085 terms present). The gene detail shows the UniProtKB entry and its
+   function sentences under "Annotation evidence"; GO search works. Next:
+   PRECISE-1K transcript abundance (MIT over the files) under the admission
+   contract, then the regulatory-site papers, then Mori 2021 and Choe 2022
+   behind the EQ353 question.
 5. An annotation-evidence and GO layer for E. coli, which needs the annotation
    release tooling generalised beyond UTEX 2973.
 

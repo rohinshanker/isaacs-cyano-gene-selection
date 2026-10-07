@@ -1,0 +1,65 @@
+{
+  "assemblyAccession": "GCF_000005845.2",
+  "counts": {
+    "annotationEvidenceRecords": 4651,
+    "goAmbiguousRelationships": 0,
+    "goMappedLoci": 3961,
+    "goMappedRelationships": 54409,
+    "goSourceRecords": 54437,
+    "goUniqueTerms": 4085,
+    "goUnknownLocusRows": 24,
+    "goUnmatchedAccessionRows": 4,
+    "lociWithCuratedFunction": 3118,
+    "lociWithNearbyNoncodingRna": 336,
+    "lociWithOverlappingCds": 1303,
+    "lociWithSeveralUniprotEntries": 1,
+    "lociWithUniprotEntry": 4384,
+    "nearbyNoncodingRnaRelationships": 461,
+    "overlappingCdsPairs": 746,
+    "partialLoci": 0,
+    "pseudogenes": 145,
+    "translationalExceptionLoci": 3,
+    "uniprotEntries": 4403,
+    "uniprotEntriesWithoutLocus": 1
+  },
+  "generatedFiles": {
+    "annotation-evidence-v1.jsonl": {
+      "byteSize": 5854364,
+      "sha256": "f29cb3a6e52568f9d0f3e751f4efea4cc64aac512bd233634b9d768296110d8d"
+    },
+    "go-annotations-v1.tsv": {
+      "byteSize": 8549534,
+      "sha256": "ba7e3514e8651a8a56be846df51c1395dc45cb66b707d88d36a0dcfb9958fe90"
+    }
+  },
+  "inputs": {
+    "gaf": {
+      "byteSize": 10026754,
+      "generated": "2026-07-28",
+      "goVersion": "2026-07-26",
+      "name": "18.E_coli_MG1655.goa",
+      "path": "data/raw/ecoli-k12-mg1655/annotation/18.E_coli_MG1655.goa",
+      "sha256": "12694eed60b0caf54b5edbce367ca2d47df50c6691a734f27ab9f72249a7f06f",
+      "url": "https://ftp.ebi.ac.uk/pub/databases/GO/goa/proteomes/18.E_coli_MG1655.goa"
+    },
+    "gff": {
+      "path": "data/raw/ecoli-k12-mg1655/GCF_000005845.2_ASM584v2_genomic.gff.gz",
+      "sha256": "afdf03dc1d06e423d874ee29d9e0df14f5d32baf893f4da9f93aa721eb5f495e"
+    },
+    "uniprot": {
+      "byteSize": 2134190,
+      "name": "uniprot_UP000000625.tsv",
+      "path": "data/raw/ecoli-k12-mg1655/annotation/uniprot_UP000000625.tsv",
+      "retrieved": "2026-10-06",
+      "sha256": "8961fc6f35769029eeab2c4a392505584008bbb0106307779870519a56f52c88",
+      "url": "https://rest.uniprot.org/uniprotkb/stream?query=proteome:UP000000625&format=tsv&fields=accession,id,reviewed,gene_primary,gene_oln,gene_synonym,protein_name,cc_function,xref_refseq,protein_existence,length,date_modified,version"
+    }
+  },
+  "licences": {
+    "go": "Gene Ontology Consortium, CC BY 4.0; GOA annotations by EcoCyc, UniProt, InterPro and others",
+    "uniprot": "UniProtKB, CC BY 4.0 (The UniProt Consortium)"
+  },
+  "organism": "ecoli-k12-mg1655",
+  "releaseId": "GCF_000005845.2-UniProtGOA_2026-07-28",
+  "schemaVersion": 1
+}

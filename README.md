@@ -267,6 +267,8 @@ candidate build is:
 
 ```sh
 ./tools/fetch_genome.sh --organism ecoli-k12-mg1655
+./.venv/bin/python tools/ecoli_annotation_layer.py fetch           # UniProtKB and GOA inputs, pinned
+./.venv/bin/python tools/ecoli_annotation_layer.py build --obo <go-basic.obo 2026-05-19>
 ./.venv/bin/python scripts/build_features.py --organism ecoli-k12-mg1655
 ./.venv/bin/python tools/build_data_manifest.py build --organism ecoli-k12-mg1655
 ./.venv/bin/python tools/validate_contract.py --organism ecoli-k12-mg1655

@@ -656,6 +656,18 @@ until it is made, this paragraph is the contract's record that the exception
 exists.
 
 `annotations.json` is an object keyed by every published gene's exact locus tag.
+Each record may also carry `curatedFunction`: null for UTEX 2973, and for
+E. coli K-12 MG1655 (since 2026-10-06) the UniProtKB entry joined to the locus
+through its ordered locus name: `accession`, `entryName`, `reviewed`,
+`proteinName`, `function` (the curators' FUNCTION sentences, one string per
+block, empty when UniProt states none), `existence`, `entryVersion`,
+`modified`, `mappingMethod`, `mappingAmbiguity` (an entry naming several loci is
+carried to each and says so) and `otherEntries`. The E. coli GO relationships
+come from the UniProt-GOA proteome file, not a RefSeq GAF, so their evidence
+codes include experimental ones and `assignedBy` names EcoCyc, UniProt,
+InterPro and others; the builder is `tools/ecoli_annotation_layer.py`, whose
+release directory the organism config names. The viewer shows the function as
+the curators' sentences and never derives a category from it.
 The loader requires it when `meta.annotationRelease` is present and attaches its
 record to the in-memory gene as `annotationEvidence`. Keeping this relationship
 payload separate preserves the `genes.json` interaction budget. It is not a

@@ -490,6 +490,9 @@ def load_annotation_layer(
             "overlappingCds": source.get("overlappingCds", []),
             "nearbyNoncodingRnas": source.get("nearbyNoncodingRnas", []),
             "goAnnotations": go_by_locus.get(locus, []),
+            # A curated UniProtKB entry where the release carries one (E. coli);
+            # null where the release has none (UTEX 2973).
+            "curatedFunction": source.get("curatedFunction"),
         }
 
     metadata = {

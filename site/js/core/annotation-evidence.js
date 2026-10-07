@@ -23,7 +23,24 @@ export function annotationEvidenceModel(gene, meta = {}, goTerms = null) {
   const methods = Array.isArray(evidence.annotationMethods) ? evidence.annotationMethods : [];
   const inferences = Array.isArray(evidence.inferences) ? evidence.inferences : [];
   const release = meta.annotationRelease ?? {};
+  const curated = evidence.curatedFunction && typeof evidence.curatedFunction === 'object'
+    ? evidence.curatedFunction : null;
   return {
+    // A curated UniProtKB entry joined to the locus, where the release carries
+    // one: the function text stays the curators' sentences, never a category.
+    curatedFunction: curated ? {
+      accession: curated.accession,
+      entryName: curated.entryName,
+      proteinName: curated.proteinName,
+      reviewed: curated.reviewed === true,
+      existence: curated.existence,
+      functions: Array.isArray(curated.function) ? curated.function : [],
+      mappingAmbiguity: curated.mappingAmbiguity || '',
+      heading: `${curated.accession}${curated.entryName ? ` (${curated.entryName})` : ''}`
+        + `${curated.reviewed === true ? ', reviewed' : ''}`
+        + `${curated.existence ? ` · ${curated.existence}` : ''}`
+        + `${curated.mappingAmbiguity ? ` · ${curated.mappingAmbiguity}` : ''}`,
+    } : null,
     releaseId: release.releaseId ?? evidence.releaseId ?? 'release not recorded',
     replicon: [evidence.repliconType, evidence.repliconName]
       .filter(Boolean).filter((value, index, values) => values.indexOf(value) === index)

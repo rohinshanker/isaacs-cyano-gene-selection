@@ -38,6 +38,23 @@ test('annotation evidence retains risk relationships and evidence-coded GO seman
     'GO:0000001': { name: 'example process', isObsolete: true },
   });
   assert.match(withName.go[0].text, /example process \[obsolete ID in pinned GO name release\]/);
+  assert.equal(model.curatedFunction, null, 'a release without UniProt entries has no curated function');
+});
+
+test('a curated UniProtKB entry is shown as the curators\' sentences, never as a category', () => {
+  const gene = { annotationEvidence: { goAnnotations: [], curatedFunction: {
+    accession: 'P00001', entryName: 'AAA_ECOLI', reviewed: true, proteinName: 'Protein A',
+    existence: 'Evidence at protein level', function: ['Does A.', 'Also B.'],
+    mappingAmbiguity: 'entry names several loci: b0002, b0004',
+  } } };
+  const model = annotationEvidenceModel(gene, {});
+  assert.deepEqual(model.curatedFunction.functions, ['Does A.', 'Also B.']);
+  assert.equal(model.curatedFunction.heading,
+    'P00001 (AAA_ECOLI), reviewed · Evidence at protein level · entry names several loci: b0002, b0004');
+  assert.equal(model.curatedFunction.proteinName, 'Protein A');
+  const bare = annotationEvidenceModel({ annotationEvidence: { curatedFunction: { accession: 'P2' } } }, {});
+  assert.deepEqual(bare.curatedFunction.functions, []);
+  assert.equal(bare.curatedFunction.heading, 'P2');
 });
 
 test('annotation evidence is optional and malformed lists stay explicit and empty', () => {

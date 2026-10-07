@@ -25,6 +25,20 @@
           "url": "https://doi.org/10.1126/science.277.5331.1453",
           "contribution": "The original K-12 MG1655 genome sequence, maintained since as GenBank U00096 and mirrored by RefSeq NC_000913.3, from which every coordinate, codon, and folding window in this dataset is taken.",
           "downloads": []
+        },
+        {
+          "id": "uniprotkb-ecoli",
+          "citation": "The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Research 53, D609–D617 (2025). doi:10.1093/nar/gkae1010. UniProtKB proteome UP000000625 (Escherichia coli K-12), TSV retrieved 2026-10-06.",
+          "url": "https://www.uniprot.org/proteomes/UP000000625",
+          "contribution": "The curated function text, protein name, existence level and entry identity shown for each E. coli gene under \"Annotation evidence\", joined to the RefSeq locus tag through the entry's ordered locus name (b number) by tools/ecoli_annotation_layer.py; 4,403 reviewed entries, 4,384 loci joined, 3,118 with a function statement. An entry naming several loci is carried to each with its ambiguity stated. UniProtKB data are CC BY 4.0.",
+          "downloads": []
+        },
+        {
+          "id": "goa-ecoli",
+          "citation": "Gene Ontology Consortium. UniProt-GOA proteome annotation file 18.E_coli_MG1655.goa (generated 2026-07-28, GO version 2026-07-26); Ashburner M et al., Nature Genetics 25, 25–29 (2000), doi:10.1038/75556; Gene Ontology Consortium, The Gene Ontology knowledgebase in 2026, Nucleic Acids Research (2025), doi:10.1093/nar/gkaf1292; term names from go-basic.obo release 2026-05-19.",
+          "url": "https://geneontology.org/docs/go-citation-policy/",
+          "contribution": "Evidence-coded Gene Ontology relationships in gene details and GO-term search for E. coli: every row of the GOA file joined to a locus through its UniProtKB accession (54,062 relationships over 3,900 site genes, assigned by EcoCyc, UniProt, InterPro, GO_Central and others; evidence codes kept, computational and experimental alike). GO data and products: © 1999–2026 Gene Ontology Consortium, CC BY 4.0.",
+          "downloads": []
         }
       ]
     },

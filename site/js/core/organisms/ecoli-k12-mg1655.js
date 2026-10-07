@@ -1,10 +1,12 @@
 /**
  * Escherichia coli K-12 MG1655.
  *
- * A RefSeq-only release: sequence, annotation, and what is computed from them.
- * It declares no study-bound evidence layer, so none is requested, drawn, or
- * exported, and nothing here names another organism. The field contract is in
- * `../organisms.js`.
+ * The RefSeq release (sequence, annotation, and what is computed from them)
+ * with one annotation layer: UniProtKB's curated function and the UniProt-GOA
+ * evidence-coded GO relationships, joined by locus tag (owner decision,
+ * 2026-10-06). It declares no study-bound evidence layer, so none is
+ * requested, drawn, or exported, and nothing here names another organism. The
+ * field contract is in `../organisms.js`.
  */
 export const ECOLI_K12_MG1655 = {
   id: 'ecoli-k12-mg1655',
@@ -61,8 +63,9 @@ export const ECOLI_K12_MG1655 = {
       + 'transcription-termination-site data set is admitted for this strain, so none of those '
       + 'tracks is drawn.',
     directProteomicsLabel: 'Direct proteomics detection',
-    goSearchNote: 'GO matches are RefSeq computational suggestions, not experimentally tested '
-      + 'functions. Review their evidence before selecting a candidate.',
+    goSearchNote: 'GO matches come from UniProt-GOA with their evidence codes: some are '
+      + 'experimental (IDA, IMP, EXP), many are computational (IEA, IBA). Read the code before '
+      + 'selecting a candidate.',
     metricMethods: {},
     metricReading: {
       cai: 'A convention-derived index, not a measurement: read it as supporting context '
@@ -72,7 +75,9 @@ export const ECOLI_K12_MG1655 = {
       expressionProxy: 'A rank built from CAI and tAI, so it inherits both conventions: '
         + 'read it as supporting context.',
     },
-    goTermsCaveat: 'GO relationships are RefSeq computational suggestions, not experimentally '
-      + 'tested functions. Obsolete GO IDs retain their historical names and are not remapped.',
+    goTermsCaveat: 'GO relationships are UniProt-GOA annotations with their evidence codes, '
+      + 'assigned by EcoCyc, UniProt, InterPro and others; an IEA or IBA row is computational, '
+      + 'an IDA, IMP or EXP row cites an experiment. Obsolete GO IDs retain their historical '
+      + 'names and are not remapped.',
   },
 };

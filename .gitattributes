@@ -23,3 +23,4 @@ docs/notes/handoff/*.tsv -whitespace
 # served: an empty last field leaves a trailing tab on the row, which is its
 # content, not damage. Exempt from the text whitespace gate, not reformatted.
 data/expression/ingest/uniprot_pcc7942_orf_names.tsv -whitespace
+data/annotation/releases/*/go-annotations-v1.tsv -whitespace

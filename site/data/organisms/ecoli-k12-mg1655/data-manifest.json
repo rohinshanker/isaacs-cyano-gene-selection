@@ -1,8 +1,12 @@
 {
   "files": {
+    "annotations.json": {
+      "bytes": 17375529,
+      "sha256": "dc060d80d1cf6bd3f3c390bef61b2662303bda0b5018ad3854e9ca39fccd53b1"
+    },
     "citations.json": {
-      "bytes": 9883,
-      "sha256": "60dc760e8e4eae6b2172cc296f9737c9a63753946aab27970d01c994389b75bb"
+      "bytes": 11738,
+      "sha256": "b53134062a22f6be0ab09da1cdd1b4806c9662110e4fc657411cf4a786f719dd"
     },
     "codon_pca.json": {
       "bytes": 5330,
@@ -16,9 +20,13 @@
       "bytes": 8042652,
       "sha256": "171ecc78e98a44d6d00b1f143eefa1efe5b2094164d935122840a6bfbbdac2b2"
     },
+    "go-term-names-v1.json": {
+      "bytes": 462101,
+      "sha256": "f15a0f0691e4ad9d623cfe4776b348a664b0787d0d7303e0039b35b99c2f8936"
+    },
     "meta.json": {
-      "bytes": 21598,
-      "sha256": "544845ab230b58112ec4d57f968f524bfff457d7cad3597a4252cfee6b757b9d"
+      "bytes": 22344,
+      "sha256": "919d7d4e108de0321f737bebc66c7fafc0ace0adde00316b95cbb2c1818276a5"
     }
   },
   "schemaVersion": 1
