@@ -11,11 +11,13 @@ Reproduce the audit from the versioned site data:
 .venv/bin/python tools/audit_pca_length.py > /tmp/cyano-pca-length-audit.json
 ```
 
-The script rejects a changed RSCU order or a failure to reconstruct published
-PC1/PC2 scores (maximum observed difference was 0.0000023). It uses seed 2973,
-20 within-gene draws, 75 sense codons per draw, and a 1,000-resample gene-level
-bootstrap. The 75-codon sample matches the short stratum's median 225 nt. The
-source `site/data/genes.json` contains the exact packed codons and RSCU values.
+The script rejects a changed RSCU order, a payload built from a different gene
+file, or a failure to reconstruct published PC1/PC2 scores (maximum observed
+difference was 0.0000023). It uses seed 2973, 20 within-gene draws, 75 sense
+codons per draw, and a 1,000-resample gene-level bootstrap. The 75-codon sample
+matches the short stratum's median 225 nt. The sources are
+`site/data/genes.json` for the exact packed codons and
+`site/data/codon_rscu.json` for the RSCU values, keyed to the same gene order.
 
 | Quantity | PC1 | PC2 |
 | --- | ---: | ---: |

@@ -792,10 +792,6 @@ function main(args) {
       cdsSegments: g === 17 || g === 41
         ? [[gene.start, gene.start + 71], [gene.start + 73, gene.end]]
         : null,
-      rscu: Array.from(
-        rscuMatrix.subarray(g * rscuOrder.length, (g + 1) * rscuOrder.length),
-        (value) => Math.round(value * 1e4) / 1e4,
-      ),
       codonPca: Array.from(
         codonPcaResult.scores.subarray(g * codonPcaResult.components, (g + 1) * codonPcaResult.components),
         (value) => Math.round(value * 1e4) / 1e4,
@@ -1000,6 +996,19 @@ function main(args) {
     };
   }
 
+  // The per-gene RSCU vectors ride apart from genes.json, keyed to its gene
+  // order: nothing in the browser reads one, and the column order stays in
+  // meta.rscuOrder. The loader has no entry for this file, so the page never
+  // asks for it even though the manifest describes it.
+  const codonRscuFile = {
+    schemaVersion: 1,
+    geneIds: records.map((record) => record.id),
+    rscu: records.map((_, g) => Array.from(
+      rscuMatrix.subarray(g * rscuOrder.length, (g + 1) * rscuOrder.length),
+      (value) => Math.round(value * 1e4) / 1e4,
+    )),
+  };
+
   const codonPcaFile = {
     explainedVariance: Array.from(codonPcaResult.explained, (value) => Math.round(value * 1e5) / 1e5),
     loadings: rscuOrder.map((codon, c) => ({
@@ -1042,7 +1051,9 @@ function main(args) {
     };
   }
 
-  return { meta, records, codonPcaFile, excludedFile, annotationsFile, goTermsFile };
+  return {
+    meta, records, codonRscuFile, codonPcaFile, excludedFile, annotationsFile, goTermsFile,
+  };
 }
 
 /** The content manifest for a set of files: each one's byte size and SHA-256. */
@@ -1074,12 +1085,13 @@ function contentManifest(files) {
 export function buildFixture(options = {}) {
   const resolved = resolveOptions(options);
   const {
-    meta, records, codonPcaFile, excludedFile, annotationsFile, goTermsFile,
+    meta, records, codonRscuFile, codonPcaFile, excludedFile, annotationsFile, goTermsFile,
   } = main(resolved);
   const files = {
     'meta.json': `${JSON.stringify(meta, null, 1)}\n`,
     'genes.json': `${JSON.stringify(records)}\n`,
     'codon_pca.json': `${JSON.stringify(codonPcaFile, null, 1)}\n`,
+    'codon_rscu.json': `${JSON.stringify(codonRscuFile)}\n`,
     'excluded.json': `${JSON.stringify(excludedFile, null, 1)}\n`,
   };
   if (annotationsFile) {

@@ -97,9 +97,15 @@ test('the second organism loads from its own directory, every optional layer abs
   assert.deepEqual([...new Set(dataset.genes.map((gene) => gene.seqid))], ['NC_000913.3']);
   assert.deepEqual(dataset.meta.genome,
     { accession: 'GCF_000005845.2', taxid: 511145, totalLength: 4641652 });
-  // Exactly the files its manifest publishes, each once, and nothing else.
+  // Exactly the files the loader has an entry for, each once, and nothing else.
   assert.deepEqual([...requested].sort(),
     [DATA_MANIFEST_NAME, 'codon_pca.json', 'excluded.json', 'genes.json', 'meta.json'].sort());
+  // The RSCU payload is published and described by the manifest, and the page
+  // still never asks for it: nothing in the browser reads a per-gene vector, so
+  // it has no loader entry and joins no tier.
+  const manifest = JSON.parse(ecoliFixtureFiles()[DATA_MANIFEST_NAME]);
+  assert.ok('codon_rscu.json' in manifest.files);
+  assert.ok(!requested.includes('codon_rscu.json'));
   const states = Object.fromEntries(Object.entries(dataset.files)
     .map(([key, record]) => [key, record.state]));
   for (const key of ['meta', 'genes', 'codonPca', 'excluded']) {

@@ -17,6 +17,7 @@ from build_features import (
     cds_segments,
     circular_slice,
     codon_occurrences,
+    codon_rscu_document,
     effective_anticodon,
     exclusion_reason,
     expression_layers_document,
@@ -369,6 +370,20 @@ def test_expression_layers_document_holds_layer_sources_in_gene_order():
         "layers": {"exprA": [1.5, None, 3.0], "exprB": [None, None, None]},
     }
     assert expression_layers_document(genes, sources[:1], values) is None
+
+
+def test_codon_rscu_document_holds_every_vector_in_gene_order():
+    genes = [
+        {"id": "g1", "rscu": [1.5, 0.0]},
+        {"id": "g2", "rscu": [0.0, 2.0]},
+    ]
+    assert codon_rscu_document(genes) == {
+        "schemaVersion": 1,
+        "geneIds": ["g1", "g2"],
+        "rscu": [[1.5, 0.0], [0.0, 2.0]],
+    }
+    # The column order is not repeated here: it stays in meta.rscuOrder.
+    assert "rscuOrder" not in codon_rscu_document(genes)
 
 
 def test_expression_manifest_rejects_an_empty_citation_id(tmp_path):

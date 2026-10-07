@@ -40,7 +40,7 @@ test('its manifest lists exactly what it publishes, so every optional layer is a
   const manifest = JSON.parse(files['data-manifest.json']);
   assert.ok(normalizeManifest(manifest), 'a manifest the loader accepts');
   assert.deepEqual(Object.keys(manifest.files).sort(),
-    ['codon_pca.json', 'excluded.json', 'genes.json', 'meta.json']);
+    ['codon_pca.json', 'codon_rscu.json', 'excluded.json', 'genes.json', 'meta.json']);
   for (const [name, entry] of Object.entries(manifest.files)) {
     const bytes = Buffer.from(files[name], 'utf8');
     assert.equal(entry.bytes, bytes.byteLength, name);
@@ -78,16 +78,16 @@ test('nothing in it carries cyanobacterial provenance', () => {
 });
 
 /**
- * The default fixture's files as the generator wrote them at `c56f1a8`, the
- * commit this organism's work started from, by SHA-256 of their exact bytes.
+ * The default fixture's files by SHA-256 of their exact bytes, first pinned at
+ * `c56f1a8`, the commit this organism's work started from.
  *
  * Pinned, not regenerated: comparing the generator with its own current output
  * — whether in memory or through `tests/fixtures/data/`, which `pretest` has
  * just rewritten with this same generator — can only ever agree with itself,
  * and so cannot show that the cyanobacterial fixture is unchanged. These
- * digests were taken outside the generator, from that commit's own tree:
+ * digests are taken outside the generator, from a commit's own tree:
  *
- *     git archive c56f1a8 | tar -x -C <scratch>
+ *     git archive <commit> | tar -x -C <scratch>
  *     cd <scratch> && node tests/fixtures/make_fixture.mjs --out <scratch>/out
  *     shasum -a 256 <scratch>/out/*
  *
@@ -97,11 +97,17 @@ test('nothing in it carries cyanobacterial provenance', () => {
  * mean codon-pair score differing in its last bit between arm64 and x64, so
  * the generator rounds it; a new float field needs the same care, checked by
  * generating once under linux/amd64 (for example in a node:24 container).
+ *
+ * Re-established when the per-gene RSCU vectors moved out of `genes.json` into
+ * `codon_rscu.json`: `genes.json` lost the field and the new file carries the
+ * same values under the same 1e-4 rounding, so no float is computed differently
+ * and `codon_pca.json`, `excluded.json` and `meta.json` keep their digests.
  */
 const BASELINE_DIGESTS = Object.freeze({
   'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',
+  'codon_rscu.json': '3686732493ee239daa1cd53f3fe401ecf231cb542229490396027295cc997158',
   'excluded.json': 'f5812402efd22d2b1fcb41f0c131271ce1a93fff07e3980bbbcd02e4bf0c9cd5',
-  'genes.json': 'e68accedf7406ef5dd70a774efff9388cec1ac2341cfc6f2da588263714379df',
+  'genes.json': 'bc7766127077e37c63250775cf06a45dcc7160e4bda9dfc6f3b32c94191ff493',
   'meta.json': '2b90d84dc5c9e2c327924140d6fd5644d5bf779396fb9dad7e18f279ae8e824a',
 });
 
@@ -116,7 +122,19 @@ test('the default fixture is the one the generator has always written', async ()
     genes: 300, seed: 20260918, expression: false, annotations: false, organism: 'utex2973',
   });
   assert.deepEqual(Object.keys(fixture.files).sort(),
-    ['codon_pca.json', 'excluded.json', 'genes.json', 'meta.json'], 'and no manifest');
+    ['codon_pca.json', 'codon_rscu.json', 'excluded.json', 'genes.json', 'meta.json'],
+    'and no manifest');
+  // The RSCU vectors are published and keyed to the gene order, and no gene
+  // record carries one: the browser reads only meta.rscuOrder.
+  const codonRscu = JSON.parse(fixture.files['codon_rscu.json']);
+  assert.equal(codonRscu.schemaVersion, 1);
+  assert.deepEqual(codonRscu.geneIds,
+    JSON.parse(fixture.files['genes.json']).map((gene) => gene.id));
+  assert.equal(codonRscu.rscu.length, codonRscu.geneIds.length);
+  const columns = JSON.parse(fixture.files['meta.json']).rscuOrder.length;
+  assert.ok(codonRscu.rscu.every((vector) => vector.length === columns
+    && vector.every((value) => Number.isFinite(value) && value >= 0)));
+  assert.ok(JSON.parse(fixture.files['genes.json']).every((gene) => !('rscu' in gene)));
   // Byte for byte what the generator wrote at the baseline commit, above.
   for (const [name, text] of Object.entries(fixture.files)) {
     assert.equal(digestOf(text), BASELINE_DIGESTS[name], name);
@@ -139,8 +157,9 @@ test('the expression variant is the one the generator has always written', () =>
       .map(([name, text]) => [name, digestOf(text)])),
     {
       'codon_pca.json': '3c552a2acbcb4a6b77bafd35ad03e93150d684430b16957482ab0c6f01e6d6c4',
+      'codon_rscu.json': '3686732493ee239daa1cd53f3fe401ecf231cb542229490396027295cc997158',
       'excluded.json': 'f5812402efd22d2b1fcb41f0c131271ce1a93fff07e3980bbbcd02e4bf0c9cd5',
-      'genes.json': '9e422ce2f28ad73999f2b2a90f0f07690c6f6ff937dd7e065c83aec1f3d5cc67',
+      'genes.json': '3588fd5c2d87fba6a095bb021f1e8ca6660c15c39bb86a6cedd9c9668dd82d20',
       'meta.json': '96aa042183920957383d7eb95d23382ce34bd31a25f66768ece0d39e9899356b',
     },
   );
@@ -251,9 +270,10 @@ test('the annotated E. coli variant publishes exactly the two files its release 
   const plain = ecoliFixtureFiles();
   const files = ecoliAnnotatedFixtureFiles();
   assert.deepEqual(Object.keys(files).sort(), ['annotations.json', 'codon_pca.json',
-    'data-manifest.json', 'excluded.json', 'genes.json', 'go-term-names-v1.json', 'meta.json']);
+    'codon_rscu.json', 'data-manifest.json', 'excluded.json', 'genes.json',
+    'go-term-names-v1.json', 'meta.json']);
   // Only the annotation layer differs: the same genes, the same codon space.
-  for (const name of ['genes.json', 'codon_pca.json', 'excluded.json']) {
+  for (const name of ['genes.json', 'codon_pca.json', 'codon_rscu.json', 'excluded.json']) {
     assert.equal(files[name], plain[name], name);
   }
   // And the manifest really describes what is there, so the loader asks for both.

@@ -275,8 +275,10 @@ candidate build is:
 node tools/check_live_metrics.mjs --organism ecoli-k12-mg1655
 ```
 
-The E. coli core payload is 8,042,652 bytes for 4,287 genes, inside the
-2,000-byte-per-gene budget the validator enforces for every organism.
+The E. coli core payload is 6,310,634 bytes for 4,287 genes, inside the
+2,000-byte-per-gene budget the validator enforces for every organism. The
+per-gene RSCU vectors ship apart from it, in `codon_rscu.json`, which the page
+never requests; see [the data contract](docs/validation/data-contract.md#codon_rscujson).
 UTEX byte identity can be reproduced without rewriting `site/data/`:
 
 ```sh
