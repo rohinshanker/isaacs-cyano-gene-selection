@@ -1,7 +1,8 @@
 /** Open the real site with ?uiArtifacts=<absolute ignored directory>, then run via playwright-cli. */
 async (page) => {
   const { root, base } = await page.evaluate(() => ({
-    root: new URL(location.href).searchParams.get('uiArtifacts'), base: location.href.split('#')[0],
+    root: new URL(location.href).searchParams.get('uiArtifacts'),
+    base: (() => { const url = new URL(location.href); url.hash = ''; url.searchParams.delete('organism'); return url.href; })(),
   }));
   if (!root?.startsWith('/')) throw new Error('An absolute uiArtifacts directory is required.');
   const entries = [];
