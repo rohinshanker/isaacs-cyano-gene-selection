@@ -285,9 +285,14 @@ export class LoadProgress {
   }
 
   buildTail() {
+    this.failureStatus = document.createElement('div');
+    this.failureStatus.className = 'load-failure-announcement visually-hidden';
+    this.failureStatus.setAttribute('role', 'status');
+    this.failureStatus.setAttribute('aria-live', 'polite');
+    this.failureStatus.setAttribute('aria-atomic', 'true');
     this.failures = document.createElement('ul');
     this.failures.className = 'load-failures';
-    this.tail.replaceChildren(this.failures);
+    this.tail.replaceChildren(this.failureStatus, this.failures);
     this.tail.hidden = true;
   }
 
@@ -560,6 +565,20 @@ export class LoadProgress {
     this.presentation.hidden = !loading;
     if (this.tail.hidden) return;
     if (loading) this.renderStage();
+    const announcement = [
+      ...failed.map((file) => {
+        const record = this.files[file.key];
+        const name = dataFileLabel(file, this.organism);
+        const message = record.error?.message ?? 'could not be loaded';
+        return `${name}: ${message}.${record.blockedBy ? '' : ` Retry loading ${name}.`}`;
+      }),
+      ...resourceFailures.map((resource) => (
+        `${resource.label}: ${resource.error?.message ?? 'could not be loaded'}. Retry loading ${resource.label}.`
+      )),
+    ].join(' ');
+    if (this.failureStatus.textContent !== announcement) {
+      this.failureStatus.textContent = announcement;
+    }
     this.failures.replaceChildren(
       ...failed.map((file) => this.failureRow(file)),
       ...resourceFailures.map((resource) => this.resourceFailureRow(resource)),

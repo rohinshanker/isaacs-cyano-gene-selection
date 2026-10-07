@@ -14,7 +14,8 @@ presentation now moves from the shell into the revealed map card and measures
 the complete active cycle. Later tiers, the source ledger, citation downloads,
 organism navigations, and per-file retries no longer create or depend on a
 secondary meter. Concise stage text stays with the bar; failed files remain
-actionable in its host.
+actionable in its host and are announced from a persistent live region after
+the completed progress presentation is hidden.
 
 ## Requirements
 
@@ -52,6 +53,34 @@ actionable in its host.
   and truthful-completion requirements; the owner has not specified this timing.
 
 ## Verification
+
+DEM-261 post-review accessibility verification, 2026-10-06:
+
+- The failed-file regression verifies that the post-reveal live region remains
+  outside the hidden progress presentation, announces the failed file and only
+  available Retry actions, does not repeat an unchanged failure, and clears
+  after recovery.
+- `npm test`: 1,092 passed.
+- `.venv/bin/python -m pytest -q`: 486 passed, 1 skipped, 36 subtests passed.
+- `.venv/bin/python tools/validate_contract.py`: 110 passed, 1 declared
+  spliced-CDS contiguity skip.
+- `node tools/build_module_preloads.mjs --check`,
+  `node tools/build_load_bar.mjs --check`, and
+  `.venv/bin/python tools/build_data_manifest.py check`: passed. Temporary
+  canonical-environment and ignored raw-input symlinks were removed afterward.
+- Real Chromium at `http://127.0.0.1:8787/?load-min=1500` with an injected
+  `excluded.json` HTTP 503 exposed the persistent polite atomic status, exact
+  failed-file message, and Retry while the settled progress presentation was
+  hidden. At 375x812, 768x1024, 1280x800, and 1440x900 there was no horizontal
+  overflow; the 60px settled host reserve was unchanged at tablet and desktop,
+  while the mobile host expanded only for its wrapping visible error. A real
+  retry cleared the status and failure row, completed under the default
+  nonzero minimum, and restored the 60px settled host. The only console error
+  was the deliberately injected 503; visual baselines were not changed.
+- Render evidence is under `.playwright-cli/dem-261-loading-followup/`:
+  `failure-375.png`, `failure-768.png`, `failure-1280.png`,
+  `failure-1440.png`, their semantic snapshots, and
+  `retry-recovered-768.png` with its semantic snapshot.
 
 DEM-261 repair verification, 2026-10-06:
 

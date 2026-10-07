@@ -230,6 +230,10 @@ A later file that cannot be read, or fails its validation, is `failed`, and the
 page stays usable. The chromosome presentation's host at the top of the map card
 lists it with the loader's exact message and a **Retry** control (`LoadProgress`
 in `ui/load-progress.js`).
+The failure list has its own persistent polite live region, separate from the
+progress presentation: once the completed bar is hidden, a newly failed file is
+still announced with its error and any Retry action. The announcement changes
+only when the failure summary changes, so progress renders do not repeat it.
 `retry(key)` asks the server for that one file again with `cache: 'reload'`,
 verifies it like any other copy, then re-applies the files that were only waiting
 on it without downloading them again. A file blocked by another has no Retry of its own; it is

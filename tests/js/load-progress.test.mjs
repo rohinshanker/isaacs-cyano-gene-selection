@@ -465,7 +465,7 @@ test('complete response bytes stay visibly and accessibly incomplete until the f
 test('a file that could not be loaded stays listed with a Retry, and a blocked one without', async () => {
   await withFakeDocument((document) => {
     const retried = [];
-    const { tail, progress } = mount(document, { onRetry: (key) => retried.push(key) });
+    const { presentation, tail, progress } = mount(document, { onRetry: (key) => retried.push(key) });
     progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
     progress.reveal();
     assert.equal(progress.presentation.hidden, true);
@@ -496,12 +496,30 @@ test('a file that could not be loaded stays listed with a Retry, and a blocked o
     buttons[0].dispatch('click');
     assert.deepEqual(retried, ['candidateEvidence']);
 
+    const failureStatus = tail.querySelector('.load-failure-announcement');
+    assert.ok(failureStatus, 'failure announcements remain mounted beside the settled presentation');
+    assert.equal(failureStatus.getAttribute('role'), 'status');
+    assert.equal(failureStatus.getAttribute('aria-atomic'), 'true');
+    assert.equal(failureStatus.parentNode, tail);
+    assert.equal(presentation.hidden, true, 'the progress presentation is already hidden');
+    assert.match(failureStatus.textContent,
+      /candidate evidence: could not read candidate_evidence\.json: HTTP 502\. Retry loading candidate evidence\./i);
+    assert.match(failureStatus.textContent,
+      /derived function categories: .*waiting on candidate_evidence\.json, which could not be loaded\./i);
+    assert.doesNotMatch(failureStatus.textContent, /Retry loading derived function categories/i,
+      'a blocked file does not announce a retry that is unavailable');
+    const announcedText = failureStatus.childNodes[0];
+    progress.update(snapshot({ receivedBytes: 1000, currentTier: null }));
+    assert.equal(failureStatus.childNodes[0], announcedText,
+      'unchanged progress renders do not repeat the same failure announcement');
+
     // With none left the reserved host remains and carries no failure.
     progress.setFiles(records({ excluded: { state: FILE_STATE.FAILED, error: null, blockedBy: null } }));
     assert.equal(tail.querySelectorAll('li.load-failure').length, 1);
     progress.setFiles(records());
     assert.equal(tail.hidden, false);
     assert.ok(!tail.hasClass('has-failures'));
+    assert.equal(failureStatus.textContent, '');
   });
 });
 
