@@ -91,20 +91,25 @@ not modify Package D or apply an owner judgement to `default_verdict`.
 ```
 
 The replay uses exact IDs and typed numeric intervals. Flux ranges are compared
-as complete ranges, and a profile reported only by its peak is unknown rather
-than a constant at that peak. The only cross-description spectrum failure is the
-explicit `full-spectrum` against `narrow-band` opposition. Identical reviewed
-classes pass; different lamp descriptions without an explicit class relation are
-unknown. The owner's J1 same-spectrum decision is displayed in its own column and
-does not change the default screen. A known component failure remains decisive
-when another component is unknown.
+as complete ranges; a profile reported only by its peak remains unknown rather
+than a constant at that peak. Identical reviewed spectrum classes pass, distinct
+reviewed classes fail, and a missing class stays unknown. Owner J1 is displayed
+separately and never mutates the default screen. A known component failure remains
+decisive when another component is unknown.
 
-The generated current artifacts contain the verdict counts and source pins;
+Only explicitly named exponential/held sampling phases compare by overlapping
+OD. A bare OD preserves its numeric value but does not establish the phase;
+stationary sampling needs no OD. Stock, maintenance or dilution OD is never
+transferred into sampling. Comparable culture classes are planktonic and biofilm.
+Reported formats outside those classes remain labelled as reported and cannot
+pass the default. Overrides bind exact row/accession and source values, with
+manual evidence pinned by hash. Unreviewed type labels and uncovered gap statuses
+are errors, and a `present` audit entry cannot describe a remaining gap.
+
+The generated current artifacts contain verdict counts and source pins;
 replay them rather than using counts from an earlier snapshot. There is no
 `escalate` verdict because the owner rejected a fixed narrow-miss boundary.
-Keep unresolved spectrum relationships distinct from genuinely absent fields.
-A typed paper overlay may provide photon flux and photoperiod while gas CO₂
-remains unknown: bicarbonate concentration is not a gas percentage.
+Bicarbonate concentration is not a gas CO₂ percentage.
 
 Verified source absences and conflicts are accepted unknown outcomes. They do
 not keep the recovery implementation open. Track optional depositor follow-up in

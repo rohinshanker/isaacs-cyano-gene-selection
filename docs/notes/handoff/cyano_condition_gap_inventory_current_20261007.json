@@ -140,6 +140,19 @@
       }
     },
     {
+      "condition_row": 58,
+      "fields": {
+        "phot": "12:12"
+      },
+      "audit": {
+        "light_regime": {
+          "status": "partial",
+          "source": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
+          "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported."
+        }
+      }
+    },
+    {
       "condition_row": 75,
       "fields": {
         "T": [
@@ -207,7 +220,7 @@
   ],
   "owner_judgement_separation": {
     "pair_calls": "data/expression/pair_judgements.json is displayed alongside, never applied to default_verdict.",
-    "J1": "Rows 21/46/47/54 have an owner same-spectrum judgement displayed separately; the default exact-class screen remains undecidable."
+    "J1": "Accessions GSE18902/GSE50908/GSE50919/GSE52486 resolve exactly to rows 21/46/47/54 and have an owner same-spectrum judgement displayed separately; the default screen remains undecidable because their class is unreported."
   },
   "gaps": [
     {
@@ -216,7 +229,7 @@
       "condition_set": "Zn/ZnO-ENM exposure incubation (5 h, condition at sampling for array)",
       "field": "light_intensity",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE102914.light_intensity",
       "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
       "historical_value": "not retrieved"
@@ -238,10 +251,21 @@
       "condition_set": "Zn/ZnO-ENM exposure incubation (5 h, condition at sampling for array)",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE102914.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
+    },
+    {
+      "condition_row": 2,
+      "artifact": "GSE102914",
+      "condition_set": "Zn/ZnO-ENM exposure incubation (5 h, condition at sampling for array)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.27",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 2; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730nm adjusted to 0.27 (3.10E8 cells/mL) at start of exposure"
     },
     {
       "condition_row": 3,
@@ -249,7 +273,7 @@
       "condition_set": "BG11, 30°C, cool fluorescent light 40 µE, entrained then constant light",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103462.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -260,7 +284,7 @@
       "condition_set": "BG11, 30°C, cool fluorescent light 40 µE, entrained then constant light",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103462.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -271,7 +295,7 @@
       "condition_set": "Synchronized constant-light growth conditions (all samples, group 1)",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103463.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -282,7 +306,7 @@
       "condition_set": "Synchronized constant-light growth conditions (all samples, group 1)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103463.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -293,7 +317,7 @@
       "condition_set": "BG11, 30°C, 40 μE cool fluorescent light, entrainment then constant light with theophylline induction",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103644.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -304,7 +328,7 @@
       "condition_set": "BG11, 30°C, 40 μE cool fluorescent light, entrainment then constant light with theophylline induction",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103644.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -315,7 +339,7 @@
       "condition_set": "BG11, 30°C, 12h light/12h dark, cool fluorescent 40 µE, flask culture - WT and rel- strain",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103704.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -326,7 +350,7 @@
       "condition_set": "BG11, 30°C, 12h light/12h dark, cool fluorescent 40 µE, flask culture - WT and rel- strain",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE103704.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -337,7 +361,7 @@
       "condition_set": "Clear Day (continuous 12L:12D, parabolic natural-light profile)",
       "field": "light_intensity",
       "status": "partial",
-      "value": "parabolic natural-light profile with reported peak 600 µmol photons m-2 s-1; full sampling profile is not a constant flux",
+      "value": "partial",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 10",
       "uncertainty": "A parabolic profile with a reported peak is not treated as constant 600 flux.",
       "historical_value": "light intensity varied parabolically, reaching a maximum of 600 µmol photons m-2 s-1"
@@ -348,7 +372,7 @@
       "condition_set": "High Light pulse (10-fold increase applied to Low Light-acclimated culture)",
       "field": "light_intensity",
       "status": "partial",
-      "value": "Low Light culture intensity increased 10-fold for 1 hour, equal to the Clear Day intensity between 8 and 9 hr after dawn",
+      "value": "partial",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 11; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
       "historical_value": "Low Light culture intensity increased 10-fold for 1 hour, equal to the Clear Day intensity between 8 and 9 hr after dawn"
@@ -359,7 +383,7 @@
       "condition_set": "Shade pulse (10-fold decrease applied to Clear Day-acclimated culture)",
       "field": "light_intensity",
       "status": "partial",
-      "value": "Clear Day culture intensity decreased 10-fold for 1 hour, defined by dividing the Clear Day profile by 10 between 8 and 9 hr after dawn",
+      "value": "partial",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 12; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
       "historical_value": "Clear Day culture intensity decreased 10-fold for 1 hour, defined by dividing the Clear Day profile by 10 between 8 and 9 hr after dawn"
@@ -370,7 +394,7 @@
       "condition_set": "BG11, 30°C, 12h/12h light-dark cycle with cool fluorescent light",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE105774.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -381,7 +405,7 @@
       "condition_set": "BG11, 30°C, 12h/12h light-dark cycle with cool fluorescent light",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE105774.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -403,7 +427,7 @@
       "condition_set": "Normal growth condition (no H2O2)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-005",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not reported"
@@ -431,6 +455,17 @@
       "historical_value": "not reported"
     },
     {
+      "condition_row": 17,
+      "artifact": "GSE122841",
+      "condition_set": "Normal growth condition (no H2O2)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.3",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 17; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 = 0.3"
+    },
+    {
       "condition_row": 18,
       "artifact": "GSE122841",
       "condition_set": "H2O2 oxidative stress (2.5 mM, 2 days)",
@@ -447,7 +482,7 @@
       "condition_set": "H2O2 oxidative stress (2.5 mM, 2 days)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-005",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not reported"
@@ -462,6 +497,17 @@
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-006",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not reported"
+    },
+    {
+      "condition_row": 18,
+      "artifact": "GSE122841",
+      "condition_set": "H2O2 oxidative stress (2.5 mM, 2 days)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.3–0.35",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 18; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 = 0.30–0.35 (at time of H2O2 exposure)"
     },
     {
       "condition_row": 19,
@@ -523,10 +569,21 @@
       "artifact": "GSE205443",
       "condition_set": "Experiment 1 RB-TnSeq library v1.0 - bubbling tube biofilm formation (fresh BG-11)",
       "field": "light_regime",
-      "status": "not retrieved",
+      "status": "partial",
       "value": "schedule=continuous; photoperiod=None; spectrum=fluorescent (class not stated)",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 22; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Spectrum class is unknown.",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 22; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
+      "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+      "historical_value": ""
+    },
+    {
+      "condition_row": 22,
+      "artifact": "GSE205443",
+      "condition_set": "Experiment 1 RB-TnSeq library v1.0 - bubbling tube biofilm formation (fresh BG-11)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD750 0.5",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 22 typed sampling record",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": ""
     },
     {
@@ -534,10 +591,21 @@
       "artifact": "GSE205443",
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - bubbling tube biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "light_regime",
-      "status": "not retrieved",
+      "status": "partial",
       "value": "schedule=continuous; photoperiod=None; spectrum=fluorescent (class not stated)",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 23; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Spectrum class is unknown.",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 23; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
+      "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+      "historical_value": ""
+    },
+    {
+      "condition_row": 23,
+      "artifact": "GSE205443",
+      "condition_set": "Experiment 2 RB-TnSeq library v2.0 - bubbling tube biofilm formation (fresh BG-11 or Conditioned Media)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD750 0.5",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 23 typed sampling record",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": ""
     },
     {
@@ -545,10 +613,10 @@
       "artifact": "GSE205443",
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - flask biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "temperature",
-      "status": "not retrieved",
-      "value": "room temperature",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling temperature has no reviewed numeric interval.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
+      "uncertainty": "Room temperature is reported without a reviewed numeric sampling interval.",
       "historical_value": ""
     },
     {
@@ -556,10 +624,10 @@
       "artifact": "GSE205443",
       "condition_set": "Experiment 2 RB-TnSeq library v2.0 - flask biofilm formation (fresh BG-11 or Conditioned Media)",
       "field": "light_regime",
-      "status": "not retrieved",
+      "status": "partial",
       "value": "schedule=continuous; photoperiod=None; spectrum=fluorescent (class not stated)",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Spectrum class is unknown.",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
+      "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
       "historical_value": ""
     },
     {
@@ -571,6 +639,17 @@
       "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-153",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
+      "historical_value": ""
+    },
+    {
+      "condition_row": 24,
+      "artifact": "GSE205443",
+      "condition_set": "Experiment 2 RB-TnSeq library v2.0 - flask biofilm formation (fresh BG-11 or Conditioned Media)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD750 0.5",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 24 typed sampling record",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
       "historical_value": ""
     },
     {
@@ -601,7 +680,7 @@
       "condition_set": "0 mM NaCl control (WT and Syn7942/Δsps-ect)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE222067.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Day 4 of culture at sampling; OD750 not reported for this timepoint"
@@ -634,7 +713,7 @@
       "condition_set": "300 mM NaCl salt-stress treatment (WT and Syn7942/Δsps-ect)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE222067.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Day 4 of culture at sampling (after 4 days of 300 mM NaCl treatment); OD750 not reported for this timepoint"
@@ -645,7 +724,7 @@
       "condition_set": "Standard BG11 photoautotrophic growth prior to/at time of salt or streptomycin stress sampling",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-027",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -656,9 +735,9 @@
       "condition_set": "Standard BG11 photoautotrophic growth prior to/at time of salt or streptomycin stress sampling",
       "field": "culture_format",
       "status": "not reported",
-      "value": "",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-028",
-      "uncertainty": "Sampling culture format is unknown.",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
       "historical_value": "not retrieved"
     },
     {
@@ -667,7 +746,7 @@
       "condition_set": "Standard BG11 photoautotrophic growth prior to/at time of salt or streptomycin stress sampling",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-029",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -689,10 +768,21 @@
       "condition_set": "RNA-seq WT and del(xpk), 4 timepoints, 12-h L/D cycle (GSE227397 RNA-seq samples)",
       "field": "co2",
       "status": "not reported",
-      "value": "not reported in GEO growth protocol; paper RNA-seq section does not specify NaHCO3 supplementation",
+      "value": "not reported",
       "source_provenance": "cyano_condition_paper_addendum_20261007.json limits",
       "uncertainty": "50 mM NaHCO3 is not a gas CO2 percentage.",
       "historical_value": "not reported in GEO growth protocol; paper RNA-seq section does not specify NaHCO3 supplementation"
+    },
+    {
+      "condition_row": 32,
+      "artifact": "GSE227397",
+      "condition_set": "RNA-seq WT and del(xpk), 4 timepoints, 12-h L/D cycle (GSE227397 RNA-seq samples)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 1",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 32; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730~1"
     },
     {
       "condition_row": 33,
@@ -700,7 +790,7 @@
       "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
       "field": "light_intensity",
       "status": "conflicting",
-      "value": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
+      "value": "conflicting",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-019",
       "uncertainty": "Archive ~40 µE conflicts with the accepted paper branch; no sample-specific value chosen.",
       "historical_value": "~40µE of illumination"
@@ -731,9 +821,20 @@
       "condition_row": 33,
       "artifact": "GSE237858",
       "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
+      "field": "culture_format",
+      "status": "partial",
+      "value": "solid plate",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 33; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "historical_value": "agar plates (BG-11 medium)"
+    },
+    {
+      "condition_row": 33,
+      "artifact": "GSE237858",
+      "condition_set": "No ZnCl2 induction (WT and labA-KO), 12h dark pulse then 12h LL",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-022",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "OD750 not reported for RNA-seq samples; harvested after 12h in constant light (LL) following a single 12h dark pulse"
@@ -744,7 +845,7 @@
       "condition_set": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
       "field": "light_intensity",
       "status": "conflicting",
-      "value": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
+      "value": "conflicting",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-019",
       "uncertainty": "Archive ~40 µE conflicts with the accepted paper branch; no sample-specific value chosen.",
       "historical_value": "~40µE of illumination"
@@ -775,9 +876,20 @@
       "condition_row": 34,
       "artifact": "GSE237858",
       "condition_set": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
+      "field": "culture_format",
+      "status": "partial",
+      "value": "solid plate",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 34; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "historical_value": "agar plates (BG-11 medium)"
+    },
+    {
+      "condition_row": 34,
+      "artifact": "GSE237858",
+      "condition_set": "ZnCl2 induction of kaiA (kaiA-Ex and kaiA-Ex/labA-KO), 12h dark pulse then 12h LL",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-022",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "OD750 not reported for RNA-seq samples; harvested after 12h in constant light (LL) following a single 12h dark pulse"
@@ -790,7 +902,7 @@
       "status": "conflicting",
       "value": "schedule=diel; photoperiod=None; spectrum=fluorescent (class not stated)",
       "source_provenance": "cyano_package_B_archive_addendum_20261007.json corrections row 35",
-      "uncertainty": "The aggregate includes six disputed eight-cycle samples; no unconditional photoperiod.",
+      "uncertainty": "The aggregate includes six disputed eight-cycle samples, so no unconditional photoperiod; the sampling spectrum class is also unreported.",
       "historical_value": "spectrum: fluorescent lights (stated for maintenance phase, not explicitly restated for treatment); regime: diel, short-day photoperiod LD8:16 (8h light:16h dark), applied for 1, 4, or 8 cycles"
     },
     {
@@ -808,9 +920,20 @@
       "condition_row": 35,
       "artifact": "GSE252562",
       "condition_set": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
+      "field": "culture_format",
+      "status": "partial",
+      "value": "solid plate",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 35; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "historical_value": "agar plates"
+    },
+    {
+      "condition_row": 35,
+      "artifact": "GSE252562",
+      "condition_set": "Short-day photoperiod (LD8:16), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-014",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not reported"
@@ -841,9 +964,20 @@
       "condition_row": 36,
       "artifact": "GSE252562",
       "condition_set": "Long-day photoperiod (LD16:8), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
+      "field": "culture_format",
+      "status": "partial",
+      "value": "solid plate",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 36; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
+      "historical_value": "agar plates"
+    },
+    {
+      "condition_row": 36,
+      "artifact": "GSE252562",
+      "condition_set": "Long-day photoperiod (LD16:8), WT and ΔkaiABC, RNA-seq (1/4/8 cycles)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-014",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not reported"
@@ -865,7 +999,7 @@
       "condition_set": "Liquid bubbled culture conditions (RNA-Seq samples: WT, pilB::Tn5, sigF1::Mu, sigF2-mutant at D1 and D4)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE254350.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "sampled at day 1 (D1) and day 4 (D4) of growth per sample titles; OD750 not reported for RNA-Seq sampling itself (OD750 of 4.0 is reported only for a separate DNA-uptake competence assay, not for RNA-Seq harvest)"
@@ -920,9 +1054,9 @@
       "condition_set": "Axenic S. elongatus, non-mBR-tagged control (Se_ax_*)",
       "field": "culture_format",
       "status": "not reported",
-      "value": "",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 41; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is unknown.",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
       "historical_value": "not reported for this specific sample subset beyond 'axenic'; sample title lacks 'mBR' tag used for the bioreactor-labelled samples"
     },
     {
@@ -931,7 +1065,7 @@
       "condition_set": "Axenic S. elongatus, non-mBR-tagged control (Se_ax_*)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE335065.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Day 4/6/8 (series design indicates mBR/mixed time points of ~90/140/190 hrs); OD750 at harvest not reported"
@@ -953,7 +1087,7 @@
       "condition_set": "Axenic S. elongatus within membrane bioreactor (Se_ax_mBR_*)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE335065.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Day 4/6/8, collected at ~90/140/190 hrs; OD750 at harvest not reported"
@@ -975,7 +1109,7 @@
       "condition_set": "S. elongatus unit of membrane-separated co-culture bioreactor (Se_CC_mBR_*)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE335065.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Day 4/6/8, collected at ~90/140/190 hrs; OD750 at harvest not reported"
@@ -997,7 +1131,7 @@
       "condition_set": "Mixed co-culture of S. elongatus + R. toruloides (Se_Rt_CC_*)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE335065.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Day 4/6/8, collected at ~90/140/190 hrs; OD750 at harvest not reported"
@@ -1019,7 +1153,7 @@
       "condition_set": "Standard BG-11 large-scale FFA production cultivation (all strains, all time points)",
       "field": "growth_phase",
       "status": "partial",
-      "value": "unknown",
+      "value": "partial",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 45; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Initial inoculation at OD730 ~0.15; IPTG induction (1 mM) after 96h (4 days); RNA-seq samples taken before induction (day 4, ~100h) and 8 days after induction (day 12, ~240h)"
@@ -1052,7 +1186,7 @@
       "condition_set": "BG-11M, 100 µE cool fluorescent light, 1% CO2, 24-68h timecourse (both strains + pool)",
       "field": "temperature",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_intake_20261007.tsv CR-154",
       "uncertainty": "Sampling temperature has no reviewed numeric interval.",
       "historical_value": "not retrieved"
@@ -1085,7 +1219,7 @@
       "condition_set": "Standard LL growth / 12h:12h entrainment prior to microarray sampling",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE59112.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "OD750 ~0.2 (starting density of 120 mL cultures prior to synchronization and sampling)"
@@ -1107,7 +1241,7 @@
       "condition_set": "Control N+ 24h (initial growth before split) / N+ and N- 48h RNA-seq samples",
       "field": "co2",
       "status": "not reported",
-      "value": "not reported for RNA-seq growth; separate photobioreactor experiment used 5% CO2 (v/v) and 95% air (v/v)",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE79726.co2",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not reported for RNA-seq growth; separate photobioreactor experiment used 5% CO2 (v/v) and 95% air (v/v)"
@@ -1118,7 +1252,7 @@
       "condition_set": "Control N+ 24h (initial growth before split) / N+ and N- 48h RNA-seq samples",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_archive_condition_manual_supplement_20261007.json GSE79726.growth_phase",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "cells harvested at OD730 of 1.0 (control, before N+/N- split); RNA-seq samples collected after 24 h of nitrogen starvation / 48h time point per GEO sample titles"
@@ -1162,9 +1296,9 @@
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "light_regime",
       "status": "partial",
-      "value": "schedule=diel; photoperiod=None; spectrum=None",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Diel photoperiod is unknown or conflicting.",
+      "value": "schedule=diel; photoperiod=12:12; spectrum=None",
+      "source_provenance": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
+      "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported.",
       "historical_value": "spectrum: not reported; cycle: diel (light and dark cycles); photoperiod: 12:12-hours"
     },
     {
@@ -1195,9 +1329,9 @@
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "culture_format",
       "status": "not retrieved",
-      "value": "",
+      "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is unknown.",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
       "historical_value": "not retrieved"
     },
     {
@@ -1206,7 +1340,7 @@
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "growth_phase",
       "status": "not retrieved",
-      "value": "unknown",
+      "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -1239,7 +1373,7 @@
       "condition_set": "S. elongatus PCC 7942 arm of the 48-organism acetylation survey",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 61; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not reported"
@@ -1250,7 +1384,7 @@
       "condition_set": "S. elongatus PCC 7942 arm of the 48-organism acetylation survey",
       "field": "co2",
       "status": "not reported",
-      "value": "not reported as a CO2 regime; atmosphere given only as 'Aerobic'",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 61; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not reported as a CO2 regime; atmosphere given only as 'Aerobic'"
@@ -1261,10 +1395,21 @@
       "condition_set": "0.04% CO2 (ambient, iTRAQ 114)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 62; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum not reported; continuous vs diel not reported; photoperiod not reported"
+    },
+    {
+      "condition_row": 62,
+      "artifact": "PXD011485",
+      "condition_set": "0.04% CO2 (ambient, iTRAQ 114)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.8",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 62; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 = 0.8"
     },
     {
       "condition_row": 63,
@@ -1272,10 +1417,21 @@
       "condition_set": "0.5% CO2 (iTRAQ 115)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 63; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum not reported; continuous vs diel not reported; photoperiod not reported"
+    },
+    {
+      "condition_row": 63,
+      "artifact": "PXD011485",
+      "condition_set": "0.5% CO2 (iTRAQ 115)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.8",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 63; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 = 0.8"
     },
     {
       "condition_row": 64,
@@ -1283,10 +1439,21 @@
       "condition_set": "1% CO2 (iTRAQ 116)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 64; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum not reported; continuous vs diel not reported; photoperiod not reported"
+    },
+    {
+      "condition_row": 64,
+      "artifact": "PXD011485",
+      "condition_set": "1% CO2 (iTRAQ 116)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.8",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 64; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 = 0.8"
     },
     {
       "condition_row": 65,
@@ -1294,10 +1461,21 @@
       "condition_set": "10% CO2 (iTRAQ 117)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 65; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum not reported; continuous vs diel not reported; photoperiod not reported"
+    },
+    {
+      "condition_row": 65,
+      "artifact": "PXD011485",
+      "condition_set": "10% CO2 (iTRAQ 117)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 0.8",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 65; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 = 0.8"
     },
     {
       "condition_row": 66,
@@ -1305,7 +1483,7 @@
       "condition_set": "N-starvation degradation and re-synthesis time course (UTEX 2973), growth/culture conditions",
       "field": "light_regime",
       "status": "uncertain",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "uncertain",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 66; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum: not reported; continuous (implied by photoautotrophic multicultivator growth, not explicitly stated); photoperiod: not reported"
@@ -1349,7 +1527,7 @@
       "condition_set": "Growth light (GL) condition",
       "field": "growth_phase",
       "status": "partial",
-      "value": "unknown",
+      "value": "partial",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 67; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "Starting OD750 = 0.2 at inoculation; harvested after 14 days of growth under GL (no harvest OD750 given)"
@@ -1360,7 +1538,7 @@
       "condition_set": "High light (HL) condition",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 68; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not reported (spectrum/continuity not explicitly restated for the HL intensity condition; continuous white light is only explicitly stated for the 40 µmol pre-experimental phase)"
@@ -1377,12 +1555,23 @@
       "historical_value": "not reported"
     },
     {
+      "condition_row": 68,
+      "artifact": "PXD019731",
+      "condition_set": "High light (HL) condition",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD750 0.6",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 68; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "Starting OD750 = 0.2 at inoculation; harvested after 14 days under HL; OD750 of HL culture = 0.6 just before LL transfer"
+    },
+    {
       "condition_row": 69,
       "artifact": "PXD019731",
       "condition_set": "Low light (LL) recovery condition, days 1-5 post HL-to-LL transfer",
       "field": "temperature",
       "status": "not reported",
-      "value": "not reported (30°C is stated only for the preceding 14-day GL/HL culturing phase; not explicitly restated for the LL transfer phase)",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 69; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling temperature has no reviewed numeric interval.",
       "historical_value": "not reported (30°C is stated only for the preceding 14-day GL/HL culturing phase; not explicitly restated for the LL transfer phase)"
@@ -1393,7 +1582,7 @@
       "condition_set": "Low light (LL) recovery condition, days 1-5 post HL-to-LL transfer",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 69; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not reported (spectrum/continuity not explicitly restated for the LL intensity condition)"
@@ -1415,7 +1604,7 @@
       "condition_set": "Low light (LL) recovery condition, days 1-5 post HL-to-LL transfer",
       "field": "growth_phase",
       "status": "partial",
-      "value": "unknown",
+      "value": "partial",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 69; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "OD750 adjusted to 0.6 at start of LL transfer; harvested at distinct time points over five consecutive days (LL day1-5), no further OD750 values given per day"
@@ -1426,7 +1615,7 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "temperature",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
       "uncertainty": "Sampling temperature has no reviewed numeric interval.",
       "historical_value": "not retrieved"
@@ -1437,7 +1626,7 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "light_intensity",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
       "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
       "historical_value": "not retrieved"
@@ -1448,7 +1637,7 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not retrieved"
@@ -1459,7 +1648,7 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "co2",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not retrieved"
@@ -1470,7 +1659,7 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "medium",
       "status": "not reported",
-      "value": "not retrieved",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
       "uncertainty": "Sampling medium is unknown.",
       "historical_value": "not retrieved"
@@ -1481,9 +1670,9 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "culture_format",
       "status": "not reported",
-      "value": "",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
-      "uncertainty": "Sampling culture format is unknown.",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
       "historical_value": "not retrieved"
     },
     {
@@ -1492,7 +1681,7 @@
       "condition_set": "All samples (growth conditions not described in available metadata)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_pride_condition_check_20261007.json read_fields",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -1525,7 +1714,7 @@
       "condition_set": "not reported",
       "field": "light_regime",
       "status": "not retrieved",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not retrieved"
@@ -1558,9 +1747,9 @@
       "condition_set": "not reported",
       "field": "culture_format",
       "status": "not retrieved",
-      "value": "",
+      "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is unknown.",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
       "historical_value": "not retrieved"
     },
     {
@@ -1569,7 +1758,7 @@
       "condition_set": "not reported",
       "field": "growth_phase",
       "status": "not retrieved",
-      "value": "unknown",
+      "value": "not retrieved",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 71; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not retrieved"
@@ -1580,7 +1769,7 @@
       "condition_set": "Standard growth/cultivation condition (L1118 and engineered strains, flask/Roux bottle stage)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 72; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum not reported; continuity/photoperiod not reported"
@@ -1591,7 +1780,7 @@
       "condition_set": "Standard growth/cultivation condition (L1118 and engineered strains, flask/Roux bottle stage)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 72; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not reported (OD not specified for this condition set; see separate sets for log/stationary comparison)"
@@ -1602,7 +1791,7 @@
       "condition_set": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
       "field": "temperature",
       "status": "not reported",
-      "value": "not reported for this specific comparison (general cultivation at 30°C, see other set)",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling temperature has no reviewed numeric interval.",
       "historical_value": "not reported for this specific comparison (general cultivation at 30°C, see other set)"
@@ -1613,7 +1802,7 @@
       "condition_set": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
       "field": "light_intensity",
       "status": "not reported",
-      "value": "not reported for this specific comparison",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
       "historical_value": "not reported for this specific comparison"
@@ -1624,7 +1813,7 @@
       "condition_set": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "not reported for this specific comparison"
@@ -1635,7 +1824,7 @@
       "condition_set": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
       "field": "co2",
       "status": "not reported",
-      "value": "not reported for this specific comparison",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling gas CO2 percentage is unknown.",
       "historical_value": "not reported for this specific comparison"
@@ -1646,7 +1835,7 @@
       "condition_set": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
       "field": "medium",
       "status": "not reported",
-      "value": "not reported for this specific comparison",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling medium is unknown.",
       "historical_value": "not reported for this specific comparison"
@@ -1657,9 +1846,9 @@
       "condition_set": "High vs low limonene production phase comparison in L1118 (log vs stationary phase)",
       "field": "culture_format",
       "status": "not reported",
-      "value": "",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 73; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is unknown.",
+      "uncertainty": "Sampling culture format is missing or outside the allowed planktonic/biofilm classes.",
       "historical_value": "not reported for this specific comparison"
     },
     {
@@ -1679,7 +1868,7 @@
       "condition_set": "L1118 vs sucrose mutant Lsps comparative proteomics",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 74; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum not reported; continuity/photoperiod not reported"
@@ -1690,7 +1879,7 @@
       "condition_set": "L1118 vs sucrose mutant Lsps comparative proteomics",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 74; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not reported (specific OD/day of harvest for proteomics not stated in excerpts)"
@@ -1734,10 +1923,21 @@
       "condition_set": "Cyanobacterial photoautotrophic growth (BG-11, 1% CO2, ~70 µmol light)",
       "field": "light_regime",
       "status": "not reported",
-      "value": "schedule=None; photoperiod=None; spectrum=None",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 76; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling light schedule is unknown.",
       "historical_value": "spectrum: not reported; continuous vs diel: not reported; photoperiod: not reported"
+    },
+    {
+      "condition_row": 76,
+      "artifact": "PXD044412",
+      "condition_set": "Cyanobacterial photoautotrophic growth (BG-11, 1% CO2, ~70 µmol light)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD730 1",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 76; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "OD730 ~1.0"
     },
     {
       "condition_row": 77,
@@ -1749,6 +1949,17 @@
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 77; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Spectrum class is unknown.",
       "historical_value": "continuous illumination (not diel); spectrum/lamp type not reported; photoperiod: continuous, no dark period mentioned"
+    },
+    {
+      "condition_row": 77,
+      "artifact": "PXD062851",
+      "condition_set": "Liquid BG-11H culture, 30°C, 50 µmol photons m-2 s-1, 3% CO2 (both BB-SP3 and TFA-is endoproteome samples)",
+      "field": "growth_phase",
+      "status": "partial",
+      "value": "OD stated; OD750 2",
+      "source_provenance": "cyano_dataset_condition_records_20261007.json row 77; reviewed status from cyano_condition_gap_inventory_20261007.json",
+      "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+      "historical_value": "main cultures inoculated at OD750 = 0.4, grown for 4 days, harvested at OD750 equivalent of 2"
     },
     {
       "condition_row": 78,
@@ -1767,7 +1978,7 @@
       "condition_set": "Circadian free-run culture for MS protein-condensation fractionation (subjective dawn/dusk, supernatant+pellet, TMT, both replicates)",
       "field": "growth_phase",
       "status": "not reported",
-      "value": "unknown",
+      "value": "not reported",
       "source_provenance": "cyano_dataset_condition_records_20261007.json row 78; reviewed status from cyano_condition_gap_inventory_20261007.json",
       "uncertainty": "Sampling phase is unknown.",
       "historical_value": "not reported"

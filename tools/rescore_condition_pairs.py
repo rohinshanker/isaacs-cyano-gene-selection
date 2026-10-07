@@ -71,50 +71,140 @@ CONTINUITY = {
     "continuous (after diel entrainment)": "continuous",
     "diel": "diel",
 }
+KNOWN_PHASES = {"exponential", "steady-state (held)"}
+UNKNOWN_PHASES = {None, "OD stated", "two phases in one set"}
+FORMAT_CLASSES = {
+    "planktonic liquid": "planktonic",
+    "biofilm": "biofilm",
+}
+UNSUPPORTED_FORMATS = {None, "solid plate"}
+GAP_STATUSES = ("not reported", "not retrieved", "partial", "conflicting", "uncertain")
+J1_ACCESSION_ROWS = {
+    "GSE18902": 21,
+    "GSE50908": 46,
+    "GSE50919": 47,
+    "GSE52486": 54,
+}
+
+EVIDENCE_SHA256 = {
+    "bc": "aada503cbd79909ec66c2a32344942661ca4a59326313bfccfe8211b1b6f1d3f",
+    "archive": "cddad944172d4af90244398806b6f316b3f78d56825da2f7dc890cd56ca16cf5",
+    "intake": "5521e9bda63671dfb9c3486a48f2e9ac41c79a4e4f9214f39841c4cbcba566da",
+    "paper": "da29ffb70a90dcf128b027a598c0d3e40611436f7d02d3cd2472bbc0d8aecc6a",
+}
+RECORD_AUDIT_PINS = {
+    2: {"acc": "GSE102914", "phase": "OD stated", "od": [0.27, 0.27], "od_nm": 730},
+    22: {"acc": "GSE205443", "T": [30.0, 30.0], "spec": "fluorescent (class not stated)", "phase": "OD stated", "od": [0.5, 0.5]},
+    23: {"acc": "GSE205443", "T": [30.0, 30.0], "spec": "fluorescent (class not stated)", "phase": "OD stated", "od": [0.5, 0.5]},
+    24: {"acc": "GSE205443", "T": None, "T_text": "room temperature", "spec": "fluorescent (class not stated)", "phase": "OD stated", "od": [0.5, 0.5]},
+}
 
 # These are typed intake decisions, not text parsing.  Each source is pinned in
 # the generated audit, and tests verify the expected evidence entry still exists.
 RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
     10: {
-        "I": None,
-        "I_text": "parabolic natural-light profile with reported peak 600 µmol photons m-2 s-1; full sampling profile is not a constant flux",
+        "expected_accession": "GSE104203",
+        "expected_source": {"I": [600.0, 600.0]},
+        "values": {
+            "I": None,
+            "I_text": "parabolic natural-light profile with reported peak 600 µmol photons m-2 s-1; full sampling profile is not a constant flux",
+        },
     },
     32: {
-        "I": [50.0, 50.0],
-        "I_text": "50 µmol m−2 s−1 (general growth Methods; RNA-seq section identifies GSE227397)",
-        "phot": "12:12",
-        "medium_text": "standard BG11 supplemented with 50 mM NaHCO3 in general growth Methods; not a gas CO2 percentage",
+        "expected_accession": "GSE227397",
+        "expected_source": {"I": None, "phot": None, "co2": None, "phase": "OD stated", "od": [1.0, 1.0]},
+        "values": {
+            "I": [50.0, 50.0],
+            "I_text": "50 µmol m−2 s−1 (general growth Methods; RNA-seq section identifies GSE227397)",
+            "phot": "12:12",
+            "medium_text": "standard BG11 supplemented with 50 mM NaHCO3 in general growth Methods; not a gas CO2 percentage",
+        },
     },
     33: {
-        "I": None,
-        "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
+        "expected_accession": "GSE237858",
+        "expected_source": {"I": [40.0, 40.0], "spec": "fluorescent (class not stated)"},
+        "values": {
+            "I": None,
+            "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
+        },
     },
     34: {
-        "I": None,
-        "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
+        "expected_accession": "GSE237858",
+        "expected_source": {"I": [40.0, 40.0], "spec": "fluorescent (class not stated)"},
+        "values": {
+            "I": None,
+            "I_text": "conflicting: archive reports ~40 µE for plate growth; accepted Package B records a different paper value",
+        },
+    },
+    58: {
+        "expected_accession": "PXD000510",
+        "expected_source": {"cont": "diel", "phot": None, "spec": None},
+        "values": {"phot": "12:12"},
     },
     75: {
-        "T": [32.0, 32.0],
-        "T_text": "32 °C",
-        "I": [150.0, 150.0],
-        "I_text": "~150 µmol photons m-2 s-1",
-        "co2": 2.0,
-        "co2_text": "2% CO2",
-        "cont": "continuous",
-        "phot": None,
-        "spec": "Gro-Lux fluorescent (class not stated)",
-        "medium": "BG-11",
-        "conditioned": False,
-        "n_altered": False,
-        "medium_text": "BG11 with 1 g/L HEPES, pH 8.3",
-        "fmt": "planktonic liquid",
-        "phase": "exponential",
-        "od": None,
-        "od_nm": 750,
+        "expected_accession": "PXD036717",
+        "expected_source": {
+            "T": None, "I": None, "co2": None, "cont": None, "spec": None,
+            "medium": "BG-11", "fmt": "planktonic liquid", "phase": None, "od": None,
+        },
+        "values": {
+            "T": [32.0, 32.0],
+            "T_text": "32 °C",
+            "I": [150.0, 150.0],
+            "I_text": "~150 µmol photons m-2 s-1",
+            "co2": 2.0,
+            "co2_text": "2% CO2",
+            "cont": "continuous",
+            "phot": None,
+            "spec": "Gro-Lux fluorescent (class not stated)",
+            "medium": "BG-11",
+            "conditioned": False,
+            "n_altered": False,
+            "medium_text": "BG11 with 1 g/L HEPES, pH 8.3",
+            "fmt": "planktonic liquid",
+            "phase": "exponential",
+            "od": None,
+            "od_nm": 750,
+        },
     },
 }
 
 OVERRIDE_AUDIT = {
+    "22.light_regime": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 22; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
+        "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+    },
+    "22.growth_phase": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 22 typed sampling record",
+        "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+    },
+    "23.light_regime": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 23; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 growth-protocol scope",
+        "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+    },
+    "23.growth_phase": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 23 typed sampling record",
+        "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+    },
+    "24.temperature": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
+        "uncertainty": "Room temperature is reported without a reviewed numeric sampling interval.",
+    },
+    "24.light_regime": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 24; cyano_archive_condition_intake_20261007.tsv CR-153 reviewed GSE205443 flask scope",
+        "uncertainty": "Continuous fluorescent illumination is reported; spectrum class is not stated.",
+    },
+    "24.growth_phase": {
+        "status": "partial",
+        "source": "cyano_dataset_condition_records_20261007.json row 24 typed sampling record",
+        "uncertainty": "A numeric OD is reported without an explicit sampling phase.",
+    },
     "10.light_intensity": {
         "status": "partial",
         "source": "cyano_dataset_condition_records_20261007.json row 10",
@@ -158,12 +248,17 @@ OVERRIDE_AUDIT = {
     "35.light_regime": {
         "status": "conflicting",
         "source": "cyano_package_B_archive_addendum_20261007.json corrections row 35",
-        "uncertainty": "The aggregate includes six disputed eight-cycle samples; no unconditional photoperiod.",
+        "uncertainty": "The aggregate includes six disputed eight-cycle samples, so no unconditional photoperiod; the sampling spectrum class is also unreported.",
     },
     "39.light_regime": {
         "status": "partial",
         "source": "cyano_package_B_archive_addendum_20261007.json corrections row 39",
         "uncertainty": "Continuous cultivation is not evidence of continuous illumination.",
+    },
+    "58.light_regime": {
+        "status": "partial",
+        "source": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
+        "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported.",
     },
     "75.temperature": {
         "status": "present",
@@ -214,10 +309,31 @@ def load_records(path: Path) -> dict[int, dict[str, Any]]:
     records = {int(record["row"]): deepcopy(record) for record in raw}
     if len(records) != len(raw):
         raise ValueError("duplicate condition row")
-    for number, changes in RECORD_OVERRIDES.items():
+    for number, expected_fields in RECORD_AUDIT_PINS.items():
+        if number not in records:
+            raise ValueError(f"audit pin names absent condition row {number}")
+        for field, expected in expected_fields.items():
+            if records[number].get(field) != expected:
+                raise ValueError(
+                    f"audit-pinned row {number} field {field} changed: "
+                    f"expected {expected!r}, found {records[number].get(field)!r}"
+                )
+    for number, overlay in RECORD_OVERRIDES.items():
         if number not in records:
             raise ValueError(f"override names absent condition row {number}")
-        records[number].update(deepcopy(changes))
+        record = records[number]
+        if record.get("acc") != overlay["expected_accession"]:
+            raise ValueError(
+                f"override row {number} expected accession {overlay['expected_accession']}, "
+                f"found {record.get('acc')!r}"
+            )
+        for field, expected in overlay["expected_source"].items():
+            if record.get(field) != expected:
+                raise ValueError(
+                    f"override row {number} source field {field} changed: "
+                    f"expected {expected!r}, found {record.get(field)!r}"
+                )
+        record.update(deepcopy(overlay["values"]))
     return records
 
 
@@ -292,6 +408,8 @@ def score_light_intensity(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, st
     av, bv = a.get("I"), b.get("I")
     if av is None or bv is None:
         return "undecidable", "full sampling flux is missing, conflicting, relative, or profile-only"
+    if min(*av, *bv) <= 0:
+        return "fail", "sampling photon flux must be positive"
     ab, bb = _flux_band(av), _flux_band(bv)
     if av == bv and ab is not None:
         return "pass", f"identical {av[0]:g}–{av[1]:g} profile; {ab}"
@@ -310,19 +428,24 @@ def _spectrum(record: dict[str, Any]) -> str | None:
     return SPECTRUM_CLASSES[value]
 
 
+def _continuity(record: dict[str, Any]) -> str | None:
+    value = record.get("cont")
+    if value is None:
+        return None
+    if value not in CONTINUITY:
+        raise ValueError(f"unreviewed continuity value: {value!r}")
+    return CONTINUITY[value]
+
+
 def score_light_regime(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     sa, sb = _spectrum(a), _spectrum(b)
     if sa is None or sb is None:
         spectrum_result = "unknown"
     elif sa == sb:
         spectrum_result = "pass"
-    elif {sa, sb} == {"full-spectrum", "narrow-band"}:
-        spectrum_result = "fail"
     else:
-        # Different lamp descriptions are not automatically different spectrum
-        # classes.  Only the explicitly typed full/narrow opposition is a fail.
-        spectrum_result = "unknown"
-    ca, cb = CONTINUITY.get(a.get("cont")), CONTINUITY.get(b.get("cont"))
+        spectrum_result = "fail"
+    ca, cb = _continuity(a), _continuity(b)
     if ca is None or cb is None:
         schedule_result = "unknown"
     elif ca != cb:
@@ -354,6 +477,8 @@ def score_co2(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     av, bv = a.get("co2"), b.get("co2")
     if av is None or bv is None:
         return "undecidable", "gas CO2 percentage missing on one or both sides"
+    if av <= 0 or bv <= 0:
+        return "fail", "gas CO2 percentage must be positive"
     ar, br = _co2_regime(av), _co2_regime(bv)
     ratio = max(av / bv, bv / av)
     if ar is not None and ar == br and (ar == "ambient" or ratio <= 2.0):
@@ -364,6 +489,8 @@ def score_co2(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
 def score_medium(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     if a.get("medium") is None or b.get("medium") is None:
         return "undecidable", "medium missing on one or both sides"
+    if any(record.get("conditioned") is None or record.get("n_altered") is None for record in (a, b)):
+        return "undecidable", "fresh-medium or nitrogen-source flag unresolved"
     if a.get("conditioned") or b.get("conditioned"):
         return "fail", "conditioned/mixed medium is not fresh-medium comparable"
     if a.get("medium") != "BG-11" or b.get("medium") != "BG-11":
@@ -375,8 +502,11 @@ def score_medium(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
 
 def _score_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     ap, bp = a.get("phase"), b.get("phase")
-    if ap is None or bp is None or "two phases in one set" in (ap, bp):
-        return "undecidable", "sampling phase missing or aggregate contains two phases"
+    for phase in (ap, bp):
+        if phase not in KNOWN_PHASES | {"stationary"} | UNKNOWN_PHASES:
+            raise ValueError(f"unreviewed sampling phase: {phase!r}")
+    if ap in UNKNOWN_PHASES or bp in UNKNOWN_PHASES:
+        return "undecidable", "sampling phase missing, unnamed, or aggregates two phases"
     if ap == bp == "stationary":
         return "pass", "both stationary; OD not required"
     if "stationary" in (ap, bp):
@@ -389,10 +519,19 @@ def _score_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
     return "fail", f"sampling OD ranges do not overlap: {ao} vs {bo}"
 
 
+def _format_class(record: dict[str, Any]) -> str | None:
+    value = record.get("fmt")
+    if value in UNSUPPORTED_FORMATS:
+        return None
+    if value not in FORMAT_CLASSES:
+        raise ValueError(f"unreviewed culture format: {value!r}")
+    return FORMAT_CLASSES[value]
+
+
 def score_format_phase(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str]:
-    af, bf = a.get("fmt"), b.get("fmt")
+    af, bf = _format_class(a), _format_class(b)
     if af is None or bf is None:
-        format_result = ("undecidable", "culture format missing")
+        format_result = ("undecidable", "culture format missing or outside the allowed planktonic/biofilm classes")
     elif af == bf:
         format_result = ("pass", f"both {af}")
     else:
@@ -433,6 +572,21 @@ def load_owner_judgements(path: Path) -> dict[frozenset[int], dict[str, Any]]:
     return result
 
 
+def _j1_rows(records: dict[int, dict[str, Any]]) -> set[int]:
+    """Resolve the four owner-reviewed J1 accessions to their pinned rows."""
+    rows: set[int] = set()
+    for accession, expected_row in J1_ACCESSION_ROWS.items():
+        matches = sorted(row for row, record in records.items() if record.get("acc") == accession)
+        if matches != [expected_row]:
+            raise ValueError(
+                f"J1 accession {accession} expected only row {expected_row}, found {matches}"
+            )
+        rows.add(expected_row)
+    if len(rows) != 4:
+        raise ValueError(f"J1 must resolve to four distinct rows, found {sorted(rows)}")
+    return rows
+
+
 def rescore_pairs(
     original: Sequence[dict[str, str]],
     historical: Sequence[dict[str, str]],
@@ -444,7 +598,7 @@ def rescore_pairs(
         raise ValueError("historical overlay changed pair count")
     output = []
     seen: set[tuple[str, str, str, int, int]] = set()
-    j1_rows = {21, 46, 47, 54}
+    j1_rows = _j1_rows(records)
     for number, (old, effective) in enumerate(zip(original, historical), start=1):
         row_a = parse_condition_set(old["condition_set_a"])[0]
         row_b = parse_condition_set(old["condition_set_b"])[0]
@@ -509,7 +663,7 @@ def _gap_reason(record: dict[str, Any], field: str) -> str | None:
     if field == "light_intensity":
         return None if record.get("I") is not None else "Sampling photon flux has no reviewed complete numeric profile."
     if field == "light_regime":
-        continuity = CONTINUITY.get(record.get("cont"))
+        continuity = _continuity(record)
         if continuity is None:
             return "Sampling light schedule is unknown."
         if continuity == "diel" and record.get("phot") is None:
@@ -522,13 +676,18 @@ def _gap_reason(record: dict[str, Any], field: str) -> str | None:
     if field == "medium":
         return None if record.get("medium") is not None else "Sampling medium is unknown."
     if field == "culture_format":
-        return None if record.get("fmt") is not None else "Sampling culture format is unknown."
+        return None if _format_class(record) is not None else "Sampling culture format is missing or outside the allowed planktonic/biofilm classes."
     if field == "growth_phase":
-        if record.get("phase") is None:
+        phase = record.get("phase")
+        if phase not in KNOWN_PHASES | {"stationary"} | UNKNOWN_PHASES:
+            raise ValueError(f"unreviewed sampling phase: {phase!r}")
+        if phase is None:
             return "Sampling phase is unknown."
-        if record.get("phase") == "stationary":
+        if phase == "OD stated":
+            return "A numeric OD is reported without an explicit sampling phase."
+        if phase == "stationary":
             return None
-        if record.get("phase") == "two phases in one set":
+        if phase == "two phases in one set":
             return "One condition set aggregates two phases."
         return None if record.get("od") is not None else "Non-stationary phase lacks a reviewed sampling OD."
     raise ValueError(f"unknown gap field {field}")
@@ -616,8 +775,20 @@ def build_gap_inventory(
             if reason is None:
                 continue
             explicit = source_audit.get(f"{row}.{field}")
-            old_status, old_value = old_statuses.get((row, field), ("not retrieved", ""))
-            status = explicit["status"] if explicit else (old_status if old_status != "present" else "partial")
+            historical = old_statuses.get((row, field))
+            if explicit and explicit["status"] == "present":
+                raise ValueError(f"present audit cannot describe remaining gap {row}.{field}")
+            if explicit:
+                status = explicit["status"]
+            elif historical:
+                status = historical[0] if historical[0] != "present" else "partial"
+            else:
+                raise ValueError(
+                    f"gap {row}.{field} lacks a reviewed historical status or explicit current audit"
+                )
+            if status not in GAP_STATUSES:
+                raise ValueError(f"invalid gap status {status!r} for {row}.{field}")
+            old_value = historical[1] if historical else ""
             source = explicit["source"] if explicit else f"cyano_dataset_condition_records_20261007.json row {row}; reviewed status from cyano_condition_gap_inventory_20261007.json"
             gaps.append({
                 "condition_row": row,
@@ -625,7 +796,7 @@ def build_gap_inventory(
                 "condition_set": record["label"],
                 "field": field,
                 "status": status,
-                "value": _current_field_value(record, field),
+                "value": _current_field_value(record, field, status),
                 "source_provenance": source,
                 "uncertainty": reason,
                 "historical_value": old_value,
@@ -635,36 +806,38 @@ def build_gap_inventory(
         "scope": "Current typed condition cells used by the complete 941-pair default-screen replay; owner judgements remain separate.",
         "sources": [{"name": path.name, "sha256": sha256(path)} for path in source_paths],
         "classification_contract": {
-            "statuses": ["not reported", "not retrieved", "partial", "conflicting", "uncertain"],
+            "statuses": list(GAP_STATUSES),
             "semantic_classification": "Exact typed fields and explicit mappings only; structured unknown for every unmapped spectrum.",
         },
         "corrections": [
-            {"condition_row": row, "fields": changes, "audit": {key.split(".", 1)[1]: value for key, value in OVERRIDE_AUDIT.items() if key.startswith(f"{row}.")}}
-            for row, changes in sorted(RECORD_OVERRIDES.items())
+            {"condition_row": row, "fields": overlay["values"], "audit": {key.split(".", 1)[1]: value for key, value in OVERRIDE_AUDIT.items() if key.startswith(f"{row}.")}}
+            for row, overlay in sorted(RECORD_OVERRIDES.items())
         ],
         "owner_judgement_separation": {
             "pair_calls": "data/expression/pair_judgements.json is displayed alongside, never applied to default_verdict.",
-            "J1": "Rows 21/46/47/54 have an owner same-spectrum judgement displayed separately; the default exact-class screen remains undecidable.",
+            "J1": "Accessions GSE18902/GSE50908/GSE50919/GSE52486 resolve exactly to rows 21/46/47/54 and have an owner same-spectrum judgement displayed separately; the default screen remains undecidable because their class is unreported.",
         },
         "gaps": gaps,
     }
 
 
-def _current_field_value(record: dict[str, Any], field: str) -> str:
+def _current_field_value(record: dict[str, Any], field: str, status: str) -> str:
     if field == "temperature":
-        return _fmt_range(record.get("T"), record["T_text"])
+        return status if record.get("T") is None else _fmt_range(record["T"], record["T_text"])
     if field == "light_intensity":
-        return _fmt_range(record.get("I"), record["I_text"])
+        return status if record.get("I") is None else _fmt_range(record["I"], record["I_text"])
     if field == "light_regime":
+        if record.get("cont") is None and record.get("phot") is None and record.get("spec") is None:
+            return status
         return f"schedule={record.get('cont')}; photoperiod={record.get('phot')}; spectrum={record.get('spec')}"
     if field == "co2":
-        return record["co2_text"]
+        return status if record.get("co2") is None else record["co2_text"]
     if field == "medium":
-        return record.get("medium_text") or ""
+        return status if record.get("medium") is None else (record.get("medium_text") or str(record["medium"]))
     if field == "culture_format":
-        return record.get("fmt") or ""
+        return record.get("fmt") or status
     if field == "growth_phase":
-        return _phase_text(record)
+        return status if record.get("phase") is None else _phase_text(record)
     raise ValueError(field)
 
 
@@ -736,6 +909,12 @@ def _write_tsv(path: Path, rows: Iterable[dict[str, Any]], fields: Sequence[str]
 
 def _validate_evidence(inputs: dict[str, Path]) -> None:
     """Fail closed if the narrow evidence rows behind overlays disappear."""
+    for name, expected in EVIDENCE_SHA256.items():
+        actual = sha256(inputs[name])
+        if actual != expected:
+            raise ValueError(
+                f"{name} overlay evidence SHA-256 changed: expected {expected}, found {actual}"
+            )
     paper = json.loads(inputs["paper"].read_text(encoding="utf-8"))
     if paper.get("dataset") != "GSE227397" or paper.get("reported_values", {}).get("photon_flux") != 50 or paper.get("reported_values", {}).get("photoperiod") != "12:12":
         raise ValueError("GSE227397 paper overlay evidence changed")
@@ -747,12 +926,40 @@ def _validate_evidence(inputs: dict[str, Path]) -> None:
         raise ValueError("GSE311172 correction changed")
     with inputs["bc"].open(encoding="utf-8", newline="") as stream:
         bc = list(csv.DictReader(stream, delimiter="\t"))
-    if sum(row["artifact"] == "PRIDE PXD036717" for row in bc) != 1:
+    pxd = [row for row in bc if row["artifact"] == "PRIDE PXD036717"]
+    if len(pxd) != 1:
         raise ValueError("PXD036717 BC addendum row missing or duplicated")
+    required_pxd_values = (
+        "temperature = 32 °C",
+        "light_intensity = ~150 µmol photons m-2 s-1",
+        "light_regime = continuous light; Sylvania 15 W Gro-Lux fluorescent bulbs",
+        "co2 = 2% CO2 in the incubator",
+        "medium = BG11 with 1 g/L HEPES, pH 8.3",
+        "culture_format = shaken flasks (150 rpm) in a Multitron incubator",
+        "growth_phase = cultures back-diluted daily to OD750 0.3 (steady exponential growth); OD at labeling and any IPTG induction before labeling not stated",
+    )
+    if not all(value in pxd[0]["conditions"] for value in required_pxd_values):
+        raise ValueError("PXD036717 BC overlay values changed")
     with inputs["intake"].open(encoding="utf-8", newline="") as stream:
         intake = {row["row_id"]: row for row in csv.DictReader(stream, delimiter="\t")}
-    if intake.get("CR-019", {}).get("dataset") != "GSE237858":
-        raise ValueError("GSE237858 CR-019 evidence missing")
+    required_intake = {
+        "CR-019": ("GSE237858", "light_intensity", "GSM7655427..GSM7655438 (12: GSM7655427, GSM7655428, GSM7655429, GSM7655430, GSM7655431, GSM7655432, GSM7655433, GSM7655434, GSM7655435, GSM7655436, GSM7655437, GSM7655438)"),
+        "CR-020": ("GSE237858", "light_spectrum", "GSM7655427..GSM7655438 (12: GSM7655427, GSM7655428, GSM7655429, GSM7655430, GSM7655431, GSM7655432, GSM7655433, GSM7655434, GSM7655435, GSM7655436, GSM7655437, GSM7655438)"),
+        "CR-153": ("GSE205443", "co2", "flask-format samples"),
+    }
+    for row_id, (dataset, field, samples) in required_intake.items():
+        item = intake.get(row_id, {})
+        if (item.get("dataset"), item.get("field"), item.get("accepted_scope")) != (dataset, field, samples):
+            raise ValueError(f"{dataset} {row_id} evidence identity or scope changed")
+    row58_regimes = set()
+    for pair in read_table(inputs["pairs"]):
+        for side in ("a", "b"):
+            row, _, values = parse_condition_set(pair[f"condition_set_{side}"])
+            if row == 58:
+                row58_regimes.add(values["light_regime"])
+    expected_row58 = "spectrum: not reported; cycle: diel (light and dark cycles); photoperiod: 12:12-hours"
+    if row58_regimes != {expected_row58}:
+        raise ValueError(f"PXD000510 row 58 photoperiod evidence changed: {sorted(row58_regimes)}")
     manual = json.loads(inputs["manual"].read_text(encoding="utf-8"))
     if not isinstance(manual, list) or not manual:
         raise ValueError("manual archive supplement is empty or invalid")
@@ -786,6 +993,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "manual": args.manual_supplement,
         "paper": args.paper_addendum,
         "pride": args.pride_check,
+        "pairs": args.pairs,
     }
     _validate_evidence(inputs)
     original = read_table(args.pairs)
