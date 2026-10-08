@@ -120,10 +120,13 @@ test('a long measured unit cannot squeeze the metric description into a ribbon',
 test('the comparison region carries its measurement limits on every tab', () => {
   // The note is built for the delta tab from the table's own metrics, and for
   // the chart tabs from the axes, so no view promotes a measurement silently.
-  assert.match(compareSource, /this\.measurementNote\.className = 'panel-note measurement-limits'/);
+  assert.match(compareSource, /this\.measurementDetails\.className = 'method-help measurement-limits'/);
+  assert.match(compareSource, /measurementSummary\.textContent = 'Measurement Limits'/);
+  assert.match(compareSource, /this\.measurementDetails\.append\(measurementSummary, this\.measurementNote\)/);
   assert.match(compareSource, /this\.renderMeasurementNote\(\);/);
   assert.match(compareSource, /if \(this\.tab !== 'delta'\) shown\.push\(\.\.\.this\.activeAxes\(\)\);/);
   assert.match(compareSource, /measurementLimitNote\(shown, this\.state\.dataset\)/);
+  assert.match(compareSource, /this\.measurementDetails\.hidden = note === null/);
 });
 
 test('measured UTEX evidence opens with the gene detail, before the codon-usage indices', () => {

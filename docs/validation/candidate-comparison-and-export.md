@@ -83,6 +83,13 @@ comparison's result is visible at the default desktop scroll position. Raw A and
 B values remain to the right for verification. Narrow screens may require the
 contained horizontal scroller, which the visible guidance must say explicitly.
 
+Measurement caveats live in one native **Measurement Limits** disclosure above
+the chart. It starts closed, is omitted entirely when the current comparison has
+no applicable declared limits, and keeps the full deduplicated replicate,
+condition, and coverage text when opened. The disclosure element is reused while
+candidates, comparison tabs, and selected metrics change, so live copy updates do
+not discard its open state or keyboard focus.
+
 ## 3. Colour reads a value; it does not judge it
 
 Take the ramp family from `meta.metrics[<key>].scale`: `diverging` for signed

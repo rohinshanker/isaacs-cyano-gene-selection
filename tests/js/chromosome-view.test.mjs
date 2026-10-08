@@ -451,10 +451,42 @@ function disclosureText(view) {
 
 test('the tab descriptor is frozen and carries the permanent chromosome id', () => {
   assert.equal(CHROMOSOME_TAB.id, 'chromosome');
-  assert.equal(CHROMOSOME_TAB.name, 'Chromosome');
+  assert.equal(CHROMOSOME_TAB.name, 'Chromosome/Gene');
   assert.ok(Object.isFrozen(CHROMOSOME_TAB));
   assert.ok(CHROMOSOME_TAB.blurb.length > 0);
   assert.ok(CHROMOSOME_TAB.source.length > 0);
+});
+
+test('viewer information is one closed disclosure that stays live without moving the plot or sequence', () => {
+  const mounted = mount();
+  const { view, restore, flush } = mounted;
+  try {
+    assert.equal(view.viewerInfo.tagName, 'details');
+    assert.equal(view.viewerInfo.getAttribute('open'), null, 'closed in a fresh view');
+    assert.equal(view.viewerInfo.children[0].tagName, 'summary');
+    assert.equal(view.viewerInfo.children[0].textContent, 'Chromosome Viewer Info');
+    assert.deepEqual(view.viewerInfo.children[1].children,
+      [view.markerNote, view.trackSummaries, view.evidenceNote]);
+
+    const canvasIndex = view.figure.children.indexOf(view.canvasHost);
+    const infoIndex = view.figure.children.indexOf(view.viewerInfo);
+    const sequenceIndex = view.figure.children.indexOf(view.sequenceHost);
+    assert.ok(canvasIndex < infoIndex, 'the plot stays outside and before the disclosure');
+    assert.ok(infoIndex < sequenceIndex, 'the sequence stays outside and after the disclosure');
+
+    view.viewerInfo.open = true;
+    const track = view.primaryTrack();
+    view.zoomBand(view.bands()[0], 4, 1_000_000);
+    flush();
+    assert.equal(view.figure.children[infoIndex], view.viewerInfo, 'updates reuse the disclosure');
+    assert.equal(view.viewerInfo.open, true, 'a live zoom does not close it');
+    const primarySummary = view.trackSummaries.children[0].text();
+    assert.match(primarySummary, /Showing [\d,]+–[\d,]+\./);
+    assert.doesNotMatch(primarySummary, /Showing the whole replicon/);
+    assert.ok(view.windowFor(track).to - view.windowFor(track).from + 1 < track.lengthBp);
+  } finally {
+    restore();
+  }
 });
 
 test('a band reserves both strand lanes around one axis, in drawing order', () => {
