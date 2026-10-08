@@ -12,7 +12,7 @@
 ## Current state
 
 Split out of
-[A_licence-unblocked-sources__20261006](A_licence-unblocked-sources__20261006.md)
+the resolved licence-unblocked-sources ticket (row 6 was split out of it)
 row 6 by the owner's decision of 2026-10-07, so that ticket can close on the
 rows whose deposits already carry a per-gene table. Nothing is built yet.
 

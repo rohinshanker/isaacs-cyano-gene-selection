@@ -31,7 +31,8 @@ resolved. What the ingestion learned is in
 **Your decision, 2026-10-07: save these for later.** Nothing waits on them; they
 only upgrade fields that are already published as honestly unknown.
 
-Ticket: [A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md).
+These emails belong to the source-ingestion work, whose ticket is resolved; the
+replies go to the depositor-correspondence ticket named at the end of this item.
 
 **All three datasets shipped on 2026-10-07 and nothing waits on these emails.**
 Re-reading the GEO records showed the conditions were in the deposits all along,

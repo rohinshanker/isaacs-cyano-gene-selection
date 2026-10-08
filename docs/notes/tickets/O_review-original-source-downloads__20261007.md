@@ -18,7 +18,7 @@ the source-download catalogue. Record the owner's response here with its date;
 no new scientific or licence judgement is requested.
 
 Implementation, if wanted, belongs to rows 8 and 9 of
-[A_licence-unblocked-sources__20261006](A_licence-unblocked-sources__20261006.md).
+[proteomics-deposit-readers.md](../../validation/proteomics-deposit-readers.md), distilled from the resolved licence-unblocked-sources ticket.
 
 ## What the change would do
 
