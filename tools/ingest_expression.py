@@ -32,7 +32,7 @@ from typing import Any, Mapping
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from condition_record import validate_record  # noqa: E402
-from expression_table import header_line  # noqa: E402
+from expression_table import format_value, header_line  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "data/expression/sources.json"
@@ -560,18 +560,25 @@ def map_to_utex(values: Mapping[str, float], crosswalk: Mapping[str, str]) -> tu
     return mapped, unmapped
 
 
-def write_table(path: Path, mapped: Mapping[str, tuple[float, str]], data_type: str,
-                *, signed: bool = False) -> str:
+def write_table(
+    path: Path,
+    mapped: Mapping[str, tuple[float, str]],
+    data_type: str,
+    quantity: str | None = None,
+    *, signed: bool = False,
+) -> str:
     """Write the pipeline's three-column table and return its SHA-256.
 
-    ``data_type`` and ``signed`` name the value column, so a fitness table is
-    never downloaded under an abundance header and a ratio is never downloaded
-    as an amount (``scripts/expression_table.py``).
+    ``data_type`` names the value column, so a fitness table is never
+    downloaded under an abundance header (``scripts/expression_table.py``). A
+    declared ``quantity`` names it instead, and also fixes the precision: the
+    four decimals every shipped table uses would publish a p-value of 3e-18 as
+    zero, turning the strongest evidence in a deposit into the weakest.
     """
-    lines = [header_line(data_type, signed=signed)]
+    lines = [header_line(data_type, quantity, signed=signed)]
     for locus in sorted(mapped):
         value, source = mapped[locus]
-        lines.append(f"{locus}\t{value:.4f}\t{source}")
+        lines.append(f"{locus}\t{format_value(value, quantity)}\t{source}")
     content = "\n".join(lines) + "\n"
     path.write_text(content, encoding="utf-8")
     return sha256_of(content.encode("utf-8"))

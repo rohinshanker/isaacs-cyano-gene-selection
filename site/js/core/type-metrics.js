@@ -16,16 +16,56 @@
  * within-dataset mid-rank percentile, a unitless 0 to 1; a signed fitness pools
  * as the mean of the values, which share the log2 scale. The pooling rule is
  * stated beside the value wherever it is shown.
+ *
+ * A source may declare the `quantity` its values are, and then that
+ * declaration — not the assay sentence — decides the kind, the label, the
+ * metric family and whether the type pools at all. Three quantities do not
+ * pool: a log2 fold change, a p-value and a translation-efficiency ratio each
+ * belong to one contrast evaluated by one method, so such a type reads one
+ * dataset however many are selected and says which. See
+ * `scripts/expression_table.py` for the contract and
+ * `docs/validation/data-contract.md` for the reader-facing rules.
  */
 import { percentileRank, sortedFinite } from './stats.js';
 
-/** The kind of quantity a dataset measures, from its record's data type and its source's assay. */
+/**
+ * The quantity contract a dataset's source declares, or null.
+ *
+ * One transcriptomics deposit publishes several kinds of number — an
+ * abundance, a log2 fold change, a p-value, a translation-efficiency ratio —
+ * and `dataType` and the assay sentence cannot tell them apart: all of them
+ * are "transcriptomics by RNA-seq". A source may therefore declare its
+ * measured `quantity`, and the pipeline resolves what follows from it
+ * (`scripts/expression_table.py`) and publishes the answers. This module reads
+ * those answers; it never parses prose to reach them, because a regular
+ * expression over an assay sentence is how a p-value becomes an abundance.
+ */
+function declaredQuantity(dataset) {
+  const source = dataset?.source;
+  return source && typeof source.quantity === 'string' && source.quantity ? source : null;
+}
+
+/** Whether several selected datasets of a quantity may be shown as one pooled value. */
+const datasetPools = (dataset) => declaredQuantity(dataset)?.quantityPools !== false;
+
+/** The metric family a dataset's type belongs to. */
+function datasetFamily(dataset) {
+  const declared = declaredQuantity(dataset)?.quantityFamily;
+  if (declared) return declared;
+  return assayKind(dataset) === 'fitness' ? 'Fitness' : 'Expression';
+}
+
+/** The kind of quantity a dataset measures: its declaration, else its data type and assay. */
 export function assayKind(dataset) {
+  const declared = declaredQuantity(dataset)?.quantityKind;
+  if (typeof declared === 'string' && declared) return declared;
   if (dataset?.record?.dataType === 'fitness') return 'fitness';
   if (/initiation/i.test(dataset?.source?.assay ?? '')) return 'initiation';
   // Ribosome profiling counts footprints on a transcript. That is occupancy,
   // not abundance, and pooling it with transcript counts would average two
-  // different measurements of the same gene.
+  // different measurements of the same gene. A source that declares its
+  // quantity has already been answered above; this reads the assay sentence
+  // only for the sources shipped before quantities existed.
   if (/ribosome profiling/i.test(dataset?.source?.assay ?? '')) return 'occupancy';
   // A ratio to a reference strain or condition is a comparison, not a level.
   // Pooling it with abundances would rank a fold change among measurements of
@@ -52,6 +92,11 @@ export function isTypeKey(key) {
 /** The reader-facing name of a type: the quantity, then the platform in brackets. */
 export function typeLabelFor(dataset) {
   const { dataType, platform } = dataset.record;
+  // A declared quantity's label already names the molecule the number was
+  // measured on — "RNA abundance", "Ribosome occupancy", "RNA log2FC (EdgeR)" —
+  // so appending the platform after it would say the same thing twice.
+  const declared = declaredQuantity(dataset)?.quantityLabel;
+  if (declared) return declared;
   const kind = assayKind(dataset);
   const quantity = kind === 'initiation' ? 'Transcription initiation'
     : kind === 'fitness' ? 'Gene fitness'
@@ -123,6 +168,31 @@ export function selectedOfType(group, selection) {
   return group.datasets.filter((dataset) => chosen.has(dataset.id));
 }
 
+/** The selected datasets of a type named by key, in selection order. */
+export function selectedDatasetsOfType(typeKey, datasets, selection) {
+  const group = typeGroups(datasets).get(typeKey);
+  return group ? selectedOfType(group, selection) : [];
+}
+
+/**
+ * Whether a type shows several selected datasets as one pooled value.
+ *
+ * An abundance does: the deposits report different units, so each is ranked
+ * within itself and the ranks averaged, which is scale-free and answers "how
+ * busy is this gene across what I selected".
+ *
+ * A fold change, a p-value and a translation-efficiency ratio do not. Each is
+ * the result of one contrast evaluated by one algorithm. Averaging two of them
+ * mixes contrasts, or mixes two estimators of one contrast, and the number
+ * that comes out answers no question anyone asked — worse, it reads like a
+ * stronger result than either input. Such a type is read from one dataset
+ * however many are selected, and {@link informingDataset} says which.
+ */
+export function typePools(typeKey, datasets) {
+  const group = typeGroups(datasets).get(typeKey);
+  return group ? datasetPools(group.datasets[0]) : true;
+}
+
 /** The dataset that informs a type when the reader has not chosen: a shipped original, else the first selected. */
 export function defaultInforming(group, selection) {
   const candidates = selectedOfType(group, selection);
@@ -153,6 +223,12 @@ export function normalizeTypeSources(value, datasets, selection) {
 /**
  * The dataset the reader named for a type, or the only selected one; null when
  * the type pools several or none of its datasets is selected.
+ *
+ * A type that does not pool always names one, because there is no pooled value
+ * for it to fall back to: with several selected and none named, the first of
+ * them in manifest order is read. That choice is deterministic rather than
+ * clever, and the interface says a single dataset is being read so the reader
+ * is never shown one contrast while believing they are shown several.
  */
 export function informingDataset(typeKey, typeSources, datasets, selection) {
   const group = typeGroups(datasets).get(typeKey);
@@ -160,7 +236,8 @@ export function informingDataset(typeKey, typeSources, datasets, selection) {
   const candidates = selectedOfType(group, selection);
   const chosen = candidates.find((d) => d.id === typeSources?.[typeKey]);
   if (chosen) return chosen;
-  return candidates.length === 1 ? candidates[0] : null;
+  if (candidates.length === 1) return candidates[0];
+  return datasetPools(group.datasets[0]) ? null : candidates[0] ?? null;
 }
 
 /** The datasets a type reads: the named one alone, else every selected dataset of the type. */
@@ -192,7 +269,7 @@ export function typeKeyOf(metricKey, datasets) {
  * property that depends on the dataset is a getter, so a change of informing
  * dataset is seen by the next read without rebuilding anything.
  */
-export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount = 0 }) {
+export function buildTypeMetrics(datasets, { contributing, metricOf, selected, geneCount = 0 }) {
   const metrics = [];
   // Within-dataset mid-rank percentiles, built once per dataset metric and kept
   // while that metric object lives; a dataset's values never change in a session.
@@ -206,12 +283,27 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
     return rankCache.get(metric);
   };
   for (const group of typeGroups(datasets).values()) {
-    const kind = assayKind(group.datasets[0]);
-    // Both carry a sign and both take a diverging ramp; only fitness shares a
-    // log2 scale, so they pool and are described differently.
+    const first = group.datasets[0];
+    const kind = assayKind(first);
     const signed = kind === 'fitness' || kind === 'ratio';
+    const pools = datasetPools(first);
+    const family = datasetFamily(first);
     const current = () => contributing(group.key).map((dataset) => metricOf(dataset) ?? null).filter(Boolean);
     const one = () => { const list = current(); return list.length === 1 ? list[0] : null; };
+    // How many of the type's datasets the reader selected, which differs from
+    // how many are read when the quantity does not pool.
+    const selectedCount = () => (selected ? selected(group.key).length : current().length);
+    // The sentence a non-pooling type owes the reader whenever more than one of
+    // its datasets is selected: one of them is being read, and which.
+    const selectionNote = () => {
+      const count = selectedCount();
+      if (pools || count < 2) return null;
+      const read = current()[0]?.provenance?.id ?? contributing(group.key)[0]?.id ?? 'one dataset';
+      return `${count} datasets of this kind are selected, and ${read} alone is read: `
+        + 'a fold change, a p-value and a translation-efficiency ratio each belong to one '
+        + 'contrast evaluated by one method, so they are never averaged across contrasts. '
+        + 'Choose another under Data Sources.';
+    };
     const pooledProvenance = (list) => {
       const { ingest: _firstIngest, ...first } = list[0].provenance ?? {};
       const ids = list.map((metric) => metric.provenance?.id ?? metric.key);
@@ -253,23 +345,33 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
       key: group.key,
       label: group.label,
       // A fitness screen is its own family (owner decision, 2026-10-05); every
-      // abundance, ratio and initiation measure is expression evidence, and a
-      // ratio is held apart from abundances by its own type rather than by a
-      // family of its own.
-      family: kind === 'fitness' ? 'Fitness' : 'Expression',
+      // abundance and initiation measure is expression evidence. A declared
+      // quantity names its own family, which is what keeps a fold change, a
+      // p-value and a translation-efficiency ratio out of the abundance rules:
+      // the low-traffic threshold and the measured-first orderings select on
+      // the family, and none of those three is a measure of how busy a gene is.
+      family,
       source: 'pipeline',
       integer: false,
       isType: true,
       typeKey: group.key,
+      /** Whether several selected datasets of this type show as one pooled value. */
+      pools,
       get unit() { const list = current(); return list.length === 1 ? list[0].unit : list.length > 1 ? pooledProvenance(list).units : ''; },
       get desc() {
         const list = current();
-        if (list.length === 1) return list[0].desc;
+        const note = selectionNote();
+        if (list.length === 1) return note ? `${list[0].desc} ${note}` : list[0].desc;
         if (list.length > 1) return `${group.label}, pooled over ${list.length} selected datasets: ${pooledProvenance(list).units}.`;
         return `${group.label}, from the datasets selected under Data Sources.`;
       },
-      get scale() { return one()?.scale ?? (signed ? 'diverging' : 'sequential'); },
+      get scale() {
+        return one()?.scale
+          ?? (signed || first?.source?.signed === true ? 'diverging' : 'sequential');
+      },
       get provenance() { const list = current(); return list.length === 1 ? list[0].provenance : list.length > 1 ? pooledProvenance(list) : null; },
+      /** Why one dataset is read while several are selected, or null. */
+      get selectionNote() { return selectionNote(); },
       get fileKey() { return current().find((metric) => metric.fileKey)?.fileKey ?? null; },
       get tssEvidenceSource() { return one()?.tssEvidenceSource; },
       get informing() { return one() ? contributing(group.key)[0] : null; },

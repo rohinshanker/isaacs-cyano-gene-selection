@@ -34,6 +34,21 @@ const INTEGER_KEYS = new Set([
 ]);
 
 /**
+ * Metric families that hold a declared quantity which is not an abundance.
+ *
+ * A source may declare the quantity its values are, and the pipeline then
+ * publishes the family that follows from it (`scripts/expression_table.py`). A
+ * log2 fold change, a reported p-value and a translation-efficiency ratio are
+ * measurements, but none of them says how busy a gene is, so none may answer
+ * the low-traffic threshold, open as the measured default, or stand in for
+ * abundance anywhere else. The declaration decides, not the metric's name:
+ * a key the pipeline happens to call `rpkmLog2Fc` must not light the filter up.
+ */
+const NON_ABUNDANCE_QUANTITY_FAMILIES = new Set([
+  'Fold change', 'Significance', 'Translation efficiency',
+]);
+
+/**
  * True when a metric describes transcript abundance, which is what the
  * low-traffic filter thresholds on. Detection is by declaration first and by
  * name second, so a pipeline that later adds `expressionTpm` or `rnaSeqRpkm`
@@ -42,6 +57,10 @@ const INTEGER_KEYS = new Set([
 export function isExpressionMetric(metric) {
   if (metric.family === 'Fitness' || metric.provenance?.record?.dataType === 'fitness'
     || metric.key?.startsWith('type.fitness.')) return false;
+  // A declared quantity answers this question outright, whichever way.
+  const declared = metric.provenance?.quantityFamily ?? null;
+  if (declared) return !NON_ABUNDANCE_QUANTITY_FAMILIES.has(declared);
+  if (NON_ABUNDANCE_QUANTITY_FAMILIES.has(metric.family)) return false;
   if (metric.family && /expression/i.test(metric.family)) return true;
   if (/^(expression|expr|tpm|rpkm|fpkm|rnaSeq|transcript)/i.test(metric.key)) return true;
   return /\b(tpm|rpkm|fpkm|reads per|transcripts per)\b/i.test(metric.unit ?? '');
@@ -72,6 +91,18 @@ export function isMeasuredMetric(metric) {
  */
 export function isNativeMeasuredMetric(metric) {
   return isMeasuredMetric(metric) && metric.provenance?.isTargetOrganism === true;
+}
+
+/**
+ * True for any metric whose values come from a declared deposit, abundance or
+ * not. A fold change, a p-value and a translation-efficiency ratio are real
+ * measurements with a condition, a coverage count and a citation; they are
+ * simply not abundances, so {@link isMeasuredMetric} excludes them from the
+ * places that mean abundance. Everything that states a measurement's limits
+ * asks this instead, so a ratio is never shown without its provenance.
+ */
+export function hasDeclaredMeasurement(metric) {
+  return isMeasuredMetric(metric) || Boolean(metric?.provenance?.quantity);
 }
 
 /**
@@ -201,7 +232,7 @@ export function freshViewColorKey(registry, functionCategories) {
  * @returns {string[]} zero or more limit clauses, in display order.
  */
 export function measurementLimitClauses(metric, formatCount = String) {
-  if (!metric || !isMeasuredMetric(metric) || !metric.provenance) return [];
+  if (!metric || !hasDeclaredMeasurement(metric) || !metric.provenance) return [];
   const source = normalizeExpressionSource(metric.provenance);
   const clauses = [];
   if (source.condition) clauses.push(`condition: ${source.condition}`);

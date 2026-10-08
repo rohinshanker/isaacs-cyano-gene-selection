@@ -773,8 +773,11 @@ verify it with `python3 tools/regulatory_tss.py check`.
 `expression` is loaded from `data/expression/GSE205444_pcc7942_wt_bg11_day1.tsv`,
 a three-column `locus_tag`, quantity, `source_gene_id` table. The quantity column
 is `fitness` for declared fitness data and `abundance` for transcript/protein
-layers; mismatched or ambiguous headers are rejected. The pipeline joins
-it by locus tag and writes `null` for the 164 genes with no value.
+layers, or the column a source's declared `quantity` names where it declares one
+(`read_count`, `log2_fold_change`, `p_value`,
+`translation_efficiency_log2_fold_change`); mismatched or ambiguous headers are
+rejected. The pipeline joins it by locus tag and writes `null` for the 164 genes
+with no value.
 
 **This measurement is from *S. elongatus* PCC 7942, not UTEX 2973**, comes from a
 biofilm and conditioned-media experiment, and lacks light and CO2 metadata. Full
@@ -903,6 +906,27 @@ for a type none of whose datasets is selected selects its defaults (the shipped
 originals and the standard-growth sets, else every dataset of the type), and the
 Data Sources section lists every dataset of the colouring type with an include
 control, a pooled row and an "alone informs" choice (owner report, 2026-10-06).
+
+**Declared quantities.** `dataType` names the experiment, not the number: one
+differential-expression deposit publishes an abundance, a read count, a log2
+fold change, a p-value and sometimes a translation-efficiency ratio, all of them
+"transcriptomics by RNA-seq". A source may therefore declare the `quantity` its
+values are, and the pipeline publishes `quantityKind`, `quantityLabel`,
+`quantityFamily`, `quantityPools` and `quantityBounds` beside it, resolved once
+from the contract in `scripts/expression_table.py`. The declaration — never the
+assay sentence — then fixes the value column the table is headed with, the
+values the column admits, `signed` and `logScale`, the colour ramp, the metric
+family and the `kind` in the type key, so each quantity is its own selectable
+metric and none joins another. `Fold change`, `Significance` and
+`Translation efficiency` are families outside `Expression`, which is what keeps
+those three out of the low-traffic threshold and the measured-abundance
+orderings; each reads one selected dataset rather than pooling, because a mean
+of two contrasts answers no question, and the selector says which dataset it
+read. A `p_value` layer is exempt from the six-decimal publication rounding, so
+a published 1e-300 is not written as zero. A source declaring no `quantity` is
+unchanged in every respect, and no shipped source declares one yet. The full
+rules, including how to add a quantity, are in
+[measured-quantity-contract.md](measured-quantity-contract.md).
 
 `meta.pairJudgements` carries the owner's judgements on escalated condition-set
 pairs from `data/expression/pair_judgements.json` (the transcription of the

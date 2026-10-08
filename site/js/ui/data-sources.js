@@ -365,7 +365,19 @@ export class DataSourcesPanel {
     if (colorType && forType.length) {
       this.list.append(el('li', { className: 'data-sources-type', text: `${kindLabel}: ${included.length} of ${forType.length} included` }));
       const named = this.informing.chosen(colorType);
-      if (included.length > 1) {
+      // A fold change, a p-value and a translation-efficiency ratio each belong
+      // to one contrast evaluated by one method, so this kind offers no pooled
+      // row: one included dataset is read, and the row says which it is.
+      const pools = this.informing.poolsType?.(colorType) ?? true;
+      if (!pools && included.length > 1) {
+        this.list.append(el('li', {
+          className: 'data-sources-note',
+          text: `These values do not pool: one of the ${included.length} included datasets is read, `
+            + 'because a fold change, a p-value and a translation-efficiency ratio each belong to '
+            + 'one contrast evaluated by one method.',
+        }));
+      }
+      if (pools && included.length > 1) {
         const row = el('li', { className: 'data-sources-item data-sources-pooled' });
         const radio = document.createElement('input');
         radio.type = 'radio';

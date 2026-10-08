@@ -1794,6 +1794,8 @@ input[type="range"] { width: 100%; }
 .data-sources-list { list-style: none; margin: 0.3rem 0; padding: 0; max-height: 11rem; overflow: auto; }
 .data-sources-list li { padding: 0.15rem 0; border-bottom: 1px dotted var(--line); }
 .data-sources-type { color: var(--ink-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 0 !important; }
+/* Why a kind of measurement reads one dataset while several are included. */
+.data-sources-note { color: var(--ink-muted); font-size: 0.78rem; line-height: 1.35; border-bottom: 0 !important; }
 .data-sources-acc { font-weight: 600; }
 .data-sources-label, .data-sources-empty { color: var(--ink-muted); font-size: 0.85rem; }
 .data-sources-actions { margin-top: 0.3rem; }

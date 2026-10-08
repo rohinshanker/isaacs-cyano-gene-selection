@@ -8,7 +8,7 @@
  */
 import { CATEGORICAL } from './colors.js';
 import { sortedFinite, medianSorted, quantileSorted } from '../core/stats.js';
-import { isMeasuredMetric } from '../core/metric-registry.js';
+import { hasDeclaredMeasurement } from '../core/metric-registry.js';
 import { metricHelp } from '../core/metric-help.js';
 
 /**
@@ -45,7 +45,7 @@ export function measurementLimitNote(metrics, dataset) {
   const seen = new Set();
   const lines = [];
   for (const metric of metrics) {
-    if (!isMeasuredMetric(metric)) continue;
+    if (!hasDeclaredMeasurement(metric)) continue;
     const source = metric.provenance?.id ?? metric.key;
     if (seen.has(source)) continue;
     seen.add(source);

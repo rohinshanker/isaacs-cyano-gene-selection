@@ -1469,6 +1469,186 @@ def validate_data_manifest(data_dir: str, report: Report) -> None:
     )
 
 
+# The measured quantities a source may declare, re-stated here rather than
+# imported from ``scripts/expression_table.py``, like every other expectation in
+# this file: a pipeline that publishes the wrong meaning for a column should
+# fail here even when its own tests agree with it.
+#
+# Each entry is the column the table heads its numbers with, the type-grouping
+# kind and reader-facing label per platform, the metric family, whether several
+# deposits of the quantity may be pooled into one shown value, the sign
+# convention, and the values the quantity admits.
+EXPRESSION_QUANTITIES: dict[str, dict[str, Any]] = {
+    "rpkm": {
+        "column": "abundance", "family": "Expression", "pools": True,
+        "signed": False, "logScale": False,
+        "platforms": {"RNA-seq": ("abundance", "RNA abundance"),
+                      "Ribo-seq": ("occupancy", "Ribosome occupancy")},
+        "bounds": {"nonnegative": True, "integral": False, "unitInterval": False},
+    },
+    "read_count": {
+        "column": "read_count", "family": "Expression", "pools": True,
+        "signed": False, "logScale": False,
+        "platforms": {"RNA-seq": ("read-count", "RNA read count"),
+                      "Ribo-seq": ("footprint-count", "Ribosome footprint count")},
+        "bounds": {"nonnegative": True, "integral": True, "unitInterval": False},
+    },
+    "log2_fold_change": {
+        "column": "log2_fold_change", "family": "Fold change", "pools": False,
+        "signed": True, "logScale": False,
+        "platforms": {"RNA-seq": ("log2-fold-change", "RNA log2FC"),
+                      "Ribo-seq": ("log2-fold-change", "Ribosome log2FC")},
+        "bounds": {"nonnegative": False, "integral": False, "unitInterval": False},
+    },
+    "edger_log2_fold_change": {
+        "column": "log2_fold_change", "family": "Fold change", "pools": False,
+        "signed": True, "logScale": False,
+        "platforms": {"RNA-seq": ("edger-log2-fold-change", "RNA log2FC (EdgeR)"),
+                      "Ribo-seq": ("edger-log2-fold-change", "Ribosome log2FC (EdgeR)")},
+        "bounds": {"nonnegative": False, "integral": False, "unitInterval": False},
+    },
+    "p_value": {
+        "column": "p_value", "family": "Significance", "pools": False,
+        "signed": False, "logScale": False,
+        "platforms": {
+            "RNA-seq": ("p-value", "RNA reported P-value (adjustment unspecified)"),
+            "Ribo-seq": ("p-value", "Ribosome reported P-value (adjustment unspecified)"),
+        },
+        "bounds": {"nonnegative": True, "integral": False, "unitInterval": True},
+    },
+    "translation_efficiency_log2_fold_change": {
+        "column": "translation_efficiency_log2_fold_change",
+        "family": "Translation efficiency", "pools": False,
+        "signed": True, "logScale": False,
+        "platforms": {"RNA-seq": ("te-log2-fold-change", "TE log2FC"),
+                      "Ribo-seq": ("te-log2-fold-change", "TE log2FC")},
+        "bounds": {"nonnegative": False, "integral": False, "unitInterval": False},
+    },
+}
+
+# The families a declared quantity may claim that the interface reads as
+# transcript abundance. A fold change, a p-value and a translation-efficiency
+# ratio are not abundances, and the low-traffic threshold and the
+# measured-evidence orderings select on the family, so a ratio sitting in
+# ``Expression`` would be offered as a measure of how busy a gene is.
+ABUNDANCE_FAMILIES = {"Expression"}
+
+
+def quantity_value_problem(quantity: str, value: Any) -> str | None:
+    """Why ``value`` is not an admissible ``quantity``, or None when it is."""
+    bounds = EXPRESSION_QUANTITIES[quantity]["bounds"]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return "not a number"
+    if not math.isfinite(value):
+        return "not finite"
+    if bounds["nonnegative"] and value < 0:
+        return f"negative ({value})"
+    if bounds["integral"] and float(value) != int(value):
+        return f"not a whole count ({value})"
+    if bounds["unitInterval"] and not 0 <= value <= 1:
+        return f"outside [0, 1] ({value})"
+    return None
+
+
+def validate_expression_quantities(meta: dict[str, Any], genes: list[Any],
+                                   report: Report) -> None:
+    """Checks what every source that declares a measured quantity publishes about it.
+
+    A source may declare the quantity its values are, because ``dataType`` alone
+    cannot separate an abundance from a fold change from a p-value: all three are
+    "transcriptomics by RNA-seq". The declaration must be one this contract
+    knows, must be defined for the record's data type and platform, and must
+    carry exactly the kind, label, family, pooling rule, sign convention and
+    bounds that follow from it. A source that declares nothing is unaffected.
+    """
+    sources = [s for s in meta.get("expressionSources", []) if isinstance(s, dict)]
+    declared = [s for s in sources if "quantity" in s]
+    if not declared:
+        report.check(True, "no expression source declares a measured quantity")
+        return
+
+    problems: list[str] = []
+    for source in declared:
+        name = source.get("id")
+        quantity = source.get("quantity")
+        if quantity not in EXPRESSION_QUANTITIES:
+            problems.append(f"{name}: unknown quantity {quantity!r}")
+            continue
+        contract = EXPRESSION_QUANTITIES[quantity]
+        record = source.get("record") if isinstance(source.get("record"), dict) else {}
+        platform = record.get("platform")
+        if platform not in contract["platforms"]:
+            problems.append(f"{name}: quantity {quantity!r} is not defined for {platform!r}")
+            continue
+        if record.get("dataType") != "transcriptomics":
+            problems.append(
+                f"{name}: quantity {quantity!r} is a transcriptomics quantity, "
+                f"not {record.get('dataType')!r}")
+            continue
+        kind, label = contract["platforms"][platform]
+        expected = {
+            "quantityKind": kind,
+            "quantityLabel": label,
+            "quantityFamily": contract["family"],
+            "quantityPools": contract["pools"],
+            "quantityBounds": contract["bounds"],
+            "signed": contract["signed"],
+            "logScale": contract["logScale"],
+        }
+        for field, want in expected.items():
+            if source.get(field) != want:
+                problems.append(f"{name}: {field} is {source.get(field)!r}, not {want!r}")
+        definition = (meta.get("metrics") or {}).get(source.get("metricKey"))
+        if isinstance(definition, dict) and definition.get("family") != contract["family"]:
+            problems.append(
+                f"{name}: its metric sits in family {definition.get('family')!r}, "
+                f"not {contract['family']!r}")
+    report.check(not problems, "every declared expression quantity matches the contract",
+                 "; ".join(problems[:4]))
+
+    # Nothing may group two different quantities into one selectable metric. The
+    # browser's type key is the data type, the platform and the kind, so one
+    # such triple standing for two quantities would silently average a p-value
+    # into a fold change. The check is on the triple, not on prose.
+    by_type: dict[tuple[Any, Any, Any], set[Any]] = {}
+    for source in declared:
+        record = source.get("record") if isinstance(source.get("record"), dict) else {}
+        key = (record.get("dataType"), record.get("platform"), source.get("quantityKind"))
+        by_type.setdefault(key, set()).add(source.get("quantity"))
+    shared = {key: sorted(map(str, names)) for key, names in by_type.items() if len(names) > 1}
+    report.check(not shared, "no two declared quantities collapse into one type metric",
+                 "; ".join(f"{k}: {v}" for k, v in list(shared.items())[:4]))
+
+    # A quantity that is not an abundance must not be offered where the
+    # interface means transcript abundance.
+    misfiled = [
+        f"{s.get('id')} ({s.get('quantity')}) is in {s.get('quantityFamily')!r}"
+        for s in declared
+        if s.get("quantity") in ("log2_fold_change", "edger_log2_fold_change", "p_value",
+                                 "translation_efficiency_log2_fold_change")
+        and s.get("quantityFamily") in ABUNDANCE_FAMILIES
+    ]
+    report.check(not misfiled, "no fold change, p-value or ratio is filed as an abundance",
+                 "; ".join(misfiled[:4]))
+
+    gene_rows = [g for g in genes if isinstance(g, dict)]
+    bad = []
+    for source in declared:
+        if source.get("payload") != "genes.json" or source["quantity"] not in EXPRESSION_QUANTITIES:
+            continue
+        key = source.get("metricKey")
+        for gene in gene_rows:
+            value = gene.get(key)
+            if value is None:
+                continue
+            problem = quantity_value_problem(source["quantity"], value)
+            if problem:
+                bad.append(f"{key} on {gene.get('id')}: {problem}")
+                break
+    report.check(not bad, "every genes.json quantity column holds values its quantity admits",
+                 "; ".join(bad[:4]))
+
+
 def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[Any],
                                report: Report) -> None:
     """Checks the separate expression-layer payload against the sources that declare it.
@@ -1524,16 +1704,28 @@ def validate_expression_layers(data_dir: str, meta: dict[str, Any], genes: list[
         if not isinstance(column, list) or len(column) != len(gene_rows):
             problems.append(f"{source['metricKey']}: not one entry per gene")
             continue
-        # A value may be negative for two different reasons: a signed quantity
-        # centred on zero, or an ordinary abundance expressed in logs where a
-        # negative simply means below one unit. Both are legitimate; neither is
-        # a licence for the other's ramp.
-        may_be_negative = source.get("signed") is True or source.get("logScale") is True
-        bad = [v for v in column if v is not None
-               and (isinstance(v, bool) or not isinstance(v, (int, float))
-                    or not math.isfinite(v) or (v < 0 and not may_be_negative))]
-        if bad:
-            problems.append(f"{source['metricKey']}: {len(bad)} invalid values, e.g. {bad[:3]}")
+        # A declared quantity states its own admissible values: whole counts for
+        # a read count, [0, 1] for a p-value, either sign for a log ratio.
+        if source.get("quantity") in EXPRESSION_QUANTITIES:
+            reasons = [
+                quantity_value_problem(source["quantity"], v) for v in column if v is not None
+            ]
+            bad = [reason for reason in reasons if reason]
+            if bad:
+                problems.append(
+                    f"{source['metricKey']}: {len(bad)} values its "
+                    f"{source['quantity']} contract refuses, e.g. {bad[:3]}")
+        else:
+            # A value may be negative for two different reasons: a signed quantity
+            # centred on zero, or an ordinary abundance expressed in logs where a
+            # negative simply means below one unit. Both are legitimate; neither is
+            # a licence for the other's ramp.
+            may_be_negative = source.get("signed") is True or source.get("logScale") is True
+            bad = [v for v in column if v is not None
+                   and (isinstance(v, bool) or not isinstance(v, (int, float))
+                        or not math.isfinite(v) or (v < 0 and not may_be_negative))]
+            if bad:
+                problems.append(f"{source['metricKey']}: {len(bad)} invalid values, e.g. {bad[:3]}")
         with_value = sum(v is not None for v in column)
         declared = (source.get("coverage") or {}).get("withValue")
         if with_value != declared:
@@ -1669,6 +1861,7 @@ def main() -> int:
     )
 
     if isinstance(meta, dict) and isinstance(genes, list):
+        validate_expression_quantities(meta, genes, report)
         validate_expression_layers(data_dir, meta, genes, report)
         validate_codon_rscu(data_dir, meta, genes, report)
     if isinstance(meta, dict):

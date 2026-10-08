@@ -88,7 +88,7 @@ import {
 } from './core/data-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
-  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  normalizeTypeSources, selectedDatasetsOfType, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor, typePools,
 } from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -1599,6 +1599,10 @@ function dataSourcesState() {
     // The colouring type's full dataset list, with inclusion edited in place.
     colorTypeKey: isTypeKey(state.colorBy) ? state.colorBy : null,
     allOfType: (typeKey) => typeGroups(context.datasets).get(typeKey)?.datasets ?? [],
+    // A fold change, a p-value or a translation-efficiency ratio is read from
+    // one dataset however many are selected, so the panel offers no pooled row
+    // for it and says one is being read instead.
+    poolsType: (typeKey) => typePools(typeKey, context.datasets),
     isSelected: (id) => sourceSelection().includes(id),
     onSelect: (id, on) => {
       const current = sourceSelection();
@@ -1717,10 +1721,15 @@ function syncAxisSourceSelects() {
       option.textContent = `${dataset.record.studyId} · ${dataset.record.conditionSet}`;
       select.append(option);
     }
-    const pooled = document.createElement('option');
-    pooled.value = '';
-    pooled.textContent = `Pooled (${candidates.length} datasets)`;
-    select.prepend(pooled);
+    // A fold change, a p-value or a translation-efficiency ratio is read from
+    // one dataset however many are selected, so offering "Pooled" here would be
+    // a choice the axis cannot honour.
+    if (typePools(state[key], context.datasets)) {
+      const pooled = document.createElement('option');
+      pooled.value = '';
+      pooled.textContent = `Pooled (${candidates.length} datasets)`;
+      select.prepend(pooled);
+    }
     select.value = informingDataset(state[key], state.typeSources, context.datasets, chosen)?.id ?? '';
     row.hidden = false;
   }
@@ -2152,6 +2161,9 @@ function installTypeMetrics() {
   const typeMetrics = buildTypeMetrics(context.datasets, {
     contributing: (typeKey) => contributingDatasets(typeKey, state.typeSources, context.datasets, sourceSelection()),
     metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+    // What the reader selected, which a type that does not pool reads only one
+    // of; the metric needs both numbers to say so.
+    selected: (typeKey) => selectedDatasetsOfType(typeKey, context.datasets, sourceSelection()),
     geneCount: context.dataset.genes.length,
   });
   // Placed before the first dataset metric so the Expression family keeps its
