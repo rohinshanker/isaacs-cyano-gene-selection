@@ -126,7 +126,9 @@
           "Sec"
         ]
       },
-      "optionalLayers": [],
+      "optionalLayers": [
+        "expression"
+      ],
       "rawDirectory": "data/raw/ecoli-syn61-delta3-ev5",
       "outputDirectory": "site/data/organisms/ecoli-syn61-delta3-ev5",
       "expressionDirectory": "data/expression/organisms/ecoli-syn61-delta3-ev5",

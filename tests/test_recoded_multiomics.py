@@ -80,7 +80,8 @@ def test_no_growth_is_not_a_zero_minute_doubling_time():
     assert record["doublingTimeMinutes"] is None
     assert record["doublingTimeSdMinutes"] is None
     assert record["doublingTimeReplicatesMinutes"] == [None] * 10
-    assert record["maximumOd600Replicates"] == [0] * 3 + [None] * 7
+    assert record["maximumOd600Replicates"] == [None] * 10
+    assert record["maximumOd600"] is None
     assert record["growthStatus"] == "no_growth_detected"
     assert record["sourceCells"][1] == intake.NO_GROWTH
 

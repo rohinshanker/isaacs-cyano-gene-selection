@@ -60,7 +60,7 @@ def test_the_shipped_sources_carry_valid_records():
         (lambda r: r["conditions"]["format"].update(value=""), "format value must be"),
         (lambda r: r["conditions"]["phase"].update(label="lag"), "phase label must be one of"),
         (lambda r: r["conditions"]["phase"].update(od=[0.5, 0.3]), "od must be a two-number"),
-        (lambda r: r["conditions"]["phase"].update(odNm=600), "odNm must be 730, 750 or null"),
+        (lambda r: r["conditions"]["phase"].update(odNm=601), "odNm must be 600, 730, 750 or null"),
         (lambda r: r["conditions"]["phase"].update(odNm=None), "od needs its wavelength"),
     ],
 )

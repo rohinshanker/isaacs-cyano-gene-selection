@@ -110,9 +110,10 @@ def read_growth(rows: Iterable[Sequence[Any]]) -> list[dict[str, Any]]:
             "growthStatus": "no_growth_detected" if no_growth else "reported",
             "doublingTimeMinutes": None if no_growth else values[0],
             "doublingTimeSdMinutes": None if no_growth else values[1],
-            "maximumOd600": values[2], "maximumOd600Sd": values[3],
+            "maximumOd600": None if no_growth else values[2],
+            "maximumOd600Sd": None if no_growth else values[3],
             "doublingTimeReplicatesMinutes": [None] * 10 if no_growth else values[4:14],
-            "maximumOd600Replicates": values[14:24],
+            "maximumOd600Replicates": [None] * 10 if no_growth else values[14:24],
             "sourceCells": list(row),
         })
     return result
