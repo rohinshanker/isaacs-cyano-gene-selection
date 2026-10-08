@@ -90,3 +90,10 @@ reusable profiling/reproduction and performance contracts into
 `docs/validation/chromosome-view.md` and relevant loading/data contracts; update
 `docs/validation/INDEX.md`. Then delete the resolved ticket and remove its queue
 row. Keep transient profiling artifacts outside permanent validation documents.
+
+## Owner environment, 2026-10-08
+
+Confirmed in the UI-closeout session: Chrome on a Mac; lag occurs on default
+selections of protein abundance, transcript initiation and transcript abundance.
+The original four-dataset identities are not required to reproduce these defaults.
+cyano-general-ticket-closing retains ownership of profiling/repair.

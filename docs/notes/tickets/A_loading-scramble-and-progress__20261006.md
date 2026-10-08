@@ -3,7 +3,7 @@
 Scope: Select and promote the loading/reveal presentation in `site/` after the owner's visual comparison.
 Status: active
 Opened: 2026-10-06
-Updated: 2026-10-07
+Updated: 2026-10-08
 
 ## Current State
 
@@ -42,6 +42,17 @@ content receives one bounded local reveal only in review mode; unchanged
 replacements inherit their deadline. Ordinary user changes do not restart it.
 The RSCU sidecar is integrated, has no browser tier/fetch, and is excluded from
 progress. Packed codons remain in the core file.
+
+## Owner requirement, 2026-10-08
+
+The owner wants continuing visible activity so waiting/preparation does not look
+like a frozen screen. A/B/C are reveal gates; grouped/continuous are byte-progress
+geometry. Current code pulses during indeterminate preparation/unknown-size work;
+known-byte network stalls and B's final presentation hold are not guaranteed to
+keep moving. Proposed completion contract: activity remains visible whenever work
+is pending, while the measured completed extent advances only for actual work.
+Recommendation supplied: A readiness plus continuous aggregate progress, with a
+separate activity cue. Reveal/progress defaults still await the owner's choice.
 
 ## Verification
 
