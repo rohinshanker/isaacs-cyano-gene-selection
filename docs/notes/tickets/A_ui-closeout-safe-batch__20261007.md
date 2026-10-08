@@ -19,8 +19,8 @@ coordinate-transfer copy in a collapsed Chromosome Viewer Info disclosure.
 Implemented on local result `699b389ee4ed57ec2dc7afadfe5c4f301de7ed5d`, including
 the scoped Data Selection wrapping/hover repairs and corrected loading helper.
 Independent exact-patch review: DEM-307 approved cd66c57..699b389 with no material
-defects; all seven acceptance criteria hold. Main remains untouched by this
-session; the patch is available for coordinated integration after review.
+defects; all seven acceptance criteria hold. The reviewed UI code is now integrated locally on main; other active writers
+retain their isolated worktrees.
 
 Chromosome performance remains open and is now reproduced in default UTEX at
 1440×900, Chromium/normal CPU, local data, empty shortlist and inactive recoding.
@@ -43,8 +43,9 @@ the chromosome-performance owner has a separate worktree at that baseline.
 The isolated UI branch includes this main baseline via 94cc966. Combined gates and
 renders pass. This session closed the Measurement Limits, tab name/order and
 Chromosome Viewer Info tickets on 2026-10-08, recording its name and all findings
-before R-renaming, distillation and deletion. Canonical file cleanup follows the
-guarded fast-forward; no broader UI or performance ticket is closed.
+before R-renaming, distillation and deletion. Canonical main was fast-forwarded to 1519853 after the clean-index/head guard,
+and its three original ticket files were R-renamed/verified/deleted. No broader
+UI or performance ticket is closed.
 
 DEM-307 observations retained with the approved result:
 
