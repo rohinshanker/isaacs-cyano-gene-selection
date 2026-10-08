@@ -25,6 +25,7 @@ import { loadDatasetStaged } from '../../site/js/core/dataset.js';
 import { dataDirectoryPath, searchCopy } from '../../site/js/ui/organism-selector.js';
 
 const ECOLI = organismById('ecoli-k12-mg1655');
+const SYN61 = organismById('ecoli-syn61-delta3-ev5');
 const PAGE = 'https://example.test/site/';
 const SHA = (digit) => digit.repeat(64);
 
@@ -35,10 +36,14 @@ function strings(value) {
   return [];
 }
 
-test('the registry is two frozen records, the default organism first', () => {
-  assert.deepEqual(ORGANISMS.map((organism) => organism.id), ['utex2973', 'ecoli-k12-mg1655']);
+test('the registry contains three frozen records, the default organism first', () => {
+  assert.deepEqual(ORGANISMS.map((organism) => organism.id), [
+    'utex2973', 'ecoli-k12-mg1655', 'ecoli-syn61-delta3-ev5',
+  ]);
   assert.equal(DEFAULT_ORGANISM, ORGANISMS[0]);
-  assert.deepEqual(ORGANISMS.map((organism) => organism.label), ['Cyanobacteria', 'E. coli']);
+  assert.deepEqual(ORGANISMS.map((organism) => organism.label), [
+    'Cyanobacteria', 'E. coli', 'E. coli Syn61',
+  ]);
   assert.equal(ORGANISM_PARAM, 'org');
   assert.equal(DATA_PARAM, 'data');
   const frozen = (value) => typeof value !== 'object' || value === null
@@ -53,7 +58,7 @@ test('every record carries every field a view reads', () => {
   const fields = ['id', 'label', 'species', 'strain', 'shortName', 'title', 'description',
     'dataDirectory', 'storageNamespace', 'handoffStrain', 'genome', 'genomeCitation',
     'citationLabels', 'searchAliases', 'searchAliasExample', 'locusExample', 'freshAxes',
-    'annotationSources', 'layers', 'copy'];
+    'annotationSources', 'layers', 'recoding', 'copy'];
   const copy = ['tabBlurbs', 'nativeProjectionSummary', 'coordinateEvidenceNote',
     'noAdmittedTrackData', 'directProteomicsLabel', 'goSearchNote', 'metricMethods',
     'metricReading', 'goTermsCaveat'];
@@ -121,6 +126,28 @@ test('E. coli is K-12 MG1655, one circular chromosome, and no study-bound layer'
   }
 });
 
+test('Syn61 delta 3 ev5 mirrors config metadata and declares only sourced recoding facts', async () => {
+  const config = JSON.parse(await readFile(
+    new URL('../../config/organisms.json', import.meta.url), 'utf8',
+  )).organisms[SYN61.id];
+  assert.deepEqual(organismIdentity(SYN61), {
+    id: 'ecoli-syn61-delta3-ev5', label: 'E. coli Syn61', species: 'Escherichia coli',
+    strain: config.strainIdentity, assembly: config.accession,
+  });
+  assert.deepEqual(SYN61.genome.replicons, [{
+    accession: 'CP116771.1', lengthBp: config.expectedTotalLength,
+    role: 'chromosome', label: 'Chromosome', primary: true,
+  }]);
+  assert.equal(SYN61.dataDirectory, `${config.outputDirectory.replace(/^site\//, '')}/`);
+  assert.deepEqual(SYN61.recoding.targets, ['TCA', 'TCG', 'TAG']);
+  assert.equal(SYN61.recoding.replacements, null);
+  assert.match(SYN61.recoding.replacementNote, /unavailable.*not inferred/i);
+  assert.match(SYN61.copy.nativeProjectionSummary, /refitted.*surviving synonymous variation/i);
+  assert.match(SYN61.copy.nativeProjectionSummary, /not parent-fixed axes/i);
+  assert.deepEqual(SYN61.layers, {});
+  assert.deepEqual(SYN61.annotationSources, []);
+});
+
 test('nothing in the E. coli record names the cyanobacterial organism or its studies', () => {
   const forbidden = /UTEX|2973|Synechococcus|elongatus|PCC|7942|Tan |GSE205444|M744|cyano|NZ_CP/i;
   for (const text of strings(ECOLI)) assert.ok(!forbidden.test(text), text);
@@ -135,6 +162,8 @@ test('an address names its organism in the query string, and no org means the de
     { organism: DEFAULT_ORGANISM, requestedId: null, recognised: true });
   assert.deepEqual(resolveOrganism('?org=ecoli-k12-mg1655'),
     { organism: ECOLI, requestedId: 'ecoli-k12-mg1655', recognised: true });
+  assert.deepEqual(resolveOrganism('?org=ecoli-syn61-delta3-ev5'),
+    { organism: SYN61, requestedId: 'ecoli-syn61-delta3-ev5', recognised: true });
   assert.deepEqual(resolveOrganism('org=ecoli-k12-mg1655&load-min=0').organism, ECOLI);
   assert.deepEqual(resolveOrganism('?org=utex2973'),
     { organism: DEFAULT_ORGANISM, requestedId: 'utex2973', recognised: true });
@@ -176,12 +205,16 @@ test('switching organisms keeps the page\'s other parameters and drops a data ov
   assert.equal(switchSearch('?data=fixtures/', ECOLI), '?org=ecoli-k12-mg1655');
   assert.equal(switchSearch('?org=ecoli-k12-mg1655&data=fixtures/', DEFAULT_ORGANISM), '');
   assert.equal(switchSearch('?org=ecoli-k12-mg1655', ECOLI), '?org=ecoli-k12-mg1655');
+  assert.equal(switchSearch('?org=ecoli-k12-mg1655&data=x/', SYN61),
+    '?org=ecoli-syn61-delta3-ev5');
 });
 
 test('the data directory follows the organism, and ?data= overrides it for either', () => {
   assert.equal(resolveDataDirectory(''), 'data/');
   assert.equal(resolveDataDirectory('?org=utex2973'), 'data/');
   assert.equal(resolveDataDirectory('?org=ecoli-k12-mg1655'), 'data/organisms/ecoli-k12-mg1655/');
+  assert.equal(resolveDataDirectory('?org=ecoli-syn61-delta3-ev5'),
+    'data/organisms/ecoli-syn61-delta3-ev5/');
   assert.equal(resolveDataDirectory('?data=other'), 'other/');
   assert.equal(resolveDataDirectory('?data=other/'), 'other/');
   assert.equal(resolveDataDirectory('?org=ecoli-k12-mg1655&data=../fixtures/x'), '../fixtures/x/');
@@ -211,7 +244,11 @@ test('no storage key is shared between organisms', () => {
     lastView: 'recoding-map.ecoli-k12-mg1655.last-view.v1',
   });
   // Nor is one organism's key a prefix of another's, so no scan by prefix can cross.
-  for (const key of keys[1]) assert.ok(!key.startsWith(`${DEFAULT_ORGANISM.storageNamespace}.`));
+  for (const organismKeys of keys.slice(1)) {
+    for (const key of organismKeys) {
+      assert.ok(!key.startsWith(`${DEFAULT_ORGANISM.storageNamespace}.`));
+    }
+  }
 });
 
 test('a dataset is its stamped organism\'s, and a hand-built one is the default\'s', () => {
@@ -223,6 +260,7 @@ test('a dataset is its stamped organism\'s, and a hand-built one is the default\
 
 test('a replicon is found by its accession across every genome of record', () => {
   assert.equal(repliconByAccession('NC_000913.3').lengthBp, 4641652);
+  assert.equal(repliconByAccession('CP116771.1').lengthBp, 3977501);
   assert.equal(repliconByAccession('NZ_CP006471.1').lengthBp, 2690418);
   assert.equal(repliconByAccession('NZ_CP006473.1').lengthBp, 7842);
   assert.equal(repliconByAccession('NC_000913'), null, 'the exact accession, version included');
@@ -239,6 +277,8 @@ test('source names and ids are read by role, in precedence order', () => {
     { reviewed: 'utex-2973', product: 'pcc-7942', go: 'go-iea' });
   assert.deepEqual(sourceLabels(ECOLI), { precedence: '', sequence: '' });
   assert.deepEqual(sourceIds(ECOLI), {});
+  assert.deepEqual(sourceLabels(SYN61), { precedence: '', sequence: '' });
+  assert.deepEqual(sourceIds(SYN61), {});
 });
 
 test('a record\'s sentence is filled by name, and an unknown name is left as written', () => {
@@ -421,6 +461,7 @@ test('the tier 1 list each side holds is the loader\'s own rule, per organism', 
   assert.deepEqual(coreFileNames(DEFAULT_ORGANISM),
     ['meta.json', 'genes.json', 'function-categories-v1.json']);
   assert.deepEqual(coreFileNames(ECOLI), ['meta.json', 'genes.json']);
+  assert.deepEqual(coreFileNames(SYN61), ['meta.json', 'genes.json']);
   assert.deepEqual(coreFileNames(), coreFileNames(DEFAULT_ORGANISM));
   // No organism: a tool reading a directory on its own terms asks for everything.
   assert.deepEqual(coreFileNames(null),

@@ -19,6 +19,7 @@ import { adoptingFetch } from './core/early-data.js';
 import { geneIdentity, geneMapLabel } from './core/gene-identity.js';
 import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillReplacement } from './core/scheme.js';
 import { computeLiveMetrics } from './core/live-metrics.js';
+import { buildRecodedGenomeModel } from './core/recoded-genome.js';
 import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues,
@@ -77,6 +78,7 @@ import { ComparePanel } from './ui/compare.js';
 import { normalizeCompareAxes } from './ui/compare-model.js';
 import { LeftPanels } from './ui/left-panels.js';
 import { renderGeneViewer } from './ui/gene-viewer.js';
+import { renderRecodedGenomePanel } from './ui/recoded-genome.js';
 import { GeneSequenceView } from './ui/gene-sequence-view.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { DataSourcesPanel } from './ui/data-sources.js';
@@ -197,6 +199,7 @@ const context = {
   dataset: null,
   registry: null,
   live: null,
+  recodedGenome: null,
   scheme: null,
   verification: null,
   mask: null,
@@ -2076,7 +2079,10 @@ function normalizeAndApply(decoded) {
     recomputeScheme();
   }
   if (!context.registry) {
-    context.registry = buildMetricRegistry(context.dataset.meta, context.dataset.genes, context.live);
+    const organismMetrics = context.recodedGenome ? [context.recodedGenome.metric] : [];
+    context.registry = buildMetricRegistry(
+      context.dataset.meta, context.dataset.genes, context.live, organismMetrics,
+    );
   }
   context.datasets = datasetsFrom(context.dataset.meta);
   state.sources = isDefaultSelection(state.sources, context.datasets)
@@ -2553,6 +2559,8 @@ async function boot() {
   performance.mark('cyano:core');
   performance.mark('cyano:prepare-start');
   context.dataset = dataset;
+  context.recodedGenome = buildRecodedGenomeModel(organism, dataset);
+  renderRecodedGenomePanel(element('recoded-genome-panel'), context.recodedGenome);
   applyGeneCount(document, dataset.genes.length);
   loadProgress.setIdentity({
     releaseId: dataset.meta.annotationRelease?.releaseId ?? null,

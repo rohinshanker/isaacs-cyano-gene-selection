@@ -163,6 +163,7 @@ export const UTEX2973 = {
       searchPlaceholder: 'e.g. aTSS-1705677 or M744_RS08610',
     },
   },
+  recoding: null,
   copy: {
     annotationSourceHint: 'Each checkbox enables one annotation source for function-category '
       + 'colouring and the legend counts only; the detail panel, lists, search, and export '

@@ -44,6 +44,7 @@
 <link rel="modulepreload" href="js/core/metric-registry.js">
 <link rel="modulepreload" href="js/core/organisms.js">
 <link rel="modulepreload" href="js/core/organisms/ecoli-k12-mg1655.js">
+<link rel="modulepreload" href="js/core/organisms/ecoli-syn61-delta3-ev5.js">
 <link rel="modulepreload" href="js/core/organisms/utex2973.js">
 <link rel="modulepreload" href="js/core/paint-priority.js">
 <link rel="modulepreload" href="js/core/panel-design.js">
@@ -51,6 +52,7 @@
 <link rel="modulepreload" href="js/core/panel-features.js">
 <link rel="modulepreload" href="js/core/pca.js">
 <link rel="modulepreload" href="js/core/projection-help.js">
+<link rel="modulepreload" href="js/core/recoded-genome.js">
 <link rel="modulepreload" href="js/core/regulatory-tss.js">
 <link rel="modulepreload" href="js/core/rosetta-handoff.js">
 <link rel="modulepreload" href="js/core/scheme.js">
@@ -92,6 +94,7 @@
 <link rel="modulepreload" href="js/ui/panel-designer.js">
 <link rel="modulepreload" href="js/ui/panels.js">
 <link rel="modulepreload" href="js/ui/range-slider.js">
+<link rel="modulepreload" href="js/ui/recoded-genome.js">
 <link rel="modulepreload" href="js/ui/regulatory-sites.js">
 <link rel="modulepreload" href="js/ui/rosetta-handoff-panel.js">
 <link rel="modulepreload" href="js/ui/scale-select.js">
@@ -313,6 +316,11 @@ if (window.location.protocol === 'file:') {
       directory: 'data/organisms/ecoli-k12-mg1655/',
       title: 'Escherichia coli recoding-diversity map',
       core: ['meta.json', 'genes.json']
+    },
+    'ecoli-syn61-delta3-ev5': {
+      directory: 'data/organisms/ecoli-syn61-delta3-ev5/',
+      title: 'Escherichia coli Syn61Δ3(ev5) recoding-diversity map',
+      core: ['meta.json', 'genes.json']
     }
   };
   var query = new URLSearchParams(window.location.search);
@@ -364,7 +372,8 @@ if (window.location.protocol === 'file:') {
   <!-- Each panel carries its own id so the controls column can be reordered and
        collapsed from a shared link. The head, caret, and move buttons are added
        by ui/left-panels.js, which needs only the id, the heading, and the body. -->
-  <aside class="column controls" id="controls-column" aria-label="Gene visualizer, scheme and filters">
+  <aside class="column controls" id="controls-column" aria-label="Genome and gene controls">
+    <section class="card recoded-genome-panel" id="recoded-genome-panel" hidden></section>
     <section class="card panel-card" data-panel-id="gene-viewer">
       <h2>Gene visualizer</h2>
       <div class="panel-body" id="panel-body-gene-viewer" data-panel-body>

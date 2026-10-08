@@ -385,10 +385,12 @@ export function describeExpressionSource(source, formatCoverageCount = String) {
  * @param {object} meta parsed meta.json.
  * @param {Array<object>} genes parsed genes.json.
  * @param {Record<string, Float64Array>} liveFields output of computeLiveMetrics.
+ * @param {object[]} [additionalMetrics] organism-scoped metrics computed from
+ *   the loaded sequence rather than declared by the pipeline.
  * @returns {{metrics: object[], byKey: Map<string, object>, families: string[],
  *   declaredButMissing: string[]}}
  */
-export function buildMetricRegistry(meta, genes, liveFields) {
+export function buildMetricRegistry(meta, genes, liveFields, additionalMetrics = []) {
   const metrics = [];
   const declaredButMissing = [];
   const expressionSources = new Map(
@@ -447,6 +449,16 @@ export function buildMetricRegistry(meta, genes, liveFields) {
       }
     }
     metrics.push(metric);
+  }
+
+  for (const metric of additionalMetrics) {
+    if (!metric || typeof metric.key !== 'string' || typeof metric.read !== 'function') {
+      throw new Error('an additional metric needs a key and reader');
+    }
+    if (metrics.some((entry) => entry.key === metric.key)) {
+      throw new Error(`additional metric ${metric.key} duplicates a declared metric`);
+    }
+    metrics.push({ ...metric });
   }
 
   for (const definition of LIVE_METRICS) {

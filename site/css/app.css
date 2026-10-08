@@ -442,6 +442,26 @@ input[type="range"] { width: 100%; }
 .panel-note { color: var(--ink-muted); font-size: 0.83rem; margin: 0.25rem 0 0.5rem; }
 .empty-state { color: var(--ink-muted); font-style: italic; }
 
+/* Deposited recoded-genome facts ---------------------------------------- */
+
+.recoded-genome-panel { border-left: 3px solid var(--accent); }
+.recoded-genome-lead { font-weight: 600; }
+.recoded-genome-facts { display: grid; gap: 0.45rem; margin: 0.75rem 0; }
+.recoded-genome-fact {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.2rem 0.65rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--line);
+}
+.recoded-genome-fact dt { color: var(--ink-muted); font-size: 0.8rem; font-weight: 600; }
+.recoded-genome-fact dd { margin: 0; overflow-wrap: anywhere; }
+.recoded-genome-convention { margin-top: 0.75rem; }
+
+@media (max-width: 420px) {
+  .recoded-genome-fact { grid-template-columns: 1fr; }
+}
+
 /* Scheme editor --------------------------------------------------------- */
 
 .target-list { list-style: none; margin: 0.5rem 0; padding: 0; display: grid; gap: 0.4rem; }

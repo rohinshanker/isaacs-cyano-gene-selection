@@ -40,6 +40,7 @@ export const ECOLI_K12_MG1655 = {
   locusExample: 'b0001',
   annotationSources: [],
   layers: {},
+  recoding: null,
   copy: {
     annotationSourceHint: null,
     tabBlurbs: {
