@@ -35,10 +35,11 @@ def test_generated_documents_follow_contract():
     assert meta["expressionSource"]["isTargetOrganism"] is False
     assert meta["codonOccurrences"]["GTG"] == {"total": 18659, "editable": 18303}
     assert meta["codonOccurrences"]["TTG"] == {"total": 20427, "editable": 20324}
-    # 35 computed metrics plus one metric per ingested layer (159: 53 expression,
-    # three protein, four PXD000510 diel identification windows, nine GSE205443
-    # fitness fractions, 90 Fitness Browser condition sets).
-    assert len(meta["metrics"]) == 35 + 159
+    # 35 computed metrics plus one metric per ingested layer (161: 53 expression,
+    # three protein, four PXD000510 diel identification windows, two PXD005851
+    # acetylation-survey media, nine GSE205443 fitness fractions, 90 Fitness
+    # Browser condition sets).
+    assert len(meta["metrics"]) == 35 + 161
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -114,7 +115,7 @@ def test_generated_documents_follow_contract():
     assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
 
     manifest = json.loads(EXPRESSION_MANIFEST.read_text())
-    assert len(meta["expressionSources"]) == len(manifest) == 161
+    assert len(meta["expressionSources"]) == len(manifest) == 163
     for emitted, selected in zip(meta["expressionSources"], manifest, strict=True):
         assert emitted | selected == emitted
     assert [source["coverage"]["withValue"] for source in meta["expressionSources"]] == [
@@ -148,13 +149,16 @@ def test_generated_documents_follow_contract():
         # PXD000510's four diel identification windows; each covers the
         # proteins its own 6-plex identified, so the counts differ.
         1713, 1797, 1927, 1928,
+        # PXD005851's two media; a protein counts only where all three
+        # replicates identified it, so the two differ.
+        1390, 1451,
     ]
     assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
     # The two original measurements ride in genes.json; every ingested layer is
     # published apart, joined by locus tag, so the gene file keeps its budget.
     layered = [s for s in meta["expressionSources"] if s["payload"] == "expression_layers.json"]
     assert [s["payload"] for s in meta["expressionSources"][:2]] == ["genes.json", "genes.json"]
-    assert len(layered) == 159
+    assert len(layered) == 161
     layers = json.loads((DATA / "expression_layers.json").read_text())
     assert layers["geneIds"] == [gene["id"] for gene in genes]
     assert set(layers["layers"]) == {s["metricKey"] for s in layered}

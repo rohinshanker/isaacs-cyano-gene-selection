@@ -361,6 +361,26 @@
           ]
         },
         {
+          "id": "nakayasu-2017",
+          "citation": "Nakayasu ES, Burnet MC, Walukiewicz HE, Wilkins CS, Shukla AK, Brooks S, Plutz MJ, Lee BD, Schilling B, Wolfe AJ, Müller S, Kirby JR, Rao CV, Cort JR, Payne SH. Ancient Regulatory Role of Lysine Acetylation in Central Metabolism. mBio 2017;8(6):e01894-17. doi:10.1128/mBio.01894-17; PRIDE PXD005851, the Synechococcus elongatus PCC 7942 arm of a 48-organism survey.",
+          "url": "https://doi.org/10.1128/mBio.01894-17",
+          "contribution": "Two optional protein-identification layers: unique-peptide spectrum matches per protein, scaled per run to matches per million and averaged over three biological replicates, for PCC 7942 grown in BG-11 and in BG-11 with sodium chloride. These are identification counts read from the deposit's own MS-GF+ mzIdentML search results, not a published table: the article's supplement reports per-organism totals and a glycolytic-enzyme table and never a per-protein value for this organism. A match counts for a protein only when it is rank 1, passes the search threshold at MS-GF:QValue at or below 0.01, and its non-decoy evidence names that one protein; a spectrum whose peptide is shared between proteins is counted for neither, and decoys are dropped. Spectral counting measures abundance only coarsely and favours long and readily ionised proteins, and a protein has a value only where all three replicates identified it. The survey grew each of its 48 organisms once to early stationary phase in 5 mL of unshaken aerobic culture; for this organism that was 22 °C in ATCC 616 BG-11, well below its usual cultivation, so these layers are not comparable to the 30 °C datasets without care. The deposited run names distinguish a BG-11 and a BG-11-with-NaCl set, but the article describes one growth condition per organism and its Table S1 carries only the plain BG-11 row, so the salt concentration is nowhere stated and is recorded as not reported. Keyed by UniProt accession and mapped to UTEX 2973 through UniProt's ordered-locus names and the one-to-one identifier crosswalk; an accession naming several ordered loci does not map. The measured organism is PCC 7942, not UTEX 2973. Deposit terms: the PRIDE record states 'EBI terms of use'; the article is CC BY 4.0. Reader, files and condition records are in data/expression/ingest/.",
+          "downloads": [
+            {
+              "filename": "PXD005851_bg11.tsv",
+              "repoPath": "data/expression/PXD005851_bg11.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD005851_bg11.tsv",
+              "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "PXD005851_bg11_nacl.tsv",
+              "repoPath": "data/expression/PXD005851_bg11_nacl.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD005851_bg11_nacl.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "puszynska-2017-ppgpp",
           "citation": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Reports 21, 3155–3165 (2017). doi:10.1016/j.celrep.2017.11.067; GEO GSE103462, GSE103463, GSE103644, GSE103704, GSE105774.",
           "url": "https://doi.org/10.1016/j.celrep.2017.11.067",

@@ -151,7 +151,7 @@ test('the production registry leads with measured UTEX evidence, before Translat
   assert.deepEqual(expression.slice(2), dataset.meta.expressionSources.slice(2)
     .filter((source) => source.record.dataType !== 'fitness')
     .map((source) => source.metricKey));
-  assert.equal(expression.length, 62);
+  assert.equal(expression.length, 64);
   // Nine GSE205443 biofilm fractions plus the Fitness Browser's 90 condition sets.
   assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 99);
   assert.equal(defaultColorMetricKey(registry), 'gc3');

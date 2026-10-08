@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on thirty-four metrics, symmetric log on twenty-six, linear on the rest', async () => {
+test('the shipped release opens logarithmic on thirty-nine metrics, symmetric log on twenty-six, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -101,10 +101,12 @@ test('the shipped release opens logarithmic on thirty-four metrics, symmetric lo
     .filter(([, value]) => value === scale).map(([key]) => key).sort();
 
   // Every ingested PCC 7942 abundance layer is skewed enough for the rule. Of the
-  // 69 ingested layers, 36 are strictly positive and open logarithmic, 24 report a
-  // zero somewhere and open symmetric log, and the nine signed fitness layers take
-  // a diverging ramp instead. PXD000510's four diel windows are spectral counts of
-  // at least one match, so none reaches zero and all four open logarithmic.
+  // 71 ingested layers, 37 are strictly positive and skewed enough to open
+  // logarithmic, 24 report a zero somewhere and open symmetric log, and the nine
+  // signed fitness layers take a diverging ramp instead. PXD000510's four diel
+  // windows and PXD005851's two media are spectral counts of at least one match,
+  // so none reaches zero; five of the six are skewed enough for the rule, while
+  // PXD005851's plain BG-11 layer is not and opens linear with the rest.
   assert.deepEqual(keysFor('log10'), [
     'exprGse103462WtDawn', 'exprGse103463RelAPlusDusk', 'exprGse103644RelAPlusInduced',
     'exprGse103704WtDark', 'exprGse103704WtDusk', 'exprGse104203ClearDay',
@@ -116,7 +118,7 @@ test('the shipped release opens logarithmic on thirty-four metrics, symmetric lo
     'exprGse335065AxenicMbr', 'exprGse335065CocultureMbr', 'exprGse79726Control',
     'exprGse79726NMinus', 'exprGse79726NPlus', 'expression',
     'protPxd000510Ld175To265', 'protPxd000510Ld305To385', 'protPxd000510Ld415To505',
-    'protPxd000510Ld65To145', 'protPxd030282L1118Log',
+    'protPxd000510Ld65To145', 'protPxd005851Bg11Nacl', 'protPxd030282L1118Log',
     'protPxd030282L1118Stationary', 'protPxd062851Dia', 'tssInitiation'
   ]);
   assert.deepEqual(keysFor('symlog'), [
