@@ -85,7 +85,6 @@ async (page) => {
       'Hover must preserve the measurement model without a full update');
 
     const slider = page.getByRole('slider', { name: /Hide genes below:/ });
-    const previous = await slider.inputValue();
     await slider.evaluate((element) => {
       element.value = String(Number(element.min) + (Number(element.max) - Number(element.min)) * 0.8);
       element.dispatchEvent(new Event('input', { bubbles: true }));
@@ -93,11 +92,8 @@ async (page) => {
     });
     const filtered = await read();
     check(filtered.passing < restored.passing, 'Filtering must narrow the plotted genes');
-    await slider.evaluate((element, value) => {
-      element.value = value;
-      element.dispatchEvent(new Event('input', { bubbles: true }));
-      element.dispatchEvent(new Event('change', { bubbles: true }));
-    }, previous);
+    await page.getByRole('button', { name: 'Clear all filters', exact: true }).click();
+    check((await read()).passing === restored.passing, 'Clearing the temporary filter must restore all genes');
     const views = [];
     for (const name of ['Native codon space', 'Metric X vs Y', 'Recoding-risk space', 'Baseline risk UMAP', 'Perturbation space']) {
       const tab = page.getByRole('tab', { name, exact: true });
@@ -112,7 +108,8 @@ async (page) => {
     await page.reload(); await settle(); await instrument();
     await page.locator('#chromosome-color-by').selectOption(key);
     const reloaded = await read();
-    check(reloaded.hash === pooled.hash && reloaded.pooled?.length === 4, 'Shared-link reload must preserve the restored pool');
+    check(reloaded.hash === pooled.hash && reloaded.pooled?.length === 4
+      && reloaded.passing === restored.passing, 'Shared-link reload must preserve the restored pool and passing genes');
     const widths = [];
     for (const width of [959, 960, 1239, 1240]) {
       await page.setViewportSize({ width, height: 900 });

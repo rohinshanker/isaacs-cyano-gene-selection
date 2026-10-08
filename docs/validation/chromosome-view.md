@@ -654,7 +654,7 @@ It covers the three measurement defaults and one, four and all available
 contributors for abundance types. Compare output `sha256` values between cached
 and uncached runs: every selected-source list and value array must agree. The
 optional 100 ms bound is a warm-sweep budget on the development Mac, not a network
-or device-independent guarantee. The unit test's stronger work bound is that a
+or device-independent guarantee. The unit test's stronger work bound is that
 2,715 metric reads never re-read the catalogue after resolving membership.
 
 For browser profiling, serve the actual site and record browser/version,
