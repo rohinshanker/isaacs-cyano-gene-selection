@@ -4,6 +4,8 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
+| [recoded-multiomics.md](recoded-multiomics.md) | Pinned Syn61 evolved-genome identity, conservative author-name joins, sixteen typed omics fields, study-wide strain fitness and unresolved partial-isolate boundaries |
+| [recoded-reference-projection.md](recoded-reference-projection.md) | Reproducible fitted PCA transforms, checksummed child-local parent-reference projections and strict recoded-lineage validation |
 | [data-contract.md](data-contract.md) | Frozen `site/data/*.json` interface, cross-organism evidence transfer and uncertainty rules, admitted *S. elongatus* sister strains, their data types and condition-comparability thresholds, separate Tan 2018 gTSS evidence, the shared marker representation that keeps geometry, coordinate basis and measured-versus-predicted status apart, missing-value semantics, annotation-source blank-field views, and the per-gene core-payload budget with the rule for splitting a field out of it and the `codon_rscu.json` sidecar it produced |
 | [expression-agreement.md](expression-agreement.md) | Pinned processed RNA-seq agreement plan, current and historical metadata snapshots, exact replicate time strata, control-relative responses, empirical ranges, missing/zero handling, and the boundary from raw reprocessing and lab pair judgements |
 | [fitness-screen-data.md](fitness-screen-data.md) | Published signed RB-TnSeq quantities, nine biofilm fractions and all 129 compendium experiments in 90 condition sets, pinned inputs and exact joins, default pooling boundaries, condition grid, link persistence and rendered acceptance |

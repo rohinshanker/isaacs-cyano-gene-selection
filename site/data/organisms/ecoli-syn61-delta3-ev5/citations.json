@@ -321,6 +321,13 @@
           "url": "https://www.uniprot.org/uniprotkb?query=organism_id:1140",
           "contribution": "UniProt accession to PCC 7942 ordered-locus-name table (2,751 entries, CC BY 4.0), the first step in mapping a protein deposit keyed by UniProt accession onto UTEX 2973 locus tags; entries naming several loci, or loci named by several entries, are dropped. The table is a pinned input beside the ingestion specs, not a product download.",
           "downloads": []
+        },
+        {
+          "id": "fredens-2019-syn61",
+          "citation": "Fredens J, Wang K, de la Torre D, et al. Total synthesis of Escherichia coli with a recoded genome. Nature 569, 514–518 (2019). doi:10.1038/s41586-019-1192-5. Chin lab deposit Addgene #174513.",
+          "url": "https://www.addgene.org/174513/",
+          "contribution": "Depositor Comments establish the original Syn61 design prescription TCG→AGC, TCA→AGT, TAG→TAA. This describes the ancestor's prescribed replacements, not a complete per-locus edit history for the evolved CP116771.1 genome.",
+          "downloads": []
         }
       ]
     }

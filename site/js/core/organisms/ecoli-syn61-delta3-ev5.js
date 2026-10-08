@@ -46,10 +46,12 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
     schemeName: 'Syn61 three-codon scheme',
     targets: ['TCA', 'TCG', 'TAG'],
     scope: 'Deposited whole-genome Syn61Δ3(ev5) sequence',
-    source: 'Assembly GCA_028355435.1; chromosome CP116771.1',
-    replacements: null,
-    replacementNote: 'Historical replacements are unavailable from the admitted strain record; '
-      + 'they are not inferred from the codons that survive in the deposited genome.',
+    source: 'Assembly GCA_028355435.1; chromosome CP116771.1. Original Syn61 design: '
+      + 'Fredens et al. 2019; Chin lab depositor comments, Addgene #174513.',
+    replacements: 'Original Syn61 design: TCG → AGC, TCA → AGT, TAG → TAA (100% per target). '
+      + 'This is the published design prescription, not an ev5 per-locus edit history; '
+      + 'the evolved deposited genome has the observed residuals shown above.',
+    replacementNote: 'The original design prescription does not establish every ev5 replacement event.',
   },
   copy: {
     annotationSourceHint: null,

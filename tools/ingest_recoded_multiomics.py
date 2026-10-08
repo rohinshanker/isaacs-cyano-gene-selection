@@ -307,6 +307,12 @@ def main(argv=None) -> int:
 def write_citations(data_dir: Path, expression_dir: Path, sources: list[dict]) -> None:
     """Publish a self-contained source ledger for this organism's actual inputs."""
     methods = json.loads((ROOT / "site/data/citations.json").read_text())["sections"][1]
+    methods["items"].append({
+        "id": "fredens-2019-syn61", "citation": "Fredens J, Wang K, de la Torre D, et al. Total synthesis of Escherichia coli with a recoded genome. Nature 569, 514–518 (2019). doi:10.1038/s41586-019-1192-5. Chin lab deposit Addgene #174513.",
+        "url": "https://www.addgene.org/174513/",
+        "contribution": "Depositor Comments establish the original Syn61 design prescription TCG→AGC, TCA→AGT, TAG→TAA. This describes the ancestor's prescribed replacements, not a complete per-locus edit history for the evolved CP116771.1 genome.",
+        "downloads": [],
+    })
     paths = [expression_dir / s["file"] for s in sources]
     paths += [expression_dir / "gene-join-audit.json", expression_dir / "sources.json",
               ROOT / "data/recoded/nyerges-2026/growth-source-cell-audit.json",

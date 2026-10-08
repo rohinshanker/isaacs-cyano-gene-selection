@@ -140,8 +140,8 @@ test('Syn61 delta 3 ev5 mirrors config metadata and declares only sourced recodi
   }]);
   assert.equal(SYN61.dataDirectory, `${config.outputDirectory.replace(/^site\//, '')}/`);
   assert.deepEqual(SYN61.recoding.targets, ['TCA', 'TCG', 'TAG']);
-  assert.equal(SYN61.recoding.replacements, null);
-  assert.match(SYN61.recoding.replacementNote, /unavailable.*not inferred/i);
+  assert.match(SYN61.recoding.replacements, /TCG → AGC, TCA → AGT, TAG → TAA/);
+  assert.match(SYN61.recoding.replacementNote, /does not establish every ev5 replacement event/);
   assert.match(SYN61.copy.nativeProjectionSummary, /refitted.*surviving synonymous variation/i);
   assert.match(SYN61.copy.nativeProjectionSummary, /not parent-fixed axes/i);
   assert.deepEqual(SYN61.layers, {});

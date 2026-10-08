@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "url": "https://www.addgene.org/174513/",
+  "location": "Depositor Comments",
+  "retrieved": "2026-10-08",
+  "retrievalMethod": "web reader; direct HTTP returned 403",
+  "excerpt": "replacing the TCG, TCA, and TAG codons with their synonyms AGC, AGT, and TAA, respectively",
+  "excerptSha256": "e2f15e5fa7a03fbbc0175214b035eb5029522aed496cb23dc7a16f76bd9ab37f",
+  "checksumScope": "UTF-8 excerpt only, no full-webpage checksum asserted",
+  "designPrescription": {
+    "TCG": "AGC",
+    "TCA": "AGT",
+    "TAG": "TAA"
+  },
+  "boundary": "Original Syn61 design, not a complete ev5 per-locus edit history"
+}

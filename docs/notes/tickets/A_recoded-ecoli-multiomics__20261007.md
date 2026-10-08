@@ -9,7 +9,7 @@
   value it produces.
 - **Status:** active
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-08
 
 Opened at the owner's request on 2026-10-07, with a Claude Science handoff asked
 for. **The handoff was not needed and the owner withdrew it the same day.** Every
@@ -27,14 +27,22 @@ All six owner questions were answered on 2026-10-07 and are recorded under
 
 ## Current State
 
-Admission is in progress. Source Data 1–3 and the design genome are pinned by
-checksum; scheme derivation and distribution editing are implemented. No measured
-layer or recoded organism has been published yet.
+Implementation is in review in the owner's integration worktree. Source Data
+1–7 and the design are pinned. CP116771.1 is the exact deposited Syn61∆3(ev5)
+genome, admitted as GCA_028355435.1 with 3,549 plotted CDSs. Its recoded-only
+scheme panel and residual metric are implemented (148 target codons in included
+CDSs). Sixteen measured source columns are extracted separately, with 3,192
+exact unique gene-name joins out of 3,640 source rows and a complete rejection
+audit. The 69 growth records and 5,280 Biolog wells retain source-labelled
+strain/condition identity in a separate whole-strain artifact. The typed-quantity
+and fitness UI implementations are still undergoing integration and validation.
 
 Implementation owner: **cyano-ticket-closing**, resumed at the owner’s request
 on 2026-10-07 in `work/recoded-multiomics-20261007`, baseline `be5b3b3`.
-Independent work: DEM-309 verifies D4/D5 source evidence; DEM-310 implements D8
-projection artifacts. The original DEM-309 Claude run failed before executing
+Independent work: DEM-309 delivered the D4/D5 evidence dossier; DEM-310 delivered
+D8 projection artifacts; DEM-314 delivered Syn61 U2/U3. DEM-312 supplies the
+fitness view, DEM-315 the typed-quantity contract, and DEM-316 the public parent
+reference records and parent-reference view. The original DEM-309 Claude run failed before executing
 because of a provider biology filter; its terminal failure was checked before
 assigning the evidence work to Codex. Existing audit findings: none recorded
 against this ticket; new findings remain open until individually addressed. What follows was read directly from Europe PMC,
@@ -563,11 +571,11 @@ recomputed map always reachable beside it.
 | D1 | Owner answers Q1 and Q2 | Create the six organism records and pin their genomes | **met 2026-10-07.** One record per profiled genome; design and derived genomes admissible, pinned by checksum |
 | D2 | Owner answers Q3 | Build the two codon projections | **met 2026-10-07.** Refit and shared-axis projection, both labelled |
 | D3 | The Ec_Syn57 target set and replacement distribution | The scheme preset and every per-gene recoded mark | **met 2026-10-07** by `tools/recoded_scheme.py`, two independent derivations in agreement. See "Derived 2026-10-07" |
-| D4 | The reference strain, units, normalisation and identifier namespace of every Supplementary Data 3 column, read from the methods | Any ingestion of a fold-change or translation-efficiency value | **open.** Replicate RPKM does not wait on it; the two derived quantities do |
-| D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open.** The rosters differ between the deposit and the supplements and must be reconciled, not assumed |
+| D4 | The reference strain, units, normalisation and identifier namespace of every Supplementary Data 3 column, read from the methods | Any ingestion of a fold-change or translation-efficiency value | **met with explicit source caveats 2026-10-08.** All five references and distinct quantities verified in the evidence dossier. Exact normalization details remain unspecified; values stay as deposited. Debugged Seg30–35 versus unedited Seg30–35 is not versus MDS42. |
+| D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open for partial isolates.** Exact Syn61 ev5 accession and 88 design segment features are verified. D5-isolates requires final structural/mutation history and stock sequences; D4-debug-identity requires assay replicate-to-clone mapping. Design intervals contain overlaps and gaps, so no synthetic concatenation is admitted. |
 | D6 | A distribution representation in `site/js/core/scheme.js` and its editor | Adding Ec_Syn57 as a selectable scheme preset, and U2's honest description of it | **met 2026-10-07** as U1, shipped with 44 new tests and rendered validation |
-| D7 | At least one recoded organism record, which needs D5 for a per-strain genome or the design genome admitted under Q2 | U2's panel and U3's colour source, and any rendered validation of either | **open.** Both are specified and neither can be rendered until a recoded organism exists |
-| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **open.** U4 above; the refitted map needs none of this |
+| D7 | At least one recoded organism record, which needs D5 for a per-strain genome or the design genome admitted under Q2 | U2's panel and U3's colour source, and any rendered validation of either | **met 2026-10-08.** Exact Syn61∆3(ev5), GCA_028355435.1; U2/U3 have unit tests and four-width rendered validation in DEM-314. |
+| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **implementation in review.** Schema 2 fit parameters and strict self-contained projector delivered by DEM-310; public-reference payload/view in DEM-316. Public MDS42 is explicitly not asserted to equal the experimental stock. |
 
 ## Work plan
 
