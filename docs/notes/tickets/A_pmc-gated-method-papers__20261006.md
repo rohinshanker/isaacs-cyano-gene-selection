@@ -7,6 +7,8 @@
 - **Status:** active
 - **Opened:** 2026-10-06
 - **Updated:** 2026-10-07
+- **Owner:** `cyano-general-ticket-closing` (`bfdd1b08-1791384632`), integrating
+  on branch `pmc-method-papers-20261007` from `be5b3b3`.
 
 ## Owner delivered the papers, 2026-10-07
 
@@ -45,9 +47,36 @@ in the data waits on this: the memo already marks every abstract-only claim.
 
 ## Verification
 
-Not started. The memo's claims and the companion table's `retrieved_via` column
-agree; no other file changes.
+All four saved HTML articles were read and pinned in
+`docs/notes/handoff/cyano_comparability_methods_fulltext_20261007.json`.
+The reproducible script in `docs/validation/comparability-methods-evidence.md`
+verified four HTML/text hash pairs and all 12 excerpts at their cited anchors.
+The citation inventory is 44 papers: 33 full text, 11 abstract only; the four
+promoted rows and memo marks agree. Full-text reading adds the limits below.
+
+- `npm test`: 1,272 passed.
+- Python gate: the first worktree run lacked nine ignored raw inputs; all 13
+  affected tests passed after linking the pinned canonical inputs. The final
+  full gate passed: 783 passed, one skipped, 36 subtests passed.
+- `tools/validate_contract.py`: 116 passed, 0 failed, one declared spliced-CDS
+  contiguity exemption.
+- `git diff --check`: passed.
+- Multica `DEM-308`: independent four-paper reading in progress; exact-patch
+  review has not started. This ticket cannot close until review clears.
+
+## Open findings
+
+- `PMC-1` — open: MAQC's strong A/B reference contrast needs its limitation on
+  weaker biological contrasts retained.
+- `PMC-2` — open: Lin's species clustering needs its tissue-selection and
+  principal-component scope retained.
+- `PMC-3` — open: gPCA uses supplied batch labels; it does not identify a
+  technical cause when study and biology are confounded.
+- `PMC-4` — open: Evans distinguishes constant total mRNA/cell from balanced
+  expression assumptions and explicitly scopes its analysis to mRNA/cell.
 
 ## Cleanup
 
-On resolution, delete this ticket and its index row; nothing to distil.
+On resolution, name the closing session/date and disposition every finding.
+Preserve the evidence pins and reusable quote/anchor verification contract,
+replace links to this ticket, then remove the resolved ticket and queue row.
