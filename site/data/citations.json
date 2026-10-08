@@ -381,6 +381,20 @@
           ]
         },
         {
+          "id": "wang-2016-limonene",
+          "citation": "Wang X, Liu W, Xin C, Zheng Y, Cheng Y, Sun S, Li R, Zhu X-G, Dai SY, Rentzepis PM, Yuan JS. Enhanced limonene production in cyanobacteria reveals photosynthesis limitations. Proc Natl Acad Sci USA 2016;113(50):14225-14230. doi:10.1073/pnas.1613340113; Dataset S1; PRIDE PXD005105.",
+          "url": "https://doi.org/10.1073/pnas.1613340113",
+          "contribution": "One optional protein-ratio layer, listed apart from the abundance layers and labelled as a ratio: the published signed fold change in normalised spectral abundance factor between wild-type PCC 7942 and the limonene-producing strain L1118, from Dataset S1 of the article. Positive where the protein is higher in the wild type and negative where it is higher in L1118, with the magnitude the fold itself rather than its logarithm, so no value falls between -1 and 1. It covers only the 95 proteins the study found significantly changed at a BH q-value and L-stringency of 0.05, of which 88 map; a gene without a value was either unchanged between the strains or not measured, and the two cannot be told apart. The cultures were 500 mL in a 1-L Roux bottle at 30 °C under 100 µmol photons m⁻² s⁻¹ of continuous cool white fluorescent light with 5% CO₂ in BG-11 plus 10 mM TES at pH 8.2, in log phase, three biological replicates per strain. The PRIDE deposit itself holds only unfiltered ProLuCID search output and no protein-level table, so the article's dataset is the only usable result; the article's supplementary appendix confirms Dataset S1 is its sole proteomics data file. Keyed by UniProt accession and mapped to UTEX 2973 through UniProt's ordered-locus names and the one-to-one identifier crosswalk. The measured organism is PCC 7942 and an engineered derivative, not UTEX 2973. Deposit terms: PRIDE/ProteomeXchange public-repository terms; article as published. Reader, columns and condition record are in data/expression/ingest/.",
+          "downloads": [
+            {
+              "filename": "PXD005105_wt_vs_l1118.tsv",
+              "repoPath": "data/expression/PXD005105_wt_vs_l1118.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/PXD005105_wt_vs_l1118.tsv",
+              "kind": "Project-derived mapped table"
+            }
+          ]
+        },
+        {
           "id": "puszynska-2017-ppgpp",
           "citation": "Puszynska AM, O'Shea EK. ppGpp controls global gene expression in light and in darkness in S. elongatus. Cell Reports 21, 3155–3165 (2017). doi:10.1016/j.celrep.2017.11.067; GEO GSE103462, GSE103463, GSE103644, GSE103704, GSE105774.",
           "url": "https://doi.org/10.1016/j.celrep.2017.11.067",
