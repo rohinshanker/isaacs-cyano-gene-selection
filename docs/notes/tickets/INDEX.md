@@ -11,6 +11,8 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_chromosome-dataset-pointer-lag__20261008](O_chromosome-dataset-pointer-lag__20261008.md) | Owner-reported mouse-movement lag in the chromosome viewer with dataset-based coloring; reproduce/profile the current hover path and preserve metric/source correctness |
+| [O_dataset-coloring-loading-bar__20261008](O_dataset-coloring-loading-bar__20261008.md) | Overlay a continuous loading bar on the map when switching to dataset-based coloring, driven by actual data-loading progress; separate from the existing header-placement request |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | Primary-source candidate assessment for RBS and other regulatory/cryptic-site methods; no execution/admission; existing iDOG hold retained |
 | [A_ui-closeout-safe-batch__20261007](A_ui-closeout-safe-batch__20261007.md) | Isolated UI closeout coordinated by cyano-source-ingestion; clear disclosures/tab order first; pending owner decisions and three inherited 375px Data Selection mockup findings retained |
 | [O_loading-bar-header-placement__20261007](O_loading-bar-header-placement__20261007.md) | Open for later: move additional loading progress beneath the top-right Jump to map / Reset panel widths controls; prevent menu resizing and the leftover center-panel gap; assess intervening changes and clarification at resolution |
