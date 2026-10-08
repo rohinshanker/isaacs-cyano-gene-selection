@@ -624,6 +624,9 @@ one supplies values. Cached and uncached paths share `informingOfType`; preserve
 its named-source/default-source rule and the full selected count used by the
 disclosure. Never turn a fold change, significance value or translation-efficiency
 contrast into a pooled abundance when adding or caching a quantity.
+The shipped Syn61 non-pooling types each contain one dataset; the synthetic
+declared-quantity unit test exercises several selected datasets of one such
+type. Report that distinction when describing browser and unit coverage.
 
 Hover and keyboard previews use `ChromosomeView.setInteraction`: keep the colour
 values, scales, tracks, layers and source controls, update emphasis and the gene
@@ -666,6 +669,8 @@ or device-independent guarantee. The unit test's stronger work bound is that
 
 For browser profiling, serve the actual site and record browser/version,
 viewport, organism, exact dataset IDs, cache state and CPU/network throttling.
+Save each reported parity/profiling run's output and pin its digest to the
+reviewed commit; a count in an evidence manifest needs the underlying result.
 Use a separate named browser session. Compare cold and warm navigations; the
 `cyano:core`, `cyano:revealed` and `cyano:settled` performance marks describe
 application milestones. Resource timings and JSON-parse/CPU samples distinguish

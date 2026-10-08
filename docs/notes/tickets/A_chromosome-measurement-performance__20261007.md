@@ -119,3 +119,20 @@ The combined change keeps main's approved Syn61/reference/strain-fitness work;
 only this ticket is owned here. Re-run full gates, rendered chromosome/source
 checks and performance bounds, verify non-pooling quantities against uncached
 rules, and obtain a bounded integration review before final closure.
+
+
+## Final integration review
+
+DEM-317 approves `b689c77` (comment `01a11a02-2d60-7db3-8f6a-531015126231`),
+with INT-1 correct and all prior REV findings resolved. Combined gates:
+1,337 JS tests, 891 Python tests plus 1 skip/36 subtests, 117 contract checks
+with 0 failures and the existing exemption. UTEX 24 layouts/14 timing cases,
+Syn61 16 layouts and all source-state checks pass.
+
+INT-A and INT-B remain open only until this documentation correction is committed:
+INT-A's 272-comparison output is now saved as `integrated-membership.txt` and its
+SHA-256 is included in `integrated-evidence.json`. INT-B's coverage distinction
+is explicit in the runbook: multiple selected non-pooling sources are covered
+by the synthetic unit test; every shipped Syn61 non-pooling type has one source.
+No production-code repair or additional independent review is required for these
+non-blocking evidence notes; the coordinator owns this documentation pass.
