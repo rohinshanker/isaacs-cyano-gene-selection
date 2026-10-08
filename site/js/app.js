@@ -39,6 +39,7 @@ import {
 } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
+import { STRAIN_FITNESS_TAB, StrainFitnessPanel } from './ui/strain-fitness.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
 import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
@@ -148,10 +149,12 @@ const STORAGE_COMPARE_AXES = STORAGE.compareAxes;
 const COLOR_SOURCE_TOGGLES = organism.annotationSources;
 
 /**
- * The shared tablist: map panels, then the chromosome, length, regulatory, and
- * source views. A tab's id is the permanent `p` token in the URL hash.
+ * The shared tablist: map panels, then the chromosome, length, regulatory,
+ * strain-fitness, and source views. A tab's id is the permanent `p` token in
+ * the URL hash.
  */
-const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB];
+const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB,
+  CITATIONS_TAB];
 
 const element = (id) => document.getElementById(id);
 
@@ -615,6 +618,7 @@ let panelDesigner = null;
 let citationsPanel = null;
 let lengthExplorer = null;
 let regulatorySitesPanel = null;
+let strainFitnessPanel = null;
 let chromosomeView = null;
 let geneSequenceView = null;
 let workspaceResizer = null;
@@ -1253,7 +1257,7 @@ function renderLiveFilters() {
       mapCount: context.dataset.genes.length,
       pending: pendingState(context.dataset, 'lengthCohorts'),
     }, { live: true });
-  } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id].includes(state.panel)) {
+  } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id, STRAIN_FITNESS_TAB.id].includes(state.panel)) {
     plot.setMask(context.mask);
   }
   filterPanel.renderSummary(context.dataset.genes.length, context.passing);
@@ -1507,18 +1511,22 @@ function renderCurrentView() {
   const citationsActive = state.panel === CITATIONS_TAB.id;
   const lengthsActive = state.panel === LENGTH_TAB.id;
   const regulatoryActive = state.panel === REGULATORY_TAB.id;
+  const fitnessActive = state.panel === STRAIN_FITNESS_TAB.id;
   const chromosomeActive = state.panel === CHROMOSOME_TAB.id;
-  const mapActive = !citationsActive && !lengthsActive && !regulatoryActive && !chromosomeActive;
+  const mapActive = !citationsActive && !lengthsActive && !regulatoryActive && !fitnessActive
+    && !chromosomeActive;
   element('features-used').hidden = !mapActive;
   element('main').classList.toggle('citations-active', citationsActive);
   element('main').classList.toggle('lengths-active', lengthsActive);
   element('main').classList.toggle('regulatory-active', regulatoryActive);
+  element('main').classList.toggle('fitness-active', fitnessActive);
   element('main').classList.toggle('chromosome-active', chromosomeActive);
   workspaceResizer?.update();
   element('map-view').hidden = !mapActive;
   element('chromosome-view').hidden = !chromosomeActive;
   element('length-view').hidden = !lengthsActive;
   element('regulatory-view').hidden = !regulatoryActive;
+  element('strain-fitness-view').hidden = !fitnessActive;
   element('citations-view').hidden = !citationsActive;
   if (chromosomeActive) {
     element('panel-blurb').textContent = `${tabBlurb(CHROMOSOME_TAB, organism)} ${CHROMOSOME_TAB.source}`;
@@ -1546,6 +1554,12 @@ function renderCurrentView() {
     element('panel-blurb').textContent = tabBlurb(REGULATORY_TAB, organism);
     regulatorySitesPanel.update(context.dataset.regulatoryTss,
       pendingState(context.dataset, 'regulatoryTss'));
+    return;
+  }
+  if (fitnessActive) {
+    element('panel-blurb').textContent = tabBlurb(STRAIN_FITNESS_TAB, organism);
+    strainFitnessPanel.update(context.dataset.strainFitness,
+      pendingState(context.dataset, 'strainFitness'));
     return;
   }
   renderMap();
@@ -2252,6 +2266,7 @@ function promotedFileKeys(view) {
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
   if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
+  if (view.panel === STRAIN_FITNESS_TAB.id) keys.add('strainFitness');
   if (view.pinnedId) {
     for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
       'goIeaEssentiality', 'goTerms', 'tssEvidence']) keys.add(key);
@@ -2833,6 +2848,11 @@ async function boot() {
       jumpToMap();
       announce(`${id} pinned and shown on the map.`);
     },
+  });
+
+  strainFitnessPanel = new StrainFitnessPanel(element('strain-fitness-view'), {
+    organism,
+    onAnnounce: announce,
   });
 
   sidePanel = new SidePanel(element('detail'), {

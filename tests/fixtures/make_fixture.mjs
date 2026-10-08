@@ -43,6 +43,14 @@
  *                        five carry GO relationships, including one obsolete id,
  *                        so the detail panel, GO-name search, and export all have
  *                        something real to read.
+ *   --with-strain-fitness add `strain_fitness.json`: the one layer whose rows are
+ *                        strains rather than genes. Three strains, one native and
+ *                        two recoded, across three conditions, with every state
+ *                        the panel must draw — a strain that did not grow, a
+ *                        measured zero beside an unmeasured null, a sparse
+ *                        replicate series, and signed Biolog values. It declares
+ *                        itself `synthetic-test-fixture`, which the panel shows as
+ *                        a warning, because nothing in it is a measurement.
  */
 import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -75,7 +83,8 @@ function mulberry32(seed) {
 
 /** The options a fixture is built from, with every default filled in. */
 function resolveOptions({
-  genes = 300, seed = 20260918, expression = false, annotations = false, organism = 'utex2973',
+  genes = 300, seed = 20260918, expression = false, annotations = false, strainFitness = false,
+  organism = 'utex2973',
 } = {}) {
   if (!Number.isInteger(genes) || genes < 1) throw new Error('--genes must be a positive integer');
   if (!Object.hasOwn(PROFILES, organism)) throw new Error(`unknown organism ${organism}`);
@@ -85,7 +94,7 @@ function resolveOptions({
   if (annotations && !PROFILES[organism].annotations) {
     throw new Error(`${organism} has no annotation layer, so --with-annotations does not apply`);
   }
-  return { genes, seed, expression, annotations, organism };
+  return { genes, seed, expression, annotations, strainFitness, organism };
 }
 
 function parseArgs(argv) {
@@ -97,6 +106,7 @@ function parseArgs(argv) {
     else if (flag === '--seed') args.seed = Number(argv[(i += 1)]);
     else if (flag === '--with-expression') args.expression = true;
     else if (flag === '--with-annotations') args.annotations = true;
+    else if (flag === '--with-strain-fitness') args.strainFitness = true;
     else if (flag === '--organism') args.organism = argv[(i += 1)];
     else throw new Error(`unknown flag ${flag}`);
   }
@@ -334,6 +344,149 @@ function annotationLayer(genes, seed) {
       withAnnotationEvidence: genes.length,
       withGoAnnotations,
       goRelationships,
+    },
+  };
+}
+
+/**
+ * The strain-fitness layer: the one published shape whose rows are strains.
+ *
+ * Fixed values rather than drawn ones, because each row exists to put one state
+ * on screen and a random number could not be relied on to produce it:
+ *
+ * - `parent/rich` is the complete case, every field present.
+ * - `seg-a/minimal` has replicates 1 and 3 and no replicate 2, which is why
+ *   replicate numbers are explicit rather than positional, and no maximum OD600
+ *   at all, so a null reads as unknown rather than as zero.
+ * - `seg-b/minimal` did not grow: its doubling time is null, never 0 minutes,
+ *   and its maximum-OD600 series carries a measured 0 beside two small
+ *   non-zero readings, which is the null-versus-zero distinction in one row.
+ * - the Biolog wells carry a negative value, a zero, positives, and a null.
+ *
+ * Nothing here is a measurement. The layer says so in `provenanceClass`, and
+ * every label says so again, so no screenshot of this fixture can be mistaken
+ * for evidence about a real strain.
+ */
+function strainFitnessLayer(organismId, accession) {
+  const SYNTHETIC = '(synthetic)';
+  const strains = [
+    { id: 'parent', label: `Unmodified parent ${SYNTHETIC}`,
+      scheme: { label: 'native', recoded: false, segments: null } },
+    { id: 'seg-a', label: `Segment set A ${SYNTHETIC}`,
+      scheme: { label: `seven-codon recoding ${SYNTHETIC}`, recoded: true, segments: '9-18' } },
+    { id: 'seg-b', label: `Segment set B ${SYNTHETIC}`,
+      scheme: { label: `seven-codon recoding ${SYNTHETIC}`, recoded: true, segments: '70-81' } },
+  ];
+  const conditions = [
+    { id: 'rich-37', label: `Rich medium, 37 C, shaking ${SYNTHETIC}`,
+      description: 'Complete the interface\'s full-data state.' },
+    { id: 'minimal-37', label: `Minimal medium, 37 C, shaking ${SYNTHETIC}`,
+      description: 'Where the no-growth and missing-value states live.' },
+    { id: 'biolog-48h', label: `Biolog incubation, 48 h, 37 C ${SYNTHETIC}`, description: null },
+  ];
+  const series = (values) => values.map((value, index) => ({ replicate: index + 1, value }));
+  const growthRecords = [
+    { id: 'g-parent-rich', strainId: 'parent', conditionId: 'rich-37', growthStatus: 'reported',
+      doublingTimeMinutes: 24.5, doublingTimeSdMinutes: 0.8,
+      doublingTimeReplicates: series([24.1, 25, 24.4]),
+      maximumOd600: 1.82, maximumOd600Sd: 0.05, maximumOd600Replicates: series([1.8, 1.85, 1.81]) },
+    { id: 'g-parent-minimal', strainId: 'parent', conditionId: 'minimal-37', growthStatus: 'reported',
+      doublingTimeMinutes: 58.2, doublingTimeSdMinutes: 2.1,
+      doublingTimeReplicates: series([57, 59.1, 58.5]),
+      maximumOd600: 0.94, maximumOd600Sd: 0.03, maximumOd600Replicates: series([0.92, 0.97, 0.93]) },
+    { id: 'g-seg-a-rich', strainId: 'seg-a', conditionId: 'rich-37', growthStatus: 'reported',
+      doublingTimeMinutes: 31.7, doublingTimeSdMinutes: 1.4,
+      doublingTimeReplicates: series([30.9, 32.8, 31.4]),
+      maximumOd600: 1.61, maximumOd600Sd: 0.07, maximumOd600Replicates: series([1.54, 1.68, 1.61]) },
+    { id: 'g-seg-a-minimal', strainId: 'seg-a', conditionId: 'minimal-37', growthStatus: 'reported',
+      doublingTimeMinutes: 96.4, doublingTimeSdMinutes: 6,
+      doublingTimeReplicates: [{ replicate: 1, value: 90.2 }, { replicate: 3, value: 102.6 }],
+      maximumOd600: null, maximumOd600Sd: null, maximumOd600Replicates: [] },
+    { id: 'g-seg-b-rich', strainId: 'seg-b', conditionId: 'rich-37', growthStatus: 'reported',
+      doublingTimeMinutes: 44.9, doublingTimeSdMinutes: 3.2,
+      doublingTimeReplicates: series([41.8, 48.1, 44.8]),
+      maximumOd600: 1.12, maximumOd600Sd: 0.11, maximumOd600Replicates: series([1.01, 1.23, 1.12]) },
+    { id: 'g-seg-b-minimal', strainId: 'seg-b', conditionId: 'minimal-37',
+      growthStatus: 'no_growth_detected',
+      doublingTimeMinutes: null, doublingTimeSdMinutes: null, doublingTimeReplicates: [],
+      maximumOd600: 0.03, maximumOd600Sd: 0.02, maximumOd600Replicates: series([0, 0.05, 0.04]) },
+  ];
+  const plates = [
+    { id: 'PM1', label: `PM1 carbon sources ${SYNTHETIC}` },
+    { id: 'PM2', label: `PM2 carbon sources ${SYNTHETIC}` },
+  ];
+  const substrates = {
+    PM1: ['Negative control', 'D-glucose', 'L-arabinose', 'Sodium acetate'],
+    PM2: ['Glycerol', 'D-sorbitol', 'Succinate', 'L-proline'],
+  };
+  // One fixed table per strain, in plate and well order: a positive, a zero, a
+  // negative, and a null, so the signed values and the null-versus-zero rule
+  // are all on screen at once.
+  const values = {
+    parent: { PM1: [0, 0.91, 0.44, 0.12], PM2: [0.58, 0.33, 0.71, 0.05] },
+    'seg-a': { PM1: [0, 0.84, -0.21, null], PM2: [0.49, 0.3, 0.66, -0.04] },
+    'seg-b': { PM1: [0, 0.52, -0.38, 0.09], PM2: [0.21, null, 0.4, 0] },
+  };
+  const biologRecords = [];
+  for (const strain of strains) {
+    for (const plate of plates) {
+      substrates[plate.id].forEach((substrate, index) => {
+        const well = `A${String(index + 1).padStart(2, '0')}`;
+        biologRecords.push({
+          id: `b-${strain.id}-${plate.id}-${well}`,
+          strainId: strain.id,
+          conditionId: 'biolog-48h',
+          plateId: plate.id,
+          well,
+          substrate,
+          value: values[strain.id][plate.id][index],
+        });
+      });
+    }
+  }
+  return {
+    schemaVersion: 1,
+    organismId,
+    genome: { accession },
+    provenanceClass: 'synthetic-test-fixture',
+    source: {
+      citation: 'Synthetic strain-fitness fixture, not a publication',
+      doi: null,
+      studyId: 'FIXTURE_STRAIN_FITNESS',
+      sheet: 'generated by tests/fixtures/make_fixture.mjs',
+      sourceFile: 'make_fixture.mjs --with-strain-fitness',
+      sourceFileSha256: createHash('sha256')
+        .update('synthetic strain fitness fixture v1').digest('hex'),
+      retrieved: '2026-10-07',
+      comparedAgainst: `Unmodified parent ${SYNTHETIC}`,
+    },
+    strains,
+    conditions,
+    growth: {
+      units: {
+        doublingTime: 'minutes',
+        maximumOd600: 'OD600, synthetic fixture value with no instrument behind it',
+      },
+      metadata: {
+        replicateDefinition: 'synthetic replicate, three per strain and condition',
+        instrument: 'none; these values were written by the fixture generator',
+        caveat: 'Synthetic. Not a measurement of any strain.',
+      },
+      records: growthRecords,
+    },
+    biolog: {
+      units: {
+        value: 'maximum curve height in the arbitrary units this fixture defines',
+        reference: `the unmodified parent in the same well ${SYNTHETIC}`,
+        normalization: 'none; the fixture states its values as written',
+      },
+      metadata: {
+        plateCatalogue: 'two synthetic plates of four wells, not a Biolog catalogue',
+        incubationHours: 48,
+        caveat: 'Synthetic. The unit is defined by this fixture and by nothing else.',
+      },
+      plates,
+      records: biologRecords,
     },
   };
 }
@@ -1051,8 +1204,15 @@ function main(args) {
     };
   }
 
+  // The one layer whose rows are not genes. It joins nothing onto a gene, so it
+  // is built from the organism's identity alone rather than from the simulated
+  // sequences above.
+  const strainFitnessFile = args.strainFitness
+    ? strainFitnessLayer(args.organism, profile.genome.accession) : null;
+
   return {
     meta, records, codonRscuFile, codonPcaFile, excludedFile, annotationsFile, goTermsFile,
+    strainFitnessFile,
   };
 }
 
@@ -1077,7 +1237,7 @@ function contentManifest(files) {
  * disk for the rendered checks.
  *
  * @param {{genes?: number, seed?: number, expression?: boolean, annotations?: boolean,
- *   organism?: string}} [options]
+ *   strainFitness?: boolean, organism?: string}} [options]
  * @returns {{options: object, files: Record<string, string>}} each published
  *   file's exact text by name, with `data-manifest.json` among them for an
  *   organism whose profile publishes one.
@@ -1086,6 +1246,7 @@ export function buildFixture(options = {}) {
   const resolved = resolveOptions(options);
   const {
     meta, records, codonRscuFile, codonPcaFile, excludedFile, annotationsFile, goTermsFile,
+    strainFitnessFile,
   } = main(resolved);
   const files = {
     'meta.json': `${JSON.stringify(meta, null, 1)}\n`,
@@ -1097,6 +1258,9 @@ export function buildFixture(options = {}) {
   if (annotationsFile) {
     files['annotations.json'] = `${JSON.stringify(annotationsFile)}\n`;
     files['go-term-names-v1.json'] = `${JSON.stringify(goTermsFile, null, 1)}\n`;
+  }
+  if (strainFitnessFile) {
+    files['strain_fitness.json'] = `${JSON.stringify(strainFitnessFile, null, 1)}\n`;
   }
   if (PROFILES[resolved.organism].manifest) {
     files['data-manifest.json'] = `${JSON.stringify(contentManifest(files), null, 1)}\n`;
@@ -1114,6 +1278,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   process.stdout.write(
     `wrote ${fixture.options.genes} genes to ${out}`
     + `${fixture.options.expression ? ' with expression, expressionBasis, and expressionProxy' : ''}`
-    + `${fixture.options.annotations ? ' with annotation evidence and GO term names' : ''}\n`,
+    + `${fixture.options.annotations ? ' with annotation evidence and GO term names' : ''}`
+    + `${fixture.options.strainFitness ? ' with a strain-fitness layer' : ''}\n`,
   );
 }

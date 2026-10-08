@@ -26,6 +26,7 @@ import { computeLiveMetrics } from './live-metrics.js';
 import { declaredMeasurementSources } from './metric-registry.js';
 import { validateLengthInventory } from './length-cohorts.js';
 import { validateRegulatoryTss } from './regulatory-tss.js';
+import { validateStrainFitness } from './strain-fitness.js';
 import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
@@ -209,6 +210,7 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     excluded: [],
     lengthCohorts: null,
     regulatoryTss: null,
+    strainFitness: null,
     candidateEvidence: null,
     goIeaEssentiality: null,
     goTerms: null,
@@ -421,6 +423,14 @@ export const DATA_APPLIERS = Object.freeze({
     if (regulatoryTss) validateRegulatoryTss(regulatoryTss, dataset.genes);
     dataset.regulatoryTss = regulatoryTss;
   },
+
+  // Whole-strain measurements. The file declares the organism and assembly it
+  // belongs to and is checked against this dataset's, because the layer is
+  // organism-neutral and so nothing else would catch a file published into the
+  // wrong data directory. It joins nothing onto a gene.
+  strainFitness(dataset, strainFitness) {
+    dataset.strainFitness = strainFitness ? validateStrainFitness(strainFitness, dataset) : null;
+  },
 });
 
 /**
@@ -496,10 +506,15 @@ export const TIER_LEAD_BYTES = 128 * 1024;
 /**
  * The order the single-step loader met its checks in, so that `loadDataset`
  * reports the same failure when more than one file is wrong.
+ *
+ * A file added after that loader existed goes last: it has no historical place
+ * in the order, and leaving it out would let `loadDataset` return a dataset
+ * whose layer failed without reporting it.
  */
 const LEGACY_FAILURE_ORDER = Object.freeze([
   'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
   'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca', 'excluded',
+  'strainFitness',
 ]);
 
 /**

@@ -41,6 +41,8 @@ import { PANELS, tabBlurb } from '../../site/js/ui/panels.js';
 import { CHROMOSOME_TAB, ChromosomeView } from '../../site/js/ui/chromosome-view.js';
 import { LENGTH_TAB } from '../../site/js/ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from '../../site/js/ui/regulatory-sites.js';
+import { STRAIN_FITNESS_TAB, StrainFitnessPanel, UNAVAILABLE_TEXT }
+  from '../../site/js/ui/strain-fitness.js';
 import { CITATIONS_TAB } from '../../site/js/ui/citations.js';
 import { describeGeneView, renderGeneViewer } from '../../site/js/ui/gene-viewer.js';
 import { renderMetricHelp } from '../../site/js/ui/metric-help.js';
@@ -63,7 +65,8 @@ const ECOLI_TERMS = /Escherichia|E\. coli|K-12|MG1655|NC_000913|GCF_000005845|\b
 /** A finding about a layer nobody looked for. */
 const NEGATIVE_CLAIM = /No .*start site maps|no mapped TSS|No supported .* call/i;
 
-const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB];
+const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB,
+  CITATIONS_TAB];
 
 /** A dataset with its metric registry, as the page holds them. */
 function withRegistry(dataset) {
@@ -467,6 +470,12 @@ async function everythingSaid(dataset, registry, organism) {
       dataset.regulatoryTss ?? null, null,
     );
     said.push(regulatory.textContent);
+    // The strain-fitness layer is organism-neutral: its words come from the
+    // file, so a release without one must say nothing about any organism.
+    const fitness = document.createElement('div');
+    new StrainFitnessPanel(fitness, { organism }).update(dataset.strainFitness ?? null, null);
+    assert.equal(fitness.textContent, UNAVAILABLE_TEXT);
+    said.push(fitness.textContent);
     for (const metric of registry.metrics.slice(0, 6)) {
       const details = document.createElement('details');
       const summary = document.createElement('summary');

@@ -889,6 +889,85 @@ input[type="range"] { width: 100%; }
 #main.regulatory-active > .resize-handle,
 #main.regulatory-active > .detail,
 #main.regulatory-active .analysis > :not(#map-section) { display: none; }
+/* Strain fitness ---------------------------------------------------------- */
+
+/* One column, like the other tabs whose rows are not genes: there is no gene to
+   select here, so the controls rail and the gene detail rail have nothing to
+   act on and are hidden rather than left beside a table they cannot touch. */
+#main.fitness-active {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1100px;
+  margin-inline: auto;
+}
+#main.fitness-active > .analysis { grid-column: 1; grid-row: 1; }
+#main.fitness-active > .controls,
+#main.fitness-active > .resize-handle,
+#main.fitness-active > .detail,
+#main.fitness-active .analysis > :not(#map-section) { display: none; }
+#strain-fitness-view { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.75rem; }
+#strain-fitness-view h3 { margin: 0; font-size: 0.95rem; }
+.fitness-source { display: grid; gap: 0.1rem; }
+.fitness-source .panel-note { margin: 0; overflow-wrap: anywhere; }
+.fitness-controls { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.fitness-controls label { display: grid; gap: 0.25rem; flex: 1 1 13rem; font-size: 0.88rem; }
+.fitness-controls input, .fitness-controls select { width: 100%; min-width: 0; }
+/* The selection every table below is read under. It stays on screen rather than
+   living in the rows, so a narrow table never drops the context with a column. */
+.fitness-context {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.fitness-definitions {
+  margin: 0.4rem 0 0;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 0.15rem 0.7rem;
+  font-size: 0.82rem;
+}
+.fitness-definitions dt { color: var(--ink-muted); }
+.fitness-definitions dd { margin: 0; overflow-wrap: anywhere; }
+.fitness-section { display: grid; gap: 0.45rem; }
+.fitness-paging { display: flex; align-items: center; flex-wrap: wrap; gap: 0.7rem; }
+.fitness-paging span { font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.fitness-export { display: grid; gap: 0.3rem; }
+.fitness-export > .panel-note { margin: 0; overflow-wrap: anywhere; }
+/* `.table-scroll` keeps the overflow inside the card; the table itself is wide
+   enough that its columns stay readable rather than wrapping to one word each. */
+.fitness-table {
+  width: 100%;
+  min-width: 48rem;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.fitness-table caption { text-align: left; font-weight: 600; padding-bottom: 0.3rem; }
+.fitness-table th, .fitness-table td {
+  border-top: 1px solid var(--line);
+  padding: 0.3rem 0.45rem;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.fitness-table th { text-align: left; font-weight: 600; }
+/* The declared unit, under its column name. Muted and lighter so the name is
+   what a reader scans and the unit is what they find when they need it. */
+.fitness-unit {
+  display: block;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+.fitness-table thead th { color: var(--ink-muted); border-top: none; }
+.fitness-table td.numeric, .fitness-table th.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  /* The shared `.numeric` rule keeps one number on one line, which is right for
+     a number and wrong for the two things that share these columns: a declared
+     unit and a numbered replicate series. Both are prose and must wrap inside
+     their column rather than run out of the table. */
+  white-space: normal;
+}
 #citations-view { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 0.75rem; }
 #main.lengths-active > .detail,
 #main.lengths-active .analysis > :not(#map-section) { display: none; }
