@@ -12,6 +12,7 @@ Reusable contracts and runbooks for this repository.
 | [genome-provenance.md](genome-provenance.md) | Reacquiring and re-verifying the UTEX 2973 genome, and the wrong-accession trap |
 | [metric-convention-parity.md](metric-convention-parity.md) | Keeping the browser's recomputed CAI, tAI, ENC, GC3, codon-pair score and mid-rank expression percentile equal to the pipeline's |
 | [data-use-audit-checklist.md](data-use-audit-checklist.md) | Release-time walk of whether every displayed value still means what its source measured: what to audit, the return format, and which defect classes the first run showed a machine cannot catch |
+| [comparability-pilot-evidence.md](comparability-pilot-evidence.md) | What the comparability pilot supports once its numbers are rebuilt from the returned pairs: the reproduction, sample-level confidence intervals and the precision they imply, the similar-controls result being indistinguishable from chance, the gaps that stay open, the audit residue read here, and the mockup render notes |
 | [metric-explanations.md](metric-explanations.md) | Exact map feature matrices, selected-colour calculation/source/citation disclosure, and export parity |
 | [pca-length-sensitivity.md](pca-length-sensitivity.md) | Fixed native RSCU PCA, length/sparsity audit, within-gene downsampling, and reproducible sensitivity checks |
 | [instant-hints.md](instant-hints.md) | Exact native-title replacement, pointer/focus suppression, accessible descriptions, viewport clamping and rendered checks |
