@@ -39,6 +39,10 @@ condition table intentionally scrolls horizontally; primary controls stay
 reachable. With every condition filter open, the filter bar scrolls within a quarter
 of the viewport height so the table and completion controls remain usable.
 
+Dataset identity flex children shrink within their table cells. Long strain chips
+wrap without truncation or overlap into neighboring condition columns; their full
+text remains available. Selected data-type tabs retain readable contrast on hover.
+
 ## Regression checks
 
 Run the unit contracts:
@@ -60,6 +64,14 @@ alignment, the count endpoint, header-to-row alignment, horizontal scrolling, st
 empty filters, flat/grouped lists, tab changes, Escape/focus restoration, pointer
 transparency and runtime diagnostics. Inspect the screenshots as well as the
 assertions. Keep full repository gates in addition to this focused check.
+
+`tools/ui/check_data_selection_wrapping.js` uses the default UTEX address (no
+`org` parameter) with the same app/artifact setup and
+checks actual dataset identities in transcriptomics, proteomics and fitness,
+including long strain names, all four viewport sizes and the 1320px breakpoint.
+It asserts chip geometry, selected-tab hover contrast, access to the last condition
+column, Escape/focus restoration and runtime diagnostics. Inspect its long-strain
+and right-column screenshots; a tall row uses the existing vertical scroll pane.
 
 Measurement provenance shows every declared source in the dataset disclosure.
 Exports carry compact provenance and caveats only for the measurement columns

@@ -20,6 +20,11 @@ so a link opens straight onto this view. The encoder needed no change: `p`
 already accepts any id in `ALL_TABS` and falls back to `native` for an unknown
 one.
 
+Its visible and accessible name is **Chromosome/Gene**, and it is third in the
+shared tab order: Native codon space, Metric X vs Y, then Chromosome/Gene. The
+remaining tabs keep their relative order. DOM order is arrow-key order, while the
+stable `chromosome` id preserves direct links and saved view state.
+
 Shipping this tab does **not** retire the native codon-space PCA. That is a
 separate, user-facing removal and a separate owner decision.
 
@@ -98,6 +103,13 @@ with accession, length, and plotted CDS count. A plasmid coordinate is never
 mapped onto the chromosome axis, and neither plasmid track is ever hidden: their
 60 CDSs are part of the plotted set. Each track keeps its own window, so zooming
 one leaves the others where they were, and each reports its own visible range.
+
+The marker-conventions paragraph, every per-replicon summary, and the organism's
+coordinate-evidence note live together in one native **Chromosome Viewer Info**
+disclosure. It starts closed and its element is reused across paints, so opening
+it does not freeze the content: filter, colour, start-site, and zoom changes keep
+the expanded text current without discarding open state or summary focus. The
+canvas, controls, legend, and pinned-gene sequence remain outside the disclosure.
 
 **Strand decides the lane.** Plus-strand CDSs draw above the axis, minus-strand
 below it (`strandLane`). There is no third lane and no default: a record that
