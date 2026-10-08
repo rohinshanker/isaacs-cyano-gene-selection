@@ -32,6 +32,17 @@ main (tab order/name, chromosome information disclosure and Compare disclosure).
 This work remains isolated and preserves the stable `chromosome` ID; integrate
 their result before the final rendered and repository gates.
 
+Integration now includes that coordinator's `7bf8811` through merge `9716d53`.
+The original review target `65d1add` remains frozen in its first worktree while
+the final writer is isolated in `worktrees/chromosome-performance-integration-20261008`.
+PERF-3 (open): the required source-change browser check found the existing
+unconditional `setSources` -> `renderMap` call throws on the chromosome tab
+(`tabBlurb` receives no scatter descriptor), leaving colours stale after changing
+membership. Removing that redundant render lets `renderAll` dispatch the active
+view once. A shipped real-browser regression now verifies exact pooled hashes
+through named-source selection, deselection, restoration, view switches and
+reload, and asserts that runtime errors fail the check.
+
 Read-only scout DEM-313 confirmed the call path. Its suggested pending-rank
 invalidation risk was checked: a wholly unknown layer never calls `ranks`,
 because the existing finite-value guard skips it. A regression test now reads

@@ -1677,7 +1677,6 @@ function setSources(ids) {
   fillAxisSelects();
   syncAxisSourceSelects();
   plot.projectionId = null;
-  renderMap();
   renderAll();
   announce(`Data sources: ${sourceSelection().length} selected.`);
 }

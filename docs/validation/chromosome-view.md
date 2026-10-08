@@ -623,6 +623,11 @@ current zoom. Pinning, filters, source changes, colour changes and file landings
 use the full render. The paint still owns column winners, hit testing and the
 accessible description; reusing measurement values must not freeze those.
 
+A source change invalidates the scatter projection and calls `renderAll` once.
+That dispatcher refreshes the active panel. Do not call `renderMap` first:
+Chromosome/Gene is not a scatter panel, so that extra call has no panel descriptor
+and prevents the chromosome refresh from completing.
+
 Run the deterministic membership/invalidation and interaction regressions:
 
 ```sh
@@ -630,6 +635,16 @@ node --test tests/js/source-selection.test.mjs tests/js/type-metrics.test.mjs te
 node tools/check_chromosome_metrics.mjs --max-ms=100
 node tools/check_chromosome_metrics.mjs --uncached
 ```
+
+For the real-browser state regression, open the verified local server with
+`?uiArtifacts=<absolute ignored artifact directory>` and no `org` or `data`
+override, then run `tools/ui/check_chromosome_measurements.js` through
+`playwright-cli -s=<task session> run-code --filename <absolute script path>`.
+It checks a four-source pool, a named source, removal and restoration, identical
+value hashes after view switches and reload, hover without a full model update,
+filtering, all five scatter tabs and the 959/960 and 1239/1240 px breakpoints.
+Runtime errors and failed requests fail the check. This functional check uses
+reduced motion; the loading/settled visual matrix also needs normal motion.
 
 The replay reads the shipped UTEX 2973 release and reports JSON parsing, core
 application, expression-layer joining and whole-gene metric sweeps separately.
