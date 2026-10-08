@@ -27,6 +27,7 @@ from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
+import codon_pca as cp  # noqa: E402
 from organisms import OrganismConfig, get_organism  # noqa: E402
 from rna_context import folding_context, restore_start_window  # noqa: E402
 from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
@@ -1370,7 +1371,8 @@ def build(
         del gene["_contextEnd"]
 
     rscu_matrix = np.asarray([gene["rscu"] for gene in genes])
-    scaled_rscu = StandardScaler().fit_transform(rscu_matrix)
+    rscu_scaler = StandardScaler().fit(rscu_matrix)
+    scaled_rscu = rscu_scaler.transform(rscu_matrix)
     pca = PCA(n_components=6, random_state=organism.umapSeed).fit(scaled_rscu)
     coordinates = pca.transform(scaled_rscu)
     for gene, point in zip(genes, coordinates, strict=True):
@@ -1402,14 +1404,19 @@ def build(
         # established site payload rather than rewriting every one-line record.
         gene["rnaContext"] = gene.pop("_rnaContext")
 
-    codon_pca = {
-        "explainedVariance": pca.explained_variance_ratio_.tolist(),
-        "loadings": [
-            {"codon": codon, "aa": fm.AA_BY_CODON[codon], "pc": pca.components_[:, index].tolist()}
-            for index, codon in enumerate(fm.RSCU_ORDER)
-        ],
-        "nComponents": 6,
-    }
+    codon_pca = cp.native_pca_document(
+        fm.RSCU_ORDER,
+        rscu_scaler,
+        pca,
+        {
+            "organismId": organism.organism_id,
+            "label": organism.organismIdentity,
+            "strain": organism.strainIdentity,
+            "genomeAccession": organism.accession,
+            "taxid": organism.taxid,
+        },
+        fm.AA_BY_CODON,
+    )
     metric_labels = {
         "gc": ("GC", "fraction"),
         "gc1": ("GC1", "fraction"),
@@ -1691,7 +1698,15 @@ def build(
         documents[LAYERS_PAYLOAD] = layers
     for name, document in documents.items():
         # Tiny published adjusted p-values must not round to zero.
-        serializable = document if name == "tss_evidence.json" else round_floats(document)
+        # The parent-frame projector must reproduce sklearn's transform from the
+        # published fit, so its floating-point parameters retain JSON's full
+        # round-trip precision. Other generated metrics keep the compact
+        # six-decimal publication convention.
+        serializable = (
+            document
+            if name in {"tss_evidence.json", "codon_pca.json"}
+            else round_floats(document)
+        )
         content = json.dumps(
             serializable, separators=(",", ":"), ensure_ascii=False
         ) + "\n"

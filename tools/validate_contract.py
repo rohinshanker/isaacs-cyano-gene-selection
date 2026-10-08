@@ -853,6 +853,106 @@ def validate_codon_pca(pca: Any, meta: dict[str, Any], report: Report) -> None:
     else:
         report.fail("codon_pca.loadings is an array", repr(type(loadings)))
 
+    # Schema 2 adds the exact fitted transform used by the recoded-genome
+    # parent-frame projector. Legacy shipped artifacts remain readable until
+    # their next ordinary rebuild; any schema-2 artifact is held to the full
+    # reproducibility contract here.
+    schema_version = pca.get("schemaVersion")
+    if schema_version is None:
+        return
+    report.check(schema_version == 2, "codon_pca.schemaVersion is 2")
+    if schema_version != 2:
+        return
+    report.check(
+        pca.get("projectionType") == "native-fit",
+        "codon_pca.projectionType identifies a native fit",
+    )
+    reference = pca.get("referenceGenome")
+    genome = meta.get("genome") or {}
+    report.check(
+        isinstance(reference, dict)
+        and reference.get("genomeAccession") == genome.get("accession")
+        and reference.get("taxid") == genome.get("taxid")
+        and all(reference.get(key) for key in ("organismId", "label", "strain")),
+        "codon_pca.referenceGenome identifies the dataset genome",
+    )
+
+    n_components = pca.get("nComponents")
+    transform = pca.get("transform")
+    if not report.check(
+        isinstance(n_components, int)
+        and not isinstance(n_components, bool)
+        and n_components > 0,
+        "codon_pca.nComponents is a positive integer",
+    ):
+        return
+    if not report.check(
+        isinstance(transform, dict), "codon_pca.transform is an object"
+    ):
+        return
+    order = transform.get("featureOrder")
+    if not report.check(
+        order == rscu_order and len(set(order or [])) == len(order or []),
+        "codon_pca.transform.featureOrder repeats meta.rscuOrder exactly",
+    ):
+        return
+    width = len(order)
+
+    def finite_vector(value: Any, length: int) -> bool:
+        return (
+            isinstance(value, list)
+            and len(value) == length
+            and all(
+                not isinstance(item, bool)
+                and isinstance(item, (int, float))
+                and math.isfinite(item)
+                for item in value
+            )
+        )
+
+    scaler = transform.get("scaler")
+    scaler_ok = (
+        isinstance(scaler, dict)
+        and finite_vector(scaler.get("mean"), width)
+        and finite_vector(scaler.get("scale"), width)
+        and all(value > 0 for value in scaler["scale"])
+    )
+    report.check(
+        scaler_ok,
+        "codon_pca.transform scaler has finite means and positive scales",
+    )
+    pca_transform = transform.get("pca")
+    components = pca_transform.get("components") if isinstance(pca_transform, dict) else None
+    pca_ok = (
+        isinstance(pca_transform, dict)
+        and finite_vector(pca_transform.get("mean"), width)
+        and isinstance(components, list)
+        and len(components) == n_components
+        and all(finite_vector(row, width) for row in components)
+    )
+    report.check(
+        pca_ok,
+        "codon_pca.transform PCA has finite centering and component rows",
+    )
+    if pca_ok and isinstance(loadings, list) and len(loadings) == width:
+        loading_order = [
+            entry.get("codon") if isinstance(entry, dict) else None
+            for entry in loadings
+        ]
+        loading_values_ok = all(
+            isinstance(entry, dict)
+            and finite_vector(entry.get("pc"), n_components)
+            and all(
+                entry["pc"][component] == components[component][feature]
+                for component in range(n_components)
+            )
+            for feature, entry in enumerate(loadings)
+        )
+        report.check(
+            loading_order == order and loading_values_ok,
+            "codon_pca.loadings exactly mirror the ordered transform components",
+        )
+
 
 def validate_excluded(
     excluded: Any,
