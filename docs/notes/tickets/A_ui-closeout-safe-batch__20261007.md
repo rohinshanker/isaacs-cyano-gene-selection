@@ -42,6 +42,7 @@ has been asked explicitly because project AGENTS.md reserves closure to their
 owning session. It remains pending; no original ticket has been closed.
 
 DEM-307 observations retained with the approved result:
+
 - UI-REVIEW-1 open: pre-existing shared active-chip hover contrast remains poor
   outside `.data-selection`, including the organism header and condition grid.
 - UI-REVIEW-2 open: the order-insensitive ALL_TABS copy in
@@ -52,6 +53,7 @@ DEM-307 observations retained with the approved result:
   not cover the present overlap defect. The identity-geometry and contrast checks
   are proven by the reviewer's mutation probe: reverting the CSS produces 24
   overflowing rows at 375px and changes contrast from 7.02 to 1.178.
+
 These do not block the approved bounded UI slice; the parent stays active.
 
 Owner questions submitted together: independent X/Y/PCA committed selections;
