@@ -1,0 +1,29 @@
+{
+  "files": {
+    "citations.json": {
+      "bytes": 2528,
+      "sha256": "14cb37926defa35c98476d7a530d31b2adef0e98c3d939ae2e4d8e4c4352aa70"
+    },
+    "codon_pca.json": {
+      "bytes": 20934,
+      "sha256": "6dccf0dcf2fac598b1aaf5f17b5fb5855c5a4189e92668db6565a51e5cfc9d09"
+    },
+    "codon_rscu.json": {
+      "bytes": 1757527,
+      "sha256": "61eb7c488727aabc1c2e12115d7847e57e8d9448271291f45de4f3832dda848e"
+    },
+    "excluded.json": {
+      "bytes": 16998,
+      "sha256": "315b4ce7f6da2bb80b8737a282ca0e279d79278eea4b90f434bdc867ee603337"
+    },
+    "genes.json": {
+      "bytes": 6262221,
+      "sha256": "232d13d8955278d6f96fdc809dfe5befd8dc39a37068c879566678f6ac5a2791"
+    },
+    "meta.json": {
+      "bytes": 22350,
+      "sha256": "8eff03c257a3395b04c82af526ca528fef5fc03676952936602d5fe463fa3cdd"
+    }
+  },
+  "schemaVersion": 1
+}

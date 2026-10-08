@@ -13,6 +13,13 @@
           "downloads": []
         },
         {
+          "id": "ncbi-ecoli-mds42-public-reference",
+          "citation": "NCBI RefSeq. Escherichia coli str. K-12 substr. MDS42, GCF_000350185.1 (ASM35018v1), public GenBank chromosome AP012306.1; retrieved 2026-10-08.",
+          "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000350185.1/",
+          "contribution": "Supplies the complete native codon-PCA transform copied into Syn61's child-local parent-reference projection artifact. Public AP012306.1 differs from the 2026 MDS42 stock by the reported 51 bp insertion and represents historical lineage rather than an exact isogenic experimental parent. No MDS42 omics, growth or fitness value is mixed into the projection.",
+          "downloads": []
+        },
+        {
           "id": "nyerges-2026-recoding",
           "citation": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
           "url": "https://doi.org/10.1038/s41467-026-74300-9",

@@ -100,18 +100,11 @@ test('the file registry orders dependencies before their dependents', () => {
 
 test('the site fetches every registered file and nothing the registry omits', async () => {
   const published = JSON.parse(await site(DATA_MANIFEST_NAME)).files;
-  // Registered and not yet published by any release: the strain-fitness layer's
-  // source admission is a separate decision, and the loader's absent path is
-  // what a release without it gets. Any other unpublished registration is a
-  // file the page would ask for and never find, so the list is exact.
-  const awaitingAdmission = ['strain_fitness.json'];
-  for (const file of DATA_FILES) {
-    if (awaitingAdmission.includes(file.name)) {
-      assert.ok(!published[file.name], `${file.name} is not published yet`);
-      continue;
-    }
+  for (const file of DATA_FILES.filter((entry) => !entry.organismField && entry.key !== 'strainFitness')) {
     assert.ok(published[file.name], `${file.name} is published`);
   }
+  assert.ok(!published['codon_pca_reference.json']);
+  assert.ok(!published['strain_fitness.json']);
   // Published but never fetched by the page: citations has its own loader, the
   // PCC 7942 table is an input to candidate_evidence.json, read by no module,
   // and the per-gene RSCU vectors have no browser consumer at all — the site
@@ -445,10 +438,7 @@ test('the staged loader and the single-step loader build the same dataset', asyn
   const dataset = await staged.settled;
   const whole = await loadDataset({ baseUrl: BASE, fetchImpl: siteFetch().fetchImpl });
   for (const file of DATA_FILES) {
-    // The shipped manifest is what says which files this release publishes. A
-    // registered file it does not list is absent, which is a settled state and
-    // not a failure; everything it lists must be ready.
-    const expected = file.name === 'strain_fitness.json' ? 'absent' : 'ready';
+    const expected = file.organismField || file.key === 'strainFitness' ? 'absent' : 'ready';
     assert.equal(dataset.files[file.key].state, expected, file.key);
     assert.equal(whole.files[file.key].state, expected, file.key);
   }

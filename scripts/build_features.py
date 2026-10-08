@@ -898,12 +898,31 @@ def cds_segments(location: str) -> list[list[int]] | None:
     ]
 
 
-def exclusion_reason(sequence: str, annotation: Mapping[str, Any]) -> str | None:
+def overlapping_cds_segments(segments: list[list[int]] | None) -> bool:
+    """Return whether a joined CDS assigns one genomic base more than once."""
+    if not segments:
+        return False
+    ordered = sorted(segments)
+    return any(start <= previous_end
+               for (_, previous_end), (start, _) in zip(ordered, ordered[1:]))
+
+
+def exclusion_reason(
+    sequence: str,
+    annotation: Mapping[str, Any],
+    segments: list[list[int]] | None = None,
+) -> str | None:
     """Returns the first failed frozen-contract inclusion condition."""
     if set(sequence) - set("ACGT"):
         return "ambiguous_base"
     if len(sequence) % 3:
         return "length_not_multiple_of_3"
+    if overlapping_cds_segments(segments):
+        # Programmed frameshifts in some NCBI annotations repeat the slippage
+        # base across joined segments. The packed CDS can represent that
+        # translation, but one genomic nucleotide cannot be independently
+        # recoded twice or mapped losslessly into the RNA-context payload.
+        return "overlapping_cds_segments"
     codons = fm.split_codons(sequence, remove_stop=False)
     if not codons or codons[-1] not in fm.TABLE.stop_codons:
         return "missing_terminal_stop"
@@ -1200,11 +1219,11 @@ def build(
             f"No GFF annotation matches selected CDS {locus}/{record.get('protein_id')}",
         )
         annotation = annotations[annotation_key]
-        reason = exclusion_reason(sequence, annotation)
+        segments = cds_segments(record.get("location", ""))
+        reason = exclusion_reason(sequence, annotation, segments)
         if reason:
             excluded.append({"id": locus, "reason": reason, "lengthNt": len(sequence)})
         else:
-            segments = cds_segments(record.get("location", ""))
             context_start, context_end = annotation["start"], annotation["end"]
             display_start, display_end = context_start, context_end
             replicon_length = len(genomes[annotation["seqid"]])

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
 import pickle
 import sys
@@ -28,6 +29,52 @@ def test_default_and_named_organisms_are_explicit() -> None:
     assert ecoli.accession == "GCF_000005845.2"
     assert ecoli.path("rawDirectory") == ROOT / "data/raw/ecoli-k12-mg1655"
     assert ecoli.optionalLayers == ["annotation", "expression"]
+
+
+def test_public_parent_configs_and_builds_keep_the_reference_boundary() -> None:
+    expected = {
+        "ecoli-mds42-public-reference": {
+            "accession": "GCF_000350185.1",
+            "length": 3976195,
+            "genes": 3586,
+            "excluded": 57,
+            "manifest_sha256": (
+                "51e30146620d8d878f0a5534d0235ea5a0d1c4e7515a73d31e24dd373e2c3104"
+            ),
+        },
+        "ecoli-dh10b-public-reference": {
+            "accession": "GCF_000019425.1",
+            "length": 4686137,
+            "genes": 4227,
+            "excluded": 241,
+            "manifest_sha256": (
+                "944c1344aaabc5ed8a38652be5d5f96df3f3bc4bf084b31da67ae5ced9fc7a81"
+            ),
+        },
+    }
+    for organism_id, pinned in expected.items():
+        organism = get_organism(organism_id)
+        assert organism.optionalLayers == []
+        assert organism.primaryExpressionMetric is None
+        meta = json.loads((organism.path("outputDirectory") / "meta.json").read_text())
+        genes = json.loads((organism.path("outputDirectory") / "genes.json").read_text())
+        excluded = json.loads(
+            (organism.path("outputDirectory") / "excluded.json").read_text()
+        )
+        assert meta["genome"] == {
+            "accession": pinned["accession"],
+            "taxid": organism.taxid,
+            "totalLength": pinned["length"],
+        }
+        assert len(genes) == pinned["genes"] == organism.expectedGeneCount
+        assert len(excluded) == pinned["excluded"]
+        assert "expressionSources" not in meta
+        raw_manifest = organism.path("rawDirectory") / "md5checksums.txt"
+        assert hashlib.sha256(raw_manifest.read_bytes()).hexdigest() == pinned["manifest_sha256"]
+
+    dh10b = get_organism("ecoli-dh10b-public-reference")
+    excluded = json.loads((dh10b.path("outputDirectory") / "excluded.json").read_text())
+    assert sum(row["reason"] == "overlapping_cds_segments" for row in excluded) == 29
 
 
 def test_unknown_organism_id_fails_loudly() -> None:

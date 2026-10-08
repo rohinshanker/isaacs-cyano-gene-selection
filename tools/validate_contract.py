@@ -508,8 +508,6 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
         return
     problems = []
     complement = str.maketrans("ACGT", "TGCA")
-    valid_genomes = {seqid for seqid, sequence in genomes.items()
-                     if sequence and not set(sequence) - set("ACGT")}
     for gene in genes:
         if not isinstance(gene, dict):
             continue
@@ -525,10 +523,12 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
             if gene.get("seqid") != seqid or gene.get("strand") != strand:
                 raise ValueError("published replicon or strand differs from raw GFF")
             genome = genomes.get(seqid, "")
-            if seqid not in valid_genomes:
-                raise ValueError("missing or ambiguous raw genomic sequence")
+            if not genome:
+                raise ValueError("missing raw genomic sequence")
             positions = ordered_cds_positions(rows, len(genome), strand)
             raw_cds = "".join(genome[position] for position in positions)
+            if set(raw_cds) - set("ACGT"):
+                raise ValueError("ambiguous raw genomic sequence in CDS")
             if strand == "-":
                 raw_cds = raw_cds.translate(complement)
             if raw_cds != cds:
@@ -539,6 +539,8 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
             direction = 1 if strand == "+" else -1
             window_positions = [(anchor + direction * delta) % len(genome) for delta in range(-30, 60)]
             expected = "".join(genome[position] for position in window_positions)
+            if set(expected) - set("ACGT"):
+                raise ValueError("ambiguous raw genomic sequence in start window")
             if strand == "-":
                 expected = expected.translate(complement)
             if observed != expected:

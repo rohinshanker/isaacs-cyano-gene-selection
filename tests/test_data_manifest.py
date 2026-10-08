@@ -16,6 +16,9 @@ import validate_contract  # noqa: E402
 
 SITE_DATA = ROOT / "site/data"
 ECOLI_DATA = SITE_DATA / "organisms/ecoli-k12-mg1655"
+MDS42_DATA = SITE_DATA / "organisms/ecoli-mds42-public-reference"
+DH10B_DATA = SITE_DATA / "organisms/ecoli-dh10b-public-reference"
+SYN61_DATA = SITE_DATA / "organisms/ecoli-syn61-delta3-ev5"
 
 
 def populate(directory: Path) -> None:
@@ -118,6 +121,11 @@ class BuildDataManifestTest(unittest.TestCase):
         for data_dir, required_files in (
             (SITE_DATA, ("meta.json", "genes.json")),
             (ECOLI_DATA, ("meta.json", "genes.json", "citations.json")),
+            (MDS42_DATA, ("meta.json", "genes.json", "citations.json")),
+            (DH10B_DATA, ("meta.json", "genes.json", "citations.json")),
+            (SYN61_DATA, (
+                "meta.json", "genes.json", "citations.json", "codon_pca_reference.json"
+            )),
         ):
             manifest_tool.check_manifest(data_dir)
             published = json.loads(
@@ -142,6 +150,9 @@ class ContractGateTest(unittest.TestCase):
             self.assertEqual(self.run_gate(directory).failures, [])
         self.assertEqual(self.run_gate(SITE_DATA).failures, [])
         self.assertEqual(self.run_gate(ECOLI_DATA).failures, [])
+        self.assertEqual(self.run_gate(MDS42_DATA).failures, [])
+        self.assertEqual(self.run_gate(DH10B_DATA).failures, [])
+        self.assertEqual(self.run_gate(SYN61_DATA).failures, [])
 
     def test_the_gate_names_every_file_that_fell_out_of_date(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,0 +1,46 @@
+{
+  "sections": [
+    {
+      "id": "primary-data",
+      "title": "Primary data",
+      "description": "Public reference sequence and annotation only; no experimental study values are attached.",
+      "items": [
+        {
+          "id": "ncbi-ecoli-dh10b-public-reference",
+          "citation": "NCBI RefSeq. Escherichia coli str. K-12 substr. DH10B, GCF_000019425.1 (ASM1942v1), RefSeq chromosome NC_010473.1 corresponding to GenBank CP000948.1; retrieved 2026-10-08.",
+          "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000019425.1/",
+          "contribution": "Public reference sequence, CDS coordinates, proteins and tRNA annotations. The build pins NCBI's MD5 manifest and assembly report. Equality to the 2026 supplier stock is not established, and the study describes genotype changes, so no experimental omics, growth or fitness value is attached to this record.",
+          "downloads": []
+        },
+        {
+          "id": "nyerges-2026-reference-boundary",
+          "citation": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+          "url": "https://doi.org/10.1038/s41467-026-74300-9",
+          "contribution": "Documents the DH10B-derived study lineage and genotype changes. It does not establish that public CP000948.1 is the exact study stock and supplies no value to this record.",
+          "downloads": []
+        }
+      ]
+    },
+    {
+      "id": "methods-and-tools",
+      "title": "Methods and tools",
+      "description": "Software and published conventions used for sequence-derived metrics; none supplies experimental values.",
+      "items": [
+        {
+          "id": "scikit-learn",
+          "citation": "Pedregosa F et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research 12, 2825-2830 (2011).",
+          "url": "https://jmlr.org/papers/v12/pedregosa11a.html",
+          "contribution": "StandardScaler and PCA fit the reference's native codon-space axes.",
+          "downloads": []
+        },
+        {
+          "id": "biopython",
+          "citation": "Cock PJA et al. Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics 25, 1422-1423 (2009).",
+          "url": "https://doi.org/10.1093/bioinformatics/btp163",
+          "contribution": "Parses and validates the pinned NCBI sequence and annotation records.",
+          "downloads": []
+        }
+      ]
+    }
+  ]
+}

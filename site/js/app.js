@@ -32,7 +32,7 @@ import {
 } from './core/url-state.js';
 import { markerVisible, withMarkerVisible } from './core/marker-layers.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
-import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
+import { buildProjection, panelName, panelsFor, tabBlurb } from './ui/panels.js';
 import {
   CITATIONS_TAB, CitationsPanel, citationDownloadResourceKey, citationsBlurb, fetchCitationBlob,
   loadCitationsManifest,
@@ -153,8 +153,9 @@ const COLOR_SOURCE_TOGGLES = organism.annotationSources;
  * map panels, then length, regulatory, strain fitness, and source views. A tab's id is the
  * permanent `p` token in the URL hash.
  */
+const MAP_PANELS = panelsFor(organism);
 const ALL_TABS = [
-  ...PANELS.slice(0, 2), CHROMOSOME_TAB, ...PANELS.slice(2),
+  ...MAP_PANELS.slice(0, 2), CHROMOSOME_TAB, ...MAP_PANELS.slice(2),
   LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,
 ];
 
@@ -285,7 +286,7 @@ function jumpToMap() {
   pendingMapJump = false;
   // The chromosome view is a map of the same genes, so a jump lands on it
   // rather than switching the reader off the tab they chose.
-  const onAMap = PANELS.some((panel) => panel.id === state.panel)
+  const onAMap = MAP_PANELS.some((panel) => panel.id === state.panel)
     || state.panel === CHROMOSOME_TAB.id;
   if (!onAMap) {
     state.panel = 'native';
@@ -943,7 +944,7 @@ function syncAxisScaleAvailability(axis) {
 
 function renderMap() {
   const projection = projectionFor(state.panel);
-  const panel = PANELS.find((entry) => entry.id === state.panel);
+  const panel = MAP_PANELS.find((entry) => entry.id === state.panel);
   element('panel-blurb').textContent = `${tabBlurb(panel, organism)} ${panel.source}`;
   element('axis-chooser').hidden = state.panel !== 'axes';
   if (state.panel === 'axes') {
@@ -1010,7 +1011,10 @@ function renderMap() {
     ? 'About these axes' : 'What drives these axes';
   if (projection.available) {
     renderLoadings(element('loadings'), projection, {
-      pending: state.panel === 'native' ? pendingState(context.dataset, 'codonPca') : null,
+      pending: state.panel === 'native'
+        ? pendingState(context.dataset, 'codonPca')
+        : state.panel === 'reference'
+          ? pendingState(context.dataset, 'codonPcaReference') : null,
     });
   }
 
@@ -1021,12 +1025,12 @@ function renderMap() {
   canvas.setAttribute(
     'aria-label',
     projection.available
-      ? `${panel.name}: ${formatCount(context.passing)} of `
+      ? `${panelName(panel, organism)}: ${formatCount(context.passing)} of `
         + `${formatCount(context.dataset.genes.length)} genes shown, coloured by `
         + `${metric.label}${scaleClause ? ` ${scaleClause}` : ''}. `
         + `${drawOrderSentence(colors)} Nothing is hidden by that order: every gene stays `
         + 'selectable, reachable by the arrow keys, and counted.'
-      : `${panel.name}: ${projection.message}`,
+      : `${panelName(panel, organism)}: ${projection.message}`,
   );
 
   const hidden = context.dataset.genes.length - context.passing;
@@ -1451,7 +1455,7 @@ function buildPanelTabs() {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'tab';
-    button.textContent = panel.name;
+    button.textContent = panelName(panel, organism);
     button.setAttribute('role', 'tab');
     button.id = `panel-tab-${panel.id}`;
     button.addEventListener('click', () => {
@@ -1459,7 +1463,7 @@ function buildPanelTabs() {
       updatePanelTabs();
       renderCurrentView();
       persist();
-      announce(`${panel.name}. ${tabBlurb(panel, organism)}`);
+      announce(`${panelName(panel, organism)}. ${tabBlurb(panel, organism)}`);
     });
     button.addEventListener('keydown', (event) => {
       const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
@@ -1486,7 +1490,7 @@ function updatePanelTabs() {
     button.tabIndex = selected ? 0 : -1;
     button.classList.toggle('active', selected);
   });
-  const mapTab = PANELS.find((panel) => panel.id === state.panel);
+  const mapTab = MAP_PANELS.find((panel) => panel.id === state.panel);
   element('map-view').setAttribute('aria-labelledby', `panel-tab-${mapTab?.id ?? 'native'}`);
 }
 
@@ -2323,7 +2327,7 @@ function flushLandings() {
     }
   }
   // The native projection's axis labels and loadings come from this file.
-  if (keys.has('codonPca')) context.projections.clear();
+  if (keys.has('codonPca') || keys.has('codonPcaReference')) context.projections.clear();
   if (keys.has('goTerms') || keys.has('annotations')) {
     searchResults?.setGenes(dataset.genes, dataset.goTerms?.terms, dataset);
   }
@@ -2431,7 +2435,7 @@ function cleanRevealFrame() {
 
 /** Whether the tab on screen is one of the scatter maps. */
 function mapTabActive() {
-  return PANELS.some((panel) => panel.id === state.panel);
+  return MAP_PANELS.some((panel) => panel.id === state.panel);
 }
 
 /**
@@ -2545,7 +2549,7 @@ async function boot() {
     if (manifest !== null) {
       citationsManifest = manifest;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) renderCitationsTab(manifest);
-      if (context.dataset && PANELS.some((panel) => panel.id === state.panel)) {
+      if (context.dataset && MAP_PANELS.some((panel) => panel.id === state.panel)) {
         renderColorHelp(element('colour-help'));
         renderProjectionHelp(element('features-used'),
           projectionHelp(state.panel, context.dataset, context.registry,

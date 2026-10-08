@@ -164,6 +164,7 @@ export const UTEX2973 = {
     },
   },
   recoding: null,
+  referenceCodonPca: null,
   copy: {
     annotationSourceHint: 'Each checkbox enables one annotation source for function-category '
       + 'colouring and the legend counts only; the detail panel, lists, search, and export '

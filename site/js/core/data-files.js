@@ -31,8 +31,12 @@ export const FILE_STATE = Object.freeze({
   FAILED: 'failed',
 });
 
-function file(key, name, tier, label, { required = false, needs = [] } = {}) {
-  return Object.freeze({ key, name, tier, label, required, needs: Object.freeze(needs) });
+function file(key, name, tier, label, {
+  required = false, needs = [], organismField = null,
+} = {}) {
+  return Object.freeze({
+    key, name, tier, label, required, organismField, needs: Object.freeze(needs),
+  });
 }
 
 /**
@@ -53,6 +57,8 @@ export const DATA_FILES = Object.freeze([
     'derived function categories', { needs: ['annotations', 'candidateEvidence'] }),
   file('lengthCohorts', 'length_cohorts.json', 2, 'length inventory'),
   file('codonPca', 'codon_pca.json', 2, 'codon-space loadings'),
+  file('codonPcaReference', 'codon_pca_reference.json', 2,
+    'parent-reference codon-space coordinates', { organismField: 'referenceCodonPca' }),
   file('excluded', 'excluded.json', 2, 'excluded loci'),
   file('tssEvidence', 'tss_evidence.json', 3, 'start sites'),
   file('expressionLayers', 'expression_layers.json', 3, 'expression layers'),
@@ -86,7 +92,8 @@ export const CORE_FILE_KEYS = Object.freeze(
  * @param {{key: string, required: boolean}} file an entry of `DATA_FILES`.
  */
 export function publishesFile(organism, file) {
-  return !organism || file.required || publishesLayer(organism, file.key);
+  return !organism || file.required
+    || (file.organismField ? Boolean(organism[file.organismField]) : publishesLayer(organism, file.key));
 }
 
 /**

@@ -20,6 +20,7 @@
 <link rel="modulepreload" href="js/core/candidate-evidence.js">
 <link rel="modulepreload" href="js/core/chromosome-model.js">
 <link rel="modulepreload" href="js/core/codon-metrics.js">
+<link rel="modulepreload" href="js/core/codon-pca-reference.js">
 <link rel="modulepreload" href="js/core/codon-table.js">
 <link rel="modulepreload" href="js/core/conventions.js">
 <link rel="modulepreload" href="js/core/data-files.js">
@@ -43,7 +44,9 @@
 <link rel="modulepreload" href="js/core/metric-help.js">
 <link rel="modulepreload" href="js/core/metric-registry.js">
 <link rel="modulepreload" href="js/core/organisms.js">
+<link rel="modulepreload" href="js/core/organisms/ecoli-dh10b-public-reference.js">
 <link rel="modulepreload" href="js/core/organisms/ecoli-k12-mg1655.js">
+<link rel="modulepreload" href="js/core/organisms/ecoli-mds42-public-reference.js">
 <link rel="modulepreload" href="js/core/organisms/ecoli-syn61-delta3-ev5.js">
 <link rel="modulepreload" href="js/core/organisms/utex2973.js">
 <link rel="modulepreload" href="js/core/paint-priority.js">
@@ -153,7 +156,7 @@
       </p>
       <h3>What “close together” means</h3>
       <p>
-        The four PCA and UMAP maps combine many gene measurements into two dimensions; nearby
+        The PCA and UMAP maps combine many gene measurements into two dimensions; nearby
         genes are similar in the inputs to that map, and those axis numbers have no native units.
         Metric X vs Y instead plots the two measurements you choose, in their own units.
       </p>
@@ -161,7 +164,7 @@
         Under a PCA map, <b>What drives these axes</b> lists measurements that pull genes left,
         right, up, or down. The metric plot names its two measurements directly.
       </p>
-      <h3>Why there are five maps</h3>
+      <h3>Why these maps differ</h3>
       <p>
         They answer different questions. <b>Native codon space</b> asks how a gene writes its
         codons today. <b>Recoding-risk space</b> asks how exposed a gene is to the scheme you set.
@@ -169,6 +172,9 @@
         gaps between clusters mean nothing. <b>Perturbation space</b> asks how far recoding would
         move a gene from where it started, which is a different question from where it started.
         <b>Metric X vs Y</b> shows a direct relationship, such as CDS length against CAI.
+        A recoded genome may also offer a separately labelled public-parent frame. That map keeps
+        the recoded genome's native refit available and does not turn sequence separation into a
+        fitness or expression measurement.
       </p>
     </div>
     <div>
@@ -317,6 +323,16 @@ if (window.location.protocol === 'file:') {
     'ecoli-k12-mg1655': {
       directory: 'data/organisms/ecoli-k12-mg1655/',
       title: 'Escherichia coli recoding-diversity map',
+      core: ['meta.json', 'genes.json']
+    },
+    'ecoli-mds42-public-reference': {
+      directory: 'data/organisms/ecoli-mds42-public-reference/',
+      title: 'E. coli MDS42 public-reference recoding-diversity map',
+      core: ['meta.json', 'genes.json']
+    },
+    'ecoli-dh10b-public-reference': {
+      directory: 'data/organisms/ecoli-dh10b-public-reference/',
+      title: 'E. coli DH10B public-reference recoding-diversity map',
       core: ['meta.json', 'genes.json']
     },
     'ecoli-syn61-delta3-ev5': {

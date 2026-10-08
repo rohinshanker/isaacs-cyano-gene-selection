@@ -16,6 +16,14 @@ function descriptionsFor(organism) {
       summary: organism.copy.nativeProjectionSummary,
       citations: [genome, 'scikit-learn'],
     },
+    ...(organism.referenceCodonPca ? {
+      reference: {
+        summary: organism.copy.referenceProjectionSummary,
+        citations: [
+          genome, organism.referenceCodonPca.citationId, 'nyerges-2026-recoding', 'scikit-learn',
+        ],
+      },
+    } : {}),
     risk: {
       summary: 'This PCA standardizes the available baseline risk, length, and active-scheme target-load columns. Unknown cells use the finite mean of their column. It is recomputed in the browser when the scheme changes.',
       citations: [genome],
@@ -50,8 +58,10 @@ export function projectionHelp(panelId, dataset, registry, axes = DEFAULT_METRIC
   const descriptions = descriptionsFor(organismOf(dataset));
   if (!Object.hasOwn(descriptions, panelId)) return null;
   const definition = descriptions[panelId];
-  if (panelId === 'native') {
-    const aminoAcids = new Map((dataset.codonPca?.loadings ?? [])
+  if (panelId === 'native' || panelId === 'reference') {
+    const artifact = panelId === 'reference'
+      ? dataset.codonPcaReference?.reference : dataset.codonPca;
+    const aminoAcids = new Map((artifact?.loadings ?? [])
       .map((row) => [row.codon, row.aa]));
     return {
       ...definition,

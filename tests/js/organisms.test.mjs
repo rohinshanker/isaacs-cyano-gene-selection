@@ -25,6 +25,8 @@ import { loadDatasetStaged } from '../../site/js/core/dataset.js';
 import { dataDirectoryPath, searchCopy } from '../../site/js/ui/organism-selector.js';
 
 const ECOLI = organismById('ecoli-k12-mg1655');
+const MDS42 = organismById('ecoli-mds42-public-reference');
+const DH10B = organismById('ecoli-dh10b-public-reference');
 const SYN61 = organismById('ecoli-syn61-delta3-ev5');
 const PAGE = 'https://example.test/site/';
 const SHA = (digit) => digit.repeat(64);
@@ -36,13 +38,15 @@ function strings(value) {
   return [];
 }
 
-test('the registry contains three frozen records, the default organism first', () => {
+test('the registry contains five frozen records, the default organism first', () => {
   assert.deepEqual(ORGANISMS.map((organism) => organism.id), [
-    'utex2973', 'ecoli-k12-mg1655', 'ecoli-syn61-delta3-ev5',
+    'utex2973', 'ecoli-k12-mg1655', 'ecoli-mds42-public-reference',
+    'ecoli-dh10b-public-reference', 'ecoli-syn61-delta3-ev5',
   ]);
   assert.equal(DEFAULT_ORGANISM, ORGANISMS[0]);
   assert.deepEqual(ORGANISMS.map((organism) => organism.label), [
-    'Cyanobacteria', 'E. coli', 'E. coli Syn61',
+    'Cyanobacteria', 'E. coli', 'MDS42 public reference',
+    'DH10B public reference', 'E. coli Syn61',
   ]);
   assert.equal(ORGANISM_PARAM, 'org');
   assert.equal(DATA_PARAM, 'data');
@@ -58,7 +62,7 @@ test('every record carries every field a view reads', () => {
   const fields = ['id', 'label', 'species', 'strain', 'shortName', 'title', 'description',
     'dataDirectory', 'storageNamespace', 'handoffStrain', 'genome', 'genomeCitation',
     'citationLabels', 'searchAliases', 'searchAliasExample', 'locusExample', 'freshAxes',
-    'annotationSources', 'layers', 'recoding', 'copy'];
+    'annotationSources', 'layers', 'recoding', 'referenceCodonPca', 'copy'];
   const copy = ['tabBlurbs', 'nativeProjectionSummary', 'coordinateEvidenceNote',
     'noAdmittedTrackData', 'directProteomicsLabel', 'goSearchNote', 'metricMethods',
     'metricReading', 'goTermsCaveat'];
@@ -69,8 +73,13 @@ test('every record carries every field a view reads', () => {
     for (const field of ['annotationSourceHint', 'copyNumberNote', 'copyNumberSentence']) {
       assert.ok(field in organism.copy, `${organism.id}.copy.${field} is stated, even as null`);
     }
-    assert.deepEqual(Object.keys(organism.copy.tabBlurbs).sort(),
-      ['axes', 'chromosome', 'native', 'regulatory']);
+    const blurbs = ['axes', 'chromosome', 'native', 'regulatory'];
+    if (organism.referenceCodonPca) blurbs.push('reference');
+    assert.deepEqual(Object.keys(organism.copy.tabBlurbs).sort(), blurbs.sort());
+    if (organism.referenceCodonPca) {
+      assert.ok(organism.copy.referenceProjectionSummary,
+        `${organism.id}.copy.referenceProjectionSummary`);
+    }
     assert.deepEqual(Object.keys(organism.copy.metricReading).sort(),
       ['cai', 'expressionProxy', 'tai']);
     assert.equal(organism.genome.replicons.filter((replicon) => replicon.primary).length, 1);
@@ -144,8 +153,29 @@ test('Syn61 delta 3 ev5 mirrors config metadata and declares only sourced recodi
   assert.match(SYN61.recoding.replacementNote, /does not establish every ev5 replacement event/);
   assert.match(SYN61.copy.nativeProjectionSummary, /refitted.*surviving synonymous variation/i);
   assert.match(SYN61.copy.nativeProjectionSummary, /not parent-fixed axes/i);
+  assert.equal(SYN61.referenceCodonPca.parentOrganismId, MDS42.id);
+  assert.equal(SYN61.referenceCodonPca.parentSequenceAccession, 'AP012306.1');
+  assert.match(SYN61.copy.referenceProjectionSummary, /not.*fitness|do not measure fitness/i);
   assert.deepEqual(SYN61.layers, {});
   assert.deepEqual(SYN61.annotationSources, []);
+});
+
+test('public parent records are assembly-pinned and refuse experimental-value claims', async () => {
+  const config = JSON.parse(await readFile(
+    new URL('../../config/organisms.json', import.meta.url), 'utf8',
+  )).organisms;
+  for (const [organism, sequence] of [[MDS42, 'AP012306.1'], [DH10B, 'CP000948.1']]) {
+    assert.equal(organism.genome.accession, config[organism.id].accession);
+    assert.equal(organism.dataDirectory, `${config[organism.id].outputDirectory.replace(/^site\//, '')}/`);
+    assert.equal(organism.recoding, null);
+    assert.equal(organism.referenceCodonPca, null);
+    assert.deepEqual(organism.layers, {});
+    assert.ok(strings(organism).some((value) => value.includes(sequence)));
+    const copy = strings(organism.copy).join(' ');
+    assert.match(copy, /public reference/i);
+    assert.match(copy, /no experimental|not experimental|no 2026 experimental/i);
+    assert.match(copy, /not.*stock|stock.*not/i);
+  }
 });
 
 test('nothing in the E. coli record names the cyanobacterial organism or its studies', () => {
@@ -164,6 +194,8 @@ test('an address names its organism in the query string, and no org means the de
     { organism: ECOLI, requestedId: 'ecoli-k12-mg1655', recognised: true });
   assert.deepEqual(resolveOrganism('?org=ecoli-syn61-delta3-ev5'),
     { organism: SYN61, requestedId: 'ecoli-syn61-delta3-ev5', recognised: true });
+  assert.equal(resolveOrganism('?org=ecoli-mds42-public-reference').organism, MDS42);
+  assert.equal(resolveOrganism('?org=ecoli-dh10b-public-reference').organism, DH10B);
   assert.deepEqual(resolveOrganism('org=ecoli-k12-mg1655&load-min=0').organism, ECOLI);
   assert.deepEqual(resolveOrganism('?org=utex2973'),
     { organism: DEFAULT_ORGANISM, requestedId: 'utex2973', recognised: true });
@@ -215,6 +247,10 @@ test('the data directory follows the organism, and ?data= overrides it for eithe
   assert.equal(resolveDataDirectory('?org=ecoli-k12-mg1655'), 'data/organisms/ecoli-k12-mg1655/');
   assert.equal(resolveDataDirectory('?org=ecoli-syn61-delta3-ev5'),
     'data/organisms/ecoli-syn61-delta3-ev5/');
+  assert.equal(resolveDataDirectory('?org=ecoli-mds42-public-reference'),
+    'data/organisms/ecoli-mds42-public-reference/');
+  assert.equal(resolveDataDirectory('?org=ecoli-dh10b-public-reference'),
+    'data/organisms/ecoli-dh10b-public-reference/');
   assert.equal(resolveDataDirectory('?data=other'), 'other/');
   assert.equal(resolveDataDirectory('?data=other/'), 'other/');
   assert.equal(resolveDataDirectory('?org=ecoli-k12-mg1655&data=../fixtures/x'), '../fixtures/x/');
@@ -462,21 +498,25 @@ test('the tier 1 list each side holds is the loader\'s own rule, per organism', 
     ['meta.json', 'genes.json', 'function-categories-v1.json']);
   assert.deepEqual(coreFileNames(ECOLI), ['meta.json', 'genes.json']);
   assert.deepEqual(coreFileNames(SYN61), ['meta.json', 'genes.json']);
+  assert.deepEqual(coreFileNames(MDS42), ['meta.json', 'genes.json']);
+  assert.deepEqual(coreFileNames(DH10B), ['meta.json', 'genes.json']);
   assert.deepEqual(coreFileNames(), coreFileNames(DEFAULT_ORGANISM));
   // No organism: a tool reading a directory on its own terms asks for everything.
   assert.deepEqual(coreFileNames(null),
     CORE_FILE_KEYS.map((key) => DATA_FILE_BY_KEY[key].name));
   for (const file of DATA_FILES) {
     assert.equal(publishesFile(null, file), true, file.name);
-    assert.equal(publishesFile(DEFAULT_ORGANISM, file),
-      file.required || publishesLayer(DEFAULT_ORGANISM, file.key), file.name);
-    assert.equal(publishesFile(ECOLI, file),
-      file.required || publishesLayer(ECOLI, file.key), file.name);
+    const expected = (organism) => file.required || (file.organismField
+      ? Boolean(organism[file.organismField]) : publishesLayer(organism, file.key));
+    assert.equal(publishesFile(DEFAULT_ORGANISM, file), expected(DEFAULT_ORGANISM), file.name);
+    assert.equal(publishesFile(ECOLI, file), expected(ECOLI), file.name);
   }
   assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.genes), true);
   assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.functionCategories), false);
   assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.codonPca), true,
     'an organism-neutral file loads for every organism that publishes it');
+  assert.equal(publishesFile(ECOLI, DATA_FILE_BY_KEY.codonPcaReference), false);
+  assert.equal(publishesFile(SYN61, DATA_FILE_BY_KEY.codonPcaReference), true);
 });
 
 test('the tab is titled for the organism before any module runs', async () => {

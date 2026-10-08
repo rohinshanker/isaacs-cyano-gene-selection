@@ -30,7 +30,9 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
     id: 'ncbi-ecoli-syn61-delta3-ev5',
     label: 'E. coli Syn61 delta 3 evolved variant 5 GenBank assembly',
   },
-  citationLabels: {},
+  citationLabels: {
+    'ncbi-ecoli-mds42-public-reference': 'NCBI MDS42 public reference AP012306.1',
+  },
   searchAliases: {
     'atp synthase': ['ATP synthase'],
     ribosome: ['ribosomal protein'],
@@ -53,11 +55,27 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
       + 'the evolved deposited genome has the observed residuals shown above.',
     replacementNote: 'The original design prescription does not establish every ev5 replacement event.',
   },
+  referenceCodonPca: {
+    panelName: 'MDS42 public-reference codon space',
+    parentOrganismId: 'ecoli-mds42-public-reference',
+    parentLabel: 'Escherichia coli str. K-12 substr. MDS42',
+    parentGenomeAccession: 'GCF_000350185.1',
+    parentSequenceAccession: 'AP012306.1',
+    parentTaxid: 1110693,
+    childLabel: 'Escherichia coli Syn61 substr. delta 3 (ev5)',
+    citationId: 'ncbi-ecoli-mds42-public-reference',
+  },
   copy: {
     annotationSourceHint: null,
     tabBlurbs: {
       native: 'Each dot is a gene from the deposited recoded genome, placed by a PCA refitted '
         + 'to this genome. Separation reflects surviving synonymous variation.',
+      reference: 'Each dot is a Syn61 gene projected into the fixed axes fitted on public MDS42 '
+        + 'AP012306.1. That public reference differs from the 2026 study stock and represents '
+        + 'historical lineage, not an exact isogenic experimental parent. Removed sense codons '
+        + 'TCA and TCG dominate the expected shift; TAG is a stop, not an RSCU feature. These '
+        + 'sequence-derived coordinates do not measure fitness or expression and must not be '
+        + 'mixed with those scales.',
       axes: 'Choose one gene metric for each axis to inspect their relationship directly. '
         + 'CAI and tAI remain selectable on either axis.',
       chromosome: 'Every plotted CDS at its position on the deposited 3.98 Mb chromosome. '
@@ -68,6 +86,11 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
       + 'relative synonymous codon use (RSCU) columns are standardized across its included '
       + 'coding genes before PCA. Separation therefore reflects surviving synonymous variation '
       + 'within this recoded genome; these are not parent-fixed axes.',
+    referenceProjectionSummary: 'This map applies the complete scaler and PCA transform fitted '
+      + 'on public MDS42 AP012306.1 to Syn61 RSCU vectors. The removed sense codons TCA and TCG '
+      + 'dominate the expected shift; TAG is a stop and is not one of the 59 RSCU features. '
+      + 'The coordinates do not measure fitness, expression, or causal recoding effects, and '
+      + 'the public reference differs from the 2026 MDS42 study stock.',
     copyNumberNote: null,
     copyNumberSentence: null,
     coordinateEvidenceNote: 'A value a source does not report is absent here, never zero.',

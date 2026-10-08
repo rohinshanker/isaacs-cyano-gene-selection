@@ -62,13 +62,16 @@ test('the selector offers every organism, Cyanobacteria first and selected by de
   await withFakeDocument(() => {
     const { options, identity } = selectorFor(DEFAULT_ORGANISM, '');
     assert.deepEqual(options.map((option) => option.textContent),
-      ['Cyanobacteria', 'E. coli', 'E. coli Syn61']);
+      ['Cyanobacteria', 'E. coli', 'MDS42 public reference',
+        'DH10B public reference', 'E. coli Syn61']);
     assert.deepEqual(options.map((option) => option.dataset.organism), ORGANISMS.map((o) => o.id));
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      ['page', null, null]);
+      ['page', null, null, null, null]);
     assert.ok(options[0].classList.contains('active'));
     assert.ok(!options[1].classList.contains('active'));
     assert.ok(!options[2].classList.contains('active'));
+    assert.ok(!options[3].classList.contains('active'));
+    assert.ok(!options[4].classList.contains('active'));
     // Each is a link, which is what makes it keyboard-operable, styled as the page's chips are.
     for (const option of options) {
       assert.equal(option.tagName, 'a');
@@ -76,7 +79,10 @@ test('the selector offers every organism, Cyanobacteria first and selected by de
       assert.ok(option.classList.contains('organism-option'));
     }
     assert.deepEqual(options.map((option) => option.href), [
-      '/site/', '/site/?org=ecoli-k12-mg1655', '/site/?org=ecoli-syn61-delta3-ev5',
+      '/site/', '/site/?org=ecoli-k12-mg1655',
+      '/site/?org=ecoli-mds42-public-reference',
+      '/site/?org=ecoli-dh10b-public-reference',
+      '/site/?org=ecoli-syn61-delta3-ev5',
     ]);
     // The strain and reference assembly of the organism in view, species in italics.
     assert.equal(identity.id, 'organism-identity');
@@ -89,10 +95,13 @@ test('in the native E. coli view the selector names that strain and nothing of t
   await withFakeDocument(() => {
     const { options, identity } = selectorFor(ECOLI, '?org=ecoli-k12-mg1655');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      [null, 'page', null]);
+      [null, 'page', null, null, null]);
     assert.ok(options[1].classList.contains('active'));
     assert.deepEqual(options.map((option) => option.href), [
-      '/site/', '/site/?org=ecoli-k12-mg1655', '/site/?org=ecoli-syn61-delta3-ev5',
+      '/site/', '/site/?org=ecoli-k12-mg1655',
+      '/site/?org=ecoli-mds42-public-reference',
+      '/site/?org=ecoli-dh10b-public-reference',
+      '/site/?org=ecoli-syn61-delta3-ev5',
     ]);
     assert.equal(identity.textContent, 'Escherichia coli K-12 MG1655 · GCF_000005845.2');
     assert.ok(!/Synechococcus|UTEX|GCF_000817325/.test(identity.textContent));
@@ -103,8 +112,8 @@ test('in the recoded E. coli view the selector and identity name the deposited s
   await withFakeDocument(() => {
     const { options, identity } = selectorFor(SYN61, '?org=ecoli-syn61-delta3-ev5');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      [null, null, 'page']);
-    assert.ok(options[2].classList.contains('active'));
+      [null, null, null, null, 'page']);
+    assert.ok(options[4].classList.contains('active'));
     assert.equal(identity.textContent,
       'Escherichia coli Syn61 substr. delta 3 (ev5) · GCA_028355435.1');
     assert.ok(!/Synechococcus|UTEX|GCF_000817325|MG1655/.test(identity.textContent));

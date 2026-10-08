@@ -31,6 +31,7 @@ import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
+import { validateCodonPcaReference } from './codon-pca-reference.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
   normalizeManifest, publishesFile,
@@ -207,6 +208,7 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     meta,
     genes,
     codonPca: null,
+    codonPcaReference: null,
     excluded: [],
     lengthCohorts: null,
     regulatoryTss: null,
@@ -318,6 +320,12 @@ export const DATA_APPLIERS = Object.freeze({
 
   codonPca(dataset, codonPca) {
     dataset.codonPca = codonPca;
+  },
+
+  codonPcaReference(dataset, reference) {
+    dataset.codonPcaReference = reference
+      ? validateCodonPcaReference(reference, dataset, dataset.organism)
+      : null;
   },
 
   excluded(dataset, excluded) {
@@ -513,8 +521,8 @@ export const TIER_LEAD_BYTES = 128 * 1024;
  */
 const LEGACY_FAILURE_ORDER = Object.freeze([
   'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
-  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca', 'excluded',
-  'strainFitness',
+  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca',
+  'codonPcaReference', 'excluded', 'strainFitness',
 ]);
 
 /**
