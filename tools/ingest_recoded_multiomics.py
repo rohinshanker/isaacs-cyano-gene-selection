@@ -43,6 +43,33 @@ M9_TO_RICH_ROW = {4: 3, 6: 5, 8: 7, 10: 9, 13: 12, 15: 14, 17: 16,
                   19: 18, 21: 20, 23: 22, 25: 24, 27: 26, 29: 28, 31: 30,
                   33: 32, 36: 35, 38: 37, 40: 39, 45: 44, 47: 46, 49: 48}
 M9_ROWS = set(M9_TO_RICH_ROW)
+# Literal segment identities from the pinned growth sheet. Condition and stage
+# stay in their own fields; a segment set never claims the entire strain label.
+GROWTH_SEGMENTS = {
+    7: "36-37", 9: "46-49", 11: "36-37_46-49", 12: "38-44",
+    14: "36-44_46-49", 16: "36-44_46-49", 18: "51-59",
+    20: "36-44_46-49_51-59", 22: "36-44_46-49_51-59", 24: "9-18",
+    26: "9-18_36-44_46-49_51-59", 28: "9-18_36-44_46-49_51-59",
+    30: "9-18_36-59", 32: "9-18_36-59", 34: "9-18_36-59",
+    35: "1-8", 37: "19-29", 39: "30-35", 41: "30-35", 42: "30-35",
+    43: "30-35", 44: "60-69", 46: "70-81", 48: "82-0", 50: "21",
+    51: "21", 52: "46-48+49del", 53: "9", 54: "9_11", 55: "9_11_14",
+    56: "9_11_14_15", 57: "9_11_14_15_16", 58: "9_11_14_15_16_17",
+    59: "34", 60: "31_34", 61: "30_31_34", 62: "30_31_33_34",
+    63: "30_31_33_34_35", 64: "30_31_33_34_35", 65: "3", 66: "2_3",
+    67: "1_2_3", 68: "1_2_3_8", 69: "1_2_3_7_8",
+    70: "Segment 2 design, mraZ-ftsZ locus only",
+}
+BIOLOG_SEGMENTS = {
+    "MDS42 vs Syn61Δ3(ev5)": None,
+    "MDS42_Seg1-8": "1-8", "MDS42_Seg36-37": "36-37",
+    "MDS42_Seg36-37_46-49": "36-37_46-49",
+    "MDS42_Seg36-44_46-49": "36-44_46-49",
+    "MDS42_Seg36-44_46-49_51-59": "36-44_46-49_51-59",
+    "MDS42_Seg9-18_36-44_46-49_51-59": "9-18_36-44_46-49_51-59",
+    "MDS42_Seg9-18_36-59": "9-18_36-59", "MDS42_Seg30-35": "30-35",
+    "MDS42_Seg80-0": "80-0", "MDS42_Seg19-29": "19-29",
+}
 # Literal workbook column contract. Positional inference would silently accept a
 # revised workbook under old labels; the entire list is checked before writing.
 COLUMNS = [
@@ -239,7 +266,7 @@ def fitness_document(document: dict) -> dict:
             strains.append({"id": strain_id, "label": "Growth: " + row["sourceLabel"],
                             "scheme": {"recoded": n >= 7,
                                        "label": "Partial Syn57 design" if n >= 7 else "Non-recoded control",
-                                       "segments": row["sourceLabel"] if n >= 7 else None}})
+                                       "segments": GROWTH_SEGMENTS[n] if n >= 7 else None}})
         record = {key: row[key] for key in ("growthStatus", "doublingTimeMinutes", "doublingTimeSdMinutes",
                                           "maximumOd600", "maximumOd600Sd")}
         record.update({"id": identifier, "strainId": strain_id,
@@ -254,7 +281,7 @@ def fitness_document(document: dict) -> dict:
         strains.append({"id": identifier, "label": "Biolog: " + sheet["sheet"],
                         "scheme": {"recoded": True,
                                    "label": "Syn61∆3(ev5)" if sheet["sheet"] == "MDS42 vs Syn61Δ3(ev5)" else "Partial Syn57 design",
-                                   "segments": None if i == 0 else sheet["sheet"]}})
+                                   "segments": BIOLOG_SEGMENTS[sheet["sheet"]]}})
         for row in sheet["rows"]:
             wells.append({"id": f"{identifier}-row-{row['sourceRow']}-column-{row['sourceColumn']}",
                           "strainId": identifier, "conditionId": "biolog",
@@ -274,7 +301,7 @@ def fitness_document(document: dict) -> dict:
         "growth": {"units": {"doublingTime": "minutes", "maximumOd600": "OD600"},
                    "metadata": {"Scope": "Study comparison strains named in each row; these are not all Syn61. Growth and Biolog identities are kept separate, with no inferred evolution-stage join.",
                                 "Source": "Fitness_Source_data, source row encoded in record ID",
-                                "Replicates": "Ten published measurements per row; independent starter-culture mapping unspecified.",
+                                "Replicates": "Ten published measurements for each of 52 numeric growth rows. The 17 no-growth rows have no numeric measurements; their zero placeholders are audited separately. Independent starter-culture mapping is unspecified.",
                                 "SD": "Source-reported population SD (ddof=0).",
                                 "No growth": "Categorical source result; all numeric zero placeholders retained only in the source-cell audit, not interpreted as kinetic measurements.",
                                 "Acquisition": "Aerobic microplate, 800 rpm, OD600 every nine minutes; GrowthRates 4.4. Long-term no-growth assessment used three cultures over 14 days."},
@@ -282,7 +309,7 @@ def fitness_document(document: dict) -> dict:
         "biolog": {"units": {"value": "source-reported Max Height difference (optical-density basis; source wavelength inconsistent)",
                               "reference": "MDS42", "normalization": "As deposited; exact background/curve/per-well processing unspecified; source mentions 590 nm and OD600."},
                    "metadata": {"Replicates": "Two independent replicate measurements summarized by source; individual replicate values unavailable.",
-                                "Summary": "No cross-well mean is reported here. Published Table 1 score matches the sum, despite mean wording.",
+                                "Summary": "No cross-well mean is reported here. Table 1 scores generally match sums despite mean wording; Seg80-0 sums to -10.286431 while Table 1 Strain 10 reports -10.26, with identity unresolved.",
                                 "Identity": "Seg80-0 source label retained; equivalence to Seg82-0 unresolved. No cross-assay identity or evolution-stage join.",
                                 "Source": "Exact source sheet retained in strain label; row/column in record ID."},
                    "plates": [{"id": p, "label": p} for p in ("PM01", "PM02", "PM04", "PM06", "PM09")],
@@ -314,7 +341,28 @@ def main(argv=None) -> int:
 
 def write_citations(data_dir: Path, expression_dir: Path, sources: list[dict]) -> None:
     """Publish a self-contained source ledger for this organism's actual inputs."""
-    methods = json.loads((ROOT / "site/data/citations.json").read_text())["sections"][1]
+    catalog = json.loads((ROOT / "site/data/citations.json").read_text())
+    shared = {item["id"]: item for section in catalog["sections"]
+              if section["id"] == "methods-and-tools" for item in section["items"]}
+    descriptions = {
+        "sharp-li-cai": "Defines CAI. The Syn61 build uses its own 77-gene translation-machinery reference set, a sequence-derived convention rather than measured expression.",
+        "dos-reis-tai": "Defines the tRNA adaptation index and wobble/zero-weight conventions. Copy numbers are from the deposited Syn61 annotation; this proxy does not measure charging or expression.",
+        "soma-lysidine": "Supports the bacterial lysidine/TilS convention for Ile-CAT decoding ATA. This is a biochemical convention, not a direct Syn61 modification or charging measurement.",
+        "wright-enc": "Defines ENC and its GC3-based expected curve. Short-family substitutions remain labelled implementation conventions.",
+        "coleman-codon-pairs": "Motivates the codon-pair log-odds feature. Scores are fitted to this Syn61 genome; no viral measurements or attenuation outcomes are transferred.",
+        "umap": "umap-learn computes this genome's risk-feature embedding. Proximity is a visualization of calculated features, not evidence of shared function.",
+        "scikit-learn": "StandardScaler and PCA fit this genome's native codon coordinates. The separately labelled public-parent projection uses a pinned MDS42 transform.",
+        "viennarna": shared["viennarna"]["contribution"],
+        "emscripten": shared["emscripten"]["contribution"],
+        "biopython": shared["biopython"]["contribution"],
+        "ncbi-genetic-code": "Defines bacterial codon assignments for the deposited Syn61 coding sequences and synonymous simulations, with initiation treated separately. The genome's engineered target set is declared independently.",
+        "numpy": shared["numpy"]["contribution"],
+        "openpyxl": "Extracts the Nyerges 2026 deposited workbooks without treating formatting or recalculation as biological data.",
+    }
+    methods = {"id": "methods-and-tools", "title": "Methods and tools",
+               "description": "Methods used for this genome's computed features and published-table extraction.",
+               "items": [{**shared[key], "contribution": contribution, "downloads": []}
+                         for key, contribution in descriptions.items()]}
     methods["items"].append({
         "id": "fredens-2019-syn61", "citation": "Fredens J, Wang K, de la Torre D, et al. Total synthesis of Escherichia coli with a recoded genome. Nature 569, 514–518 (2019). doi:10.1038/s41586-019-1192-5. Chin lab deposit Addgene #174513.",
         "url": "https://www.addgene.org/174513/",

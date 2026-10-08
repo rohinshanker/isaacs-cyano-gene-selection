@@ -79,6 +79,7 @@ export class SchemeEditor {
     clear.className = 'chip-button';
     clear.textContent = 'No scheme';
     clear.addEventListener('click', () => {
+      this.presetNote.hidden = true;
       if (this.handlers.onClear) this.handlers.onClear();
       else this.handlers.onChange({});
     });

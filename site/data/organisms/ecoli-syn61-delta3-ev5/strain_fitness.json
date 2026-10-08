@@ -49,7 +49,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-37"
+        "segments": "36-37"
       }
     },
     {
@@ -58,7 +58,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_46-49"
+        "segments": "46-49"
       }
     },
     {
@@ -67,7 +67,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-37_46-49"
+        "segments": "36-37_46-49"
       }
     },
     {
@@ -76,7 +76,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_38-44"
+        "segments": "38-44"
       }
     },
     {
@@ -85,7 +85,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49"
+        "segments": "36-44_46-49"
       }
     },
     {
@@ -94,7 +94,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49 Troubleshot"
+        "segments": "36-44_46-49"
       }
     },
     {
@@ -103,7 +103,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_51-59"
+        "segments": "51-59"
       }
     },
     {
@@ -112,7 +112,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59"
+        "segments": "36-44_46-49_51-59"
       }
     },
     {
@@ -121,7 +121,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59 Troubleshot"
+        "segments": "36-44_46-49_51-59"
       }
     },
     {
@@ -130,7 +130,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18"
+        "segments": "9-18"
       }
     },
     {
@@ -139,7 +139,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59"
+        "segments": "9-18_36-44_46-49_51-59"
       }
     },
     {
@@ -148,7 +148,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59 Troubleshot"
+        "segments": "9-18_36-44_46-49_51-59"
       }
     },
     {
@@ -157,7 +157,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-59"
+        "segments": "9-18_36-59"
       }
     },
     {
@@ -166,7 +166,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-59 Evolved"
+        "segments": "9-18_36-59"
       }
     },
     {
@@ -175,7 +175,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-59 Evolved and then translatomics-based debugged"
+        "segments": "9-18_36-59"
       }
     },
     {
@@ -184,7 +184,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_1-8"
+        "segments": "1-8"
       }
     },
     {
@@ -193,7 +193,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_19-29"
+        "segments": "19-29"
       }
     },
     {
@@ -202,7 +202,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30-35"
+        "segments": "30-35"
       }
     },
     {
@@ -211,7 +211,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30-35 translatomics-based debugged Clone 1"
+        "segments": "30-35"
       }
     },
     {
@@ -220,7 +220,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30-35 translatomics-based debugged Clone 2"
+        "segments": "30-35"
       }
     },
     {
@@ -229,7 +229,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30-35 translatomics-based debugged Clone 3"
+        "segments": "30-35"
       }
     },
     {
@@ -238,7 +238,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_60-69"
+        "segments": "60-69"
       }
     },
     {
@@ -247,7 +247,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_70-81"
+        "segments": "70-81"
       }
     },
     {
@@ -256,7 +256,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_82-0"
+        "segments": "82-0"
       }
     },
     {
@@ -265,7 +265,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_21"
+        "segments": "21"
       }
     },
     {
@@ -274,7 +274,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_21 Troubleshot"
+        "segments": "21"
       }
     },
     {
@@ -283,7 +283,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_46-48+49del (tadA start codon erroneously recoded)"
+        "segments": "46-48+49del"
       }
     },
     {
@@ -292,7 +292,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9"
+        "segments": "9"
       }
     },
     {
@@ -301,7 +301,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9_11"
+        "segments": "9_11"
       }
     },
     {
@@ -310,7 +310,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9_11_14"
+        "segments": "9_11_14"
       }
     },
     {
@@ -319,7 +319,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9_11_14_15"
+        "segments": "9_11_14_15"
       }
     },
     {
@@ -328,7 +328,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9_11_14_15_16"
+        "segments": "9_11_14_15_16"
       }
     },
     {
@@ -337,7 +337,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9_11_14_15_16_17"
+        "segments": "9_11_14_15_16_17"
       }
     },
     {
@@ -346,7 +346,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_34"
+        "segments": "34"
       }
     },
     {
@@ -355,7 +355,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_31_34"
+        "segments": "31_34"
       }
     },
     {
@@ -364,7 +364,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30_31_34"
+        "segments": "30_31_34"
       }
     },
     {
@@ -373,7 +373,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30_31_33_34"
+        "segments": "30_31_33_34"
       }
     },
     {
@@ -382,7 +382,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30_31_33_34_35"
+        "segments": "30_31_33_34_35"
       }
     },
     {
@@ -391,7 +391,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30_31_33_34_35 evolved"
+        "segments": "30_31_33_34_35"
       }
     },
     {
@@ -400,7 +400,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_3"
+        "segments": "3"
       }
     },
     {
@@ -409,7 +409,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_2_3"
+        "segments": "2_3"
       }
     },
     {
@@ -418,7 +418,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_1_2_3"
+        "segments": "1_2_3"
       }
     },
     {
@@ -427,7 +427,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_1_2_3_8"
+        "segments": "1_2_3_8"
       }
     },
     {
@@ -436,7 +436,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_1_2_3_7_8"
+        "segments": "1_2_3_7_8"
       }
     },
     {
@@ -445,7 +445,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA mraZ-ftsZ locus recoded according to Segment 2's design"
+        "segments": "Segment 2 design, mraZ-ftsZ locus only"
       }
     },
     {
@@ -463,7 +463,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg1-8"
+        "segments": "1-8"
       }
     },
     {
@@ -472,7 +472,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg36-37"
+        "segments": "36-37"
       }
     },
     {
@@ -481,7 +481,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg36-37_46-49"
+        "segments": "36-37_46-49"
       }
     },
     {
@@ -490,7 +490,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg36-44_46-49"
+        "segments": "36-44_46-49"
       }
     },
     {
@@ -499,7 +499,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg36-44_46-49_51-59"
+        "segments": "36-44_46-49_51-59"
       }
     },
     {
@@ -508,7 +508,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg9-18_36-44_46-49_51-59"
+        "segments": "9-18_36-44_46-49_51-59"
       }
     },
     {
@@ -517,7 +517,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg9-18_36-59"
+        "segments": "9-18_36-59"
       }
     },
     {
@@ -526,7 +526,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg30-35"
+        "segments": "30-35"
       }
     },
     {
@@ -535,7 +535,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg80-0"
+        "segments": "80-0"
       }
     },
     {
@@ -544,7 +544,7 @@
       "scheme": {
         "recoded": true,
         "label": "Partial Syn57 design",
-        "segments": "MDS42_Seg19-29"
+        "segments": "19-29"
       }
     }
   ],
@@ -570,7 +570,7 @@
     "metadata": {
       "Scope": "Study comparison strains named in each row; these are not all Syn61. Growth and Biolog identities are kept separate, with no inferred evolution-stage join.",
       "Source": "Fitness_Source_data, source row encoded in record ID",
-      "Replicates": "Ten published measurements per row; independent starter-culture mapping unspecified.",
+      "Replicates": "Ten published measurements for each of 52 numeric growth rows. The 17 no-growth rows have no numeric measurements; their zero placeholders are audited separately. Independent starter-culture mapping is unspecified.",
       "SD": "Source-reported population SD (ddof=0).",
       "No growth": "Categorical source result; all numeric zero placeholders retained only in the source-cell audit, not interpreted as kinetic measurements.",
       "Acquisition": "Aerobic microplate, 800 rpm, OD600 every nine minutes; GrowthRates 4.4. Long-term no-growth assessment used three cultures over 14 days."
@@ -7072,7 +7072,7 @@
     },
     "metadata": {
       "Replicates": "Two independent replicate measurements summarized by source; individual replicate values unavailable.",
-      "Summary": "No cross-well mean is reported here. Published Table 1 score matches the sum, despite mean wording.",
+      "Summary": "No cross-well mean is reported here. Table 1 scores generally match sums despite mean wording; Seg80-0 sums to -10.286431 while Table 1 Strain 10 reports -10.26, with identity unresolved.",
       "Identity": "Seg80-0 source label retained; equivalence to Seg82-0 unresolved. No cross-assay identity or evolution-stage join.",
       "Source": "Exact source sheet retained in strain label; row/column in record ID."
     },

@@ -310,3 +310,17 @@ test('a second layer replaces the first rather than filtering it through a stale
     assert.ok(host.querySelector('p.fitness-context').textContent.includes('Strain: All strains'));
   });
 });
+
+
+test('metadata preserves source acronyms while expanding camel-case keys', async () => {
+  await withFakeDocument((document) => {
+    const { host } = mount(document, layerFor((file) => {
+      file.growth.metadata.SD = 'Population SD';
+      file.growth.metadata.OD600 = 'Source wavelength';
+    }));
+    const labels = host.querySelector('dl.fitness-definitions').querySelectorAll('dt').map((e) => e.textContent);
+    assert.ok(labels.includes('SD'));
+    assert.ok(labels.includes('OD600'));
+    assert.ok(labels.includes('Replicate definition'));
+  });
+});

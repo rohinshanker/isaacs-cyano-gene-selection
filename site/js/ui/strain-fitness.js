@@ -60,6 +60,7 @@ function plural(count, noun) {
  * changes, so nothing is renamed on the file's behalf.
  */
 function humanise(key) {
+  if (/^[A-Z0-9]+$/.test(key)) return key;
   const words = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }

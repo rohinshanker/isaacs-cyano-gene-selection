@@ -151,91 +151,56 @@
     },
     {
       "id": "methods-and-tools",
-      "title": "Methods, design, validation & software",
-      "description": "These works guided calculations, interpretation, validation, software implementation, or explicit source-admission decisions. Their experimental measurements were not imported as gene-level data unless listed above.",
+      "title": "Methods and tools",
+      "description": "Methods used for this genome's computed features and published-table extraction.",
       "items": [
-        {
-          "id": "ungerer-2018-assessed",
-          "citation": "Ungerer J, Wendt KE, Hendry JI, Maranas CD, Pakrasi HB. Comparative genomics reveals the molecular determinants of rapid growth of the cyanobacterium Synechococcus elongatus UTEX 2973. Proceedings of the National Academy of Sciences 115, E11761–E11770 (2018). doi:10.1073/pnas.1814912115.",
-          "url": "https://doi.org/10.1073/pnas.1814912115",
-          "contribution": "Reviewed as a possible native UTEX 2973 gene-body transcriptomics and allele/phenotype source. Its supplemental wild-type TPM survey lacks biological replicates, so no expression values or growth-effect labels from this paper are integrated in the current site.",
-          "downloads": []
-        },
-        {
-          "id": "hassanien-2025-assessed",
-          "citation": "Hassanien A et al. Gene expression analysis reveals genes related to heavy metals and produced water exposure in Synechococcus elongatus. International Microbiology 28, 2697–2708 (2025). doi:10.1007/s10123-025-00715-x.",
-          "url": "https://doi.org/10.1007/s10123-025-00715-x",
-          "contribution": "Assessed as another UTEX 2973 transcriptomics candidate. The accessible supplement provides selected genes, not a validated genome-wide, per-replicate baseline abundance matrix; no values from it are integrated.",
-          "downloads": []
-        },
-        {
-          "id": "rubin-2015-assessed",
-          "citation": "Rubin BE et al. The essential gene set of a photosynthetic organism. Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015). doi:10.1073/pnas.1519220112.",
-          "url": "https://doi.org/10.1073/pnas.1519220112",
-          "contribution": "Original PCC 7942 transposon-screen evidence behind the calls republished in Adomako 2022 Data Set S1. The assay used BG-11 at 30 C with multiple light and culture regimes. The original Rubin Dataset S3 is not yet offered here. Its calls are shown as PCC observations and an explicit cross-strain assumption for UTEX candidates; they do not establish UTEX essentiality or recoding outcomes.",
-          "downloads": []
-        },
-        {
-          "id": "ungerer-2018-mbio-growth",
-          "citation": "Ungerer J, Lin PC, Chen HY, Pakrasi HB. Adjustments to Photosystem Stoichiometry and Electron Transfer Proteins Are Key to the Remarkably Fast Growth of the Cyanobacterium Synechococcus elongatus UTEX 2973. mBio 9, e02327-17 (2018). doi:10.1128/mBio.02327-17.",
-          "url": "https://doi.org/10.1128/mBio.02327-17",
-          "contribution": "Reports similar growth rates at a PCC-7942-compatible 400 micromol photons m^-2 s^-1 light intensity, while documenting substantially different growth optima. This condition-specific observation motivates review of, but does not validate, transferring PCC gene-essentiality calls to UTEX 2973.",
-          "downloads": []
-        },
         {
           "id": "sharp-li-cai",
           "citation": "Sharp PM, Li WH. The codon adaptation index—a measure of directional synonymous codon usage bias, and its potential applications. Nucleic Acids Research 15, 1281–1295 (1987). doi:10.1093/nar/15.3.1281.",
           "url": "https://doi.org/10.1093/nar/15.3.1281",
-          "contribution": "Defines the CAI method used for genome-derived codon-adaptation values. This project chooses its own release-pinned 71-gene reference set; that set is a convention, not expression data from the paper.",
+          "contribution": "Defines CAI. The Syn61 build uses its own 77-gene translation-machinery reference set, a sequence-derived convention rather than measured expression.",
           "downloads": []
         },
         {
           "id": "dos-reis-tai",
           "citation": "dos Reis M, Savva R, Wernisch L. Solving the riddle of codon usage preferences: a test for translational selection. Nucleic Acids Research 32, 5036–5044 (2004). doi:10.1093/nar/gkh834.",
           "url": "https://doi.org/10.1093/nar/gkh834",
-          "contribution": "Source of the tRNA adaptation index convention, selective wobble constraints, and zero-weight substitution. The anticodon copy counts used here come from this UTEX annotation, not the paper’s organisms; tAI is a proxy, not measured expression.",
+          "contribution": "Defines the tRNA adaptation index and wobble/zero-weight conventions. Copy numbers are from the deposited Syn61 annotation; this proxy does not measure charging or expression.",
           "downloads": []
         },
         {
           "id": "soma-lysidine",
           "citation": "Soma A et al. An RNA-modifying enzyme that governs both the codon and amino acid specificities of isoleucine tRNA. Molecular Cell 12, 689–698 (2003). doi:10.1016/S1097-2765(03)00346-0.",
           "url": "https://doi.org/10.1016/S1097-2765(03)00346-0",
-          "contribution": "Supports the bacterial lysidine/TilS convention used to model the annotated Ile-CAT tRNA as decoding ATA rather than ATG. This is a biochemical rule from other bacteria, not direct measurement of UTEX 2973 tRNA modification or charging.",
+          "contribution": "Supports the bacterial lysidine/TilS convention for Ile-CAT decoding ATA. This is a biochemical convention, not a direct Syn61 modification or charging measurement.",
           "downloads": []
         },
         {
           "id": "wright-enc",
           "citation": "Wright F. The ‘effective number of codons’ used in a gene. Gene 87, 23–29 (1990). doi:10.1016/0378-1119(90)90491-9.",
           "url": "https://doi.org/10.1016/0378-1119(90)90491-9",
-          "contribution": "Defines the ENC synonymous-codon-bias metric and its GC3-based expected curve used by the site. Short-family substitutions and the difference-from-expectation are labelled as implementation conventions.",
+          "contribution": "Defines ENC and its GC3-based expected curve. Short-family substitutions remain labelled implementation conventions.",
           "downloads": []
         },
         {
           "id": "coleman-codon-pairs",
           "citation": "Coleman JR et al. Virus attenuation by genome-scale changes in codon pair bias. Science 320, 1784–1787 (2008). doi:10.1126/science.1155761.",
           "url": "https://doi.org/10.1126/science.1155761",
-          "contribution": "Motivates the codon-pair-bias / log-odds feature. This site estimates its own amino-acid-pair-conditioned scores from the UTEX genome; it does not import the paper’s viral measurements or infer attenuation outcomes.",
-          "downloads": []
-        },
-        {
-          "id": "deseq2",
-          "citation": "Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 15, 550 (2014). doi:10.1186/s13059-014-0550-8.",
-          "url": "https://doi.org/10.1186/s13059-014-0550-8",
-          "contribution": "Explains the DESeq2-normalized counts and reported differential-transcription statistics supplied by the two source studies. This site does not rerun DESeq2 or call gene-level differential expression from Tan’s TSS rows.",
+          "contribution": "Motivates the codon-pair log-odds feature. Scores are fitted to this Syn61 genome; no viral measurements or attenuation outcomes are transferred.",
           "downloads": []
         },
         {
           "id": "umap",
           "citation": "McInnes L, Healy J, Saul N, Großberger L. UMAP: Uniform Manifold Approximation and Projection. Journal of Open Source Software 3, 861 (2018). doi:10.21105/joss.00861; umap-learn software.",
           "url": "https://doi.org/10.21105/joss.00861",
-          "contribution": "The build pipeline uses umap-learn to place genes in the recoding-risk projection. Coordinates are a visualization of computed UTEX features, not evidence that nearby genes share biological function.",
+          "contribution": "umap-learn computes this genome's risk-feature embedding. Proximity is a visualization of calculated features, not evidence of shared function.",
           "downloads": []
         },
         {
           "id": "scikit-learn",
           "citation": "Pedregosa F et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research 12, 2825–2830 (2011).",
           "url": "https://jmlr.org/papers/v12/pedregosa11a.html",
-          "contribution": "The build pipeline uses StandardScaler and PCA for codon-usage coordinates and projection inputs. The in-browser two-axis projection also uses project code, not a copied scikit-learn model.",
+          "contribution": "StandardScaler and PCA fit this genome's native codon coordinates. The separately labelled public-parent projection uses a pinned MDS42 transform.",
           "downloads": []
         },
         {
@@ -263,7 +228,7 @@
           "id": "ncbi-genetic-code",
           "citation": "NCBI. The Genetic Codes: The Bacterial, Archaeal and Plant Plastid Code (translation table 11).",
           "url": "https://www.ncbi.nlm.nih.gov/datasets/docs/v2/data-processing/taxonomy-processing/genetic-codes/",
-          "contribution": "Defines the bacterial codon-to-amino-acid and alternative initiation assignments used to interpret UTEX coding sequences and validate synonymous recoding; the initiation position is handled separately from ordinary codons.",
+          "contribution": "Defines bacterial codon assignments for the deposited Syn61 coding sequences and synonymous simulations, with initiation treated separately. The genome's engineered target set is declared independently.",
           "downloads": []
         },
         {
@@ -274,59 +239,10 @@
           "downloads": []
         },
         {
-          "id": "scipy",
-          "citation": "Virtanen P et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272 (2020). doi:10.1038/s41592-019-0686-2.",
-          "url": "https://doi.org/10.1038/s41592-019-0686-2",
-          "contribution": "SciPy supports statistical integration checks and is a declared build-environment dependency; it contributes no biological measurements to the site.",
-          "downloads": []
-        },
-        {
           "id": "openpyxl",
           "citation": "openpyxl, Python library for reading and writing Excel workbooks (project documentation).",
           "url": "https://openpyxl.readthedocs.io/en/stable/",
-          "contribution": "Used to extract the published Tan 2018 Table S1 XLSX into the checked TSV without treating workbook formatting or recalculation as biological data.",
-          "downloads": []
-        },
-        {
-          "id": "pandas",
-          "citation": "McKinney W. Data Structures for Statistical Computing in Python. Proceedings of the 9th Python in Science Conference, 51–56 (2010); pandas library.",
-          "url": "https://conference.scipy.org.s3.amazonaws.com/proceedings/scipy2010/pdfs/mckinney.pdf",
-          "contribution": "pandas is a declared Python scientific-stack dependency in the build environment. The current core build does not directly import pandas or take biological observations from it; it remains credited as part of the declared software environment.",
-          "downloads": []
-        },
-        {
-          "id": "pytest",
-          "citation": "pytest development team. pytest: Python testing framework (project documentation).",
-          "url": "https://docs.pytest.org/en/stable/",
-          "contribution": "Runs the Python feature, integration, provenance, and source-ledger tests. It is a validation tool and supplies no biological data or browser runtime code.",
-          "downloads": []
-        },
-        {
-          "id": "typesafe-jev",
-          "citation": "TypeSafe, System One / Jev model (jev-1.13.0); project CAI reference-set semantic audit, 2026-09-19.",
-          "url": "https://www.typesafe.ai/",
-          "contribution": "Used only to independently classify RefSeq product names for validation of the 71-gene CAI reference-set rule. Disagreements were reviewed; the model did not automatically change published membership or supply biological ground truth.",
-          "downloads": []
-        },
-        {
-          "id": "trrosettarna-server",
-          "citation": "Wang W, Liu X, Peng Z, Yang J. The trRosettaRNA server for RNA structure prediction. Nature Protocols 21 (2026). doi:10.1038/s41596-026-01356-8.",
-          "url": "https://doi.org/10.1038/s41596-026-01356-8",
-          "contribution": "External form opened by the hand-off. This site prepares files but does not submit sequences or capture returned models.",
-          "downloads": []
-        },
-        {
-          "id": "trrosettarna-standalone",
-          "citation": "Wang W, Feng C, Han R, Wang Z, Ye L, Du Z, Wei H, Zhang F, Peng Z, Yang J. trRosettaRNA: automated prediction of RNA 3D structure with transformer network. Nature Communications 14, 7266 (2023). doi:10.1038/s41467-023-42528-4.",
-          "url": "https://doi.org/10.1038/s41467-023-42528-4",
-          "contribution": "Method paper for trRosettaRNA. The official standalone package documents A3M and custom dot-bracket/CT inputs; its Apache-2.0 code and the separate PyRosetta licence remain external terms.",
-          "downloads": []
-        },
-        {
-          "id": "uniprot-pcc7942",
-          "citation": "The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Research 53, D609–D617 (2025). doi:10.1093/nar/gkae1010. Entries for Synechococcus elongatus PCC 7942 (taxon 1140), retrieved 6 October 2026.",
-          "url": "https://www.uniprot.org/uniprotkb?query=organism_id:1140",
-          "contribution": "UniProt accession to PCC 7942 ordered-locus-name table (2,751 entries, CC BY 4.0), the first step in mapping a protein deposit keyed by UniProt accession onto UTEX 2973 locus tags; entries naming several loci, or loci named by several entries, are dropped. The table is a pinned input beside the ingestion specs, not a product download.",
+          "contribution": "Extracts the Nyerges 2026 deposited workbooks without treating formatting or recalculation as biological data.",
           "downloads": []
         },
         {

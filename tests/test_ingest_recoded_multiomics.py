@@ -117,3 +117,46 @@ def test_changed_omics_columns_fail_before_writing(tmp_path):
     with pytest.raises(ValueError, match="columns changed"):
         ingest.write_omics(document, [], {}, tmp_path, tmp_path / "none")
     assert not list(tmp_path.iterdir())
+
+
+def test_source_ledger_only_credits_syn61_inputs_and_used_methods():
+    directory = ROOT / "site/data/organisms/ecoli-syn61-delta3-ev5"
+    ledger = json.loads((directory / "citations.json").read_text())
+    methods = next(s for s in ledger["sections"] if s["id"] == "methods-and-tools")
+    ids = {i["id"] for i in methods["items"]}
+    assert ids == {"sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
+                   "coleman-codon-pairs", "umap", "scikit-learn", "viennarna",
+                   "emscripten", "biopython", "ncbi-genetic-code", "numpy",
+                   "openpyxl", "fredens-2019-syn61"}
+    text = json.dumps(methods)
+    assert "UTEX" not in text
+    assert "PCC 7942" not in text
+    assert "77-gene" in text
+    assert "ncbi-ecoli-mds42-public-reference" in {
+        i["id"] for i in ledger["sections"][0]["items"]}
+
+
+def test_segment_fields_separate_condition_stage_and_strain_labels():
+    document = ingest.extract(ROOT / "data/raw/recoded-ecoli")
+    layer = ingest.fitness_document(document)
+    strains = {s["id"]: s for s in layer["strains"]}
+    assert strains["growth-strain-7"]["scheme"]["segments"] == "36-37"
+    assert strains["growth-strain-16"]["scheme"]["segments"] == "36-44_46-49"
+    assert strains["growth-strain-70"]["scheme"]["segments"] == "Segment 2 design, mraZ-ftsZ locus only"
+    for s in strains.values():
+        segments = s["scheme"]["segments"]
+        if segments:
+            assert "E. coli" not in segments
+            assert "MDS42" not in segments
+            assert "M9" not in segments
+            assert "Troubleshot" not in segments
+    # Scheme and segments resolve from one sheet identity, independent of order.
+    reversed_document = copy.deepcopy(document)
+    reversed_document["biolog"].reverse()
+    reordered = ingest.fitness_document(reversed_document)
+    for s in reordered["strains"]:
+        if s["label"] == "Biolog: MDS42 vs Syn61Δ3(ev5)":
+            assert s["scheme"] == {"recoded": True, "label": "Syn61∆3(ev5)", "segments": None}
+    assert "17 no-growth rows" in layer["growth"]["metadata"]["Replicates"]
+    assert "-10.286431" in layer["biolog"]["metadata"]["Summary"]
+    assert "-10.26" in layer["biolog"]["metadata"]["Summary"]

@@ -1,8 +1,8 @@
 {
   "files": {
     "citations.json": {
-      "bytes": 27967,
-      "sha256": "77ce3c230016752ab0c762a7ad0ab8134c4bb21395aa8061922a8de45a167553"
+      "bytes": 19872,
+      "sha256": "9922464770b336415c5b5c73029413682ef7d95d425ca966f202b6b879c1fd65"
     },
     "codon_pca.json": {
       "bytes": 20877,
@@ -33,8 +33,8 @@
       "sha256": "3385a2510d2891f4aa5d415933c67d11df59bc4bfbce0227f386d4dd40bc8312"
     },
     "strain_fitness.json": {
-      "bytes": 1553851,
-      "sha256": "1713ff25db13eb877086d119e09b14fc38651fce00e1d0b660249143a8266531"
+      "bytes": 1552440,
+      "sha256": "f46596840460420c7cc611e87fee5ebad8bcbf964270d39e228a054cb2fdf746"
     }
   },
   "schemaVersion": 1
