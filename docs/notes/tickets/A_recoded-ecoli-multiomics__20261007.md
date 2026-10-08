@@ -29,6 +29,8 @@ All six owner questions were answered on 2026-10-07 and are recorded under
 
 Implementation owner: **cyano-ticket-closing**, resumed at the owner's request
 on 2026-10-07 in `work/recoded-multiomics-20261007`, baseline `be5b3b3`.
+Integrated into canonical local `main` at `c4aff4e` on 2026-10-08, preserving
+concurrent ticket updates. No push or deployment was performed.
 
 Implemented, validated and independently reviewed:
 
