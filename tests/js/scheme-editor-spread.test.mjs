@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SchemeEditor } from '../../site/js/ui/scheme-editor.js';
-import { validateSchemeMap, ROTATION_SIZE } from '../../site/js/core/scheme.js';
+import { validateSchemeMap, ROTATION_SIZE, PRESETS } from '../../site/js/core/scheme.js';
 import { withFakeDocument } from './fake-dom.mjs';
 import { standardTable } from './helpers.mjs';
 
@@ -167,4 +167,39 @@ test('a share total that is not a hundred is called out rather than hidden', asy
     assert.match(total.textContent, /total 90%, and must total 100%/);
     assert.equal(total.className.includes('warn'), true);
   });
+});
+
+
+test('published presets apply declared shares without genome-frequency substitution', () => {
+  for (const preset of PRESETS.filter((p) => p.map)) {
+    let result;
+    let name;
+    const view = editor({}, { onChange: (map) => { result = map; } });
+    view.handlers.onNameChange = (value) => { name = value; };
+    view.nameInput = {};
+    view.presetNote = {};
+    view.applyPreset(preset);
+    assert.deepEqual(result, preset.map);
+    assert.notEqual(result, preset.map);
+    assert.equal(name, preset.name);
+    assert.equal(view.presetNote.textContent, preset.note);
+    assert.equal(view.presetNote.hidden, false);
+    if (Array.isArray(result.AGC)) {
+      result.AGC[0].share = 1;
+      assert.equal(preset.map.AGC[0].share, 54, 'editing does not mutate the shared preset');
+    }
+  }
+});
+
+test('target-only presets still use the active genome prefill', () => {
+  let result;
+  const view = editor({}, { onChange: (map) => { result = map; } });
+  view.handlers.onNameChange = () => {};
+  view.nameInput = {};
+  view.presetNote = {};
+  view.highExpressed = { checked: false };
+  view.dataset.meta = { codonCounts: {} };
+  view.applyPreset(PRESETS.find((p) => p.id === 'amber'));
+  assert.equal(validateSchemeMap(result, table).ok, true);
+  assert.equal(Object.keys(result).join(), 'TAG');
 });

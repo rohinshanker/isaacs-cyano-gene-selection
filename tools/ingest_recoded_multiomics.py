@@ -343,6 +343,13 @@ def write_citations(data_dir: Path, expression_dir: Path, sources: list[dict]) -
                     "contribution": "Supplementary Data 3 Syn61_delta3_ev5 supplies sixteen separately typed columns: six replicate RPKMs, three ribosome read counts, four RNA/Ribo log2 changes, two P-values and translation-efficiency log2 change. Exact unique gene-name mapping reaches 3,192 of 3,640 author rows; all omissions are audited. MDS42 is the contrast reference. Supplementary Data 2 supplies 69 growth rows and 5,280 signed Biolog well differences for source-labelled study strains; these whole-strain comparisons color no gene. Missing normalization details, wavelength inconsistency, no-growth sentinels and unresolved assay-stage identities remain explicit. Article CC BY-NC-ND 4.0; derived tables admitted under the owner's citation-only decision of 2026-10-06 and labelled as derived.",
                     "downloads": downloads},
                ]}
+    primary["items"].insert(1, {
+        "id": "ncbi-ecoli-mds42-public-reference",
+        "citation": "NCBI RefSeq. Escherichia coli str. K-12 substr. MDS42, GCF_000350185.1 (ASM35018v1), public GenBank chromosome AP012306.1; retrieved 2026-10-08.",
+        "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000350185.1/",
+        "contribution": "Supplies the complete native codon-PCA transform copied into Syn61's child-local parent-reference projection artifact. Public AP012306.1 differs from the 2026 MDS42 stock by the reported 51 bp insertion and represents historical lineage rather than an exact isogenic experimental parent. No MDS42 omics, growth or fitness value is mixed into the projection.",
+        "downloads": []
+    })
     write_json(data_dir / "citations.json", {"sections": [primary, methods]})
 
 

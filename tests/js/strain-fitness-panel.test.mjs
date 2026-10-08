@@ -196,7 +196,7 @@ test('filtering by strain and condition narrows both tables and the context line
     assert.equal(rowsOf(host, 0).length, 1);
     // One of a thing is counted as one of it, not as "1 records".
     assert.equal(host.querySelector('p.length-summary').textContent,
-      '1 growth record, 1 strain, 1 with no growth detected, 0 Biolog wells.');
+      '1 growth record, 1 growth strain, 1 with no growth detected, 0 Biolog wells.');
     // The Biolog wells belong to their own condition, so a growth condition
     // empties that table rather than showing wells it did not select.
     assert.equal(host.querySelectorAll('table.fitness-table').length, 1);

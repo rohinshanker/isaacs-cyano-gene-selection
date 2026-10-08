@@ -27,7 +27,7 @@
  */
 export const ROTATION_SIZE = 100;
 
-/** Target sets shipped as presets. Replacements prefill from meta. */
+/** Published presets declare replacements; target-only presets prefill from meta. */
 export const PRESETS = Object.freeze([
   Object.freeze({
     id: 'amber',
@@ -37,9 +37,30 @@ export const PRESETS = Object.freeze([
   }),
   Object.freeze({
     id: 'syn61',
-    name: 'Syn61-style',
+    name: 'Syn61 original design',
     targets: Object.freeze(['TCG', 'TCA', 'TAG']),
-    note: 'The three codons removed in the Syn61 Escherichia coli genome.',
+    map: Object.freeze({ TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' }),
+    note: 'Original Syn61 prescription (Chin lab, Addgene #174513); applying it simulates replacements and does not reconstruct evolved Syn61 genomes.',
+  }),
+  Object.freeze({
+    id: 'ec-syn57',
+    name: 'Ec_Syn57 aggregate',
+    targets: Object.freeze(['AGC', 'AGT', 'TTA', 'TTG', 'AGA', 'AGG', 'TAG']),
+    // Changed codons in 3,490 equal-length, identical-protein design/MG1655 pairs.
+    // Largest-remainder rounding to 100%, ties by codon; exact counts are in
+    // data/recoded/ec_syn57_{substitutions,terminal_substitutions}.tsv.
+    map: Object.freeze(Object.fromEntries(Object.entries({
+      AGC: [['TCA', 54], ['TCT', 22], ['TCC', 12], ['TCG', 12]],
+      AGT: [['TCA', 55], ['TCT', 22], ['TCC', 12], ['TCG', 11]],
+      TTA: [['CTT', 48], ['CTA', 44], ['CTC', 7], ['CTG', 1]],
+      TTG: [['CTT', 48], ['CTA', 44], ['CTC', 7], ['CTG', 1]],
+      AGA: [['CGT', 62], ['CGA', 31], ['CGG', 6], ['CGC', 1]],
+      AGG: [['CGT', 57], ['CGA', 33], ['CGG', 9], ['CGC', 1]],
+      TAG: [['TAA', 52], ['TGA', 48]],
+    }).map(([codon, values]) => [codon,
+      Object.freeze(values.map(([destination, share]) => Object.freeze({ codon: destination, share }))),
+    ]))),
+    note: 'Observed Ec_Syn57 replacement shares in 3,490 matched design/MG1655 CDSs, rounded to whole percentages. This simulation does not reconstruct any published genome. Its serine destinations conflict with Syn61 targets.',
   }),
 ]);
 

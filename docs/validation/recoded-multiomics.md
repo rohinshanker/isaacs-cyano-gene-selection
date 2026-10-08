@@ -156,3 +156,22 @@ scheme visibility, residual counts 0/1, separate omics quantities, missing
 values, the study fitness view, filtering, keyboard navigation, exact download
 names and citations. Native-organism routes must retain their own labels,
 state and datasets.
+
+
+## Recoding presets
+
+`Syn61 original design` applies the depositor's prescribed TCG→AGC, TCA→AGT,
+TAG→TAA replacements. It describes the ancestor, not all evolved ev5 edits.
+`Ec_Syn57 aggregate` simulates the observed replacement distribution among
+3,490 equal-length, identical-protein design/MG1655 CDS pairs. The body-codon
+counts are in `ec_syn57_substitutions.tsv`; terminal-stop changes are in
+`ec_syn57_terminal_substitutions.tsv`, including TAG→TAA 118 and TAG→TGA 108.
+`tools/recoded_scheme.py` reproduces both from the pinned sources.
+
+Each distribution uses largest-remainder rounding to 100 integer percentage
+points, with codon-alphabetical ties. The browser test independently checks
+every destination and share against the tables and verifies unchanged protein
+translations. Applying aggregate shares uses the editor's deterministic
+rotation; it does not reproduce the design's locus-specific choices or any
+experimental partial isolate. The visible preset note states that boundary
+and the conflict between Ec_Syn57's serine destinations and Syn61's targets.

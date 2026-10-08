@@ -4,6 +4,7 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
+| [recoded-parent-reference-records.md](recoded-parent-reference-records.md) | Public reference accession pins, stock caveats, CDS exclusions and fixed-reference PCA regeneration |
 | [recoded-multiomics.md](recoded-multiomics.md) | Pinned Syn61 evolved-genome identity, conservative author-name joins, sixteen typed omics fields, study-wide strain fitness and unresolved partial-isolate boundaries |
 | [recoded-reference-projection.md](recoded-reference-projection.md) | Reproducible fitted PCA transforms, checksummed child-local parent-reference projections and strict recoded-lineage validation |
 | [strain-fitness.md](strain-fitness.md) | Organism-neutral whole-strain growth and Biolog layer, absence and no-growth semantics, filtering, exports and rendered checks |

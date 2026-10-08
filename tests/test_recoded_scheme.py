@@ -435,7 +435,7 @@ def test_main_report_writes_nothing(tiny_inputs, capsys):
     assert not out.exists()
 
 
-def test_main_writes_the_four_tables(tiny_inputs):
+def test_main_writes_the_five_tables(tiny_inputs):
     out = tiny_inputs.root / "out"
     assert recoded_scheme.main(["--out-dir", str(out), *tiny_inputs.argv]) == 0
     names = sorted(p.name for p in out.iterdir())
@@ -443,6 +443,7 @@ def test_main_writes_the_four_tables(tiny_inputs):
         "ec_syn57_residual_targets.tsv",
         "ec_syn57_retention.tsv",
         "ec_syn57_substitutions.tsv",
+        "ec_syn57_terminal_substitutions.tsv",
         "ec_syn57_unpaired.tsv",
     ]
 
@@ -494,3 +495,16 @@ def test_main_unpaired_table_exists_even_when_everything_pairs(tiny_inputs):
     recoded_scheme.main(["--out-dir", str(out), *tiny_inputs.argv])
     rows = (out / "ec_syn57_unpaired.tsv").read_text().splitlines()
     assert rows[0].split("\t") == ["source", "gene", "reason"]
+
+
+def test_terminal_substitutions_exclude_retained_stops(tiny_inputs):
+    out = tiny_inputs.root / "terminal"
+    recoded_scheme.main(["--out-dir", str(out), *tiny_inputs.argv])
+    import csv
+    with (out / "ec_syn57_terminal_substitutions.tsv").open() as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    for row in rows:
+        assert row["native_codon"] != row["recoded_codon"]
+        assert recoded_scheme.AMINO_ACID[row["native_codon"]] == "*"
+        assert recoded_scheme.AMINO_ACID[row["recoded_codon"]] == "*"
+        assert int(row["count"]) > 0
