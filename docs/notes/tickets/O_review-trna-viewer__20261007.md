@@ -5,12 +5,13 @@
   prepares the review; the linked implementation ticket owns code and UI work.
 - **Status:** open
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-08
 
 ## Current State
 
-The proposal is ready. **The only pending action is the owner reading it and
-recording that it has been reviewed, with any requested edits.** No source
+The owner approved the bounded first version on 2026-10-08 after its complete
+in-chat summary. The specification transfers to the implementation ticket; this
+review ticket is ready for its documented closure lifecycle. No source
 download, new scan, Claude Science answer, compute host, probability calibration
 or additional biological decision is needed for this bounded version.
 
@@ -21,6 +22,10 @@ This does not record the proposal as already reviewed or implemented.
 After review, implementation continues in
 [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md).
 That ticket's broader research options are separate from this first version.
+
+## Owner approval
+
+Approved 2026-10-08 in this session after the full bounded summary was presented: 44 annotated loci plus the separately labelled, initially hidden pseudogene candidate; searchable separate track/list/detail and genomic sequence; independent selection; current tAI/CDS models unchanged; no probability or mature/structure claim. Transfer the specification to O_trna-identification-viewer__20260930 for implementation.
 
 ## What the viewer is for
 

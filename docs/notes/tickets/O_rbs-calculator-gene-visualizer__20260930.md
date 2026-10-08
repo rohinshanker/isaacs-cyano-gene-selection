@@ -4,7 +4,7 @@
   RBS features for UTEX 2973 and support their display in the gene visualizer.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-08
 
 ## Current State
 
@@ -163,3 +163,12 @@ On resolution, rename the ticket/H1 to resolved and record final validation.
 Distill reusable prediction, evidence, coordinate, and validation contracts into
 `docs/validation/`, update its index, then delete the resolved ticket and remove
 its live queue and pending-claim entries. Do not retain task narration.
+
+## Owner direction, 2026-10-08
+
+RBS Calculator remains a primary candidate. The owner requested a broader list
+of computational methods that could identify regulatory/cryptic regulatory sites,
+including iDOG and methods already mentioned in the repository/open tickets.
+A_regulatory-methods-shortlist__20261008 records the primary-source candidate list.
+This does not select a model version, calibration threshold, host-specific parameter
+or source-admission outcome; those remain method/evaluation decisions.
