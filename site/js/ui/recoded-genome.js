@@ -48,7 +48,7 @@ export function renderRecodedGenomePanel(host, model) {
 
   const axes = document.createElement('p');
   axes.className = 'panel-note';
-  axes.textContent = 'Axes are refitted to the deposited recoded genome; separation reflects '
+  axes.textContent = 'Native codon space refits its axes to the deposited recoded genome; separation reflects '
     + 'surviving synonymous variation.';
 
   host.append(heading, lead, facts, convention, axes);

@@ -105,7 +105,7 @@ test('native and incomplete records fail closed with no panel or metric', async 
     assert.match(host.textContent, /not a partial Ec_Syn57 segment set/);
     assert.match(host.textContent, /Historical replacements.*TCG → AGC/);
     assert.match(host.textContent, /not an ev5 per-locus edit history/);
-    assert.match(host.textContent, /Axes are refitted.*surviving synonymous variation/i);
+    assert.match(host.textContent, /Native codon space refits its axes.*surviving synonymous variation/i);
   });
 });
 
