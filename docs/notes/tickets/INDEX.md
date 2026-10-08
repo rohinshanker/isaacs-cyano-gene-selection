@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [A_ui-closeout-safe-batch__20261007](A_ui-closeout-safe-batch__20261007.md) | Isolated UI closeout coordinated by cyano-source-ingestion; clear disclosures/tab order first; pending owner decisions and three inherited 375px Data Selection mockup findings retained |
 | [O_loading-bar-header-placement__20261007](O_loading-bar-header-placement__20261007.md) | Open for later: move additional loading progress beneath the top-right Jump to map / Reset panel widths controls; prevent menu resizing and the leftover center-panel gap; assess intervening changes and clarification at resolution |
 | [O_annotation-precedence-data-sources__20261007](O_annotation-precedence-data-sources__20261007.md) | Open for later: move functional-annotation precedence text into expanded Data Sources only, spanning the section's full width; assess intervening changes and clarification at resolution |
 | [O_tan-information-collapsed__20261007](O_tan-information-collapsed__20261007.md) | Open for later: collapse every tan text/information box across the site, including the bottom-center-panel box, behind a relevant label; assess intervening changes and clarification at resolution |
