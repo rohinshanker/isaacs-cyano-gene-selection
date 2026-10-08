@@ -9,6 +9,9 @@ Updated: 2026-10-08
 
 Opened for later at the owner's request. No implementation started.
 
+Owner reconfirmation, 2026-10-08: **yes** to independent applied X/Y/PCA
+selections. Record this decision only; do not implement it yet.
+
 For Metric X vs Y, selecting an axis metric with multiple data sources should
 provide an option to open a center peek and select datasets. The owner explicitly
 wants this to be a separate window from the PCA map's dataset-selection window.

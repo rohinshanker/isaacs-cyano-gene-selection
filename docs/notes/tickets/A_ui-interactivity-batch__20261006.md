@@ -3,7 +3,7 @@
 Scope: Complete open UI/interactivity work and coordinate the owner's remaining loading choice.
 Status: active
 Opened: 2026-10-06
-Updated: 2026-10-07
+Updated: 2026-10-08
 
 ## Current State
 
@@ -16,10 +16,12 @@ remain in that feature's own ticket. The payload coordinator integrated the
 RSCU sidecar and closed its ticket after loading acceptance. The owner authorized
 publication of completed engineering commits on main.
 
-Only the owner's A/B/C reveal and grouped/continuous progress choice remain
-in this batch. The accepted query-only implementation, URLs and final evidence
-are recorded in `A_loading-scramble-and-progress__20261006.md`. Apply the choice
-when supplied; production defaults remain unchanged. The human clutter ticket
+The owner selected B with a 500 ms hold on 2026-10-08, retaining continuing
+activity during pending work. Grouped/continuous geometry remains a separate
+unconfirmed choice. The accepted query-only implementation, URLs and final evidence
+are recorded in `A_loading-scramble-and-progress__20261006.md`. The owner explicitly
+requested recording only: do not apply the choice yet; production defaults remain
+unchanged. The human clutter ticket
 stays open for keep/move/merge/remove marks, as explicitly requested; its
 refreshed 20-render/211-entry packet is in the ignored `cyano-ui-resume/` folder.
 Scientific extensions retain their original evidence and owner-decision gates.

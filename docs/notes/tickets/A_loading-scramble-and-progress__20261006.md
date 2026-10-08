@@ -8,11 +8,12 @@ Updated: 2026-10-08
 ## Current State
 
 Engineering is implemented, integrated on `main`, and accepted by independent
-DEM-267 review of `06ab535`. The owner's visual choice remains pending.
+DEM-267 review of `06ab535`. The owner selected B with a 500 ms hold on
+2026-10-08 and instructed that the decision be recorded without implementation.
 Production retains its previously selected 1,500 ms minimum, block schedule and
 50-letter/s text timing. The alternatives are query-only and do not change
 analysis hashes or saved state. The owner authorized publication of completed
-engineering commits on main; the visual defaults remain undecided.
+engineering commits on main; applying the newly selected default is on hold.
 
 The review packet with all six live URLs is in the canonical ignored directory
 `.playwright-cli/cyano-ui-resume/animation/owner-choice.md`. The canonical site is
@@ -22,7 +23,7 @@ choices; do not rerun broad implementation or review.
 | Choice | Behavior |
 | --- | --- |
 | A | Reveal after required data, context, view and a clean frame are ready |
-| B | The same readiness, plus a presentation-only 1,000 ms hold |
+| B | The same readiness, plus a presentation-only 500 ms hold selected by the owner; the existing preview uses 1,000 ms until implementation resumes |
 | C | At least 50% of measurable known bytes plus readiness; no byte total or an unreachable terminal failure falls back to readiness with an actionable error |
 | Grouped | Known files occupy byte-weighted chromosome slots; unsized work stays separate |
 | Continuous | The same known-byte totals form one aggregate extent |
@@ -52,7 +53,12 @@ known-byte network stalls and B's final presentation hold are not guaranteed to
 keep moving. Proposed completion contract: activity remains visible whenever work
 is pending, while the measured completed extent advances only for actual work.
 Recommendation supplied: A readiness plus continuous aggregate progress, with a
-separate activity cue. Reveal/progress defaults still await the owner's choice.
+separate activity cue. The owner selected **B, but 0.5 s**, after that explanation.
+This means readiness plus a 500 ms presentation hold. Continuing activity remains
+a requirement through known-byte stalls, preparation and the final hold; measured
+extent changes only for actual completed work. Grouped/continuous geometry was
+not explicitly selected in this answer and remains a separate pending choice.
+**Record only; do not change code, production defaults or previews yet.**
 
 ## Verification
 

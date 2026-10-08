@@ -6,9 +6,42 @@
   pinned local tRNAscan-SE runs.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-08
 
 ## Current State
+
+The owner approved the bounded viewer on 2026-10-08. DEM-320 returned isolated
+implementation commit `5f2d8daccf2af9a2eb9b79f950d71051b480d790`; DEM-321's
+completed independent review is **not approvable** with five open findings below.
+It is not integrated into canonical main.
+
+Latest owner instruction: **record the decisions; do not work on them yet**.
+Hold repairs, implementation, integration and closure. On eventual resolution,
+serve the final reviewed application on localhost and **open it for the owner
+to view**, providing the working URL and access to the tRNA track/list/detail and
+opt-in candidate. A screenshot or a written URL alone does not satisfy the
+opening requirement. Do not launch this preview during the record-only pass.
+
+## Open independent-review findings
+
+Coordinator identifiers below preserve all five findings from DEM-321, run
+`01a119e7-d292-7188-ad46-e5b10bb04bea`, against `5f2d8da`.
+
+| Finding | Status | Defect and required acceptance |
+| --- | --- | --- |
+| TRNA-R1 | open | `Scan isotype` uses the RefSeq-preferred display label in `site/js/ui/trna-viewer.js:25,418`; preserve the actual scan's `fMet`/`Ile2` separately from RefSeq `Met`/`Ile`. |
+| TRNA-R2 | open | An unfiltered cluster marker looks up only `cluster.loci[0]` in the filtered list, becoming a dead control with a false announcement when that member is excluded. Reproduced at 1280 px with Strand = Plus on the three-locus cluster at `M744_RS11570`; every displayed cluster must retain an actionable inspection path. |
+| TRNA-R3 | open | The status region says `44 locusi are shown.` at all four widths; correct the plural and cover the status wording. |
+| TRNA-R4 | open | Keyboard focus on a track marker drops to `body` on resize; preserve focus on a reachable marker/control across rerendering. |
+| TRNA-R5 | open | At 1280 px the filter grid splits label placement and clips `All record types`; keep labels and selected values legible. |
+
+The reviewer independently confirmed all 45 genomic sequences, transcription
+orientation, comparison fields, 44 pinned GFF loci, candidate exclusion from GFF,
+byte-identical rebuild, manifest digest, selection isolation and truthful load
+states. Findings R1 and R3 were not caught by the existing eight JS tests. Those
+passing checks do not resolve the findings or permit ticket closure.
+
+## Existing evidence context
 
 Owner sources:
 [UTEX 2973 GtRNAdb page](https://gtrnadb.ucsc.edu/genomes/bacteria/Syne_UTEX_2973/)
@@ -37,8 +70,8 @@ run on `GCF_000817325.1`, concordance for 44 RefSeq tRNA loci, and one additiona
 low-confidence pseudogene candidate. Outputs are in `data/trna/independent_run/`
 and comparison code/tests in `tools/trna_validate.py` and
 `tests/test_trna_validate.py`. This new ticket does not recreate that validation
-or reopen its settled lab decisions. No new scan, data admission, or UI work has
-started.
+or reopen its settled lab decisions. No new scan or data admission has started;
+the isolated viewer implementation and unresolved review are recorded above.
 
 The strain in scope is *Synechococcus* sp. UTEX 2973, RefSeq assembly
 `GCF_000817325.1` (taxid 1350461, Complete), which this repository pins; GtRNAdb
@@ -301,4 +334,7 @@ loading/failure/retry, filtering and selection isolation. Render the real app at
 375, 768, 1280 and 1440 px and test keyboard/touch interactions before completion.
 
 
-Implementation is active in DEM-320 under cyano-source-ingestion; the viewer is not yet reported complete.
+DEM-320 implementation has returned; DEM-321 review findings remain open. The
+viewer is on the owner's record-only hold and is not reported complete. Closure
+requires resolving every finding, the required gates/rendered checks, and opening
+the final localhost application for the owner as specified above.

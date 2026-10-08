@@ -19,6 +19,11 @@ once it exists.
 
 Owner decision, 2026-10-06: leave this ticket open for human marks. Preparation is complete; wording changes await those marks.
 
+Owner decision, 2026-10-08: the owner will enter keep/move/merge/remove marks
+**on this ticket itself**. Leave the ticket open for those entries. Record only;
+do not apply new clutter changes yet. Existing specific UI requests already count
+as instructions, but this answer does not authorize broader removals.
+
 ## Work
 
 1. **Prepare.** Agents capture every view at desktop and tablet widths and list each

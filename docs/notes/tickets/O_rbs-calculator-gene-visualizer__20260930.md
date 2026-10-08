@@ -172,3 +172,13 @@ including iDOG and methods already mentioned in the repository/open tickets.
 A_regulatory-methods-shortlist__20261008 records the primary-source candidate list.
 This does not select a model version, calibration threshold, host-specific parameter
 or source-admission outcome; those remain method/evaluation decisions.
+
+The owner subsequently selected RBS Calculator, iDOG/TransTermHP, Promoter
+Calculator, ViennaRNA, STREME, Rfam + Infernal, and IntaRNA. Methods outside the
+requested recommendation should have slightly transparent tags and lower overlap
+precedence; the exact category and opacity are not yet specified. Hover outlines
+apply to annotations, including initiation/termination sites, in both gene
+viewers. See A_regulatory-methods-shortlist__20261008 and
+O_gene-sequence-structural-features__20261007 for the shared display requirement.
+**Record only; do not evaluate, run or integrate the methods yet.** Existing
+scientific, dependency, licence and iDOG-hold constraints remain in force.

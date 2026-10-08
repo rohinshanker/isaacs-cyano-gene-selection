@@ -10,14 +10,22 @@
 ## Current State
 
 The owner approved the bounded first version on 2026-10-08 after its complete
-in-chat summary. The specification transfers to the implementation ticket; this
-review ticket is ready for its documented closure lifecycle. No source
+in-chat summary. The specification transfers to the implementation ticket. The
+isolated implementation returned, but its independent review has five open
+findings (TRNA-R1–TRNA-R5 in that ticket). Keep both tickets open while these
+remain unresolved and the owner's record-only hold is in effect. No source
 download, new scan, Claude Science answer, compute host, probability calibration
 or additional biological decision is needed for this bounded version.
 
 The owner requested this ticket on 2026-10-07: "open a ticket for this explaining
 what the tRNA viewer would do in detail that is only blocked by me reading it".
-This does not record the proposal as already reviewed or implemented.
+That opening request prepared the proposal; the subsequent approval and isolated
+implementation/review state are recorded above.
+
+Latest owner decision, 2026-10-08: resolving the tRNA viewer ticket requires
+serving the final reviewed application on localhost and **opening it for the
+owner to view**, with a working URL. This is a future resolution gate. Record
+only; do not repair, integrate, close or launch the viewer in this pass.
 
 After review, implementation continues in
 [O_trna-identification-viewer__20260930](O_trna-identification-viewer__20260930.md).
@@ -126,7 +134,9 @@ implementation-specific validation remains separate.
 
 Preparation checked `comparison.json`: 44 concordant, 0 discordant, 0 unresolved,
 1 scan-only candidate; the candidate's fields match the location and flags above.
-The existing validation document and loader contracts were read. No viewer behavior has been implemented or rendered.
+The existing validation document and loader contracts were read. The subsequent
+isolated DEM-320 implementation was rendered, but DEM-321 did not approve it;
+the implementation ticket retains all five findings and the final-preview gate.
 
 ## Cleanup
 

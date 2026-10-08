@@ -11,6 +11,27 @@ Owner: cyano-source-ingestion. Code baseline 7bf8811 in isolated worktree
 worktrees/ui-choices-20261008. This is a candidate shortlist, not method execution,
 new source admission, genomic remapping or a calibrated-confidence claim.
 
+## Owner selection, 2026-10-08
+
+**Record only; do not work on these methods or their viewer changes yet.**
+Include RBS Calculator, iDOG/TransTermHP, Promoter Calculator, ViennaRNA, STREME,
+Rfam + Infernal, and IntaRNA. The broader assessment table below is retained as
+research context; it does not add independently approved methods beyond this list.
+In particular, the earlier SD baseline and MEME/FIMO suggestions were not
+explicitly selected in this answer.
+
+For methods that "dont follow the recommendation that i requested", the owner
+requests slightly transparent annotation-tag coloring and lower visual precedence
+when multiple annotations overlap. Preserve the criterion as given; the affected
+method set and opacity value need clarification before implementation. Lower
+precedence must retain inspectable annotation identity, coordinates and evidence.
+Every such gene annotation, including initiation and termination sites on genes,
+gets an outline on hover in both gene viewers. The display requirements are also
+recorded in O_gene-sequence-structural-features__20261007.
+
+This is method-scope selection, not validated UTEX function, source admission,
+runtime/version/parameter selection or release of the existing iDOG owner hold.
+
 | Candidate | Proposed use | Relationship and limit |
 | --- | --- | --- |
 | RBS Calculator | Score translation initiation at annotated and alternative/internal starts; compare native/recoded sequence | Primary owner-requested candidate. Existing v1.0 ticket owns runtime/licence/method assessment. Host-specific applicability and parameters require verification. |

@@ -101,6 +101,14 @@ uses canonical `?org=`, normalizes the default route, and asserts organism ident
 
 ## Verification
 
+Decision-recording pass, 2026-10-08, isolated baseline af36f97: only 12 ticket/index
+files changed; all 36 live ticket identities/statuses and all 66 local Markdown
+links in the changed files checked; `git diff --check` passed. Required gates:
+JavaScript 1,337 passed; pytest 891 passed, 1 skipped, 36 subtests; contract
+117 passed, 1 declared skip. Logs are in the decision-record worktree's ignored
+`.playwright-cli/decision-record-20261008/`. No application code/data, UI behavior,
+method execution, preview launch or feature-ticket closure occurred in this pass.
+
 Final integration result 94cc966: npm test 1,274 passed; pytest 783 passed, 1 skipped,
 36 subtests; validate_contract 116 passed, 1 declared contiguity skip. The initial
 worker Python gate lacked ignored raw sources; existing pinned canonical inputs
@@ -134,19 +142,41 @@ R-rename/status/validation and delete this ticket and its queue row last.
 
 ## Current owner decisions, 2026-10-08
 
-- Independent applied X/Y/PCA selections confirmed; no coupled behavior permitted.
-- Loading should show continuing activity through waiting/preparation; A/B/C reveal
-  and grouped/continuous choices await the concrete flow explanation.
-- RBS Calculator is a primary assessment candidate; broaden the candidate list to
-  regulatory and cryptic-site computational methods, including iDOG and tools in
-  the repository/open tickets. This is candidate assessment, not source admission
-  or authorization to release iDOG's existing owner hold.
-- Bounded first tRNA viewer approved after the in-chat specification summary.
-- Downloads and broader clutter review await the explanations requested here.
-- Lag reproduced by the owner on Chrome/macOS on the defaults of all three data
-  layers: protein abundance, transcript initiation and transcript abundance.
+**Record only; do not implement these decisions yet.** This instruction applies
+to the pending work below, including tRNA repairs/integration. Existing completed
+presentation changes remain as previously recorded. No new implementation,
+dispatch, localhost launch or ticket closure is authorized by this recording pass.
 
-Approved tRNA implementation DEM-320 returned 5f2d8da: JS1,282; pytest786 plus
+1. Independent applied X/Y/PCA selections reconfirmed; no coupled behavior.
+2. Reveal choice **B with a 500 ms presentation hold** after readiness, replacing
+   the offered 1,000 ms hold. Keep continuing visible activity during waits and
+   preparation without fabricating measured progress. Grouped/continuous geometry
+   was not explicitly selected by this answer; keep that separate from choice B.
+3. Include RBS Calculator, iDOG/TransTermHP, Promoter Calculator, ViennaRNA,
+   STREME, Rfam + Infernal, and IntaRNA in the requested method scope. The owner
+   says methods that "dont follow the recommendation that i requested" should
+   have slightly transparent annotation-tag coloring and lower precedence when
+   annotations overlap. Preserve this wording: which methods fall into that
+   category and the opacity value remain to be clarified before implementation.
+   Add a hover outline around all these gene annotations, including initiation
+   and termination sites, in both gene viewers. This scope decision does not
+   validate predictions or release the existing iDOG execution/closure hold.
+4. The bounded tRNA viewer remains approved. Resolving its ticket requires serving
+   the final reviewed application on localhost and opening it for the owner to
+   view; provide the working URL. This is a future closure gate, not a launch now.
+5. Keep an upstream source catalogue with link-last-checked dates and relevant
+   source/version/file/integrity/access metadata. Record the choice now; do not
+   build the catalogue or check links in this pass.
+6. The owner will enter clutter keep/move/merge/remove marks directly in the
+   human-audit ticket. Leave it open for those entries.
+7. Chrome on macOS and the default protein-abundance, transcript-initiation and
+   transcript-abundance layers reconfirmed as the reported lag context. The
+   performance owner's separate tickets retain that work.
+
+Approved tRNA implementation DEM-320 returned isolated commit
+5f2d8daccf2af9a2eb9b79f950d71051b480d790: JS1,282; pytest786 plus
 1 skip/36 subtests; contract116 plus1 declared skip; durable four-width renders.
-Independent exact-patch review dispatched before integration. Scope remains the
-44 annotated records + separately opt-in predicted pseudogene candidate.
+DEM-321's completed independent review is **not approvable** and reports five open
+findings, recorded as TRNA-R1 through TRNA-R5 in the implementation ticket. Keep
+the 44 annotated records + opt-in candidate scope; no fixes, integration or
+closure while this record-only instruction remains in effect.

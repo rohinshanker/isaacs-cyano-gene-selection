@@ -9,13 +9,17 @@
 
 ## Current State
 
-Ready for the owner to read. The owner requested this review and instructed that
-the current arrangement stay in place while it causes no known issue. No current
-download or calculation defect requiring this change was established.
+Owner decision, 2026-10-08: **keep an upstream catalogue**, with dates when links
+were last checked and other relevant metadata. The owner requested recording
+only; do not implement the catalogue or check links yet. The current arrangement
+continues until implementation resumes. No current download or calculation defect
+requiring this change was established.
 
-The only pending decision is whether to keep the current arrangement or expand
-the source-download catalogue. Record the owner's response here with its date;
-no new scientific or licence judgement is requested.
+Catalogue metadata includes source/citation, original-versus-derived status,
+assembly/release/version, exact filename and upstream URL, bytes and SHA-256,
+compression identity, last link-check date and result, and relevant access or
+availability notes. Record retrieval dates separately from link-check dates where
+they differ. Retained copies were not selected by this decision.
 
 Implementation, if wanted, belongs to rows 8 and 9 of
 [proteomics-deposit-readers.md](../../validation/proteomics-deposit-readers.md), distilled from the resolved licence-unblocked-sources ticket.
@@ -46,7 +50,7 @@ the current release used.
 | An upstream versioned link avoids duplicating large files | Upstream availability remains a dependency; a changing or disappearing link needs an explicit failure/fallback |
 | Original Rubin S3 is discoverable beside its republication | Current calls already come through the cited Adomako workbook; users need an explanation of why both artifacts are listed |
 
-## Recommendation and review options
+## Options considered before the owner decision
 
 Keep the current arrangement while no concrete user need or defect requires the
 extra catalogue. If the owner wants it, prefer a small catalogue of exact
@@ -83,11 +87,12 @@ or retain the current arrangement. Resolve with the normal R-rename and dated
 verification; distil only any new reusable download rule into the source ledger
 and its validation index, then delete this ticket and remove its queue row.
 
-## Owner explanation requested, 2026-10-08
+## Explanation supplied before the decision, 2026-10-08
 
-Compare keep-current, an upstream-link catalogue, and selected retained copies in
-chat before the owner decides. The offered recommendation is a small upstream
+The in-chat explanation compared keep-current, an upstream-link catalogue, and
+selected retained copies. The offered recommendation was a small upstream
 catalogue with exact versions/sizes/hashes, retaining copies only when availability
-justifies it. No catalogue or hosting choice has been approved yet. Scope remains
+justifies it. The subsequent owner decision selects the upstream catalogue above.
+Scope remains
 RefSeq GFF/feature inputs and original Rubin Dataset S3, not automatic raw-omics
 downloads or new startup payloads.

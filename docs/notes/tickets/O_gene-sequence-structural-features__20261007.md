@@ -9,6 +9,27 @@ Updated: 2026-10-08
 
 Opened for later at the owner's request. No new implementation started.
 
+## Owner display decision, 2026-10-08
+
+**Record only; do not implement these changes yet**, including the already chosen
+adjustable upstream window. Requested methods: RBS Calculator, iDOG/TransTermHP,
+Promoter Calculator, ViennaRNA, STREME, Rfam + Infernal, and IntaRNA; method
+assessment/admission remains with the linked method tickets.
+
+For annotations from methods that "dont follow the recommendation that i
+requested", use slightly transparent tag coloring and do not give them precedence
+when multiple annotations overlap. The affected category and opacity value remain
+unspecified; clarify them before implementing rather than assigning methods to
+that category here. Keep every overlapping annotation inspectable.
+
+Add an outline on hover around any of these gene annotations, including
+termination and initiation sites on the genes themselves, in **both**
+`site/js/ui/gene-viewer.js` and `site/js/ui/gene-sequence-view.js`. This is an
+additional acceptance requirement for both viewers, retaining the existing
+source/evidence, coordinate, keyboard and touch contracts.
+
+## Existing context
+
 Owner request: the gene viewer should have Tan initiation start sites and other
 future structural features that are added. The owner clarified the target as the
 sequence viewer at the bottom of Chromosome/Gene. “Tan” is understood as the
