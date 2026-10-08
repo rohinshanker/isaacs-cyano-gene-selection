@@ -16,9 +16,14 @@ async (page) => {
   page.on('pageerror', pageError); page.on('console', consoleError); page.on('requestfailed', requestFailed);
   const check = (ok, label) => { if (!ok) throw new Error(label); };
   const urls = await page.evaluate((base) => {
-    const url = new URL(base); url.hash = ''; url.searchParams.set('load-min', '1500');
+    const url = new URL(base);
+    url.hash = '';
+    url.searchParams.delete('org');
+    url.searchParams.delete('organism');
+    url.searchParams.set('load-min', '1500');
     const deep = new URL(url); deep.hash = 'ver=6&p=chromosome';
-    const ecoli = new URL(url); ecoli.searchParams.set('organism', 'ecoli-k12-mg1655');
+    const ecoli = new URL(url);
+    ecoli.searchParams.set('org', 'ecoli-k12-mg1655');
     return { boot: url.href, deep: deep.href, ecoli: ecoli.href };
   }, base);
   const checkLayout = async () => {
@@ -69,6 +74,7 @@ async (page) => {
     await page.goto(urls.deep); await settle(); await checkLayout();
     await page.screenshot({ path: `${root}/loading-deep-reduced-768.png` });
     await page.goto(urls.ecoli); await settle(); await checkLayout();
+    check(await page.locator('#organism-strain').textContent() === 'K-12 MG1655', 'E. coli dataset identity');
     await page.screenshot({ path: `${root}/loading-ecoli-768.png` });
     check(errors.length === 0, `runtime errors: ${errors.join('; ')}`);
     return { evidence, failureRetry: 'passed', reducedMotion: 'passed', deepLink: 'passed', organism: 'passed', runtimeErrors: errors };
