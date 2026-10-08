@@ -397,25 +397,46 @@ export class ChromosomeView {
         this.windows.set(track.accession, fullWindow(track.lengthBp));
       }
     }
-    // The cursor is a keyboard preview, not state, and it is a local copy of a
-    // selection the rest of the workspace owns. So it is reconciled whenever
-    // that selection changes — a pin made in another tab, a search result, a
-    // live hash — and not only when it happens to be unset: a stale cursor
-    // would send the next arrow key off from a gene the reader left behind.
-    const selected = model.active >= 0 ? model.active : model.pinned;
-    const incoming = selected >= 0 && selected !== this.reconciledSelection;
-    this.reconciledSelection = selected;
-    if (incoming) this.cursor = locateIndex(this.lanes, selected);
-    else if (this.cursor === null && selected >= 0) {
-      this.cursor = locateIndex(this.lanes, selected);
-    }
+    const incoming = this.reconcileSelection();
     this.syncControls();
     this.renderSummaries();
     this.resize();
     // A selection that arrived from elsewhere has to be brought into the
     // window, or a zoomed track answers a search by showing the reader a
     // stretch of genome the gene they asked for is not on.
-    if (incoming) this.revealIndex(selected);
+    if (incoming >= 0) this.revealIndex(incoming);
+    this.draw();
+  }
+
+  /** Reconcile the keyboard cursor; return a newly selected index to reveal. */
+  reconcileSelection() {
+    // The cursor is a keyboard preview, not state, and it is a local copy of a
+    // selection the rest of the workspace owns. So it is reconciled whenever
+    // that selection changes — a pin made in another tab, a search result, a
+    // live hash — and not only when it happens to be unset: a stale cursor
+    // would send the next arrow key off from a gene the reader left behind.
+    const selected = this.model.active >= 0 ? this.model.active : this.model.pinned;
+    const incoming = selected >= 0 && selected !== this.reconciledSelection;
+    this.reconciledSelection = selected;
+    if (incoming) this.cursor = locateIndex(this.lanes, selected);
+    else if (this.cursor === null && selected >= 0) {
+      this.cursor = locateIndex(this.lanes, selected);
+    }
+    return incoming ? selected : -1;
+  }
+
+  /**
+   * A pointer or keyboard preview changes emphasis, not measurement values or
+   * coordinates. Keep the colour model, layers, controls and source disclosure
+   * intact; a full update still handles pins, filters, sources and file landings.
+   */
+  setInteraction({ hovered = this.model?.hovered, active = this.model?.active }) {
+    if (!this.model?.verified) return;
+    const hasSelection = this.model.pinned >= 0 || active >= 0 || hovered >= 0;
+    this.model = { ...this.model, hovered, active, hasSelection };
+    const incoming = this.reconcileSelection();
+    if (incoming >= 0) this.revealIndex(incoming);
+    this.detailJump.hidden = !hasSelection;
     this.draw();
   }
 

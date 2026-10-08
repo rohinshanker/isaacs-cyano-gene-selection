@@ -592,3 +592,60 @@ The published site pins `color-scheme: light` in `site/css/app.css`, so a dark
 operating-system preference renders it identically. Emulating dark is still part
 of the check; the expected result is an unchanged page, and a difference means
 a colour has been hard-coded somewhere that now responds to the preference.
+
+### Measurement responsiveness
+
+Source membership is resolved by `core/source-selection.js` once for a dataset
+catalogue, selected-ID array and named-contributor object. These are immutable
+snapshots: replace them when changing sources, including a decoded link. The
+resolver caches membership only. Metric lookup and gene values stay live, so a
+layer arriving after the first render supplies its values on the next read.
+Do not cache a pending layer's missing values as measured zeros or discard
+selected contributors to meet a timing target. Ratio and abundance membership
+remain separate types.
+
+Hover and keyboard previews use `ChromosomeView.setInteraction`: keep the colour
+values, scales, tracks, layers and source controls, update emphasis and the gene
+detail, and repaint. A new keyboard selection still reveals its locus at the
+current zoom. Pinning, filters, source changes, colour changes and file landings
+use the full render. The paint still owns column winners, hit testing and the
+accessible description; reusing measurement values must not freeze those.
+
+Run the deterministic membership/invalidation and interaction regressions:
+
+```sh
+node --test tests/js/source-selection.test.mjs tests/js/type-metrics.test.mjs tests/js/chromosome-view.test.mjs
+node tools/check_chromosome_metrics.mjs --max-ms=100
+node tools/check_chromosome_metrics.mjs --uncached
+```
+
+The replay reads the shipped UTEX 2973 release and reports JSON parsing, core
+application, expression-layer joining and whole-gene metric sweeps separately.
+It covers the three measurement defaults and one, four and all available
+contributors for abundance types. Compare output `sha256` values between cached
+and uncached runs: every selected-source list and value array must agree. The
+optional 100 ms bound is a warm-sweep budget on the development Mac, not a network
+or device-independent guarantee. The unit test's stronger work bound is that a
+2,715-gene sweep never re-reads the catalogue after resolving membership.
+
+For browser profiling, serve the actual site and record browser/version,
+viewport, organism, exact dataset IDs, cache state and CPU/network throttling.
+Use a separate named browser session. Compare cold and warm navigations; the
+`cyano:core`, `cyano:revealed` and `cyano:settled` performance marks describe
+application milestones. Resource timings and JSON-parse/CPU samples distinguish
+transfer from parsing, validation/application and rendering. Wait for both
+`cyano:settled` and the reveal's `inert` attributes to clear before measuring
+settled interactions; otherwise input can land on animation-held controls.
+
+Measure pointer entry, sustained drag and wheel zoom separately. A slow hover
+handler can block the start of an otherwise fast drag. Re-read the canvas bounds
+after layout changes, and verify that events reached the canvas. At 1440 px,
+use a 40-move drag and 40 wheel events, checking frame durations and long tasks;
+repeat at 375, 768 and 1280 px with all three defaults and a multi-source
+selection. Include a provisional four-transcript-source selection when the
+reported four IDs are unavailable, and record its IDs explicitly. Exercise
+source replacement, a named contributor, filtering, pin/keyboard selection,
+view switching, late-layer arrival and a shared-link reload. Check canvas/host
+geometry, the selected-gene description, console errors and failed requests.
+For steady interactions on the development Mac, investigate handlers or canvas
+frames exceeding 50 ms; report first-use percentile preparation separately.

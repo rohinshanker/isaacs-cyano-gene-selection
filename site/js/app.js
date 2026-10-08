@@ -83,6 +83,7 @@ import { DataSourcesPanel } from './ui/data-sources.js';
 import {
   datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
+import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
   normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
@@ -1601,9 +1602,15 @@ function chromosomeDataSources() {
   return chromosomeDataSourcesPanel;
 }
 
-/** The resolved data-source selection: ids of the datasets the menus offer. */
+/** One membership snapshot, shared by selectors and whole-gene metric reads. */
+const resolveSourceSelection = createSourceSelectionResolver();
+
+function resolvedSourceSelection() {
+  return resolveSourceSelection(context.datasets ?? [], state.sources, state.typeSources);
+}
+
 function sourceSelection() {
-  return normalizeSelection(state.sources, context.datasets ?? []);
+  return resolvedSourceSelection().selection;
 }
 
 /**
@@ -2124,7 +2131,7 @@ function installTypeMetrics() {
   const registry = context.registry;
   if (registry.metrics.some((metric) => metric.isType)) return;
   const typeMetrics = buildTypeMetrics(context.datasets, {
-    contributing: (typeKey) => contributingDatasets(typeKey, state.typeSources, context.datasets, sourceSelection()),
+    contributing: (typeKey) => resolvedSourceSelection().contributing(typeKey),
     metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
     geneCount: context.dataset.genes.length,
   });
@@ -2776,12 +2783,12 @@ async function boot() {
     onHover: (index) => {
       if (context.hoveredIndex === index) return;
       context.hoveredIndex = index;
-      renderChromosomeView();
+      chromosomeView.setInteraction({ hovered: index });
       renderDetail();
     },
     onPreview: (index) => {
       context.activeIndex = index;
-      renderChromosomeView();
+      chromosomeView.setInteraction({ active: index });
       renderDetail();
       announceActive(index);
     },

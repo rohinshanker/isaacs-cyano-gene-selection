@@ -1511,6 +1511,67 @@ test('a selection arriving from another view is brought into a zoomed window', (
   }
 });
 
+test('hover previews preserve measurement and coordinate models while updating emphasis and description', () => {
+  const { view, restore, flush } = mount();
+  try {
+    const { colors, tracks, mask } = view.model;
+    const { layers, lanes, colorSelect } = view;
+    const windows = [...view.windows];
+    view.setInteraction({ hovered: 0 });
+    flush();
+    assert.equal(view.model.colors, colors);
+    assert.equal(view.model.tracks, tracks);
+    assert.equal(view.model.mask, mask);
+    assert.equal(view.layers, layers);
+    assert.equal(view.lanes, lanes);
+    assert.equal(view.colorSelect, colorSelect);
+    assert.deepEqual([...view.windows], windows, 'hover must not move any replicon camera');
+    assert.ok(view.emphasisOf(0) > view.emphasisOf(1));
+    assert.match(view.canvas.getAttribute('aria-label'), /PLUS/);
+    assert.equal(view.detailJump.hidden, false);
+    view.setInteraction({ hovered: -1 });
+    flush();
+    assert.equal(view.model.hasSelection, false);
+    assert.equal(view.detailJump.hidden, true);
+    assert.equal(view.emphasisOf(0), view.emphasisOf(1));
+  } finally {
+    restore();
+  }
+});
+
+test('keyboard previews reveal distant genes, retain zoom, and reconcile with a subsequent pin', () => {
+  const { view, restore, flush } = mount();
+  try {
+    view.zoomBand(view.bands()[0], 400, 100000);
+    const before = view.windowFor(view.primaryTrack());
+    const layers = view.layers;
+    view.setInteraction({ active: 3 });
+    flush();
+    const after = view.windowFor(view.primaryTrack());
+    assert.ok(after.from <= 400000 && after.to >= 400000);
+    assert.equal(after.to - after.from, before.to - before.from);
+    assert.equal(view.layers, layers);
+    assert.equal(view.lanes[view.cursor.laneIndex].marks[view.cursor.markIndex].index, 3);
+    assert.match(view.canvas.getAttribute('aria-label'), /OP1/);
+    const panned = panAway(view);
+    view.setInteraction({ active: 3, hovered: 4 });
+    assert.deepEqual(view.windowFor(view.primaryTrack()), panned, 'repeated preview leaves a panned camera alone');
+    view.update({ ...view.model, active: -1, hovered: -1, pinned: 0, hasSelection: true });
+    assert.equal(view.lanes[view.cursor.laneIndex].marks[view.cursor.markIndex].index, 0, 'the full pin update supersedes the preview');
+    view.setInteraction({ hovered: -1 });
+    assert.equal(view.detailJump.hidden, false, 'a pin still counts as a selection');
+    view.model = { ...view.model, verified: false };
+    const unavailable = view.model;
+    view.setInteraction({ active: 1 });
+    assert.equal(view.model, unavailable, 'an unverified dataset stays undrawn');
+    view.model = null;
+    view.setInteraction({});
+    assert.equal(view.model, null, 'interaction before a model arrives is harmless');
+  } finally {
+    restore();
+  }
+});
+
 /** Pan the chromosome away from wherever it is, and report the new window. */
 function panAway(view) {
   const band = view.bands()[0];

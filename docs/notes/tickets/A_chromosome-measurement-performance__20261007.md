@@ -3,11 +3,45 @@
 Scope: Investigate and improve chromosome visualizer responsiveness with protein abundance, transcript initiation, and transcript abundance, including default selections and large dataset selections.
 Status: active
 Opened: 2026-10-07
-Updated: 2026-10-07
+Updated: 2026-10-08
 
 ## Current State
 
 Owned by `cyano-general-ticket-closing` (`bfdd1b08-1791384632`). Active reproduction and profiling starts from `4826fa172441387f5872ba0d8d1b743f207bfa4a`, including the separate protein ratio assay and signed export contracts. No root cause is assumed. The coordinator owns implementation and rendered profiling; a read-only scout will inspect the calculation and redraw paths independently.
+
+Runtime finding PERF-1 (open): at 1440 px in local Headless Chrome 154 on this
+Mac, a settled transcript-abundance hover blocked for about 2.4 seconds while
+canvas paint took about 5 ms. CPU samples put repeated `typeGroups` rebuilding
+at the top, through the per-gene `contributingDatasets` callback. The repair
+caches membership by immutable dataset/source/named-contributor snapshots,
+without caching measurement values. Cold/warm and selection-size profiling is
+in progress; the four-source reproduction is provisional, chosen in manifest
+order because the originally reported four IDs were not supplied.
+
+Owner clarification 2026-10-08: pan or zoom feels slowest. An isolated 40-move
+drag and 40-event wheel run with 54 transcript datasets found the incoming hover
+blocked for 2,543 ms, while drag/wheel handlers stayed at or below 0.6 ms and
+their frames below 5 ms. The source-membership repair removes that dominant
+cost. PERF-2 (open): the resulting 54-dataset hover still rebuilt the whole
+colour model (about 160 ms); hover/keyboard previews now update only emphasis
+and the shared detail, preserving the loaded colour/coordinate models. Pins,
+filters, source changes and file landings still use the full update.
+
+The source-ingestion coordinator owns a separate approved UI integration into
+main (tab order/name, chromosome information disclosure and Compare disclosure).
+This work remains isolated and preserves the stable `chromosome` ID; integrate
+their result before the final rendered and repository gates.
+
+Read-only scout DEM-313 confirmed the call path. Its suggested pending-rank
+invalidation risk was checked: a wholly unknown layer never calls `ranks`,
+because the existing finite-value guard skips it. A regression test now reads
+the pool before and after a simulated layer arrival and checks exact ranks;
+no rank-cache change is needed for this loading contract.
+
+Affected-area comparison against `b769ee1`: application wiring, chromosome
+view/model and paint priority are unchanged. The intervening fitness pooling,
+E. coli layer additions and PXD005105 ratio classification are preserved.
+No owner clarification is needed to repair the measured default-case stalls.
 
 Owner report: the chromosome visualizer appeared “pretty laggy” when tried with
 four transcriptomics datasets. Clarification on 2026-10-07: this happens whenever
