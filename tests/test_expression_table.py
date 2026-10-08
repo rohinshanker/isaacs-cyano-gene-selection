@@ -59,6 +59,10 @@ def test_check_header_accepts_the_declared_header_and_names_a_mismatch():
 MANIFESTS = {
     "data/expression/sources.json": {"fitness": 99, "abundance": 64, "ratio": 1},
     "data/expression/organisms/ecoli-k12-mg1655/sources.json": {"abundance": 78},
+    "data/expression/organisms/ecoli-syn61-delta3-ev5/sources.json": {
+        "abundance": 6, "read_count": 3, "log2_fold_change": 4, "p_value": 2,
+        "translation_efficiency_log2_fold_change": 1,
+    },
 }
 
 
@@ -88,7 +92,7 @@ def test_every_shipped_table_heads_its_values_with_its_declared_quantity():
             fieldnames = csv.DictReader(handle, delimiter="\t").fieldnames
         column = table.check_header(
             fieldnames, source["record"]["dataType"], str(path.relative_to(ROOT)),
-            signed=bool(source.get("signed")))
+            source.get("quantity"), signed=bool(source.get("signed")))
         seen[key][column] = seen[key].get(column, 0) + 1
     assert seen == MANIFESTS
 

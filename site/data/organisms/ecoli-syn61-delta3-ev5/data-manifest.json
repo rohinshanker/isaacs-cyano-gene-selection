@@ -5,8 +5,8 @@
       "sha256": "77ce3c230016752ab0c762a7ad0ab8134c4bb21395aa8061922a8de45a167553"
     },
     "codon_pca.json": {
-      "bytes": 5312,
-      "sha256": "c2b4d9cb3f76cbe47179e70f946e4295eb96ab51a64240548d3bde0684f5a9a3"
+      "bytes": 20877,
+      "sha256": "f2873f96e5a8940ebf865c626a7720a0fe438d52db21e7c5abffbe205a7af9d8"
     },
     "codon_pca_reference.json": {
       "bytes": 710870,
@@ -20,13 +20,17 @@
       "bytes": 9485,
       "sha256": "e39644998837e7909d1198ee95f0be003307408f95a51bcb75b784ff2946d933"
     },
+    "expression_layers.json": {
+      "bytes": 537630,
+      "sha256": "c906388bd5d6794014a51a82eb5645848f2e2dd931518daa1e664e27220d7baf"
+    },
     "genes.json": {
       "bytes": 5263398,
       "sha256": "d54f15fa067ab2afbb6a610f6cdf960eae7b9b84f542ea0e6f1b4cac1433f345"
     },
     "meta.json": {
-      "bytes": 21633,
-      "sha256": "e66975e9830f4388cf60a5a28324d1b020fad5fe00afc3165a9f6dbc99e7b519"
+      "bytes": 107397,
+      "sha256": "3385a2510d2891f4aa5d415933c67d11df59bc4bfbce0227f386d4dd40bc8312"
     },
     "strain_fitness.json": {
       "bytes": 1553851,
