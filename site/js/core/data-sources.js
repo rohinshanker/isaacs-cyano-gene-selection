@@ -13,6 +13,13 @@
  */
 import { DEFAULT_POOLED_STUDIES, isTypeKey, typeKeyFor } from './type-metrics.js';
 
+/** A source choice keeps sample/replicate identity beside its culture condition. */
+export function datasetChoiceLabel(dataset) {
+  const label = dataset.label || dataset.id;
+  const condition = dataset.record?.conditionSet;
+  return condition && condition !== label ? `${label} · ${condition}` : label;
+}
+
 /** The three condition axes drawn as tracks, on one shared scale each. */
 export const CONDITION_SCALES = Object.freeze({
   temperature: Object.freeze({

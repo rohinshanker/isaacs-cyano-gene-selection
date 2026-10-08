@@ -100,7 +100,11 @@ test('the file registry orders dependencies before their dependents', () => {
 
 test('the site fetches every registered file and nothing the registry omits', async () => {
   const published = JSON.parse(await site(DATA_MANIFEST_NAME)).files;
-  for (const file of DATA_FILES) assert.ok(published[file.name], `${file.name} is published`);
+  for (const file of DATA_FILES.filter((entry) => !entry.organismField && entry.key !== 'strainFitness')) {
+    assert.ok(published[file.name], `${file.name} is published`);
+  }
+  assert.ok(!published['codon_pca_reference.json']);
+  assert.ok(!published['strain_fitness.json']);
   // Published but never fetched by the page: citations has its own loader, the
   // PCC 7942 table is an input to candidate_evidence.json, read by no module,
   // and the per-gene RSCU vectors have no browser consumer at all — the site
@@ -433,7 +437,12 @@ test('the staged loader and the single-step loader build the same dataset', asyn
   const staged = loadDatasetStaged({ baseUrl: BASE, fetchImpl: siteFetch().fetchImpl });
   const dataset = await staged.settled;
   const whole = await loadDataset({ baseUrl: BASE, fetchImpl: siteFetch().fetchImpl });
-  for (const file of DATA_FILES) assert.equal(dataset.files[file.key].state, 'ready', file.key);
+  for (const file of DATA_FILES) {
+    const expected = file.organismField || file.key === 'strainFitness' ? 'absent' : 'ready';
+    assert.equal(dataset.files[file.key].state, expected, file.key);
+    assert.equal(whole.files[file.key].state, expected, file.key);
+  }
+  assert.equal(dataset.strainFitness, null);
   assert.equal(dataset.genes.length, whole.genes.length);
   assert.deepEqual(dataset.genes[100], whole.genes[100]);
   assert.deepEqual(dataset.provenance, whole.provenance);

@@ -21,12 +21,31 @@ export function tabBlurb(tab, organism = DEFAULT_ORGANISM) {
   return organism.copy.tabBlurbs[tab.id] ?? tab.blurb;
 }
 
+/** Panels available for one organism; parent-fixed axes are opt-in per record. */
+export function panelsFor(organism = DEFAULT_ORGANISM) {
+  return PANELS.filter((panel) => !panel.requiresReference || organism.referenceCodonPca);
+}
+
+/** The tab name may carry the declared parent's name without global copy leakage. */
+export function panelName(panel, organism = DEFAULT_ORGANISM) {
+  return panel.id === 'reference'
+    ? organism.referenceCodonPca?.panelName ?? panel.name
+    : panel.name;
+}
+
 export const PANELS = Object.freeze([
   {
     id: 'native',
     name: 'Native codon space',
     source: 'Precomputed by the pipeline from codon usage (RSCU).',
     blurb: DEFAULT_ORGANISM.copy.tabBlurbs.native,
+  },
+  {
+    id: 'reference',
+    name: 'Parent-reference codon space',
+    source: 'Precomputed from this child genome in a pinned public-parent PCA frame.',
+    blurb: 'Available only for a recoded derivative with a validated child-local reference artifact.',
+    requiresReference: true,
   },
   {
     id: 'axes',
@@ -105,13 +124,17 @@ export function buildProjection(panelId, { dataset, registry, schemeActive }) {
   const rows = genes.length;
   const labels = genes.map(geneMapLabel);
 
-  if (panelId === 'native') {
-    const explained = dataset.codonPca?.explainedVariance ?? [];
+  if (panelId === 'native' || panelId === 'reference') {
+    const reference = panelId === 'reference';
+    const artifact = reference ? dataset.codonPcaReference?.reference : dataset.codonPca;
+    const explained = artifact?.explainedVariance ?? [];
     const x = new Float64Array(rows);
     const y = new Float64Array(rows);
     let usable = 0;
     for (let i = 0; i < rows; i += 1) {
-      const scores = genes[i].codonPca;
+      const scores = reference
+        ? dataset.codonPcaReference?.coordinates?.[i]
+        : genes[i].codonPca;
       if (Array.isArray(scores) && scores.length >= 2) {
         x[i] = scores[0];
         y[i] = scores[1];
@@ -124,11 +147,13 @@ export function buildProjection(panelId, { dataset, registry, schemeActive }) {
     if (usable === 0) {
       return {
         available: false,
-        message: 'This dataset has no precomputed codon-usage coordinates, so the native '
-          + 'codon map cannot be drawn. The pipeline writes them into genes.json as codonPca.',
+        message: reference
+          ? 'This recoded dataset has no validated child-local parent-reference coordinates.'
+          : 'This dataset has no precomputed codon-usage coordinates, so the native codon map '
+            + 'cannot be drawn. The pipeline writes them into genes.json as codonPca.',
       };
     }
-    const loadings = (dataset.codonPca?.loadings ?? []).map((entry) => ({
+    const loadings = (artifact?.loadings ?? []).map((entry) => ({
       label: entry.codon,
       sublabel: entry.aa,
       pc: entry.pc,
@@ -141,8 +166,12 @@ export function buildProjection(panelId, { dataset, registry, schemeActive }) {
       xLabel: axisLabel(1, explained[0]),
       yLabel: axisLabel(2, explained[1]),
       loadings,
-      loadingNote: 'Codons that pull genes along each axis. A long bar to the right means genes '
-        + 'high on that axis use that codon more than average.',
+      loadingNote: reference
+        ? 'Public MDS42 AP012306.1 codon loadings, applied unchanged to Syn61. TCA and TCG '
+          + 'removal dominates the expected shift; TAG is not an RSCU feature. These axes do '
+          + 'not measure fitness or expression.'
+        : 'Codons that pull genes along each axis. A long bar to the right means genes high on '
+          + 'that axis use that codon more than average.',
     };
   }
 

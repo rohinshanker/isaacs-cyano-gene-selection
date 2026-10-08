@@ -6,7 +6,7 @@
   `site/` and the validation documents that fix the affected wording.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-05
+- **Updated:** 2026-10-08
 
 ## Current state
 
@@ -41,3 +41,10 @@ and re-checked by the person who marked it. The gates run after each change.
 On resolution, record the help-icon and peek pattern in
 [responsive-workspace.md](../../validation/responsive-workspace.md), update
 `validation/INDEX.md` if its row changes, then delete this ticket and its index row.
+
+## Owner explanation requested, 2026-10-08
+
+Explain that marks mean plain keep/move/merge/remove choices about explanatory
+text; no formal annotation or 211-item exercise is required. The specific existing
+requests already count as owner instructions. Broader removal/rewriting remains
+unapproved; required caveats stay accessible even when moved behind help.

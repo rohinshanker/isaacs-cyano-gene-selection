@@ -618,6 +618,13 @@ Do not cache a pending layer's missing values as measured zeros or discard
 selected contributors to meet a timing target. Ratio and abundance membership
 remain separate types.
 
+Selected membership and contributing membership are separate snapshots. A
+declared non-pooling quantity can have several datasets selected while exactly
+one supplies values. Cached and uncached paths share `informingOfType`; preserve
+its named-source/default-source rule and the full selected count used by the
+disclosure. Never turn a fold change, significance value or translation-efficiency
+contrast into a pooled abundance when adding or caching a quantity.
+
 Hover and keyboard previews use `ChromosomeView.setInteraction`: keep the colour
 values, scales, tracks, layers and source controls, update emphasis and the gene
 detail, and repaint. A new keyboard selection still reveals its locus at the

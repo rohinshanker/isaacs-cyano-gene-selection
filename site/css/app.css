@@ -442,6 +442,26 @@ input[type="range"] { width: 100%; }
 .panel-note { color: var(--ink-muted); font-size: 0.83rem; margin: 0.25rem 0 0.5rem; }
 .empty-state { color: var(--ink-muted); font-style: italic; }
 
+/* Deposited recoded-genome facts ---------------------------------------- */
+
+.recoded-genome-panel { border-left: 3px solid var(--accent); }
+.recoded-genome-lead { font-weight: 600; }
+.recoded-genome-facts { display: grid; gap: 0.45rem; margin: 0.75rem 0; }
+.recoded-genome-fact {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.2rem 0.65rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--line);
+}
+.recoded-genome-fact dt { color: var(--ink-muted); font-size: 0.8rem; font-weight: 600; }
+.recoded-genome-fact dd { margin: 0; overflow-wrap: anywhere; }
+.recoded-genome-convention { margin-top: 0.75rem; }
+
+@media (max-width: 420px) {
+  .recoded-genome-fact { grid-template-columns: 1fr; }
+}
+
 /* Scheme editor --------------------------------------------------------- */
 
 .target-list { list-style: none; margin: 0.5rem 0; padding: 0; display: grid; gap: 0.4rem; }
@@ -869,6 +889,85 @@ input[type="range"] { width: 100%; }
 #main.regulatory-active > .resize-handle,
 #main.regulatory-active > .detail,
 #main.regulatory-active .analysis > :not(#map-section) { display: none; }
+/* Strain fitness ---------------------------------------------------------- */
+
+/* One column, like the other tabs whose rows are not genes: there is no gene to
+   select here, so the controls rail and the gene detail rail have nothing to
+   act on and are hidden rather than left beside a table they cannot touch. */
+#main.fitness-active {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1100px;
+  margin-inline: auto;
+}
+#main.fitness-active > .analysis { grid-column: 1; grid-row: 1; }
+#main.fitness-active > .controls,
+#main.fitness-active > .resize-handle,
+#main.fitness-active > .detail,
+#main.fitness-active .analysis > :not(#map-section) { display: none; }
+#strain-fitness-view { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.75rem; }
+#strain-fitness-view h3 { margin: 0; font-size: 0.95rem; }
+.fitness-source { display: grid; gap: 0.1rem; }
+.fitness-source .panel-note { margin: 0; overflow-wrap: anywhere; }
+.fitness-controls { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.fitness-controls label { display: grid; gap: 0.25rem; flex: 1 1 13rem; font-size: 0.88rem; }
+.fitness-controls input, .fitness-controls select { width: 100%; min-width: 0; }
+/* The selection every table below is read under. It stays on screen rather than
+   living in the rows, so a narrow table never drops the context with a column. */
+.fitness-context {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.fitness-definitions {
+  margin: 0.4rem 0 0;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 0.15rem 0.7rem;
+  font-size: 0.82rem;
+}
+.fitness-definitions dt { color: var(--ink-muted); }
+.fitness-definitions dd { margin: 0; overflow-wrap: anywhere; }
+.fitness-section { display: grid; gap: 0.45rem; }
+.fitness-paging { display: flex; align-items: center; flex-wrap: wrap; gap: 0.7rem; }
+.fitness-paging span { font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.fitness-export { display: grid; gap: 0.3rem; }
+.fitness-export > .panel-note { margin: 0; overflow-wrap: anywhere; }
+/* `.table-scroll` keeps the overflow inside the card; the table itself is wide
+   enough that its columns stay readable rather than wrapping to one word each. */
+.fitness-table {
+  width: 100%;
+  min-width: 48rem;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.fitness-table caption { text-align: left; font-weight: 600; padding-bottom: 0.3rem; }
+.fitness-table th, .fitness-table td {
+  border-top: 1px solid var(--line);
+  padding: 0.3rem 0.45rem;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.fitness-table th { text-align: left; font-weight: 600; }
+/* The declared unit, under its column name. Muted and lighter so the name is
+   what a reader scans and the unit is what they find when they need it. */
+.fitness-unit {
+  display: block;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+.fitness-table thead th { color: var(--ink-muted); border-top: none; }
+.fitness-table td.numeric, .fitness-table th.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  /* The shared `.numeric` rule keeps one number on one line, which is right for
+     a number and wrong for the two things that share these columns: a declared
+     unit and a numbered replicate series. Both are prose and must wrap inside
+     their column rather than run out of the table. */
+  white-space: normal;
+}
 #citations-view { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 0.75rem; }
 #main.lengths-active > .detail,
 #main.lengths-active .analysis > :not(#map-section) { display: none; }
@@ -1695,6 +1794,8 @@ input[type="range"] { width: 100%; }
 .data-sources-list { list-style: none; margin: 0.3rem 0; padding: 0; max-height: 11rem; overflow: auto; }
 .data-sources-list li { padding: 0.15rem 0; border-bottom: 1px dotted var(--line); }
 .data-sources-type { color: var(--ink-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 0 !important; }
+/* Why a kind of measurement reads one dataset while several are included. */
+.data-sources-note { color: var(--ink-muted); font-size: 0.78rem; line-height: 1.35; border-bottom: 0 !important; }
 .data-sources-acc { font-weight: 600; }
 .data-sources-label, .data-sources-empty { color: var(--ink-muted); font-size: 0.85rem; }
 .data-sources-actions { margin-top: 0.3rem; }

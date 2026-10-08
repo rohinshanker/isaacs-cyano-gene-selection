@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -494,5 +495,39 @@ test('a rebalanced result always validates', () => {
         `position ${position} at ${requested} must validate`,
       );
     }
+  }
+});
+
+
+test('published presets preserve proteins and match the pinned observed distributions', async () => {
+  const dataset = await fixtureDataset();
+  for (const preset of PRESETS.filter((p) => p.map)) {
+    assert.equal(validateSchemeMap(preset.map, table).ok, true);
+    assert.equal(verifyProteinsUnchanged(dataset, compileScheme(preset.map, table)).ok, true);
+  }
+  assert.deepEqual(PRESETS.find((p) => p.id === 'syn61').map,
+    { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' });
+  const preset = PRESETS.find((p) => p.id === 'ec-syn57');
+  const counts = new Map(preset.targets.map((c) => [c, new Map()]));
+  for (const filename of ['ec_syn57_substitutions.tsv', 'ec_syn57_terminal_substitutions.tsv']) {
+    const lines = (await readFile(new URL(`../../data/recoded/${filename}`, import.meta.url), 'utf8'))
+      .trim().split('\n').map((line) => line.split('\t'));
+    const header = lines.shift();
+    for (const values of lines) {
+      const row = Object.fromEntries(header.map((h, i) => [h, values[i]]));
+      if (row.source && row.source !== 'genome_wide') continue;
+      counts.get(row.native_codon)?.set(row.recoded_codon, Number(row.count));
+    }
+  }
+  for (const [codon, observed] of counts) {
+    const total = [...observed.values()].reduce((a, b) => a + b, 0);
+    assert.ok(total > 0);
+    const shares = new Map([...observed].map(([to, n]) => [to, Math.floor(n * 100 / total)]));
+    const remainder = 100 - [...shares.values()].reduce((a, b) => a + b, 0);
+    const ranked = [...observed].sort(([a, an], [b, bn]) =>
+      (bn * 100 % total) - (an * 100 % total) || a.localeCompare(b));
+    for (const [to] of ranked.slice(0, remainder)) shares.set(to, shares.get(to) + 1);
+    assert.deepEqual(Object.fromEntries(preset.map[codon].map((d) => [d.codon, d.share])),
+      Object.fromEntries(shares), codon);
   }
 });

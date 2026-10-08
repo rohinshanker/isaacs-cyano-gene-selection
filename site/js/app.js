@@ -19,6 +19,7 @@ import { adoptingFetch } from './core/early-data.js';
 import { geneIdentity, geneMapLabel } from './core/gene-identity.js';
 import { compileScheme, validateSchemeMap, verifyProteinsUnchanged, prefillReplacement } from './core/scheme.js';
 import { computeLiveMetrics } from './core/live-metrics.js';
+import { buildRecodedGenomeModel } from './core/recoded-genome.js';
 import { RECOMPUTATION_TOLERANCE } from './core/conventions.js';
 import {
   buildMetricRegistry, rebindLiveMetrics, metricValues,
@@ -31,13 +32,14 @@ import {
 } from './core/url-state.js';
 import { markerVisible, withMarkerVisible } from './core/marker-layers.js';
 import { sortedFinite, percentileRank } from './core/stats.js';
-import { PANELS, buildProjection, tabBlurb } from './ui/panels.js';
+import { buildProjection, panelName, panelsFor, tabBlurb } from './ui/panels.js';
 import {
   CITATIONS_TAB, CitationsPanel, citationDownloadResourceKey, citationsBlurb, fetchCitationBlob,
   loadCitationsManifest,
 } from './ui/citations.js';
 import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
+import { STRAIN_FITNESS_TAB, StrainFitnessPanel } from './ui/strain-fitness.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
 import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
@@ -77,16 +79,17 @@ import { ComparePanel } from './ui/compare.js';
 import { normalizeCompareAxes } from './ui/compare-model.js';
 import { LeftPanels } from './ui/left-panels.js';
 import { renderGeneViewer } from './ui/gene-viewer.js';
+import { renderRecodedGenomePanel } from './ui/recoded-genome.js';
 import { GeneSequenceView } from './ui/gene-sequence-view.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { DataSourcesPanel } from './ui/data-sources.js';
 import {
-  datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
+  datasetChoiceLabel, datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
-  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor, typePools,
 } from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -148,12 +151,13 @@ const COLOR_SOURCE_TOGGLES = organism.annotationSources;
 
 /**
  * The shared tablist: the first two map panels, chromosome/gene, the remaining
- * map panels, then length, regulatory, and source views. A tab's id is the
+ * map panels, then length, regulatory, strain fitness, and source views. A tab's id is the
  * permanent `p` token in the URL hash.
  */
+const MAP_PANELS = panelsFor(organism);
 const ALL_TABS = [
-  ...PANELS.slice(0, 2), CHROMOSOME_TAB, ...PANELS.slice(2),
-  LENGTH_TAB, REGULATORY_TAB, CITATIONS_TAB,
+  ...MAP_PANELS.slice(0, 2), CHROMOSOME_TAB, ...MAP_PANELS.slice(2),
+  LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,
 ];
 
 const element = (id) => document.getElementById(id);
@@ -202,6 +206,7 @@ const context = {
   dataset: null,
   registry: null,
   live: null,
+  recodedGenome: null,
   scheme: null,
   verification: null,
   mask: null,
@@ -282,7 +287,7 @@ function jumpToMap() {
   pendingMapJump = false;
   // The chromosome view is a map of the same genes, so a jump lands on it
   // rather than switching the reader off the tab they chose.
-  const onAMap = PANELS.some((panel) => panel.id === state.panel)
+  const onAMap = MAP_PANELS.some((panel) => panel.id === state.panel)
     || state.panel === CHROMOSOME_TAB.id;
   if (!onAMap) {
     state.panel = 'native';
@@ -617,6 +622,7 @@ let panelDesigner = null;
 let citationsPanel = null;
 let lengthExplorer = null;
 let regulatorySitesPanel = null;
+let strainFitnessPanel = null;
 let chromosomeView = null;
 let geneSequenceView = null;
 let workspaceResizer = null;
@@ -939,7 +945,7 @@ function syncAxisScaleAvailability(axis) {
 
 function renderMap() {
   const projection = projectionFor(state.panel);
-  const panel = PANELS.find((entry) => entry.id === state.panel);
+  const panel = MAP_PANELS.find((entry) => entry.id === state.panel);
   element('panel-blurb').textContent = `${tabBlurb(panel, organism)} ${panel.source}`;
   element('axis-chooser').hidden = state.panel !== 'axes';
   if (state.panel === 'axes') {
@@ -1006,7 +1012,10 @@ function renderMap() {
     ? 'About these axes' : 'What drives these axes';
   if (projection.available) {
     renderLoadings(element('loadings'), projection, {
-      pending: state.panel === 'native' ? pendingState(context.dataset, 'codonPca') : null,
+      pending: state.panel === 'native'
+        ? pendingState(context.dataset, 'codonPca')
+        : state.panel === 'reference'
+          ? pendingState(context.dataset, 'codonPcaReference') : null,
     });
   }
 
@@ -1017,12 +1026,12 @@ function renderMap() {
   canvas.setAttribute(
     'aria-label',
     projection.available
-      ? `${panel.name}: ${formatCount(context.passing)} of `
+      ? `${panelName(panel, organism)}: ${formatCount(context.passing)} of `
         + `${formatCount(context.dataset.genes.length)} genes shown, coloured by `
         + `${metric.label}${scaleClause ? ` ${scaleClause}` : ''}. `
         + `${drawOrderSentence(colors)} Nothing is hidden by that order: every gene stays `
         + 'selectable, reachable by the arrow keys, and counted.'
-      : `${panel.name}: ${projection.message}`,
+      : `${panelName(panel, organism)}: ${projection.message}`,
   );
 
   const hidden = context.dataset.genes.length - context.passing;
@@ -1255,7 +1264,7 @@ function renderLiveFilters() {
       mapCount: context.dataset.genes.length,
       pending: pendingState(context.dataset, 'lengthCohorts'),
     }, { live: true });
-  } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id].includes(state.panel)) {
+  } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id, STRAIN_FITNESS_TAB.id].includes(state.panel)) {
     plot.setMask(context.mask);
   }
   filterPanel.renderSummary(context.dataset.genes.length, context.passing);
@@ -1447,7 +1456,7 @@ function buildPanelTabs() {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'tab';
-    button.textContent = panel.name;
+    button.textContent = panelName(panel, organism);
     button.setAttribute('role', 'tab');
     button.id = `panel-tab-${panel.id}`;
     button.addEventListener('click', () => {
@@ -1455,7 +1464,7 @@ function buildPanelTabs() {
       updatePanelTabs();
       renderCurrentView();
       persist();
-      announce(`${panel.name}. ${tabBlurb(panel, organism)}`);
+      announce(`${panelName(panel, organism)}. ${tabBlurb(panel, organism)}`);
     });
     button.addEventListener('keydown', (event) => {
       const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
@@ -1482,7 +1491,7 @@ function updatePanelTabs() {
     button.tabIndex = selected ? 0 : -1;
     button.classList.toggle('active', selected);
   });
-  const mapTab = PANELS.find((panel) => panel.id === state.panel);
+  const mapTab = MAP_PANELS.find((panel) => panel.id === state.panel);
   element('map-view').setAttribute('aria-labelledby', `panel-tab-${mapTab?.id ?? 'native'}`);
 }
 
@@ -1509,18 +1518,22 @@ function renderCurrentView() {
   const citationsActive = state.panel === CITATIONS_TAB.id;
   const lengthsActive = state.panel === LENGTH_TAB.id;
   const regulatoryActive = state.panel === REGULATORY_TAB.id;
+  const fitnessActive = state.panel === STRAIN_FITNESS_TAB.id;
   const chromosomeActive = state.panel === CHROMOSOME_TAB.id;
-  const mapActive = !citationsActive && !lengthsActive && !regulatoryActive && !chromosomeActive;
+  const mapActive = !citationsActive && !lengthsActive && !regulatoryActive && !fitnessActive
+    && !chromosomeActive;
   element('features-used').hidden = !mapActive;
   element('main').classList.toggle('citations-active', citationsActive);
   element('main').classList.toggle('lengths-active', lengthsActive);
   element('main').classList.toggle('regulatory-active', regulatoryActive);
+  element('main').classList.toggle('fitness-active', fitnessActive);
   element('main').classList.toggle('chromosome-active', chromosomeActive);
   workspaceResizer?.update();
   element('map-view').hidden = !mapActive;
   element('chromosome-view').hidden = !chromosomeActive;
   element('length-view').hidden = !lengthsActive;
   element('regulatory-view').hidden = !regulatoryActive;
+  element('strain-fitness-view').hidden = !fitnessActive;
   element('citations-view').hidden = !citationsActive;
   if (chromosomeActive) {
     element('panel-blurb').textContent = `${tabBlurb(CHROMOSOME_TAB, organism)} ${CHROMOSOME_TAB.source}`;
@@ -1548,6 +1561,12 @@ function renderCurrentView() {
     element('panel-blurb').textContent = tabBlurb(REGULATORY_TAB, organism);
     regulatorySitesPanel.update(context.dataset.regulatoryTss,
       pendingState(context.dataset, 'regulatoryTss'));
+    return;
+  }
+  if (fitnessActive) {
+    element('panel-blurb').textContent = tabBlurb(STRAIN_FITNESS_TAB, organism);
+    strainFitnessPanel.update(context.dataset.strainFitness,
+      pendingState(context.dataset, 'strainFitness'));
     return;
   }
   renderMap();
@@ -1581,6 +1600,10 @@ function dataSourcesState() {
     // The colouring type's full dataset list, with inclusion edited in place.
     colorTypeKey: isTypeKey(state.colorBy) ? state.colorBy : null,
     allOfType: (typeKey) => typeGroups(context.datasets).get(typeKey)?.datasets ?? [],
+    // A fold change, a p-value or a translation-efficiency ratio is read from
+    // one dataset however many are selected, so the panel offers no pooled row
+    // for it and says one is being read instead.
+    poolsType: (typeKey) => typePools(typeKey, context.datasets),
     isSelected: (id) => sourceSelection().includes(id),
     onSelect: (id, on) => {
       const current = sourceSelection();
@@ -1701,13 +1724,18 @@ function syncAxisSourceSelects() {
     for (const dataset of candidates) {
       const option = document.createElement('option');
       option.value = dataset.id;
-      option.textContent = `${dataset.record.studyId} · ${dataset.record.conditionSet}`;
+      option.textContent = `${dataset.record.studyId} · ${datasetChoiceLabel(dataset)}`;
       select.append(option);
     }
-    const pooled = document.createElement('option');
-    pooled.value = '';
-    pooled.textContent = `Pooled (${candidates.length} datasets)`;
-    select.prepend(pooled);
+    // A fold change, a p-value or a translation-efficiency ratio is read from
+    // one dataset however many are selected, so offering "Pooled" here would be
+    // a choice the axis cannot honour.
+    if (typePools(state[key], context.datasets)) {
+      const pooled = document.createElement('option');
+      pooled.value = '';
+      pooled.textContent = `Pooled (${candidates.length} datasets)`;
+      select.prepend(pooled);
+    }
     select.value = informingDataset(state[key], state.typeSources, context.datasets, chosen)?.id ?? '';
     row.hidden = false;
   }
@@ -2086,7 +2114,10 @@ function normalizeAndApply(decoded) {
     recomputeScheme();
   }
   if (!context.registry) {
-    context.registry = buildMetricRegistry(context.dataset.meta, context.dataset.genes, context.live);
+    const organismMetrics = context.recodedGenome ? [context.recodedGenome.metric] : [];
+    context.registry = buildMetricRegistry(
+      context.dataset.meta, context.dataset.genes, context.live, organismMetrics,
+    );
   }
   context.datasets = datasetsFrom(context.dataset.meta);
   state.sources = isDefaultSelection(state.sources, context.datasets)
@@ -2136,6 +2167,9 @@ function installTypeMetrics() {
   const typeMetrics = buildTypeMetrics(context.datasets, {
     contributing: (typeKey) => resolvedSourceSelection().contributing(typeKey),
     metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+    // What the reader selected, which a type that does not pool reads only one
+    // of; the metric needs both numbers to say so.
+    selected: (typeKey) => resolvedSourceSelection().selected(typeKey),
     geneCount: context.dataset.genes.length,
   });
   // Placed before the first dataset metric so the Expression family keeps its
@@ -2256,6 +2290,7 @@ function promotedFileKeys(view) {
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
   if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
+  if (view.panel === STRAIN_FITNESS_TAB.id) keys.add('strainFitness');
   if (view.pinnedId) {
     for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
       'goIeaEssentiality', 'goTerms', 'tssEvidence']) keys.add(key);
@@ -2310,7 +2345,7 @@ function flushLandings() {
     }
   }
   // The native projection's axis labels and loadings come from this file.
-  if (keys.has('codonPca')) context.projections.clear();
+  if (keys.has('codonPca') || keys.has('codonPcaReference')) context.projections.clear();
   if (keys.has('goTerms') || keys.has('annotations')) {
     searchResults?.setGenes(dataset.genes, dataset.goTerms?.terms, dataset);
   }
@@ -2418,7 +2453,7 @@ function cleanRevealFrame() {
 
 /** Whether the tab on screen is one of the scatter maps. */
 function mapTabActive() {
-  return PANELS.some((panel) => panel.id === state.panel);
+  return MAP_PANELS.some((panel) => panel.id === state.panel);
 }
 
 /**
@@ -2532,7 +2567,7 @@ async function boot() {
     if (manifest !== null) {
       citationsManifest = manifest;
       if (citationsPanel && state.panel === CITATIONS_TAB.id) renderCitationsTab(manifest);
-      if (context.dataset && PANELS.some((panel) => panel.id === state.panel)) {
+      if (context.dataset && MAP_PANELS.some((panel) => panel.id === state.panel)) {
         renderColorHelp(element('colour-help'));
         renderProjectionHelp(element('features-used'),
           projectionHelp(state.panel, context.dataset, context.registry,
@@ -2563,6 +2598,8 @@ async function boot() {
   performance.mark('cyano:core');
   performance.mark('cyano:prepare-start');
   context.dataset = dataset;
+  context.recodedGenome = buildRecodedGenomeModel(organism, dataset);
+  renderRecodedGenomePanel(element('recoded-genome-panel'), context.recodedGenome);
   applyGeneCount(document, dataset.genes.length);
   loadProgress.setIdentity({
     releaseId: dataset.meta.annotationRelease?.releaseId ?? null,
@@ -2835,6 +2872,11 @@ async function boot() {
       jumpToMap();
       announce(`${id} pinned and shown on the map.`);
     },
+  });
+
+  strainFitnessPanel = new StrainFitnessPanel(element('strain-fitness-view'), {
+    organism,
+    onAnnounce: announce,
   });
 
   sidePanel = new SidePanel(element('detail'), {

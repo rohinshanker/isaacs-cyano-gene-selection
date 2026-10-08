@@ -81,6 +81,23 @@ may reduce unknown coverage only when it records its inputs, normalization,
 confidence or interval, conflicts, and fallback behavior. Prefer a versioned
 offline download over a live request from the static site.
 
+### Recoded genome records
+
+Owner decision, 2026-10-07: a deposited recoded design, pinned by checksum,
+may be a genome of record. A derived partial genome is also admissible only
+when pinned parent/design inputs, an explicit segment-to-coordinate map and
+all required structural/mutation operations reproduce its complete sequence
+and checksum. Resolve overlaps, gaps, relocations and strain/stage identities;
+never fill them by concatenation or silently call a complete design a measured
+partial isolate. Record derivation, genome provenance and residual codons
+separately from measured phenotypes.
+
+Each admitted genome has its own organism record, directory and keys. A public
+parent reference whose stock differs from the assay organism can supply a
+labelled historical-lineage projection, but cannot acquire that stock's omics
+by accession resemblance. See [recoded-multiomics.md](recoded-multiomics.md) and
+[recoded-parent-reference-records.md](recoded-parent-reference-records.md).
+
 ## Ranked candidates
 
 ### 1. Native global proteome

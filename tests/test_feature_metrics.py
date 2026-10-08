@@ -461,6 +461,10 @@ def test_inclusion_reasons_cover_every_contract_branch():
     assert exclusion_reason("ATGTAA", {**normal, "pseudo": True}) == "pseudogene"
     assert exclusion_reason("ATNTAA", normal) == "ambiguous_base"
     assert exclusion_reason("ATGTA", normal) == "length_not_multiple_of_3"
+    assert exclusion_reason(
+        "ATGTAA", normal, [[1, 4], [4, 6]]
+    ) == "overlapping_cds_segments"
+    assert exclusion_reason("ATGTAA", normal, [[1, 3], [4, 6]]) is None
     assert exclusion_reason("ATGGCT", normal) == "missing_terminal_stop"
     assert exclusion_reason("ATGTAGTAA", normal) == "internal_stop"
 

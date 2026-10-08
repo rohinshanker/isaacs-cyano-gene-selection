@@ -141,7 +141,7 @@ def validate_record(record: Any, label: str) -> None:
     od = phase.get("od")
     _require(od is None or (isinstance(od, list) and len(od) == 2 and all(_is_number(v) for v in od) and od[0] <= od[1]),
              f"{label}: phase od must be a two-number ordered range or null")
-    _require(phase.get("odNm") in (None, 730, 750), f"{label}: phase odNm must be 730, 750 or null")
+    _require(phase.get("odNm") in (None, 600, 730, 750), f"{label}: phase odNm must be 600, 730, 750 or null")
     _require(od is None or phase.get("odNm") is not None, f"{label}: phase od needs its wavelength")
 
 

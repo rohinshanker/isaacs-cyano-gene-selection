@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dataset } from './data-sources-fixture.mjs';
 import { normalizeSelection } from '../../site/js/core/data-sources.js';
-import { buildTypeMetrics, contributingDatasets, typeKeyFor } from '../../site/js/core/type-metrics.js';
+import { buildTypeMetrics, contributingDatasets, selectedDatasetsOfType, typeKeyFor } from '../../site/js/core/type-metrics.js';
 import { createSourceSelectionResolver } from '../../site/js/core/source-selection.js';
 
 const abundance = 'type.transcriptomics.rna-seq.abundance';
@@ -24,6 +24,7 @@ test('resolved membership matches uncached selection for defaults, subsets and n
       assert.deepEqual(result.selection, normalizeSelection(sources, all));
       for (const key of [abundance, typeKeyFor(all[2]), 'type.unknown']) {
         assert.deepEqual(result.contributing(key), contributingDatasets(key, named, all, result.selection));
+        assert.deepEqual(result.selected(key), selectedDatasetsOfType(key, all, result.selection));
       }
     }
   }
@@ -47,6 +48,7 @@ test('selection, named source and catalogue replacement each refresh membership'
   assert.deepEqual(ids(resolve(all, sources, names)), ['A', 'B']);
   assert.throws(() => initial.selection.push('P'), TypeError);
   assert.throws(() => initial.contributing(abundance).pop(), TypeError);
+  assert.throws(() => initial.selected(abundance).pop(), TypeError);
 });
 
 test('whole-genome reads reuse membership while late values and metric replacements remain live', () => {
@@ -69,6 +71,7 @@ test('whole-genome reads reuse membership while late values and metric replaceme
   assert.equal(metric.read(0), 1 / 6);
   const readsAfterFirst = catalogueReads;
   for (let i = 0; i < 2715; i += 1) metric.read(i % 3);
+  for (let i = 0; i < 2715; i += 1) resolve(all, sources, names).selected(abundance);
   assert.equal(catalogueReads, readsAfterFirst, 'gene reads must not rescan the source catalogue');
   // Unknown layers have no finite value and therefore no cached rank array.
   values.b = [30, 10, NaN];
@@ -88,4 +91,42 @@ test('ratio membership stays separate from protein abundance', () => {
   const result = createSourceSelectionResolver()([protein, ratio], ['P', 'R'], {});
   assert.deepEqual(result.contributing('type.proteomics.lc-ms-ms.abundance'), [protein]);
   assert.deepEqual(result.contributing('type.proteomics.lc-ms-ms.ratio'), [ratio]);
+});
+
+test('declared quantities preserve contributing and selected membership separately', () => {
+  for (const quantity of ['rpkm', 'read_count', 'log2_fold_change',
+    'edger_log2_fold_change', 'p_value', 'translation_efficiency_log2_fold_change']) {
+    const all = ['A', 'B'].map((id) => dataset({ id, datasetId: id, metricKey: id, quantity }));
+    const key = typeKeyFor(all[0]);
+    const sources = ['A', 'B'];
+    let names = {};
+    const resolve = createSourceSelectionResolver();
+    const own = new Map(all.map((d, i) => [d.id, {
+      key: d.id, read: (index) => (index + i + 1) / 10,
+      desc: d.id, provenance: { id: d.id },
+    }]));
+    const make = (cached) => buildTypeMetrics(all, {
+      contributing: (type) => cached ? resolve(all, sources, names).contributing(type)
+        : contributingDatasets(type, names, all, sources),
+      selected: (type) => cached ? resolve(all, sources, names).selected(type)
+        : selectedDatasetsOfType(type, all, sources),
+      metricOf: (d) => own.get(d.id), geneCount: 3,
+    })[0];
+    const cached = make(true);
+    const uncached = make(false);
+    for (const named of [{}, { [key]: 'B' }, { [key]: 'unknown' }, {}]) {
+      names = named;
+      const result = resolve(all, sources, names);
+      assert.deepEqual(result.selected(key), all);
+      assert.deepEqual(result.contributing(key), contributingDatasets(key, names, all, sources));
+      assert.deepEqual([0, 1, 2].map(cached.read), [0, 1, 2].map(uncached.read));
+      assert.equal(cached.selectionNote, uncached.selectionNote);
+      if (!cached.pools) {
+        const expected = named[key] === 'B' ? 'B' : 'A';
+        assert.deepEqual(result.contributing(key).map((d) => d.id), [expected]);
+        assert.equal(cached.read(0), own.get(expected).read(0));
+        assert.match(cached.selectionNote, /2 datasets of this kind are selected/);
+      }
+    }
+  }
 });

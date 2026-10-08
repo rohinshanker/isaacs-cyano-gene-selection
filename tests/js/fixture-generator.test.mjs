@@ -119,7 +119,8 @@ function digestOf(text) {
 test('the default fixture is the one the generator has always written', async () => {
   const fixture = buildFixture();
   assert.deepEqual(fixture.options, {
-    genes: 300, seed: 20260918, expression: false, annotations: false, organism: 'utex2973',
+    genes: 300, seed: 20260918, expression: false, annotations: false, strainFitness: false,
+    organism: 'utex2973',
   });
   assert.deepEqual(Object.keys(fixture.files).sort(),
     ['codon_pca.json', 'codon_rscu.json', 'excluded.json', 'genes.json', 'meta.json'],

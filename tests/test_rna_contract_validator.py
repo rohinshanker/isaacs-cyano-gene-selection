@@ -205,7 +205,7 @@ def test_raw_inputs_missing_are_explicitly_skipped(tmp_path):
     ("bad-strand", "inconsistent GFF"),
     ("mixed-strands", "inconsistent GFF"),
     ("ambiguous-genome", "ambiguous raw"),
-    ("missing-replicon", "ambiguous raw"),
+    ("missing-replicon", "missing raw"),
     ("bad-start", "invalid raw GFF"),
     ("long-segment", "invalid raw GFF"),
     ("repeated-position", "repeats a genomic"),
@@ -229,7 +229,8 @@ def test_raw_gate_reports_bad_inputs_without_crashing(tmp_path, change, message)
     elif change == "mixed-strands":
         gff += gff.splitlines()[-1].replace("\t+\t", "\t-\t") + "\n"
     elif change == "ambiguous-genome":
-        fasta += "N\n"
+        header, sequence = fasta.splitlines()
+        fasta = f"{header}\n{sequence[:50]}N{sequence[51:]}\n"
     elif change == "missing-replicon":
         fasta = fasta.replace(">circle", ">different")
     elif change == "bad-start":
@@ -255,6 +256,19 @@ def test_raw_gate_reports_bad_inputs_without_crashing(tmp_path, change, message)
     cross_check_rna_context([gene], str(tmp_path), report)
     assert len(report.failures) == 1
     assert message in report.failures[0]
+
+
+def test_raw_gate_allows_iupac_ambiguity_outside_checked_gene(tmp_path):
+    gene = synthetic_case(tmp_path)
+    genome_path = tmp_path / f"{ASSEMBLY_PREFIX}_genomic.fna.gz"
+    with gzip.open(genome_path, "rt") as handle:
+        header, sequence = handle.read().splitlines()
+    # Position 200 is outside both this gene's CDS and its -30:+60 start window.
+    with gzip.open(genome_path, "wt") as handle:
+        handle.write(f"{header}\n{sequence[:199]}R{sequence[200:]}\n")
+    report = Report()
+    cross_check_rna_context([gene], str(tmp_path), report)
+    assert not report.failures
 
 
 @pytest.mark.parametrize("field, value", [

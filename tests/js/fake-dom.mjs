@@ -140,6 +140,8 @@ export class FakeElement {
   removeAttribute(name) { delete this.attributes[name]; }
   addEventListener(type, listener) { (this.listeners[type] ??= []).push(listener); }
   dispatch(type, event = {}) { for (const listener of this.listeners[type] ?? []) listener(event); }
+  /** `HTMLElement.click()`: the one event a renderer fires at an element itself. */
+  click(event = {}) { this.dispatch('click', event); }
   focus() {
     this.focused = true;
     // A modal's whole contract is where focus goes, so the fake tracks the

@@ -79,10 +79,15 @@ export class SchemeEditor {
     clear.className = 'chip-button';
     clear.textContent = 'No scheme';
     clear.addEventListener('click', () => {
+      this.presetNote.hidden = true;
       if (this.handlers.onClear) this.handlers.onClear();
       else this.handlers.onChange({});
     });
     presetRow.append(clear);
+    this.presetNote = document.createElement('p');
+    this.presetNote.className = 'muted';
+    this.presetNote.hidden = true;
+    presetRow.append(this.presetNote);
 
     const addRow = document.createElement('div');
     addRow.className = 'field-row';
@@ -208,13 +213,15 @@ export class SchemeEditor {
   }
 
   applyPreset(preset) {
-    const map = {};
-    for (const codon of preset.targets) {
+    const map = preset.map ? structuredClone(preset.map) : {};
+    for (const codon of preset.map ? [] : preset.targets) {
       const replacement = prefillReplacement(
         codon, this.dataset.meta, this.dataset.table, this.highExpressed.checked, preset.targets,
       );
       if (replacement) map[codon] = replacement;
     }
+    this.presetNote.textContent = preset.note;
+    this.presetNote.hidden = false;
     this.nameInput.value = preset.name;
     this.handlers.onNameChange(preset.name);
     this.handlers.onChange(map);

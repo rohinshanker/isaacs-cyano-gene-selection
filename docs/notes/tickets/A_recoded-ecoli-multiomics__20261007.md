@@ -9,7 +9,7 @@
   value it produces.
 - **Status:** active
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-08
 
 Opened at the owner's request on 2026-10-07, with a Claude Science handoff asked
 for. **The handoff was not needed and the owner withdrew it the same day.** Every
@@ -27,12 +27,77 @@ All six owner questions were answered on 2026-10-07 and are recorded under
 
 ## Current State
 
-Nothing is admitted. No file is pinned in the repository, no ledger row is
-written and no code is changed. What follows was read directly from Europe PMC,
-NCBI and MassIVE on 2026-10-07 by this repository's agents, under the
-last-resort rule in the
-[handoff contract](../../validation/claude-science-handoff.md), and is recorded
-as retrieval evidence rather than as a dataset decision.
+Implementation owner: **cyano-ticket-closing**, resumed at the owner's request
+on 2026-10-07 in `work/recoded-multiomics-20261007`, baseline `be5b3b3`.
+Integrated into canonical local `main` at `c4aff4e` on 2026-10-08, preserving
+concurrent ticket updates. No push or deployment was performed.
+
+Implemented, validated and independently reviewed:
+
+- Exact Syn61∆3(ev5) CP116771.1 / GCA_028355435.1: 3,549 plotted CDSs,
+  141 excluded; recoded scheme panel and 148 residual target codons.
+- Public MDS42 AP012306.1 and DH10B CP000948.1 reference records, explicitly
+  distinguished from the study stocks, with no study omics attached to them.
+- Syn61 native PCA plus a separate child-local fixed public-MDS42 projection;
+  complete transforms, identities, gene order and source digests are validated.
+- Sixteen typed Syn61 omics columns: 50,513 source values over 3,192 exact,
+  unique gene-name joins. Read counts, RPKM, two LFC estimators, P-values and
+  TE are distinct; derived quantities never pool or qualify as low traffic.
+- Separate whole-strain fitness: 69 growth records over 48 growth strains,
+  17 categorical no-growth results, and 5,280 signed Biolog well differences.
+  Biolog identities remain separate from growth/evolution-stage identities.
+- Original Syn61 prescription and an explicitly labelled Ec_Syn57 aggregate
+  simulation preset, with every destination/share checked against pinned data.
+
+**Remaining evidence gates:** D5-isolates (final sequence and structural/mutation
+history for the three partial isolates) and D4-debug-identity (which debugged
+clone corresponds to each assay replicate). The design's overlapping/gapped
+segment features do not establish exact isolate genomes. Those organism records
+and their per-gene omics joins remain unshipped. Source normalization and
+Biolog wavelength/Seg80-0 identity limitations remain explicit, not imputed.
+The ticket stays active until that remaining scope is resolved.
+
+Multica work: DEM-309 source dossier, DEM-310 projection engine, DEM-312 fitness
+view, DEM-314 recoded UI, DEM-315 quantity contract, DEM-316 parent references.
+DEM-318 independently recomputed all admitted source values, gene joins and
+residual counts; DEM-319 reviews quantity/fitness integration. DEM-309's initial
+Claude run failed before execution under a provider biology filter; its terminal
+failure was confirmed before Codex took the evidence assignment.
+
+### Review findings and acceptance
+
+DEM-318 reviewed the earlier `cfc99f2` snapshot. Every finding is accounted for;
+DEM-318 confirms all eight findings resolved at `001d69e` (code/data `b74d128`),
+and approves the parent-reference and preset additions. DEM-319 confirms its
+three findings resolved at `30b13d5`. All findings below are resolved.
+
+| Finding | State / repair |
+| --- | --- |
+| DEM-318-F1: missing manifest entries | Fixed `8c489d6`, final typed manifest `d939b8e`; real fitness/citations render and manifest/release gates pass |
+| DEM-318-F2: unregistered typed source tables | Fixed `d939b8e` with quantity framework `274f665` / `c952f4d`; all 16 headers counted and full Python gate passes |
+| DEM-318-F3: inherited cyanobacterial citation claims | Fixed `b74d128`; explicit method-ID allowlist and Syn61 contributions. ViennaRNA and UMAP remain because this build actually uses both (`build_features.py`), with genome-specific descriptions |
+| DEM-318-F4: whole strain label in segment field | Fixed `b74d128`; literal source-row/sheet segment maps separate condition and stage, and Biolog mapping is independent of sheet order |
+| DEM-318-F5: 69 strains instead of 48 | Fixed `8c489d6`; explicit 21-pair M9/rich-medium identity crosswalk, 48 growth strains |
+| DEM-318-F6: stale child PCA artifact | Fixed `d939b8e`; child schema 2 regenerated; `283e686` supplies parent schema 2 and real validated child-local projection |
+| DEM-318-F7: blanket replicate/score claims | Fixed `b74d128`; 52 numeric / 17 no-growth distinction and Seg80-0 −10.286431 vs Table 1 −10.26 exception explicit |
+| DEM-318-F8: SD lowercased | Fixed `b74d128`; source acronym display preserved and tested |
+| DEM319-F1: indistinguishable replicate choices | Fixed `30b13d5`; source/sample labels in ordinary rows, accessible labels and axis menus; actual 16-source Syn61 regression test |
+| DEM319-F2: false compendium pooling disclosure | Fixed `30b13d5`; declared quantities stay individually visible outside the compound/dose compendium, while explicit abundance pooling and legacy fitness compendia remain available |
+| DEM319-F3: invalid fitness replicate values admitted | Fixed `30b13d5`; doubling-time replicates positive and absent for no-growth, OD replicates nonnegative; negative/boundary tests |
+
+
+The review's non-blocking suggestion to re-multiply the production projection
+is now an automated regression assertion in `test_codon_pca_projection.py`:
+every child coordinate must reproduce from the independently read public-parent
+transform and the shipped child RSCU vectors. MG1655's legacy schema-1 native
+fit remains supported; it is not used as this projection's parent.
+
+This session is **not closing** the ticket. D5-isolates and D4-debug-identity
+remain open, as described above; no partial-isolate values or genome are invented.
+
+Read-only evidence comes from pinned source files and the located-quote/hash
+manifest in [the dossier](../handoff/recoded_ecoli_evidence__20261007.md), under
+[the handoff contract](../../validation/claude-science-handoff.md).
 
 ### The paper
 
@@ -132,8 +197,7 @@ as log2 fold change in translation efficiency. Replicate-level RPKM plus a
 derived fold change and a translation-efficiency term is more than the viewer's
 expression layers currently carry from any source.
 
-**`Supplementary_Data_2.xlsx`** — fitness. `Fitness_Source_data` is 73 strains
-by doubling time, maximum OD600, their standard deviations and the individual
+**`Supplementary_Data_2.xlsx`** — fitness. `Fitness_Source_data` contains 69 populated strain–condition rows (48 growth strains), with doubling time, maximum OD600, their standard deviations and the individual
 replicate columns behind each. `Biolog_Source_data` holds only the plate
 catalogue: PM1 and PM2 carbon utilisation, PM4 phosphorus and sulfur, PM6
 nitrogen, PM9 osmotic and ionic response, 96 wells each, which is where the 480
@@ -448,9 +512,13 @@ matched every descendant icon button and pulled the share rows' remove control
 into the wrong grid column, and the destination dropdowns were clipped by
 repeating occurrence counts the panel already showed.
 
-**Not done here.** The Ec_Syn57 scheme is not yet a shipped preset. Its map is
-derived and recorded above, but a preset also needs the organism it belongs to,
-which is D7.
+**Implemented 2026-10-08.** Ec_Syn57 aggregate is a simulation preset whose
+whole-percentage shares reproduce the observed matched-CDS distribution after
+largest-remainder rounding. TAG terminal changes are independently counted
+(118 to TAA, 108 to TGA). The visible note disclaims reconstruction of a
+published genome and names its conflict with Syn61 serine targets. The Syn61
+original-design preset now uses the depositor prescription TCG→AGC, TCA→AGT,
+TAG→TAA rather than current-genome frequency prefills.
 
 When editing a scheme, each target codon offers a single replacement codon today.
 The editor gains a per-codon choice to make that target a **distribution** rather
@@ -554,11 +622,11 @@ recomputed map always reachable beside it.
 | D1 | Owner answers Q1 and Q2 | Create the six organism records and pin their genomes | **met 2026-10-07.** One record per profiled genome; design and derived genomes admissible, pinned by checksum |
 | D2 | Owner answers Q3 | Build the two codon projections | **met 2026-10-07.** Refit and shared-axis projection, both labelled |
 | D3 | The Ec_Syn57 target set and replacement distribution | The scheme preset and every per-gene recoded mark | **met 2026-10-07** by `tools/recoded_scheme.py`, two independent derivations in agreement. See "Derived 2026-10-07" |
-| D4 | The reference strain, units, normalisation and identifier namespace of every Supplementary Data 3 column, read from the methods | Any ingestion of a fold-change or translation-efficiency value | **open.** Replicate RPKM does not wait on it; the two derived quantities do |
-| D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open.** The rosters differ between the deposit and the supplements and must be reconciled, not assumed |
+| D4 | The reference strain, units, normalisation and identifier namespace of every Supplementary Data 3 column, read from the methods | Any ingestion of a fold-change or translation-efficiency value | **met with explicit source caveats 2026-10-08.** All five references and distinct quantities verified in the evidence dossier. Exact normalization details remain unspecified; values stay as deposited. Debugged Seg30–35 versus unedited Seg30–35 is not versus MDS42. |
+| D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open for partial isolates.** Exact Syn61 ev5 accession and 88 design segment features are verified. D5-isolates requires final structural/mutation history and stock sequences; D4-debug-identity requires assay replicate-to-clone mapping. Design intervals contain overlaps and gaps, so no synthetic concatenation is admitted. |
 | D6 | A distribution representation in `site/js/core/scheme.js` and its editor | Adding Ec_Syn57 as a selectable scheme preset, and U2's honest description of it | **met 2026-10-07** as U1, shipped with 44 new tests and rendered validation |
-| D7 | At least one recoded organism record, which needs D5 for a per-strain genome or the design genome admitted under Q2 | U2's panel and U3's colour source, and any rendered validation of either | **open.** Both are specified and neither can be rendered until a recoded organism exists |
-| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **open.** U4 above; the refitted map needs none of this |
+| D7 | At least one recoded organism record, which needs D5 for a per-strain genome or the design genome admitted under Q2 | U2's panel and U3's colour source, and any rendered validation of either | **met 2026-10-08.** Exact Syn61∆3(ev5), GCA_028355435.1; U2/U3 have unit tests and four-width rendered validation in DEM-314. |
+| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **met and reviewed 2026-10-08.** Schema 2 transforms and projector, real MDS42 parent-reference payload and separate browser view shipped in the integration branch. Public MDS42 is explicitly not the exact experimental stock. |
 
 ## Work plan
 
@@ -600,6 +668,36 @@ Step 2 is done. Nothing here waits on Claude Science.
    close it.
 
 ## Verification
+
+Integrated code/data at `d939b8e`: `npm test` **1,327 passed**;
+`.venv/bin/python -m pytest -q` **888 passed, 1 skipped, 36 subtests**;
+default contract **117 passed / 1 declared spliced-CDS skip**;
+Syn61 **92 / 1**, MDS42 **86 / 1**, DH10B **86 / 1**. Follow-on label/citation
+repairs `b74d128`: 8 source-ingestion and 13 fitness-panel tests passed.
+After `b74d128`, full gates pass: JavaScript **1,328**, Python **890 passed /
+1 skipped / 36 subtests**, default contract **117 / 1**, Syn61 **92 / 1**.
+`30b13d5` then passes 72 focused JS tests. Final gates: JavaScript **1,330 passed**; Python **891 passed, 1 skipped,
+36 subtests passed**, including the production-coordinate reproduction test. DEM-319 confirms F1/F2/F3 resolved at
+`30b13d5` with 93 focused tests and a real-data Chrome recheck. DEM-318 also approves all eight repairs and the parent/preset scope at
+`001d69e`, with independent exact coordinate reproduction and source-value audits. `3f9fddd` scopes the scheme panel’s axes sentence
+to Native codon space (4 focused tests), avoiding a contradictory description
+when the parent-reference tab is selected.
+
+Real app rendered at 375×812, 768×1024, 1280×800 and 1440×900: native/refit,
+parent-fixed P-value colouring, LFC-vs-TE axes, aggregate preset and whole-strain
+fitness states. Zero page overflow or browser errors. MDS42/DH10B expose no
+study omics or child-reference panel. Growth and Biolog downloads retain 69 and
+5,280 rows; no-growth numeric fields remain absent. Final corrections were rendered at all four widths: explicit segment fields,
+replicate source/axis choices, P-value informing source, revised metadata and
+Syn61-only citations; zero page overflow or page errors. Reusable contracts are in `docs/validation/recoded-multiomics.md`,
+`recoded-reference-projection.md`, `recoded-parent-reference-records.md`,
+`measured-quantity-contract.md` and `strain-fitness.md`.
+
+The Downloads intake prompt was compared with the retained repository handoff;
+it added no new evidence and contained the stale ten-file count. The duplicate
+Downloads file was deleted at the owner's request; the corrected repository
+handoff remains.
+
 
 **Sources.** Every source fact in "Current State" was read from the named
 endpoint on 2026-10-07. The Europe PMC bundle and the Source Data archive were

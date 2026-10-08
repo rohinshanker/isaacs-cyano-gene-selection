@@ -1,0 +1,2013 @@
+{
+  "schema_version": 1,
+  "session": "codex-reviewer / DEM-309",
+  "retrieval_date_utc": "2026-10-08",
+  "retrieval_date_America_New_York": "2026-10-07",
+  "assigned_baseline": "be5b3b3d3c15c443fe555ada851683e7ea2f7bd8",
+  "actual_worktree_base": "2db9d3ebeed7f30bd40516649bd040568fc61971",
+  "sources": [
+    {
+      "id": "article",
+      "file": "article.xml",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/fullTextXML",
+      "location": "Sec10, Sec17, Sec19, Sec27, Sec28",
+      "bytes": 318246,
+      "sha256": "0f819b794c2bd9e83669157439552b16555d75d97153676e2c348b2eb9381a69",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Admit with caveats: exact study, incomplete normalization details and wavelength conflict."
+    },
+    {
+      "id": "bundle",
+      "file": "supplements.zip",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "Publisher-deposited supplementary bundle",
+      "bytes": 21528360,
+      "sha256": "e42c100b438049b589b8ff65bf377bcc917830f83010b8cecd7c2b7d25b383a4",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact byte-pinned source container."
+    },
+    {
+      "id": "source_archive",
+      "file": "41467_2026_74300_MOESM3_ESM.zip",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip",
+      "bytes": 7186052,
+      "sha256": "cde46b0711b55c420d06e51e817201737b7df01f4a84ec08f56f379670b2c4b1",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact match to canonical pinned archive."
+    },
+    {
+      "id": "data1",
+      "file": "Supplementary_Data_1.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_1.xlsx",
+      "bytes": 378521,
+      "sha256": "9f53c2019c333f73a8d5eecc6bc76c6bbd62c4fc1b772df934b1f1f472003103",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "data2",
+      "file": "Supplementary_Data_2.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_2.xlsx",
+      "bytes": 210918,
+      "sha256": "083101a99c6ada219c1e8ff58e7b349c271661fc97d72a0b55c842d2a9561aa1",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "data3",
+      "file": "Supplementary_Data_3.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_3.xlsx",
+      "bytes": 3809265,
+      "sha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "data4",
+      "file": "Supplementary_Data_4.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_4.xlsx",
+      "bytes": 68499,
+      "sha256": "c3d63217df8b63fcab11eeb3e1920b7ae28e900e1663779e5d847658fd2e6aeb",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "data5",
+      "file": "Supplementary_Data_5.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_5.xlsx",
+      "bytes": 106706,
+      "sha256": "10f5e3c9f38eb6ae4bc8d88f2af8a8aec15d21a25599ca6f6bd3cc0a9768330a",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "data6",
+      "file": "Supplementary_Data_6.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_6.xlsx",
+      "bytes": 30299,
+      "sha256": "7abbc920088fd56a0d4bc77bdd25b4e28806d269d63c727174f2b12a58b22579",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "data7",
+      "file": "Supplementary_Data_7.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Supplementary_Data_7.xlsx",
+      "bytes": 31354,
+      "sha256": "c97456aef2ffeb06d6572c20057a9d56d828622d20d5ea83e3261c3b1498ff94",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact study artifact; interpretation and strain-match limits are in the dossier."
+    },
+    {
+      "id": "design",
+      "file": "Ec_Syn57.gb",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM3_ESM.zip/Ec_Syn57.gb",
+      "bytes": 16757528,
+      "sha256": "8c61aeebfb8fef71a9d01ceba2a2acdb8babdf96ac0aa01aae36b10d08f77f96",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact design; reject as an exact profiled isolate genome."
+    },
+    {
+      "id": "moesm1",
+      "file": "41467_2026_74300_MOESM1_ESM.pdf",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM1_ESM.pdf",
+      "bytes": 8304144,
+      "sha256": "a08e5fcb4f4f4672017f362acdeba4dcf5aa24ebcf7607735ae3389079642986",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Primary supplementary evidence; MOESM5 is peer-review history, not a substitute for final data."
+    },
+    {
+      "id": "moesm2",
+      "file": "41467_2026_74300_MOESM2_ESM.pdf",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM2_ESM.pdf",
+      "bytes": 226474,
+      "sha256": "4bb8426d706b893e8e634e95a9d0c263947303566a0fa1c0eaba96a9276dd3ba",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Primary supplementary evidence; MOESM5 is peer-review history, not a substitute for final data."
+    },
+    {
+      "id": "moesm4",
+      "file": "41467_2026_74300_MOESM4_ESM.pdf",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM4_ESM.pdf",
+      "bytes": 1657370,
+      "sha256": "4c46466b6c21cec09bf3eb92124c5327794b1ba7e7f130984ca03dca70dc313f",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Primary supplementary evidence; MOESM5 is peer-review history, not a substitute for final data."
+    },
+    {
+      "id": "moesm5",
+      "file": "41467_2026_74300_MOESM5_ESM.pdf",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM5_ESM.pdf",
+      "bytes": 1339230,
+      "sha256": "8393357ae50cbd7b8447341c88417cced8c607c73171907ffc539968b02b348c",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Primary supplementary evidence; MOESM5 is peer-review history, not a substitute for final data."
+    },
+    {
+      "id": "moesm6",
+      "file": "41467_2026_74300_MOESM6_ESM.xlsx",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "location": "41467_2026_74300_MOESM6_ESM.xlsx",
+      "bytes": 2456033,
+      "sha256": "7358d6e35afaac0b09ab5975f735c55759672a630ccb2ada2c5534e4e6f98ef4",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Primary supplementary evidence; MOESM5 is peer-review history, not a substitute for final data."
+    },
+    {
+      "id": "sra",
+      "file": "runinfo.csv",
+      "url": "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc=PRJNA1088510",
+      "location": "Run, SampleName, LibraryStrategy, BioSample fields",
+      "bytes": 38963,
+      "sha256": "168cab6bb9a9f9bef8f02cf930707e48da8d05da6090d0467d938e7002692682",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact deposit; debugged omics profile not separately named."
+    },
+    {
+      "id": "zenodo",
+      "file": "zenodo.json",
+      "url": "https://zenodo.org/api/records/19682030",
+      "location": "metadata and files",
+      "bytes": 4010,
+      "sha256": "2d7f21f235d87f7ba0fc7b9ce019301928193938281306c8bbb9aa26a941c8ab",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Initial 2016 design software, not final 2026 strain reconstruction."
+    },
+    {
+      "id": "software",
+      "file": "recoli57.zip",
+      "url": "https://zenodo.org/api/records/19682030/files/churchlab/recoli57-v1.0.0.zip/content",
+      "location": "churchlab-recoli57-5485b1a",
+      "bytes": 30364205,
+      "sha256": "d3874538894a5cf1e0987fadc38cbc3c5e6cbd10e440dd1a84059271aeec61e0",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Admit as historical design provenance only; no final isolate patch manifest found."
+    },
+    {
+      "id": "AP012306.1",
+      "file": "AP012306.1.gb",
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=AP012306.1&rettype=gbwithparts&retmode=text",
+      "location": "LOCUS, DEFINITION, VERSION, source feature, ORIGIN",
+      "bytes": 9363594,
+      "sha256": "2790c379990112abbf8357f0fa3c39797850357582255f0f3db5b6913f25109c",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact strain accession for Syn61 delta3 ev5; parental reference only for MDS42/DH10B."
+    },
+    {
+      "id": "CP000948.1",
+      "file": "CP000948.1.gb",
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP000948.1&rettype=gbwithparts&retmode=text",
+      "location": "LOCUS, DEFINITION, VERSION, source feature, ORIGIN",
+      "bytes": 10031119,
+      "sha256": "1bdf5f5991d7ddea5919d7fb722f700084c9faf5cbec8481fc2a9c15ceeec754",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact strain accession for Syn61 delta3 ev5; parental reference only for MDS42/DH10B."
+    },
+    {
+      "id": "CP116771.1",
+      "file": "CP116771.1.gb",
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=CP116771.1&rettype=gbwithparts&retmode=text",
+      "location": "LOCUS, DEFINITION, VERSION, source feature, ORIGIN",
+      "bytes": 9847354,
+      "sha256": "5e9ec698aea8de2e227670bec48251c05264dc92aebe637bbb2e99194dd48417",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "Exact strain accession for Syn61 delta3 ev5; parental reference only for MDS42/DH10B."
+    },
+    {
+      "id": "crossref",
+      "file": "crossref.json",
+      "url": "https://api.crossref.org/works/10.1038/s41467-026-74300-9",
+      "location": "Correction/update metadata",
+      "bytes": 55051,
+      "sha256": "cce449ffad57d77e648c23b2ad64bd076f7fab9e373376c2258bd19fabcc89d1",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "No correction/retraction relationship found on retrieval."
+    },
+    {
+      "id": "europepmc",
+      "file": "europepmc.json",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:42331836%20AND%20SRC:MED&format=json&resultType=core",
+      "location": "Correction/update metadata",
+      "bytes": 14541,
+      "sha256": "f7a3a624d6d4cb30ad086808f50ff8052503daa79f99bf1636249a4c2d68dbf6",
+      "retrieved_utc_date": "2026-10-08",
+      "assessment": "No correction/retraction relationship found on retrieval."
+    }
+  ],
+  "mechanically_matched_quotes": [
+    {
+      "source_id": "article",
+      "location": "sec[@id=\"Sec19\"]",
+      "quote": "three independent replicates",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "0f819b794c2bd9e83669157439552b16555d75d97153676e2c348b2eb9381a69"
+    },
+    {
+      "source_id": "article",
+      "location": "sec[@id=\"Sec19\"]",
+      "quote": "using the standard settings",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "0f819b794c2bd9e83669157439552b16555d75d97153676e2c348b2eb9381a69"
+    },
+    {
+      "source_id": "article",
+      "location": "sec[@id=\"Sec17\"]",
+      "quote": "51 bp insertion between mrcB and hemL",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "0f819b794c2bd9e83669157439552b16555d75d97153676e2c348b2eb9381a69"
+    },
+    {
+      "source_id": "article",
+      "location": "sec[@id=\"Sec28\"]",
+      "quote": "OD monitoring at 590 nm",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "0f819b794c2bd9e83669157439552b16555d75d97153676e2c348b2eb9381a69"
+    },
+    {
+      "source_id": "moesm1",
+      "location": "PDF page 30",
+      "quote": "parental MDS42",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "a08e5fcb4f4f4672017f362acdeba4dcf5aa24ebcf7607735ae3389079642986"
+    },
+    {
+      "source_id": "moesm1",
+      "location": "PDF page 33",
+      "quote": "its final, debugged variant",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "a08e5fcb4f4f4672017f362acdeba4dcf5aa24ebcf7607735ae3389079642986"
+    },
+    {
+      "source_id": "moesm1",
+      "location": "PDF page 5",
+      "quote": "mean difference in maximal optical density",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "a08e5fcb4f4f4672017f362acdeba4dcf5aa24ebcf7607735ae3389079642986"
+    },
+    {
+      "source_id": "moesm1",
+      "location": "PDF page 55",
+      "quote": "recA1 allele to wild-type recA",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "a08e5fcb4f4f4672017f362acdeba4dcf5aa24ebcf7607735ae3389079642986"
+    },
+    {
+      "source_id": "data3",
+      "location": "Legend!B9",
+      "quote": "Delta_LFC",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0"
+    },
+    {
+      "source_id": "data1",
+      "location": "Strains & Plasmids!D2",
+      "quote": "GenBank: CP116771.1",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "9f53c2019c333f73a8d5eecc6bc76c6bbd62c4fc1b772df934b1f1f472003103"
+    },
+    {
+      "source_id": "data2",
+      "location": "Fitness_Source_data!B4",
+      "quote": "0 (no growth detected)",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "083101a99c6ada219c1e8ff58e7b349c271661fc97d72a0b55c842d2a9561aa1"
+    },
+    {
+      "source_id": "data2",
+      "location": "Biolog_Source_data!A1",
+      "quote": "Strains were compared to E. coli MDS42",
+      "match": "pass",
+      "normalization": "Unicode whitespace collapsed",
+      "source_sha256": "083101a99c6ada219c1e8ff58e7b349c271661fc97d72a0b55c842d2a9561aa1"
+    }
+  ],
+  "omics_sheets": [
+    {
+      "sheet": "Seg9-18_36-44_46-49_51-59",
+      "rows": 3642,
+      "unique_row_identifiers": 3642,
+      "reference": "MDS42",
+      "reference_evidence": "explicit control columns; Supplementary Figure 15",
+      "contrast": "named test / named reference",
+      "headers": [
+        {
+          "column": "A",
+          "name": "Gene"
+        },
+        {
+          "column": "B",
+          "name": "Description"
+        },
+        {
+          "column": "C",
+          "name": "RNA-MDS42-1_rpkm"
+        },
+        {
+          "column": "D",
+          "name": "RNA-MDS42-2_rpkm"
+        },
+        {
+          "column": "E",
+          "name": "RNA-MDS42-3_rpkm"
+        },
+        {
+          "column": "F",
+          "name": "RNA-Seg9-18_36-44_46-49_51-59-1_rpkm"
+        },
+        {
+          "column": "G",
+          "name": "RNA-Seg9-18_36-44_46-49_51-59-2_rpkm"
+        },
+        {
+          "column": "H",
+          "name": "RNA-Seg9-18_36-44_46-49_51-59-3_rpkm"
+        },
+        {
+          "column": "I",
+          "name": "RIBO-MDS42-1_rpkm"
+        },
+        {
+          "column": "J",
+          "name": "RIBO-MDS42-2_rpkm"
+        },
+        {
+          "column": "K",
+          "name": "RIBO-MDS42-3_rpkm"
+        },
+        {
+          "column": "L",
+          "name": "RIBO-Seg9-18_36-44_46-49_51-59-1_rpkm"
+        },
+        {
+          "column": "M",
+          "name": "RIBO-Seg9-18_36-44_46-49_51-59-2_rpkm"
+        },
+        {
+          "column": "N",
+          "name": "RIBO-Seg9-18_36-44_46-49_51-59-3_rpkm"
+        },
+        {
+          "column": "O",
+          "name": "RNA_LFC"
+        },
+        {
+          "column": "P",
+          "name": "RNA_LFC_EdgeR"
+        },
+        {
+          "column": "Q",
+          "name": "RNA_P-value"
+        },
+        {
+          "column": "R",
+          "name": "RIBO_LFC"
+        },
+        {
+          "column": "S",
+          "name": "RIBO_LFC_EdgeR"
+        },
+        {
+          "column": "T",
+          "name": "RIBO_P-value"
+        },
+        {
+          "column": "U",
+          "name": "Delta_LFC"
+        }
+      ],
+      "replicate_columns": [
+        {
+          "column": "C",
+          "header": "RNA-MDS42-1_rpkm"
+        },
+        {
+          "column": "D",
+          "header": "RNA-MDS42-2_rpkm"
+        },
+        {
+          "column": "E",
+          "header": "RNA-MDS42-3_rpkm"
+        },
+        {
+          "column": "F",
+          "header": "RNA-Seg9-18_36-44_46-49_51-59-1_rpkm"
+        },
+        {
+          "column": "G",
+          "header": "RNA-Seg9-18_36-44_46-49_51-59-2_rpkm"
+        },
+        {
+          "column": "H",
+          "header": "RNA-Seg9-18_36-44_46-49_51-59-3_rpkm"
+        },
+        {
+          "column": "I",
+          "header": "RIBO-MDS42-1_rpkm"
+        },
+        {
+          "column": "J",
+          "header": "RIBO-MDS42-2_rpkm"
+        },
+        {
+          "column": "K",
+          "header": "RIBO-MDS42-3_rpkm"
+        },
+        {
+          "column": "L",
+          "header": "RIBO-Seg9-18_36-44_46-49_51-59-1_rpkm"
+        },
+        {
+          "column": "M",
+          "header": "RIBO-Seg9-18_36-44_46-49_51-59-2_rpkm"
+        },
+        {
+          "column": "N",
+          "header": "RIBO-Seg9-18_36-44_46-49_51-59-3_rpkm"
+        }
+      ],
+      "biological_replicates": 3,
+      "delta_check": {
+        "formula": "RIBO_LFC - RNA_LFC",
+        "finite_rows": 3642,
+        "max_abs_error": 0.00010000000000065512,
+        "tolerance": 0.00010001
+      },
+      "missing_dash_counts": {
+        "RNA_LFC_EdgeR": 12,
+        "RIBO_LFC_EdgeR": 550
+      },
+      "identifier_namespace": "author Gene keys: symbols with disambiguation suffixes; Seg70-81 also ECDH10B_RS identifiers; not stable universal locus tags",
+      "sra_run_mapping_basis": "Deposited sample names and replicate numbers; not additional clone/genome identity evidence.",
+      "sra_runs_in_replicate_order": {
+        "test": {
+          "RNA": [
+            "SRR28359369",
+            "SRR28359358",
+            "SRR28359352"
+          ],
+          "RIBO": [
+            "SRR28359394",
+            "SRR28359393",
+            "SRR28359380"
+          ]
+        },
+        "reference": {
+          "RNA": [
+            "SRR28359372",
+            "SRR28359371",
+            "SRR28359370"
+          ],
+          "RIBO": [
+            "SRR28359375",
+            "SRR28359374",
+            "SRR28359373"
+          ]
+        }
+      }
+    },
+    {
+      "sheet": "Seg30-35",
+      "rows": 3641,
+      "unique_row_identifiers": 3641,
+      "reference": "MDS42",
+      "reference_evidence": "Supplementary Figure 18; Source Data figure table",
+      "contrast": "named test / named reference",
+      "headers": [
+        {
+          "column": "A",
+          "name": "Gene"
+        },
+        {
+          "column": "B",
+          "name": "Description"
+        },
+        {
+          "column": "C",
+          "name": "RNA-Seg30-35_1_rpkm"
+        },
+        {
+          "column": "D",
+          "name": "RNA-Seg30-35_2_rpkm"
+        },
+        {
+          "column": "E",
+          "name": "RNA-Seg30-35_3_rpkm"
+        },
+        {
+          "column": "F",
+          "name": "RIBO-Seg30-35_1_rpkm"
+        },
+        {
+          "column": "G",
+          "name": "RIBO-Seg30-35_2_rpkm"
+        },
+        {
+          "column": "H",
+          "name": "RIBO-Seg30-35_3_rpkm"
+        },
+        {
+          "column": "I",
+          "name": "RNA_LFC"
+        },
+        {
+          "column": "J",
+          "name": "RNA_LFC_EdgeR"
+        },
+        {
+          "column": "K",
+          "name": "RNA_P-value"
+        },
+        {
+          "column": "L",
+          "name": "RIBO_LFC"
+        },
+        {
+          "column": "M",
+          "name": "RIBO_LFC_EdgeR"
+        },
+        {
+          "column": "N",
+          "name": "RIBO_P-value"
+        },
+        {
+          "column": "O",
+          "name": "Delta_LFC"
+        }
+      ],
+      "replicate_columns": [
+        {
+          "column": "C",
+          "header": "RNA-Seg30-35_1_rpkm"
+        },
+        {
+          "column": "D",
+          "header": "RNA-Seg30-35_2_rpkm"
+        },
+        {
+          "column": "E",
+          "header": "RNA-Seg30-35_3_rpkm"
+        },
+        {
+          "column": "F",
+          "header": "RIBO-Seg30-35_1_rpkm"
+        },
+        {
+          "column": "G",
+          "header": "RIBO-Seg30-35_2_rpkm"
+        },
+        {
+          "column": "H",
+          "header": "RIBO-Seg30-35_3_rpkm"
+        }
+      ],
+      "biological_replicates": 3,
+      "delta_check": {
+        "formula": "RIBO_LFC - RNA_LFC",
+        "finite_rows": 3632,
+        "max_abs_error": 0.00010000000000065512,
+        "tolerance": 0.00010001
+      },
+      "missing_dash_counts": {
+        "RNA-Seg30-35_1_rpkm": 7,
+        "RNA-Seg30-35_2_rpkm": 7,
+        "RNA-Seg30-35_3_rpkm": 7,
+        "RIBO-Seg30-35_1_rpkm": 7,
+        "RIBO-Seg30-35_2_rpkm": 7,
+        "RIBO-Seg30-35_3_rpkm": 7,
+        "RNA_LFC": 9,
+        "RNA_LFC_EdgeR": 51,
+        "RNA_P-value": 9,
+        "RIBO_LFC": 9,
+        "RIBO_LFC_EdgeR": 739,
+        "RIBO_P-value": 9,
+        "Delta_LFC": 9
+      },
+      "identifier_namespace": "author Gene keys: symbols with disambiguation suffixes; Seg70-81 also ECDH10B_RS identifiers; not stable universal locus tags",
+      "sra_run_mapping_basis": "Deposited sample names and replicate numbers; not additional clone/genome identity evidence.",
+      "sra_runs_in_replicate_order": {
+        "test": {
+          "RNA": [
+            "SRR28359365",
+            "SRR28359364",
+            "SRR28359363"
+          ],
+          "RIBO": [
+            "SRR28359368",
+            "SRR28359367",
+            "SRR28359366"
+          ]
+        },
+        "reference": {
+          "RNA": [
+            "SRR28359372",
+            "SRR28359371",
+            "SRR28359370"
+          ],
+          "RIBO": [
+            "SRR28359375",
+            "SRR28359374",
+            "SRR28359373"
+          ]
+        }
+      }
+    },
+    {
+      "sheet": "Seg30-35_debugged",
+      "rows": 3634,
+      "unique_row_identifiers": 3634,
+      "reference": "Seg30-35 unedited",
+      "reference_evidence": "explicit control columns; Supplementary Figure 20",
+      "contrast": "named test / named reference",
+      "headers": [
+        {
+          "column": "A",
+          "name": "Gene"
+        },
+        {
+          "column": "B",
+          "name": "Description"
+        },
+        {
+          "column": "C",
+          "name": "RNA-Seg30-35_unedited_1_rpkm"
+        },
+        {
+          "column": "D",
+          "name": "RNA-Seg30-35_unedited_2_rpkm"
+        },
+        {
+          "column": "E",
+          "name": "RNA-Seg30-35_unedited_3_rpkm"
+        },
+        {
+          "column": "F",
+          "name": "RNA-Seg30-35_debugged_1_rpkm"
+        },
+        {
+          "column": "G",
+          "name": "RNA-Seg30-35_debugged_2_rpkm"
+        },
+        {
+          "column": "H",
+          "name": "RNA-Seg30-35_debugged_3_rpkm"
+        },
+        {
+          "column": "I",
+          "name": "RIBO-Seg30-35_unedited_1_rpkm"
+        },
+        {
+          "column": "J",
+          "name": "RIBO-Seg30-35_unedited_2_rpkm"
+        },
+        {
+          "column": "K",
+          "name": "RIBO-Seg30-35_unedited_3_rpkm"
+        },
+        {
+          "column": "L",
+          "name": "RIBO-Seg30-35_debugged_1_rpkm"
+        },
+        {
+          "column": "M",
+          "name": "RIBO-Seg30-35_debugged_2_rpkm"
+        },
+        {
+          "column": "N",
+          "name": "RIBO-Seg30-35_debugged_3_rpkm"
+        },
+        {
+          "column": "O",
+          "name": "RNA_LFC"
+        },
+        {
+          "column": "P",
+          "name": "RNA_LFC_EdgeR"
+        },
+        {
+          "column": "Q",
+          "name": "RNA_P-value"
+        },
+        {
+          "column": "R",
+          "name": "RIBO_LFC"
+        },
+        {
+          "column": "S",
+          "name": "RIBO_LFC_EdgeR"
+        },
+        {
+          "column": "T",
+          "name": "RIBO_P-value"
+        },
+        {
+          "column": "U",
+          "name": "Delta_LFC"
+        }
+      ],
+      "replicate_columns": [
+        {
+          "column": "C",
+          "header": "RNA-Seg30-35_unedited_1_rpkm"
+        },
+        {
+          "column": "D",
+          "header": "RNA-Seg30-35_unedited_2_rpkm"
+        },
+        {
+          "column": "E",
+          "header": "RNA-Seg30-35_unedited_3_rpkm"
+        },
+        {
+          "column": "F",
+          "header": "RNA-Seg30-35_debugged_1_rpkm"
+        },
+        {
+          "column": "G",
+          "header": "RNA-Seg30-35_debugged_2_rpkm"
+        },
+        {
+          "column": "H",
+          "header": "RNA-Seg30-35_debugged_3_rpkm"
+        },
+        {
+          "column": "I",
+          "header": "RIBO-Seg30-35_unedited_1_rpkm"
+        },
+        {
+          "column": "J",
+          "header": "RIBO-Seg30-35_unedited_2_rpkm"
+        },
+        {
+          "column": "K",
+          "header": "RIBO-Seg30-35_unedited_3_rpkm"
+        },
+        {
+          "column": "L",
+          "header": "RIBO-Seg30-35_debugged_1_rpkm"
+        },
+        {
+          "column": "M",
+          "header": "RIBO-Seg30-35_debugged_2_rpkm"
+        },
+        {
+          "column": "N",
+          "header": "RIBO-Seg30-35_debugged_3_rpkm"
+        }
+      ],
+      "biological_replicates": 3,
+      "delta_check": {
+        "formula": "RIBO_LFC - RNA_LFC",
+        "finite_rows": 3634,
+        "max_abs_error": 0.00010000000000065512,
+        "tolerance": 0.00010001
+      },
+      "missing_dash_counts": {},
+      "identifier_namespace": "author Gene keys: symbols with disambiguation suffixes; Seg70-81 also ECDH10B_RS identifiers; not stable universal locus tags",
+      "sra_run_mapping_basis": "Deposited sample names and replicate numbers; not additional clone/genome identity evidence.",
+      "sra_runs_in_replicate_order": {
+        "test": null,
+        "reference": {
+          "RNA": [
+            "SRR28359365",
+            "SRR28359364",
+            "SRR28359363"
+          ],
+          "RIBO": [
+            "SRR28359368",
+            "SRR28359367",
+            "SRR28359366"
+          ]
+        }
+      }
+    },
+    {
+      "sheet": "Seg70-81",
+      "rows": 4258,
+      "unique_row_identifiers": 4258,
+      "reference": "DH10B",
+      "reference_evidence": "explicit DH10B control columns; SRA and Data 1",
+      "contrast": "named test / named reference",
+      "headers": [
+        {
+          "column": "A",
+          "name": "Gene"
+        },
+        {
+          "column": "B",
+          "name": "Description"
+        },
+        {
+          "column": "C",
+          "name": "RNA-E_coli_DH10B_1_rpkm"
+        },
+        {
+          "column": "D",
+          "name": "RNA-E_coli_DH10B_2_rpkm"
+        },
+        {
+          "column": "E",
+          "name": "RNA-E_coli_DH10B_3_rpkm"
+        },
+        {
+          "column": "F",
+          "name": "RNA-Seg70-81_1_rpkm"
+        },
+        {
+          "column": "G",
+          "name": "RNA-Seg70-81_2_rpkm"
+        },
+        {
+          "column": "H",
+          "name": "RNA-Seg70-81_3_rpkm"
+        },
+        {
+          "column": "I",
+          "name": "RIBO-E_coli_DH10B_1_rpkm"
+        },
+        {
+          "column": "J",
+          "name": "RIBO-E_coli_DH10B_2_rpkm"
+        },
+        {
+          "column": "K",
+          "name": "RIBOE_coli_DH10B_3_rpkm"
+        },
+        {
+          "column": "L",
+          "name": "RIBO-Seg70-81_1_rpkm"
+        },
+        {
+          "column": "M",
+          "name": "RIBO-Seg70-81_2_rpkm"
+        },
+        {
+          "column": "N",
+          "name": "RIBO-Seg70-81_3_rpkm"
+        },
+        {
+          "column": "O",
+          "name": "RNA_LFC"
+        },
+        {
+          "column": "P",
+          "name": "RNA_LFC_EdgeR"
+        },
+        {
+          "column": "Q",
+          "name": "RNA_P-value"
+        },
+        {
+          "column": "R",
+          "name": "RIBO_LFC"
+        },
+        {
+          "column": "S",
+          "name": "RIBO_LFC_EdgeR"
+        },
+        {
+          "column": "T",
+          "name": "RIBO_P-value"
+        },
+        {
+          "column": "U",
+          "name": "Delta_LFC"
+        }
+      ],
+      "replicate_columns": [
+        {
+          "column": "C",
+          "header": "RNA-E_coli_DH10B_1_rpkm"
+        },
+        {
+          "column": "D",
+          "header": "RNA-E_coli_DH10B_2_rpkm"
+        },
+        {
+          "column": "E",
+          "header": "RNA-E_coli_DH10B_3_rpkm"
+        },
+        {
+          "column": "F",
+          "header": "RNA-Seg70-81_1_rpkm"
+        },
+        {
+          "column": "G",
+          "header": "RNA-Seg70-81_2_rpkm"
+        },
+        {
+          "column": "H",
+          "header": "RNA-Seg70-81_3_rpkm"
+        },
+        {
+          "column": "I",
+          "header": "RIBO-E_coli_DH10B_1_rpkm"
+        },
+        {
+          "column": "J",
+          "header": "RIBO-E_coli_DH10B_2_rpkm"
+        },
+        {
+          "column": "K",
+          "header": "RIBOE_coli_DH10B_3_rpkm"
+        },
+        {
+          "column": "L",
+          "header": "RIBO-Seg70-81_1_rpkm"
+        },
+        {
+          "column": "M",
+          "header": "RIBO-Seg70-81_2_rpkm"
+        },
+        {
+          "column": "N",
+          "header": "RIBO-Seg70-81_3_rpkm"
+        }
+      ],
+      "biological_replicates": 3,
+      "delta_check": {
+        "formula": "RIBO_LFC - RNA_LFC",
+        "finite_rows": 4162,
+        "max_abs_error": 0.00010000000000068288,
+        "tolerance": 0.00010001
+      },
+      "missing_dash_counts": {
+        "RNA-E_coli_DH10B_1_rpkm": 15,
+        "RNA-E_coli_DH10B_2_rpkm": 15,
+        "RNA-E_coli_DH10B_3_rpkm": 15,
+        "RNA-Seg70-81_1_rpkm": 81,
+        "RNA-Seg70-81_2_rpkm": 81,
+        "RNA-Seg70-81_3_rpkm": 81,
+        "RIBO-E_coli_DH10B_1_rpkm": 15,
+        "RIBO-E_coli_DH10B_2_rpkm": 15,
+        "RIBOE_coli_DH10B_3_rpkm": 15,
+        "RIBO-Seg70-81_1_rpkm": 81,
+        "RIBO-Seg70-81_2_rpkm": 81,
+        "RIBO-Seg70-81_3_rpkm": 81,
+        "RNA_LFC": 96,
+        "RNA_LFC_EdgeR": 146,
+        "RNA_P-value": 96,
+        "RIBO_LFC": 96,
+        "RIBO_LFC_EdgeR": 1628,
+        "RIBO_P-value": 96,
+        "Delta_LFC": 96
+      },
+      "identifier_namespace": "author Gene keys: symbols with disambiguation suffixes; Seg70-81 also ECDH10B_RS identifiers; not stable universal locus tags",
+      "sra_run_mapping_basis": "Deposited sample names and replicate numbers; not additional clone/genome identity evidence.",
+      "sra_runs_in_replicate_order": {
+        "test": {
+          "RNA": [
+            "SRR28359326",
+            "SRR28359392",
+            "SRR28359389"
+          ],
+          "RIBO": [
+            "SRR28359346",
+            "SRR28359340",
+            "SRR28359334"
+          ]
+        },
+        "reference": {
+          "RNA": [
+            "SRR28359378",
+            "SRR28359377",
+            "SRR28359376"
+          ],
+          "RIBO": [
+            "SRR28359382",
+            "SRR28359381",
+            "SRR28359379"
+          ]
+        }
+      }
+    },
+    {
+      "sheet": "Syn61_delta3_ev5",
+      "rows": 3640,
+      "unique_row_identifiers": 3640,
+      "reference": "MDS42",
+      "reference_evidence": "article Sec10 explicitly compares Syn61 delta3 transcriptome and translatome to MDS42",
+      "contrast": "named test / named reference",
+      "headers": [
+        {
+          "column": "A",
+          "name": "Gene"
+        },
+        {
+          "column": "B",
+          "name": "Description"
+        },
+        {
+          "column": "C",
+          "name": "RNA-Ec_Syn61_delta3_ev5_1_rpkm"
+        },
+        {
+          "column": "D",
+          "name": "RNA-Ec_Syn61_delta3_ev5_2_rpkm"
+        },
+        {
+          "column": "E",
+          "name": "RNA-Ec_Syn61_delta3_ev5_3_rpkm"
+        },
+        {
+          "column": "F",
+          "name": "RIBO-Ec_Syn61_delta3_ev5_1_reads"
+        },
+        {
+          "column": "G",
+          "name": "RIBO-Ec_Syn61_delta3_ev5_2_reads"
+        },
+        {
+          "column": "H",
+          "name": "RIBO-Ec_Syn61_delta3_ev5_3_reads"
+        },
+        {
+          "column": "I",
+          "name": "RIBO-Ec_Syn61_delta3_ev5_1_rpkm"
+        },
+        {
+          "column": "J",
+          "name": "RIBO-Ec_Syn61_delta3_ev5_2_rpkm"
+        },
+        {
+          "column": "K",
+          "name": "RIBO-Ec_Syn61_delta3_ev5_3_rpkm"
+        },
+        {
+          "column": "L",
+          "name": "RNA_LFC"
+        },
+        {
+          "column": "M",
+          "name": "RNA_LFC_EdgeR"
+        },
+        {
+          "column": "N",
+          "name": "RNA_P-value"
+        },
+        {
+          "column": "O",
+          "name": "RIBO_LFC"
+        },
+        {
+          "column": "P",
+          "name": "RIBO_LFC_EdgeR"
+        },
+        {
+          "column": "Q",
+          "name": "RIBO_P-value"
+        },
+        {
+          "column": "R",
+          "name": "Delta_LFC"
+        }
+      ],
+      "replicate_columns": [
+        {
+          "column": "C",
+          "header": "RNA-Ec_Syn61_delta3_ev5_1_rpkm"
+        },
+        {
+          "column": "D",
+          "header": "RNA-Ec_Syn61_delta3_ev5_2_rpkm"
+        },
+        {
+          "column": "E",
+          "header": "RNA-Ec_Syn61_delta3_ev5_3_rpkm"
+        },
+        {
+          "column": "F",
+          "header": "RIBO-Ec_Syn61_delta3_ev5_1_reads"
+        },
+        {
+          "column": "G",
+          "header": "RIBO-Ec_Syn61_delta3_ev5_2_reads"
+        },
+        {
+          "column": "H",
+          "header": "RIBO-Ec_Syn61_delta3_ev5_3_reads"
+        },
+        {
+          "column": "I",
+          "header": "RIBO-Ec_Syn61_delta3_ev5_1_rpkm"
+        },
+        {
+          "column": "J",
+          "header": "RIBO-Ec_Syn61_delta3_ev5_2_rpkm"
+        },
+        {
+          "column": "K",
+          "header": "RIBO-Ec_Syn61_delta3_ev5_3_rpkm"
+        }
+      ],
+      "biological_replicates": 3,
+      "delta_check": {
+        "formula": "RIBO_LFC - RNA_LFC",
+        "finite_rows": 3634,
+        "max_abs_error": 0.00010000000000065512,
+        "tolerance": 0.00010001
+      },
+      "missing_dash_counts": {
+        "RNA-Ec_Syn61_delta3_ev5_1_rpkm": 5,
+        "RNA-Ec_Syn61_delta3_ev5_2_rpkm": 5,
+        "RNA-Ec_Syn61_delta3_ev5_3_rpkm": 5,
+        "RIBO-Ec_Syn61_delta3_ev5_1_reads": 5,
+        "RIBO-Ec_Syn61_delta3_ev5_2_reads": 5,
+        "RIBO-Ec_Syn61_delta3_ev5_3_reads": 5,
+        "RIBO-Ec_Syn61_delta3_ev5_1_rpkm": 5,
+        "RIBO-Ec_Syn61_delta3_ev5_2_rpkm": 5,
+        "RIBO-Ec_Syn61_delta3_ev5_3_rpkm": 5,
+        "RNA_LFC": 6,
+        "RNA_LFC_EdgeR": 40,
+        "RNA_P-value": 6,
+        "RIBO_LFC": 6,
+        "RIBO_LFC_EdgeR": 653,
+        "RIBO_P-value": 6,
+        "Delta_LFC": 6
+      },
+      "identifier_namespace": "author Gene keys: symbols with disambiguation suffixes; Seg70-81 also ECDH10B_RS identifiers; not stable universal locus tags",
+      "sra_run_mapping_basis": "Deposited sample names and replicate numbers; not additional clone/genome identity evidence.",
+      "sra_runs_in_replicate_order": {
+        "test": {
+          "RNA": [
+            "SRR28359385",
+            "SRR28359384",
+            "SRR28359383"
+          ],
+          "RIBO": [
+            "SRR28359388",
+            "SRR28359387",
+            "SRR28359386"
+          ]
+        },
+        "reference": {
+          "RNA": [
+            "SRR28359372",
+            "SRR28359371",
+            "SRR28359370"
+          ],
+          "RIBO": [
+            "SRR28359375",
+            "SRR28359374",
+            "SRR28359373"
+          ]
+        }
+      }
+    }
+  ],
+  "segment_feature_count": 88,
+  "segment_coordinate_system": "Ec_Syn57 design, never parental accession coordinates",
+  "segment_discontinuities": [
+    {
+      "left": "seg4",
+      "right": "seg5_2",
+      "signed_gap_bp": -1896,
+      "left_end_1": 219471,
+      "right_start_1": 217576
+    },
+    {
+      "left": "seg10_A",
+      "right": "seg10_B",
+      "signed_gap_bp": -129,
+      "left_end_1": 472693,
+      "right_start_1": 472565
+    },
+    {
+      "left": "seg21",
+      "right": "seg22_3",
+      "signed_gap_bp": -100,
+      "left_end_1": 993330,
+      "right_start_1": 993231
+    },
+    {
+      "left": "seg32",
+      "right": "seg33",
+      "signed_gap_bp": 1405,
+      "left_end_1": 1495645,
+      "right_start_1": 1497051
+    },
+    {
+      "left": "seg48",
+      "right": "seg49",
+      "signed_gap_bp": 1,
+      "left_end_1": 2227413,
+      "right_start_1": 2227415
+    },
+    {
+      "left": "seg63",
+      "right": "seg64_3",
+      "signed_gap_bp": -3029,
+      "left_end_1": 2911945,
+      "right_start_1": 2908917
+    },
+    {
+      "left": "seg85",
+      "right": "seg86",
+      "signed_gap_bp": -108,
+      "left_end_1": 3921625,
+      "right_start_1": 3921518
+    }
+  ],
+  "genomes": [
+    {
+      "accession": "AP012306.1",
+      "length": 3976195,
+      "definition": "Escherichia coli str. K-12 substr. MDS42 DNA, complete genome",
+      "sequence_sha256": "29945aaf687449429b8766147cc040a0593ac7d75dc105d9ca44b272a9639330",
+      "exact_profiled_strain_supported": false
+    },
+    {
+      "accession": "CP000948.1",
+      "length": 4686137,
+      "definition": "Escherichia coli str. K12 substr. DH10B, complete genome",
+      "sequence_sha256": "c1539052b783e2205445e8a3846a3d5cc6df7ae07cd47de7595ca80ac7dd206c",
+      "exact_profiled_strain_supported": false
+    },
+    {
+      "accession": "CP116771.1",
+      "length": 3977501,
+      "definition": "Escherichia coli strain Syn61 substr. delta 3 (ev5) chromosome, complete genome",
+      "sequence_sha256": "a0b9f0cd4efd438a4dc818e1f217304f8d0443d3176d45dc01fa579e311a2176",
+      "exact_profiled_strain_supported": true
+    }
+  ],
+  "growth": {
+    "numeric_rows": 52,
+    "no_growth_rows": [
+      4,
+      10,
+      13,
+      15,
+      17,
+      19,
+      21,
+      23,
+      25,
+      27,
+      29,
+      31,
+      33,
+      36,
+      45,
+      47,
+      49
+    ],
+    "summary_check": "mean and population SD over 10 supplied replicates",
+    "max_abs_error": 2.4158453015843406e-13
+  },
+  "biolog": [
+    {
+      "sheet": "MDS42 vs Syn61Δ3(ev5)",
+      "cells": 480,
+      "sum": -31.870724663847394,
+      "mean": -0.06639734304968208,
+      "minimum": -0.941493169638515,
+      "maximum": 0.52080313413997
+    },
+    {
+      "sheet": "MDS42_Seg1-8",
+      "cells": 480,
+      "sum": -29.702353497842473,
+      "mean": -0.061879903120505154,
+      "minimum": -0.910839689029742,
+      "maximum": 0.41229997770805
+    },
+    {
+      "sheet": "MDS42_Seg36-37",
+      "cells": 480,
+      "sum": -2.071018970262054,
+      "mean": -0.004314622854712612,
+      "minimum": -0.758020319981304,
+      "maximum": 0.224938259833211
+    },
+    {
+      "sheet": "MDS42_Seg36-37_46-49",
+      "cells": 480,
+      "sum": -11.205705723005412,
+      "mean": -0.023345220256261276,
+      "minimum": -0.527799597319712,
+      "maximum": 0.221026540211216
+    },
+    {
+      "sheet": "MDS42_Seg36-44_46-49",
+      "cells": 480,
+      "sum": -37.06502139162875,
+      "mean": -0.07721879456589323,
+      "minimum": -1.01038518252558,
+      "maximum": 0.557282132555235
+    },
+    {
+      "sheet": "MDS42_Seg36-44_46-49_51-59",
+      "cells": 480,
+      "sum": -50.61127827463364,
+      "mean": -0.10544016307215341,
+      "minimum": -1.03335244689829,
+      "maximum": 0.180147794428477
+    },
+    {
+      "sheet": "MDS42_Seg9-18_36-44_46-49_51-59",
+      "cells": 480,
+      "sum": -52.85655082772733,
+      "mean": -0.11011781422443194,
+      "minimum": -1.04441430569345,
+      "maximum": 0.255555464304327
+    },
+    {
+      "sheet": "MDS42_Seg9-18_36-59",
+      "cells": 480,
+      "sum": -55.486946416300434,
+      "mean": -0.11559780503395925,
+      "minimum": -1.07597159391453,
+      "maximum": 0.441902199703044
+    },
+    {
+      "sheet": "MDS42_Seg30-35",
+      "cells": 480,
+      "sum": -8.030124644428403,
+      "mean": -0.016729426342559174,
+      "minimum": -0.871688674823631,
+      "maximum": 0.274758907103244
+    },
+    {
+      "sheet": "MDS42_Seg80-0",
+      "cells": 480,
+      "sum": -10.28643099964253,
+      "mean": -0.021430064582588604,
+      "minimum": -0.819460148896739,
+      "maximum": 0.560534703168774
+    },
+    {
+      "sheet": "MDS42_Seg19-29",
+      "cells": 480,
+      "sum": -20.621751402884872,
+      "mean": -0.04296198208934349,
+      "minimum": -0.88073499771519,
+      "maximum": 0.560685777029974
+    }
+  ],
+  "sra_run_count": 74,
+  "sra_runs": [
+    {
+      "Run": "SRR28359394",
+      "BioSample": "SAMN40473695",
+      "SampleName": "RIBO-MDS42_d_recA_Seg9-18_36-44_46-49_51-59-1",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_1",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359393",
+      "BioSample": "SAMN40473696",
+      "SampleName": "RIBO-MDS42_d_recA_Seg9-18_36-44_46-49_51-59-2",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_2",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359392",
+      "BioSample": "SAMN40473705",
+      "SampleName": "RNA-E_coli_DH10B_Seg_70-81_2",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_11",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359388",
+      "BioSample": "SAMN40473707",
+      "SampleName": "RIBO-Ec_Syn61d3_ev5_1",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_13",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359389",
+      "BioSample": "SAMN40473706",
+      "SampleName": "RNA-E_coli_DH10B_Seg_70-81_3",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_12",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359387",
+      "BioSample": "SAMN40473708",
+      "SampleName": "RIBO-Ec_Syn61d3_ev5_2",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_14",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359386",
+      "BioSample": "SAMN40473709",
+      "SampleName": "RIBO-Ec_Syn61d3_ev5_3",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_15",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359383",
+      "BioSample": "SAMN40473712",
+      "SampleName": "RNA-Ec_Syn61d3_ev5_3",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_18",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359385",
+      "BioSample": "SAMN40473710",
+      "SampleName": "RNA-Ec_Syn61d3_ev5_1",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_16",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359384",
+      "BioSample": "SAMN40473711",
+      "SampleName": "RNA-Ec_Syn61d3_ev5_2",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_17",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359382",
+      "BioSample": "SAMN40473713",
+      "SampleName": "RIBO-Escherichia_coli_DH10B_1",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_19",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359379",
+      "BioSample": "SAMN40473715",
+      "SampleName": "RIBO-Escherichia_coli_DH10B_3",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_21",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359380",
+      "BioSample": "SAMN40473697",
+      "SampleName": "RIBO-MDS42_d_recA_Seg9-18_36-44_46-49_51-59-3",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_3",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359381",
+      "BioSample": "SAMN40473714",
+      "SampleName": "RIBO-Escherichia_coli_DH10B_2",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_20",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359378",
+      "BioSample": "SAMN40473716",
+      "SampleName": "RNA-Escherichia_coli_DH10B_1",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_22",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359377",
+      "BioSample": "SAMN40473717",
+      "SampleName": "RNA-Escherichia_coli_DH10B_2",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_23",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359376",
+      "BioSample": "SAMN40473718",
+      "SampleName": "RNA-Escherichia_coli_DH10B_3",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_24",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359375",
+      "BioSample": "SAMN40473719",
+      "SampleName": "RIBO-MDS-1",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_25",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359374",
+      "BioSample": "SAMN40473720",
+      "SampleName": "RIBO-MDS-2",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_26",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359373",
+      "BioSample": "SAMN40473721",
+      "SampleName": "RIBO-MDS-3",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_27",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359372",
+      "BioSample": "SAMN40473722",
+      "SampleName": "RNA-MDS-1",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_28",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359371",
+      "BioSample": "SAMN40473723",
+      "SampleName": "RNA-MDS-2",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_29",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359369",
+      "BioSample": "SAMN40473698",
+      "SampleName": "RNA-MDS42_d_recA_Seg9-18_36-44_46-49_51-59-1",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_4",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359370",
+      "BioSample": "SAMN40473724",
+      "SampleName": "RNA-MDS-3",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_30",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359368",
+      "BioSample": "SAMN40473725",
+      "SampleName": "RIBO-MDS42_d_recA_Seg_30-35_1",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_31",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359367",
+      "BioSample": "SAMN40473726",
+      "SampleName": "RIBO-MDS42_d_recA_Seg_30-35_2",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_32",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359365",
+      "BioSample": "SAMN40473728",
+      "SampleName": "RNA-MDS42_d_recA_Seg_30-35_1",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_34",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359366",
+      "BioSample": "SAMN40473727",
+      "SampleName": "RIBO-MDS42_d_recA_Seg_30-35_3",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_33",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359364",
+      "BioSample": "SAMN40473729",
+      "SampleName": "RNA-MDS42_d_recA_Seg_30-35_2",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_35",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359363",
+      "BioSample": "SAMN40473730",
+      "SampleName": "RNA-MDS42_d_recA_Seg_30-35_3",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_36",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359362",
+      "BioSample": "SAMN40473731",
+      "SampleName": "MDS42_cappable-seq_Sample-1",
+      "LibraryStrategy": "OTHER",
+      "LibraryName": "library_ID_37",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359360",
+      "BioSample": "SAMN40473733",
+      "SampleName": "MDS42_d_recA_Seg_9-18_36-44_46-49_51-59_cappable-seq_Sample-1",
+      "LibraryStrategy": "OTHER",
+      "LibraryName": "library_ID_39",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359361",
+      "BioSample": "SAMN40473732",
+      "SampleName": "MDS42_cappable-seq_Sample-2",
+      "LibraryStrategy": "OTHER",
+      "LibraryName": "library_ID_38",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359359",
+      "BioSample": "SAMN40473734",
+      "SampleName": "MDS42_d_recA_Seg_9-18_36-44_46-49_51-59_cappable-seq_Sample-2",
+      "LibraryStrategy": "OTHER",
+      "LibraryName": "library_ID_40",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359358",
+      "BioSample": "SAMN40473699",
+      "SampleName": "RNA-MDS42_d_recA_Seg9-18_36-44_46-49_51-59-2",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_5",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359357",
+      "BioSample": "SAMN40473735",
+      "SampleName": "DNA-1-1_S11_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_41",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359355",
+      "BioSample": "SAMN40473739",
+      "SampleName": "DNA-2-1_S12_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_45",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359356",
+      "BioSample": "SAMN40473737",
+      "SampleName": "DNA-1-2_S16_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_43",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359353",
+      "BioSample": "SAMN40473743",
+      "SampleName": "DNA-3-1_S13_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_49",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359354",
+      "BioSample": "SAMN40473741",
+      "SampleName": "DNA-2-2_S17_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_47",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359352",
+      "BioSample": "SAMN40473700",
+      "SampleName": "RNA-MDS42_d_recA_Seg9-18_36-44_46-49_51-59-3",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_6",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359349",
+      "BioSample": "SAMN40473749",
+      "SampleName": "DNA-4-2_S19_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_55",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359351",
+      "BioSample": "SAMN40473745",
+      "SampleName": "DNA-3-2_S18_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_51",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359350",
+      "BioSample": "SAMN40473747",
+      "SampleName": "DNA-4-1_S14_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_53",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359348",
+      "BioSample": "SAMN40473751",
+      "SampleName": "DNA-5-1_S15_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_57",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359347",
+      "BioSample": "SAMN40473753",
+      "SampleName": "DNA-5-2_S20_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_59",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359346",
+      "BioSample": "SAMN40473701",
+      "SampleName": "RIBO-E_coli_DH10B_Seg_70-81_1",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_7",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359345",
+      "BioSample": "SAMN40473755",
+      "SampleName": "RNA-1-1_S1_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_61",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359343",
+      "BioSample": "SAMN40473759",
+      "SampleName": "RNA-2-1_S2_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_65",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359344",
+      "BioSample": "SAMN40473757",
+      "SampleName": "RNA-1-2_S6_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_63",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359342",
+      "BioSample": "SAMN40473761",
+      "SampleName": "RNA-2-2_S7_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_67",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359341",
+      "BioSample": "SAMN40473763",
+      "SampleName": "RNA-3-1_S3_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_69",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359340",
+      "BioSample": "SAMN40473702",
+      "SampleName": "RIBO-E_coli_DH10B_Seg_70-81_2",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_8",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359339",
+      "BioSample": "SAMN40473765",
+      "SampleName": "RNA-3-2_S8_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_71",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359336",
+      "BioSample": "SAMN40473771",
+      "SampleName": "RNA-5-1_S5_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_77",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359337",
+      "BioSample": "SAMN40473769",
+      "SampleName": "RNA-4-2_S9_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_75",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359338",
+      "BioSample": "SAMN40473767",
+      "SampleName": "RNA-4-1_S4_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_73",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359335",
+      "BioSample": "SAMN40473773",
+      "SampleName": "RNA-5-2_S10_L001_R1_001",
+      "LibraryStrategy": "AMPLICON",
+      "LibraryName": "library_ID_79",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359333",
+      "BioSample": "SAMN40473775",
+      "SampleName": "E_coli_DH10B_Seg_70-81_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_81",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359334",
+      "BioSample": "SAMN40473703",
+      "SampleName": "RIBO-E_coli_DH10B_Seg_70-81_3",
+      "LibraryStrategy": "Ribo-seq",
+      "LibraryName": "library_ID_9",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359332",
+      "BioSample": "SAMN40473776",
+      "SampleName": "E_coli_DH10B_Seg_70-81_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_82",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359331",
+      "BioSample": "SAMN40473778",
+      "SampleName": "MDS42_d_recA_Seg_1-8_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_84",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359330",
+      "BioSample": "SAMN40473779",
+      "SampleName": "MDS42_d_recA_Seg_1-8_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_85",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359329",
+      "BioSample": "SAMN40473781",
+      "SampleName": "MDS42_d_recA_Seg_9-18_36-44_46-49_51-59_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_87",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359328",
+      "BioSample": "SAMN40473782",
+      "SampleName": "MDS42_d_recA_Seg_9-18_36-44_46-49_51-59_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_88",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359327",
+      "BioSample": "SAMN40473784",
+      "SampleName": "MDS42_d_recA_Seg_9-18_36-59_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_90",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359326",
+      "BioSample": "SAMN40473704",
+      "SampleName": "RNA-E_coli_DH10B_Seg_70-81_1",
+      "LibraryStrategy": "ssRNA-seq",
+      "LibraryName": "library_ID_10",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359324",
+      "BioSample": "SAMN40473787",
+      "SampleName": "MDS42_d_recA_Seg_30-35_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_93",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359323",
+      "BioSample": "SAMN40473788",
+      "SampleName": "MDS42_d_recA_Seg_30-35_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_94",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359325",
+      "BioSample": "SAMN40473785",
+      "SampleName": "MDS42_d_recA_Seg_9-18_36-59_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_91",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359322",
+      "BioSample": "SAMN40473790",
+      "SampleName": "MDS42_d_recA_Seg_82-0_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_96",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359320",
+      "BioSample": "SAMN40473793",
+      "SampleName": "MDS42_d_recA_Seg_19-29_nanopore",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_99",
+      "Platform": "OXFORD_NANOPORE"
+    },
+    {
+      "Run": "SRR28359321",
+      "BioSample": "SAMN40473791",
+      "SampleName": "MDS42_d_recA_Seg_82-0_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_97",
+      "Platform": "ILLUMINA"
+    },
+    {
+      "Run": "SRR28359319",
+      "BioSample": "SAMN40473794",
+      "SampleName": "MDS42_d_recA_Seg_19-29_R1_001",
+      "LibraryStrategy": "WGS",
+      "LibraryName": "library_ID_100",
+      "Platform": "ILLUMINA"
+    }
+  ],
+  "unresolved": [
+    "Exact RPKM denominator/filtering, non-EdgeR pseudocount/aggregation and EdgeR normalization parameters are not stated.",
+    "Debugged RNA/Ribo replicate-to-clone mapping and corresponding raw accessions were not found.",
+    "No complete per-isolate native-to-design boundary and mutation manifest was found for the partial Syn57 strains.",
+    "Biolog measurement wavelength conflicts (590 versus 600 nm); exact per-well processing is not reported.",
+    "Biolog mean-versus-sum discrepancy and Seg80-0-versus-Seg82-0 identity conflict remain."
+  ]
+}

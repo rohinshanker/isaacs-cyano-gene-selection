@@ -1,6 +1,6 @@
 /** Resolve source membership once per immutable application-state snapshot. */
 import { normalizeSelection } from './data-sources.js';
-import { selectedOfType, typeGroups } from './type-metrics.js';
+import { informingOfType, selectedOfType, typeGroups } from './type-metrics.js';
 
 const NONE = Object.freeze([]);
 
@@ -26,10 +26,12 @@ export function createSourceSelectionResolver() {
       if (snapshot) Object.freeze(snapshot);
     }
     const selection = Object.freeze(normalizeSelection(sources, datasets));
+    const selectedByType = new Map();
     const contributors = new Map();
     for (const [key, group] of typeGroups(datasets)) {
-      const selected = selectedOfType(group, selection);
-      const named = selected.find((dataset) => dataset.id === typeSources?.[key]);
+      const selected = Object.freeze(selectedOfType(group, selection));
+      selectedByType.set(key, selected);
+      const named = informingOfType(group, selected, typeSources?.[key]);
       contributors.set(key, Object.freeze(named ? [named] : selected));
     }
     previousDatasets = datasets;
@@ -37,6 +39,7 @@ export function createSourceSelectionResolver() {
     previousTypeSources = typeSources;
     resolved = {
       selection,
+      selected: (key) => selectedByType.get(key) ?? NONE,
       contributing: (key) => contributors.get(key) ?? NONE,
     };
     return resolved;

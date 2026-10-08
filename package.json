@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "check:live-metrics": "node tools/check_live_metrics.mjs",
-    "generate:test-fixtures": "node tests/fixtures/make_fixture.mjs && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-ecoli --organism ecoli-k12-mg1655 && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-ecoli-annotated --organism ecoli-k12-mg1655 --with-annotations",
+    "generate:test-fixtures": "node tests/fixtures/make_fixture.mjs && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-ecoli --organism ecoli-k12-mg1655 && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-ecoli-annotated --organism ecoli-k12-mg1655 --with-annotations && node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-strain-fitness --with-strain-fitness",
     "pretest": "npm run generate:test-fixtures",
     "test": "node --test \"tests/js/*.test.mjs\""
   }

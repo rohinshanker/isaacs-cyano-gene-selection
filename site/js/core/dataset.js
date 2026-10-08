@@ -26,10 +26,12 @@ import { computeLiveMetrics } from './live-metrics.js';
 import { declaredMeasurementSources } from './metric-registry.js';
 import { validateLengthInventory } from './length-cohorts.js';
 import { validateRegulatoryTss } from './regulatory-tss.js';
+import { validateStrainFitness } from './strain-fitness.js';
 import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
+import { validateCodonPcaReference } from './codon-pca-reference.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
   normalizeManifest, publishesFile,
@@ -206,9 +208,11 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     meta,
     genes,
     codonPca: null,
+    codonPcaReference: null,
     excluded: [],
     lengthCohorts: null,
     regulatoryTss: null,
+    strainFitness: null,
     candidateEvidence: null,
     goIeaEssentiality: null,
     goTerms: null,
@@ -318,6 +322,12 @@ export const DATA_APPLIERS = Object.freeze({
     dataset.codonPca = codonPca;
   },
 
+  codonPcaReference(dataset, reference) {
+    dataset.codonPcaReference = reference
+      ? validateCodonPcaReference(reference, dataset, dataset.organism)
+      : null;
+  },
+
   excluded(dataset, excluded) {
     dataset.excluded = excluded ?? [];
     dataset.provenance.excludedCount = dataset.excluded.length;
@@ -374,15 +384,25 @@ export const DATA_APPLIERS = Object.freeze({
       if (!Array.isArray(column) || column.length !== genes.length) {
         throw new Error(`expression_layers.json has no complete layer for ${source.metricKey}`);
       }
-      for (let index = 0; index < column.length; index += 1) {
-        const value = column[index];
-        if (value === null) continue;
+      // A source that declares its measured quantity ships the bounds that
+      // quantity admits, resolved once by the pipeline from the quantity
+      // contract: whole counts for a read count, [0, 1] for a p-value, either
+      // sign for a log ratio. A source that declares none keeps the older
+      // rule, where only the sign is constrained.
+      const bounds = source.quantityBounds ?? null;
+      const mayBeNegative = bounds
+        ? !bounds.nonnegative
         // Two reasons a value may be negative, and the source says which. A
         // fitness score is signed and centres on zero; a log-scaled abundance
         // is one-sided and a negative simply means below one unit. Neither
         // licenses the other's ramp, but both are real values.
-        const mayBeNegative = source.signed === true || source.logScale === true;
-        if (typeof value !== 'number' || !Number.isFinite(value) || (value < 0 && !mayBeNegative)) {
+        : source.signed === true || source.logScale === true;
+      for (let index = 0; index < column.length; index += 1) {
+        const value = column[index];
+        if (value === null) continue;
+        if (typeof value !== 'number' || !Number.isFinite(value) || (value < 0 && !mayBeNegative)
+          || (bounds?.integral && !Number.isInteger(value))
+          || (bounds?.unitInterval && (value < 0 || value > 1))) {
           throw new Error(`expression_layers.json has an invalid value for ${source.metricKey}`);
         }
         genes[index][source.metricKey] = value;
@@ -420,6 +440,14 @@ export const DATA_APPLIERS = Object.freeze({
   regulatoryTss(dataset, regulatoryTss) {
     if (regulatoryTss) validateRegulatoryTss(regulatoryTss, dataset.genes);
     dataset.regulatoryTss = regulatoryTss;
+  },
+
+  // Whole-strain measurements. The file declares the organism and assembly it
+  // belongs to and is checked against this dataset's, because the layer is
+  // organism-neutral and so nothing else would catch a file published into the
+  // wrong data directory. It joins nothing onto a gene.
+  strainFitness(dataset, strainFitness) {
+    dataset.strainFitness = strainFitness ? validateStrainFitness(strainFitness, dataset) : null;
   },
 });
 
@@ -496,10 +524,15 @@ export const TIER_LEAD_BYTES = 128 * 1024;
 /**
  * The order the single-step loader met its checks in, so that `loadDataset`
  * reports the same failure when more than one file is wrong.
+ *
+ * A file added after that loader existed goes last: it has no historical place
+ * in the order, and leaving it out would let `loadDataset` return a dataset
+ * whose layer failed without reporting it.
  */
 const LEGACY_FAILURE_ORDER = Object.freeze([
   'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
-  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca', 'excluded',
+  'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca',
+  'codonPcaReference', 'excluded', 'strainFitness',
 ]);
 
 /**

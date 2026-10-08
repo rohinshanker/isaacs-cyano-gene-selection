@@ -131,3 +131,22 @@ Before closing, record closing session/date and disposition of every open findin
 Retain pending owner questions and unresolved UI findings in their owning tickets.
 Distill reusable contracts into docs/validation, update its index, then perform
 R-rename/status/validation and delete this ticket and its queue row last.
+
+## Current owner decisions, 2026-10-08
+
+- Independent applied X/Y/PCA selections confirmed; no coupled behavior permitted.
+- Loading should show continuing activity through waiting/preparation; A/B/C reveal
+  and grouped/continuous choices await the concrete flow explanation.
+- RBS Calculator is a primary assessment candidate; broaden the candidate list to
+  regulatory and cryptic-site computational methods, including iDOG and tools in
+  the repository/open tickets. This is candidate assessment, not source admission
+  or authorization to release iDOG's existing owner hold.
+- Bounded first tRNA viewer approved after the in-chat specification summary.
+- Downloads and broader clutter review await the explanations requested here.
+- Lag reproduced by the owner on Chrome/macOS on the defaults of all three data
+  layers: protein abundance, transcript initiation and transcript abundance.
+
+Approved tRNA implementation DEM-320 returned 5f2d8da: JS1,282; pytest786 plus
+1 skip/36 subtests; contract116 plus1 declared skip; durable four-width renders.
+Independent exact-patch review dispatched before integration. Scope remains the
+44 annotated records + separately opt-in predicted pseudogene candidate.

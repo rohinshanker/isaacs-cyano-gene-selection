@@ -1,0 +1,6 @@
+native_codon	recoded_codon	count
+TAA	TAG	2
+TAA	TGA	63
+TAG	TAA	118
+TAG	TGA	108
+TGA	TAA	44

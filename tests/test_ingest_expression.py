@@ -555,6 +555,25 @@ def test_write_table_names_a_fitness_column_and_keeps_signs_and_zero(tmp_path):
         ingest.write_table(tmp_path / "x.tsv", {"U1": (1.0, "S1")}, "metabolomics")
 
 
+def test_write_table_heads_a_declared_quantity_and_keeps_a_tiny_p_value_exact(tmp_path):
+    """Four decimals would publish 3.2e-18 as zero, inverting the evidence."""
+    path = tmp_path / "p.tsv"
+    ingest.write_table(
+        path, {"U1": (3.2e-18, "S1"), "U2": (0.0499, "S2")}, "transcriptomics", "p_value")
+    assert path.read_text(encoding="utf-8").splitlines() == [
+        "locus_tag\tp_value\tsource_gene_id",
+        "U1\t3.2e-18\tS1", "U2\t0.0499\tS2",
+    ]
+    # Every other quantity keeps the four-decimal convention under its own column.
+    fold = tmp_path / "fc.tsv"
+    ingest.write_table(fold, {"U1": (-1.25, "S1")}, "transcriptomics", "log2_fold_change")
+    assert fold.read_text(encoding="utf-8").splitlines() == [
+        "locus_tag\tlog2_fold_change\tsource_gene_id", "U1\t-1.2500\tS1",
+    ]
+    with pytest.raises(ValueError, match="unsupported expression quantity"):
+        ingest.write_table(tmp_path / "x.tsv", {"U1": (1.0, "S1")}, "transcriptomics", "tpm")
+
+
 def test_condition_quotes_reads_axis_and_replicate_citations(tmp_path):
     path = conditions_file(tmp_path)
     quotes, replicates = ingest.condition_quotes(path, 2)

@@ -31,8 +31,12 @@ export const FILE_STATE = Object.freeze({
   FAILED: 'failed',
 });
 
-function file(key, name, tier, label, { required = false, needs = [] } = {}) {
-  return Object.freeze({ key, name, tier, label, required, needs: Object.freeze(needs) });
+function file(key, name, tier, label, {
+  required = false, needs = [], organismField = null,
+} = {}) {
+  return Object.freeze({
+    key, name, tier, label, required, organismField, needs: Object.freeze(needs),
+  });
 }
 
 /**
@@ -53,6 +57,8 @@ export const DATA_FILES = Object.freeze([
     'derived function categories', { needs: ['annotations', 'candidateEvidence'] }),
   file('lengthCohorts', 'length_cohorts.json', 2, 'length inventory'),
   file('codonPca', 'codon_pca.json', 2, 'codon-space loadings'),
+  file('codonPcaReference', 'codon_pca_reference.json', 2,
+    'parent-reference codon-space coordinates', { organismField: 'referenceCodonPca' }),
   file('excluded', 'excluded.json', 2, 'excluded loci'),
   file('tssEvidence', 'tss_evidence.json', 3, 'start sites'),
   file('expressionLayers', 'expression_layers.json', 3, 'expression layers'),
@@ -60,6 +66,7 @@ export const DATA_FILES = Object.freeze([
     { needs: ['candidateEvidence'] }),
   file('goTerms', 'go-term-names-v1.json', 3, 'GO term names', { needs: ['annotations'] }),
   file('regulatoryTss', 'regulatory_tss.json', 4, 'regulatory start sites'),
+  file('strainFitness', 'strain_fitness.json', 5, 'strain fitness measurements'),
 ]);
 
 /** Files by key, for consumers that ask about one. */
@@ -85,7 +92,8 @@ export const CORE_FILE_KEYS = Object.freeze(
  * @param {{key: string, required: boolean}} file an entry of `DATA_FILES`.
  */
 export function publishesFile(organism, file) {
-  return !organism || file.required || publishesLayer(organism, file.key);
+  return !organism || file.required
+    || (file.organismField ? Boolean(organism[file.organismField]) : publishesLayer(organism, file.key));
 }
 
 /**
@@ -108,6 +116,9 @@ export const TIER_LABELS = Object.freeze({
   2: 'function categories and filters',
   3: 'per-gene evidence',
   4: 'regulatory sites',
+  // Last, and alone in its tier: the only layer whose rows are strains rather
+  // than genes, so nothing the map or the gene detail draws waits on it.
+  5: 'strain fitness',
 });
 
 /** What tier 2 is for an organism that publishes no function categories. */

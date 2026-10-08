@@ -1,0 +1,46 @@
+{
+  "sections": [
+    {
+      "id": "primary-data",
+      "title": "Primary data",
+      "description": "Public reference sequence and annotation only; no experimental study values are attached.",
+      "items": [
+        {
+          "id": "ncbi-ecoli-mds42-public-reference",
+          "citation": "NCBI RefSeq. Escherichia coli str. K-12 substr. MDS42, GCF_000350185.1 (ASM35018v1), RefSeq chromosome NC_020518.1 corresponding to GenBank AP012306.1; retrieved 2026-10-08.",
+          "url": "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000350185.1/",
+          "contribution": "Public reference sequence, CDS coordinates, proteins and tRNA annotations. The build pins NCBI's MD5 manifest and assembly report. This reference lacks the 51 bp mrcB-hemL insertion reported for the Nyerges 2026 MDS42 stock, so no experimental omics, growth or fitness value is attached to it.",
+          "downloads": []
+        },
+        {
+          "id": "nyerges-2026-reference-boundary",
+          "citation": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+          "url": "https://doi.org/10.1038/s41467-026-74300-9",
+          "contribution": "Establishes the study-stock mismatch: the sequenced MDS42 stock carries a 51 bp insertion absent from public AP012306.1. It supplies no value to this public-reference record.",
+          "downloads": []
+        }
+      ]
+    },
+    {
+      "id": "methods-and-tools",
+      "title": "Methods and tools",
+      "description": "Software and published conventions used for sequence-derived metrics; none supplies experimental values.",
+      "items": [
+        {
+          "id": "scikit-learn",
+          "citation": "Pedregosa F et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research 12, 2825-2830 (2011).",
+          "url": "https://jmlr.org/papers/v12/pedregosa11a.html",
+          "contribution": "StandardScaler and PCA fit the reference's native codon-space axes.",
+          "downloads": []
+        },
+        {
+          "id": "biopython",
+          "citation": "Cock PJA et al. Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics 25, 1422-1423 (2009).",
+          "url": "https://doi.org/10.1093/bioinformatics/btp163",
+          "contribution": "Parses and validates the pinned NCBI sequence and annotation records.",
+          "downloads": []
+        }
+      ]
+    }
+  ]
+}

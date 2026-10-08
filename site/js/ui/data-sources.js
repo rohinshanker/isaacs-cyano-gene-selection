@@ -26,7 +26,7 @@
  */
 import {
   CONDITION_SCALES, DATA_TYPES, FILTER_FIELDS, compendiumStudies, conditionGrid, conditionRange,
-  dataTypeOfMetric, emptyFilter, formatRange, groupDatasets, normalizeSelection, passesFilters,
+  datasetChoiceLabel, dataTypeOfMetric, emptyFilter, formatRange, groupDatasets, normalizeSelection, passesFilters,
   regimeOf, studyColors, summariseSet,
 } from '../core/data-sources.js';
 import { renderSourceToggles } from './legend.js';
@@ -365,7 +365,19 @@ export class DataSourcesPanel {
     if (colorType && forType.length) {
       this.list.append(el('li', { className: 'data-sources-type', text: `${kindLabel}: ${included.length} of ${forType.length} included` }));
       const named = this.informing.chosen(colorType);
-      if (included.length > 1) {
+      // A fold change, a p-value and a translation-efficiency ratio each belong
+      // to one contrast evaluated by one method, so this kind offers no pooled
+      // row: one included dataset is read, and the row says which it is.
+      const pools = this.informing.poolsType?.(colorType) ?? true;
+      if (!pools && included.length > 1) {
+        this.list.append(el('li', {
+          className: 'data-sources-note',
+          text: `These values do not pool: one of the ${included.length} included datasets is read, `
+            + 'because a fold change, a p-value and a translation-efficiency ratio each belong to '
+            + 'one contrast evaluated by one method.',
+        }));
+      }
+      if (pools && included.length > 1) {
         const row = el('li', { className: 'data-sources-item data-sources-pooled' });
         const radio = document.createElement('input');
         radio.type = 'radio';
@@ -386,7 +398,7 @@ export class DataSourcesPanel {
         include.type = 'checkbox';
         include.id = `ds-include-${dataset.id}`;
         include.checked = chosenIds.has(dataset.id);
-        include.setAttribute('aria-label', `Include ${dataset.record.studyId} ${dataset.record.conditionSet}`);
+        include.setAttribute('aria-label', `Include ${dataset.record.studyId} ${datasetChoiceLabel(dataset)}`);
         include.addEventListener('change', () => this.informing.onSelect(dataset.id, include.checked));
         item.append(include, ' ');
         if (include.checked && included.length > 1) {
@@ -395,12 +407,12 @@ export class DataSourcesPanel {
           radio.name = `ds-inform-${colorType}`;
           radio.id = `ds-inform-${colorType}-${dataset.id}`;
           radio.checked = named?.id === dataset.id;
-          radio.setAttribute('aria-label', `${dataset.record.studyId} ${dataset.record.conditionSet} alone informs ${kindLabel}`);
+          radio.setAttribute('aria-label', `${dataset.record.studyId} ${datasetChoiceLabel(dataset)} alone informs ${kindLabel}`);
           radio.addEventListener('change', () => { if (radio.checked) this.informing.onInform(colorType, dataset.id); });
           item.append(radio, ' ');
         }
         item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
-          el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
+          el('span', { className: 'data-sources-label', text: datasetChoiceLabel(dataset) }));
         if (dataset.record.group === 'engineered') item.append(' ', chip('engineered strain', 'ds-chip'));
         if (include.checked && (named ? named.id === dataset.id : included.length === 1)) {
           item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
@@ -433,7 +445,7 @@ export class DataSourcesPanel {
           const item = el('li', { className: 'data-sources-item' });
           item.dataset.id = dataset.id;
           item.append(el('span', { className: 'data-sources-acc', text: dataset.record.studyId }), ' ',
-            el('span', { className: 'data-sources-label', text: dataset.record.conditionSet }));
+            el('span', { className: 'data-sources-label', text: datasetChoiceLabel(dataset) }));
           if (dataset.record.group === 'engineered') item.append(' ', chip('engineered strain', 'ds-chip'));
           if (dataset.metricKey === this.colorMetricKey) item.append(' ', chip('colouring the map', 'ds-chip ds-chip-active'));
           this.list.append(item);
@@ -638,6 +650,10 @@ export class DataSourcesPanel {
 
   /** The compendium a dataset belongs to, or null for an ordinary study. */
   compendiumOf(dataset) {
+    // Declared omics fields include replicates and distinct statistical bases,
+    // not a compound/dose compendium. Keep their source choices individually
+    // visible, including the one informing a non-pooling quantity.
+    if (dataset.source?.quantity != null) return null;
     const study = dataset.record.studyId;
     return this.compendia.has(study) ? study : null;
   }
@@ -756,7 +772,7 @@ export class DataSourcesPanel {
 
     const cell = (dataset, label) => {
       const wrap = el('label', { className: chosen.has(dataset.id) ? 'cg-cell cg-on' : 'cg-cell' });
-      const box = el('input', { attrs: { type: 'checkbox', 'aria-label': `${dataset.record.conditionSet}` } });
+      const box = el('input', { attrs: { type: 'checkbox', 'aria-label': `${datasetChoiceLabel(dataset)}` } });
       box.checked = chosen.has(dataset.id);
       box.addEventListener('change', () => {
         if (box.checked) chosen.add(dataset.id); else chosen.delete(dataset.id);
@@ -789,7 +805,7 @@ export class DataSourcesPanel {
       const line = el('div', { className: 'cg-row cg-row-loose' });
       line.append(el('div', { className: 'cg-rowhead', children: [el('span', { className: 'cg-compound', text: 'No added compound' })] }));
       const cells = el('div', { className: 'cg-cells' });
-      layout.loose.forEach((d) => cells.append(cell(d, d.record.conditionSet)));
+      layout.loose.forEach((d) => cells.append(cell(d, datasetChoiceLabel(d))));
       line.append(cells);
       table.append(line);
     }
@@ -978,7 +994,7 @@ export class DataSourcesPanel {
     const row = el('tr', { className: state.selected.has(dataset.id) ? 'ds-selected' : '' });
     row.dataset.id = dataset.id;
     row.style.borderLeft = `4px solid ${colors.get(dataset.record.studyId)}`;
-    const box = el('input', { attrs: { type: state.mode === 'single' ? 'radio' : 'checkbox', name: 'ds-pick', 'aria-label': `Show ${dataset.record.studyId}: ${dataset.record.conditionSet}` } });
+    const box = el('input', { attrs: { type: state.mode === 'single' ? 'radio' : 'checkbox', name: 'ds-pick', 'aria-label': `Show ${dataset.record.studyId}: ${datasetChoiceLabel(dataset)}` } });
     box.checked = state.selected.has(dataset.id);
     box.addEventListener('change', () => { this.selectRow(dataset, box.checked); this.renderList(); if (!state.info) this.renderSide(); });
     row.append(el('td', { children: [box] }));
@@ -988,10 +1004,10 @@ export class DataSourcesPanel {
     const platform = chip(dataset.record.platform, dataset.record.platform === 'array' ? 'ds-chip ds-chip-array' : 'ds-chip',
       dataset.record.platform === 'array' ? 'An array measures a chosen set of targets, not the whole transcriptome' : null);
     id.append(platform);
-    const info = el('button', { className: 'ds-info', text: 'i', attrs: { type: 'button', title: 'Source details and citation', 'aria-label': `Source details and citation for ${dataset.record.studyId}: ${dataset.record.conditionSet}` } });
+    const info = el('button', { className: 'ds-info', text: 'i', attrs: { type: 'button', title: 'Source details and citation', 'aria-label': `Source details and citation for ${dataset.record.studyId}: ${datasetChoiceLabel(dataset)}` } });
     info.addEventListener('click', () => { state.info = dataset.id; state.infoOpener = info; this.renderSide(); });
     top.append(id, info);
-    name.append(top, el('span', { className: 'ds-label', text: dataset.record.conditionSet }));
+    name.append(top, el('span', { className: 'ds-label', text: datasetChoiceLabel(dataset) }));
     row.append(name);
     for (const axis of ['temperature', 'lightIntensity', 'co2']) row.append(el('td', { children: [trackCell(dataset, axis)] }));
     row.append(el('td', { children: [regimeCell(dataset)] }), el('td', { children: [mediumCell(dataset)] }), el('td', { children: [phaseCell(dataset)] }));

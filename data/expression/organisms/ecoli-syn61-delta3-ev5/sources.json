@@ -1,0 +1,2002 @@
+[
+  {
+    "id": "Nyerges2026_Syn61_01",
+    "file": "Nyerges2026_Syn61_01.tsv",
+    "metricKey": "nyergesSyn61Column01",
+    "label": "RNA RPKM replicate 1 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "RNA-seq",
+    "quantity": "rpkm",
+    "units": "RPKM, source reported",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "3999f750e24d7b2b3fa63c843f311c0b9ba1cc226c245ff6ac12b28a4948ad9e",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RNA-Ec_Syn61_delta3_ev5_1_rpkm",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RNA-Ec_Syn61_delta3_ev5_1_rpkm"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_02",
+    "file": "Nyerges2026_Syn61_02.tsv",
+    "metricKey": "nyergesSyn61Column02",
+    "label": "RNA RPKM replicate 2 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "RNA-seq",
+    "quantity": "rpkm",
+    "units": "RPKM, source reported",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "819822b64465fd24eb4d857fb2f6c2813f2f056d75b0b6061d4a6ba0f25a43ed",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RNA-Ec_Syn61_delta3_ev5_2_rpkm",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RNA-Ec_Syn61_delta3_ev5_2_rpkm"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_03",
+    "file": "Nyerges2026_Syn61_03.tsv",
+    "metricKey": "nyergesSyn61Column03",
+    "label": "RNA RPKM replicate 3 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "RNA-seq",
+    "quantity": "rpkm",
+    "units": "RPKM, source reported",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "1dfac2965b8b72253603bddc7ba31e1014c4561c52ceccc5ef758891edbb7dfd",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RNA-Ec_Syn61_delta3_ev5_3_rpkm",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RNA-Ec_Syn61_delta3_ev5_3_rpkm"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_04",
+    "file": "Nyerges2026_Syn61_04.tsv",
+    "metricKey": "nyergesSyn61Column04",
+    "label": "Ribosome read count replicate 1 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "read_count",
+    "units": "ribosome-footprint reads",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "fd192f34c33aa317ec8d6f8846a2d10f4602f3e19ad525ffdde09a530af31eb9",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RIBO-Ec_Syn61_delta3_ev5_1_reads",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO-Ec_Syn61_delta3_ev5_1_reads"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_05",
+    "file": "Nyerges2026_Syn61_05.tsv",
+    "metricKey": "nyergesSyn61Column05",
+    "label": "Ribosome read count replicate 2 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "read_count",
+    "units": "ribosome-footprint reads",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "7e4a30888d8b0caa2e7003ec4810e1e8be4b49ef5d661f2c555a0cb3dd3de602",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RIBO-Ec_Syn61_delta3_ev5_2_reads",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO-Ec_Syn61_delta3_ev5_2_reads"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_06",
+    "file": "Nyerges2026_Syn61_06.tsv",
+    "metricKey": "nyergesSyn61Column06",
+    "label": "Ribosome read count replicate 3 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "read_count",
+    "units": "ribosome-footprint reads",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "16b7258b2f0e2b9f4f31e7b3c959ba574b580dcc521640d92a0a24a207e29e84",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RIBO-Ec_Syn61_delta3_ev5_3_reads",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO-Ec_Syn61_delta3_ev5_3_reads"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_07",
+    "file": "Nyerges2026_Syn61_07.tsv",
+    "metricKey": "nyergesSyn61Column07",
+    "label": "Ribosome RPKM replicate 1 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "rpkm",
+    "units": "RPKM, source reported",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "034b902709a8a71c695215ff92a507a331d8b7ec266314160238d7676b74e820",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RIBO-Ec_Syn61_delta3_ev5_1_rpkm",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO-Ec_Syn61_delta3_ev5_1_rpkm"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_08",
+    "file": "Nyerges2026_Syn61_08.tsv",
+    "metricKey": "nyergesSyn61Column08",
+    "label": "Ribosome RPKM replicate 2 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "rpkm",
+    "units": "RPKM, source reported",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "fdcf8eed7287f57d85b034e643fcda10dbd23560e6796733d7e4f12389392b4b",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RIBO-Ec_Syn61_delta3_ev5_2_rpkm",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO-Ec_Syn61_delta3_ev5_2_rpkm"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_09",
+    "file": "Nyerges2026_Syn61_09.tsv",
+    "metricKey": "nyergesSyn61Column09",
+    "label": "Ribosome RPKM replicate 3 — Syn61∆3(ev5)",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "rpkm",
+    "units": "RPKM, source reported",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "16c7eb58eba01e9d2614ea135c99cd2737ae76349df0097a63f76b548254cae5",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "RIBO-Ec_Syn61_delta3_ev5_3_rpkm",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 1,
+        "text": "One of three independent biological replicates; RNA and Ribo libraries came from the same samples.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO-Ec_Syn61_delta3_ev5_3_rpkm"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": null,
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_10",
+    "file": "Nyerges2026_Syn61_10.tsv",
+    "metricKey": "nyergesSyn61Column10",
+    "label": "RNA log2 fold change (read-count calculation) — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "RNA-seq",
+    "quantity": "log2_fold_change",
+    "units": "log2 fold change vs MDS42 (read-count calculation)",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "13e2a3a5dc0345a80730e6bba21266bc0760514a58aeec37cb6f9c7d9b873ba2",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RNA_LFC"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_11",
+    "file": "Nyerges2026_Syn61_11.tsv",
+    "metricKey": "nyergesSyn61Column11",
+    "label": "RNA log2 fold change (EdgeR) — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "RNA-seq",
+    "quantity": "edger_log2_fold_change",
+    "units": "log2 fold change vs MDS42 (EdgeR)",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "ca550a1cc23bc73866a99bb72e4b3f05cac5bfdec48ca97e0df1ceb322c0e6be",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RNA_LFC_EdgeR"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_12",
+    "file": "Nyerges2026_Syn61_12.tsv",
+    "metricKey": "nyergesSyn61Column12",
+    "label": "RNA reported P-value — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "RNA-seq",
+    "quantity": "p_value",
+    "units": "source-reported P-value, adjustment unspecified",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "9ed065a4d3f07a4f21a4cbd801992edcde6fbca372ce4cd9f4cd7ada219dd345",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RNA_P-value"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_13",
+    "file": "Nyerges2026_Syn61_13.tsv",
+    "metricKey": "nyergesSyn61Column13",
+    "label": "Ribosome log2 fold change (read-count calculation) — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "log2_fold_change",
+    "units": "log2 fold change vs MDS42 (read-count calculation)",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "214ec6f378b813023b6409a2563dfc94abafc288972a18780d70216f8d0f3d14",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO_LFC"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_14",
+    "file": "Nyerges2026_Syn61_14.tsv",
+    "metricKey": "nyergesSyn61Column14",
+    "label": "Ribosome log2 fold change (EdgeR) — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "edger_log2_fold_change",
+    "units": "log2 fold change vs MDS42 (EdgeR)",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "6db10fc7b6a143b25e5fc3e8b1d098c59a8f13bf4a72d8e73cfc393089df00eb",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO_LFC_EdgeR"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_15",
+    "file": "Nyerges2026_Syn61_15.tsv",
+    "metricKey": "nyergesSyn61Column15",
+    "label": "Ribosome reported P-value — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "p_value",
+    "units": "source-reported P-value, adjustment unspecified",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "d4f3f48b0c2d042e0b1f70c1425b7d8cd63a92f99fafe351e6dfa66ec9bdbb7f",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": false,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "RIBO_P-value"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  },
+  {
+    "id": "Nyerges2026_Syn61_16",
+    "file": "Nyerges2026_Syn61_16.tsv",
+    "metricKey": "nyergesSyn61Column16",
+    "label": "Translation-efficiency log2 fold change — Syn61∆3(ev5) vs MDS42",
+    "organism": "Escherichia coli Syn61∆3(ev5)",
+    "isTargetOrganism": true,
+    "assay": "ribosome profiling",
+    "quantity": "translation_efficiency_log2_fold_change",
+    "units": "log2 translation-efficiency change vs MDS42",
+    "condition": "LBL, 37 °C, mid-exponential",
+    "sha256": "74e71b42d87d640b44d3286ea755cbcff646ddf072619243a6865501fcfd38a0",
+    "record": {
+      "studyId": "Nyerges2026",
+      "dataType": "transcriptomics",
+      "platform": "Ribo-seq",
+      "strain": "Syn61∆3(ev5)",
+      "basis": "direct",
+      "conditionSet": "LBL, 37 °C, mid-exponential",
+      "samples": "Three paired RNA/Ribo cultures; Syn61∆3(ev5) / MDS42",
+      "archiveUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "citation": {
+        "text": "Nyerges A et al. Probing the limits of genetic recoding using multi-omics-guided evolution. Nature Communications (2026). doi:10.1038/s41467-026-74300-9.",
+        "url": "https://doi.org/10.1038/s41467-026-74300-9",
+        "pmid": "42331836"
+      },
+      "replicates": {
+        "count": 3,
+        "text": "Three independent starter cultures; paired RNA/Ribo libraries.",
+        "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
+      },
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "text": "37 °C",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "lo": 37,
+          "hi": 37,
+          "unit": "°C"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false
+        },
+        "co2": {
+          "status": "not reported",
+          "text": "Not reported",
+          "quote": "",
+          "where": "",
+          "lo": null,
+          "hi": null,
+          "unit": "%"
+        },
+        "medium": {
+          "status": "reported",
+          "text": "Lysogeny Broth Lennox (LBL), without growth antibiotics",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "base": "LBL",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false
+        },
+        "format": {
+          "status": "reported",
+          "text": "500 ml in 2000 ml baffled Erlenmeyer flask, 250 rpm",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "value": "flask"
+        },
+        "phase": {
+          "status": "reported",
+          "text": "Mid-exponential, OD600 0.40–0.45",
+          "quote": "",
+          "where": "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)",
+          "label": "exponential",
+          "od": [
+            0.4,
+            0.45
+          ],
+          "odNm": 600
+        }
+      }
+    },
+    "citationId": "nyerges-2026-recoding",
+    "licence": "Article CC BY-NC-ND 4.0; derived numerical tables admitted with attribution under the owner's 2026-10-06 source-ledger decision, not represented as unmodified publisher files.",
+    "caveat": "Exact, case-sensitive gene-name join unique across all CP116771.1 annotated genes; ambiguous, unmatched and excluded loci are absent. No suffix stripping or aliases. RPKM denominators/filtering and non-EdgeR pseudocount/aggregation are unspecified. EdgeR 4.0.12 settings are not fully reported. P-values are described as adjusted in figure captions; the adjustment method/family is unspecified. Delta_LFC is RIBO_LFC minus RNA_LFC, not an EdgeR difference or absolute translation efficiency.",
+    "provenanceDoc": "docs/validation/recoded-multiomics.md",
+    "payload": "expression_layers.json",
+    "signed": true,
+    "logScale": false,
+    "ingest": {
+      "sourceFile": "Supplementary_Data_3.xlsx",
+      "sourceSha256": "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
+      "sourceUrl": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/supplementaryFiles",
+      "sheet": "Syn61_delta3_ev5",
+      "columns": [
+        "Delta_LFC"
+      ],
+      "normalization": "as-deposited",
+      "mappingRoute": "exact unique gene name on CP116771.1",
+      "mappingAuditSha256": "55bf967ea6a0a2525899056916902c3f083b9c93f1b6203ca76e15de4339e572",
+      "referenceStrain": "MDS42",
+      "missingPolicy": "source dash/blank or unjoined gene is absent, never zero"
+    }
+  }
+]

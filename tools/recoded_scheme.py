@@ -492,7 +492,18 @@ def main(argv: list[str] | None = None) -> int:
             for r in rejections
         ],
     )
-    print(f"wrote 4 tables to {out}")
+    terminal_changes = Counter(
+        (pair.native[-3:], pair.recoded[-3:]) for pair in design_pairs
+        if pair.native[-3:] in set(CodonTable.unambiguous_dna_by_id[11].stop_codons)
+        and pair.recoded[-3:] in set(CodonTable.unambiguous_dna_by_id[11].stop_codons)
+        and pair.native[-3:] != pair.recoded[-3:]
+    )
+    _write_tsv(
+        out / "ec_syn57_terminal_substitutions.tsv",
+        ["native_codon", "recoded_codon", "count"],
+        [[before, after, count] for (before, after), count in sorted(terminal_changes.items())],
+    )
+    print(f"wrote 5 tables to {out}")
     return 0
 
 

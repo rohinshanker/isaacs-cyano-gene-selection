@@ -107,6 +107,7 @@ test('a link is opened onto its own data: what each view promotes', async () => 
   assert.match(promoted, /view\.categoryFilter\.length > 0\) keys\.add\('sourceDerivedCategories'\)/);
   assert.match(promoted, /view\.proteinFilter !== 'any' \|\| view\.panel === LENGTH_TAB\.id\) keys\.add\('lengthCohorts'\)/);
   assert.match(promoted, /view\.panel === REGULATORY_TAB\.id\) keys\.add\('regulatoryTss'\)/);
+  assert.match(promoted, /view\.panel === STRAIN_FITNESS_TAB\.id\) keys\.add\('strainFitness'\)/);
   for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
     'goIeaEssentiality', 'goTerms', 'tssEvidence']) {
     assert.ok(promoted.includes(`'${key}'`), `a pinned gene waits for ${key}`);
@@ -121,7 +122,8 @@ test('nothing computed once at start-up is left stale when its file lands', asyn
   // Dropped only once the inventory is known not to be published: a failed
   // request may be retried, and the link's filter must still be there when it is.
   assert.match(flush, /if \(!dataset\.lengthCohorts && !pendingState\(dataset, 'lengthCohorts'\)\) \{\s*state\.proteinFilter = 'any';/);
-  assert.match(flush, /keys\.has\('codonPca'\)\) context\.projections\.clear\(\);/);
+  assert.match(flush,
+    /keys\.has\('codonPca'\) \|\| keys\.has\('codonPcaReference'\)\) context\.projections\.clear\(\);/);
   assert.match(flush, /searchResults\?\.setGenes\(dataset\.genes, dataset\.goTerms\?\.terms, dataset\);/);
   assert.match(flush, /keys\.has\('excluded'\)\) renderProvenance\(\);/);
   assert.match(flush, /renderAll\(\);/);

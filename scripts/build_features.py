@@ -27,6 +27,7 @@ from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
+import codon_pca as cp  # noqa: E402
 from organisms import OrganismConfig, get_organism  # noqa: E402
 from rna_context import folding_context, restore_start_window  # noqa: E402
 from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
@@ -572,6 +573,45 @@ def load_pair_judgements(path: Path) -> list[dict[str, Any]]:
     ]
 
 
+def declare_quantity(source: dict[str, Any], label: str) -> str | None:
+    """Resolves a source's optional ``quantity`` and stamps what follows from it.
+
+    A source that declares none is left exactly as it was: its column, its sign
+    convention and its family keep following ``dataType`` alone, which is all
+    the shipped sources have ever needed.
+
+    A source that declares one gets the contract's own answers written onto it,
+    so every later reader — this module, the layer payload, the contract
+    validator and the browser — reads one declaration instead of re-deriving
+    the meaning of the number. ``signed`` and ``logScale`` follow from the
+    quantity rather than from a manifest's opinion of it, and a manifest that
+    contradicts the contract is refused rather than quietly overridden.
+    """
+    if "quantity" not in source:
+        return None
+    quantity = source["quantity"]
+    require(
+        isinstance(quantity, str) and bool(quantity),
+        f"{label} declares an invalid quantity: {quantity!r}",
+    )
+    # Both raise ValueError naming the clash, which is the same contract error
+    # `require` raises, so it travels to the caller unchanged.
+    record = source["record"]
+    facts = expression_table.quantity_facts(
+        record["dataType"], record["platform"], quantity, label
+    )
+    flags = expression_table.declared_flags(quantity)
+    for flag, expected in flags.items():
+        require(
+            source.get(flag, expected) is expected,
+            f"{label} declares {flag}={source.get(flag)!r}, but quantity "
+            f"{quantity!r} is always {flag}={expected}",
+        )
+        source[flag] = expected
+    source.update(facts)
+    return quantity
+
+
 def load_expression_sources(
     directory: Path, existing_metric_keys: Iterable[str] = ()
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
@@ -633,6 +673,7 @@ def load_expression_sources(
             isinstance(source["citationId"], str) and bool(source["citationId"]),
             f"Expression source {source_id} names no citation ledger entry",
         )
+        quantity = declare_quantity(source, f"Expression source {source_id}")
         source.setdefault("payload", GENES_PAYLOAD)
         source.setdefault("signed", source["record"]["dataType"] == "fitness")
         require(
@@ -658,16 +699,18 @@ def load_expression_sources(
         )
 
         # The value column is named after the declared quantity, so a fitness
-        # table cannot be loaded as an abundance or the reverse, and a signed
-        # ratio is not loaded as an amount.
+        # table cannot be loaded as an abundance or the reverse, and a p-value
+        # column cannot be loaded as a fold change.
+        data_type = source["record"]["dataType"]
+        declared = f"{data_type} {quantity}" if quantity else data_type
         expected_header = expression_table.header(
-            source["record"]["dataType"], signed=bool(source.get("signed")))
+            data_type, quantity, signed=bool(source.get("signed")))
         with table_path.open(encoding="utf-8", newline="") as handle:
             rows = csv.DictReader(handle, delimiter="\t")
             require(
                 rows.fieldnames == expected_header,
                 f"Unexpected expression columns in {file_name}: {rows.fieldnames}; "
-                f"a {source['record']['dataType']} table must have {expected_header}",
+                f"a {declared} table must have {expected_header}",
             )
             value_field = expected_header[1]
             values: dict[str, float] = {}
@@ -678,6 +721,20 @@ def load_expression_sources(
                     f"Duplicate locus_tag {locus} in expression source {source_id}",
                 )
                 value = float(row[value_field])
+                if quantity is not None:
+                    # A declared quantity states its own admissible values:
+                    # finite everywhere, non-negative for an abundance or a
+                    # count, whole for a count, within [0, 1] for a p-value,
+                    # signed for a log ratio. Nothing is inferred from the
+                    # numbers themselves.
+                    problem = expression_table.value_problem(quantity, value)
+                    require(
+                        problem is None,
+                        f"Invalid value for {locus} in expression source {source_id}: "
+                        f"{problem}",
+                    )
+                    values[locus] = value
+                    continue
                 # A fitness score is signed (loss below zero, gain above); every
                 # abundance is not. The source says which it is.
                 # Two different reasons a value may be negative, and they want
@@ -714,6 +771,18 @@ def expression_metric_definition(
     The coverage names its column and payload, so a count is never mistaken for
     another layer's (the Tan site rows in ``tss_evidence.json`` count differently).
     """
+    # A declared quantity says what the number is in one word, which the assay
+    # sentence cannot: "transcriptomics by RNA-seq" covers an abundance, a fold
+    # change and a p-value alike. Saying it here keeps a reader who meets the
+    # metric on its own from having to read the contrast out of the condition.
+    quantity = (
+        f" Quantity: {source['quantityLabel']} ({source['quantity']}), which "
+        + ("pools across selected datasets as a within-dataset rank."
+           if source["quantityPools"]
+           else "is read from one selected dataset and never pooled across contrasts.")
+        if source.get("quantity")
+        else ""
+    )
     return {
         "label": source["label"],
         "unit": source["units"],
@@ -721,12 +790,17 @@ def expression_metric_definition(
             f"{source['assay']} measured in {source['organism']} under "
             f"{source['condition']}, reported in {source['units']}; available for "
             f"{with_value:,} of {total:,} genes in the {source['metricKey']} column of "
-            f"{source['payload']}. {source['caveat']}"
+            f"{source['payload']}.{quantity} {source['caveat']}"
         ),
         # A fitness screen is its own family and centres on zero, by owner
         # decision of 2026-10-05; an abundance is a one-sided ramp, including a
-        # log-scaled one whose low values happen to be negative.
-        "family": "Fitness" if source["record"]["dataType"] == "fitness" else "Expression",
+        # log-scaled one whose low values happen to be negative. A declared
+        # quantity names its own family, which is what keeps a fold change, a
+        # p-value and a translation-efficiency ratio out of the abundance
+        # rules: the low-traffic threshold and the measured-first orderings
+        # select on the family.
+        "family": source.get("quantityFamily")
+        or ("Fitness" if source["record"]["dataType"] == "fitness" else "Expression"),
         "scale": "diverging" if source.get("signed") else "sequential",
         "missingPolicy": MISSING_POLICY,
         "direction": "contextual",
@@ -897,12 +971,31 @@ def cds_segments(location: str) -> list[list[int]] | None:
     ]
 
 
-def exclusion_reason(sequence: str, annotation: Mapping[str, Any]) -> str | None:
+def overlapping_cds_segments(segments: list[list[int]] | None) -> bool:
+    """Return whether a joined CDS assigns one genomic base more than once."""
+    if not segments:
+        return False
+    ordered = sorted(segments)
+    return any(start <= previous_end
+               for (_, previous_end), (start, _) in zip(ordered, ordered[1:]))
+
+
+def exclusion_reason(
+    sequence: str,
+    annotation: Mapping[str, Any],
+    segments: list[list[int]] | None = None,
+) -> str | None:
     """Returns the first failed frozen-contract inclusion condition."""
     if set(sequence) - set("ACGT"):
         return "ambiguous_base"
     if len(sequence) % 3:
         return "length_not_multiple_of_3"
+    if overlapping_cds_segments(segments):
+        # Programmed frameshifts in some NCBI annotations repeat the slippage
+        # base across joined segments. The packed CDS can represent that
+        # translation, but one genomic nucleotide cannot be independently
+        # recoded twice or mapped losslessly into the RNA-context payload.
+        return "overlapping_cds_segments"
     codons = fm.split_codons(sequence, remove_stop=False)
     if not codons or codons[-1] not in fm.TABLE.stop_codons:
         return "missing_terminal_stop"
@@ -927,8 +1020,12 @@ def verify_assembly_identity(raw_dir: Path, config: OrganismConfig) -> None:
         for line in report.splitlines()
         if line.startswith("# ") and ":" in line
     }
+    accession_field = (
+        "GenBank assembly accession" if config.accession.startswith("GCA_")
+        else "RefSeq assembly accession"
+    )
     require(
-        fields.get("RefSeq assembly accession") == config.accession,
+        fields.get(accession_field) == config.accession,
         f"Assembly report does not name {config.accession}",
     )
     require(
@@ -1122,14 +1219,37 @@ def add_context(
                 group[0].update(operonId=None, operonPosition=None, operonSize=1)
 
 
-def round_floats(value: Any) -> Any:
-    """Recursively rounds finite floats for stable, compact JSON."""
+def exact_floats(value: Any) -> Any:
+    """Recursively keeps finite floats at full JSON round-trip precision."""
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, list):
+        return [exact_floats(item) for item in value]
+    if isinstance(value, dict):
+        return {key: exact_floats(item) for key, item in value.items()}
+    return value
+
+
+def round_floats(value: Any, exact_keys: frozenset[str] = frozenset()) -> Any:
+    """Recursively rounds finite floats for stable, compact JSON.
+
+    A key in ``exact_keys`` keeps full precision wherever it appears, however
+    deeply nested. Six decimals is the publication convention for a metric read
+    off a ramp, but a published p-value of 3e-18 rounds to zero there, which
+    would turn the strongest evidence in a layer into an exact zero. The
+    quantity contract in ``scripts/expression_table.py`` says which columns
+    those are; nothing here inspects a value to decide.
+    """
     if isinstance(value, float):
         return round(value, 6) if math.isfinite(value) else None
     if isinstance(value, list):
-        return [round_floats(item) for item in value]
+        return [round_floats(item, exact_keys) for item in value]
     if isinstance(value, dict):
-        return {key: round_floats(item) for key, item in value.items()}
+        return {
+            key: exact_floats(item) if key in exact_keys
+            else round_floats(item, exact_keys)
+            for key, item in value.items()
+        }
     return value
 
 
@@ -1195,11 +1315,11 @@ def build(
             f"No GFF annotation matches selected CDS {locus}/{record.get('protein_id')}",
         )
         annotation = annotations[annotation_key]
-        reason = exclusion_reason(sequence, annotation)
+        segments = cds_segments(record.get("location", ""))
+        reason = exclusion_reason(sequence, annotation, segments)
         if reason:
             excluded.append({"id": locus, "reason": reason, "lengthNt": len(sequence)})
         else:
-            segments = cds_segments(record.get("location", ""))
             context_start, context_end = annotation["start"], annotation["end"]
             display_start, display_end = context_start, context_end
             replicon_length = len(genomes[annotation["seqid"]])
@@ -1368,7 +1488,8 @@ def build(
         del gene["_contextEnd"]
 
     rscu_matrix = np.asarray([gene["rscu"] for gene in genes])
-    scaled_rscu = StandardScaler().fit_transform(rscu_matrix)
+    rscu_scaler = StandardScaler().fit(rscu_matrix)
+    scaled_rscu = rscu_scaler.transform(rscu_matrix)
     pca = PCA(n_components=6, random_state=organism.umapSeed).fit(scaled_rscu)
     coordinates = pca.transform(scaled_rscu)
     for gene, point in zip(genes, coordinates, strict=True):
@@ -1400,14 +1521,19 @@ def build(
         # established site payload rather than rewriting every one-line record.
         gene["rnaContext"] = gene.pop("_rnaContext")
 
-    codon_pca = {
-        "explainedVariance": pca.explained_variance_ratio_.tolist(),
-        "loadings": [
-            {"codon": codon, "aa": fm.AA_BY_CODON[codon], "pc": pca.components_[:, index].tolist()}
-            for index, codon in enumerate(fm.RSCU_ORDER)
-        ],
-        "nComponents": 6,
-    }
+    codon_pca = cp.native_pca_document(
+        fm.RSCU_ORDER,
+        rscu_scaler,
+        pca,
+        {
+            "organismId": organism.organism_id,
+            "label": organism.organismIdentity,
+            "strain": organism.strainIdentity,
+            "genomeAccession": organism.accession,
+            "taxid": organism.taxid,
+        },
+        fm.AA_BY_CODON,
+    )
     metric_labels = {
         "gc": ("GC", "fraction"),
         "gc1": ("GC1", "fraction"),
@@ -1687,9 +1813,27 @@ def build(
     layers = expression_layers_document(genes, expression_sources, expression_values)
     if layers is not None:
         documents[LAYERS_PAYLOAD] = layers
+    # A layer whose quantity is a probability keeps full precision under its own
+    # metric key, wherever the rounding walk meets it; every other column keeps
+    # the six-decimal publication convention. The quantity contract decides,
+    # never an inspection of the values.
+    exact_metric_keys = frozenset(
+        source["metricKey"]
+        for source in expression_sources
+        if source.get("quantity")
+        and expression_table.quantity_spec(source["quantity"]).exact
+    )
     for name, document in documents.items():
         # Tiny published adjusted p-values must not round to zero.
-        serializable = document if name == "tss_evidence.json" else round_floats(document)
+        # The parent-frame projector must reproduce sklearn's transform from the
+        # published fit, so its floating-point parameters retain JSON's full
+        # round-trip precision. Other generated metrics keep the compact
+        # six-decimal publication convention.
+        serializable = (
+            document
+            if name in {"tss_evidence.json", "codon_pca.json"}
+            else round_floats(document, exact_metric_keys)
+        )
         content = json.dumps(
             serializable, separators=(",", ":"), ensure_ascii=False
         ) + "\n"

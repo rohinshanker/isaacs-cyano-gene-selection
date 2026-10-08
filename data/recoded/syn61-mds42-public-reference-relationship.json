@@ -1,0 +1,19 @@
+{
+  "type": "recoded-derivative",
+  "parent": {
+    "organismId": "ecoli-mds42-public-reference",
+    "label": "Escherichia coli str. K-12 substr. MDS42",
+    "genomeAccession": "GCF_000350185.1"
+  },
+  "child": {
+    "organismId": "ecoli-syn61-delta3-ev5",
+    "label": "Escherichia coli Syn61 substr. delta 3 (ev5)",
+    "genomeAccession": "GCA_028355435.1"
+  },
+  "provenance": {
+    "recodingScheme": "Syn61 61-codon scheme (TCA, TCG and TAG removed)",
+    "segmentSet": "deposited whole-genome Syn61 delta 3 evolved variant 5",
+    "source": "Nyerges et al. 2026 PMCID PMC13287592 proteomics methods; Supplementary Data 1 cell D2; NCBI CP116771.1",
+    "description": "The article identifies Syn61 as a 61-codon variant of MDS42. This comparison uses the public MDS42 AP012306.1 reference assembly, which differs from the 2026 study stock and is not asserted to be an exact isogenic experimental parent."
+  }
+}

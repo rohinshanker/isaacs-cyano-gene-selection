@@ -1,0 +1,41 @@
+{
+  "files": {
+    "citations.json": {
+      "bytes": 19872,
+      "sha256": "9922464770b336415c5b5c73029413682ef7d95d425ca966f202b6b879c1fd65"
+    },
+    "codon_pca.json": {
+      "bytes": 20877,
+      "sha256": "f2873f96e5a8940ebf865c626a7720a0fe438d52db21e7c5abffbe205a7af9d8"
+    },
+    "codon_pca_reference.json": {
+      "bytes": 710870,
+      "sha256": "708f0c0f02d7fa6f0fc3e5df64fc565d23e9cd728dcf8f0c02c19dac5e66de77"
+    },
+    "codon_rscu.json": {
+      "bytes": 1452936,
+      "sha256": "349ccabf79196813d2511a5cad5292d8ab075cc686d61f8f97fc5dbf7cf5232b"
+    },
+    "excluded.json": {
+      "bytes": 9485,
+      "sha256": "e39644998837e7909d1198ee95f0be003307408f95a51bcb75b784ff2946d933"
+    },
+    "expression_layers.json": {
+      "bytes": 537630,
+      "sha256": "c906388bd5d6794014a51a82eb5645848f2e2dd931518daa1e664e27220d7baf"
+    },
+    "genes.json": {
+      "bytes": 5263398,
+      "sha256": "d54f15fa067ab2afbb6a610f6cdf960eae7b9b84f542ea0e6f1b4cac1433f345"
+    },
+    "meta.json": {
+      "bytes": 107397,
+      "sha256": "3385a2510d2891f4aa5d415933c67d11df59bc4bfbce0227f386d4dd40bc8312"
+    },
+    "strain_fitness.json": {
+      "bytes": 1552440,
+      "sha256": "f46596840460420c7cc611e87fee5ebad8bcbf964270d39e228a054cb2fdf746"
+    }
+  },
+  "schemaVersion": 1
+}

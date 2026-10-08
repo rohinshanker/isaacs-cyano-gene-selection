@@ -5,7 +5,7 @@
   byte sizes and SHA-256 checksums. Documentation only until reviewed.
 - **Status:** open
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-08
 
 ## Current State
 
@@ -82,3 +82,12 @@ After the owner records a decision, transfer the action to the ingestion ticket
 or retain the current arrangement. Resolve with the normal R-rename and dated
 verification; distil only any new reusable download rule into the source ledger
 and its validation index, then delete this ticket and remove its queue row.
+
+## Owner explanation requested, 2026-10-08
+
+Compare keep-current, an upstream-link catalogue, and selected retained copies in
+chat before the owner decides. The offered recommendation is a small upstream
+catalogue with exact versions/sizes/hashes, retaining copies only when availability
+justifies it. No catalogue or hosting choice has been approved yet. Scope remains
+RefSeq GFF/feature inputs and original Rubin Dataset S3, not automatic raw-omics
+downloads or new startup payloads.
