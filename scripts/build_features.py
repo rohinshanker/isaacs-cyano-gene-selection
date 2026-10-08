@@ -925,8 +925,12 @@ def verify_assembly_identity(raw_dir: Path, config: OrganismConfig) -> None:
         for line in report.splitlines()
         if line.startswith("# ") and ":" in line
     }
+    accession_field = (
+        "GenBank assembly accession" if config.accession.startswith("GCA_")
+        else "RefSeq assembly accession"
+    )
     require(
-        fields.get("RefSeq assembly accession") == config.accession,
+        fields.get(accession_field) == config.accession,
         f"Assembly report does not name {config.accession}",
     )
     require(

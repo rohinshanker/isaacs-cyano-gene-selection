@@ -102,6 +102,52 @@
       "annotationDirectory": "data/annotation/releases/GCF_000005845.2-UniProtGOA_2026-07-28",
       "expressionDirectory": "data/expression/organisms/ecoli-k12-mg1655",
       "primaryExpressionMetric": null
+    },
+    "ecoli-syn61-delta3-ev5": {
+      "accession": "GCA_028355435.1",
+      "assemblyPrefix": "GCA_028355435.1_ASM2835543v1",
+      "ftpDirectory": "GCA/028/355/435/GCA_028355435.1_ASM2835543v1",
+      "expectedTotalLength": 3977501,
+      "organismIdentity": "Escherichia coli",
+      "strainIdentity": "Syn61 substr. delta 3 (ev5)",
+      "taxid": 562,
+      "umapSeed": 6103,
+      "caiReferenceRule": "ecoli-translation-machinery-product-match-v1",
+      "caiReferenceMethod": "ecoli-translation-machinery-product-match-v1",
+      "caiReferenceDescription": "translation-machinery",
+      "trnaSpecialCases": {
+        "inosineAtWobble": true,
+        "lysidine": {
+          "aminoAcid": "Ile",
+          "genomicAnticodon": "CAT",
+          "effectiveAnticodon": "LAT"
+        },
+        "excludedFromDecodingPool": [
+          "Sec"
+        ]
+      },
+      "optionalLayers": [],
+      "rawDirectory": "data/raw/ecoli-syn61-delta3-ev5",
+      "outputDirectory": "site/data/organisms/ecoli-syn61-delta3-ev5",
+      "expressionDirectory": "data/expression/organisms/ecoli-syn61-delta3-ev5",
+      "primaryExpressionMetric": null,
+      "geneCountRange": [
+        3549,
+        3549
+      ],
+      "expectedGeneCount": 3549,
+      "expectedCdsRecords": 3690,
+      "expectedTerminalStops": {
+        "TAG": 7,
+        "TAA": 2558,
+        "TGA": 984
+      },
+      "expectedSpliced": [
+        "PPG85_12095"
+      ],
+      "expectedExceptions": {
+        "PPG85_12095": "ribosomal_slippage"
+      }
     }
   }
 }

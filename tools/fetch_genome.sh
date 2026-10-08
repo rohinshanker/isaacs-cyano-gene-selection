@@ -70,16 +70,19 @@ for line in open(os.path.join(dest, "md5checksums.txt"), encoding="utf-8"):
 
 report = os.path.join(dest, f"{accession}_assembly_report.txt")
 organism = ""
+infraspecific = ""
 taxid = ""
 for line in open(report, encoding="utf-8"):
     if line.startswith("# Organism name:"):
         organism = line.split(":", 1)[1].strip()
+    elif line.startswith("# Infraspecific name:"):
+        infraspecific = line.split(":", 1)[1].strip()
     elif line.startswith("# Taxid:"):
         taxid = line.split(":", 1)[1].strip()
 
 # A correct checksum only proves the file downloaded intact, not that it is the
 # right organism. Check identity explicitly.
-if expected_organism not in organism or expected_strain not in organism:
+if expected_organism not in organism or expected_strain not in (organism + " " + infraspecific):
     failures.append(f"wrong organism: {organism!r}")
 if taxid != expected_taxid:
     failures.append(f"wrong taxid: {taxid!r}")

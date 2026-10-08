@@ -79,6 +79,26 @@ PINNED: tuple[PinnedFile, ...] = (
         "4b14ee8c867394ca67ce44e8d07b3a99e8a88770355a134ba76977830e7d04f0",
         "per-gene replicate-level RNA-seq and Ribo-seq values",
     ),
+    PinnedFile(
+        "Supplementary_Data_4.xlsx", 68_499,
+        "c3d63217df8b63fcab11eeb3e1920b7ae28e900e1663779e5d847658fd2e6aeb",
+        "identified synthesis errors",
+    ),
+    PinnedFile(
+        "Supplementary_Data_5.xlsx", 106_706,
+        "10f5e3c9f38eb6ae4bc8d88f2af8a8aec15d21a25599ca6f6bd3cc0a9768330a",
+        "per-strain sequencing and evolved mutations",
+    ),
+    PinnedFile(
+        "Supplementary_Data_6.xlsx", 30_299,
+        "7abbc920088fd56a0d4bc77bdd25b4e28806d269d63c727174f2b12a58b22579",
+        "cryptic ORF peptide and sequence evidence",
+    ),
+    PinnedFile(
+        "Supplementary_Data_7.xlsx", 31_354,
+        "c97456aef2ffeb06d6572c20057a9d56d828622d20d5ea83e3261c3b1498ff94",
+        "segment troubleshooting record",
+    ),
 )
 
 #: The Source Data archive itself.
@@ -173,6 +193,12 @@ def main(argv: list[str] | None = None) -> int:
             print("  (about 21.5 MB; several minutes is normal)", file=sys.stderr)
             download(BUNDLE_URL, bundle)
             extract_members(bundle, [SOURCE_ARCHIVE], archive.parent)
+        # Verify the containing archive before replacing any extracted input.
+        problems = verify(archive, PINNED_ARCHIVE)
+        if problems:
+            for problem in problems:
+                print(f"FAIL {problem}", file=sys.stderr)
+            return 1
         extract_members(archive, [p.name for p in PINNED], dest)
 
     problems = verify(archive, PINNED_ARCHIVE)

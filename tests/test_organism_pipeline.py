@@ -35,6 +35,25 @@ def test_unknown_organism_id_fails_loudly() -> None:
         get_organism("not-real")
 
 
+def test_genbank_genome_identity_uses_its_own_assembly_namespace(tmp_path) -> None:
+    organism = get_organism("ecoli-syn61-delta3-ev5")
+    path = tmp_path / f"{organism.assemblyPrefix}_assembly_report.txt"
+    report = (
+        "# Organism name: Escherichia coli (E. coli)\n"
+        "# Infraspecific name: strain=Syn61 substr. delta 3 (ev5)\n"
+        "# Taxid: 562\n"
+        "# GenBank assembly accession: GCA_028355435.1\n"
+    )
+    path.write_text(report)
+    build_features.verify_assembly_identity(tmp_path, organism)
+    path.write_text(report.replace(".1\n", ".2\n"))
+    with pytest.raises(ValueError, match="does not name"):
+        build_features.verify_assembly_identity(tmp_path, organism)
+    path.write_text(report.replace("GenBank assembly", "RefSeq assembly"))
+    with pytest.raises(ValueError, match="does not name"):
+        build_features.verify_assembly_identity(tmp_path, organism)
+
+
 def test_organism_config_requires_expectations_and_rejects_unknown_trna_keys() -> None:
     values = dict(get_organism("ecoli-k12-mg1655").values)
     values.pop("expectedCdsRecords")

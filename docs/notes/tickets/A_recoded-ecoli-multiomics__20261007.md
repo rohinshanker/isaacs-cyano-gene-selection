@@ -27,8 +27,17 @@ All six owner questions were answered on 2026-10-07 and are recorded under
 
 ## Current State
 
-Nothing is admitted. No file is pinned in the repository, no ledger row is
-written and no code is changed. What follows was read directly from Europe PMC,
+Admission is in progress. Source Data 1–3 and the design genome are pinned by
+checksum; scheme derivation and distribution editing are implemented. No measured
+layer or recoded organism has been published yet.
+
+Implementation owner: **cyano-ticket-closing**, resumed at the owner’s request
+on 2026-10-07 in `work/recoded-multiomics-20261007`, baseline `be5b3b3`.
+Independent work: DEM-309 verifies D4/D5 source evidence; DEM-310 implements D8
+projection artifacts. The original DEM-309 Claude run failed before executing
+because of a provider biology filter; its terminal failure was checked before
+assigning the evidence work to Codex. Existing audit findings: none recorded
+against this ticket; new findings remain open until individually addressed. What follows was read directly from Europe PMC,
 NCBI and MassIVE on 2026-10-07 by this repository's agents, under the
 last-resort rule in the
 [handoff contract](../../validation/claude-science-handoff.md), and is recorded
