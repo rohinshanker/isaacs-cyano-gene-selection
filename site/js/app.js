@@ -84,7 +84,7 @@ import { GeneSequenceView } from './ui/gene-sequence-view.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { DataSourcesPanel } from './ui/data-sources.js';
 import {
-  datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
+  datasetChoiceLabel, datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
@@ -1718,7 +1718,7 @@ function syncAxisSourceSelects() {
     for (const dataset of candidates) {
       const option = document.createElement('option');
       option.value = dataset.id;
-      option.textContent = `${dataset.record.studyId} · ${dataset.record.conditionSet}`;
+      option.textContent = `${dataset.record.studyId} · ${datasetChoiceLabel(dataset)}`;
       select.append(option);
     }
     // A fold change, a p-value or a translation-efficiency ratio is read from

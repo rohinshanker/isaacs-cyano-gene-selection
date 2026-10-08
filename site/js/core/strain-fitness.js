@@ -101,7 +101,7 @@ function requireMetadata(value, what) {
  * Replicate numbers are explicit rather than positional so that a source which
  * reports replicates 1 and 3 cannot be read as 1 and 2.
  */
-function requireReplicates(value, what, recordId) {
+function requireReplicates(value, what, recordId, bounds) {
   const where = `${what} of record ${recordId}`;
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value)) fail(`has a ${where} that is not an array`);
@@ -114,7 +114,7 @@ function requireReplicates(value, what, recordId) {
     }
     if (seen.has(replicate)) fail(`repeats replicate ${replicate} in the ${where}`);
     seen.add(replicate);
-    return { replicate, value: requireMeasurement(entry.value, `replicate in the ${where}`) };
+    return { replicate, value: requireMeasurement(entry.value, `replicate in the ${where}`, bounds) };
   });
   return series.sort((a, b) => a.replicate - b.replicate);
 }
@@ -222,6 +222,12 @@ function requireGrowth(raw, { strains, conditions, ids }) {
     if (maximumOd600 === null && maximumOd600Sd !== null) {
       fail(`record ${id} has a maximum-OD600 SD with no maximum OD600`);
     }
+    const doublingTimeReplicates = requireReplicates(
+      entry.doublingTimeReplicates, 'doubling-time replicates', id, { positive: true },
+    );
+    if (noGrowth && doublingTimeReplicates.some((replicate) => replicate.value !== null)) {
+      fail(`record ${id} reports no growth and a measured doubling-time replicate`);
+    }
     return Object.freeze({
       id,
       strain: resolve(strains, entry.strainId, 'strain', id),
@@ -230,12 +236,12 @@ function requireGrowth(raw, { strains, conditions, ids }) {
       doublingTimeMinutes,
       doublingTimeSdMinutes,
       doublingTimeReplicates: Object.freeze(
-        requireReplicates(entry.doublingTimeReplicates, 'doubling-time replicates', id),
+        doublingTimeReplicates,
       ),
       maximumOd600,
       maximumOd600Sd,
       maximumOd600Replicates: Object.freeze(
-        requireReplicates(entry.maximumOd600Replicates, 'maximum-OD600 replicates', id),
+        requireReplicates(entry.maximumOd600Replicates, 'maximum-OD600 replicates', id, { nonNegative: true }),
       ),
     });
   });

@@ -92,14 +92,18 @@ times or ten independently measured growth curves. M9-labelled rows are mapped
 explicitly by pinned source row to M9 + 2% D-glucose; the remaining growth rows
 use 2×YT, at 37 °C. An explicit pinned-row crosswalk pairs the 21 M9 rows with
 their corresponding rich-medium strain; evolved/troubleshot stages remain
-separate. This crosswalk is not a cross-assay identity claim.
+separate. This crosswalk is not a cross-assay identity claim. Segment sets come from a
+literal source-row/sheet map; condition and evolution stage stay outside the
+segment field, and no sheet-order inference supplies a scheme.
 
 Biolog entries are signed Max Height differences versus MDS42. Keep plate,
 well, substrate, source sheet and negative values. The source inconsistently
 names 590 nm and OD600, and does not supply exact per-well processing. Use the
 declared optical-density-basis caveat instead of claiming a fully specified
-OD600 assay. The published summary score numerically matches a sum over 480
-wells despite mean wording; the interface does not invent a cross-well mean.
+OD600 assay. Table 1 summary scores generally match sums over 480 wells despite
+mean wording; Seg80-0 sums to −10.286431 while Table 1 Strain 10 reports −10.26.
+That exception and the unresolved Seg80-0/Seg82-0 identity stay explicit. The
+interface does not invent a cross-well mean.
 
 ## Scheme and projections
 

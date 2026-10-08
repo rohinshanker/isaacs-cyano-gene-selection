@@ -503,3 +503,24 @@ test('the layer is last in the loading order and has a tier name of its own', ()
   assert.equal(publishesFile(DEFAULT_ORGANISM, file), true);
   assert.equal(publishesFile(organismById('ecoli-k12-mg1655'), file), true);
 });
+
+
+test('replicates enforce measurement bounds and categorical no-growth absence', () => {
+  const row = (d) => d.growth.records.find((r) => r.growthStatus === GROWTH_STATUS.NO_GROWTH);
+  refuses(/no growth and a measured doubling-time replicate/, (d) => {
+    row(d).doublingTimeReplicates = [{ replicate: 1, value: 24 }];
+  });
+  for (const value of [0, -1]) {
+    refuses(/not above zero/, (d) => {
+      d.growth.records[0].doublingTimeReplicates = [{ replicate: 1, value }];
+    });
+  }
+  refuses(/negative/, (d) => {
+    d.growth.records[0].maximumOd600Replicates = [{ replicate: 1, value: -0.1 }];
+  });
+  const layer = load((d) => {
+    row(d).doublingTimeReplicates = [{ replicate: 1, value: null }];
+    d.growth.records[0].maximumOd600Replicates = [{ replicate: 1, value: 0 }];
+  });
+  assert.equal(layer.growth.records[0].maximumOd600Replicates[0].value, 0);
+});

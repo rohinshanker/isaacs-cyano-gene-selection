@@ -162,7 +162,7 @@ function table(headers, rows, caption) {
 function strainCell(record) {
   const segments = record.strain.scheme.segments;
   return `${record.strain.label} — ${record.strain.scheme.label}`
-    + (segments && !record.strain.label.endsWith(segments) ? ` (${segments})` : '');
+    + (segments ? ` (${segments})` : '');
 }
 
 function downloadTsv(text, name) {
@@ -356,7 +356,7 @@ export class StrainFitnessPanel {
     const labels = selectionLabels(this.layer, this.selection);
     const parts = [
       `Strain: ${labels.strain}`,
-      `Scheme: ${labels.scheme}${labels.segments && !labels.strain.endsWith(labels.segments)
+      `Scheme: ${labels.scheme}${labels.segments
         ? ` (${labels.segments})` : ''}`,
       `Condition: ${labels.condition}`,
       `Source: ${this.layer.source.studyId ?? this.layer.source.sourceFile}`,

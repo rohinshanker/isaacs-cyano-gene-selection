@@ -1,3 +1,4 @@
+import { datasetChoiceLabel, datasetsFrom } from '../../site/js/core/data-sources.js';
 /**
  * The browser's half of the declared-quantity contract.
  *
@@ -354,5 +355,46 @@ test('the source selector offers no pooled row for a quantity that does not pool
     assert.ok(pooledHost.querySelectorAll('input')
       .some((input) => input.id === `ds-inform-${abundanceKey}-pooled`));
     assert.equal(pooledHost.querySelector('li.data-sources-note'), null);
+  });
+});
+
+
+test('the real Syn61 study keeps replicate labels and non-pooling fields out of the compendium grid', async () => {
+  const meta = JSON.parse(await readFile(new URL(
+    '../../site/data/organisms/ecoli-syn61-delta3-ev5/meta.json', import.meta.url), 'utf8'));
+  const rows = datasetsFrom(meta);
+  assert.equal(rows.length, 16);
+  const rna = rows.filter((d) => d.source.quantity === 'rpkm' && d.record.platform === 'RNA-seq');
+  assert.equal(new Set(rna.map(datasetChoiceLabel)).size, 3);
+  rna.forEach((d, i) => assert.ok(datasetChoiceLabel(d).includes(`replicate ${i + 1}`)));
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const panel = new DataSourcesPanel(host, { datasets: rows, onChange: () => {}, storage: null });
+    const selection = rows.map((d) => d.id);
+    const key = 'type.transcriptomics.rna-seq.p-value';
+    const informing = {
+      typeOf: (d) => ({ key: typeKeyFor(d), label: typeLabelFor(d) }),
+      chosen: (k) => informingDataset(k, {}, rows, selection),
+      onInform: () => {}, onSelect: () => {}, colorTypeKey: key,
+      allOfType: (k) => typeGroups(rows).get(k)?.datasets ?? [],
+      poolsType: (k) => typePools(k, rows),
+    };
+    panel.update({ selection, colorMetricKey: key, informing });
+    assert.equal(panel.compendia.has('Nyerges2026'), true, 'the original threshold branch is exercised');
+    assert.ok(rows.every((d) => panel.compendiumOf(d) === null));
+    assert.equal(host.querySelectorAll('li.data-sources-compendium').length, 0);
+    assert.ok(!host.textContent.includes('pooled'));
+    const source = host.querySelectorAll('li.data-sources-item')
+      .find((li) => li.dataset.id === 'Nyerges2026_Syn61_12');
+    assert.ok(source.textContent.includes('colouring the map'));
+    assert.ok(source.textContent.includes('RNA reported P-value'));
+    const rnaKey = 'type.transcriptomics.rna-seq.abundance';
+    panel.update({ selection, colorMetricKey: rnaKey, informing: { ...informing, colorTypeKey: rnaKey } });
+    const choices = host.querySelectorAll('input').filter((e) => e.type === 'checkbox')
+      .map((e) => e.getAttribute('aria-label'));
+    assert.equal(new Set(choices).size, 3);
+    assert.ok(choices.every((c) => c.includes('RNA RPKM replicate')));
+    assert.equal(host.querySelectorAll('li.data-sources-pooled').length, 1, 'abundance retains explicit pooling');
   });
 });
