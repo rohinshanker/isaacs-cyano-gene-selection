@@ -5,8 +5,8 @@
       "sha256": "dc060d80d1cf6bd3f3c390bef61b2662303bda0b5018ad3854e9ca39fccd53b1"
     },
     "citations.json": {
-      "bytes": 11738,
-      "sha256": "b53134062a22f6be0ab09da1cdd1b4806c9662110e4fc657411cf4a786f719dd"
+      "bytes": 55728,
+      "sha256": "6281829c1cc9e0c6028f3d64faa29450538a2518e45430d2630b415fb04ca771"
     },
     "codon_pca.json": {
       "bytes": 5330,
@@ -34,7 +34,7 @@
     },
     "meta.json": {
       "bytes": 462527,
-      "sha256": "dca2db4d93deee371fcb4ab801f8abd0d8311f416b5295878957508dfcbffd01"
+      "sha256": "bf8b42fc164180f36a3277c25e92ed66b8c56a3d713ffcfe8d965fd8aad27ceb"
     }
   },
   "schemaVersion": 1

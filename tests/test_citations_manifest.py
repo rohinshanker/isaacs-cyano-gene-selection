@@ -52,7 +52,7 @@ def test_sections_and_citations_are_complete():
         "gilliam-2025", "dong-2023", "sato-2026", "choi-2016",
         "puszynska-2017", "piechura-2017", "russo-2025", "li-2022", "ncbi-pcc-7942", "gene-ontology",
         "adomako-2022-essentiality", "puszynska-2017-ppgpp", "xu-2024", "suban-2024", "bohutskyi-2024", "markson-2013", "johnson-2024", "gse225426-deposit", "gse311172-deposit",
-        "price-2018-fitness-browser", "guerreiro-2014",
+        "price-2018-fitness-browser", "guerreiro-2014", "nakayasu-2017",
     } == {item["id"] for item in sections[0]["items"]}
     assert {
         "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
@@ -126,3 +126,74 @@ def test_every_retained_external_data_source_is_attributed():
         "site/data/pcc7942-essentiality-v1.json",
     })
     assert required <= download_paths()
+
+
+def _ecoli_citations() -> dict:
+    return json.loads(
+        (ROOT / "site/data/organisms/ecoli-k12-mg1655/citations.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
+def test_every_ecoli_expression_source_is_attributed():
+    """The second organism's layers need a citation like the first organism's.
+
+    This went unchecked when E. coli shipped no measurements, and 78 layers were
+    published citing neither study before it was noticed. The check is by
+    organism now, not by the default payload.
+    """
+    sources = json.loads(
+        (ROOT / "data/expression/organisms/ecoli-k12-mg1655/sources.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert sources, "the organism publishes layers, so it must cite them"
+    cited = {
+        item["id"]
+        for section in _ecoli_citations()["sections"]
+        for item in section["items"]
+    }
+    assert {source["citationId"] for source in sources} <= cited
+
+
+def test_every_ecoli_layer_table_is_offered_and_tracked():
+    """Each published table is downloadable, named exactly, and in the repository."""
+    import subprocess
+
+    sources = json.loads(
+        (ROOT / "data/expression/organisms/ecoli-k12-mg1655/sources.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    offered = {
+        download["repoPath"]: download
+        for section in _ecoli_citations()["sections"]
+        for item in section["items"]
+        for download in item["downloads"]
+    }
+    for source in sources:
+        path = f"data/expression/organisms/ecoli-k12-mg1655/{source['file']}"
+        assert path in offered, f"{source['id']} is published but not offered"
+        download = offered[path]
+        assert download["filename"] == source["file"]
+        assert download["url"] == RAW_PREFIX + path
+        assert download["kind"].strip()
+        assert (ROOT / path).is_file()
+        subprocess.run(
+            ["git", "ls-files", "--error-unmatch", path],
+            cwd=ROOT, check=True, capture_output=True,
+        )
+
+
+def test_the_ecoli_ledger_states_the_strain_of_every_borrowed_measurement():
+    """A borrowed measurement names its strain in the ledger, not only in the map."""
+    items = {
+        item["id"]: item
+        for section in _ecoli_citations()["sections"]
+        for item in section["items"]
+    }
+    assert "REL606" in items["caglar-2017-ag3c"]["contribution"]
+    assert "NCM3722" in items["zhang-2022-translation"]["contribution"]
+    # And the log scale is stated where a reader meets the numbers.
+    assert "log-transformed" in items["caglar-2017-ag3c"]["contribution"]

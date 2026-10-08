@@ -39,6 +39,490 @@
           "url": "https://geneontology.org/docs/go-citation-policy/",
           "contribution": "Evidence-coded Gene Ontology relationships in gene details and GO-term search for E. coli: every row of the GOA file joined to a locus through its UniProtKB accession (54,062 relationships over 3,900 site genes, assigned by EcoCyc, UniProt, InterPro, GO_Central and others; evidence codes kept, computational and experimental alike). GO data and products: © 1999–2026 Gene Ontology Consortium, CC BY 4.0.",
           "downloads": []
+        },
+        {
+          "id": "caglar-2017-ag3c",
+          "citation": "Caglar MU, Houser JR, Barnhart CS, et al. The E. coli molecular phenotype under different growth conditions. Sci Rep 2017;7:45303. doi:10.1038/srep45303. With Houser JR et al., PLoS Comput Biol 2015;11:e1004400. GEO GSE94117 and GSE67402; PRIDE PXD005721 and PXD002140.",
+          "url": "https://doi.org/10.1038/srep45303",
+          "contribution": "Fifty-four optional layers, twenty-seven transcript and twenty-seven protein, one pair per condition set carrying at least three cultures with both. Its two layers are taken from aliquots of the same flasks, which no other E. coli source here does, so they may be compared with each other. Measured in E. coli B str. REL606 and placed on these genes through the ortholog crosswalk documented in docs/validation/rel606-crosswalk.md, reaching 3,715 of 4,287 plotted genes. The published values are normalized and log-transformed, so differences are multiplicative and a negative is an abundance below one unit. In the protein matrix 46.1% of cells hold one identical value the paper does not define; it is read as a non-detection floor and carried as absent. Article CC BY 4.0.",
+          "downloads": [
+            {
+              "filename": "AG3C_gluconate_Mg_0_8_mM_Na_5_mM_stationary_27_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_gluconate_Mg_0_8_mM_Na_5_mM_stationary_27_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_gluconate_Mg_0_8_mM_Na_5_mM_stationary_27_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_gluconate_Mg_0_8_mM_Na_5_mM_stationary_27_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_gluconate_Mg_0_8_mM_Na_5_mM_stationary_27_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_gluconate_Mg_0_8_mM_Na_5_mM_stationary_27_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_08_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_08_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_08_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_08_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_08_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_3_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_3_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_3_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_3_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_3_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_3_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_4_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_4_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_4_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_4_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_4_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_4_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_6_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_6_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_6_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_6_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_6_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_6_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_8_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_8_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_8_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_8_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_8_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_exponential_8_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_336_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_336_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_336_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_336_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_336_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_late_stationary_336_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_24_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_24_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_24_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_24_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_24_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_24_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_48_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_48_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_48_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_48_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_48_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_0_8_mM_Na_5_mM_stationary_48_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_200_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_200_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_200_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_200_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_200_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_8_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_exponential_5_5_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_8_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_exponential_5_5_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_8_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_stationary_28_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glucose_Mg_8_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glucose_Mg_8_mM_Na_5_mM_stationary_28_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_10_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_10_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_10_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_10_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_10_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_10_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_14_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_14_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_14_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_14_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_14_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_14_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_5_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_5_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_7_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_7_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_7_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_7_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_7_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_7_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_8_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_8_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_8_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_8_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_8_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_exponential_8_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_late_stationary_168_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_24_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_24_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_24_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_24_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_24_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_24_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_48_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_48_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_48_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_48_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_48_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_glycerol_Mg_0_8_mM_Na_5_mM_stationary_48_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_lactate_Mg_0_8_mM_Na_5_mM_stationary_29_h_PROT.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_lactate_Mg_0_8_mM_Na_5_mM_stationary_29_h_PROT.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_lactate_Mg_0_8_mM_Na_5_mM_stationary_29_h_PROT.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "AG3C_lactate_Mg_0_8_mM_Na_5_mM_stationary_29_h_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/AG3C_lactate_Mg_0_8_mM_Na_5_mM_stationary_29_h_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/AG3C_lactate_Mg_0_8_mM_Na_5_mM_stationary_29_h_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            }
+          ]
+        },
+        {
+          "id": "zhang-2022-translation",
+          "citation": "Zhang H, Dai X, Li Z, et al. Global and gene-specific translational regulation in Escherichia coli across different conditions. PLoS Comput Biol 2022;18(10):e1010641. doi:10.1371/journal.pcbi.1010641. GEO GSE182100.",
+          "url": "https://doi.org/10.1371/journal.pcbi.1010641",
+          "contribution": "Twenty-four optional layers, twelve transcript and twelve ribosome occupancy, across twelve conditions in biological triplicate throughout. Measured in E. coli NCM3722, a K-12 strain but not the MG1655 shown here. The depositor's counts are already expressed on NC_000913.3, so they join by exact gene span with no ortholog crosswalk, reaching 4,110 of 4,287 plotted genes. A footprint value is ribosome occupancy, not protein abundance, and is never placed on a transcript scale. Article CC BY 4.0; GEO public repository terms over the deposit.",
+          "downloads": [
+            {
+              "filename": "GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_1_h_1_delta_leuB_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_Leucine_limitation_growth_rate_0_6_h_1_delta_leuB_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_carbon_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_defined_rich_MOPS_growth_rate_1_8_h_1_batch_culture_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_glucose_minimal_growth_rate_0_9_h_1_batch_culture_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_1_h_1_delta_rplA_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_nitrogen_limitation_growth_rate_0_6_h_1_delta_rplA_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_1_h_1_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_FP.tsv",
+              "kind": "Project-derived mapped expression table"
+            },
+            {
+              "filename": "GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "repoPath": "data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/organisms/ecoli-k12-mg1655/GSE182100_phosphate_limitation_growth_rate_0_6_h_1_chemostat_RNA.tsv",
+              "kind": "Project-derived mapped expression table"
+            }
+          ]
         }
       ]
     },
