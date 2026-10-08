@@ -145,3 +145,8 @@ R-rename/status/validation and delete this ticket and its queue row last.
 - Downloads and broader clutter review await the explanations requested here.
 - Lag reproduced by the owner on Chrome/macOS on the defaults of all three data
   layers: protein abundance, transcript initiation and transcript abundance.
+
+Approved tRNA implementation DEM-320 returned 5f2d8da: JS1,282; pytest786 plus
+1 skip/36 subtests; contract116 plus1 declared skip; durable four-width renders.
+Independent exact-patch review dispatched before integration. Scope remains the
+44 annotated records + separately opt-in predicted pseudogene candidate.
