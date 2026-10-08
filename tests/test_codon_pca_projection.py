@@ -351,3 +351,20 @@ def test_cli_rejects_gene_order_mismatch_without_writing_output(tmp_path: Path):
     assert completed.returncode != 0
     assert "must repeat genes.json order exactly" in completed.stderr
     assert not (child_dir / "codon_pca_reference.json").exists()
+
+
+def test_published_syn61_coordinates_reproduce_from_public_parent_transform():
+    """Audit every shipped coordinate independently of the projection CLI."""
+    root = Path(__file__).resolve().parents[1] / "site/data/organisms"
+    parent = json.loads((root / "ecoli-mds42-public-reference/codon_pca.json").read_text())
+    child = root / "ecoli-syn61-delta3-ev5"
+    rscu = json.loads((child / "codon_rscu.json").read_text())
+    projection = json.loads((child / "codon_pca_reference.json").read_text())
+    assert projection["geneIds"] == rscu["geneIds"]
+    assert projection["reference"]["transform"] == parent["transform"]
+    transform = parent["transform"]
+    scaled = (np.asarray(rscu["rscu"]) - np.asarray(transform["scaler"]["mean"])) \
+        / np.asarray(transform["scaler"]["scale"])
+    expected = (scaled - np.asarray(transform["pca"]["mean"])) \
+        @ np.asarray(transform["pca"]["components"]).T
+    np.testing.assert_allclose(projection["coordinates"], expected, rtol=0, atol=1e-12)

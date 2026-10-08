@@ -30,7 +30,7 @@ All six owner questions were answered on 2026-10-07 and are recorded under
 Implementation owner: **cyano-ticket-closing**, resumed at the owner's request
 on 2026-10-07 in `work/recoded-multiomics-20261007`, baseline `be5b3b3`.
 
-Implemented and under final independent review:
+Implemented, validated and independently reviewed:
 
 - Exact Syn61∆3(ev5) CP116771.1 / GCA_028355435.1: 3,549 plotted CDSs,
   141 excluded; recoded scheme panel and 148 residual target codons.
@@ -62,10 +62,12 @@ residual counts; DEM-319 reviews quantity/fitness integration. DEM-309's initial
 Claude run failed before execution under a provider biology filter; its terminal
 failure was confirmed before Codex took the evidence assignment.
 
-### Review findings retained until recheck
+### Review findings and acceptance
 
 DEM-318 reviewed the earlier `cfc99f2` snapshot. Every finding is accounted for;
-fixes below await the reviewer's confirmation on the final patch.
+DEM-318 confirms all eight findings resolved at `001d69e` (code/data `b74d128`),
+and approves the parent-reference and preset additions. DEM-319 confirms its
+three findings resolved at `30b13d5`. All findings below are resolved.
 
 | Finding | State / repair |
 | --- | --- |
@@ -81,6 +83,15 @@ fixes below await the reviewer's confirmation on the final patch.
 | DEM319-F2: false compendium pooling disclosure | Fixed `30b13d5`; declared quantities stay individually visible outside the compound/dose compendium, while explicit abundance pooling and legacy fitness compendia remain available |
 | DEM319-F3: invalid fitness replicate values admitted | Fixed `30b13d5`; doubling-time replicates positive and absent for no-growth, OD replicates nonnegative; negative/boundary tests |
 
+
+The review's non-blocking suggestion to re-multiply the production projection
+is now an automated regression assertion in `test_codon_pca_projection.py`:
+every child coordinate must reproduce from the independently read public-parent
+transform and the shipped child RSCU vectors. MG1655's legacy schema-1 native
+fit remains supported; it is not used as this projection's parent.
+
+This session is **not closing** the ticket. D5-isolates and D4-debug-identity
+remain open, as described above; no partial-isolate values or genome are invented.
 
 Read-only evidence comes from pinned source files and the located-quote/hash
 manifest in [the dossier](../handoff/recoded_ecoli_evidence__20261007.md), under
@@ -613,7 +624,7 @@ recomputed map always reachable beside it.
 | D5 | A segment-to-coordinate table per strain, from Supplementary Data 2, 3 and 5 reconciled against the SRA roster | Per-strain derived genomes, and marking which genes are recoded in which strain | **open for partial isolates.** Exact Syn61 ev5 accession and 88 design segment features are verified. D5-isolates requires final structural/mutation history and stock sequences; D4-debug-identity requires assay replicate-to-clone mapping. Design intervals contain overlaps and gaps, so no synthetic concatenation is admitted. |
 | D6 | A distribution representation in `site/js/core/scheme.js` and its editor | Adding Ec_Syn57 as a selectable scheme preset, and U2's honest description of it | **met 2026-10-07** as U1, shipped with 44 new tests and rendered validation |
 | D7 | At least one recoded organism record, which needs D5 for a per-strain genome or the design genome admitted under Q2 | U2's panel and U3's colour source, and any rendered validation of either | **met 2026-10-08.** Exact Syn61∆3(ev5), GCA_028355435.1; U2/U3 have unit tests and four-width rendered validation in DEM-314. |
-| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **implemented; final review pending.** Schema 2 transforms and projector, real MDS42 parent-reference payload and separate browser view shipped in the integration branch. Public MDS42 is explicitly not the exact experimental stock. |
+| D8 | Publishing the scaler mean and scale in `codon_pca.json`, and shipping a parent reference projection into the recoded organism's own directory | Q3's second map, recoded genes on the parent's fixed axes | **met and reviewed 2026-10-08.** Schema 2 transforms and projector, real MDS42 parent-reference payload and separate browser view shipped in the integration branch. Public MDS42 is explicitly not the exact experimental stock. |
 
 ## Work plan
 
@@ -663,9 +674,10 @@ Syn61 **92 / 1**, MDS42 **86 / 1**, DH10B **86 / 1**. Follow-on label/citation
 repairs `b74d128`: 8 source-ingestion and 13 fitness-panel tests passed.
 After `b74d128`, full gates pass: JavaScript **1,328**, Python **890 passed /
 1 skipped / 36 subtests**, default contract **117 / 1**, Syn61 **92 / 1**.
-`30b13d5` then passes 72 focused JS tests. Final JS rerun: **1,330 passed**. DEM-319 confirms F1/F2/F3 resolved at
-`30b13d5` with 93 focused tests and a real-data Chrome recheck. DEM-318 final
-confirmation remains pending. `3f9fddd` scopes the scheme panel’s axes sentence
+`30b13d5` then passes 72 focused JS tests. Final gates: JavaScript **1,330 passed**; Python **891 passed, 1 skipped,
+36 subtests passed**, including the production-coordinate reproduction test. DEM-319 confirms F1/F2/F3 resolved at
+`30b13d5` with 93 focused tests and a real-data Chrome recheck. DEM-318 also approves all eight repairs and the parent/preset scope at
+`001d69e`, with independent exact coordinate reproduction and source-value audits. `3f9fddd` scopes the scheme panel’s axes sentence
 to Native codon space (4 focused tests), avoiding a contradictory description
 when the parent-reference tab is selected.
 

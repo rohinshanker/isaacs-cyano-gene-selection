@@ -116,3 +116,9 @@ separate panel explains that removal of the sense codons `TCA` and `TCG`
 dominates the expected shift; `TAG` is a stop and is not one of the 59 RSCU
 features. Neither separation nor proximity is a fitness, expression, or causal
 effect measurement.
+
+
+`tests/test_codon_pca_projection.py` independently re-multiplies every published
+Syn61 coordinate from the public parent's transform and the child's shipped
+RSCU vectors, with absolute tolerance 1e-12. A successful manifest check alone
+cannot replace this numerical reproduction check.
