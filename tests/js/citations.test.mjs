@@ -252,7 +252,22 @@ test('the published E. coli ledger is well formed and contains only used sources
   assert.deepEqual(manifest.sections.map(({ id }) => id), ['primary-data', 'methods-and-tools']);
   const items = manifest.sections.flatMap(({ items }) => items);
   assert.ok(items.some(({ id }) => id === 'ncbi-ecoli-k12-mg1655'));
-  assert.ok(items.every(({ downloads }) => downloads.length === 0));
+  // Until this organism published measurements, nothing here offered a
+  // download. Two studies now do, and only those two: a ledger entry offers a
+  // file when the site derived one from it, and otherwise offers none.
+  const offering = items.filter(({ downloads }) => downloads.length > 0);
+  assert.deepEqual(offering.map(({ id }) => id).sort(),
+    ['caglar-2017-ag3c', 'zhang-2022-translation']);
+  assert.equal(offering.reduce((n, { downloads }) => n + downloads.length, 0), 78);
+  for (const { downloads } of offering) {
+    for (const download of downloads) {
+      // The browser saves the bytes under this name, so it must be the file's.
+      assert.equal(download.repoPath.split('/').pop(), download.filename);
+      assert.ok(download.repoPath.startsWith('data/expression/organisms/ecoli-k12-mg1655/'));
+      assert.ok(download.url.endsWith(download.repoPath));
+      assert.ok(download.kind.trim());
+    }
+  }
   const forbidden = ['expression', 'tss', 'essential', 'protein-evidence', 'gene-ontology', 'trrosettarna'];
   assert.ok(items.every(({ id }) => !forbidden.some((term) => id.includes(term))));
 
