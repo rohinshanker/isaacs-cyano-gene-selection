@@ -594,14 +594,13 @@ def declare_quantity(source: dict[str, Any], label: str) -> str | None:
         isinstance(quantity, str) and bool(quantity),
         f"{label} declares an invalid quantity: {quantity!r}",
     )
+    # Both raise ValueError naming the clash, which is the same contract error
+    # `require` raises, so it travels to the caller unchanged.
     record = source["record"]
-    try:
-        facts = expression_table.quantity_facts(
-            record["dataType"], record["platform"], quantity, label
-        )
-        flags = expression_table.declared_flags(quantity)
-    except ValueError as error:
-        raise ValueError(str(error)) from None
+    facts = expression_table.quantity_facts(
+        record["dataType"], record["platform"], quantity, label
+    )
+    flags = expression_table.declared_flags(quantity)
     for flag, expected in flags.items():
         require(
             source.get(flag, expected) is expected,
