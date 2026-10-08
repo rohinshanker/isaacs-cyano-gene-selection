@@ -1,0 +1,159 @@
+{
+  "dataType": "proteomics",
+  "platform": "LC-MS/MS",
+  "strain": "PCC 7942",
+  "basis": "transferred",
+  "organism": "Synechococcus elongatus PCC 7942",
+  "assay": "LC-MS/MS protein abundance ratio (NSAF spectral counting, wild type relative to L1118)",
+  "signed": true,
+  "licence": "PNAS 2016 article and its Dataset S1; PRIDE/ProteomeXchange public-repository terms for the deposit. Admitted with citation under the owner's decision of 2026-10-06 that every source is permitted with citation; the deposit and Wang et al. 2016 are both cited.",
+  "provenanceDoc": "data/expression/INGESTED_SOURCES.md",
+  "studyId": "PXD005105",
+  "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD005105",
+  "citationId": "wang-2016-limonene",
+  "citation": {
+    "text": "Wang X, Liu W, Xin C, et al. Enhanced limonene production in cyanobacteria reveals photosynthesis limitations. Proc Natl Acad Sci USA 2016;113(50):14225-14230. Dataset S1; PRIDE PXD005105.",
+    "url": "https://doi.org/10.1073/pnas.1613340113",
+    "pmid": "27911807"
+  },
+  "files": [
+    {
+      "name": "PXD005105_pnas_dataset_s1.xlsx",
+      "url": "https://www.pnas.org/doi/suppl/10.1073/pnas.1613340113/suppl_file/pnas.1613340113.sd01.xlsx",
+      "sha256": "c21d7b25231573f0085a7f5d7804cbb7aac149cf00e06eaa33e69c2482d29c50",
+      "manual": true
+    }
+  ],
+  "reader": {
+    "format": "xlsx",
+    "sheet": "Sheet1",
+    "idColumn": "#Locus",
+    "idKind": "uniprot_pcc7942",
+    "idPattern": "([A-Z0-9]+)_.*"
+  },
+  "units": "signed fold change in NSAF, wild type relative to L1118, as published (a ratio of at least 1 is positive, below 1 is the negative reciprocal; not log2)",
+  "normalization": "as-deposited",
+  "conditionTableRow": 59,
+  "replicates": {
+    "count": 3,
+    "text": "three biological replicates per strain"
+  },
+  "conditions": {
+    "temperature": {
+      "status": "reported",
+      "lo": 30.0,
+      "hi": 30.0,
+      "unit": "°C",
+      "text": "30 °C"
+    },
+    "lightIntensity": {
+      "status": "reported",
+      "lo": 100.0,
+      "hi": 100.0,
+      "unit": "µmol photons m⁻² s⁻¹",
+      "text": "100 µmol photons m⁻² s⁻¹"
+    },
+    "lightRegime": {
+      "status": "reported",
+      "kind": "continuous",
+      "photoperiod": null,
+      "spectrumClass": "cool white fluorescent",
+      "entrained": false,
+      "text": "continuous illumination from cool white fluorescent lamps; photoperiod not reported"
+    },
+    "co2": {
+      "status": "reported",
+      "lo": 5.0,
+      "hi": 5.0,
+      "unit": "%",
+      "text": "5% (vol/vol) CO₂"
+    },
+    "medium": {
+      "status": "reported",
+      "base": "BG-11",
+      "modified": true,
+      "conditioned": false,
+      "nitrogenAltered": false,
+      "text": "BG-11 supplemented with 10 mM TES, pH 8.2"
+    },
+    "format": {
+      "status": "reported",
+      "value": "1-L Roux bottle, 500 mL culture, coupled to a hydrocarbon absorbent trap",
+      "text": "500 mL in a 1-L Roux bottle coupled to a photobioreactor with a hydrocarbon absorbent trap"
+    },
+    "phase": {
+      "status": "reported",
+      "label": "exponential",
+      "od": null,
+      "odNm": null,
+      "text": "log phase, over a 2-day limonene production window; no optical density is given"
+    }
+  },
+  "caveat": "A ratio, not an abundance, and listed apart from the abundance layers (owner decision, 2026-10-07). The value is the published signed fold change in normalised spectral abundance factor between the wild type and the limonene-producing strain L1118: positive where the protein is higher in the wild type, negative where it is higher in L1118, and the magnitude is the fold itself rather than its logarithm, so no value falls between -1 and 1. It covers only the 95 proteins the study found significantly changed at a BH q-value and L-stringency of 0.05, not the proteome: a gene without a value here was either unchanged between the strains or not measured, and the two cannot be told apart. The study identified its proteins by ProLuCID with DTASelect filtering and compared them in PatternLab; the deposit itself holds only unfiltered search output, so this published table is the only usable result. Measured in PCC 7942 and its engineered derivative, not UTEX 2973, and keyed by UniProt accession through UniProt's ordered-locus names and the one-to-one crosswalk.",
+  "layers": [
+    {
+      "id": "PXD005105_wt_vs_l1118",
+      "metricKey": "protPxd005105WtVsL1118",
+      "label": "Protein ratio PXD005105 wild type vs L1118 (PCC 7942)",
+      "conditionSet": "Wild type relative to the limonene producer L1118, log phase in a 1-L Roux bottle at 30 °C, 100 µmol photons m⁻² s⁻¹ continuous, 5% CO₂; three biological replicates per strain",
+      "samples": "Dataset S1 of PNAS 10.1073/pnas.1613340113, the 95 proteins significantly changed between the strains",
+      "columns": [
+        "Fold Change"
+      ],
+      "treatments": [],
+      "group": "engineered",
+      "conditionTableRow": 59,
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30.0,
+          "hi": 30.0,
+          "unit": "°C",
+          "text": "30 °C"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100.0,
+          "hi": 100.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool white fluorescent",
+          "entrained": false,
+          "text": "continuous illumination from cool white fluorescent lamps; photoperiod not reported"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 5.0,
+          "hi": 5.0,
+          "unit": "%",
+          "text": "5% (vol/vol) CO₂"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11 supplemented with 10 mM TES, pH 8.2"
+        },
+        "format": {
+          "status": "reported",
+          "value": "1-L Roux bottle, 500 mL culture, coupled to a hydrocarbon absorbent trap",
+          "text": "500 mL in a 1-L Roux bottle coupled to a photobioreactor with a hydrocarbon absorbent trap"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "exponential",
+          "od": null,
+          "odNm": null,
+          "text": "log phase, over a 2-day limonene production window; no optical density is given"
+        }
+      }
+    }
+  ]
+}

@@ -134,8 +134,9 @@ test('the colour scale is resolved once and named in both accessible description
 });
 
 test('the chromosome tab is a registered tab with its own tabpanel container', () => {
-  assert.match(app, /const ALL_TABS = \[\.\.\.PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB,\n  CITATIONS_TAB\];/,
-    'the chromosome view is a selectable tab in the shared tablist');
+  assert.match(app,
+    /const ALL_TABS = \[\s*\.\.\.PANELS\.slice\(0, 2\), CHROMOSOME_TAB, \.\.\.PANELS\.slice\(2\),\s*LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,\s*\];/,
+    'the chromosome view is the third selectable tab in the shared tablist');
   assert.match(html,
     /<div id="chromosome-view" role="tabpanel" aria-labelledby="panel-tab-chromosome" hidden><\/div>/);
   assert.equal((html.match(/id="chromosome-view"/g) ?? []).length, 1);

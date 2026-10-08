@@ -34,7 +34,7 @@ import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
   id: 'chromosome',
-  name: 'Chromosome',
+  name: 'Chromosome/Gene',
   // The default organism's; `tabBlurb` in ui/panels.js words it per organism.
   blurb: DEFAULT_ORGANISM.copy.tabBlurbs.chromosome,
   source: 'Drawn from the release-pinned RefSeq coordinates in genes.json. No coordinate from '
@@ -615,6 +615,15 @@ export class ChromosomeView {
     this.legendHost = document.createElement('div');
     this.legendHost.className = 'legend';
 
+    // Keep one native disclosure across paints so its open state and summary
+    // focus survive live filter, colour, start-site, and zoom updates.
+    this.viewerInfo = document.createElement('details');
+    this.viewerInfo.className = 'method-help chromosome-viewer-info';
+    const viewerInfoSummary = document.createElement('summary');
+    viewerInfoSummary.textContent = 'Chromosome Viewer Info';
+    const viewerInfoContent = document.createElement('div');
+    viewerInfoContent.className = 'help-content';
+
     this.markerNote = document.createElement('p');
     this.markerNote.className = 'panel-note';
 
@@ -624,6 +633,8 @@ export class ChromosomeView {
     this.evidenceNote = document.createElement('p');
     this.evidenceNote.className = 'panel-note';
     this.evidenceNote.textContent = this.organism.copy.coordinateEvidenceNote;
+    viewerInfoContent.append(this.markerNote, this.trackSummaries, this.evidenceNote);
+    this.viewerInfo.append(viewerInfoSummary, viewerInfoContent);
 
     // The pinned gene's sequence close-up sits at the foot of the figure, by
     // owner decision of 2026-09-30, below the tracks and their key. The app
@@ -632,8 +643,7 @@ export class ChromosomeView {
     this.sequenceHost.className = 'chromosome-sequence';
 
     this.figure.append(toolbar, this.windowReadout, this.canvasHost,
-      this.instructions, this.detailJump, this.legendHost, this.markerNote, this.trackSummaries,
-      this.evidenceNote, this.sequenceHost);
+      this.instructions, this.detailJump, this.legendHost, this.viewerInfo, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {

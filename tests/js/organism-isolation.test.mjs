@@ -65,8 +65,10 @@ const ECOLI_TERMS = /Escherichia|E\. coli|K-12|MG1655|NC_000913|GCF_000005845|\b
 /** A finding about a layer nobody looked for. */
 const NEGATIVE_CLAIM = /No .*start site maps|no mapped TSS|No supported .* call/i;
 
-const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB,
-  CITATIONS_TAB];
+const ALL_TABS = [
+  ...PANELS.slice(0, 2), CHROMOSOME_TAB, ...PANELS.slice(2),
+  LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,
+];
 
 /** A dataset with its metric registry, as the page holds them. */
 function withRegistry(dataset) {

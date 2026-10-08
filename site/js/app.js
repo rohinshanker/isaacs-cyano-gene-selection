@@ -149,12 +149,14 @@ const STORAGE_COMPARE_AXES = STORAGE.compareAxes;
 const COLOR_SOURCE_TOGGLES = organism.annotationSources;
 
 /**
- * The shared tablist: map panels, then the chromosome, length, regulatory,
- * strain-fitness, and source views. A tab's id is the permanent `p` token in
- * the URL hash.
+ * The shared tablist: the first two map panels, chromosome/gene, the remaining
+ * map panels, then length, regulatory, strain fitness, and source views. A tab's id is the
+ * permanent `p` token in the URL hash.
  */
-const ALL_TABS = [...PANELS, CHROMOSOME_TAB, LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB,
-  CITATIONS_TAB];
+const ALL_TABS = [
+  ...PANELS.slice(0, 2), CHROMOSOME_TAB, ...PANELS.slice(2),
+  LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,
+];
 
 const element = (id) => document.getElementById(id);
 

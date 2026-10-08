@@ -176,9 +176,15 @@ export class ComparePanel {
 
     // A measurement this view promotes must say how thin it is right here, not
     // only in the map's colour disclosure: the comparison is where a candidate
-    // is read against its peers.
+    // is read against its peers. Keep one disclosure across renders so changing
+    // candidates, tabs, or metrics does not take focus or the reader's open state.
+    this.measurementDetails = document.createElement('details');
+    this.measurementDetails.className = 'method-help measurement-limits';
+    const measurementSummary = document.createElement('summary');
+    measurementSummary.textContent = 'Measurement Limits';
     this.measurementNote = document.createElement('p');
-    this.measurementNote.className = 'panel-note measurement-limits';
+    this.measurementNote.className = 'panel-note help-content';
+    this.measurementDetails.append(measurementSummary, this.measurementNote);
 
     this.panel = document.createElement('div');
     this.panel.id = 'compare-panel';
@@ -223,7 +229,7 @@ export class ComparePanel {
     this.tableHost.className = 'table-region';
 
     this.host.append(
-      this.tablist, this.axisPicker, this.unavailableNote, this.measurementNote,
+      this.tablist, this.axisPicker, this.unavailableNote, this.measurementDetails,
       this.panel, this.tableHeading, this.tableHost,
     );
 
@@ -346,7 +352,7 @@ export class ComparePanel {
       shown.push(...metricsInDisplayOrder(this.registry));
     }
     const note = measurementLimitNote(shown, this.state.dataset);
-    this.measurementNote.hidden = note === null;
+    this.measurementDetails.hidden = note === null;
     this.measurementNote.textContent = note ?? '';
   }
 

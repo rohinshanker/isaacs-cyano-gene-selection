@@ -110,7 +110,7 @@ The licence facts stay recorded in the package C table and in each row's note so
 that the attribution is right and the history is visible; the admission contract
 (manifest entry, checksum pin, documented join, condition record) still governs
 what is shown. Everything the earlier rules kept back is queued for ingestion in
-[A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md).
+[proteomics-deposit-readers.md](proteomics-deposit-readers.md).
 Two matters are access terms, not distribution, and are unchanged: BioCyc's and
 KEGG's own terms govern how their pages and APIs are read (the owner signs in to
 BioCyc in person), and SRI's open-database terms ask for the attribution
