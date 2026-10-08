@@ -17,7 +17,7 @@
   },
   "strains": [
     {
-      "id": "growth-row-2",
+      "id": "growth-strain-2",
       "label": "Growth: E. coli K-12 MG1655",
       "scheme": {
         "recoded": false,
@@ -26,7 +26,7 @@
       }
     },
     {
-      "id": "growth-row-3",
+      "id": "growth-strain-3",
       "label": "Growth: E. coli DH10B",
       "scheme": {
         "recoded": false,
@@ -35,16 +35,7 @@
       }
     },
     {
-      "id": "growth-row-4",
-      "label": "Growth: E. coli DH10B M9",
-      "scheme": {
-        "recoded": false,
-        "label": "Non-recoded control",
-        "segments": null
-      }
-    },
-    {
-      "id": "growth-row-5",
+      "id": "growth-strain-5",
       "label": "Growth: E. coli MDS42 ΔrecA",
       "scheme": {
         "recoded": false,
@@ -53,16 +44,7 @@
       }
     },
     {
-      "id": "growth-row-6",
-      "label": "Growth: E. coli MDS42 ΔrecA M9",
-      "scheme": {
-        "recoded": false,
-        "label": "Non-recoded control",
-        "segments": null
-      }
-    },
-    {
-      "id": "growth-row-7",
+      "id": "growth-strain-7",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_36-37",
       "scheme": {
         "recoded": true,
@@ -71,16 +53,7 @@
       }
     },
     {
-      "id": "growth-row-8",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_36-37 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-37 M9"
-      }
-    },
-    {
-      "id": "growth-row-9",
+      "id": "growth-strain-9",
       "label": "Growth: E. coli DH10B Segment_46-49",
       "scheme": {
         "recoded": true,
@@ -89,16 +62,7 @@
       }
     },
     {
-      "id": "growth-row-10",
-      "label": "Growth: E. coli DH10B Segment_46-49 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_46-49 M9"
-      }
-    },
-    {
-      "id": "growth-row-11",
+      "id": "growth-strain-11",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_36-37_46-49",
       "scheme": {
         "recoded": true,
@@ -107,7 +71,7 @@
       }
     },
     {
-      "id": "growth-row-12",
+      "id": "growth-strain-12",
       "label": "Growth: E. coli DH10B Segment_38-44",
       "scheme": {
         "recoded": true,
@@ -116,16 +80,7 @@
       }
     },
     {
-      "id": "growth-row-13",
-      "label": "Growth: E. coli DH10B Segment_38-44 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_38-44 M9"
-      }
-    },
-    {
-      "id": "growth-row-14",
+      "id": "growth-strain-14",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49",
       "scheme": {
         "recoded": true,
@@ -134,16 +89,7 @@
       }
     },
     {
-      "id": "growth-row-15",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49 M9"
-      }
-    },
-    {
-      "id": "growth-row-16",
+      "id": "growth-strain-16",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49 Troubleshot",
       "scheme": {
         "recoded": true,
@@ -152,16 +98,7 @@
       }
     },
     {
-      "id": "growth-row-17",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49 Troubleshot, M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49 Troubleshot, M9"
-      }
-    },
-    {
-      "id": "growth-row-18",
+      "id": "growth-strain-18",
       "label": "Growth: E. coli DH10B Segment_51-59",
       "scheme": {
         "recoded": true,
@@ -170,16 +107,7 @@
       }
     },
     {
-      "id": "growth-row-19",
-      "label": "Growth: E. coli DH10B Segment_51-59 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_51-59 M9"
-      }
-    },
-    {
-      "id": "growth-row-20",
+      "id": "growth-strain-20",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59",
       "scheme": {
         "recoded": true,
@@ -188,16 +116,7 @@
       }
     },
     {
-      "id": "growth-row-21",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59 M9"
-      }
-    },
-    {
-      "id": "growth-row-22",
+      "id": "growth-strain-22",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59 Troubleshot",
       "scheme": {
         "recoded": true,
@@ -206,16 +125,7 @@
       }
     },
     {
-      "id": "growth-row-23",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59 Troubleshot, M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_36-44_46-49_51-59 Troubleshot, M9"
-      }
-    },
-    {
-      "id": "growth-row-24",
+      "id": "growth-strain-24",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18",
       "scheme": {
         "recoded": true,
@@ -224,16 +134,7 @@
       }
     },
     {
-      "id": "growth-row-25",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18 M9"
-      }
-    },
-    {
-      "id": "growth-row-26",
+      "id": "growth-strain-26",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59",
       "scheme": {
         "recoded": true,
@@ -242,16 +143,7 @@
       }
     },
     {
-      "id": "growth-row-27",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59, M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59, M9"
-      }
-    },
-    {
-      "id": "growth-row-28",
+      "id": "growth-strain-28",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59 Troubleshot",
       "scheme": {
         "recoded": true,
@@ -260,16 +152,7 @@
       }
     },
     {
-      "id": "growth-row-29",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59 Troubleshot, M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-44_46-49_51-59 Troubleshot, M9"
-      }
-    },
-    {
-      "id": "growth-row-30",
+      "id": "growth-strain-30",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-59",
       "scheme": {
         "recoded": true,
@@ -278,16 +161,7 @@
       }
     },
     {
-      "id": "growth-row-31",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-59 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-59 M9"
-      }
-    },
-    {
-      "id": "growth-row-32",
+      "id": "growth-strain-32",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-59 Evolved",
       "scheme": {
         "recoded": true,
@@ -296,16 +170,7 @@
       }
     },
     {
-      "id": "growth-row-33",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-59 Evolved, M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_9-18_36-59 Evolved, M9"
-      }
-    },
-    {
-      "id": "growth-row-34",
+      "id": "growth-strain-34",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9-18_36-59 Evolved and then translatomics-based debugged",
       "scheme": {
         "recoded": true,
@@ -314,7 +179,7 @@
       }
     },
     {
-      "id": "growth-row-35",
+      "id": "growth-strain-35",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_1-8",
       "scheme": {
         "recoded": true,
@@ -323,16 +188,7 @@
       }
     },
     {
-      "id": "growth-row-36",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_1-8 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_1-8 M9"
-      }
-    },
-    {
-      "id": "growth-row-37",
+      "id": "growth-strain-37",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_19-29",
       "scheme": {
         "recoded": true,
@@ -341,16 +197,7 @@
       }
     },
     {
-      "id": "growth-row-38",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_19-29 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_19-29 M9"
-      }
-    },
-    {
-      "id": "growth-row-39",
+      "id": "growth-strain-39",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30-35",
       "scheme": {
         "recoded": true,
@@ -359,16 +206,7 @@
       }
     },
     {
-      "id": "growth-row-40",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_30-35 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_30-35 M9"
-      }
-    },
-    {
-      "id": "growth-row-41",
+      "id": "growth-strain-41",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30-35 translatomics-based debugged Clone 1",
       "scheme": {
         "recoded": true,
@@ -377,7 +215,7 @@
       }
     },
     {
-      "id": "growth-row-42",
+      "id": "growth-strain-42",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30-35 translatomics-based debugged Clone 2",
       "scheme": {
         "recoded": true,
@@ -386,7 +224,7 @@
       }
     },
     {
-      "id": "growth-row-43",
+      "id": "growth-strain-43",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30-35 translatomics-based debugged Clone 3",
       "scheme": {
         "recoded": true,
@@ -395,7 +233,7 @@
       }
     },
     {
-      "id": "growth-row-44",
+      "id": "growth-strain-44",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_60-69",
       "scheme": {
         "recoded": true,
@@ -404,16 +242,7 @@
       }
     },
     {
-      "id": "growth-row-45",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_60-69 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_60-69 M9"
-      }
-    },
-    {
-      "id": "growth-row-46",
+      "id": "growth-strain-46",
       "label": "Growth: E. coli DH10B Segment_70-81",
       "scheme": {
         "recoded": true,
@@ -422,16 +251,7 @@
       }
     },
     {
-      "id": "growth-row-47",
-      "label": "Growth: E. coli DH10B Segment_70-81 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli DH10B Segment_70-81 M9"
-      }
-    },
-    {
-      "id": "growth-row-48",
+      "id": "growth-strain-48",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_82-0",
       "scheme": {
         "recoded": true,
@@ -440,16 +260,7 @@
       }
     },
     {
-      "id": "growth-row-49",
-      "label": "Growth: E. coli MDS42 ΔrecA Segment_82-0 M9",
-      "scheme": {
-        "recoded": true,
-        "label": "Partial Syn57 design",
-        "segments": "E. coli MDS42 ΔrecA Segment_82-0 M9"
-      }
-    },
-    {
-      "id": "growth-row-50",
+      "id": "growth-strain-50",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_21",
       "scheme": {
         "recoded": true,
@@ -458,7 +269,7 @@
       }
     },
     {
-      "id": "growth-row-51",
+      "id": "growth-strain-51",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_21 Troubleshot",
       "scheme": {
         "recoded": true,
@@ -467,7 +278,7 @@
       }
     },
     {
-      "id": "growth-row-52",
+      "id": "growth-strain-52",
       "label": "Growth: E. coli DH10B Segment_46-48+49del (tadA start codon erroneously recoded)",
       "scheme": {
         "recoded": true,
@@ -476,7 +287,7 @@
       }
     },
     {
-      "id": "growth-row-53",
+      "id": "growth-strain-53",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9",
       "scheme": {
         "recoded": true,
@@ -485,7 +296,7 @@
       }
     },
     {
-      "id": "growth-row-54",
+      "id": "growth-strain-54",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9_11",
       "scheme": {
         "recoded": true,
@@ -494,7 +305,7 @@
       }
     },
     {
-      "id": "growth-row-55",
+      "id": "growth-strain-55",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9_11_14",
       "scheme": {
         "recoded": true,
@@ -503,7 +314,7 @@
       }
     },
     {
-      "id": "growth-row-56",
+      "id": "growth-strain-56",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9_11_14_15",
       "scheme": {
         "recoded": true,
@@ -512,7 +323,7 @@
       }
     },
     {
-      "id": "growth-row-57",
+      "id": "growth-strain-57",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9_11_14_15_16",
       "scheme": {
         "recoded": true,
@@ -521,7 +332,7 @@
       }
     },
     {
-      "id": "growth-row-58",
+      "id": "growth-strain-58",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_9_11_14_15_16_17",
       "scheme": {
         "recoded": true,
@@ -530,7 +341,7 @@
       }
     },
     {
-      "id": "growth-row-59",
+      "id": "growth-strain-59",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_34",
       "scheme": {
         "recoded": true,
@@ -539,7 +350,7 @@
       }
     },
     {
-      "id": "growth-row-60",
+      "id": "growth-strain-60",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_31_34",
       "scheme": {
         "recoded": true,
@@ -548,7 +359,7 @@
       }
     },
     {
-      "id": "growth-row-61",
+      "id": "growth-strain-61",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30_31_34",
       "scheme": {
         "recoded": true,
@@ -557,7 +368,7 @@
       }
     },
     {
-      "id": "growth-row-62",
+      "id": "growth-strain-62",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30_31_33_34",
       "scheme": {
         "recoded": true,
@@ -566,7 +377,7 @@
       }
     },
     {
-      "id": "growth-row-63",
+      "id": "growth-strain-63",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30_31_33_34_35",
       "scheme": {
         "recoded": true,
@@ -575,7 +386,7 @@
       }
     },
     {
-      "id": "growth-row-64",
+      "id": "growth-strain-64",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_30_31_33_34_35 evolved",
       "scheme": {
         "recoded": true,
@@ -584,7 +395,7 @@
       }
     },
     {
-      "id": "growth-row-65",
+      "id": "growth-strain-65",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_3",
       "scheme": {
         "recoded": true,
@@ -593,7 +404,7 @@
       }
     },
     {
-      "id": "growth-row-66",
+      "id": "growth-strain-66",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_2_3",
       "scheme": {
         "recoded": true,
@@ -602,7 +413,7 @@
       }
     },
     {
-      "id": "growth-row-67",
+      "id": "growth-strain-67",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_1_2_3",
       "scheme": {
         "recoded": true,
@@ -611,7 +422,7 @@
       }
     },
     {
-      "id": "growth-row-68",
+      "id": "growth-strain-68",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_1_2_3_8",
       "scheme": {
         "recoded": true,
@@ -620,7 +431,7 @@
       }
     },
     {
-      "id": "growth-row-69",
+      "id": "growth-strain-69",
       "label": "Growth: E. coli MDS42 ΔrecA Segment_1_2_3_7_8",
       "scheme": {
         "recoded": true,
@@ -629,7 +440,7 @@
       }
     },
     {
-      "id": "growth-row-70",
+      "id": "growth-strain-70",
       "label": "Growth: E. coli MDS42 ΔrecA mraZ-ftsZ locus recoded according to Segment 2's design",
       "scheme": {
         "recoded": true,
@@ -772,7 +583,7 @@
         "maximumOd600": 1.3565999999999998,
         "maximumOd600Sd": 0.006770524351924298,
         "id": "growth-row-2",
-        "strainId": "growth-row-2",
+        "strainId": "growth-strain-2",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -866,7 +677,7 @@
         "maximumOd600": 1.0574,
         "maximumOd600Sd": 0.011663618649458656,
         "id": "growth-row-3",
-        "strainId": "growth-row-3",
+        "strainId": "growth-strain-3",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -960,7 +771,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-4",
-        "strainId": "growth-row-4",
+        "strainId": "growth-strain-3",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -1054,7 +865,7 @@
         "maximumOd600": 1.3482,
         "maximumOd600Sd": 0.015529327094243338,
         "id": "growth-row-5",
-        "strainId": "growth-row-5",
+        "strainId": "growth-strain-5",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -1148,7 +959,7 @@
         "maximumOd600": 0.5325,
         "maximumOd600Sd": 0.015467708298258035,
         "id": "growth-row-6",
-        "strainId": "growth-row-6",
+        "strainId": "growth-strain-5",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -1242,7 +1053,7 @@
         "maximumOd600": 1.3581,
         "maximumOd600Sd": 0.012169223475637187,
         "id": "growth-row-7",
-        "strainId": "growth-row-7",
+        "strainId": "growth-strain-7",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -1336,7 +1147,7 @@
         "maximumOd600": 0.5961000000000001,
         "maximumOd600Sd": 0.014109925584495489,
         "id": "growth-row-8",
-        "strainId": "growth-row-8",
+        "strainId": "growth-strain-7",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -1430,7 +1241,7 @@
         "maximumOd600": 0.9602999999999999,
         "maximumOd600Sd": 0.04473265026800893,
         "id": "growth-row-9",
-        "strainId": "growth-row-9",
+        "strainId": "growth-strain-9",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -1524,7 +1335,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-10",
-        "strainId": "growth-row-10",
+        "strainId": "growth-strain-9",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -1618,7 +1429,7 @@
         "maximumOd600": 1.1507999999999998,
         "maximumOd600Sd": 0.02570914234275428,
         "id": "growth-row-11",
-        "strainId": "growth-row-11",
+        "strainId": "growth-strain-11",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -1712,7 +1523,7 @@
         "maximumOd600": 0.4630000000000001,
         "maximumOd600Sd": 0.07838494753458654,
         "id": "growth-row-12",
-        "strainId": "growth-row-12",
+        "strainId": "growth-strain-12",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -1806,7 +1617,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-13",
-        "strainId": "growth-row-13",
+        "strainId": "growth-strain-12",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -1900,7 +1711,7 @@
         "maximumOd600": 0.1967,
         "maximumOd600Sd": 0.029062174729362508,
         "id": "growth-row-14",
-        "strainId": "growth-row-14",
+        "strainId": "growth-strain-14",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -1994,7 +1805,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-15",
-        "strainId": "growth-row-15",
+        "strainId": "growth-strain-14",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -2088,7 +1899,7 @@
         "maximumOd600": 1.0196999999999998,
         "maximumOd600Sd": 0.03766709439285173,
         "id": "growth-row-16",
-        "strainId": "growth-row-16",
+        "strainId": "growth-strain-16",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -2182,7 +1993,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-17",
-        "strainId": "growth-row-17",
+        "strainId": "growth-strain-16",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -2276,7 +2087,7 @@
         "maximumOd600": 0.24000000000000005,
         "maximumOd600Sd": 0.015549919613940123,
         "id": "growth-row-18",
-        "strainId": "growth-row-18",
+        "strainId": "growth-strain-18",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -2370,7 +2181,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-19",
-        "strainId": "growth-row-19",
+        "strainId": "growth-strain-18",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -2464,7 +2275,7 @@
         "maximumOd600": 0.6389999999999999,
         "maximumOd600Sd": 0.02133072900770156,
         "id": "growth-row-20",
-        "strainId": "growth-row-20",
+        "strainId": "growth-strain-20",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -2558,7 +2369,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-21",
-        "strainId": "growth-row-21",
+        "strainId": "growth-strain-20",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -2652,7 +2463,7 @@
         "maximumOd600": 0.6656000000000001,
         "maximumOd600Sd": 0.03851285499674101,
         "id": "growth-row-22",
-        "strainId": "growth-row-22",
+        "strainId": "growth-strain-22",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -2746,7 +2557,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-23",
-        "strainId": "growth-row-23",
+        "strainId": "growth-strain-22",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -2840,7 +2651,7 @@
         "maximumOd600": 0.751,
         "maximumOd600Sd": 0.02954657340538834,
         "id": "growth-row-24",
-        "strainId": "growth-row-24",
+        "strainId": "growth-strain-24",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -2934,7 +2745,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-25",
-        "strainId": "growth-row-25",
+        "strainId": "growth-strain-24",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -3028,7 +2839,7 @@
         "maximumOd600": 0.41659999999999997,
         "maximumOd600Sd": 0.02796140196771255,
         "id": "growth-row-26",
-        "strainId": "growth-row-26",
+        "strainId": "growth-strain-26",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -3122,7 +2933,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-27",
-        "strainId": "growth-row-27",
+        "strainId": "growth-strain-26",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -3216,7 +3027,7 @@
         "maximumOd600": 0.5193,
         "maximumOd600Sd": 0.010798611021793508,
         "id": "growth-row-28",
-        "strainId": "growth-row-28",
+        "strainId": "growth-strain-28",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -3310,7 +3121,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-29",
-        "strainId": "growth-row-29",
+        "strainId": "growth-strain-28",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -3404,7 +3215,7 @@
         "maximumOd600": 0.39299999999999996,
         "maximumOd600Sd": 0.05129132480254358,
         "id": "growth-row-30",
-        "strainId": "growth-row-30",
+        "strainId": "growth-strain-30",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -3498,7 +3309,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-31",
-        "strainId": "growth-row-31",
+        "strainId": "growth-strain-30",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -3592,7 +3403,7 @@
         "maximumOd600": 0.3145,
         "maximumOd600Sd": 0.022005681084665395,
         "id": "growth-row-32",
-        "strainId": "growth-row-32",
+        "strainId": "growth-strain-32",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -3686,7 +3497,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-33",
-        "strainId": "growth-row-33",
+        "strainId": "growth-strain-32",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -3780,7 +3591,7 @@
         "maximumOd600": 1.0072,
         "maximumOd600Sd": 0.02241785003072328,
         "id": "growth-row-34",
-        "strainId": "growth-row-34",
+        "strainId": "growth-strain-34",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -3874,7 +3685,7 @@
         "maximumOd600": 1.0785,
         "maximumOd600Sd": 0.06261509402691977,
         "id": "growth-row-35",
-        "strainId": "growth-row-35",
+        "strainId": "growth-strain-35",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -3968,7 +3779,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-36",
-        "strainId": "growth-row-36",
+        "strainId": "growth-strain-35",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -4062,7 +3873,7 @@
         "maximumOd600": 0.9795,
         "maximumOd600Sd": 0.00567538544946509,
         "id": "growth-row-37",
-        "strainId": "growth-row-37",
+        "strainId": "growth-strain-37",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -4156,7 +3967,7 @@
         "maximumOd600": 0.14100000000000001,
         "maximumOd600Sd": 0.024054105678656932,
         "id": "growth-row-38",
-        "strainId": "growth-row-38",
+        "strainId": "growth-strain-37",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -4250,7 +4061,7 @@
         "maximumOd600": 1.2559,
         "maximumOd600Sd": 0.012469562943423464,
         "id": "growth-row-39",
-        "strainId": "growth-row-39",
+        "strainId": "growth-strain-39",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -4344,7 +4155,7 @@
         "maximumOd600": 0.4575,
         "maximumOd600Sd": 0.014108508071373092,
         "id": "growth-row-40",
-        "strainId": "growth-row-40",
+        "strainId": "growth-strain-39",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -4438,7 +4249,7 @@
         "maximumOd600": 1.1704000000000003,
         "maximumOd600Sd": 0.008593020423576361,
         "id": "growth-row-41",
-        "strainId": "growth-row-41",
+        "strainId": "growth-strain-41",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -4532,7 +4343,7 @@
         "maximumOd600": 1.205,
         "maximumOd600Sd": 0.006480740698407887,
         "id": "growth-row-42",
-        "strainId": "growth-row-42",
+        "strainId": "growth-strain-42",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -4626,7 +4437,7 @@
         "maximumOd600": 1.201,
         "maximumOd600Sd": 0.007443117626371397,
         "id": "growth-row-43",
-        "strainId": "growth-row-43",
+        "strainId": "growth-strain-43",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -4720,7 +4531,7 @@
         "maximumOd600": 0.26753,
         "maximumOd600Sd": 0.004080441152620637,
         "id": "growth-row-44",
-        "strainId": "growth-row-44",
+        "strainId": "growth-strain-44",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -4814,7 +4625,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-45",
-        "strainId": "growth-row-45",
+        "strainId": "growth-strain-44",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -4908,7 +4719,7 @@
         "maximumOd600": 0.8212000000000002,
         "maximumOd600Sd": 0.0045650848842053345,
         "id": "growth-row-46",
-        "strainId": "growth-row-46",
+        "strainId": "growth-strain-46",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5002,7 +4813,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-47",
-        "strainId": "growth-row-47",
+        "strainId": "growth-strain-46",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -5096,7 +4907,7 @@
         "maximumOd600": 1.1987,
         "maximumOd600Sd": 0.0048466483264210415,
         "id": "growth-row-48",
-        "strainId": "growth-row-48",
+        "strainId": "growth-strain-48",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5190,7 +5001,7 @@
         "maximumOd600": null,
         "maximumOd600Sd": null,
         "id": "growth-row-49",
-        "strainId": "growth-row-49",
+        "strainId": "growth-strain-48",
         "conditionId": "m9",
         "doublingTimeReplicates": [
           {
@@ -5284,7 +5095,7 @@
         "maximumOd600": 0.3874,
         "maximumOd600Sd": 0.025120509548972124,
         "id": "growth-row-50",
-        "strainId": "growth-row-50",
+        "strainId": "growth-strain-50",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5378,7 +5189,7 @@
         "maximumOd600": 1.3049,
         "maximumOd600Sd": 0.01759801125127498,
         "id": "growth-row-51",
-        "strainId": "growth-row-51",
+        "strainId": "growth-strain-51",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5472,7 +5283,7 @@
         "maximumOd600": 0.26789999999999997,
         "maximumOd600Sd": 0.04776075795043476,
         "id": "growth-row-52",
-        "strainId": "growth-row-52",
+        "strainId": "growth-strain-52",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5566,7 +5377,7 @@
         "maximumOd600": 1.1961,
         "maximumOd600Sd": 0.008949301648732142,
         "id": "growth-row-53",
-        "strainId": "growth-row-53",
+        "strainId": "growth-strain-53",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5660,7 +5471,7 @@
         "maximumOd600": 0.9473,
         "maximumOd600Sd": 0.009818859404228155,
         "id": "growth-row-54",
-        "strainId": "growth-row-54",
+        "strainId": "growth-strain-54",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5754,7 +5565,7 @@
         "maximumOd600": 1.1757000000000002,
         "maximumOd600Sd": 0.012256018929489293,
         "id": "growth-row-55",
-        "strainId": "growth-row-55",
+        "strainId": "growth-strain-55",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5848,7 +5659,7 @@
         "maximumOd600": 1.1913,
         "maximumOd600Sd": 0.021123683390924037,
         "id": "growth-row-56",
-        "strainId": "growth-row-56",
+        "strainId": "growth-strain-56",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -5942,7 +5753,7 @@
         "maximumOd600": 1.1856,
         "maximumOd600Sd": 0.01369087287209984,
         "id": "growth-row-57",
-        "strainId": "growth-row-57",
+        "strainId": "growth-strain-57",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6036,7 +5847,7 @@
         "maximumOd600": 1.255,
         "maximumOd600Sd": 0.015962455951387913,
         "id": "growth-row-58",
-        "strainId": "growth-row-58",
+        "strainId": "growth-strain-58",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6130,7 +5941,7 @@
         "maximumOd600": 1.1526,
         "maximumOd600Sd": 0.011083320801997936,
         "id": "growth-row-59",
-        "strainId": "growth-row-59",
+        "strainId": "growth-strain-59",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6224,7 +6035,7 @@
         "maximumOd600": 1.3002999999999998,
         "maximumOd600Sd": 0.010100000000000029,
         "id": "growth-row-60",
-        "strainId": "growth-row-60",
+        "strainId": "growth-strain-60",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6318,7 +6129,7 @@
         "maximumOd600": 1.2576,
         "maximumOd600Sd": 0.01868261223705078,
         "id": "growth-row-61",
-        "strainId": "growth-row-61",
+        "strainId": "growth-strain-61",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6412,7 +6223,7 @@
         "maximumOd600": 1.1594000000000002,
         "maximumOd600Sd": 0.033785203862045886,
         "id": "growth-row-62",
-        "strainId": "growth-row-62",
+        "strainId": "growth-strain-62",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6506,7 +6317,7 @@
         "maximumOd600": 0.7824000000000001,
         "maximumOd600Sd": 0.027681040442873523,
         "id": "growth-row-63",
-        "strainId": "growth-row-63",
+        "strainId": "growth-strain-63",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6600,7 +6411,7 @@
         "maximumOd600": 1.0107,
         "maximumOd600Sd": 0.027022398117117572,
         "id": "growth-row-64",
-        "strainId": "growth-row-64",
+        "strainId": "growth-strain-64",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6694,7 +6505,7 @@
         "maximumOd600": 1.2283,
         "maximumOd600Sd": 0.01898973406870141,
         "id": "growth-row-65",
-        "strainId": "growth-row-65",
+        "strainId": "growth-strain-65",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6788,7 +6599,7 @@
         "maximumOd600": 1.366,
         "maximumOd600Sd": 0.020837466256721286,
         "id": "growth-row-66",
-        "strainId": "growth-row-66",
+        "strainId": "growth-strain-66",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6882,7 +6693,7 @@
         "maximumOd600": 1.3009,
         "maximumOd600Sd": 0.015776247969653608,
         "id": "growth-row-67",
-        "strainId": "growth-row-67",
+        "strainId": "growth-strain-67",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -6976,7 +6787,7 @@
         "maximumOd600": 1.2363000000000004,
         "maximumOd600Sd": 0.019131387822110556,
         "id": "growth-row-68",
-        "strainId": "growth-row-68",
+        "strainId": "growth-strain-68",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -7070,7 +6881,7 @@
         "maximumOd600": 0.9634,
         "maximumOd600Sd": 0.025306916050755746,
         "id": "growth-row-69",
-        "strainId": "growth-row-69",
+        "strainId": "growth-strain-69",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {
@@ -7164,7 +6975,7 @@
         "maximumOd600": 1.1602,
         "maximumOd600Sd": 0.019106019993708822,
         "id": "growth-row-70",
-        "strainId": "growth-row-70",
+        "strainId": "growth-strain-70",
         "conditionId": "2xyt",
         "doublingTimeReplicates": [
           {

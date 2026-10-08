@@ -161,7 +161,7 @@ function table(headers, rows, caption) {
 function strainCell(record) {
   const segments = record.strain.scheme.segments;
   return `${record.strain.label} — ${record.strain.scheme.label}`
-    + (segments ? ` (${segments})` : '');
+    + (segments && !record.strain.label.endsWith(segments) ? ` (${segments})` : '');
 }
 
 function downloadTsv(text, name) {
@@ -355,13 +355,14 @@ export class StrainFitnessPanel {
     const labels = selectionLabels(this.layer, this.selection);
     const parts = [
       `Strain: ${labels.strain}`,
-      `Scheme: ${labels.scheme}${labels.segments ? ` (${labels.segments})` : ''}`,
+      `Scheme: ${labels.scheme}${labels.segments && !labels.strain.endsWith(labels.segments)
+        ? ` (${labels.segments})` : ''}`,
       `Condition: ${labels.condition}`,
       `Source: ${this.layer.source.studyId ?? this.layer.source.sourceFile}`,
     ];
     this.context.textContent = parts.join(' · ');
     const summary = growthSummary(selectGrowth(this.layer, this.selection));
-    const counted = [plural(growthCount, 'growth record'), plural(summary.strains, 'strain')];
+    const counted = [plural(growthCount, 'growth record'), plural(summary.strains, 'growth strain')];
     if (summary.noGrowth > 0) counted.push(`${formatCount(summary.noGrowth)} with no growth detected`);
     if (this.layer.biolog) counted.push(plural(wellCount, 'Biolog well'));
     this.summary.textContent = `${counted.join(', ')}.`;

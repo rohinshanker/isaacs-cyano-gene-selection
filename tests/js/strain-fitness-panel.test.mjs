@@ -176,7 +176,7 @@ test('every row names its strain, scheme and condition, and the context line nam
       + 'Condition: All conditions · Source: FIXTURE_STRAIN_FITNESS');
     assert.equal(host.querySelector('p.fitness-context').getAttribute('role'), 'status');
     assert.equal(host.querySelector('p.length-summary').textContent,
-      '6 growth records, 3 strains, 1 with no growth detected, 24 Biolog wells.');
+      '6 growth records, 3 growth strains, 1 with no growth detected, 24 Biolog wells.');
   });
 });
 

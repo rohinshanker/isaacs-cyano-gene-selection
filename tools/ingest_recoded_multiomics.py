@@ -36,7 +36,13 @@ CITATION = ("Nyerges A et al. Probing the limits of genetic recoding using "
             f"doi:{DOI}.")
 WHERE = "Nyerges 2026, Methods, Transcriptome and translatome analysis (Sec19)"
 DOC = "docs/validation/recoded-multiomics.md"
-M9_ROWS = {4, 6, 8, 10, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 36, 38, 40, 45, 47, 49}
+# The sheet labels these exact rows as the same strain under M9. This explicit
+# source-row crosswalk separates condition from strain without parsing prose or
+# merging evolved, troubleshot, clone-specific, or cross-assay identities.
+M9_TO_RICH_ROW = {4: 3, 6: 5, 8: 7, 10: 9, 13: 12, 15: 14, 17: 16,
+                  19: 18, 21: 20, 23: 22, 25: 24, 27: 26, 29: 28, 31: 30,
+                  33: 32, 36: 35, 38: 37, 40: 39, 45: 44, 47: 46, 49: 48}
+M9_ROWS = set(M9_TO_RICH_ROW)
 # Literal workbook column contract. Positional inference would silently accept a
 # revised workbook under old labels; the entire list is checked before writing.
 COLUMNS = [
@@ -228,13 +234,15 @@ def fitness_document(document: dict) -> dict:
     for row in document["growth"]:
         n = row["sourceRow"]
         identifier = f"growth-row-{n}"
-        strains.append({"id": identifier, "label": "Growth: " + row["sourceLabel"],
-                        "scheme": {"recoded": n >= 7,
-                                   "label": "Partial Syn57 design" if n >= 7 else "Non-recoded control",
-                                   "segments": row["sourceLabel"] if n >= 7 else None}})
+        strain_id = f"growth-strain-{M9_TO_RICH_ROW.get(n, n)}"
+        if n not in M9_ROWS:
+            strains.append({"id": strain_id, "label": "Growth: " + row["sourceLabel"],
+                            "scheme": {"recoded": n >= 7,
+                                       "label": "Partial Syn57 design" if n >= 7 else "Non-recoded control",
+                                       "segments": row["sourceLabel"] if n >= 7 else None}})
         record = {key: row[key] for key in ("growthStatus", "doublingTimeMinutes", "doublingTimeSdMinutes",
                                           "maximumOd600", "maximumOd600Sd")}
-        record.update({"id": identifier, "strainId": identifier,
+        record.update({"id": identifier, "strainId": strain_id,
                        "conditionId": "m9" if n in M9_ROWS else "2xyt"})
         for key, values in (("doublingTimeReplicates", row["doublingTimeReplicatesMinutes"]),
                             ("maximumOd600Replicates", row["maximumOd600Replicates"])):

@@ -92,7 +92,7 @@ def test_all_fitness_source_rows_survive_without_stage_merging():
     raw = copy.deepcopy(document)
     result = ingest.fitness_document(document)
     assert document == raw
-    assert len(result["strains"]) == 80
+    assert len(result["strains"]) == 59  # 48 growth strains and 11 separate Biolog identities
     assert len(result["growth"]["records"]) == 69
     assert len(result["biolog"]["records"]) == 5280
     assert len({r["id"] for r in result["biolog"]["records"]}) == 5280
@@ -105,6 +105,9 @@ def test_all_fitness_source_rows_survive_without_stage_merging():
     for row, record in zip(document["growth"], result["growth"]["records"], strict=True):
         assert record["doublingTimeMinutes"] == row["doublingTimeMinutes"]
         assert record["conditionId"] == ("m9" if row["sourceRow"] in ingest.M9_ROWS else "2xyt")
+    by_row = {r["id"]: r for r in result["growth"]["records"]}
+    for m9, rich in ingest.M9_TO_RICH_ROW.items():
+        assert by_row[f"growth-row-{m9}"]["strainId"] == by_row[f"growth-row-{rich}"]["strainId"]
     expected_wells = [row["maxHeight"] for sheet in document["biolog"] for row in sheet["rows"]]
     assert [row["value"] for row in result["biolog"]["records"]] == expected_wells
 

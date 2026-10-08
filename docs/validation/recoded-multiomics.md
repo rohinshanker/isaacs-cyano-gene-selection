@@ -69,7 +69,8 @@ P-values and missing cells are distinct and must survive serialization.
 
 ## Whole-strain fitness
 
-`strain_fitness.json` contains 69 growth records and 5,280 Biolog well values
+`strain_fitness.json` contains 69 growth records for 48 source-labelled growth
+strains and 5,280 Biolog well values
 from eleven source sheets. It is a **study comparison view**, whose records
 name many strains; being available on the Syn61 page does not make every row a
 Syn61 measurement. It colors no gene. See [strain-fitness.md](strain-fitness.md)
@@ -89,7 +90,9 @@ the interpreted layer, including doubling time and OD; their original zeros
 remain only in the source-cell audit. They are not ten zero-minute doubling
 times or ten independently measured growth curves. M9-labelled rows are mapped
 explicitly by pinned source row to M9 + 2% D-glucose; the remaining growth rows
-use 2×YT, at 37 °C.
+use 2×YT, at 37 °C. An explicit pinned-row crosswalk pairs the 21 M9 rows with
+their corresponding rich-medium strain; evolved/troubleshot stages remain
+separate. This crosswalk is not a cross-assay identity claim.
 
 Biolog entries are signed Max Height differences versus MDS42. Keep plate,
 well, substrate, source sheet and negative values. The source inconsistently
