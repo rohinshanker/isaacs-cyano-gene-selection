@@ -9,17 +9,22 @@ item is removed here.
 **Done on 2026-10-07 and removed from this list.** The Fitness Browser pages and
 PCC 7942 tables are saved in the private drop folder and verified complete, so
 [fitness-screen source and selection contract](fitness-screen-data.md)
-records their pins and admission. All four PMC method papers are saved, filed under paper titles,
-and mapped to their PMC ids in
-[A_pmc-gated-method-papers__20261006](../notes/tickets/A_pmc-gated-method-papers__20261006.md).
+records their pins and admission. The four PMC method papers are verified in full text; their filename/PMC mappings,
+evidence pins and reproduction procedure are in
+[the comparability methods evidence contract](comparability-methods-evidence.md).
 The SRI notification about EcoCyc-derived content was sent, recorded in
 [A_add-ecoli-organism__20261005](../notes/tickets/A_add-ecoli-organism__20261005.md).
 The question to the O'Shea lab about the flask-culture temperature was sent,
 recorded under J2 in
 [O_comparability-lab-judgements__20261005](../notes/tickets/O_comparability-lab-judgements__20261005.md).
 
-Three items remain. Items 5 and 6 are deferred by you rather than blocked;
-item 7 is new on 2026-10-07 and it does block a dataset.
+Two items remain, both deferred by you rather than blocked.
+
+**Done on 2026-10-07 and removed from this list.** You supplied PNAS Dataset
+S1 for PXD005105, which unblocked the last deposit of the source-ingestion
+work; it ships as a ratio layer and the licence-unblocked-sources ticket is
+resolved. What the ingestion learned is in
+[proteomics-deposit-readers.md](proteomics-deposit-readers.md).
 
 ## 5. Three optional depositor emails, saved for later
 
@@ -171,43 +176,3 @@ source never stated it and only the depositor could settle it, rather than
 because the project did not look. This belongs with the condition-metadata and
 Data Sources work, and is recorded for the session that owns it; it is the only
 item on this list that is an agent's job rather than yours.
-
-## 7. The PNAS limonene paper's supplementary protein table
-
-**New on 2026-10-07, and this one blocks real data.** Your decision that day was
-to ship PXD005105 from the paper's published values rather than have the agents
-derive their own, so this is the step that unblocks it.
-
-Ticket: [A_licence-unblocked-sources__20261006](../notes/tickets/A_licence-unblocked-sources__20261006.md), row 7.
-
-**What is needed:** the supplementary material of *Enhanced limonene production
-in cyanobacteria reveals photosynthesis limitations*, PNAS 2016;113(50), PMID
-27911807, PMC5167140, doi:10.1073/pnas.1613340113. The table wanted is the
-proteomics one, reporting NSAF or equivalent per-protein values for the wild
-type and the limonene strains. Saving it to the private drop folder is enough;
-the agents read it from there.
-
-**Why the agents cannot get it.** The PRIDE deposit holds exactly two files, an
-8.1 GB `RAW.zip` and a 944 MB `SEARCH.zip`, confirmed against the PRIDE v3
-listing, the FTP directory and the deposit's own `README.txt`. The search
-archive was downloaded and opened on 2026-10-07 and holds 118 unfiltered
-ProLuCID `.sqt` files rather than the authors' DTASelect output, with the decoys
-still in them: in one file, 10,882 of 21,349 top-ranked matches are
-reversed-sequence decoys, a 49% false-discovery rate, so counting them as
-deposited would give a quantity about half of which is noise. The filtering the
-authors performed was never deposited. PMC5167140 is not open access through the
-Europe PMC API, and LIT-08 and LIT-09 of the blocked-task register forbid
-working around the PMC challenge, changing User-Agent or using a mirror, so a
-person reading it in a browser is the route.
-
-**What it buys:** a wild-type proteome, which the release still does not have.
-The deposit covers nine samples, three biological replicates each of the wild
-type, L1115 and L1118, where the only proteomics strain shipped so far is the
-engineered L1118 from a different deposit. The condition record is already
-written and waiting, and the archive is cached with its checksum recorded in the
-ticket, so nothing needs downloading again.
-
-**If the table does not exist or is not usable,** say so and the fallback is the
-option you did not take on 2026-10-07: have the agents do the false-discovery
-filtering themselves and label the layer as this project's own derivation rather
-than the depositors' published values.
