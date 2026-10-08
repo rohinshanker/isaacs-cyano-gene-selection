@@ -610,7 +610,9 @@ a colour has been hard-coded somewhere that now responds to the preference.
 Source membership is resolved by `core/source-selection.js` once for a dataset
 catalogue, selected-ID array and named-contributor object. These are immutable
 snapshots: replace them when changing sources, including a decoded link. The
-resolver caches membership only. Metric lookup and gene values stay live, so a
+resolver freezes these three containers when accepting them, so an in-place
+membership edit fails at its writer. Catalogue records must remain unchanged.
+The resolver caches membership only. Metric lookup and gene values stay live, so a
 layer arriving after the first render supplies its values on the next read.
 Do not cache a pending layer's missing values as measured zeros or discard
 selected contributors to meet a timing target. Ratio and abundance membership
@@ -653,7 +655,7 @@ contributors for abundance types. Compare output `sha256` values between cached
 and uncached runs: every selected-source list and value array must agree. The
 optional 100 ms bound is a warm-sweep budget on the development Mac, not a network
 or device-independent guarantee. The unit test's stronger work bound is that a
-2,715-gene sweep never re-reads the catalogue after resolving membership.
+2,715 metric reads never re-read the catalogue after resolving membership.
 
 For browser profiling, serve the actual site and record browser/version,
 viewport, organism, exact dataset IDs, cache state and CPU/network throttling.
@@ -669,7 +671,9 @@ handler can block the start of an otherwise fast drag. Re-read the canvas bounds
 after layout changes, and verify that events reached the canvas. At 1440 px,
 use a 40-move drag and 40 wheel events, checking frame durations and long tasks;
 repeat at 375, 768 and 1280 px with all three defaults and a multi-source
-selection. Include a provisional four-transcript-source selection when the
+selection where one exists. Initiation currently has only one source, so its
+default and explicitly selected cases are the same coverage, not a pool.
+Include a provisional four-transcript-source selection when the
 reported four IDs are unavailable, and record its IDs explicitly. Exercise
 source replacement, a named contributor, filtering, pin/keyboard selection,
 view switching, late-layer arrival and a shared-link reload. Check canvas/host

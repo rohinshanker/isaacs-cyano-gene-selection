@@ -36,6 +36,9 @@ test('selection, named source and catalogue replacement each refresh membership'
   const names = {};
   const initial = resolve(all, sources, names);
   assert.equal(resolve(all, sources, names), initial);
+  assert.throws(() => sources.push('P'), TypeError);
+  assert.throws(() => { names[abundance] = 'B'; }, TypeError);
+  assert.throws(() => all.pop(), TypeError);
   const ids = (result) => result.contributing(abundance).map((d) => d.id);
   assert.deepEqual(ids(resolve(all, ['B'], names)), ['B']);
   assert.deepEqual(ids(resolve(all, sources, { [abundance]: 'B' })), ['B']);

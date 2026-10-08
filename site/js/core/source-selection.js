@@ -7,7 +7,8 @@ const NONE = Object.freeze([]);
 /**
  * Source membership depends on the dataset catalogue, selected IDs and named
  * contributors, never on the gene being read. Callers replace these inputs
- * when they change; do not mutate their arrays, records or objects in place.
+ * when they change. The resolver freezes these containers when accepting them;
+ * catalogue records must also remain unchanged for the lifetime of a snapshot.
  *
  * Only membership is cached. Registry metrics and their values remain live,
  * including values joined by a later expression-layer download.
@@ -21,6 +22,9 @@ export function createSourceSelectionResolver() {
     if (resolved && datasets === previousDatasets && sources === previousSources
       && typeSources === previousTypeSources) return resolved;
 
+    for (const snapshot of [datasets, sources, typeSources]) {
+      if (snapshot) Object.freeze(snapshot);
+    }
     const selection = Object.freeze(normalizeSelection(sources, datasets));
     const contributors = new Map();
     for (const [key, group] of typeGroups(datasets)) {

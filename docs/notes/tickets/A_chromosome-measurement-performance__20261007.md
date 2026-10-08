@@ -112,6 +112,20 @@ with `O_data-sources-selection__20261005.md` and
 `A_loading-scramble-and-progress__20261006.md` where shared loading/state changes
 are necessary.
 
+## Review findings
+
+DEM-317 reviewed `65d1add` and approved the cache/preview implementation, with
+closure held for these findings. The integration writer has already moved to
+`42e8801`; final review and gates remain pending for the added hardening below.
+
+| Finding | Current disposition |
+| --- | --- |
+| REV-1: chromosome source changes throw | `42e8801` resolves the same defect as PERF-3; the new browser regression fails on `65d1add` and passes the final source-switch repair |
+| REV-2: incomplete validation claim against old source-switch artifacts | Old `state-results.txt` failed on `65d1add`; those failures are retained as evidence, not counted as passing. The integration directory contains the passing final regression, 24-case matrix and full gates. Final closure will name the exact verified target |
+| REV-3: future in-place source writes could silently stale the cache | Open pending review: resolver now freezes its three input containers; mutation assertions prove that source-ID, named-source and catalogue-array writes fail at the writer |
+| REV-4: three-gene fixture described as a 2,715-gene sweep | Wording corrected to 2,715 metric reads; pending final review |
+| REV-5: initiation default and multi cases duplicate coverage | Runbook now explicitly states there is one initiation source and no pooled-initiation case; 24 executed cases include four duplicates, pending final review |
+
 ## Verification
 
 Ticket opening and clarification: source locations and queue link checked; the
