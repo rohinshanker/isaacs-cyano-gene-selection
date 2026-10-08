@@ -40,6 +40,10 @@ evidence before integration. No data, scientific method, or pooling changes.
 Local integration/closure ownership for the three original presentation tickets
 has been asked explicitly because project AGENTS.md reserves closure to their
 owning session. It remains pending; no original ticket has been closed.
+Canonical main currently has an active proteomics ingestion staged/in progress,
+including type-metrics and release payload changes. Keep this branch isolated;
+coordinate a clean integration point with that owner and rerun combined gates
+against the resulting main baseline rather than disturbing their index.
 
 DEM-307 observations retained with the approved result:
 
