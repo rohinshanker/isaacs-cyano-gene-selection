@@ -5,6 +5,7 @@ import {
   assayKind, buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, defaultInforming,
   informingDataset, isDatasetOwnKey, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from '../../site/js/core/type-metrics.js';
+import { sortedFinite, percentileRank } from '../../site/js/core/stats.js';
 
 function datasets() {
   const rows = [
@@ -220,4 +221,26 @@ test('a ribosome profiling type is named occupancy, not abundance', () => {
   assert.equal(typeLabelFor(transcripts), 'Transcript abundance (RNA-seq)');
   assert.notEqual(typeKeyFor(footprints), typeKeyFor(transcripts),
     'the two must not pool');
+});
+
+test('a log-scaled and a linear dataset pool safely, because pooling is by rank', () => {
+  // The owner's pooling rule of 2026-10-06 exists because units differ between
+  // deposits. An abundance pools as the mean of each dataset's within-dataset
+  // mid-rank percentile, and a rank is unchanged by any monotonic transform, so
+  // a log-scaled deposit and a linear one may share a type without rescaling
+  // either. This is the normalisation; there is no second one to add.
+  const linear = [1, 2, 4, 8, 16, 32, 0.5];
+  const logged = linear.map(Math.log2);
+  const rankedLinear = sortedFinite(linear);
+  const rankedLogged = sortedFinite(logged);
+  for (let i = 0; i < linear.length; i += 1) {
+    assert.equal(
+      percentileRank(rankedLinear, linear[i]),
+      percentileRank(rankedLogged, logged[i]),
+      'a monotonic transform must not move a gene in its own dataset',
+    );
+  }
+  // And the negative a log scale produces is an ordinary low value, not an edge
+  // case: it ranks below the others and nothing else changes.
+  assert.ok(percentileRank(rankedLogged, Math.log2(0.5)) < percentileRank(rankedLogged, 0));
 });

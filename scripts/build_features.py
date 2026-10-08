@@ -683,6 +683,16 @@ def load_expression_sources(
                 # fitness log-ratio, and takes a diverging ramp. `logScale` is an
                 # ordinary one-sided abundance expressed in logs, where a negative
                 # is simply a value below one unit and zero is not a midpoint.
+                # The two are contradictory claims about the same numbers and
+                # prescribe different pooling: a signed quantity pools as the
+                # mean of its values, which only works because every fitness
+                # deposit shares one log2 scale, while an abundance pools as a
+                # within-dataset rank, which is scale-free. A source claiming
+                # both would make the pooled value depend on which rule won.
+                require(
+                    not (source.get("signed") is True and source.get("logScale") is True),
+                    f"{source_id} declares both signed and logScale; it must declare one",
+                )
                 allows_negative = source.get("signed") is True or source.get("logScale") is True
                 require(
                     math.isfinite(value) and (value >= 0 or allows_negative),
