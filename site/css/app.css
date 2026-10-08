@@ -1712,6 +1712,7 @@ input[type="range"] { width: 100%; }
 .peek-head { display: flex; gap: 0.75rem; align-items: center; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); }
 .peek-title { font-size: 1rem; margin: 0; margin-right: auto; }
 .peek-tabs { display: flex; gap: 0.4rem; }
+.data-selection .chip-button.active:hover:not(:disabled) { background: var(--accent); }
 @media (max-width: 600px) {
   .peek-head { flex-wrap: wrap; }
   .peek-title { flex: 1; }
@@ -1755,7 +1756,8 @@ input[type="range"] { width: 100%; }
 .ds-group-n { font-weight: 400; color: var(--ink-muted); float: right; }
 .ds-table tr.ds-selected td { background: var(--accent-soft); }
 .ds-name-top { display: flex; gap: 0.25rem; align-items: flex-start; }
-.ds-name-id { flex: 1; }
+.ds-name-id { flex: 1; min-width: 0; }
+.ds-name-id .ds-chip { max-width: 100%; white-space: normal; }
 .ds-acc { font-weight: 600; }
 .ds-label { display: block; color: var(--ink-muted); font-size: 0.8rem; }
 .ds-chip { display: inline-block; border: 1px solid var(--line); border-radius: 10px; padding: 0 0.45rem; font-size: 0.72rem; color: var(--ink-muted); background: var(--surface); margin: 1px 2px 1px 0; white-space: nowrap; }
