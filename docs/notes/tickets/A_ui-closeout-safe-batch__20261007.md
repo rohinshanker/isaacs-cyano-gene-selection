@@ -3,7 +3,7 @@
 Scope: Coordinate isolated UI closeout, implement clear presentation requests, collect pending owner decisions, and verify inherited mobile Data Selection findings.
 Status: active
 Opened: 2026-10-07
-Updated: 2026-10-07
+Updated: 2026-10-08
 
 ## Current State
 
@@ -37,22 +37,23 @@ Original UI tickets remain under their opening session until ownership transfers
 do not delete or close another session's ticket. Return exact patch and rendered
 evidence before integration. No data, scientific method, or pooling changes.
 
-Local integration/closure ownership for the three original presentation tickets
-has been asked explicitly because project AGENTS.md reserves closure to their
-owning session. It remains pending; no original ticket has been closed.
-Canonical main currently has an active proteomics ingestion staged/in progress,
-including type-metrics and release payload changes. Keep this branch isolated;
-coordinate a clean integration point with that owner and rerun combined gates
-against the resulting main baseline rather than disturbing their index.
+Owner assigned this session integration/closure of the three original presentation
+tickets. Integration baseline is 38520a5 after the proteomics work committed;
+the chromosome-performance owner has a separate worktree at that baseline.
+The isolated UI branch includes this main baseline via 94cc966. Combined gates and
+renders pass. This session closed the Measurement Limits, tab name/order and
+Chromosome Viewer Info tickets on 2026-10-08, recording its name and all findings
+before R-renaming, distillation and deletion. Canonical file cleanup follows the
+guarded fast-forward; no broader UI or performance ticket is closed.
 
 DEM-307 observations retained with the approved result:
 
 - UI-REVIEW-1 open: pre-existing shared active-chip hover contrast remains poor
   outside `.data-selection`, including the organism header and condition grid.
-- UI-REVIEW-2 open: the order-insensitive ALL_TABS copy in
-  tests/js/organism-isolation.test.mjs:66 still uses the old order.
-- UI-REVIEW-3 open: the wrapping helper documents its default-UTEX requirement but
-  has no early guard; an E. coli caller receives a locator timeout.
+- UI-REVIEW-2 resolved by 94cc966: the order-insensitive ALL_TABS test copy now
+  follows the actual tab order.
+- UI-REVIEW-3 resolved by 94cc966: the wrapping helper rejects org/data overrides
+  immediately and names a missing published test dataset instead of timing out.
 - UI-REVIEW-4 informational: `clippedChips` guards possible truncation but does
   not cover the present overlap defect. The identity-geometry and contrast checks
   are proven by the reviewer's mutation probe: reverting the CSS produces 24
@@ -99,7 +100,7 @@ uses canonical `?org=`, normalizes the default route, and asserts organism ident
 
 ## Verification
 
-Final code result 699b389: npm test 1,274 passed; pytest 768 passed, 1 skipped,
+Final integration result 94cc966: npm test 1,274 passed; pytest 783 passed, 1 skipped,
 36 subtests; validate_contract 116 passed, 1 declared contiguity skip. The initial
 worker Python gate lacked ignored raw sources; existing pinned canonical inputs
 were linked into this isolated worktree for the passing combined gate.
