@@ -65,7 +65,8 @@ empty filters, flat/grouped lists, tab changes, Escape/focus restoration, pointe
 transparency and runtime diagnostics. Inspect the screenshots as well as the
 assertions. Keep full repository gates in addition to this focused check.
 
-`tools/ui/check_data_selection_wrapping.js` uses the same app/artifact setup and
+`tools/ui/check_data_selection_wrapping.js` uses the default UTEX address (no
+`org` parameter) with the same app/artifact setup and
 checks actual dataset identities in transcriptomics, proteomics and fitness,
 including long strain names, all four viewport sizes and the 1320px breakpoint.
 It asserts chip geometry, selected-tab hover contrast, access to the last condition
