@@ -27,6 +27,12 @@ export function assayKind(dataset) {
   // not abundance, and pooling it with transcript counts would average two
   // different measurements of the same gene.
   if (/ribosome profiling/i.test(dataset?.source?.assay ?? '')) return 'occupancy';
+  // A ratio to a reference strain or condition is a comparison, not a level.
+  // Pooling it with abundances would rank a fold change among measurements of
+  // how much protein is present, so it is its own kind (owner decision,
+  // 2026-10-07: a ratio ships as a signed layer listed apart from abundances
+  // and labelled as a ratio).
+  if (/\bratio\b/i.test(dataset?.source?.assay ?? '')) return 'ratio';
   return 'abundance';
 }
 
@@ -53,9 +59,10 @@ export function typeLabelFor(dataset) {
       // but what it counts is footprints on a transcript. Naming that
       // abundance would promise the reader a different measurement.
       : kind === 'occupancy' ? 'Ribosome occupancy'
-        : dataType === 'proteomics' ? 'Protein abundance'
-          : dataType === 'transcriptomics' ? 'Transcript abundance'
-            : `${dataType} measurement`;
+        : kind === 'ratio' ? `${dataType === 'proteomics' ? 'Protein' : 'Transcript'} abundance ratio`
+          : dataType === 'proteomics' ? 'Protein abundance'
+            : dataType === 'transcriptomics' ? 'Transcript abundance'
+              : `${dataType} measurement`;
   return `${quantity} (${platform})`;
 }
 
@@ -199,7 +206,10 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
     return rankCache.get(metric);
   };
   for (const group of typeGroups(datasets).values()) {
-    const signed = assayKind(group.datasets[0]) === 'fitness';
+    const kind = assayKind(group.datasets[0]);
+    // Both carry a sign and both take a diverging ramp; only fitness shares a
+    // log2 scale, so they pool and are described differently.
+    const signed = kind === 'fitness' || kind === 'ratio';
     const current = () => contributing(group.key).map((dataset) => metricOf(dataset) ?? null).filter(Boolean);
     const one = () => { const list = current(); return list.length === 1 ? list[0] : null; };
     const pooledProvenance = (list) => {
@@ -225,12 +235,15 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
         isTargetOrganism: list.every((metric) => metric.provenance?.isTargetOrganism === true),
         organism: [...new Set(list.map((metric) => metric.provenance?.organism).filter(Boolean))].join('; '),
         condition: `${list.length} datasets pooled: ${list.map((metric) => metric.provenance?.condition ?? metric.key).join(' | ')}`,
-        units: signed
+        units: kind === 'fitness'
           ? `mean gene fitness across ${list.length} condition sets (shared log2 scale)`
-          : `pooled percentile across ${list.length} datasets: mean of each dataset's within-dataset mid-rank, 0 to 1`,
+          : kind === 'ratio'
+            ? `mean of ${list.length} ratios, each a fold change against its own reference`
+            : `pooled percentile across ${list.length} datasets: mean of each dataset's within-dataset mid-rank, 0 to 1`,
         caveat: `Pooled by owner decision of ${defaultCompendium ? '2026-10-07' : '2026-10-06'}. `
-          + (signed ? 'Fitness values share a log2 scale and are averaged as published.'
-            : 'The deposits report different units, so each is ranked within itself before averaging; the pooled value is a rank, not an abundance.')
+          + (kind === 'fitness' ? 'Fitness values share a log2 scale and are averaged as published.'
+            : kind === 'ratio' ? 'Each value is a fold change against its own reference, so an average of them is not itself a measured ratio.'
+              : 'The deposits report different units, so each is ranked within itself before averaging; the pooled value is a rank, not an abundance.')
           + ' Choose one dataset under Data Sources to read its own values.'
           + (sourceCaveats.length ? ` ${sourceCaveats.join(' ')}` : ''),
         citationIds: [...new Set(list.map((metric) => metric.provenance?.citationId).filter(Boolean))],
@@ -240,8 +253,10 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, geneCount =
       key: group.key,
       label: group.label,
       // A fitness screen is its own family (owner decision, 2026-10-05); every
-      // abundance and initiation measure is expression evidence.
-      family: signed ? 'Fitness' : 'Expression',
+      // abundance, ratio and initiation measure is expression evidence, and a
+      // ratio is held apart from abundances by its own type rather than by a
+      // family of its own.
+      family: kind === 'fitness' ? 'Fitness' : 'Expression',
       source: 'pipeline',
       integer: false,
       isType: true,

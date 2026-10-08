@@ -57,7 +57,7 @@ def test_check_header_accepts_the_declared_header_and_names_a_mismatch():
 
 
 MANIFESTS = {
-    "data/expression/sources.json": {"fitness": 99, "abundance": 64},
+    "data/expression/sources.json": {"fitness": 99, "abundance": 64, "ratio": 1},
     "data/expression/organisms/ecoli-k12-mg1655/sources.json": {"abundance": 78},
 }
 
@@ -73,10 +73,11 @@ def shipped_sources():
 def test_every_shipped_table_heads_its_values_with_its_declared_quantity():
     """The release itself, not a synthetic table: 99 fitness tables and the rest.
 
-    A fitness value is signed and centres on zero, so a consumer that reads one
-    column as the other misreads every row. The counts are pinned per manifest
-    so a new layer cannot arrive under the wrong header unnoticed, and so the
-    dormant E. coli tables are seen to stay abundances.
+    A fitness value is signed and centres on zero, and a ratio is signed and
+    centres on one, so a consumer that reads either as an abundance misreads
+    every row. The counts are pinned per manifest so a new layer cannot arrive
+    under the wrong header unnoticed, and so the dormant E. coli tables are
+    seen to stay abundances.
     """
     assert sorted(str(p.relative_to(ROOT)) for p in ROOT.glob("data/expression/**/sources.json")) \
         == sorted(MANIFESTS), "a new source manifest must declare its expected columns here"
@@ -86,7 +87,8 @@ def test_every_shipped_table_heads_its_values_with_its_declared_quantity():
         with path.open(encoding="utf-8", newline="") as handle:
             fieldnames = csv.DictReader(handle, delimiter="\t").fieldnames
         column = table.check_header(
-            fieldnames, source["record"]["dataType"], str(path.relative_to(ROOT)))
+            fieldnames, source["record"]["dataType"], str(path.relative_to(ROOT)),
+            signed=bool(source.get("signed")))
         seen[key][column] = seen[key].get(column, 0) + 1
     assert seen == MANIFESTS
 

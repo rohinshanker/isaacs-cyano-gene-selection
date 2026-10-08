@@ -39,7 +39,7 @@ def test_generated_documents_follow_contract():
     # three protein, four PXD000510 diel identification windows, two PXD005851
     # acetylation-survey media, nine GSE205443 fitness fractions, 90 Fitness
     # Browser condition sets).
-    assert len(meta["metrics"]) == 35 + 161
+    assert len(meta["metrics"]) == 35 + 162
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}
@@ -115,7 +115,7 @@ def test_generated_documents_follow_contract():
     assert "not transcript or protein abundance" in meta["expressionProxy"]["meaning"]
 
     manifest = json.loads(EXPRESSION_MANIFEST.read_text())
-    assert len(meta["expressionSources"]) == len(manifest) == 163
+    assert len(meta["expressionSources"]) == len(manifest) == 164
     for emitted, selected in zip(meta["expressionSources"], manifest, strict=True):
         assert emitted | selected == emitted
     assert [source["coverage"]["withValue"] for source in meta["expressionSources"]] == [
@@ -152,13 +152,15 @@ def test_generated_documents_follow_contract():
         # PXD005851's two media; a protein counts only where all three
         # replicates identified it, so the two differ.
         1390, 1451,
+        # PXD005105 is a ratio over the 95 proteins the study found changed.
+        88,
     ]
     assert all(source["coverage"]["total"] == 2715 for source in meta["expressionSources"])
     # The two original measurements ride in genes.json; every ingested layer is
     # published apart, joined by locus tag, so the gene file keeps its budget.
     layered = [s for s in meta["expressionSources"] if s["payload"] == "expression_layers.json"]
     assert [s["payload"] for s in meta["expressionSources"][:2]] == ["genes.json", "genes.json"]
-    assert len(layered) == 161
+    assert len(layered) == 162
     layers = json.loads((DATA / "expression_layers.json").read_text())
     assert layers["geneIds"] == [gene["id"] for gene in genes]
     assert set(layers["layers"]) == {s["metricKey"] for s in layered}

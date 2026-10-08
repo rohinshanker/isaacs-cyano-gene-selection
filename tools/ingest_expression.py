@@ -560,13 +560,15 @@ def map_to_utex(values: Mapping[str, float], crosswalk: Mapping[str, str]) -> tu
     return mapped, unmapped
 
 
-def write_table(path: Path, mapped: Mapping[str, tuple[float, str]], data_type: str) -> str:
+def write_table(path: Path, mapped: Mapping[str, tuple[float, str]], data_type: str,
+                *, signed: bool = False) -> str:
     """Write the pipeline's three-column table and return its SHA-256.
 
-    ``data_type`` names the value column, so a fitness table is never
-    downloaded under an abundance header (``scripts/expression_table.py``).
+    ``data_type`` and ``signed`` name the value column, so a fitness table is
+    never downloaded under an abundance header and a ratio is never downloaded
+    as an amount (``scripts/expression_table.py``).
     """
-    lines = [header_line(data_type)]
+    lines = [header_line(data_type, signed=signed)]
     for locus in sorted(mapped):
         value, source = mapped[locus]
         lines.append(f"{locus}\t{value:.4f}\t{source}")
@@ -660,12 +662,12 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
     orf_names = load_uniprot_orf_names(uniprot_table) if via_uniprot else None
     manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else []
     by_id = {entry["id"]: index for index, entry in enumerate(manifest)}
+    signed = spec.get("signed", spec["dataType"] == "fitness")
     written = []
     for layer in spec["layers"]:
         quotes, replicate_quote = condition_quotes(
             conditions_table, layer.get("conditionTableRow", spec.get("conditionTableRow")))
-        means = layer_means(header, rows, layer["columns"], spec["normalization"],
-                            signed=spec.get("signed", spec["dataType"] == "fitness"))
+        means = layer_means(header, rows, layer["columns"], spec["normalization"], signed=signed)
         no_locus = 0
         if via_uniprot:
             means, no_locus = through_uniprot(means, orf_names)
@@ -674,7 +676,8 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
         if not mapped:
             raise ValueError(f"layer {layer['id']} maps no gene; check idKind and the columns")
         table_name = f"{layer['id']}.tsv"
-        digest = write_table(out_dir / table_name, mapped, spec["dataType"])
+        digest = write_table(out_dir / table_name, mapped, spec["dataType"],
+                             signed=signed)
         entry = {
             "record": build_record(spec, layer, quotes, replicate_quote),
             "id": layer["id"],
@@ -692,7 +695,7 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
             "provenanceDoc": spec["provenanceDoc"],
             "citationId": spec["citationId"],
             "payload": "expression_layers.json",
-            "signed": spec.get("signed", spec["dataType"] == "fitness"),
+            "signed": signed,
             "ingest": {
                 "sourceFile": "; ".join(f["name"] for f in sources),
                 "sourceSha256": "; ".join(f["sha256"] for f in sources),

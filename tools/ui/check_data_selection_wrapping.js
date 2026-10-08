@@ -1,10 +1,12 @@
-/** Run on the real app with ?uiArtifacts=<absolute ignored directory> via playwright-cli. */
+/** Run on published UTEX data, without org/data overrides, and with ?uiArtifacts=<absolute ignored directory>. */
 async (page) => {
-  const { root, base } = await page.evaluate(() => ({
+  const { root, base, hasOverride } = await page.evaluate(() => ({
     root: new URL(location.href).searchParams.get('uiArtifacts'),
     base: location.href.split('#')[0],
+    hasOverride: ['org', 'data'].some((key) => new URL(location.href).searchParams.has(key)),
   }));
   if (!root?.startsWith('/')) throw new Error('An absolute uiArtifacts directory is required.');
+  if (hasOverride) throw new Error('The wrapping check requires published UTEX data without org/data overrides.');
   const errors = [];
   const onPageError = (error) => errors.push(error.message);
   const onConsole = (message) => {
@@ -27,6 +29,8 @@ async (page) => {
     await page.locator('#data-sources summary').click();
     await page.locator('#data-sources .data-sources-change').click();
     const dialog = page.getByRole('dialog', { name: 'Data selection', exact: true });
+    check(await dialog.locator('tr[data-id="GSE311172_ad2_0_o2"]').count() === 1,
+      'The wrapping check requires the published GSE311172_ad2_0_o2 dataset.');
     const matrix = [];
     for (const [width, height] of [[375, 812], [768, 1024], [1280, 800], [1319, 900], [1321, 900], [1440, 900]]) {
       await page.setViewportSize({ width, height });

@@ -658,8 +658,10 @@ def load_expression_sources(
         )
 
         # The value column is named after the declared quantity, so a fitness
-        # table cannot be loaded as an abundance or the reverse.
-        expected_header = expression_table.header(source["record"]["dataType"])
+        # table cannot be loaded as an abundance or the reverse, and a signed
+        # ratio is not loaded as an amount.
+        expected_header = expression_table.header(
+            source["record"]["dataType"], signed=bool(source.get("signed")))
         with table_path.open(encoding="utf-8", newline="") as handle:
             rows = csv.DictReader(handle, delimiter="\t")
             require(
