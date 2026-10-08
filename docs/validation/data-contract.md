@@ -39,10 +39,21 @@ commands default to `utex2973`; `--organism ecoli-k12-mg1655` selects the second
 record, and an unknown id must fail before reading or writing data. Raw inputs use
 the configured per-organism directory under `data/raw/`.
 
+### Recoded E. coli projection exception
+
+Owner decision, 2026-10-07: admitted recoded E. coli genomes may also carry
+codon-PCA coordinates in a declared parent's fixed frame, alongside a separately
+labelled refit of their own genes. This exception concerns projection
+coordinates only; genomic coordinates, organism identity and measured-source
+joins remain local. The child carries a complete, checksummed reference
+transform and its own gene order. Public-reference versus experimental-stock
+differences must be visible. See [recoded-reference-projection.md](recoded-reference-projection.md).
+The sister-strain genomic-coordinate limits below remain in force.
+
 ## Evidence coverage and cross-organism transfer
 
-UTEX 2973 remains the genome, coordinate system, and experimental target of every
-published row. It is **not**, however, the only organism from which the project may
+Within the UTEX 2973 dataset, UTEX 2973 remains the genome, coordinate system,
+and experimental target of every published row. It is **not**, however, the only organism from which the project may
 draw evidence. Native UTEX 2973 data are too sparse to make "native or unknown" a
 useful general policy. For annotations, expression/activity estimates,
 essentiality, regulation, protein evidence, and related biological context, the

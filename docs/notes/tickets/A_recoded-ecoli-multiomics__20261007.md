@@ -77,6 +77,10 @@ fixes below await the reviewer's confirmation on the final patch.
 | DEM-318-F6: stale child PCA artifact | Fixed `d939b8e`; child schema 2 regenerated; `283e686` supplies parent schema 2 and real validated child-local projection |
 | DEM-318-F7: blanket replicate/score claims | Fixed `b74d128`; 52 numeric / 17 no-growth distinction and Seg80-0 −10.286431 vs Table 1 −10.26 exception explicit |
 | DEM-318-F8: SD lowercased | Fixed `b74d128`; source acronym display preserved and tested |
+| DEM319-F1: indistinguishable replicate choices | Fixed `30b13d5`; source/sample labels in ordinary rows, accessible labels and axis menus; actual 16-source Syn61 regression test |
+| DEM319-F2: false compendium pooling disclosure | Fixed `30b13d5`; declared quantities stay individually visible outside the compound/dose compendium, while explicit abundance pooling and legacy fitness compendia remain available |
+| DEM319-F3: invalid fitness replicate values admitted | Fixed `30b13d5`; doubling-time replicates positive and absent for no-growth, OD replicates nonnegative; negative/boundary tests |
+
 
 Read-only evidence comes from pinned source files and the located-quote/hash
 manifest in [the dossier](../handoff/recoded_ecoli_evidence__20261007.md), under
@@ -657,14 +661,21 @@ Integrated code/data at `d939b8e`: `npm test` **1,327 passed**;
 default contract **117 passed / 1 declared spliced-CDS skip**;
 Syn61 **92 / 1**, MDS42 **86 / 1**, DH10B **86 / 1**. Follow-on label/citation
 repairs `b74d128`: 8 source-ingestion and 13 fitness-panel tests passed.
-Final rerun and independent review confirmation remain pending.
+After `b74d128`, full gates pass: JavaScript **1,328**, Python **890 passed /
+1 skipped / 36 subtests**, default contract **117 / 1**, Syn61 **92 / 1**.
+`30b13d5` then passes 72 focused JS tests. Final JS rerun: **1,330 passed**. DEM-319 confirms F1/F2/F3 resolved at
+`30b13d5` with 93 focused tests and a real-data Chrome recheck. DEM-318 final
+confirmation remains pending. `3f9fddd` scopes the scheme panel’s axes sentence
+to Native codon space (4 focused tests), avoiding a contradictory description
+when the parent-reference tab is selected.
 
 Real app rendered at 375×812, 768×1024, 1280×800 and 1440×900: native/refit,
 parent-fixed P-value colouring, LFC-vs-TE axes, aggregate preset and whole-strain
 fitness states. Zero page overflow or browser errors. MDS42/DH10B expose no
 study omics or child-reference panel. Growth and Biolog downloads retain 69 and
-5,280 rows; no-growth numeric fields remain absent. Review corrections need a
-focused final render. Reusable contracts are in `docs/validation/recoded-multiomics.md`,
+5,280 rows; no-growth numeric fields remain absent. Final corrections were rendered at all four widths: explicit segment fields,
+replicate source/axis choices, P-value informing source, revised metadata and
+Syn61-only citations; zero page overflow or page errors. Reusable contracts are in `docs/validation/recoded-multiomics.md`,
 `recoded-reference-projection.md`, `recoded-parent-reference-records.md`,
 `measured-quantity-contract.md` and `strain-fitness.md`.
 

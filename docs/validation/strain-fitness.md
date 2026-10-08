@@ -191,3 +191,11 @@ and cut them off inside their columns, which `.fitness-table .numeric` now
 overrides. Both were invisible to an assertion on text content.
 
 Also apply the repository's [release gate](release-gate.md) before publication.
+
+
+Replicate values obey their measurement's bounds: a doubling time is positive
+and an OD value is nonnegative. A `no_growth_detected` record cannot contain a
+measured doubling-time replicate; absent replicates stay null. Segment fields
+hold the segment set alone, with medium and stage retained separately in the
+condition and source strain label. Source metadata acronyms such as SD and
+OD600 retain their capitalization.

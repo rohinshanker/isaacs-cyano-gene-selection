@@ -143,3 +143,12 @@ admitted: copy `site/data`, inject declared sources into
 `meta.expressionSources` with their columns in `expression_layers.json`, drop
 `data-manifest.json` so the loader asks for every file, and open the page with
 `?data=<that directory>`.
+
+
+Declared-quantity sources keep individual source/sample labels in Data Sources
+and axis choices, even when many fields share one study and culture condition.
+They do not enter the compound/dose compendium grid: different omics fields and
+replicates are not distinct compound doses. RPKM/count types retain their
+explicit pooling control; a non-pooling type names the source actually read.
+The regression test uses the real sixteen-source Syn61 release, including its
+three otherwise identically described RNA cultures.
