@@ -22,8 +22,7 @@ function field(label, value) {
   return [term, description];
 }
 
-function displayIsotype(locus) {
-  const value = locus.refseqIsotype ?? locus.scanIsotype;
+function displayIsotype(value) {
   return value === 'Undet' ? 'Undetermined (Undet)' : value;
 }
 
@@ -227,10 +226,10 @@ export class TrnaViewer {
       for (const value of values) control.append(option(value, value));
       control.value = values.includes(selected) ? selected : 'all';
     };
-    fill(this.isotype.select, [...new Set(loci.map((locus) => (
-      locus.refseqIsotype ?? locus.scanIsotype)))].sort(), 'isotypes');
-    fill(this.anticodon.select, [...new Set(loci.map((locus) => (
-      locus.refseqAnticodon ?? locus.scanAnticodon)))].sort(), 'anticodons');
+    fill(this.isotype.select, [...new Set(loci.flatMap((locus) => (
+      [locus.refseqIsotype, locus.scanIsotype])).filter(Boolean))].sort(), 'isotypes');
+    fill(this.anticodon.select, [...new Set(loci.flatMap((locus) => (
+      [locus.refseqAnticodon, locus.scanAnticodon])).filter(Boolean))].sort(), 'anticodons');
   }
 
   render() {
@@ -282,9 +281,9 @@ export class TrnaViewer {
   renderContent() {
     if (!this.payload) return;
     const active = document.activeElement;
-    const activeLocus = active?.dataset?.trnaId ?? null;
+    const activeListLocus = this.list.contains(active) ? active?.dataset?.trnaId ?? null : null;
     const { matches, selectedRetained } = this.matchingLoci();
-    this.resultsSummary.textContent = `${formatCount(matches.length)} locus${matches.length === 1 ? '' : 'i'} `
+    this.resultsSummary.textContent = `${formatCount(matches.length)} ${matches.length === 1 ? 'locus' : 'loci'} `
       + `${matches.length === 1 ? 'is' : 'are'} shown${selectedRetained
         ? '; the selected locus is retained outside the current filters' : ''}.`;
     this.empty.hidden = matches.length > 0;
@@ -292,8 +291,8 @@ export class TrnaViewer {
     for (const locus of matches) this.list.append(this.listItem(locus, selectedRetained));
     this.renderTrack();
     this.renderDetail();
-    if (activeLocus) {
-      this.list.querySelector?.(`[data-trna-id="${CSS.escape(activeLocus)}"]`)?.focus();
+    if (activeListLocus) {
+      this.list.querySelector?.(`[data-trna-id="${CSS.escape(activeListLocus)}"]`)?.focus();
     }
   }
 
@@ -338,11 +337,14 @@ export class TrnaViewer {
   }
 
   visibleTrackLoci() {
-    return (this.payload?.loci ?? []).filter((locus) => this.candidateAllowed(locus));
+    return this.matchingLoci().matches;
   }
 
   renderTrack() {
     if (!this.trackFigure || !this.payload) return;
+    const focusedMarker = this.trackMarkers.contains(document.activeElement)
+      ? document.activeElement : null;
+    const focusedIds = focusedMarker?.dataset?.trnaIds?.split('\n').filter(Boolean) ?? [];
     this.trackToggle.checked = this.showTrack;
     this.candidateToggle.checked = this.showCandidate;
     this.trackFigure.hidden = !this.showTrack;
@@ -361,6 +363,7 @@ export class TrnaViewer {
       const marker = document.createElement('button');
       marker.type = 'button';
       marker.className = cluster.loci.length > 1 ? 'trna-marker is-cluster' : 'trna-marker';
+      marker.dataset.trnaIds = cluster.loci.map((locus) => locus.id).join('\n');
       if (cluster.candidate) marker.classList.add('has-candidate');
       marker.style.left = `${(cluster.x / width) * 100}%`;
       if (cluster.loci.length > 1) {
@@ -376,11 +379,17 @@ export class TrnaViewer {
       marker.addEventListener('click', () => {
         if (cluster.loci.length === 1) this.selectLocus(cluster.loci[0], marker);
         else {
-          const row = this.list.querySelector?.(`[data-trna-id="${CSS.escape(cluster.loci[0].id)}"]`);
+          const row = cluster.loci.map((locus) => this.list.querySelector?.(
+            `[data-trna-id="${CSS.escape(locus.id)}"]`,
+          )).find(Boolean);
+          if (!row) {
+            this.selectLocus(cluster.loci[0], marker);
+            return;
+          }
           row?.focus();
           row?.scrollIntoView?.({ block: 'nearest' });
           this.handlers.onAnnounce?.(`${cluster.loci.length} tRNA loci share this marker; `
-            + 'the first matching list row is focused.');
+            + 'the first locus in the filtered list is focused.');
         }
       });
       this.trackMarkers.append(marker);
@@ -390,6 +399,12 @@ export class TrnaViewer {
       note.className = 'trna-track-empty';
       note.textContent = 'No tRNA loci in this window';
       this.trackMarkers.append(note);
+    }
+    if (focusedIds.length > 0) {
+      const replacement = [...this.trackMarkers.querySelectorAll('.trna-marker')]
+        .find((marker) => marker.dataset.trnaIds.split('\n')
+          .some((id) => focusedIds.includes(id)));
+      replacement?.focus();
     }
   }
 
@@ -413,9 +428,11 @@ export class TrnaViewer {
       field('Length', `${locus.lengthNt} nt`),
       field('RefSeq locus', locus.locusTag ?? 'None — scan-only candidate'),
       field('RefSeq product', locus.refseqProduct ?? 'Not annotated'),
+      field('RefSeq isotype', locus.refseqIsotype
+        ? displayIsotype(locus.refseqIsotype) : 'Not annotated'),
       field('RefSeq genomic anticodon', locus.refseqAnticodon
         ? displayAnticodon(locus.refseqAnticodon) : 'Not annotated'),
-      field('Scan isotype', displayIsotype(locus)),
+      field('Scan isotype', displayIsotype(locus.scanIsotype)),
       field('Scan anticodon', displayAnticodon(locus.scanAnticodon)),
       field('Annotation vs scan', locus.annotationScanStatus),
       field('Pseudogene flag', locus.pseudo ? 'Yes (scan prediction)' : 'No'),

@@ -297,10 +297,12 @@ RefSeq row.
 Each record repeats the assembly, run/source identity, native 1-based inclusive
 coordinates, length, strand, RefSeq and scan fields, and the genomic locus
 sequence in transcription orientation. The detail consumer must keep `Ile2`
-and `fMet` as scan labels and may show the model-effective anticodon only as a
-separate field. `Undet`/`NNN` are rendered as undetermined, never as an amino
-acid or known decoding assignment. This layer is not an input to tAI, CDS
-filters, recoding models, protein pins, or the shortlist.
+and `fMet` as scan labels in a field separate from RefSeq's `Ile` and `Met`;
+recorded-value filters match either source without relabelling either one. The
+model-effective anticodon may appear only as a separate field. `Undet`/`NNN`
+are rendered as undetermined, never as an amino acid or known decoding
+assignment. This layer is not an input to tAI, CDS filters, recoding models,
+protein pins, or the shortlist.
 
 Rebuild after the pinned FASTA is present, then rebuild the content manifest:
 

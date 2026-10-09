@@ -1052,13 +1052,20 @@ input[type="range"] { width: 100%; }
 .trna-visibility { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
 .trna-filters {
   display: grid;
-  grid-template-columns: minmax(12rem, 2fr) repeat(2, minmax(8rem, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem 0.75rem;
-  align-items: end;
+  align-items: start;
 }
-.trna-filters .field-row { width: 100%; }
+.trna-filters .field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.2rem;
+  width: 100%;
+  margin: 0;
+}
+.trna-search-field { grid-column: 1 / -1; }
 .trna-filters input,
-.trna-filters select { width: 100%; }
+.trna-filters select { width: 100%; min-width: 0; }
 .trna-track-figure {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1179,6 +1186,7 @@ input[type="range"] { width: 100%; }
 
 @media (max-width: 600px) {
   .trna-filters { grid-template-columns: 1fr; }
+  .trna-search-field { grid-column: auto; }
   .trna-facts { grid-template-columns: 1fr; gap: 0.1rem; }
   .trna-facts dd { margin-bottom: 0.35rem; }
   .trna-list { max-height: 24rem; }

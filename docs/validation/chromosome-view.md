@@ -108,13 +108,18 @@ record reachable and zooming recomputes the clusters.
 
 Search covers stable or locus identity, RefSeq product/isotype and anticodon,
 scan isotype and anticodon, effective anticodon, and replicon. Strand, record
-type, isotype, and anticodon have recorded-value selectors. A selected row
-remains in the list with an explicit retained label if later filters or
-candidate hiding would otherwise remove it. Rows and markers are buttons, and
-selection opens a separate tRNA detail with source/run identity, native
-coordinates, sequence and the annotation-versus-scan status. It never invents
-a RefSeq id or nearest-CDS join, calls a scan score a probability, or presents
-a genomic sequence as a mature or modified tRNA.
+type, isotype, and anticodon have recorded-value selectors. The isotype and
+anticodon selectors preserve the union of RefSeq and scan values instead of
+collapsing one source into the other. List and track use the same filtered
+population, so every displayed cluster has a reachable row; a selected row is
+the only deliberate exception and remains in both with an explicit retained
+label if later filters or candidate hiding would otherwise remove it. Rows and
+markers are buttons. Marker identity survives responsive reclustering, so a
+focused marker restores focus to the replacement marker that still contains at
+least one of its loci after resize. Selection opens a separate tRNA detail with
+source/run identity, native coordinates, sequence and the annotation-versus-scan
+status. It never invents a RefSeq id or nearest-CDS join, calls a scan score a
+probability, or presents a genomic sequence as a mature or modified tRNA.
 
 ### Replicon accessions are compared normalised
 

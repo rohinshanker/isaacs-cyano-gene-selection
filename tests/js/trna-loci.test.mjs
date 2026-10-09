@@ -10,6 +10,14 @@ import { FakeElement, withFakeDocument } from './fake-dom.mjs';
 const payload = JSON.parse(readFileSync(
   new URL('../../site/data/trna-loci-v1.json', import.meta.url),
 ));
+const appCss = readFileSync(new URL('../../site/css/app.css', import.meta.url), 'utf8');
+
+function detailFact(viewer, label) {
+  const facts = viewer.detail.querySelector('dl');
+  const termIndex = facts.children.findIndex((node) => node.textContent === label);
+  assert.notEqual(termIndex, -1, `${label} is absent from the tRNA detail`);
+  return facts.children[termIndex + 1].textContent;
+}
 
 test('published payload preserves 44 annotated loci and one distinct candidate', () => {
   assert.equal(validateTrnaPayload(payload, {
@@ -43,6 +51,10 @@ test('search and recorded-field filters preserve source-specific labels', () => 
   assert.equal(matchesTrnaFilters(fmet, { query: 'fmet', strand: '-' }), true);
   assert.equal(matchesTrnaFilters(ile2, { query: 'LAT' }), true);
   assert.equal(matchesTrnaFilters(ile2, { anticodon: 'CAT' }), true);
+  assert.equal(matchesTrnaFilters(ile2, { isotype: 'Ile2' }), true);
+  assert.equal(matchesTrnaFilters(ile2, { isotype: 'Ile' }), true);
+  assert.equal(matchesTrnaFilters(fmet, { isotype: 'fMet' }), true);
+  assert.equal(matchesTrnaFilters(fmet, { isotype: 'Met' }), true);
   assert.equal(matchesTrnaFilters(ile2, { strand: '-' }), false);
 });
 
@@ -68,7 +80,10 @@ test('overlap checks are inclusive and never join to a nearby CDS', () => {
 
 async function withTrnaDom(body) {
   const previous = { ResizeObserver: globalThis.ResizeObserver, CSS: globalThis.CSS };
-  globalThis.ResizeObserver = class { observe() {} };
+  globalThis.ResizeObserver = class {
+    constructor(callback) { this.callback = callback; }
+    observe() {}
+  };
   globalThis.CSS = { escape: (value) => value };
   const previousRect = FakeElement.prototype.getBoundingClientRect;
   FakeElement.prototype.getBoundingClientRect = () => ({ width: 600, left: 0, top: 0 });
@@ -100,8 +115,101 @@ test('viewer distinguishes loading, failure with retry, unavailable, and ready s
     } });
     assert.match(viewer.countSummary.textContent, /44 RefSeq-annotated loci/);
     assert.match(viewer.countSummary.textContent, /1 additional predicted pseudogene candidate/);
+    assert.equal(viewer.resultsSummary.textContent, '44 loci are shown.');
     assert.equal(viewer.list.children.length, 44, 'candidate is hidden by default');
+    viewer.filters.query = 'no such locus';
+    viewer.renderContent();
+    assert.equal(viewer.resultsSummary.textContent, '0 loci are shown.');
+    viewer.filters.query = 'M744_RS00070';
+    viewer.renderContent();
+    assert.equal(viewer.resultsSummary.textContent, '1 locus is shown.');
   });
+});
+
+test('viewer keeps RefSeq and scan isotype labels separate in filters and detail', async () => {
+  await withTrnaDom((document) => {
+    const host = new FakeElement('div');
+    document.body.append(host);
+    const viewer = new TrnaViewer(host);
+    viewer.update({ payload, fileState: 'ready', viewport: {
+      replicon: 'NZ_CP006471.1', from: 1, to: 2690418,
+    } });
+    const options = viewer.isotype.select.children.map((node) => node.textContent);
+    for (const label of ['Ile', 'Ile2', 'Met', 'fMet']) assert.ok(options.includes(label));
+
+    const fmet = payload.loci.find((locus) => locus.scanIsotype === 'fMet');
+    viewer.selectLocus(fmet);
+    assert.equal(detailFact(viewer, 'RefSeq isotype'), 'Met');
+    assert.equal(detailFact(viewer, 'Scan isotype'), 'fMet');
+
+    const ile2 = payload.loci.find((locus) => locus.scanIsotype === 'Ile2');
+    viewer.selectLocus(ile2);
+    assert.equal(detailFact(viewer, 'RefSeq isotype'), 'Ile');
+    assert.equal(detailFact(viewer, 'Scan isotype'), 'Ile2');
+  });
+});
+
+test('filtered tracks contain only reachable list loci and clusters focus a matching row', async () => {
+  await withTrnaDom((document) => {
+    const host = new FakeElement('div');
+    document.body.append(host);
+    const announcements = [];
+    const viewer = new TrnaViewer(host, { onAnnounce: (message) => announcements.push(message) });
+    viewer.update({ payload, fileState: 'ready', viewport: {
+      replicon: 'NZ_CP006471.1', from: 1, to: 2690418,
+    } });
+
+    viewer.filters.strand = '+';
+    viewer.renderContent();
+    const plusRows = new Set(viewer.list.querySelectorAll('.trna-row')
+      .map((row) => row.dataset.trnaId));
+    const plusMarkers = viewer.trackMarkers.querySelectorAll('.trna-marker');
+    for (const marker of plusMarkers) {
+      const ids = marker.dataset.trnaIds.split('\n');
+      assert.equal(ids.every((id) => plusRows.has(id)), true);
+      assert.equal(ids.some((id) => id.includes('M744_RS11570')), false);
+    }
+
+    viewer.filters.strand = '-';
+    viewer.renderContent();
+    const target = viewer.trackMarkers.querySelectorAll('.trna-marker')
+      .find((marker) => marker.dataset.trnaIds.includes('M744_RS11570'));
+    assert.ok(target, 'the filtered minus-strand cluster remains on the track');
+    assert.equal(target.dataset.trnaIds.split('\n').length, 3);
+    target.dispatch('click');
+    assert.equal(document.activeElement.hasClass('trna-row'), true);
+    assert.ok(target.dataset.trnaIds.split('\n').includes(document.activeElement.dataset.trnaId));
+    assert.match(announcements.at(-1), /first locus in the filtered list is focused/);
+  });
+});
+
+test('track marker focus survives the resize observer rerender', async () => {
+  await withTrnaDom((document) => {
+    const host = new FakeElement('div');
+    document.body.append(host);
+    const viewer = new TrnaViewer(host);
+    viewer.update({ payload, fileState: 'ready', viewport: {
+      replicon: 'NZ_CP006471.1', from: 1, to: 2690418,
+    } });
+    const original = viewer.trackMarkers.querySelector('.trna-marker');
+    const originalIds = original.dataset.trnaIds.split('\n');
+    original.focus();
+    viewer.resizeObserver.callback();
+    assert.notEqual(document.activeElement, original);
+    assert.equal(document.activeElement.hasClass('trna-marker'), true);
+    assert.equal(document.activeElement.isConnected, true);
+    assert.equal(document.activeElement.dataset.trnaIds.split('\n')
+      .some((id) => originalIds.includes(id)), true);
+  });
+});
+
+test('tRNA filters use an even stacked-label grid without narrow select columns', () => {
+  const rules = appCss.slice(appCss.indexOf('.trna-filters {'), appCss.indexOf('#length-view'));
+  assert.match(rules, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(rules, /\.trna-filters \.field-row \{\n  display: grid;\n  grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(rules, /\.trna-search-field \{ grid-column: 1 \/ -1; \}/);
+  assert.match(rules, /\.trna-filters select \{ width: 100%; min-width: 0; \}/);
+  assert.match(rules, /@media \(max-width: 600px\) \{\n  \.trna-filters \{ grid-template-columns: 1fr; \}\n  \.trna-search-field \{ grid-column: auto; \}/);
 });
 
 test('viewer selection is independent and retained across filters', async () => {

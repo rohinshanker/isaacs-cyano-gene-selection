@@ -111,9 +111,9 @@ export function matchesTrnaFilters(locus, filters = {}) {
   if (filters.strand && filters.strand !== 'all' && locus.strand !== filters.strand) return false;
   if (filters.kind && filters.kind !== 'all' && locus.kind !== filters.kind) return false;
   if (filters.isotype && filters.isotype !== 'all'
-    && (locus.refseqIsotype ?? locus.scanIsotype) !== filters.isotype) return false;
+    && ![locus.refseqIsotype, locus.scanIsotype].includes(filters.isotype)) return false;
   if (filters.anticodon && filters.anticodon !== 'all'
-    && (locus.refseqAnticodon ?? locus.scanAnticodon) !== filters.anticodon) return false;
+    && ![locus.refseqAnticodon, locus.scanAnticodon].includes(filters.anticodon)) return false;
   return true;
 }
 
