@@ -41,6 +41,7 @@ import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.j
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { STRAIN_FITNESS_TAB, StrainFitnessPanel } from './ui/strain-fitness.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
+import { TrnaViewer } from './ui/trna-viewer.js';
 import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
 import { metricHelp, functionCategoryHelp } from './core/metric-help.js';
@@ -624,6 +625,7 @@ let lengthExplorer = null;
 let regulatorySitesPanel = null;
 let strainFitnessPanel = null;
 let chromosomeView = null;
+let trnaViewer = null;
 let geneSequenceView = null;
 let workspaceResizer = null;
 let leftPanels = null;
@@ -1129,6 +1131,20 @@ function renderChromosomeView() {
   });
   // The toolbar exists once the view has rendered, so its section follows.
   chromosomeDataSources()?.update(dataSourcesState());
+  trnaViewer ??= new TrnaViewer(chromosomeView.trnaElement(), {
+    onReveal: (locus) => chromosomeView.revealCoordinate(
+      locus.replicon, locus.start, locus.end,
+    ),
+    onRetry: () => retryFile('trnaLoci'),
+    onAnnounce: announce,
+  });
+  const trnaFile = context.dataset.files?.trnaLoci;
+  trnaViewer.update({
+    payload: context.dataset.trnaLoci,
+    fileState: trnaFile?.state ?? FILE_STATE.ABSENT,
+    fileError: trnaFile?.error ?? null,
+    viewport: chromosomeView.trnaViewport(),
+  });
 }
 
 /**
@@ -2290,6 +2306,7 @@ function promotedFileKeys(view) {
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
   if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
+  if (view.panel === CHROMOSOME_TAB.id) keys.add('trnaLoci');
   if (view.panel === STRAIN_FITNESS_TAB.id) keys.add('strainFitness');
   if (view.pinnedId) {
     for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
@@ -2859,6 +2876,7 @@ async function boot() {
     // focus on the checkbox, so this records the choice and writes the link
     // rather than re-rendering over the top of it.
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('chromosome', visible),
+    onViewportChange: (viewport) => trnaViewer?.setViewport(viewport),
     onDetailJump: () => jumpToDetail(),
     onAnnounce: announce,
   }, { organism });

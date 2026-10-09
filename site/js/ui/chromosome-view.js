@@ -657,6 +657,12 @@ export class ChromosomeView {
     viewerInfoContent.append(this.markerNote, this.trackSummaries, this.evidenceNote);
     this.viewerInfo.append(viewerInfoSummary, viewerInfoContent);
 
+    // The tRNA layer is a separate noncoding population with its own selection,
+    // filters, list, and detail. The app mounts it here; it never enters the
+    // CDS canvas's pin, shortlist, colour, or filter model.
+    this.trnaHost = document.createElement('div');
+    this.trnaHost.className = 'chromosome-trna';
+
     // The pinned gene's sequence close-up sits at the foot of the figure, by
     // owner decision of 2026-09-30, below the tracks and their key. The app
     // mounts its own view here through `sequenceElement`, as it does the legend.
@@ -664,7 +670,8 @@ export class ChromosomeView {
     this.sequenceHost.className = 'chromosome-sequence';
 
     this.figure.append(toolbar, this.windowReadout, this.canvasHost,
-      this.instructions, this.detailJump, this.legendHost, this.viewerInfo, this.sequenceHost);
+      this.instructions, this.detailJump, this.legendHost, this.viewerInfo,
+      this.trnaHost, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -705,6 +712,37 @@ export class ChromosomeView {
   /** The host for the pinned gene's sequence close-up, at the foot of the figure. */
   sequenceElement() {
     return this.sequenceHost;
+  }
+
+  /** Host for the independent noncoding tRNA layer. */
+  trnaElement() {
+    return this.trnaHost;
+  }
+
+  /** Give the tRNA layer the primary coordinate window without sharing selection state. */
+  trnaViewport() {
+    if (!this.model?.verified) return null;
+    const track = this.primaryTrack();
+    const window = this.windowFor(track);
+    return { replicon: track.accession, from: window.from, to: window.to };
+  }
+
+  /** Centre a native coordinate in its replicon's existing chromosome window. */
+  revealCoordinate(accession, start, end = start) {
+    if (!this.model?.verified) return false;
+    const track = this.model.tracks.find((entry) => entry.accession === accession);
+    if (!track) return false;
+    const window = this.windowFor(track);
+    const centre = Math.round((start + end) / 2);
+    if (centre < window.from || centre > window.to) {
+      const span = window.to - window.from + 1;
+      const from = Math.round(centre - (span - 1) / 2);
+      this.windows.set(track.accession,
+        clampWindow({ from, to: from + span - 1 }, track.lengthBp));
+      this.renderSummaries();
+      this.draw();
+    }
+    return true;
   }
 
   syncControls() {
@@ -878,6 +916,7 @@ export class ChromosomeView {
       item.append(name, facts);
       this.trackSummaries.append(item);
     }
+    this.handlers.onViewportChange?.(this.trnaViewport());
   }
 
   resize() {

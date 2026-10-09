@@ -51,7 +51,7 @@ export const DATA_PARAM = 'data';
  */
 export const STUDY_LAYER_KEYS = Object.freeze([
   'functionCategories', 'sourceDerivedCategories', 'candidateEvidence', 'goIeaEssentiality',
-  'tssEvidence', 'regulatoryTss',
+  'tssEvidence', 'trnaLoci', 'regulatoryTss',
 ]);
 
 /** The names a record keeps in browser storage, under its namespace. */

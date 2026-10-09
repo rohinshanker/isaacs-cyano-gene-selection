@@ -61,6 +61,7 @@ export const DATA_FILES = Object.freeze([
     'parent-reference codon-space coordinates', { organismField: 'referenceCodonPca' }),
   file('excluded', 'excluded.json', 2, 'excluded loci'),
   file('tssEvidence', 'tss_evidence.json', 3, 'start sites'),
+  file('trnaLoci', 'trna-loci-v1.json', 3, 'tRNA loci'),
   file('expressionLayers', 'expression_layers.json', 3, 'expression layers'),
   file('goIeaEssentiality', 'go-iea-essentiality-v1.json', 3, 'GO IEA essentiality context',
     { needs: ['candidateEvidence'] }),

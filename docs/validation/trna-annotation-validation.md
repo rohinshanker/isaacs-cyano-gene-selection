@@ -282,3 +282,35 @@ test that reruns the comparison against the checked-in
 44/44 concordance (including pseudogene-flag agreement) and species-table
 parity. That regression test executes after a normal `tools/fetch_genome.sh`
 fetch — it only skips if `data/raw/` has not been fetched at all.
+
+## Published viewer layer
+
+`tools/build_trna_loci.py` turns the checked-in comparison and the pinned
+genome FASTA into `site/data/trna-loci-v1.json`. It does not run tRNAscan-SE,
+read another source, or join a tRNA to a CDS. The payload contains exactly 44
+coordinate-concordant RefSeq loci and one separately typed
+`scan-only-candidate`; the candidate's stable id is the pinned run id plus its
+replicon, native inclusive coordinates, and strand, and its `locusTag` is
+`null`. The builder refuses changed comparison counts or a non-concordant
+RefSeq row.
+
+Each record repeats the assembly, run/source identity, native 1-based inclusive
+coordinates, length, strand, RefSeq and scan fields, and the genomic locus
+sequence in transcription orientation. The detail consumer must keep `Ile2`
+and `fMet` as scan labels and may show the model-effective anticodon only as a
+separate field. `Undet`/`NNN` are rendered as undetermined, never as an amino
+acid or known decoding assignment. This layer is not an input to tAI, CDS
+filters, recoding models, protein pins, or the shortlist.
+
+Rebuild after the pinned FASTA is present, then rebuild the content manifest:
+
+```sh
+.venv/bin/python tools/build_trna_loci.py
+.venv/bin/python tools/build_data_manifest.py build
+```
+
+`tests/test_build_trna_loci.py` pins reproducibility, transcription orientation,
+all 45 identities and lengths, both strands, the candidate fields, and the
+`Ile2`/`fMet` cases. `tests/js/trna-loci.test.mjs` independently validates the
+published browser schema, filtering, overlap grouping, marker clustering, and
+loading/error/unavailable/selection states.

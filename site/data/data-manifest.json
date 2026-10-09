@@ -64,6 +64,10 @@
       "bytes": 612250,
       "sha256": "d2c793be21bb558df0309205ccea5423a1a3c708b6feb4d3567b2f2c0a463c81"
     },
+    "trna-loci-v1.json": {
+      "bytes": 27266,
+      "sha256": "ad1ccdcd250f84113dc42ba9df7dd60005a6d5bc5a11dac0b8f4abf9beddbc0c"
+    },
     "tss_evidence.json": {
       "bytes": 1193977,
       "sha256": "5bc931e453064411611a504271e99890452f677fcd09752a819e863e08535a1a"

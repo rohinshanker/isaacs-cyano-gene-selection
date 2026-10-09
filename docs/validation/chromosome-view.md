@@ -85,6 +85,37 @@ breakpoint rule hides it once the sticky side rail begins. See
    selected colour draws as an empty outline, never as a colour that would imply
    a measurement.
 
+## The independent tRNA layer
+
+The Chromosome/Gene tab mounts one optional noncoding layer below the CDS
+viewer. UTEX 2973 publishes `trna-loci-v1.json`; an organism without that
+declared layer gets a truthful unavailable state and does not request the file.
+Loading, integrity or validation failure with retry, and ready are distinct
+states.
+
+The tRNA track reads the primary chromosome's current coordinate window, so a
+chromosome pan or zoom changes its marker grouping and selecting a list row or
+single marker can centre that native locus. It otherwise shares no state with
+the CDS viewer: tRNA selection does not pin, preview, shortlist, filter, or
+recompute a protein-coding gene. Its own track toggle controls only tRNA marks.
+
+The 44 RefSeq loci are visible by default. The one scan-only predicted
+pseudogene candidate is counted in the heading but is hidden behind an explicit
+checkbox. RefSeq loci use circular markers; a marker containing the candidate
+uses a diamond as well as an accessible label. Markers that overlap at the
+current width become a numbered cluster, while the searchable list keeps every
+record reachable and zooming recomputes the clusters.
+
+Search covers stable or locus identity, RefSeq product/isotype and anticodon,
+scan isotype and anticodon, effective anticodon, and replicon. Strand, record
+type, isotype, and anticodon have recorded-value selectors. A selected row
+remains in the list with an explicit retained label if later filters or
+candidate hiding would otherwise remove it. Rows and markers are buttons, and
+selection opens a separate tRNA detail with source/run identity, native
+coordinates, sequence and the annotation-versus-scan status. It never invents
+a RefSeq id or nearest-CDS join, calls a scan score a probability, or presents
+a genomic sequence as a mature or modified tRNA.
+
 ### Replicon accessions are compared normalised
 
 `genes.json` writes `NZ_CP006471.1`; the Tan 2018 extract writes `CP006471`.

@@ -31,6 +31,7 @@ import { validateCandidateEvidence } from './candidate-evidence.js';
 import { joinFunctionCategories } from './function-categories.js';
 import { validateSourceDerivedCategories } from './source-derived-categories.js';
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
+import { validateTrnaPayload } from './trna-loci.js';
 import { validateCodonPcaReference } from './codon-pca-reference.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
@@ -212,6 +213,7 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     excluded: [],
     lengthCohorts: null,
     regulatoryTss: null,
+    trnaLoci: null,
     strainFitness: null,
     candidateEvidence: null,
     goIeaEssentiality: null,
@@ -442,6 +444,16 @@ export const DATA_APPLIERS = Object.freeze({
     dataset.regulatoryTss = regulatoryTss;
   },
 
+  trnaLoci(dataset, trnaLoci) {
+    if (trnaLoci) {
+      validateTrnaPayload(trnaLoci, {
+        organismId: dataset.organism?.id ?? null,
+        assembly: dataset.meta.genome?.accession ?? null,
+      });
+    }
+    dataset.trnaLoci = trnaLoci;
+  },
+
   // Whole-strain measurements. The file declares the organism and assembly it
   // belongs to and is checked against this dataset's, because the layer is
   // organism-neutral and so nothing else would catch a file published into the
@@ -530,7 +542,7 @@ export const TIER_LEAD_BYTES = 128 * 1024;
  * whose layer failed without reporting it.
  */
 const LEGACY_FAILURE_ORDER = Object.freeze([
-  'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
+  'lengthCohorts', 'regulatoryTss', 'trnaLoci', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
   'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca',
   'codonPcaReference', 'excluded', 'strainFitness',
 ]);

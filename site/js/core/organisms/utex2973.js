@@ -152,6 +152,10 @@ export const UTEX2973 = {
         + 'cultures per condition. They describe start-site initiation, not whole-gene '
         + 'RNA abundance; a gene can have multiple separately regulated TSSs.',
     },
+    trnaLoci: {
+      fileLabel: 'UTEX 2973 tRNA loci',
+      label: 'UTEX 2973 tRNA loci',
+    },
     regulatoryTss: {
       intro: 'Tan et al. measured transcription initiation in UTEX 2973. These 2,333 '
         + 'antisense, internal, and orphan or novel sites are separate from the gene-linked TSSs '

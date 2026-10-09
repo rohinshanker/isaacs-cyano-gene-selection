@@ -1029,6 +1029,161 @@ input[type="range"] { width: 100%; }
 .chromosome-unavailable p { margin: 0 0 0.35rem; }
 .chromosome-unavailable ul { margin: 0; padding-left: 1.1rem; font-size: 0.85rem; }
 
+/* Independent noncoding tRNA layer -------------------------------------- */
+.chromosome-trna { margin-top: 0.85rem; }
+.trna-viewer {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+.trna-heading-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.trna-heading-row h3 { margin: 0; }
+.trna-count-summary,
+.trna-results-summary,
+.trna-track-caption { margin: 0; color: var(--ink-muted); font-size: 0.82rem; }
+.trna-status { padding: 0.6rem 0; }
+.trna-status p { margin: 0 0 0.5rem; }
+.trna-ready { display: grid; gap: 0.65rem; }
+.trna-visibility { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
+.trna-filters {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) repeat(2, minmax(8rem, 1fr));
+  gap: 0.5rem 0.75rem;
+  align-items: end;
+}
+.trna-filters .field-row { width: 100%; }
+.trna-filters input,
+.trna-filters select { width: 100%; }
+.trna-track-figure {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.65rem 0.7rem;
+  background: var(--surface-sunken);
+}
+.trna-track {
+  position: relative;
+  height: 2.25rem;
+  margin-top: 0.35rem;
+}
+.trna-track-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1.05rem;
+  border-top: 2px solid #536774;
+}
+.trna-track-markers { position: absolute; inset: 0; }
+.trna-marker {
+  position: absolute;
+  top: 0.46rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  min-width: 1.15rem;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 2px solid #244f6c;
+  border-radius: 50%;
+  background: #d9edf7;
+  color: #17394e;
+  font-size: 0.67rem;
+  font-weight: 700;
+  line-height: 1;
+  z-index: 1;
+}
+.trna-marker:hover,
+.trna-marker:focus-visible { z-index: 2; transform: translateX(-50%) scale(1.15); }
+.trna-marker.has-candidate {
+  border-radius: 0;
+  border-color: #8a4c13;
+  background: #fff0d8;
+  transform: translateX(-50%) rotate(45deg);
+}
+.trna-marker.has-candidate > span { display: inline-block; transform: rotate(-45deg); }
+.trna-marker.has-candidate:hover,
+.trna-marker.has-candidate:focus-visible {
+  transform: translateX(-50%) rotate(45deg) scale(1.15);
+}
+.trna-marker.has-candidate.is-cluster { border-radius: 0.2rem; }
+.trna-track-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+.trna-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 0.4rem;
+  max-height: 20rem;
+  overflow: auto;
+}
+.trna-row {
+  width: 100%;
+  min-height: 3.2rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  display: grid;
+  gap: 0.2rem;
+}
+.trna-row:hover { border-color: #7794a7; }
+.trna-row.is-selected { border-color: #9f2f2f; box-shadow: inset 3px 0 #9f2f2f; }
+.trna-row strong { overflow-wrap: anywhere; }
+.trna-row > span { color: var(--ink-muted); font-size: 0.78rem; }
+.trna-candidate-badge,
+.trna-retained { font-weight: 650; }
+.trna-candidate-badge { color: #7d430c !important; }
+.trna-retained { color: #8a2c2c !important; }
+.trna-empty { margin: 0; padding: 0.75rem; border: 1px dashed var(--line); }
+.trna-detail {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.8rem;
+  background: var(--surface-sunken);
+}
+.trna-detail h4,
+.trna-detail h5 { margin: 0 0 0.45rem; overflow-wrap: anywhere; }
+.trna-detail h5 { margin-top: 0.8rem; }
+.trna-detail-status { margin: 0 0 0.65rem; }
+.trna-facts {
+  display: grid;
+  grid-template-columns: minmax(9rem, auto) minmax(0, 1fr);
+  gap: 0.3rem 0.75rem;
+  margin: 0;
+}
+.trna-facts dt { color: var(--ink-muted); font-size: 0.8rem; }
+.trna-facts dd { margin: 0; overflow-wrap: anywhere; }
+.trna-sequence {
+  display: block;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+.trna-sources { margin: 0; }
+
+@media (max-width: 600px) {
+  .trna-filters { grid-template-columns: 1fr; }
+  .trna-facts { grid-template-columns: 1fr; gap: 0.1rem; }
+  .trna-facts dd { margin-bottom: 0.35rem; }
+  .trna-list { max-height: 24rem; }
+}
+
 #length-view { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
 .length-summary { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .length-chart { border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; background: var(--surface); }
