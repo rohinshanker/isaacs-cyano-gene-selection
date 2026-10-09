@@ -80,12 +80,21 @@ beside Scale at 375 px and stranded Colour by above it. See
 [chromosome-view.md](chromosome-view.md).
 
 An info button sits immediately beside each **Scale** label and remains enabled
-when the Scale select is disabled. Its popover is fixed to viewport coordinates,
+when the Scale select is disabled. Label and icon share `.scale-label-row`, an
+inline flex row with centered items. Both field labels reserve the icon's height,
+so the Colour by and Scale selects share a baseline below 560 px as well as
+above it. The icon stays on the label line when the fields stack; it must never
+be a third line between label and select. Its popover is fixed to viewport coordinates,
 clamped to 16 px side margins, and placed above the trigger when there is not
 room below. At 375 px its long symmetric-log copy must remain wholly within the
 viewport; the same control and placement rules apply on the Chromosome/Gene
 tab. Hover, focus, click/touch, Escape, focus departure, and an outside pointer
 press are the supported open/dismiss paths.
+
+The shared scatter-map toolbar has a 0.5 rem bottom margin. This leaves a small
+gap above the plot even when the view buttons wrap. Search results and filter
+status stay in normal flow between toolbar and canvas; keep this spacing on the
+toolbar rather than adding it to every canvas or individual button.
 
 The designer, shortlist help, and provenance use native disclosures so support
 content does not dominate the default page. Wide tables, including the opened
@@ -143,3 +152,17 @@ filenames; an open designer with results; and a long selected-gene detail. Verif
 - `document.documentElement.scrollWidth <= innerWidth` in every state.
 
 The static source-order checks live in `tests/js/layout.test.mjs`.
+The real-browser alignment, spacing, popover and shared-map interaction checks
+use the existing machine-wide Playwright CLI, without a project dependency:
+
+```sh
+playwright-cli -s=<unique-session> open 'http://127.0.0.1:<task-port>/site/?uiArtifacts=<absolute ignored artifact directory>'
+playwright-cli -s=<unique-session> run-code --filename=tools/ui/check_toolbar_layout.js
+```
+
+Start the server from the assigned worktree. The check renders both toolbars at
+360, 375, 559/560, 768, 959/960, 1239/1240, 1280 and 1440 px, checks element
+centers and select baselines, and saves screenshots. It also checks hover,
+keyboard and pointer disclosure paths, disabled and enabled Scale, changing
+explanations, viewport clamping, shared scatter views, zoom/pan/reset, and search
+and filter content between toolbar and plot. Unexpected browser errors fail it.

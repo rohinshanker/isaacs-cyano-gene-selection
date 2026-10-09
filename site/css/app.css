@@ -231,12 +231,7 @@ pre {
    load read as fluid again. */
 .load-gene { fill: #dfe5ea; }
 .load-gene.is-on { fill: var(--gene); }
-/* Activity changes no completed extent or number; it only marks ongoing work. */
-.load-progress.is-activity .load-chromosome { animation: load-activity-pulse 1.2s ease-in-out infinite alternate; }
-@keyframes load-activity-pulse { from { opacity: 0.45; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .load-progress.is-activity .load-chromosome { animation: none; opacity: 0.65; }
-}
+/* Activity is named in the status; the bar stays at full opacity in every phase. */
 
 /* After reveal the same chromosome presentation continues in the fixed header
    slot beneath its actions. The slot, buttons and header geometry do not move
@@ -296,14 +291,8 @@ pre {
   transform: scaleX(0);
   transform-origin: left center;
 }
-.dataset-color-progress.is-activity .dataset-color-progress-meter {
-  animation: load-activity-pulse 1.2s ease-in-out infinite alternate;
-}
 .dataset-color-progress.is-error { border-color: var(--danger); }
 .dataset-color-progress-retry { min-height: 28px; padding: 0.1rem 0.6rem; }
-@media (prefers-reduced-motion: reduce) {
-  .dataset-color-progress.is-activity .dataset-color-progress-meter { animation: none; }
-}
 
 /* Evidence whose file has not landed, or could not be loaded: never drawn as
    absent, and never as a value. */
@@ -784,7 +773,7 @@ input[type="range"] { width: 100%; }
   .metric-help-list > div { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
 }
 /* Optional axis controls precede colour/search and view controls. */
-.map-toolbar { display: flex; flex-direction: column; gap: 0.5rem; }
+.map-toolbar { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
 .map-toolbar-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .axis-chooser { padding: 0.65rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-sunken); }
 .axis-chooser > .field-row { flex: 1 1 11rem; }
@@ -828,6 +817,11 @@ input[type="range"] { width: 100%; }
   margin-bottom: 0;
 }
 .colour-scale-row > .field-row > label { white-space: nowrap; }
+.colour-scale-row > .field-row > label,
+.scale-label-row { display: inline-flex; align-items: center; min-height: 1.35rem; }
+.scale-label-row { gap: 0.4rem; }
+.scale-label-row > label { white-space: nowrap; }
+.scale-label-row > .info-popover { align-self: center; }
 /* A column flex basis would be read as a height, so the stacked select sizes
    itself from the column it is in. */
 .colour-scale-row > .field-row > select { flex: none; width: 100%; }
