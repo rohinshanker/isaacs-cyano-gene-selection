@@ -8,6 +8,18 @@
 
 ## Current State
 
+Owner follow-up, 2026-10-09: explicitly reopen/retain this ticket while the owner
+investigates the Salis Lab RBS Calculator more thoroughly to obtain a more
+complete repository. The canonical ticket was already open when this request
+arrived; retain it in the live queue. The next input is the owner's repository
+or access findings, followed by a pinned completeness/runtime assessment. Do not
+close this work because the public harness is incomplete or the generic viewer
+is finished.
+
+The owner subsequently confirmed that **RBS Calculator is the ticket meant by
+the missing-full-code reopening request**. Its status remains open; executable
+model access and exploratory cross-organism evaluation are unfinished work.
+
 Owner decisions, 2026-10-09: assess current accessible versions rather than
 restricting evaluation to v1.0. The current public v2.1.1 harness imports private
 Salis-lab code absent from its repository; the owner reports no existing code,
@@ -85,17 +97,43 @@ boundary. No model assignment was requested for this ticket.
 External scientific evidence and any licence questions follow the
 [Claude Science handoff](../../validation/claude-science-handoff.md). Code
 inspection and input inventory are independent of CS-1; adoption of a biological
-interpretation waits on the relevant evidence and intake check. This ticket is
-planning only; no dispatch or implementation has started.
+validation claim waits on the relevant evidence and intake check. The owner's
+2026-10-09 rough-prediction scope permits explicitly exploratory assessment
+without first establishing CS-1. Source/runtime
+assessment has begun, but no RBS model has been executed or integrated.
+
+## Rough cross-organism prediction scope, 2026-10-09
+
+Investigate transfer from related cyanobacteria, E. coli and other bacteria as
+requested by the owner. Once the owner supplies usable code/access, score native
+UTEX start-region sequences with a pinned model and explicit host/rRNA settings.
+Conserved PCC 7942/PCC 6301 start-region alignments can provide candidate context;
+protein orthology alone does not transfer an RBS or its activity. Keep default
+E. coli and proposed UTEX parameter scenarios visibly separate. An annotated 16S
+boundary is still not proof of the mature anti-SD input.
+
+The retrieved Sebesta & Peebles study (PCC 6803) reports poor RBS Calculator
+relative-expression predictions. It supports trying a computational comparison,
+but cautions against treating cross-species scores as reliable rates. Its tested
+versions do not establish v1.0 or UTEX accuracy. Source, located quote and checksum
+are S1 in the [shared transfer assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09).
+
+Possible output is an exploratory initiation-context candidate and raw score,
+with any binding interval emitted only if the selected model actually supplies
+one. Compare ranking against independent translation/reporter evidence where
+available; transcript abundance is not a translation benchmark. Apply the shared
+alignment, controls, evidence labels and recoding rules. Missing validation
+does not forbid a rough candidate, but missing executable code still prevents
+a genuine RBS Calculator run. No SD-only substitute is authorized under its name.
 
 ## Dependencies and assessment
 
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
 | D1 | Clarify desired output and display below | Define the feature and evaluation target |
-| D2 | Pin and inspect code, output contracts, runtime dependencies, and code/dependency licences. The two named blockers are the Python 2 port and the unbundled, separately licensed NuPACK dependency | Decide reuse, adaptation effort, and integration architecture |
+| D2 | Receive the owner's more complete repository/access findings, then pin and inspect code, output contracts, runtime dependencies, and code/dependency licences. The assessed v2.1.1 harness lacks its private `DNAc` implementation; v1.0 instead needs a Python 2 port and unbundled, separately licensed NuPACK | Decide reuse, adaptation effort, and integration architecture |
 | D3 | Establish reliable input sequences, start-site annotations, strand/coordinate mapping, and required model parameters | Run meaningful predictions |
-| D4 | Scientific applicability evidence (CS-1) and an approved benchmark where needed | Interpret predictions and set display thresholds |
+| D4 | A stated exploratory evaluation with source-host limits; scientific applicability evidence (CS-1) before any validated-UTEX claim | Interpret raw scores conservatively and define display criteria without inventing calibrated confidence |
 | D5 | Owner-approved proposal, provenance contract, and required tests/rendered checks | Add outputs to the gene visualizer |
 
 When activated, assess whether more robust data or annotations are mandatory or
@@ -134,12 +172,14 @@ That metric still requires its own definition and evidence decisions.
    from original sequence? Should they run on demand or be precomputed?
 5. What evidence and accuracy justify display, and should insufficiently validated
    predictions be available as an explicitly exploratory layer?
-6. Is assessment restricted to v1.0, or may it compare newer accessible versions
-   or alternatives if v1.0 is unsuitable? Which runtime/compute budget is acceptable?
-   Q7, raised by the 2026-09-30 return; unanswered: "Is porting v1.0 worth it, or
-   would you rather the assessment consider the current Salis-lab version or a
-   different initiation model? Your clarifying question 6 asks this; the licence and
-   runtime findings now give it a cost side".
+   **Partly answered 2026-10-09:** investigate very rough cross-organism
+   predictions; native UTEX validation is not a prerequisite for candidate
+   assessment. Display thresholds and measured-performance claims remain unset.
+6. Version scope answered 2026-10-09: assess current accessible versions rather
+   than restricting the assessment to v1.0; local computation is authorized where
+   supported. This also answers the newer-version option in the returned Q7.
+   The owner is investigating a more complete Salis Lab repository; no specific
+   implementation, v1.0 port, substitute model or compute budget is selected.
 7. Which additional data or annotation gaps should be prioritized if needed, and
    is experimental validation in scope?
 
@@ -156,11 +196,17 @@ That metric still requires its own definition and evidence decisions.
 
 ## Verification
 
-Ticket creation verified 2026-09-30: required fields, dependencies, local links,
-live index entry, and CS-1 queue row checked; `git diff --check` passed.
-Repository gates passed: `npm test` (659 tests), pytest (332 passed, 1 skipped,
-24 subtests passed), and contract validation (96 passed, 0 failed, 1 declared
-skip). No RBS prediction or visible UI is implemented or validated in this pass.
+Cross-organism follow-up: owner confirmed the RBS ticket identity; the transfer
+proposal and PCC 6803 limitation link to mechanically verified S1 in the shared
+assessment. Ticket remains open. Current source/link checks and repository gates
+are recorded in [the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+
+Owner follow-up verified 2026-10-09 by `cyano-regulatory-sites`: open filename,
+H1/status, local links, live index entry, retained CS-1 row and repository-review
+dependency checked; `git diff --check` passed. Repository gates passed:
+`npm test` (1,415 passed), pytest (938 passed, 1 skipped, 36 subtests passed),
+and contract validation (119 passed, 0 failed, 1 declared skip). This update
+changes ticket documentation only; it runs no RBS model and changes no UI.
 
 Future implementation: reproducible pinned-code evaluation; `npm test`,
 `.venv/bin/python -m pytest -q`, and `.venv/bin/python tools/validate_contract.py`.
@@ -169,6 +215,10 @@ including unsupported, uncertain, and missing predictions and recoding states
 if those are included in the approved scope.
 
 ## Cleanup
+
+Keep this ticket open during the owner's repository investigation and the
+remaining model assessment. Missing implementation access is an unresolved
+dependency, not a completed assessment or reason to remove the ticket.
 
 On resolution, rename the ticket/H1 to resolved and record final validation.
 Distill reusable prediction, evidence, coordinate, and validation contracts into
