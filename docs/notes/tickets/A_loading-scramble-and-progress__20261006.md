@@ -72,6 +72,19 @@ coordinator.
 
 ## Verification
 
+Independent loading audit retained: LOAD-R1 late failure hides Retry; LOAD-R2
+incomplete dependent/shared-control refresh; LOAD-R3 stale source-operation
+feedback; LOAD-R4 missing multi-file category dependencies; LOAD-R5 wrong
+implicit traffic default deletes an explicit filter. R1/R3/R4 are confirmed
+addressed by `ba6f1fc`. R2 and R5 are addressed in the coordinator's current
+repair using shared-control synchronization and `defaultTrafficCandidate`;
+final independent confirmation remains open. The persistent real-app check
+`tools/ui/check_color_source_following.js` passes all four required widths with
+fresh documents, preserves the exact explicit RNA bounds and removes only the
+prior traffic-owned CAI threshold. Twenty-one focused tests pass. Final combined
+gates and review still precede closure. The separate pointer-only canvas change
+was removed; General's reviewed `5fdaaa9` pointer closure/code is preserved.
+
 Final branch verification: `npm test` passed 1,348; `.venv/bin/python -m
 pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
 tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,

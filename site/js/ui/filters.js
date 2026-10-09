@@ -79,9 +79,9 @@ export function followColourTrafficState({
   if (!enabled || !candidates.some((metric) => metric.key === colorKey)) {
     return { trafficKey, filters };
   }
-  // A null key means the first candidate is in effect. Its threshold is still
-  // stored under that concrete key and must be removed when colour moves away.
-  const previousKey = trafficKey ?? candidates[0]?.key ?? null;
+  // A null key follows the same safe native/proxy default as the traffic panel.
+  // Candidate order alone must not remove a separate, explicitly added filter.
+  const previousKey = trafficKey ?? defaultTrafficCandidate(candidates)?.key ?? null;
   if (previousKey === colorKey) return { trafficKey, filters };
   const nextFilters = { ...filters };
   if (previousKey) delete nextFilters[previousKey];

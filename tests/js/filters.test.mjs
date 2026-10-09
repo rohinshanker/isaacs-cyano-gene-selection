@@ -128,7 +128,9 @@ test('clearing filters also clears the remembered traffic-metric choice', () => 
 });
 
 test('following colour removes a threshold on the implicit default traffic metric', () => {
-  const candidates = [metric('initiation'), metric('protein')];
+  const candidates = [metric('initiation', {
+    family: 'Expression', provenance: { isTargetOrganism: true },
+  }), metric('protein', { family: 'Expression', provenance: { isTargetOrganism: true } })];
   const unrelated = { min: 0, max: 1, includeMissing: true };
   const result = followColourTrafficState({
     enabled: true,
@@ -138,6 +140,37 @@ test('following colour removes a threshold on the implicit default traffic metri
   }, candidates);
   assert.equal(result.trafficKey, 'protein');
   assert.deepEqual(result.filters, { cai: unrelated });
+});
+
+test('colour following uses the safe proxy default and preserves explicit borrowed filters', () => {
+  const rna = metric('expression', {
+    family: 'Expression', provenance: { isTargetOrganism: false },
+  });
+  const protein = metric('protein', {
+    family: 'Expression', provenance: { isTargetOrganism: false },
+  });
+  const cai = metric('cai', { family: 'Translation' });
+  const candidates = [rna, protein, cai];
+  const explicitRna = { min: 100, max: 1000000, includeMissing: false };
+  const filters = { expression: explicitRna, cai: { min: 0.7, max: 1, includeMissing: true } };
+  const result = followColourTrafficState({
+    enabled: true, colorKey: 'protein', trafficKey: null, filters,
+  }, candidates);
+  assert.equal(result.trafficKey, 'protein');
+  assert.deepEqual(result.filters, { expression: explicitRna });
+  assert.ok(filters.cai, 'input state is not mutated');
+});
+
+test('a borrowed-only menu has no implicit threshold to delete', () => {
+  const rna = metric('expression', {
+    family: 'Expression', provenance: { isTargetOrganism: false },
+  });
+  const filters = { expression: { min: 100, max: 1000000, includeMissing: false } };
+  const result = followColourTrafficState({
+    enabled: true, colorKey: 'expression', trafficKey: null, filters,
+  }, [rna]);
+  assert.deepEqual(result.filters, filters);
+  assert.equal(result.trafficKey, 'expression');
 });
 
 test('following colour leaves state alone for a non-activity colour', () => {

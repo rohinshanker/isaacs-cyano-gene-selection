@@ -2433,6 +2433,7 @@ async function renderSelectedColorMetric(key) {
   // source. Resolve that relationship before recomputing the mask and every
   // shared control so the map and chromosome paths retain identical semantics.
   followColourForTraffic();
+  syncSharedControls();
   renderAll();
 }
 
