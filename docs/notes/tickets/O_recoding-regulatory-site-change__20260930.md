@@ -5,9 +5,22 @@
   types and evidence requirements before choosing or implementing the metric.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-09
 
 ## Current State
+
+Owner direction, 2026-10-09: investigate very rough regulatory candidates
+transferred from other cyanobacteria, E. coli and other prokaryotes. The
+[selected-method transfer assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09)
+now records routes for every selected method. These may become exploratory
+inputs to this metric, with source host, native sequence and mapping provenance.
+This research request does not choose the metric's unit, aggregation, coverage
+threshold or implementation. Retain experimental, homology-derived and model-only
+evidence separately; recompute each method on original and recoded sequence under
+identical settings. Report changed predictions separately from functional effects,
+and no-hit/unevaluated regions separately from unchanged sites. Original donor
+coordinates stay donor-only; any inferred UTEX interval requires its own explicit
+alignment/placement contract.
 
 The owner intends to add this metric once enough data has been collected. This
 ticket records the idea and questions for a later discussion; it does not
@@ -90,12 +103,11 @@ ticket need not finish before this metric can proceed. Research routing follows
 
 ## Verification
 
-Ticket creation verified 2026-09-30: dependency links, required fields, unanswered
-questions, and the live index entry checked; `git diff --check` passed. Repository
-gates passed: `npm test` (659 tests), `.venv/bin/python -m pytest -q` (332 passed,
-1 skipped, 24 subtests passed), and `.venv/bin/python tools/validate_contract.py`
-(96 passed, 0 failed, 1 declared skip). No code, data, or visible UI change was
-made in this pass.
+Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
+open status, retained metric-definition decisions, local links and live queue
+verified; current passing repository gates are recorded in
+[the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+No metric implementation, dataset or UI changed.
 
 Future implementation: run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`; use the UI render/inspect/repair

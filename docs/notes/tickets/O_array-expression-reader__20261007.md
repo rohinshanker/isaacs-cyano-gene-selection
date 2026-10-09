@@ -1,4 +1,4 @@
-# O_array-expression-reader__20261007 — Open
+# O_array-expression-reader__20261007 — Open (reviewed by rohin)
 
 - **Scope:** An array reader for `tools/ingest_expression.py` and the separate
   "array" platform listing in Data Sources, for the seven PCC 7942 microarray

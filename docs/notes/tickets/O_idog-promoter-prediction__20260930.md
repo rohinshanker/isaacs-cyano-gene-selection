@@ -5,12 +5,18 @@
   Assess additional data and annotation requirements before proposing integration.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-02
+- **Updated:** 2026-10-09
 - **Requested future models:** Mythos 5.1 / Fable 5.1. Reserved for future assessment;
   neither availability nor a provider/transport identifier is assumed. Confirm
   routing when work is activated; do not dispatch or substitute a model now.
 
 ## Current State
+
+Owner direction, 2026-10-09: record ways to transfer other-organism evidence for
+very rough UTEX regulatory predictions. This authorizes the source-based planning
+below; it does not release the existing hold on running/adapting iDOG. The ticket
+remains open. The owner's missing-full-code reopening request was confirmed to
+refer to RBS Calculator, which also remains open.
 
 Owner supplied [jayman1466/iDOG](https://github.com/jayman1466/iDOG), pinned at
 commit `9d71187f0b2eb27ee681918927e12850470a0688` (2022-04-01, head of `master`),
@@ -46,12 +52,11 @@ shipped only as bytecode) establishes what the tool does:
 
 **Design and location prediction are different problems with different labels,
 and stay separate here.** This ticket's title and CS-1 are both about location
-prediction while the owner's interest is design, so a future reader going by the
-title alone will take the wrong scope. Predicting the strength of a candidate
-promoter needs sequence-activity pairs; locating promoters in the UTEX 2973 genome
-needs positional labels, and this repository's only labelled positional evidence
-is Tan 2018 at a single condition. Any refit toward location prediction inherits
-that one dataset. These are two claim rows when they are raised, not one.
+prediction while the owner's interest includes design. Predicting promoter
+strength needs sequence-activity pairs; locating candidates needs a separate
+positional evaluation. Tan 2018 supplies native UTEX TSS evidence across four
+conditions, not complete promoter boundaries or a promoter-strength benchmark.
+Its condition measurements are not independent loci for train/test splitting.
 
 **Owner hold: this ticket is not to be closed, resolved, or run through its
 Cleanup section.** Owner direction recorded in the 2026-09-30 return (section
@@ -150,6 +155,29 @@ library; whether that paper validates anything about iDOG is not judged here.
 
 ## Dependencies and work
 
+### Rough transfer route and limits
+
+Use iDOG's RBS/terminator components only for the capabilities their actual
+implementation supports. A bacterial model could score native UTEX sequence
+under explicit host assumptions; conserved donor regions could supply additional
+candidates under a checked local alignment. The yeast promoter library cannot
+be re-labelled a cyanobacterial model, and a fixed T7 promoter does not locate
+native promoters without the corresponding polymerase system. These are not
+resolved by accepting low confidence. Obtaining the twelve bytecode-only modules'
+source remains useful for inspection and portability, not proof of a missing
+genomic promoter predictor.
+
+Standalone TransTermHP can be assessed independently of the iDOG hold. The
+[shared transfer assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09)
+records native UTEX scoring, PCC 7942 transcript-end evidence (Cascino 2026,
+GSE309256) and UTEX reporter-part evidence (Gale 2021), with located primary-source
+receipts S3/S4. Intrinsic terminator candidates cover only one termination
+mechanism; donor transcript ends and reporter strengths are not native UTEX
+termination coordinates or calibrated model confidence. RBS scoring retains its
+[own code-access and host-input ticket](O_rbs-calculator-gene-visualizer__20260930.md).
+No iDOG execution or new promoter-model development was performed or authorized
+by this documentation update.
+
 1. **Code feasibility:** Pin an iDOG commit; inspect relevant functions, input and
    output contracts, dependencies, runtime compatibility, and code/asset licences.
    Establish whether a promoter predictor actually exists, could be reused through
@@ -223,12 +251,12 @@ from measured sites; sister-strain coordinates never become UTEX coordinates.
 
 ## Verification
 
-Ticket creation verified 2026-09-30: required fields, model reservation,
-dependencies, local links, and index/claim queue entries checked;
-`git diff --check` passed. Repository gates passed: `npm test` (659 tests),
-pytest (332 passed, 1 skipped, 24 subtests passed), and contract validation
-(96 passed, 0 failed, 1 declared skip). No prediction or visible UI has been
-implemented or validated in this pass.
+Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
+open status, retained execution/closure hold, local links and source-receipt
+references verified. Corrected the stale single-condition description of Tan
+2018 against S9 (four conditions). Current passing repository gates are recorded
+in [the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+No iDOG code, prediction layer or UI changed.
 
 Future work: reproducible pinned-code assessment and benchmark; then `npm test`,
 `.venv/bin/python -m pytest -q`, and `.venv/bin/python tools/validate_contract.py`.
