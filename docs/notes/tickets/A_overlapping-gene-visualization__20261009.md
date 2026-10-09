@@ -90,3 +90,30 @@ required resolved-ticket lifecycle.
   covers interaction tolerance; preserve access to nearby gene and site marks.
 - [Chromosome left/right controls](../../validation/chromosome-view.md)
   covers navigation; overlap tracks must stay aligned with that viewport.
+
+## Implementation and open review findings
+
+`cyano-ui-fixes` coordinates, integrates and closes this ticket. Multica
+`DEM-337` (`claude-implementer`) owns the isolated implementation on
+`agent/claude-implementer/dem-337`. The integration branch is
+`work/overlapping-genes-integration-20261009`. Neither implementation nor closure
+is complete. The independent native-annotation comparison agrees with all 3,121
+pairs in the first generated payloads; final-patch validation is pending.
+
+| Finding | State | Required resolution |
+| --- | --- | --- |
+| OG-F1 | open | Confirm native identity coverage explicitly before classifying an omitted gene as non-overlapping. |
+| OG-F2 | open | Keep unavailable OG results distinct from the legacy adjacent-CDS flag in exports, panel design and active filters. |
+| OG-F3 | open | Never classify an unrecorded partner strand as both strands. |
+| OG-F4 | open | Label summed per-pair shared bases as pairwise; they can differ from distinct genomic bases. |
+| OG-F5 | open | Clearing the overlap layer must clear joined per-gene state. |
+| OG-F6 | open | Remove unsupported biological generalizations and distinguish added scan-only candidates from computational annotations already in the pinned release. |
+| OG-UI1 | open | Fit expanded-view partner labels without accidental left-edge clipping; keep full identity accessible. |
+| OG-UI2 | open | Keep the OG legend concise and put full coverage/definition in a disclosure; omit internal field-token wording from user copy. |
+| OG-UI3 | open | Preserve meaningful keyboard focus after selecting an overlapping partner. |
+
+Reproduction notes, independent comparison scripts and early rendered evidence
+are under `/tmp/cyano-overlap-20261009/`; see `model-review-findings.md` and
+`coordinator-review-cases.md`. These are working evidence, not final approval.
+Record resolving commits for every row before closure and retain the reusable
+contracts and regression checks in the repository.
