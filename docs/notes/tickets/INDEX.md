@@ -11,6 +11,10 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_trna-viewer-tab__20261009](O_trna-viewer-tab__20261009.md) | Move the full tRNA viewer into its own application tab; preserve independent selection, evidence labels and coordinate navigation; implementation not started |
+| [O_strain-fitness-dataset-selector__20261009](O_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; implementation not started |
+| [O_scale-info-icon-alignment__20261009](O_scale-info-icon-alignment__20261009.md) | Vertically centre the info icon next to Scale with its control/label line across responsive map and chromosome toolbars; implementation not started |
+| [O_pca-map-button-gap__20261009](O_pca-map-button-gap__20261009.md) | Small vertical gap between buttons directly above the PCA map and the plot edge, including wrapped controls; implementation not started |
 | [O_strain-navigation-format__20261009](O_strain-navigation-format__20261009.md) | Order Cyanobacteria → E. coli Syn61 → E. coli; conventional E. coli dropdown MG1655 (default), MDS42, DH10B; retain collapsible/movable recoding panels; implementation not started |
 | [O_syn57-visualizer-inclusion__20261009](O_syn57-visualizer-inclusion__20261009.md) | Add Syn57 from the Nyerges radical-recoding paper with explicit design/strain provenance; then replace Syn61 button with Recoded E. Coli dropdown containing Syn57 and Syn61; implementation not started |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
