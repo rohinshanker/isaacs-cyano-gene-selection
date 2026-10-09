@@ -89,10 +89,20 @@ measurement that link previously displayed. The failed-layer render preserved
 a requested Log10 scale and reported a retryable load failure without claiming
 the metric was absent.
 
+Post-implementation audit AXIS-R1 found that a mixed ready/failed pool still
+reported finite pairs without qualifying that only its ready contributor was
+being read. The repair keeps every requested id for retry, computes from ready
+contributors only, labels the pair count as partial, names failed/loading ids
+and available/requested counts, and records requested versus actual contributors
+in exports. A delayed real Retry changed the failed note to loading, preserved
+Log10 and the two-dataset request, then restored the established two-dataset
+pooled provenance when the expression layer arrived.
+
 Validation in this worktree:
 
 - focused axis/source/modal/state tests: 129 passed;
-- `npm test`: 1,346 passed;
+- focused AXIS-R1 contributor/resource/copy/export regression set: 96 passed;
+- `npm test`: 1,350 passed;
 - `.venv/bin/python -m pytest -q`: 891 passed, 1 skipped, 36 subtests passed;
 - `.venv/bin/python tools/validate_contract.py`: 117 passed, 0 failed,
   1 declared spliced-CDS skip.

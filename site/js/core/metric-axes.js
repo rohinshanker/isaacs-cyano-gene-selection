@@ -234,6 +234,10 @@ export function isDiagonalAxisPair(axes) {
   return true;
 }
 
+const resourceState = (resource) => (
+  typeof resource === 'string' ? resource : resource?.state ?? null
+);
+
 /**
  * The reason an axes projection has nothing to plot, distinguishing a
  * genuinely unavailable metric from an empty percentile ranking cohort: the
@@ -242,18 +246,18 @@ export function isDiagonalAxisPair(axes) {
  * finite pairs to plot.
  *
  * @param {{x: object, y: object, available: boolean, finitePairCount: number}} axes
- * @param {{x?: ('loading'|'failed'|null), y?: ('loading'|'failed'|null)}} [resources]
+ * @param {{x?: (string|object|null), y?: (string|object|null)}} [resources]
  * @returns {string|null}
  */
 export function axesUnavailableMessage(axes, resources = {}) {
   if (axes.finitePairCount > 0) return null;
-  const failedAxis = resources.x === 'failed' ? axes.x
-    : resources.y === 'failed' ? axes.y : null;
+  const failedAxis = resourceState(resources.x) === 'failed' ? axes.x
+    : resourceState(resources.y) === 'failed' ? axes.y : null;
   if (failedAxis) {
     return `${failedAxis.label} values could not be loaded. Retry the failed dataset file.`;
   }
-  const loadingAxis = resources.x === 'loading' ? axes.x
-    : resources.y === 'loading' ? axes.y : null;
+  const loadingAxis = resourceState(resources.x) === 'loading' ? axes.x
+    : resourceState(resources.y) === 'loading' ? axes.y : null;
   if (loadingAxis) return `${loadingAxis.label} values are still loading.`;
   if (!axes.available) {
     return 'A selected metric is unavailable in this dataset. Choose another axis.';
@@ -266,4 +270,34 @@ export function axesUnavailableMessage(axes, resources = {}) {
       + 'Relax the filters to restore a ranking cohort.';
   }
   return 'No genes have values on both selected axes. Choose another pair of metrics.';
+}
+
+/**
+ * Qualify a drawable axis whose requested pool is only partly readable. The
+ * selection remains intact for retry, but the plot and provenance describe
+ * only the contributors whose values are available now.
+ */
+export function axesResourceNote(axes, resources = {}) {
+  if (axes.finitePairCount === 0) return null;
+  const notes = [];
+  for (const [axis, projection] of [['x', axes.x], ['y', axes.y]]) {
+    const resource = resources[axis];
+    const state = resourceState(resource);
+    if (!state) continue;
+    const affectedIds = resource?.affectedIds ?? [];
+    const affected = affectedIds.length
+      ? affectedIds.join(', ') : 'A selected dataset file';
+    const requested = resource?.requestedCount ?? 0;
+    const available = resource?.availableCount ?? 0;
+    if (state === 'failed') {
+      notes.push(`${axis.toUpperCase()} — ${projection.label}: ${affected} could not be loaded. `
+        + `Plotted ${axis.toUpperCase()} values currently use ${available} of ${requested} requested `
+        + `dataset${requested === 1 ? '' : 's'}; retry to restore the requested selection.`);
+    } else {
+      notes.push(`${axis.toUpperCase()} — ${projection.label}: ${affected} ${affectedIds.length > 1 ? 'are' : 'is'} still loading. `
+        + `Plotted ${axis.toUpperCase()} values currently use ${available} of ${requested} requested `
+        + `dataset${requested === 1 ? '' : 's'} and will update when loading finishes.`);
+    }
+  }
+  return notes.length ? notes.join(' ') : null;
 }

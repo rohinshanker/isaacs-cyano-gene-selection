@@ -11,11 +11,15 @@ import { formatCount } from './format.js';
  * unavailable metric, an empty percentile ranking cohort, or no shared
  * finite pairs) instead of a stale pair count.
  *
- * @param {{available: boolean, message: string|null, isDiagonalPair: boolean,
- *   finitePairCount: number}} projection
+ * @param {{available: boolean, message: string|null, resourceNote?: string|null,
+ *   isDiagonalPair: boolean, finitePairCount: number}} projection
  */
 export function axisPairsNote(projection) {
   if (!projection.available) return projection.message;
+  if (projection.resourceNote) {
+    return `${formatCount(projection.finitePairCount)} genes currently have values on both axes `
+      + 'from the available contributors; this is a partial result.';
+  }
   return projection.isDiagonalPair
     ? `${formatCount(projection.finitePairCount)} genes have this metric. Identical axes place points on a diagonal.`
     : `${formatCount(projection.finitePairCount)} genes have values on both axes; missing pairs are not plotted.`;

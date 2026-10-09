@@ -16,6 +16,16 @@ test('axisPairsNote reports the finite pair count for a plotted, non-diagonal pr
   assert.equal(note, '1,727 genes have values on both axes; missing pairs are not plotted.');
 });
 
+test('axisPairsNote marks a drawable mixed-resource projection as partial', () => {
+  assert.equal(axisPairsNote({
+    available: true,
+    message: null,
+    resourceNote: 'X contributor still loading.',
+    isDiagonalPair: false,
+    finitePairCount: 2551,
+  }), '2,551 genes currently have values on both axes from the available contributors; this is a partial result.');
+});
+
 test('axisPairsNote calls out a diagonal pair instead of a "both axes" count', () => {
   const note = axisPairsNote({ available: true, isDiagonalPair: true, finitePairCount: 200 });
   assert.equal(note, '200 genes have this metric. Identical axes place points on a diagonal.');

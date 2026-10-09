@@ -13,6 +13,7 @@ import {
   axisTitle,
   axisTitleSuffix,
   isDiagonalAxisPair,
+  axesResourceNote,
   axesUnavailableMessage,
 } from '../../site/js/core/metric-axes.js';
 
@@ -373,9 +374,30 @@ test('pending axis resources report loading and failure instead of claiming meas
     'X abundance values are still loading.',
   );
   assert.equal(
-    axesUnavailableMessage(projection, { x: null, y: 'failed' }),
+    axesUnavailableMessage(projection, { x: null, y: { state: 'failed' } }),
     'Y abundance values could not be loaded. Retry the failed dataset file.',
   );
+});
+
+test('a partial pool keeps finite pairs and qualifies failed or loading contributors', () => {
+  const registry = registryOf([
+    metric('x', 'X abundance', 'counts', [10, 20]),
+    metric('y', 'GC', 'fraction', [0.4, 0.6]),
+  ]);
+  const projection = buildMetricAxesProjection(registry, 2, { x: 'x', y: 'y' });
+  const base = {
+    requestedCount: 2, availableCount: 1, affectedIds: ['LAYER'],
+  };
+  assert.equal(axesUnavailableMessage(projection, { x: { ...base, state: 'failed' } }), null);
+  assert.equal(
+    axesResourceNote(projection, { x: { ...base, state: 'failed' } }),
+    'X — X abundance: LAYER could not be loaded. Plotted X values currently use 1 of 2 requested datasets; retry to restore the requested selection.',
+  );
+  assert.equal(
+    axesResourceNote(projection, { x: { ...base, state: 'loading' } }),
+    'X — X abundance: LAYER is still loading. Plotted X values currently use 1 of 2 requested datasets and will update when loading finishes.',
+  );
+  assert.equal(axesResourceNote(projection, { x: { ...base, state: null } }), null);
 });
 
 test('identical axis keys are a diagonal only when both axes also share their effective scale', () => {

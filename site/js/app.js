@@ -51,7 +51,7 @@ import {
 } from './core/function-categories.js';
 import {
   buildMetricAxesProjection, resolveDefaultMetricAxes, axisTitle, axisTitleSuffix,
-  isDiagonalAxisPair, axesUnavailableMessage,
+  isDiagonalAxisPair, axesResourceNote, axesUnavailableMessage,
   metricLog10Availability, log10DisabledReason, AXIS_SCALES, DEFAULT_AXIS_SCALE,
 } from './core/metric-axes.js';
 import {
@@ -95,7 +95,7 @@ import {
 import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
-  legacyAxisDatasetSelection, normalizeAxisDatasetSelection,
+  legacyAxisDatasetSelection, normalizeAxisDatasetSelection, resolveAxisContributors,
 } from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
@@ -580,6 +580,7 @@ function projectionFor(panelId) {
     const projection = {
       available: axes.available && axes.finitePairCount > 0,
       message: axesUnavailableMessage(axes, resources),
+      resourceNote: axesResourceNote(axes, resources),
       x: axes.x.values,
       y: axes.y.values,
       independentAxes: true,
@@ -941,7 +942,7 @@ function axisLimitNotes() {
     ? [['x', state.axisX]] : [['x', state.axisX], ['y', state.axisY]];
   return entries
     .map(([axis, key]) => {
-      if (axisMetricResourceState(axis, key)) return null;
+      if (axisMetricResourceState(axis, key).state) return null;
       const metric = metricForAxis(axis, key);
       const limits = metricHelp(metric, context.dataset)?.limits;
       return limits ? `${axis.toUpperCase()} — ${metric.label}: ${limits}.` : null;
@@ -959,8 +960,9 @@ function syncAxisScaleAvailability(axis) {
   const scaleKey = axis === 'x' ? 'axisXScale' : 'axisYScale';
   const select = element(`axis-${axis}-scale`);
   const metric = metricForAxis(axis, state[metricKey]);
+  const resource = axisMetricResourceState(axis, state[metricKey]);
   const availability = metricLog10Availability(
-    metric, context.dataset.genes.length, axisMetricResourceState(axis, state[metricKey]),
+    metric, context.dataset.genes.length, resource.state,
   );
   const logOption = [...select.options].find((option) => option.value === 'log10');
   if (logOption) {
@@ -990,7 +992,9 @@ function renderMap() {
     ].filter(Boolean))];
     // A measured axis states its replicate and condition limits here, beside
     // the plot, rather than leaving a thin measurement to look like a deep one.
-    element('axis-note').textContent = [pairs, axisTitlesNote(projection), ...axisLimitNotes(), ...scaleNotes]
+    element('axis-note').textContent = [
+      pairs, axisTitlesNote(projection), projection.resourceNote, ...axisLimitNotes(), ...scaleNotes,
+    ].filter(Boolean)
       .join(' ');
   }
 
@@ -1060,6 +1064,7 @@ function renderMap() {
       ? `${panelName(panel, organism)}: ${formatCount(context.passing)} of `
         + `${formatCount(context.dataset.genes.length)} genes shown, coloured by `
         + `${metric.label}${scaleClause ? ` ${scaleClause}` : ''}. `
+        + `${projection.resourceNote ? `${projection.resourceNote} ` : ''}`
         + `${drawOrderSentence(colors)} Nothing is hidden by that order: every gene stays `
         + 'selectable, reachable by the arrow keys, and counted.'
       : `${panelName(panel, organism)}: ${projection.message}`,
@@ -1723,10 +1728,24 @@ function metricForAxis(axis, key) {
   return context.axisTypeMetrics[axis]?.get(key) ?? context.registry.byKey.get(key);
 }
 
-/** Loading state of the file that supplies one applied axis measurement. */
+/** Requested and currently readable contributors for one applied axis. */
+function axisContributorState(axis, key = state[axisMetricField(axis)]) {
+  return resolveAxisContributors(key, axisSourceSelection(axis, key), context.datasets ?? [], {
+    metricOf: (dataset) => context.registry.byKey.get(dataset.metricKey) ?? null,
+    resourceStateOf: (metric) => (metric.fileKey
+      ? pendingState(context.dataset, metric.fileKey) : null),
+  });
+}
+
+/** Loading state and counts used by the axis copy and scale controls. */
 function axisMetricResourceState(axis, key = state[axisMetricField(axis)]) {
-  const fileKey = metricForAxis(axis, key)?.fileKey;
-  return fileKey ? pendingState(context.dataset, fileKey) : null;
+  const contributors = axisContributorState(axis, key);
+  return {
+    state: contributors.state,
+    requestedCount: contributors.requested.length,
+    availableCount: contributors.available.length,
+    affectedIds: contributors.affected.map(({ dataset }) => dataset.id),
+  };
 }
 
 function axisAwareRegistry() {
@@ -1736,15 +1755,16 @@ function axisAwareRegistry() {
 /** Selected rows and actual contributors recorded with an exported view. */
 function axisContributorManifest(axis) {
   const key = state[axisMetricField(axis)];
-  const selected = axisSourceSelection(axis, key);
+  const resolved = axisContributorState(axis, key);
   const metric = metricForAxis(axis, key);
-  const contributors = isTypeKey(key)
-    ? contributingDatasets(key, {}, context.datasets, selected).map((dataset) => dataset.id)
-    : [];
   return {
     metric: key,
-    selected,
-    contributors,
+    selected: resolved.selected,
+    requestedContributors: resolved.requested.map((dataset) => dataset.id),
+    contributors: resolved.available.map((dataset) => dataset.id),
+    resourceState: resolved.state,
+    unavailableContributors: resolved.affected.map(({ dataset }) => dataset.id),
+    requestedPooled: typePools(key, context.datasets) && resolved.requested.length > 1,
     pooled: Boolean(metric?.pooled),
     unit: metric?.unit ?? '',
     provenanceId: metric?.provenance?.id ?? null,
@@ -2334,9 +2354,7 @@ function normalizeAndApply(decoded) {
 function installTypeMetrics() {
   const registry = context.registry;
   const buildForAxis = (axis) => buildTypeMetrics(context.datasets, {
-    contributing: (typeKey) => contributingDatasets(
-      typeKey, {}, context.datasets, axisSourceSelection(axis, typeKey),
-    ),
+    contributing: (typeKey) => axisContributorState(axis, typeKey).available,
     metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
     selected: (typeKey) => {
       const selected = new Set(axisSourceSelection(axis, typeKey));

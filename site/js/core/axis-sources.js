@@ -49,6 +49,34 @@ export function legacyAxisDatasetSelection(
     .map((dataset) => dataset.id);
 }
 
+/**
+ * Resolve the requested contributors separately from the contributors whose
+ * values can be read now. A loading or retryable file remains requested but is
+ * excluded from the calculation until it settles, so a partial pool cannot
+ * present one ready dataset as if every selected dataset contributed.
+ */
+export function resolveAxisContributors(
+  metricKey,
+  ids,
+  datasets,
+  { metricOf, resourceStateOf },
+) {
+  const selected = normalizeAxisDatasetSelection(metricKey, ids, datasets) ?? [];
+  const requested = isTypeKey(metricKey)
+    ? contributingDatasets(metricKey, {}, datasets, selected) : [];
+  const available = [];
+  const affected = [];
+  for (const dataset of requested) {
+    const metric = metricOf(dataset);
+    const state = metric ? resourceStateOf(metric) : null;
+    if (state === 'loading' || state === 'failed') affected.push({ dataset, state });
+    else if (metric) available.push(dataset);
+  }
+  const state = affected.some((entry) => entry.state === 'failed') ? 'failed'
+    : affected.some((entry) => entry.state === 'loading') ? 'loading' : null;
+  return { selected, requested, available, affected, state };
+}
+
 /** Reader-facing summary for the compact axis control. */
 export function axisDatasetSelectionLabel(metricKey, ids, datasets, pools = true) {
   const available = availableAxisDatasets(metricKey, datasets);

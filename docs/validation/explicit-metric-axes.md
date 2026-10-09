@@ -53,10 +53,18 @@ poolable abundance-like quantities, a mean for the declared shared-scale
 fitness quantity, and one informing dataset for quantities that do not pool.
 
 An axis whose measurement file is loading or retryable keeps its requested
-scale and names the resource state. The transient empty in-memory column does
-not disable Log10, reset the URL to linear, claim that the metric is absent, or
-emit coverage and scale conclusions that require loaded values. Once the file
-settles, the ordinary value-based scale and missingness rules apply.
+datasets and scale and names the resource state. In a mixed-file pool, ready
+contributors continue to draw, but the pair count is labelled as a partial
+result and the axis note names the unavailable dataset ids plus the available
+and requested contributor counts. The type metric's values, units, provenance,
+feature explanation, and canvas description use only the contributors readable
+now; no missing contributor is included in a claimed pool. The export records
+selected ids, requested contributors, actual contributors, resource state, and
+whether the requested and actual views are pooled separately. Retry keeps the
+selection intact; loading changes to the full established pool as soon as its
+file settles. A transient empty in-memory column therefore does not disable
+Log10, reset the URL to linear, claim that the metric is absent, or emit
+coverage conclusions that require loaded values.
 
 The shared scatter renderer applies independent X/Y fit factors only to this
 tab. Hit testing, keyboard neighbor selection, zoom, pan, ticks, pin and
