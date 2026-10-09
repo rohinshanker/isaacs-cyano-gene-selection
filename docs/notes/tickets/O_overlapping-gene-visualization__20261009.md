@@ -20,15 +20,14 @@ its entire bounding interval.
 
 ## Owner questions
 
-Asked in chat on 2026-10-09; answers are pending. Recommendations below are
-proposals, not owner decisions. Record answers here before implementing the
-dependent overlap definition and compact-view design.
+Owner decisions recorded on 2026-10-09. All three questions are answered;
+implementation can proceed with the definition and compact-view design below.
 
 | ID | Question | Choices / recommendation | Decision |
 | --- | --- | --- | --- |
-| Q1 | Which annotated features count toward OG? | Protein-coding genes only initially (recommended), or all annotated genes including tRNA/rRNA. | Pending |
-| Q2 | What counts as an overlap? | Any shared genomic base between actual annotated gene/CDS segments, on either strand (recommended); same-strand only; or an owner-specified minimum overlap length. | Pending |
-| Q3 | How much should the smaller gene viewer show? | OG badge plus a compact overlap strip with partner names on hover/click (recommended); badge only linking to the expanded viewer; or all overlapping partner genes drawn directly. | Pending |
+| Q1 | Which annotated features count toward OG? | Protein-coding genes only initially (recommended), or all annotated genes including tRNA/rRNA. | All annotated genes, including tRNA/rRNA. |
+| Q2 | What counts as an overlap? | Any shared genomic base between actual annotated gene/CDS segments, on either strand (recommended); same-strand only; or an owner-specified minimum overlap length. | Any shared genomic base between actual annotated gene/CDS segments, on either strand. |
+| Q3 | How much should the smaller gene viewer show? | OG badge plus a compact overlap strip with partner names on hover/click (recommended); badge only linking to the expanded viewer; or all overlapping partner genes drawn directly. | OG badge plus a compact overlap strip with partner names on hover/click and explicit direction indicators. |
 
 ## Acceptance
 

@@ -1,4 +1,4 @@
-# O_syn57-visualizer-inclusion__20261009 — Open
+# O_syn57-visualizer-inclusion__20261009 — Open (approved by Rohin)
 
 - **Scope:** Add the owner's requested Syn57 from the Nyerges radical-recoding paper and group recoded E. coli choices.
 - **Status:** open
