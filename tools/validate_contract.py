@@ -25,7 +25,7 @@ import os
 import re
 import collections
 import sys
-from typing import Any, Callable, Iterable, Iterator
+from typing import Any, Callable, Iterable, Iterator, Sequence
 from urllib.parse import unquote
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -1889,6 +1889,371 @@ def validate_pair_judgements(meta: dict[str, Any], report: Report) -> None:
                  "; ".join(problems[:4]))
 
 
+def _overlap_universe(
+    gff_path: str,
+) -> tuple[dict[str, list[tuple[int, int]]], dict[str, dict[str, Any]], dict[str, int]]:
+    """Re-derives every annotated gene's occupied segments straight from the GFF.
+
+    Deliberately independent of ``tools/build_gene_overlaps.py``: its own scan,
+    its own child/exon resolution and its own circular normalisation, so a bug
+    mirrored in that producer's tests still fails here.
+    """
+    lengths: dict[str, int] = {}
+    rows: list[tuple[str, str, int, int, str, dict[str, str]]] = []
+    with gzip.open(gff_path, "rt") as handle:
+        for line in handle:
+            if line.startswith("##sequence-region "):
+                parts = line.split()
+                lengths[parts[1]] = int(parts[3])
+                continue
+            if not line.strip() or line.startswith("#"):
+                continue
+            fields = line.rstrip("\n").split("\t")
+            if len(fields) != 9:
+                continue
+            attrs = {}
+            for item in fields[8].split(";"):
+                key, separator, value = item.partition("=")
+                if separator:
+                    attrs[unquote(key)] = unquote(value)
+            rows.append((fields[0], fields[2], int(fields[3]), int(fields[4]), fields[6], attrs))
+
+    def pieces(seqid: str, start: int, end: int) -> list[tuple[int, int]]:
+        length = lengths[seqid]
+        if end <= length:
+            return [(start, end)]
+        return [(start, length), (1, end - length)]
+
+    children: dict[str, list[tuple[str, str, int, int, str, dict[str, str]]]] = (
+        collections.defaultdict(list)
+    )
+    for row in rows:
+        parent = row[5].get("Parent")
+        if parent:
+            for one in parent.split(","):
+                children[one].append(row)
+
+    segments: dict[str, list[tuple[int, int]]] = {}
+    identity: dict[str, dict[str, Any]] = {}
+    for seqid, kind, start, end, strand, attrs in rows:
+        if kind not in ("gene", "pseudogene"):
+            continue
+        locus = attrs.get("locus_tag")
+        if not locus:
+            continue
+        found: list[tuple[int, int]] = []
+        for child in children.get(attrs.get("ID", ""), []):
+            if child[1] == "exon":
+                continue
+            exons = [item for item in children.get(child[5].get("ID", ""), [])
+                     if item[1] == "exon"]
+            for source in exons or [child]:
+                found.extend(pieces(source[0], source[2], source[3]))
+        source_kind = "child" if found else "gene"
+        if not found:
+            found = pieces(seqid, start, end)
+        merged: list[tuple[int, int]] = []
+        for piece in sorted(found):
+            if merged and piece[0] <= merged[-1][1] + 1:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], piece[1]))
+            else:
+                merged.append(piece)
+        segments[locus] = merged
+        identity[locus] = {
+            "seqid": seqid,
+            "strand": strand if strand in ("+", "-") else None,
+            "biotype": attrs.get("gene_biotype") or kind,
+            "segmentSource": source_kind,
+        }
+    return segments, identity, lengths
+
+
+def _shared(
+    left: Sequence[tuple[int, int]], right: Sequence[tuple[int, int]]
+) -> list[tuple[int, int]]:
+    """Bases two canonical segment lists share, as merged intervals."""
+    found: list[tuple[int, int]] = []
+    for a_start, a_end in left:
+        for b_start, b_end in right:
+            start, end = max(a_start, b_start), min(a_end, b_end)
+            if start <= end:
+                found.append((start, end))
+    merged: list[tuple[int, int]] = []
+    for piece in sorted(found):
+        if merged and piece[0] <= merged[-1][1] + 1:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], piece[1]))
+        else:
+            merged.append(piece)
+    return merged
+
+
+def validate_gene_overlaps(
+    data_dir: str,
+    raw_dir: str,
+    genes: list[dict[str, Any]],
+    report: Report,
+    organism: OrganismConfig = DEFAULT_ORGANISM,
+) -> None:
+    """Checks the published overlapping-gene layer against its own definition.
+
+    Three independent checks, in order of strength. The payload has to be
+    internally exact — every shared interval re-derived from the two features'
+    segments, the coverage block reconciled against what is listed. It has to
+    agree with ``genes.json`` about every plotted CDS it lists. And where the
+    pinned annotation is present, the whole relation is re-derived here from
+    that annotation and compared gene for gene, which is the check a hand-edited
+    or stale layer cannot survive.
+    """
+    path = os.path.join(data_dir, "gene_overlaps.json")
+    if not os.path.exists(path):
+        report.check(False, "gene_overlaps.json is published",
+                     f"missing {path}; run: tools/build_gene_overlaps.py build")
+        return
+    payload = load_json(path, report)
+    if not isinstance(payload, dict):
+        return
+    problems: list[str] = []
+    if payload.get("schemaVersion") != 1:
+        problems.append("schemaVersion is not 1")
+    if payload.get("datasetVersion") != "gene-overlaps-v1":
+        problems.append("datasetVersion is not gene-overlaps-v1")
+    if payload.get("origin") != "computed" or not payload.get("producer"):
+        problems.append("origin and producer are not both stated")
+    definition = payload.get("definition")
+    if not isinstance(definition, dict) or not all(
+        isinstance(definition.get(key), str) and definition.get(key)
+        for key in ("features", "extent", "overlap", "excluded")
+    ):
+        problems.append("the definition block is incomplete")
+    release = payload.get("release")
+    if not isinstance(release, dict) or release.get("accession") != organism.accession:
+        problems.append("the release does not name this organism's assembly")
+    elif not re.fullmatch(r"[0-9a-f]{64}", str(release.get("sha256", ""))):
+        problems.append("the release carries no SHA-256 of its annotation input")
+    report.check(not problems, "gene_overlaps.json states its schema, definition and release",
+                 "; ".join(problems))
+
+    features = payload.get("features")
+    pairs = payload.get("pairs")
+    coverage = payload.get("coverage")
+    if not isinstance(features, list) or not isinstance(pairs, list) \
+            or not isinstance(coverage, dict):
+        report.check(False, "gene_overlaps.json carries features, pairs and coverage")
+        return
+    lengths = {
+        entry.get("accession"): entry.get("lengthBp")
+        for entry in payload.get("replicons", []) if isinstance(entry, dict)
+    }
+
+    shape: list[str] = []
+    listed: dict[str, dict[str, Any]] = {}
+    for position, feature in enumerate(features):
+        locus = feature.get("id") if isinstance(feature, dict) else None
+        if not isinstance(locus, str) or not locus:
+            shape.append(f"feature {position} has no locus tag")
+            continue
+        if locus in listed:
+            shape.append(f"{locus} is listed more than once")
+        listed[locus] = feature
+        length = lengths.get(feature.get("seqid"))
+        if not isinstance(length, int):
+            shape.append(f"{locus} is on an undeclared replicon")
+            continue
+        segments = feature.get("segments")
+        if not isinstance(segments, list) or not segments:
+            shape.append(f"{locus} has no segments")
+            continue
+        previous = None
+        for piece in segments:
+            if not (isinstance(piece, list) and len(piece) == 2
+                    and all(isinstance(value, int) for value in piece)):
+                shape.append(f"{locus} has a malformed segment")
+                break
+            start, end = piece
+            if start < 1 or end < start or end > length:
+                shape.append(f"{locus} has a segment outside its replicon")
+            if previous is not None and start <= previous + 1:
+                shape.append(f"{locus} has segments that are not canonical")
+            previous = end
+        if feature.get("segmentSource") not in ("child", "gene"):
+            shape.append(f"{locus} does not say where its segments came from")
+        if feature.get("strand") not in ("+", "-", None):
+            shape.append(f"{locus} has an unreadable strand")
+        if not isinstance(feature.get("pseudo"), bool):
+            shape.append(f"{locus} does not say whether it is a pseudogene")
+    report.check(not shape, "every listed overlapping gene has canonical in-range segments",
+                 "; ".join(shape[:4]))
+
+    exact: list[str] = []
+    total_shared = 0
+    degrees: dict[int, int] = collections.defaultdict(int)
+    previous_pair: tuple[int, int] | None = None
+    for pair in pairs:
+        if not (isinstance(pair, list) and len(pair) == 3):
+            exact.append("a pair is malformed")
+            continue
+        first, second, pieces = pair
+        if not (isinstance(first, int) and isinstance(second, int)
+                and 0 <= first < second < len(features)):
+            exact.append("a pair does not name two distinct features in order")
+            continue
+        if previous_pair is not None and (first, second) <= previous_pair:
+            exact.append("the pairs are not in ascending order")
+        previous_pair = (first, second)
+        left, right = features[first], features[second]
+        if left.get("seqid") != right.get("seqid"):
+            exact.append(f"{left.get('id')} and {right.get('id')} are on two replicons")
+            continue
+        recomputed = _shared(
+            [tuple(piece) for piece in left["segments"]],
+            [tuple(piece) for piece in right["segments"]],
+        )
+        if not recomputed:
+            exact.append(f"{left.get('id')} and {right.get('id')} share no base")
+            continue
+        if [list(piece) for piece in recomputed] != pieces:
+            exact.append(f"{left.get('id')} and {right.get('id')} report bases their segments "
+                         "do not share")
+        total_shared += sum(end - start + 1 for start, end in recomputed)
+        degrees[first] += 1
+        degrees[second] += 1
+    report.check(not exact, "every overlapping pair's shared bases follow from its own segments",
+                 "; ".join(exact[:4]))
+
+    census = coverage.get("byBiotype")
+    reconciled: list[str] = []
+    if not isinstance(census, dict) or any(
+        not isinstance(value, int) or value < 0 for value in census.values()
+    ):
+        reconciled.append("the biotype census is missing or not whole counts")
+    elif sum(census.values()) != coverage.get("annotatedGenes"):
+        reconciled.append("the biotype census does not sum to the annotated gene count")
+    if coverage.get("overlappingGenes") != len(features):
+        reconciled.append("overlappingGenes is not the number of listed features")
+    if coverage.get("overlappingPairs") != len(pairs):
+        reconciled.append("overlappingPairs is not the number of listed pairs")
+    if coverage.get("pairwiseSharedBases") != total_shared:
+        reconciled.append("pairwiseSharedBases is not the total the pairs share")
+    if coverage.get("maxPartners") != (max(degrees.values()) if degrees else 0):
+        reconciled.append("maxPartners is not the largest partner count")
+    report.check(not reconciled, "the overlap coverage block follows from the listed relations",
+                 "; ".join(reconciled[:4]))
+
+    inventory = payload.get("coveredGenes")
+    named: list[str] = []
+    if not isinstance(inventory, list) or not inventory \
+            or any(not isinstance(locus, str) or not locus for locus in inventory):
+        named.append("coveredGenes is missing or is not a list of locus tags")
+        covered: set[str] = set()
+    else:
+        covered = set(inventory)
+        if len(covered) != len(inventory):
+            named.append("coveredGenes lists a locus more than once")
+        if len(covered) != coverage.get("annotatedGenes"):
+            named.append("coveredGenes does not hold every annotated gene")
+        missing_features = sorted(set(listed) - covered)
+        if missing_features:
+            named.append(
+                f"{len(missing_features)} overlapping genes are not in coveredGenes, "
+                f"starting with {missing_features[0]}"
+            )
+        uncompared = sorted(
+            str(gene.get("id")) for gene in genes
+            if isinstance(gene, dict) and gene.get("id") not in covered
+        )
+        if uncompared:
+            named.append(
+                f"{len(uncompared)} plotted CDSs were not compared, "
+                f"starting with {uncompared[0]}"
+            )
+    report.check(
+        not named,
+        "the overlap layer names every annotated gene it compared, plotted CDSs included",
+        "; ".join(named[:4]),
+    )
+
+    joined: list[str] = []
+    by_id = {gene.get("id"): gene for gene in genes if isinstance(gene, dict)}
+    for locus, feature in listed.items():
+        gene = by_id.get(locus)
+        if gene is None:
+            continue
+        own = sorted(
+            [list(piece) for piece in (gene.get("cdsSegments")
+                                       or [[gene.get("start"), gene.get("end")]])]
+        )
+        if own != sorted(feature.get("segments", [])):
+            joined.append(f"{locus} segments differ from genes.json")
+        if gene.get("strand") != feature.get("strand") or gene.get("seqid") != feature.get("seqid"):
+            joined.append(f"{locus} strand or replicon differs from genes.json")
+    report.check(not joined, "every listed plotted CDS agrees with genes.json about itself",
+                 "; ".join(joined[:4]))
+
+    gff_path = os.path.join(raw_dir, f"{organism.assemblyPrefix}_genomic.gff.gz")
+    label = "the overlap relation re-derives from the pinned annotation"
+    if not os.path.exists(gff_path):
+        report.skip(label, f"missing raw input: {gff_path}")
+        return
+    segments, identity, raw_lengths = _overlap_universe(gff_path)
+    derived: dict[tuple[str, str], list[tuple[int, int]]] = {}
+    by_replicon: dict[str, list[str]] = collections.defaultdict(list)
+    for locus, record in identity.items():
+        by_replicon[record["seqid"]].append(locus)
+    for loci in by_replicon.values():
+        ordered = sorted(loci, key=lambda name: segments[name][0])
+        for position, locus in enumerate(ordered):
+            reach = max(end for _, end in segments[locus])
+            for other in ordered[position + 1:]:
+                if segments[other][0][0] > reach:
+                    break
+                pieces = _shared(segments[locus], segments[other])
+                if pieces:
+                    derived[tuple(sorted((locus, other)))] = pieces
+    published = {
+        tuple(sorted((features[pair[0]]["id"], features[pair[1]]["id"]))): [
+            tuple(piece) for piece in pair[2]
+        ]
+        for pair in pairs if isinstance(pair, list) and len(pair) == 3
+    }
+    differences: list[str] = []
+    for key in sorted(set(derived) - set(published)):
+        differences.append(f"{key[0]}/{key[1]} overlaps in the annotation but is not published")
+    for key in sorted(set(published) - set(derived)):
+        differences.append(f"{key[0]}/{key[1]} is published but shares no base in the annotation")
+    for key in sorted(set(published) & set(derived)):
+        if published[key] != derived[key]:
+            differences.append(f"{key[0]}/{key[1]} publishes bases the annotation does not share")
+    if coverage.get("annotatedGenes") != len(identity):
+        differences.append(
+            f"annotatedGenes is {coverage.get('annotatedGenes')}, and the annotation has "
+            f"{len(identity)} gene records"
+        )
+    if coverage.get("childlessGenes") != sum(
+        1 for record in identity.values() if record["segmentSource"] == "gene"
+    ):
+        differences.append("childlessGenes does not match the annotation")
+    if covered and covered != set(identity):
+        differences.append(
+            "coveredGenes is not exactly the annotation's gene records"
+        )
+    for locus, feature in listed.items():
+        record = identity.get(locus)
+        if record is None:
+            differences.append(f"{locus} is published but is not an annotated gene")
+            continue
+        if [list(piece) for piece in segments[locus]] != feature.get("segments"):
+            differences.append(f"{locus} segments differ from the annotation")
+        if record["strand"] != feature.get("strand") or record["biotype"] != feature.get("biotype"):
+            differences.append(f"{locus} strand or biotype differs from the annotation")
+    declared = {
+        entry.get("accession"): entry.get("lengthBp")
+        for entry in payload.get("replicons", []) if isinstance(entry, dict)
+    }
+    if declared != raw_lengths:
+        differences.append("the declared replicon lengths differ from the annotation's")
+    report.check(not differences, label, "; ".join(differences[:4]))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--organism", default=None)
@@ -1953,6 +2318,7 @@ def main() -> int:
             organism,
         )
         cross_check_rna_context(genes, raw_dir, report, sequence_context, organism)
+        validate_gene_overlaps(data_dir, raw_dir, genes, report, organism)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
     if excluded is not None and isinstance(genes, list):

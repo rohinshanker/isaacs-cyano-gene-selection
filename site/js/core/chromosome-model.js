@@ -555,11 +555,15 @@ export function describePaintOrder(paintOrder) {
         + `occupied columns on ${paintOrder.accession} holds one CDS at this zoom.`);
   }
   if (paintOrder.categorical && hasColumns) {
-    parts.push('Where CDSs of different categories share one column, the column shows a '
-      + 'lab-reviewed category over a source-derived one, then the category with more CDSs in '
-      + 'that column, then the earlier locus. Every column is decided by what is in it: a CDS '
-      + 'wide enough to cross several can hold the majority in one and be the minority in the '
-      + 'next.');
+    // The reviewed-over-derived clause belongs to the channel that has two
+    // kinds of evidence behind a category. A channel with one — the
+    // overlapping-gene classes — follows the same rule without it.
+    parts.push('Where CDSs of different categories share one column, the column shows '
+      + (paintOrder.derivedEvidence === false ? ''
+        : 'a lab-reviewed category over a source-derived one, then ')
+      + 'the category with more CDSs in that column, then the earlier locus. Every column is '
+      + 'decided by what is in it: a CDS wide enough to cross several can hold the majority in '
+      + 'one and be the minority in the next.');
   }
   if (paintOrder.alike) {
     parts.push(describeSolidDerived(paintOrder.alike));
@@ -607,7 +611,7 @@ export function describeSolidDerived({ derived, reviewed, threshold }) {
  */
 export function describeChromosomeView({
   tracks, window, colorLabel, passing, total, selected = null, categoryFilterLabels = [],
-  colorScaleClause = null, paintOrder = null,
+  colorScaleClause = null, paintOrder = null, overlapClause = null,
   copyNumberSentence = DEFAULT_ORGANISM.copy.copyNumberSentence,
 }) {
   if (!Array.isArray(tracks) || tracks.length === 0) {
@@ -631,6 +635,11 @@ export function describeChromosomeView({
         + `${track.cdsCount.toLocaleString('en-US')} plotted CDSs`).join('; ')}.`);
   }
   parts.push('Plus-strand CDSs sit above each axis and minus-strand CDSs below it.');
+  // The overlap row is a third band of pixels and has to be in the sentence:
+  // a reader who is not looking at the canvas would otherwise not know it is
+  // there, nor whether it is empty because nothing overlaps or because the
+  // layer has not been read.
+  if (overlapClause) parts.push(overlapClause);
   parts.push(...describePaintOrder(paintOrder));
   const wrapping = tracks.flatMap((track) => track.marks.filter((mark) => mark.wraps));
   if (wrapping.length > 0) {

@@ -31,9 +31,13 @@
  * carries.
  */
 import {
-  availableUpstreamNt, codonAtOffset, describeGeneSequence, describeSequenceMarkers, geneSequenceModel,
-  placementRangesText, sequenceMarkers, signedOffset,
+  availableUpstreamNt, codonAtOffset, describeGeneSequence, describeSequenceMarkers,
+  describeSequencePartners, geneSequenceModel, partnerPlacements, placementRangesText,
+  sequenceMarkers, signedOffset,
 } from '../core/gene-sequence-model.js';
+import {
+  OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, biotypeLabel, describePartner,
+} from '../core/gene-overlaps.js';
 import {
   overlapGroups, paddedHitRange, tickStep, ticksFor,
 } from '../core/gene-view-model.js';
@@ -97,6 +101,28 @@ const RULER_HEIGHT = 20;
 const ROW_HEIGHT = 22;
 const ROW_GAP = 3;
 const RESIDUE_RULER_HEIGHT = 14;
+/**
+ * One overlapping partner's aligned track, in pixels.
+ *
+ * The partner tracks sit under the residue ruler on the strip's own scale, so
+ * a partner's bases are under this gene's bases and the shared stretch can be
+ * read off the letters. A row per partner, never one shared row: two partners
+ * in one row would hide each other wherever they share a base of this gene,
+ * which is exactly the case the view exists to show.
+ */
+export const PARTNER_ROW_HEIGHT = 13;
+export const PARTNER_ROW_GAP = 2;
+/**
+ * Partner tracks the strip draws before it stops adding rows.
+ *
+ * The releases on this site reach three partners for one gene; the cap is well
+ * clear of that and keeps a pathological annotation from growing the strip
+ * without bound. Any partner past it keeps its row in the list below, and the
+ * description says how many are not drawn.
+ */
+export const MAX_PARTNER_ROWS = 6;
+/** Drawn width of a partner's direction arrow and of its continuation chevron. */
+const PARTNER_ARROW = 6;
 
 function svg(name, attributes = {}) {
   const node = document.createElementNS(SVG_NS, name);
@@ -264,6 +290,32 @@ export function residueTicks(firstCodon, lastCodon, target) {
   return ticks;
 }
 
+/**
+ * Characters of a locus tag the partner gutter has room for.
+ *
+ * The gutter is {@link LABEL_WIDTH} wide and the label is drawn at 9px in the
+ * monospace face, about 5.4px a character, with 6px of padding at its right
+ * edge. Anything longer than this runs off the left of the strip and is
+ * clipped by the element, which is how `M744_RS04085` came out reading
+ * `_RS04085` — a label a reader could mistake for another locus.
+ */
+export const PARTNER_LABEL_CHARS = Math.floor((LABEL_WIDTH - 6) / 5.4);
+
+/**
+ * A locus tag fitted to the partner gutter, keeping the end of it.
+ *
+ * The end is what distinguishes two loci of one release — every tag in a
+ * release shares its prefix — so a tag that does not fit keeps its tail behind
+ * a leading ellipsis rather than losing it. The whole identity is in the
+ * track's own label, its tooltip and the list beneath the strip, so nothing is
+ * only here.
+ */
+export function fitPartnerLabel(id) {
+  const text = String(id ?? '');
+  if (text.length <= PARTNER_LABEL_CHARS) return text;
+  return `\u2026${text.slice(-(PARTNER_LABEL_CHARS - 1))}`;
+}
+
 export class GeneSequenceView {
   /**
    * @param {HTMLElement} host emptied and rebuilt on first use.
@@ -293,6 +345,15 @@ export class GeneSequenceView {
     this.markerRows = [];
     /** Cached reachability; camera-only redraws must not rebuild models. */
     this.markerReachabilityCache = undefined;
+    /**
+     * This gene's overlapping partners placed on this strip's columns, or null
+     * while the overlap layer has not been read. Held rather than recomputed
+     * per frame: a placement depends on the gene and the upstream extent, not
+     * on the camera, so panning and zooming cost nothing.
+     */
+    this.partners = null;
+    /** `'loading'` or `'failed'` while the overlap layer has not landed. */
+    this.overlapsPending = null;
     this.gene = null;
     this.table = null;
     this.scheme = null;
@@ -316,6 +377,7 @@ export class GeneSequenceView {
   update({
     gene, table, scheme, schemeVersion, organism = DEFAULT_ORGANISM,
     markerPending = null, sequenceContextPending = null, markersVisible = true,
+    overlapsPending = null,
   }) {
     if (!this.built) this.build();
     const id = gene?.id ?? null;
@@ -328,8 +390,15 @@ export class GeneSequenceView {
     const markerChanged = layer?.id !== this.markerLayer?.id
       || markerPending !== this.markerPending
       || markersVisible !== this.markersVisible;
+    // The overlap layer landing changes this gene's partner tracks without
+    // changing the gene, so it is its own reason to redraw: without it the
+    // tracks would stay empty until the reader pinned something else.
+    const overlapChanged = overlapsPending !== this.overlapsPending
+      || Array.isArray(gene?.overlapPartners) !== Array.isArray(this.partners);
     // Hover re-renders the tab; nothing here depends on hover, so they cost nothing.
-    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged) return;
+    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged) {
+      return;
+    }
     this.gene = gene;
     this.table = table;
     this.scheme = scheme;
@@ -349,11 +418,34 @@ export class GeneSequenceView {
     this.markerRows = this.markerLayer && !markerPending && this.model
       ? sequenceMarkers(gene, this.model) : [];
     this.markerReachabilityCache = undefined;
+    this.overlapsPending = overlapsPending;
+    this.partners = this.placePartners();
     if (geneChanged) {
       this.camera = null;
       this.selectedCodon = null;
     }
     this.render();
+  }
+
+  /**
+   * This gene's overlapping partners on this strip's columns, or null when the
+   * overlap layer has not been read.
+   *
+   * Null and an empty array are different answers and are kept apart all the
+   * way to the drawing: an empty array is "every annotated gene was compared
+   * and none shares a base", and null is "nobody looked yet".
+   */
+  placePartners() {
+    const partners = this.gene?.overlapPartners;
+    if (!this.model || !Array.isArray(partners)) return null;
+    return partnerPlacements(this.model, partners);
+  }
+
+  /** The partner tracks this strip draws, widest overlap first. */
+  drawnPartners() {
+    return (this.partners ?? [])
+      .filter((partner) => partner.status === 'placed')
+      .slice(0, MAX_PARTNER_ROWS);
   }
 
   /** Extents the organism contract and the loaded sidecar both make available. */
@@ -372,6 +464,9 @@ export class GeneSequenceView {
     this.markerRows = this.markerLayer && !this.markerPending && this.model
       ? sequenceMarkers(this.gene, this.model) : [];
     this.markerReachabilityCache = undefined;
+    // A wider upstream window shows columns a partner may occupy, so the
+    // placements are re-derived with the model they are measured against.
+    this.partners = this.placePartners();
     this.camera = null;
     this.render();
     this.handlers.onAnnounce?.(`Showing ${formatCount(next)} upstream nucleotides.`);
@@ -576,6 +671,20 @@ export class GeneSequenceView {
     this.markerDetails.hidden = true;
     this.markerListHost.append(this.markerDetails);
 
+    // The overlapping-gene list, kept and refilled for the same reason the
+    // marker list is: a reader who opened it holds its state and its focus.
+    // Its own host, not the marker list's: the two writers each ask whether
+    // the reader is standing in *their* host, and sharing one would make each
+    // of them carry the other's focus away on every render.
+    this.partnerListHost = element('div');
+    this.partnerDetails = element('details', 'method-help gene-sequence-partners-list');
+    this.partnerSummary = document.createElement('summary');
+    this.partnerNote = element('p', 'panel-note');
+    this.partnerList = element('ul', 'gene-sequence-partner-rows');
+    this.partnerDetails.append(this.partnerSummary, this.partnerNote, this.partnerList);
+    this.partnerDetails.hidden = true;
+    this.partnerListHost.append(this.partnerDetails);
+
     this.selection = element('p', 'gene-sequence-selection');
     this.selection.setAttribute('role', 'status');
     this.selection.hidden = true;
@@ -587,7 +696,7 @@ export class GeneSequenceView {
       + 'zoom, 0 or Home returns to the start, and End goes to the stop. Click a codon to read it out.';
 
     this.figure.append(this.heading, toolbar, this.readout, this.strip, this.markerControlHost,
-      this.selection, this.instructions, this.markerListHost);
+      this.selection, this.instructions, this.markerListHost, this.partnerListHost);
     this.host.append(this.empty, this.figure);
     this.bindEvents();
     if (typeof ResizeObserver !== 'undefined') {
@@ -626,6 +735,7 @@ export class GeneSequenceView {
       // view's labelled host rather than on the document body.
       this.writeMarkerControl();
       this.writeMarkerList();
+      this.writePartnerList();
       this.writeSelection();
       return;
     }
@@ -640,6 +750,7 @@ export class GeneSequenceView {
     this.writeSelection();
     this.writeMarkerControl();
     this.writeMarkerList();
+    this.writePartnerList();
     this.draw();
   }
 
@@ -953,6 +1064,68 @@ export class GeneSequenceView {
   }
 
   /** The readout for the selected codon, hidden when none is selected. */
+  /**
+   * The complete overlapping-gene list, with a route to every plotted partner.
+   *
+   * The drawn tracks are a picture of the relationships; this is the record.
+   * Every partner has a row, including the ones past {@link MAX_PARTNER_ROWS}
+   * and the ones occupying no column this close-up shows, so a partner is
+   * never lost to the drawing's limits. A partner the map plots carries a
+   * button that pins it, which is how a reader navigates an overlap.
+   *
+   * Kept and refilled rather than rebuilt, like the marker list, so a reader
+   * holding the disclosure keeps it open and keeps their focus.
+   */
+  writePartnerList() {
+    const details = this.partnerDetails;
+    const held = this.heldIn(this.partnerListHost);
+    if (!this.model) {
+      details.hidden = true;
+      this.partnerSummary.textContent = '';
+      this.partnerNote.textContent = '';
+      this.partnerList.replaceChildren();
+      this.carryFocus(held);
+      return;
+    }
+    details.hidden = false;
+    const partners = this.partners;
+    if (partners === null) {
+      this.partnerSummary.textContent = `${OVERLAP_TAG_LABEL} \u2014 overlapping genes`;
+      this.partnerNote.textContent = OVERLAP_UNAVAILABLE.note;
+      this.partnerList.replaceChildren();
+      this.carryFocus(held);
+      return;
+    }
+    this.partnerSummary.textContent = partners.length === 0
+      ? `${OVERLAP_TAG_LABEL} \u2014 no overlapping gene`
+      : `${OVERLAP_TAG_LABEL} \u2014 overlapping genes (${formatCount(partners.length)})`;
+    this.partnerNote.textContent = describeSequencePartners(this.partnerDescription()).join(' ')
+      + ` ${OVERLAP_TAG_LABEL} stands for ${OVERLAP_TAG_EXPANSION}: annotated genes that share at `
+      + 'least one genomic base with this one on the same replicon, on either strand. The tag is '
+      + 'genomic context, so it does not change when a filter hides a partner.';
+    this.partnerList.replaceChildren(...partners.map((partner) => {
+      const item = document.createElement('li');
+      const id = element('span', 'gene-view-site-id', partner.id);
+      item.append(id, document.createTextNode(` \u00b7 ${this.describePartnerTrack(partner)}`));
+      if (partner.status !== 'placed') {
+        item.append(document.createTextNode(' It occupies no base this close-up shows, so it has '
+          + 'no track here.'));
+      }
+      if (partner.selectable) {
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'chip-button gene-sequence-open-partner';
+        open.dataset.overlapPartner = partner.id;
+        open.textContent = `Pin ${partner.id}`;
+        open.setAttribute('aria-label', `Pin ${partner.id}, an overlapping gene, and read its sequence`);
+        open.addEventListener('click', () => this.openPartner(partner));
+        item.append(document.createTextNode(' '), open);
+      }
+      return item;
+    }));
+    this.carryFocus(held);
+  }
+
   writeSelection() {
     const codon = this.selectedCodon === null ? null : this.model?.codons[this.selectedCodon] ?? null;
     this.selectedCodon = codon ? codon.index : null;
@@ -1079,7 +1252,7 @@ export class GeneSequenceView {
       preserveAspectRatio: 'xMinYMin meet',
     });
     const description = describeGeneSequence(model, this.shownRange(window),
-      this.markerDescription(crowding.crowded));
+      this.markerDescription(crowding.crowded), this.partnerDescription());
     const desc = svg('desc');
     desc.textContent = description;
     root.append(desc);
@@ -1099,6 +1272,7 @@ export class GeneSequenceView {
     if (cells) this.drawCells(area, rows, x, perNt, firstVisible, lastVisible, width);
     else this.drawBars(area, rows, x, perNt, firstVisible, lastVisible);
     this.drawJunctions(area, rows, x, firstVisible, lastVisible);
+    this.drawPartners(area, rows, x, firstVisible, lastVisible, width);
     // Last, so a mark sits over the letter it names rather than under it.
     this.drawMarkers(area, rows, x, crowding);
     root.append(area);
@@ -1117,8 +1291,19 @@ export class GeneSequenceView {
     const recoded = active ? bases + ROW_HEIGHT + ROW_GAP : null;
     const residues = (active ? recoded : bases) + ROW_HEIGHT + ROW_GAP;
     const residueRuler = residues + ROW_HEIGHT;
+    // The partner tracks come last, under the residue ruler, so adding one
+    // moves no row a reader is reading. A gene with no partner, and a gene
+    // whose overlap layer has not landed, add no height at all: the strip says
+    // which of the two it is in words rather than by reserving an empty band.
+    const partnersTop = residueRuler + RESIDUE_RULER_HEIGHT;
+    const partners = this.drawnPartners().map((partner, row) => ({
+      partner,
+      y: partnersTop + row * (PARTNER_ROW_HEIGHT + PARTNER_ROW_GAP),
+    }));
+    const height = partners.length === 0 ? partnersTop
+      : partners[partners.length - 1].y + PARTNER_ROW_HEIGHT + PARTNER_ROW_GAP;
     return {
-      markers, bases, recoded, residues, residueRuler, height: residueRuler + RESIDUE_RULER_HEIGHT,
+      markers, bases, recoded, residues, residueRuler, partners, height,
     };
   }
 
@@ -1143,6 +1328,14 @@ export class GeneSequenceView {
     label(rows.bases, this.model.scheme.active ? 'Original' : 'Bases');
     if (rows.recoded !== null) label(rows.recoded, 'Recoded');
     if (cells) label(rows.residues, 'Protein');
+    // Each partner row is named by the locus it draws, clipped to the gutter so
+    // a long tag cannot run under the sequence. The full identity, biotype and
+    // shared interval are in the row's own label and in the list below.
+    for (const { partner, y } of rows.partners) {
+      labels.append(text(LABEL_WIDTH - 6, y + PARTNER_ROW_HEIGHT - 3, fitPartnerLabel(partner.id), {
+        'text-anchor': 'end', class: 'gene-sequence-partner-label',
+      }));
+    }
     root.append(labels);
   }
 
@@ -1470,6 +1663,154 @@ export class GeneSequenceView {
       group.append(mark);
     }
     if (group.children.length > 0) area.append(group);
+  }
+
+  /**
+   * The overlapping partners, aligned to this gene's own columns.
+   *
+   * Each partner is drawn where it really is: a pale bar over every column its
+   * own annotated segments occupy, and a solid overlay over the columns the two
+   * genes share, so a reader can see the shared stretch against the letters
+   * above it. The bar is built from the strip's column map, which is the same
+   * lookup a marker is placed through, so the track and the base row cannot
+   * disagree about which base belongs to the partner.
+   *
+   * A direction arrow sits on the end the partner reads towards, which is the
+   * right-hand end for a partner transcribed the way this strip reads and the
+   * left for one against it; a partner whose strand the release does not record
+   * gets none, because an arrow would assert a direction nobody annotated.
+   *
+   * Edge continuation is a chevron at the clipped edge of the drawn area, and
+   * it is drawn from the genomic answer in the placement — whether the partner
+   * occupies the next base beyond what is drawn — not from the bar happening to
+   * reach the edge. So a partner that ends exactly at the last drawn column
+   * gets no chevron, and one that continues past a window the reader has panned
+   * to gets one at that window's edge.
+   */
+  drawPartners(area, rows, x, firstVisible, lastVisible, width) {
+    if (rows.partners.length === 0) return;
+    const group = svg('g', { class: 'gene-sequence-partners' });
+    const left = LABEL_WIDTH;
+    const right = LABEL_WIDTH + width;
+    for (const { partner, y } of rows.partners) {
+      const mid = y + PARTNER_ROW_HEIGHT / 2;
+      const row = svg('g', {
+        class: `gene-sequence-partner gene-sequence-partner-${partner.relation}`,
+        'data-overlap-partner': partner.id,
+      });
+      const bar = (run, className) => {
+        if (run.toOffset + 1 < firstVisible || run.fromOffset > lastVisible) return;
+        const x0 = Math.max(left, x(run.fromOffset));
+        const x1 = Math.min(right, x(run.toOffset + 1));
+        if (x1 <= x0) return;
+        row.append(svg('rect', {
+          class: className,
+          x: x0, y, width: Math.max(1, x1 - x0), height: PARTNER_ROW_HEIGHT, rx: 1,
+        }));
+      };
+      for (const run of partner.runs) bar(run, 'gene-sequence-partner-bar');
+      for (const run of partner.sharedRuns) bar(run, 'gene-sequence-partner-shared');
+      if (partner.relation !== 'unknown') {
+        const forward = partner.relation === 'same';
+        const last = partner.runs[partner.runs.length - 1];
+        const first = partner.runs[0];
+        const tipOffset = forward ? last.toOffset + 1 : first.fromOffset;
+        const tip = Math.min(right, Math.max(left, x(tipOffset)));
+        const base = forward ? tip - PARTNER_ARROW : tip + PARTNER_ARROW;
+        row.append(svg('path', {
+          class: 'gene-sequence-partner-arrow',
+          'aria-hidden': 'true',
+          d: `M ${tip} ${mid} L ${base} ${y + 1} L ${base} ${y + PARTNER_ROW_HEIGHT - 1} Z`,
+        }));
+      }
+      // The chevrons: one at each edge of the *drawn window* the partner has
+      // bases beyond, pointing out of it. Two things put bases there — more of
+      // the partner's own placed track, scrolled off the camera, and the
+      // genomic continuation past the end of the sequence this strip holds —
+      // and a reader panning the strip needs to be told about either. An edge
+      // the partner simply stops at gets nothing.
+      const first = partner.runs[0];
+      const last = partner.runs[partner.runs.length - 1];
+      const beyondLeft = partner.runs.some((run) => run.fromOffset < firstVisible)
+        || (partner.continuesBefore && firstVisible <= first.fromOffset);
+      const beyondRight = partner.runs.some((run) => run.toOffset > lastVisible)
+        || (partner.continuesAfter && lastVisible >= last.toOffset);
+      for (const edge of [
+        beyondLeft ? { at: left, direction: -1 } : null,
+        beyondRight ? { at: right, direction: 1 } : null,
+      ].filter(Boolean)) {
+        const tip = edge.at + edge.direction * 1;
+        const base = tip - edge.direction * PARTNER_ARROW;
+        row.append(svg('path', {
+          class: 'gene-sequence-partner-continues',
+          'aria-hidden': 'true',
+          d: `M ${tip} ${mid} L ${base} ${y + 2} L ${base} ${y + PARTNER_ROW_HEIGHT - 2} Z`,
+        }));
+      }
+      const label = this.describePartnerTrack(partner);
+      const title = svg('title');
+      title.textContent = label;
+      row.append(title);
+      interactiveAnnotation(row, label,
+        partner.selectable ? () => this.openPartner(partner) : null);
+      group.append(row);
+    }
+    area.append(group);
+  }
+
+  /** What one partner track says about itself to a pointer or a reader. */
+  describePartnerTrack(partner) {
+    const parts = [describePartner(partner)];
+    const placed = partner.runs
+      .map((run) => (run.fromOffset === run.toOffset ? signedOffset(run.fromOffset)
+        : `${signedOffset(run.fromOffset)} to ${signedOffset(run.toOffset)}`))
+      .join(', ');
+    parts.push(`Drawn on this close-up at ${placed}, on the same coordinates as the bases above.`);
+    if (partner.continuesBefore || partner.continuesAfter) {
+      const sides = partner.continuesBefore && partner.continuesAfter
+        ? 'both ends of the sequence this close-up holds'
+        : partner.continuesBefore ? 'the upstream end of the sequence this close-up holds'
+          : 'the downstream end of the sequence this close-up holds';
+      parts.push(`It continues past ${sides}.`);
+    }
+    parts.push('A chevron at an edge of the strip means this partner has bases beyond that edge '
+      + 'of the window as drawn, whether further along its own track or past the sequence '
+      + 'itself.');
+    parts.push(partner.selectable
+      ? 'Click or press Enter to pin it and read its own sequence.'
+      : `It is a ${biotypeLabel(partner.biotype)} this map does not plot, so it cannot be pinned.`);
+    return parts.join(' ');
+  }
+
+  /** Pin an overlapping partner, which is how a reader walks an overlap. */
+  openPartner(partner) {
+    if (!partner?.selectable) return;
+    this.handlers.onOpenPartner?.(partner.id, partner.geneIndex);
+  }
+
+  /**
+   * The overlap sentences for this strip's accessible description.
+   *
+   * `null` is the unavailable state and is passed through as such: the
+   * description then says the layer has not been read rather than that the
+   * gene has no partner.
+   */
+  partnerDescription() {
+    if (this.partners === null) return null;
+    const drawn = this.drawnPartners();
+    const outside = this.partners.filter((partner) => partner.status !== 'placed');
+    return {
+      total: this.partners.length,
+      drawn: drawn.map((partner) => ({
+        id: partner.id,
+        relation: partner.relation,
+        sharedBases: partner.sharedBases,
+        continues: partner.continuesBefore || partner.continuesAfter,
+        selectable: partner.selectable,
+      })),
+      notDrawn: this.partners.length - drawn.length,
+      outsideShown: outside.length,
+    };
   }
 
   /** What one mark says about itself to a pointer. */

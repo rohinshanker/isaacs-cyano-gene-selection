@@ -805,3 +805,58 @@ test('shipped fitness provenance stays a measurement, and a pooled export record
   assert.deepEqual(pooled.manifest.expressionSources.map((source) => source.id), pair.map((source) => source.id));
   assert.ok(pooled.manifest.expressionSources.every((source) => !('record' in source)));
 });
+
+test('the export carries the overlapping-gene identity beside the legacy flag', async () => {
+  const { dataset, registry } = await shippedContext();
+  // A locus the shipped layer reports two partners for, and one it reports
+  // none for, so both states are in the same export.
+  const overlapping = dataset.genes.find((gene) => gene.overlapPartners?.length === 2);
+  const alone = dataset.genes.find((gene) => gene.overlapPartners?.length === 0);
+  assert.ok(overlapping && alone, 'the shipped layer has both states');
+  const result = exportFor(dataset, registry, [overlapping.id, alone.id], [{ map: {} }]);
+  const columns = result.columns;
+  for (const name of ['overlapsNeighbor', 'overlapClass', 'overlapPartnerCount',
+    'overlapSharedBases', 'overlapPartners']) {
+    assert.ok(columns.includes(name), name);
+  }
+  const rows = new Map(result.rows.map((row) => [row.id, row]));
+  const row = rows.get(overlapping.id);
+  assert.equal(row.overlapPartnerCount, 2);
+  assert.equal(row.overlapClass, overlapping.overlapClass);
+  assert.equal(
+    row.overlapSharedBases,
+    overlapping.overlapPartners.reduce((total, partner) => total + partner.sharedBases, 0),
+  );
+  // Each partner is named with what it is, which way it reads, and exactly
+  // which bases it shares, so the relation can be rebuilt from the file.
+  const cells = row.overlapPartners.split('; ');
+  assert.equal(cells.length, 2);
+  for (const [position, cell] of cells.entries()) {
+    const partner = overlapping.overlapPartners[position];
+    const intervals = partner.sharedIntervals
+      .map((piece) => `${piece.from}-${piece.to}`).join('+');
+    assert.equal(cell, `${partner.id}:${partner.biotype}:${partner.strand}:`
+      + `${partner.sharedBases}:${intervals}`);
+  }
+  // A gene the layer reports no partner for exports an explicit zero, not a
+  // blank: the measurement is that it shares no base.
+  assert.equal(rows.get(alone.id).overlapPartnerCount, 0);
+  assert.equal(rows.get(alone.id).overlapClass, 'no-overlap');
+  assert.equal(rows.get(alone.id).overlapPartners, '');
+  // The adjacent-CDS envelope flag keeps its own column and its own meaning.
+  assert.equal(row.overlapsNeighbor, String(overlapping.overlapsNeighbor));
+});
+
+test('a gene with no overlap layer exports the columns empty rather than false', async () => {
+  const { dataset, registry } = await context();
+  const [first] = dataset.genes;
+  assert.equal(first.overlapPartners, undefined, 'the fixture publishes no overlap layer');
+  const result = exportFor(dataset, registry, [first.id], [{ map: {} }]);
+  const [row] = result.rows;
+  assert.equal(row.overlapClass, '');
+  assert.equal(row.overlapPartnerCount, '');
+  assert.equal(row.overlapSharedBases, '');
+  assert.equal(row.overlapPartners, '');
+  // And the legacy flag the pipeline writes is still there, under its own name.
+  assert.equal(row.overlapsNeighbor, String(first.overlapsNeighbor));
+});

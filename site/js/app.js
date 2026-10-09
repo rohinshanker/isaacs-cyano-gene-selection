@@ -44,7 +44,7 @@ import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
 import { TrnaViewer } from './ui/trna-viewer.js';
 import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
-import { metricHelp, functionCategoryHelp } from './core/metric-help.js';
+import { metricHelp, functionCategoryHelp, overlapColorHelp } from './core/metric-help.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
   UNKNOWN_CATEGORY_ID,
@@ -63,8 +63,15 @@ import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
 import {
   annotationSourceExplanation, describeValueScale, renderLegend, renderCategoryLegend,
+  renderOverlapLegend,
 } from './ui/legend.js';
-import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/colors.js';
+import {
+  buildColorScale, buildCategoryColorScale, buildOverlapColorScale, isDivergingRamp,
+} from './ui/colors.js';
+import {
+  OVERLAP_CLASSES, OVERLAP_CLASS_IDS, OVERLAP_COLOR_KEY, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE,
+  overlapFilterOf, overlapSelectionFor, passesOverlapClassFilter,
+} from './core/gene-overlaps.js';
 import { scaleControlState, syncScaleSelect } from './ui/scale-select.js';
 import { drawDirectionControlState, renderDrawDirection } from './ui/draw-direction.js';
 import {
@@ -386,6 +393,37 @@ function resolveCategoryModel() {
   return context.categories;
 }
 
+/**
+ * Adopt an overlapping-gene class selection, the one channel the OG filter and
+ * the OG colour key both write.
+ *
+ * It is a filter, so it narrows what is drawn and what the counts report; it
+ * never touches a gene's class, its partners or its tag, because those are
+ * genomic context. The announcement names what is kept rather than a number,
+ * so a reader who cannot see the key knows which classes are in force.
+ */
+function setOverlapSelection(selection, message = null) {
+  const next = [...new Set(selection)].filter((id) => OVERLAP_CLASS_IDS.includes(id)).sort();
+  const current = [...(state.overlapClassFilter ?? [])].sort();
+  if (next.join(',') === current.join(',')) return;
+  state.overlapClassFilter = next;
+  renderAll();
+  persist();
+  const labels = OVERLAP_CLASSES.filter((entry) => next.includes(entry.id))
+    .map((entry) => entry.label).join('; ');
+  announce(message ?? (next.length === 0
+    ? `Overlapping-gene filter cleared; every gene is shown.`
+    : `Overlapping-gene filter: showing ${labels}.`));
+}
+
+/** Toggle one OG class in the selection, from the colour key. */
+function toggleOverlapClassFilter(id) {
+  const selected = new Set(state.overlapClassFilter ?? []);
+  if (selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  setOverlapSelection([...selected]);
+}
+
 /** Flip one colour-source checkbox: only colouring and the legend counts change. */
 function toggleColorSource(id, enabled) {
   const next = new Set(state.colorSources);
@@ -404,6 +442,7 @@ function toggleColorSource(id, enabled) {
 
 function computeMask() {
   resolveCategoryModel();
+  context.overlaps = resolveOverlapModel();
   const { dataset, registry } = context;
   const count = dataset.genes.length;
   const mask = new Uint8Array(count).fill(1);
@@ -457,6 +496,20 @@ function computeMask() {
     }
   }
 
+  // The OG class selection, which is the one channel both the filter panel's
+  // three options and the colour key's class rows write. A gene whose overlap
+  // context has not been read passes whatever is selected: hiding it would turn
+  // a file still in flight into a claim about which genes overlap.
+  const overlapSelection = state.overlapClassFilter ?? [];
+  if (overlapSelection.length > 0 && dataset.geneOverlaps) {
+    for (let i = 0; i < count; i += 1) {
+      if (!mask[i]) continue;
+      if (!passesOverlapClassFilter(dataset.geneOverlaps, dataset.genes[i], overlapSelection)) {
+        mask[i] = 0;
+      }
+    }
+  }
+
   // Kept separate from the category-filtered mask below: a legend hover
   // preview narrows this base mask to one category without ever touching
   // `state.categoryFilter`, so numeric/exception/expression/protein filters
@@ -500,9 +553,22 @@ function previewCategory(id) {
     apply(context.mask);
     return;
   }
+  const base = context.baseMask;
+  // An OG class previews through the overlap index, a function category
+  // through the category model: one preview channel, two vocabularies, and
+  // neither can be read against the other's buckets.
+  if (OVERLAP_CLASS_IDS.includes(id)) {
+    const overlaps = overlapModel();
+    if (!overlaps.index) return;
+    const preview = new Uint8Array(base.length);
+    for (let i = 0; i < base.length; i += 1) {
+      preview[i] = base[i] && OVERLAP_CLASS_IDS[overlaps.values[i]] === id ? 1 : 0;
+    }
+    apply(preview);
+    return;
+  }
   const categories = context.categories;
   if (!categories) return;
-  const base = context.baseMask;
   const preview = new Uint8Array(base.length);
   for (let i = 0; i < base.length; i += 1) {
     preview[i] = base[i] && categoryBucketId(categories, i) === id ? 1 : 0;
@@ -688,6 +754,59 @@ function scheduleTiming() {
 }
 
 /**
+ * The OG colour channel: one bucket per class, and the state nothing is known in.
+ *
+ * It reads the overlap index the loader built, so the classes a gene is
+ * coloured by, the classes the legend counts and the classes the filter keeps
+ * are one resolution. While the layer is loading or has failed every gene
+ * falls in one further neutral bucket, exactly as the function categories do:
+ * not loaded yet must not look like no overlap.
+ */
+function resolveOverlapModel() {
+  const { dataset } = context;
+  const pending = isLoading(dataset, 'geneOverlaps') ? FILE_STATE.LOADING
+    : hasFailed(dataset, 'geneOverlaps') ? FILE_STATE.FAILED : null;
+  const index = dataset.geneOverlaps ?? null;
+  const total = dataset.genes.length;
+  if (!index) {
+    // One bucket past the classes, which is the neutral the scale appends.
+    const values = new Int16Array(total).fill(OVERLAP_CLASSES.length);
+    return {
+      index: null,
+      pending: pending ?? FILE_STATE.ABSENT,
+      values,
+      counts: new Int32Array(OVERLAP_CLASSES.length),
+      overlapping: 0,
+      nonOverlapping: 0,
+    };
+  }
+  let overlapping = 0;
+  for (let i = 0; i < total; i += 1) {
+    if (index.values[i] !== OVERLAP_CLASS_IDS.indexOf('no-overlap')) overlapping += 1;
+  }
+  return {
+    index,
+    pending: null,
+    values: index.values,
+    counts: index.counts,
+    overlapping,
+    nonOverlapping: total - overlapping,
+  };
+}
+
+/**
+ * The OG model for this render.
+ *
+ * Resolved by `computeMask`, which runs on every path that redraws, and read
+ * from the render context after that, exactly as the category model is: a file
+ * landing or an organism changing must move the classes, so nothing here is
+ * cached beyond one render.
+ */
+function overlapModel() {
+  return context.overlaps ?? resolveOverlapModel();
+}
+
+/**
  * The colour scale in effect, and the availability of every scale the current
  * Colour by could take.
  *
@@ -703,6 +822,16 @@ function scheduleTiming() {
  *   scale: string|null, availability: Map<string, object>|null}}
  */
 function resolveColorScale() {
+  if (state.colorBy === OVERLAP_COLOR_KEY) {
+    // No ramp is in effect, so the link and the export manifest say so rather
+    // than carrying a scale nothing is drawing.
+    state.colorScale = null;
+    const overlaps = overlapModel();
+    return {
+      categorical: true, overlap: true, metric: null, values: overlaps.values,
+      scale: null, availability: null,
+    };
+  }
   const categories = context.categories ?? resolveCategoryModel();
   if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
     // No scale is in effect, so the link and the export manifest say so rather
@@ -742,6 +871,34 @@ function resolveColorScale() {
  */
 function colorModel() {
   const resolved = resolveColorScale();
+  // One control state for both toolbars, decided where the scales are defined,
+  // and the same arrangement for Draw on top. Built once here, before the
+  // channel-specific parts, so no colour channel can acquire a second notion
+  // of what the Scale control is.
+  const shared = {
+    scaleControl: scaleControlState(resolved),
+    drawDirectionControl: drawDirectionControlState(resolved, state.drawOnTop),
+    drawOnTop: normalizeDrawDirection(state.drawOnTop),
+  };
+  if (resolved.overlap) {
+    const overlaps = overlapModel();
+    const label = overlaps.pending
+      ? `Overlapping genes (${OVERLAP_TAG_LABEL}, not loaded yet)`
+      : `Overlapping genes (${OVERLAP_TAG_LABEL})`;
+    return {
+      ...shared,
+      categories: null,
+      overlaps,
+      categorical: true,
+      overlap: true,
+      metric: { label },
+      values: overlaps.values,
+      scale: buildOverlapColorScale({ pending: Boolean(overlaps.pending) }),
+      valueScale: null,
+      derived: null,
+      label,
+    };
+  }
   const categories = context.categories ?? resolveCategoryModel();
   const pendingCategories = resolved.categorical && categories.pending;
   const metric = resolved.categorical
@@ -758,17 +915,13 @@ function colorModel() {
       transform: valueScaleTransform(resolved.scale, values),
     });
   return {
+    ...shared,
     categories,
     categorical: resolved.categorical,
     metric,
     values,
     scale,
     valueScale: resolved.scale,
-    // One control state for both toolbars, decided where the scales are defined.
-    scaleControl: scaleControlState(resolved),
-    // The same arrangement for Draw on top: one state, both surfaces.
-    drawDirectionControl: drawDirectionControlState(resolved, state.drawOnTop),
-    drawOnTop: normalizeDrawDirection(state.drawOnTop),
     derived: resolved.categorical ? categories.derived : null,
     label: metric.label,
   };
@@ -816,6 +969,10 @@ function drawOrderSentence(colors) {
     categorical: colors.categorical,
     direction: colors.drawOnTop,
     metricLabel: colors.categorical ? null : colors.label,
+    // Only the function-category channel resolves a category from two kinds of
+    // evidence, so only its sentence names the reviewed-over-derived half of
+    // the rule. See describeDrawOrder.
+    derivedEvidence: Boolean(colors.derived),
   });
 }
 
@@ -829,6 +986,7 @@ function drawOrderSentence(colors) {
 function drawOrderExplanation(colors) {
   return describePaintOrder({
     categorical: colors.categorical,
+    derivedEvidence: Boolean(colors.derived),
     order: drawOrderSentence(colors),
     accession: null,
     columns: null,
@@ -845,6 +1003,20 @@ function drawOrderExplanation(colors) {
  */
 function renderColorLegend(host, colors, { markerConventions = true } = {}) {
   const { categorical, categories, metric, values, scale } = colors;
+  if (colors.overlap) {
+    renderOverlapLegend(host, {
+      scale,
+      counts: colors.overlaps.counts,
+      index: colors.overlaps.index,
+      pending: colors.overlaps.pending,
+      selected: state.overlapClassFilter,
+      onHoverCategory: (id) => hoverCategory(id),
+      onFocusCategory: (id) => focusCategory(id),
+      onToggleCategory: (id) => toggleOverlapClassFilter(id),
+      onResetCategoryFilter: () => setOverlapSelection([], 'Overlapping-gene class selection cleared.'),
+    });
+    return;
+  }
   if (categorical) {
     let hiddenReviewedCount = 0;
     let hiddenUnknownCount = 0;
@@ -908,6 +1080,14 @@ function colorSelectOptions() {
   if (context.dataset.functionCategories) {
     options.push({ group: 'Reviewed function', value: FUNCTION_COLOR_KEY, label: 'Function category' });
   }
+  // Offered for every organism, whatever its overlap layer has done: the
+  // channel's own legend says when nothing has been read, which is a state a
+  // reader has to be able to reach rather than an option that quietly vanishes.
+  options.push({
+    group: 'Genomic context',
+    value: OVERLAP_COLOR_KEY,
+    label: `Overlapping genes (${OVERLAP_TAG_LABEL})`,
+  });
   for (const family of context.registry.families) {
     for (const metric of familyMetrics(family)) {
       options.push({ group: family, value: metric.key, label: optionLabel(metric) });
@@ -917,6 +1097,10 @@ function colorSelectOptions() {
 }
 
 function renderColorHelp(host) {
+  if (state.colorBy === OVERLAP_COLOR_KEY) {
+    renderMetricHelp(host, overlapColorHelp(overlapModel()), citationsManifest, organism);
+    return;
+  }
   const categories = context.categories ?? resolveCategoryModel();
   if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
     renderMetricHelp(host, functionCategoryHelp({
@@ -1145,6 +1329,10 @@ function renderChromosomeView() {
     hasSelection: pinnedIndex() >= 0 || context.activeIndex >= 0 || context.hoveredIndex >= 0,
     tssPending: pendingState(context.dataset, 'tssEvidence'),
     showStartSites: markersVisibleIn('chromosome'),
+    // The overlap index itself, not a derived list: the view reads the shared
+    // stretches and the partner identities straight out of it and recomputes
+    // nothing per frame.
+    geneOverlaps: context.dataset.geneOverlaps ?? null,
   });
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
@@ -1156,6 +1344,7 @@ function renderChromosomeView() {
   geneSequenceView ??= new GeneSequenceView(chromosomeView.sequenceElement(), {
     onAnnounce: (message) => announce(message),
     onMarkersVisibleChange: (visible) => setMarkersVisibleIn('sequence', visible),
+    onOpenPartner: (id, index) => openOverlapPartner(id, index),
   });
   const pinned = pinnedIndex();
   geneSequenceView.update({
@@ -1167,6 +1356,7 @@ function renderChromosomeView() {
     markerPending: pendingState(context.dataset, 'tssEvidence'),
     sequenceContextPending: pendingState(context.dataset, 'sequenceContext'),
     markersVisible: markersVisibleIn('sequence'),
+    overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
   });
   // The toolbar exists once the view has rendered, so its section follows.
   chromosomeDataSources()?.update(dataSourcesState());
@@ -1263,6 +1453,7 @@ function renderControlsGeneViewer(index) {
     organism,
     startSitesVisible: markersVisibleIn('gene-controls'),
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-controls', visible),
+    onOpenPartner: (id, partnerIndex) => openOverlapPartner(id, partnerIndex),
   });
 }
 
@@ -1361,6 +1552,14 @@ function renderAll({ schemeErrors = [] } = {}) {
       directDetectionLabel: organism.copy.directProteomicsLabel,
     } : null,
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
+    overlapClassFilter: state.overlapClassFilter,
+    // Of the whole plotted set, not of what the other filters leave: the tag
+    // records genomic context, so these two counts must not move as a reader
+    // narrows something else. Null while nothing has been read.
+    overlapCounts: overlapModel().index ? {
+      overlapping: overlapModel().overlapping,
+      nonOverlapping: overlapModel().nonOverlapping,
+    } : null,
   });
   shortlistPanel.update({
     ids: state.shortlist,
@@ -1476,6 +1675,75 @@ function setPinned(index) {
   } else if (previousId) {
     announce(`Unpinned ${previousId}.`);
   }
+}
+
+/**
+ * Pin an overlapping partner, which is how a reader walks an overlap.
+ *
+ * Only a partner this map plots can be pinned, and both gene viewers already
+ * refuse to offer the route for one it does not; this re-checks against the
+ * dataset's own index rather than trusting the index the caller carried, so a
+ * stale view cannot pin the wrong row. A partner the filters currently hide is
+ * still pinned: the tag records genomic context, and refusing to open a gene
+ * because a filter hides it would make the overlap unreachable from the
+ * relationship that names it. The announcement says so.
+ */
+function openOverlapPartner(id, partnerIndex = -1) {
+  const index = context.dataset.indexById.get(id)
+    ?? (partnerIndex >= 0 ? partnerIndex : undefined);
+  if (index === undefined || index < 0 || index >= context.dataset.genes.length) {
+    announce(`${id} is an annotated gene this map does not plot, so it cannot be opened here.`);
+    return;
+  }
+  // Which host the reader activated the partner from, read before the rebuild
+  // detaches the control they were holding. Pinning re-renders every gene
+  // surface, so without this the keyboard reader lands on <body> with nothing
+  // named and no way back into the viewer they were walking.
+  const from = overlapNavigationHost(document.activeElement);
+  const hidden = context.mask && !context.mask[index];
+  setPinned(index);
+  if (hidden) {
+    announce(`${id} is hidden by the current filters and is pinned anyway, because an overlap is `
+      + 'genomic context rather than a measurement.');
+  }
+  restoreOverlapFocus(from);
+}
+
+/**
+ * The labelled regions an overlap can be opened from, by name.
+ *
+ * Each is a focusable group with an accessible name — the two gene
+ * visualizers' hosts and the sequence close-up's strip — so landing on one
+ * leaves a keyboard reader somewhere that says where they are and what is in
+ * it. They are resolved by name rather than held as nodes because pinning
+ * rebuilds them: the detail column replaces its whole subtree, so the element
+ * the reader activated no longer exists by the time focus has to go somewhere.
+ */
+const OVERLAP_NAVIGATION_HOSTS = Object.freeze({
+  controls: () => document.querySelector('#gene-viewer-controls'),
+  detail: () => element('detail').querySelector('.gene-view'),
+  sequence: () => document.querySelector('.gene-sequence-strip'),
+});
+
+/** Which of those regions a node is inside, or null. */
+function overlapNavigationHost(node) {
+  if (!node || node === document.body) return null;
+  for (const [name, find] of Object.entries(OVERLAP_NAVIGATION_HOSTS)) {
+    const host = find();
+    if (host && (host === node || host.contains(node))) return name;
+  }
+  return null;
+}
+
+/**
+ * Put focus back in the region the reader came from, now that it describes the
+ * gene they opened. A region that did not survive the rebuild falls back to
+ * the gene detail column, which is where the newly pinned gene is described.
+ */
+function restoreOverlapFocus(name) {
+  if (!name) return;
+  const host = OVERLAP_NAVIGATION_HOSTS[name]?.();
+  (host?.isConnected ? host : element('detail')).focus?.({ preventScroll: true });
 }
 
 /**
@@ -2328,6 +2596,7 @@ function normalizeAndApply(decoded) {
   if (state.trafficKey && !context.registry.byKey.has(state.trafficKey)) state.trafficKey = null;
   if (!state.colorBy || !((context.registry.byKey.has(state.colorBy)
     && metricInScope(context.registry.byKey.get(state.colorBy)))
+    || state.colorBy === OVERLAP_COLOR_KEY
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
     state.colorBy = freshViewColorKey(scopedRegistry(), context.dataset.functionCategories);
   }
@@ -2581,6 +2850,7 @@ function colorMetricFileKeys(key) {
     required.add(fileKey);
   };
   if (key === FUNCTION_COLOR_KEY) addWithDependencies('sourceDerivedCategories');
+  if (key === OVERLAP_COLOR_KEY) addWithDependencies('geneOverlaps');
   const direct = context.registry.byKey.get(key)?.fileKey ?? null;
   if (direct) addWithDependencies(direct);
   if (isTypeKey(key)) {
@@ -2609,7 +2879,9 @@ async function renderSelectedColorMetric(key) {
   const host = activeDatasetColorHost();
   const operation = datasetColorProgress.begin({
     fileKeys,
-    metricLabel: metric?.label ?? (key === FUNCTION_COLOR_KEY ? 'Function category' : key),
+    metricLabel: metric?.label
+      ?? (key === FUNCTION_COLOR_KEY ? 'Function category'
+        : key === OVERLAP_COLOR_KEY ? `Overlapping genes (${OVERLAP_TAG_LABEL})` : key),
     host,
     snapshot: staged.snapshot(),
   });
@@ -2700,6 +2972,12 @@ function flushLandings() {
   // rather than all at once. An intro still running picks the colours up itself.
   if (revealed && keys.has('sourceDerivedCategories') && state.colorBy === FUNCTION_COLOR_KEY
     && !isLoading(dataset, 'sourceDerivedCategories') && !plot.introActive) {
+    startMapIntro({ appearMs: 0, colourMs: loadTiming.mapIntro.colourMs });
+  }
+  // The same for the overlap classes, which arrive the same way and under the
+  // same not-loaded neutral.
+  if (revealed && keys.has('geneOverlaps') && state.colorBy === OVERLAP_COLOR_KEY
+    && !isLoading(dataset, 'geneOverlaps') && !plot.introActive) {
     startMapIntro({ appearMs: 0, colourMs: loadTiming.mapIntro.colourMs });
   }
 }
@@ -3070,6 +3348,9 @@ async function boot() {
       renderAll();
       announce(`All filters cleared. Showing all ${formatCount(context.dataset.genes.length)} genes.`);
     },
+    onOverlapFilterChange: (mode) => {
+      setOverlapSelection(overlapSelectionFor(mode));
+    },
     onExceptionFilterChange: (mode) => {
       state.exceptionFilter = mode;
       renderAll();
@@ -3205,6 +3486,7 @@ async function boot() {
     onShortlistToggle: (index) => toggleShortlist(index),
     onUnpin: () => setPinned(-1),
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-detail', visible),
+    onOpenPartner: (id, index) => openOverlapPartner(id, index),
   });
 
   shortlistPanel = new ShortlistPanel(element('shortlist'), {

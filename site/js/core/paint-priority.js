@@ -256,10 +256,19 @@ export function paintRanks(indices, model) {
  * @param {{categorical: boolean, direction?: string, metricLabel?: string|null}} model
  * @returns {string}
  */
-export function describeDrawOrder({ categorical, direction, metricLabel = null }) {
+export function describeDrawOrder({
+  categorical, direction, metricLabel = null, derivedEvidence = true,
+}) {
   if (categorical) {
-    return 'Where marks overlap, a lab-reviewed category draws over a source-derived one, '
-      + 'and both draw over genes with no category.';
+    // The reviewed-over-derived half of the rule is about where a category
+    // came from, and only the function-category channel has two origins. A
+    // categorical channel with one — the overlapping-gene classes, whose class
+    // is read off the annotation and nothing else — would be described by a
+    // distinction it does not have, so it is left out rather than restated.
+    return derivedEvidence
+      ? 'Where marks overlap, a lab-reviewed category draws over a source-derived one, '
+        + 'and both draw over genes with no category.'
+      : 'Where marks overlap, a gene with a class draws over a gene with none.';
   }
   const label = metricLabel ? `${metricLabel} ` : '';
   return normalizeDrawDirection(direction) === 'lowest'

@@ -60,9 +60,85 @@ implementation can proceed with the definition and compact-view design below.
   and existing navigation. Keep dense overlaps keyboard/touch accessible and
   avoid recalculating relationships on every pointer movement or redraw.
 
+## Implementation, 2026-10-09 (`claude-implementer`, DEM-337)
+
+Delivered on `agent/claude-implementer/dem-337` from baseline `4518be8`. The
+reusable contract is now
+[docs/validation/gene-overlaps.md](../../validation/gene-overlaps.md); the
+payload is in
+[data-contract.md](../../validation/data-contract.md#overlapping-genes-and-what-overlapsneighbor-is-not).
+
+**Audit of the old producer.** `scripts/build_features.py::add_context` writes
+`overlapsNeighbor` from the gap to the two CDSs adjacent in coordinate order,
+on each gene's bounding envelope. It is adjacency-only, coding-only,
+envelope-based and carries no partner, so it misses 3 / 70 / 8 / 34 / 15
+plotted loci per organism against the full annotation. It keeps its own meaning
+and its own export column and is **never** used as the OG answer or as a
+fallback for it.
+
+**Layer.** `tools/build_gene_overlaps.py` builds `gene_overlaps.json` per
+organism from that organism's pinned GFF3: every `gene`/`pseudogene` row with a
+locus tag, extent from its annotated child segments (exons where present, the
+gene row's own span only where the release gives no child), overlap = at least
+one shared base on the same replicon on either strand, exact integer
+arithmetic. It publishes `coveredGenes`, the inventory of every gene compared,
+so zero partners is a measured absence for a named identity.
+
+| organism | annotated genes | overlapping | pairs | pairwise shared bases | plotted CDSs tagged |
+| --- | --- | --- | --- | --- | --- |
+| utex2973 | 2,776 | 717 | 402 | 5,236 | 714 of 2,715 |
+| ecoli-k12-mg1655 | 4,651 | 1,454 | 842 | 16,518 | 1,361 of 4,287 |
+| ecoli-mds42-public-reference | 3,763 | 1,029 | 592 | 4,827 | 1,015 of 3,586 |
+| ecoli-dh10b-public-reference | 4,590 | 1,316 | 761 | 6,629 | 1,255 of 4,227 |
+| ecoli-syn61-delta3-ev5 | 3,808 | 926 | 524 | 3,789 | 896 of 3,549 |
+
+No organism needs an unavailable state for missing input. `tools/validate_contract.py`
+re-derives the whole relation from the pinned annotation independently of the
+producer and agrees for all five.
+
+**Views.** Chromosome: a dedicated overlap row per band with one block per
+shared stretch, direction arrows at a readable zoom, a dark underline inside
+each overlapping CDS's own bar, a `role="status"` readout naming both genes,
+both partners outlined together, labelled Previous/Next overlap controls and
+`O`/`Shift+O`. Expanded (sequence close-up): one aligned partner track per
+partner on the strip's own coordinates, shared bases solid, direction arrows,
+edge-continuation chevrons, and a Pin button per plotted partner. Compact
+viewer: the OG badge, a reserved one-lane overlap strip with per-partner
+direction arrows, and the complete partner list with an Open button per plotted
+partner. OG colour mode with a five-class key, a three-state filter writing one
+class-selection channel, and `og=` in the hash.
+
+**Coordinator findings resolved.** OG-F1 (`coveredGenes` inventory, validated
+against every plotted CDS), OG-F2 (no legacy fallback anywhere; the class
+filter is suspended and says so while the layer is unread), OG-F3
+(`overlap-strand-unrecorded` class), OG-F4 (`pairwiseSharedBases`, labelled),
+OG-F5 (clearing the layer clears the joined gene fields), OG-F6 (no biological
+generalisation; the "predicted" wording narrowed), OG-UI1 (`fitPartnerLabel`
+plus a CSS specificity fix the browser verified at 54.2 px inside a 60 px
+gutter), OG-UI2 (short rule in the key, full definition in the colour
+explanation), OG-UI3 (focus handed back to a named region), OG-UI4 (a mark is a
+pair, with a `key`; stepper controls reach every coincident pair).
+
 ## Verification
 
-Implementation is in progress; no overlap feature is yet complete.
+Final gates on `agent/claude-implementer/dem-337`, 2026-10-09: `npm test`
+1,461 JavaScript tests; canonical `.venv/bin/python -m pytest -q` 957 tests and
+46 subtests with one skip; `tools/validate_contract.py` 126 / 88 / 94 / 94 /
+100 checks with one declared skip each over the five organisms;
+`tools/build_gene_overlaps.py check` and `tools/build_data_manifest.py check`
+clean for all five. Rendered against the real app served from this worktree at
+375×812, 768×1024, 1280×800 and 1440×900 and across the 960 px and 1240 px
+breakpoints: no horizontal overflow, no console message, no failed request.
+Exercised: whole-genome and close zoom, pan, a one-base overlap, a tRNA partner
+the map does not plot, an origin-crossing locus, the OG colour mode on three
+organisms, all three filter states and a colour-key class selection, partner
+navigation from both viewers including a partner the filters hide, keyboard
+focus on the overlap marks, touch-pointer inspection of the row, the
+Previous/Next overlap stepper over MG1655's coincident `b4793`/`b4455` and
+`b4793`/`b4647` pairs, and the unavailable state served from a deployment with
+no layer. Screenshots and snapshots are under
+`/tmp/cyano-overlap-20261009/worker/dem-337-cyano-overlaps/`, outside Git.
+
 Ticket intake; no UI or overlap data had changed at intake. Intake baseline gates on
 2026-10-09 passed: 1,396 JavaScript tests; 938 Python tests and 36 subtests with
 one skip; 119 contract checks with one declared skip. These results do not

@@ -102,6 +102,30 @@ test('the map toolbar puts colour with its scale, then its explanation, then gen
  * accessible descriptions state it, so nothing on screen can claim a scale that
  * is not the one being drawn.
  */
+/**
+ * Opening a partner rebuilds every gene surface, including the control the
+ * reader activated. Without a handoff the keyboard lands on `<body>` with no
+ * accessible name and no way back into the viewer they were walking, which is
+ * what a browser check of the first implementation found.
+ */
+test('opening an overlapping partner hands focus to a named region', () => {
+  const open = app.slice(app.indexOf('function openOverlapPartner('),
+    app.indexOf('function overlapNavigationHost('));
+  assert.match(open, /const from = overlapNavigationHost\(document\.activeElement\);/,
+    'the region is read before the rebuild detaches the control');
+  assert.match(open, /restoreOverlapFocus\(from\);/, 'and focus is put back after it');
+  // Resolved by name, not by node: the detail column replaces its subtree, so
+  // the element the reader activated no longer exists.
+  const hosts = app.slice(app.indexOf('const OVERLAP_NAVIGATION_HOSTS'),
+    app.indexOf('function restoreOverlapFocus('));
+  for (const name of ['controls', 'detail', 'sequence']) {
+    assert.ok(hosts.includes(`${name}:`), name);
+  }
+  const restore = app.slice(app.indexOf('function restoreOverlapFocus('));
+  assert.match(restore.slice(0, 400), /host\?\.isConnected \? host : element\('detail'\)/,
+    'a region that did not survive falls back to the gene detail column');
+});
+
 test('the colour scale is resolved once and named in both accessible descriptions', () => {
   assert.equal((app.match(/function resolveColorScale\(\)/g) ?? []).length, 1,
     'one function resolves the scale in effect');

@@ -55,6 +55,7 @@ export const DATA_FILES = Object.freeze([
   file('candidateEvidence', 'candidate_evidence.json', 2, 'candidate evidence'),
   file('sourceDerivedCategories', 'source-derived-categories-v1.json', 2,
     'derived function categories', { needs: ['annotations', 'candidateEvidence'] }),
+  file('geneOverlaps', 'gene_overlaps.json', 2, 'overlapping-gene context'),
   file('lengthCohorts', 'length_cohorts.json', 2, 'length inventory'),
   file('codonPca', 'codon_pca.json', 2, 'codon-space loadings'),
   file('codonPcaReference', 'codon_pca_reference.json', 2,

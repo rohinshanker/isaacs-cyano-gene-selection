@@ -47,7 +47,8 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'goIeaDerivedCategory', 'goIeaDerivedProbability',
   'seqid', 'start', 'end',
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
-  'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor', 'operonId',
+  'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor',
+  'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
   'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
   'tssInitiationBasisReason', 'tssMappedSiteCount', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus',
@@ -435,7 +436,21 @@ export function buildExport({
         translationalException: gene.translationalException ?? '',
         cdsSegmentCount: Array.isArray(gene.cdsSegments) ? gene.cdsSegments.length : 1,
         cdsSegments: Array.isArray(gene.cdsSegments) ? JSON.stringify(gene.cdsSegments) : '',
+        // The adjacent-CDS envelope flag the pipeline writes, kept under its
+        // own name and its own meaning. The four columns beside it are the OG
+        // relation: every annotated gene, exact segments, both strands.
         overlapsNeighbor: typeof gene.overlapsNeighbor === 'boolean' ? String(gene.overlapsNeighbor) : '',
+        overlapClass: gene.overlapClass ?? '',
+        overlapPartnerCount: Array.isArray(gene.overlapPartners)
+          ? gene.overlapPartners.length : '',
+        overlapSharedBases: Array.isArray(gene.overlapPartners)
+          ? gene.overlapPartners.reduce((total, partner) => total + partner.sharedBases, 0) : '',
+        overlapPartners: Array.isArray(gene.overlapPartners)
+          ? gene.overlapPartners.map((partner) => `${partner.id}:${partner.biotype}:`
+            + `${partner.strand ?? '?'}:${partner.sharedBases}:`
+            + partner.sharedIntervals.map((piece) => `${piece.from}-${piece.to}`).join('+'))
+            .join('; ')
+          : '',
         operonId: gene.operonId ?? '',
         expressionBasis: basis.basis,
         expressionSourceId: gene.expressionSourceId ?? '',

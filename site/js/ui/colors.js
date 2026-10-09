@@ -54,6 +54,38 @@ export const ACTIVE_FOCUS_COLOR = '#2f6f8f';
 /** The one colour every CDS takes while the function categories are loading. */
 export const PENDING_CATEGORY_COLOR = '#b7c2cd';
 
+/**
+ * The OG classes' colours, in `OVERLAP_CLASSES` order.
+ *
+ * Five hues — the Okabe-Ito set plus Tol's wine — that stay apart under
+ * deuteranopia, protanopia and tritanopia, and none of them is the pale grey
+ * an absent value draws in: a
+ * gene measured as overlapping nothing is a measurement, so it is filled, and
+ * only a gene whose overlap context has not been read takes the neutral
+ * {@link PENDING_CATEGORY_COLOR}.
+ */
+export const OVERLAP_CLASS_COLORS = Object.freeze([
+  '#56b4e9', '#009e73', '#e69f00', '#cc79a7', '#882255',
+]);
+
+/**
+ * A categorical scale over an explicit colour list.
+ *
+ * Every categorical channel reaches the canvas through this one bucket
+ * interface, so the chromosome view and the scatter maps cannot acquire a
+ * second notion of what a category colour is.
+ */
+export function buildCategoricalScale(buckets) {
+  const frozen = Object.freeze([...buckets]);
+  return {
+    buckets: frozen,
+    categorical: true,
+    bucketOf(value) {
+      return Number.isInteger(value) && value >= 0 && value < frozen.length ? value : -1;
+    },
+  };
+}
+
 /** Categorical colours use the same bucket interface as numeric canvas scales. */
 export function buildCategoryColorScale(categoryCount, { pending = false } = {}) {
   if (!Number.isInteger(categoryCount) || categoryCount < 1 || categoryCount > CATEGORICAL.length) {
@@ -64,13 +96,18 @@ export function buildCategoryColorScale(categoryCount, { pending = false } = {})
   // a neutral that is none of the category colours and not the open ring an
   // unknown CDS draws as: not loaded yet must not look like no category.
   if (pending) buckets.push(PENDING_CATEGORY_COLOR);
-  return {
-    buckets,
-    categorical: true,
-    bucketOf(value) {
-      return Number.isInteger(value) && value >= 0 && value < buckets.length ? value : -1;
-    },
-  };
+  return buildCategoricalScale(buckets);
+}
+
+/**
+ * The OG colour scale. While the overlap layer has not been read every CDS
+ * falls in one further neutral bucket, for the same reason the function
+ * categories have one: not loaded yet must not look like no overlap.
+ */
+export function buildOverlapColorScale({ pending = false } = {}) {
+  return buildCategoricalScale(pending
+    ? [...OVERLAP_CLASS_COLORS, PENDING_CATEGORY_COLOR]
+    : OVERLAP_CLASS_COLORS);
 }
 
 function interpolate(stops, t) {

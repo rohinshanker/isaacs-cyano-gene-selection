@@ -669,7 +669,8 @@ when the recoding scheme changes.
   "minLocalGc": 0.38, "maxLocalGc": 0.71, "gc5prime": 0.49,
 
   "neighborUpstreamNt": 112, "neighborDownstreamNt": -4,
-  "overlapsNeighbor": true, "operonId": "op_0421", "operonPosition": 2, "operonSize": 4,
+  "overlapsNeighbor": true,      // adjacent-CDS envelope flag; NOT the OG relation, see below
+  "operonId": "op_0421", "operonPosition": 2, "operonSize": 4,
 
   "expression": 1284.6,          // measured abundance only; null when unmeasured
   "expressionPercentile": 0.71,  // null when expression is null
@@ -1128,6 +1129,100 @@ UTEX 2973 and scales to roughly 14 s for E. coli; that E. coli figure is an
 estimate, not a measurement, and neither has been re-measured against the
 smaller core file. A further joined payload remains the remedy if a core file
 outgrows the per-gene budget again.
+
+## Overlapping genes, and what `overlapsNeighbor` is not
+
+Two different quantities, and they are not interchangeable.
+
+`overlapsNeighbor` is the **adjacent-CDS envelope flag** the pipeline writes in
+`scripts/build_features.py::add_context`, from the gap to the two CDSs adjacent
+in coordinate order measured on each gene's bounding interval. It is the
+companion of `neighborUpstreamNt` and `neighborDownstreamNt`, keeps exactly that
+meaning, and is exported under that name. It is **not** the overlapping-gene
+relation: it sees only the nearest neighbour on each side, only the
+protein-coding loci `genes.json` holds, and only envelopes, so a gene contained
+inside a non-adjacent one, a tRNA or rRNA partner, and the unoccupied gap inside
+a joined CDS are all invisible to it.
+
+The **OG relation** is the separate layer `site/data/gene_overlaps.json`, one per
+organism output directory, required of every organism the site can show. Owner
+decision of 2026-10-09 fixed its definition and the layer carries that definition
+in its own `definition` block, which is what every sentence a reader sees is
+composed from:
+
+- **Features.** Every `gene` or `pseudogene` row of that organism's pinned GFF3
+  with a `locus_tag` — tRNA, rRNA, tmRNA, ncRNA, SRP_RNA, RNase_P_RNA,
+  antisense_RNA and pseudogene rows included. `riboswitch` and `misc_feature`
+  rows are regulatory annotation, not genes, and are excluded. The release's own
+  gene rows include computationally annotated ones (tRNAscan-SE, PGAP), and
+  those are genes here; what this layer adds is no scan of its own.
+- **Extent.** The union of a gene's annotated child segments: each child's
+  `exon` rows when it has them, else the child's own span. A gene row the release
+  gives no child at all uses the gene row's own span, recorded as
+  `segmentSource: "gene"`. NCBI's end-overflow notation for an origin-crossing
+  feature is split against the replicon length before anything is compared.
+- **Overlap.** At least one shared genomic base between two *different* genes'
+  segments on the *same* replicon, on either strand. Exact integer arithmetic: a
+  one-base overlap counts, abutting ends do not, and no envelope, tolerance,
+  minimum length, or cross-replicon or cross-organism join is ever used.
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "datasetVersion": "gene-overlaps-v1",
+  "origin": "computed",
+  "producer": "tools/build_gene_overlaps.py",
+  "definition": { "features": "...", "extent": "...", "overlap": "...", "excluded": "..." },
+  "release": { "accession": "GCF_000817325.1",
+               "gff": "GCF_000817325.1_ASM81732v1_genomic.gff.gz", "sha256": "<64 hex>" },
+  "replicons": [ { "accession": "NZ_CP006471.1", "lengthBp": 2690418 }, ... ],
+  "coverage": {
+    "annotatedGenes": 2776,            // the whole annotation, not the listed subset
+    "byBiotype": { "protein_coding": 2715, "tRNA": 44, ... },
+    "childlessGenes": 0,
+    "overlappingGenes": 717, "overlappingPairs": 402,
+    "pairwiseSharedBases": 5236,     // summed per pair; a base two pairs share counts twice
+    "maxPartners": 2
+  },
+  "coveredGenes": ["M744_RS00005", ...],   // every annotated gene that was compared
+  "features": [ {                      // only genes with at least one partner
+    "id": "M744_RS00420", "name": null, "biotype": "protein_coding",
+    "seqid": "NZ_CP006471.1", "strand": "+", "segments": [[77086, 77956]],
+    "segmentSource": "child", "pseudo": false
+  }, ... ],
+  "pairs": [ [0, 1, [[77956, 77956]]], ... ]   // i < j into `features`, exact shared bases
+}
+```
+
+`features` lists only the genes that have a partner, with their identity, strand
+and exact segments, so a partner that is not a plotted CDS is still drawable and
+nameable. `pairs` indexes into `features`, `i < j`, ascending, with the exact
+shared intervals.
+
+`coveredGenes` names **every** annotated gene the producer compared. It is what
+makes a gene absent from `features` a *measured absence* rather than a gene
+nobody looked at: the browser and the contract validator both refuse a layer
+that does not name every plotted CDS, so zero partners is an answer only for an
+identity the layer accounts for. `coverage` reports the whole annotation
+alongside it, and `pairwiseSharedBases` is summed per pair — a base two
+different pairs both share is counted twice, and it is not a count of distinct
+genomic bases.
+
+The browser re-derives every shared interval from the two features' segments
+before it joins anything, reconciles `coverage` against what is listed, and
+checks every listed plotted CDS against that gene's own `cdsSegments`, strand and
+replicon in `genes.json`. `tools/validate_contract.py` does all of that again and,
+where the pinned annotation is present, re-derives the whole relation from it
+independently of the producer.
+
+A deployment without the layer is the **unavailable** state, which is never an
+absence of overlaps: `dataset.geneOverlaps` is null, no gene carries
+`overlapPartners`, and every surface says the layer has not been read. Nothing
+is allowed to stand in for it — `overlapsNeighbor` least of all, since it is
+the narrower quantity the layer exists to replace — so the export columns are
+blank, the panel-design caveat states the unknown, and the class filter is
+suspended rather than applied. The interaction rules and the rendered checks
+are in [gene-overlaps.md](gene-overlaps.md).
 
 ## Length cohort inventory
 

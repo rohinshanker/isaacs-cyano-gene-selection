@@ -6,6 +6,10 @@ import {
   PINNED_COLOR, REVIEWED_MARKER_BORDER, SHORTLIST_COLOR,
 } from './colors.js';
 import { MULTIPLE_CATEGORY_ID, UNKNOWN_CATEGORY_ID } from '../core/function-categories.js';
+import {
+  OVERLAP_CLASSES, OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE,
+  describeOverlapRule,
+} from '../core/gene-overlaps.js';
 import { VALUE_SCALE_LABELS } from '../core/value-scales.js';
 import { defaultColorSources } from '../core/annotation-source.js';
 import { DEFAULT_ORGANISM, sourceIds, sourceLabels } from '../core/organisms.js';
@@ -321,6 +325,115 @@ export function renderCategoryLegend(host, {
 
   // Restore focus only once the new row is actually attached to the document:
   // `.focus()` on a still-detached element is a silent no-op.
+  if (focusedId !== null) {
+    const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
+      .find((row) => row.dataset.categoryId === focusedId);
+    if (toFocus) toFocus.focus();
+  }
+}
+
+/**
+ * The OG colour key: the four classes, what the abbreviation means, and the
+ * rule the classes were resolved under.
+ *
+ * Each row is a filter the reader can click, the way a function-category row
+ * is, and the counts beside them are of the whole plotted set — the tag is
+ * genomic context, so it does not move when another filter hides a partner.
+ * While the overlap layer has not landed there are no rows at all, only the one
+ * neutral swatch and the sentence that says nothing has been read: rows with
+ * zeroes beside them would read as a genome whose genes overlap nothing.
+ *
+ * @param {HTMLElement} host emptied and rebuilt.
+ * @param {{scale: object, counts: Int32Array|number[], index: object|null,
+ *   selected?: string[], pending?: 'loading'|'failed'|null,
+ *   onHoverCategory?: (id: string|null) => void,
+ *   onFocusCategory?: (id: string|null) => void,
+ *   onToggleCategory?: (id: string) => void,
+ *   onResetCategoryFilter?: () => void}} state
+ */
+export function renderOverlapLegend(host, {
+  scale, counts, index = null, selected = [], pending = null,
+  onHoverCategory = () => {}, onFocusCategory = () => {},
+  onToggleCategory = () => {}, onResetCategoryFilter = () => {},
+}) {
+  const focusedId = host.contains(document.activeElement)
+    ? document.activeElement.dataset.categoryId ?? null
+    : null;
+  host.replaceChildren();
+  host.classList.add('category-mode');
+  const title = document.createElement('p');
+  title.className = 'legend-title';
+  title.textContent = `Overlapping genes (${OVERLAP_TAG_LABEL})`;
+  const list = document.createElement('ul');
+  list.className = 'legend-notes category-legend';
+  if (pending) {
+    const item = document.createElement('li');
+    item.className = 'evidence-pending';
+    item.dataset.pending = pending;
+    item.setAttribute('role', 'status');
+    const color = scale.buckets[scale.buckets.length - 1];
+    item.append(makeSwatch('filled-circle', color, color),
+      document.createTextNode(OVERLAP_UNAVAILABLE.label));
+    list.append(item);
+    const note = document.createElement('p');
+    note.className = 'legend-ramp-note';
+    note.textContent = OVERLAP_UNAVAILABLE.note
+      + (selected.length > 0
+        ? ' A class selection is held and cannot act until the layer is read, so no gene is '
+          + 'hidden by it.'
+        : '');
+    note.setAttribute('role', 'status');
+    host.append(title, list, note);
+    return;
+  }
+  OVERLAP_CLASSES.forEach((entry, position) => {
+    const item = document.createElement('li');
+    const button = document.createElement('div');
+    button.className = 'category-legend-row';
+    button.setAttribute('role', 'checkbox');
+    button.tabIndex = 0;
+    const isSelected = selected.includes(entry.id);
+    button.setAttribute('aria-checked', String(isSelected));
+    button.classList.toggle('selected', isSelected);
+    button.dataset.categoryId = entry.id;
+    const color = scale.buckets[position];
+    button.append(makeSwatch('filled-circle', REVIEWED_MARKER_BORDER, color),
+      document.createTextNode(` ${entry.label} (${formatCount(counts[position] ?? 0)})`));
+    button.title = entry.note;
+    button.addEventListener('mouseenter', () => onHoverCategory(entry.id));
+    button.addEventListener('mouseleave', () => onHoverCategory(null));
+    button.addEventListener('focus', () => onFocusCategory(entry.id));
+    button.addEventListener('blur', () => onFocusCategory(null));
+    button.addEventListener('click', () => onToggleCategory(entry.id));
+    button.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+      event.preventDefault();
+      onToggleCategory(entry.id);
+    });
+    item.append(button);
+    list.append(item);
+  });
+  const resetButton = document.createElement('button');
+  resetButton.type = 'button';
+  resetButton.className = 'chip-button category-legend-reset';
+  resetButton.textContent = 'Clear class selection';
+  resetButton.disabled = selected.length === 0;
+  resetButton.addEventListener('click', () => onResetCategoryFilter());
+
+  // One short rule here, and nothing else: the full definition, the field
+  // names behind it and the biotype census live in the colour explanation
+  // disclosure, which is this view's convention for everything a key would
+  // have to shrink to fit. Owner-facing copy, not machine-facing.
+  const rule = document.createElement('p');
+  rule.className = 'legend-ramp-note';
+  rule.textContent = describeOverlapRule(index);
+  const note = document.createElement('p');
+  note.className = 'legend-ramp-note';
+  note.textContent = 'Hover or focus a class to preview it; click, Enter, or Space toggles it as '
+    + 'a filter. The class is genomic context and does not change when a filter hides a partner. '
+    + 'The full definition and what it covers are in the colour explanation.';
+  host.append(title, list, rule, resetButton, note);
+
   if (focusedId !== null) {
     const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
       .find((row) => row.dataset.categoryId === focusedId);

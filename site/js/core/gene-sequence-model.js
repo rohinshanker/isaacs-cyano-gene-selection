@@ -286,6 +286,17 @@ export function sequenceColumns(model) {
   return columns;
 }
 
+/** Contiguous runs over ascending offsets, the shape every placed track takes. */
+function runsOf(offsets) {
+  const runs = [];
+  for (const offset of offsets) {
+    const last = runs[runs.length - 1];
+    if (last && offset <= last.toOffset + 1) last.toOffset = Math.max(last.toOffset, offset);
+    else runs.push({ fromOffset: offset, toOffset: offset });
+  }
+  return runs.map((run) => ({ ...run, shownNt: run.toOffset - run.fromOffset + 1 }));
+}
+
 /**
  * Where one marker lands on this strip, from its **native genomic coordinate
  * and nothing else**.
@@ -356,12 +367,6 @@ export function markerPlacement(model, marker, columns = sequenceColumns(model))
   // run has to be contiguous in the order the strip draws, whatever order the
   // positions arrived in.
   covered.sort((a, b) => a - b);
-  const runs = [];
-  for (const offset of covered) {
-    const last = runs[runs.length - 1];
-    if (last && offset <= last.toOffset + 1) last.toOffset = Math.max(last.toOffset, offset);
-    else runs.push({ fromOffset: offset, toOffset: offset });
-  }
   return {
     status: 'placed',
     reason: null,
@@ -369,7 +374,7 @@ export function markerPlacement(model, marker, columns = sequenceColumns(model))
     toOffset: covered[covered.length - 1],
     shownNt: covered.length,
     spanNt,
-    runs: runs.map((run) => ({ ...run, shownNt: run.toOffset - run.fromOffset + 1 })),
+    runs: runsOf(covered),
   };
 }
 
@@ -420,6 +425,84 @@ export function sequenceMarkers(gene, model) {
       if (placed(a) !== placed(b)) return placed(a) ? -1 : 1;
       return placed(a) ? a.placement.fromOffset - b.placement.fromOffset : 0;
     });
+}
+
+/** Whether a canonical segment list occupies one genomic base. */
+function occupies(segments, position) {
+  return segments.some((piece) => position >= piece.from && position <= piece.to);
+}
+
+/**
+ * Overlapping partners aligned onto this strip's own columns.
+ *
+ * A partner is placed from its **own annotated segments and nothing else**, by
+ * the same rule a marker is: it is drawn on the letters whose genomic
+ * coordinates it really occupies, so the partner track and the base row cannot
+ * disagree about which base is shared. The bases the two genes share are
+ * placed separately, as `sharedRuns`, because a partner that merely runs
+ * alongside this gene past a junction occupies columns it does not share.
+ *
+ * Edge continuation is answered in genomic coordinates, not from the drawn
+ * runs: the partner continues past the start of what is drawn when it occupies
+ * the base one step before the first placed column in *this gene's*
+ * transcription direction, and past the end when it occupies the base one step
+ * after the last. Both can hold at once, which is exactly a partner this gene
+ * lies inside. The step is taken around the replicon, so a partner continuing
+ * across the circular origin is not reported as ending there.
+ *
+ * @param {object} model from {@link geneSequenceModel}.
+ * @param {object[]} partners from `core/gene-overlaps.js`, widest first.
+ * @param {Map<number, number>} [columns] from {@link sequenceColumns}.
+ */
+export function partnerPlacements(model, partners, columns = sequenceColumns(model)) {
+  if (!model || !Array.isArray(partners) || partners.length === 0) return [];
+  const lengthBp = repliconLength(model.replicon);
+  const step = (position, forward) => {
+    const raw = model.strand === '-' ? (forward ? position - 1 : position + 1)
+      : (forward ? position + 1 : position - 1);
+    if (!(lengthBp > 0)) return raw;
+    return ((raw - 1) % lengthBp + lengthBp) % lengthBp + 1;
+  };
+  const offsetToPosition = new Map();
+  for (const [position, offset] of columns) offsetToPosition.set(offset, position);
+  return partners.map((partner) => {
+    const covered = [];
+    const shared = [];
+    for (const [position, offset] of columns) {
+      if (occupies(partner.segments, position)) covered.push(offset);
+      if (occupies(partner.sharedIntervals, position)) shared.push(offset);
+    }
+    covered.sort((a, b) => a - b);
+    shared.sort((a, b) => a - b);
+    const runs = runsOf(covered);
+    const partnerNt = partner.segments
+      .reduce((total, piece) => total + (piece.to - piece.from + 1), 0);
+    const firstPosition = covered.length > 0 ? offsetToPosition.get(covered[0]) : null;
+    const lastPosition = covered.length > 0
+      ? offsetToPosition.get(covered[covered.length - 1]) : null;
+    return {
+      id: partner.id,
+      name: partner.name ?? null,
+      biotype: partner.biotype,
+      strand: partner.strand,
+      relation: partner.relation,
+      containment: partner.containment,
+      selectable: partner.selectable,
+      geneIndex: partner.geneIndex,
+      sharedBases: partner.sharedBases,
+      segments: partner.segments,
+      sharedIntervals: partner.sharedIntervals,
+      status: covered.length > 0 ? 'placed' : 'outside-shown-sequence',
+      runs,
+      sharedRuns: runsOf(shared),
+      shownNt: covered.length,
+      partnerNt,
+      continuesBefore: firstPosition !== null
+        && occupies(partner.segments, step(firstPosition, false)),
+      continuesAfter: lastPosition !== null
+        && occupies(partner.segments, step(lastPosition, true)),
+    };
+  });
 }
 
 /** The codon that holds a CDS offset, or null outside the coding sequence. */
@@ -560,7 +643,51 @@ export function describeSequenceMarkers(model, marks) {
  * One paragraph naming what the close-up shows, for its accessible description.
  * The visible strip is a picture; this is its text equivalent.
  */
-export function describeGeneSequence(model, window = null, marks = null) {
+/**
+ * The overlapping-gene sentences for the close-up's description.
+ *
+ * A reader who is not looking at the picture has to be able to tell the three
+ * states apart: the layer has not been read, it was read and this gene shares
+ * no base with another annotated gene, or these partners are drawn on these
+ * coordinates. `null` is the first, an empty summary the second.
+ */
+export function describeSequencePartners(partners) {
+  if (partners === null || partners === undefined) {
+    return ['The overlapping-gene layer has not been read, so no partner track is drawn. '
+      + 'That is not an absence of overlapping genes.'];
+  }
+  if (partners.total === 0) {
+    return ['No annotated gene of this release shares a base with this one on its replicon, so '
+      + 'there is no partner track to draw. Every annotated gene was compared, tRNA, rRNA and '
+      + 'pseudogene rows included.'];
+  }
+  const parts = [];
+  const drawn = partners.drawn ?? [];
+  const named = drawn.map((partner) => {
+    const relation = partner.relation === 'same' ? 'same strand'
+      : partner.relation === 'opposite' ? 'opposite strand' : 'strand not recorded';
+    return `${partner.id} (${relation}, ${partner.sharedBases.toLocaleString('en-US')} shared `
+      + `base${partner.sharedBases === 1 ? '' : 's'}`
+      + `${partner.continues ? ', continuing past the drawn window' : ''}`
+      + `${partner.selectable ? '' : ', not plotted on this map'})`;
+  }).join('; ');
+  parts.push(`${partners.total.toLocaleString('en-US')} annotated `
+    + `gene${partners.total === 1 ? '' : 's'} overlap${partners.total === 1 ? 's' : ''} this one, `
+    + `each drawn as its own track beneath the sequence on the same coordinates: ${named}. `
+    + 'A solid stretch is a base the two genes share and an arrow gives the partner\u2019s '
+    + 'reading direction.');
+  if (partners.notDrawn > 0) {
+    parts.push(`${partners.notDrawn.toLocaleString('en-US')} further `
+      + `partner${partners.notDrawn === 1 ? '' : 's'} are listed below rather than drawn.`);
+  }
+  if (partners.outsideShown > 0) {
+    parts.push(`${partners.outsideShown.toLocaleString('en-US')} of them occupy no base this `
+      + 'close-up shows.');
+  }
+  return parts;
+}
+
+export function describeGeneSequence(model, window = null, marks = null, partners = null) {
   if (!model) return 'No gene is pinned.';
   const identity = model.name ? `${model.id} ${model.name}` : model.id;
   const parts = [];
@@ -596,6 +723,7 @@ export function describeGeneSequence(model, window = null, marks = null) {
         + `${model.scheme.stopChanged ? ', including the terminal stop' : ''}.`);
   }
   parts.push(...describeSequenceMarkers(model, marks));
+  parts.push(...describeSequencePartners(partners));
   if (window) {
     parts.push(`Showing nucleotides ${signedOffset(window.from)} to ${signedOffset(window.to)}.`);
   }

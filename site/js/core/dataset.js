@@ -33,6 +33,11 @@ import { validateSourceDerivedCategories } from './source-derived-categories.js'
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
 import { validateTrnaPayload } from './trna-loci.js';
 import { validateCodonPcaReference } from './codon-pca-reference.js';
+import { OVERLAP_CLASS_IDS, validateGeneOverlaps } from './gene-overlaps.js';
+
+/** One shared empty list, so a gene with no partner costs no allocation. */
+const NO_PARTNERS = Object.freeze([]);
+import { organismOf } from './organisms.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, DATA_MANIFEST_NAME, FILE_STATE, dataRequest,
   normalizeManifest, publishesFile,
@@ -309,6 +314,40 @@ export const DATA_APPLIERS = Object.freeze({
         dataset.meta.annotationRelease?.releaseId,
       )
       : null;
+  },
+
+  /**
+   * The overlapping-gene relation, validated and indexed once.
+   *
+   * The index is cached on the dataset and every gene that has a partner is
+   * given its partner list and its OG class here, so no view recomputes a
+   * relationship while the pointer moves. A deployment without the file leaves
+   * `geneOverlaps` null and every gene without `overlapPartners`, which is the
+   * unavailable state and never an absence of overlaps.
+   */
+  geneOverlaps(dataset, payload) {
+    if (!payload) {
+      dataset.geneOverlaps = null;
+      // The joined fields go with the index. A dataset that had the layer and
+      // then lost it — a retry, an organism change, a deployment that does not
+      // publish it — must not leave an export or a panel reading the previous
+      // answer as if it were this one's.
+      for (const gene of dataset.genes) {
+        delete gene.overlapPartners;
+        delete gene.overlapClass;
+      }
+      return;
+    }
+    const index = validateGeneOverlaps(payload, dataset.genes, organismOf(dataset));
+    // Every gene, not only the ones with a partner: an array of no partners is
+    // how a consumer tells a gene measured to overlap nothing from a gene whose
+    // layer has not landed, which carries no array at all.
+    for (let position = 0; position < dataset.genes.length; position += 1) {
+      const gene = dataset.genes[position];
+      gene.overlapPartners = index.partnersById.get(gene.id) ?? NO_PARTNERS;
+      gene.overlapClass = OVERLAP_CLASS_IDS[index.values[position]];
+    }
+    dataset.geneOverlaps = index;
   },
 
   lengthCohorts(dataset, lengthCohorts) {

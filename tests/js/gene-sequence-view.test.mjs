@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import {
   CELL_PX_PER_NT, CODON_HIT_PADDING_PX, EDGE_PAD_NT, FALLBACK_WIDTH, GeneSequenceView, LABEL_WIDTH,
   LETTER_PX_PER_NT, MAX_PX_PER_NT, MIN_OPENING_CDS_NT, OPEN_PX_PER_NT, cameraWindow,
-  clampCamera, fittingCamera, openingCamera, residueTicks,
+  PARTNER_LABEL_CHARS, clampCamera, fitPartnerLabel, fittingCamera, openingCamera, residueTicks,
 } from '../../site/js/ui/gene-sequence-view.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
@@ -608,5 +608,256 @@ test('the protein row is labelled only where residues are drawn', async () => {
     assert.deepEqual(labelsOf(), ['Bases']);
     view.goToStart();
     assert.deepEqual(labelsOf(), ['Bases', 'Protein']);
+  });
+});
+
+/* Overlapping genes: the aligned partner tracks ---------------------------- */
+
+/**
+ * One overlap partner, in the shape `core/gene-overlaps.js` hands the view.
+ *
+ * The fixture gene runs 1001–1027 on the plus strand with 30 upstream bases,
+ * so a partner's coordinates can be chosen to land on, before, or past what
+ * the strip draws.
+ */
+function partner(id, segments, options = {}) {
+  const shared = options.sharedIntervals ?? segments;
+  return {
+    id,
+    name: null,
+    biotype: 'protein_coding',
+    seqid: 'NZ_CP006471.1',
+    strand: '-',
+    segments,
+    segmentSource: 'child',
+    pseudo: false,
+    selectable: true,
+    geneIndex: 7,
+    relation: 'opposite',
+    containment: 'partial',
+    sharedIntervals: shared,
+    sharedBases: shared.reduce((total, piece) => total + (piece.to - piece.from + 1), 0),
+    ...options,
+  };
+}
+
+const partnerRows = (view) => view.strip.querySelectorAll('g.gene-sequence-partner');
+const partnerList = (view) => view.partnerList.children;
+
+test('a partner is drawn as its own track, on this gene’s own coordinates', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    const overlapping = gene({
+      overlapPartners: [partner('PARTNER', [{ from: 1020, to: 1027 }])],
+      overlapClass: 'overlap-opposite-strand',
+    });
+    view.update({ gene: overlapping, table, scheme: null, schemeVersion: 1 });
+    const rows = partnerRows(view);
+    assert.equal(rows.length, 1, 'one row per partner, never one shared row');
+    assert.equal(rows[0].getAttribute('data-overlap-partner'), 'PARTNER');
+    // Bases 1020–1027 of a gene starting at 1001 are offsets 19 to 26.
+    const placed = view.partners[0];
+    assert.deepEqual(placed.runs, [{ fromOffset: 19, toOffset: 26, shownNt: 8 }]);
+    assert.deepEqual(placed.sharedRuns, placed.runs);
+    assert.equal(placed.continuesBefore, false);
+    assert.equal(placed.continuesAfter, false);
+    // The shared stretch is drawn over the partner's own bar, so the bases the
+    // two genes share read against the letters above them.
+    assert.equal(rows[0].querySelectorAll('rect.gene-sequence-partner-bar').length, 1);
+    assert.equal(rows[0].querySelectorAll('rect.gene-sequence-partner-shared').length, 1);
+    // And an arrow for the direction it is read in.
+    assert.equal(rows[0].querySelectorAll('path.gene-sequence-partner-arrow').length, 1);
+    assert.match(rows[0].getAttribute('aria-label'), /PARTNER, a protein-coding gene/);
+    assert.match(rows[0].getAttribute('aria-label'), /on the same coordinates as the bases above/);
+  });
+});
+
+test('a partner that runs past the drawn window gets a chevron at that edge', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    // Starts upstream of the 30 shipped bases and ends past the stop codon, so
+    // this gene lies inside it and both edges continue.
+    const overlapping = gene({
+      overlapPartners: [partner('AROUND', [{ from: 900, to: 1100 }], {
+        sharedIntervals: [{ from: 1001, to: 1027 }], containment: 'containedBy',
+      })],
+      overlapClass: 'overlap-opposite-strand',
+    });
+    view.update({ gene: overlapping, table, scheme: null, schemeVersion: 1 });
+    const placed = view.partners[0];
+    assert.equal(placed.continuesBefore, true, 'past the upstream edge');
+    assert.equal(placed.continuesAfter, true, 'past the downstream edge');
+    assert.equal(placed.shownNt, 57, 'the 30 upstream bases and the 27 coding ones');
+    assert.ok(placed.partnerNt > placed.shownNt);
+    const row = partnerRows(view)[0];
+    assert.equal(row.querySelectorAll('path.gene-sequence-partner-continues').length, 2);
+    assert.match(row.getAttribute('aria-label'),
+      /continues past both ends of the sequence this close-up holds/);
+    assert.match(view.strip.querySelector('svg').getAttribute('aria-label'),
+      /continuing past the drawn window/);
+  });
+});
+
+test('a partner whose bases this strip does not show keeps its row in the list', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    const overlapping = gene({
+      // Shares bases with the gene's coding sequence, which this fixture draws,
+      // and a second partner far away that no column of this strip covers.
+      overlapPartners: [
+        partner('NEAR', [{ from: 1025, to: 1027 }]),
+        partner('FAR', [{ from: 5000, to: 5100 }], { sharedIntervals: [{ from: 5000, to: 5100 }] }),
+      ],
+      overlapClass: 'overlap-opposite-strand',
+    });
+    view.update({ gene: overlapping, table, scheme: null, schemeVersion: 1 });
+    assert.equal(partnerRows(view).length, 1, 'only the one with columns is drawn');
+    assert.equal(partnerList(view).length, 2, 'both keep a row in the list');
+    assert.match(partnerList(view)[1].textContent, /occupies no base this close-up shows/);
+    assert.match(view.partnerSummary.textContent, /OG — overlapping genes \(2\)/);
+  });
+});
+
+test('a plotted partner can be pinned from its track and from its row', async () => {
+  const opened = [];
+  await withFakeDocument((document) => {
+    const view = mount(document, { onOpenPartner: (id, index) => opened.push([id, index]) });
+    const overlapping = gene({
+      overlapPartners: [
+        partner('OPENABLE', [{ from: 1020, to: 1027 }]),
+        partner('TRNA', [{ from: 1001, to: 1004 }], {
+          biotype: 'tRNA', selectable: false, geneIndex: -1,
+        }),
+      ],
+      overlapClass: 'overlap-opposite-strand',
+    });
+    view.update({ gene: overlapping, table, scheme: null, schemeVersion: 1 });
+    const rows = partnerRows(view);
+    const byId = (id) => rows.find((row) => row.getAttribute('data-overlap-partner') === id);
+    byId('OPENABLE').dispatch('click', { stopPropagation() {}, preventDefault() {} });
+    assert.deepEqual(opened, [['OPENABLE', 7]]);
+    // The one the map does not plot offers no route, and says why.
+    const unplotted = byId('TRNA');
+    unplotted.dispatch('click', { stopPropagation() {}, preventDefault() {} });
+    assert.deepEqual(opened, [['OPENABLE', 7]], 'nothing further was opened');
+    assert.match(unplotted.getAttribute('aria-label'), /a tRNA gene this map does not plot/);
+    const buttons = view.partnerList.querySelectorAll('button.gene-sequence-open-partner');
+    assert.equal(buttons.length, 1, 'one button, for the plotted partner');
+    buttons[0].click();
+    assert.deepEqual(opened, [['OPENABLE', 7], ['OPENABLE', 7]]);
+  });
+});
+
+test('no partner and no overlap layer are different answers, and both are said', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    // Read, and nothing shares a base.
+    view.update({
+      gene: gene({ overlapPartners: [], overlapClass: 'no-overlap' }),
+      table, scheme: null, schemeVersion: 1,
+    });
+    assert.equal(partnerRows(view).length, 0);
+    assert.match(view.partnerSummary.textContent, /no overlapping gene/);
+    assert.match(view.partnerNote.textContent, /No annotated gene of this release shares a base/);
+    assert.match(view.partnerNote.textContent, /tRNA, rRNA and pseudogene rows included/);
+    assert.match(svgOf(view).getAttribute('aria-label'),
+      /No annotated gene of this release shares a base with this one/);
+
+    // Not read: the same empty picture, a different sentence.
+    view.update({
+      gene: gene(), table, scheme: null, schemeVersion: 2, overlapsPending: 'loading',
+    });
+    assert.equal(partnerRows(view).length, 0);
+    assert.match(view.partnerNote.textContent, /has not been read/);
+    assert.match(view.partnerNote.textContent, /not an absence of overlaps/);
+    assert.match(svgOf(view).getAttribute('aria-label'), /has not been read/);
+  });
+});
+
+test('the overlap layer landing redraws the tracks without the gene changing', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    const pinned = gene();
+    view.update({ gene: pinned, table, scheme: null, schemeVersion: 1, overlapsPending: 'loading' });
+    assert.equal(partnerRows(view).length, 0);
+    // The same gene, the same scheme, the same everything but the layer.
+    view.update({
+      gene: { ...pinned, overlapPartners: [partner('LATE', [{ from: 1020, to: 1027 }])], overlapClass: 'overlap-opposite-strand' },
+      table, scheme: null, schemeVersion: 1, overlapsPending: null,
+    });
+    assert.equal(partnerRows(view).length, 1, 'the tracks do not wait for the next pin');
+  });
+});
+
+test('a wider upstream window re-places the partners against the columns it adds', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    const extended = 'TGCA'.repeat(15);
+    const overlapping = gene({
+      rnaContext: { upstream: UPSTREAM },
+      extendedUpstream: extended + UPSTREAM,
+      overlapPartners: [partner('UPSTREAM_PARTNER', [{ from: 950, to: 1002 }], {
+        sharedIntervals: [{ from: 1001, to: 1002 }],
+      })],
+      overlapClass: 'overlap-opposite-strand',
+    });
+    view.update({
+      gene: overlapping, table, scheme: null, schemeVersion: 1,
+      organism: { ...DEFAULT_ORGANISM, sequenceContext: { maxUpstreamNt: 90, optionsNt: [30, 90] } },
+    });
+    const before = view.partners[0].shownNt;
+    view.setUpstreamNt(90);
+    const after = view.partners[0].shownNt;
+    assert.ok(after > before, 'more of the partner is placed once more bases are shown');
+    // Edge continuation is about the window that is drawn, not about the gene:
+    // at 30 upstream bases the partner ran past the drawn edge, and at 90 the
+    // strip shows its own first base, so the chevron is gone and correctly so.
+    assert.equal(before < view.partners[0].partnerNt, true);
+    assert.equal(view.partners[0].continuesBefore, false, 'its own start is now on screen');
+  });
+});
+
+test('a long locus tag is fitted to the gutter instead of being clipped by it', () => {
+  // Rendering showed `M744_RS04085` coming out as `_RS04085`, which reads as a
+  // different locus: the text ran off the left of the strip and the element
+  // clipped it. A tag that does not fit now keeps its tail behind an ellipsis.
+  assert.equal(fitPartnerLabel('b0002'), 'b0002');
+  const fitted = fitPartnerLabel('M744_RS04085');
+  assert.equal(fitted.length, PARTNER_LABEL_CHARS);
+  assert.ok(fitted.startsWith('…'));
+  assert.ok(fitted.endsWith('RS04085'), 'the part that tells two loci apart survives');
+  assert.equal(fitPartnerLabel(null), '');
+});
+
+test('a chevron marks an edge the partner has bases beyond, drawn or not', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    // A partner far down the coding sequence of a long gene: its own track is
+    // nowhere near the opening window, and the reader has to be told it is off
+    // to the right rather than left to think the gene has no partner.
+    const long = longGene();
+    view.update({
+      gene: {
+        ...long,
+        overlapPartners: [partner('FARDOWN', [{ from: 3900, to: 4003 }], {
+          sharedIntervals: [{ from: 3900, to: 4003 }],
+        })],
+        overlapClass: 'overlap-opposite-strand',
+      },
+      table,
+      scheme: null,
+      schemeVersion: 1,
+    });
+    const row = partnerRows(view)[0];
+    assert.equal(row.querySelectorAll('rect.gene-sequence-partner-bar').length, 0,
+      'none of its track is inside the opening window');
+    const chevrons = row.querySelectorAll('path.gene-sequence-partner-continues');
+    assert.equal(chevrons.length, 1, 'one chevron, at the edge it lies beyond');
+    // Pan to the end and the track appears; the chevron now points the other way.
+    view.goToEnd();
+    const after = partnerRows(view)[0];
+    assert.ok(after.querySelectorAll('rect.gene-sequence-partner-bar').length > 0);
+    const ends = after.querySelectorAll('path.gene-sequence-partner-continues');
+    assert.equal(ends.length, 1, 'the rest of its track is now off to the left');
   });
 });

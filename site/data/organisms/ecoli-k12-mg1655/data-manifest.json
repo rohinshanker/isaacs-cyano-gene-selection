@@ -24,6 +24,10 @@
       "bytes": 2617628,
       "sha256": "403b1e6718de5c5a4f6e8b4a91c1fed3c75b4681dd98cca306e19a1825bdd94c"
     },
+    "gene_overlaps.json": {
+      "bytes": 296705,
+      "sha256": "79a42fd72751cca04aa5247374bd7483122885f3826261e667a00eccdbfc4216"
+    },
     "genes.json": {
       "bytes": 6310634,
       "sha256": "348e8b8ccbb9113fb45bbd504fa67092a631e2381c08d377b4452e91ea5ad388"

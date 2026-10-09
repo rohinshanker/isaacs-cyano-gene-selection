@@ -211,6 +211,40 @@ export function resolveConstraints({ registry, config }) {
 }
 
 /** Why one gene fails one constraint, or null when it passes. */
+/**
+ * What a gene's overlapping-gene context costs a design, in one sentence, or
+ * null where it costs nothing.
+ *
+ * The overlap layer is the only thing that can answer this. Without it the
+ * answer is **unknown**, and the sentence says so: `overlapsNeighbor` is a
+ * different quantity — the adjacent-CDS envelope flag, which misses a
+ * non-adjacent partner, every non-coding partner, and the gap inside a joined
+ * CDS — so it may be reported beside the unknown, clearly labelled as the old
+ * flag, and never stand in for the answer. Substituting it would quietly hand
+ * back the very misses the layer exists to find.
+ */
+function overlapCaveat(gene) {
+  const partners = gene.overlapPartners;
+  if (Array.isArray(partners)) {
+    if (partners.length === 0) return null;
+    const bases = partners.reduce((total, partner) => total + partner.sharedBases, 0);
+    const names = partners.map((partner) => partner.id).join(', ');
+    return `It shares ${bases} base${bases === 1 ? '' : 's'} with `
+      + `${partners.length} annotated gene${partners.length === 1 ? '' : 's'}: ${names}.`;
+  }
+  return 'Whether it overlaps another annotated gene is unknown: the overlapping-gene layer has '
+    + 'not been read.'
+    + (gene.overlapsNeighbor === true
+      ? ' The release\u2019s older adjacent-CDS envelope flag is set for it, which is a '
+        + 'different and narrower quantity.'
+      : '');
+}
+
+/** Whether this gene's overlap context has been read at all. */
+function overlapKnown(gene) {
+  return Array.isArray(gene.overlapPartners);
+}
+
 function constraintFailure(constraint, gene, index) {
   if (constraint.kind === 'range') {
     const value = constraint.metric.read(index);
@@ -238,7 +272,15 @@ function constraintFailure(constraint, gene, index) {
       : null;
   }
   if (constraint.id === 'excludeAmbiguousLoci') {
-    if (gene.overlapsNeighbor === true) return 'Overlaps a neighbouring gene.';
+    // Only a *known* overlap excludes. An unknown one is neither a reason to
+    // drop a gene nor a reason to call it unambiguous, so the constraint acts
+    // on what it can and `designPanel` says the overlap half could not be
+    // applied. Substituting `overlapsNeighbor` here would hand back the
+    // non-adjacent and non-coding partners it cannot see.
+    if (overlapKnown(gene)) {
+      const overlap = overlapCaveat(gene);
+      if (overlap) return overlap;
+    }
     if (Array.isArray(gene.cdsSegments) && gene.cdsSegments.length > 1) {
       return `Coding sequence is split into ${gene.cdsSegments.length} segments.`;
     }
@@ -475,7 +517,8 @@ function explainGene({ space, dataset, index, step, earlier, constraints }) {
   if (Array.isArray(gene.cdsSegments) && gene.cdsSegments.length > 1) {
     caveats.push(`Its coding sequence is split into ${gene.cdsSegments.length} segments.`);
   }
-  if (gene.overlapsNeighbor === true) caveats.push('It overlaps a neighbouring gene.');
+  const overlap = overlapCaveat(gene);
+  if (overlap) caveats.push(overlap);
   const basis = expressionBasisOf(gene);
   if (basis.basis !== 'measured') caveats.push(`Expression: ${basis.text}`);
 
@@ -536,6 +579,21 @@ export function designPanel({ dataset, registry, space, config: rawConfig }) {
   if (anchors.length > config.size) {
     problems.push(`${anchors.length} genes are required but the panel size is ${config.size}. `
       + 'Raise the size or release some of them.');
+  }
+
+  // The ambiguity constraint rests partly on the overlapping-gene layer. When
+  // that layer has not been read the constraint still drops split CDSs, and
+  // this says in so many words that the overlap half of it did not act — the
+  // alternative is a design that looks fully constrained and is not.
+  if (constraints.active.some((constraint) => constraint.id === 'excludeAmbiguousLoci')) {
+    const unread = dataset.genes.reduce(
+      (total, gene) => total + (overlapKnown(gene) ? 0 : 1), 0,
+    );
+    if (unread > 0) {
+      problems.push(`The overlapping-gene layer has not been read for ${unread} of `
+        + `${dataset.genes.length} genes, so "exclude ambiguous loci" dropped split coding `
+        + 'sequences only and could not act on overlaps.');
+    }
   }
 
   const pool = eligibility.pool.filter((index) => !anchors.includes(index));

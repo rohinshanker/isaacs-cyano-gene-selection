@@ -840,6 +840,7 @@ export class SidePanel {
         this.startSitesVisible = visible;
         this.handlers.onStartSitesVisibleChange?.(visible);
       },
+      onOpenPartner: (id, index) => this.handlers.onOpenPartner?.(id, index),
     });
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);

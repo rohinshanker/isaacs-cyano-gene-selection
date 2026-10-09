@@ -382,3 +382,55 @@ test('a published metric this dataset does not have is reported, not assumed', a
   assert.equal(resolved.active.length, 2, 'only the two default flags stay active');
   assert.match(resolved.blocked[0].reason, /not in this dataset/);
 });
+
+test('the ambiguity constraint acts on a known overlap and never on the legacy flag', async () => {
+  const { dataset, registry, space } = await context();
+  const [gene] = dataset.genes;
+  const partner = {
+    id: 'PARTNER', name: null, biotype: 'tRNA', seqid: gene.seqid, strand: '-',
+    segments: [{ from: gene.start, to: gene.start + 9 }], segmentSource: 'child', pseudo: false,
+    selectable: false, geneIndex: -1, relation: 'opposite', containment: 'partial',
+    sharedIntervals: [{ from: gene.start, to: gene.start + 9 }], sharedBases: 10,
+  };
+  const design = (first) => designPanel({
+    dataset: {
+      ...dataset,
+      genes: dataset.genes.map((row, index) => (index === 0 ? first : row)),
+    },
+    registry,
+    space,
+    config: { size: 4 },
+  });
+  const reasonFor = (first) => (design(first).eligibility.rejections.get(0) ?? []).join(' ');
+
+  // A known overlap is the real relation: how many bases, with which genes.
+  assert.match(reasonFor({ ...gene, overlapsNeighbor: false, overlapPartners: [partner] }),
+    /shares 10 bases with 1 annotated gene: PARTNER/);
+  // A known absence is not ambiguous, whatever the legacy flag says.
+  assert.ok(!/overlap/i.test(reasonFor({
+    ...gene, overlapsNeighbor: true, overlapPartners: [],
+  })));
+  // An unknown one excludes nothing: the legacy adjacent-CDS flag cannot stand
+  // in for the relation, because it cannot see a non-adjacent or non-coding
+  // partner. The design says the overlap half of the constraint did not act.
+  const unread = design({ ...gene, overlapsNeighbor: true });
+  const reason = (unread.eligibility.rejections.get(0) ?? []).join(' ');
+  assert.ok(!/overlap/i.test(reason), reason);
+  assert.ok(unread.problems.some((note) => /could not act on overlaps/.test(note)));
+  // And the caveat a chosen gene carries states the unknown rather than
+  // reporting the old flag as the answer.
+  const chosen = designPanel({
+    dataset: {
+      ...dataset,
+      genes: dataset.genes.map((row, index) => (
+        index === 0 ? { ...gene, overlapsNeighbor: true } : row)),
+    },
+    registry,
+    space,
+    config: { size: 4, excludeAmbiguousLoci: false, seeds: [gene.id] },
+  });
+  const caveats = chosen.genes.find((entry) => entry.id === gene.id)?.caveats ?? [];
+  assert.ok(caveats.some((note) => /Whether it overlaps another annotated gene is unknown/
+    .test(note)), caveats.join(' | '));
+  assert.ok(caveats.some((note) => /older adjacent-CDS envelope flag/.test(note)));
+});

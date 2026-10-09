@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, MIN_TSS_SPACING_PX, PAN_STEP_FRACTION,
+  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, MIN_OVERLAP_ARROW_PX, MIN_TSS_SPACING_PX,
+  OVERLAP_ROW_HEIGHT, PAN_STEP_FRACTION,
   bandLayout, canvasHeightFor, columnCrowding, columnOccupancy, columnOfKey, drawnColumns,
-  fitTickLabels, fitTrackLabel, pieceColumns, pieceRect, resolveMarkPaint, trackLabelVariants,
+  fitTickLabels, fitTrackLabel, overlapConventions, pieceColumns, pieceRect, resolveMarkPaint,
+  sharedIntervalsByIndex, trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
 import {
   describePaintOrder, formatCoordinate, positionTicks, repliconTracks, visibleMarks,
@@ -18,6 +20,9 @@ import { CATEGORICAL_SCALE_REASON, scaleControlState } from '../../site/js/ui/sc
 import { drawDirectionControlState } from '../../site/js/ui/draw-direction.js';
 import { resetConfirmDialogForTests } from '../../site/js/ui/confirm-dialog.js';
 import { organismById } from '../../site/js/core/organisms.js';
+import {
+  OVERLAP_CLASS_IDS, validateGeneOverlaps,
+} from '../../site/js/core/gene-overlaps.js';
 
 const CHROMOSOME = 'NZ_CP006471.1';
 const PLASMID_B = 'NZ_CP006472.1';
@@ -382,7 +387,7 @@ function viewModel({
   genes = GENES, meta = META, mask = null, showHidden = true,
   categoryFilterLabels = [], colorScale = 'log10', categorical = false,
   drawOnTop = 'highest', pinned = -1, hovered = -1, active = -1, shortlist = new Set(),
-  categoryOf = null, derivedOf = null, showStartSites = undefined,
+  categoryOf = null, derivedOf = null, showStartSites = undefined, geneOverlaps = null,
 } = {}) {
   const colorMode = { colorScale, categorical, categoryOf, derivedOf };
   const colors = colorModel(genes, colorMode);
@@ -418,6 +423,7 @@ function viewModel({
     categoryFilterLabels,
     hasSelection: false,
     showStartSites,
+    geneOverlaps,
   };
 }
 
@@ -3035,5 +3041,425 @@ test('the start-site layer takes its visibility from the caller, so a link reach
     assert.equal(view.startSitesToggle.checked, true);
   } finally {
     mounted.restore();
+  }
+});
+
+/* Overlapping genes (OG) --------------------------------------------------- */
+
+/**
+ * The overlap layer for the fixture genes, built through the real validator so
+ * a test cannot assert against a relation the loader would refuse.
+ *
+ * Three relationships over the fixture's own coordinates: PLUS overlaps a
+ * plus-strand annotated gene the map does not plot, MINUS overlaps NOVALUE's
+ * neighbourhood on the opposite strand, and the origin-crossing plasmid gene
+ * overlaps a gene on one of its two real pieces.
+ */
+function overlapIndexFor(genes = GENES) {
+  const feature = (id, seqid, segments, strand, options = {}) => ({
+    id,
+    name: null,
+    biotype: 'protein_coding',
+    seqid,
+    strand,
+    segments,
+    segmentSource: 'child',
+    pseudo: false,
+    ...options,
+  });
+  const features = [
+    feature('PLUS', CHROMOSOME, [[100000, 101000]], '+'),
+    feature('NEIGHBOUR', CHROMOSOME, [[100900, 101500]], '+'),
+    feature('MINUS', CHROMOSOME, [[200000, 201000]], '-'),
+    feature('ASRNA', CHROMOSOME, [[200990, 201400]], '+',
+      { biotype: 'antisense_RNA' }),
+    feature('M744_RS13290', PLASMID_B, [[1, 2510], [45877, 46366]], '-'),
+    feature('PLASMID_NEIGHBOUR', PLASMID_B, [[2500, 3000]], '+'),
+  ];
+  const pairs = [
+    [0, 1, [[100900, 101000]]],
+    [2, 3, [[200990, 201000]]],
+    [4, 5, [[2500, 2510]]],
+  ];
+  const shared = pairs.reduce((total, [, , pieces]) => total
+    + pieces.reduce((sum, [from, to]) => sum + (to - from + 1), 0), 0);
+  const covered = [...new Set([
+    ...features.map((feature) => feature.id),
+    ...genes.map((gene) => gene.id),
+  ])].sort();
+  return validateGeneOverlaps({
+    schemaVersion: 1,
+    datasetVersion: 'gene-overlaps-v1',
+    origin: 'computed',
+    producer: 'tools/build_gene_overlaps.py',
+    definition: {
+      features: 'every gene or pseudogene row with a locus tag',
+      extent: 'the gene’s annotated child segments',
+      overlap: 'at least one shared genomic base on the same replicon, on either strand',
+      excluded: 'regulatory and misc_feature rows',
+    },
+    release: {
+      accession: 'GCF_000817325.1',
+      gff: 'GCF_000817325.1_ASM81732v1_genomic.gff.gz',
+      sha256: 'b'.repeat(64),
+    },
+    replicons: organismById('utex2973').genome.replicons
+      .map((replicon) => ({ accession: replicon.accession, lengthBp: replicon.lengthBp })),
+    coverage: {
+      annotatedGenes: 2776,
+      byBiotype: { protein_coding: 2715, tRNA: 44, rRNA: 6, pseudogene: 7, antisense_RNA: 4 },
+      childlessGenes: 0,
+      overlappingGenes: features.length,
+      overlappingPairs: pairs.length,
+      pairwiseSharedBases: shared,
+      maxPartners: 1,
+    },
+    coveredGenes: [
+      ...covered,
+      ...Array.from({ length: 2776 - covered.length }, (_, i) => `PAD${i}`),
+    ].sort(),
+    features,
+    pairs,
+  }, genes, organismById('utex2973'));
+}
+
+/** Every fillRect the overlap row drew, in the primary band. */
+function overlapRowFills(ops, layout) {
+  return ops.filter((op) => op.op === 'fillRect'
+    && op.y >= layout.overlapTop && op.y + op.h <= layout.overlapBottom);
+}
+
+test('the band reserves its own overlap row between the lanes and the tick labels', () => {
+  const layout = bandLayout(0, 17);
+  assert.equal(layout.overlapTop, layout.bracketBelowTop + 8);
+  assert.equal(layout.overlapBottom, layout.overlapTop + OVERLAP_ROW_HEIGHT);
+  // Below both lanes and above the labels, so neither partner's bar can cover
+  // it and it cannot cover a tick.
+  assert.ok(layout.overlapTop > layout.laneBelowTop);
+  assert.ok(layout.tickBaseline > layout.overlapBottom);
+  assert.equal(canvasHeightFor([{ primary: true }]),
+    8 + 6 + bandLayout(0, 17).height);
+});
+
+test('the overlap row draws one block per shared stretch, on both partners’ coordinates', () => {
+  const mounted = mount({ geneOverlaps: overlapIndexFor() });
+  const { view, restore, flush } = mounted;
+  try {
+    const band = view.bands()[0];
+    // Snapshotted: `flush` returns the view's own live ops array, so a later
+    // redraw would otherwise rewrite what this variable points at.
+    const whole = [...mounted.ops];
+    const blocks = overlapRowFills(whole, band.layout);
+    // Two chromosome pairs; the plasmid pair is drawn on its own band.
+    assert.equal(blocks.length, 2);
+    const expected = pieceRect(band.scale, { from: 100900, to: 101000 });
+    const first = blocks.find((block) => Math.abs(block.x - expected.left) < 0.01);
+    assert.ok(first, 'on the shared coordinates');
+    assert.ok(first.w >= 1, 'never narrower than a column');
+
+    // Zoomed into the overlap, the block is wide enough to carry the pair's
+    // two direction arrows, which is the readable close-zoom representation.
+    view.windows.set(CHROMOSOME, { from: 100800, to: 101100 });
+    view.draw();
+    const close = flush();
+    const band2 = view.bands()[0];
+    const wide = overlapRowFills(close, band2.layout);
+    assert.equal(wide.length, 1);
+    assert.ok(wide[0].w >= MIN_OVERLAP_ARROW_PX, 'wide enough for arrows');
+    // Two arrow heads inside the row, one per partner: each starts with its own
+    // `moveTo`, and nothing else in this row begins a path strictly inside it.
+    const arrowHeads = close.filter((op) => op.op === 'moveTo'
+      && op.y > band2.layout.overlapTop && op.y < band2.layout.overlapBottom);
+    assert.equal(arrowHeads.length, 2, 'one arrow per partner');
+    // At whole-genome zoom there is no room for them, and none is drawn.
+    assert.equal(whole.filter((op) => op.op === 'moveTo'
+      && op.y > band.layout.overlapTop && op.y < band.layout.overlapBottom).length, 0);
+  } finally {
+    restore();
+  }
+});
+
+test('an overlapping CDS is underlined inside its own bar, in its own strand lane', () => {
+  const mounted = mount({ geneOverlaps: overlapIndexFor() });
+  const { view, restore } = mounted;
+  try {
+    const band = view.bands()[0];
+    const plus = band.track.marks.find((mark) => mark.id === 'PLUS');
+    const rect = view.barRect(band, plus, plus.pieces[0]);
+    const shared = pieceRect(band.scale, { from: 100900, to: 101000 });
+    const underline = mounted.ops.filter((op) => op.op === 'fillRect'
+      && op.h === 2 && Math.abs(op.x - shared.left) < 1.01);
+    assert.equal(underline.length, 1, 'one underline over the shared bases');
+    assert.ok(underline[0].y >= rect.top && underline[0].y < rect.top + rect.height,
+      'inside the bar, in the plus lane');
+
+    // Zoomed in, it covers the shared bases only and not the whole gene. At
+    // whole-genome zoom both are one snapped column wide, which is the same
+    // rule every sub-pixel mark in this view follows.
+    view.windows.set(CHROMOSOME, { from: 99500, to: 101500 });
+    view.draw();
+    const close = mounted.flush();
+    const band2 = view.bands()[0];
+    const plus2 = band2.track.marks.find((mark) => mark.id === 'PLUS');
+    const rect2 = view.barRect(band2, plus2, plus2.pieces[0]);
+    const shared2 = pieceRect(band2.scale, { from: 100900, to: 101000 });
+    const zoomed = close.filter((op) => op.op === 'fillRect' && op.h === 2
+      && Math.abs(op.x - shared2.left) < 0.01);
+    assert.equal(zoomed.length, 1);
+    assert.ok(zoomed[0].w < rect2.width, 'the shared bases only');
+    assert.ok(zoomed[0].x >= rect2.left && zoomed[0].x + zoomed[0].w <= rect2.left + rect2.width,
+      'inside the gene\u2019s own bar');
+    // A gene with no partner gets none, and with no layer joined nobody does.
+    const byIndex = sharedIntervalsByIndex(band.track, GENES, overlapIndexFor());
+    assert.deepEqual(byIndex.get(band.track.marks.find((mark) => mark.id === 'NOVALUE').index),
+      undefined);
+    assert.equal(sharedIntervalsByIndex(band.track, GENES, null).size, 0);
+  } finally {
+    restore();
+  }
+});
+
+test('hovering the overlap row names both genes and outlines them together', () => {
+  const announced = [];
+  const hovered = [];
+  const mounted = mount({
+    geneOverlaps: overlapIndexFor(),
+    handlers: { onAnnounce: (message) => announced.push(message), onHover: (index) => hovered.push(index) },
+  });
+  const { view, restore, flush } = mounted;
+  try {
+    const band = view.bands()[0];
+    const block = pieceRect(band.scale, { from: 100900, to: 101000 });
+    const y = band.layout.overlapTop + 4;
+    const found = view.overlapAt(block.left + 0.5, y);
+    assert.ok(found, 'the row answers a pointer');
+    assert.deepEqual([found.mark.from, found.mark.to], [100900, 101000]);
+    // A one-base block is still reachable: the row gives it the same reach a
+    // one-pixel gene bar gets.
+    view.canvas.dispatch('pointermove', { clientX: block.left + 0.5, clientY: y });
+    const ops = flush();
+    assert.match(view.overlapReadout.textContent,
+      /PLUS \(protein-coding gene, forward strand\) and NEIGHBOUR \(protein-coding gene, forward strand\) on the same strand share/);
+    assert.match(view.overlapReadout.textContent, /101 bases at NZ_CP006471\.1 100,900–101,000/);
+    assert.match(view.overlapReadout.textContent,
+      /NEIGHBOUR is annotated context this map does not plot/);
+    // The pointer is asking about an overlap, not about a gene.
+    assert.equal(hovered.at(-1), -1);
+    // The inspected block and its plotted partner are outlined in the one
+    // colour nothing else in this view strokes a rectangle in.
+    const outlines = ops.filter((op) => op.op === 'strokeRect' && op.stroke === '#1b2733');
+    assert.equal(outlines.length, 2, 'the block and the plotted partner');
+    assert.ok(outlines.some((op) => op.y < band.layout.overlapTop + 1
+      && op.h >= OVERLAP_ROW_HEIGHT), 'the block itself');
+    assert.ok(outlines.some((op) => op.y <= band.layout.axisY), 'the partner in the plus lane');
+
+    // Keyboard: O steps through the window's overlaps and announces one.
+    view.setActiveOverlap(null);
+    view.onKeyDown({ key: 'o', preventDefault() {} });
+    assert.match(announced.at(-1), /PLUS \(protein-coding gene, forward strand\) and NEIGHBOUR/);
+  } finally {
+    restore();
+  }
+});
+
+test('clicking an overlap opens the partner the map plots, and says when it cannot', () => {
+  const selected = [];
+  const announced = [];
+  const mounted = mount({
+    geneOverlaps: overlapIndexFor(),
+    handlers: {
+      onSelect: (index) => selected.push(index),
+      onAnnounce: (message) => announced.push(message),
+    },
+  });
+  const { view, restore } = mounted;
+  try {
+    const marks = view.overlapsInView();
+    // PLUS/NEIGHBOUR: only PLUS is plotted, so that is what opens.
+    view.selectOverlapPartner(marks[0]);
+    assert.deepEqual(selected, [0]);
+    // MINUS/ASRNA: the antisense RNA is not plotted, so MINUS opens.
+    view.selectOverlapPartner(marks[1]);
+    assert.deepEqual(selected, [0, 1]);
+    // A pair with nothing plotted says so instead of pinning something else.
+    view.selectOverlapPartner({
+      accession: CHROMOSOME,
+      mark: {
+        key: 'X#Y', from: 1, to: 2, bases: 2, relation: 'same',
+        genes: [{ id: 'X', geneIndex: -1, biotype: 'ncRNA', strand: '+' },
+          { id: 'Y', geneIndex: -1, biotype: 'ncRNA', strand: '+' }],
+      },
+    });
+    assert.deepEqual(selected, [0, 1], 'nothing further was pinned');
+    assert.match(announced.at(-1), /X and Y are annotated genes this map does not plot/);
+  } finally {
+    restore();
+  }
+});
+
+test('the overlap row is never filtered, because an overlap is genomic context', () => {
+  const mask = new Uint8Array(GENES.length);
+  const mounted = mount({
+    geneOverlaps: overlapIndexFor(), mask, showHidden: false,
+  });
+  const { view, restore } = mounted;
+  try {
+    const band = view.bands()[0];
+    // Every gene is hidden and the ghosts are off, so no bar is drawn at all.
+    assert.equal(mounted.ops.filter((op) => op.op === 'fillRect'
+      && op.y >= band.layout.laneAboveTop && op.y < band.layout.axisY).length, 0);
+    // The shared stretches are still there, and still named.
+    assert.equal(overlapRowFills(mounted.ops, band.layout).length, 2);
+    assert.match(overlapConventions(view), /nothing in this row is hidden by a filter/);
+  } finally {
+    restore();
+  }
+});
+
+test('with no overlap layer the row says so rather than reading as no overlaps', () => {
+  const mounted = mount();
+  const { view, restore } = mounted;
+  try {
+    const band = view.bands()[0];
+    assert.equal(overlapRowFills(mounted.ops, band.layout).length, 0);
+    const note = overlapConventions(view);
+    assert.match(note, /has not been read/);
+    assert.match(note, /not an absence of overlaps/);
+    assert.match(view.overlapReadout.textContent, /has not been read/);
+    assert.equal(view.overlapNext.disabled, true, 'nothing to step through');
+    assert.equal(view.overlapPrevious.disabled, true);
+    assert.match(view.canvas.getAttribute('aria-label'), /has not been read/);
+    // And the keyboard says the same rather than silently doing nothing.
+    const announced = [];
+    view.handlers.onAnnounce = (message) => announced.push(message);
+    view.onKeyDown({ key: 'o', preventDefault() {} });
+    assert.match(announced.at(-1), /has not been read/);
+  } finally {
+    restore();
+  }
+});
+
+test('the conventions and the canvas description state the rule and the counts', () => {
+  const mounted = mount({ geneOverlaps: overlapIndexFor() });
+  const { view, restore } = mounted;
+  try {
+    const note = overlapConventions(view);
+    assert.match(note, /OG \(overlapping genes\)/);
+    assert.match(note, /2 such stretches are drawn on NZ_CP006471\.1/);
+    assert.match(note, /tRNA, rRNA and pseudogene rows included/);
+    assert.match(note, /press O/);
+    // The canvas's own description carries the same clause, from the same call.
+    assert.ok(view.canvas.getAttribute('aria-label').includes(note));
+    // And the classes the colour mode uses are the vocabulary the index holds.
+    assert.equal(OVERLAP_CLASS_IDS.length, 5);
+  } finally {
+    restore();
+  }
+});
+
+test('two pairs over the same bases are two marks, and both can be reached', () => {
+  // MG1655's b4793/b4647 and b4793/b4455 share exactly 3,720,448–3,720,471;
+  // the same shape is set up here on this organism's own chromosome.
+  // A mark identified by coordinates alone would be one mark, and stepping or
+  // tapping would reach the first and never the second.
+  const genes = [
+    gene({ id: 'HOST', start: 1720000, end: 1721000, strand: '+', cai: 0.5 }),
+    gene({ id: 'ONE', start: 1720448, end: 1720471, strand: '-', cai: 0.5 }),
+    gene({ id: 'TWO', start: 1720448, end: 1720471, strand: '-', cai: 0.5 }),
+  ];
+  const feature = (id, segments, strand) => ({
+    id, name: null, biotype: 'protein_coding', seqid: CHROMOSOME, strand, segments,
+    segmentSource: 'child', pseudo: false,
+  });
+  const index = validateGeneOverlaps({
+    schemaVersion: 1,
+    datasetVersion: 'gene-overlaps-v1',
+    origin: 'computed',
+    producer: 'tools/build_gene_overlaps.py',
+    definition: {
+      features: 'f', extent: 'e', overlap: 'o', excluded: 'x',
+    },
+    release: {
+      accession: 'GCF_000817325.1', gff: 'g.gff.gz', sha256: 'd'.repeat(64),
+    },
+    replicons: organismById('utex2973').genome.replicons
+      .map((replicon) => ({ accession: replicon.accession, lengthBp: replicon.lengthBp })),
+    coverage: {
+      annotatedGenes: 3,
+      byBiotype: { protein_coding: 3 },
+      childlessGenes: 0,
+      overlappingGenes: 3,
+      overlappingPairs: 2,
+      pairwiseSharedBases: 48,
+      maxPartners: 2,
+    },
+    coveredGenes: ['HOST', 'ONE', 'TWO'],
+    features: [
+      feature('HOST', [[1720000, 1721000]], '+'),
+      feature('ONE', [[1720448, 1720471]], '-'),
+      feature('TWO', [[1720448, 1720471]], '-'),
+    ],
+    pairs: [
+      [0, 1, [[1720448, 1720471]]],
+      [0, 2, [[1720448, 1720471]]],
+    ],
+  }, genes, organismById('utex2973'));
+
+  const mounted = mount({ genes, geneOverlaps: index });
+  const { view, restore } = mounted;
+  try {
+    const marks = view.overlapsInView();
+    assert.equal(marks.length, 2, 'two pairs, two marks');
+    assert.notEqual(marks[0].mark.key, marks[1].mark.key);
+
+    // The keyboard steps from one to the other and wraps.
+    view.setActiveOverlap(null);
+    view.onKeyDown({ key: 'o', preventDefault() {} });
+    const first = view.activeOverlap.mark.key;
+    view.onKeyDown({ key: 'o', preventDefault() {} });
+    const second = view.activeOverlap.mark.key;
+    assert.notEqual(second, first, 'O advances past a coincident pair');
+    view.onKeyDown({ key: 'o', preventDefault() {} });
+    assert.equal(view.activeOverlap.mark.key, first, 'and wraps back');
+    view.onKeyDown({ key: 'O', shiftKey: true, preventDefault() {} });
+    assert.equal(view.activeOverlap.mark.key, second, 'Shift and O steps back');
+
+    // And a tap on the shared pixels walks them too, which is the touch route.
+    const band = view.bands()[0];
+    const { left } = pieceRect(band.scale, { from: 1720448, to: 1720471 });
+    const y = band.layout.overlapTop + 4;
+    assert.equal(view.coincidentAt(left + 0.5, y), 2);
+    view.setActiveOverlap(null);
+    const tapped = [];
+    for (let tap = 0; tap < 3; tap += 1) {
+      const hit = view.overlapAt(left + 0.5, y, { advance: true });
+      view.setActiveOverlap(hit);
+      tapped.push(hit.mark.key);
+    }
+    assert.equal(new Set(tapped).size, 2, 'both pairs are reachable by tapping');
+    assert.equal(tapped[0], tapped[2], 'and the tap route cycles');
+    // A pointer resting on the pair it is already inspecting keeps it, so
+    // moving a pixel inside one cluster does not throw the reader back.
+    const hovered = view.overlapAt(left + 0.5, y);
+    assert.equal(view.overlapAt(left + 0.5, y).mark.key, hovered.mark.key);
+
+    // The labelled buttons are the discoverable route, and they work for a
+    // pointer, a touch and a keyboard alike.
+    view.setActiveOverlap(null);
+    assert.equal(view.overlapNext.disabled, false);
+    view.overlapNext.dispatch('click', {});
+    const stepped = view.activeOverlap.mark.key;
+    assert.match(view.overlapReadout.textContent, /Pair 1 of 2 in this window/);
+    assert.match(view.overlapReadout.textContent,
+      /1 other pair covers exactly these bases; Next overlap reaches them\./);
+    view.overlapNext.dispatch('click', {});
+    assert.notEqual(view.activeOverlap.mark.key, stepped);
+    assert.match(view.overlapReadout.textContent, /Pair 2 of 2 in this window/);
+    view.overlapPrevious.dispatch('click', {});
+    assert.equal(view.activeOverlap.mark.key, stepped);
+    assert.equal(view.overlapNext.getAttribute('aria-label'),
+      'Inspect the next overlapping-gene pair in this window');
+  } finally {
+    restore();
   }
 });

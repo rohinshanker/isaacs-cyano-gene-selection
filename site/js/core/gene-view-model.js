@@ -91,6 +91,92 @@ export function orientedSegments(gene) {
 }
 
 /**
+ * This gene's transcription pieces with the drawn offset each one starts at.
+ *
+ * The same accumulation {@link orientedSegments} performs, kept apart so a
+ * caller that has a genomic coordinate can find the drawn offset it lands on
+ * without re-deriving the frame. A genomic gap between two pieces is a gap in
+ * the offsets too, which is why a coordinate is mapped inside one piece and
+ * never by interpolating across a junction.
+ */
+export function offsetPieces(gene) {
+  const spans = [];
+  let offset = 0;
+  for (const piece of transcriptionPieces(gene)) {
+    offset += piece.gapBefore;
+    const length = piece.high - piece.low + 1;
+    spans.push({ low: piece.low, high: piece.high, offset, length });
+    offset += length;
+  }
+  return spans;
+}
+
+/**
+ * Overlapping partners in this gene's own drawn frame, for the compact strip.
+ *
+ * Only the **shared** bases are placed, and each shared interval is clipped to
+ * one transcription piece before it is mapped, so a shared stretch that runs
+ * across a splice junction becomes the two drawn runs it really is rather than
+ * a bar across the gap. Every shared base is by definition inside this gene's
+ * own segments, so a partner always has somewhere to be drawn; whether the
+ * partner itself continues past this gene is carried as `extendsBeyond`
+ * instead of being drawn as a coordinate this frame cannot hold.
+ *
+ * `direction` is the partner's reading direction relative to this gene, which
+ * is what the strip's arrow shows: `with` for a same-strand partner, `against`
+ * for an opposite-strand one, and null where the release records no strand.
+ *
+ * @param {object} gene a `genes.json` record.
+ * @param {object[]} partners from `core/gene-overlaps.js`, widest first.
+ */
+export function overlapTracks(gene, partners) {
+  if (!gene || !Array.isArray(partners) || partners.length === 0) return [];
+  const spans = offsetPieces(gene);
+  const place = (span, bp) => (gene.strand === '-'
+    ? span.offset + (span.high - bp) : span.offset + (bp - span.low));
+  return partners.map((partner) => {
+    const runs = [];
+    for (const span of spans) {
+      for (const piece of partner.sharedIntervals) {
+        const low = Math.max(span.low, piece.from);
+        const high = Math.min(span.high, piece.to);
+        if (low > high) continue;
+        const a = place(span, low);
+        const b = place(span, high);
+        runs.push({ from: Math.min(a, b), to: Math.max(a, b) });
+      }
+    }
+    runs.sort((a, b) => a.from - b.from);
+    const merged = [];
+    for (const run of runs) {
+      const last = merged[merged.length - 1];
+      if (last && run.from <= last.to + 1) last.to = Math.max(last.to, run.to);
+      else merged.push({ ...run });
+    }
+    const shownNt = merged.reduce((total, run) => total + (run.to - run.from + 1), 0);
+    const partnerNt = partner.segments
+      .reduce((total, piece) => total + (piece.to - piece.from + 1), 0);
+    return {
+      id: partner.id,
+      name: partner.name ?? null,
+      biotype: partner.biotype,
+      strand: partner.strand,
+      relation: partner.relation,
+      containment: partner.containment,
+      selectable: partner.selectable,
+      geneIndex: partner.geneIndex,
+      sharedBases: partner.sharedBases,
+      sharedIntervals: partner.sharedIntervals,
+      direction: partner.relation === 'same' ? 'with'
+        : partner.relation === 'opposite' ? 'against' : null,
+      runs: merged,
+      shownNt,
+      extendsBeyond: partnerNt > partner.sharedBases,
+    };
+  });
+}
+
+/**
  * Every published Tan 2018 start-site row of one gene, drawn or not.
  *
  * `sourceStartDistanceNt` is the distance the authors published against their
@@ -299,6 +385,13 @@ export function geneViewModel(gene) {
     spliced: segments.length > 1,
     segments,
     codons,
+    // The OG relation in this gene's own drawn frame. An array means the
+    // overlap layer has been read and this is every partner it found, empty
+    // included; null means nothing has been read, which is not an absence of
+    // overlaps and is said so wherever it is shown.
+    overlaps: Array.isArray(gene.overlapPartners)
+      ? overlapTracks(gene, gene.overlapPartners) : null,
+    overlapClass: typeof gene.overlapClass === 'string' ? gene.overlapClass : null,
     tss: marks,
     // Every published row, including any with no distance to be drawn at, so
     // the inspection list can hold them while the drawing cannot.

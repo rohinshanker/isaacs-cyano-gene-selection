@@ -32,6 +32,10 @@ import { renderDrawDirection } from './draw-direction.js';
 import { formatCount } from './format.js';
 import { InfoPopover } from './disclosures.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
+import {
+  OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, biotypeLabel,
+  overlapMarksInWindow, repliconOverlapMarks,
+} from '../core/gene-overlaps.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
   id: 'chromosome',
@@ -47,6 +51,16 @@ const BAND_GAP = 18;
 const TRACK_LABEL_HEIGHT = 18;
 const TSS_ROW_HEIGHT = 10;
 const BRACKET_ROW_HEIGHT = 8;
+/**
+ * The overlap row, under both strand lanes and above the tick labels.
+ *
+ * Its own row, not a glyph on a gene's bar, because that is what makes an
+ * overlap identifiable without one partner hiding the other: a shared stretch
+ * belongs to two genes that may sit in different lanes, and a mark drawn in
+ * either lane would have to be drawn over one of them. Here it is drawn once,
+ * at the coordinates both genes occupy, where nothing else is painted.
+ */
+export const OVERLAP_ROW_HEIGHT = 9;
 const AXIS_HEIGHT = 1;
 const TICK_LABEL_HEIGHT = 15;
 const PRIMARY_LANE_HEIGHT = 17;
@@ -102,6 +116,22 @@ export const PAN_STEP_FRACTION = 0.15;
 const WRAP_MARKER_FILL = '#ffffff';
 const WRAP_MARKER_STROKE = '#1b2733';
 
+/**
+ * The overlap row's colours, by the strand relation of the pair.
+ *
+ * The same four-hue family the OG colour mode uses, so a reader who has met the
+ * classes in the legend meets the same hues here. The row is never the only
+ * channel: every block carries its pair's direction arrows at a readable zoom
+ * and its full identity in the readout and the accessible description.
+ */
+const OVERLAP_COLORS = Object.freeze({
+  same: '#009e73', opposite: '#e69f00', unknown: '#687583',
+});
+/** The outline the overlap row's active block, and both its partners, take. */
+const OVERLAP_ACTIVE_COLOR = '#1b2733';
+/** Narrowest block that has room for the pair's two direction arrows. */
+export const MIN_OVERLAP_ARROW_PX = 12;
+
 const AXIS_COLOR = '#536774';
 const LABEL_COLOR = '#4a5568';
 const OPERON_COLOR = '#687583';
@@ -116,6 +146,8 @@ export function bandLayout(top, laneHeight) {
   const axisY = laneAboveTop + laneHeight;
   const laneBelowTop = axisY + AXIS_HEIGHT;
   const bracketBelowTop = laneBelowTop + laneHeight;
+  const overlapTop = bracketBelowTop + BRACKET_ROW_HEIGHT;
+  const overlapBottom = overlapTop + OVERLAP_ROW_HEIGHT;
   return {
     top,
     labelBaseline: top + 13,
@@ -126,10 +158,12 @@ export function bandLayout(top, laneHeight) {
     axisY,
     laneBelowTop,
     bracketBelowTop,
+    overlapTop,
+    overlapBottom,
     laneHeight,
-    tickBaseline: bracketBelowTop + BRACKET_ROW_HEIGHT + 11,
+    tickBaseline: overlapBottom + 11,
     height: TRACK_LABEL_HEIGHT + TSS_ROW_HEIGHT + BRACKET_ROW_HEIGHT * 2
-      + laneHeight * 2 + AXIS_HEIGHT + TICK_LABEL_HEIGHT,
+      + laneHeight * 2 + AXIS_HEIGHT + OVERLAP_ROW_HEIGHT + TICK_LABEL_HEIGHT,
   };
 }
 
@@ -311,6 +345,44 @@ export function columnCrowding(columns) {
 }
 
 /**
+ * The bases each plotted gene of one track shares with a partner, merged.
+ *
+ * The underline a gene's own bar carries is drawn from this: the stretches of
+ * *that* gene that are shared, in its own lane, so the strand information the
+ * lanes carry is kept and neither partner is drawn over the other. Computed
+ * once per render from the partner lists the overlap index already built.
+ *
+ * Read out of the index rather than off the gene records, so the row, the
+ * underlines, the readout and the keyboard all answer from the one structure
+ * the loader validated. A gene record's own `overlapPartners` is the same list;
+ * taking it from there as well would be a second source that could drift.
+ *
+ * @param {{marks: {index: number}[]}} track
+ * @param {object[]} genes `dataset.genes`.
+ * @param {object|null} index the overlap index, or null when none is joined.
+ * @returns {Map<number, {from: number, to: number}[]>}
+ */
+export function sharedIntervalsByIndex(track, genes, index) {
+  const shared = new Map();
+  if (!index || index.state !== 'ready') return shared;
+  for (const mark of track.marks) {
+    const partners = index.partnersById.get(genes[mark.index]?.id);
+    if (!Array.isArray(partners) || partners.length === 0) continue;
+    const pieces = [];
+    for (const partner of partners) pieces.push(...partner.sharedIntervals);
+    pieces.sort((a, b) => a.from - b.from || a.to - b.to);
+    const merged = [];
+    for (const piece of pieces) {
+      const last = merged[merged.length - 1];
+      if (last && piece.from <= last.to + 1) last.to = Math.max(last.to, piece.to);
+      else merged.push({ from: piece.from, to: piece.to });
+    }
+    shared.set(mark.index, merged);
+  }
+  return shared;
+}
+
+/**
  * The fill and outline one piece actually takes, given how wide it is.
  *
  * Owner decision D1 lives here and nowhere else: a source-derived category
@@ -326,6 +398,45 @@ export function resolveMarkPaint(style, width) {
   return { fill: style.fill, stroke: style.stroke };
 }
 
+
+/**
+ * What the overlap row and the bar underlines mean, in one paragraph.
+ *
+ * It says the rule, that the row is drawn for every annotated gene and not only
+ * the plotted CDSs, and that it is not filtered: the tag records genomic
+ * context, so hiding a partner with a filter changes neither the block nor the
+ * other gene's underline. Where the layer has not landed it says that instead,
+ * because an empty row would otherwise read as a genome with no overlapping
+ * genes.
+ *
+ * A free function rather than a method, so the sentence can be checked against
+ * a hand-made view state the way the marker conventions already are, and so it
+ * cannot quietly start depending on the rest of the instance.
+ *
+ * @param {{model: object, layers?: Map<string, object>}} view
+ */
+export function overlapConventions(view) {
+  const index = view?.model?.geneOverlaps ?? null;
+  if (!index) {
+    return `The row under the strand lanes is where overlapping genes (${OVERLAP_TAG_LABEL}) are `
+      + `drawn. ${OVERLAP_UNAVAILABLE.note}`;
+  }
+  const tracks = view.model.tracks ?? [];
+  const track = tracks.find((entry) => entry.primary) ?? tracks[0] ?? null;
+  const total = track ? (view.layers?.get(track.accession)?.overlaps ?? []).length : 0;
+  return `${OVERLAP_TAG_LABEL} (${OVERLAP_TAG_EXPANSION}): the row under the strand lanes holds `
+    + 'one block for every stretch two annotated genes share, green where both genes are '
+    + 'on one strand and orange where they are on opposite strands, with each gene\u2019s '
+    + 'direction as an arrow once '
+    + `the block is wide enough. ${formatCount(total)} such `
+    + `stretch${total === 1 ? '' : 'es'} ${total === 1 ? 'is' : 'are'} drawn on `
+    + `${track?.accession ?? 'this replicon'}. Every annotated gene is counted, tRNA, rRNA and `
+    + 'pseudogene rows included, so a block can belong to a gene this map does not plot. Each '
+    + 'overlapping CDS also carries a dark underline inside its own bar over the bases it shares, '
+    + 'in its own strand lane. Hover a block, or press O, to name both genes and outline them '
+    + 'together; nothing in this row is hidden by a filter, because an overlap is genomic context '
+    + 'rather than a measurement.';
+}
 
 export class ChromosomeView {
   /**
@@ -372,6 +483,13 @@ export class ChromosomeView {
     // rather than guessing at the geometry a second time.
     this.columnShown = new Map();
     this.drawStats = { columns: null, alikeDerived: 0, reviewedDrawn: 0 };
+    /**
+     * The overlap the reader is inspecting, as `{accession, from, to, mark}`,
+     * or null. It is a camera-level preview like the keyboard cursor: it pins
+     * nothing, filters nothing and changes no value, and it is what outlines
+     * both partners at once so neither can hide the other.
+     */
+    this.activeOverlap = null;
   }
 
   /**
@@ -407,6 +525,12 @@ export class ChromosomeView {
       brackets: operonBrackets(track, model.genes),
       // Start sites are drawn only for an organism whose record declares them.
       tss: this.startSites ? tssPositions(track, model.genes) : [],
+      // Every shared stretch on this replicon, and the bases each plotted gene
+      // shares with a partner. Both come out of the overlap index, which was
+      // built once when the layer was joined; the pointer, the keyboard and
+      // every frame read these lists and recompute nothing.
+      overlaps: repliconOverlapMarks(model.geneOverlaps, track.accession),
+      sharedByIndex: sharedIntervalsByIndex(track, model.genes, model.geneOverlaps),
     }]));
     for (const track of model.tracks) {
       if (!this.windows.has(track.accession)) {
@@ -636,6 +760,30 @@ export class ChromosomeView {
     this.windowReadout.className = 'chromosome-window';
     this.windowReadout.setAttribute('role', 'status');
 
+    // The overlap row's own line, beside the window readout: which two genes
+    // the inspected shared stretch belongs to, or how many are in view, and a
+    // labelled pair of buttons that step through them. The buttons are what
+    // makes every pair reachable by pointer, touch and keyboard alike — two
+    // pairs can cover exactly the same pixels, and a hover can only ever
+    // name one of them. A status region, so a reader who is not looking at the
+    // canvas hears what the step landed on.
+    this.overlapRow = document.createElement('div');
+    this.overlapRow.className = 'chromosome-overlap-row';
+    this.overlapReadout = document.createElement('p');
+    this.overlapReadout.className = 'chromosome-window chromosome-overlap-readout';
+    this.overlapReadout.id = 'chromosome-overlap-readout';
+    this.overlapReadout.setAttribute('role', 'status');
+    this.overlapPrevious = this.chip('\u25c0 Previous overlap',
+      'Inspect the previous overlapping-gene pair in this window',
+      () => this.stepOverlap(-1));
+    this.overlapNext = this.chip('Next overlap \u25b6',
+      'Inspect the next overlapping-gene pair in this window',
+      () => this.stepOverlap(1));
+    const overlapButtons = document.createElement('div');
+    overlapButtons.className = 'chromosome-toolbar-row chromosome-overlap-steppers';
+    overlapButtons.append(this.overlapPrevious, this.overlapNext);
+    this.overlapRow.append(this.overlapReadout, overlapButtons);
+
     this.canvasHost = document.createElement('div');
     this.canvasHost.className = 'chromosome-canvas-host';
     this.canvas = document.createElement('canvas');
@@ -657,8 +805,9 @@ export class ChromosomeView {
       + 'Double-click, 0, or Reset view returns every track to its full length. With a track '
       + 'focused: Left and Right move along one strand lane and announce the CDS without pinning '
       + 'it, Up and Down cross to the next lane or replicon, Shift and an arrow pans the '
-      + 'chromosome the same step the buttons do, Enter pins the active CDS, and S adds or '
-      + 'removes it from the shortlist.';
+      + 'chromosome the same step the buttons do, O steps through the overlapping-gene blocks in '
+      + 'the chromosome window and Shift and O steps back, Enter pins the active CDS or, with an '
+      + 'overlap being inspected, its other gene, and S adds or removes it from the shortlist.';
 
     this.detailJump = document.createElement('button');
     this.detailJump.type = 'button';
@@ -704,7 +853,7 @@ export class ChromosomeView {
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
-    this.figure.append(toolbar, this.windowReadout, this.canvasHost,
+    this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
       this.instructions, this.detailJump, this.legendHost, this.viewerInfo,
       this.trnaHost, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
@@ -878,6 +1027,7 @@ export class ChromosomeView {
     parts.push('A source-derived function category draws as an outlined bar with a pale fill. '
       + 'Shortlisted CDSs carry a dark diamond beside the bar, and '
       + 'the pinned CDS is outlined in red with a line through its band.');
+    parts.push(overlapConventions(this));
     // The start-site file may not have landed. Saying the sites "fill in as you
     // zoom" would then promise marks no zoom can show, and an empty tick row
     // would read as a genome with no start sites.
@@ -928,6 +1078,8 @@ export class ChromosomeView {
       + `(${formatBasePairs(window.to - window.from + 1)} in view) · `
       + `${formatCount(this.model.passing)} of ${formatCount(this.model.total)} plotted CDSs pass `
       + 'all filters.';
+
+    this.writeOverlapReadout();
 
     this.trackSummaries.replaceChildren();
     for (const track of this.model.tracks) {
@@ -1027,6 +1179,7 @@ export class ChromosomeView {
       selected: this.selectedId(),
       categoryFilterLabels: this.model.categoryFilterLabels,
       paintOrder: this.paintOrderFacts(),
+      overlapClause: overlapConventions(this),
       copyNumberSentence: this.organism.copy.copyNumberSentence,
     }));
   }
@@ -1046,10 +1199,12 @@ export class ChromosomeView {
     const categorical = this.categoricalColor;
     return {
       categorical,
+      derivedEvidence: Boolean(this.model.colors.derived),
       order: describeDrawOrder({
         categorical,
         direction: this.model.drawOnTop,
         metricLabel: categorical ? null : this.model.colorLabel,
+        derivedEvidence: Boolean(this.model.colors.derived),
       }),
       accession: this.primaryTrack().accession,
       columns: this.drawStats.columns,
@@ -1184,8 +1339,8 @@ export class ChromosomeView {
     for (const tick of ticks) {
       const x = scale.bpToX(tick.bp);
       ctx.beginPath();
-      ctx.moveTo(x, layout.bracketBelowTop + BRACKET_ROW_HEIGHT);
-      ctx.lineTo(x, layout.bracketBelowTop + BRACKET_ROW_HEIGHT + 3);
+      ctx.moveTo(x, layout.overlapBottom);
+      ctx.lineTo(x, layout.overlapBottom + 3);
       ctx.stroke();
     }
     for (const tick of fitTickLabels(ticks, {
@@ -1202,6 +1357,7 @@ export class ChromosomeView {
     this.paintMarks(ctx, band, marks);
     this.paintOperons(ctx, band);
     this.paintTss(ctx, band);
+    this.paintOverlaps(ctx, band);
     this.paintSelectionMarks(ctx, band, marks);
   }
 
@@ -1241,6 +1397,10 @@ export class ChromosomeView {
       this.countEvidenceDrawn(band, mark);
     }
     this.paintColumnWinners(ctx, band, columns, byIndex);
+    // After the column winners, so an underline is not painted over by a
+    // neighbour's slice: the underline says this gene shares bases, and a
+    // column resolved for someone else must not take that away.
+    for (const index of order) this.paintOverlapUnderline(ctx, band, byIndex.get(index));
   }
 
   /**
@@ -1457,6 +1617,86 @@ export class ChromosomeView {
     }
   }
 
+  /**
+   * The overlap row: one block over every stretch two annotated genes share.
+   *
+   * Drawn in its own row under both lanes, so neither partner can hide the
+   * other and a shared stretch is visible whichever lanes its two genes sit
+   * in. A sub-pixel stretch is snapped to a whole column with a pixel of width
+   * — the same rule the gene bars follow — so at whole-genome zoom the row
+   * reads as where the overlaps are; at a zoom wide enough for it, each block
+   * carries the two partners' direction arrows, one above the other, and the
+   * active block is outlined with both of its genes.
+   *
+   * Nothing here is filtered. The tag records genomic context, so a filter that
+   * hides one partner changes neither the block nor the other partner's bar;
+   * "Show filtered-out genes" governs the gene lanes and not this row.
+   */
+  paintOverlaps(ctx, band) {
+    const marks = overlapMarksInWindow(
+      this.layers.get(band.track.accession)?.overlaps ?? [], band.window,
+    );
+    const { layout, scale } = band;
+    const top = layout.overlapTop + 1;
+    const height = OVERLAP_ROW_HEIGHT - 2;
+    const active = this.activeOverlap;
+    for (const mark of marks) {
+      const { left, width } = pieceRect(scale, { from: mark.from, to: mark.to });
+      if (left + width < band.left || left > band.left + band.width) continue;
+      ctx.fillStyle = OVERLAP_COLORS[mark.relation] ?? OVERLAP_COLORS.unknown;
+      ctx.fillRect(left, top, width, height);
+      if (width >= MIN_OVERLAP_ARROW_PX) {
+        // One arrow per partner, in the order the lanes read: the plus-strand
+        // gene's arrow points right in the upper half and the minus-strand
+        // gene's points left in the lower half. A pair on one strand draws two
+        // arrows the same way, which is itself the same-strand case.
+        ctx.strokeStyle = WRAP_MARKER_FILL;
+        ctx.lineWidth = 1;
+        mark.genes.forEach((gene, position) => {
+          const y = top + (position === 0 ? height * 0.3 : height * 0.7);
+          const forward = gene.strand !== '-';
+          const tip = forward ? left + width - 2 : left + 2;
+          const base = forward ? tip - 4 : tip + 4;
+          ctx.beginPath();
+          ctx.moveTo(base, y - 2.5);
+          ctx.lineTo(tip, y);
+          ctx.lineTo(base, y + 2.5);
+          ctx.stroke();
+        });
+      }
+      if (active && active.mark.key === mark.key) {
+        ctx.strokeStyle = OVERLAP_ACTIVE_COLOR;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(left - 1.5, layout.overlapTop - 0.5,
+          Math.max(3, width + 3), OVERLAP_ROW_HEIGHT + 1);
+      }
+    }
+  }
+
+  /**
+   * The shared stretches of one CDS, underlined inside its own bar.
+   *
+   * On the bar, in the gene's own lane, so the strand the lane carries is kept
+   * and the mark is on the gene it is about. It is an underline rather than a
+   * fill so the colour the bar carries — the function category, the metric, the
+   * OG class — is still readable through it.
+   */
+  paintOverlapUnderline(ctx, band, mark) {
+    const shared = this.layers.get(band.track.accession)?.sharedByIndex?.get(mark.index);
+    if (!shared || shared.length === 0) return;
+    const lane = this.laneTop(band.layout, mark);
+    const thickness = 2;
+    const y = mark.lane === 'below'
+      ? lane + band.layout.laneHeight - thickness - 1 : lane + 2;
+    ctx.fillStyle = OVERLAP_ACTIVE_COLOR;
+    for (const piece of shared) {
+      const { left, width } = pieceRect(band.scale, piece);
+      if (left + width < band.left || left > band.left + band.width) continue;
+      ctx.fillRect(Math.max(band.left, left), y,
+        Math.min(width, band.left + band.width - Math.max(band.left, left)), thickness);
+    }
+  }
+
   paintOperons(ctx, band) {
     const { layout, scale } = band;
     ctx.strokeStyle = OPERON_COLOR;
@@ -1538,6 +1778,17 @@ export class ChromosomeView {
       ctx.closePath();
       ctx.fill();
     }
+    // Both genes of the overlap being inspected, outlined together. This is
+    // the answer to "which two genes is this", and outlining only one of them
+    // would leave the other hidden behind whatever else shares its column.
+    const inspected = this.activeOverlap;
+    if (inspected && inspected.accession === band.track.accession) {
+      for (const gene of inspected.mark.genes) {
+        if (gene.geneIndex < 0) continue;
+        const partner = marks.find((mark) => mark.index === gene.geneIndex);
+        if (partner) outline(partner, OVERLAP_ACTIVE_COLOR, 2);
+      }
+    }
     for (const mark of marks) {
       if (mark.index === pinned) {
         ctx.strokeStyle = PINNED_COLOR;
@@ -1545,13 +1796,214 @@ export class ChromosomeView {
         const x = Math.round(scale.bpToX(mark.pieces[0].from)) + 0.5;
         ctx.beginPath();
         ctx.moveTo(x, layout.tssTop);
-        ctx.lineTo(x, layout.bracketBelowTop + BRACKET_ROW_HEIGHT);
+        ctx.lineTo(x, layout.overlapBottom);
         ctx.stroke();
         outline(mark, PINNED_COLOR, 2);
       }
       if (mark.index === active) outline(mark, ACTIVE_FOCUS_COLOR, 2);
       if (mark.index === hovered) outline(mark, HOVER_FOCUS_COLOR, 1.5);
     }
+  }
+
+  /**
+   * The overlap block under a canvas position, or null.
+   *
+   * The row is its own hit area, between the lower bracket row and the tick
+   * labels, so reaching an overlap never competes with reaching a gene. A
+   * sub-pixel block is measured against the column it was snapped onto and
+   * given the same three-pixel reach a one-pixel gene bar gets, because a
+   * one-base overlap is otherwise unreachable by pointer at any zoom.
+   */
+  overlapAt(x, y, { advance = false } = {}) {
+    const band = this.bandAt(y);
+    if (!band) return null;
+    const { layout } = band;
+    if (y < layout.overlapTop - 1 || y > layout.overlapBottom + 1) return null;
+    const marks = overlapMarksInWindow(
+      this.layers.get(band.track.accession)?.overlaps ?? [], band.window,
+    );
+    // Every mark the pointer reaches, nearest first, so a tap can be offered a
+    // route through the ones that share its pixels instead of always landing
+    // on the same one.
+    const reached = [];
+    for (const mark of marks) {
+      const { left, width } = pieceRect(band.scale, { from: mark.from, to: mark.to });
+      const x0 = left;
+      const x1 = Math.max(x0 + 2, left + width);
+      const distance = x < x0 ? x0 - x : x > x1 ? x - x1 : 0;
+      if (distance > 3) continue;
+      reached.push({ distance, active: { accession: band.track.accession, mark } });
+    }
+    if (reached.length === 0) return null;
+    reached.sort((a, b) => a.distance - b.distance);
+    const nearest = reached.filter((entry) => entry.distance === reached[0].distance);
+    const current = nearest
+      .findIndex((entry) => entry.active.mark.key === this.activeOverlap?.mark?.key);
+    if (!advance) {
+      // A pointer that is still on the pair it was already inspecting keeps
+      // it. Otherwise moving a pixel inside one cluster would throw the
+      // reader back to its first pair, and the press that is meant to advance
+      // through the cluster could never leave that pair.
+      return current >= 0 ? nearest[current].active : nearest[0].active;
+    }
+    if (nearest.length === 1) return nearest[0].active;
+    // A second press on the same pixels moves to the next pair there, and
+    // wraps, which is the touch and pointer route through coincident marks.
+    return nearest[(current + 1) % nearest.length].active;
+  }
+
+  /** How many overlap marks share the pixels at a canvas position. */
+  coincidentAt(x, y) {
+    const band = this.bandAt(y);
+    if (!band) return 0;
+    const marks = overlapMarksInWindow(
+      this.layers.get(band.track.accession)?.overlaps ?? [], band.window,
+    );
+    let count = 0;
+    let nearest = Infinity;
+    for (const mark of marks) {
+      const { left, width } = pieceRect(band.scale, { from: mark.from, to: mark.to });
+      const x1 = Math.max(left + 2, left + width);
+      const distance = x < left ? left - x : x > x1 ? x - x1 : 0;
+      if (distance > 3) continue;
+      if (distance < nearest) {
+        nearest = distance;
+        count = 1;
+      } else if (distance === nearest) count += 1;
+    }
+    return count;
+  }
+
+  /** The overlap blocks of the primary track inside its window, in order. */
+  overlapsInView() {
+    const track = this.primaryTrack();
+    return overlapMarksInWindow(
+      this.layers.get(track.accession)?.overlaps ?? [], this.windowFor(track),
+    ).map((mark) => ({ accession: track.accession, mark }));
+  }
+
+  /**
+   * Inspect one overlap, or none: it outlines the block and both its genes and
+   * writes the readout. Nothing is pinned, filtered or recoloured.
+   */
+  setActiveOverlap(active, { announce = false } = {}) {
+    // By pair, not by coordinates: two pairs can cover exactly the same bases.
+    if ((this.activeOverlap?.mark?.key ?? null) === (active?.mark?.key ?? null)) return;
+    this.activeOverlap = active ?? null;
+    this.writeOverlapReadout();
+    this.draw();
+    if (announce && active) this.handlers.onAnnounce?.(this.describeOverlap(active));
+  }
+
+  /** Step through the overlaps of the primary track's window. */
+  stepOverlap(step) {
+    const marks = this.overlapsInView();
+    if (marks.length === 0) {
+      this.handlers.onAnnounce?.(this.model.geneOverlaps
+        ? 'No overlapping gene is in the chromosome window. Zoom out or pan to find one.'
+        : OVERLAP_UNAVAILABLE.note);
+      return;
+    }
+    const current = this.activeOverlap === null ? -1
+      : marks.findIndex((entry) => entry.mark.key === this.activeOverlap.mark.key);
+    const next = current < 0
+      ? (step > 0 ? 0 : marks.length - 1)
+      : (current + step + marks.length) % marks.length;
+    this.setActiveOverlap(marks[next], { announce: true });
+  }
+
+  /**
+   * Pin a plotted gene of the overlap being inspected.
+   *
+   * The one that is not already pinned, so pressing Enter again walks the pair
+   * rather than reselecting the gene the reader is already on. A pair with no
+   * plotted gene — two non-coding genes overlapping each other — pins nothing
+   * and says why, because there is nothing on this map to open.
+   */
+  selectOverlapPartner(active) {
+    const plotted = active.mark.genes.filter((gene) => gene.geneIndex >= 0);
+    if (plotted.length === 0) {
+      this.handlers.onAnnounce?.(`${active.mark.genes.map((gene) => gene.id).join(' and ')} are `
+        + 'annotated genes this map does not plot, so neither can be opened here. Their overlap '
+        + 'is still drawn and named.');
+      return;
+    }
+    const current = this.model.pinned;
+    const next = plotted.find((gene) => gene.geneIndex !== current) ?? plotted[0];
+    this.cursor = locateIndex(this.lanes, next.geneIndex);
+    this.handlers.onSelect?.(next.geneIndex);
+  }
+
+  /**
+   * One overlap in words: both genes, what kind each is, which way each reads,
+   * the bases they share, and what can be done with them.
+   *
+   * Both partners are named — that is the whole point of the row — and each is
+   * named once. A gene this map does not plot says so here rather than being
+   * left to look like one a reader could open and did not.
+   */
+  describeOverlap(active) {
+    const [first, second] = active.mark.genes;
+    const name = (gene) => {
+      const direction = gene.strand === '+' ? 'forward strand'
+        : gene.strand === '-' ? 'reverse strand' : 'strand not recorded';
+      return `${gene.id} (${biotypeLabel(gene.biotype)}, ${direction})`;
+    };
+    const relation = active.mark.relation === 'same' ? 'on the same strand'
+      : active.mark.relation === 'opposite' ? 'on opposite strands'
+        : 'on strands the release does not record';
+    const bases = active.mark.to - active.mark.from + 1;
+    const coordinates = bases === 1
+      ? formatCoordinate(active.mark.from)
+      : `${formatCoordinate(active.mark.from)}\u2013${formatCoordinate(active.mark.to)}`;
+    const unplotted = active.mark.genes.filter((gene) => gene.geneIndex < 0);
+    const route = unplotted.length === 2
+      ? ' Neither is plotted on this map, so neither can be opened here.'
+      : unplotted.length === 1
+        ? ` ${unplotted[0].id} is annotated context this map does not plot, so it cannot be `
+          + 'opened here.'
+        : ' Press Enter, or click, to open the other one.';
+    return `${name(first)} and ${name(second)} ${relation} share ${formatCount(bases)} `
+      + `base${bases === 1 ? '' : 's'} at ${active.accession} ${coordinates}.${route}`;
+  }
+
+  /** The readout line for the overlap being inspected, or the row's own note. */
+  writeOverlapReadout() {
+    if (!this.overlapReadout) return;
+    const enable = (on) => {
+      this.overlapPrevious.disabled = !on;
+      this.overlapNext.disabled = !on;
+    };
+    if (!this.model?.geneOverlaps) {
+      this.overlapReadout.textContent = OVERLAP_UNAVAILABLE.note;
+      enable(false);
+      return;
+    }
+    const marks = this.overlapsInView();
+    enable(marks.length > 0);
+    const active = this.activeOverlap;
+    if (!active) {
+      this.overlapReadout.textContent = marks.length === 0
+        ? `${OVERLAP_TAG_LABEL} (${OVERLAP_TAG_EXPANSION}): no shared stretch is inside the `
+          + 'chromosome window. The row under the lanes is empty here.'
+        : `${OVERLAP_TAG_LABEL} (${OVERLAP_TAG_EXPANSION}): ${formatCount(marks.length)} shared `
+          + `stretch${marks.length === 1 ? '' : 'es'} in view. Hover one, press O, or use Next `
+          + 'overlap to name its two genes.';
+      return;
+    }
+    // Where this pair sits among the ones in the window, and how many others
+    // cover exactly the same bases. Two pairs can, so a reader who is told
+    // only "this pair" cannot know there is another under the same pixels.
+    const position = marks.findIndex((entry) => entry.mark.key === active.mark.key);
+    const coincident = marks.filter((entry) => entry.mark.from === active.mark.from
+      && entry.mark.to === active.mark.to).length;
+    this.overlapReadout.textContent = `${this.describeOverlap(active)} `
+      + `Pair ${formatCount(position + 1)} of ${formatCount(marks.length)} in this window`
+      + (coincident > 1
+        ? `, and ${formatCount(coincident - 1)} other `
+          + `${coincident === 2 ? 'pair covers' : 'pairs cover'} exactly these bases; `
+          + 'Next overlap reaches them.'
+        : '.');
   }
 
   /** The band under a canvas y, or null between bands. */
@@ -1646,6 +2098,15 @@ export class ChromosomeView {
         this.draw();
         return;
       }
+      // The overlap row first: it is its own band of pixels, so a pointer in
+      // it is asking about an overlap and not about a gene.
+      const overlap = this.overlapAt(x, y);
+      this.setActiveOverlap(overlap);
+      if (overlap) {
+        canvas.style.cursor = 'pointer';
+        this.handlers.onHover?.(-1);
+        return;
+      }
       const index = this.hitTest(x, y);
       canvas.style.cursor = index >= 0 ? 'pointer' : this.bandAt(y) ? 'grab' : 'default';
       this.handlers.onHover?.(index);
@@ -1668,6 +2129,21 @@ export class ChromosomeView {
       canvas.releasePointerCapture?.(event.pointerId);
       canvas.style.cursor = 'grab';
       if (moved) return;
+      // A tap or click on the row: the nearest pair, and on a repeat tap the
+      // next pair sharing those pixels, so every coincident pair has a pointer
+      // and touch route and not only O and Shift+O.
+      const overlap = this.overlapAt(x, y, { advance: true });
+      if (overlap) {
+        const shared = this.coincidentAt(x, y);
+        this.setActiveOverlap(overlap, { announce: true });
+        if (shared > 1) {
+          this.handlers.onAnnounce?.(`${formatCount(shared)} overlapping pairs share these `
+            + 'pixels. Click or tap again for the next one, or press O.');
+        } else {
+          this.selectOverlapPartner(overlap);
+        }
+        return;
+      }
       const index = this.hitTest(x, y);
       if (index >= 0) {
         this.cursor = locateIndex(this.lanes, index);
@@ -1816,6 +2292,7 @@ export class ChromosomeView {
    * announces the larger change it is part of.
    */
   resetView({ announce = true } = {}) {
+    this.activeOverlap = null;
     if (!this.model?.verified) {
       this.windows.clear();
       return;
@@ -1872,7 +2349,8 @@ export class ChromosomeView {
     }
     if (event.key === 'Enter') {
       event.preventDefault();
-      if (this.model.active >= 0) this.handlers.onSelect?.(this.model.active);
+      if (this.activeOverlap) this.selectOverlapPartner(this.activeOverlap);
+      else if (this.model.active >= 0) this.handlers.onSelect?.(this.model.active);
       else {
         this.handlers.onAnnounce?.('Move to a CDS with the arrow keys first, then press Enter to '
           + 'pin it.');
@@ -1888,6 +2366,9 @@ export class ChromosomeView {
     } else if (event.key === '0') {
       event.preventDefault();
       this.resetView();
+    } else if (event.key.toLowerCase() === 'o') {
+      event.preventDefault();
+      this.stepOverlap(event.shiftKey ? -1 : 1);
     } else if (event.key.toLowerCase() === 's') {
       const target = this.model.active >= 0 ? this.model.active : this.model.pinned;
       if (target >= 0) {

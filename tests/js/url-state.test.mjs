@@ -547,3 +547,23 @@ test('the marker visibility is not part of the exported view state', () => {
   assert.ok(!Object.hasOwn(viewStateOf({ ...defaultState(), hiddenMarkers: ['tss.sequence'] }),
     'hiddenMarkers'));
 });
+
+test('the overlapping-gene class selection survives a link, and a fresh view writes none', () => {
+  const fresh = defaultState();
+  assert.deepEqual(fresh.overlapClassFilter, []);
+  assert.ok(!encodeState(fresh).includes('og='), 'the fresh view carries no og field');
+  const selected = {
+    ...fresh, overlapClassFilter: ['overlap-both-strands', 'no-overlap'],
+  };
+  const hash = encodeState(selected);
+  assert.match(hash, /og=no-overlap%2Coverlap-both-strands/);
+  assert.deepEqual(decodeState(hash).overlapClassFilter,
+    ['no-overlap', 'overlap-both-strands']);
+  // An id no class names is dropped rather than carried into the mask.
+  assert.deepEqual(decodeState('og=overlap-same-strand,nonsense').overlapClassFilter,
+    ['overlap-same-strand']);
+  assert.deepEqual(decodeState('og=').overlapClassFilter ?? [], []);
+  // The colour key is a colour, and a link that names it keeps it.
+  assert.equal(decodeState(encodeState({ ...fresh, colorBy: 'overlapClass' })).colorBy,
+    'overlapClass');
+});

@@ -19,6 +19,10 @@ import { sortedFinite, quantileSorted } from '../core/stats.js';
 import { RangeSlider, hasUsableSpread } from './range-slider.js';
 import { DEFAULT_ORGANISM } from '../core/organisms.js';
 import { tanDisclosure } from './disclosures.js';
+import {
+  OVERLAP_CLASSES, OVERLAP_FILTERS, OVERLAP_FILTER_LABELS, OVERLAP_TAG_EXPANSION,
+  OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, overlapFilterOf,
+} from '../core/gene-overlaps.js';
 
 const HISTOGRAM_BINS = 44;
 
@@ -109,6 +113,7 @@ export function clearedFilterState() {
     expressionFilter: 'any',
     trafficKey: null,
     proteinFilter: 'any',
+    overlapClassFilter: [],
   };
 }
 
@@ -186,6 +191,8 @@ export class FilterPanel {
 
     this.basisHost = document.createElement('div');
     this.basisHost.className = 'basis-filter';
+    this.overlapHost = document.createElement('div');
+    this.overlapHost.className = 'overlap-filter';
     this.proteinHost = document.createElement('div');
 
     const addRow = document.createElement('div');
@@ -216,7 +223,8 @@ export class FilterPanel {
     this.clearButton.addEventListener('click', () => this.handlers.onClear());
 
     this.host.append(
-      this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost, addRow, this.list, this.summary,
+      this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost, this.overlapHost,
+      addRow, this.list, this.summary,
       this.clearButton,
     );
   }
@@ -288,12 +296,14 @@ export class FilterPanel {
     this.renderProteinFilter(state);
     this.renderBasisFilter(state);
     this.renderExceptionFilter(state);
+    this.renderOverlapFilter(state);
     this.renderRows(state);
 
     this.renderSummary(state.count, state.passing);
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
+      && (state.overlapClassFilter ?? []).length === 0
       && (state.categoryFilter ?? []).length === 0;
   }
 
@@ -653,6 +663,78 @@ export class FilterPanel {
       fieldset.append(row);
     }
     this.exceptionHost.append(fieldset);
+  }
+
+  /**
+   * The overlapping-gene filter: all genes, only the overlapping ones, or only
+   * the ones that overlap nothing.
+   *
+   * Built whatever the counts are, including zero, because the three states are
+   * about what the reader wants to see and not about this organism. While the
+   * overlap layer has not landed the fieldset says so and the options are
+   * disabled: filtering on an unread layer would turn a file in flight into a
+   * claim about which genes overlap. The counts quoted are of the whole plotted
+   * set, not of what the other filters leave, so they do not move as the reader
+   * narrows something else.
+   */
+  renderOverlapFilter(state) {
+    this.overlapHost.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'flag-filter';
+    const legend = document.createElement('legend');
+    legend.textContent = `Overlapping genes (${OVERLAP_TAG_LABEL})`;
+    fieldset.append(legend);
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    const counts = state.overlapCounts ?? null;
+    note.textContent = counts
+      ? `${OVERLAP_TAG_LABEL} marks ${OVERLAP_TAG_EXPANSION}: a gene that shares at least one `
+        + 'genomic base with another annotated gene on its replicon, on either strand. '
+        + `${formatCount(counts.overlapping)} of ${formatCount(state.count)} plotted genes carry `
+        + `the tag and ${formatCount(counts.nonOverlapping)} share no base with one. Every `
+        + 'annotated gene is compared, tRNA, rRNA and pseudogene rows included, so a partner is '
+        + 'not always a gene this map plots.'
+      : OVERLAP_UNAVAILABLE.note;
+    fieldset.append(note);
+    const selection = state.overlapClassFilter ?? [];
+    const chosen = overlapFilterOf(selection);
+    for (const value of OVERLAP_FILTERS) {
+      const row = document.createElement('div');
+      row.className = 'checkbox-row';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'overlap-filter';
+      input.id = `overlap-filter-${value}`;
+      input.value = value;
+      input.disabled = !counts && value !== 'any';
+      input.checked = chosen === value;
+      input.addEventListener('change', () => this.handlers.onOverlapFilterChange?.(value));
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+      label.textContent = counts && value !== 'any'
+        ? `${OVERLAP_FILTER_LABELS[value]} (${formatCount(
+          value === 'only' ? counts.overlapping : counts.nonOverlapping)})`
+        : OVERLAP_FILTER_LABELS[value];
+      row.append(input, label);
+      fieldset.append(row);
+    }
+    // A selection made from the colour key that none of the three options can
+    // express. None of them is shown as chosen, and the classes being kept are
+    // named here, so the panel never claims a state the map is not in.
+    if (chosen === null) {
+      const labels = OVERLAP_CLASSES
+        .filter((entry) => selection.includes(entry.id))
+        .map((entry) => entry.label)
+        .join('; ');
+      const custom = document.createElement('p');
+      custom.className = 'panel-note';
+      custom.setAttribute('role', 'status');
+      custom.textContent = `A class selection from the ${OVERLAP_TAG_LABEL} colour key is in `
+        + `force, which none of these three options describes: ${labels}. Choose one of them, or `
+        + 'clear the selection in the colour key, to leave it.';
+      fieldset.append(custom);
+    }
+    this.overlapHost.append(fieldset);
   }
 
   renderRows(state) {

@@ -8,6 +8,10 @@ import { annotationSourceLabel } from './annotation-source.js';
 import { THRESHOLDS as DERIVED_THRESHOLDS } from './source-derived-categories.js';
 import { formatCount } from '../ui/format.js';
 import { DEFAULT_ORGANISM, layerOf, organismOf, sourceLabels } from './organisms.js';
+import {
+  OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, describeOverlapCoverage,
+  describeOverlapDefinition,
+} from './gene-overlaps.js';
 
 /**
  * How each metric is calculated, in words that hold for any organism.
@@ -267,6 +271,57 @@ export function methodKeys() {
  *   the model from `resolveFunctionCategories` under the enabled sources, and
  *   `organism` is the record of the organism on screen.
  */
+/**
+ * The OG colour channel's own explanation: what the abbreviation means, the
+ * rule the classes come from, and how much of the annotation was compared.
+ *
+ * Every sentence is the overlap layer's own — the rule and the coverage come
+ * out of `core/gene-overlaps.js`, which reads the payload's `definition` block
+ * — so the help, the legend and the data cannot describe different rules.
+ *
+ * @param {{index: object|null, pending: string|null, overlapping: number,
+ *   nonOverlapping: number}} model from the app's own OG resolution.
+ */
+export function overlapColorHelp(model) {
+  const title = `Overlapping genes (${OVERLAP_TAG_LABEL})`;
+  const unit = 'genomic-context class (not a numeric metric)';
+  if (!model?.index) {
+    const waiting = model?.pending === 'failed' ? 'could not be loaded'
+      : model?.pending === 'loading' ? 'is still loading'
+        : 'is not published for this organism';
+    return {
+      title,
+      summary: `${OVERLAP_TAG_LABEL} stands for ${OVERLAP_TAG_EXPANSION}: annotated genes that `
+        + 'share at least one genomic base with each other on the same replicon, on either strand.',
+      unit,
+      method: `The overlapping-gene layer ${waiting}, so no gene is classed and every CDS is `
+        + `drawn in one neutral colour. ${OVERLAP_UNAVAILABLE.note}`,
+      origin: 'The organism\u2019s own pinned annotation release; no overlap is inferred across '
+        + 'strains or replicons, and no predicted feature is counted.',
+      coverage: `Not counted: the overlapping-gene layer ${waiting}.`,
+      citations: [],
+    };
+  }
+  return {
+    title,
+    summary: `${OVERLAP_TAG_LABEL} stands for ${OVERLAP_TAG_EXPANSION}: annotated genes that share `
+      + 'at least one genomic base with each other on the same replicon, on either strand. The '
+      + 'classes separate the strand relation the annotation records, and nothing is asserted '
+      + 'here about what an overlap means for a recoding decision.',
+    unit,
+    method: `${describeOverlapDefinition(model.index)} Containment is carried per partner rather `
+      + 'than as a class of its own, because one gene can contain one partner and lie inside '
+      + 'another. '
+      + 'The class is genomic context, not a measurement: it does not change when a filter hides '
+      + 'a partner, and it is never recomputed while the pointer moves.',
+    origin: `${model.index.release.accession}, from ${model.index.release.gff} `
+      + `(SHA-256 ${model.index.release.sha256.slice(0, 12)}\u2026), by `
+      + `${model.index.coverage.annotatedGenes.toLocaleString('en-US')} annotated gene records.`,
+    coverage: describeOverlapCoverage(model.index),
+    citations: [],
+  };
+}
+
 export function functionCategoryHelp({
   reviewed, derived, categories, organism = DEFAULT_ORGANISM,
 }) {

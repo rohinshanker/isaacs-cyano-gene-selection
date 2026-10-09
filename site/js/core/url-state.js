@@ -13,6 +13,7 @@ import { serializeSchemeMap, parseSchemeMap } from './scheme.js';
 import { DEFAULT_AXIS_SCALE, AXIS_SCALES } from './metric-axes.js';
 import { VALUE_SCALES } from './value-scales.js';
 import { CATEGORY_FILTER_IDS } from './function-categories.js';
+import { OVERLAP_CLASS_IDS } from './gene-overlaps.js';
 import {
   defaultColorSources, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
   NO_SOURCES,
@@ -36,6 +37,7 @@ const KEYS = {
   typeSources: 'src',
   axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
+  overlapClassFilter: 'og',
 };
 
 /**
@@ -130,6 +132,13 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     showHidden: true,
     exceptionFilter: 'any',
     expressionFilter: 'any',
+    // The overlapping-gene selection: the OG classes the reader is keeping, as
+    // a set, which is the one channel both the OG filter's three states and the
+    // colour key's per-class rows write. An omitted `og` means the empty set,
+    // which hides nothing — the fresh view, and also what every link written
+    // before the field existed drew, so its absence has exactly one meaning
+    // and the encoder version did not move for it.
+    overlapClassFilter: [],
     trafficKey: null,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
@@ -297,6 +306,7 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   parts.push(`${KEYS.shortlist}=${encodeURIComponent(state.shortlist.join(','))}`);
   push(KEYS.pinned, state.pinnedId ?? '');
   push(KEYS.compareTab, state.compareTab);
+  push(KEYS.overlapClassFilter, [...(state.overlapClassFilter ?? [])].sort().join(','));
   if (state.exceptionFilter && state.exceptionFilter !== 'any') {
     push(KEYS.exceptionFilter, state.exceptionFilter);
   }
@@ -385,6 +395,11 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   }
   if (values.has(KEYS.pinned)) state.pinnedId = values.get(KEYS.pinned) || null;
   if (values.has(KEYS.compareTab)) state.compareTab = values.get(KEYS.compareTab);
+  if (values.has(KEYS.overlapClassFilter)) {
+    const ids = values.get(KEYS.overlapClassFilter).split(',')
+      .filter((id) => OVERLAP_CLASS_IDS.includes(id));
+    state.overlapClassFilter = [...new Set(ids)].sort();
+  }
   if (values.has(KEYS.exceptionFilter)) {
     const mode = values.get(KEYS.exceptionFilter);
     if (['any', 'only', 'none'].includes(mode)) state.exceptionFilter = mode;

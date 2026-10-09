@@ -27,20 +27,39 @@ import { pendingNote } from './loading-note.js';
 import { tanDisclosure } from './disclosures.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import {
-  geneViewModel, fractionOf, overlapGroups, paddedHitRange, ticksFor,
+  geneViewModel, fractionOf, overlapGroups, overlapTracks, paddedHitRange, ticksFor,
 } from '../core/gene-view-model.js';
+import {
+  OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, biotypeLabel, describePartner,
+} from '../core/gene-overlaps.js';
 import { markerPaintOrder, markerPresentation } from '../core/marker-layers.js';
 import { formatCount } from './format.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const VIEW_WIDTH = 320;
-const VIEW_HEIGHT = 96;
+const VIEW_HEIGHT = 112;
 const MARGIN_X = 10;
 const TRACK_Y = 46;
 const TRACK_HEIGHT = 16;
 const TSS_Y = 26;
-const RULER_Y = 74;
+const RULER_Y = 90;
+/**
+ * The overlap strip: one lane under the coding track, for owner decision Q3.
+ *
+ * Reserved on every gene, whether or not this locus has a partner, so the
+ * ruler and the coding track sit at the same height for every gene and
+ * selecting a gene with no overlap moves nothing. The sequence close-up
+ * reserves its marker row on the same rule.
+ */
+const OVERLAP_Y = 68;
+const OVERLAP_HEIGHT = 8;
+/** Smallest drawn width of a shared interval, so a one-base overlap is visible. */
+export const MIN_OVERLAP_WIDTH = 4;
+/** Drawn width of the direction arrow on one overlap mark. */
+const OVERLAP_ARROW = 5;
+/** Invisible padding around an overlap mark. */
+export const OVERLAP_HIT_PADDING = 4;
 /** Smallest drawn width for a three-nucleotide mark, in view units. */
 const MIN_CODON_WIDTH = 5;
 /**
@@ -83,6 +102,12 @@ function svg(name, attributes = {}) {
   for (const [key, value] of Object.entries(attributes)) {
     if (value === null || value === undefined) continue;
     node.setAttribute(key, String(value));
+    // An SVG element's `className` is an animated string the browser owns, so
+    // the attribute is what sets it there; the test DOM matches on the plain
+    // string, so it is written too wherever it is one. The sequence close-up's
+    // own helper does the same, and without it a drawn mark is invisible to
+    // every class-based assertion and a check could pass while nothing drew.
+    if (key === 'class' && typeof node.className === 'string') node.className = String(value);
   }
   return node;
 }
@@ -130,6 +155,41 @@ function annotationHitTarget(annotation, attributes) {
 function signedNt(offset) {
   if (offset === 0) return 'start';
   return offset > 0 ? `+${formatCount(offset)}` : `−${formatCount(Math.abs(offset))}`;
+}
+
+/**
+ * The OG tag's own sentence, in the accessible description and nowhere else
+ * duplicated: how many annotated genes share a base with this one, which way
+ * they read, and — when nothing has been read — that this is not an absence.
+ *
+ * It is a statement about genomic context, so it does not change when a filter
+ * hides a partner and it never counts only the partners this map can plot.
+ */
+export function overlapSentence(model) {
+  const tracks = model?.overlaps;
+  if (!Array.isArray(tracks)) return OVERLAP_UNAVAILABLE.note;
+  if (tracks.length === 0) {
+    return `${OVERLAP_TAG_LABEL} (${OVERLAP_TAG_EXPANSION}): no annotated gene shares a base `
+      + 'with this one on its replicon, so the overlap strip under the coding track is empty.';
+  }
+  const bases = tracks.reduce((total, track) => total + track.sharedBases, 0);
+  const with_ = tracks.filter((track) => track.direction === 'with').length;
+  const against = tracks.filter((track) => track.direction === 'against').length;
+  const unrecorded = tracks.length - with_ - against;
+  const directions = [
+    with_ > 0 ? `${formatCount(with_)} ${with_ === 1 ? 'reads' : 'read'} the same way as this gene` : null,
+    against > 0 ? `${formatCount(against)} ${against === 1 ? 'reads' : 'read'} against it` : null,
+    unrecorded > 0 ? `${formatCount(unrecorded)} on a strand the release does not record` : null,
+  ].filter(Boolean).join(', ');
+  const beyond = tracks.filter((track) => track.extendsBeyond).length;
+  return `${OVERLAP_TAG_LABEL} (${OVERLAP_TAG_EXPANSION}): ${formatCount(tracks.length)} annotated `
+    + `gene${tracks.length === 1 ? ' shares' : 's share'} ${formatCount(bases)} `
+    + `base${bases === 1 ? '' : 's'} with this one — ${directions}. The strip under the coding `
+    + 'track marks the shared bases, with an arrow for each partner\u2019s direction, and every '
+    + 'partner is listed with its exact shared interval below.'
+    + (beyond > 0
+      ? ` ${formatCount(beyond)} of them ${beyond === 1 ? 'continues' : 'continue'} past this `
+        + 'gene\u2019s own span.' : '');
 }
 
 /**
@@ -200,6 +260,7 @@ export function describeGeneView(model, tssPending = null, organism = DEFAULT_OR
   } else {
     parts.push(`No ${startSites.label} start site maps to this locus by exact locus tag.`);
   }
+  parts.push(overlapSentence(model));
   // Held back while the start-site file is in flight. The sentence rests on
   // which start-site data set there is, which is a claim about what has landed;
   // saying it beside "still loading" would contradict the loading wording
@@ -306,6 +367,90 @@ function drawTrack(root, model, x) {
     d: `M ${tip} ${TRACK_Y - 3} L ${tip + 8} ${mid} L ${tip} ${TRACK_Y + TRACK_HEIGHT + 3} Z`,
   }));
   root.append(track);
+}
+
+/**
+ * The compact overlap strip: owner decision Q3 for the smaller gene viewer.
+ *
+ * One lane under the coding track with a mark over every stretch this gene
+ * shares with another annotated gene, each carrying an explicit direction
+ * arrow — pointing the way the picture reads for a same-strand partner and the
+ * other way for an opposite-strand one — and each inspectable by pointer,
+ * touch and keyboard, with the partner named in its label.
+ *
+ * The strip is a compact *display* of the relationships, labelled as such: a
+ * one-base overlap is widened to {@link MIN_OVERLAP_WIDTH} so it can be seen
+ * and hit at all, and two partners whose shared bases fall in the same drawn
+ * space are counted in the label rather than hidden behind one another. The
+ * complete list under the picture holds every partner with its exact shared
+ * interval, so nothing a mark cannot separate is lost. That is the same stance
+ * this view already takes for start-site marks that share drawn space.
+ */
+function drawOverlaps(root, model, x) {
+  const tracks = model.overlaps;
+  if (!Array.isArray(tracks) || tracks.length === 0) return;
+  const group = svg('g', { class: 'gene-view-overlaps' });
+  const marks = [];
+  for (const track of tracks) {
+    for (const run of track.runs) marks.push({ track, run, offset: run.from });
+  }
+  marks.sort((a, b) => a.offset - b.offset);
+  // Which marks share drawn space at this viewBox, by the one grouping rule
+  // this module already uses for crowded start-site heads.
+  const clusters = overlapGroups(marks, (offset) => x(offset), MIN_OVERLAP_WIDTH);
+  const clusterOf = new Map();
+  clusters.forEach((members, index) => {
+    for (const member of members) clusterOf.set(member, { index, size: members.length });
+  });
+  const ranges = marks.map(({ run }) => {
+    const left = x(run.from);
+    const width = Math.max(MIN_OVERLAP_WIDTH, x(run.to + 1) - left);
+    return { from: left, to: left + width };
+  });
+  marks.forEach((mark, index) => {
+    const { track, run } = mark;
+    const { from, to } = ranges[index];
+    const cluster = clusterOf.get(mark);
+    const shares = cluster.size > 1
+      ? ` Drawn with ${cluster.size - 1} other overlap ${cluster.size === 2 ? 'mark' : 'marks'} `
+        + 'in the same space at this width; every partner is listed below.'
+      : '';
+    const label = `${describePartner(track)} Shared bases drawn from `
+      + `${signedNt(run.from)} to ${signedNt(run.to)} of this gene.${shares}`;
+    const rect = interactiveAnnotation(svg('rect', {
+      class: `gene-view-overlap gene-view-overlap-${track.direction ?? 'unknown'}`
+        + ' gene-view-annotation',
+      'data-overlap-partner': track.id,
+      x: from, y: OVERLAP_Y, width: to - from, height: OVERLAP_HEIGHT, rx: 1,
+    }), label);
+    const title = svg('title');
+    title.textContent = label;
+    rect.append(title);
+    const hit = paddedHitRange(ranges, index, OVERLAP_HIT_PADDING);
+    group.append(rect, annotationHitTarget(rect, {
+      class: 'gene-view-overlap-hit-target',
+      'data-overlap-partner': track.id,
+      x: hit.from, y: OVERLAP_Y - OVERLAP_HIT_PADDING,
+      width: Math.max(1, hit.to - hit.from),
+      height: OVERLAP_HEIGHT + OVERLAP_HIT_PADDING * 2,
+    }));
+    // The arrow is the direction indicator Q3 asks for, and it is drawn on the
+    // end of the mark the partner reads towards: rightwards for a partner
+    // transcribed the way this picture reads, leftwards for one against it. A
+    // partner whose strand the release does not record gets no arrow, because
+    // an arrow would assert a direction nobody annotated.
+    if (track.direction === null) return;
+    const mid = OVERLAP_Y + OVERLAP_HEIGHT / 2;
+    const forward = track.direction === 'with';
+    const tip = forward ? to : from;
+    const base = forward ? to - OVERLAP_ARROW : from + OVERLAP_ARROW;
+    group.append(svg('path', {
+      class: 'gene-view-overlap-arrow',
+      'aria-hidden': 'true',
+      d: `M ${tip} ${mid} L ${base} ${OVERLAP_Y} L ${base} ${OVERLAP_Y + OVERLAP_HEIGHT} Z`,
+    }));
+  });
+  root.append(group);
 }
 
 function drawStart(root, x) {
@@ -445,6 +590,7 @@ export function geneViewSvg(model, tssPending = null, organism = DEFAULT_ORGANIS
   drawRuler(root, model, x);
   drawStart(root, x);
   drawTrack(root, model, x);
+  drawOverlaps(root, model, x);
   drawTss(root, model, x, layerOf(organism, 'tssEvidence'), startSitesVisible);
   return root;
 }
@@ -587,6 +733,110 @@ function startSitesControl(startSites, visible, onChange) {
   return { row, box };
 }
 
+/**
+ * The OG badge: the tag itself, with the partner count and what it stands for.
+ *
+ * It is built on every gene whose overlap context is known, including a gene
+ * with no partner, because the tag records genomic context: a reader must be
+ * able to tell nothing-shares-a-base-with-this-gene apart from nobody-looked,
+ * and only a badge that is always there can say either. Its title and its
+ * accessible name expand the abbreviation and state the rule, which is why the
+ * two-letter tag is safe to show on its own.
+ */
+export function overlapBadge(model) {
+  const tracks = model?.overlaps;
+  const badge = document.createElement('span');
+  badge.className = 'gene-view-og-badge';
+  badge.dataset.overlapClass = model?.overlapClass ?? OVERLAP_UNAVAILABLE.id;
+  if (!Array.isArray(tracks)) {
+    badge.classList.add('unavailable');
+    badge.textContent = `${OVERLAP_TAG_LABEL} ?`;
+    badge.title = OVERLAP_UNAVAILABLE.note;
+    badge.setAttribute('aria-label', `${OVERLAP_TAG_LABEL}, ${OVERLAP_TAG_EXPANSION}: `
+      + OVERLAP_UNAVAILABLE.note);
+    return badge;
+  }
+  const count = tracks.length;
+  badge.classList.toggle('none', count === 0);
+  badge.textContent = count === 0 ? `${OVERLAP_TAG_LABEL} 0` : `${OVERLAP_TAG_LABEL} ${formatCount(count)}`;
+  const rule = `${OVERLAP_TAG_LABEL} stands for ${OVERLAP_TAG_EXPANSION}: annotated genes that `
+    + 'share at least one genomic base with this one on the same replicon, on either strand.';
+  badge.title = count === 0
+    ? `${rule} None does.`
+    : `${rule} ${formatCount(count)} ${count === 1 ? 'does' : 'do'}.`;
+  badge.setAttribute('aria-label', badge.title);
+  return badge;
+}
+
+/**
+ * Every overlapping partner, in full, with a route to the ones this map plots.
+ *
+ * This is the complete record the compact strip is a display of: one row per
+ * partner with its identity, what kind of gene it is, which way it reads, how
+ * many bases it shares and exactly where, and whether it contains or lies
+ * inside this gene. A partner the map plots carries a button that opens it, so
+ * a reader can walk an overlap; a partner the map does not plot — a tRNA, an
+ * rRNA, a pseudogene, an excluded locus — says so instead of offering a route
+ * that would go nowhere.
+ */
+function overlapList(model, onOpenPartner) {
+  const tracks = model?.overlaps;
+  const section = document.createElement('div');
+  section.className = 'gene-view-overlap-list';
+  const heading = document.createElement('p');
+  heading.className = 'gene-view-overlap-heading';
+  if (!Array.isArray(tracks)) {
+    heading.textContent = `${OVERLAP_TAG_LABEL} \u2014 overlapping genes`;
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    note.textContent = OVERLAP_UNAVAILABLE.note;
+    section.append(heading, note);
+    return section;
+  }
+  heading.textContent = tracks.length === 0
+    ? `${OVERLAP_TAG_LABEL} \u2014 no overlapping gene`
+    : `${OVERLAP_TAG_LABEL} \u2014 ${formatCount(tracks.length)} overlapping `
+      + `gene${tracks.length === 1 ? '' : 's'}`;
+  section.append(heading);
+  if (tracks.length === 0) {
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    note.textContent = 'No annotated gene of this release shares a base with this one on its '
+      + 'replicon. Every annotated gene was compared, tRNA, rRNA and pseudogene rows included.';
+    section.append(note);
+    return section;
+  }
+  const list = document.createElement('ul');
+  list.className = 'gene-view-partners';
+  for (const track of tracks) {
+    const item = document.createElement('li');
+    const text = document.createElement('span');
+    text.className = 'gene-view-partner-text';
+    text.textContent = describePartner(track)
+      + (track.extendsBeyond ? ' It continues past this gene\u2019s own span.' : '');
+    item.append(text);
+    if (track.selectable && onOpenPartner) {
+      const open = document.createElement('button');
+      open.type = 'button';
+      open.className = 'chip-button gene-view-open-partner';
+      open.dataset.overlapPartner = track.id;
+      open.textContent = `Open ${track.id}`;
+      open.setAttribute('aria-label', `Open ${track.id}, an overlapping gene, in the gene visualizer`);
+      open.addEventListener('click', () => onOpenPartner(track.id, track.geneIndex));
+      item.append(open);
+    } else if (!track.selectable) {
+      const note = document.createElement('span');
+      note.className = 'gene-view-partner-note';
+      note.textContent = ` Not plotted on this map: a ${biotypeLabel(track.biotype)} is `
+        + 'annotated context, not a selectable CDS.';
+      item.append(note);
+    }
+    list.append(item);
+  }
+  section.append(list);
+  return section;
+}
+
 function legendRow(items) {
   const list = document.createElement('ul');
   list.className = 'gene-view-legend';
@@ -651,6 +901,7 @@ function factsFor(model) {
 export function renderGeneViewer(host, gene, {
   tssPending = null, organism = DEFAULT_ORGANISM,
   startSitesVisible = true, onStartSitesVisibleChange = null,
+  onOpenPartner = null,
 } = {}) {
   const startSites = layerOf(organism, 'tssEvidence');
   host.classList.add('gene-view');
@@ -693,7 +944,7 @@ export function renderGeneViewer(host, gene, {
     heading.className = 'gene-view-heading';
     const identity = document.createElement('strong');
     identity.textContent = model.name ? `${model.id} ${model.name}` : model.id;
-    heading.append(identity);
+    heading.append(identity, document.createTextNode(' '), overlapBadge(model));
     if (model.product) {
       const product = document.createElement('span');
       product.className = 'gene-view-product';
@@ -730,6 +981,10 @@ export function renderGeneViewer(host, gene, {
     if (startSites && visible && model.tss.length > 0) {
       items.push(['gene-view-key-tss', `${startSites.label} start site`]);
     }
+    if (Array.isArray(model.overlaps) && model.overlaps.length > 0) {
+      items.push(['gene-view-key-overlap',
+        `Shared bases with an overlapping gene (${OVERLAP_TAG_LABEL}), arrow for its direction`]);
+    }
     if (model.spliced) items.push(['gene-view-key-join', 'Splice gap']);
     host.append(legendRow(items));
 
@@ -757,6 +1012,8 @@ export function renderGeneViewer(host, gene, {
       const sites = startSiteList(model, startSites, visible);
       if (sites) host.append(sites);
     }
+
+    host.append(overlapList(model, onOpenPartner));
 
     if (model.spliced) {
       const spliced = document.createElement('p');

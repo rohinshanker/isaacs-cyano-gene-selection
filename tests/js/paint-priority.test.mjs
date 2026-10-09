@@ -13,6 +13,7 @@ import {
   normalizeDrawDirection, paintBatchOrder, paintPriority, paintRanks, sortByPaintOrder,
   topByPaintOrder,
 } from '../../site/js/core/paint-priority.js';
+import { describePaintOrder } from '../../site/js/core/chromosome-model.js';
 
 /**
  * A metric colour over five genes: 0 and 1 are filtered out, 2 has no value,
@@ -343,4 +344,29 @@ test('the lowest direction survives a value the model cannot give a number for',
   assert.deepEqual(sortByPaintOrder([2, 1], bareLowest), [2, 1]);
   const finiteLowest = metricModel({ direction: 'lowest', hasValue: () => true });
   assert.equal(paintPriority(4, finiteLowest).value, -90);
+});
+
+test('a categorical channel with one kind of evidence is not told it has two', () => {
+  // The function-category channel resolves a category from a lab review or
+  // from a derivation, and the rule names both.
+  assert.match(describeDrawOrder({ categorical: true, direction: 'highest' }),
+    /a lab-reviewed category draws over a source-derived one/);
+  // The overlapping-gene classes come from the annotation and nothing else, so
+  // the sentence must not claim a distinction this channel does not have.
+  const single = describeDrawOrder({
+    categorical: true, direction: 'highest', derivedEvidence: false,
+  });
+  assert.equal(single, 'Where marks overlap, a gene with a class draws over a gene with none.');
+  assert.ok(!/reviewed|derived/.test(single));
+  // And the same for the per-column rule the chromosome view discloses.
+  const columns = { occupied: 10, shared: 3, median: 1, max: 2 };
+  const withBoth = describePaintOrder({
+    categorical: true, order: 'x', accession: 'chr', columns, alike: null,
+  }).join(' ');
+  assert.match(withBoth, /a lab-reviewed category over a source-derived one, then the category/);
+  const withOne = describePaintOrder({
+    categorical: true, derivedEvidence: false, order: 'x', accession: 'chr', columns, alike: null,
+  }).join(' ');
+  assert.match(withOne, /the column shows the category with more CDSs in that column/);
+  assert.ok(!/reviewed|derived/.test(withOne));
 });

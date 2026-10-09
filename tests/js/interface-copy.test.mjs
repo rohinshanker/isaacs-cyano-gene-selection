@@ -42,6 +42,10 @@ test('clear all filters resets numeric and categorical channels together', () =>
     expressionFilter: 'any',
     trafficKey: null,
     proteinFilter: 'any',
+    // The overlapping-gene class selection is one of those channels: the OG
+    // filter's three options and the OG colour key's class rows both write it,
+    // so Clear all filters has to clear it too.
+    overlapClassFilter: [],
   });
 });
 
