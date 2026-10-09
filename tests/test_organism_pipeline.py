@@ -31,6 +31,24 @@ def test_default_and_named_organisms_are_explicit() -> None:
     assert ecoli.optionalLayers == ["annotation", "expression"]
 
 
+def test_sequence_context_document_is_optional_and_explicit() -> None:
+    genes = [
+        {"id": "plus", "seqid": "rep", "start": 2, "end": 7, "strand": "+"},
+        {"id": "minus", "seqid": "rep", "start": 10, "end": 15, "strand": "-"},
+    ]
+    genomes = {"rep": "ACGTTGCA" * 4}
+    assert build_features.sequence_context_document(genes, genomes, 30) is None
+    payload = build_features.sequence_context_document(genes, genomes, 60)
+    assert payload is not None
+    assert payload["schemaVersion"] == 1
+    assert payload["maxUpstreamNt"] == 60
+    assert payload["origin"] == "computed"
+    assert payload["producer"] == "build_features.py:strand-oriented-circular-upstream-v1"
+    assert payload["geneIds"] == ["plus", "minus"]
+    assert all(len(sequence) == 60 and set(sequence) <= set("ACGT")
+               for sequence in payload["upstream"])
+
+
 def test_public_parent_configs_and_builds_keep_the_reference_boundary() -> None:
     expected = {
         "ecoli-mds42-public-reference": {

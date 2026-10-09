@@ -453,6 +453,30 @@ Recoding never changes codon position zero. Sense substitutions must preserve
 their amino acid; a terminal stop may map only to another stop. No padded or
 invented upstream sequence is allowed: missing context fails that gene explicitly.
 
+An organism may additionally publish `sequence_context.json` for a longer
+native sequence-view window without increasing `genes.json`. The payload is an
+order-joined column contract:
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "maxUpstreamNt": 1000,
+  "origin": "computed",
+  "producer": "build_features.py:strand-oriented-circular-upstream-v1",
+  "geneIds": ["M744_RS00005", "..."],
+  "upstream": ["<1000 strand-oriented ACGT bases>", "..."]
+}
+```
+
+`geneIds` must exactly equal `genes.json` order and every sequence must have the
+configured fixed length. Its final 30 bases must equal the gene's core upstream
+context. Production and independent contract validation both derive the sequence
+from pinned genomic input with circular wrapping and transcription orientation;
+the payload's computed origin is data provenance, not an evidence-confidence
+claim. Consumers begin at 30 nt and offer only configured extents that the loaded
+payload can supply exactly. Missing or invalid expanded context never authorizes
+padding, coordinate inference, or a relabelled gene-relative site.
+
 On request, the local worker folds wild type and recoded RNA with the shipped
 ViennaRNA 2.7.2 build and reports both energies and **Δ = recoded − wild type**.
 See [RNA folding validation](rna-folding.md) for settings, provenance, caching,

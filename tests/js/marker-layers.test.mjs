@@ -29,8 +29,9 @@ import assert from 'node:assert/strict';
 import {
   MARKER_GEOMETRIES, MARKER_LAYER_IDS, MARKER_TYPES, MARKER_VIEWS, MARKER_VIEW_IDS,
   availableMarkerLayers, isDefaultMarkerVisibility, markerCoversPosition, markerKey, markerKeys,
-  markerLayerForKey, markerLayersOf, markerOf, markerOnReplicon, markerSpanNt, markerTypeOf,
-  markerVisible, normalizeHiddenMarkers, withMarkerVisible,
+  markerLayerForKey, markerLayersOf, markerOf, markerOnReplicon, markerPaintOrder,
+  markerPresentation, markerSpanNt, markerTypeOf, markerVisible, normalizeHiddenMarkers,
+  withMarkerVisible,
 } from '../../site/js/core/marker-layers.js';
 import { DEFAULT_ORGANISM, organismById } from '../../site/js/core/organisms.js';
 import { FILE_STATE } from '../../site/js/core/data-files.js';
@@ -105,6 +106,25 @@ test('a point row becomes a point marker with every field its own', () => {
   // No layer and no row field leaves it unrecorded, which is read as neither.
   assert.equal(markerOf(row(), null).measurement, null);
   assert.equal(markerOf(row(), null).layerId, null);
+});
+
+test('overlap priority follows explicit origin, never measurement or producer wording', () => {
+  const computed = markerOf(row({
+    id: 'computed', measurement: 'measured', origin: 'computed', producer: 'wet-lab sounding text',
+  }), TAN);
+  const sourced = markerOf(row({
+    id: 'source', measurement: 'predicted', origin: 'source', producer: 'algorithm sounding text',
+  }), TAN);
+  assert.deepEqual(markerPresentation(computed), {
+    id: 'supplementary', priority: 0, opacity: 0.62,
+  });
+  assert.deepEqual(markerPresentation(sourced), {
+    id: 'primary', priority: 1, opacity: 1,
+  });
+  assert.deepEqual(markerPaintOrder([sourced, computed]).map((marker) => marker.id),
+    ['computed', 'source']);
+  assert.equal(computed.producer, 'wet-lab sounding text');
+  assert.equal(sourced.producer, 'algorithm sounding text');
 });
 
 test('an interval needs both ends, and one end alone is unmapped rather than a point', () => {

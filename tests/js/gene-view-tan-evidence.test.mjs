@@ -121,6 +121,43 @@ test('the absence reaches the accessible description and adds no visible text', 
   });
 });
 
+test('gene annotations are keyboard targets and computed overlap paints underneath source evidence', async () => {
+  await withFakeDocument((document) => {
+    const host = document.createElement('div');
+    const base = joined(TWO_SITES);
+    const position = base.tssEvidence[0].position;
+    const distance = base.tssEvidence[0].sourceStartDistanceNt;
+    renderGeneViewer(host, {
+      ...base,
+      tssEvidence: [
+        { ...base.tssEvidence[0], id: 'source', origin: 'source', producer: 'fixture source' },
+        {
+          ...base.tssEvidence[0], id: 'computed', position, sourceStartDistanceNt: distance,
+          origin: 'computed', producer: 'fixture computation',
+        },
+      ],
+    });
+    const bySvgClass = (name) => host.descendants().filter((node) => (
+      node.getAttribute?.('class')?.split(/\s+/).includes(name)
+    ));
+    const marks = bySvgClass('gene-view-marker');
+    const codons = bySvgClass('gene-view-codon');
+    assert.equal(marks.length, 2);
+    assert.deepEqual(codons.map((codon) => codon.getAttribute('class').includes('gene-view-codon-start')
+      ? 'start' : 'stop'), ['start', 'stop']);
+    const annotations = [...codons, ...marks];
+    for (const annotation of annotations) {
+      assert.equal(annotation.getAttribute('tabindex'), '0');
+      assert.equal(annotation.getAttribute('role'), 'img');
+      assert.ok(annotation.getAttribute('aria-label'));
+    }
+    assert.deepEqual(marks.map((mark) => mark.attributes['data-marker-id']), ['computed', 'source']);
+    assert.match(marks[0].getAttribute('class'), /gene-view-marker-supplementary/);
+    assert.match(marks[1].getAttribute('class'), /gene-view-marker-primary/);
+    assert.equal(marks[0].attributes['data-marker-producer'], 'fixture computation');
+  });
+});
+
 /** How often each id occurs, which is what comparing two multisets needs. */
 function tally(ids) {
   const counts = new Map();

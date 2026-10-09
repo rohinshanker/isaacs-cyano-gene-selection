@@ -415,6 +415,44 @@ test('a failed validation leaves the dataset as it was', async () => {
   assert.deepEqual(dataset.codonPca, { explainedVariance: [0.5] });
 });
 
+test('expanded sequence context joins by exact gene order and preserves core suffixes', async () => {
+  const dataset = buildCoreDataset(
+    JSON.parse(await fixture('meta.json')), JSON.parse(await fixture('genes.json')), null,
+  );
+  dataset.organism = { sequenceContext: { maxUpstreamNt: 60 } };
+  const geneIds = dataset.genes.map((gene) => gene.id);
+  const upstream = dataset.genes.map((gene) => {
+    const context = gene.rnaContext;
+    const core = context.upstream ?? context.sequence.slice(0, 30);
+    return `${'A'.repeat(30)}${core}`;
+  });
+  const payload = {
+    schemaVersion: 1,
+    maxUpstreamNt: 60,
+    origin: 'computed',
+    producer: 'fixture:strand-oriented-upstream-v1',
+    geneIds,
+    upstream,
+  };
+  DATA_APPLIERS.sequenceContext(dataset, payload);
+  assert.equal(dataset.genes[0].extendedUpstream, upstream[0]);
+  assert.deepEqual(dataset.sequenceContext, {
+    maxUpstreamNt: 60,
+    origin: 'computed',
+    producer: 'fixture:strand-oriented-upstream-v1',
+  });
+
+  assert.throws(() => DATA_APPLIERS.sequenceContext(dataset, {
+    ...payload, geneIds: [geneIds[1], geneIds[0], ...geneIds.slice(2)],
+  }), /different gene file/);
+  assert.throws(() => DATA_APPLIERS.sequenceContext(dataset, {
+    ...payload, origin: 'source',
+  }), /computed origin and producer/);
+  assert.throws(() => DATA_APPLIERS.sequenceContext(dataset, {
+    ...payload, upstream: [`${'C'.repeat(60)}`, ...upstream.slice(1)],
+  }), /disagrees with genes.json/);
+});
+
 /** A `fetch` over the published site data, with per-file overrides. */
 function siteFetch(overrides = {}) {
   const log = [];
@@ -438,7 +476,8 @@ test('the staged loader and the single-step loader build the same dataset', asyn
   const dataset = await staged.settled;
   const whole = await loadDataset({ baseUrl: BASE, fetchImpl: siteFetch().fetchImpl });
   for (const file of DATA_FILES) {
-    const expected = file.organismField || file.key === 'strainFitness' ? 'absent' : 'ready';
+    const expected = file.key === 'sequenceContext' ? 'ready'
+      : file.organismField || file.key === 'strainFitness' ? 'absent' : 'ready';
     assert.equal(dataset.files[file.key].state, expected, file.key);
     assert.equal(whole.files[file.key].state, expected, file.key);
   }

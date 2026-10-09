@@ -38,6 +38,7 @@ REQUIRED_FIELDS = {
     "expectedTerminalStops",
     "expectedSpliced",
     "expectedExceptions",
+    "sequenceContextNt",
 }
 KNOWN_OPTIONAL_LAYERS = {"annotation", "expression", "tss"}
 KNOWN_TRNA_SPECIAL_CASES = {
@@ -170,6 +171,11 @@ def _validate(organism_id: str, values: Any) -> OrganismConfig:
     if values["caiReferenceRule"] not in known_cai_rules:
         raise ValueError(
             f"Organism configuration {organism_id!r} has an unknown CAI reference rule"
+        )
+    context_nt = values["sequenceContextNt"]
+    if not isinstance(context_nt, int) or isinstance(context_nt, bool) or context_nt < 30:
+        raise ValueError(
+            f"Organism configuration {organism_id!r} has invalid sequenceContextNt"
         )
     return OrganismConfig(organism_id, values)
 

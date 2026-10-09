@@ -50,7 +50,8 @@
       ],
       "expectedExceptions": {
         "M744_RS00920": "ribosomal_slippage"
-      }
+      },
+      "sequenceContextNt": 1000
     },
     "ecoli-k12-mg1655": {
       "accession": "GCF_000005845.2",
@@ -99,6 +100,7 @@
       "expectedExceptions": {
         "b2891": "ribosomal_slippage"
       },
+      "sequenceContextNt": 30,
       "annotationDirectory": "data/annotation/releases/GCF_000005845.2-UniProtGOA_2026-07-28",
       "expressionDirectory": "data/expression/organisms/ecoli-k12-mg1655",
       "primaryExpressionMetric": null
@@ -147,7 +149,8 @@
       ],
       "expectedExceptions": {
         "ECMDS42_RS12245": "ribosomal_slippage"
-      }
+      },
+      "sequenceContextNt": 30
     },
     "ecoli-dh10b-public-reference": {
       "accession": "GCF_000019425.1",
@@ -193,7 +196,8 @@
       ],
       "expectedExceptions": {
         "ECDH10B_RS15560": "ribosomal_slippage"
-      }
+      },
+      "sequenceContextNt": 30
     },
     "ecoli-syn61-delta3-ev5": {
       "accession": "GCA_028355435.1",
@@ -241,7 +245,8 @@
       ],
       "expectedExceptions": {
         "PPG85_12095": "ribosomal_slippage"
-      }
+      },
+      "sequenceContextNt": 30
     }
   }
 }

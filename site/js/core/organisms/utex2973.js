@@ -56,6 +56,10 @@ export const UTEX2973 = {
     { id: 'pcc-7942', label: 'PCC 7942', role: 'product' },
     { id: 'go-iea', label: 'GO IEA', role: 'go' },
   ],
+  sequenceContext: {
+    maxUpstreamNt: 1000,
+    optionsNt: [30, 60, 120, 240, 500, 1000],
+  },
   layers: {
     functionCategories: {
       summary: 'A broad cyanobacterial function for each CDS under the enabled annotation '

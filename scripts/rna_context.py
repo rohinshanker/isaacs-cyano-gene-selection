@@ -3,6 +3,21 @@
 from Bio.Seq import Seq
 
 
+def upstream_sequence(annotation: dict, genome: str, length: int) -> str:
+    """Return an exact strand-oriented circular sequence before the CDS start."""
+    if not isinstance(length, int) or isinstance(length, bool) or length < 0:
+        raise ValueError("upstream sequence length must be a non-negative integer")
+    size = len(genome)
+    if size == 0:
+        raise ValueError("genome sequence is empty")
+    minus = annotation["strand"] == "-"
+    anchor = annotation["end"] - 1 if minus else annotation["start"] - 1
+    positions = [(anchor + (-offset if minus else offset)) % size
+                 for offset in range(-length, 0)]
+    sequence = "".join(genome[position] for position in positions)
+    return str(Seq(sequence).complement()) if minus else sequence
+
+
 def folding_context(annotation: dict, genome: str, cds: str) -> dict:
     """Map an oriented circular genomic -30:+60 window onto CDS nucleotides.
 

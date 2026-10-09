@@ -28,6 +28,7 @@ import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import {
   geneViewModel, fractionOf, overlapGroups, ticksFor,
 } from '../core/gene-view-model.js';
+import { markerPaintOrder, markerPresentation } from '../core/marker-layers.js';
 import { formatCount } from './format.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -78,6 +79,22 @@ function svg(name, attributes = {}) {
     if (value === null || value === undefined) continue;
     node.setAttribute(key, String(value));
   }
+  return node;
+}
+
+/** Make a drawn annotation inspectable by pointer, touch, and keyboard. */
+function interactiveAnnotation(node, label) {
+  node.setAttribute('tabindex', '0');
+  node.setAttribute('role', 'img');
+  node.setAttribute('aria-label', label);
+  node.addEventListener('pointerdown', (event) => {
+    event.stopPropagation?.();
+    node.focus?.({ preventScroll: true });
+  });
+  node.addEventListener('click', (event) => {
+    event.stopPropagation?.();
+    node.focus?.({ preventScroll: true });
+  });
   return node;
 }
 
@@ -232,11 +249,11 @@ function drawTrack(root, model, x) {
     const left = x(codon.from);
     const right = x(codon.to);
     const width = Math.max(MIN_CODON_WIDTH, right - left);
-    const rect = svg('rect', {
-      class: `gene-view-codon gene-view-codon-${codon.kind}`,
+    const rect = interactiveAnnotation(svg('rect', {
+      class: `gene-view-codon gene-view-codon-${codon.kind} gene-view-annotation`,
       x: codon.kind === 'stop' ? right - width : left, y: TRACK_Y,
       width, height: TRACK_HEIGHT,
-    });
+    }), codon.label);
     const title = svg('title');
     title.textContent = codon.label;
     rect.append(title);
@@ -270,18 +287,27 @@ function drawStart(root, x) {
 function drawTss(root, model, x, startSites, visible) {
   if (!startSites || !visible || model.tss.length === 0) return;
   const group = svg('g', { class: 'gene-view-tss' });
-  for (const site of model.tss) {
+  for (const site of markerPaintOrder(model.tss)) {
     const tx = x(site.offset);
-    const mark = svg('g');
-    mark.append(svg('line', { x1: tx, x2: tx, y1: TSS_Y, y2: TRACK_Y - 2 }));
-    mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: TSS_MARK_RADIUS }));
-    const title = svg('title');
-    title.textContent = `${site.id}: published ${site.distanceNt} nt upstream of the `
+    const presentation = markerPresentation(site);
+    const label = `${site.id}: published ${site.distanceNt} nt upstream of the `
       + `${startSites.label} gene-model start`
       + (site.placementGapNt > 0
         ? `; its published genome coordinate, where the chromosome view draws it, is `
           + `${site.impliedDistanceNt} nt from this release's start, ${site.placementGapNt} nt away`
-        : '');
+        : '')
+      + (site.origin === 'computed'
+        ? `; computed by ${site.producer ?? 'an unrecorded producer'}` : '');
+    const mark = interactiveAnnotation(svg('g', {
+      class: `gene-view-marker gene-view-marker-${presentation.id} gene-view-annotation`,
+      'data-marker-id': site.id ?? '',
+      'data-marker-origin': site.origin ?? '',
+      'data-marker-producer': site.producer ?? '',
+    }), label);
+    mark.append(svg('line', { x1: tx, x2: tx, y1: TSS_Y, y2: TRACK_Y - 2 }));
+    mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: TSS_MARK_RADIUS }));
+    const title = svg('title');
+    title.textContent = label;
     mark.append(title);
     group.append(mark);
   }
@@ -351,7 +377,7 @@ export function geneViewSvg(model, tssPending = null, organism = DEFAULT_ORGANIS
   const root = svg('svg', {
     class: 'gene-view-svg',
     viewBox: `0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`,
-    role: 'img',
+    role: 'group',
     preserveAspectRatio: 'xMidYMid meet',
   });
   const said = describeGeneView(model, tssPending, organism, startSitesVisible);
@@ -396,6 +422,10 @@ function siteRowText(row, cluster) {
     ? `measured site, ${formatCount(row.readCount)} condition read `
       + `${row.readCount === 1 ? 'count' : 'counts'} in this row`
     : 'measured site, no condition read count in this row');
+  if (row.origin === 'computed') {
+    parts.push(`computed by ${row.producer ?? 'an unrecorded producer'}; supplementary `
+      + 'presentation with lower overlap priority');
+  }
   if (cluster) parts.push(cluster);
   return parts.join(' · ');
 }

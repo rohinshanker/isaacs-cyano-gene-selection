@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import {
-  AMINO_ACID_NAMES, codonAtOffset, describeGeneSequence, firstTranscribedBase, geneSequenceModel,
-  genomicPositions, junctionsOf, signedOffset, upstreamContext, upstreamPosition,
+  AMINO_ACID_NAMES, availableUpstreamNt, codonAtOffset, describeGeneSequence,
+  firstTranscribedBase, geneSequenceModel, genomicPositions, junctionsOf, signedOffset,
+  upstreamContext, upstreamPosition,
 } from '../../site/js/core/gene-sequence-model.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { CodonTable } from '../../site/js/core/codon-table.js';
@@ -91,6 +92,23 @@ test('the upstream context reads in transcription orientation with genomic posit
   assert.equal(model.upstream[0].position, 971);
   assert.equal(model.upstream[29].offset, -1);
   assert.equal(model.upstream[29].position, 1000);
+});
+
+test('an explicit sidecar extent expands the exact upstream window on request', () => {
+  const extendedUpstream = `${'G'.repeat(30)}${UPSTREAM}`;
+  const gene = plusGene({ extendedUpstream });
+  assert.equal(availableUpstreamNt(gene), 60);
+  const model = geneSequenceModel(gene, table, null, { upstreamNt: 60 });
+  assert.equal(model.upstream.length, 60);
+  assert.equal(model.upstream[0].offset, -60);
+  assert.equal(model.upstream[0].base, 'G');
+  assert.equal(model.upstream[59].offset, -1);
+  assert.equal(model.upstream[59].base, UPSTREAM.at(-1));
+  assert.deepEqual(model.domain, { min: -60, max: 27 });
+  assert.equal(model.upstream[0].position, 941);
+
+  assert.equal(availableUpstreamNt(plusGene({ extendedUpstream: `${'N'.repeat(30)}${UPSTREAM}` })), 30);
+  assert.equal(availableUpstreamNt(plusGene({ rnaContext: null, extendedUpstream })), 0);
 });
 
 test('a minus-strand gene counts genomic positions downwards from its end', () => {

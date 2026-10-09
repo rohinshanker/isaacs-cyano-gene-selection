@@ -3,13 +3,24 @@
 Scope: Ensure the sequence viewer at the bottom of Chromosome/Gene shows Tan initiation start sites and supports other structural/positional features as they are added, starting with determined Shine-Dalgarno and RBS-like sequences per gene, visible in the gene viewers.
 Status: open
 Opened: 2026-10-07
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
 Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
 
-Opened for later at the owner's request. No new implementation started.
+The bounded admitted-UI slice assigned through DEM-327 is implemented in its
+task worktree: the sequence close-up still starts at 30 nt and can select exact
+native upstream extents through 1,000 nt from an optional generated sidecar;
+explicit computed markers receive slightly transparent, lower-priority
+presentation; and start, stop and marker annotations have matching hover and
+keyboard-visible outlines plus pointer/touch metadata access in both viewers.
+
+This does not admit or generate an RBS, promoter, terminator, motif, family or
+interaction layer. The source/method-dependent Shine-Dalgarno/RBS work below
+remains open, as do any other source-dependent feature layers. This ticket is
+not being closed by the DEM-327 implementation session; the coordinator owns
+integration and closure.
 
 ## Owner display decision, 2026-10-08
 
@@ -20,9 +31,9 @@ assessment/admission remains with the linked method tickets.
 
 For annotations from methods that "dont follow the recommendation that i
 requested", use slightly transparent tag coloring and do not give them precedence
-when multiple annotations overlap. The affected category and opacity value remain
-unspecified; clarify them before implementing rather than assigning methods to
-that category here. Keep every overlapping annotation inspectable.
+when multiple annotations overlap. The owner clarified this category as outputs
+computed by a method rather than annotations picked from a library. Keep every
+overlapping annotation inspectable and its evidence classification unchanged.
 
 Add an outline on hover around any of these gene annotations, including
 termination and initiation sites on the genes themselves, in **both**
@@ -149,6 +160,33 @@ under the existing contracts, the shipped sequence extent, and admitted
 point/interval layer integration. Verify accessible metadata, keyboard/touch
 operation, clipping, runtime diagnostics, and chromosome interaction performance.
 Run focused marker/gene-viewer/sequence tests and all repository completion gates.
+
+### DEM-327 implementation verification (codex-implementer, 2026-10-09)
+
+The generated UTEX 2973 sidecar contains 1,000 exact strand-oriented upstream
+bases for every gene and remains separate from the unchanged core `genes.json`
+budget. Its order, DNA alphabet, core 30 nt suffix, both strands, circular
+origins and raw-genome identity are checked by unit and contract validation.
+At the 1,000 nt selection all 2,432 current Tan rows have native columns (2,417
+upstream and 15 within coding sequence); their published gene-model offsets are
+unchanged.
+
+Focused unit checks cover expanded sequence generation/loading/model/UI,
+source-versus-computed overlap order, generic computed fixtures, and focusable
+start/stop/marker annotations. Final gates passed after linking the canonical
+ignored raw inputs read-only into the isolated worktree: `npm test` 1,342/1,342;
+`pytest -q` 897 passed, 1 skipped and 36 subtests passed; contract validation
+119 passed, 0 failed and 1 declared splice-contiguity skip.
+
+Playwright rendered the real app at 375×812, 768×1024, 1280×800 and 1440×900,
+plus both sides of the 960 and 1240 breakpoints. The initial 30 nt and expanded
+1,000 nt windows, delayed/failed/absent sidecar, hidden markers, source-distance
+labels, keyboard activation, hover/focus outlines in both viewer renderers,
+pointer focus and a mobile touch tap passed with zero page or strip overflow and
+no unexpected console/runtime/network errors. Durable screenshots and semantic
+snapshots are under the DEM-327 handoff's `gene-upstream` evidence directory.
+No scientific source or licence claim was added, so this slice has no Claude
+Science claim dependency.
 
 ## Cleanup
 

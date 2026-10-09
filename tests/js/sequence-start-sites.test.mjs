@@ -717,12 +717,21 @@ test('two rows on one base keep both marks, both titles and both rows', async ()
     const { view } = mount(document, {
       ...gene,
       tssEvidence: [
-        { id: 'gTSS+320187', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187, sourceStartDistanceNt: 15 },
-        { id: 'gTSS+320187b', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187, sourceStartDistanceNt: 15 },
+        { id: 'source', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187, sourceStartDistanceNt: 15, origin: 'source', producer: 'fixture source' },
+        { id: 'computed', type: 'gTSS', replicon: 'CP006471', strand: '+', position: 320187, sourceStartDistanceNt: 15, origin: 'computed', producer: 'fixture computation' },
       ],
     });
     const marks = markGroups(view);
     assert.equal(marks.length, 2);
+    assert.deepEqual(marks.map((mark) => mark.attributes['data-marker-id']), ['computed', 'source'],
+      'the supplementary computation paints below source evidence');
+    assert.ok(marks[0].hasClass('gene-sequence-marker-supplementary'));
+    assert.ok(marks[1].hasClass('gene-sequence-marker-primary'));
+    for (const mark of marks) {
+      assert.equal(mark.getAttribute('tabindex'), '0');
+      assert.equal(mark.getAttribute('role'), 'img');
+      assert.ok(mark.getAttribute('aria-label'));
+    }
     assert.equal(new Set(marks.map((mark) => mark.attributes['data-marker-id'])).size, 2);
     assert.equal(new Set(marks.map((mark) => mark.querySelector('rect.gene-sequence-marker-column')
       .attributes.x)).size, 1, 'one base, so one column, and both marks on it');

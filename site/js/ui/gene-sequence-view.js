@@ -31,11 +31,13 @@
  * carries.
  */
 import {
-  codonAtOffset, describeGeneSequence, describeSequenceMarkers, geneSequenceModel,
+  availableUpstreamNt, codonAtOffset, describeGeneSequence, describeSequenceMarkers, geneSequenceModel,
   placementRangesText, sequenceMarkers, signedOffset,
 } from '../core/gene-sequence-model.js';
 import { overlapGroups, tickStep, ticksFor } from '../core/gene-view-model.js';
-import { markerLayersOf, markerSpanNt } from '../core/marker-layers.js';
+import {
+  markerLayersOf, markerPaintOrder, markerPresentation, markerSpanNt,
+} from '../core/marker-layers.js';
 import { DEFAULT_ORGANISM } from '../core/organisms.js';
 import { pendingNote } from './loading-note.js';
 import { formatCount } from './format.js';
@@ -142,6 +144,24 @@ function element(tag, className, textContent) {
   return node;
 }
 
+/** Make a drawn SVG annotation inspectable by pointer, touch, and keyboard. */
+function interactiveAnnotation(node, label) {
+  node.setAttribute('tabindex', '0');
+  node.setAttribute('role', 'img');
+  node.setAttribute('aria-label', label);
+  node.addEventListener('pointerdown', (event) => {
+    event.stopPropagation?.();
+    node.focus?.({ preventScroll: true });
+  });
+  node.addEventListener('click', (event) => {
+    // Do not let the strip's coordinate-click handler rebuild this annotation
+    // before touch/pointer focus can expose its own metadata.
+    event.stopPropagation?.();
+    node.focus?.({ preventScroll: true });
+  });
+  return node;
+}
+
 /** Genomic range text for a pair of positions, in the order given. */
 function genomicRange(from, to) {
   if (!Number.isFinite(from) || !Number.isFinite(to)) return null;
@@ -238,12 +258,20 @@ export class GeneSequenceView {
     this.markersVisible = true;
     /** Every published row of the layer for this gene, placed or not. */
     this.markerRows = [];
+    this.gene = null;
+    this.table = null;
+    this.scheme = null;
+    this.organism = DEFAULT_ORGANISM;
+    this.upstreamNt = 30;
+    this.availableUpstream = 0;
+    this.sequenceContextPending = null;
   }
 
   /**
    * @param {{gene: object|null, table: object, scheme: object|null,
    *   schemeVersion: number, organism?: object,
-   *   markerPending?: 'loading'|'failed'|null, markersVisible?: boolean}} input
+   *   markerPending?: 'loading'|'failed'|null,
+   *   sequenceContextPending?: 'loading'|'failed'|null, markersVisible?: boolean}} input
    *   the pinned gene, or null when nothing is pinned; the dataset's codon
    *   table; the compiled scheme and the version that changes whenever the
    *   scheme does; the organism on screen, whose record says which marker
@@ -252,24 +280,34 @@ export class GeneSequenceView {
    */
   update({
     gene, table, scheme, schemeVersion, organism = DEFAULT_ORGANISM,
-    markerPending = null, markersVisible = true,
+    markerPending = null, sequenceContextPending = null, markersVisible = true,
   }) {
     if (!this.built) this.build();
     const id = gene?.id ?? null;
     const geneChanged = id !== this.geneId;
     const schemeChanged = schemeVersion !== this.schemeVersion;
+    const nextAvailableUpstream = availableUpstreamNt(gene);
+    const contextChanged = nextAvailableUpstream !== this.availableUpstream
+      || sequenceContextPending !== this.sequenceContextPending;
     const [layer = null] = markerLayersOf(organism);
     const markerChanged = layer?.id !== this.markerLayer?.id
       || markerPending !== this.markerPending
       || markersVisible !== this.markersVisible;
     // Hover re-renders the tab; nothing here depends on hover, so they cost nothing.
-    if (!geneChanged && !schemeChanged && !markerChanged) return;
+    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged) return;
+    this.gene = gene;
+    this.table = table;
+    this.scheme = scheme;
+    this.organism = organism;
     this.geneId = id;
     this.schemeVersion = schemeVersion;
     this.markerLayer = layer;
     this.markerPending = markerPending;
     this.markersVisible = markersVisible;
-    this.model = gene ? geneSequenceModel(gene, table, scheme) : null;
+    this.availableUpstream = nextAvailableUpstream;
+    this.sequenceContextPending = sequenceContextPending;
+    if (geneChanged || this.upstreamNt > nextAvailableUpstream) this.upstreamNt = 30;
+    this.model = gene ? geneSequenceModel(gene, table, scheme, { upstreamNt: this.upstreamNt }) : null;
     // Every row the layer publishes for this gene, with where this strip can
     // place it. Held rather than recomputed per frame: it depends on the gene
     // and the layer, not on the camera.
@@ -280,6 +318,26 @@ export class GeneSequenceView {
       this.selectedCodon = null;
     }
     this.render();
+  }
+
+  /** Extents the organism contract and the loaded sidecar both make available. */
+  upstreamOptions() {
+    const declared = this.organism?.sequenceContext?.optionsNt ?? [30];
+    return [...new Set([30, ...declared])]
+      .filter((value) => Number.isInteger(value) && value <= this.availableUpstream)
+      .sort((a, b) => a - b);
+  }
+
+  setUpstreamNt(value) {
+    const next = Number(value);
+    if (!this.gene || next === this.upstreamNt || !this.upstreamOptions().includes(next)) return;
+    this.upstreamNt = next;
+    this.model = geneSequenceModel(this.gene, this.table, this.scheme, { upstreamNt: next });
+    this.markerRows = this.markerLayer && !this.markerPending && this.model
+      ? sequenceMarkers(this.gene, this.model) : [];
+    this.camera = null;
+    this.render();
+    this.handlers.onAnnounce?.(`Showing ${formatCount(next)} upstream nucleotides.`);
   }
 
   /** The rows this strip has a base for, in drawn order. */
@@ -351,7 +409,13 @@ export class GeneSequenceView {
     this.zoomOutButton = this.chip('Zoom out (−)', 'Zoom out of the sequence', () => this.zoomBy(1 / ZOOM_STEP));
     this.fitButton = this.chip('Fit gene', 'Fit the whole gene into the strip', () => this.fitGene());
     this.startButton = this.chip('Start (0)', 'Return to the start of the gene', () => this.goToStart());
-    toolbar.append(this.zoomInButton, this.zoomOutButton, this.fitButton, this.startButton);
+    this.upstreamLabel = element('label', 'gene-sequence-upstream-control', 'Upstream ');
+    this.upstreamSelect = document.createElement('select');
+    this.upstreamSelect.setAttribute('aria-label', 'Upstream sequence window');
+    this.upstreamSelect.addEventListener('change', () => this.setUpstreamNt(this.upstreamSelect.value));
+    this.upstreamLabel.append(this.upstreamSelect);
+    toolbar.append(this.zoomInButton, this.zoomOutButton, this.fitButton, this.startButton,
+      this.upstreamLabel);
 
     this.readout = element('p', 'chromosome-window');
     this.readout.setAttribute('role', 'status');
@@ -441,12 +505,36 @@ export class GeneSequenceView {
       + `${formatCount(model.lengthNt)} nt, ${formatCount(model.lengthCodons)} codons`;
     this.product.textContent = model.product ?? '';
     this.product.hidden = !model.product;
+    this.writeUpstreamControl();
     if (!this.camera) this.camera = openingCamera(model.domain, this.width());
     // A scheme change rewrites what the selected codon says about itself.
     this.writeSelection();
     this.writeMarkerControl();
     this.writeMarkerList();
     this.draw();
+  }
+
+  writeUpstreamControl() {
+    const options = this.upstreamOptions();
+    this.upstreamSelect.replaceChildren();
+    if (options.length === 0) {
+      const option = document.createElement('option');
+      option.value = '0';
+      option.textContent = 'Unavailable';
+      this.upstreamSelect.append(option);
+      this.upstreamSelect.disabled = true;
+      return;
+    }
+    for (const value of options) {
+      const option = document.createElement('option');
+      option.value = String(value);
+      option.textContent = `${formatCount(value)} nt`;
+      option.selected = value === this.upstreamNt;
+      this.upstreamSelect.append(option);
+    }
+    this.upstreamSelect.value = String(this.upstreamNt);
+    this.upstreamSelect.disabled = options.length === 1;
+    this.upstreamSelect.dataset.loadState = this.sequenceContextPending ?? 'ready';
   }
 
   /**
@@ -632,6 +720,10 @@ export class GeneSequenceView {
           : row.basisGapNt === 0 ? ', which is this same base'
             : `, ${formatCount(row.basisGapNt)} nt from this mark`));
     parts.push(row.measurement === 'predicted' ? 'predicted site' : 'measured site');
+    if (row.origin === 'computed') {
+      parts.push(`computed by ${row.producer ?? 'an unrecorded producer'}; supplementary `
+        + 'presentation with lower overlap priority');
+    }
     parts.push(row.evidence === 'measured'
       ? `${formatCount(row.readCount)} condition read ${row.readCount === 1 ? 'count' : 'counts'} `
         + 'in this row'
@@ -756,7 +848,7 @@ export class GeneSequenceView {
       viewBox: `0 0 ${total} ${rows.height}`,
       width: total,
       height: rows.height,
-      role: 'img',
+      role: 'group',
       preserveAspectRatio: 'xMinYMin meet',
     });
     const description = describeGeneSequence(model, this.shownRange(window),
@@ -875,6 +967,10 @@ export class GeneSequenceView {
       if (codon.changed) classes.push('gene-sequence-changed');
       if (index === this.selectedCodon) classes.push('gene-sequence-selected');
       const cell = svg('g', { class: classes.join(' '), 'data-codon-index': index });
+      if (codon.kind === 'start' || codon.kind === 'stop') {
+        cell.setAttribute('class', `${cell.getAttribute('class')} gene-sequence-annotation`);
+        interactiveAnnotation(cell, this.describeCodon(codon));
+      }
 
       cell.append(svg('rect', {
         class: 'gene-sequence-bases', x: left, y: rows.bases, width: cellWidth, height: ROW_HEIGHT,
@@ -955,7 +1051,15 @@ export class GeneSequenceView {
     const mark = (codon, y, className) => {
       const width = Math.max(4, perNt * 3);
       const left = codon.kind === 'stop' ? x(codon.offset + 3) - width : x(codon.offset);
-      group.append(svg('rect', { class: className, x: left, y, width, height: ROW_HEIGHT }));
+      const node = interactiveAnnotation(svg('rect', {
+        class: `${className} gene-sequence-annotation`,
+        'data-codon-index': codon.index,
+        x: left, y, width, height: ROW_HEIGHT,
+      }), this.describeCodon(codon));
+      const title = svg('title');
+      title.textContent = this.describeCodon(codon);
+      node.append(title);
+      group.append(node);
     };
     const start = model.codons[0];
     const stop = model.codons[model.codons.length - 1];
@@ -1043,11 +1147,19 @@ export class GeneSequenceView {
     const group = svg('g', { class: 'gene-sequence-markers' });
     const top = rows.markers + 2;
     const bottom = rows.markers + MARKER_ROW_HEIGHT - 3;
-    for (const row of crowding.drawn) {
+    for (const row of markerPaintOrder(crowding.drawn)) {
       const shared = crowding.sharedWith.get(row) ?? 0;
-      const classes = ['gene-sequence-marker'];
+      const presentation = markerPresentation(row);
+      const classes = ['gene-sequence-marker', 'gene-sequence-annotation',
+        `gene-sequence-marker-${presentation.id}`];
       if (shared > 0) classes.push('gene-sequence-marker-shared');
-      const mark = svg('g', { class: classes.join(' '), 'data-marker-id': row.id ?? '' });
+      const label = this.describeMarker(row, shared);
+      const mark = interactiveAnnotation(svg('g', {
+        class: classes.join(' '),
+        'data-marker-id': row.id ?? '',
+        'data-marker-origin': row.origin ?? '',
+        'data-marker-producer': row.producer ?? '',
+      }), label);
       for (const run of row.placement.runs) {
         const left = x(run.fromOffset);
         const right = x(run.toOffset + 1);
@@ -1073,7 +1185,7 @@ export class GeneSequenceView {
         }));
       }
       const title = svg('title');
-      title.textContent = this.describeMarker(row, shared);
+      title.textContent = label;
       mark.append(title);
       group.append(mark);
     }
@@ -1114,6 +1226,10 @@ export class GeneSequenceView {
       parts.push(`Its head shares drawn space with ${formatCount(shared - 1)} other `
         + `${shared === 2 ? 'mark' : 'marks'} at this zoom, which is display only: zoom in, or `
         + 'read the list below, to tell them apart.');
+    }
+    if (row.origin === 'computed') {
+      parts.push(`This row was computed by ${row.producer ?? 'an unrecorded producer'}; its tag is `
+        + 'slightly transparent and painted below source records when marks overlap.');
     }
     return parts.join(' ');
   }
@@ -1207,6 +1323,14 @@ export class GeneSequenceView {
 
   onKeyDown(event) {
     if (!this.model) return;
+    const codonIndex = Number(event.target?.dataset?.codonIndex);
+    if ((event.key === 'Enter' || event.key === ' ') && Number.isInteger(codonIndex)) {
+      event.preventDefault();
+      this.selectCodon(codonIndex);
+      const annotation = this.strip.querySelector(`[data-codon-index="${codonIndex}"]`);
+      annotation?.focus({ preventScroll: true });
+      return;
+    }
     const window = this.visibleWindow();
     const step = event.shiftKey ? window.spanNt : window.spanNt * PAN_FRACTION;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {

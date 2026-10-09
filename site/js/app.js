@@ -1137,6 +1137,7 @@ function renderChromosomeView() {
     schemeVersion: context.schemeVersion,
     organism,
     markerPending: pendingState(context.dataset, 'tssEvidence'),
+    sequenceContextPending: pendingState(context.dataset, 'sequenceContext'),
     markersVisible: markersVisibleIn('sequence'),
   });
   // The toolbar exists once the view has rendered, so its section follows.

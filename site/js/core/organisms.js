@@ -28,6 +28,8 @@
  * - `layers`: the study-bound evidence layers it publishes, keyed by data-file
  *   key, each with the labels its views read. A layer that is not declared is
  *   never requested, whatever its data directory holds.
+ * - `sequenceContext`: the optional expanded upstream-sequence payload and the
+ *   selectable extents it supports, or null when only the core 30 nt exist.
  * - `copy`: whole sentences that state organism facts.
  */
 import { UTEX2973 } from './organisms/utex2973.js';

@@ -61,8 +61,12 @@ every codon's tooltip and click readout, and in every upstream base's tooltip. A
 ruler carrying genomic positions would put two coordinate systems on one axis and
 make an offset look like a position.
 
-The drawn domain is **exactly the shipped sequence**: `min` is −30 when upstream
-context is shipped and 0 when it is not, `max` is `cdsLengthNt`. The small
+The drawn domain is **exactly the selected shipped sequence**: `min` is the
+negative selected upstream extent when context is shipped and 0 when it is not,
+`max` is `cdsLengthNt`. The initial extent remains 30 nt. For an organism that
+declares an expanded sidecar, the toolbar offers only declared extents no longer
+than the exact sequence that has landed; choosing one rebuilds the native column
+map and resets the camera. The small
 visualizer's domain pads, to at least 60 nt upstream and 4% or 12 nt past the
 stop, because it draws a gene as a shape; this one draws bases, and a padded
 domain would offer positions no base occupies.
@@ -92,15 +96,27 @@ read `codons` alone would show an amber-reassignment scheme changing nothing.
 denominator convention the rest of the site uses; see
 [data-contract.md](data-contract.md#the-terminal-stop-is-carried-separately-and-it-matters).
 
-**Only the 30 upstream bases the release ships in `rnaContext` are shown, and no
-flank is padded or invented.** Both shipped forms are read: `{upstream: <30 ACGT
-bases>}` directly, and the 90-base `[-30,60)` window form only when
+**The initial 30 upstream bases come from `rnaContext`; a declared optional
+sidecar may supply longer exact context, and no flank is padded or invented.**
+Both core forms are read: `{upstream: <30 ACGT bases>}` directly, and the
+90-base `[-30,60)` window form only when
 `cdsOffsets[30]` is 0 and the first 30 offsets are all −1, which is what says
 base 30 of that window is the start. Any other shape, a wrong length, a non-ACGT
 character or a missing `cdsOffsets`, yields **no upstream at all**: the domain
 begins at 0 and the description says "No upstream context is shipped for this
 gene." Padding a flank would put invented sequence in front of a start codon the
 reader is about to recode, which the data contract forbids outright.
+
+`sequence_context.json` is the optional long-context payload. It is keyed to the
+exact `genes.json` order, carries one fixed-length ACGT string per gene in
+transcription orientation, and declares `origin: "computed"` plus a non-empty
+producer. The loader rejects another gene order, another configured extent, a
+non-ACGT sequence, or a sequence whose final 30 bases disagree with that gene's
+core context. Keeping it out of `genes.json` preserves the core map-start budget;
+the sidecar has its own compact-payload budget. The producer and contract
+validator derive and independently re-check both strands and circular origins
+against the pinned RefSeq genome. A missing, loading or failed sidecar leaves the
+truthful 30 nt initial view; it never manufactures a longer option.
 
 The window form is also the only source of **junction gap bases**. A run of −1
 strictly between two consecutive CDS offsets is the genomic gap of a splice, and
@@ -358,13 +374,32 @@ columns between the ends, and offsets `+5..+9` stay unpainted while their letter
 stay on screen. One row is still one mark with one identity and one description:
 separate outlines are how coverage is drawn and never two sites.
 
-**A row the strip cannot place is kept, with its reason.** 1,563 of the shipped
-rows are published further upstream than the 30 bases the release ships, so no
-mark is drawn for them; the list says so in those words. The three reasons are
+**A row the selected strip cannot place is kept, with its reason.** At the
+initial 30 nt extent, 1,563 of the shipped rows are further upstream and no mark
+is drawn for them; the list says so in those words. At the configured 1,000 nt
+extent every current Tan row has a native column (2,417 upstream and 15 inside
+the CDS), so all 2,432 can be drawn without changing any published gene-model
+distance. The three reasons are
 distinct and none of them is absence: `no-native-coordinate`, `other-replicon`,
 and `outside-shown-sequence`. A gene whose segments do not add up to its coding
 length has no coordinate for any base, so it places nothing — the same reason it
 already shows no genomic coordinates.
+
+**Presentation priority comes only from explicit origin.** A marker record with
+`origin: "computed"` is supplementary: its tag fill is 0.62 opacity and it is
+painted before a `source` record, so source evidence stays on top at an overlap.
+`producer` is retained in its pointer, touch, keyboard and list metadata. A
+measurement may still be measured or predicted independently; neither that
+field, a tool name, display text nor a confidence-looking value changes the
+priority. Stable paint order does not merge records: every overlapping marker
+keeps its own focus target and list row.
+
+Start and stop annotations and every marker are focusable SVG annotations with
+an accessible label and a `<title>`. Hover and `:focus-visible` draw the same
+outline in both the small gene visualizer and the sequence close-up. A pointer
+or touch click moves focus to the annotation so the metadata remains available
+without hover; Enter or Space on a close-up start/stop cell selects the codon and
+fills the persistent readout.
 
 **The marker row is reserved by the data, not by the reader.** It is 16 px tall
 whenever this locus has a placeable mark and the layer has landed, whether or not
@@ -458,7 +493,7 @@ Unit coverage:
 
 - `tests/js/gene-sequence-model.test.mjs`: decoding and the appended stop, the
   forced methionine at position zero and a non-ATG start, the upstream context in
-  both `rnaContext` forms and every malformed shape, minus-strand positions,
+  both `rnaContext` forms, an expanded exact sidecar extent and every malformed shape, minus-strand positions,
   splices and their gap bases, both origin-crossing genes, upstream positions
   wrapping the origin, the scheme diff with the reassigned stop and the unchanged
   protein, unknown coordinates, and a pass over the shipped `site/data` asserting
@@ -467,12 +502,13 @@ Unit coverage:
   and both wrap genes' first and last codon positions are the ones above.
 - `tests/js/gene-sequence-view.test.mjs`: the camera arithmetic, residue ticks, the
   empty state and its no-op navigation, the opening render with every row and
-  tooltip, the free hover re-render, the camera and selection reset on a changed
+  tooltip, focusable start/stop annotations, the initial and expanded upstream
+  selector, the free hover re-render, the camera and selection reset on a changed
   pin, the zoom and pan keys and chips, the wheel about the pointer, click against
   drag, the recoded row with its shape marks, the letter and cell thresholds,
   junction labels including `origin`, the width fallback, the no-upstream and
   unknown-coordinate case, the letter classes with the stylesheet rule that reads
-  them, the narrow strip, and the protein label in bar mode.
+them, the narrow strip, and the protein label in bar mode.
 - `tests/js/gene-view-model.test.mjs`: `transcriptionPieces` and
   `orientedSegments` for both wrap genes, the not-a-wrap cases, and an unknown
   replicon.
@@ -502,7 +538,8 @@ Unit coverage:
   distinct, every type's geometry, a point row, an interval needing both ends,
   an unmapped row kept with every field it carries, circular coverage and spans,
   the per-organism layer registry, availability, and the four independent
-  visibilities with their canonical order.
+  visibilities with their canonical order, plus explicit source/computed
+  presentation priority that is independent of measurement and producer text.
 
 Rendered validation is required for any change to this view, and source
 inspection does not substitute for it. Serve `site/` over HTTP, open the
@@ -545,6 +582,10 @@ Chromosome tab, and check at **375, 768, 1280 and 1440 px** wide:
   SVG with the strip's height unchanged, the hidden choice surviving a reload in
   `mk` while the other three views keep their marks, and an organism with no
   such layer saying nothing about a start site;
+- the upstream selector at its initial 30 nt and at every offered exact extent,
+  including 1,000 nt: camera reset, native-coordinate placement, source distances
+  unchanged, all annotations focusable, hover and keyboard outlines equivalent,
+  and a tap exposing the same metadata without hover;
 - `document.documentElement.scrollWidth <= innerWidth` in every state, with the
   SVG inside the strip at 375 px;
 - a clean browser console.

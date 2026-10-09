@@ -455,7 +455,7 @@ def ordered_cds_positions(
 
 
 def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
-                            report: Report,
+                            report: Report, sequence_context: Any = None,
                             organism: OrganismConfig = DEFAULT_ORGANISM) -> None:
     """Independently check context and edit maps using raw genomic FASTA and GFF.
 
@@ -549,9 +549,62 @@ def cross_check_rna_context(genes: list[dict[str, Any]], raw_dir: str,
             expected_offsets = [offset_by_position.get(position, -1) for position in window_positions]
             if observed_offsets != expected_offsets:
                 raise ValueError("CDS edit map differs from raw genomic positions")
+            if sequence_context is not None:
+                max_upstream = sequence_context["maxUpstreamNt"]
+                index = sequence_context["geneIds"].index(gid)
+                expanded_positions = [
+                    (anchor + direction * delta) % len(genome)
+                    for delta in range(-max_upstream, 0)
+                ]
+                expanded = "".join(genome[position] for position in expanded_positions)
+                if strand == "-":
+                    expanded = expanded.translate(complement)
+                if sequence_context["upstream"][index] != expanded:
+                    raise ValueError("expanded upstream sequence differs from raw genome")
         except ValueError as error:
             problems.append(f"{gid}: {error}")
     report.check(not problems, label, f"{len(problems)} problems, e.g. {problems[:3]}")
+
+
+def validate_sequence_context(payload: Any, genes: list[dict[str, Any]],
+                              report: Report, organism: OrganismConfig) -> None:
+    """Validate the optional long upstream payload against genes.json."""
+    label = "expanded upstream sequences follow the configured sidecar contract"
+    if organism.sequenceContextNt <= 30:
+        report.check(payload is None, label, "payload published for a 30 nt-only organism")
+        return
+    if not isinstance(payload, dict):
+        report.fail(label, "sequence_context.json is not an object")
+        return
+    ids = payload.get("geneIds")
+    upstream = payload.get("upstream")
+    expected_ids = [gene.get("id") for gene in genes]
+    valid = (
+        payload.get("schemaVersion") == 1
+        and payload.get("maxUpstreamNt") == organism.sequenceContextNt
+        and payload.get("origin") == "computed"
+        and isinstance(payload.get("producer"), str)
+        and bool(payload.get("producer"))
+        and ids == expected_ids
+        and isinstance(upstream, list)
+        and len(upstream) == len(genes)
+    )
+    problems = []
+    if valid:
+        for gene, sequence in zip(genes, upstream, strict=True):
+            if not isinstance(sequence, str) or len(sequence) != organism.sequenceContextNt \
+                    or re.fullmatch(r"[ACGT]+", sequence) is None:
+                problems.append(f"{gene.get('id')}: invalid sequence")
+                continue
+            try:
+                _, core_window, _ = decode_rna_context(gene)
+            except ValueError as error:
+                problems.append(f"{gene.get('id')}: {error}")
+                continue
+            if sequence[-30:] != core_window[:30]:
+                problems.append(f"{gene.get('id')}: core 30 nt suffix mismatch")
+    report.check(valid and not problems, label,
+                 f"invalid header or {len(problems)} sequences, e.g. {problems[:3]}")
 
 
 def validate_genes(genes: Any, meta: dict[str, Any], report: Report,
@@ -1859,11 +1912,16 @@ def main() -> int:
         load_json(os.path.join(data_dir, "tss_evidence.json"), report)
         if isinstance(meta, dict) and "tssEvidenceSource" in meta else None
     )
+    sequence_context = (
+        load_json(os.path.join(data_dir, "sequence_context.json"), report)
+        if organism.sequenceContextNt > 30 else None
+    )
 
     if isinstance(meta, dict) and isinstance(genes, list):
         validate_expression_quantities(meta, genes, report)
         validate_expression_layers(data_dir, meta, genes, report)
         validate_codon_rscu(data_dir, meta, genes, report)
+        validate_sequence_context(sequence_context, genes, report, organism)
     if isinstance(meta, dict):
         validate_pair_judgements(meta, report)
 
@@ -1894,7 +1952,7 @@ def main() -> int:
             excluded if isinstance(excluded, list) else [],
             organism,
         )
-        cross_check_rna_context(genes, raw_dir, report, organism)
+        cross_check_rna_context(genes, raw_dir, report, sequence_context, organism)
     if meta is not None and pca is not None:
         validate_codon_pca(pca, meta, report)
     if excluded is not None and isinstance(genes, list):
@@ -2139,6 +2197,14 @@ def main() -> int:
         path = os.path.join(data_dir, "genes.json")
         if os.path.exists(path):
             check_genes_json_budget(report, os.path.getsize(path), len(genes))
+        sequence_path = os.path.join(data_dir, "sequence_context.json")
+        if organism.sequenceContextNt > 30 and os.path.exists(sequence_path):
+            limit = (organism.sequenceContextNt + 80) * len(genes)
+            report.check(
+                os.path.getsize(sequence_path) <= limit,
+                "sequence_context.json stays within its separate compact-payload budget",
+                f"{os.path.getsize(sequence_path):,} bytes; limit {limit:,}",
+            )
 
     validate_data_manifest(data_dir, report)
 

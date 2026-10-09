@@ -9,7 +9,8 @@
  * the terminal stop occupies the last three offsets.
  *
  * It shows only what the release ships exactly: the packed sense codons, the
- * separately stored terminal stop, and the 30 upstream bases of `rnaContext`.
+ * separately stored terminal stop, and exact upstream bases supplied by the
+ * core `rnaContext` or its optional expanded sidecar.
  * No flank is padded, no gap base is invented, and position zero is always
  * translated as methionine and never recoded, per the data contract.
  */
@@ -29,6 +30,20 @@ export const AMINO_ACID_NAMES = Object.freeze({
 
 function isDna(text, length) {
   return typeof text === 'string' && text.length === length && /^[ACGT]+$/.test(text);
+}
+
+/** How many exact upstream bases this gene can expose without inventing any. */
+export function availableUpstreamNt(gene) {
+  const context = gene?.rnaContext;
+  const coreValid = isDna(context?.upstream, UPSTREAM_CONTEXT_NT)
+    || (isDna(context?.sequence, 90) && Array.isArray(context.cdsOffsets)
+    && context.cdsOffsets.length === 90
+    && context.cdsOffsets[UPSTREAM_CONTEXT_NT] === 0
+    && context.cdsOffsets.slice(0, UPSTREAM_CONTEXT_NT).every((offset) => offset === -1));
+  if (!coreValid) return 0;
+  const expanded = gene?.extendedUpstream;
+  return typeof expanded === 'string' && expanded.length >= UPSTREAM_CONTEXT_NT
+    && /^[ACGT]+$/.test(expanded) ? expanded.length : UPSTREAM_CONTEXT_NT;
 }
 
 /**
@@ -96,11 +111,19 @@ export function junctionsOf(gene) {
  * two consecutive CDS offsets is the genomic gap of a junction. Any other shape
  * yields no upstream rather than a guess.
  */
-export function upstreamContext(gene, junctions) {
+export function upstreamContext(gene, junctions, requestedNt = UPSTREAM_CONTEXT_NT) {
   const context = gene.rnaContext;
   if (!context || typeof context !== 'object') return null;
+  const available = availableUpstreamNt(gene);
+  const length = Number.isInteger(requestedNt) && requestedNt > 0
+    ? Math.min(requestedNt, available) : 0;
+  if (length === 0) return null;
+  const expanded = gene.extendedUpstream;
+  const selected = typeof expanded === 'string' && expanded.length >= length
+    ? expanded.slice(-length) : null;
   if (context.upstream !== undefined) {
-    return isDna(context.upstream, UPSTREAM_CONTEXT_NT) ? context.upstream : null;
+    return selected ?? (isDna(context.upstream, UPSTREAM_CONTEXT_NT)
+      ? context.upstream.slice(-length) : null);
   }
   const { sequence, cdsOffsets } = context;
   if (!isDna(sequence, 90) || !Array.isArray(cdsOffsets) || cdsOffsets.length !== 90) return null;
@@ -126,7 +149,7 @@ export function upstreamContext(gene, junctions) {
       index += 1;
     }
   }
-  return upstream;
+  return selected ?? (upstream ? upstream.slice(-length) : null);
 }
 
 /**
@@ -138,7 +161,9 @@ export function upstreamContext(gene, junctions) {
  *   recoding scheme, or null for the original sequence alone.
  * @returns {object|null} null when the record has no packed sequence.
  */
-export function geneSequenceModel(gene, table, scheme = null) {
+export function geneSequenceModel(gene, table, scheme = null, {
+  upstreamNt = UPSTREAM_CONTEXT_NT,
+} = {}) {
   if (!gene || typeof gene.codons !== 'string' || gene.codons.length === 0 || !table) return null;
   if (!Number.isFinite(gene.start) || !Number.isFinite(gene.end)) return null;
   let indices;
@@ -154,7 +179,7 @@ export function geneSequenceModel(gene, table, scheme = null) {
   const active = Boolean(scheme?.active) && scheme.rotation instanceof Uint8Array;
   const positions = genomicPositions(gene, cdsLengthNt);
   const junctions = junctionsOf(gene);
-  const upstream = upstreamContext(gene, junctions);
+  const upstream = upstreamContext(gene, junctions, upstreamNt);
 
   const codons = [];
   let changedCodons = 0;
@@ -193,7 +218,7 @@ export function geneSequenceModel(gene, table, scheme = null) {
 
   const upstreamBases = upstream
     ? [...upstream].map((base, i) => {
-      const offset = i - UPSTREAM_CONTEXT_NT;
+      const offset = i - upstream.length;
       return { offset, base, position: upstreamPosition(gene, offset) };
     })
     : [];
@@ -224,7 +249,7 @@ export function geneSequenceModel(gene, table, scheme = null) {
       changedCodons,
       stopChanged: hasStop && codons[codons.length - 1].changed,
     },
-    domain: { min: upstreamBases.length > 0 ? -UPSTREAM_CONTEXT_NT : 0, max: cdsLengthNt },
+    domain: { min: upstreamBases.length > 0 ? -upstreamBases.length : 0, max: cdsLengthNt },
   };
 }
 

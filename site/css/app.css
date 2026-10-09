@@ -1848,6 +1848,20 @@ input[type="range"] { width: 100%; }
 .gene-view-zero { stroke: var(--ink-muted); stroke-width: 1; stroke-dasharray: 2 2; }
 .gene-view-tss line { stroke: #6b4f9e; stroke-width: 1.4; }
 .gene-view-tss circle { fill: #6b4f9e; }
+.gene-view-marker-supplementary circle { fill-opacity: 0.62; }
+.gene-view-annotation { outline: none; }
+.gene-view-codon.gene-view-annotation:hover,
+.gene-view-codon.gene-view-annotation:focus-visible {
+  stroke: var(--focus);
+  stroke-width: 2.5;
+}
+.gene-view-marker.gene-view-annotation:hover circle,
+.gene-view-marker.gene-view-annotation:focus-visible circle {
+  stroke: var(--focus);
+  stroke-width: 2;
+}
+.gene-view-marker.gene-view-annotation:hover line,
+.gene-view-marker.gene-view-annotation:focus-visible line { stroke: var(--focus); stroke-width: 2; }
 
 /* The start-site layer's own show/hide. Compact enough to sit between the
    picture and the legend in a side rail: the label is the row, so the words are
@@ -1927,6 +1941,14 @@ input[type="range"] { width: 100%; }
 }
 .gene-sequence-strip.is-dragging { cursor: grabbing; }
 .gene-sequence-strip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gene-sequence-upstream-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+.gene-sequence-upstream-control select { min-height: 2rem; max-width: 8rem; }
 .gene-sequence-svg { display: block; width: 100%; height: auto; font-family: var(--mono); }
 .gene-sequence-labels text { fill: var(--ink-muted); font-family: var(--font); font-size: 11px; }
 .gene-sequence-ruler line { stroke: var(--line-strong); stroke-width: 1; }
@@ -1990,6 +2012,29 @@ input[type="range"] { width: 100%; }
 /* A head sharing drawn space with another is outlined, so the picture says a
    cluster is there rather than leaving one head to stand for several. */
 .gene-sequence-marker-shared .gene-sequence-marker-head { stroke: var(--surface); stroke-width: 1; }
+.gene-sequence-marker-supplementary .gene-sequence-marker-head,
+.gene-sequence-marker-supplementary .gene-sequence-marker-span { fill-opacity: 0.62; }
+.gene-sequence-annotation { outline: none; }
+.gene-sequence-codon.gene-sequence-annotation:hover .gene-sequence-bases,
+.gene-sequence-codon.gene-sequence-annotation:focus-visible .gene-sequence-bases,
+.gene-sequence-codon.gene-sequence-annotation:hover .gene-sequence-recoded,
+.gene-sequence-codon.gene-sequence-annotation:focus-visible .gene-sequence-recoded,
+.gene-sequence-annotation.gene-sequence-start-mark:hover,
+.gene-sequence-annotation.gene-sequence-start-mark:focus-visible,
+.gene-sequence-annotation.gene-sequence-stop-mark:hover,
+.gene-sequence-annotation.gene-sequence-stop-mark:focus-visible {
+  stroke: var(--focus);
+  stroke-width: 2.5;
+}
+.gene-sequence-marker.gene-sequence-annotation:hover .gene-sequence-marker-head,
+.gene-sequence-marker.gene-sequence-annotation:focus-visible .gene-sequence-marker-head,
+.gene-sequence-marker.gene-sequence-annotation:hover .gene-sequence-marker-span,
+.gene-sequence-marker.gene-sequence-annotation:focus-visible .gene-sequence-marker-span,
+.gene-sequence-marker.gene-sequence-annotation:hover .gene-sequence-marker-column,
+.gene-sequence-marker.gene-sequence-annotation:focus-visible .gene-sequence-marker-column {
+  stroke: var(--focus);
+  stroke-width: 2.5;
+}
 
 /* The marker layer's own show/hide, between the strip and its readout. */
 .gene-sequence-marker-row:empty { display: none; }

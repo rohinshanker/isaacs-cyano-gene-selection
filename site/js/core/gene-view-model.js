@@ -170,8 +170,10 @@ export function tssMarks(gene) {
     .filter((row) => row.drawn)
     .map(({
       id, offset, distanceNt, impliedDistanceNt, placementGapNt, strand, position, replicon,
+      origin, producer,
     }) => ({
       id, offset, distanceNt, impliedDistanceNt, placementGapNt, strand, position, replicon,
+      origin, producer,
     }));
 }
 

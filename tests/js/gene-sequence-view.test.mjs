@@ -7,6 +7,7 @@ import {
   openingCamera, residueTicks,
 } from '../../site/js/ui/gene-sequence-view.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
+import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
 import { withFakeDocument } from './fake-dom.mjs';
 import { standardTable } from './helpers.mjs';
 
@@ -114,7 +115,7 @@ test('a pinned gene opens readable at its start with every row drawn', async () 
     assert.equal(view.facts.textContent, 'plus strand, 27 nt, 8 codons');
     assert.equal(view.product.textContent, 'test protein');
     const svg = svgOf(view);
-    assert.equal(svg.getAttribute('role'), 'img');
+    assert.equal(svg.getAttribute('role'), 'group');
     assert.match(svg.getAttribute('aria-label'), /M744_RS00005 abcA on the plus strand/);
     assert.match(svg.querySelector('desc').textContent, /Showing nucleotides −30 to \+26/);
     // Every base has a letter at the opening zoom; the short gene fits whole.
@@ -142,6 +143,37 @@ test('a pinned gene opens readable at its start with every row drawn', async () 
     assert.match(cells[8].querySelector('title').textContent, /Terminal stop TAG\. CDS \+24 to \+26/);
     assert.match(view.strip.querySelector('g.gene-sequence-upstream').querySelector('title').textContent,
       /Upstream base −30, genomic 971/);
+    for (const annotation of [cells[0], cells[8]]) {
+      assert.equal(annotation.getAttribute('tabindex'), '0');
+      assert.equal(annotation.getAttribute('role'), 'img');
+      assert.ok(annotation.getAttribute('aria-label'));
+    }
+  });
+});
+
+test('the upstream selector starts at 30 and expands only to exact loaded extents', async () => {
+  await withFakeDocument((document) => {
+    const announcements = [];
+    const view = mount(document, { onAnnounce: (message) => announcements.push(message) });
+    const extendedUpstream = `${'G'.repeat(30)}${UPSTREAM}`;
+    view.update({
+      gene: gene({ extendedUpstream }), table, scheme: null, schemeVersion: 0,
+      organism: {
+        ...DEFAULT_ORGANISM,
+        sequenceContext: { maxUpstreamNt: 60, optionsNt: [30, 60, 120] },
+      },
+    });
+    assert.equal(view.upstreamNt, 30);
+    assert.deepEqual(view.upstreamSelect.children.map((option) => option.value), ['30', '60']);
+    assert.equal(view.upstreamSelect.disabled, false);
+
+    view.upstreamSelect.value = '60';
+    view.upstreamSelect.dispatch('change');
+    assert.equal(view.upstreamNt, 60);
+    assert.equal(view.model.domain.min, -60);
+    assert.equal(view.model.upstream.length, 60);
+    assert.ok(view.strip.querySelectorAll('g.gene-sequence-upstream').length > 30);
+    assert.deepEqual(announcements, ['Showing 60 upstream nucleotides.']);
   });
 });
 

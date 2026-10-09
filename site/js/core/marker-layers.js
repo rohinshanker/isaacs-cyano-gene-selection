@@ -25,6 +25,10 @@
  *   this record carries a usable native coordinate at all. A row with no
  *   coordinate is kept and marked unmapped; it is never dropped, because a
  *   dropped row is indistinguishable from a row the study never published.
+ * - **Record origin and producer.** `origin` says whether the row came from an
+ *   admitted source record or was computed for this release; `producer` names
+ *   the explicit producer contract. Presentation priority reads only that
+ *   origin. It never guesses from a tool name, display text, or confidence.
  *
  * {@link MARKER_TYPES} is a representation vocabulary and nothing more. A type
  * having an entry here does not admit a dataset, licence a source or assert
@@ -57,6 +61,7 @@ function markerRepliconLength(accession) {
 
 /** The two geometries a marker can have. There is no implicit third. */
 export const MARKER_GEOMETRIES = Object.freeze(['point', 'interval']);
+export const MARKER_ORIGINS = Object.freeze(['source', 'computed']);
 
 /**
  * How each feature type is represented and named.
@@ -179,6 +184,8 @@ const MARKER_LAYER_REGISTRY = Object.freeze([
     key: 'tssEvidence',
     types: Object.freeze(['gTSS']),
     measurement: 'measured',
+    origin: 'source',
+    producer: 'Tan 2018 Table S1',
   }),
 ]);
 
@@ -208,6 +215,8 @@ export function markerLayersOf(organism) {
       key: layer.key,
       types: layer.types,
       measurement: layer.measurement,
+      origin: layer.origin,
+      producer: layer.producer,
       label: declared.label,
       fileLabel: declared.fileLabel,
       citation: declared.citation,
@@ -280,9 +289,33 @@ export function markerOf(row, layer) {
     // is never read as either answer.
     measurement: row?.measurement === 'measured' || row?.measurement === 'predicted'
       ? row.measurement : layer?.measurement ?? null,
+    origin: MARKER_ORIGINS.includes(row?.origin) ? row.origin : layer?.origin ?? null,
+    producer: typeof row?.producer === 'string' && row.producer !== ''
+      ? row.producer : layer?.producer ?? null,
     readCount,
     coordinateStatus: complete ? 'mapped' : 'unmapped',
   };
+}
+
+/**
+ * The styling class and paint priority an explicit record origin requests.
+ * Computed rows are supplementary: translucent and painted first so a source
+ * record wins an overlap without hiding the computed row from focus or lists.
+ */
+export function markerPresentation(marker) {
+  const supplementary = marker?.origin === 'computed';
+  return Object.freeze({
+    id: supplementary ? 'supplementary' : 'primary',
+    priority: supplementary ? 0 : 1,
+    opacity: supplementary ? 0.62 : 1,
+  });
+}
+
+/** Stable lower-priority-first order for SVG paint stacking. */
+export function markerPaintOrder(markers) {
+  return [...markers].sort((a, b) => (
+    markerPresentation(a).priority - markerPresentation(b).priority
+  ));
 }
 
 /**

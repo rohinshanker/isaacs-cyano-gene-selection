@@ -62,6 +62,9 @@ export const DATA_FILES = Object.freeze([
   file('excluded', 'excluded.json', 2, 'excluded loci'),
   file('tssEvidence', 'tss_evidence.json', 3, 'start sites'),
   file('trnaLoci', 'trna-loci-v1.json', 3, 'tRNA loci'),
+  file('sequenceContext', 'sequence_context.json', 3, 'expanded upstream sequence', {
+    organismField: 'sequenceContext',
+  }),
   file('expressionLayers', 'expression_layers.json', 3, 'expression layers'),
   file('goIeaEssentiality', 'go-iea-essentiality-v1.json', 3, 'GO IEA essentiality context',
     { needs: ['candidateEvidence'] }),

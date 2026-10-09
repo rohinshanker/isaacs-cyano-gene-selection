@@ -352,6 +352,55 @@ export const DATA_APPLIERS = Object.freeze({
   },
 
   /**
+   * Long native upstream sequence, kept outside genes.json so map boot and its
+   * per-gene size budget do not pay for a close-up-only control.
+   */
+  sequenceContext(dataset, payload) {
+    const { genes, organism } = dataset;
+    if (!payload) {
+      dataset.sequenceContext = null;
+      return;
+    }
+    if (typeof payload !== 'object' || Array.isArray(payload) || payload.schemaVersion !== 1) {
+      throw new Error('sequence_context.json has an unknown schemaVersion');
+    }
+    const max = payload.maxUpstreamNt;
+    if (!Number.isInteger(max) || max <= 30
+      || (organism?.sequenceContext && max !== organism.sequenceContext.maxUpstreamNt)) {
+      throw new Error('sequence_context.json has an invalid upstream extent');
+    }
+    if (payload.origin !== 'computed' || typeof payload.producer !== 'string'
+      || payload.producer.length === 0) {
+      throw new Error('sequence_context.json must name its computed origin and producer');
+    }
+    const ids = payload.geneIds;
+    const upstream = payload.upstream;
+    if (!Array.isArray(ids) || ids.length !== genes.length
+      || ids.some((id, index) => id !== genes[index].id)) {
+      throw new Error('sequence_context.json was built from a different gene file');
+    }
+    if (!Array.isArray(upstream) || upstream.length !== genes.length
+      || upstream.some((sequence) => typeof sequence !== 'string'
+        || sequence.length !== max || !/^[ACGT]+$/.test(sequence))) {
+      throw new Error('sequence_context.json has an invalid upstream sequence column');
+    }
+    for (let index = 0; index < genes.length; index += 1) {
+      const context = genes[index].rnaContext;
+      const core = typeof context?.upstream === 'string'
+        ? context.upstream : typeof context?.sequence === 'string' ? context.sequence.slice(0, 30) : null;
+      if (core === null || upstream[index].slice(-30) !== core) {
+        throw new Error(`sequence_context.json disagrees with genes.json for ${genes[index].id}`);
+      }
+    }
+    for (let index = 0; index < genes.length; index += 1) {
+      genes[index].extendedUpstream = upstream[index];
+    }
+    dataset.sequenceContext = {
+      maxUpstreamNt: max, origin: payload.origin, producer: payload.producer,
+    };
+  },
+
+  /**
    * Expression layers published apart from the gene file, joined by locus tag.
    *
    * The payload repeats the gene order, so a file built from another gene file
@@ -542,9 +591,9 @@ export const TIER_LEAD_BYTES = 128 * 1024;
  * whose layer failed without reporting it.
  */
 const LEGACY_FAILURE_ORDER = Object.freeze([
-  'lengthCohorts', 'regulatoryTss', 'trnaLoci', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
+  'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
   'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca',
-  'codonPcaReference', 'excluded', 'strainFitness',
+  'codonPcaReference', 'excluded', 'strainFitness', 'trnaLoci', 'sequenceContext',
 ]);
 
 /**

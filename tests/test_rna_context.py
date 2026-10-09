@@ -6,7 +6,29 @@ import pytest
 from Bio.Seq import Seq
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from rna_context import folding_context, restore_start_window
+from rna_context import folding_context, restore_start_window, upstream_sequence
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+def test_upstream_sequence_is_exact_strand_oriented_and_circular(strand):
+    genome = "ACGTTGCA" * 5
+    annotation = {"start": 3, "end": 13, "strand": strand}
+    length = 32
+    anchor = annotation["end"] - 1 if strand == "-" else annotation["start"] - 1
+    positions = [
+        (anchor + (-offset if strand == "-" else offset)) % len(genome)
+        for offset in range(-length, 0)
+    ]
+    expected = "".join(genome[position] for position in positions)
+    if strand == "-":
+        expected = str(Seq(expected).complement())
+    assert upstream_sequence(annotation, genome, length) == expected
+
+
+@pytest.mark.parametrize("length", [-1, 1.5, True])
+def test_upstream_sequence_rejects_invalid_lengths(length):
+    with pytest.raises(ValueError, match="non-negative integer"):
+        upstream_sequence({"start": 1, "end": 3, "strand": "+"}, "ACGT", length)
 
 
 @pytest.mark.parametrize("strand", ["+", "-"])

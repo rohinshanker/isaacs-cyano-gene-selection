@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import feature_metrics as fm  # noqa: E402
 import codon_pca as cp  # noqa: E402
 from organisms import OrganismConfig, get_organism  # noqa: E402
-from rna_context import folding_context, restore_start_window  # noqa: E402
+from rna_context import folding_context, restore_start_window, upstream_sequence  # noqa: E402
 from tss_evidence import TABLE_SHA256, load_tss_evidence  # noqa: E402
 from condition_record import validate_record  # noqa: E402
 import expression_table  # noqa: E402
@@ -116,6 +116,7 @@ PAYLOADS = (GENES_PAYLOAD, LAYERS_PAYLOAD)
 # feature labels. They therefore ride in their own payload, keyed to the
 # genes.json gene order the way expression_layers.json is.
 RSCU_PAYLOAD = "codon_rscu.json"
+SEQUENCE_CONTEXT_PAYLOAD = "sequence_context.json"
 
 EXPRESSION_SOURCE_FIELDS = (
     "record",
@@ -187,6 +188,27 @@ def require(condition: bool, message: str) -> None:
     """Raises a persistent, descriptive input-contract error."""
     if not condition:
         raise ValueError(message)
+
+
+def sequence_context_document(
+    genes: Sequence[Mapping[str, Any]],
+    genomes: Mapping[str, str],
+    upstream_nt: int,
+) -> dict[str, Any] | None:
+    """Build the optional long upstream-sequence payload in gene-file order."""
+    if upstream_nt <= 30:
+        return None
+    return {
+        "schemaVersion": 1,
+        "maxUpstreamNt": upstream_nt,
+        "origin": "computed",
+        "producer": "build_features.py:strand-oriented-circular-upstream-v1",
+        "geneIds": [gene["id"] for gene in genes],
+        "upstream": [
+            upstream_sequence(gene, genomes[gene["seqid"]], upstream_nt)
+            for gene in genes
+        ],
+    }
 
 
 def number_word(value: int) -> str:
@@ -1806,6 +1828,11 @@ def build(
         "codon_pca.json": codon_pca,
         RSCU_PAYLOAD: codon_rscu,
     }
+    sequence_context = sequence_context_document(
+        included, genomes, organism.sequenceContextNt
+    )
+    if sequence_context is not None:
+        documents[SEQUENCE_CONTEXT_PAYLOAD] = sequence_context
     if organism.has_layer("tss"):
         documents["tss_evidence.json"] = tss_evidence
     if organism.has_layer("annotation"):
@@ -1838,7 +1865,9 @@ def build(
             serializable, separators=(",", ":"), ensure_ascii=False
         ) + "\n"
         (output_dir / name).write_text(content, encoding="utf-8")
-    for absent_name in {"tss_evidence.json", "annotations.json"} - documents.keys():
+    for absent_name in {
+        "tss_evidence.json", "annotations.json", SEQUENCE_CONTEXT_PAYLOAD,
+    } - documents.keys():
         stale = output_dir / absent_name
         if stale.exists():
             stale.unlink()
