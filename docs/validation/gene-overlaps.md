@@ -253,6 +253,11 @@ failing, and the skip is the thing to notice.
 
 ## Checks
 
+`tests/test_gene_overlap_sweep_oracle.py` independently expands 1,000 seeded
+synthetic cases into finite base sets and compares pair intersections with the
+sweep. It checks multiple replicons, split segments and coincident intervals
+without reusing the producer's interval-intersection implementation.
+
 Deterministic, in `tests/test_gene_overlaps.py` (the producer, over synthetic
 annotations) and `tests/js/gene-overlaps.test.mjs` (the model and the loader):
 

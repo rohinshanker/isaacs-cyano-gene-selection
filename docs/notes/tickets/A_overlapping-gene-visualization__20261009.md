@@ -7,18 +7,11 @@
 
 ## Current State
 
-Owned by `cyano-ui-fixes` (coordinator and closer). Implementation started on
-2026-10-09 at the owner's request, after committing completed UI work and tickets.
-Work runs in isolated worktrees; canonical baseline is `6235d1e`.
- The owner requests full overlap visibility in the chromosome
-and expanded gene viewer, a partial/compact representation in the smaller viewer,
-and an **OG** (overlapping genes) tag that can also drive filtering and colouring.
-
-Existing export and panel-design code reads `overlapsNeighbor`; its presence alone
-does not establish complete overlap relationships or the requested UI. Audit its
-producer, coverage and definition before reusing it. Reuse the chromosome model's
-annotated CDS segments where applicable, rather than assuming every gene occupies
-its entire bounding interval.
+Owned by `cyano-ui-fixes` (coordinator and closer). Implementation and
+coordinator verification are complete in
+`work/overlapping-genes-integration-20261009`, based on main `90d3f36`.
+Independent review and deployment remain open; this ticket is not closed.
+The owner has authorized pushing the accepted result to main.
 
 ## Owner questions
 
@@ -108,50 +101,32 @@ direction arrows, and the complete partner list with an Open button per plotted
 partner. OG colour mode with a five-class key, a three-state filter writing one
 class-selection channel, and `og=` in the hash.
 
-**Coordinator findings resolved.** OG-F1 (`coveredGenes` inventory, validated
-against every plotted CDS), OG-F2 (no legacy fallback anywhere; the class
-filter is suspended and says so while the layer is unread), OG-F3
-(`overlap-strand-unrecorded` class), OG-F4 (`pairwiseSharedBases`, labelled),
-OG-F5 (clearing the layer clears the joined gene fields), OG-F6 (no biological
-generalisation; the "predicted" wording narrowed), OG-UI1 (`fitPartnerLabel`
-plus a CSS specificity fix the browser verified at 54.2 px inside a 60 px
-gutter), OG-UI2 (short rule in the key, full definition in the colour
-explanation), OG-UI3 (focus handed back to a named region), OG-UI4 (a mark is a
-pair, with a `key`; stepper controls reach every coincident pair).
-
 ## Verification
 
-Final gates on `agent/claude-implementer/dem-337`, 2026-10-09: `npm test`
-1,461 JavaScript tests; canonical `.venv/bin/python -m pytest -q` 957 tests and
-46 subtests with one skip; `tools/validate_contract.py` 126 / 88 / 94 / 94 /
-100 checks with one declared skip each over the five organisms;
-`tools/build_gene_overlaps.py check` and `tools/build_data_manifest.py check`
-clean for all five. Rendered against the real app served from this worktree at
-375×812, 768×1024, 1280×800 and 1440×900 and across the 960 px and 1240 px
-breakpoints: no horizontal overflow, no console message, no failed request.
-Exercised: whole-genome and close zoom, pan, a one-base overlap, a tRNA partner
-the map does not plot, an origin-crossing locus, the OG colour mode on three
-organisms, all three filter states and a colour-key class selection, partner
-navigation from both viewers including a partner the filters hide, keyboard
-focus on the overlap marks, touch-pointer inspection of the row, the
-Previous/Next overlap stepper over MG1655's coincident `b4793`/`b4455` and
-`b4793`/`b4647` pairs, and the unavailable state served from a deployment with
-no layer. Screenshots and snapshots are under
-`/tmp/cyano-overlap-20261009/worker/dem-337-cyano-overlaps/`, outside Git.
+Coordinator gates: 1,461 JavaScript tests pass at `80130a8`; 958 Python tests
+and 46 subtests pass with one declared skip at `1cf01c3`; all five organism
+contracts pass (126 / 88 / 94 / 94 / 100 checks, one declared skip each).
+The only subsequent runtime change is the categorical scale explanation in
+`80130a8`, covered by the repeated JavaScript suite and fresh browser render.
 
-Ticket intake; no UI or overlap data had changed at intake. Intake baseline gates on
-2026-10-09 passed: 1,396 JavaScript tests; 938 Python tests and 36 subtests with
-one skip; 119 contract checks with one declared skip. These results do not
-validate an overlap implementation. Ticket metadata, local links and the queue
-entry were checked.
+Independent exhaustive native-GFF intersections agree with all 3,121 pairs
+across 19,588 annotated loci. A separate 1,000-case finite-base oracle checks
+the sweep; browser-index checks cover every plotted gene; geometry checks
+cover 6,008 partner tracks. All five overlap builders and manifests check clean.
 
-Before closure, add deterministic tests for non-overlaps, endpoint/minimum-length
-rules, both strands, containment, several partners, distinct replicons, split CDSs
-and origin-crossing loci. Render all three views at mobile, tablet and desktop
-widths with the UI render skill. Exercise dense overlaps, zoom/pan, partner
-navigation, hidden partners, OG filters/colour legend, keyboard focus, touch and
-unavailable data. Confirm consistent tags/counts and no console or performance
-regressions, then run the gates in `AGENTS.md`.
+The real integrated application was rendered at 375×812, 768×1024, 1280×800,
+1440×900 and both sides of the 960/1240 px breakpoints. Checks cover all three
+viewers, five organisms, one-base overlaps, RNA/pseudogene partners, coincident
+pairs, hidden partners, partner navigation and focus, filter/colour changes,
+loading/unknown context, keyboard controls and actual mobile touch controls.
+No unexpected console/page/request errors or horizontal page overflow occurred.
+Manual screenshot and semantic inspection complements DOM/keyboard checks;
+Chromium was used, with no automated accessibility audit or other browser run.
+No visual regression baselines were added or changed.
+
+Transient evidence is in `/tmp/cyano-overlap-20261009/final-ui/`, with gate and
+independent-oracle reports in its parent directory. Reusable checks and native
+fixtures are in [gene-overlaps.md](../../validation/gene-overlaps.md) and tests.
 
 ## Cleanup
 
@@ -167,31 +142,28 @@ required resolved-ticket lifecycle.
 - [Chromosome left/right controls](../../validation/chromosome-view.md)
   covers navigation; overlap tracks must stay aligned with that viewport.
 
-## Implementation and open review findings
+## Review findings and closure ownership
 
-`cyano-ui-fixes` coordinates, integrates and closes this ticket. Multica
-`DEM-337` (`claude-implementer`) owns the isolated implementation on
-`agent/claude-implementer/dem-337`. The integration branch is
-`work/overlapping-genes-integration-20261009`. Neither implementation nor closure
-is complete. The independent native-annotation comparison agrees with all 3,121
-pairs in the first generated payloads; final-patch validation is pending.
+`cyano-ui-fixes` owns integration and closure; Multica `DEM-337` delivered the
+isolated implementation, integrated as `fb4daa3`. Independent exact-patch review
+is pending. No other session's tickets are included in this closure.
 
-| Finding | State | Required resolution |
+| Finding | Resolving commit | Resolution |
 | --- | --- | --- |
-| OG-F1 | open | Confirm native identity coverage explicitly before classifying an omitted gene as non-overlapping. |
-| OG-F2 | open | Keep unavailable OG results distinct from the legacy adjacent-CDS flag in exports, panel design and active filters. |
-| OG-F3 | open | Never classify an unrecorded partner strand as both strands. |
-| OG-F4 | open | Label summed per-pair shared bases as pairwise; they can differ from distinct genomic bases. |
-| OG-F5 | open | Clearing the overlap layer must clear joined per-gene state. |
-| OG-F6 | open | Remove unsupported biological generalizations and distinguish added scan-only candidates from computational annotations already in the pinned release. |
-| OG-UI1 | open | Fit expanded-view partner labels without accidental left-edge clipping; keep full identity accessible. |
-| OG-UI2 | open | Keep the OG legend concise and put full coverage/definition in a disclosure; omit internal field-token wording from user copy. |
-| OG-UI3 | open | Preserve meaningful keyboard focus after selecting an overlapping partner. |
-| OG-UI4 | open | Distinguish coincident pairs by identity and make each reachable by keyboard and touch/click; MG1655 b4793/b4647 and b4793/b4455 share the same interval. |
-| OG-UI5 | open | Describe the disabled scale generically for categorical colours; the OG mode must not be labelled Function category. |
+| OG-F1 | `fb4daa3` | Explicit native identity inventory; omitted/uncovered identities stay unknown. |
+| OG-F2 | `fb4daa3`, `8bc6956` | No legacy fallback; unavailable filter is suspended and says it is not applied. |
+| OG-F3 | `fb4daa3` | Unrecorded strand has its own class, never an invented both-strands relation. |
+| OG-F4 | `fb4daa3` | Summed shared bases are explicitly pairwise. |
+| OG-F5 | `fb4daa3` | Clearing a layer clears joined per-gene state. |
+| OG-F6 | `fb4daa3` | Removed unsupported biological generalizations and clarified native versus added scan-only annotations. |
+| OG-UI1 | `fb4daa3` | Labels fit the expanded gutter with full accessible identity. |
+| OG-UI2 | `fb4daa3` | Short legend plus full disclosure; removed internal field names from user text. |
+| OG-UI3 | `fb4daa3` | Partner navigation restores focus to a named viewer region. |
+| OG-UI4 | `fb4daa3` | Pair identity plus explicit keyboard/touch steppers reaches coincident pairs. |
+| OG-UI5 | `80130a8` | Generic categorical-scale explanation also describes OG mode accurately. |
+| OG-REVIEW | open | Independent review of the final patch and supplied renders. |
 
-Reproduction notes, independent comparison scripts and early rendered evidence
-are under `/tmp/cyano-overlap-20261009/`; see `model-review-findings.md` and
-`coordinator-review-cases.md`. These are working evidence, not final approval.
-Record resolving commits for every row before closure and retain the reusable
-contracts and regression checks in the repository.
+Before closure, record the reviewer result and named closer/date here, preserve
+any new findings, then follow the resolved-ticket lifecycle. The permanent
+contract is already distilled into `docs/validation/gene-overlaps.md` and
+`data-contract.md`, with a validation index row.
