@@ -174,11 +174,17 @@ test('the chromosome toolbar writes colour and visibility through the shared con
   const showHiddenChange = toolbar.slice(toolbar.indexOf('onShowHiddenChange:'), toolbar.indexOf('onDetailJump:'));
   assert.match(colorChange, /selectColorMetric\(key\)/,
     'chromosome colours use the shared, progress-aware selection path');
-  const colorSelection = app.slice(app.indexOf('async function selectColorMetric('),
+  const colorSelection = app.slice(app.indexOf('async function renderSelectedColorMetric('),
     app.indexOf('/** A later file settled.'));
   assert.match(colorSelection,
-    /state\.colorBy = key;\s*state\.colorScale = null;[\s\S]*?syncSharedControls\(\);/,
-    'the shared path moves the map selector with it and opens the metric on its default scale');
+    /fileKeys: colorMetricFileKeys\(key\)|const fileKeys = colorMetricFileKeys\(key\)/,
+    'the shared path derives every unresolved input for the selected colour');
+  assert.match(colorSelection, /followColourForTraffic\(\);\s*renderAll\(\);/,
+    'the shared path follows the colour for traffic before recomputing every view and filter');
+  assert.match(app, /function setSources\([\s\S]*?renderSelectedColorMetric\(state\.colorBy\)/,
+    'changing the selected sources refreshes or retires the active colour operation');
+  assert.match(app, /function setInforming\([\s\S]*?renderSelectedColorMetric\(typeKey\)/,
+    'changing the informing source refreshes or retires the active colour operation');
   const scaleChange = toolbar.slice(toolbar.indexOf('onColorScaleChange:'), toolbar.indexOf('onShowHiddenChange:'));
   assert.match(scaleChange, /state\.colorScale = scale;\s*syncSharedControls\(\);/,
     'and choosing a scale there moves the map selector with it too');

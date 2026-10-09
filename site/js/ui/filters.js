@@ -72,6 +72,22 @@ export function defaultTrafficCandidate(candidates) {
   return candidates.find(isExpressionProxyMetric) ?? null;
 }
 
+/** Follow a colour metric without retaining the previous activity threshold. */
+export function followColourTrafficState({
+  enabled, colorKey, trafficKey, filters,
+}, candidates) {
+  if (!enabled || !candidates.some((metric) => metric.key === colorKey)) {
+    return { trafficKey, filters };
+  }
+  // A null key means the first candidate is in effect. Its threshold is still
+  // stored under that concrete key and must be removed when colour moves away.
+  const previousKey = trafficKey ?? candidates[0]?.key ?? null;
+  if (previousKey === colorKey) return { trafficKey, filters };
+  const nextFilters = { ...filters };
+  if (previousKey) delete nextFilters[previousKey];
+  return { trafficKey: colorKey, filters: nextFilters };
+}
+
 /** Reader-facing copy for a registry metric without destroying scientific capitalization. */
 export function trafficThresholdLabel(metric) {
   return `Hide genes below: ${metric.label}${metric.unit ? ` (${metric.unit})` : ''}`;

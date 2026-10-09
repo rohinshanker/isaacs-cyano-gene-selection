@@ -71,7 +71,9 @@ import {
 import { colorAnnouncement, installColorControls } from './ui/color-controls.js';
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
-import { FilterPanel, clearedFilterState, orderTrafficCandidates } from './ui/filters.js';
+import {
+  FilterPanel, clearedFilterState, followColourTrafficState, orderTrafficCandidates,
+} from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
 import { GeneSearchResults } from './ui/gene-search-results.js';
@@ -381,7 +383,8 @@ function toggleColorSource(id, enabled) {
   if (enabled) next.add(id);
   else next.delete(id);
   state.colorSources = normalizeAnnotationSources([...next], COLOR_SOURCE_TOGGLES);
-  renderAll();
+  if (state.colorBy === FUNCTION_COLOR_KEY) void renderSelectedColorMetric(state.colorBy);
+  else renderAll();
   announce(isAllSources(state.colorSources, COLOR_SOURCE_TOGGLES)
     ? 'Category colour: every annotation source enabled.'
     : state.colorSources.length === 0
@@ -1393,12 +1396,15 @@ function renderAll({ schemeErrors = [] } = {}) {
  * one is dropped rather than silently kept on a metric no longer named.
  */
 function followColourForTraffic() {
-  if (!context.trafficFollowsColor) return;
   const candidates = orderTrafficCandidates(scopedRegistry());
-  if (!candidates.some((metric) => metric.key === state.colorBy)) return;
-  if (state.trafficKey === state.colorBy) return;
-  if (state.trafficKey) delete state.filters[state.trafficKey];
-  state.trafficKey = state.colorBy;
+  const followed = followColourTrafficState({
+    enabled: context.trafficFollowsColor,
+    colorKey: state.colorBy,
+    trafficKey: state.trafficKey,
+    filters: state.filters,
+  }, candidates);
+  state.trafficKey = followed.trafficKey;
+  state.filters = followed.filters;
 }
 
 function setScheme(map, { name } = {}) {
@@ -1728,7 +1734,7 @@ function setSources(ids) {
   fillAxisSelects();
   syncAxisSourceSelects();
   plot.projectionId = null;
-  renderAll();
+  void renderSelectedColorMetric(state.colorBy);
   announce(`Data sources: ${sourceSelection().length} selected.`);
 }
 
@@ -2247,8 +2253,11 @@ function setInforming(typeKey, datasetId) {
   if (datasetId) next[typeKey] = datasetId; else delete next[typeKey];
   state.typeSources = normalizeTypeSources(next, context.datasets, sourceSelection());
   context.percentiles.delete(typeKey);
-  if (state.colorBy === typeKey) { state.colorScale = null; resolveColorScale(); }
-  renderAll();
+  if (state.colorBy === typeKey) {
+    state.colorScale = null;
+    resolveColorScale();
+    void renderSelectedColorMetric(typeKey);
+  } else renderAll();
   const dataset = informingDataset(typeKey, state.typeSources, context.datasets, sourceSelection());
   const count = contributingDatasets(typeKey, state.typeSources, context.datasets, sourceSelection()).length;
   announce(dataset
@@ -2377,42 +2386,61 @@ function activeDatasetColorHost() {
     ? element('map-canvas').parentElement : null;
 }
 
-function colorMetricFileKey(key) {
+function colorMetricFileKeys(key) {
+  const required = new Set();
+  const addWithDependencies = (fileKey) => {
+    const file = DATA_FILE_BY_KEY[fileKey];
+    if (!file || required.has(fileKey)) return;
+    for (const dependency of file.needs) addWithDependencies(dependency);
+    required.add(fileKey);
+  };
+  if (key === FUNCTION_COLOR_KEY) addWithDependencies('sourceDerivedCategories');
   const direct = context.registry.byKey.get(key)?.fileKey ?? null;
-  if (direct) return direct;
-  if (!isTypeKey(key)) return null;
-  const contributors = contributingDatasets(
-    key, state.typeSources, context.datasets, sourceSelection(),
-  );
-  const fileKeys = [...new Set(contributors
-    .map((dataset) => context.registry.byKey.get(dataset.metricKey)?.fileKey
-      ?? DATA_FILES.find((file) => file.name === dataset.source?.payload)?.key)
-    .filter(Boolean))];
-  return fileKeys.find((fileKey) => staged.files[fileKey]?.state !== FILE_STATE.READY) ?? null;
+  if (direct) addWithDependencies(direct);
+  if (isTypeKey(key)) {
+    const contributors = contributingDatasets(
+      key, state.typeSources, context.datasets, sourceSelection(),
+    );
+    for (const dataset of contributors) {
+      const fileKey = context.registry.byKey.get(dataset.metricKey)?.fileKey
+        ?? DATA_FILES.find((file) => file.name === dataset.source?.payload)?.key;
+      if (fileKey) addWithDependencies(fileKey);
+    }
+  }
+  return [...required].filter((fileKey) => {
+    const fileState = staged.files[fileKey]?.state;
+    return fileState === FILE_STATE.LOADING || fileState === FILE_STATE.FAILED;
+  });
 }
 
 /**
  * A metric backed by an unresolved file paints its real transfer state first,
  * then yields a frame before the potentially expensive colour render.
  */
-async function selectColorMetric(key) {
-  state.colorBy = key;
-  state.colorScale = null;
-  ensureTypeSelected(key);
+async function renderSelectedColorMetric(key) {
   const metric = context.registry.byKey.get(key) ?? null;
-  const fileKey = colorMetricFileKey(key);
+  const fileKeys = colorMetricFileKeys(key);
   const host = activeDatasetColorHost();
   const operation = datasetColorProgress.begin({
-    fileKey,
-    metricLabel: metric?.label ?? key,
+    fileKeys,
+    metricLabel: metric?.label ?? (key === FUNCTION_COLOR_KEY ? 'Function category' : key),
     host,
     snapshot: staged.snapshot(),
   });
   if (operation.pending && await datasetColorProgress.waitForPaint(operation.token) === false) return;
   if (operation.token !== datasetColorProgress.token) return;
-  syncSharedControls();
-  renderCurrentView();
-  persist();
+  // A colour change can also be the low-traffic filter's chosen activity
+  // source. Resolve that relationship before recomputing the mask and every
+  // shared control so the map and chromosome paths retain identical semantics.
+  followColourForTraffic();
+  renderAll();
+}
+
+async function selectColorMetric(key) {
+  state.colorBy = key;
+  state.colorScale = null;
+  ensureTypeSelected(key);
+  await renderSelectedColorMetric(key);
 }
 
 /** A later file settled. Renders are coalesced, since several often land together. */
@@ -2465,7 +2493,11 @@ function flushLandings() {
   }
   loadProgress.setFiles(staged.files);
   renderAll();
-  if (datasetColorProgress.fileKey && keys.has(datasetColorProgress.fileKey)) {
+  if (datasetColorProgress.fileKeys.some((fileKey) => keys.has(fileKey))
+    && datasetColorProgress.fileKeys.every((fileKey) => (
+      staged.files[fileKey]?.state === FILE_STATE.READY
+        || staged.files[fileKey]?.state === FILE_STATE.ABSENT
+    ))) {
     const token = datasetColorProgress.token;
     void datasetColorProgress.waitForPaint(token).then((current) => {
       if (current) datasetColorProgress.applied(token);

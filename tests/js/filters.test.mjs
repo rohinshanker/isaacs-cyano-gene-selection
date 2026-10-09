@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  orderTrafficCandidates, defaultTrafficCandidate, clearedFilterState,
+  orderTrafficCandidates, defaultTrafficCandidate, clearedFilterState, followColourTrafficState,
 } from '../../site/js/ui/filters.js';
 
 function metric(key, overrides = {}) {
@@ -125,4 +125,26 @@ test('with no expression evidence at all, the candidate list is simply empty', (
 
 test('clearing filters also clears the remembered traffic-metric choice', () => {
   assert.equal(clearedFilterState().trafficKey, null);
+});
+
+test('following colour removes a threshold on the implicit default traffic metric', () => {
+  const candidates = [metric('initiation'), metric('protein')];
+  const unrelated = { min: 0, max: 1, includeMissing: true };
+  const result = followColourTrafficState({
+    enabled: true,
+    colorKey: 'protein',
+    trafficKey: null,
+    filters: { initiation: { min: 10, max: 20, includeMissing: true }, cai: unrelated },
+  }, candidates);
+  assert.equal(result.trafficKey, 'protein');
+  assert.deepEqual(result.filters, { cai: unrelated });
+});
+
+test('following colour leaves state alone for a non-activity colour', () => {
+  const filters = { initiation: { min: 10, max: 20, includeMissing: true } };
+  const result = followColourTrafficState({
+    enabled: true, colorKey: 'functionCategory', trafficKey: null, filters,
+  }, [metric('initiation'), metric('protein')]);
+  assert.equal(result.trafficKey, null);
+  assert.equal(result.filters, filters);
 });

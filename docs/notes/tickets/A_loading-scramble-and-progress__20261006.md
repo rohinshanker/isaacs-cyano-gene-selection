@@ -72,7 +72,7 @@ coordinator.
 
 ## Verification
 
-Final branch verification: `npm test` passed 1,342; `.venv/bin/python -m
+Final branch verification: `npm test` passed 1,348; `.venv/bin/python -m
 pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
 tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,
 layout, overlay and chromosome checks passed 150. The real-app matrix rendered
@@ -80,6 +80,14 @@ and inspected screenshots plus semantic snapshots at 375x812, 768x1024,
 1280x800 and 1440x900, and breakpoint screenshots at 959/960 and 1239/1240.
 The browser check reported no runtime errors or failed requests outside the
 deliberately aborted failure scenario.
+
+Follow-up review reproduced and repaired four selected-operation lifecycle
+regressions: a failed landing now retains Retry, cached colour changes refresh
+their filters and source disclosure, named and pooled source changes supersede
+or restore pending work, and Function category aggregates its annotation,
+candidate-evidence and derived-category dependencies. The exact real-app
+failure, cached-source and three-file pending sequences pass alongside the
+final responsive matrix.
 
 Final combined gates: `npm test` 1,116 passed; pytest 494 passed, 1 skipped,
 36 subtests; contract 116 passed, 1 declared contiguity skip. Manifest, module
