@@ -240,7 +240,7 @@ test('a fresh view, and a hash this encoder did not write, keep the measured def
 });
 
 test('this encoder writes the migrated version and round-trips its own snapshot', () => {
-  assert.equal(STATE_VERSION, 6);
+  assert.equal(STATE_VERSION, 7);
   assert.ok(STATE_VERSION >= MEASURED_AXES_VERSION);
   const state = defaultState();
   state.panel = 'axes';
@@ -435,15 +435,15 @@ test('a hand-edited direction is ignored rather than drawn, and leaves the defau
   }
 });
 
-test('the draw direction did not bump the encoder version, and links stay readable both ways', () => {
+test('the draw direction field remains readable across the later axis-source version', () => {
   // An older link has no `dt`, which means highest — and highest is what every
   // earlier viewer drew, so the two agree and no reader can misread the other's
   // hash. That is the test the version number exists for.
-  assert.equal(STATE_VERSION, 6);
+  assert.equal(STATE_VERSION, 7);
   const older = decodeState('#ver=6&p=native&c=cai');
   assert.equal(applyDecoded(defaultState(), older).drawOnTop, 'highest');
   const newer = decodeState(encodeState({ ...defaultState(), drawOnTop: 'lowest' }));
-  assert.equal(newer.version, 6);
+  assert.equal(newer.version, 7);
 });
 
 test('the export manifest records the direction the picture was drawn in', () => {
@@ -477,13 +477,39 @@ test('the dataset selection and the informing datasets ride in the link only whe
   assert.deepEqual(messy.typeSources, { 'type.a.b.c': 'GSE1', 'type.x.y.z': 'PXD1.1' });
 });
 
+test('X and Y dataset selections round-trip independently of each other and global sources', () => {
+  const state = {
+    ...defaultState(),
+    panel: 'axes',
+    axisX: 'type.transcriptomics.rna-seq.abundance',
+    axisY: 'type.transcriptomics.rna-seq.abundance',
+    sources: ['GLOBAL'],
+    typeSources: { 'type.transcriptomics.rna-seq.abundance': 'GLOBAL' },
+    axisXSources: ['X1', 'X2'],
+    axisYSources: ['Y1'],
+  };
+  const encoded = encodeState(state);
+  const decoded = decodeState(encoded);
+  assert.deepEqual(decoded.axisXSources, ['X1', 'X2']);
+  assert.deepEqual(decoded.axisYSources, ['Y1']);
+  assert.deepEqual(decoded.sources, ['GLOBAL']);
+  assert.deepEqual(decoded.typeSources, state.typeSources);
+  const view = viewStateOf(applyDecoded(defaultState(), decoded));
+  assert.deepEqual(view.axisXSources, ['X1', 'X2']);
+  assert.deepEqual(view.axisYSources, ['Y1']);
+
+  const older = applyDecoded(defaultState(), decodeState('#ver=6&p=axes&ds=A,B&src=type.x.y.z=B'));
+  assert.equal(older.axisXSources, null, 'the app can distinguish and bootstrap an older omitted field once');
+  assert.equal(older.axisYSources, null);
+});
+
 test('a fresh view draws every marker layer everywhere and writes no field for it', () => {
   // The owner's provisional default of 2026-10-07: all current Tan marks
   // visible, in all four views. An absent `mk` has exactly that one meaning,
   // which is why it did not bump the encoder version.
   assert.deepEqual(defaultState().hiddenMarkers, []);
   assert.doesNotMatch(encodeState(defaultState()), /(^|&)mk=/);
-  assert.equal(STATE_VERSION, 6, 'the hidden marker views did not need a version');
+  assert.equal(STATE_VERSION, 7, 'the hidden marker views did not cause the later version bump');
 });
 
 test('each view hides its own marks in a shared link, independently of the others', () => {

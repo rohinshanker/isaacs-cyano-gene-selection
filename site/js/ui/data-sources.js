@@ -42,6 +42,7 @@ const AXIS_NAMES = Object.freeze({
 });
 /** Where the section remembers that the reader hid it: presentation, not link state. */
 export const HIDDEN_STORAGE_KEY = 'cyano.data-sources-hidden.v1';
+let PANEL_SERIAL = 0;
 
 function el(tag, { className, text, attrs, children } = {}) {
   const node = document.createElement(tag);
@@ -240,10 +241,10 @@ function restoreAfterRender(root, fallback) {
 export class DataSourcesPanel {
   /**
    * @param {HTMLElement} host the toolbar row the section renders into.
-   * @param {{datasets: object[], judgements?: object[], onChange: function(string[]): void,
-   *   storage?: {getItem: function, setItem: function}|null}} options
+   * @param {{datasets: object[], judgements?: object[], onChange?: function(string[]): void,
+   *   storage?: {getItem: function, setItem: function}|null, section?: boolean}} options
    */
-  constructor(host, { datasets, judgements = [], onChange, storage = null }) {
+  constructor(host, { datasets, judgements = [], onChange, storage = null, section = true }) {
     this.host = host;
     this.datasets = datasets;
     this.judgements = judgements;
@@ -258,7 +259,9 @@ export class DataSourcesPanel {
     /** Open modals, outermost first; the last entry owns focus and Escape. */
     this.modals = [];
     this.compendia = compendiumStudies(datasets);
-    this.build();
+    this.idPrefix = `data-selection-${++PANEL_SERIAL}`;
+    this.sectionEnabled = section;
+    if (section) this.build();
   }
 
   readHidden() {
@@ -294,7 +297,7 @@ export class DataSourcesPanel {
       this.renderSection();
     });
     this.host.append(this.details, this.hideButton);
-    this.renderSection();
+    if (this.sectionEnabled) this.renderSection();
   }
 
   /**
@@ -314,7 +317,7 @@ export class DataSourcesPanel {
     // which dataset informs each type metric, chosen here when a type has
     // more than one selected dataset.
     this.informing = informing;
-    this.renderSection();
+    if (this.sectionEnabled) this.renderSection();
   }
 
   /**
@@ -507,30 +510,43 @@ export class DataSourcesPanel {
   }
 
   /**
-   * Open the peek. In `multi` mode the selection is edited in place and handed
-   * to `onChange` on Done; in `single` mode the reader picks one dataset of
-   * one data type and the promise resolves to its metric key, or null.
+   * Open the peek. In `multi` mode the global selection is edited in place and
+   * handed to `onChange` on Done. `subset` edits only `candidateIds` and
+   * resolves to their selected dataset ids without touching the global panel.
+   * In `single` mode the reader picks one dataset and receives its metric key.
    *
-   * @param {{mode?: 'multi'|'single', dataType?: string|null, opener?: HTMLElement|null,
-   *   title?: string, current?: string|null}} options
+   * @param {{mode?: 'multi'|'subset'|'single', dataType?: string|null,
+   *   opener?: HTMLElement|null, title?: string, current?: string|string[]|null,
+   *   candidateIds?: string[]|null}} options
    * @returns {Promise<string[]|string|null>}
    */
-  open({ mode = 'multi', dataType = null, opener = null, title = null, current = null } = {}) {
+  open({
+    mode = 'multi', dataType = null, opener = null, title = null, current = null,
+    candidateIds = null,
+  } = {}) {
     if (!this.peek) this.peek = this.buildPeek();
     const peek = this.peek;
     if (peek.active) peek.settle(null);
-    const fallbackType = dataTypeOfMetric(this.colorMetricKey, this.datasets) ?? DATA_TYPES[0].id;
+    const allowed = Array.isArray(candidateIds) ? new Set(candidateIds) : null;
+    const candidates = allowed ? this.datasets.filter((dataset) => allowed.has(dataset.id)) : this.datasets;
+    const fallbackType = dataType ?? dataTypeOfMetric(this.colorMetricKey, candidates)
+      ?? candidates[0]?.record?.dataType ?? DATA_TYPES[0].id;
+    const selected = mode === 'multi' ? this.selection
+      : mode === 'subset' ? (Array.isArray(current) ? current : [])
+        : current ? [current] : [];
     peek.state = {
       mode,
-      type: dataType ?? fallbackType,
-      selected: mode === 'multi' ? new Set(this.selection) : new Set(current ? [current] : []),
+      type: fallbackType,
+      selected: new Set(selected),
+      allowed,
       filters: [],
-      arrays: false,
+      arrays: mode === 'subset' && candidates.some((dataset) => dataset.record.platform === 'array'),
       flat: false,
       info: null,
     };
     peek.title.textContent = title ?? (mode === 'multi' ? 'Data selection' : 'Select a source');
-    peek.done.textContent = mode === 'multi' ? 'Done' : 'Use this source';
+    peek.done.textContent = mode === 'single' ? 'Use this source'
+      : mode === 'subset' ? 'Use these datasets' : 'Done';
     this.renderPeek();
     this.pushModal(peek);
     const opening = opener ?? (typeof document.activeElement?.focus === 'function' ? document.activeElement : null);
@@ -601,8 +617,9 @@ export class DataSourcesPanel {
   buildPeek() {
     const backdrop = el('div', { className: 'peek-backdrop' });
     backdrop.hidden = true;
-    const dialog = el('div', { className: 'peek data-selection', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'data-selection-title' } });
-    const title = el('h2', { className: 'peek-title', text: 'Data selection', attrs: { id: 'data-selection-title' } });
+    const titleId = `${this.idPrefix}-title`;
+    const dialog = el('div', { className: 'peek data-selection', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId } });
+    const title = el('h2', { className: 'peek-title', text: 'Data selection', attrs: { id: titleId } });
     const tabs = el('div', { className: 'peek-tabs', attrs: { role: 'tablist', 'aria-label': 'Data type' } });
     const close = el('button', { className: 'chip-button peek-close', text: 'Close', attrs: { type: 'button', 'aria-label': 'Close data selection' } });
     const head = el('div', { className: 'peek-head', children: [title, tabs, close] });
@@ -698,8 +715,9 @@ export class DataSourcesPanel {
   buildGridPeek() {
     const backdrop = el('div', { className: 'peek-backdrop peek-backdrop-stacked' });
     backdrop.hidden = true;
-    const dialog = el('div', { className: 'peek condition-grid', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'condition-grid-title' } });
-    const title = el('h2', { className: 'peek-title', text: 'Choose conditions', attrs: { id: 'condition-grid-title' } });
+    const titleId = `${this.idPrefix}-condition-grid-title`;
+    const dialog = el('div', { className: 'peek condition-grid', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId } });
+    const title = el('h2', { className: 'peek-title', text: 'Choose conditions', attrs: { id: titleId } });
     const close = el('button', { className: 'chip-button peek-close', text: 'Close', attrs: { type: 'button', 'aria-label': 'Close the condition grid' } });
     const head = el('div', { className: 'peek-head', children: [title, close] });
     const note = el('p', { className: 'cg-note' });
@@ -837,12 +855,19 @@ export class DataSourcesPanel {
       peek.settle(next);
       return;
     }
+    if (mode === 'subset') {
+      const next = this.datasets.filter((dataset) => selected.has(dataset.id)).map((dataset) => dataset.id);
+      peek.settle(next);
+      return;
+    }
     const id = [...selected][0] ?? null;
     peek.settle(id ? this.datasets.find((d) => d.id === id)?.metricKey ?? null : null);
   }
 
   typeDatasets() {
-    return this.datasets.filter((d) => d.record.dataType === this.peek.state.type);
+    const { type, allowed } = this.peek.state;
+    return this.datasets.filter((dataset) => dataset.record.dataType === type
+      && (!allowed || allowed.has(dataset.id)));
   }
 
   shownDatasets() {
@@ -865,8 +890,11 @@ export class DataSourcesPanel {
     const { tabs, state } = this.peek;
     const restore = restoreAfterRender(tabs);
     tabs.replaceChildren();
-    for (const type of DATA_TYPES) {
-      const n = this.datasets.filter((d) => d.record.dataType === type.id).length;
+    const types = state.allowed ? DATA_TYPES.filter((type) => this.datasets.some((dataset) =>
+      dataset.record.dataType === type.id && state.allowed.has(dataset.id))) : DATA_TYPES;
+    for (const type of types) {
+      const n = this.datasets.filter((dataset) => dataset.record.dataType === type.id
+        && (!state.allowed || state.allowed.has(dataset.id))).length;
       const tab = el('button', { className: 'chip-button peek-tab', text: `${type.name} (${n})`, attrs: { type: 'button', role: 'tab', tabindex: state.type === type.id ? 0 : -1, 'aria-selected': String(state.type === type.id) } });
       if (state.type === type.id) tab.classList.add('active');
       tab.addEventListener('click', () => {
@@ -876,13 +904,13 @@ export class DataSourcesPanel {
         this.renderPeek();
       });
       tab.addEventListener('keydown', (event) => {
-        const index = DATA_TYPES.indexOf(type);
-        const next = event.key === 'ArrowRight' ? (index + 1) % DATA_TYPES.length
-          : event.key === 'ArrowLeft' ? (index + DATA_TYPES.length - 1) % DATA_TYPES.length
-            : event.key === 'Home' ? 0 : event.key === 'End' ? DATA_TYPES.length - 1 : null;
+        const index = types.indexOf(type);
+        const next = event.key === 'ArrowRight' ? (index + 1) % types.length
+          : event.key === 'ArrowLeft' ? (index + types.length - 1) % types.length
+            : event.key === 'Home' ? 0 : event.key === 'End' ? types.length - 1 : null;
         if (next === null) return;
         event.preventDefault();
-        state.type = DATA_TYPES[next].id;
+        state.type = types[next].id;
         state.filters = [];
         state.info = null;
         this.renderPeek();
@@ -911,17 +939,21 @@ export class DataSourcesPanel {
     });
     bar.append(filters, add);
     if (state.type === 'transcriptomics') {
-      const arrays = el('input', { attrs: { type: 'checkbox', id: 'peek-arrays' } });
+      const arrays = el('input', {
+        attrs: { type: 'checkbox', id: `${this.idPrefix}-peek-arrays` },
+      });
       arrays.checked = state.arrays;
       arrays.addEventListener('change', () => { state.arrays = arrays.checked; this.renderList(); });
-      const count = this.datasets.filter((d) => d.record.dataType === 'transcriptomics' && d.record.platform === 'array').length;
+      const count = this.typeDatasets().filter((dataset) => dataset.record.platform === 'array').length;
       bar.append(el('label', { className: 'checkbox-row', children: [arrays, el('span', { text: ` Include array datasets (${count})` })] }));
     }
-    const flat = el('input', { attrs: { type: 'checkbox', id: 'peek-flat' } });
+    const flat = el('input', {
+      attrs: { type: 'checkbox', id: `${this.idPrefix}-peek-flat` },
+    });
     flat.checked = state.flat;
     flat.addEventListener('change', () => { state.flat = flat.checked; this.renderList(); });
     bar.append(el('label', { className: 'checkbox-row', children: [flat, el('span', { text: ' Flat table' })] }));
-    if (state.mode === 'multi') {
+    if (state.mode !== 'single') {
       const all = el('button', { className: 'chip-button', text: 'Select all shown', attrs: { type: 'button' } });
       all.addEventListener('click', () => { this.shownDatasets().forEach((d) => state.selected.add(d.id)); this.renderList(); this.renderSide(); });
       const clear = el('button', { className: 'chip-button', text: 'Clear selection', attrs: { type: 'button' } });
@@ -1133,7 +1165,7 @@ export class DataSourcesPanel {
         const studies = new Set(group.datasets.map((d) => d.record.studyId)).size;
         const selected = group.datasets.filter((d) => state.selected.has(d.id)).length;
         body.append(this.headerRow('ds-group', {
-          box: group.selectAll && state.mode === 'multi' ? this.selectAllBox(group.datasets, group.name) : null,
+          box: group.selectAll && state.mode !== 'single' ? this.selectAllBox(group.datasets, group.name) : null,
           title: group.name,
           rule: group.rule,
           note: `${group.datasets.length} condition set${group.datasets.length === 1 ? '' : 's'} · ${studies} stud${studies === 1 ? 'y' : 'ies'} · ${selected} selected`,
@@ -1143,7 +1175,7 @@ export class DataSourcesPanel {
         group.sets.forEach((set, index) => {
           const name = `Comparable set ${index + 1}`;
           body.append(this.headerRow('ds-subgroup', {
-            box: state.mode === 'multi' ? this.selectAllBox(set, `${name} of ${group.name}`) : null,
+            box: state.mode !== 'single' ? this.selectAllBox(set, `${name} of ${group.name}`) : null,
             title: name,
             rule: `${set.length} condition sets · ${summariseSet(set)}`,
           }));
@@ -1170,9 +1202,12 @@ export class DataSourcesPanel {
     }
     list.replaceChildren(table, legend);
     const total = this.typeDatasets().length;
-    count.textContent = state.mode === 'multi'
-      ? `${shown.length} of ${total} condition sets shown in this tab · ${state.selected.size} selected across all tabs`
-      : `${shown.length} of ${total} condition sets shown · choose one`;
+    count.textContent = state.mode === 'single'
+      ? `${shown.length} of ${total} condition sets shown · choose one`
+      : state.mode === 'subset'
+        ? `${shown.length} of ${total} available datasets shown · ${state.selected.size} selected for this axis`
+        : `${shown.length} of ${total} condition sets shown in this tab · ${state.selected.size} selected across all tabs`;
+    this.peek.done.disabled = state.mode === 'subset' && state.selected.size === 0;
     restore();
   }
 

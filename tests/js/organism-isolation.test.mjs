@@ -305,7 +305,7 @@ test('a link is read under the organism its address names', () => {
   assert.deepEqual(decodeState('#cs=ecoli', DEFAULT_ORGANISM).colorSources, undefined);
   // Everything that is not an organism fact reads the same under either, and
   // an E. coli link round-trips through its own encoder unchanged.
-  const link = '#ver=6&p=umap&c=cai&s=TAG-TAA&n=amber&csc=linear&l=b0001%2Cb0002&g=b0002&t=table';
+  const link = '#ver=7&p=umap&c=cai&s=TAG-TAA&n=amber&csc=linear&l=b0001%2Cb0002&g=b0002&t=table';
   assert.deepEqual(decodeState(link, ECOLI), decodeState(link));
   assert.equal(encodeState(applyDecoded(defaultState(ECOLI), decodeState(link, ECOLI), ECOLI), ECOLI),
     link.slice(1));

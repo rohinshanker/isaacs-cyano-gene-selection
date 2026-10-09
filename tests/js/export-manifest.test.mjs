@@ -166,6 +166,19 @@ test('an axis-scale export wires through the real URL-state decode and app viewS
   assert.equal(result.manifest.viewState.axisY, 'tssInitiation');
 });
 
+test('the export manifest preserves independent X and Y dataset selections from the link', async () => {
+  const { dataset, registry } = await context();
+  const id = dataset.genes[0].id;
+  const decoded = decodeState('ver=7&p=axes&ax=type.transcriptomics.rna-seq.abundance'
+    + '&ay=type.transcriptomics.rna-seq.abundance&xds=X1,X2&yds=Y1&l=');
+  const state = applyDecoded(defaultState(), decoded);
+  const result = buildExport({
+    dataset, registry, ids: [id], schemes: [{ map: {} }], viewState: viewStateOf(state),
+  });
+  assert.deepEqual(result.manifest.viewState.axisXSources, ['X1', 'X2']);
+  assert.deepEqual(result.manifest.viewState.axisYSources, ['Y1']);
+});
+
 test('the manifest records the colour scale in effect, and the exported values stay unscaled', async () => {
   const { dataset, registry } = await context();
   const id = dataset.genes[0].id;

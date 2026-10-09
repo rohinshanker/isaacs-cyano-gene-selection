@@ -3,16 +3,19 @@
 Scope: Add a center dataset-selection peek for each Metric X vs Y axis whose selected metric has multiple data sources, separate from the PCA map's dataset-selection window.
 Status: open
 Opened: 2026-10-07
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
 Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
 
-Opened for later at the owner's request. No implementation started.
 
 Owner reconfirmation, 2026-10-08: **yes** to independent applied X/Y/PCA
 selections. Record this decision only; do not implement it yet.
+Implemented on `work/ui-axis-picker-20261009` for coordinator integration.
+The later authorization to proceed superseded the earlier record-only hold.
+X, Y, global colour/filter, and PCA selections now remain independent after
+the older link state is copied once during migration.
 
 For Metric X vs Y, selecting an axis metric with multiple data sources should
 provide an option to open a center peek and select datasets. The owner explicitly
@@ -69,8 +72,35 @@ with that work without resolving the broader ticket.
 
 ## Verification
 
-Ticket opening: source locations and queue link checked. UI behavior has not
-been rendered or changed.
+Implemented and rendered from the assigned worktree on port 8837 in Playwright
+session `axis-picker-20261009`. UTEX 2973 was checked at 375x812, 768x1024,
+1280x800, and 1440x900, plus the 599/601 and 1319/1321 breakpoints. The maximum
+54-dataset transcriptomics picker, an empty filter, the loading shell, a failed
+expression-layer axis, and normal states were captured. Syn61 was checked for
+single-source and non-pooling occupancy, log2 fold-change, p-value, TE, and
+computed/no-layer axes.
+
+Applied X and Y selections of the same transcript-abundance type produced
+different values and independent `xds`/`yds` fields. Apply changed only its
+requesting axis; Cancel, Escape, and backdrop dismissal changed none and
+restored focus. Changing the main Data Sources/PCA selection left both axes
+unchanged. A version-6 link with global source state migrated both axes to the
+measurement that link previously displayed. The failed-layer render preserved
+a requested Log10 scale and reported a retryable load failure without claiming
+the metric was absent.
+
+Validation in this worktree:
+
+- focused axis/source/modal/state tests: 129 passed;
+- `npm test`: 1,346 passed;
+- `.venv/bin/python -m pytest -q`: 891 passed, 1 skipped, 36 subtests passed;
+- `.venv/bin/python tools/validate_contract.py`: 117 passed, 0 failed,
+  1 declared spliced-CDS skip.
+
+Durable screenshots, semantic snapshots, and scripted check results are under
+`worktrees/ui-open-tickets-20261008/.playwright-cli/ui-open-tickets-20261008/axis-picker`.
+No clarification was needed after the owner confirmed independent committed
+state; the existing quantity and comparability contracts determined the rest.
 
 At implementation, render Metric X vs Y and the PCA picker at 375, 768, 1280,
 and 1440 px widths and relevant breakpoints. Inspect both axes, multi-source

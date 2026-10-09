@@ -72,8 +72,18 @@ function unavailableValues(rowCount) {
 export const DEFAULT_AXIS_SCALE = DEFAULT_VALUE_SCALE;
 export const DEFAULT_AXIS_SCALES = Object.freeze({ x: DEFAULT_AXIS_SCALE, y: DEFAULT_AXIS_SCALE });
 
-/** Convenience wrapper for a single registry metric, used by axis-scale controls. */
-export function metricLog10Availability(metric, rowCount) {
+/**
+ * Convenience wrapper for a single registry metric, used by axis-scale
+ * controls. A requested scale stays selectable while its file is loading or
+ * retryable: an empty in-memory column at that point is not evidence that the
+ * published measurement cannot use the scale.
+ */
+export function metricLog10Availability(metric, rowCount, resourceState = null) {
+  if (resourceState === 'loading' || resourceState === 'failed') {
+    return {
+      available: true, finiteCount: 0, nonPositiveCount: 0, pending: resourceState,
+    };
+  }
   if (!metric) return { available: false, finiteCount: 0, nonPositiveCount: 0 };
   return log10Availability(metricValues(metric, rowCount));
 }
@@ -137,8 +147,8 @@ export function axisTitle(axis) {
   return `${axis.label}${axisTitleSuffix(axis)}`;
 }
 
-function buildAxis(registry, key, rowCount, requestedScale, mask) {
-  const metric = registry.byKey.get(key) ?? null;
+function buildAxis(registry, axis, key, rowCount, requestedScale, mask) {
+  const metric = registry.metricForAxis?.(axis, key) ?? registry.byKey.get(key) ?? null;
   const raw = metric ? metricValues(metric, rowCount) : unavailableValues(rowCount);
   const log10 = log10Availability(raw);
   const scale = AXIS_SCALES.includes(requestedScale) ? requestedScale : DEFAULT_AXIS_SCALE;
@@ -187,8 +197,8 @@ export function buildMetricAxesProjection(
   scales = DEFAULT_AXIS_SCALES,
   mask = null,
 ) {
-  const x = buildAxis(registry, keys.x ?? DEFAULT_METRIC_AXES.x, rowCount, scales?.x ?? DEFAULT_AXIS_SCALE, mask);
-  const y = buildAxis(registry, keys.y ?? DEFAULT_METRIC_AXES.y, rowCount, scales?.y ?? DEFAULT_AXIS_SCALE, mask);
+  const x = buildAxis(registry, 'x', keys.x ?? DEFAULT_METRIC_AXES.x, rowCount, scales?.x ?? DEFAULT_AXIS_SCALE, mask);
+  const y = buildAxis(registry, 'y', keys.y ?? DEFAULT_METRIC_AXES.y, rowCount, scales?.y ?? DEFAULT_AXIS_SCALE, mask);
   let finitePairCount = 0;
   for (let index = 0; index < rowCount; index += 1) {
     if (Number.isFinite(x.values[index]) && Number.isFinite(y.values[index])) {
@@ -213,7 +223,15 @@ export function buildMetricAxesProjection(
  * @param {{x: object, y: object}} axes result of buildMetricAxesProjection.
  */
 export function isDiagonalAxisPair(axes) {
-  return axes.x.key === axes.y.key && axes.x.scale === axes.y.scale;
+  if (axes.x.key !== axes.y.key || axes.x.scale !== axes.y.scale) return false;
+  if (axes.x.metric === axes.y.metric) return true;
+  if (axes.x.rawValues.length !== axes.y.rawValues.length) return false;
+  for (let index = 0; index < axes.x.rawValues.length; index += 1) {
+    const x = axes.x.rawValues[index];
+    const y = axes.y.rawValues[index];
+    if (!(Object.is(x, y) || (Number.isNaN(x) && Number.isNaN(y)))) return false;
+  }
+  return true;
 }
 
 /**
@@ -224,10 +242,19 @@ export function isDiagonalAxisPair(axes) {
  * finite pairs to plot.
  *
  * @param {{x: object, y: object, available: boolean, finitePairCount: number}} axes
+ * @param {{x?: ('loading'|'failed'|null), y?: ('loading'|'failed'|null)}} [resources]
  * @returns {string|null}
  */
-export function axesUnavailableMessage(axes) {
+export function axesUnavailableMessage(axes, resources = {}) {
   if (axes.finitePairCount > 0) return null;
+  const failedAxis = resources.x === 'failed' ? axes.x
+    : resources.y === 'failed' ? axes.y : null;
+  if (failedAxis) {
+    return `${failedAxis.label} values could not be loaded. Retry the failed dataset file.`;
+  }
+  const loadingAxis = resources.x === 'loading' ? axes.x
+    : resources.y === 'loading' ? axes.y : null;
+  if (loadingAxis) return `${loadingAxis.label} values are still loading.`;
   if (!axes.available) {
     return 'A selected metric is unavailable in this dataset. Choose another axis.';
   }

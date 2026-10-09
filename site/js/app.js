@@ -90,9 +90,13 @@ import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { DataSourcesPanel } from './ui/data-sources.js';
 import { InfoPopover, tanDisclosure } from './ui/disclosures.js';
 import {
-  datasetChoiceLabel, datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
+  datasetsFrom, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import { createSourceSelectionResolver } from './core/source-selection.js';
+import {
+  availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
+  legacyAxisDatasetSelection, normalizeAxisDatasetSelection,
+} from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
   normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor, typePools,
@@ -229,6 +233,7 @@ const context = {
   schemeVersion: 0,
   projections: new Map(),
   percentiles: new Map(),
+  axisTypeMetrics: { x: null, y: null },
   // A colour scale defaulted while its metric's file was loading, re-chosen on landing.
   scaleAwaitsFile: null,
   timings: { scheme: NaN, projection: NaN, codons: 0 },
@@ -566,12 +571,15 @@ function projectionFor(panelId) {
   if (panelId === 'axes') {
     // Never cached: percentile ranks the visible cohort, so a filter change
     // must be able to move every point on this axis, not just show/hide them.
-    const axes = buildMetricAxesProjection(context.registry, context.dataset.genes.length, {
+    const axes = buildMetricAxesProjection(axisAwareRegistry(), context.dataset.genes.length, {
       x: state.axisX, y: state.axisY,
     }, { x: state.axisXScale, y: state.axisYScale }, context.mask);
+    const resources = Object.fromEntries(
+      ['x', 'y'].map((axis) => [axis, axisMetricResourceState(axis)]),
+    );
     const projection = {
       available: axes.available && axes.finitePairCount > 0,
-      message: axesUnavailableMessage(axes),
+      message: axesUnavailableMessage(axes, resources),
       x: axes.x.values,
       y: axes.y.values,
       independentAxes: true,
@@ -628,6 +636,7 @@ let schemeEditor = null;
 let filterPanel = null;
 let dataSourcesPanel = null;
 let chromosomeDataSourcesPanel = null;
+const axisDataSourcesPanels = { x: null, y: null };
 let sidePanel = null;
 let shortlistPanel = null;
 let searchResults = null;
@@ -927,12 +936,15 @@ function renderColorHelp(host) {
  * wording lives in the metric's own explanation disclosure.
  */
 function axisLimitNotes() {
-  const keys = state.axisX === state.axisY ? [state.axisX] : [state.axisX, state.axisY];
-  return keys
-    .map((key) => {
-      const metric = context.registry.byKey.get(key);
+  const entries = state.axisX === state.axisY
+    && JSON.stringify(state.axisXSources) === JSON.stringify(state.axisYSources)
+    ? [['x', state.axisX]] : [['x', state.axisX], ['y', state.axisY]];
+  return entries
+    .map(([axis, key]) => {
+      if (axisMetricResourceState(axis, key)) return null;
+      const metric = metricForAxis(axis, key);
       const limits = metricHelp(metric, context.dataset)?.limits;
-      return limits ? `${metric.label}: ${limits}.` : null;
+      return limits ? `${axis.toUpperCase()} — ${metric.label}: ${limits}.` : null;
     })
     .filter(Boolean);
 }
@@ -946,8 +958,10 @@ function syncAxisScaleAvailability(axis) {
   const metricKey = axis === 'x' ? 'axisX' : 'axisY';
   const scaleKey = axis === 'x' ? 'axisXScale' : 'axisYScale';
   const select = element(`axis-${axis}-scale`);
-  const metric = context.registry.byKey.get(state[metricKey]);
-  const availability = metricLog10Availability(metric, context.dataset.genes.length);
+  const metric = metricForAxis(axis, state[metricKey]);
+  const availability = metricLog10Availability(
+    metric, context.dataset.genes.length, axisMetricResourceState(axis, state[metricKey]),
+  );
   const logOption = [...select.options].find((option) => option.value === 'log10');
   if (logOption) {
     logOption.disabled = !availability.available;
@@ -971,8 +985,8 @@ function renderMap() {
     const yLog = syncAxisScaleAvailability('y');
     const pairs = axisPairsNote(projection);
     const scaleNotes = [...new Set([
-      log10DisabledReason(context.registry.byKey.get(state.axisX)?.label ?? state.axisX, xLog),
-      log10DisabledReason(context.registry.byKey.get(state.axisY)?.label ?? state.axisY, yLog),
+      log10DisabledReason(metricForAxis('x', state.axisX)?.label ?? state.axisX, xLog),
+      log10DisabledReason(metricForAxis('y', state.axisY)?.label ?? state.axisY, yLog),
     ].filter(Boolean))];
     // A measured axis states its replicate and condition limits here, beside
     // the plot, rather than leaving a thin measurement to look like a deep one.
@@ -998,7 +1012,7 @@ function renderMap() {
     explanation: drawOrderExplanation(colors),
   });
   renderProjectionHelp(element('features-used'),
-    projectionHelp(state.panel, context.dataset, context.registry,
+    projectionHelp(state.panel, context.dataset, axisAwareRegistry(),
       { x: state.axisX, y: state.axisY }), citationsManifest, organism);
   plot.setColor({ values, scale, derived: colors.derived });
   plot.setDrawDirection(colors.drawOnTop);
@@ -1358,6 +1372,10 @@ function renderAll({ schemeErrors = [] } = {}) {
     filterMask: context.mask,
     viewState: () => ({
       ...viewStateOf(state, organism), dataSources: sourceSelection(), typeSources: state.typeSources,
+      axisContributors: {
+        x: axisContributorManifest('x'),
+        y: axisContributorManifest('y'),
+      },
     }),
     // With no scheme set there is no burden to report, so the rows say nothing
     // rather than showing a column of zeros that looks like a measurement.
@@ -1692,6 +1710,100 @@ function sourceSelection() {
   return resolvedSourceSelection().selection;
 }
 
+const axisSourceField = (axis) => (axis === 'x' ? 'axisXSources' : 'axisYSources');
+const axisMetricField = (axis) => (axis === 'x' ? 'axisX' : 'axisY');
+
+/** Applied dataset ids for one axis and its current metric. */
+function axisSourceSelection(axis, metricKey = state[axisMetricField(axis)]) {
+  return normalizeAxisDatasetSelection(metricKey, state[axisSourceField(axis)], context.datasets ?? []) ?? [];
+}
+
+/** The type metric instance whose getters and values read one axis's selection. */
+function metricForAxis(axis, key) {
+  return context.axisTypeMetrics[axis]?.get(key) ?? context.registry.byKey.get(key);
+}
+
+/** Loading state of the file that supplies one applied axis measurement. */
+function axisMetricResourceState(axis, key = state[axisMetricField(axis)]) {
+  const fileKey = metricForAxis(axis, key)?.fileKey;
+  return fileKey ? pendingState(context.dataset, fileKey) : null;
+}
+
+function axisAwareRegistry() {
+  return { ...context.registry, metricForAxis };
+}
+
+/** Selected rows and actual contributors recorded with an exported view. */
+function axisContributorManifest(axis) {
+  const key = state[axisMetricField(axis)];
+  const selected = axisSourceSelection(axis, key);
+  const metric = metricForAxis(axis, key);
+  const contributors = isTypeKey(key)
+    ? contributingDatasets(key, {}, context.datasets, selected).map((dataset) => dataset.id)
+    : [];
+  return {
+    metric: key,
+    selected,
+    contributors,
+    pooled: Boolean(metric?.pooled),
+    unit: metric?.unit ?? '',
+    provenanceId: metric?.provenance?.id ?? null,
+  };
+}
+
+/** Normalize or initialize an axis once; never consult global state afterwards. */
+function resolveAxisSourceSelection(axis) {
+  const key = state[axisMetricField(axis)];
+  const field = axisSourceField(axis);
+  if (!isTypeKey(key)) {
+    state[field] = [];
+    return;
+  }
+  const normalized = normalizeAxisDatasetSelection(key, state[field], context.datasets);
+  if (normalized?.length) {
+    state[field] = normalized;
+    return;
+  }
+  state[field] = state[field] === null
+    ? legacyAxisDatasetSelection(key, context.datasets, sourceSelection(), state.typeSources)
+    : defaultAxisDatasetSelection(key, context.datasets);
+}
+
+function axisDataSourcesPanel(axis) {
+  if (!axisDataSourcesPanels[axis]) {
+    axisDataSourcesPanels[axis] = new DataSourcesPanel(document.createElement('div'), {
+      datasets: context.datasets,
+      judgements: context.dataset.meta.pairJudgements ?? [],
+      section: false,
+    });
+  }
+  return axisDataSourcesPanels[axis];
+}
+
+async function openAxisDatasetSelection(axis, opener) {
+  const key = state[axisMetricField(axis)];
+  const group = typeGroups(context.datasets).get(key);
+  if (!group || group.datasets.length < 2) return;
+  const label = metricForAxis(axis, key)?.label ?? group.label;
+  const result = await axisDataSourcesPanel(axis).open({
+    mode: 'subset',
+    dataType: group.datasets[0].record.dataType,
+    candidateIds: group.datasets.map((dataset) => dataset.id),
+    current: axisSourceSelection(axis, key),
+    opener,
+    title: `${axis.toUpperCase()} axis — ${label}: choose datasets`,
+  });
+  if (result === null) return;
+  state[axisSourceField(axis)] = normalizeAxisDatasetSelection(key, result, context.datasets);
+  syncAxisSourceSelects();
+  plot.projectionId = null;
+  renderAll();
+  const metric = metricForAxis(axis, key);
+  announce(`${axis.toUpperCase()} axis ${label}: ${axisDatasetSelectionLabel(
+    key, state[axisSourceField(axis)], context.datasets, typePools(key, context.datasets),
+  )}. ${metric?.unit ? `Values use ${metric.unit}.` : ''}`);
+}
+
 /**
  * Whether a metric is offered by the colour, axis and filter selectors. A
  * metric that belongs to a dataset is offered only while that dataset is
@@ -1757,38 +1869,24 @@ function setSources(ids) {
 }
 
 /**
- * A metric with several selected sources of its data type gets a source
- * selector beside its axis; one with a single source, or a computed metric,
- * does not. Choosing a source switches the axis to that source's metric.
+ * A type metric with several admitted datasets gets its own dataset-selection
+ * action. The applied ids belong to that axis, regardless of the global
+ * colour/PCA selection or what the other axis reads.
  */
 function syncAxisSourceSelects() {
   for (const [axis, key] of [['x', 'axisX'], ['y', 'axisY']]) {
     const row = element(`axis-${axis}-source-row`);
-    const select = element(`axis-${axis}-source`);
-    const group = isTypeKey(state[key]) ? typeGroups(context.datasets ?? []).get(state[key]) : null;
-    const chosen = new Set(sourceSelection());
-    const candidates = group ? group.datasets.filter((dataset) => chosen.has(dataset.id)) : [];
+    const button = element(`axis-${axis}-source`);
+    const candidates = availableAxisDatasets(state[key], context.datasets ?? []);
     if (candidates.length < 2) {
       row.hidden = true;
       continue;
     }
-    select.replaceChildren();
-    for (const dataset of candidates) {
-      const option = document.createElement('option');
-      option.value = dataset.id;
-      option.textContent = `${dataset.record.studyId} · ${datasetChoiceLabel(dataset)}`;
-      select.append(option);
-    }
-    // A fold change, a p-value or a translation-efficiency ratio is read from
-    // one dataset however many are selected, so offering "Pooled" here would be
-    // a choice the axis cannot honour.
-    if (typePools(state[key], context.datasets)) {
-      const pooled = document.createElement('option');
-      pooled.value = '';
-      pooled.textContent = `Pooled (${candidates.length} datasets)`;
-      select.prepend(pooled);
-    }
-    select.value = informingDataset(state[key], state.typeSources, context.datasets, chosen)?.id ?? '';
+    const label = metricForAxis(axis, state[key])?.label ?? state[key];
+    button.textContent = axisDatasetSelectionLabel(
+      state[key], axisSourceSelection(axis), context.datasets, typePools(state[key], context.datasets),
+    );
+    button.setAttribute('aria-label', `Choose datasets for ${axis.toUpperCase()} axis: ${label}`);
     row.hidden = false;
   }
 }
@@ -1893,7 +1991,7 @@ function buildAxisSelects() {
     const select = element(`axis-${axis}`);
     const onAxisChange = (value) => {
       state[key] = value;
-      ensureTypeSelected(value);
+      state[axisSourceField(axis)] = defaultAxisDatasetSelection(value, context.datasets);
       syncAxisSourceSelects();
       plot.projectionId = null;
       renderMap();
@@ -1902,11 +2000,8 @@ function buildAxisSelects() {
         + `${element('axis-y').selectedOptions[0].textContent} on Y.`);
     };
     select.addEventListener('change', () => onAxisChange(select.value));
-    element(`axis-${axis}-source`).addEventListener('change', (event) => {
-      // The axis keeps its type; the chosen dataset informs it, or the empty
-      // choice pools every selected dataset of the type again.
-      setInforming(state[key], event.target.value || null);
-    });
+    const sourceButton = element(`axis-${axis}-source`);
+    sourceButton.addEventListener('click', () => void openAxisDatasetSelection(axis, sourceButton));
   }
   syncAxisSourceSelects();
 }
@@ -2200,9 +2295,9 @@ function normalizeAndApply(decoded) {
   // the per-dataset menus) means that type informed by that dataset.
   adoptLegacyMetricKeys();
   state.typeSources = normalizeTypeSources(state.typeSources, context.datasets, sourceSelection());
-  // A link that colours, plots or filters by a type selects that type's
-  // defaults when it carries no dataset of it.
-  for (const key of [state.colorBy, state.axisX, state.axisY, state.trafficKey, ...Object.keys(state.filters)]) {
+  // Global colour and filter consumers keep their own selection. Axes resolve
+  // independent copies below and never add datasets to this global set.
+  for (const key of [state.colorBy, state.trafficKey, ...Object.keys(state.filters)]) {
     if (key && context.registry.byKey.has(key)) ensureTypeSelected(key);
   }
   // A filter or a traffic metric this dataset has no metric for cannot act, so
@@ -2227,6 +2322,8 @@ function normalizeAndApply(decoded) {
   const axes = resolveDefaultMetricAxes(scopedRegistry(), freshAxes);
   if (!metricInScope(context.registry.byKey.get(state.axisX))) state.axisX = axes.x;
   if (!metricInScope(context.registry.byKey.get(state.axisY))) state.axisY = axes.y;
+  resolveAxisSourceSelection('x');
+  resolveAxisSourceSelection('y');
 }
 
 /**
@@ -2236,6 +2333,25 @@ function normalizeAndApply(decoded) {
  */
 function installTypeMetrics() {
   const registry = context.registry;
+  const buildForAxis = (axis) => buildTypeMetrics(context.datasets, {
+    contributing: (typeKey) => contributingDatasets(
+      typeKey, {}, context.datasets, axisSourceSelection(axis, typeKey),
+    ),
+    metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+    selected: (typeKey) => {
+      const selected = new Set(axisSourceSelection(axis, typeKey));
+      return (typeGroups(context.datasets).get(typeKey)?.datasets ?? [])
+        .filter((dataset) => selected.has(dataset.id));
+    },
+    geneCount: context.dataset.genes.length,
+  });
+  for (const axis of ['x', 'y']) {
+    if (!context.axisTypeMetrics[axis]) {
+      context.axisTypeMetrics[axis] = new Map(
+        buildForAxis(axis).map((metric) => [metric.key, metric]),
+      );
+    }
+  }
   if (registry.metrics.some((metric) => metric.isType)) return;
   const typeMetrics = buildTypeMetrics(context.datasets, {
     contributing: (typeKey) => resolvedSourceSelection().contributing(typeKey),
@@ -2269,12 +2385,19 @@ function adoptLegacyMetricKeys() {
     state.typeSources = { ...state.typeSources, [typeKey]: dataset.id };
     return typeKey;
   };
+  const adoptAxis = (axis) => {
+    const key = axisMetricField(axis);
+    const dataset = context.datasets.find((candidate) => candidate.metricKey === state[key]);
+    if (!dataset) return;
+    state[key] = typeKeyFor(dataset);
+    if (state[axisSourceField(axis)] === null) state[axisSourceField(axis)] = [dataset.id];
+  };
   // Two keys of one type can disagree on the dataset; the colour is what the
   // reader saw, so it is adopted last and wins.
   state.filters = Object.fromEntries(Object.entries(state.filters).map(([key, range]) => [adopt(key), range]));
   if (state.trafficKey) state.trafficKey = adopt(state.trafficKey);
-  state.axisX = adopt(state.axisX);
-  state.axisY = adopt(state.axisY);
+  adoptAxis('x');
+  adoptAxis('y');
   state.colorBy = adopt(state.colorBy);
 }
 
@@ -2382,12 +2505,15 @@ function promotedFileKeys(view) {
  * for that payload the way a pinned gene waits for its evidence.
  */
 function promotedMetricFileKeys(view, registry) {
-  const named = [view.colorBy, view.axisX, view.axisY, view.trafficKey,
-    ...Object.keys(view.filters ?? {})];
+  const named = [view.colorBy, view.trafficKey, ...Object.keys(view.filters ?? {})];
   const keys = new Set();
   for (const key of named) {
     const fileKey = registry.byKey.get(key)?.fileKey;
     if (fileKey) keys.add(fileKey);
+  }
+  for (const [axis, key] of [['x', view.axisX], ['y', view.axisY]]) {
+    const metric = registry.metricForAxis?.(axis, key) ?? registry.byKey.get(key);
+    if (metric?.fileKey) keys.add(metric.fileKey);
   }
   return [...keys];
 }
@@ -2747,7 +2873,7 @@ async function boot() {
       if (context.dataset && MAP_PANELS.some((panel) => panel.id === state.panel)) {
         renderColorHelp(element('colour-help'));
         renderProjectionHelp(element('features-used'),
-          projectionHelp(state.panel, context.dataset, context.registry,
+          projectionHelp(state.panel, context.dataset, axisAwareRegistry(),
             { x: state.axisX, y: state.axisY }), manifest, organism);
       }
       if (context.dataset && chromosomeView && state.panel === CHROMOSOME_TAB.id) {
@@ -3227,7 +3353,7 @@ async function boot() {
   // bar to finish: it fills in uneven blocks over its minimum time and is held
   // full for a moment so it is seen. Neither ever delays a request. Files named
   // through a metric are known only now that the registry exists.
-  const promotedByMetric = promotedMetricFileKeys(state, context.registry)
+  const promotedByMetric = promotedMetricFileKeys(state, axisAwareRegistry())
     .filter((key) => !promoted.includes(key));
   if (promotedByMetric.length > 0) {
     promoted.push(...promotedByMetric);

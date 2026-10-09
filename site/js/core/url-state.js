@@ -34,6 +34,7 @@ const KEYS = {
   panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc', drawOnTop: 'dt',
   sources: 'ds',
   typeSources: 'src',
+  axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
 };
 
@@ -46,8 +47,9 @@ const KEYS = {
  * the fresh-view metric axes are why version 2 became 3, dropping the
  * single-source view field `as` for the colour-source toggles `cs` is why
  * version 3 became 4, the controls-column layout (`po`, `pc`) with the chosen
- * comparison metrics (`cm`) is why version 4 became 5, and moving those chosen
- * metrics out of the link into browser storage is why version 5 became 6.
+ * comparison metrics (`cm`) is why version 4 became 5, moving those chosen
+ * metrics out of the link into browser storage is why version 5 became 6, and
+ * independent X/Y dataset contributor lists are why version 6 became 7.
  *
  * The colour scale `csc` deliberately did not bump it. A version number is only
  * useful where the absence of a field has to mean two different things to two
@@ -84,7 +86,7 @@ const KEYS = {
  * were visible by default then and had no persisted state at all. So an
  * omitted `mk` has exactly one meaning and no older one to preserve.
  */
-export const STATE_VERSION = 6;
+export const STATE_VERSION = 7;
 
 /**
  * The first encoder version whose omitted `ax`/`ay` mean today's measured
@@ -144,6 +146,11 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // Which dataset informs each type metric, where it differs from the default;
     // empty means the defaults. Resolved by the app against the loaded sources.
     typeSources: {},
+    // Null means this axis has not yet copied an older link's contributors or
+    // received the defaults for a newly selected metric. The app resolves it
+    // once against the loaded catalogue, then keeps an independent array.
+    axisXSources: null,
+    axisYSources: null,
     // Which admitted marker layers the reader has hidden, and in which of the
     // four views. Empty is the fresh view: every mark drawn everywhere. Each
     // view is its own entry, so one choice never moves another's picture.
@@ -202,6 +209,8 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     axisY: state.axisY,
     axisXScale: state.axisXScale,
     axisYScale: state.axisYScale,
+    axisXSources: Array.isArray(state.axisXSources) ? [...state.axisXSources] : [],
+    axisYSources: Array.isArray(state.axisYSources) ? [...state.axisYSources] : [],
     categoryFilter: state.categoryFilter,
     colorSources: normalizeAnnotationSources(state.colorSources, organism.annotationSources),
     // Which of two overlapping marks the exported picture shows. It changes no
@@ -326,6 +335,15 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (informing.length > 0) {
     push(KEYS.typeSources, informing.map(([type, id]) => `${type}=${id}`).join(','));
   }
+  // A type metric's applied axis contributors are always written. Older links
+  // omitted these fields and are migrated once from `ds`/`src`; current links
+  // carry the independent copies so colour/PCA state can change separately.
+  if (Array.isArray(state.axisXSources) && state.axisXSources.length > 0) {
+    push(KEYS.axisXSources, state.axisXSources.join(','));
+  }
+  if (Array.isArray(state.axisYSources) && state.axisYSources.length > 0) {
+    push(KEYS.axisYSources, state.axisYSources.join(','));
+  }
   // Only the views a reader has put marks away in, in the registry's canonical
   // order, so two readers who made the same choice write the same link. Every
   // mark visible everywhere writes no field at all.
@@ -447,6 +465,14 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
       .map((pair) => /^(type\.[\w.-]+)=([\w.-]+)$/.exec(pair))
       .filter(Boolean)
       .map((match) => [match[1], match[2]]));
+  }
+  if (values.has(KEYS.axisXSources)) {
+    state.axisXSources = values.get(KEYS.axisXSources).split(',')
+      .filter((id) => /^[\w.-]+$/.test(id));
+  }
+  if (values.has(KEYS.axisYSources)) {
+    state.axisYSources = values.get(KEYS.axisYSources).split(',')
+      .filter((id) => /^[\w.-]+$/.test(id));
   }
   // Version 5 wrote `cm` for the chosen comparison metrics. Those now live in
   // browser storage instead, to keep a shared link readable, so a version 5

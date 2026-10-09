@@ -789,6 +789,7 @@ input[type="range"] { width: 100%; }
 .axis-chooser { padding: 0.65rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-sunken); }
 .axis-chooser > .field-row { flex: 1 1 11rem; }
 .axis-chooser > .panel-note { flex: 2 1 16rem; margin: 0; font-size: 0.8rem; }
+.axis-source-button { flex: 1 1 9rem; min-width: 0; text-align: left; overflow-wrap: anywhere; }
 .map-toolbar .field-row { margin-bottom: 0; }
 .map-toolbar-row > .field-row { flex: 1 1 11rem; min-width: 0; }
 

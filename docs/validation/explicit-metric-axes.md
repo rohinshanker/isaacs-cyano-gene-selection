@@ -29,6 +29,35 @@ saw. See [viewer-interaction-state.md](viewer-interaction-state.md). The
 candidate export manifest records the active panel, colour metric, axis keys,
 and axis scales in `viewState`; numeric CSV rows remain unchanged.
 
+## Independent dataset contributors
+
+A type metric on X and the same type metric on Y are two independent applied
+measurements. `axisXSources` and `axisYSources` hold their dataset ids; `xds`
+and `yds` carry those choices in shared links. The axis-specific type-metric
+instances read only their own contributors, so committing X never changes Y,
+the colour/filter selection, or PCA. The export view records both the selected
+ids and the datasets that actually contributed, together with the unit,
+pooling flag, and provenance id.
+
+An older link has no `xds`/`yds`. At first load only, each axis copies the
+contributors the old global source and informing-source fields would have used.
+The copies are then ordinary independent state; global changes cannot become a
+fallback that recouples them. A newly chosen type starts from that type's
+existing default rule. Computed metrics keep an empty dataset selection.
+
+The axis dataset button is present whenever the catalogue admits more than one
+dataset for the selected type, even if the global selection currently contains
+one. Its label distinguishes an individual condition from a pooled selection.
+Pooling still uses the type metric's established rule: within-dataset ranks for
+poolable abundance-like quantities, a mean for the declared shared-scale
+fitness quantity, and one informing dataset for quantities that do not pool.
+
+An axis whose measurement file is loading or retryable keeps its requested
+scale and names the resource state. The transient empty in-memory column does
+not disable Log10, reset the URL to linear, claim that the metric is absent, or
+emit coverage and scale conclusions that require loaded values. Once the file
+settles, the ordinary value-based scale and missingness rules apply.
+
 The shared scatter renderer applies independent X/Y fit factors only to this
 tab. Hit testing, keyboard neighbor selection, zoom, pan, ticks, pin and
 shortlist marks use those factors. A length filter changes visibility only and

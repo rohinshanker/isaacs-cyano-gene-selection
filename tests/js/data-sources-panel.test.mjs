@@ -249,6 +249,39 @@ test('single mode offers radios and resolves to the chosen metric key', async ()
   });
 });
 
+test('subset mode commits only its allowed dataset ids and cancellation changes nothing', async () => {
+  await withFakeDocument(async (document) => {
+    const globalChanges = [];
+    const { panel } = mount(document, { onChange: (ids) => globalChanges.push(ids) });
+    const before = [...panel.selection];
+    const options = {
+      mode: 'subset', dataType: 'transcriptomics',
+      candidateIds: ['GSE205444', 'GSE9.5'], current: ['GSE205444'],
+      title: 'X axis — Transcript abundance: choose datasets',
+    };
+    const cancelled = panel.open(options);
+    assert.equal(document.querySelector('.peek-title').textContent, options.title);
+    assert.deepEqual(rowsOf(document).map((row) => row.dataset.id), ['GSE205444', 'GSE9.5']);
+    assert.deepEqual(document.querySelectorAll('button.peek-tab').map((tab) => tab.textContent),
+      ['Transcriptomics (2)']);
+    rowBoxes(document)[1].checked = true;
+    rowBoxes(document)[1].dispatch('change');
+    panel.peek.close.dispatch('click');
+    assert.equal(await cancelled, null);
+    assert.deepEqual(panel.selection, before);
+    assert.deepEqual(globalChanges, []);
+
+    const committed = panel.open(options);
+    const boxes = rowBoxes(document);
+    boxes[1].checked = true;
+    boxes[1].dispatch('change');
+    document.querySelector('button.peek-done').dispatch('click');
+    assert.deepEqual(await committed, ['GSE205444', 'GSE9.5']);
+    assert.deepEqual(panel.selection, before, 'the global/PCA draft and applied selection stay untouched');
+    assert.deepEqual(globalChanges, []);
+  });
+});
+
 test('the info button shows every axis as reported with its quote, the replicates, and a linked citation', async () => {
   await withFakeDocument(async (document) => {
     const { panel } = mount(document);

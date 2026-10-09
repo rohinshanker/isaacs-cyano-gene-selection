@@ -4,6 +4,22 @@ The Data Sources peek shares the condition scales in `core/data-sources.js`.
 Missing conditions remain explicit missing values. Selection, grouping and
 comparability do not change when a column is hovered.
 
+## Axis subset mode
+
+Metric X and Metric Y each own a headless `DataSourcesPanel` instance in
+`subset` mode. The modal title names the requesting axis and metric, and its
+candidate ids are the complete admitted catalogue group for that metric. A
+global colour/PCA selection therefore cannot make an axis dataset unreachable.
+Each instance has its own draft and dialog id; opening or cancelling one cannot
+overwrite the other axis or the main Data Sources picker.
+
+`Use these datasets` returns catalogue-ordered ids without mutating the panel's
+global selection. It is disabled when none is selected. Cancel, Escape, and the
+backdrop return `null`, leave applied state untouched, and restore focus to the
+axis button. The shared rows, condition metadata, comparability groups,
+compendium grid, missing-value marks, touch targets, focus trap, and responsive
+pane behavior remain the same as the main picker.
+
 ## Condition guides
 
 `ConditionGuides` aligns its decorative SVG lines with the rendered header's
@@ -48,7 +64,8 @@ text remains available. Selected data-type tabs retain readable contrast on hove
 Run the unit contracts:
 
 ```sh
-node --test tests/js/condition-guides.test.mjs tests/js/data-sources-panel.test.mjs
+node --test tests/js/condition-guides.test.mjs tests/js/data-sources-panel.test.mjs \
+  tests/js/axis-sources.test.mjs tests/js/metric-axes.test.mjs tests/js/url-state.test.mjs
 ```
 
 Start the real app with a unique port from the assigned worktree. Open its URL

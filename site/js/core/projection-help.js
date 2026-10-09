@@ -41,8 +41,10 @@ function descriptionsFor(organism) {
 
 export function projectionHelp(panelId, dataset, registry, axes = DEFAULT_METRIC_AXES) {
   if (panelId === 'axes') {
-    const selected = [['X', axes.x], ['Y', axes.y]]
-      .map(([axis, key]) => ({ axis, key, metric: registry.byKey.get(key) }))
+    const selected = [['X', 'x', axes.x], ['Y', 'y', axes.y]]
+      .map(([axis, axisId, key]) => ({
+        axis, key, metric: registry.metricForAxis?.(axisId, key) ?? registry.byKey.get(key),
+      }))
       .filter((entry) => entry.metric);
     const explained = selected.map(({ axis, key, metric }) => ({
       key,

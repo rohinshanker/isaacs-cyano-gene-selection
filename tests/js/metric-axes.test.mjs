@@ -240,6 +240,16 @@ test('a metric with only positive finite values allows log10, and disabled reaso
   assert.equal(log10DisabledReason('CDS length', availability), null);
 });
 
+test('a requested log scale stays selected while its measurement is loading or retryable', () => {
+  const absentInMemory = metric('expression', 'Expression', 'counts', [NaN, NaN]);
+  for (const state of ['loading', 'failed']) {
+    const availability = metricLog10Availability(absentInMemory, 2, state);
+    assert.equal(availability.available, true);
+    assert.equal(availability.pending, state);
+    assert.equal(log10DisabledReason('Expression', availability), null);
+  }
+});
+
 test('percentile ranks the visible cohort, not the whole dataset, and still ranks a hidden gene', () => {
   const registry = registryOf([
     metric('tss', 'TSS initiation', 'counts', [10, 20, 30, 40, 100]),
@@ -352,6 +362,22 @@ test('an unavailable metric reports its own message ahead of any cohort or pairi
   );
 });
 
+test('pending axis resources report loading and failure instead of claiming measurements are absent', () => {
+  const registry = registryOf([
+    metric('x', 'X abundance', 'TPM', [NaN, NaN]),
+    metric('y', 'Y abundance', 'TPM', [NaN, NaN]),
+  ]);
+  const projection = buildMetricAxesProjection(registry, 2, { x: 'x', y: 'y' });
+  assert.equal(
+    axesUnavailableMessage(projection, { x: 'loading', y: null }),
+    'X abundance values are still loading.',
+  );
+  assert.equal(
+    axesUnavailableMessage(projection, { x: null, y: 'failed' }),
+    'Y abundance values could not be loaded. Retry the failed dataset file.',
+  );
+});
+
 test('identical axis keys are a diagonal only when both axes also share their effective scale', () => {
   const registry = registryOf([
     metric('tss', 'TSS initiation', 'counts', [10, 20, 30, 40]),
@@ -375,4 +401,22 @@ test('identical axis keys are a diagonal only when both axes also share their ef
     { x: 'tss', y: 'lengthNt' },
   );
   assert.equal(isDiagonalAxisPair(differentKeys), false);
+});
+
+test('the same type key can resolve to independent X and Y metric values', () => {
+  const key = 'type.transcriptomics.rna-seq.abundance';
+  const metric = (values) => ({ key, label: 'RNA abundance', unit: 'TPM', read: (index) => values[index] });
+  const xMetric = metric([1, 2, 3]);
+  const yMetric = metric([3, 2, 1]);
+  const registry = {
+    byKey: new Map([[key, metric([9, 9, 9])]]),
+    metricForAxis: (axis) => (axis === 'x' ? xMetric : yMetric),
+  };
+  const axes = buildMetricAxesProjection(registry, 3, { x: key, y: key });
+  assert.deepEqual([...axes.x.values], [1, 2, 3]);
+  assert.deepEqual([...axes.y.values], [3, 2, 1]);
+  assert.equal(isDiagonalAxisPair(axes), false);
+
+  registry.metricForAxis = () => xMetric;
+  assert.equal(isDiagonalAxisPair(buildMetricAxesProjection(registry, 3, { x: key, y: key })), true);
 });
