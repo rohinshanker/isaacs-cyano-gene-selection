@@ -11,6 +11,8 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_overlapping-gene-visualization__20261009](O_overlapping-gene-visualization__20261009.md) | Show overlaps in chromosome and expanded gene views, compact context in the smaller viewer, and an OG tag/filter/colour mode; Q1–Q3 await owner decisions; implementation not started |
+| [O_chromosome-left-right-controls__20261009](O_chromosome-left-right-controls__20261009.md) | Add visible left/right chromosome pan controls alongside zoom/reset; preserve zoom, coordinate bounds, aligned tracks and existing drag/keyboard navigation; implementation not started |
 | [O_regulatory-feature-hit-targets__20261009](O_regulatory-feature-hit-targets__20261009.md) | Enlarge hover/click targets for initiation sites and regulatory annotations in both gene viewers; preserve coordinate accuracy, overlap selection and navigation; implementation not started |
 | [O_tan-sites-large-gene-viewer__20261009](O_tan-sites-large-gene-viewer__20261009.md) | Make admitted Tan initiation sites visible in the larger sequence viewer; reproduce the reported absence and check pinned gene, marker visibility, upstream extent and loading/camera state; implementation not started |
 | [O_trna-viewer-tab__20261009](O_trna-viewer-tab__20261009.md) | Move the full tRNA viewer into its own application tab; preserve independent selection, evidence labels and coordinate navigation; implementation not started |
