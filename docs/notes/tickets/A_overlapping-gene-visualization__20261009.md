@@ -1,14 +1,16 @@
-# O_overlapping-gene-visualization__20261009 — Open
+# A_overlapping-gene-visualization__20261009 — Active
 
 - **Scope:** Visualize overlapping genes in the chromosome, expanded gene viewer and smaller gene viewer, with an OG tag usable for filtering and colouring.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The owner requests full overlap visibility in the chromosome
+Owned by `cyano-ui-fixes` (coordinator and closer). Implementation started on
+2026-10-09 at the owner's request, after committing completed UI work and tickets.
+Work runs in isolated worktrees; canonical baseline is `6235d1e`.
+ The owner requests full overlap visibility in the chromosome
 and expanded gene viewer, a partial/compact representation in the smaller viewer,
 and an **OG** (overlapping genes) tag that can also drive filtering and colouring.
 
@@ -60,7 +62,8 @@ implementation can proceed with the definition and compact-view design below.
 
 ## Verification
 
-Ticket-only intake; no UI or overlap data has changed. Intake baseline gates on
+Implementation is in progress; no overlap feature is yet complete.
+Ticket intake; no UI or overlap data had changed at intake. Intake baseline gates on
 2026-10-09 passed: 1,396 JavaScript tests; 938 Python tests and 36 subtests with
 one skip; 119 contract checks with one declared skip. These results do not
 validate an overlap implementation. Ticket metadata, local links and the queue
