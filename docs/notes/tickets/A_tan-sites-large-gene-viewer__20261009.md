@@ -41,10 +41,31 @@ or established the cause. Reuse the admitted Tan data and existing implementatio
 
 ## Verification
 
-Ticket-only intake; no UI behavior or data has changed. Intake validation on
-2026-10-09 passed metadata/link checks and the repository gates: 1,395 JavaScript
-tests; 925 Python tests and 36 subtests with one skip; 119 contract checks with
-one declared skip. This validates the baseline, not a repair of the reported UI.
+Implemented by `codex-implementer` on 2026-10-09 for DEM-334; coordinator
+integration and closure remain pending. The initial 30-nt sequence remains the
+default. When an admitted site is outside it but placeable in an existing exact
+sidecar, the control and complete site list remain discoverable, the status names
+the current-window reason, and **Show nearest site** expands to the smallest
+declared window that can reveal it. Repeated **Show next site** actions reveal
+successively more distant rows; **Go to nearest site** centres an already drawn,
+off-camera mark. Missing-coordinate, wrong-replicon and otherwise unreachable
+rows are counted separately from rows a larger exact sequence can reveal, and
+retain their row-level reason. Hidden state remains distinct and disables
+navigation.
+
+Real data checks covered plus-strand `M744_RS00025` (30→60 nt reveal),
+minus-strand `M744_RS00045` (30→60→500→1,000 nt), overlapping rows at
+`M744_RS10630`, narrow-camera navigation and hidden state. Real-browser checks
+passed at 375×812, 768×1024, 960×900, 1240×900, 1280×800 and 1440×900 with no
+horizontal overflow, console error or failed request. Keyboard paths passed;
+touch tapping remains unverified because the available browser context did not
+expose touch input.
+
+Final repository gates passed after copying the canonical checkout's verified,
+gitignored raw inputs into this isolated worktree: 1,402 JavaScript tests; 938
+Python tests and 36 subtests with one skip; 119 contract checks with one declared
+skip. The implementation reuses the admitted Tan data; no scientific source,
+coordinate, evidence row or admission changed.
 
 Before closure, use the UI render skill at mobile, tablet, and desktop widths.
 Check a locus with a site inside the short window, one requiring a larger upstream
@@ -54,7 +75,7 @@ focus, reload, and loading/failure states. Run the gates in `AGENTS.md`.
 
 ## Cleanup
 
-The implementing session owns closure and records every remaining finding.
+The coordinator owns closure and records every remaining finding.
 Distill any corrected visibility/window rules into
 [gene-sequence-closeup.md](../../validation/gene-sequence-closeup.md) and the
 marker-state runbook; update the validation index and follow the required

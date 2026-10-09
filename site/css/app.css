@@ -1881,6 +1881,7 @@ input[type="range"] { width: 100%; }
 .gene-view-marker-supplementary circle { fill-opacity: 0.62; }
 .gene-view-annotation { outline: none; }
 .gene-view-codon.gene-view-annotation:hover,
+.gene-view-codon.gene-view-annotation.is-hit-hovered,
 .gene-view-codon.gene-view-annotation:focus-visible {
   stroke: var(--focus);
   stroke-width: 2.5;
@@ -2050,8 +2051,10 @@ input[type="range"] { width: 100%; }
 .gene-sequence-codon.gene-sequence-annotation:hover .gene-sequence-recoded,
 .gene-sequence-codon.gene-sequence-annotation:focus-visible .gene-sequence-recoded,
 .gene-sequence-annotation.gene-sequence-start-mark:hover,
+.gene-sequence-annotation.gene-sequence-start-mark.is-hit-hovered,
 .gene-sequence-annotation.gene-sequence-start-mark:focus-visible,
 .gene-sequence-annotation.gene-sequence-stop-mark:hover,
+.gene-sequence-annotation.gene-sequence-stop-mark.is-hit-hovered,
 .gene-sequence-annotation.gene-sequence-stop-mark:focus-visible {
   stroke: var(--focus);
   stroke-width: 2.5;

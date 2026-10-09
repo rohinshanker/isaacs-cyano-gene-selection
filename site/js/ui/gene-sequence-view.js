@@ -34,7 +34,9 @@ import {
   availableUpstreamNt, codonAtOffset, describeGeneSequence, describeSequenceMarkers, geneSequenceModel,
   placementRangesText, sequenceMarkers, signedOffset,
 } from '../core/gene-sequence-model.js';
-import { overlapGroups, tickStep, ticksFor } from '../core/gene-view-model.js';
+import {
+  overlapGroups, paddedHitRange, tickStep, ticksFor,
+} from '../core/gene-view-model.js';
 import {
   markerLayersOf, markerPaintOrder, markerPresentation, markerSpanNt,
 } from '../core/marker-layers.js';
@@ -79,6 +81,10 @@ export const MARKER_ROW_HEIGHT = 16;
  * every zoom and two heads closer than this overlap at that zoom and no other.
  */
 export const MARKER_HEAD_PX = 9;
+/** Invisible padding around a marker tag, in pixels. */
+export const MARKER_HIT_PADDING_PX = 5;
+/** Padding outside start/stop codons; the gene-facing edge stays exact. */
+export const CODON_HIT_PADDING_PX = 5;
 /**
  * The `data-sequence-action` value the marker checkbox carries, so a rebuild
  * can find the control a reader was holding.
@@ -161,6 +167,29 @@ function interactiveAnnotation(node, label, activate = null) {
     else node.focus?.({ preventScroll: true });
   });
   return node;
+}
+
+/** A pointer-only rectangle that invokes the same annotation as its visible mark. */
+function annotationHitTarget(annotation, attributes, activate = null) {
+  const target = svg('rect', {
+    ...attributes,
+    fill: 'transparent',
+    stroke: 'none',
+    'pointer-events': 'all',
+    'aria-hidden': 'true',
+  });
+  target.addEventListener('pointerdown', (event) => {
+    event.stopPropagation?.();
+    annotation.focus?.({ preventScroll: true });
+  });
+  target.addEventListener('click', (event) => {
+    event.stopPropagation?.();
+    if (activate) activate();
+    else annotation.focus?.({ preventScroll: true });
+  });
+  target.addEventListener('pointerenter', () => annotation.classList.add('is-hit-hovered'));
+  target.addEventListener('pointerleave', () => annotation.classList.remove('is-hit-hovered'));
+  return target;
 }
 
 /** Genomic range text for a pair of positions, in the order given. */
@@ -259,6 +288,8 @@ export class GeneSequenceView {
     this.markersVisible = true;
     /** Every published row of the layer for this gene, placed or not. */
     this.markerRows = [];
+    /** Cached reachability; camera-only redraws must not rebuild models. */
+    this.markerReachabilityCache = undefined;
     this.gene = null;
     this.table = null;
     this.scheme = null;
@@ -314,6 +345,7 @@ export class GeneSequenceView {
     // and the layer, not on the camera.
     this.markerRows = this.markerLayer && !markerPending && this.model
       ? sequenceMarkers(gene, this.model) : [];
+    this.markerReachabilityCache = undefined;
     if (geneChanged) {
       this.camera = null;
       this.selectedCodon = null;
@@ -336,9 +368,100 @@ export class GeneSequenceView {
     this.model = geneSequenceModel(this.gene, this.table, this.scheme, { upstreamNt: next });
     this.markerRows = this.markerLayer && !this.markerPending && this.model
       ? sequenceMarkers(this.gene, this.model) : [];
+    this.markerReachabilityCache = undefined;
     this.camera = null;
     this.render();
     this.handlers.onAnnounce?.(`Showing ${formatCount(next)} upstream nucleotides.`);
+  }
+
+  /** Smallest declared sequence extent that can place at least one published row. */
+  markerRevealExtent() {
+    if (!this.gene || !this.markerLayer || this.markerPending || this.markerRows.length === 0) {
+      return null;
+    }
+    if (this.markerRowShown()) return this.upstreamNt;
+    return this.markerExpansionExtent();
+  }
+
+  /** Next declared exact extent that can place more of this locus's rows. */
+  markerExpansionExtent() {
+    if (!this.gene || !this.markerLayer || this.markerPending) return null;
+    return this.markerReachability().nextExtent;
+  }
+
+  /** Rows a larger exact sequence can reveal, kept apart from permanently unplaceable rows. */
+  markerReachability() {
+    if (!this.gene || !this.markerLayer || this.markerPending) {
+      return { nextExtent: null, expandable: 0, unplaceable: 0 };
+    }
+    if (this.markerReachabilityCache !== undefined) return this.markerReachabilityCache;
+    const currentCount = this.placedMarkers().length;
+    let nextExtent = null;
+    let maximumCount = currentCount;
+    for (const upstreamNt of this.upstreamOptions()) {
+      if (upstreamNt <= this.upstreamNt) continue;
+      const model = geneSequenceModel(this.gene, this.table, this.scheme, { upstreamNt });
+      const placed = sequenceMarkers(this.gene, model)
+        .filter((row) => row.placement.status === 'placed').length;
+      if (nextExtent === null && placed > currentCount) nextExtent = upstreamNt;
+      maximumCount = Math.max(maximumCount, placed);
+    }
+    this.markerReachabilityCache = {
+      nextExtent,
+      expandable: maximumCount - currentCount,
+      unplaceable: this.markerRows.length - maximumCount,
+    };
+    return this.markerReachabilityCache;
+  }
+
+  /** Whether a placed row overlaps the camera's current nucleotide window. */
+  markerInWindow(row, window = this.visibleWindow()) {
+    return Boolean(window) && row.placement.toOffset + 1 >= window.from
+      && row.placement.fromOffset <= window.to;
+  }
+
+  /** Nearest placed row to the annotated start, optionally outside the camera. */
+  nearestPlacedMarker(outsideWindow = false) {
+    const window = this.visibleWindow();
+    const candidates = this.placedMarkers()
+      .filter((row) => !outsideWindow || !this.markerInWindow(row, window));
+    const middle = (row) => (row.placement.fromOffset + row.placement.toOffset) / 2;
+    return candidates.sort((a, b) => Math.abs(middle(a)) - Math.abs(middle(b)))[0] ?? null;
+  }
+
+  /** Expand if necessary, then centre the nearest published site in the camera. */
+  revealNearestMarker() {
+    if (!this.markersVisible) return;
+    const placed = this.placedMarkers();
+    const visible = placed.filter((row) => this.markerInWindow(row));
+    const expansion = this.markerExpansionExtent();
+    const useExpansion = placed.length === 0 || (expansion !== null && visible.length > 0);
+    const offscreen = this.nearestPlacedMarker(true);
+    const extent = useExpansion ? expansion : offscreen ? this.upstreamNt : null;
+    if (extent === null && !offscreen) return;
+    const expanded = extent !== this.upstreamNt;
+    const alreadyPlaced = new Set(this.placedMarkers().map((row) => row.id));
+    if (expanded) {
+      this.upstreamNt = extent;
+      this.model = geneSequenceModel(this.gene, this.table, this.scheme, { upstreamNt: extent });
+      this.markerRows = sequenceMarkers(this.gene, this.model);
+      this.markerReachabilityCache = undefined;
+      this.camera = openingCamera(this.model.domain, this.width());
+      this.render();
+    }
+    const newlyPlaced = expanded
+      ? this.placedMarkers().filter((row) => !alreadyPlaced.has(row.id)) : [];
+    const middleOf = (row) => (row.placement.fromOffset + row.placement.toOffset) / 2;
+    const target = expanded
+      ? newlyPlaced.sort((a, b) => Math.abs(middleOf(a)) - Math.abs(middleOf(b)))[0]
+      : offscreen;
+    if (!target) return;
+    const middle = middleOf(target);
+    const perNt = this.camera?.perNt ?? OPEN_PX_PER_NT;
+    this.setCamera({ from: middle - this.width() / perNt / 2, perNt });
+    this.handlers.onAnnounce?.(`${this.markerLayer.label} start site ${target.id ?? ''} shown at `
+      + `${placementRangesText(target.placement)}`
+      + `${expanded ? ` with ${formatCount(extent)} upstream nucleotides` : ''}.`);
   }
 
   /** The rows this strip has a base for, in drawn order. */
@@ -539,13 +662,12 @@ export class GeneSequenceView {
   }
 
   /**
-   * The marker layer's show/hide, built only where there is a mark to govern.
+   * The marker layer's show/hide and a route to the nearest placeable row.
    *
    * An organism with no such layer, a file still in flight or failed, and a
-   * locus whose published rows this strip has no base for all get no control:
-   * offering to hide a mark that is not there would read as a promise it could
-   * be shown. The rows themselves stay in the list either way, so hidden stays
-   * distinct from absent, loading, failed and unplaceable.
+   * locus whose rows cannot fit any declared exact sequence get no control.
+   * A row beyond the current short sequence keeps the control and gets an
+   * explicit expansion action, because the larger exact window can show it.
    *
    * The condition is on the rows rather than on the current choice, so the
    * control does not vanish when a reader unchecks it.
@@ -555,13 +677,15 @@ export class GeneSequenceView {
     const held = this.heldIn(host);
     host.replaceChildren();
     this.markerToggle = null;
-    if (!this.markerLayer || this.markerPending || !this.markerRowShown()) {
+    this.markerNavigationButton = null;
+    this.markerNavigationStatus = null;
+    const revealExtent = this.markerRevealExtent();
+    if (!this.markerLayer || this.markerPending || revealExtent === null) {
       if (this.markerLayer && this.markerPending) {
         host.append(pendingNote(this.markerPending, `the ${this.markerLayer.fileLabel}`));
       }
-      // Loading, failed, no landed layer and no placeable row all take the
-      // control away while the reader may be standing on it. Each is a state
-      // this view is in, not a reason to drop them back to the document.
+      // Loading, failed, no landed layer and no revealable row all take the
+      // control away while the reader may be standing on it.
       this.carryFocus(held);
       return;
     }
@@ -575,7 +699,87 @@ export class GeneSequenceView {
     row.append(box, document.createTextNode(` ${this.markerControlLabel()}`));
     host.append(row);
     this.markerToggle = box;
+
+    const navigation = element('div', 'chromosome-toolbar-row gene-sequence-marker-navigation');
+    const button = this.chip('Go to nearest site', 'Show the nearest start site in the sequence',
+      () => this.revealNearestMarker());
+    const status = element('span', 'gene-sequence-facts');
+    status.setAttribute('role', 'status');
+    navigation.append(button, status);
+    host.append(navigation);
+    this.markerNavigationButton = button;
+    this.markerNavigationStatus = status;
+    this.writeMarkerNavigationStatus();
     if (held) box.focus({ preventScroll: true });
+  }
+
+  /** Keep hidden, short-sequence and off-camera states explicit beside the control. */
+  writeMarkerNavigationStatus() {
+    const button = this.markerNavigationButton;
+    const status = this.markerNavigationStatus;
+    if (!button || !status) return;
+    button.disabled = !this.markersVisible;
+    if (!this.markersVisible) {
+      button.hidden = false;
+      status.textContent = `${this.markerLayer.label} sites are hidden in this view.`;
+      return;
+    }
+    const placed = this.placedMarkers();
+    const reachability = this.markerReachability();
+    if (placed.length === 0) {
+      const extent = reachability.nextExtent;
+      button.hidden = false;
+      button.textContent = 'Show nearest site';
+      status.textContent = `${formatCount(reachability.expandable)} published `
+        + `${reachability.expandable === 1 ? 'site lies' : 'sites lie'} beyond the current `
+        + `${formatCount(this.upstreamNt)} nt sequence; the action uses the existing `
+        + `${formatCount(extent)} nt upstream window.`
+        + this.unplaceableMarkerStatus(reachability.unplaceable);
+      return;
+    }
+    const outside = placed.filter((row) => !this.markerInWindow(row));
+    const expansion = reachability.nextExtent;
+    if (outside.length > 0 && outside.length === placed.length) {
+      button.hidden = false;
+      button.textContent = 'Go to nearest site';
+      status.textContent = `${formatCount(outside.length)} of ${formatCount(placed.length)} placeable `
+        + `${placed.length === 1 ? 'site is' : 'sites are'} outside the current camera window.`
+        + this.unplaceableMarkerStatus(reachability.unplaceable);
+      return;
+    }
+    if (expansion !== null) {
+      const beyond = reachability.expandable;
+      button.hidden = false;
+      button.textContent = 'Show next site';
+      status.textContent = `${formatCount(beyond)} published ${beyond === 1 ? 'site remains' : 'sites remain'} `
+        + `beyond the current ${formatCount(this.upstreamNt)} nt sequence; the action uses the `
+        + `existing ${formatCount(expansion)} nt upstream window.`
+        + this.unplaceableMarkerStatus(reachability.unplaceable);
+      return;
+    }
+    if (outside.length > 0) {
+      button.hidden = false;
+      button.textContent = 'Go to nearest site';
+      status.textContent = `${formatCount(outside.length)} of ${formatCount(placed.length)} placeable `
+        + `${placed.length === 1 ? 'site is' : 'sites are'} outside the current camera window.`
+        + this.unplaceableMarkerStatus(reachability.unplaceable);
+      return;
+    }
+    const unplaceable = reachability.unplaceable;
+    button.hidden = true;
+    status.textContent = `${formatCount(placed.length)} placeable `
+      + `${placed.length === 1 ? 'site is' : 'sites are'} in the current window.`
+      + (unplaceable > 0
+        ? ` ${formatCount(unplaceable)} published ${unplaceable === 1 ? 'row cannot' : 'rows cannot'} `
+          + 'be placed in the available exact sequence; the list below gives each reason.'
+        : '');
+  }
+
+  /** Status suffix for rows no available exact sequence can ever place. */
+  unplaceableMarkerStatus(count) {
+    if (count <= 0) return '';
+    return ` ${formatCount(count)} published ${count === 1 ? 'row cannot' : 'rows cannot'} be placed `
+      + 'in the available exact sequence; the list below gives each reason.';
   }
 
   /**
@@ -884,6 +1088,7 @@ export class GeneSequenceView {
     root.append(area);
     this.strip.replaceChildren(root);
     this.writeReadout(window);
+    this.writeMarkerNavigationStatus();
   }
 
   rowLayout() {
@@ -975,11 +1180,21 @@ export class GeneSequenceView {
       if (index === this.selectedCodon) classes.push('gene-sequence-selected');
       if (codon.kind === 'start' || codon.kind === 'stop') classes.push('gene-sequence-annotation');
       const cell = svg('g', { class: classes.join(' '), 'data-codon-index': index });
+      let activate = null;
       if (codon.kind === 'start' || codon.kind === 'stop') {
-        interactiveAnnotation(cell, this.describeCodon(codon), () => {
+        activate = () => {
           this.selectCodon(index);
           this.codonAnnotation(index)?.focus({ preventScroll: true });
-        });
+        };
+        interactiveAnnotation(cell, this.describeCodon(codon), activate);
+        cell.append(annotationHitTarget(cell, {
+          class: 'gene-sequence-codon-hit-target',
+          'data-codon-index': index,
+          x: codon.kind === 'start' ? left - CODON_HIT_PADDING_PX : left,
+          y: Math.max(0, rows.bases - CODON_HIT_PADDING_PX),
+          width: cellWidth + CODON_HIT_PADDING_PX,
+          height: rows.residues + ROW_HEIGHT - rows.bases + CODON_HIT_PADDING_PX * 2,
+        }, activate));
       }
 
       cell.append(svg('rect', {
@@ -1061,14 +1276,23 @@ export class GeneSequenceView {
     const mark = (codon, y, className) => {
       const width = Math.max(4, perNt * 3);
       const left = codon.kind === 'stop' ? x(codon.offset + 3) - width : x(codon.offset);
+      const activate = () => {
+        this.selectCodon(codon.index);
+        this.codonAnnotation(codon.index)?.focus({ preventScroll: true });
+      };
       const node = interactiveAnnotation(svg('rect', {
         class: `${className} gene-sequence-annotation`,
         'data-codon-index': codon.index,
         x: left, y, width, height: ROW_HEIGHT,
-      }), this.describeCodon(codon), () => {
-        this.selectCodon(codon.index);
-        this.codonAnnotation(codon.index)?.focus({ preventScroll: true });
-      });
+      }), this.describeCodon(codon), activate);
+      group.append(annotationHitTarget(node, {
+        class: 'gene-sequence-codon-hit-target',
+        'data-codon-index': codon.index,
+        x: codon.kind === 'start' ? left - CODON_HIT_PADDING_PX : left,
+        y: Math.max(0, y - CODON_HIT_PADDING_PX),
+        width: width + CODON_HIT_PADDING_PX,
+        height: ROW_HEIGHT + CODON_HIT_PADDING_PX * 2,
+      }, activate));
       const title = svg('title');
       title.textContent = this.describeCodon(codon);
       node.append(title);
@@ -1160,7 +1384,20 @@ export class GeneSequenceView {
     const group = svg('g', { class: 'gene-sequence-markers' });
     const top = rows.markers + 2;
     const bottom = rows.markers + MARKER_ROW_HEIGHT - 3;
-    for (const row of markerPaintOrder(crowding.drawn)) {
+    const ordered = markerPaintOrder(crowding.drawn);
+    const targets = ordered.flatMap((row) => row.placement.runs.map((run) => {
+      const left = x(run.fromOffset);
+      const right = x(run.toOffset + 1);
+      const centre = (left + right) / 2;
+      return {
+        row,
+        run,
+        from: row.geometry === 'interval' ? left : centre - MARKER_HEAD_PX / 2,
+        to: row.geometry === 'interval' ? right : centre + MARKER_HEAD_PX / 2,
+      };
+    }));
+    const targetRanges = targets.map(({ from, to }) => ({ from, to }));
+    for (const row of ordered) {
       const shared = crowding.sharedWith.get(row) ?? 0;
       const presentation = markerPresentation(row);
       const classes = ['gene-sequence-marker', 'gene-sequence-annotation',
@@ -1177,6 +1414,20 @@ export class GeneSequenceView {
         const left = x(run.fromOffset);
         const right = x(run.toOffset + 1);
         const centre = (left + right) / 2;
+        const targetIndex = targets.findIndex((entry) => entry.row === row && entry.run === run);
+        const hit = paddedHitRange(targetRanges, targetIndex, MARKER_HIT_PADDING_PX);
+        mark.append(svg('rect', {
+          class: 'gene-sequence-marker-hit-target',
+          'data-marker-id': row.id ?? '',
+          x: hit.from,
+          y: Math.max(0, top - MARKER_HIT_PADDING_PX),
+          width: hit.to - hit.from,
+          height: MARKER_ROW_HEIGHT,
+          fill: 'transparent',
+          stroke: 'none',
+          'pointer-events': 'all',
+          'aria-hidden': 'true',
+        }));
         if (row.geometry === 'interval') {
           mark.append(svg('rect', {
             class: 'gene-sequence-marker-span',

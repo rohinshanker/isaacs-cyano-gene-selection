@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  geneViewModel, orientedSegments, transcriptionPieces, tssMarks, fractionOf, tickStep, ticksFor,
+  geneViewModel, orientedSegments, paddedHitRange, transcriptionPieces, tssMarks, fractionOf,
+  tickStep, ticksFor,
   UPSTREAM_CONTEXT_NT,
 } from '../../site/js/core/gene-view-model.js';
 
@@ -135,6 +136,16 @@ test('the ruler steps in ones, twos and fives, and always marks the start', () =
   assert.equal(tickStep({ min: 0, max: 100 }, 4), 50);
   assert.ok(ticksFor({ min: -60, max: 1040 }, 4).includes(0));
   assert.ok(ticksFor({ min: -614, max: 1050 }, 4).includes(0));
+});
+
+test('interaction padding divides nearby targets without changing visible intervals', () => {
+  const ranges = [{ from: 0, to: 6 }, { from: 8, to: 14 }];
+  assert.deepEqual(paddedHitRange(ranges, 0, 5), { from: -5, to: 7 });
+  assert.deepEqual(paddedHitRange(ranges, 1, 5), { from: 7, to: 19 });
+  const overlap = [{ from: 2, to: 8 }, { from: 2, to: 8 }];
+  assert.deepEqual(paddedHitRange(overlap, 0, 5), { from: -3, to: 13 },
+    'exact overlaps retain paint-order precedence');
+  assert.equal(paddedHitRange(ranges, 9, 5), null);
 });
 
 test('an origin-crossing plus-strand gene is one short track, not the whole replicon', () => {

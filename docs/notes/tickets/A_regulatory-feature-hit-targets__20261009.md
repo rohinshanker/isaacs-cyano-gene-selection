@@ -31,12 +31,30 @@ initiation sites, termination sites and other displayed regulatory annotations.
 
 ## Verification
 
-Ticket-only intake; no UI behavior has changed. The reported interaction issue
-has not been independently reproduced or repaired during intake.
-Metadata, related-ticket links and the queue entry were checked. Repository
-gates passed on 2026-10-09: 1,396 JavaScript tests; 938 Python tests and 36 subtests
-with one skip; 119 contract checks with one declared skip. These checks validate
-the intake baseline, not an implementation of this request.
+Implemented by `codex-implementer` on 2026-10-09 for DEM-334; coordinator
+integration and closure remain pending. Both gene viewers now separate visible
+marker geometry from interaction geometry. Each marker receives 5 px of padding,
+with padding between neighbouring features partitioned at their centre midpoint;
+exact overlaps retain source-last SVG paint precedence. The invisible targets do
+not change biological coordinates or visible extents, and the sequence target is
+confined to the marker row so it does not intercept base/codon navigation. Start
+and stop codons receive 5 units/px of vertical and outward-edge padding in both
+viewers; their gene-facing edges remain exact so nearby bases keep their identity.
+
+Focused regression tests cover isolated, neighbouring, exact-overlap, hidden and
+focus states. Real-browser checks passed at 375×812, 768×1024, 960×900,
+1240×900, 1280×800 and 1440×900 with no horizontal overflow, console error or
+failed request. Pointer probes immediately inside and outside the padding
+confirmed the correct hover/selection identity in both viewers. Keyboard paths
+passed; padding-only hover and immediate-outside movement also passed for both
+start and stop annotations in the small viewer and close-up cell/bar modes.
+Touch tapping remains unverified because the available browser context
+did not expose touch input.
+
+Final repository gates passed after copying the canonical checkout's verified,
+gitignored raw inputs into this isolated worktree: 1,402 JavaScript tests; 938
+Python tests and 36 subtests with one skip; 119 contract checks with one declared
+skip. No scientific source, coordinate, evidence row or admission changed.
 
 Before closure, use the UI render skill on both viewers at mobile, tablet and
 desktop widths. Check isolated and overlapping markers, both strands, multiple
@@ -47,7 +65,7 @@ hit-testing regression coverage and run the gates in `AGENTS.md`.
 
 ## Cleanup
 
-The implementing session owns closure and records every remaining finding.
+The coordinator owns closure and records every remaining finding.
 Distill reusable hit-testing and overlap rules into the relevant viewer validation
 documentation, update its index, and follow the required resolved-ticket lifecycle.
 
