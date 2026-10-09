@@ -148,6 +148,32 @@ test('interaction padding divides nearby targets without changing visible interv
   assert.equal(paddedHitRange(ranges, 9, 5), null);
 });
 
+test('wide intervals share only the gap between edges with neighbouring targets', () => {
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 200 }, { from: 257, to: 263 }], 0, 5),
+    { from: -5, to: 205 }, 'a distant point cannot take an interval edge padding');
+  const near = [{ from: 0, to: 200 }, { from: 204, to: 210 }];
+  assert.deepEqual(paddedHitRange(near, 0, 5), { from: -5, to: 202 });
+  assert.deepEqual(paddedHitRange(near, 1, 5), { from: 202, to: 215 });
+  assert.deepEqual(paddedHitRange([{ from: -8, to: -4 }, { from: 0, to: 200 }], 1, 5),
+    { from: -2, to: 205 }, 'left gaps follow the same rule');
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 200 }, { from: 50, to: 60 }], 0, 5),
+    { from: -5, to: 205 }, 'an interior mark cannot shrink the outer padding');
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 200 }, { from: -2, to: 5 },
+    { from: 197, to: 203 }], 0, 5), { from: 0, to: 200 },
+  'overlapping neighbours remove padding without shortening the visible interval');
+});
+
+test('invalid hit ranges and padding are rejected or ignored without changing valid geometry', () => {
+  for (const range of [null, { from: NaN, to: 2 }, { from: 0, to: Infinity }, { from: 3, to: 2 }]) {
+    assert.equal(paddedHitRange([range], 0, 5), null);
+    assert.deepEqual(paddedHitRange([{ from: 0, to: 6 }, range], 0, 5), { from: -5, to: 11 });
+  }
+  for (const padding of [-1, NaN, Infinity]) {
+    assert.equal(paddedHitRange([{ from: 0, to: 6 }], 0, padding), null);
+  }
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 6 }], 0, 0), { from: 0, to: 6 });
+});
+
 test('an origin-crossing plus-strand gene is one short track, not the whole replicon', () => {
   // M744_RS13620: join(7830..7842,1..281) on the 7,842 bp plasmid. Its record
   // spans the entire replicon, so ordering its pieces by coordinate drew a

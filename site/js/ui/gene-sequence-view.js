@@ -423,23 +423,25 @@ export class GeneSequenceView {
       && row.placement.fromOffset <= window.to;
   }
 
-  /** Nearest placed row to the annotated start, optionally outside the camera. */
-  nearestPlacedMarker(outsideWindow = false) {
+  /** Advance through off-camera rows in transcription order, wrapping at the end. */
+  nextOffscreenMarker() {
     const window = this.visibleWindow();
     const candidates = this.placedMarkers()
-      .filter((row) => !outsideWindow || !this.markerInWindow(row, window));
+      .filter((row) => !this.markerInWindow(row, window));
     const middle = (row) => (row.placement.fromOffset + row.placement.toOffset) / 2;
-    return candidates.sort((a, b) => Math.abs(middle(a)) - Math.abs(middle(b)))[0] ?? null;
+    candidates.sort((a, b) => middle(a) - middle(b));
+    const centre = window ? (window.from + window.to) / 2 : -Infinity;
+    return candidates.find((row) => middle(row) > centre) ?? candidates[0] ?? null;
   }
 
-  /** Expand if necessary, then centre the nearest published site in the camera. */
+  /** Expand to the nearest newly available site, or advance through placed sites. */
   revealNearestMarker() {
     if (!this.markersVisible) return;
     const placed = this.placedMarkers();
     const visible = placed.filter((row) => this.markerInWindow(row));
     const expansion = this.markerExpansionExtent();
     const useExpansion = placed.length === 0 || (expansion !== null && visible.length > 0);
-    const offscreen = this.nearestPlacedMarker(true);
+    const offscreen = this.nextOffscreenMarker();
     const extent = useExpansion ? expansion : offscreen ? this.upstreamNt : null;
     if (extent === null && !offscreen) return;
     const expanded = extent !== this.upstreamNt;
@@ -705,7 +707,7 @@ export class GeneSequenceView {
     this.markerToggle = box;
 
     const navigation = element('div', 'chromosome-toolbar-row gene-sequence-marker-navigation');
-    const button = this.chip('Go to nearest site', 'Show the nearest start site in the sequence',
+    const button = this.chip('Go to next site', 'Reveal a start site in the sequence',
       () => this.revealNearestMarker());
     const status = element('span', 'gene-sequence-facts');
     status.setAttribute('role', 'status');
@@ -750,7 +752,7 @@ export class GeneSequenceView {
     const expansion = reachability.nextExtent;
     if (outside.length > 0 && outside.length === placed.length) {
       button.hidden = false;
-      button.textContent = 'Go to nearest site';
+      button.textContent = 'Go to next site';
       status.textContent = `${formatCount(outside.length)} of ${formatCount(placed.length)} placeable `
         + `${placed.length === 1 ? 'site is' : 'sites are'} outside the current camera window.`
         + this.unplaceableMarkerStatus(reachability.unplaceable);
@@ -768,7 +770,7 @@ export class GeneSequenceView {
     }
     if (outside.length > 0) {
       button.hidden = false;
-      button.textContent = 'Go to nearest site';
+      button.textContent = 'Go to next site';
       status.textContent = `${formatCount(outside.length)} of ${formatCount(placed.length)} placeable `
         + `${placed.length === 1 ? 'site is' : 'sites are'} outside the current camera window.`
         + this.unplaceableMarkerStatus(reachability.unplaceable);

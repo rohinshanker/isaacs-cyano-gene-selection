@@ -86,3 +86,17 @@ documentation, update its index, and follow the required resolved-ticket lifecyc
   details over standalone codon padding. The target now carries the visible
   annotation's exact hint text; the browser contract checks both details and
   dismissal in small-view and sequence cell/bar modes. Final review pending.
+
+- **DEM-336-F1:** camera-action focus loss overlaps the Tan ticket; fixed by
+  `f531145`, pending the final confirmation review.
+- **DEM-336-F3:** a distant neighbour could consume a wide interval's padding.
+  The helper now partitions by adjacent edges, preserving wide/nested intervals
+  and exact-overlap precedence. Regression tests cover separated/near/overlapping
+  intervals and invalid inputs. Final review pending.
+- **DEM-336-F4:** browser checks falsely required horizontal padding in dense
+  clusters. Checks now require visible-head containment and allow consumed padding
+  only with overlapping neighbours; all five reported loci and zoom-out are checked.
+  Final review pending.
+- **DEM-336-F5:** marker targets had no automated padding-only interaction check.
+  The browser contract now checks exact hints, outlines, dismissal, target focus
+  and preserved codon selection for both viewers. Final review pending.

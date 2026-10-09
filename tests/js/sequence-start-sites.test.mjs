@@ -515,13 +515,42 @@ test('a camera-only reveal that finishes returns focus to the visibility control
     view.setCamera({ from: 100, perNt: 12 });
     const button = view.markerNavigationButton;
     assert.equal(button.hidden, false);
-    assert.equal(button.textContent, 'Go to nearest site');
+    assert.equal(button.textContent, 'Go to next site');
     button.focus();
 
     button.click();
 
     assert.equal(button.hidden, true);
     assert.equal(document.activeElement, toggleOf(view));
+  });
+});
+
+test('repeated camera navigation returns to every separated site in transcription order', async () => {
+  await withFakeDocument(async (document) => {
+    for (const strand of ['-', '+']) {
+      const { view, announced } = mount(document, expanded('M744_RS00045'));
+      view.strip.clientWidth = 375;
+      while (view.upstreamNt < 1000) view.revealNearestMarker();
+      const rows = view.placedMarkers();
+      if (strand === '+') {
+        // Mirror the same three native positions onto the opposite transcription frame.
+        const base = expanded('M744_RS00025');
+        view.update({ gene: { ...base, tssEvidence: rows.map((row, index) => ({
+          id: `plus-${index}`, type: 'gTSS', replicon: base.seqid, strand: '+',
+          position: base.start - [40, 400, 900][index], sourceStartDistanceNt: [40, 400, 900][index],
+        })) }, table, scheme: null, schemeVersion: 2, organism: DEFAULT_ORGANISM });
+        view.setUpstreamNt(1000);
+      }
+      const expected = view.placedMarkers().map((row) => row.id);
+      const visits = [];
+      for (let i = 0; i < expected.length * 2; i += 1) {
+        view.revealNearestMarker();
+        visits.push(expected.find((id) => announced.at(-1).includes(`site ${id} shown`)));
+      }
+      assert.deepEqual(new Set(visits.slice(0, expected.length)), new Set(expected), strand);
+      assert.deepEqual(visits.slice(expected.length), visits.slice(0, expected.length),
+        'the next traversal repeats the complete cycle, not only the nearer pair');
+    }
   });
 });
 

@@ -95,7 +95,7 @@ async (page) => {
   const shortState = await page.locator('.gene-sequence-marker-navigation').innerText();
   check(shortState.includes('beyond the current 30 nt sequence'),
     'the short sequence says why the site is not drawn');
-  await page.getByRole('button', { name: 'Show the nearest start site in the sequence' }).focus();
+  await page.getByRole('button', { name: 'Reveal a start site in the sequence' }).focus();
   await page.keyboard.press('Enter');
   check(await page.locator('.gene-sequence-upstream-control select').inputValue() === '60',
     'the reveal uses the smallest existing exact upstream window');
@@ -117,11 +117,14 @@ async (page) => {
   evidence.push({ cameraOnlyReveal: true, focus: 'visibility control' });
 
   /* --- repeated expansions retain the action; a finished action has a focus fallback --- */
-  for (const width of [375, 1440]) {
+  for (const width of [375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await open('&g=M744_RS00045');
     const button = page.locator('.gene-sequence-marker-navigation button');
     await button.waitFor({ state: 'visible' });
+    await page.locator('.gene-sequence-figure').screenshot({ path: `${root}/site-navigation-${width}.png` });
+    check(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+      `${width}: the long navigation status wraps without overflow`);
     await button.focus();
     for (const [extent, key] of [['60', 'Enter'], ['500', 'Space'], ['1000', 'Enter']]) {
       check(await button.evaluate((node) => node === document.activeElement),
@@ -135,6 +138,19 @@ async (page) => {
       `${width}: reveal retains action focus or uses its visibility fallback`);
       evidence.push({ keyboardReveal: extent, width, focused: await focused() });
     }
+    const visits = [];
+    for (let step = 0; step < 6; step += 1) {
+      check(await button.textContent() === 'Go to next site', 'camera navigation names its next-site action');
+      await button.focus();
+      await page.keyboard.press(step % 2 ? 'Space' : 'Enter');
+      visits.push(await page.locator('g.gene-sequence-marker').evaluateAll(
+        (nodes) => nodes.map((node) => node.dataset.markerId).sort()));
+    }
+    check(new Set(visits.slice(0, 3).flat()).size === 3,
+      `${width}: repeated camera navigation revisits all three sites`);
+    check(JSON.stringify(visits.slice(0, 3)) === JSON.stringify(visits.slice(3)),
+      `${width}: the complete navigation cycle repeats`);
+    evidence.push({ cameraCycle: visits, width });
   }
   await page.setViewportSize({ width: 1440, height: 900 });
 
@@ -237,6 +253,40 @@ async (page) => {
     codonHover: 'padding-only and immediately-outside checks in cell and bar modes',
   });
 
+  /* --- marker padding itself answers hover and click, in both viewers --- */
+  await open(`&g=${WITH_MARKS}`);
+  for (const [selector, headSelector, targetSelector] of [
+    ['g.gene-view-marker', 'circle', '.gene-view-marker-hit-target'],
+    ['g.gene-sequence-marker', '.gene-sequence-marker-head', '.gene-sequence-marker-hit-target'],
+  ]) {
+    const mark = page.locator(selector).first();
+    const head = mark.locator(headSelector);
+    const hit = mark.locator(targetSelector);
+    await hit.scrollIntoViewIfNeeded();
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const [h, v] = await Promise.all([hit.boundingBox(), head.boundingBox()]);
+    const x = h.x + 1;
+    const y = v.y + v.height / 2;
+    check(x < v.x, `${selector}: test point is in padding alone`);
+    const beforeSelection = await page.locator('.gene-sequence-selection').textContent();
+    const expectedHint = await mark.getAttribute('aria-label');
+    const markerId = await mark.getAttribute('data-marker-id');
+    await page.mouse.move(x, y);
+    check(await head.evaluate((node) => getComputedStyle(node).stroke === 'rgb(26, 115, 232)'),
+      `${selector}: padding hover outlines its own mark`);
+    check(await page.locator('.instant-hint').isVisible()
+      && await page.locator('.instant-hint').textContent() === expectedHint,
+    `${selector}: padding hover has the correct evidence details`);
+    await page.mouse.click(x, y);
+    check(await mark.evaluate((node) => node === document.activeElement),
+      `${selector}: padding click focuses its own annotation`);
+    check(await page.locator('.gene-sequence-selection').textContent() === beforeSelection,
+      `${selector}: marker padding does not select a codon`);
+    await page.mouse.move(h.x - 1, y);
+    check(!await page.locator('.instant-hint').isVisible(), `${selector}: leaving dismisses the hint`);
+    evidence.push({ markerPaddingInteraction: selector, markerId, hover: true, click: true });
+  }
+
   /* --- the open list keeps its identity, its state and its focus --- */
   await open(`&g=${WITH_MARKS}`);
   await page.waitForSelector('.gene-sequence-sites summary', { timeout: 30000 });
@@ -305,42 +355,53 @@ async (page) => {
   }
   evidence.push({ touchTapChecked: hasTouch });
 
+  const markerGeometry = () => page.evaluate(() => {
+    const strip = document.querySelector('.gene-sequence-strip').getBoundingClientRect();
+    const columns = [...document.querySelectorAll('rect.gene-sequence-marker-column')]
+      .map((node) => node.getBoundingClientRect());
+    const sequenceTargets = [...document.querySelectorAll('g.gene-sequence-marker')]
+      .map((mark) => ({
+        head: mark.querySelector('.gene-sequence-marker-head')?.getBoundingClientRect(),
+        hit: mark.querySelector('.gene-sequence-marker-hit-target')?.getBoundingClientRect(),
+      }));
+    const validTarget = ({ head, hit }, index, pairs) => {
+      if (!head || !hit || hit.left > head.left + 0.1 || hit.right < head.right - 0.1
+        || hit.height <= head.height) return false;
+      if (hit.width > head.width + 0.1) return true;
+      return pairs.some((other, j) => j !== index && other.head
+        && other.head.left < head.right && other.head.right > head.left);
+    };
+    const smallTargets = [...document.querySelectorAll('g.gene-view-marker')]
+      .map((mark) => ({
+        head: mark.querySelector('circle')?.getBoundingClientRect(),
+        hit: mark.querySelector('rect.gene-view-marker-hit-target')?.getBoundingClientRect(),
+      }));
+    return {
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      marks: document.querySelectorAll('g.gene-sequence-marker').length,
+      columns: columns.length,
+      paddedTargets: sequenceTargets.length,
+      minimumTargetWidth: Math.min(...sequenceTargets.map(({ hit }) => hit.width)),
+      validSequenceTargets: sequenceTargets.filter(validTarget).length,
+      smallMarks: smallTargets.length,
+      validSmallTargets: smallTargets.filter(validTarget).length,
+      outside: columns.filter((box) => box.left < strip.left - 1 || box.right > strip.right + 1).length,
+    };
+  });
+
   /* --- geometry, at every width the workspace is checked at --- */
   for (const [width, height] of [[375, 812], [768, 1024], [960, 900], [1240, 900],
     [1280, 800], [1440, 900]]) {
     await page.setViewportSize({ width, height });
     await open(`&g=${WITH_MARKS}`);
     await page.waitForSelector('g.gene-sequence-marker', { timeout: 30000 });
-    const geometry = await page.evaluate(() => {
-      const strip = document.querySelector('.gene-sequence-strip').getBoundingClientRect();
-      const columns = [...document.querySelectorAll('rect.gene-sequence-marker-column')]
-        .map((node) => node.getBoundingClientRect());
-      const targets = [...document.querySelectorAll('rect.gene-sequence-marker-hit-target')]
-        .map((node) => node.getBoundingClientRect());
-      const smallTargets = [...document.querySelectorAll('g.gene-view-marker')]
-        .map((mark) => ({
-          head: mark.querySelector('circle')?.getBoundingClientRect(),
-          hit: mark.querySelector('rect.gene-view-marker-hit-target')?.getBoundingClientRect(),
-        }));
-      return {
-        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        marks: document.querySelectorAll('g.gene-sequence-marker').length,
-        columns: columns.length,
-        paddedTargets: targets.length,
-        minimumTargetWidth: Math.min(...targets.map((box) => box.width)),
-        smallMarks: smallTargets.length,
-        smallTargetsPadded: smallTargets.filter(({ head, hit }) => (
-          head && hit && hit.width > head.width && hit.height > head.height * 2
-        )).length,
-        outside: columns.filter((box) => box.left < strip.left - 1 || box.right > strip.right + 1).length,
-      };
-    });
+    const geometry = await markerGeometry();
     check(geometry.overflow <= 0, `${width}: no page overflow, saw ${geometry.overflow}`);
     check(geometry.marks > 0 && geometry.columns >= geometry.marks, `${width}: the marks are drawn`);
-    check(geometry.paddedTargets >= geometry.marks && geometry.minimumTargetWidth >= 19,
-      `${width}: every point mark keeps its 19 px padded target`);
-    check(geometry.smallMarks > 0 && geometry.smallTargetsPadded === geometry.smallMarks,
-      `${width}: every small-view target expands beyond its head while partitioning neighbour padding`);
+    check(geometry.paddedTargets >= geometry.marks && geometry.validSequenceTargets === geometry.paddedTargets,
+      `${width}: every point target contains its head, with padding shared only by crowded neighbours`);
+    check(geometry.smallMarks > 0 && geometry.validSmallTargets === geometry.smallMarks,
+      `${width}: small-view targets contain their heads and respect crowded neighbours`);
     check(geometry.outside === 0, `${width}: every outline is inside the strip`);
     // The close-up sits at the foot of a long figure, so a viewport shot of the
     // top of the page is a picture of something else.
@@ -349,6 +410,21 @@ async (page) => {
     await page.locator('.gene-sequence-figure')
       .screenshot({ path: `${root}/sequence-markers-${width}-strip.png` });
     evidence.push({ width, height, ...geometry });
+  }
+
+  /* --- dense clusters and zoom-out must preserve each head without promising impossible padding --- */
+  await page.setViewportSize({ width: 375, height: 812 });
+  for (const gene of ['M744_RS01695', 'M744_RS04970', 'M744_RS05925', 'M744_RS07135', 'M744_RS13025']) {
+    await open(`&g=${gene}`);
+    await page.locator('.gene-sequence-upstream-control select').selectOption('1000');
+    await page.getByRole('button', { name: 'Fit the whole gene into the strip' }).click();
+    const geometry = await markerGeometry();
+    check(geometry.marks > 0 && geometry.validSequenceTargets === geometry.paddedTargets,
+      `${gene}: zoomed-out sequence targets preserve visible heads`);
+    check(geometry.smallMarks > 0 && geometry.validSmallTargets === geometry.smallMarks,
+      `${gene}: dense small-view targets allow zero horizontal padding only with overlap`);
+    check(geometry.overflow <= 0, `${gene}: dense markers do not overflow the page`);
+    evidence.push({ crowdedGene: gene, ...geometry });
   }
 
   /* --- the two cases the shipped file publishes no row for --- */

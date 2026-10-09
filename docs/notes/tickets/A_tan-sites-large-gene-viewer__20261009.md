@@ -99,3 +99,13 @@ access remains open, and iDOG retains the owner's review hold. Existing ViennaRN
 folding and tRNA validation do not constitute newly published regulatory-site
 prediction layers. The computed-tag/overlap/hover display contract is implemented;
 method-specific producers and their evaluated outputs remain separate work.
+
+- **DEM-336-F1:** camera-only completion dropped focus to the document. Fixed by
+  `f531145`; unit and real-browser completion/focus regressions pass.
+- **DEM-336-F2:** repeated camera actions alternated between the nearer pair of
+  three sites. The action now advances through transcription order and wraps;
+  labelled **Go to next site**, with two complete cycles tested on both strands
+  and in the browser. Final review pending.
+- **DEM-336-F6:** the long navigation-status layout lacked mobile/tablet evidence.
+  The browser contract now captures it at 375, 768 and 1440 px and checks overflow;
+  emulated-touch marker/pan checks are recorded separately. Final review pending.

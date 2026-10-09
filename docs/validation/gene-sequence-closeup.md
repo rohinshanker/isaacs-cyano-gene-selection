@@ -407,9 +407,10 @@ base, span, stem, head and outlined sequence columns keep their exact geometry.
 An invisible target adds 5 drawn units around a small-view head and 5 px around
 a close-up tag, confined to the marker row so it does not intercept codon
 selection or pan gestures. `paddedHitRange` divides only that padding at the
-midpoint between distinct neighbouring feature centres; it never shortens a
-visible mark. Exact overlaps retain stable source-last paint precedence and all
-rows remain reachable in the inspection list. A pointer immediately outside
+midpoint of the gap between adjacent feature edges; it never shortens a
+visible mark. Overlapping heads can consume all horizontal padding; wide
+intervals retain padding when a neighbour is clear of their edge. Exact overlaps
+retain stable source-last paint precedence and all rows remain reachable in the inspection list. A pointer immediately outside
 the padded interval falls through to the underlying SVG. The gene's own start
 and stop codons also gain 5 units/px of invisible padding vertically and on
 their outward-facing edge. Their gene-facing edge remains exact, so the next
@@ -443,7 +444,9 @@ that action selects the smallest existing upstream extent that can place another
 row and centres the new native-coordinate mark. For a locus with successively
 more distant rows the action becomes **Show next site** until the available exact
 sequence includes them all. When a placed row is outside the camera it becomes
-**Go to nearest site** and pans without changing sequence extent. Hidden state is
+**Go to next site** and pans without changing sequence extent. Repeated camera
+actions advance in transcription order and wrap from the last site to the first;
+they never alternate indefinitely between nearer-to-start sites. Hidden state is
 said beside the checked state and disables navigation rather than silently
 overriding the reader's link-carried choice. A file in flight or failed puts a
 note there instead and builds no list, so hidden stays distinct from absent,

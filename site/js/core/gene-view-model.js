@@ -213,7 +213,7 @@ export function overlapGroups(marks, xOf, minSeparation) {
  * part of a neighbouring interval's padding.
  *
  * The visible interval is never shortened. Only the invisible padding is
- * divided at the midpoint between distinct feature centres, so nearby marks
+ * divided at the midpoint of gaps between adjacent feature edges, so nearby marks
  * remain independently reachable. Exactly overlapping features intentionally
  * keep the same target: SVG paint order then applies the existing evidence
  * precedence, while the complete inspection list retains every row.
@@ -227,24 +227,18 @@ export function paddedHitRange(ranges, index, padding) {
   const range = ranges[index];
   if (!range || !Number.isFinite(range.from) || !Number.isFinite(range.to)
     || range.to < range.from || !Number.isFinite(padding) || padding < 0) return null;
-  const centre = (range.from + range.to) / 2;
-  const centres = ranges.flatMap((candidate, candidateIndex) => {
-    if (candidateIndex === index || !Number.isFinite(candidate?.from)
-      || !Number.isFinite(candidate?.to) || candidate.to < candidate.from) return [];
-    return [(candidate.from + candidate.to) / 2];
-  });
-  const previous = centres.filter((value) => value < centre)
-    .reduce((nearest, value) => Math.max(nearest, value), -Infinity);
-  const next = centres.filter((value) => value > centre)
-    .reduce((nearest, value) => Math.min(nearest, value), Infinity);
   let from = range.from - padding;
   let to = range.to + padding;
-  if (Number.isFinite(previous)) {
-    from = Math.max(from, Math.min(range.from, (previous + centre) / 2));
-  }
-  if (Number.isFinite(next)) {
-    to = Math.min(to, Math.max(range.to, (centre + next) / 2));
-  }
+  ranges.forEach((candidate, candidateIndex) => {
+    if (candidateIndex === index || !Number.isFinite(candidate?.from)
+      || !Number.isFinite(candidate?.to) || candidate.to < candidate.from) return;
+    if (candidate.from < range.from) {
+      from = Math.max(from, Math.min(range.from, (candidate.to + range.from) / 2));
+    }
+    if (candidate.to > range.to) {
+      to = Math.min(to, Math.max(range.to, (range.to + candidate.from) / 2));
+    }
+  });
   return { from, to };
 }
 
