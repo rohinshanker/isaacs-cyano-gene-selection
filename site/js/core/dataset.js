@@ -1030,10 +1030,10 @@ export function loadDatasetStaged({
  * the single-step loader threw it. Tools and tests that want every file
  * validated before they read anything use this.
  *
- * @param {{baseUrl: URL|string, fetchImpl?: typeof fetch}} options
+ * @param {{baseUrl: URL|string, fetchImpl?: typeof fetch, organism?: object|null}} options
  */
-export async function loadDataset({ baseUrl, fetchImpl = fetch }) {
-  const staged = loadDatasetStaged({ baseUrl, fetchImpl, lenientOptional: true });
+export async function loadDataset({ baseUrl, fetchImpl = fetch, organism = null }) {
+  const staged = loadDatasetStaged({ baseUrl, fetchImpl, organism, lenientOptional: true });
   const dataset = await staged.core;
   await staged.settled;
   const failed = (key) => dataset.files[key].state === FILE_STATE.FAILED;

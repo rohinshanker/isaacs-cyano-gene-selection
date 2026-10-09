@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [A_pages-deployment-repair__20261009](A_pages-deployment-repair__20261009.md) | Repair missing CI fixtures and pinned recoded inputs, cover all shipped organisms, and verify successful deployment plus live Pages views |
 | [O_tan-sites-large-gene-viewer__20261009](O_tan-sites-large-gene-viewer__20261009.md) | Make admitted Tan initiation sites visible in the larger sequence viewer; reproduce the reported absence and check pinned gene, marker visibility, upstream extent and loading/camera state; implementation not started |
 | [O_trna-viewer-tab__20261009](O_trna-viewer-tab__20261009.md) | Move the full tRNA viewer into its own application tab; preserve independent selection, evidence labels and coordinate navigation; implementation not started |
 | [O_strain-fitness-dataset-selector__20261009](O_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; implementation not started |

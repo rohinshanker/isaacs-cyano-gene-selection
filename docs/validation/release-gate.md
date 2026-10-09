@@ -14,14 +14,19 @@ operator, run URL, result) belong with the lab's release record, not here.
 ## The automated gate
 
 Run from the repository root on the exact commit intended for publication. If
-the raw files are missing, first run `./tools/fetch_genome.sh data/raw` and
-`python3 tools/annotation_release.py fetch`.
+the raw files are missing, fetch each published organism with
+`bash tools/fetch_genome.sh --organism ID`, run
+`python3 tools/annotation_release.py fetch` for annotation companions, and run
+`python3 tools/fetch_recoded_ecoli.py` for the recoded source workbooks. The latter
+verifies the pinned archive and every extracted member before they are used.
+Use a fresh checkout when changing CI input setup; linking an existing raw-data
+directory can conceal a missing fetch step.
 
 Do not publish until the automated gate passes and the intended commit has a
 clean worktree.
 
 Complete the [README setup](../../README.md#rebuilding) first. CI's reference
-environment is Python 3.12 and Node 22. The browser procedure also requires
+environment is Python 3.12 and Node 24. The browser procedure also requires
 `playwright-cli` on `PATH`; if it is unavailable, record browser validation as
 incomplete rather than treating the non-browser tests as a substitute.
 
@@ -38,6 +43,17 @@ git diff --check
 git diff --check "$(git merge-base origin/main HEAD)" HEAD
 git status --short
 ```
+
+The workflow's organism list must cover every published record in
+`config/organisms.json`. Run the contract, data-manifest and live-metric checks
+with `--organism ID` for each record. The live-metric harness must pass that
+organism's browser registry record to the loader so declared companion layers
+are checked in the correct context.
+
+CI generates fixtures with `npm run generate:test-fixtures`, the same shared
+script invoked by local `npm test`. Do not copy a partial list of generator
+commands into the workflow. New input-fetch steps must also participate in the
+final failure-aggregation gate; a missing or changed source must block deploy.
 
 Also run the real-browser procedure in
 [`rna-folding.md`](rna-folding.md#browser-regression). It is intentionally a
@@ -88,14 +104,20 @@ change has been identified and deliberately accepted.
 
 1. Push the reviewed `main` commit to the intended GitHub remote.
 2. Confirm Pages uses **GitHub Actions** as its source.
-3. Wait for `.github/workflows/pages.yml` to finish both `validate` and `deploy`.
+3. Wait for `.github/workflows/pages.yml` to finish both `validate` and `deploy`
+   successfully for the pushed SHA. A successful Git push alone does not update
+   Pages; failed validation leaves the last successful release live.
 4. Record the workflow URL, deployed commit, and Pages URL in the lab release record.
-5. Run the production smoke test.
+5. Run the production smoke test. Check deployed module/data bytes against the
+   intended commit if the site still appears old; a hard refresh cannot repair
+   a skipped deployment. Do not report publication complete until both the
+   workflow and live-content checks succeed.
 
 Production smoke test:
 
 - [ ] The Pages URL loads over HTTPS without console or network errors.
-- [ ] The map and all 2,715 site genes load.
+- [ ] Every shipped organism can be selected and its expected gene count loads:
+  UTEX 2973, MG1655, MDS42 public reference, DH10B public reference, and Syn61.
 - [ ] Search, filters, schemes, selection, and map controls work.
 - [ ] A shared URL restores the intended state in a fresh browser session.
 - [ ] Shortlist CSV and manifest export work; the automated gate covers panel-manifest

@@ -20,7 +20,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
-      ORGANISMS: utex2973 ecoli-k12-mg1655
+      ORGANISMS: >-
+        utex2973 ecoli-k12-mg1655 ecoli-mds42-public-reference
+        ecoli-dh10b-public-reference ecoli-syn61-delta3-ev5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,6 +50,13 @@ jobs:
             fi
           done
           exit "$status"
+
+      # The recoded source workbooks are gitignored. Pipeline tests reproduce
+      # the admitted omics and fitness values from these checksum-pinned inputs.
+      - name: Fetch and verify recoded source inputs
+        id: recoded_inputs
+        continue-on-error: true
+        run: python3 tools/fetch_recoded_ecoli.py
 
       # This gate is driven by the release manifest, not by the downloader's
       # file list. It checks all core and retained companion inputs, the pinned
@@ -152,15 +161,12 @@ jobs:
           done
           exit "$status"
 
-      # Fixture data is generated, not committed; the generator is the asset.
-      # Both variants are required: the export and basis suites load the
-      # expression variant, and without it twelve tests fail on a clean checkout.
+      # Use the same complete fixture set as local npm test, including organism,
+      # annotation and strain-fitness variants. Keep its list in package.json.
       - name: Generate test fixtures
         id: fixtures
         continue-on-error: true
-        run: |
-          node tests/fixtures/make_fixture.mjs
-          node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
+        run: npm run generate:test-fixtures
 
       - name: Run site unit tests
         id: js_tests
@@ -217,6 +223,7 @@ jobs:
           status=0
           for gate in \
             "fetch_genomes=${{ steps.fetch_genomes.outcome }}" \
+            "recoded_inputs=${{ steps.recoded_inputs.outcome }}" \
             "annotation_release=${{ steps.annotation_release.outcome }}" \
             "sister_strain=${{ steps.sister_strain.outcome }}" \
             "protein_evidence=${{ steps.protein_evidence.outcome }}" \

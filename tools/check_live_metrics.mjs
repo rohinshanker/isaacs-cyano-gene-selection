@@ -29,6 +29,7 @@ const outputDirectory = organism.outputDirectory.replace(/\/?$/, '/');
 const DATA = new URL(outputDirectory, ROOT);
 
 const { loadDataset } = await import(new URL('site/js/core/dataset.js', ROOT));
+const { organismById } = await import(new URL('site/js/core/organisms.js', ROOT));
 const { compileScheme, verifyProteinsUnchanged, PRESETS } =
   await import(new URL('site/js/core/scheme.js', ROOT));
 const { computeLiveMetrics } = await import(new URL('site/js/core/live-metrics.js', ROOT));
@@ -50,7 +51,7 @@ const fetchImpl = async (href) => {
   return { ok: true, status: 200, json: async () => JSON.parse(body) };
 };
 
-const dataset = await loadDataset({ baseUrl: DATA, fetchImpl });
+const dataset = await loadDataset({ baseUrl: DATA, fetchImpl, organism: organismById(organismId) });
 const { genes, table, packed, offsets } = dataset;
 
 note(genes.length === EXPECTED_GENES, 'dataset loads every gene',
