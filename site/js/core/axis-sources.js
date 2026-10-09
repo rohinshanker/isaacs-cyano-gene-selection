@@ -77,6 +77,13 @@ export function resolveAxisContributors(
   return { selected, requested, available, affected, state };
 }
 
+/** URL readiness follows requested inputs, including unreadable pending layers. */
+export function requestedAxisFileKeys(contributors, metricOf) {
+  return [...new Set(contributors.requested
+    .map((dataset) => metricOf(dataset)?.fileKey)
+    .filter((key) => typeof key === 'string' && key.length > 0))];
+}
+
 /** Reader-facing summary for the compact axis control. */
 export function axisDatasetSelectionLabel(metricKey, ids, datasets, pools = true) {
   const available = availableAxisDatasets(metricKey, datasets);

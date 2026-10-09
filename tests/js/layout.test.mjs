@@ -179,7 +179,7 @@ test('the chromosome toolbar writes colour and visibility through the shared con
   assert.match(colorSelection,
     /fileKeys: colorMetricFileKeys\(key\)|const fileKeys = colorMetricFileKeys\(key\)/,
     'the shared path derives every unresolved input for the selected colour');
-  assert.match(colorSelection, /followColourForTraffic\(\);\s*renderAll\(\);/,
+  assert.match(colorSelection, /followColourForTraffic\(\);\s*syncSharedControls\(\);\s*renderAll\(\);/,
     'the shared path follows the colour for traffic before recomputing every view and filter');
   assert.match(app, /function setSources\([\s\S]*?renderSelectedColorMetric\(state\.colorBy\)/,
     'changing the selected sources refreshes or retires the active colour operation');

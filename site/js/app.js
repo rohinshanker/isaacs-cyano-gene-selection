@@ -95,7 +95,8 @@ import {
 import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
-  legacyAxisDatasetSelection, normalizeAxisDatasetSelection, resolveAxisContributors,
+  legacyAxisDatasetSelection, normalizeAxisDatasetSelection, requestedAxisFileKeys,
+  resolveAxisContributors,
 } from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
@@ -2532,6 +2533,10 @@ function promotedMetricFileKeys(view, registry) {
   for (const [axis, key] of [['x', view.axisX], ['y', view.axisY]]) {
     const metric = registry.metricForAxis?.(axis, key) ?? registry.byKey.get(key);
     if (metric?.fileKey) keys.add(metric.fileKey);
+    for (const fileKey of requestedAxisFileKeys(
+      axisContributorState(axis, key),
+      (dataset) => registry.byKey.get(dataset.metricKey),
+    )) keys.add(fileKey);
   }
   return [...keys];
 }

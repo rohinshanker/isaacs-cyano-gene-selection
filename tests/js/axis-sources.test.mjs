@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { dataset } from './data-sources-fixture.mjs';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
-  legacyAxisDatasetSelection, normalizeAxisDatasetSelection, resolveAxisContributors,
+  legacyAxisDatasetSelection, normalizeAxisDatasetSelection, requestedAxisFileKeys,
+  resolveAxisContributors,
 } from '../../site/js/core/axis-sources.js';
 import { buildTypeMetrics, typeKeyFor } from '../../site/js/core/type-metrics.js';
 
@@ -14,6 +15,15 @@ function fixture() {
     dataset({ id: 'C', datasetId: 'C', metricKey: 'c', dataType: 'proteomics', platform: 'LC-MS/MS' }),
   ];
 }
+
+test('URL readiness retains pending requested layers and deduplicates their files', () => {
+  const contributors = { requested: [{ metricKey: 'a' }, { metricKey: 'b' }, { metricKey: 'c' }] };
+  const metrics = new Map([['a', {}], ['b', { fileKey: 'expressionLayers' }],
+    ['c', { fileKey: 'expressionLayers' }]]);
+  assert.deepEqual(requestedAxisFileKeys(contributors, (entry) => metrics.get(entry.metricKey)),
+    ['expressionLayers']);
+  assert.deepEqual(requestedAxisFileKeys({ requested: [] }, () => null), []);
+});
 
 test('each axis normalizes an independent catalogue-ordered selection of the exact type', () => {
   const rows = fixture();
@@ -78,6 +88,8 @@ test('a mixed-file pool uses ready contributors while failed/loading inputs rema
     assert.equal(result.state, state);
     assert.deepEqual(result.requested.map((entry) => entry.id), ['A', 'B']);
     assert.deepEqual(result.available.map((entry) => entry.id), ['A']);
+    assert.deepEqual(requestedAxisFileKeys(result, (entry) => metrics.get(entry.metricKey)),
+      ['expressionLayers'], 'URL readiness includes the requested unreadable layer');
     assert.deepEqual([typeMetric.read(0), typeMetric.read(1)], [1, 3]);
     assert.equal(typeMetric.provenance.id, 'A');
   }
