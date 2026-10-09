@@ -81,6 +81,15 @@ Distill any corrected visibility/window rules into
 marker-state runbook; update the validation index and follow the required
 resolved-ticket lifecycle.
 
+## Integration findings
+
+- **TAN-2:** mixed expandable and permanently unplaceable rows are counted
+  separately by `cd7e8ef`; no larger-window promise is made for an unreachable row.
+- **TAN-3:** repeated keyboard reveals on `M744_RS00045` lost focus to the checkbox
+  after the first expansion. The repair retains action focus while further
+  navigation remains and returns to the checkbox when the action finishes or is
+  disabled. Final validation and independent review are pending.
+
 ## Related predictor status at intake
 
 [The selected-methods ticket](A_regulatory-methods-shortlist__20261008.md) and

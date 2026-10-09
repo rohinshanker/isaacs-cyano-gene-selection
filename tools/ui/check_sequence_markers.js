@@ -95,12 +95,48 @@ async (page) => {
   const shortState = await page.locator('.gene-sequence-marker-navigation').innerText();
   check(shortState.includes('beyond the current 30 nt sequence'),
     'the short sequence says why the site is not drawn');
-  await page.getByRole('button', { name: 'Show the nearest start site in the sequence' }).click();
+  await page.getByRole('button', { name: 'Show the nearest start site in the sequence' }).focus();
+  await page.keyboard.press('Enter');
   check(await page.locator('.gene-sequence-upstream-control select').inputValue() === '60',
     'the reveal uses the smallest existing exact upstream window');
   check(await page.locator('g.gene-sequence-marker').count() === 1,
     'the revealed site is drawn at its native coordinate');
-  evidence.push({ shortWindowReveal: '30 to 60 nt', marks: 1 });
+  check((await focused()).action === 'gene-sequence-start-sites',
+    'a completed reveal returns keyboard focus to the visibility control');
+  evidence.push({ shortWindowReveal: '30 to 60 nt', marks: 1, focus: 'visibility control' });
+
+  await page.locator('.gene-sequence-strip').focus();
+  await page.keyboard.press('End');
+  const cameraAction = page.locator('.gene-sequence-marker-navigation button');
+  check(await cameraAction.isVisible(), 'moving away exposes camera navigation');
+  await cameraAction.focus();
+  await page.keyboard.press('Enter');
+  check(!await cameraAction.isVisible(), 'the camera-only reveal finishes its action');
+  check((await focused()).action === 'gene-sequence-start-sites',
+    'a completed camera-only action returns keyboard focus to visibility');
+  evidence.push({ cameraOnlyReveal: true, focus: 'visibility control' });
+
+  /* --- repeated expansions retain the action; a finished action has a focus fallback --- */
+  for (const width of [375, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open('&g=M744_RS00045');
+    const button = page.locator('.gene-sequence-marker-navigation button');
+    await button.waitFor({ state: 'visible' });
+    await button.focus();
+    for (const [extent, key] of [['60', 'Enter'], ['500', 'Space'], ['1000', 'Enter']]) {
+      check(await button.evaluate((node) => node === document.activeElement),
+        `${width}: the next expansion remains keyboard focused`);
+      await page.keyboard.press(key);
+      check(await page.locator('.gene-sequence-upstream-control select').inputValue() === extent,
+        `${width}: keyboard reveal reaches ${extent} nt`);
+      check(await button.isVisible()
+        ? await button.evaluate((node) => node === document.activeElement)
+        : (await focused()).action === 'gene-sequence-start-sites',
+      `${width}: reveal retains action focus or uses its visibility fallback`);
+      evidence.push({ keyboardReveal: extent, width, focused: await focused() });
+    }
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
 
   /* --- the gene's own start/stop marks have outward padding, not stolen neighbours --- */
   await open(`&g=${WITH_MARKS}`);

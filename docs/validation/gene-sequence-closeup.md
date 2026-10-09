@@ -465,6 +465,10 @@ So this view reads, before it rebuilds, whether the reader is standing inside it
 own control host or its own list host — scoped to those hosts, because a view
 that moved focus when *someone else* held it would take the reader out of what
 they were using. The checkbox is restored by identity where it still exists.
+A reader activating the reveal button stays on that button through successive
+upstream expansions while another action is available. When the final expansion
+or camera-only move hides the button, or hiding the layer disables it, focus
+returns to the visibility checkbox. Rebuilding controls never steals outside focus.
 Where it does not — the layer still loading, the layer failed, an organism with
 no such layer, a locus whose rows no available exact window has a base for, or
 nothing pinned at all — focus goes to the labelled part of this view that survived: the strip

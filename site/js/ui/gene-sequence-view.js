@@ -678,6 +678,7 @@ export class GeneSequenceView {
   writeMarkerControl() {
     const host = this.markerControlHost;
     const held = this.heldIn(host);
+    const heldNavigation = document.activeElement === this.markerNavigationButton;
     host.replaceChildren();
     this.markerToggle = null;
     this.markerNavigationButton = null;
@@ -713,7 +714,10 @@ export class GeneSequenceView {
     this.markerNavigationButton = button;
     this.markerNavigationStatus = status;
     this.writeMarkerNavigationStatus();
-    if (held) box.focus({ preventScroll: true });
+    if (held) {
+      const target = heldNavigation && !button.hidden && !button.disabled ? button : box;
+      target.focus({ preventScroll: true });
+    }
   }
 
   /** Keep hidden, short-sequence and off-camera states explicit beside the control. */
@@ -721,8 +725,10 @@ export class GeneSequenceView {
     const button = this.markerNavigationButton;
     const status = this.markerNavigationStatus;
     if (!button || !status) return;
+    const held = document.activeElement === button;
     button.disabled = !this.markersVisible;
     if (!this.markersVisible) {
+      if (held) this.markerToggle.focus({ preventScroll: true });
       button.hidden = false;
       status.textContent = `${this.markerLayer.label} sites are hidden in this view.`;
       return;
@@ -769,6 +775,9 @@ export class GeneSequenceView {
       return;
     }
     const unplaceable = reachability.unplaceable;
+    // A camera update can finish the action after the control was rebuilt.
+    // Keep keyboard focus in the controls when there is no further action.
+    if (held) this.markerToggle.focus({ preventScroll: true });
     button.hidden = true;
     status.textContent = `${formatCount(placed.length)} placeable `
       + `${placed.length === 1 ? 'site is' : 'sites are'} in the current window.`

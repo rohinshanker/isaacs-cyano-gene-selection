@@ -437,6 +437,7 @@ test('a short sequence explains an excluded site and reveals it through the exis
     assert.match(status.textContent, /beyond the current 30 nt sequence/);
     assert.match(status.textContent, /existing 60 nt upstream window/);
 
+    button.focus();
     button.click();
 
     assert.equal(view.upstreamNt, 60);
@@ -444,6 +445,8 @@ test('a short sequence explains an excluded site and reveals it through the exis
     const [row] = view.placedMarkers();
     assert.equal(view.markerInWindow(row), true);
     assert.match(announced.at(-1), /Tan 2018 start site .* shown at .* with 60 upstream nucleotides/);
+    assert.equal(view.markerNavigationButton.hidden, true);
+    assert.equal(document.activeElement, toggleOf(view), 'a completed reveal returns focus to visibility');
   });
 });
 
@@ -486,9 +489,11 @@ test('successive actions reveal every longer-window site on the minus strand', a
     assert.equal(view.placedMarkers().length, 0);
 
     let actions = 0;
+    view.markerNavigationButton.focus();
     while (view.placedMarkers().length < view.markerRows.length && actions < 6) {
       const button = view.markerControlHost.querySelector('button');
       assert.equal(button.hidden, false);
+      assert.equal(document.activeElement, button, 'successive actions retain keyboard focus');
       button.click();
       actions += 1;
     }
@@ -498,6 +503,37 @@ test('successive actions reveal every longer-window site on the minus strand', a
     assert.ok(actions >= 2, 'more distant rows require more than the first short expansion');
     assert.match(view.markerControlHost.querySelector('span.gene-sequence-facts').textContent,
       /3 placeable sites are in the current window|outside the current camera window/);
+    const finalButton = view.markerNavigationButton;
+    assert.equal(document.activeElement, finalButton.hidden ? toggleOf(view) : finalButton);
+  });
+});
+
+test('a camera-only reveal that finishes returns focus to the visibility control', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, expanded('M744_RS00025'));
+    view.markerNavigationButton.click();
+    view.setCamera({ from: 100, perNt: 12 });
+    const button = view.markerNavigationButton;
+    assert.equal(button.hidden, false);
+    assert.equal(button.textContent, 'Go to nearest site');
+    button.focus();
+
+    button.click();
+
+    assert.equal(button.hidden, true);
+    assert.equal(document.activeElement, toggleOf(view));
+  });
+});
+
+test('hiding the layer while its navigation has focus returns focus to visibility', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, expanded('M744_RS00025'));
+    view.markerNavigationButton.focus();
+
+    view.setMarkersVisible(false);
+
+    assert.equal(view.markerNavigationButton.disabled, true);
+    assert.equal(document.activeElement, toggleOf(view));
   });
 });
 
