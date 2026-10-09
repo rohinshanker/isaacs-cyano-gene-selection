@@ -168,7 +168,7 @@ export class InfoPopover {
     this.button.setAttribute('aria-expanded', String(open));
     if (open) {
       this.position();
-      this.addGlobalListeners();
+      if (!this.popover.hidden) this.addGlobalListeners();
     } else {
       this.removeGlobalListeners();
     }
@@ -183,12 +183,18 @@ export class InfoPopover {
     const margin = 16;
     const gap = 4;
     const button = this.button.getBoundingClientRect();
+    if (button.bottom <= 0 || button.top >= viewportHeight
+      || button.right <= 0 || button.left >= viewportWidth) {
+      this.close({ suppressUntilExit: true });
+      return;
+    }
     const box = this.popover.getBoundingClientRect();
     const left = Math.max(margin, Math.min(button.right - box.width, viewportWidth - box.width - margin));
     const below = button.bottom + gap;
     const top = below + box.height <= viewportHeight - margin
       ? below : Math.max(margin, button.top - box.height - gap);
     this.popover.style.left = `${left}px`;
-    this.popover.style.top = `${top}px`;
+    this.popover.style.top = `${Math.max(margin,
+      Math.min(top, viewportHeight - box.height - margin))}px`;
   }
 }

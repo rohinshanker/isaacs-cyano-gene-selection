@@ -132,3 +132,26 @@ test('open information popover follows resize and scroll and cleans up viewport 
     assert.equal(globalThis.window.listeners.scroll.length, 0);
   });
 });
+
+
+test('responsive reflow dismisses a pinned popover whose anchor leaves the viewport', async () => {
+  await withFakeDocument((document) => {
+    globalThis.window.innerWidth = 1280;
+    globalThis.window.innerHeight = 800;
+    const host = document.createElement('span');
+    document.body.append(host);
+    const info = new InfoPopover(host, { id: 'scale-width-reflow', label: 'About the scale' });
+    let top = 200;
+    info.button.getBoundingClientRect = () => ({ left: 300, right: 328, top, bottom: top + 25 });
+    info.popover.getBoundingClientRect = () => ({ width: 300, height: 80 });
+    info.button.dispatch('click');
+    assert.equal(info.popover.hidden, false);
+    top = 3000;
+    globalThis.window.innerWidth = 375;
+    globalThis.window.innerHeight = 812;
+    globalThis.window.dispatch('resize');
+    assert.equal(info.popover.hidden, true);
+    assert.equal(info.button.getAttribute('aria-expanded'), 'false');
+    assert.equal(globalThis.window.listeners.resize.length, 0);
+  });
+});
