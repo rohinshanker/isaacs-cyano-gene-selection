@@ -51,6 +51,14 @@ jobs:
           done
           exit "$status"
 
+      # Cache only the pinned containing archive, never partial downloads.
+      # The fetcher below verifies its size/digest even on an exact cache hit.
+      - name: Restore recoded source archive
+        uses: actions/cache@v5
+        with:
+          path: data/raw/recoded-ecoli/source/41467_2026_74300_MOESM3_ESM.zip
+          key: ${{ runner.os }}-recoded-source-v1-${{ hashFiles('tools/fetch_recoded_ecoli.py') }}
+
       # The recoded source workbooks are gitignored. Pipeline tests reproduce
       # the admitted omics and fitness values from these checksum-pinned inputs.
       - name: Fetch and verify recoded source inputs

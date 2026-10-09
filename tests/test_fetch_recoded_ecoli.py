@@ -1,8 +1,10 @@
 """A changed archive must not replace a pinned extracted input."""
 
 import hashlib
+import http.client
 import io
 import sys
+import urllib.error
 import zipfile
 from pathlib import Path
 
@@ -82,3 +84,92 @@ def test_download_replaces_destination_only_after_success(monkeypatch, tmp_path)
     with pytest.raises(RuntimeError, match="HTTP 503"):
         fetch.download("https://example.test/data", dest)
     assert dest.read_bytes() == b"new"
+
+
+def test_interrupted_body_restarts_without_replacing_existing_file(monkeypatch, tmp_path):
+    class Response(io.BytesIO):
+        status = 200
+
+    class InterruptedResponse(Response):
+        def read(self, size=-1):
+            if self.tell():
+                raise http.client.IncompleteRead(b"cut off")
+            return super().read(size)
+
+    dest = tmp_path / "download.zip"
+    dest.write_bytes(b"original")
+    calls = []
+    delays = []
+
+    def open_url(url, timeout):
+        assert timeout == 900
+        assert dest.read_bytes() == b"original"
+        assert not dest.with_suffix(".zip.part").exists()
+        calls.append(url)
+        return InterruptedResponse(b"partial") if len(calls) == 1 else Response(b"complete")
+
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", open_url)
+    monkeypatch.setattr(fetch.time, "sleep", delays.append)
+    fetch.download("https://example.test/data", dest)
+    assert len(calls) == 2
+    assert delays == [5]
+    assert dest.read_bytes() == b"complete"
+    assert not dest.with_suffix(".zip.part").exists()
+
+
+@pytest.mark.parametrize("error", [
+    TimeoutError("timeout"),
+    ConnectionResetError("reset"),
+    urllib.error.URLError("connection failed"),
+    *[urllib.error.HTTPError("https://example.test", code, "temporary", {}, None)
+      for code in (408, 429, 500, 502, 503, 504)],
+])
+def test_transient_failures_have_bounded_retries(monkeypatch, tmp_path, error):
+    dest = tmp_path / "download.zip"
+    dest.write_bytes(b"original")
+    calls = []
+    delays = []
+
+    def fail(url, timeout):
+        calls.append(url)
+        raise error
+
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", fail)
+    monkeypatch.setattr(fetch.time, "sleep", delays.append)
+    with pytest.raises(type(error)):
+        fetch.download("https://example.test/data", dest)
+    assert len(calls) == 3
+    assert delays == [5, 10]
+    assert dest.read_bytes() == b"original"
+    assert not dest.with_suffix(".zip.part").exists()
+
+
+@pytest.mark.parametrize("error", [
+    urllib.error.HTTPError("https://example.test", 403, "forbidden", {}, None),
+    urllib.error.HTTPError("https://example.test", 404, "missing", {}, None),
+    OSError("disk full"),
+])
+def test_permanent_failures_are_not_retried(monkeypatch, tmp_path, error):
+    class Response(io.BytesIO):
+        status = 200
+
+        def read(self, size=-1):
+            raise error
+
+    calls = []
+    delays = []
+    dest = tmp_path / "download.zip"
+    dest.write_bytes(b"original")
+
+    def open_url(url, timeout):
+        calls.append(url)
+        return Response(b"body")
+
+    monkeypatch.setattr(fetch.urllib.request, "urlopen", open_url)
+    monkeypatch.setattr(fetch.time, "sleep", delays.append)
+    with pytest.raises(type(error)):
+        fetch.download("https://example.test/data", dest)
+    assert len(calls) == 1
+    assert delays == []
+    assert dest.read_bytes() == b"original"
+    assert not dest.with_suffix(".zip.part").exists()

@@ -24,8 +24,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import shutil
 import sys
+import time
+import urllib.error
 import urllib.request
 import zipfile
 from dataclasses import dataclass
@@ -142,15 +145,35 @@ def verify(path: Path, pinned: PinnedFile) -> list[str]:
 
 
 def download(url: str, dest: Path) -> None:
-    """Stream ``url`` to ``dest``, writing to a temporary file first."""
+    """Atomically download with at most three transient transport attempts."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")
-    with urllib.request.urlopen(url, timeout=900) as response:
-        if response.status != 200:
-            raise RuntimeError(f"{url} answered HTTP {response.status}")
-        with tmp.open("wb") as handle:
-            shutil.copyfileobj(response, handle, length=1 << 20)
-    tmp.replace(dest)
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(url, timeout=900) as response:
+                if response.status != 200:
+                    raise RuntimeError(f"{url} answered HTTP {response.status}")
+                with tmp.open("wb") as handle:
+                    shutil.copyfileobj(response, handle, length=1 << 20)
+            tmp.replace(dest)
+            return
+        except (http.client.IncompleteRead, urllib.error.URLError,
+                TimeoutError, ConnectionError) as error:
+            if isinstance(error, urllib.error.HTTPError) and error.code not in {
+                408, 429, 500, 502, 503, 504,
+            }:
+                raise
+            if attempt == 3:
+                raise
+            delay = 5 * attempt
+            print(
+                f"download attempt {attempt}/3 interrupted: {error}; "
+                f"retrying in {delay}s",
+                file=sys.stderr,
+            )
+        finally:
+            tmp.unlink(missing_ok=True)
+        time.sleep(delay)
 
 
 def extract_members(archive: Path, names: list[str], dest: Path) -> list[str]:

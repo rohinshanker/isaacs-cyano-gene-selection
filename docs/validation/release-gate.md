@@ -22,6 +22,13 @@ verifies the pinned archive and every extracted member before they are used.
 Use a fresh checkout when changing CI input setup; linking an existing raw-data
 directory can conceal a missing fetch step.
 
+Recoded downloads retry transient transport errors at most three times, with
+5- and 10-second delays. Partial transfers are discarded; existing destination
+files remain intact until a complete transfer succeeds. HTTP access/not-found
+errors and failed size/digest checks remain hard failures. CI caches only the
+pinned containing archive under the fetcher hash, with no broad restore key;
+every cache hit still passes archive and extracted-member verification.
+
 Do not publish until the automated gate passes and the intended commit has a
 clean worktree.
 
@@ -107,6 +114,9 @@ change has been identified and deliberately accepted.
 3. Wait for `.github/workflows/pages.yml` to finish both `validate` and `deploy`
    successfully for the pushed SHA. A successful Git push alone does not update
    Pages; failed validation leaves the last successful release live.
+   Steps using `continue-on-error` can display a successful conclusion despite
+   a failed outcome. Use the final aggregation gate and complete job result;
+   do not infer success from the workflow advancing to a later step.
 4. Record the workflow URL, deployed commit, and Pages URL in the lab release record.
 5. Run the production smoke test. Check deployed module/data bytes against the
    intended commit if the site still appears old; a hard refresh cannot repair
