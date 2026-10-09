@@ -73,23 +73,32 @@ ticket need not finish before this metric can proceed. Research routing follows
    to investigate include promoters, transcription-factor binding sites,
    terminators, ribosome-binding sites, and regulatory RNA elements; these are
    scope suggestions, not an approved taxonomy or evidence of available data.
+include all of these, and suggest additional ones once this ticket is opened. cryptic promoters should also be considered. if there are any additional transcript initation, termination, etc. ribo-seq data sources that would provide specific sites for utex or other strains use those. look for these exact sequences in similar/other genes as well, if possible
 2. Does “changed” mean any edited base within an annotated site, a changed motif
    or predicted score, or evidence of altered regulatory function? Should these
    appear as separate metrics?
+changed mostly means if a recoding scheme is implemented and it causes a new promoter to appear somewhere. although we cannot infer if certain sites will function the same if they get recoded, it should still be shows that they are changed in some visual way + with a hover hint
 3. What qualifies as “enough data”: specified site types, a minimum coverage of
    genes or regions, a confidence threshold, or a combination?
+i dont think there needs to be some kind of "enough data" threshold, either it is borrowed from another organism, it is calculated, it is pulled from a utex or other cyano dataset, etc.. if this does become an issue, it can be explicitly asked.
 4. Which strains and evidence sources are acceptable? Should measured native
    sites, sister-strain evidence, and predictions be kept as separate layers?
+for e. coli, just do e. coli as there should be enough data out there for regulatory sites. for cyano, you can use sister strains, then any cyanos, then carry over data from e. coli or other prokaryotes where necessary and reasonable. if a certain library is for another organism and not cyano or e. coli, it can still be used, but generally the organism of origin should be mentioned
 5. What receives the color: a gene, a regulatory site, a chromosome interval,
    or more than one of these? How should a site shared by several genes be handled?
+a site shared by several genes can be mentioned on all of the genes. the coloring scheme (if selected in color by) should  be per gene and how many current sites were disrupted/new sites aadded.
 6. Should the value be binary, a changed-site count, a fraction of covered sites,
    or a graded score? If several site types contribute, how are they combined?
+it can be a changed-site and or added count
 7. How should absent annotations, incomplete coverage, and uncertain mappings
    appear so that “no detected change” cannot be mistaken for “no data”?
+what do you mean by absent annotations? as in if an annotation gets removed by a recoding scheme? then in that case there should be an indication that it was there and no longer is. ask further clarifying quesitons to confirm these answers.
 8. Should both disruption of existing sites and creation of new candidate sites
    be considered? What evidence would permit either interpretation?
+yes, if the new site matches an existing site or site brought over from other organisms. if possible and lightweight enough, can potentially add the option to calculate some of these on-demand for a newly recoded gene
 9. Must the option compare multiple recoding schemes, or only show the active
    scheme against the original sequence? Which recoding controls does it follow?
+active scheme against original scheme.
 
 ## Acceptance criteria
 
