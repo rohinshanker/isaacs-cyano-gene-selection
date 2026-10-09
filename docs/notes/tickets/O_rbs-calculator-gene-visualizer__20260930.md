@@ -193,3 +193,17 @@ viewers. See A_regulatory-methods-shortlist__20261008 and
 O_gene-sequence-structural-features__20261007 for the shared display requirement.
 **Record only; do not evaluate, run or integrate the methods yet.** Existing
 scientific, dependency, licence and iDOG-hold constraints remain in force.
+
+## Remaining gene-viewer integration scope
+
+The completed sequence/viewer UI supports exact expanded upstream context,
+annotation origin, lower-priority computed tags and hover/focus outlines. The
+remaining source-dependent work is here: evaluate the chosen RBS model and its
+host inputs; produce per-gene predicted `rbs` intervals with native coordinates,
+strand, matched sequence, start-codon spacing, method/version/parameters and
+score semantics; integrate truthful loading/failure/absence and show/hide
+controls in both gene viewers only after admission. Preserve every overlapping
+or unplaceable row and all Tan coordinate/evidence distinctions. No RBS layer
+is currently generated or advertised, and the owner keeps the access dependency
+open. Other selected method producers retain their separate evidence/input
+boundaries in regulatory-methods.md.

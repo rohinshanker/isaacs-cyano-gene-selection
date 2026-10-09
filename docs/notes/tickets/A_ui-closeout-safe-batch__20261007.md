@@ -186,3 +186,33 @@ DEM-321's completed independent review is **not approvable** and reports five op
 findings, recorded as TRNA-R1 through TRNA-R5 in the implementation ticket. Keep
 the 44 annotated records + opt-in candidate scope; no fixes, integration or
 closure while this record-only instruction remains in effect.
+
+## Final integrated disposition, 2026-10-09
+
+Closing owner is cyano-ui-fixes (80c81443-1791314087). All source/runtime UI
+findings are resolved: UI-REVIEW-1 by a966e2a; UI-REVIEW-2/3 by94cc966;
+UI-REVIEW-4 informational; UI-REVIEW-5 byfebc4aa. TRNA-R1–R5 byaca0531,
+independently approved DEM328. LOAD-R1/R3/R4 byba6f1fc; LOAD-R2/R5 by8d20969,
+approved by the same referee. AXIS-R1 bya3f73b0; AXIS-R2 andCAT-R1 byf8a5270
+(including3cf776c), approved by the same referee. DEM330-R1/R2 byd0ca42f,
+approved DEM330. PRESENTATION-R1/R2/R3 by6476dbc andR4 bycae760e, approved
+DEM331. No unresolved audit findings remain against the completed UI slice.
+General's reviewed pointer closure/code at5fdaaa9 is preserved; this session's
+separate pointer optimization was excluded.
+
+Combined final gates: JS1,395 passed; pytest925 passed,1skipped,36subtests;
+contract119 passed,1declaredskip. Actual combined UTEX/E.coli Native+Chromosome
+checks at375/768/1280/1440 passed hover-transfer/unfocusedEscape/heightresize,
+closedwarnings,44+opt-in45 tRNA/unsupportedorganism,overflow anddiagnostics.
+Sequence/context andannotation access checks pass375/768/959/960/1239/1240/1280/1440;
+separate width-reflow checks dismiss offscreen popovers in both views. Source
+behavioural regressions preserveexplicitRNA filters and allsharedselectors.
+Durable raw evidence is in .playwright-cli/ui-open-tickets-20261008/final and the
+scoped author/reviewer directories. Axe, physicaldevices andmanualscreen-reader
+testing were unavailable; nativekeyboard/focus/semantics/contrast were checked.
+
+Remaining work is retained separately: RBS code/API/backend access and
+source-specific regulatory producers; human keep/move/merge/remove marks in
+the clutter ticket; unrelated scientific/data tickets remain with their owners.
+Generic RBS renderer/data requirements transfer to the RBS ticket, so no
+missing work or claim is hidden by closing the finished sequence UI.

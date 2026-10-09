@@ -316,3 +316,18 @@ all 45 identities and lengths, both strands, the candidate fields, and the
 `Ile2`/`fMet` cases. `tests/js/trna-loci.test.mjs` independently validates the
 published browser schema, filtering, overlap grouping, marker clustering, and
 loading/error/unavailable/selection states.
+
+## First-version viewer scope and future scoring
+
+The bounded viewer uses the existing 44 concordant RefSeq loci plus the one
+separately labelled scan-only predicted pseudogene candidate. It needs no new
+GtRNAdb artifact or scan. The candidate is opt-in and is excluded from the
+44-locus model. A score is not a calibrated gene-identity probability; future
+probability coloring, mature/charged/modified RNA, secondary/3D structure and
+sister-strain layers require their own evaluated evidence and source contracts.
+Do not admit new GtRNAdb data until its terms and exact assembly/run identity
+are verified. These future options are outside the approved first viewer.
+
+Before resolving a viewer change requested for owner review, serve the reviewed
+final application on localhost, open it for the owner, and provide the working
+URL. Headless screenshots alone do not satisfy that viewing requirement.
