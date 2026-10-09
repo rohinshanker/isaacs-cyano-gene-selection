@@ -7,6 +7,8 @@ Updated: 2026-10-08
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 Opened for later at the owner's request. No new implementation started.
 
 ## Owner display decision, 2026-10-08

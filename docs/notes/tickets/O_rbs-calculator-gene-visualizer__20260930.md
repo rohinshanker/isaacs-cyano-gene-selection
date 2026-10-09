@@ -8,6 +8,8 @@
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 Owner-supplied code:
 [Ribosome-Binding-Site-Calculator-v1.0](https://github.com/hsalis/Ribosome-Binding-Site-Calculator-v1.0).
 The README describes translation-initiation-rate prediction and synthetic RBS

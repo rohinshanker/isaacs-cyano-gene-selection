@@ -54,6 +54,40 @@ function normalizeDownload(raw) {
   };
 }
 
+/** A dated upstream observation, distinct from a file retained by this project. */
+export function normalizeUpstreamArtifact(raw) {
+  if (!raw || typeof raw !== 'object'
+    || !(isNonEmptyString(raw.filename) || (raw.sourcePage === true && isNonEmptyString(raw.label)))
+    || !isWebUrl(raw.url) || !isNonEmptyString(raw.version)) return null;
+  const check = raw.linkCheck;
+  if (!check || !['verified', 'changed', 'unavailable'].includes(check.result)
+    || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(check.checkedAt)
+    || !Number.isFinite(Date.parse(check.checkedAt))
+    || new Date(check.checkedAt).toISOString().slice(0, 19) !== check.checkedAt.slice(0, 19)) return null;
+  const bytes = Number.isSafeInteger(raw.bytes) && raw.bytes > 0 ? raw.bytes : null;
+  const sha256 = /^[a-f0-9]{64}$/.test(raw.sha256) ? raw.sha256 : null;
+  const pinnedSha256 = /^[a-f0-9]{64}$/.test(raw.pinnedSha256) ? raw.pinnedSha256 : null;
+  if (check.result !== 'unavailable' && (bytes === null || sha256 === null)) return null;
+  if (raw.sourcePage === true && check.result !== 'unavailable') return null;
+  if (check.result === 'verified' && pinnedSha256 && pinnedSha256 !== sha256) return null;
+  if (check.result === 'changed' && (pinnedSha256 === null || pinnedSha256 === sha256)) return null;
+  return {
+    filename: isNonEmptyString(raw.filename) ? raw.filename : null,
+    label: isNonEmptyString(raw.label) ? raw.label : null,
+    sourcePage: raw.sourcePage === true,
+    url: raw.url, version: raw.version,
+    compression: ['gzip', 'zip', 'uncompressed'].includes(raw.compression) ? raw.compression : null,
+    bytes: check.result === 'unavailable' ? null : bytes,
+    sha256: check.result === 'unavailable' ? null : sha256,
+    pinnedSha256,
+    note: isNonEmptyString(raw.note) ? raw.note : null,
+    linkCheck: {
+      checkedAt: check.checkedAt, result: check.result,
+      detail: isNonEmptyString(check.detail) ? check.detail : null,
+    },
+  };
+}
+
 /** Keep only items that carry an id and a citation to display. */
 function normalizeItem(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -61,13 +95,17 @@ function normalizeItem(raw) {
   const downloads = Array.isArray(raw.downloads)
     ? raw.downloads.map(normalizeDownload).filter(Boolean)
     : [];
-  return {
+  const item = {
     id: raw.id,
     citation: raw.citation,
     url: isWebUrl(raw.url) ? raw.url : null,
     contribution: isNonEmptyString(raw.contribution) ? raw.contribution : null,
     downloads,
   };
+  if (Array.isArray(raw.upstreamArtifacts)) {
+    item.upstreamArtifacts = raw.upstreamArtifacts.map(normalizeUpstreamArtifact).filter(Boolean);
+  }
+  return item;
 }
 
 /** Keep only sections that carry an id and a title; items default to none. */
@@ -237,6 +275,61 @@ export class CitationsPanel {
       row.append(downloads);
     }
 
+    if (item.upstreamArtifacts?.length > 0) {
+      const catalogue = document.createElement('details');
+      catalogue.className = 'upstream-source-catalogue';
+      const summary = document.createElement('summary');
+      summary.textContent = `Upstream source catalogue (${item.upstreamArtifacts.length})`;
+      catalogue.append(summary);
+      const list = document.createElement('ul');
+      for (const artifact of item.upstreamArtifacts) list.append(this.renderUpstreamArtifact(artifact));
+      catalogue.append(list);
+      row.append(catalogue);
+    }
+
+    return row;
+  }
+
+  renderUpstreamArtifact(artifact) {
+    const row = document.createElement('li');
+    row.className = 'upstream-artifact';
+    const link = document.createElement('a');
+    link.href = artifact.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = artifact.label ?? artifact.filename;
+    row.append(link);
+    const metadata = document.createElement('dl');
+    const field = (label, value, code = false) => {
+      const term = document.createElement('dt');
+      term.textContent = label;
+      const description = document.createElement('dd');
+      if (code) {
+        const text = document.createElement('code');
+        text.textContent = value;
+        description.append(text);
+      } else description.textContent = value;
+      metadata.append(term, description);
+    };
+    field('Source version', artifact.version);
+    if (artifact.sourcePage) field('Catalogue link', 'Publisher entry; direct file URL is unverified.');
+    if (artifact.compression) field('Format', artifact.compression);
+    field('Last link check (UTC)', artifact.linkCheck.checkedAt);
+    const results = {
+      verified: 'File retrieved and its bytes/checksum recorded.',
+      changed: 'Upstream file differs from the pinned input used by this release.',
+      unavailable: 'File could not be retrieved; size and checksum are unverified.',
+    };
+    field('Check result', results[artifact.linkCheck.result]);
+    if (artifact.linkCheck.detail) field('Access details', artifact.linkCheck.detail);
+    if (artifact.bytes !== null) field('Checked file size', `${artifact.bytes.toLocaleString('en-US')} bytes`);
+    if (artifact.sha256) field('Checked SHA-256', artifact.sha256, true);
+    if (artifact.pinnedSha256) {
+      if (artifact.pinnedSha256 === artifact.sha256) field('Pinned input', 'Matches the checked file’s SHA-256.');
+      else field('Pinned input SHA-256', artifact.pinnedSha256, true);
+    }
+    if (artifact.note) field('Notes', artifact.note);
+    row.append(metadata);
     return row;
   }
 

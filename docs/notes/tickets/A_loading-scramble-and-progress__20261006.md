@@ -7,6 +7,8 @@ Updated: 2026-10-08
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 Engineering is implemented, integrated on `main`, and accepted by independent
 DEM-267 review of `06ab535`. The owner selected B with a 500 ms hold on
 2026-10-08 and instructed that the decision be recorded without implementation.

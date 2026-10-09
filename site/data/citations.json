@@ -66,6 +66,38 @@
               "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/releases/GCF_000817325.1-RS_2026_05_13/annotation-evidence-v1.jsonl",
               "kind": "Project-derived annotation evidence"
             }
+          ],
+          "upstreamArtifacts": [
+            {
+              "filename": "GCF_000817325.1_ASM81732v1_feature_table.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_feature_table.txt.gz",
+              "version": "GCF_000817325.1",
+              "compression": "gzip",
+              "pinnedSha256": "763b517919c204097ad86223f6d2afc1ca0c1eb139eb8a07e6e8abbe3463d2dc",
+              "note": "Original NCBI upstream file. Annotation updates may change this URL’s bytes independently of the assembly accession; compare its checked hash with the pinned input.",
+              "bytes": 129434,
+              "sha256": "763b517919c204097ad86223f6d2afc1ca0c1eb139eb8a07e6e8abbe3463d2dc",
+              "linkCheck": {
+                "checkedAt": "2026-10-09T03:57:04Z",
+                "result": "verified",
+                "detail": "HTTP 200; complete file retrieved."
+              }
+            },
+            {
+              "filename": "GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/325/GCF_000817325.1_ASM81732v1/GCF_000817325.1_ASM81732v1_genomic.gff.gz",
+              "version": "GCF_000817325.1",
+              "compression": "gzip",
+              "pinnedSha256": "7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f",
+              "note": "Original NCBI upstream file. Annotation updates may change this URL’s bytes independently of the assembly accession; compare its checked hash with the pinned input.",
+              "bytes": 240383,
+              "sha256": "7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f",
+              "linkCheck": {
+                "checkedAt": "2026-10-09T03:57:04Z",
+                "result": "verified",
+                "detail": "HTTP 200; complete file retrieved."
+              }
+            }
           ]
         },
         {
@@ -718,6 +750,23 @@
               "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/annotation/source/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
               "kind": "NCBI source file"
             }
+          ],
+          "upstreamArtifacts": [
+            {
+              "filename": "GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/525/GCF_000012525.1_ASM1252v1/GCF_000012525.1_ASM1252v1_genomic.gff.gz",
+              "version": "GCF_000012525.1",
+              "compression": "gzip",
+              "pinnedSha256": "eb26d58bcd1f1448d16c5c2566e405edd559d198e79e33831fc945c559382c40",
+              "note": "Original NCBI upstream file. Annotation updates may change this URL’s bytes independently of the assembly accession; compare its checked hash with the pinned input.",
+              "bytes": 238918,
+              "sha256": "eb26d58bcd1f1448d16c5c2566e405edd559d198e79e33831fc945c559382c40",
+              "linkCheck": {
+                "checkedAt": "2026-10-09T03:57:04Z",
+                "result": "verified",
+                "detail": "HTTP 200; complete file retrieved."
+              }
+            }
           ]
         },
         {
@@ -1313,8 +1362,25 @@
           "id": "rubin-2015-assessed",
           "citation": "Rubin BE et al. The essential gene set of a photosynthetic organism. Proceedings of the National Academy of Sciences 112, E6634–E6643 (2015). doi:10.1073/pnas.1519220112.",
           "url": "https://doi.org/10.1073/pnas.1519220112",
-          "contribution": "Original PCC 7942 transposon-screen evidence behind the calls republished in Adomako 2022 Data Set S1. The assay used BG-11 at 30 C with multiple light and culture regimes. The original Rubin Dataset S3 is not yet offered here. Its calls are shown as PCC observations and an explicit cross-strain assumption for UTEX candidates; they do not establish UTEX essentiality or recoding outcomes.",
-          "downloads": []
+          "contribution": "Original PCC 7942 transposon-screen evidence behind the calls republished in Adomako 2022 Data Set S1. The assay used BG-11 at 30 C with multiple light and culture regimes. The upstream catalogue records access to the original Rubin Dataset S3 without redistributing it. Its calls are shown as PCC observations and an explicit cross-strain assumption for UTEX candidates; they do not establish UTEX essentiality or recoding outcomes.",
+          "downloads": [],
+          "upstreamArtifacts": [
+            {
+              "label": "Rubin 2015 Dataset S3 — publisher entry",
+              "filename": null,
+              "sourcePage": true,
+              "url": "https://doi.org/10.1073/pnas.1519220112",
+              "version": "PNAS 112, E6634–E6643 (2015); doi:10.1073/pnas.1519220112",
+              "note": "The publisher’s direct supplement URL and original bytes could not be verified. This links to the source publication. The release still uses the separately cited Adomako republication; no Rubin file is redistributed or newly admitted.",
+              "bytes": null,
+              "sha256": null,
+              "linkCheck": {
+                "checkedAt": "2026-10-09T03:57:04Z",
+                "result": "unavailable",
+                "detail": "HTTP 403; source file could not be retrieved."
+              }
+            }
+          ]
         },
         {
           "id": "ungerer-2018-mbio-growth",

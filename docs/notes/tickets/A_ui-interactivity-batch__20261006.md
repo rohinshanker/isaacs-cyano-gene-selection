@@ -7,6 +7,8 @@ Updated: 2026-10-08
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 All authorized engineering repairs are integrated on canonical `main` in
 `/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection`.
 Guides, exact-text instant hints and unified chromosome loading are accepted

@@ -10,6 +10,8 @@
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 The owner approved the bounded viewer on 2026-10-08. DEM-320 returned isolated
 implementation commit `5f2d8daccf2af9a2eb9b79f950d71051b480d790`; DEM-321's
 completed independent review is **not approvable** with five open findings below.

@@ -15,6 +15,40 @@ not call an extracted or normalized table the publisher's unmodified file. The
 large gitignored genome inputs are retrieved at build time and cannot be
 offered as downloads from this repository.
 
+## Upstream source catalogue
+
+An item's optional `upstreamArtifacts` list is separate from its tracked-file
+`downloads`. The catalogue lives behind a disclosure in Citations & sources and
+does not add source files to startup loading. Each entry records the source
+version, exact upstream filename/URL, compression, observed byte size/SHA-256,
+UTC link-check timestamp/result and access notes. `pinnedSha256` identifies the
+input used by this release separately from the currently checked upstream file.
+An assembly accession does not freeze subsequent annotation updates at its URL.
+
+Refresh observations without retaining upstream bytes, then regenerate the
+published payload manifest:
+
+```sh
+.venv/bin/python tools/check_source_catalogue.py
+.venv/bin/python tools/build_data_manifest.py build
+```
+
+`verified` means the complete file was retrieved and its size/hash recorded;
+`changed` means those bytes differ from the pinned input. `unavailable` carries
+the access failure and clears stale observed sizes/hashes. HTML access pages,
+partial responses, empty responses and invalid gzip/ZIP signatures are never
+hashed as the expected file. A publisher-page fallback is explicitly labelled
+with an unverified direct-file URL and has no fabricated filename, size or hash.
+It remains an upstream pointer, not source admission or a retained copy.
+
+The UTEX RefSeq GFF/feature table and PCC 7942 GFF catalogue entries preserve
+their pinned input hashes. Rubin Dataset S3 currently uses a publisher-entry
+fallback because direct source access could not be verified. Existing
+Adomako-derived joins and all strain/evidence labels remain under their separate
+contracts. Test the checker and renderer with matching, changed, unavailable
+and publisher-page cases; render the catalogue open/closed by keyboard at
+375, 768, 1280 and 1440 px, including long filenames and hashes.
+
 When a source or a retained file changes, update the ledger in the same patch.
 `tests/test_citations_manifest.py` checks that every retained annotation input,
 declared expression table, and key derived evidence table is represented by a

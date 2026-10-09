@@ -5,9 +5,20 @@
   byte sizes and SHA-256 checksums. Documentation only until reviewed.
 - **Status:** open
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-08
+- **Updated:** 2026-10-09
 
 ## Current State
+
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
+The catalogue and offline link checker are implemented in the integration
+worktree. UTEX RefSeq GFF/feature-table and PCC 7942 GFF checks retrieved complete
+files whose hashes match the pinned inputs. Checks are dated
+2026-10-09T03:57:04Z. Rubin's publisher access returned HTTP 403; its catalogue
+entry links to the known source publication, explicitly labels the direct-file
+URL/size/hash unverified and retains the existing Adomako provenance. No guessed
+supplement URL or source bytes are published. Independent review, final combined
+gates and rendered validation remain required before closure.
 
 Owner decision, 2026-10-08: **keep an upstream catalogue**, with dates when links
 were last checked and other relevant metadata. The owner requested recording

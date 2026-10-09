@@ -1,6 +1,8 @@
 """Keep the public source ledger tied to the data actually shipped in Git."""
 
 import json
+import hashlib
+from datetime import datetime
 import subprocess
 from pathlib import Path
 from urllib.parse import urlparse
@@ -126,6 +128,39 @@ def test_every_retained_external_data_source_is_attributed():
         "site/data/pcc7942-essentiality-v1.json",
     })
     assert required <= download_paths()
+
+
+def test_upstream_catalogue_has_dated_checks_and_preserves_pinned_identity():
+    """Upstream observations cannot silently replace the exact release inputs."""
+    entries = {
+        artifact["url"]: artifact
+        for section in load_manifest()["sections"]
+        for item in section["items"]
+        for artifact in item.get("upstreamArtifacts", [])
+    }
+    assert len(entries) == 4
+    annotation = json.loads((ROOT / "data/manifest/annotation-release-v1.json").read_text())
+    for source in annotation["sources"]:
+        for file in source.get("files", []):
+            if file["role"] not in {"feature-table", "gff-annotation", "pcc7942-crosswalk-gff"}:
+                continue
+            artifact = entries[file["directUrl"]]
+            assert artifact["filename"] == Path(file["localPath"]).name
+            digest = hashlib.sha256((ROOT / file["localPath"]).read_bytes()).hexdigest()
+            assert artifact["pinnedSha256"] == digest
+            assert artifact["compression"] == "gzip"
+    for artifact in entries.values():
+        assert urlparse(artifact["url"]).scheme == "https"
+        check = artifact["linkCheck"]
+        assert datetime.fromisoformat(check["checkedAt"].replace("Z", "+00:00")).tzinfo is not None
+        assert check["result"] in {"verified", "changed", "unavailable"}
+        if check["result"] == "unavailable":
+            assert artifact["bytes"] is None and artifact["sha256"] is None
+        else:
+            assert artifact["bytes"] > 0 and len(artifact["sha256"]) == 64
+        if artifact.get("sourcePage"):
+            assert artifact["filename"] is None
+            assert isinstance(artifact["label"], str) and artifact["label"].strip()
 
 
 def _ecoli_citations() -> dict:

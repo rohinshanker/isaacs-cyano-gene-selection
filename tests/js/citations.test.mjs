@@ -4,8 +4,76 @@ import { readFile } from 'node:fs/promises';
 import {
   CitationsPanel, CITATIONS_TAB, citationDownloadResourceKey, fetchCitationBlob,
   loadCitationsManifest, normalizeCitationsManifest,
+  normalizeUpstreamArtifact,
 } from '../../site/js/ui/citations.js';
 import { withFakeDocument } from './fake-dom.mjs';
+
+const UPSTREAM = {
+  filename: 'input.gff.gz', url: 'https://example.test/input.gff.gz',
+  version: 'GCF_000817325.1 / RS_2026_05_13', compression: 'gzip',
+  bytes: 240383, sha256: 'a'.repeat(64), pinnedSha256: 'a'.repeat(64),
+  linkCheck: { checkedAt: '2026-10-09T04:00:00Z', result: 'verified' },
+};
+
+test('catalogue observations retain source version, dated access and byte identity', () => {
+  const artifact = normalizeUpstreamArtifact(UPSTREAM);
+  assert.equal(artifact.bytes, UPSTREAM.bytes);
+  assert.equal(artifact.sha256, UPSTREAM.sha256);
+  assert.equal(artifact.linkCheck.checkedAt, UPSTREAM.linkCheck.checkedAt);
+  assert.equal(artifact.compression, 'gzip');
+  assert.equal(artifact.version, UPSTREAM.version);
+});
+
+test('unsafe, malformed and falsely verified upstream observations are rejected', () => {
+  for (const raw of [null, {}, { ...UPSTREAM, url: 'javascript:bad()' },
+    { ...UPSTREAM, filename: '' }, { ...UPSTREAM, version: '' },
+    { ...UPSTREAM, bytes: 0 }, { ...UPSTREAM, bytes: 1.5 }, { ...UPSTREAM, sha256: 'bad' },
+    { ...UPSTREAM, linkCheck: null },
+    { ...UPSTREAM, linkCheck: { checkedAt: '2026-02-30T04:00:00Z', result: 'verified' } },
+    { ...UPSTREAM, linkCheck: { checkedAt: 'bad', result: 'verified' } },
+    { ...UPSTREAM, linkCheck: { ...UPSTREAM.linkCheck, result: 'unknown' } },
+    { ...UPSTREAM, linkCheck: { ...UPSTREAM.linkCheck, result: 'changed' } },
+    { ...UPSTREAM, pinnedSha256: 'b'.repeat(64) },
+    { ...UPSTREAM, sourcePage: true },
+  ]) assert.equal(normalizeUpstreamArtifact(raw), null);
+});
+
+test('unavailable links do not reuse stale sizes or hashes; changed links retain separate pins', () => {
+  const unavailable = normalizeUpstreamArtifact({ ...UPSTREAM,
+    linkCheck: { ...UPSTREAM.linkCheck, result: 'unavailable', detail: 'HTTP 403' } });
+  assert.equal(unavailable.bytes, null);
+  assert.equal(unavailable.sha256, null);
+  assert.equal(unavailable.pinnedSha256, UPSTREAM.pinnedSha256);
+  const changed = normalizeUpstreamArtifact({ ...UPSTREAM, pinnedSha256: 'b'.repeat(64),
+    linkCheck: { ...UPSTREAM.linkCheck, result: 'changed' } });
+  assert.equal(changed.sha256, UPSTREAM.sha256);
+  assert.equal(changed.pinnedSha256, 'b'.repeat(64));
+});
+
+test('catalogue disclosure renders real filenames, metadata and honest source-page fallback', async () => {
+  await withFakeDocument(() => {
+    const host = document.createElement('div');
+    const fixture = structuredClone(FIXTURE);
+    fixture.sections[0].items[0].upstreamArtifacts = [UPSTREAM, {
+      ...UPSTREAM, filename: null, label: 'Publisher supplement', sourcePage: true,
+      note: 'Direct file unavailable.', compression: 'unknown',
+      linkCheck: { ...UPSTREAM.linkCheck, result: 'unavailable', detail: 'HTTP 403' },
+    }, { ...UPSTREAM, sha256: 'a'.repeat(64), pinnedSha256: 'b'.repeat(64),
+      linkCheck: { ...UPSTREAM.linkCheck, result: 'changed' } }, { url: 'http://unsafe' }];
+    new CitationsPanel(host).render(normalizeCitationsManifest(fixture));
+    const disclosure = host.querySelector('.upstream-source-catalogue');
+    assert.equal(disclosure.tagName.toLowerCase(), 'details');
+    assert.equal(disclosure.getAttribute('open'), null);
+    assert.equal(disclosure.querySelector('summary').textContent, 'Upstream source catalogue (3)');
+    const rows = host.querySelectorAll('.upstream-artifact');
+    assert.equal(rows.length, 3);
+    assert.equal(rows[0].querySelector('a').textContent, UPSTREAM.filename);
+    assert.equal(rows[0].querySelector('a').rel, 'noopener noreferrer');
+    assert.ok(rows[1].textContent.includes('HTTP 403'));
+    assert.ok(rows[1].textContent.includes('direct file URL'));
+    assert.ok(rows[2].textContent.includes('Pinned input SHA-256'));
+  });
+});
 
 /** An in-test fixture standing in for `data/citations.json`, per the contract:
  * `{sections: [{id, title, description, items: [{id, citation, url, contribution,

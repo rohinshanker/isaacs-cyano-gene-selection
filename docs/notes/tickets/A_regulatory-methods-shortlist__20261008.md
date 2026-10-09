@@ -7,6 +7,8 @@ Updated: 2026-10-08
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 Owner: cyano-source-ingestion. Code baseline 7bf8811 in isolated worktree
 worktrees/ui-choices-20261008. This is a candidate shortlist, not method execution,
 new source admission, genomic remapping or a calibrated-confidence claim.

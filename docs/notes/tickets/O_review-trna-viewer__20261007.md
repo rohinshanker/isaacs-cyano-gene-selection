@@ -9,6 +9,8 @@
 
 ## Current State
 
+Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
+
 The owner approved the bounded first version on 2026-10-08 after its complete
 in-chat summary. The specification transfers to the implementation ticket. The
 isolated implementation returned, but its independent review has five open

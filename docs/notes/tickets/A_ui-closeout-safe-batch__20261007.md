@@ -3,9 +3,15 @@
 Scope: Coordinate isolated UI closeout, implement clear presentation requests, collect pending owner decisions, and verify inherited mobile Data Selection findings.
 Status: active
 Opened: 2026-10-07
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
+
+Owner resumed implementation on 2026-10-08 with "proceed with implementing open tickets". This supersedes the record-only instruction below for the assigned UI work. Session is now named `cyano-ui-fixes` with the same Agent Deck identity. Integration worktree `../worktrees/ui-open-tickets-20261008`, branch `work/ui-open-tickets-20261008`, baseline `8bdefc764b4ddcf63e3796b41ea4328bcb33daa3`. This session owns the queued presentation, independent axes, adjustable sequence extent, source catalogue, tRNA integration/closure and new unclaimed pointer/map-feedback tickets. Existing recoded/scientific workers retain their scope. Human clutter marks and the specific iDOG owner-review hold remain pending.
+
+Confirmed follow-up answers: continuous aggregate progress; B 500ms; name actual loading filenames and measured KB/MB with batched updates. Calculated regulatory predictions get slightly transparent tag fills and lower overlap priority than annotations picked from a library; classification is by how each record was obtained, not by tool name or a changed biological confidence claim. Hover outlines apply in both gene viewers, including initiation/termination sites. Evaluate current accessible predictor versions and local computation where supported; preserve source/licence/model applicability constraints.
+
+Streams: DEM-320 tRNA repair/review findings; DEM-322 three disclosures/scale/precedence plus global hover contrast; DEM-323 loading stream fell back to native `/root/loading_ui` after terminal Claude OAuth failure; DEM-327 owns upstream extent/annotation outlines; DEM-328 independently reviews the recovered tRNA patch; coordinator owns independent-axis selection, catalogue and remaining integration. No worker may close tickets or edit the shared queue.
 
 Owner: `cyano-source-ingestion` (80c81443-1791314087). Canonical repository:
 `/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/isaacs-cyano-gene-selection`.
