@@ -53,7 +53,7 @@ created/strengthened or disrupted candidates. Keep scores and sequence edits
 separate from verified biological function and measured Tan evidence.
 
 Related tickets: O_rbs-calculator-gene-visualizer__20260930,
-O_idog-promoter-prediction__20260930, O_gene-sequence-structural-features__20261007,
+O_idog-promoter-prediction__20260930, the completed gene-sequence-closeup.md contract,
 O_recoding-regulatory-site-change__20260930, O_folding-compute-backend__20260930,
 and BioCyc/cross-strain annotation assessments. BioCyc/EcoCyc records are annotation
 cross-checks, not interchangeable prediction methods or cross-strain coordinates.
