@@ -187,14 +187,23 @@ export class FakeElement {
 
 /** A `document` for `globalThis`; install it for the duration of a test. */
 export function fakeDocument() {
+  const listeners = {};
   const document = {
     activeElement: null,
     body: new FakeElement('body'),
+    listeners,
     createElement: (tag) => new FakeElement(tag),
     createElementNS: (namespace, tag) => new FakeElement(tag, namespace),
     createTextNode: (text) => new FakeNode(String(text)),
     querySelector: (selector) => document.body.querySelector(selector),
     querySelectorAll: (selector) => document.body.querySelectorAll(selector),
+    addEventListener: (type, listener) => { (listeners[type] ??= []).push(listener); },
+    removeEventListener: (type, listener) => {
+      listeners[type] = (listeners[type] ?? []).filter((entry) => entry !== listener);
+    },
+    dispatch: (type, event = {}) => {
+      for (const listener of [...(listeners[type] ?? [])]) listener(event);
+    },
   };
   return document;
 }
@@ -209,8 +218,19 @@ export function fakeDocument() {
 export async function withFakeDocument(body, { devicePixelRatio = 1 } = {}) {
   const previous = { document: globalThis.document, window: globalThis.window };
   const document = fakeDocument();
+  const listeners = {};
   globalThis.document = document;
-  globalThis.window = { devicePixelRatio };
+  globalThis.window = {
+    devicePixelRatio,
+    listeners,
+    addEventListener: (type, listener) => { (listeners[type] ??= []).push(listener); },
+    removeEventListener: (type, listener) => {
+      listeners[type] = (listeners[type] ?? []).filter((entry) => entry !== listener);
+    },
+    dispatch: (type, event = {}) => {
+      for (const listener of [...(listeners[type] ?? [])]) listener(event);
+    },
+  };
   try {
     return await body(document);
   } finally {

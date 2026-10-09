@@ -108,6 +108,20 @@ JavaScript tests; Python ran 891 tests with one expected skip and 36 subtests;
 managed worktree had no `.venv`, so both Python gates used the canonical
 checkout's existing `.venv/bin/python` against this worktree.
 
+PRESENTATION-R1 repair, `codex-implementer`, 2026-10-09: the misplaced
+disclosure was removed from the grey GO IEA context block and applied to the
+tan function-category block itself. With `M744_RS00005` pinned, the full source,
+probability, threshold, provenance and caveat explanation is now closed behind
+“Function category / information” at 375×812, 768×1024, 1280×800 and
+1440×900. Opening it restores the complete content. A second real-data
+regression confirms GO context retains its candidate-evidence presentation and
+does not acquire the function-category label. Borrowed metric-source notes
+remain closed inside the parent-integrated lazy metric-family table; that lazy
+construction and its tests were preserved. Focused checks passed 44/44. Final
+gates passed: 1,346 JavaScript tests; 891 Python tests with one expected skip
+and 36 subtests; 117 contract checks with one declared skip. No visual baseline
+files changed.
+
 ## Cleanup
 
 When implemented and verified, report the affected-area change and clarification

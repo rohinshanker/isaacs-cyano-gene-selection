@@ -18,7 +18,7 @@ test('tan information uses a closed native disclosure without changing its conte
 });
 
 test('information popover opens by hover and focus, pins by click, and dismisses by Escape', async () => {
-  await withFakeDocument((document) => {
+  await withFakeDocument(async (document) => {
     const host = document.createElement('span');
     document.body.append(host);
     const info = new InfoPopover(host, { id: 'scale-info-test', label: 'About the scale' });
@@ -29,6 +29,7 @@ test('information popover opens by hover and focus, pins by click, and dismisses
     host.dispatch('pointerenter');
     assert.equal(info.popover.hidden, false);
     host.dispatch('pointerleave');
+    await new Promise((resolve) => setTimeout(resolve, 140));
     assert.equal(info.popover.hidden, true);
 
     host.dispatch('focusin');
@@ -65,5 +66,69 @@ test('information popover closes when keyboard focus leaves its host', async () 
     host.dispatch('focusout', { relatedTarget: elsewhere });
     assert.equal(info.popover.hidden, true);
     assert.equal(info.button.getAttribute('aria-expanded'), 'false');
+  });
+});
+
+test('information popover keeps hover open while the pointer crosses its gap', async () => {
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('span');
+    document.body.append(host);
+    const info = new InfoPopover(host, { id: 'scale-info-gap', label: 'About the scale' });
+    host.dispatch('pointerenter');
+    host.dispatch('pointerleave');
+    assert.equal(info.popover.hidden, false, 'the gap gets a short hover bridge');
+    info.popover.dispatch('pointerenter');
+    await new Promise((resolve) => setTimeout(resolve, 140));
+    assert.equal(info.popover.hidden, false, 'reaching the panel cancels the pending close');
+    info.popover.dispatch('pointerleave');
+    await new Promise((resolve) => setTimeout(resolve, 140));
+    assert.equal(info.popover.hidden, true, 'leaving the whole interaction region closes it');
+  });
+});
+
+test('hover-open information popover dismisses on document Escape without moving focus', async () => {
+  await withFakeDocument((document) => {
+    const host = document.createElement('span');
+    const elsewhere = document.createElement('button');
+    document.body.append(host, elsewhere);
+    elsewhere.focus();
+    const info = new InfoPopover(host, { id: 'scale-info-hover-escape', label: 'About the scale' });
+    host.dispatch('pointerenter');
+    let prevented = false;
+    document.dispatch('keydown', {
+      key: 'Escape', preventDefault: () => { prevented = true; }, stopPropagation: () => {},
+    });
+    assert.equal(prevented, true);
+    assert.equal(info.popover.hidden, true);
+    assert.equal(document.activeElement, elsewhere, 'pointer-only dismissal does not steal focus');
+    assert.equal(document.listeners.keydown.length, 0, 'closed popover removes global Escape');
+    assert.equal(document.listeners.pointerdown.length, 0, 'closed popover removes outside click');
+  });
+});
+
+test('open information popover follows resize and scroll and cleans up viewport listeners', async () => {
+  await withFakeDocument((document) => {
+    globalThis.window.innerWidth = 1280;
+    globalThis.window.innerHeight = 800;
+    const host = document.createElement('span');
+    document.body.append(host);
+    const info = new InfoPopover(host, { id: 'scale-info-resize', label: 'About the scale' });
+    let buttonTop = 600;
+    info.button.getBoundingClientRect = () => ({ left: 1000, right: 1020,
+      top: buttonTop, bottom: buttonTop + 20, width: 20, height: 20 });
+    info.popover.getBoundingClientRect = () => ({ width: 300, height: 90 });
+    info.button.dispatch('click');
+    assert.equal(info.popover.style.top, '624px', 'initial placement fits below the trigger');
+
+    globalThis.window.innerHeight = 650;
+    globalThis.window.dispatch('resize');
+    assert.equal(info.popover.style.top, '506px', 'resize recomputes vertical placement');
+    buttonTop = 400;
+    globalThis.window.dispatch('scroll');
+    assert.equal(info.popover.style.top, '424px', 'scroll follows the moved trigger');
+
+    info.button.dispatch('click');
+    assert.equal(globalThis.window.listeners.resize.length, 0);
+    assert.equal(globalThis.window.listeners.scroll.length, 0);
   });
 });

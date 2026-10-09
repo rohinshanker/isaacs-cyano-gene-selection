@@ -842,6 +842,7 @@ input[type="range"] { width: 100%; }
 .info-popover-content {
   position: fixed; z-index: 20;
   width: min(30rem, calc(100vw - 2rem)); padding: 0.65rem 0.75rem;
+  max-height: calc(100vh - 2rem); overflow-y: auto;
   border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface);
   box-shadow: 0 8px 24px rgba(27, 39, 51, 0.18); color: var(--ink); font-size: 0.82rem;
   line-height: 1.45; overflow-wrap: anywhere;

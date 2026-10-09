@@ -33,6 +33,27 @@ export class InfoPopover {
     this.focused = false;
     this.pinned = false;
     this.dismissed = false;
+    this.leaveTimer = null;
+    this.globalListenersActive = false;
+    this.onDocumentPointerDown = (event) => {
+      if (this.popover.hidden || this.host.contains(event.target)) return;
+      this.close({ suppressUntilExit: true });
+    };
+    this.onDocumentKeyDown = (event) => {
+      if (event.key !== 'Escape' || this.popover.hidden) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const focusWasInside = this.host.contains(document.activeElement);
+      this.close({ suppressUntilExit: true });
+      if (focusWasInside) this.button.focus({ preventScroll: true });
+    };
+    this.onViewportChange = () => {
+      if (!this.host.isConnected) {
+        this.close();
+        return;
+      }
+      if (!this.popover.hidden) this.position();
+    };
 
     this.button = document.createElement('button');
     this.button.type = 'button';
@@ -50,16 +71,23 @@ export class InfoPopover {
     this.button.setAttribute('aria-describedby', id);
     this.host.replaceChildren(this.button, this.popover);
 
-    this.host.addEventListener('pointerenter', () => {
+    const enter = () => {
+      this.cancelLeave();
       this.hovered = true;
       if (!this.dismissed) this.sync();
-    });
-    this.host.addEventListener('pointerleave', () => {
+    };
+    const leave = () => {
       this.hovered = false;
-      if (!this.focused) this.dismissed = false;
-      this.sync();
-    });
+      this.scheduleLeave();
+    };
+    this.host.addEventListener('pointerenter', enter);
+    this.host.addEventListener('pointerleave', leave);
+    // The fixed panel is visually separated from the trigger by a small gap.
+    // Its own handlers cancel the grace-period close when that gap is crossed.
+    this.popover.addEventListener('pointerenter', enter);
+    this.popover.addEventListener('pointerleave', leave);
     this.host.addEventListener('focusin', () => {
+      this.cancelLeave();
       this.focused = true;
       if (!this.dismissed) this.sync();
     });
@@ -82,33 +110,68 @@ export class InfoPopover {
     });
     this.button.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape' || this.popover.hidden) return;
-      event.preventDefault();
-      event.stopPropagation();
-      this.close({ suppressUntilExit: true });
-      this.button.focus({ preventScroll: true });
+      this.onDocumentKeyDown(event);
     });
-    document.addEventListener?.('pointerdown', (event) => {
-      if (this.popover.hidden || this.host.contains(event.target)) return;
-      this.close({ suppressUntilExit: true });
-    }, true);
   }
 
   update(text) {
     this.popover.textContent = text ?? '';
+    if (!this.popover.hidden) this.position();
+  }
+
+  cancelLeave() {
+    if (this.leaveTimer === null) return;
+    globalThis.clearTimeout(this.leaveTimer);
+    this.leaveTimer = null;
+  }
+
+  scheduleLeave() {
+    this.cancelLeave();
+    this.leaveTimer = globalThis.setTimeout(() => {
+      this.leaveTimer = null;
+      if (!this.focused) this.dismissed = false;
+      this.sync();
+    }, 120);
+  }
+
+  addGlobalListeners() {
+    if (this.globalListenersActive) return;
+    document.addEventListener?.('pointerdown', this.onDocumentPointerDown, true);
+    document.addEventListener?.('keydown', this.onDocumentKeyDown, true);
+    globalThis.window?.addEventListener?.('resize', this.onViewportChange);
+    globalThis.window?.addEventListener?.('scroll', this.onViewportChange, true);
+    this.globalListenersActive = true;
+  }
+
+  removeGlobalListeners() {
+    if (!this.globalListenersActive) return;
+    document.removeEventListener?.('pointerdown', this.onDocumentPointerDown, true);
+    document.removeEventListener?.('keydown', this.onDocumentKeyDown, true);
+    globalThis.window?.removeEventListener?.('resize', this.onViewportChange);
+    globalThis.window?.removeEventListener?.('scroll', this.onViewportChange, true);
+    this.globalListenersActive = false;
   }
 
   close({ suppressUntilExit = false } = {}) {
+    this.cancelLeave();
+    this.hovered = false;
     this.pinned = false;
     this.dismissed = suppressUntilExit;
     this.popover.hidden = true;
     this.button.setAttribute('aria-expanded', 'false');
+    this.removeGlobalListeners();
   }
 
   sync() {
     const open = !this.dismissed && (this.pinned || this.hovered || this.focused);
     this.popover.hidden = !open;
     this.button.setAttribute('aria-expanded', String(open));
-    if (open) this.position();
+    if (open) {
+      this.position();
+      this.addGlobalListeners();
+    } else {
+      this.removeGlobalListeners();
+    }
   }
 
   /** Keep the fixed popover inside the current viewport, above if needed. */

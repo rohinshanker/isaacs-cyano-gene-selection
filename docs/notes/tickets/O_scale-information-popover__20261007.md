@@ -110,6 +110,28 @@ as `ui-review-5-*`. Final gates: 1,342 JavaScript tests passed; Python passed
 891 tests with one expected skip and 36 subtests; the contract validator passed
 117 checks with one declared skip.
 
+PRESENTATION-R2–R4 repair, `codex-implementer`, 2026-10-09: the shared
+popover now keeps a short cancellable hover bridge across the 4 px trigger gap,
+handles Escape at document scope only while visible, and installs its outside-
+pointer, Escape, resize and scroll listeners only while open. Closing removes
+all four global handlers; pointer-only Escape leaves the reader's existing focus
+unchanged, while button-focused Escape retains button focus. An open popover is
+repositioned when the viewport or scroll position changes, and its height is
+bounded to the usable viewport.
+
+Real Native and Chromosome/Gene checks crossed the gap, entered and read the
+panel, then exercised unfocused Escape at 375×812, 768×1024, 1280×800 and
+1440×900. Every panel stayed within 16 px viewport margins and no horizontal
+overflow appeared. For the independent lower-height reproduction, the Native
+panel moved from y=635.7–715.6 to y=526.3–606.1 and the Chromosome panel from
+y=635.2–715.1 to y=525.7–605.6 when 1280×800 was reduced to 1280×650 with each
+trigger still visible at y≈610. Browser console output was empty. Focused checks
+passed 44/44. Final gates passed: 1,346 JavaScript tests; 891 Python tests with
+one expected skip and 36 subtests; 117 contract checks with one declared skip.
+Durable screenshots, semantic snapshots, measurements and the reproduction
+script are in the requested `presentation` artifact directory. No visual
+baseline files changed.
+
 ## Cleanup
 
 When implemented and verified, report the affected-area change and clarification

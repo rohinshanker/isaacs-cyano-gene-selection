@@ -160,7 +160,7 @@ function goContextBlock(evidence, source, copy) {
     block.append(rank);
   }
   if (evidence.goContext) block.append(goAttribution(source));
-  return tanDisclosure(block, 'Function category / information');
+  return block;
 }
 
 /** Explicit notes wherever GO IEA terms disagree with another annotation. */
@@ -322,7 +322,7 @@ function functionCategoryBlock(gene, dataset, sources) {
       layerOf(organism, 'sourceDerivedCategories').attribution);
     block.append(note);
   }
-  return block;
+  return tanDisclosure(block, 'Function category / information');
 }
 
 /**
