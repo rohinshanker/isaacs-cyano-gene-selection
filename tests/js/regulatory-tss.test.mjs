@@ -62,6 +62,10 @@ class FakeElement {
   addEventListener(name, callback) { this.listeners.set(name, callback); }
 }
 
+function nodeText(node) {
+  return [node.textContent ?? '', ...node.children.map(nodeText)].join(' ');
+}
+
 test('search and paging keep controls stable and expose unmapped sites', () => {
   const previous = globalThis.document;
   globalThis.document = { createElement: (tag) => new FakeElement(tag) };
@@ -105,11 +109,11 @@ test('search and paging keep controls stable and expose unmapped sites', () => {
     search.value = 'aTSS-320358';
     search.listeners.get('input')();
     assert.equal(panel.list.children[0].children.some((child) =>
-      child.textContent?.includes('Source caution')), true);
+      nodeText(child).includes('Source caution')), true);
     search.value = 'iTSS+320358';
     search.listeners.get('input')();
     assert.equal(panel.list.children[0].children.some((child) =>
-      child.textContent?.includes('Source caution')), true);
+      nodeText(child).includes('Source caution')), true);
   } finally {
     globalThis.document = previous;
   }
@@ -130,8 +134,13 @@ test('site cards name the warning comparison and keep a zero start distance', ()
     panel.update(inventory);
     panel.search.value = row.tss_id;
     panel.search.listeners.get('input')();
-    const texts = panel.list.children[0].children.map((child) => child.textContent ?? '');
-    assert.equal(texts.includes('Source caution — High light vs control: Test caution.'), true);
+    const texts = panel.list.children[0].children.map(nodeText);
+    assert.equal(texts.some((text) => text.includes(
+      'Source caution — High light vs control: Test caution.')), true);
+    const caution = panel.list.children[0].children.find((child) =>
+      nodeText(child).includes('Source caution — High light vs control: Test caution.'));
+    assert.equal(caution.tagName, 'details');
+    assert.equal(caution.open, undefined, 'the native source-caution disclosure starts closed');
     assert.equal(texts.some((text) => text.startsWith('0 nt from the 2018 start model; ')
       && text.includes('not recalculated')), true);
     row.source_start_distance_nt = '';

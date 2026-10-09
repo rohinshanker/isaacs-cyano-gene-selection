@@ -24,6 +24,7 @@
  * site stays in the list below the picture.
  */
 import { pendingNote } from './loading-note.js';
+import { tanDisclosure } from './disclosures.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import {
   geneViewModel, fractionOf, overlapGroups, ticksFor,
@@ -707,7 +708,7 @@ export function renderGeneViewer(host, gene, {
       spliced.className = 'gene-flag';
       spliced.textContent = `Discontinuous coding sequence: ${model.segments.length} genomic `
         + 'segments, so the drawn span is longer than the coding length.';
-      host.append(spliced);
+      host.append(tanDisclosure(spliced, 'Sequence structure / information'));
     }
 
     host.append(factsFor(model));

@@ -3,11 +3,12 @@
 Scope: Move the functional-annotation precedence explanation into the expandable Data Sources section, visible only when opened and spanning its full content width.
 Status: open
 Opened: 2026-10-07
-Updated: 2026-10-07
+Updated: 2026-10-09
 
 ## Current State
 
-Opened for later at the owner's request. No implementation started.
+Implemented by `codex-implementer` in the DEM-322 worktree on 2026-10-09;
+the ticket remains open for its owning session to review and close.
 
 The owner wants the functional-annotation precedence text removed from its
 standing location and placed inside Data Sources. It should appear only when
@@ -63,6 +64,28 @@ hidden, annotation-source toggles, function-category and other colour metrics,
 and both organisms where applicable. Inspect screenshots and full-width text
 geometry, keyboard expansion/collapse, overflow, and runtime diagnostics. Run
 focused legend/Data Sources checks and all repository completion gates.
+
+Implementation verification, `codex-implementer`, 2026-10-09: the precedence
+paragraph now belongs to `details.data-sources`; the category legend retains
+only its interaction hint, and the hidden checkbox description no longer
+duplicates precedence. The paragraph is regenerated from the active organism's
+source names and threshold, cleared for non-annotation metrics, and takes the
+opened section's full content width. Native summary keyboard operation was
+exercised with Enter and Space. At 375×812 and 768×1024 the expanded paragraph
+wrapped without overflow; collapsed and non-category states exposed no copy or
+gap. Both Cyanobacteria and E. coli were exercised across all ten visible tabs.
+
+Affected-area comparison: the opening baseline `fb9747e6` predates the current
+Data Sources selector, multi-organism records, shared colour scales, and the
+Chromosome/Gene and strain-fitness additions that reached implementation parent
+`8bdefc7`. Those intervening changes affected the named files but did not alter
+the requested placement; the implementation uses their current component and
+organism contracts. The Multica bookkeeping commit `766e93e` changed no project
+code. No owner clarification was needed. Final gates passed: `npm test` ran
+1,340 JavaScript tests; Python ran 891 tests with one expected skip and 36
+subtests; `tools/validate_contract.py` passed 117 checks with one declared skip.
+The managed worktree had no `.venv`, so both Python gates used the canonical
+checkout's existing `.venv/bin/python` against this worktree.
 
 ## Cleanup
 

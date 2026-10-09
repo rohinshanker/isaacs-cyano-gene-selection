@@ -4,6 +4,7 @@ import {
 import { FOLD_SETTINGS } from '../core/folding-sequences.js';
 import { serializeSchemeMap } from '../core/scheme.js';
 import { organismOf } from '../core/organisms.js';
+import { tanDisclosure } from './disclosures.js';
 
 const EXTENSIONS = {
   sequence: 'txt', fasta: 'fasta', a3m: 'a3m', a2m: 'a2m', stockholm: 'sto',
@@ -147,7 +148,7 @@ export class RosettaHandoffPanel {
       const node = document.createElement('p');
       node.className = 'provenance-warning';
       node.textContent = message;
-      this.warning.append(node);
+      this.warning.append(tanDisclosure(node, 'Handoff warning'));
     }
   }
 

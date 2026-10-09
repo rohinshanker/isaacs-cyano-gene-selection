@@ -280,7 +280,8 @@ test('for the default organism the rewrite leaves the page saying what it said',
   assert.equal(page.nodes.get('gene-search').getAttribute('placeholder'),
     'Locus, product, category, or GO term');
   assert.equal(page.nodes.get('annotation-source-hint').textContent,
-    DEFAULT_ORGANISM.copy.annotationSourceHint);
+    'Each checkbox enables one annotation source for function-category colouring and '
+      + 'the legend counts only. The detail panel, lists, search, and export always show every source.');
   // Unchanged: the static footer already says the default organism's directory.
   assert.equal(page.nodes.get('data-directory-path').textContent, 'site/data');
   assert.equal(dataDirectoryPath(DEFAULT_ORGANISM), 'site/data');

@@ -52,7 +52,10 @@ that would cross into
 [claude-science-handoff.md](claude-science-handoff.md)'s claim territory. The
 scale itself is contracted in
 [current-design-answers.md](current-design-answers.md#the-colour-scale), and the
-legend states which scale is in effect beside the ramp.
+legend states which scale is in effect beside the ramp. The longer, dynamic
+scale explanation is available from the info button beside **Scale** on the map
+and Chromosome/Gene tab; it is no longer repeated as standing text under the
+legend.
 
 Verify with `node --test tests/js/metric-help.test.mjs
 tests/js/export-manifest.test.mjs tests/js/metric-family-order.test.mjs

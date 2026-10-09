@@ -30,6 +30,7 @@ import {
 import { syncScaleSelect } from './scale-select.js';
 import { renderDrawDirection } from './draw-direction.js';
 import { formatCount } from './format.js';
+import { InfoPopover } from './disclosures.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 
 export const CHROMOSOME_TAB = Object.freeze({
@@ -364,7 +365,7 @@ export class ChromosomeView {
    *   colorOptions: {value: string, label: string, group: string}[], colorKey: string,
    *   colorScaleControl: {options: {value: string, label: string, disabled: boolean,
    *     reason: string|null}[], value: string, disabled: boolean, reason: string|null},
-   *   colorScaleClause: string, drawOnTop: string,
+   *   colorScaleClause: string, scaleInformation: string, drawOnTop: string,
    *   drawDirectionControl: {options: {value: string, label: string}[], value: string,
    *     disabled: boolean, reason: string|null},
    *   pinned: number, hovered: number, active: number, shortlist: Set<number>,
@@ -522,13 +523,18 @@ export class ChromosomeView {
     const scaleLabel = document.createElement('label');
     scaleLabel.htmlFor = 'chromosome-color-scale';
     scaleLabel.textContent = 'Scale';
+    const scaleInfoHost = document.createElement('span');
+    this.scaleInfo = new InfoPopover(scaleInfoHost, {
+      id: 'chromosome-color-scale-info-popover',
+      label: 'About the chromosome colour scale',
+    });
     this.colorScaleSelect = document.createElement('select');
     this.colorScaleSelect.id = 'chromosome-color-scale';
     this.colorScaleSelect.setAttribute('aria-describedby', 'chromosome-color-scale-notice');
     this.colorScaleSelect.addEventListener('change', () => {
       this.handlers.onColorScaleChange?.(this.colorScaleSelect.value);
     });
-    scaleField.append(scaleLabel, this.colorScaleSelect);
+    scaleField.append(scaleLabel, scaleInfoHost, this.colorScaleSelect);
     fieldsRow.append(colorField, scaleField);
 
     // Every reason a scale is unavailable, in visible text, because the titles
@@ -768,6 +774,7 @@ export class ChromosomeView {
     }
     this.colorSelect.value = colorKey;
     syncScaleSelect(this.colorScaleSelect, this.model.colorScaleControl, this.scaleNotice);
+    this.scaleInfo.update(this.model.scaleInformation);
     this.syncDrawDirection();
     this.showHidden.checked = showHidden;
     if (this.startSitesToggle) this.startSitesToggle.checked = this.showStartSites;

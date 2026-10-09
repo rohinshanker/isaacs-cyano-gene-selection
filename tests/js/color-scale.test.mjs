@@ -512,9 +512,10 @@ test('the rendered legend puts the scale beside the ramp and each tick at its ow
     assert.deepEqual(ticks.map((tick) => tick.style.left), ['0.00%', '58.29%', '100.00%']);
     assert.deepEqual(ticks.map((tick) => tick.className), ['at-start', '', 'at-end']);
 
-    // The note below the ramp names the scale as well, for a reader who is
-    // reading rather than glancing.
-    assert.match(host.querySelector('.legend-scale-note').textContent, /^Scale: Logarithmic\./);
+    // The standing note is gone; the same live text is now owned by the Scale
+    // control's popover.
+    assert.equal(host.querySelector('.legend-scale-note'), null);
+    assert.match(describeValueScale(logarithmic.metric, logarithmic.scale), /^Scale: Logarithmic\./);
     // The ramp is painted from the ramp's own buckets, in ramp order.
     const { fills } = row.querySelector('canvas');
     assert.equal(fills.length, 196);

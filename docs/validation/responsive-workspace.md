@@ -79,10 +79,31 @@ then its view buttons on a row of their own — flat, it wrapped `Zoom in (+)` u
 beside Scale at 375 px and stranded Colour by above it. See
 [chromosome-view.md](chromosome-view.md).
 
+An info button sits immediately beside each **Scale** label and remains enabled
+when the Scale select is disabled. Its popover is fixed to viewport coordinates,
+clamped to 16 px side margins, and placed above the trigger when there is not
+room below. At 375 px its long symmetric-log copy must remain wholly within the
+viewport; the same control and placement rules apply on the Chromosome/Gene
+tab. Hover, focus, click/touch, Escape, focus departure, and an outside pointer
+press are the supported open/dismiss paths.
+
 The designer, shortlist help, and provenance use native disclosures so support
 content does not dominate the default page. Wide tables, including the opened
 axis-loadings table, scroll inside their own containers. The document itself
 must not scroll horizontally.
+
+Every tan information treatment uses the shared closed native
+`details.tan-disclosure` contract. The inventory is: borrowed-source notes in
+filters; search-alias and GO search notes; gene-view sequence structure;
+function-category, cross-organism, translational-exception, sequence-structure,
+and borrowed-metric notes in gene detail; colour-legend provenance; guided-panel
+borrowed-source, constraint, result-status/result-information, and per-gene
+caveat notes; regulatory-source cautions; RNA handoff warnings; shortlist filter
+status; synthetic strain-fitness evidence; recomputation warnings; and the
+center-column filter banner. Each keeps a concise summary visible, starts closed
+when created, retains its original content and controls when opened, and leaves
+no explanatory gap when closed. A red blocking/error treatment such as
+`.metric-alert` is not a tan information box and remains immediately visible.
 
 ## Regression checks
 
@@ -105,6 +126,11 @@ filenames; an open designer with results; and a long selected-gene detail. Verif
 - the note naming an unavailable scale sits between that row and the colour
   explanation on both tabs, and takes no height at all under a metric every scale
   can take (`#c=tssInitiation` against `#c=rareCount`);
+- the adjacent Scale info button still opens when Scale is disabled; its dynamic
+  symmetric-log and percentile copy fits the viewport and dismisses by keyboard,
+  touch/click, focus departure, and an outside pointer press on both affected tabs;
+- every inventoried tan information box starts closed, opens and re-closes with
+  native keyboard operation, and conditional boxes disappear without leaving a gap;
 - source order and focus order remain map → comparison → designer → shortlist →
   provenance → detail;
 - sticky detail is viewport-bounded and keyboard/touch scrollable;

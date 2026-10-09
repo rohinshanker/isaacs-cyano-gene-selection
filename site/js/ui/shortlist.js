@@ -12,6 +12,7 @@ import { buildExport } from '../core/export-manifest.js';
 import { FoldingPanel } from './folding-panel.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
 import { createLocusTag } from './locus-tag.js';
+import { tanDisclosure } from './disclosures.js';
 
 /**
  * Live metrics shown per row, in order, when a scheme is active. These are the two
@@ -154,7 +155,7 @@ export class ShortlistPanel {
       const hidden = document.createElement('p');
       hidden.className = 'provenance-warning';
       hidden.textContent = 'Outside the current map filters; retained in the shortlist and export.';
-      text.append(hidden);
+      text.append(tanDisclosure(hidden, 'Filter status'));
     }
 
     const metrics = this.describeMetrics(index, state);

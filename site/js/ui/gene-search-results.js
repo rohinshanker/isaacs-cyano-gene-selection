@@ -11,6 +11,7 @@ import { organismOf } from '../core/organisms.js';
 import { formatCount } from './format.js';
 import { createLocusTag } from './locus-tag.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
+import { tanDisclosure } from './disclosures.js';
 
 /** A repeated blur/change event must not replace a result while it is being clicked. */
 export function shouldRenderSearch(currentQuery, nextQuery, currentResult) {
@@ -165,13 +166,13 @@ export class GeneSearchResults {
       note.className = 'search-alias-note';
       note.textContent = `Also searched for the wording this genome's annotation uses for `
         + `${result.aliasesUsed.join(', ')}.`;
-      host.append(note);
+      host.append(tanDisclosure(note, 'Search information'));
     }
     if (result.shown.some((hit) => hit.goMatch)) {
       const note = document.createElement('p');
       note.className = 'search-alias-note';
       note.textContent = organism.copy.goSearchNote;
-      host.append(note);
+      host.append(tanDisclosure(note, 'Annotation search information'));
     }
 
     const list = document.createElement('ul');

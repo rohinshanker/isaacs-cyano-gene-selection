@@ -120,8 +120,8 @@ test('the colour scale is resolved once and named in both accessible description
   assert.match(model, /scaleControl: scaleControlState\(resolved\),/);
   assert.equal((app.match(/scaleControlState\(/g) ?? []).length, 1,
     'nothing else builds a Scale control state');
-  assert.equal((app.match(/colors\.scaleControl/g) ?? []).length, 2,
-    'the map selector and the chromosome model read that same object');
+  assert.equal((app.match(/colors\.scaleControl/g) ?? []).length, 3,
+    'the map selector, scale popover, and chromosome model read that same object');
 
   // The scatter canvas names the scale beside the metric it scales.
   const map = app.slice(app.indexOf('function renderMap()'), app.indexOf('function selectedCategoryLabels()'));
@@ -130,7 +130,7 @@ test('the colour scale is resolved once and named in both accessible description
   // And the chromosome canvas is handed the same clause.
   const chromosome = app.slice(app.indexOf('function renderChromosomeView()'));
   assert.match(chromosome.slice(0, chromosome.indexOf('renderColorHelp(')),
-    /colorScaleControl: colors\.scaleControl,\s*colorScaleClause: colorScaleClause\(colors\),/);
+    /colorScaleControl: colors\.scaleControl,\s*scaleInformation: scaleInformation\(colors\),\s*colorScaleClause: colorScaleClause\(colors\),/);
 });
 
 test('the chromosome tab is a registered tab with its own tabpanel container', () => {

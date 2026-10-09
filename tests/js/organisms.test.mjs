@@ -540,7 +540,8 @@ test('the static page is the default organism\'s, word for word', async () => {
   assert.equal(text(/<i id="organism-species">([\s\S]*?)<\/i>/), DEFAULT_ORGANISM.species);
   assert.equal(text(/<span id="organism-strain">([\s\S]*?)<\/span>/), DEFAULT_ORGANISM.strain);
   assert.equal(text(/<p class="visually-hidden" id="annotation-source-hint">([\s\S]*?)<\/p>/),
-    DEFAULT_ORGANISM.copy.annotationSourceHint);
+    'Each checkbox enables one annotation source for function-category colouring and '
+      + 'the legend counts only. The detail panel, lists, search, and export always show every source.');
   const search = searchCopy(DEFAULT_ORGANISM);
   assert.equal(text(/<p class="visually-hidden" id="gene-search-hint">([\s\S]*?)<\/p>/), search.hint);
   assert.equal(text(/id="gene-search"[\s\S]*?placeholder="([^"]*)"/), search.placeholder);

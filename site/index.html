@@ -79,6 +79,7 @@
 <link rel="modulepreload" href="js/ui/confirm-dialog.js">
 <link rel="modulepreload" href="js/ui/data-sources.js">
 <link rel="modulepreload" href="js/ui/dataset-color-progress.js">
+<link rel="modulepreload" href="js/ui/disclosures.js">
 <link rel="modulepreload" href="js/ui/draw-direction.js">
 <link rel="modulepreload" href="js/ui/filters.js">
 <link rel="modulepreload" href="js/ui/folding-panel.js">
@@ -631,6 +632,7 @@ if (window.location.protocol === 'file:') {
             </span>
             <span class="field-row">
               <label for="color-scale">Scale</label>
+              <span id="color-scale-info"></span>
               <select id="color-scale"
                       aria-describedby="color-scale-notice color-scale-hint"></select>
             </span>
@@ -690,15 +692,14 @@ if (window.location.protocol === 'file:') {
         </p>
         <p class="visually-hidden" id="annotation-source-hint">
           Each checkbox enables one annotation source for function-category colouring and
-          the legend counts only; the detail panel, lists, search, and export always show
-          every source. Colour follows UTEX 2973, then PCC 7942, then GO IEA among the
-          enabled sources: a lab-reviewed assignment wins, otherwise a category derived
-          from the PCC 7942 product name or the GO IEA terms, drawn as a hollow ring with a
-          centre dot and labelled as derived. A lower source that disagrees never changes
-          the colour; the gene detail names the conflict.
+          the legend counts only. The detail panel, lists, search, and export always show
+          every source.
         </p>
         <div id="gene-search-results" role="region" aria-label="Gene search results" hidden></div>
-        <p class="filter-banner" id="filter-banner" role="status"></p>
+        <details class="tan-disclosure filter-disclosure" id="filter-banner" hidden>
+          <summary>Filter status</summary>
+          <p class="filter-banner active" id="filter-banner-content" role="status"></p>
+        </details>
         <div class="canvas-host">
           <canvas id="map-canvas" tabindex="0" role="img" aria-describedby="map-instructions"
                   aria-label="Scatter plot of genes. Use the arrow keys to move between genes."></canvas>

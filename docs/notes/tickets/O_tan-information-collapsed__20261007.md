@@ -3,11 +3,12 @@
 Scope: Make every instance of the tan text/information box across the site collapsed by default, with a relevant label that opens the full existing content.
 Status: open
 Opened: 2026-10-07
-Updated: 2026-10-07
+Updated: 2026-10-09
 
 ## Current State
 
-Opened for later at the owner's request. No implementation started.
+Implemented by `codex-implementer` in the DEM-322 worktree on 2026-10-09;
+the ticket remains open for its owning session to review and close.
 
 The owner's clarified scope on 2026-10-07 is all instances of the tan text box,
 including the one at the bottom of the center panel. The original filter-only
@@ -71,6 +72,41 @@ changes, and relevant content appearing/disappearing. Confirm the full content
 and controls remain reachable, wording stays accurate, and there is no leftover
 gap, clipping, or horizontal overflow. Inspect runtime diagnostics; run focused
 checks for every affected component and all repository completion gates.
+
+Implementation verification, `codex-implementer`, 2026-10-09: a shared
+`tanDisclosure()` native-details contract now wraps the complete inventory:
+borrowed-source filter notes; search alias and annotation-search notes; gene-view
+sequence structure; gene-detail function-category, cross-organism,
+translational-exception, sequence-structure, and borrowed-metric notes; legend
+provenance; guided-panel borrowed measurements, borrowed constraints, stale and
+feasible result information, and gene caveats; regulatory source cautions; RNA
+handoff warnings; shortlist filter status; synthetic strain-fitness evidence;
+recomputation warnings; and the center-column filter-status box. Blocking red
+errors remain visible because they are not tan information boxes. Every created
+disclosure is closed by default, its summary remains visible, and its existing
+text/links/controls remain inside the opened body. The filter disclosure hides
+and resets closed when no genes are filtered.
+
+Rendered inspection covered fresh, opened, and re-collapsed native disclosures,
+conditional search and filter boxes, map/chromosome provenance, both organisms,
+all ten tabs, and the condition-grid active-button hover at 375×812, 768×1024,
+1280×800, 1440×900, plus 559/560 and 1319/1321 breakpoint pairs. The visible
+tan-class audit found every instance nested in a closed
+`details.tan-disclosure`; no document overflow appeared. A forced gene-data HTTP
+500 showed a reachable Retry control, and retry succeeded after the route was
+restored. The active Cyanobacteria chip and condition-grid Done button both kept
+`rgb(31, 95, 125)` behind white text on hover.
+
+Affected-area comparison: the opening baseline `fb9747e6` predates substantial
+Data Sources, multi-organism, chromosome, and strain-fitness work present at
+implementation parent `8bdefc7`; the inventory was therefore repeated against
+the current renderers rather than copied from the opening list. The Multica
+bookkeeping commit `766e93e` changed no project code. No owner clarification was
+needed. Focused component checks passed. Final gates passed: `npm test` ran 1,340
+JavaScript tests; Python ran 891 tests with one expected skip and 36 subtests;
+`tools/validate_contract.py` passed 117 checks with one declared skip. The
+managed worktree had no `.venv`, so both Python gates used the canonical
+checkout's existing `.venv/bin/python` against this worktree.
 
 ## Cleanup
 

@@ -68,6 +68,21 @@ update one and leave the other stale. Both toolbars have their own note
 (`#color-scale-notice`, `#chromosome-color-scale-notice`) and receive the same
 state.
 
+**The full scale explanation is an adjacent popover, not standing text below
+the map.** An independently enabled info button beside each **Scale** label
+reads the current result of `describeValueScale()`, including the selected
+metric, its units, the current symmetric-log transition scale, or the
+percentile interpretation. It updates whenever Colour by or Scale changes.
+Hover and focus open it transiently; click or touch pins it, a second click,
+Escape, focus leaving the control, or a pointer press elsewhere dismisses it.
+The button remains operable when the neighbouring select is disabled, and in
+that state explains why Function category has no numeric scale. The map and
+Chromosome/Gene controls use the same contract and shared scale state. The
+popover is positioned against the viewport and may move above the button to
+avoid clipping. The short availability note described above remains because it
+is the select's status/error message; the former long legend explanation does
+not.
+
 **What a change says is read from that state too.** Choosing a colour or a scale
 announces the colour channel that resulted: the metric and the scale it is now
 read under, or — for Function category — the metric and the one reason there is

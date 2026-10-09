@@ -11,6 +11,7 @@ import { pendingNote } from './loading-note.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import { REGULATORY_TYPES, potentialTargetsBySite, searchRegulatoryTss } from '../core/regulatory-tss.js';
 import { formatTssStatistic } from '../core/tss-evidence.js';
+import { tanDisclosure } from './disclosures.js';
 
 export const REGULATORY_TAB = Object.freeze({
   id: 'regulatory',
@@ -127,7 +128,7 @@ function siteCard(row, claims, warnings, onShowGene) {
     warning.className = 'provenance-warning';
     warning.textContent = `Source caution — ${COMPARISON_LABELS[sourceWarning.comparison]} vs control: `
       + sourceWarning.message;
-    card.append(warning);
+    card.append(tanDisclosure(warning, 'Source caution'));
   }
   card.append(makeTable('Raw reads at this start site', ['Condition', 'Culture 1', 'Culture 2'],
     CONDITION_FIELDS.map(([label, first, second]) => [

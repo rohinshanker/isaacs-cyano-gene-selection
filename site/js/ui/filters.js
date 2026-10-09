@@ -18,6 +18,7 @@ import { formatCount, formatExpressionSource, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
 import { RangeSlider, hasUsableSpread } from './range-slider.js';
 import { DEFAULT_ORGANISM } from '../core/organisms.js';
+import { tanDisclosure } from './disclosures.js';
 
 const HISTOGRAM_BINS = 44;
 
@@ -481,7 +482,8 @@ export class FilterPanel {
         ? 'provenance-warning' : 'panel-note';
       notice.textContent = formatExpressionSource(metric.provenance)
         ?? 'This expression measurement carries no recorded provenance, so treat it with care.';
-      this.trafficHost.append(notice);
+      this.trafficHost.append(metric.provenance?.isTargetOrganism === false
+        ? tanDisclosure(notice, 'Source / information') : notice);
     } else if (isExpressionProxyMetric(metric)) {
       const notice = document.createElement('p');
       notice.className = 'panel-note';
@@ -702,7 +704,8 @@ export class FilterPanel {
         notice.className = metric.provenance.isTargetOrganism === false
           ? 'provenance-warning' : 'panel-note';
         notice.textContent = formatExpressionSource(metric.provenance);
-        row.append(notice);
+        row.append(metric.provenance.isTargetOrganism === false
+          ? tanDisclosure(notice, 'Source / information') : notice);
       }
 
       const canvas = document.createElement('canvas');

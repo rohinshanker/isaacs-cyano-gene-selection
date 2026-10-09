@@ -172,7 +172,9 @@ export function applyOrganismIdentity(page, organism) {
   const sourceHint = page.getElementById('annotation-source-hint');
   if (sourceHint) {
     if (organism.copy.annotationSourceHint) {
-      sourceHint.textContent = organism.copy.annotationSourceHint;
+      sourceHint.textContent = 'Each checkbox enables one annotation source for '
+        + 'function-category colouring and the legend counts only. The detail panel, '
+        + 'lists, search, and export always show every source.';
     } else {
       sourceHint.remove();
     }

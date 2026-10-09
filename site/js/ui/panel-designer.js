@@ -28,6 +28,7 @@ import { canonicalJson, schemeIdOf } from '../core/export-manifest.js';
 import { isBorrowedMetric } from '../core/panel-features.js';
 import { isExpressionMetric, isExpressionProxyMetric } from '../core/metric-registry.js';
 import { formatValue, formatCount, formatPercentile } from './format.js';
+import { tanDisclosure } from './disclosures.js';
 
 /** This genome's own codon-adaptation proxies: real measurement outranks both. */
 const EXPRESSION_PROXY_KEYS = ['cai', 'tai'];
@@ -470,7 +471,7 @@ export class PanelDesigner {
       note.textContent = `${borrowed.map((metric) => metric.label).join(', ')} come from a different `
         + 'organism and condition. Off by default: a panel spread on a borrowed measurement is '
         + 'spread on something this genome was never measured for.';
-      wrap.append(row, note);
+      wrap.append(row, tanDisclosure(note, 'Borrowed measurements / information'));
     }
 
     wrap.append(this.renderRanges(registry, dataset));
@@ -582,8 +583,9 @@ export class PanelDesigner {
     missingRow.classList.add('missing-control');
     row.append(missingRow);
     if (isBorrowedMetric(metric)) {
-      row.append(element('p', 'provenance-warning',
-        'This is a borrowed measurement, so this constraint filters on another organism.'));
+      row.append(tanDisclosure(element('p', 'provenance-warning',
+        'This is a borrowed measurement, so this constraint filters on another organism.'),
+      'Borrowed measurement / information'));
     }
     return row;
   }
@@ -640,7 +642,7 @@ export class PanelDesigner {
         'These results and exports still use the settings from the last design. '
           + 'Select Regenerate panel to update them.',
       );
-      this.resultHost.append(stale);
+      this.resultHost.append(tanDisclosure(stale, 'Result status'));
     }
 
     if (design.problems.length > 0) {
@@ -659,7 +661,7 @@ export class PanelDesigner {
           + 'removes, counting a gene once per constraint it fails:'));
         alert.append(this.renderRejectionSummary());
       }
-      this.resultHost.append(alert);
+      this.resultHost.append(design.feasible ? tanDisclosure(alert, 'Result information') : alert);
     }
 
     if (design.selected.length === 0) return;
@@ -891,7 +893,7 @@ export class PanelDesigner {
       const list = element('ul', 'panel-reason-list');
       for (const caveat of gene.caveats) list.append(element('li', null, caveat));
       caveats.append(list);
-      item.append(caveats);
+      item.append(tanDisclosure(caveats, 'Gene caveats'));
     }
     return item;
   }

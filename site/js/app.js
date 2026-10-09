@@ -61,7 +61,9 @@ import {
 import { projectionHelp } from './core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
-import { renderLegend, renderCategoryLegend } from './ui/legend.js';
+import {
+  annotationSourceExplanation, describeValueScale, renderLegend, renderCategoryLegend,
+} from './ui/legend.js';
 import { buildColorScale, buildCategoryColorScale, isDivergingRamp } from './ui/colors.js';
 import { scaleControlState, syncScaleSelect } from './ui/scale-select.js';
 import { drawDirectionControlState, renderDrawDirection } from './ui/draw-direction.js';
@@ -86,6 +88,7 @@ import { renderRecodedGenomePanel } from './ui/recoded-genome.js';
 import { GeneSequenceView } from './ui/gene-sequence-view.js';
 import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { DataSourcesPanel } from './ui/data-sources.js';
+import { InfoPopover, tanDisclosure } from './ui/disclosures.js';
 import {
   datasetChoiceLabel, datasetsFrom, dataTypeOfMetric, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
@@ -636,6 +639,7 @@ let regulatorySitesPanel = null;
 let strainFitnessPanel = null;
 let chromosomeView = null;
 let trnaViewer = null;
+let scaleInfo = null;
 let geneSequenceView = null;
 let workspaceResizer = null;
 let leftPanels = null;
@@ -982,6 +986,7 @@ function renderMap() {
   const colors = colorModel();
   const { categories, categorical, metric, values, scale } = colors;
   syncColorScaleControl(colors);
+  scaleInfo?.update(scaleInformation(colors));
   renderColorHelp(element('colour-help'));
   // After the colour explanation, which rewrites that disclosure's body: the
   // control is mounted beside the body rather than inside it, so it survives the
@@ -1048,8 +1053,10 @@ function renderMap() {
 
   const hidden = context.dataset.genes.length - context.passing;
   const banner = element('filter-banner');
-  banner.classList.toggle('active', hidden > 0);
-  banner.textContent = filterBannerText({
+  const bannerContent = element('filter-banner-content');
+  banner.hidden = hidden <= 0;
+  if (hidden <= 0) banner.open = false;
+  bannerContent.textContent = filterBannerText({
     hidden,
     total: context.dataset.genes.length,
     showHidden: state.showHidden,
@@ -1100,6 +1107,7 @@ function renderChromosomeView() {
     colorOptions: colorSelectOptions(),
     colorKey: state.colorBy,
     colorScaleControl: colors.scaleControl,
+    scaleInformation: scaleInformation(colors),
     colorScaleClause: colorScaleClause(colors),
     drawOnTop: colors.drawOnTop,
     drawDirectionControl: colors.drawDirectionControl,
@@ -1626,7 +1634,16 @@ function familyMetrics(family) {
  */
 function dataSourcesState() {
   const annotation = state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories
-    ? { toggles: COLOR_SOURCE_TOGGLES, sources: state.colorSources, onToggle: toggleColorSource }
+    ? {
+      toggles: COLOR_SOURCE_TOGGLES,
+      sources: state.colorSources,
+      onToggle: toggleColorSource,
+      explanation: annotationSourceExplanation({
+        organism,
+        hasDerivedData: Boolean(context.dataset.sourceDerivedCategories),
+        derivedThreshold: DERIVED_THRESHOLDS.derivedProbabilityAtLeast,
+      }),
+    }
     : null;
   const informing = {
     typeOf: (dataset) => ({ key: typeKeyFor(dataset), label: typeLabelFor(dataset) }),
@@ -1805,6 +1822,10 @@ function buildColorSelect() {
  */
 function buildColorControls() {
   buildColorSelect();
+  scaleInfo = new InfoPopover(element('color-scale-info'), {
+    id: 'color-scale-info-popover',
+    label: 'About the colour scale',
+  });
   let storage = null;
   try { storage = window.localStorage; } catch { storage = null; }
   dataSourcesPanel = new DataSourcesPanel(element('data-sources'), {
@@ -1828,7 +1849,17 @@ function buildColorControls() {
       renderAll();
     },
   });
-  syncColorScaleControl(colorModel());
+  const colors = colorModel();
+  syncColorScaleControl(colors);
+  scaleInfo.update(scaleInformation(colors));
+}
+
+/** The live explanation shared by the scale popovers in both map views. */
+function scaleInformation(colors) {
+  if (colors.categorical) {
+    return `Scale is unavailable for ${colors.label}: ${colors.scaleControl.reason}`;
+  }
+  return describeValueScale(colors.metric, colors.scale);
 }
 
 /** Say which metric and scale the colours now read, for a screen reader. */
@@ -2047,7 +2078,12 @@ function renderProvenance() {
       + 'six decimals genes.json publishes'
     : `${problems.length} check${problems.length === 1 ? '' : 's'} failed. See the warning at `
       + 'the top of the page.');
-  if (problems.length > 0) check.className = 'provenance-warning';
+  if (problems.length > 0) {
+    const note = document.createElement('p');
+    note.className = 'provenance-warning';
+    note.textContent = check.textContent;
+    check.replaceChildren(tanDisclosure(note, 'Recomputation warning'));
+  }
 
   const report = provenance.conventionReport;
   add('Metric conventions',

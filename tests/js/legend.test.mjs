@@ -104,13 +104,10 @@ test('the value legend states no draw order, whatever it is handed', async () =>
       assert.doesNotMatch(note, /Overlap|on top|draws over|Draw on top/i,
         `no legend note may mention paint order: ${note}`);
     }
-    // And the scale note is the one `describeValueScale` writes, character for
-    // character: the clause was paid for by dropping this note's opening repeat
-    // of the scale name, so the name has to be back for the height to be back.
-    const scaleNote = host.querySelector('.legend-scale-note').textContent;
-    assert.equal(scaleNote, describeValueScale(metric, scale));
-    assert.match(scaleNote, /^Scale: /);
-    // The ramp row still names the scale above the note, as it always did.
+    // Scale explanation moved to the Scale control's popover; the legend keeps
+    // the scale name beside the ramp and carries no standing duplicate below it.
+    assert.equal(host.querySelector('.legend-scale-note'), null);
+    assert.match(describeValueScale(metric, scale), /^Scale: /);
     assert.ok(host.querySelector('.legend-ramp-row'));
     assert.ok(host.querySelector('.legend-scale-name').textContent.length > 0);
   });

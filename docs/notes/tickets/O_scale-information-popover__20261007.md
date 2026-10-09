@@ -3,11 +3,12 @@
 Scope: Move the scale explanation from below the map into a popover opened by an info button beside Scale.
 Status: open
 Opened: 2026-10-07
-Updated: 2026-10-07
+Updated: 2026-10-09
 
 ## Current State
 
-Opened for later at the owner's request. No implementation started.
+Implemented by `codex-implementer` in the DEM-322 worktree on 2026-10-09;
+the ticket remains open for its owning session to review and close.
 
 The owner wants the information about the scale removed from below the map.
 An info button next to “Scale” should open that information as a popover on
@@ -67,6 +68,28 @@ changes, and disabled Scale. Check affected map and Chromosome states for
 positioning, clipping, overlap, full text visibility, and removed below-map space.
 Inspect runtime diagnostics; run focused scale/legend/interaction checks and all
 repository completion gates.
+
+Implementation verification, `codex-implementer`, 2026-10-09: the former long
+legend note was removed. Map and Chromosome/Gene now have independently enabled,
+adjacent info buttons backed by the same live scale description. Browser checks
+covered hover, focus, click/touch-style pinning, second-click dismissal, Escape
+with focus restoration, focus departure, and outside-pointer dismissal. Dynamic
+percentile and symmetric-log copy updated with the metric and the observed
+transition scale; Function category kept the info button operable while both
+Scale selects were disabled. At 375×812 the popover was clamped to `x=16..359`;
+768×1024, 1280×800, 1440×900, and 559/560 and 1319/1321 breakpoint pairs had no
+document overflow or clipped affected controls.
+
+Affected-area comparison: the opening baseline `fb9747e6` predates the shared
+scale state and current Chromosome/Gene toolbar present at implementation parent
+`8bdefc7`; the requested move still applied and was implemented through those
+current contracts rather than copying state. The Multica bookkeeping commit
+`766e93e` changed no project code. No owner clarification was needed. Focused
+scale, legend, disclosure, and chromosome checks passed. Final gates passed:
+`npm test` ran 1,340 JavaScript tests; Python ran 891 tests with one expected
+skip and 36 subtests; `tools/validate_contract.py` passed 117 checks with one
+declared skip. The managed worktree had no `.venv`, so both Python gates used
+the canonical checkout's existing `.venv/bin/python` against this worktree.
 
 ## Cleanup
 

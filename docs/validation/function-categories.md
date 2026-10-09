@@ -20,10 +20,14 @@ silently adopted.
 
 Category colour can come from three annotation sources, each with its own
 evidence label. The viewer shows three checkboxes, **UTEX 2973**, **PCC
-7942**, and **GO IEA**, inside the legend directly above the category
-section, visible only when **Colour by** is Function category. They govern
-category colouring and the legend counts only; every other view always shows
-every source.
+7942**, and **GO IEA**, inside the closed-by-default **Data Sources** section,
+visible only when **Colour by** is Function category. The same opened section
+holds the full-width precedence, threshold, derived-label, and conflict
+explanation; collapsing or hiding Data Sources removes that explanation from
+view. The category legend retains only its marker-interaction guidance, so the
+precedence rule is not repeated as standing text below the map. The checkboxes
+govern category colouring and the legend counts only; every other view always
+shows every source.
 
 - **UTEX 2973 (reviewed).** Only rows in `assignments` are reviewed rows. A
   CDS absent from that sparse array has no UTEX category. One category ID

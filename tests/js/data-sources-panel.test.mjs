@@ -88,6 +88,7 @@ test('function-category colouring puts the annotation-source toggles in the sect
     ];
     panel.update({ colorMetricKey: 'functionCategory', annotation: {
       toggles, sources: ['utex-2973', 'go-iea'], onToggle: (id, on) => toggled.push([id, on]),
+      explanation: 'UTEX 2973 wins before PCC 7942 and GO IEA; conflicts remain named.',
     } });
     assert.equal(host.hidden, false);
     assert.equal(host.querySelector('summary').textContent, 'Data Sources (UTEX 2973, GO IEA)');
@@ -95,12 +96,18 @@ test('function-category colouring puts the annotation-source toggles in the sect
     assert.deepEqual(boxes.map((box) => [box.dataset.sourceId, box.checked]),
       [['utex-2973', true], ['pcc-7942', false], ['go-iea', true]]);
     assert.equal(host.querySelector('div.data-sources-actions').hidden, true, 'no dataset peek to open');
+    const explanation = host.querySelector('.data-sources-annotation-explanation');
+    assert.equal(explanation.hidden, false);
+    assert.match(explanation.textContent, /conflicts remain named/);
+    assert.equal(explanation.parentNode, host.querySelector('details'),
+      'the explanation exists only inside the expandable section');
     boxes[1].checked = true;
     boxes[1].dispatch('change');
     assert.deepEqual(toggled, [['pcc-7942', true]]);
     // Back to a dataset metric: the list returns and the toggles go.
     panel.update({ colorMetricKey: 'expression', annotation: null });
     assert.equal(host.querySelectorAll('input').filter((input) => input.type === 'checkbox').length, 0);
+    assert.equal(explanation.hidden, true, 'non-annotation metrics expose no stale explanation');
     assert.equal(host.querySelector('div.data-sources-actions').hidden, false);
     assert.match(host.querySelector('summary').textContent, /selected\)$/);
   });

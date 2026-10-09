@@ -10,6 +10,7 @@ import { VALUE_SCALE_LABELS } from '../core/value-scales.js';
 import { defaultColorSources } from '../core/annotation-source.js';
 import { DEFAULT_ORGANISM, sourceIds, sourceLabels } from '../core/organisms.js';
 import { describeReviewed } from '../core/source-derived-categories.js';
+import { tanDisclosure } from './disclosures.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -120,6 +121,21 @@ export function categoryEvidenceSummary(
       : '.');
 }
 
+/** Full annotation-source explanation, rendered only inside Data Sources. */
+export function annotationSourceExplanation({
+  organism = DEFAULT_ORGANISM, hasDerivedData = false, derivedThreshold = null,
+} = {}) {
+  const names = sourceLabels(organism);
+  return hasDerivedData
+    ? `Precedence ${names.precedence} among the enabled sources: a lab-reviewed assignment wins, `
+      + `then a ${names.product} or ${names.go} category from a TypeSafe Jev judgment`
+      + `${derivedThreshold === null ? '' : ` at probability ${derivedThreshold.toFixed(2)} or above`}`
+      + ', labelled pcc-7942-derived or go-iea-derived. A lower source that disagrees never '
+      + 'changes the colour; the detail panel and export name the conflict.'
+    : `Only lab-reviewed locus assignments receive a category colour. ${names.go} suggestions `
+      + 'alone leave a gene unclassified.';
+}
+
 /**
  * The organism's annotation-source checkboxes. They govern function-category
  * colouring and the legend counts only. Owner decision, 2026-10-06: they are
@@ -206,7 +222,6 @@ export function renderCategoryLegend(host, {
     : null;
   host.replaceChildren();
   host.classList.add('category-mode');
-  const names = sourceLabels(organism);
   const title = document.createElement('p');
   title.className = 'legend-title';
   title.textContent = categoryLegendTitle(sources, hasDerivedData, organism);
@@ -291,15 +306,7 @@ export function renderCategoryLegend(host, {
 
   const note = document.createElement('p');
   note.className = 'legend-ramp-note';
-  note.textContent = (hasDerivedData
-    ? `Precedence ${names.precedence} among the enabled sources: a lab-reviewed `
-      + `assignment wins, then a ${names.product} or ${names.go} category from a TypeSafe Jev judgment`
-      + `${derivedThreshold === null ? '' : ` at probability ${derivedThreshold.toFixed(2)} or above`}`
-      + ', labelled pcc-7942-derived or go-iea-derived. A lower source that disagrees never '
-      + 'changes the colour; the detail panel and export name the conflict. '
-    : 'Only lab-reviewed locus assignments receive a category colour. '
-      + `${names.go} suggestions alone leave a gene unclassified. `)
-    + 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
+  note.textContent = 'Hover or focus a category to preview it; click, Enter, or Space toggles it as a filter.';
   host.append(title, list);
   const summary = categoryEvidenceSummary(
     evidenceCounts, hasDerivedData, conflictCount, reviewedColouredCount, organism,
@@ -606,11 +613,7 @@ export function renderLegend(host, state) {
   ramp.className = 'legend-ramp-note';
   ramp.textContent = describeRamp(metric, scale);
 
-  const scaleNote = document.createElement('p');
-  scaleNote.className = 'legend-ramp-note legend-scale-note';
-  scaleNote.textContent = describeValueScale(metric, scale);
-
-  host.append(title, rampRow, ticks, notes, scaleNote, ramp);
+  host.append(title, rampRow, ticks, notes, ramp);
   const basis = describeBasisCounts(state.basisCounts);
   if (basis) {
     const note = document.createElement('p');
@@ -622,6 +625,6 @@ export function renderLegend(host, state) {
     const note = document.createElement('p');
     note.className = 'provenance-warning';
     note.textContent = state.provenanceNote;
-    host.append(note);
+    host.append(tanDisclosure(note, 'Provenance / information'));
   }
 }

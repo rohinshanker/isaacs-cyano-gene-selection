@@ -279,10 +279,14 @@ export class DataSourcesPanel {
     this.summary = el('summary', { className: 'data-sources-summary' });
     this.list = el('ul', { className: 'data-sources-list' });
     this.toggles = el('div', { className: 'data-sources-toggles' });
+    this.annotationExplanation = el('p', { className: 'data-sources-annotation-explanation' });
+    this.annotationExplanation.hidden = true;
     this.changeButton = el('button', { className: 'chip-button data-sources-change', text: 'Change Data Selection', attrs: { type: 'button' } });
     this.changeButton.addEventListener('click', () => this.open({ opener: this.changeButton }));
     this.actions = el('div', { className: 'data-sources-actions', children: [this.changeButton] });
-    this.details.append(this.summary, this.toggles, this.list, this.actions);
+    this.details.append(
+      this.summary, this.toggles, this.annotationExplanation, this.list, this.actions,
+    );
     this.hideButton = el('button', { className: 'chip-button data-sources-hide', attrs: { type: 'button' } });
     this.hideButton.addEventListener('click', () => {
       this.hidden = !this.hidden;
@@ -336,11 +340,15 @@ export class DataSourcesPanel {
     this.host.hidden = !this.relevant();
     this.toggles.replaceChildren();
     this.list.replaceChildren();
+    this.annotationExplanation.hidden = true;
+    this.annotationExplanation.textContent = '';
     if (this.annotation) {
-      const { toggles, sources, onToggle } = this.annotation;
+      const { toggles, sources, onToggle, explanation } = this.annotation;
       const names = toggles.filter((t) => sources.includes(t.id)).map((t) => t.label);
       this.summary.textContent = `Data Sources (${names.length ? names.join(', ') : 'no annotation source'})`;
       this.toggles.append(renderSourceToggles(sources, onToggle, toggles));
+      this.annotationExplanation.textContent = explanation;
+      this.annotationExplanation.hidden = !explanation;
       this.actions.hidden = true;
       this.details.hidden = this.hidden;
       this.hideButton.textContent = this.hidden ? 'Show Data Sources' : 'Hide';

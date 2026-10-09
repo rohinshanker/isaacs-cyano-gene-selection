@@ -22,6 +22,7 @@
  * runbook.
  */
 import { pendingNote } from './loading-note.js';
+import { tanDisclosure } from './disclosures.js';
 import { formatCount, formatValue, MISSING } from './format.js';
 import {
   GROWTH_STATUS, GROWTH_STATUS_LABELS, growthSummary, growthTsv, selectGrowth, selectWells,
@@ -232,9 +233,9 @@ export class StrainFitnessPanel {
     // rows are; repeating it here would be the same sentence twice on screen.
     const children = [title];
     if (layer.provenanceClass !== 'published') {
-      children.push(paragraph('These values are synthetic test data, not measurements. '
+      children.push(tanDisclosure(paragraph('These values are synthetic test data, not measurements. '
         + 'They exist so the interface can be exercised and must not be read as evidence.',
-      'provenance-warning'));
+      'provenance-warning'), 'Evidence status'));
     }
     children.push(this.buildSource(), this.buildMetadata(), this.buildControls());
     this.context = paragraph('', 'fitness-context');
