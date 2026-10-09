@@ -501,9 +501,9 @@ come from `app.js` on each render, under
   selection the workspace owns, so clearing the shared active index does not
   clear it, and a stale one sends the next arrow key off from a gene the reader
   left behind.
-- **Reset view** goes through `confirmedReset`, as every reset control does. The
-  double-click and `0` shortcuts stay direct, as the scatter map's do: the
-  control is the gate, and a modal on a pointer gesture would be noise.
+- **Reset view**, double-click and `0` act immediately and restore every track
+  to its full length. The resets that require confirmation are documented in
+  [controls-column-and-resets.md](controls-column-and-resets.md).
 - The camera — each replicon's window — is **not** shareable state. It carries
   no URL field, and applying a hash live resets every track to its full extent,
   for the same reason the scatter map resets pan and zoom: a pasted link should
@@ -521,8 +521,9 @@ Pointer, keyboard, and touch follow the existing map conventions:
 
 - drag a track to pan it, scroll over it to zoom it, double-click or `0` to
   return every track to its full length;
-- the visible Zoom in / Zoom out / Reset view controls give the equivalent touch
-  path and act on the chromosome track, as do `+` and `-`;
+- the visible Pan left / Pan right / Zoom in / Zoom out / Reset view controls
+  give the equivalent touch path and act on the chromosome track, as do the
+  arrow keys with Shift, `+` and `-`;
 - Left and Right move an active CDS along one strand lane and announce it
   without pinning it; Up and Down cross to the next lane or replicon;
 - crossing lanes compares each candidate's **fraction** of its own replicon,
@@ -534,9 +535,51 @@ Pointer, keyboard, and touch follow the existing map conventions:
 - a CDS reached from another view is brought into the window at the current zoom
   level (`revealIndex`), on any incoming selection and not only on arrow
   navigation;
-- **Reset view** asks first; double-click and `0` do not.
+- **Reset view** acts at once, as double-click and `0` do, by owner decision of
+  2026-10-05: a window is recovered by zooming again. The resets that ask are in
+  [controls-column-and-resets.md](controls-column-and-resets.md).
 
 `touch-action: none` on the canvas lets the drag handler own the gesture.
+
+### Panning the chromosome by a step
+
+**Pan left** and **Pan right** sit first on the view-button row, ahead of the
+zoom pair and **Reset view**: along the axis, then in and out of it, then back
+to the whole replicon. Each is a `chip-button` with a directional glyph in its
+visible text and the bare accessible name — "Pan left", "Pan right" — so a tap,
+a click, Enter and Space are one path and the row's DOM order is its tab order.
+They need no stylesheet of their own; the shared disabled chip style is what
+dims them.
+
+- one step is `PAN_STEP_FRACTION`, 0.15 of the window, so the control does the
+  same thing at every zoom level and 85% of the previous window is still on
+  screen — a feature near the edge can be followed across the step;
+- the buttons and Shift with an arrow key call the one `panByStep`, so the two
+  paths cannot drift apart;
+- the step goes through `panWindow`, which keeps the span and clamps to the
+  replicon. Panning therefore preserves the zoom, can never reach an invalid
+  coordinate, and never wraps past the origin — `clampWindow` returns the same
+  window at either limit, and `tests/js/chromosome-model.test.mjs` pins that
+  identity because the button state is read from it;
+- a direction is offered only when the window can move that way: **Pan left** is
+  disabled at base 1 and **Pan right** at the last base. The whole replicon in
+  view is both of those at once and needs no rule of its own. `syncPanButtons`
+  recomputes this from the window inside `renderSummaries`, so a drag, a wheel,
+  a zoom button, a reset, a `revealIndex` and a new organism all leave it right;
+- a disabled button takes no keyboard focus, so two things carry the reason in
+  text: the sentence under the track says what the dimming means, and a button
+  that disables itself under the reader's hand moves the focus to the opposite
+  direction, which a step that reached one limit always leaves enabled;
+- Shift with an arrow key at a limit announces it, because the canvas keeps the
+  focus there and the dimmed button cannot be read from it;
+- the pan and zoom buttons act on the chromosome. Secondary replicons keep
+  their own windows and are panned by dragging them. Reset restores all tracks;
+- a pan moves the camera and nothing else: no pin, shortlist, filter, colour,
+  visibility checkbox or hash field changes, and no CDS is selected, because the
+  buttons are outside the canvas the hit test reads. The aligned layers follow
+  the one window — the tick labels, the start-site row, the operon brackets, and
+  the tRNA track through the `onViewportChange` that `renderSummaries` emits.
+
 
 ## The dosage statement
 
@@ -599,6 +642,14 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
   the layer stays hidden; reach the checkbox by Tab and toggle it with Space,
   confirming focus stays on it across the repaint;
 - a plasmid zoomed independently, leaving the chromosome window unchanged;
+- **Pan left** and **Pan right**: both dimmed at whole-genome zoom; both live
+  once zoomed; a step in each direction keeping the span and most of the window;
+  repeated activation by click, by tap and by Enter or Space; each coordinate
+  limit reached, dimming only that direction and handing the focus to the other;
+  a drag to base 1 dimming **Pan left** by itself; the tRNA track caption and the
+  axis labels following the window; a pinned gene still pinned afterwards; and
+  the buttons reachable with a visible focus ring at every width above,
+  including where the button row wraps;
 - at 1440 px, click the centre of a CDS at the far right of the chromosome at
   whole-genome zoom and confirm the gene detail names that CDS, not its
   neighbour;
@@ -620,8 +671,8 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
   sentences inside it, both canvases' descriptions, and the hash all follow, that
   the open disclosure does not overflow at 375 px, and that with it closed again
   the toolbar, canvas and legend are the height they were;
-- press **Reset view** and confirm the question, that Cancel keeps the windows,
-  and that confirming returns every track to its full length;
+- zoom the chromosome and a plasmid, then press **Reset view** and confirm
+  that every track immediately returns to its full length without a question;
 - `document.documentElement.scrollWidth <= innerWidth` in every state;
 - a clean browser console.
 

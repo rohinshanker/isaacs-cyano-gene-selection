@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, MIN_TSS_SPACING_PX, bandLayout,
-  canvasHeightFor, columnCrowding, columnOccupancy, columnOfKey, drawnColumns, fitTickLabels,
-  fitTrackLabel, pieceColumns, pieceRect, resolveMarkPaint, trackLabelVariants,
+  CHROMOSOME_TAB, ChromosomeView, MIN_HOLLOW_MARK_PX, MIN_TSS_SPACING_PX, PAN_STEP_FRACTION,
+  bandLayout, canvasHeightFor, columnCrowding, columnOccupancy, columnOfKey, drawnColumns,
+  fitTickLabels, fitTrackLabel, pieceColumns, pieceRect, resolveMarkPaint, trackLabelVariants,
 } from '../../site/js/ui/chromosome-view.js';
-import { describePaintOrder, repliconTracks } from '../../site/js/core/chromosome-model.js';
+import {
+  describePaintOrder, formatCoordinate, positionTicks, repliconTracks, visibleMarks,
+} from '../../site/js/core/chromosome-model.js';
 import {
   DERIVED_MARKER_FILL, buildCategoryColorScale, buildColorScale,
 } from '../../site/js/ui/colors.js';
@@ -434,7 +436,9 @@ function mount({ handlers = {}, viewport = undefined, ...modelOptions } = {}) {
   };
   view.update(model);
   const ops = flush();
-  return { host, view, tracks: model.tracks, restore, flush, ops, document: fake.document };
+  return {
+    host, view, tracks: model.tracks, restore, flush, ops, frames, document: fake.document,
+  };
 }
 
 /**
@@ -1160,6 +1164,343 @@ test('Shift and an arrow pans the chromosome track without moving the selection'
   }
 });
 
+/**
+ * The pan controls, as the reader reaches them: a click on the button itself.
+ *
+ * `click` is what a tap and a keyboard Enter or Space both deliver to a native
+ * button, which is why the control is one — the three paths cannot disagree
+ * about what activation does, and the toolbar test above pins the element type
+ * and the accessible name that make that true.
+ */
+function panClick(view, direction) {
+  (direction === 'left' ? view.panLeft : view.panRight).dispatch('click');
+}
+
+/** The window the chromosome track is showing, and how wide it is. */
+function chromosomeWindow(view) {
+  const shown = view.windowFor(view.primaryTrack());
+  return { ...shown, span: shown.to - shown.from + 1 };
+}
+
+test('a pan button slides the chromosome window one step and keeps the zoom', () => {
+  const announced = [];
+  const selected = [];
+  const previewed = [];
+  const { view, restore } = mount({
+    handlers: {
+      onAnnounce: (message) => announced.push(message),
+      onSelect: (index) => selected.push(index),
+      onPreview: (index) => previewed.push(index),
+    },
+  });
+  try {
+    view.zoomByCentre(8);
+    announced.length = 0;
+    const before = chromosomeWindow(view);
+    assert.ok(before.span < view.primaryTrack().lengthBp, 'zoomed in, so there is room to pan');
+
+    panClick(view, 'right');
+    const right = chromosomeWindow(view);
+    const step = Math.round(before.span * PAN_STEP_FRACTION);
+    assert.equal(right.from, before.from + step);
+    assert.equal(right.span, before.span, 'the zoom level is untouched by a pan');
+    // 85% of the window the reader was looking at is still on screen, which is
+    // what lets a feature near the edge be followed across the step.
+    assert.ok(right.from <= before.to && right.to >= before.to);
+
+    panClick(view, 'left');
+    assert.deepEqual(chromosomeWindow(view), before, 'the opposite direction returns it');
+
+    // The readout above the track states the window, and carries `role="status"`,
+    // so the coordinates a pan lands on are announced as well as drawn.
+    panClick(view, 'right');
+    assert.equal(view.windowReadout.getAttribute('role'), 'status');
+    assert.ok(view.windowReadout.textContent.startsWith(
+      `${view.primaryTrack().accession} ${formatCoordinate(right.from)}–`
+      + `${formatCoordinate(right.to)} of `,
+    ), view.windowReadout.textContent);
+    assert.deepEqual(announced, [
+      `${view.primaryTrack().accession} showing `
+        + `${formatCoordinate(right.from)}–${formatCoordinate(right.to)}.`,
+      `${view.primaryTrack().accession} showing `
+        + `${formatCoordinate(before.from)}–${formatCoordinate(before.to)}.`,
+      `${view.primaryTrack().accession} showing `
+        + `${formatCoordinate(right.from)}–${formatCoordinate(right.to)}.`,
+    ]);
+    // A pan is the camera's and nothing else's: no CDS is pinned, previewed, or
+    // made active by moving the window.
+    assert.deepEqual(selected, []);
+    assert.deepEqual(previewed, []);
+  } finally {
+    restore();
+  }
+});
+
+test('a pan button and Shift with an arrow take the one same step', () => {
+  const { view, restore } = mount({ handlers: { onAnnounce: () => {} } });
+  try {
+    view.zoomByCentre(8);
+    const start = chromosomeWindow(view);
+    panClick(view, 'right');
+    const byButton = chromosomeWindow(view);
+
+    view.windows.set(view.primaryTrack().accession, { from: start.from, to: start.to });
+    view.canvas.dispatch('keydown', { key: 'ArrowRight', shiftKey: true, preventDefault: () => {} });
+    assert.deepEqual(chromosomeWindow(view), byButton);
+
+    panClick(view, 'left');
+    const backByButton = chromosomeWindow(view);
+    view.windows.set(view.primaryTrack().accession, { from: byButton.from, to: byButton.to });
+    view.canvas.dispatch('keydown', { key: 'ArrowLeft', shiftKey: true, preventDefault: () => {} });
+    assert.deepEqual(chromosomeWindow(view), backByButton);
+  } finally {
+    restore();
+  }
+});
+
+test('the pan buttons are offered only in a direction the window can move', () => {
+  const announced = [];
+  const { view, restore } = mount({
+    handlers: { onAnnounce: (message) => announced.push(message) },
+  });
+  try {
+    const track = view.primaryTrack();
+    // A fresh view shows the whole replicon, so neither direction exists: the
+    // two boundary rules cover that state between them, and the sentence under
+    // the track is where the dimming is explained.
+    assert.deepEqual(chromosomeWindow(view),
+      { from: 1, to: track.lengthBp, span: track.lengthBp });
+    assert.equal(view.panLeft.disabled, true);
+    assert.equal(view.panRight.disabled, true);
+    assert.match(view.instructions.textContent, /a pan button is dimmed when that direction has /);
+    assert.match(view.instructions.textContent,
+      /reached the end of the chromosome or the whole chromosome is already in view/);
+
+    // Zoomed about the centre, both directions open.
+    view.zoomByCentre(8);
+    assert.equal(view.panLeft.disabled, false);
+    assert.equal(view.panRight.disabled, false);
+
+    // Walked to base 1, left closes and right stays open. Repeated activation
+    // keeps working until it gets there, and the window never leaves the
+    // replicon on the way.
+    const span = chromosomeWindow(view).span;
+    for (let i = 0; i < 200 && !view.panLeft.disabled; i += 1) {
+      panClick(view, 'left');
+      const now = chromosomeWindow(view);
+      assert.ok(now.from >= 1 && now.to <= track.lengthBp, 'the window stays on the replicon');
+      assert.equal(now.span, span, 'every step keeps the zoom');
+    }
+    assert.deepEqual(chromosomeWindow(view), { from: 1, to: span, span });
+    assert.equal(view.panLeft.disabled, true);
+    assert.equal(view.panRight.disabled, false);
+
+    // Walked to the last base, the mirror image.
+    for (let i = 0; i < 200 && !view.panRight.disabled; i += 1) panClick(view, 'right');
+    assert.deepEqual(chromosomeWindow(view),
+      { from: track.lengthBp - span + 1, to: track.lengthBp, span });
+    assert.equal(view.panRight.disabled, true);
+    assert.equal(view.panLeft.disabled, false);
+
+    // Shift with an arrow reaches the same limit and says so, because the
+    // canvas keeps its focus and the dimmed button cannot be read from there.
+    announced.length = 0;
+    view.canvas.dispatch('keydown', { key: 'ArrowRight', shiftKey: true, preventDefault: () => {} });
+    assert.deepEqual(chromosomeWindow(view),
+      { from: track.lengthBp - span + 1, to: track.lengthBp, span });
+    assert.deepEqual(announced, [`${track.accession} is already showing its last base.`]);
+
+    // Reset view returns the whole replicon, so neither direction is offered again.
+    view.resetView({ announce: false });
+    assert.equal(view.panLeft.disabled, true);
+    assert.equal(view.panRight.disabled, true);
+  } finally {
+    restore();
+  }
+});
+
+test('a pan button reaching its limit hands keyboard focus to the other direction', () => {
+  const { view, document, restore } = mount({ handlers: { onAnnounce: () => {} } });
+  try {
+    const track = view.primaryTrack();
+    const span = 400000;
+    view.windows.set(track.accession, { from: 2, to: span + 1 });
+    view.renderSummaries();
+    assert.equal(view.panLeft.disabled, false);
+
+    // A reader who has tabbed to Pan left and pressed it onto base 1 would lose
+    // the focus to the document, because a disabled button takes none.
+    document.activeElement = view.panLeft;
+    panClick(view, 'left');
+    assert.equal(view.panLeft.disabled, true);
+    assert.equal(view.panRight.focused, true, 'focus moves to the direction still available');
+
+    // A press that does not reach a limit leaves the focus alone.
+    view.panRight.focused = false;
+    document.activeElement = view.panRight;
+    panClick(view, 'right');
+    assert.equal(view.panRight.disabled, false);
+    assert.equal(view.panLeft.focused, false);
+  } finally {
+    restore();
+  }
+});
+
+test('panning moves only the chromosome, and the aligned layers move with it', () => {
+  const genes = tickGenes(20);
+  const { view, flush, restore } = mount({ genes, handlers: { onAnnounce: () => {} } });
+  try {
+    // Narrow enough that the ticks are separate ticks and the window has room
+    // to move; the plasmids are drawn from the same fixture and keep their own.
+    const track = view.primaryTrack();
+    view.windows.set(track.accession, { from: 1, to: 40000 });
+    const others = view.model.tracks
+      .filter((entry) => !entry.primary)
+      .map((entry) => ({ accession: entry.accession, window: view.windowFor(entry) }));
+    view.renderSummaries();
+    view.draw();
+    const before = flush();
+    const tickXsBefore = tickRowOps(view, before).map((op) => op.x);
+    assert.ok(tickXsBefore.length > 0, 'the start-site row is drawing');
+
+    panClick(view, 'right');
+    const after = flush();
+    const band = view.bands()[0];
+    const moved = chromosomeWindow(view);
+    assert.equal(moved.from, 1 + Math.round(40000 * PAN_STEP_FRACTION));
+
+    // Every tick the frame drew sits where the *panned* window's own scale puts
+    // its published coordinate, so the evidence row cannot be a frame behind
+    // the axis beneath it.
+    const drawn = tickRowOps(view, after);
+    const expected = view.layers.get(track.accession).tss
+      .filter((site) => site.position >= moved.from && site.position <= moved.to)
+      // Snapped the way `paintTss` snaps a tick, so the assertion is on the
+      // column the reader sees and not on an unsnapped coordinate.
+      .map((site) => Math.round(band.scale.bpToX(site.position)) + 0.5);
+    assert.deepEqual(drawn.map((op) => op.x), expected);
+    assert.ok(drawn.length > 0 && drawn.length < tickXsBefore.length,
+      'the step moved some ticks out of view, so the row really was recomputed');
+
+    // The CDS bars are measured against the same scale, and the tick labels
+    // under the axis name the coordinates the window now holds.
+    const visible = visibleMarks(band.track.marks, moved);
+    const bars = after.filter((op) => op.op === 'fillRect'
+      && Math.abs(op.y - (band.layout.laneAboveTop + 2)) <= 0.6);
+    const barLefts = new Set(bars.map((op) => op.x));
+    for (const mark of visible) {
+      for (const piece of mark.pieces) {
+        assert.ok(barLefts.has(pieceRect(band.scale, piece).left),
+          `${mark.id} is drawn on the panned window`);
+      }
+    }
+    const drawnLabels = after.filter((op) => op.op === 'text'
+      && Math.abs(op.y - band.layout.tickBaseline) < 0.001);
+    const wanted = fitTickLabels(
+      positionTicks(moved, 7).filter((tick) => {
+        const x = band.scale.bpToX(tick.bp);
+        return x >= band.left - 1 && x <= band.left + band.width + 1;
+      }),
+      {
+        measure: (text) => text.length * 6,
+        x: (bp) => band.scale.bpToX(bp),
+        left: band.left,
+        right: band.left + band.width,
+      },
+    );
+    assert.ok(wanted.length > 0);
+    assert.deepEqual(drawnLabels.map((op) => ({ text: op.text, x: op.x })),
+      wanted.map((tick) => ({ text: tick.label, x: tick.anchor })));
+
+    // The plasmids keep the windows they had: each replicon owns its camera and
+    // the toolbar's controls are the chromosome's.
+    for (const other of others) {
+      assert.deepEqual(view.windowFor(view.model.tracks.find(
+        (entry) => entry.accession === other.accession,
+      )), other.window);
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('repeated panning paints once per frame, so held clicks stay responsive', () => {
+  const { view, flush, frames, restore } = mount({ handlers: { onAnnounce: () => {} } });
+  try {
+    view.zoomByCentre(8);
+    flush();
+    const before = chromosomeWindow(view);
+    for (let i = 0; i < 12; i += 1) panClick(view, 'right');
+    assert.equal(frames.length, 1, 'twelve steps queue one repaint, not twelve');
+    const after = chromosomeWindow(view);
+    assert.equal(after.from, before.from + Math.round(before.span * PAN_STEP_FRACTION) * 12);
+    assert.equal(after.span, before.span);
+    // And the frame that does run draws the window the twelfth step landed on.
+    flush();
+    assert.equal(view.bands()[0].window.from, after.from);
+  } finally {
+    restore();
+  }
+});
+
+test('panning preserves the selection, the filters and every view choice', () => {
+  const mask = Uint8Array.from([1, 1, 0, 1, 1, 1, 1]);
+  const { view, restore } = mount({
+    mask,
+    showHidden: false,
+    pinned: 1,
+    active: 0,
+    shortlist: new Set([3]),
+    categorical: true,
+    handlers: { onAnnounce: () => {} },
+  });
+  try {
+    view.setStartSitesVisible(false);
+    view.zoomByCentre(8);
+    const before = {
+      pinned: view.model.pinned,
+      active: view.model.active,
+      shortlist: view.model.shortlist,
+      mask: view.model.mask,
+      showHidden: view.model.showHidden,
+      colorKey: view.model.colorKey,
+      colorScale: view.colorScaleSelect.value,
+      startSites: view.showStartSites,
+      cursor: view.cursor,
+    };
+    panClick(view, 'right');
+    panClick(view, 'right');
+    panClick(view, 'left');
+    assert.deepEqual({
+      pinned: view.model.pinned,
+      active: view.model.active,
+      shortlist: view.model.shortlist,
+      mask: view.model.mask,
+      showHidden: view.model.showHidden,
+      colorKey: view.model.colorKey,
+      colorScale: view.colorScaleSelect.value,
+      startSites: view.showStartSites,
+      cursor: view.cursor,
+    }, before);
+    assert.equal(view.showHidden.checked, false);
+    assert.equal(view.startSitesToggle.checked, false);
+  } finally {
+    restore();
+  }
+});
+
+test('a pan on an unverified genome does nothing at all', () => {
+  const { view, restore } = mount();
+  try {
+    view.update({ ...viewModel(), verified: false, problems: ['a length is unverified'] });
+    assert.equal(view.figure.hidden, true);
+    assert.equal(view.panByStep('right'), false);
+    assert.equal(view.panByStep('left'), false);
+  } finally {
+    restore();
+  }
+});
+
 test('keyboard movement skips filtered-out CDSs when they are not shown', () => {
   const previewed = [];
   const mask = Uint8Array.from([1, 1, 0, 1, 1, 1, 1]);
@@ -1257,15 +1598,27 @@ test('Scale sits beside Colour by, offers every scale, and disables the ones wit
     assert.equal(notice, view.scaleNotice);
     assert.equal(help.id, 'chromosome-colour-help');
     assert.equal(viewRow.className, 'chromosome-toolbar-row');
-    assert.deepEqual(viewRow.children.slice(0, 3).map((child) => child.textContent),
-      ['Zoom in (+)', 'Zoom out (−)', 'Reset view']);
-    assert.equal(viewRow.children[3].children[0], view.showHidden);
+    // DOM order is tab order: along the axis, then in and out of it, then back
+    // to the whole replicon.
+    assert.deepEqual(viewRow.children.slice(0, 5).map((child) => child.textContent),
+      ['◀ Pan left', 'Pan right ▶', 'Zoom in (+)', 'Zoom out (−)', 'Reset view']);
+    assert.deepEqual(viewRow.children.slice(0, 2).map((child) => child.getAttribute('aria-label')),
+      ['Pan left', 'Pan right']);
+    // Native buttons, so a tap, a click, Enter and Space all reach them and
+    // each one takes keyboard focus in the row's own order.
+    assert.deepEqual(viewRow.children.slice(0, 2).map((child) => child.tagName),
+      ['button', 'button']);
+    assert.deepEqual(viewRow.children.slice(0, 2).map((child) => child.type),
+      ['button', 'button']);
+    assert.deepEqual(viewRow.children.slice(0, 2).map((child) => child.className),
+      ['chip-button', 'chip-button']);
+    assert.equal(viewRow.children[5].children[0], view.showHidden);
     // The two visibility checkboxes follow the buttons on the same row; what
     // this count holds is that no Colour by or Scale *field* wrapped into it,
     // which is what the flat toolbar used to do at 375 px.
-    assert.equal(viewRow.children[4].children[0], view.startSitesToggle);
-    assert.equal(viewRow.children[4].children[1].textContent, 'Show Tan 2018 start sites');
-    assert.equal(viewRow.children.length, 5, 'and no field shares the button row');
+    assert.equal(viewRow.children[6].children[0], view.startSitesToggle);
+    assert.equal(viewRow.children[6].children[1].textContent, 'Show Tan 2018 start sites');
+    assert.equal(viewRow.children.length, 7, 'and no field shares the button row');
     // The figure itself no longer carries the explanation: it lives in the
     // toolbar, directly beneath the row whose metric it explains.
     assert.equal(view.figure.children[1], view.windowReadout);
@@ -2599,7 +2952,7 @@ test('an organism with no start-site layer gets no tick row and no copy-number c
     // No layer, so no control for it: a show/hide for a row that can never fill
     // would offer evidence nobody admitted for this organism.
     assert.equal(view.startSitesToggle, undefined);
-    assert.equal(view.figure.children[0].children[4].children.length, 4);
+    assert.equal(view.figure.children[0].children[4].children.length, 6);
     // The conventions note says nothing of a tick row that will never fill.
     assert.ok(!/start site/i.test(view.markerNote.textContent));
     assert.match(view.markerNote.textContent, /Operon brackets .* fill in as you zoom\./);

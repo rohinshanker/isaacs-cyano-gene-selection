@@ -83,7 +83,7 @@ required resolved-ticket lifecycle.
 
 ## Related work
 
-- [Larger regulatory-feature hit targets](A_regulatory-feature-hit-targets__20261009.md)
+- [Larger regulatory-feature hit targets](../../validation/gene-sequence-closeup.md)
   covers interaction tolerance; preserve access to nearby gene and site marks.
-- [Chromosome left/right controls](A_chromosome-left-right-controls__20261009.md)
+- [Chromosome left/right controls](../../validation/chromosome-view.md)
   covers navigation; overlap tracks must stay aligned with that viewport.

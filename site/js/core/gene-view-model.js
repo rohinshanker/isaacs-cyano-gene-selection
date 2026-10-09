@@ -209,6 +209,40 @@ export function overlapGroups(marks, xOf, minSeparation) {
 }
 
 /**
+ * Add interaction padding to one drawn interval without stealing the nearest
+ * part of a neighbouring interval's padding.
+ *
+ * The visible interval is never shortened. Only the invisible padding is
+ * divided at the midpoint of gaps between adjacent feature edges, so nearby marks
+ * remain independently reachable. Exactly overlapping features intentionally
+ * keep the same target: SVG paint order then applies the existing evidence
+ * precedence, while the complete inspection list retains every row.
+ *
+ * @param {{from: number, to: number}[]} ranges visible intervals in paint order.
+ * @param {number} index interval whose hit range is wanted.
+ * @param {number} padding non-negative drawn units added at either edge.
+ * @returns {{from: number, to: number}|null}
+ */
+export function paddedHitRange(ranges, index, padding) {
+  const range = ranges[index];
+  if (!range || !Number.isFinite(range.from) || !Number.isFinite(range.to)
+    || range.to < range.from || !Number.isFinite(padding) || padding < 0) return null;
+  let from = range.from - padding;
+  let to = range.to + padding;
+  ranges.forEach((candidate, candidateIndex) => {
+    if (candidateIndex === index || !Number.isFinite(candidate?.from)
+      || !Number.isFinite(candidate?.to) || candidate.to < candidate.from) return;
+    if (candidate.from < range.from) {
+      from = Math.max(from, Math.min(range.from, (candidate.to + range.from) / 2));
+    }
+    if (candidate.to > range.to) {
+      to = Math.min(to, Math.max(range.to, (range.to + candidate.from) / 2));
+    }
+  });
+  return { from, to };
+}
+
+/**
  * A complete, renderer-agnostic description of one gene's track.
  *
  * @param {object} gene a record from `genes.json`, with `tssEvidence` joined.

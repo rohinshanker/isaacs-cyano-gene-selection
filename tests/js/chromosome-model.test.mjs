@@ -271,6 +271,17 @@ test('panning slides a fixed span and stops at both ends', () => {
   const atEnd = panWindow(window, CHROMOSOME_BP, CHROMOSOME_BP);
   assert.equal(atEnd.to, CHROMOSOME_BP);
   assert.equal(atEnd.to - atEnd.from + 1, 1000);
+  // A window already against a limit stays exactly where it is: the chromosome
+  // is circular but this axis is not, so a step off either end is refused
+  // rather than wrapped round to the opposite one. The view's Pan left and Pan
+  // right buttons read this identity as "there is nothing that way" and dim
+  // themselves, so a pan that silently wrapped would also mislabel the control.
+  assert.deepEqual(panWindow({ from: 1, to: 1000 }, -500, CHROMOSOME_BP), { from: 1, to: 1000 });
+  assert.deepEqual(panWindow(atEnd, 500, CHROMOSOME_BP), atEnd);
+  // And the whole replicon has nowhere to go in either direction.
+  const whole = fullWindow(CHROMOSOME_BP);
+  assert.deepEqual(panWindow(whole, -500, CHROMOSOME_BP), whole);
+  assert.deepEqual(panWindow(whole, 500, CHROMOSOME_BP), whole);
 });
 
 test('only the marks intersecting the window are drawn', () => {

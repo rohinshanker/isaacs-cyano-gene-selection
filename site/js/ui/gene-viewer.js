@@ -27,7 +27,7 @@ import { pendingNote } from './loading-note.js';
 import { tanDisclosure } from './disclosures.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import {
-  geneViewModel, fractionOf, overlapGroups, ticksFor,
+  geneViewModel, fractionOf, overlapGroups, paddedHitRange, ticksFor,
 } from '../core/gene-view-model.js';
 import { markerPaintOrder, markerPresentation } from '../core/marker-layers.js';
 import { formatCount } from './format.js';
@@ -52,6 +52,10 @@ const MIN_CODON_WIDTH = 5;
  * rendered width, and more than a diameter apart at none.
  */
 export const TSS_MARK_RADIUS = 3;
+/** Invisible padding around a marker head, in view units. */
+export const TSS_HIT_PADDING = 5;
+/** Invisible padding outside the gene's start and stop codon marks. */
+export const CODON_HIT_PADDING = 5;
 
 /**
  * The `data-detail-action` value the start-site checkbox carries.
@@ -97,6 +101,29 @@ function interactiveAnnotation(node, label) {
     node.focus?.({ preventScroll: true });
   });
   return node;
+}
+
+/** A pointer-only rectangle that forwards inspection to its visible annotation. */
+function annotationHitTarget(annotation, attributes) {
+  const target = svg('rect', {
+    ...attributes,
+    fill: 'transparent',
+    stroke: 'none',
+    'pointer-events': 'all',
+    'aria-hidden': 'true',
+  });
+  const focus = (event) => {
+    event.stopPropagation?.();
+    annotation.focus?.({ preventScroll: true });
+  };
+  target.addEventListener('pointerdown', focus);
+  target.addEventListener('click', focus);
+  const title = svg('title');
+  title.textContent = annotation.getAttribute('aria-label');
+  target.append(title);
+  target.addEventListener('pointerenter', () => annotation.classList.add('is-hit-hovered'));
+  target.addEventListener('pointerleave', () => annotation.classList.remove('is-hit-hovered'));
+  return target;
 }
 
 /** Signed nucleotide offset, written the way the labels read it. */
@@ -250,11 +277,21 @@ function drawTrack(root, model, x) {
     const left = x(codon.from);
     const right = x(codon.to);
     const width = Math.max(MIN_CODON_WIDTH, right - left);
+    const visibleX = codon.kind === 'stop' ? right - width : left;
     const rect = interactiveAnnotation(svg('rect', {
       class: `gene-view-codon gene-view-codon-${codon.kind} gene-view-annotation`,
-      x: codon.kind === 'stop' ? right - width : left, y: TRACK_Y,
+      'data-codon-kind': codon.kind,
+      x: visibleX, y: TRACK_Y,
       width, height: TRACK_HEIGHT,
     }), codon.label);
+    track.append(annotationHitTarget(rect, {
+      class: 'gene-view-codon-hit-target',
+      'data-codon-kind': codon.kind,
+      x: codon.kind === 'start' ? visibleX - CODON_HIT_PADDING : visibleX,
+      y: TRACK_Y - CODON_HIT_PADDING,
+      width: width + CODON_HIT_PADDING,
+      height: TRACK_HEIGHT + CODON_HIT_PADDING * 2,
+    }));
     const title = svg('title');
     title.textContent = codon.label;
     rect.append(title);
@@ -288,7 +325,12 @@ function drawStart(root, x) {
 function drawTss(root, model, x, startSites, visible) {
   if (!startSites || !visible || model.tss.length === 0) return;
   const group = svg('g', { class: 'gene-view-tss' });
-  for (const site of markerPaintOrder(model.tss)) {
+  const ordered = markerPaintOrder(model.tss);
+  const visibleRanges = ordered.map((site) => {
+    const tx = x(site.offset);
+    return { from: tx - TSS_MARK_RADIUS, to: tx + TSS_MARK_RADIUS };
+  });
+  ordered.forEach((site, index) => {
     const tx = x(site.offset);
     const presentation = markerPresentation(site);
     const label = `${site.id}: published ${site.distanceNt} nt upstream of the `
@@ -305,13 +347,26 @@ function drawTss(root, model, x, startSites, visible) {
       'data-marker-origin': site.origin ?? '',
       'data-marker-producer': site.producer ?? '',
     }), label);
+    const hit = paddedHitRange(visibleRanges, index, TSS_HIT_PADDING);
+    mark.append(svg('rect', {
+      class: 'gene-view-marker-hit-target',
+      'data-marker-id': site.id ?? '',
+      x: hit.from,
+      y: TSS_Y - TSS_MARK_RADIUS - TSS_HIT_PADDING,
+      width: hit.to - hit.from,
+      height: TRACK_Y - 2 - (TSS_Y - TSS_MARK_RADIUS - TSS_HIT_PADDING),
+      fill: 'transparent',
+      stroke: 'none',
+      'pointer-events': 'all',
+      'aria-hidden': 'true',
+    }));
     mark.append(svg('line', { x1: tx, x2: tx, y1: TSS_Y, y2: TRACK_Y - 2 }));
     mark.append(svg('circle', { cx: tx, cy: TSS_Y, r: TSS_MARK_RADIUS }));
     const title = svg('title');
     title.textContent = label;
     mark.append(title);
     group.append(mark);
-  }
+  });
   root.append(group);
 }
 

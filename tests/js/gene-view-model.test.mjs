@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  geneViewModel, orientedSegments, transcriptionPieces, tssMarks, fractionOf, tickStep, ticksFor,
+  geneViewModel, orientedSegments, paddedHitRange, transcriptionPieces, tssMarks, fractionOf,
+  tickStep, ticksFor,
   UPSTREAM_CONTEXT_NT,
 } from '../../site/js/core/gene-view-model.js';
 
@@ -135,6 +136,42 @@ test('the ruler steps in ones, twos and fives, and always marks the start', () =
   assert.equal(tickStep({ min: 0, max: 100 }, 4), 50);
   assert.ok(ticksFor({ min: -60, max: 1040 }, 4).includes(0));
   assert.ok(ticksFor({ min: -614, max: 1050 }, 4).includes(0));
+});
+
+test('interaction padding divides nearby targets without changing visible intervals', () => {
+  const ranges = [{ from: 0, to: 6 }, { from: 8, to: 14 }];
+  assert.deepEqual(paddedHitRange(ranges, 0, 5), { from: -5, to: 7 });
+  assert.deepEqual(paddedHitRange(ranges, 1, 5), { from: 7, to: 19 });
+  const overlap = [{ from: 2, to: 8 }, { from: 2, to: 8 }];
+  assert.deepEqual(paddedHitRange(overlap, 0, 5), { from: -3, to: 13 },
+    'exact overlaps retain paint-order precedence');
+  assert.equal(paddedHitRange(ranges, 9, 5), null);
+});
+
+test('wide intervals share only the gap between edges with neighbouring targets', () => {
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 200 }, { from: 257, to: 263 }], 0, 5),
+    { from: -5, to: 205 }, 'a distant point cannot take an interval edge padding');
+  const near = [{ from: 0, to: 200 }, { from: 204, to: 210 }];
+  assert.deepEqual(paddedHitRange(near, 0, 5), { from: -5, to: 202 });
+  assert.deepEqual(paddedHitRange(near, 1, 5), { from: 202, to: 215 });
+  assert.deepEqual(paddedHitRange([{ from: -8, to: -4 }, { from: 0, to: 200 }], 1, 5),
+    { from: -2, to: 205 }, 'left gaps follow the same rule');
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 200 }, { from: 50, to: 60 }], 0, 5),
+    { from: -5, to: 205 }, 'an interior mark cannot shrink the outer padding');
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 200 }, { from: -2, to: 5 },
+    { from: 197, to: 203 }], 0, 5), { from: 0, to: 200 },
+  'overlapping neighbours remove padding without shortening the visible interval');
+});
+
+test('invalid hit ranges and padding are rejected or ignored without changing valid geometry', () => {
+  for (const range of [null, { from: NaN, to: 2 }, { from: 0, to: Infinity }, { from: 3, to: 2 }]) {
+    assert.equal(paddedHitRange([range], 0, 5), null);
+    assert.deepEqual(paddedHitRange([{ from: 0, to: 6 }, range], 0, 5), { from: -5, to: 11 });
+  }
+  for (const padding of [-1, NaN, Infinity]) {
+    assert.equal(paddedHitRange([{ from: 0, to: 6 }], 0, padding), null);
+  }
+  assert.deepEqual(paddedHitRange([{ from: 0, to: 6 }], 0, 0), { from: 0, to: 6 });
 });
 
 test('an origin-crossing plus-strand gene is one short track, not the whole replicon', () => {

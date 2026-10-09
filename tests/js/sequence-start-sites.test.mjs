@@ -26,8 +26,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  MARKER_CONTROL, MARKER_HEAD_PX, MARKER_ROW_HEIGHT, GeneSequenceView, LABEL_WIDTH,
-  OPEN_PX_PER_NT,
+  MARKER_CONTROL, MARKER_HEAD_PX, MARKER_HIT_PADDING_PX, MARKER_ROW_HEIGHT,
+  GeneSequenceView, LABEL_WIDTH, OPEN_PX_PER_NT,
 } from '../../site/js/ui/gene-sequence-view.js';
 import {
   describeSequenceMarkers, geneSequenceModel, markerPlacement, sequenceColumns, sequenceMarkers,
@@ -42,14 +42,22 @@ const dataUrl = (name) => new URL(`../../site/data/${name}`, import.meta.url);
 const meta = JSON.parse(readFileSync(dataUrl('meta.json')));
 const genes = JSON.parse(readFileSync(dataUrl('genes.json')));
 const evidence = JSON.parse(readFileSync(dataUrl('tss_evidence.json')));
+const sequenceContext = JSON.parse(readFileSync(dataUrl('sequence_context.json')));
 const table = new CodonTable(meta.codonAlphabet);
 const geneById = new Map(genes.map((gene) => [gene.id, gene]));
+const expandedUpstream = new Map(sequenceContext.geneIds
+  .map((id, index) => [id, sequenceContext.upstream[index]]));
 const ECOLI = organismById('ecoli-k12-mg1655');
 const TAN = markerLayerForKey('tssEvidence');
 
 /** A shipped gene with its published rows joined, as the loader joins them. */
 function joined(id) {
   return { ...geneById.get(id), tssEvidence: evidence[id] ?? [] };
+}
+
+/** The same gene after the optional exact 1,000-nt sidecar lands. */
+function expanded(id) {
+  return { ...joined(id), extendedUpstream: expandedUpstream.get(id) };
 }
 
 const modelOf = (gene) => geneSequenceModel(gene, table, null);
@@ -394,6 +402,12 @@ test('the marks are drawn on the columns their coordinates name, with their own 
       assert.equal(marks[index].querySelectorAll('path.gene-sequence-marker-head').length, 1);
       assert.equal(marks[index].querySelectorAll('line.gene-sequence-marker-stem').length, 1);
       assert.equal(marks[index].querySelectorAll('rect.gene-sequence-marker-span').length, 0);
+      const hit = marks[index].querySelector('rect.gene-sequence-marker-hit-target');
+      assert.ok(hit, 'the tag has an invisible pointer target');
+      assert.equal(Number(hit.attributes.width), MARKER_HEAD_PX + MARKER_HIT_PADDING_PX * 2);
+      assert.equal(Number(hit.attributes.height), MARKER_ROW_HEIGHT);
+      assert.equal(hit.attributes['pointer-events'], 'all');
+      assert.equal(hit.attributes.fill, 'transparent');
     }
 
     // The title is the row's own account of itself, on both bases.
@@ -407,6 +421,185 @@ test('the marks are drawn on the columns their coordinates name, with their own 
     assert.equal(rows.markers, 0);
     assert.equal(rows.bases, MARKER_ROW_HEIGHT + 20);
     assert.equal(view.strip.querySelector('g.gene-sequence-labels').children.length, 3);
+  });
+});
+
+test('a short sequence explains an excluded site and reveals it through the existing window', async () => {
+  await withFakeDocument(async (document) => {
+    const { view, announced } = mount(document, expanded('M744_RS00025'));
+    assert.equal(view.upstreamNt, 30, 'the initial exact context remains 30 nt');
+    assert.equal(markGroups(view).length, 0);
+    assert.ok(toggleOf(view), 'a site revealable in a declared exact window keeps its control');
+    const navigation = view.markerControlHost.querySelector('div.gene-sequence-marker-navigation');
+    const button = navigation.querySelector('button');
+    const status = navigation.querySelector('span.gene-sequence-facts');
+    assert.equal(button.textContent, 'Show nearest site');
+    assert.equal(button.getAttribute('aria-label'), null, 'the changing visible action names the button');
+    assert.match(status.textContent, /beyond the current 30 nt sequence/);
+    assert.match(status.textContent, /existing 60 nt upstream window/);
+
+    button.focus();
+    button.click();
+
+    assert.equal(view.upstreamNt, 60);
+    assert.equal(markGroups(view).length, 1);
+    const [row] = view.placedMarkers();
+    assert.equal(view.markerInWindow(row), true);
+    assert.match(announced.at(-1), /Tan 2018 start site .* shown at .* with 60 upstream nucleotides/);
+    assert.equal(view.markerNavigationButton.hidden, true);
+    assert.equal(document.activeElement, toggleOf(view), 'a completed reveal returns focus to visibility');
+  });
+});
+
+test('mixed rows promise only sites a larger exact sequence can actually reveal', async () => {
+  await withFakeDocument(async (document) => {
+    const base = expanded('M744_RS00025');
+    const { view } = mount(document, {
+      ...base,
+      tssEvidence: [
+        ...base.tssEvidence,
+        {
+          id: 'no-coordinate', type: 'gTSS', replicon: base.seqid, strand: base.strand,
+          position: null, sourceStartDistanceNt: 15,
+        },
+        {
+          id: 'other-replicon', type: 'gTSS', replicon: 'NZ_CP006472.1', strand: base.strand,
+          position: base.start, sourceStartDistanceNt: 15,
+        },
+      ],
+    });
+    const navigation = view.markerControlHost.querySelector('div.gene-sequence-marker-navigation');
+    const status = navigation.querySelector('span.gene-sequence-facts');
+    assert.match(status.textContent, /1 published site lies beyond the current 30 nt sequence/);
+    assert.match(status.textContent, /2 published rows cannot be placed in the available exact sequence/);
+    assert.doesNotMatch(status.textContent, /3 published sites lie beyond/);
+
+    navigation.querySelector('button').click();
+
+    assert.equal(view.placedMarkers().length, 1);
+    assert.match(view.markerControlHost.querySelector('span.gene-sequence-facts').textContent,
+      /2 published rows cannot be placed in the available exact sequence/);
+  });
+});
+
+test('successive actions reveal every longer-window site on the minus strand', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, expanded('M744_RS00045'));
+    assert.equal(view.model.strand, '-');
+    assert.equal(view.markerRows.length, 3);
+    assert.equal(view.placedMarkers().length, 0);
+
+    let actions = 0;
+    view.markerNavigationButton.focus();
+    while (view.placedMarkers().length < view.markerRows.length && actions < 6) {
+      const button = view.markerControlHost.querySelector('button');
+      assert.equal(button.hidden, false);
+      assert.equal(document.activeElement, button, 'successive actions retain keyboard focus');
+      button.click();
+      actions += 1;
+    }
+
+    assert.equal(view.placedMarkers().length, 3);
+    assert.equal(view.upstreamNt, 1000);
+    assert.ok(actions >= 2, 'more distant rows require more than the first short expansion');
+    assert.match(view.markerControlHost.querySelector('span.gene-sequence-facts').textContent,
+      /3 placeable sites are in the current window|outside the current camera window/);
+    const finalButton = view.markerNavigationButton;
+    assert.equal(document.activeElement, finalButton.hidden ? toggleOf(view) : finalButton);
+  });
+});
+
+test('a camera-only reveal that finishes returns focus to the visibility control', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, expanded('M744_RS00025'));
+    view.markerNavigationButton.click();
+    view.setCamera({ from: 100, perNt: 12 });
+    const button = view.markerNavigationButton;
+    assert.equal(button.hidden, false);
+    assert.equal(button.textContent, 'Go to next site');
+    button.focus();
+
+    button.click();
+
+    assert.equal(button.hidden, true);
+    assert.equal(document.activeElement, toggleOf(view));
+  });
+});
+
+test('repeated camera navigation returns to every separated site in transcription order', async () => {
+  await withFakeDocument(async (document) => {
+    for (const strand of ['-', '+']) {
+      const { view, announced } = mount(document, expanded('M744_RS00045'));
+      view.strip.clientWidth = 375;
+      while (view.upstreamNt < 1000) view.revealNearestMarker();
+      const rows = view.placedMarkers();
+      if (strand === '+') {
+        // Mirror the same three native positions onto the opposite transcription frame.
+        const base = expanded('M744_RS00025');
+        view.update({ gene: { ...base, tssEvidence: rows.map((row, index) => ({
+          id: `plus-${index}`, type: 'gTSS', replicon: base.seqid, strand: '+',
+          position: base.start - [40, 400, 900][index], sourceStartDistanceNt: [40, 400, 900][index],
+        })) }, table, scheme: null, schemeVersion: 2, organism: DEFAULT_ORGANISM });
+        view.setUpstreamNt(1000);
+      }
+      const expected = view.placedMarkers().map((row) => row.id);
+      const visits = [];
+      for (let i = 0; i < expected.length * 2; i += 1) {
+        view.revealNearestMarker();
+        visits.push(expected.find((id) => announced.at(-1).includes(`site ${id} shown`)));
+      }
+      assert.deepEqual(new Set(visits.slice(0, expected.length)), new Set(expected), strand);
+      assert.deepEqual(visits.slice(expected.length), visits.slice(0, expected.length),
+        'the next traversal repeats the complete cycle, not only the nearer pair');
+    }
+  });
+});
+
+test('hiding the layer while its navigation has focus returns focus to visibility', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, expanded('M744_RS00025'));
+    view.markerNavigationButton.focus();
+
+    view.setMarkersVisible(false);
+
+    assert.equal(view.markerNavigationButton.disabled, true);
+    assert.equal(document.activeElement, toggleOf(view));
+  });
+});
+
+test('a narrow opening camera explains off-screen sites and pans to the nearest one', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, joined('M744_RS09575'));
+    view.strip.clientWidth = 375;
+    view.camera = null;
+    view.render();
+    assert.equal(markGroups(view).length, 0, 'both placeable sites open left of the narrow camera');
+    const navigation = view.markerControlHost.querySelector('div.gene-sequence-marker-navigation');
+    const button = navigation.querySelector('button');
+    assert.equal(button.hidden, false);
+    assert.match(navigation.querySelector('span.gene-sequence-facts').textContent,
+      /2 of 2 placeable sites are outside the current camera window/);
+
+    button.click();
+
+    assert.ok(markGroups(view).length > 0);
+    assert.equal(view.placedMarkers().some((row) => view.markerInWindow(row)), true);
+  });
+});
+
+test('a saved hidden state remains explicit and does not navigate or draw', async () => {
+  await withFakeDocument(async (document) => {
+    const { view } = mount(document, expanded('M744_RS00025'), { markersVisible: false });
+    assert.equal(toggleOf(view).checked, false);
+    assert.equal(markGroups(view).length, 0);
+    const navigation = view.markerControlHost.querySelector('div.gene-sequence-marker-navigation');
+    const button = navigation.querySelector('button');
+    assert.equal(button.disabled, true);
+    assert.match(navigation.querySelector('span.gene-sequence-facts').textContent,
+      /Tan 2018 sites are hidden in this view/);
+    button.click();
+    assert.equal(view.upstreamNt, 30);
+    assert.equal(markGroups(view).length, 0);
   });
 });
 

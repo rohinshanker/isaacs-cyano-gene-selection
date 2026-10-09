@@ -23,7 +23,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { describeGeneView, geneViewSvg, renderGeneViewer } from '../../site/js/ui/gene-viewer.js';
+import {
+  CODON_HIT_PADDING, describeGeneView, geneViewSvg, renderGeneViewer,
+} from '../../site/js/ui/gene-viewer.js';
 import { geneViewModel, fractionOf, tssMarks } from '../../site/js/core/gene-view-model.js';
 import { withFakeDocument } from './fake-dom.mjs';
 
@@ -142,6 +144,7 @@ test('gene annotations are keyboard targets and computed overlap paints undernea
     ));
     const marks = bySvgClass('gene-view-marker');
     const codons = bySvgClass('gene-view-codon');
+    const codonTargets = bySvgClass('gene-view-codon-hit-target');
     assert.equal(marks.length, 2);
     assert.deepEqual(codons.map((codon) => codon.getAttribute('class').includes('gene-view-codon-start')
       ? 'start' : 'stop'), ['start', 'stop']);
@@ -151,10 +154,42 @@ test('gene annotations are keyboard targets and computed overlap paints undernea
       assert.equal(annotation.getAttribute('role'), 'img');
       assert.ok(annotation.getAttribute('aria-label'));
     }
+    assert.equal(codonTargets.length, codons.length);
+    codons.forEach((codon, index) => {
+      const target = codonTargets[index];
+      const kind = codon.getAttribute('data-codon-kind');
+      const x = Number(codon.getAttribute('x'));
+      const width = Number(codon.getAttribute('width'));
+      assert.equal(Number(target.getAttribute('x')),
+        kind === 'start' ? x - CODON_HIT_PADDING : x);
+      assert.equal(Number(target.getAttribute('width')), width + CODON_HIT_PADDING);
+      assert.ok(Number(target.getAttribute('height')) > Number(codon.getAttribute('height')));
+      assert.equal(target.querySelector('title').textContent, codon.getAttribute('aria-label'));
+      target.dispatch('pointerenter');
+      assert.ok(codon.hasClass('is-hit-hovered'));
+      target.dispatch('pointerleave');
+      assert.ok(!codon.hasClass('is-hit-hovered'));
+      target.dispatch('pointerdown', { stopPropagation() {} });
+      assert.equal(document.activeElement, codon, `${kind} padding focuses its visible annotation`);
+    });
     assert.deepEqual(marks.map((mark) => mark.attributes['data-marker-id']), ['computed', 'source']);
     assert.match(marks[0].getAttribute('class'), /gene-view-marker-supplementary/);
     assert.match(marks[1].getAttribute('class'), /gene-view-marker-primary/);
     assert.equal(marks[0].attributes['data-marker-producer'], 'fixture computation');
+    const hitOf = (mark) => mark.children.find((node) => (
+      node.getAttribute?.('class') === 'gene-view-marker-hit-target'
+    ));
+    for (const mark of marks) {
+      const hit = hitOf(mark);
+      assert.ok(hit, 'each visible head has one padded pointer target');
+      assert.equal(Number(hit.attributes.width), 16);
+      assert.equal(hit.attributes['pointer-events'], 'all');
+      assert.equal(hit.attributes.fill, 'transparent');
+    }
+    assert.equal(hitOf(marks[0]).attributes.x, hitOf(marks[1]).attributes.x,
+      'exact overlaps retain the source-last paint precedence');
+    marks[1].dispatch('pointerdown', { stopPropagation() {} });
+    assert.equal(document.activeElement, marks[1], 'the source mark remains the selected target');
   });
 });
 

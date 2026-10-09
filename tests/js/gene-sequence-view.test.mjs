@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
-  CELL_PX_PER_NT, EDGE_PAD_NT, FALLBACK_WIDTH, GeneSequenceView, LABEL_WIDTH, LETTER_PX_PER_NT,
-  MAX_PX_PER_NT, MIN_OPENING_CDS_NT, OPEN_PX_PER_NT, cameraWindow, clampCamera, fittingCamera,
-  openingCamera, residueTicks,
+  CELL_PX_PER_NT, CODON_HIT_PADDING_PX, EDGE_PAD_NT, FALLBACK_WIDTH, GeneSequenceView, LABEL_WIDTH,
+  LETTER_PX_PER_NT, MAX_PX_PER_NT, MIN_OPENING_CDS_NT, OPEN_PX_PER_NT, cameraWindow,
+  clampCamera, fittingCamera, openingCamera, residueTicks,
 } from '../../site/js/ui/gene-sequence-view.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
@@ -234,8 +234,26 @@ test('zoom keys and buttons change the scale within the limits and announce it',
     assert.equal(codonCells(view).length, 0);
     assert.ok(view.strip.querySelector('g.gene-sequence-bars'));
     assert.equal(view.strip.querySelectorAll('rect.gene-sequence-cds-bar').length, 1);
-    assert.ok(view.strip.querySelector('rect.gene-sequence-start-mark'));
-    assert.ok(view.strip.querySelector('rect.gene-sequence-stop-mark'));
+    const startMark = view.strip.querySelector('rect.gene-sequence-start-mark');
+    const stopMark = view.strip.querySelector('rect.gene-sequence-stop-mark');
+    assert.ok(startMark);
+    assert.ok(stopMark);
+    const [startTarget, stopTarget] = view.strip
+      .querySelectorAll('rect.gene-sequence-codon-hit-target');
+    assert.equal(Number(startTarget.getAttribute('x')),
+      Number(startMark.getAttribute('x')) - CODON_HIT_PADDING_PX);
+    assert.equal(Number(startTarget.getAttribute('width')),
+      Number(startMark.getAttribute('width')) + CODON_HIT_PADDING_PX);
+    assert.equal(Number(stopTarget.getAttribute('x')), Number(stopMark.getAttribute('x')));
+    assert.equal(Number(stopTarget.getAttribute('width')),
+      Number(stopMark.getAttribute('width')) + CODON_HIT_PADDING_PX);
+    for (const [target, mark] of [[startTarget, startMark], [stopTarget, stopMark]]) {
+      assert.equal(target.querySelector('title').textContent, mark.getAttribute('aria-label'));
+      target.dispatch('pointerenter');
+      assert.ok(mark.hasClass('is-hit-hovered'));
+      target.dispatch('pointerleave');
+      assert.ok(!mark.hasClass('is-hit-hovered'));
+    }
     assert.ok(view.strip.querySelector('rect.gene-sequence-upstream-bar'));
     view.startButton.dispatch('click');
     assert.equal(view.camera.perNt, OPEN_PX_PER_NT);
@@ -348,15 +366,26 @@ test('a click selects the codon under the pointer; a drag pans and selects nothi
   });
 });
 
-test('pointer clicks on start and stop annotations select their codons and preserve focus', async () => {
+test('pointer clicks on padded start and stop targets select their codons and preserve focus', async () => {
   await withFakeDocument((document) => {
     const view = mount(document);
     view.update({ gene: gene(), table, scheme: null, schemeVersion: 0 });
     view.selectCodon(1);
 
     let start = codonCells(view)[0];
-    start.dispatch('pointerdown', { stopPropagation() {} });
-    start.dispatch('click', { stopPropagation() {} });
+    let hit = start.querySelector('rect.gene-sequence-codon-hit-target');
+    const startBase = start.querySelector('rect.gene-sequence-bases');
+    assert.equal(Number(hit.getAttribute('x')),
+      Number(startBase.getAttribute('x')) - CODON_HIT_PADDING_PX);
+    assert.equal(Number(hit.getAttribute('width')),
+      Number(startBase.getAttribute('width')) + CODON_HIT_PADDING_PX);
+    assert.equal(hit.querySelector('title').textContent, start.getAttribute('aria-label'));
+    hit.dispatch('pointerenter');
+    assert.ok(start.hasClass('is-hit-hovered'));
+    hit.dispatch('pointerleave');
+    assert.ok(!start.hasClass('is-hit-hovered'));
+    hit.dispatch('pointerdown', { stopPropagation() {} });
+    hit.dispatch('click', { stopPropagation() {} });
     start = codonCells(view)[0];
     assert.equal(view.selectedCodon, 0);
     assert.match(view.selection.textContent, /^Codon 1: initiation triplet ATG/);
@@ -364,8 +393,18 @@ test('pointer clicks on start and stop annotations select their codons and prese
     assert.equal(document.activeElement.isConnected, true);
 
     let stop = codonCells(view)[8];
-    stop.dispatch('pointerdown', { stopPropagation() {} });
-    stop.dispatch('click', { stopPropagation() {} });
+    hit = stop.querySelector('rect.gene-sequence-codon-hit-target');
+    const stopBase = stop.querySelector('rect.gene-sequence-bases');
+    assert.equal(Number(hit.getAttribute('x')), Number(stopBase.getAttribute('x')));
+    assert.equal(Number(hit.getAttribute('width')),
+      Number(stopBase.getAttribute('width')) + CODON_HIT_PADDING_PX);
+    assert.equal(hit.querySelector('title').textContent, stop.getAttribute('aria-label'));
+    hit.dispatch('pointerenter');
+    assert.ok(stop.hasClass('is-hit-hovered'));
+    hit.dispatch('pointerleave');
+    assert.ok(!stop.hasClass('is-hit-hovered'));
+    hit.dispatch('pointerdown', { stopPropagation() {} });
+    hit.dispatch('click', { stopPropagation() {} });
     stop = codonCells(view)[8];
     assert.equal(view.selectedCodon, 8);
     assert.match(view.selection.textContent, /^Terminal stop TAG\./);

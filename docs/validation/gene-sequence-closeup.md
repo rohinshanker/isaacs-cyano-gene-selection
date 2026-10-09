@@ -402,6 +402,24 @@ focus to the redrawn annotation, so its persistent readout and metadata agree.
 Pointer activation of another marker moves focus without selecting a codon;
 Enter or Space on a close-up start/stop annotation performs the same selection.
 
+**Visible extents and interaction extents are separate.** A marker's published
+base, span, stem, head and outlined sequence columns keep their exact geometry.
+An invisible target adds 5 drawn units around a small-view head and 5 px around
+a close-up tag, confined to the marker row so it does not intercept codon
+selection or pan gestures. `paddedHitRange` divides only that padding at the
+midpoint of the gap between adjacent feature edges; it never shortens a
+visible mark. Overlapping heads can consume all horizontal padding; wide
+intervals retain padding when a neighbour is clear of their edge. Exact overlaps
+retain stable source-last paint precedence and all rows remain reachable in the inspection list. A pointer immediately outside
+the padded interval falls through to the underlying SVG. The gene's own start
+and stop codons also gain 5 units/px of invisible padding vertically and on
+their outward-facing edge. Their gene-facing edge remains exact, so the next
+base or codon keeps its original pointer identity; padded activation selects
+and focuses the same visible start/stop annotation. Each padded target carries
+the annotation's exact hint text, so padding-only hover exposes the same details
+as the visible mark. Check both the outline and the hint, and their dismissal
+when the pointer leaves the target.
+
 **The marker row is reserved by the data, not by the reader.** It is 16 px tall
 whenever this locus has a placeable mark and the layer has landed, whether or not
 the marks are shown, so hiding them moves no letter; the gutter stops naming the
@@ -417,13 +435,28 @@ accessible description counts them and says the grouping is display only, and
 zooming in separates them. Nothing is merged, dropped or moved: two rows on one
 base keep two marks, two descriptions and two rows.
 
-**The show/hide and the list.** **Show ‹study› start sites** sits between the
-strip and the instructions and is built only where there is a mark to govern — a
-declared layer, a landed file, and at least one placeable row. A file in flight or
-failed puts a note there instead and builds no list, so hidden stays distinct from
-absent, loading, failed and unplaceable. Hiding removes the whole mark group: no
-head, no stem, no outlined column, no `<title>` and nothing for `elementFromPoint`
-to find. The complete list below the strip stays either way, because it is the
+**The show/hide, reveal action and list.** **Show ‹study› start sites** sits
+between the strip and the instructions. It is built for a declared, landed layer
+when at least one row is placeable now **or in a larger declared exact upstream
+window**. A row beyond the initial 30 nt therefore keeps a discoverable control,
+states that it is outside the current sequence, and offers **Show nearest site**;
+that action selects the smallest existing upstream extent that can place another
+row and centres the new native-coordinate mark. For a locus with successively
+more distant rows the action becomes **Show next site** until the available exact
+sequence includes them all. When a placed row is outside the camera it becomes
+**Go to next site** and pans without changing sequence extent. Repeated camera
+actions advance in transcription order and wrap from the last site to the first;
+they never alternate indefinitely between nearer-to-start sites. The changing
+visible action text also provides its accessible name. Hidden state is
+said beside the checked state and disables navigation rather than silently
+overriding the reader's link-carried choice. A file in flight or failed puts a
+note there instead and builds no list, so hidden stays distinct from absent,
+loading, failed and fundamentally unplaceable. Mixed rows count only coordinates
+a larger exact sequence can reveal as “beyond”; missing-coordinate, wrong-replicon
+and otherwise unreachable rows are counted separately and retain their row-level
+reason in the list. Hiding removes the whole mark
+group: no head, no stem, no outlined column, no `<title>` and nothing for
+`elementFromPoint` to find. The complete list below the strip stays either way, because it is the
 metadata and not the drawing; it is the keyboard and touch path, since a pointer
 hint answers for whichever head is on top. The choice is `tss.sequence` in
 `state.hiddenMarkers`, independent of the other three views and carried in a link
@@ -436,9 +469,13 @@ So this view reads, before it rebuilds, whether the reader is standing inside it
 own control host or its own list host — scoped to those hosts, because a view
 that moved focus when *someone else* held it would take the reader out of what
 they were using. The checkbox is restored by identity where it still exists.
+A reader activating the reveal button stays on that button through successive
+upstream expansions while another action is available. When the final expansion
+or camera-only move hides the button, or hiding the layer disables it, focus
+returns to the visibility checkbox. Rebuilding controls never steals outside focus.
 Where it does not — the layer still loading, the layer failed, an organism with
-no such layer, a locus whose rows this window has no base for, or nothing pinned
-at all — focus goes to the labelled part of this view that survived: the strip
+no such layer, a locus whose rows no available exact window has a base for, or
+nothing pinned at all — focus goes to the labelled part of this view that survived: the strip
 (`role="group"`, "Sequence close-up"), or, when the whole figure is hidden
 because nothing is pinned, the view's own host (`role="group"`, `tabIndex -1`,
 "Gene sequence close-up"), which carries the note saying why there is nothing to
@@ -513,7 +550,7 @@ Unit coverage:
 them, the narrow strip, and the protein label in bar mode.
 - `tests/js/gene-view-model.test.mjs`: `transcriptionPieces` and
   `orientedSegments` for both wrap genes, the not-a-wrap cases, and an unknown
-  replicon.
+  replicon, plus padded hit-range partitioning for neighbours and exact overlaps.
 - `tests/js/chromosome-model.test.mjs`: `wrapsOrigin` and `cdsMark.anchorBp`,
   2,510 for `M744_RS13290` and 7,830 for `M744_RS13620`.
 - `tests/js/codon-table.test.mjs`: `decode` throwing on an unknown symbol, which is
@@ -525,6 +562,9 @@ them, the narrow strip, and the protein label in bar mode.
   reaches the list exactly once, that 869 place and 1,563 do not, and that the
   drawn gap equals the gene view's `placementGapNt` on all 869; the 63
   disagreeing rows drawn at their own coordinate; the six description states;
+  the 30 nt short-window explanation and reveal, successive expansions for a
+  minus-strand locus with three rows, narrow-camera navigation, and saved-hidden
+  state;
   marks-only hiding against a whole-view fingerprint; focus across the repaint;
   the caller owning the choice through a link, a reload and a locus with no
   control; crowding at a fitted zoom and its separation when zoomed in; two
@@ -578,16 +618,20 @@ Chromosome tab, and check at **375, 768, 1280 and 1440 px** wide:
 - an admitted marker layer, at every width: the marks on the columns their
   coordinates name with the row reserved above the ruler, a disagreeing locus
   (`M744_RS00920`) drawn at its own base and not at the published distance, a
-  locus whose rows are all unplaceable (`M744_RS09240`) with no control and the
-  rows still listed, Tab from the strip to the control and Space to hide, a tap
-  on the control's words, `elementFromPoint` at a former mark returning the bare
+  locus whose rows are outside 30 nt (`M744_RS00025`) with its control, explicit
+  explanation and 60 nt reveal action, a longer minus-strand locus
+  (`M744_RS00045`) through 60, 500 and 1,000 nt, Tab from the strip to the
+  control and Space to hide, a tap on the control's words, `elementFromPoint` at a former mark returning the bare
   SVG with the strip's height unchanged, the hidden choice surviving a reload in
   `mk` while the other three views keep their marks, and an organism with no
   such layer saying nothing about a start site;
 - the upstream selector at its initial 30 nt and at every offered exact extent,
   including 1,000 nt: camera reset, native-coordinate placement, source distances
   unchanged, all annotations focusable, hover and keyboard outlines equivalent,
-  and a tap exposing the same metadata without hover;
+  a tap exposing the same metadata without hover, and 5 px of marker-row
+  interaction padding that does not alter a coordinate or block strip gestures,
+  plus start/stop padding at cell and fitted-bar zoom with the gene-facing edge
+  left exact for neighbouring bases;
 - `document.documentElement.scrollWidth <= innerWidth` in every state, with the
   SVG inside the strip at 375 px;
 - a clean browser console.
@@ -617,9 +661,9 @@ Two things it needs to be given:
   that file's `bytes` and `sha256` updated in `data/data-manifest.json`). That
   leg checks the two outlines, the gap over the uncovered bases with their
   letters still drawn, and that no description claims an agreement. Browser-only
-  detail: `instant-hints.js` moves every SVG `<title>` into a description node,
-  so a mark's own text is read through its `aria-describedby`, not from a
-  `<title>` child.
+  detail: instant hints consume SVG titles. Read a marker's accessible text from
+  its `aria-label`, falling back to `aria-describedby` or a title child when
+  inspecting an older host.
 
 The published site pins `color-scheme: light`, so a dark operating-system
 preference renders it identically; emulating dark is still part of the check and

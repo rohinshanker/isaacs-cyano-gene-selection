@@ -83,6 +83,21 @@ export const MIN_TSS_SPACING_PX = 3;
  */
 export const MIN_HOLLOW_MARK_PX = 3;
 
+/**
+ * How far one pan step slides the window, as a fraction of the window itself.
+ *
+ * A step relative to the window means the control does the same thing at every
+ * zoom level: a 250,000-bp window moves by 37,500 bp.
+ * At 0.15, 85% of the window the reader was looking at is still on screen
+ * afterwards, so a feature near the edge can be followed across the step
+ * instead of being replaced by a stretch of genome with nothing in common with
+ * the last one.
+ *
+ * Exported because the Pan left and Pan right buttons and Shift with an arrow
+ * key are the same movement, and a test pins them to the one number.
+ */
+export const PAN_STEP_FRACTION = 0.15;
+
 /** The clipped-edge chevron reads against any colour the bar beneath it takes. */
 const WRAP_MARKER_FILL = '#ffffff';
 const WRAP_MARKER_STROKE = '#1b2733';
@@ -468,7 +483,7 @@ export class ChromosomeView {
     this.unavailable.replaceChildren(heading, list);
   }
 
-  /** The primary track, which the zoom, pan and reset controls act on. */
+  /** The primary track, which the zoom and pan controls act on. */
   primaryTrack() {
     return this.model.tracks.find((track) => track.primary) ?? this.model.tracks[0];
   }
@@ -549,6 +564,13 @@ export class ChromosomeView {
     this.scaleNotice.id = 'chromosome-color-scale-notice';
     this.scaleNotice.hidden = true;
 
+    // Left and right before the zoom pair, so the row reads as the movement it
+    // offers: along the axis first, then in and out of it, then back to the
+    // whole replicon. Each carries a directional glyph as well as its words,
+    // because the glyph is what says which way at a glance, and the words are
+    // what a reader who has never dragged the track needs in order to try it.
+    this.panLeft = this.chip('◀ Pan left', 'Pan left', () => this.panFromButton('left'));
+    this.panRight = this.chip('Pan right ▶', 'Pan right', () => this.panFromButton('right'));
     this.zoomIn = this.chip('Zoom in (+)', 'Zoom in', () => this.zoomByCentre(1.6));
     this.zoomOut = this.chip('Zoom out (−)', 'Zoom out', () => this.zoomByCentre(1 / 1.6));
     // Reset view acts at once, like the double-click and `0` shortcuts, by
@@ -569,7 +591,8 @@ export class ChromosomeView {
     showHiddenLabel.textContent = 'Show filtered-out genes';
     showHiddenRow.append(this.showHidden, showHiddenLabel);
 
-    viewRow.append(this.zoomIn, this.zoomOut, this.resetButton, showHiddenRow);
+    viewRow.append(this.panLeft, this.panRight, this.zoomIn, this.zoomOut, this.resetButton,
+      showHiddenRow);
 
     // The start-site layer's own show/hide, beside the other visibility
     // checkbox and built only for an organism that publishes the layer: a
@@ -627,12 +650,15 @@ export class ChromosomeView {
     this.instructions.className = 'hint';
     this.instructions.id = 'chromosome-instructions';
     this.instructions.textContent = 'Drag a track to pan it and scroll over it to zoom it; each '
-      + 'replicon keeps its own scale and its own window. The Zoom in and Zoom out buttons, and '
-      + 'the plus and minus keys, act on the chromosome track. Double-click, 0, or Reset view '
-      + 'returns every track to its full length. With a track focused: Left and Right move along '
-      + 'one strand lane and announce the CDS without pinning it, Up and Down cross to the next '
-      + 'lane or replicon, Shift and an arrow pans the chromosome, Enter pins the active CDS, and '
-      + 'S adds or removes it from the shortlist.';
+      + 'replicon keeps its own scale and its own window. The Pan left, Pan right, Zoom in and '
+      + 'Zoom out buttons, and the plus and minus keys, act on the chromosome track. Each pan '
+      + 'step keeps most of the window on screen, and a pan button is dimmed when that direction '
+      + 'has reached the end of the chromosome or the whole chromosome is already in view. '
+      + 'Double-click, 0, or Reset view returns every track to its full length. With a track '
+      + 'focused: Left and Right move along one strand lane and announce the CDS without pinning '
+      + 'it, Up and Down cross to the next lane or replicon, Shift and an arrow pans the '
+      + 'chromosome the same step the buttons do, Enter pins the active CDS, and S adds or '
+      + 'removes it from the shortlist.';
 
     this.detailJump = document.createElement('button');
     this.detailJump.type = 'button';
@@ -894,6 +920,7 @@ export class ChromosomeView {
 
   renderSummaries() {
     this.markerNote.textContent = this.markerConventions();
+    this.syncPanButtons();
     const primary = this.primaryTrack();
     const window = this.windowFor(primary);
     this.windowReadout.textContent = `${primary.accession} ${formatCoordinate(window.from)}–`
@@ -1677,6 +1704,80 @@ export class ChromosomeView {
       + `${formatBasePairs(next.to - next.from + 1)}.`);
   }
 
+  /**
+   * Slide the chromosome window one step, for the pan buttons and Shift+arrow.
+   *
+   * The step is {@link PAN_STEP_FRACTION} of the window, so the zoom level is
+   * untouched: `panWindow` keeps the span and clamps the result to the
+   * replicon, which is also why this can never reach an invalid coordinate or
+   * wrap past the origin. The secondary replicons keep their own windows and
+   * are panned by dragging them. Zoom buttons also act on the chromosome;
+   * Reset view restores every track to its full length.
+   *
+   * Nothing but the camera moves: no selection, filter, colour choice or
+   * visibility checkbox is read or written here.
+   *
+   * @param {'left'|'right'} direction
+   * @returns {boolean} whether the window moved, so a caller at a coordinate
+   *   limit can say so rather than report a step it did not take.
+   */
+  panByStep(direction) {
+    if (!this.model?.verified) return false;
+    const track = this.primaryTrack();
+    const current = this.windowFor(track);
+    const step = (current.to - current.from + 1) * PAN_STEP_FRACTION;
+    const next = panWindow(current, direction === 'left' ? -step : step, track.lengthBp);
+    if (next.from === current.from && next.to === current.to) {
+      this.handlers.onAnnounce?.(`${track.accession} is already showing its `
+        + `${direction === 'left' ? 'first' : 'last'} base.`);
+      return false;
+    }
+    this.windows.set(track.accession, next);
+    this.renderSummaries();
+    this.draw();
+    this.handlers.onAnnounce?.(`${track.accession} showing `
+      + `${formatCoordinate(next.from)}–${formatCoordinate(next.to)}.`);
+    return true;
+  }
+
+  /**
+   * A pan button's own activation: the step, and then the focus.
+   *
+   * {@link syncPanButtons} disables a direction the instant it reaches its
+   * coordinate limit, and a disabled button drops keyboard focus to the
+   * document. So the focus moves to the opposite button, which a step that
+   * reached one limit always leaves enabled — panning preserves the span, so
+   * the window it lands on cannot be the whole replicon unless it already was,
+   * and then neither button was live to be pressed. A reader panning from the
+   * keyboard therefore keeps a place in the toolbar instead of starting again
+   * from Tab.
+   */
+  panFromButton(direction) {
+    this.panByStep(direction);
+    const pressed = direction === 'left' ? this.panLeft : this.panRight;
+    const other = direction === 'left' ? this.panRight : this.panLeft;
+    if (pressed?.disabled && document.activeElement === pressed) other?.focus();
+  }
+
+  /**
+   * Offer each pan button only the direction the window can actually move.
+   *
+   * Recomputed from the window itself on every change rather than tracked, so a
+   * drag, a wheel, a zoom button, a reset, a gene arriving from another view and
+   * a new organism all leave it right. A window already against base 1 has no
+   * left to go to and one against the last base has no right; the whole
+   * replicon in view is both of those at once, which is why it needs no rule of
+   * its own. The sentence under the track says the dimming means this, because
+   * a disabled button takes no keyboard focus and cannot be asked why.
+   */
+  syncPanButtons() {
+    if (!this.panLeft || !this.panRight) return;
+    const track = this.primaryTrack();
+    const view = this.windowFor(track);
+    this.panLeft.disabled = view.from <= 1;
+    this.panRight.disabled = view.to >= track.lengthBp;
+  }
+
   /** Zoom the chromosome track about its centre, for the buttons and keys. */
   zoomByCentre(factor) {
     const primary = this.primaryTrack();
@@ -1754,15 +1855,9 @@ export class ChromosomeView {
     if (direction) {
       event.preventDefault();
       if (event.shiftKey) {
-        const band = this.bands().find((entry) => entry.track.primary) ?? this.bands()[0];
-        const step = (band.window.to - band.window.from + 1) * 0.15;
-        const delta = direction === 'left' ? -step : direction === 'right' ? step : 0;
-        if (delta !== 0) {
-          this.windows.set(band.track.accession,
-            panWindow(band.window, delta, band.track.lengthBp));
-          this.renderSummaries();
-          this.draw();
-        }
+        // The buttons' own step, so the two paths cannot drift apart. Up and
+        // Down have no horizontal meaning and pan nothing.
+        if (direction === 'left' || direction === 'right') this.panByStep(direction);
         return;
       }
       const allowed = (mark) => this.model.showHidden || this.passes(mark);
