@@ -670,14 +670,32 @@ export class SidePanel {
     details.dataset.disclosure = key;
     const remembered = this.disclosureState.get(key);
     if (remembered !== undefined) details.open = remembered;
+    details.dataset.disclosureOpen = String(details.open);
     details.addEventListener('toggle', () => {
       // Native toggle events can be delivered after a hover rebuild has
       // detached this disclosure. An obsolete element must not overwrite the
       // state chosen in the current panel.
       if (!details.isConnected || !this.host.contains(details)) return;
       this.disclosureState.set(key, details.open);
+      details.dataset.disclosureOpen = String(details.open);
     });
     return details;
+  }
+
+  /**
+   * Capture a user toggle whose native event has not been delivered yet.
+   *
+   * Untouched disclosures are deliberately skipped, so their next rebuild can
+   * still follow scheme-dependent defaults. `rememberDisclosure` records the
+   * state each attached element started with; a difference is a real change
+   * that must survive replacing the panel for another gene or source.
+   */
+  capturePendingDisclosureState() {
+    for (const details of this.host.querySelectorAll('details')) {
+      const key = details.dataset.disclosure;
+      if (!key || details.dataset.disclosureOpen === String(details.open)) continue;
+      this.disclosureState.set(key, details.open);
+    }
   }
 
   /**
@@ -693,6 +711,7 @@ export class SidePanel {
     if (typeof state.startSitesVisible === 'boolean') {
       this.startSitesVisible = state.startSitesVisible;
     }
+    this.capturePendingDisclosureState();
     const focusedAction = this.host.contains(document.activeElement)
       ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();

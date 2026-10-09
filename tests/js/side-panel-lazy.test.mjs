@@ -22,6 +22,7 @@ test('closed metric families defer current values and percentiles until opened',
       Size: [100, 101],
       Fitness: [200, 201],
       Other: [300, 301],
+      'Change from wild type': [400, 401],
     };
     const metric = (family) => ({
       key: family.toLowerCase(),
@@ -35,21 +36,28 @@ test('closed metric families defer current values and percentiles until opened',
       },
     });
     const registry = {
-      families: ['Size', 'Fitness', 'Other'],
-      metrics: ['Size', 'Fitness', 'Other'].map(metric),
+      families: ['Size', 'Fitness', 'Other', 'Change from wild type'],
+      metrics: ['Size', 'Fitness', 'Other', 'Change from wild type'].map(metric),
     };
     const panel = new SidePanel(host, { onShortlistToggle() {}, onUnpin() {} });
-    const update = (index) => panel.update({
+    const zeroes = [0, 0];
+    const baseline = Object.fromEntries(
+      ['recodedGc3', 'recodedCai', 'recodedTai', 'recodedEnc', 'recodedCps']
+        .map((key) => [key, zeroes]),
+    );
+    const live = { ...baseline, dGc3: zeroes, dCai: zeroes, dTai: zeroes, dEnc: zeroes,
+      dCps: zeroes };
+    const update = (index, schemeActive = false) => panel.update({
       index,
       isPinned: false,
-      dataset: { genes: shippedGenes.slice(0, 2), meta: {}, files: {} },
+      dataset: { genes: shippedGenes.slice(0, 2), meta: {}, files: {}, baseline },
       registry,
       percentileOf: (key, value) => {
         percentiles.set(key, (percentiles.get(key) ?? 0) + 1);
         return value / 1000;
       },
-      schemeActive: false,
-      live: {},
+      schemeActive,
+      live,
       inShortlist: false,
       colorSources: [],
     });
@@ -100,5 +108,27 @@ test('closed metric families defer current values and percentiles until opened',
       'the attached disclosure reads the current source value when opened');
     assert.equal(reads.get('Other'), 1);
     assert.equal(percentiles.get('other'), 1);
+
+    // The browser queues native toggle events. An immediate hover/source
+    // rebuild must still preserve an open or close the reader just made.
+    currentOther.open = false;
+    update(1);
+    assert.equal(disclosure(host, 'Other').open, false,
+      'an unflushed close survives the immediate rebuild');
+    const pendingOther = disclosure(host, 'Other');
+    pendingOther.open = true;
+    values.Other[0] = 808;
+    update(0);
+    const rebuiltOther = disclosure(host, 'Other');
+    assert.equal(rebuiltOther.open, true, 'an unflushed open survives the immediate rebuild');
+    assert.match(rebuiltOther.querySelector('table.metric-table').textContent, /808/);
+
+    // A section the reader never touched keeps following its own default. The
+    // recoding delta family starts closed without a scheme and open with one.
+    assert.equal(panel.disclosureState.has('metric:Change from wild type'), false);
+    update(0, true);
+    assert.equal(disclosure(host, 'Change from wild type').open, true);
+    assert.match(disclosure(host, 'Change from wild type')
+      .querySelector('table.metric-table').textContent, /400/);
   });
 });
