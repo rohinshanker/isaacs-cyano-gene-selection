@@ -676,6 +676,11 @@ export class SidePanel {
       // detached this disclosure. An obsolete element must not overwrite the
       // state chosen in the current panel.
       if (!details.isConnected || !this.host.contains(details)) return;
+      // Setting `open` while constructing or restoring a disclosure queues the
+      // same native event as a user gesture. The recorded starting value lets
+      // that no-change event pass without turning a scheme-dependent default
+      // into a remembered reader choice.
+      if (details.dataset.disclosureOpen === String(details.open)) return;
       this.disclosureState.set(key, details.open);
       details.dataset.disclosureOpen = String(details.open);
     });

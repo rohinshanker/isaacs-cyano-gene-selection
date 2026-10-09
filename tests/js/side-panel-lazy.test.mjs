@@ -127,8 +127,16 @@ test('closed metric families defer current values and percentiles until opened',
     // recoding delta family starts closed without a scheme and open with one.
     assert.equal(panel.disclosureState.has('metric:Change from wild type'), false);
     update(0, true);
-    assert.equal(disclosure(host, 'Change from wild type').open, true);
-    assert.match(disclosure(host, 'Change from wild type')
+    const schemeDefault = disclosure(host, 'Change from wild type');
+    assert.equal(schemeDefault.open, true);
+    // Chrome queues a native toggle because construction set `open = true`.
+    // It carries no user choice and must not freeze this conditional default.
+    schemeDefault.dispatch('toggle');
+    assert.equal(panel.disclosureState.has('metric:Change from wild type'), false);
+    assert.match(schemeDefault
       .querySelector('table.metric-table').textContent, /400/);
+    update(0, false);
+    assert.equal(disclosure(host, 'Change from wild type').open, false,
+      'an untouched scheme-dependent family follows the next scheme default');
   });
 });
