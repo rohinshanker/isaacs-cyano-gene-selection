@@ -3,7 +3,7 @@
 Scope: Assess computational candidates for RBS and other regulatory/cryptic-site predictions requested by the owner, using repository/open-ticket context and primary sources.
 Status: active
 Opened: 2026-10-08
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
@@ -57,6 +57,35 @@ O_idog-promoter-prediction__20260930, O_gene-sequence-structural-features__20261
 O_recoding-regulatory-site-change__20260930, O_folding-compute-backend__20260930,
 and BioCyc/cross-strain annotation assessments. BioCyc/EcoCyc records are annotation
 cross-checks, not interchangeable prediction methods or cross-strain coordinates.
+
+## Current accessible versions and dependencies, 2026-10-09
+
+The owner authorized evaluation of current accessible versions and local
+computation where supported. The source reads below establish availability and
+code contracts; no new regulatory prediction layer is admitted by this assessment.
+
+| Selected method | Verified current source/runtime | Remaining method-specific input or access |
+| --- | --- | --- |
+| RBS Calculator | Public SalisLabCode head `46da913`; its v2.1.1 test imports a private `DNAc` package. Original v1.0 remains Python 2/NUPACK dependent. | Owner has no existing code/API/runtime access and explicitly retains this dependency as open. No surrogate SD scan is substituted. |
+| iDOG / TransTermHP | Existing iDOG review/hold retained; standalone author download is TransTermHP 2.09 C++ source. | iDOG execution still waits on the owner's own review. Standalone intrinsic-terminator evaluation needs a reproducible tool build and its stated score/input contract. |
+| Promoter Calculator | Public v1.0 at SalisLabCode `46da913`, GPL v3 or later; implementation still contains Python 2 syntax. Organism names other than the explicit E. coli or in-vitro modes fall through to E. coli calibration constants. | Python 3 compatibility/evaluation and explicit model/host labels before scores are published; selecting UTEX as a string does not supply UTEX calibration. |
+| ViennaRNA | Existing project Python/browser model is 2.7.2; Python-library smoke returned a finite MFE/structure. | Structure/accessibility is computational evidence, not a validated regulatory-site call; select windows/parameters for any new annotation method. |
+| STREME | Current author MEME Suite source download is 5.5.9. | Foreground/control cohort and evaluation split are required for motif discovery; a discovered motif alone is not an admitted site layer. |
+| Rfam + Infernal | Current official Rfam release is 15.1; existing user-owned `trna-validate` environment has Infernal 1.1.5. | Pin family models/cutoffs and native input coordinates. Fresh cmsearch matches are calculated outputs even though their models come from a library. |
+| IntaRNA | Current official release tag is v3.4.1. | Query/target RNAs, accessibility/seed parameters and an evaluated local runtime are required for an interaction layer. |
+
+The record-origin distinction is now resolved: newly calculated outputs receive
+translucent tags/lower overlap priority; annotations retrieved from a library are
+sourced records. Keep origin independent from measurement/prediction confidence.
+The generic rendering/hover contract is implemented by the gene-viewer stream;
+source-specific data producers remain separate from this shortlist.
+
+Located short quotations were mechanically matched against downloaded primary
+source bytes. Receipts, line locations, hashes and snapshots are in
+`.playwright-cli/ui-open-tickets-20261008/regulatory-assessment/` in the integration
+worktree; `located-quotations.json` records each match. Public source reads require
+no account/privacy escalation. No private RBS code or NUPACK was accessed, no
+new tool environment was installed, and no iDOG run was launched.
 
 ## Verification
 

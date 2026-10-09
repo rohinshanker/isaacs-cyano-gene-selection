@@ -4,9 +4,18 @@
   RBS features for UTEX 2973 and support their display in the gene visualizer.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-08
+- **Updated:** 2026-10-09
 
 ## Current State
+
+Owner decisions, 2026-10-09: assess current accessible versions rather than
+restricting evaluation to v1.0. The current public v2.1.1 harness imports private
+Salis-lab code absent from its repository; the owner reports no existing code,
+API access or compatible installation and explicitly says to retain the RBS
+dependency as open. Do not fabricate predictions or silently substitute another
+method. The broader selected-method source/runtime assessment is recorded in
+A_regulatory-methods-shortlist__20261008. Generic gene annotation rendering is
+separate and can finish without admitting an RBS layer.
 
 Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
 
