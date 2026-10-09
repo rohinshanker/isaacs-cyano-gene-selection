@@ -501,9 +501,9 @@ come from `app.js` on each render, under
   selection the workspace owns, so clearing the shared active index does not
   clear it, and a stale one sends the next arrow key off from a gene the reader
   left behind.
-- **Reset view** goes through `confirmedReset`, as every reset control does. The
-  double-click and `0` shortcuts stay direct, as the scatter map's do: the
-  control is the gate, and a modal on a pointer gesture would be noise.
+- **Reset view**, double-click and `0` act immediately and restore every track
+  to its full length. The resets that require confirmation are documented in
+  [controls-column-and-resets.md](controls-column-and-resets.md).
 - The camera — each replicon's window — is **not** shareable state. It carries
   no URL field, and applying a hash live resets every track to its full extent,
   for the same reason the scatter map resets pan and zoom: a pasted link should
@@ -572,8 +572,8 @@ dims them.
   direction, which a step that reached one limit always leaves enabled;
 - Shift with an arrow key at a limit announces it, because the canvas keeps the
   focus there and the dimmed button cannot be read from it;
-- the controls are the chromosome's, like zoom and reset. Secondary replicons
-  keep their own windows and are panned by dragging them;
+- the pan and zoom buttons act on the chromosome. Secondary replicons keep
+  their own windows and are panned by dragging them. Reset restores all tracks;
 - a pan moves the camera and nothing else: no pin, shortlist, filter, colour,
   visibility checkbox or hash field changes, and no CDS is selected, because the
   buttons are outside the canvas the hit test reads. The aligned layers follow
@@ -671,8 +671,8 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
   sentences inside it, both canvases' descriptions, and the hash all follow, that
   the open disclosure does not overflow at 375 px, and that with it closed again
   the toolbar, canvas and legend are the height they were;
-- press **Reset view** and confirm the question, that Cancel keeps the windows,
-  and that confirming returns every track to its full length;
+- zoom the chromosome and a plasmid, then press **Reset view** and confirm
+  that every track immediately returns to its full length without a question;
 - `document.documentElement.scrollWidth <= innerWidth` in every state;
 - a clean browser console.
 

@@ -87,7 +87,7 @@ export const MIN_HOLLOW_MARK_PX = 3;
  * How far one pan step slides the window, as a fraction of the window itself.
  *
  * A step relative to the window means the control does the same thing at every
- * zoom level: a quarter-megabase window moves by a quarter-megabase's worth.
+ * zoom level: a 250,000-bp window moves by 37,500 bp.
  * At 0.15, 85% of the window the reader was looking at is still on screen
  * afterwards, so a feature near the edge can be followed across the step
  * instead of being replaced by a stretch of genome with nothing in common with
@@ -483,7 +483,7 @@ export class ChromosomeView {
     this.unavailable.replaceChildren(heading, list);
   }
 
-  /** The primary track, which the zoom, pan and reset controls act on. */
+  /** The primary track, which the zoom and pan controls act on. */
   primaryTrack() {
     return this.model.tracks.find((track) => track.primary) ?? this.model.tracks[0];
   }
@@ -1711,8 +1711,8 @@ export class ChromosomeView {
    * untouched: `panWindow` keeps the span and clamps the result to the
    * replicon, which is also why this can never reach an invalid coordinate or
    * wrap past the origin. The secondary replicons keep their own windows and
-   * are panned by dragging them, as the zoom and reset controls likewise act on
-   * the chromosome alone.
+   * are panned by dragging them. Zoom buttons also act on the chromosome;
+   * Reset view restores every track to its full length.
    *
    * Nothing but the camera moves: no selection, filter, colour choice or
    * visibility checkbox is read or written here.
