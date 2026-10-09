@@ -434,6 +434,7 @@ test('a short sequence explains an excluded site and reveals it through the exis
     const button = navigation.querySelector('button');
     const status = navigation.querySelector('span.gene-sequence-facts');
     assert.equal(button.textContent, 'Show nearest site');
+    assert.equal(button.getAttribute('aria-label'), null, 'the changing visible action names the button');
     assert.match(status.textContent, /beyond the current 30 nt sequence/);
     assert.match(status.textContent, /existing 60 nt upstream window/);
 

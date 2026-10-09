@@ -709,6 +709,8 @@ export class GeneSequenceView {
     const navigation = element('div', 'chromosome-toolbar-row gene-sequence-marker-navigation');
     const button = this.chip('Go to next site', 'Reveal a start site in the sequence',
       () => this.revealNearestMarker());
+    // The action changes with the window; its visible text is also its accessible name.
+    button.removeAttribute('aria-label');
     const status = element('span', 'gene-sequence-facts');
     status.setAttribute('role', 'status');
     navigation.append(button, status);

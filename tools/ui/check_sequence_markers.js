@@ -95,7 +95,7 @@ async (page) => {
   const shortState = await page.locator('.gene-sequence-marker-navigation').innerText();
   check(shortState.includes('beyond the current 30 nt sequence'),
     'the short sequence says why the site is not drawn');
-  await page.getByRole('button', { name: 'Reveal a start site in the sequence' }).focus();
+  await page.getByRole('button', { name: 'Show nearest site', exact: true }).focus();
   await page.keyboard.press('Enter');
   check(await page.locator('.gene-sequence-upstream-control select').inputValue() === '60',
     'the reveal uses the smallest existing exact upstream window');
@@ -140,8 +140,11 @@ async (page) => {
     }
     const visits = [];
     for (let step = 0; step < 6; step += 1) {
+      check(await button.isVisible(), `${width}: a camera action is available at every step`);
       check(await button.textContent() === 'Go to next site', 'camera navigation names its next-site action');
       await button.focus();
+      check(await button.evaluate((node) => node === document.activeElement),
+        `${width}: each camera action receives the keyboard activation`);
       await page.keyboard.press(step % 2 ? 'Space' : 'Enter');
       visits.push(await page.locator('g.gene-sequence-marker').evaluateAll(
         (nodes) => nodes.map((node) => node.dataset.markerId).sort()));
@@ -400,6 +403,8 @@ async (page) => {
     check(geometry.marks > 0 && geometry.columns >= geometry.marks, `${width}: the marks are drawn`);
     check(geometry.paddedTargets >= geometry.marks && geometry.validSequenceTargets === geometry.paddedTargets,
       `${width}: every point target contains its head, with padding shared only by crowded neighbours`);
+    check(geometry.minimumTargetWidth >= 19,
+      `${width}: the two isolated opening-view markers retain their minimum 19 px target`);
     check(geometry.smallMarks > 0 && geometry.validSmallTargets === geometry.smallMarks,
       `${width}: small-view targets contain their heads and respect crowded neighbours`);
     check(geometry.outside === 0, `${width}: every outline is inside the strip`);

@@ -100,3 +100,17 @@ documentation, update its index, and follow the required resolved-ticket lifecyc
 - **DEM-336-F5:** marker targets had no automated padding-only interaction check.
   The browser contract now checks exact hints, outlines, dismissal, target focus
   and preserved codon selection for both viewers. Final review pending.
+
+## Confirmation-review follow-through
+
+DEM-336 approved implementation `866f2cd`; F1–F6 are confirmed resolved.
+The two new low test findings are addressed before closure:
+- **DEM-336-G1:** the isolated opening-view case again requires a literal 19 px
+  minimum target; dense and zoomed-out cases retain the valid containment check.
+- **DEM-336-G2:** every cyclic action must be visible and actually focused before
+  keyboard activation, so a hidden action cannot produce a vacuous success.
+
+The accessible-name observation is addressed by letting the visible changing
+action text name the button. The interval-render observation is being checked
+with the existing native-only/wrapping fixture contract on a temporary site copy;
+no admitted data file is changed. Final results and resolving commit follow at closure.

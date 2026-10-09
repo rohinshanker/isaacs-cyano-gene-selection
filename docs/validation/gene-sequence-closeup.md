@@ -446,7 +446,8 @@ more distant rows the action becomes **Show next site** until the available exac
 sequence includes them all. When a placed row is outside the camera it becomes
 **Go to next site** and pans without changing sequence extent. Repeated camera
 actions advance in transcription order and wrap from the last site to the first;
-they never alternate indefinitely between nearer-to-start sites. Hidden state is
+they never alternate indefinitely between nearer-to-start sites. The changing
+visible action text also provides its accessible name. Hidden state is
 said beside the checked state and disables navigation rather than silently
 overriding the reader's link-carried choice. A file in flight or failed puts a
 note there instead and builds no list, so hidden stays distinct from absent,
