@@ -145,7 +145,7 @@ function element(tag, className, textContent) {
 }
 
 /** Make a drawn SVG annotation inspectable by pointer, touch, and keyboard. */
-function interactiveAnnotation(node, label) {
+function interactiveAnnotation(node, label, activate = null) {
   node.setAttribute('tabindex', '0');
   node.setAttribute('role', 'img');
   node.setAttribute('aria-label', label);
@@ -157,7 +157,8 @@ function interactiveAnnotation(node, label) {
     // Do not let the strip's coordinate-click handler rebuild this annotation
     // before touch/pointer focus can expose its own metadata.
     event.stopPropagation?.();
-    node.focus?.({ preventScroll: true });
+    if (activate) activate();
+    else node.focus?.({ preventScroll: true });
   });
   return node;
 }
@@ -795,6 +796,12 @@ export class GeneSequenceView {
     this.draw();
   }
 
+  /** The redrawn start or stop annotation for a codon, if it is in view. */
+  codonAnnotation(index) {
+    return [...this.strip.querySelectorAll('.gene-sequence-annotation')]
+      .find((node) => node.getAttribute('data-codon-index') === String(index)) ?? null;
+  }
+
   describeCodon(codon) {
     const model = this.model;
     const parts = [];
@@ -966,10 +973,13 @@ export class GeneSequenceView {
       if (index % 2 === 1) classes.push('gene-sequence-codon-alt');
       if (codon.changed) classes.push('gene-sequence-changed');
       if (index === this.selectedCodon) classes.push('gene-sequence-selected');
+      if (codon.kind === 'start' || codon.kind === 'stop') classes.push('gene-sequence-annotation');
       const cell = svg('g', { class: classes.join(' '), 'data-codon-index': index });
       if (codon.kind === 'start' || codon.kind === 'stop') {
-        cell.setAttribute('class', `${cell.getAttribute('class')} gene-sequence-annotation`);
-        interactiveAnnotation(cell, this.describeCodon(codon));
+        interactiveAnnotation(cell, this.describeCodon(codon), () => {
+          this.selectCodon(index);
+          this.codonAnnotation(index)?.focus({ preventScroll: true });
+        });
       }
 
       cell.append(svg('rect', {
@@ -1055,7 +1065,10 @@ export class GeneSequenceView {
         class: `${className} gene-sequence-annotation`,
         'data-codon-index': codon.index,
         x: left, y, width, height: ROW_HEIGHT,
-      }), this.describeCodon(codon));
+      }), this.describeCodon(codon), () => {
+        this.selectCodon(codon.index);
+        this.codonAnnotation(codon.index)?.focus({ preventScroll: true });
+      });
       const title = svg('title');
       title.textContent = this.describeCodon(codon);
       node.append(title);
@@ -1327,8 +1340,7 @@ export class GeneSequenceView {
     if ((event.key === 'Enter' || event.key === ' ') && Number.isInteger(codonIndex)) {
       event.preventDefault();
       this.selectCodon(codonIndex);
-      const annotation = this.strip.querySelector(`[data-codon-index="${codonIndex}"]`);
-      annotation?.focus({ preventScroll: true });
+      this.codonAnnotation(codonIndex)?.focus({ preventScroll: true });
       return;
     }
     const window = this.visibleWindow();

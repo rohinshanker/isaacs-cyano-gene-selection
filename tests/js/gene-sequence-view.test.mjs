@@ -348,6 +348,32 @@ test('a click selects the codon under the pointer; a drag pans and selects nothi
   });
 });
 
+test('pointer clicks on start and stop annotations select their codons and preserve focus', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    view.update({ gene: gene(), table, scheme: null, schemeVersion: 0 });
+    view.selectCodon(1);
+
+    let start = codonCells(view)[0];
+    start.dispatch('pointerdown', { stopPropagation() {} });
+    start.dispatch('click', { stopPropagation() {} });
+    start = codonCells(view)[0];
+    assert.equal(view.selectedCodon, 0);
+    assert.match(view.selection.textContent, /^Codon 1: initiation triplet ATG/);
+    assert.equal(document.activeElement, start);
+    assert.equal(document.activeElement.isConnected, true);
+
+    let stop = codonCells(view)[8];
+    stop.dispatch('pointerdown', { stopPropagation() {} });
+    stop.dispatch('click', { stopPropagation() {} });
+    stop = codonCells(view)[8];
+    assert.equal(view.selectedCodon, 8);
+    assert.match(view.selection.textContent, /^Terminal stop TAG\./);
+    assert.equal(document.activeElement, stop);
+    assert.equal(document.activeElement.isConnected, true);
+  });
+});
+
 test('an active scheme adds the recoded row, marks each change by shape, and keeps the camera', async () => {
   await withFakeDocument((document) => {
     const view = mount(document);

@@ -27,6 +27,42 @@ async (page) => {
     check(await page.locator('[data-sequence-action="gene-sequence-start-sites"]').count() === 0,
       `${width}: an out-of-range initial marker unexpectedly has a control`);
 
+    // An annotation owns its pointer event so focus can expose its metadata,
+    // but start/stop annotations must still perform the strip's codon selection.
+    await page.getByRole('button', { name: 'Return to the start of the gene' }).click();
+    await page.waitForSelector('.gene-sequence-codon[data-codon-index="1"]');
+    await page.locator('.gene-sequence-codon[data-codon-index="1"] .gene-sequence-letter-original')
+      .first().click();
+    check(await page.locator('.gene-sequence-selection').textContent()
+      .then((text) => /^Codon 2 of 453:/.test(text)), `${width}: codon 2 was not selected`);
+    const start = page.locator('.gene-sequence-annotation[data-codon-index="0"]').first();
+    if (width === 375) {
+      await start.dispatchEvent('pointerdown', { pointerId: 41, pointerType: 'touch' });
+      await start.dispatchEvent('pointerup', { pointerId: 41, pointerType: 'touch' });
+      await start.dispatchEvent('click', { pointerType: 'touch' });
+    } else {
+      await start.locator('.gene-sequence-letter-original').first().click();
+    }
+    check(await page.locator('.gene-sequence-selection').textContent()
+      .then((text) => /^Codon 1: initiation triplet ATG/.test(text)),
+    `${width}: pointer activation left the readout on codon 2`);
+    check(await start.evaluate((node) => document.activeElement === node),
+      `${width}: pointer activation did not retain start-codon focus`);
+
+    await page.locator('.gene-sequence-strip').focus();
+    await page.keyboard.press('End');
+    await page.locator('.gene-sequence-codon[data-codon-index="452"] .gene-sequence-letter-original')
+      .first().click();
+    check(await page.locator('.gene-sequence-selection').textContent()
+      .then((text) => /^Codon 453 of 453:/.test(text)), `${width}: codon 453 was not selected`);
+    const stop = page.locator('.gene-sequence-codon-stop[data-codon-index="453"]').first();
+    await stop.locator('.gene-sequence-letter-original').first().click();
+    check(await page.locator('.gene-sequence-selection').textContent()
+      .then((text) => /^Terminal stop TAG\./.test(text)),
+    `${width}: pointer activation left the readout on codon 453`);
+    check(await stop.evaluate((node) => document.activeElement === node),
+      `${width}: pointer activation did not retain stop-codon focus`);
+
     await selector.selectOption('1000');
     await page.getByRole('button', { name: 'Fit the whole gene into the strip' }).click();
     await page.waitForTimeout(350);
@@ -74,8 +110,8 @@ async (page) => {
     check(await marker.evaluate((node) => document.activeElement === node),
       `${width}: pointer activation did not expose marker metadata through focus`);
 
-    const start = page.locator('.gene-sequence-annotation[data-codon-index="0"]').first();
-    await start.focus();
+    const expandedStart = page.locator('.gene-sequence-annotation[data-codon-index="0"]').first();
+    await expandedStart.focus();
     await page.keyboard.press('Enter');
     check(await page.locator('.gene-sequence-selection').textContent().then((text) => /Codon 1/.test(text)),
       `${width}: keyboard activation did not open the start-codon readout`);

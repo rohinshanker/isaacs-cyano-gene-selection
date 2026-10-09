@@ -377,9 +377,9 @@ separate outlines are how coverage is drawn and never two sites.
 **A row the selected strip cannot place is kept, with its reason.** At the
 initial 30 nt extent, 1,563 of the shipped rows are further upstream and no mark
 is drawn for them; the list says so in those words. At the configured 1,000 nt
-extent every current Tan row has a native column (2,417 upstream and 15 inside
-the CDS), so all 2,432 can be drawn without changing any published gene-model
-distance. The three reasons are
+extent every current Tan row has a native column (2,375 upstream, 42 on the
+first CDS base, and 15 later in the CDS), so all 2,432 can be drawn without
+changing any published gene-model distance. The three reasons are
 distinct and none of them is absence: `no-native-coordinate`, `other-replicon`,
 and `outside-shown-sequence`. A gene whose segments do not add up to its coding
 length has no coordinate for any base, so it places nothing — the same reason it
@@ -397,9 +397,10 @@ keeps its own focus target and list row.
 Start and stop annotations and every marker are focusable SVG annotations with
 an accessible label and a `<title>`. Hover and `:focus-visible` draw the same
 outline in both the small gene visualizer and the sequence close-up. A pointer
-or touch click moves focus to the annotation so the metadata remains available
-without hover; Enter or Space on a close-up start/stop cell selects the codon and
-fills the persistent readout.
+or touch click on a close-up start/stop annotation selects that codon and moves
+focus to the redrawn annotation, so its persistent readout and metadata agree.
+Pointer activation of another marker moves focus without selecting a codon;
+Enter or Space on a close-up start/stop annotation performs the same selection.
 
 **The marker row is reserved by the data, not by the reader.** It is 16 px tall
 whenever this locus has a placeable mark and the layer has landed, whether or not
@@ -505,7 +506,8 @@ Unit coverage:
   tooltip, focusable start/stop annotations, the initial and expanded upstream
   selector, the free hover re-render, the camera and selection reset on a changed
   pin, the zoom and pan keys and chips, the wheel about the pointer, click against
-  drag, the recoded row with its shape marks, the letter and cell thresholds,
+  drag, pointer selection and focus restoration on start/stop annotations, the
+  recoded row with its shape marks, the letter and cell thresholds,
   junction labels including `origin`, the width fallback, the no-upstream and
   unknown-coordinate case, the letter classes with the stylesheet rule that reads
 them, the narrow strip, and the protein label in bar mode.

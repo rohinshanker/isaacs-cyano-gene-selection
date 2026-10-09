@@ -167,9 +167,9 @@ The generated UTEX 2973 sidecar contains 1,000 exact strand-oriented upstream
 bases for every gene and remains separate from the unchanged core `genes.json`
 budget. Its order, DNA alphabet, core 30 nt suffix, both strands, circular
 origins and raw-genome identity are checked by unit and contract validation.
-At the 1,000 nt selection all 2,432 current Tan rows have native columns (2,417
-upstream and 15 within coding sequence); their published gene-model offsets are
-unchanged.
+At the 1,000 nt selection all 2,432 current Tan rows have native columns (2,375
+upstream, 42 on the first CDS base and 15 later in coding sequence); their
+published gene-model offsets are unchanged.
 
 Focused unit checks cover expanded sequence generation/loading/model/UI,
 source-versus-computed overlap order, generic computed fixtures, and focusable
@@ -187,6 +187,34 @@ no unexpected console/runtime/network errors. Durable screenshots and semantic
 snapshots are under the DEM-327 handoff's `gene-upstream` evidence directory.
 No scientific source or licence claim was added, so this slice has no Claude
 Science claim dependency.
+
+### DEM-330 repair verification (codex-implementer, 2026-10-09)
+
+- `DEM330-R1` is resolved in this repair commit. Start and stop annotations now
+  perform the codon-selection action their intercepted pointer click previously
+  bypassed, then restore focus to the replacement SVG node. The regression test
+  selects codon 2 before ATG and codon 453 before TAG, and asserts the persistent
+  readout, selected index and connected focus target after each annotation click.
+- `DEM330-R2` is resolved in this repair commit. The 2,432 native placements at
+  1,000 nt are documented as 2,375 negative offsets, 42 offset-zero sites on the
+  first CDS base and 15 positive offsets later in the CDS. A direct recount from
+  `genes.json`, `tss_evidence.json` and `sequence_context.json` reproduced all
+  four totals. No data or UI position changed.
+- DEM-330 reported no other findings. Source-dependent phenotype/RBS data work
+  remains open and was not changed; this ticket remains open for the coordinator.
+
+Focused checks passed: 55/55 sequence-view and start-site JavaScript tests. The
+real Chromosome/Gene route for `M744_RS09240` passed the exact Codon 2 → ATG and
+Codon 453 → TAG pointer transitions at 375×812, 768×1024, 959×900, 960×900,
+1239×900, 1240×900, 1280×800 and 1440×900; the 375 check used touch pointer
+events. Marker focus/hover, keyboard activation, responsive overflow and runtime
+diagnostics also passed. Screenshots and semantic snapshots are in the durable
+`gene-upstream/dem330-r1` evidence directory; visual baselines did not change.
+
+Final gates passed once on the repair: `npm test` 1,344/1,344;
+`.venv/bin/python -m pytest -q` 897 passed, 1 skipped and 36 subtests passed;
+`.venv/bin/python tools/validate_contract.py` 119 passed, 0 failed and 1 declared
+splice-contiguity skip.
 
 ## Cleanup
 
