@@ -1,7 +1,7 @@
-# O_dataset-coloring-loading-bar__20261008 — Open
+# R_dataset-coloring-loading-bar__20261008 — Resolved
 
 Scope: Overlay a continuous loading bar on the map when switching to dataset-based coloring, driven by actual data-loading progress.
-Status: open
+Status: resolved
 Opened: 2026-10-08
 Updated: 2026-10-09
 
@@ -93,3 +93,16 @@ contract into `docs/validation/progressive-loading.md`, update
 under the repository rules. Preserve the
 [chromosome interaction contract](../../validation/chromosome-view.md) and keep
 the header-placement ticket open until its own acceptance criteria are met.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: LOAD-R1/R3/R4 resolved byba6f1fc; LOAD-R2/R5 by8d20969; independent approval.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/progressive-loading.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

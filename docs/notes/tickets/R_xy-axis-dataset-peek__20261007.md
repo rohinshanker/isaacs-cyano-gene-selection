@@ -1,7 +1,7 @@
-# O_xy-axis-dataset-peek__20261007 — Open
+# R_xy-axis-dataset-peek__20261007 — Resolved
 
 Scope: Add a center dataset-selection peek for each Metric X vs Y axis whose selected metric has multiple data sources, separate from the PCA map's dataset-selection window.
-Status: open
+Status: resolved
 Opened: 2026-10-07
 Updated: 2026-10-09
 
@@ -129,3 +129,16 @@ Distill the reusable axis-picker and state-separation contracts into
 `docs/validation/data-selection-interactions.md`; update
 `docs/validation/INDEX.md`. Then delete the resolved ticket and remove its queue
 row. Leave broader Data Sources work open.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: AXIS-R1 resolved bya3f73b0; AXIS-R2 byf8a5270; independent approval.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/explicit-metric-axes.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

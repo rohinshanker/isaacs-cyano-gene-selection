@@ -1,12 +1,12 @@
-# O_trna-identification-viewer__20260930 — Open
+# R_trna-identification-viewer__20260930 — Resolved
 
 - **Scope:** Assess UTEX 2973 GtRNAdb/tRNAscan-SE evidence for identifying tRNA
   genes or candidate sequence regions; consider tRNA evidence filtering/coloring
   and viewer support, with a reusable approach for future sister-strain data or
   pinned local tRNAscan-SE runs.
-- **Status:** open
+- **Status:** resolved
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-08
+- **Updated:** 2026-10-09
 
 ## Current State
 
@@ -340,3 +340,16 @@ DEM-320 implementation has returned; DEM-321 review findings remain open. The
 viewer is on the owner's record-only hold and is not reported complete. Closure
 requires resolving every finding, the required gates/rendered checks, and opening
 the final localhost application for the owner as specified above.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: TRNA-R1–R5 resolved byaca0531; independent DEM328 approval. Current closure is the approved bounded44+locus candidate viewer. Future probability/structure/new-source options remain outside this release and in the validation contract.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/trna-annotation-validation.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

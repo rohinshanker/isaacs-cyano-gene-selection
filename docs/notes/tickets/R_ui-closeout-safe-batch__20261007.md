@@ -1,7 +1,7 @@
-# A_ui-closeout-safe-batch__20261007 — Active
+# R_ui-closeout-safe-batch__20261007 — Resolved
 
 Scope: Coordinate isolated UI closeout, implement clear presentation requests, collect pending owner decisions, and verify inherited mobile Data Selection findings.
-Status: active
+Status: resolved
 Opened: 2026-10-07
 Updated: 2026-10-09
 
@@ -216,3 +216,16 @@ source-specific regulatory producers; human keep/move/merge/remove marks in
 the clutter ticket; unrelated scientific/data tickets remain with their owners.
 Generic RBS renderer/data requirements transfer to the RBS ticket, so no
 missing work or claim is hidden by closing the finished sequence UI.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: Every named UI audit finding is resolved as recorded above; General5fda pointer closure preserved. RBS access/remaining producers and human marks retained in their own open tickets.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/regulatory-methods.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

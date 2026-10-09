@@ -1,11 +1,11 @@
-# O_review-trna-viewer__20261007 — Open
+# R_review-trna-viewer__20261007 — Resolved
 
 - **Scope:** Owner-readable specification of the first UTEX 2973 tRNA viewer,
   using the existing pinned annotation and tRNAscan-SE comparison. This ticket
   prepares the review; the linked implementation ticket owns code and UI work.
-- **Status:** open
+- **Status:** resolved
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-08
+- **Updated:** 2026-10-09
 
 ## Current State
 
@@ -147,3 +147,16 @@ edits to the implementation ticket. Resolve with the normal R-rename and dated
 verification, then delete this review ticket and remove its queue row. Distil
 the final implemented tRNA-layer/UI contract into `docs/validation/` only when
 the implementation and its validation are complete.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: Approved bounded specification implemented; TRNA-R1–R5 resolved byaca0531 and independently approved DEM328.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/trna-annotation-validation.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

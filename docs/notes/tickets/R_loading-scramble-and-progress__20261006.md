@@ -1,7 +1,7 @@
-# A_loading-scramble-and-progress__20261006 — Active
+# R_loading-scramble-and-progress__20261006 — Resolved
 
 Scope: Select and promote the loading/reveal presentation in `site/` after the owner's visual comparison.
-Status: active
+Status: resolved
 Opened: 2026-10-06
 Updated: 2026-10-09
 
@@ -139,3 +139,16 @@ defaults, update the timing/progress contract and relevant expectations, and run
 focused rendered checks plus required gates on that final change. Then complete
 the normal R-rename/status/verification/deletion lifecycle and remove its queue
 row. Keep the separate human clutter audit open for marks.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: LOAD-R1/R3/R4 resolved byba6f1fc; LOAD-R2/R5 by8d20969; independent approval. B500ms+continuous+accuratefile/byte text applied.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/progressive-loading.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

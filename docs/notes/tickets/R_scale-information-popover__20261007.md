@@ -1,7 +1,7 @@
-# O_scale-information-popover__20261007 — Open
+# R_scale-information-popover__20261007 — Resolved
 
 Scope: Move the scale explanation from below the map into a popover opened by an info button beside Scale.
-Status: open
+Status: resolved
 Opened: 2026-10-07
 Updated: 2026-10-09
 
@@ -140,3 +140,16 @@ Distill the reusable scale-info placement/interaction contract into
 `docs/validation/current-design-answers.md` and relevant responsive guidance;
 update `docs/validation/INDEX.md`. Then delete the resolved ticket and remove its
 queue row. Keep the broader clutter audit open.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: UI-REVIEW-5 resolved byfebc4aa; PRESENTATION-R2/R3 by6476dbc,R4 bycae760e; DEM331 approved.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/current-design-answers.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

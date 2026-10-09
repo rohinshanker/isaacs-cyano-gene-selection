@@ -1,7 +1,7 @@
-# A_ui-interactivity-batch__20261006 — Active
+# R_ui-interactivity-batch__20261006 — Resolved
 
 Scope: Complete open UI/interactivity work and coordinate the owner's remaining loading choice.
-Status: active
+Status: resolved
 Opened: 2026-10-06
 Updated: 2026-10-09
 
@@ -63,3 +63,16 @@ After the owner's loading choices are applied and verified, resolve the remainin
 animation ticket and this coordinator ticket using the normal lifecycle. Keep
 only reusable contracts in validation docs and keep the human clutter audit open
 for marks. Do not resume broad discovery or duplicate accepted implementation.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: Loading defaults and original accepted engineering are complete; broader human clutter marks remain in their own open ticket.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/progressive-loading.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.

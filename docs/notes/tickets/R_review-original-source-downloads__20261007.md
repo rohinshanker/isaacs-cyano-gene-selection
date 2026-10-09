@@ -1,9 +1,9 @@
-# O_review-original-source-downloads__20261007 — Open
+# R_review-original-source-downloads__20261007 — Resolved
 
 - **Scope:** Owner review of listing original RefSeq GFF/feature tables and Rubin
   2015 Dataset S3 as discoverable downloads with source citations, exact versions,
   byte sizes and SHA-256 checksums. Documentation only until reviewed.
-- **Status:** open
+- **Status:** resolved
 - **Opened:** 2026-10-07
 - **Updated:** 2026-10-09
 
@@ -107,3 +107,16 @@ justifies it. The subsequent owner decision selects the upstream catalogue above
 Scope remains
 RefSeq GFF/feature inputs and original Rubin Dataset S3, not automatic raw-omics
 downloads or new startup payloads.
+
+## Closure, 2026-10-09
+
+Closing session: cyano-ui-fixes (80c81443-1791314087).
+Findings: CAT-R1 resolved byf8a5270(including3cf776c); independent approval. Rubin publisherHTTP403 remains accurately labelled availability metadata, not a missing UI state.
+Final verification: npm1,395 passed; pytest925 passed,1skip/36subtests;
+contract119 passed,1declaredskip. Combined actualUTEX/E.coli four-width matrix
+passed withzerooverflow/unexpecteddiagnostics; applicable authored/independent
+matrices and8-width gene checks are retained in ignored scoped evidence.
+Reviewed finallocalhost http://127.0.0.1:8830/ was opened in Google Chrome for
+the owner on2026-10-09 before resolution; server belongs to this worktree.
+Reusable contracts are in ../../validation/source-ledger.md and its index.
+Cleanup: resolve/rename, verify queue and links, then delete this ticket last.
