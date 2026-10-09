@@ -2340,6 +2340,9 @@ export class ChromosomeView {
       const allowed = (mark) => this.model.showHidden || this.passes(mark);
       const next = neighborMark(this.lanes, this.cursor, direction, allowed);
       if (!next) return;
+      // Arrow navigation now owns Enter; an earlier pair inspection must not
+      // override the gene that the preview announces as active.
+      this.setActiveOverlap(null);
       this.cursor = next;
       const mark = this.lanes[next.laneIndex].marks[next.markIndex];
       this.revealIndex(mark.index);

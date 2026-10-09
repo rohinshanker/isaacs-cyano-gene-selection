@@ -678,6 +678,8 @@ export class FilterPanel {
    * narrows something else.
    */
   renderOverlapFilter(state) {
+    const focusedValue = this.overlapHost.contains(document.activeElement)
+      ? document.activeElement.value : null;
     this.overlapHost.replaceChildren();
     const fieldset = document.createElement('fieldset');
     fieldset.className = 'flag-filter';
@@ -743,6 +745,14 @@ export class FilterPanel {
       fieldset.append(custom);
     }
     this.overlapHost.append(fieldset);
+    if (focusedValue != null) {
+      // A change rerenders synchronously during native radio-key traversal.
+      // Keep the newly checked option focused so the next arrow still works.
+      const inputs = [...fieldset.querySelectorAll('input')];
+      const target = inputs.find((input) => input.value === focusedValue && !input.disabled)
+        ?? inputs.find((input) => !input.disabled);
+      target?.focus({ preventScroll: true });
+    }
   }
 
   renderRows(state) {

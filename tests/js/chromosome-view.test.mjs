@@ -3262,6 +3262,31 @@ test('hovering the overlap row names both genes and outlines them together', () 
   }
 });
 
+test('gene arrow navigation replaces overlap inspection before Enter pins', () => {
+  const selected = [];
+  const previewed = [];
+  const { view, restore } = mount({
+    geneOverlaps: overlapIndexFor(),
+    handlers: {
+      onPreview: (index) => { previewed.push(index); view.model.active = index; },
+      onSelect: (index) => selected.push(index),
+    },
+  });
+  try {
+    const key = (name) => view.onKeyDown({ key: name, preventDefault() {} });
+    for (const arrow of ['ArrowRight', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp']) {
+      key('o');
+      assert.ok(view.activeOverlap, 'O begins inspecting a pair');
+      key(arrow);
+      assert.equal(view.activeOverlap, null, `${arrow} gene navigation ends pair inspection`);
+      key('Enter');
+      assert.equal(selected.at(-1), previewed.at(-1), 'Enter pins the gene just previewed');
+    }
+  } finally {
+    restore();
+  }
+});
+
 test('clicking an overlap opens the partner the map plots, and says when it cannot', () => {
   const selected = [];
   const announced = [];

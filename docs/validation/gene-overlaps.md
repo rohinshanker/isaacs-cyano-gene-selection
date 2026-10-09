@@ -294,7 +294,11 @@ the aligned partner tracks and their chevrons, the partner the strip cannot
 place keeping its row, the badge's three states, the strip's arrows and its
 one-base minimum, the filter's three options and its custom-selection notice,
 the colour key's five rows and its unread state, the export columns in both
-states, the ambiguity caveat in both, and the hash round-trip.
+states, the ambiguity caveat in both, and the hash round-trip. Ordinary arrow
+navigation ends overlap inspection so Enter pins the gene just announced.
+Consecutive arrow changes in the OG radio group retain focus; if a focused
+choice becomes unavailable, focus moves to the enabled Show all genes option.
+Unrelated updates never take focus from another control.
 
 Rendered: all three views at 375×812, 768×1024, 1280×800 and 1440×900, and
 across the 960 px and 1240 px column breakpoints. Exercise a gene with no

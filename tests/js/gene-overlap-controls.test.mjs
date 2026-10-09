@@ -269,6 +269,33 @@ test('the filter offers all, OG-only and non-overlapping-only, with whole-set co
   });
 });
 
+test('OG filter rebuilds preserve the focused option without stealing outside focus', async () => {
+  await withFakeDocument((document) => {
+    const panel = Object.create(FilterPanel.prototype);
+    panel.overlapHost = document.createElement('div');
+    panel.handlers = {};
+    document.body.append(panel.overlapHost);
+    const state = { count: 10, overlapCounts: { overlapping: 4, nonOverlapping: 6 } };
+    panel.renderOverlapFilter({ ...state, overlapClassFilter: [] });
+    for (const value of ['only', 'none', 'any']) {
+      panel.overlapHost.querySelectorAll('input').find((node) => node.value === value).focus();
+      panel.renderOverlapFilter({ ...state, overlapClassFilter: overlapSelectionFor(value) });
+      const selected = panel.overlapHost.querySelectorAll('input').find((node) => node.value === value);
+      assert.equal(document.activeElement, selected);
+      assert.equal(selected.checked, true);
+    }
+    panel.overlapHost.querySelectorAll('input')[1].focus();
+    panel.renderOverlapFilter({ ...state, overlapCounts: null, overlapClassFilter: overlapSelectionFor('only') });
+    assert.equal(document.activeElement, panel.overlapHost.querySelectorAll('input')[0],
+      'if the focused choice becomes unavailable, keep focus on the enabled clear option');
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    panel.renderOverlapFilter({ ...state, overlapClassFilter: [] });
+    assert.equal(document.activeElement, outside, 'unrelated updates never steal focus');
+  });
+});
+
 test('the OG colour key names every class, its count, and a short rule', async () => {
   const toggled = [];
   await withFakeDocument((document) => {

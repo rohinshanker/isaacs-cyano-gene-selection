@@ -161,7 +161,9 @@ is pending. No other session's tickets are included in this closure.
 | OG-UI3 | `fb4daa3` | Partner navigation restores focus to a named viewer region. |
 | OG-UI4 | `fb4daa3` | Pair identity plus explicit keyboard/touch steppers reaches coincident pairs. |
 | OG-UI5 | `80130a8` | Generic categorical-scale explanation also describes OG mode accurately. |
-| OG-REVIEW | open | Independent review of the final patch and supplied renders. |
+| OG-R1 | open | DEM-339 found Enter pins a stale overlap partner after arrow navigation; repair and exact-patch recheck in progress. |
+| OG-R2 | open | DEM-339 found OG radio changes lose focus; repair and consecutive browser-key regression checks in progress. |
+| OG-REVIEW | open | DEM-339 requested these two changes on `30f2c9e`; no other actionable findings in its bounded review. |
 
 Before closure, record the reviewer result and named closer/date here, preserve
 any new findings, then follow the resolved-ticket lifecycle. The permanent
