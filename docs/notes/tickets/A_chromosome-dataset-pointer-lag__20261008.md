@@ -1,15 +1,21 @@
-# O_chromosome-dataset-pointer-lag__20261008 — Open
+# A_chromosome-dataset-pointer-lag__20261008 — Active
 
 Scope: Diagnose and remove mouse-movement lag in the chromosome viewer while dataset-based coloring is active.
-Status: open
+Status: active
 Opened: 2026-10-08
 Updated: 2026-10-08
 
 ## Current State
 
+Owner: `cyano-general-ticket-closing` (`bfdd1b08-1791384632`), assigned by the
+owner on 2026-10-08 to implement unblocked work without colliding with active
+sessions. Implementation starts from `8bdefc7` in an isolated worker worktree;
+this session owns integration, independent review, and closure. The existing
+UI disclosure/tRNA/regulatory work stays with `cyano-ui-fixes`.
+
 Opened at the owner's request: moving the mouse over the chromosome viewer
-lags when using dataset-based coloring. No implementation or rendered
-reproduction has started. The exact organism, coloring metric, source selection,
+lags when using dataset-based coloring. Baseline profiling is the first
+implementation step. The exact organism, coloring metric, source selection,
 zoom level and browser for this new report are not yet recorded.
 
 Opening baseline: canonical Desktop checkout, `main` at
