@@ -654,7 +654,7 @@ and prevents the chromosome refresh from completing.
 Run the deterministic membership/invalidation and interaction regressions:
 
 ```sh
-node --test tests/js/source-selection.test.mjs tests/js/type-metrics.test.mjs tests/js/chromosome-view.test.mjs
+node --test tests/js/source-selection.test.mjs tests/js/type-metrics.test.mjs tests/js/chromosome-view.test.mjs tests/js/side-panel-lazy.test.mjs
 node tools/check_chromosome_metrics.mjs --max-ms=100
 node tools/check_chromosome_metrics.mjs --uncached
 ```

@@ -1,15 +1,15 @@
-# A_chromosome-dataset-pointer-lag__20261008 — Active
+# R_chromosome-dataset-pointer-lag__20261008 — Resolved
 
 Scope: Diagnose and remove mouse-movement lag in the chromosome viewer while dataset-based coloring is active.
-Status: active
+Status: resolved
 Opened: 2026-10-08
 Updated: 2026-10-09
 
 ## Current State
 
-Implementation and exact-patch review are complete. The coordinator
-`cyano-general-ticket-closing` (`bfdd1b08-1791384632`) owns integration and
-closure. The isolated implementation branch is
+Closed by `cyano-general-ticket-closing` (`bfdd1b08-1791384632`) on
+2026-10-09. Implementation, exact-patch review and final validation are complete;
+no findings or audits remain open. The isolated implementation branch is
 `fix/chromosome-pointer-lag-20261008`; its reviewed application result is
 `4e5ca40e1104093c4a07e3ff1877ef98f4137267`.
 
@@ -136,13 +136,19 @@ Local immutable evidence is in
 `timing-after.json`, `final-browser.json`, `default-toggle-after.json` and the
 `after-*.png` captures. Coordinator evidence is in
 `.playwright-cli/pointer-review-20261008/source-state.json`, `syn61.json`, their
-result transcripts and breakpoint/Syn61 screenshots in the integration
-worktree. Timings are development-Mac measurements rather than a device-wide
+result transcripts and breakpoint/Syn61 screenshots. Both evidence directories
+are archived in the canonical checkout; `pointer-lag-20261008/evidence.json`
+pins their result digests and reviewed application commit. Timings are
+development-Mac measurements rather than a device-wide
 service-level guarantee.
 
 ## Cleanup
 
-The implementation worktree is clean except for ignored evidence. The
-coordinator owns integration, ticket resolution, queue removal and any final
-distillation/index update required by repository policy. The ticket filename
-remains dated 2026-10-08 while its content records the 2026-10-09 completion.
+PTR-1, PTR-2 and PTR-3 are resolved by the commits listed above. DEM-326 approved
+the final application commit in comment `01a11ed4-de86-725f-b068-613a078909a8`.
+No later reader needs ticket-only guidance: the lazy-table, current-value and
+queued/native-toggle contracts are distilled into
+`docs/validation/chromosome-view.md` and indexed in `docs/validation/INDEX.md`.
+The incoming loading-ticket link now points to that durable contract. Remove
+this resolved ticket after recording closure; retain the archived local evidence
+and remove only this session's temporary worktrees.

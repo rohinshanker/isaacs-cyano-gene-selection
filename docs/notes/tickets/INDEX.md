@@ -11,7 +11,6 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_chromosome-dataset-pointer-lag__20261008](A_chromosome-dataset-pointer-lag__20261008.md) | Owner-reported mouse-movement lag in the chromosome viewer with dataset-based coloring; reproduce/profile the current hover path and preserve metric/source correctness |
 | [O_dataset-coloring-loading-bar__20261008](O_dataset-coloring-loading-bar__20261008.md) | Overlay a continuous loading bar on the map when switching to dataset-based coloring, driven by actual data-loading progress; separate from the existing header-placement request |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | Owner-selected RBS Calculator, iDOG/TransTermHP, Promoter Calculator, ViennaRNA, STREME, Rfam/Infernal and IntaRNA; annotation opacity/precedence and hover outlines recorded; implementation held; existing iDOG hold retained |
 | [A_ui-closeout-safe-batch__20261007](A_ui-closeout-safe-batch__20261007.md) | cyano-source-ingestion coordination; seven owner decisions recorded 2026-10-08 with implementation held; integrated presentation slice and all open findings retained |
