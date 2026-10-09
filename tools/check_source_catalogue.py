@@ -9,12 +9,16 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import gzip
 import hashlib
+from http.client import HTTPException
 import json
 from pathlib import Path
+import tempfile
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
+import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,11 +53,25 @@ def check_artifact(artifact: dict, *, opener=urlopen, checked_at: str | None = N
                 raise ValueError("Upstream response is not the declared gzip file.")
             if compression == "zip" and not first.startswith(b"PK"):
                 raise ValueError("Upstream response is not the declared ZIP-based file.")
-            chunk = first
-            while chunk:
-                digest.update(chunk)
-                total += len(chunk)
-                chunk = response.read(65536)
+            with tempfile.SpooledTemporaryFile(max_size=2 * 1024 * 1024) as content:
+                chunk = first
+                while chunk:
+                    digest.update(chunk)
+                    total += len(chunk)
+                    content.write(chunk)
+                    chunk = response.read(65536)
+                length = response.headers.get("Content-Length")
+                if length is not None and total != int(length):
+                    raise ValueError("Upstream response ended before its declared file length.")
+                content.seek(0)
+                if compression == "gzip":
+                    with gzip.GzipFile(fileobj=content, mode="rb") as decoded:
+                        while decoded.read(65536):
+                            pass
+                elif compression == "zip":
+                    with zipfile.ZipFile(content) as archive:
+                        if archive.testzip() is not None:
+                            raise ValueError("Upstream ZIP failed its integrity check.")
             if total == 0:
                 raise ValueError("Upstream returned an empty file.")
             result["bytes"] = total
@@ -63,8 +81,9 @@ def check_artifact(artifact: dict, *, opener=urlopen, checked_at: str | None = N
             check["detail"] = f"HTTP {status}; complete file retrieved."
     except HTTPError as error:
         check["detail"] = f"HTTP {error.code}; source file could not be retrieved."
-    except (URLError, TimeoutError, OSError, ValueError) as error:
-        check["detail"] = str(error)
+    except (URLError, HTTPException, TimeoutError, OSError, ValueError, EOFError,
+            zipfile.BadZipFile, RuntimeError) as error:
+        check["detail"] = str(error) or type(error).__name__
     return result
 
 

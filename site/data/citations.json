@@ -78,7 +78,7 @@
               "bytes": 129434,
               "sha256": "763b517919c204097ad86223f6d2afc1ca0c1eb139eb8a07e6e8abbe3463d2dc",
               "linkCheck": {
-                "checkedAt": "2026-10-09T03:57:04Z",
+                "checkedAt": "2026-10-09T05:18:21Z",
                 "result": "verified",
                 "detail": "HTTP 200; complete file retrieved."
               }
@@ -93,7 +93,7 @@
               "bytes": 240383,
               "sha256": "7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f",
               "linkCheck": {
-                "checkedAt": "2026-10-09T03:57:04Z",
+                "checkedAt": "2026-10-09T05:18:21Z",
                 "result": "verified",
                 "detail": "HTTP 200; complete file retrieved."
               }
@@ -762,7 +762,7 @@
               "bytes": 238918,
               "sha256": "eb26d58bcd1f1448d16c5c2566e405edd559d198e79e33831fc945c559382c40",
               "linkCheck": {
-                "checkedAt": "2026-10-09T03:57:04Z",
+                "checkedAt": "2026-10-09T05:18:21Z",
                 "result": "verified",
                 "detail": "HTTP 200; complete file retrieved."
               }
@@ -1375,7 +1375,7 @@
               "bytes": null,
               "sha256": null,
               "linkCheck": {
-                "checkedAt": "2026-10-09T03:57:04Z",
+                "checkedAt": "2026-10-09T05:18:21Z",
                 "result": "unavailable",
                 "detail": "HTTP 403; source file could not be retrieved."
               }

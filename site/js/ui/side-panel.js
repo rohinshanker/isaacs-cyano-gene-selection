@@ -621,9 +621,12 @@ function metricFamilyTable(metrics, index, gene, state) {
       const noteRow = document.createElement('tr');
       const noteCell = document.createElement('td');
       noteCell.colSpan = 3;
-      noteCell.className = metric.provenance.isTargetOrganism === false
+      const note = document.createElement('p');
+      note.className = metric.provenance.isTargetOrganism === false
         ? 'provenance-warning' : 'panel-note';
-      noteCell.textContent = formatExpressionSource(metric.provenance);
+      note.textContent = formatExpressionSource(metric.provenance);
+      noteCell.append(metric.provenance.isTargetOrganism === false
+        ? tanDisclosure(note, 'Source / information') : note);
       noteRow.append(noteCell);
       body.append(noteRow);
     }
@@ -936,85 +939,7 @@ export class SidePanel {
       this.rememberDisclosure(details, `metric:${family}`);
       const summary = document.createElement('summary');
       summary.textContent = `${family} (${metrics.length})`;
-<<<<<<< HEAD
       details.append(summary);
-=======
-      const table = document.createElement('table');
-      table.className = 'metric-table';
-      const body = document.createElement('tbody');
-      for (const metric of metrics) {
-        const value = metric.read(index);
-        const tr = document.createElement('tr');
-        const label = document.createElement('th');
-        label.scope = 'row';
-        const labelText = document.createElement('span');
-        labelText.className = 'metric-label';
-        labelText.textContent = metric.label;
-        const desc = document.createElement('span');
-        desc.className = 'metric-desc';
-        desc.textContent = metric.desc ?? '';
-        label.append(labelText, desc);
-
-        const valueCell = document.createElement('td');
-        valueCell.className = 'numeric';
-        valueCell.textContent = formatValue(metric, value);
-        const unit = document.createElement('span');
-        unit.className = 'row-unit';
-        unit.textContent = metric.unit ?? '';
-        valueCell.append(' ', unit);
-        if (!Number.isFinite(value)) {
-          valueCell.classList.add('missing');
-          const hidden = document.createElement('span');
-          hidden.className = 'visually-hidden';
-          hidden.textContent = 'no value';
-          valueCell.append(hidden);
-        }
-        // A measured expression value says per gene whether it is a measurement,
-        // a proxy standing in, or nothing at all. The proxy metric is its own row.
-        if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-          const { basis, short, text } = expressionBasisOf(gene, metric, value);
-          const tag = document.createElement('span');
-          tag.className = `basis-tag basis-${basis}`;
-          tag.textContent = short;
-          tag.title = text;
-          valueCell.append(document.createElement('br'), tag);
-        }
-
-        const percentile = state.percentileOf(metric.key, value);
-        const rankCell = document.createElement('td');
-        rankCell.className = 'rank-cell';
-        const rankText = document.createElement('span');
-        rankText.className = 'rank-text';
-        rankText.textContent = formatPercentile(percentile);
-        const track = document.createElement('span');
-        track.className = 'rank-track';
-        const fill = document.createElement('span');
-        fill.className = 'rank-fill';
-        fill.style.width = Number.isFinite(percentile) ? `${percentile * 100}%` : '0%';
-        track.append(fill);
-        rankCell.append(rankText, track);
-
-        tr.append(label, valueCell, rankCell);
-        body.append(tr);
-
-        // A borrowed measurement says so beside the number, not in a tooltip.
-        if (metric.provenance) {
-          const noteRow = document.createElement('tr');
-          const noteCell = document.createElement('td');
-          noteCell.colSpan = 3;
-          const note = document.createElement('p');
-          note.className = metric.provenance.isTargetOrganism === false
-            ? 'provenance-warning' : 'panel-note';
-          note.textContent = formatExpressionSource(metric.provenance);
-          noteCell.append(metric.provenance.isTargetOrganism === false
-            ? tanDisclosure(note, 'Source / information') : note);
-          noteRow.append(noteCell);
-          body.append(noteRow);
-        }
-      }
-      table.append(body);
-      details.append(summary, table);
->>>>>>> a966e2a (Complete disclosure and scale UI cleanup)
       this.host.append(details);
       if (details.open) {
         details.append(metricFamilyTable(metrics, index, gene, state));

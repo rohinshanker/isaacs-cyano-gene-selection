@@ -1,8 +1,11 @@
 """A link check must distinguish bytes, changed inputs and access failures."""
 
 import hashlib
+import gzip
+from http.client import IncompleteRead
 import io
 import json
+import zipfile
 from urllib.error import HTTPError, URLError
 
 import pytest
@@ -17,11 +20,14 @@ DATE = "2026-10-09T04:00:00Z"
 class Response(io.BytesIO):
     """A streaming response with independently configurable transport metadata."""
 
-    def __init__(self, body=b"input bytes", *, url=ARTIFACT["url"], status=200, content_type="application/octet-stream"):
+    def __init__(self, body=b"input bytes", *, url=ARTIFACT["url"], status=200,
+                 content_type="application/octet-stream", content_length=None):
         super().__init__(body)
         self.url = url
         self.status = status
         self.headers = {"Content-Type": content_type}
+        if content_length is not None:
+            self.headers["Content-Length"] = str(content_length)
 
     def geturl(self):
         return self.url
@@ -61,11 +67,43 @@ def test_invalid_or_partial_response_never_gets_a_file_checksum(kwargs):
     assert result["bytes"] is None and result["sha256"] is None
 
 
-@pytest.mark.parametrize(("compression", "body"), [("gzip", b"\x1f\x8bdata"), ("zip", b"PKdata")])
+def zip_bytes():
+    """A complete tiny ZIP, including its central directory and CRC."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("input.txt", b"input bytes")
+    return buffer.getvalue()
+
+
+@pytest.mark.parametrize(("compression", "body"), [
+    ("gzip", gzip.compress(b"input bytes")), ("zip", zip_bytes()),
+])
 def test_declared_binary_container_is_checked(compression, body):
     artifact = {**ARTIFACT, "compression": compression}
     assert observe(artifact, body=body)["linkCheck"]["result"] == "verified"
     assert observe(artifact, body=b"wrong bytes")["linkCheck"]["result"] == "unavailable"
+
+
+@pytest.mark.parametrize(("compression", "body"), [
+    ("gzip", b"\x1f\x8b"), ("gzip", gzip.compress(b"input bytes")[:-4]),
+    ("zip", b"PK"), ("zip", zip_bytes()[:-8]),
+])
+def test_truncated_compressed_files_are_not_reported_as_complete(compression, body):
+    result = observe({**ARTIFACT, "compression": compression}, body=body,
+                     content_length=len(body))
+    assert result["linkCheck"]["result"] == "unavailable"
+    assert result["bytes"] is None and result["sha256"] is None
+
+
+def test_premature_eof_and_http_stream_errors_clear_observed_identity():
+    result = observe(body=b"input bytes", content_length=100)
+    assert result["linkCheck"]["result"] == "unavailable"
+    assert "declared file length" in result["linkCheck"]["detail"]
+    def opener(*args, **kwargs):
+        raise IncompleteRead(b"input", 100)
+    result = catalogue.check_artifact(ARTIFACT, opener=opener, checked_at=DATE)
+    assert result["linkCheck"]["result"] == "unavailable"
+    assert result["bytes"] is None and result["sha256"] is None
 
 
 def test_publisher_entry_is_not_hashed_as_the_original_dataset():
