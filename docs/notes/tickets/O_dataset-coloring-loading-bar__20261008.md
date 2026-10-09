@@ -73,5 +73,5 @@ finding. Distill the reusable coloring-progress lifecycle and accessibility
 contract into `docs/validation/progressive-loading.md`, update
 `docs/validation/INDEX.md`, then resolve and remove this ticket and its queue row
 under the repository rules. Keep
-[chromosome pointer lag](O_chromosome-dataset-pointer-lag__20261008.md) and the
+[chromosome pointer lag](A_chromosome-dataset-pointer-lag__20261008.md) and the
 header-placement ticket open until their own acceptance criteria are met.
