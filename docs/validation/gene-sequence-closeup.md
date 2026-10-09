@@ -414,7 +414,10 @@ the padded interval falls through to the underlying SVG. The gene's own start
 and stop codons also gain 5 units/px of invisible padding vertically and on
 their outward-facing edge. Their gene-facing edge remains exact, so the next
 base or codon keeps its original pointer identity; padded activation selects
-and focuses the same visible start/stop annotation.
+and focuses the same visible start/stop annotation. Each padded target carries
+the annotation's exact hint text, so padding-only hover exposes the same details
+as the visible mark. Check both the outline and the hint, and their dismissal
+when the pointer leaves the target.
 
 **The marker row is reserved by the data, not by the reader.** It is 16 px tall
 whenever this locus has a placeable mark and the layer has landed, whether or not

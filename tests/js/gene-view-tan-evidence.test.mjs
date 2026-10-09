@@ -164,6 +164,7 @@ test('gene annotations are keyboard targets and computed overlap paints undernea
         kind === 'start' ? x - CODON_HIT_PADDING : x);
       assert.equal(Number(target.getAttribute('width')), width + CODON_HIT_PADDING);
       assert.ok(Number(target.getAttribute('height')) > Number(codon.getAttribute('height')));
+      assert.equal(target.querySelector('title').textContent, codon.getAttribute('aria-label'));
       target.dispatch('pointerenter');
       assert.ok(codon.hasClass('is-hit-hovered'));
       target.dispatch('pointerleave');

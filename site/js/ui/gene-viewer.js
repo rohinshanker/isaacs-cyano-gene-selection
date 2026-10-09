@@ -118,6 +118,9 @@ function annotationHitTarget(annotation, attributes) {
   };
   target.addEventListener('pointerdown', focus);
   target.addEventListener('click', focus);
+  const title = svg('title');
+  title.textContent = annotation.getAttribute('aria-label');
+  target.append(title);
   target.addEventListener('pointerenter', () => annotation.classList.add('is-hit-hovered'));
   target.addEventListener('pointerleave', () => annotation.classList.remove('is-hit-hovered'));
   return target;

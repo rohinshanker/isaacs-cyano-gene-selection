@@ -77,3 +77,12 @@ documentation, update its index, and follow the required resolved-ticket lifecyc
 - [Regulatory methods](A_regulatory-methods-shortlist__20261008.md) retains the
   existing computed-tag, overlap and hover-outline decisions. This ticket adds
   no new predictions or evidence layers.
+
+## Integration findings
+
+- **HIT-2:** start/stop annotation padding and padding-only outlines were added
+  in `aea4257` alongside the regulatory marker targets.
+- **HIT-3:** the integrated render at `cd7e8ef` showed outlines but no hover
+  details over standalone codon padding. The target now carries the visible
+  annotation's exact hint text; the browser contract checks both details and
+  dismissal in small-view and sequence cell/bar modes. Final review pending.

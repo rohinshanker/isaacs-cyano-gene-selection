@@ -248,6 +248,7 @@ test('zoom keys and buttons change the scale within the limits and announce it',
     assert.equal(Number(stopTarget.getAttribute('width')),
       Number(stopMark.getAttribute('width')) + CODON_HIT_PADDING_PX);
     for (const [target, mark] of [[startTarget, startMark], [stopTarget, stopMark]]) {
+      assert.equal(target.querySelector('title').textContent, mark.getAttribute('aria-label'));
       target.dispatch('pointerenter');
       assert.ok(mark.hasClass('is-hit-hovered'));
       target.dispatch('pointerleave');
@@ -378,6 +379,7 @@ test('pointer clicks on padded start and stop targets select their codons and pr
       Number(startBase.getAttribute('x')) - CODON_HIT_PADDING_PX);
     assert.equal(Number(hit.getAttribute('width')),
       Number(startBase.getAttribute('width')) + CODON_HIT_PADDING_PX);
+    assert.equal(hit.querySelector('title').textContent, start.getAttribute('aria-label'));
     hit.dispatch('pointerenter');
     assert.ok(start.hasClass('is-hit-hovered'));
     hit.dispatch('pointerleave');
@@ -396,6 +398,7 @@ test('pointer clicks on padded start and stop targets select their codons and pr
     assert.equal(Number(hit.getAttribute('x')), Number(stopBase.getAttribute('x')));
     assert.equal(Number(hit.getAttribute('width')),
       Number(stopBase.getAttribute('width')) + CODON_HIT_PADDING_PX);
+    assert.equal(hit.querySelector('title').textContent, stop.getAttribute('aria-label'));
     hit.dispatch('pointerenter');
     assert.ok(stop.hasClass('is-hit-hovered'));
     hit.dispatch('pointerleave');

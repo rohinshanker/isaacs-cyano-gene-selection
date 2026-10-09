@@ -187,6 +187,9 @@ function annotationHitTarget(annotation, attributes, activate = null) {
     if (activate) activate();
     else annotation.focus?.({ preventScroll: true });
   });
+  const title = svg('title');
+  title.textContent = annotation.getAttribute('aria-label');
+  target.append(title);
   target.addEventListener('pointerenter', () => annotation.classList.add('is-hit-hovered'));
   target.addEventListener('pointerleave', () => annotation.classList.remove('is-hit-hovered'));
   return target;

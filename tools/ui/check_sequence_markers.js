@@ -106,6 +106,10 @@ async (page) => {
   await open(`&g=${WITH_MARKS}`);
   const verifyPaddingHover = async (hit, mark, label, edge = 'top') => {
     await hit.scrollIntoViewIfNeeded();
+    // Let the scroll dismissal settle before starting a fresh hover.
+    await page.evaluate(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    }));
     const [hitBox, markBox] = await Promise.all([hit.boundingBox(), mark.boundingBox()]);
     check(Boolean(hitBox && markBox), `${label}: the target and visible mark are measurable`);
     const x = markBox.x + markBox.width / 2;
@@ -114,9 +118,17 @@ async (page) => {
     await page.mouse.move(x, insideY);
     check(await mark.evaluate((node) => getComputedStyle(node).stroke === 'rgb(26, 115, 232)'),
       `${label}: padding-only hover outlines the visible biological mark`);
+    const expectedHint = await mark.evaluate((node) => (
+      node.closest('[aria-label]').getAttribute('aria-label')
+    ));
+    const hint = page.locator('.instant-hint');
+    check(await hint.isVisible() && await hint.textContent() === expectedHint,
+      `${label}: padding-only hover exposes the visible annotation's details`);
     await page.mouse.move(x, outsideY);
     check(await mark.evaluate((node) => getComputedStyle(node).stroke !== 'rgb(26, 115, 232)'),
       `${label}: immediately outside the target removes the outline`);
+    check(!await hint.isVisible() || await hint.textContent() !== expectedHint,
+      `${label}: leaving the padded target dismisses its details`);
   };
   await verifyPaddingHover(
     page.locator('g.gene-sequence-codon-start rect.gene-sequence-codon-hit-target'),
