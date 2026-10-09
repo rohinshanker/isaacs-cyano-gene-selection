@@ -1,14 +1,14 @@
-# O_regulatory-feature-hit-targets__20261009 — Open
+# A_regulatory-feature-hit-targets__20261009 — Active
 
 - **Scope:** Enlarge hover and click targets for initiation sites and regulatory features in both gene viewers.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The owner reports that initiation-site and regulatory-feature
+Owned by `cyano-ui-fixes` for implementation, integration and closure. Work started
+2026-10-09 under the owner's request to complete unblocked tickets. The owner reports that initiation-site and regulatory-feature
 targets are too small to hover or click comfortably. Apply the improvement to
 both the smaller gene viewer and the larger sequence close-up, including Tan
 initiation sites, termination sites and other displayed regulatory annotations.
@@ -53,7 +53,7 @@ documentation, update its index, and follow the required resolved-ticket lifecyc
 
 ## Related work
 
-- [Tan sites in the larger gene viewer](O_tan-sites-large-gene-viewer__20261009.md)
+- [Tan sites in the larger gene viewer](A_tan-sites-large-gene-viewer__20261009.md)
   covers whether admitted sites are visible and placeable; this ticket covers
   ease of interacting with displayed markers.
 - [Regulatory methods](A_regulatory-methods-shortlist__20261008.md) retains the

@@ -1,14 +1,14 @@
-# O_tan-sites-large-gene-viewer__20261009 — Open
+# A_tan-sites-large-gene-viewer__20261009 — Active
 
 - **Scope:** Make the admitted Tan initiation sites appear reliably in the larger gene sequence visualizer.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The owner wants Tan initiation sites on the **larger gene
+Owned by `cyano-ui-fixes` for implementation, integration and closure. Work started
+2026-10-09 under the owner's request to complete unblocked tickets. The owner wants Tan initiation sites on the **larger gene
 visualizer**, interpreted as the sequence close-up below Chromosome/Gene.
 
 At baseline `d507cfd`, this viewer already has a Tan marker adapter, an independent

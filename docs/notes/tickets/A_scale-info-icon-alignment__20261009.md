@@ -1,14 +1,14 @@
-# O_scale-info-icon-alignment__20261009 — Open
+# A_scale-info-icon-alignment__20261009 — Active
 
 - **Scope:** Centre the info icon beside Scale with the surrounding control line.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The owner requests vertical centring of the info icon next
+Owned by `cyano-ui-fixes` for implementation, integration and closure. Work started
+2026-10-09 under the owner's request to complete unblocked tickets. The owner requests vertical centring of the info icon next
 to **Scale** with the line it belongs to. The map and chromosome toolbars share
 the Scale disclosure pattern; inspect both rendered instances before fixing.
 

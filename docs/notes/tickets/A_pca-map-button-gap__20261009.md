@@ -1,14 +1,14 @@
-# O_pca-map-button-gap__20261009 — Open
+# A_pca-map-button-gap__20261009 — Active
 
 - **Scope:** Add a small gap between the buttons immediately above the PCA map and the map itself.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The buttons directly above the PCA map should have a small
+Owned by `cyano-ui-fixes` for implementation, integration and closure. Work started
+2026-10-09 under the owner's request to complete unblocked tickets. The buttons directly above the PCA map should have a small
 visible separation from the map edge instead of touching it. This requests
 spacing between the button row and the plot, rather than a change to spacing
 between individual buttons. No exact pixel value was specified.

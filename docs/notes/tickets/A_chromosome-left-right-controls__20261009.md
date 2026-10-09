@@ -1,14 +1,14 @@
-# O_chromosome-left-right-controls__20261009 — Open
+# A_chromosome-left-right-controls__20261009 — Active
 
 - **Scope:** Add visible left and right pan controls to the chromosome visualizer.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The owner wants to scroll left or right through the chromosome
+Owned by `cyano-ui-fixes` for implementation, integration and closure. Work started
+2026-10-09 under the owner's request to complete unblocked tickets. The owner wants to scroll left or right through the chromosome
 using controls, without needing to drag the track with the mouse.
 
 The current chromosome toolbar exposes zoom and reset controls; track dragging
