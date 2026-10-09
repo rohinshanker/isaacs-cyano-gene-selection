@@ -91,6 +91,25 @@ skip and 36 subtests; `tools/validate_contract.py` passed 117 checks with one
 declared skip. The managed worktree had no `.venv`, so both Python gates used
 the canonical checkout's existing `.venv/bin/python` against this worktree.
 
+UI-REVIEW-5 follow-up, `codex-implementer`, 2026-10-09: repeated availability
+reasons are now emitted once in the visible Scale notice while each unavailable
+option retains its own verbatim disabled reason. A regression test covers a
+numeric metric with zero finite values and all five scale options disabled.
+Rendered verification deliberately returned HTTP 500 for
+`expression_layers.json`, selected one of that file's unavailable transcript
+datasets, and confirmed the actionable failure text and Retry button remain
+visible while both Native codon space and Chromosome/Gene state the shared
+“has no finite values to scale” reason exactly once. This held at 375×812,
+768×1024, 1280×800, and 1440×900 with no horizontal overflow. The info popover
+remained operable in that state, fit within the 375 px viewport, and Escape
+closed it with focus restored. Restoring the route and choosing Retry removed
+the failure and returned the selected source to a usable scale. The deliberate
+HTTP 500 was the only console error; there were no warnings or unexpected
+runtime errors. Evidence is under the durable presentation artifact directory
+as `ui-review-5-*`. Final gates: 1,342 JavaScript tests passed; Python passed
+891 tests with one expected skip and 36 subtests; the contract validator passed
+117 checks with one declared skip.
+
 ## Cleanup
 
 When implemented and verified, report the affected-area change and clarification

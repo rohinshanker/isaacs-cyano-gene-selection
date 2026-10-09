@@ -58,13 +58,15 @@ export function scaleControlState(colors) {
 }
 
 /**
- * Every reason this control has to give, as one piece of visible text: the
- * reason each unavailable scale gives, or — when the colour has no numeric scale
+ * Every distinct reason this control has to give, as one piece of visible text:
+ * the reasons unavailable scales give, or — when the colour has no numeric scale
  * at all — the one reason the whole control is disabled.
  *
  * The sentences are the ones {@link scaleControlState} already carries, verbatim
- * and in the order the options are listed, so the note and the titles cannot
- * describe the metric differently. Empty when every scale is available, which is
+ * and in the order they first occur in the options, so the note and the titles
+ * cannot describe the metric differently. A column with no finite values gives
+ * every disabled option the same reason; the visible note says that shared fact
+ * once rather than once per scale. Empty when every scale is available, which is
  * what lets the note take no space at all rather than sit there saying nothing.
  *
  * @param {{options: {disabled: boolean, reason: string|null}[], disabled: boolean,
@@ -73,10 +75,10 @@ export function scaleControlState(colors) {
  */
 export function scaleNoticeText(control) {
   if (control.disabled) return control.reason ?? '';
-  return control.options
+  const reasons = control.options
     .filter((option) => option.disabled && option.reason)
-    .map((option) => option.reason)
-    .join(' ');
+    .map((option) => option.reason);
+  return [...new Set(reasons)].join(' ');
 }
 
 /**

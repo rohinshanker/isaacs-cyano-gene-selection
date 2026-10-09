@@ -125,6 +125,26 @@ test('the note carries every unavailable scale\'s own reason, in the listed orde
   assert.equal(scaleNoticeText(control), titles.join(' '));
 });
 
+test('a metric with no finite values states its shared unavailable reason once', async () => {
+  const control = scaleControlState({
+    categorical: false,
+    scale: 'linear',
+    availability: valueScaleAvailability([NaN, NaN], { label: 'Transcript abundance' }),
+  });
+  const reason = 'Transcript abundance has no finite values to scale.';
+  assert.equal(control.options.filter((option) => option.disabled).length, 5);
+  assert.deepEqual(control.options.map((option) => option.reason), Array(5).fill(reason));
+  assert.equal(scaleNoticeText(control), reason);
+
+  await withFakeDocument((document) => {
+    const select = document.createElement('select');
+    const notice = document.createElement('p');
+    syncScaleSelect(select, control, notice);
+    assert.equal(notice.textContent, reason);
+    assert.equal(notice.hidden, false);
+  });
+});
+
 test('a column every scale can take has an empty note, and a category has one reason', () => {
   const allAvailable = scaleControlState({
     categorical: false,
