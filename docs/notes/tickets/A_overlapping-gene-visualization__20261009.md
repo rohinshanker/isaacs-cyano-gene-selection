@@ -188,6 +188,7 @@ pairs in the first generated payloads; final-patch validation is pending.
 | OG-UI2 | open | Keep the OG legend concise and put full coverage/definition in a disclosure; omit internal field-token wording from user copy. |
 | OG-UI3 | open | Preserve meaningful keyboard focus after selecting an overlapping partner. |
 | OG-UI4 | open | Distinguish coincident pairs by identity and make each reachable by keyboard and touch/click; MG1655 b4793/b4647 and b4793/b4455 share the same interval. |
+| OG-UI5 | open | Describe the disabled scale generically for categorical colours; the OG mode must not be labelled Function category. |
 
 Reproduction notes, independent comparison scripts and early rendered evidence
 are under `/tmp/cyano-overlap-20261009/`; see `model-review-findings.md` and

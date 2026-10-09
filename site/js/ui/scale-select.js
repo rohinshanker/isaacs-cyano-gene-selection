@@ -18,9 +18,9 @@ import {
   DEFAULT_VALUE_SCALE, VALUE_SCALES, VALUE_SCALE_LABELS,
 } from '../core/value-scales.js';
 
-/** Why a function-category colour has no value scale to choose. */
-export const CATEGORICAL_SCALE_REASON = 'Function category has no numeric scale: its colours are '
-  + 'a set of named categories, not a ramp over values.';
+/** Why categorical colours, including function and OG classes, have no value scale. */
+export const CATEGORICAL_SCALE_REASON = 'Category colours have no numeric scale: each colour '
+  + 'represents a named category.';
 
 /**
  * The whole state of a Scale selector: every scale it lists, which of them are
