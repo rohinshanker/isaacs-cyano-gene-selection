@@ -721,7 +721,15 @@ export class FilterPanel {
     // A selection made from the colour key that none of the three options can
     // express. None of them is shown as chosen, and the classes being kept are
     // named here, so the panel never claims a state the map is not in.
-    if (chosen === null) {
+    if (!counts && selection.length > 0) {
+      const pending = document.createElement('p');
+      pending.className = 'panel-note';
+      pending.setAttribute('role', 'status');
+      pending.textContent = `The saved ${OVERLAP_TAG_LABEL} filter is paused while overlap `
+        + 'context is unavailable. It is not applied to the displayed genes and will apply '
+        + 'when the layer is ready. Choose Show all genes to clear it.';
+      fieldset.append(pending);
+    } else if (chosen === null) {
       const labels = OVERLAP_CLASSES
         .filter((entry) => selection.includes(entry.id))
         .map((entry) => entry.label)

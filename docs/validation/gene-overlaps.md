@@ -288,7 +288,7 @@ the pair with nothing plotted, the row surviving a mask that hides every gene,
 the aligned partner tracks and their chevrons, the partner the strip cannot
 place keeping its row, the badge's three states, the strip's arrows and its
 one-base minimum, the filter's three options and its custom-selection notice,
-the colour key's four rows and its unread state, the export columns in both
+the colour key's five rows and its unread state, the export columns in both
 states, the ambiguity caveat in both, and the hash round-trip.
 
 Rendered: all three views at 375×812, 768×1024, 1280×800 and 1440×900, and

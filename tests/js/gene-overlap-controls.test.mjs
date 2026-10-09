@@ -114,7 +114,7 @@ test('the compact strip marks the shared bases with a direction arrow each', asy
     renderGeneViewer(host, {
       ...GENE,
       overlapPartners: [partner('UNKNOWN', 5300, 5318, { strand: null, relation: 'unknown' })],
-      overlapClass: 'overlap-both-strands',
+      overlapClass: 'overlap-strand-unrecorded',
     });
     assert.equal(marks(host).length, 1);
     assert.equal(arrows(host).length, 0);
@@ -252,6 +252,20 @@ test('the filter offers all, OG-only and non-overlapping-only, with whole-set co
     assert.deepEqual(pending.querySelectorAll('input').map((node) => node.disabled),
       [false, true, true]);
     assert.match(pending.textContent, /has not been read/);
+    assert.doesNotMatch(pending.textContent, /filter is paused/);
+    for (const selection of [
+      ['overlap-same-strand'], ['no-overlap'], overlapSelectionFor('only'),
+    ]) {
+      panel.update({ ...state, overlapCounts: null, overlapClassFilter: selection });
+      assert.match(pending.textContent, /saved OG filter is paused/);
+      assert.match(pending.textContent, /not applied to the displayed genes/);
+      assert.doesNotMatch(pending.textContent, /is in force/);
+      assert.deepEqual(pending.querySelectorAll('input').map((node) => node.disabled),
+        [false, true, true]);
+    }
+    panel.update({ ...state, overlapClassFilter: ['overlap-same-strand'] });
+    assert.doesNotMatch(pending.textContent, /filter is paused/);
+    assert.match(pending.textContent, /is in force/);
   });
 });
 
@@ -275,7 +289,7 @@ test('the OG colour key names every class, its count, and a short rule', async (
         childlessGenes: 0,
         overlappingGenes: 717,
         overlappingPairs: 402,
-        sharedBases: 5236,
+        pairwiseSharedBases: 5236,
         maxPartners: 2,
         selectableGenes: 2715,
         selectableOverlapping: 714,
