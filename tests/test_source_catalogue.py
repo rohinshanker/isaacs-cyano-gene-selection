@@ -106,6 +106,16 @@ def test_premature_eof_and_http_stream_errors_clear_observed_identity():
     assert result["bytes"] is None and result["sha256"] is None
 
 
+def test_corrupt_deflate_is_a_dated_failed_observation_not_a_refresh_exception():
+    body = bytearray(gzip.compress(b"input bytes" * 100))
+    body[10] = 0x07
+    result = observe({**ARTIFACT, "compression": "gzip"}, body=bytes(body),
+                     content_length=len(body))
+    assert result["linkCheck"]["result"] == "unavailable"
+    assert result["bytes"] is None and result["sha256"] is None
+    assert result["linkCheck"]["checkedAt"] == DATE
+
+
 def test_publisher_entry_is_not_hashed_as_the_original_dataset():
     result = observe({**ARTIFACT, "sourcePage": True}, body=b"<html>Publisher</html>")
     assert result["bytes"] is None and result["sha256"] is None

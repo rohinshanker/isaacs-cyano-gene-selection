@@ -19,6 +19,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
 import zipfile
+import zlib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,7 +83,7 @@ def check_artifact(artifact: dict, *, opener=urlopen, checked_at: str | None = N
     except HTTPError as error:
         check["detail"] = f"HTTP {error.code}; source file could not be retrieved."
     except (URLError, HTTPException, TimeoutError, OSError, ValueError, EOFError,
-            zipfile.BadZipFile, RuntimeError) as error:
+            zipfile.BadZipFile, zlib.error, RuntimeError) as error:
         check["detail"] = str(error) or type(error).__name__
     return result
 
