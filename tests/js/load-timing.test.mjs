@@ -1,12 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  LOAD_REVIEW, LOAD_TIMING, LOAD_TIMING_PARAMETERS, MAX_OVERRIDE, prefersReducedMotion,
-  resolveLoadReview, resolveLoadTiming,
+  DEFAULT_LOAD_PRESENTATION, LOAD_REVIEW, LOAD_TIMING, LOAD_TIMING_PARAMETERS, MAX_OVERRIDE,
+  prefersReducedMotion, resolveLoadReview, resolveLoadTiming,
 } from '../../site/js/ui/load-timing.js';
 
-test('the defaults are the owner-selected times, with a 2.5-second text cap', () => {
-  assert.equal(LOAD_TIMING.minimumBarMs, 1500, 'the bar takes at least a second and a half');
+test('the defaults use truthful progress and the selected readiness hold', () => {
+  assert.equal(LOAD_TIMING.minimumBarMs, 0, 'truthful progress has no timer-driven minimum');
+  assert.deepEqual(DEFAULT_LOAD_PRESENTATION, {
+    name: 'B', reveal: 'ready', holdMs: 500, progress: 'continuous',
+  });
   assert.deepEqual({ ...LOAD_TIMING.scramble }, {
     leadLetters: 10, lockLettersPerSecond: 50, trailRatio: 1.5, maxDurationMs: 2500,
     flipFastMs: 40, flipSlowMs: 170,
@@ -26,7 +29,10 @@ test('with no overrides the resolved timing equals the defaults and is a fresh c
     const timing = resolveLoadTiming(search);
     assert.deepEqual(timing, {
       minimumBarMs: LOAD_TIMING.minimumBarMs,
-      scramble: { ...LOAD_TIMING.scramble },
+      scramble: {
+        ...LOAD_TIMING.scramble,
+        durationAnchors: LOAD_REVIEW.scrambleAnchors.map(([length, ms]) => [length, ms]),
+      },
       mapIntro: { ...LOAD_TIMING.mapIntro },
     });
     assert.notEqual(timing.scramble, LOAD_TIMING.scramble);
@@ -41,6 +47,7 @@ test('every tunable has an address-bar override', () => {
     scramble: {
       leadLetters: 4, lockLettersPerSecond: 90, trailRatio: 2.5, maxDurationMs: 2500,
       flipFastMs: 20, flipSlowMs: 300,
+      durationAnchors: LOAD_REVIEW.scrambleAnchors.map(([length, ms]) => [length, ms]),
     },
     mapIntro: { appearMs: 1000, colourMs: 3000 },
   });
@@ -60,14 +67,14 @@ test('an override that is not a usable number leaves the default in place', () =
   assert.equal(resolveLoadTiming(`?load-min=${MAX_OVERRIDE}`).minimumBarMs, MAX_OVERRIDE);
 });
 
-test('owner-review selectors are explicit and leave production defaults untouched', () => {
+test('owner-review selectors remain explicit around the production default', () => {
   assert.equal(resolveLoadReview(''), null);
   assert.equal(resolveLoadReview('?load-review=unknown'), null);
   assert.deepEqual(resolveLoadReview('?load-review=a&load-progress=continuous'), {
     name: 'A', reveal: 'ready', holdMs: 0, progress: 'continuous',
   });
   assert.deepEqual(resolveLoadReview('?load-review=b'), {
-    name: 'B', reveal: 'ready', holdMs: 1000, progress: 'grouped',
+    name: 'B', reveal: 'ready', holdMs: 500, progress: 'grouped',
   });
   assert.deepEqual(resolveLoadReview('?load-review=c&load-progress=bad'), {
     name: 'C', reveal: 'half', holdMs: 0, progress: 'grouped',
@@ -75,8 +82,8 @@ test('owner-review selectors are explicit and leave production defaults untouche
   const review = resolveLoadTiming('?load-review=a');
   assert.equal(review.minimumBarMs, 0, 'truthful review paths do not use the timed jump schedule');
   assert.deepEqual(review.scramble.durationAnchors, LOAD_REVIEW.scrambleAnchors);
-  assert.equal(resolveLoadTiming('').scramble.durationAnchors, undefined,
-    'balanced timing is not an unapproved production default');
+  assert.deepEqual(resolveLoadTiming('').scramble.durationAnchors,
+    LOAD_REVIEW.scrambleAnchors.map(([length, ms]) => [length, ms]));
   assert.equal(resolveLoadTiming('?load-review=a&load-min=400').minimumBarMs, 400,
     'an explicit tuning override remains available during review');
 });

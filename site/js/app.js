@@ -103,7 +103,10 @@ import {
   THRESHOLDS as DERIVED_THRESHOLDS,
 } from './core/source-derived-categories.js';
 import { LoadProgress } from './ui/load-progress.js';
-import { prefersReducedMotion, resolveLoadReview, resolveLoadTiming } from './ui/load-timing.js';
+import { DatasetColorProgress } from './ui/dataset-color-progress.js';
+import {
+  DEFAULT_LOAD_PRESENTATION, prefersReducedMotion, resolveLoadReview, resolveLoadTiming,
+} from './ui/load-timing.js';
 import { TextScramble } from './ui/text-scramble.js';
 import { installInstantHints } from './ui/instant-hints.js';
 
@@ -198,8 +201,12 @@ let booted = false;
 let revealed = false;
 const loadTiming = resolveLoadTiming(window.location.search);
 const loadReview = resolveLoadReview(window.location.search);
+const loadPresentation = loadReview ?? DEFAULT_LOAD_PRESENTATION;
 const reducedMotion = prefersReducedMotion(window);
 const textScramble = new TextScramble({ timing: loadTiming.scramble });
+const datasetColorProgress = new DatasetColorProgress({ onRetry: (key) => retryFile(key) });
+let pendingLoadSnapshot = null;
+let loadProgressFrame = 0;
 
 const context = {
   // The filters' threshold follows the colouring metric until the reader says otherwise.
@@ -1551,9 +1558,14 @@ function renderCurrentView() {
   element('regulatory-view').hidden = !regulatoryActive;
   element('strain-fitness-view').hidden = !fitnessActive;
   element('citations-view').hidden = !citationsActive;
+  datasetColorProgress.moveTo(activeDatasetColorHost());
   if (chromosomeActive) {
     element('panel-blurb').textContent = `${tabBlurb(CHROMOSOME_TAB, organism)} ${CHROMOSOME_TAB.source}`;
     renderChromosomeView();
+    // The chromosome canvas host is created lazily by its first render. Move a
+    // pending dataset operation again once that host exists so a view switch
+    // cannot leave its progress bar attached to the hidden map.
+    datasetColorProgress.moveTo(activeDatasetColorHost());
     return;
   }
   if (citationsActive) {
@@ -1801,9 +1813,11 @@ function buildColorControls() {
     model: colorModel,
     announce,
     onChange: ({ colorBy, colorScale }) => {
-      state.colorBy = colorBy;
+      if (colorBy !== state.colorBy) {
+        void selectColorMetric(colorBy);
+        return;
+      }
       state.colorScale = colorScale;
-      ensureTypeSelected(colorBy);
       renderAll();
     },
   });
@@ -2332,6 +2346,75 @@ function promotedMetricFileKeys(view, registry) {
   return [...keys];
 }
 
+/** Coalesce stream chunks into one progress DOM update per painted frame. */
+function updateLoadingProgress(snapshot) {
+  pendingLoadSnapshot = snapshot;
+  if (loadProgressFrame) return;
+  loadProgressFrame = requestAnimationFrame(() => {
+    loadProgressFrame = 0;
+    const current = pendingLoadSnapshot;
+    pendingLoadSnapshot = null;
+    if (!current) return;
+    loadProgress.update(current);
+    datasetColorProgress.update(current);
+  });
+}
+
+/** Apply the newest staged snapshot synchronously before a reveal or landing render. */
+function flushLoadingProgress() {
+  if (!pendingLoadSnapshot) return;
+  if (loadProgressFrame) cancelAnimationFrame(loadProgressFrame);
+  loadProgressFrame = 0;
+  const current = pendingLoadSnapshot;
+  pendingLoadSnapshot = null;
+  loadProgress.update(current);
+  datasetColorProgress.update(current);
+}
+
+function activeDatasetColorHost() {
+  if (state.panel === CHROMOSOME_TAB.id) return chromosomeView?.canvasHost ?? null;
+  return MAP_PANELS.some((panel) => panel.id === state.panel)
+    ? element('map-canvas').parentElement : null;
+}
+
+function colorMetricFileKey(key) {
+  const direct = context.registry.byKey.get(key)?.fileKey ?? null;
+  if (direct) return direct;
+  if (!isTypeKey(key)) return null;
+  const contributors = contributingDatasets(
+    key, state.typeSources, context.datasets, sourceSelection(),
+  );
+  const fileKeys = [...new Set(contributors
+    .map((dataset) => context.registry.byKey.get(dataset.metricKey)?.fileKey
+      ?? DATA_FILES.find((file) => file.name === dataset.source?.payload)?.key)
+    .filter(Boolean))];
+  return fileKeys.find((fileKey) => staged.files[fileKey]?.state !== FILE_STATE.READY) ?? null;
+}
+
+/**
+ * A metric backed by an unresolved file paints its real transfer state first,
+ * then yields a frame before the potentially expensive colour render.
+ */
+async function selectColorMetric(key) {
+  state.colorBy = key;
+  state.colorScale = null;
+  ensureTypeSelected(key);
+  const metric = context.registry.byKey.get(key) ?? null;
+  const fileKey = colorMetricFileKey(key);
+  const host = activeDatasetColorHost();
+  const operation = datasetColorProgress.begin({
+    fileKey,
+    metricLabel: metric?.label ?? key,
+    host,
+    snapshot: staged.snapshot(),
+  });
+  if (operation.pending && await datasetColorProgress.waitForPaint(operation.token) === false) return;
+  if (operation.token !== datasetColorProgress.token) return;
+  syncSharedControls();
+  renderCurrentView();
+  persist();
+}
+
 /** A later file settled. Renders are coalesced, since several often land together. */
 function fileLanded(key) {
   landed.add(key);
@@ -2350,6 +2433,7 @@ function fileLanded(key) {
 function flushLandings() {
   landingFlush = false;
   if (landed.size === 0) return;
+  flushLoadingProgress();
   const keys = new Set(landed);
   landed.clear();
   const { dataset } = context;
@@ -2381,6 +2465,12 @@ function flushLandings() {
   }
   loadProgress.setFiles(staged.files);
   renderAll();
+  if (datasetColorProgress.fileKey && keys.has(datasetColorProgress.fileKey)) {
+    const token = datasetColorProgress.token;
+    void datasetColorProgress.waitForPaint(token).then((current) => {
+      if (current) datasetColorProgress.applied(token);
+    });
+  }
   if (loadReview && revealed && !reducedMotion) {
     // Data landings may replace whole panels. Preserve the original deadline
     // for unchanged content and give genuinely new content one local reveal.
@@ -2518,8 +2608,8 @@ async function boot() {
     minimumMs: reducedMotion ? 0 : loadTiming.minimumBarMs,
     tierLabels: tierLabelsFor(organism),
     organism,
-    review: loadReview,
-    terminalHoldMs: reducedMotion || loadReview?.name === 'B' ? 0 : 150,
+    review: loadPresentation,
+    terminalHoldMs: reducedMotion ? 0 : loadPresentation.holdMs,
   });
   for (const [key, label] of [
     ['context', 'data context'],
@@ -2541,7 +2631,7 @@ async function boot() {
   staged = loadDatasetStaged({
     baseUrl: dataBase,
     fetchImpl,
-    onProgress: (snapshot) => loadProgress.update(snapshot),
+    onProgress: updateLoadingProgress,
     onFile: (key) => fileLanded(key),
     // Refuses another organism's assembly, and never asks for a study-bound
     // layer this organism does not declare.
@@ -2852,12 +2942,7 @@ async function boot() {
     onSelect: (index) => setPinned(togglePinTarget(index, pinnedIndex())),
     onShortlistToggle: (index) => toggleShortlist(index),
     onColorChange: (key) => {
-      state.colorBy = key;
-      // As on the map: the new metric opens on its own default scale.
-      state.colorScale = null;
-      syncSharedControls();
-      renderCurrentView();
-      persist();
+      void selectColorMetric(key);
     },
     onColorScaleChange: (scale) => {
       state.colorScale = scale;
@@ -3087,9 +3172,12 @@ async function boot() {
   } else {
     await ready;
   }
-  if (!loadReview) await loadProgress.ready();
-  if (loadReview?.holdMs > 0 && !reducedMotion) {
-    await new Promise((resolve) => setTimeout(resolve, loadReview.holdMs));
+  flushLoadingProgress();
+  if (!reducedMotion && loadTiming.minimumBarMs > 0) await loadProgress.ready();
+  if (loadPresentation.holdMs > 0 && !reducedMotion) {
+    loadProgress.setExternalActivity(true);
+    await new Promise((resolve) => setTimeout(resolve, loadPresentation.holdMs));
+    loadProgress.setExternalActivity(false);
   }
   await cleanRevealFrame();
   revealPage();

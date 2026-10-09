@@ -3,7 +3,7 @@
 Scope: Overlay a continuous loading bar on the map when switching to dataset-based coloring, driven by actual data-loading progress.
 Status: open
 Opened: 2026-10-08
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
@@ -50,7 +50,25 @@ and preserve existing initial-load and retry behavior.
 - Preserve the selected sources, quantitative values, scale and missingness.
   Loading feedback must not conceal an unresolved responsiveness defect.
 
+Implementation on `work/ui-loading-20261008` adds one token-scoped continuous
+overlay inside the active scatter/chromosome host. It reports the selected file's
+actual manifest bytes, switches to Preparing after EOF, paints before selection
+work, exposes failure Retry, follows view changes, ignores superseded operations,
+and stays hidden for cached-ready data. A controlled 2.9 MB delayed
+`expression_layers.json` run showed the overlay inside chromosome bounds before
+the file settled; deliberate failure, keyboard Retry and recovery passed.
+Integration and closure remain with the coordinator.
+
 ## Verification
+
+Final branch verification: `npm test` passed 1,342; `.venv/bin/python -m
+pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
+tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,
+layout, overlay and chromosome checks passed 150. The real-app matrix rendered
+and inspected screenshots plus semantic snapshots at 375x812, 768x1024,
+1280x800 and 1440x900, and breakpoint screenshots at 959/960 and 1239/1240.
+The browser check reported no runtime errors or failed requests outside the
+deliberately aborted failure scenario.
 
 At opening, loading guidance, the placement ticket and queue links were checked.
 The owner's map-overlay and continuous data-progress clarification is recorded.

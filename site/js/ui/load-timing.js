@@ -13,8 +13,8 @@
 
 /** The owner-selected defaults. All times are milliseconds. */
 export const LOAD_TIMING = Object.freeze({
-  /** The chromosome loading bar takes at least this long, however fast the data. */
-  minimumBarMs: 1500,
+  /** Truthful byte progress has no timer-driven minimum. */
+  minimumBarMs: 0,
   scramble: Object.freeze({
     /** How far ahead of the locking text the flipping trail starts, in letters. */
     leadLetters: 10,
@@ -37,11 +37,16 @@ export const LOAD_TIMING = Object.freeze({
   }),
 });
 
+/** The owner-selected production presentation: readiness, then a short visible hold. */
+export const DEFAULT_LOAD_PRESENTATION = Object.freeze({
+  name: 'B', reveal: 'ready', holdMs: 500, progress: 'continuous',
+});
+
 /** Query-only loading variants prepared for owner review. */
 export const LOAD_REVIEW = Object.freeze({
   variants: Object.freeze({
     a: Object.freeze({ reveal: 'ready', holdMs: 0 }),
-    b: Object.freeze({ reveal: 'ready', holdMs: 1000 }),
+    b: Object.freeze({ reveal: 'ready', holdMs: 500 }),
     c: Object.freeze({ reveal: 'half', holdMs: 0 }),
   }),
   progressModes: Object.freeze(['grouped', 'continuous']),
@@ -57,8 +62,8 @@ export const LOAD_REVIEW = Object.freeze({
 /**
  * Resolve an explicitly requested owner-review comparison.
  *
- * No selector means no review mode: production keeps its approved reveal,
- * progress schedule, and text timing until the owner chooses a replacement.
+ * No selector means no query override: the caller uses
+ * {@link DEFAULT_LOAD_PRESENTATION} for production.
  */
 export function resolveLoadReview(search = '') {
   const parameters = new URLSearchParams(search);
@@ -107,7 +112,7 @@ export function resolveLoadTiming(search = '') {
     minimumBarMs: review ? 0 : LOAD_TIMING.minimumBarMs,
     scramble: {
       ...LOAD_TIMING.scramble,
-      ...(review ? { durationAnchors: LOAD_REVIEW.scrambleAnchors.map(([length, ms]) => [length, ms]) } : {}),
+      durationAnchors: LOAD_REVIEW.scrambleAnchors.map(([length, ms]) => [length, ms]),
     },
     mapIntro: { ...LOAD_TIMING.mapIntro },
   };

@@ -1571,6 +1571,26 @@ test('hover previews preserve measurement and coordinate models while updating e
   }
 });
 
+test('browser-capable hover redraws only selection marks over the cached chromosome base', () => {
+  const { view, restore, flush } = mount();
+  try {
+    let copies = 0;
+    view.context.drawImage = () => { copies += 1; };
+    view.draw();
+    flush();
+    assert.equal(copies, 1, 'the full render copies its freshly painted base once');
+    const baseOps = view.baseCanvas.ops.length;
+    view.setInteraction({ hovered: 0 });
+    flush();
+    assert.equal(copies, 2, 'hover copies the existing base once');
+    assert.equal(view.baseCanvas.ops.length, baseOps,
+      'hover does not rebuild paint order or repaint dataset-coloured CDSs');
+    assert.match(view.canvas.getAttribute('aria-label'), /PLUS/);
+  } finally {
+    restore();
+  }
+});
+
 test('keyboard previews reveal distant genes, retain zoom, and reconcile with a subsequent pin', () => {
   const { view, restore, flush } = mount();
   try {

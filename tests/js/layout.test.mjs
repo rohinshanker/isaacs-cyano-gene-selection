@@ -172,9 +172,13 @@ test('the chromosome toolbar writes colour and visibility through the shared con
   const toolbar = app.slice(app.indexOf('chromosomeView = new ChromosomeView('));
   const colorChange = toolbar.slice(toolbar.indexOf('onColorChange:'), toolbar.indexOf('onColorScaleChange:'));
   const showHiddenChange = toolbar.slice(toolbar.indexOf('onShowHiddenChange:'), toolbar.indexOf('onDetailJump:'));
-  assert.match(colorChange, /state\.colorBy = key;[\s\S]*?state\.colorScale = null;\s*syncSharedControls\(\);/,
-    'choosing a colour on the chromosome tab moves the map selector with it, and opens '
-      + "the new metric on its own default scale");
+  assert.match(colorChange, /selectColorMetric\(key\)/,
+    'chromosome colours use the shared, progress-aware selection path');
+  const colorSelection = app.slice(app.indexOf('async function selectColorMetric('),
+    app.indexOf('/** A later file settled.'));
+  assert.match(colorSelection,
+    /state\.colorBy = key;\s*state\.colorScale = null;[\s\S]*?syncSharedControls\(\);/,
+    'the shared path moves the map selector with it and opens the metric on its default scale');
   const scaleChange = toolbar.slice(toolbar.indexOf('onColorScaleChange:'), toolbar.indexOf('onShowHiddenChange:'));
   assert.match(scaleChange, /state\.colorScale = scale;\s*syncSharedControls\(\);/,
     'and choosing a scale there moves the map selector with it too');

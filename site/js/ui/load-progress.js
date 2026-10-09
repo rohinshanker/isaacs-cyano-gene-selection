@@ -29,6 +29,16 @@ export const FULL_HOLD_MS = 150;
 /** Never round unsettled work up to the completed, 100% state. */
 const UNSETTLED_MAX_FRACTION = 0.99;
 
+/** Compact measured byte text for the visible status line. */
+export function formatLoadBytes(bytes) {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) return null;
+  if (bytes < 1024) return `${Math.round(bytes)} B`;
+  const units = [['MB', 1024 ** 2], ['KB', 1024]];
+  const [unit, divisor] = units.find(([, size]) => bytes >= size) ?? units.at(-1);
+  const value = bytes / divisor;
+  return `${value >= 10 ? value.toFixed(0) : value.toFixed(1)} ${unit}`;
+}
+
 /** A small deterministic generator, so the bar is the same picture on every load. */
 function lcg(seed) {
   let state = seed >>> 0;
@@ -365,6 +375,7 @@ export class LoadProgress {
     this.retryLabel = null;
     this.framePending = false;
     this.frameVersion = 0;
+    this.externalActivity = false;
     this.cycle = 0;
     this.startedAt = 0;
     this.genes = loadBarGenes();
@@ -523,8 +534,8 @@ export class LoadProgress {
   renderTruthfulStage() {
     const projection = this.truthfulSnapshot();
     const label = this.progressLabel(projection);
-    this.bar.classList.toggle('is-activity', projection.fraction === null
-      || projection.pendingUnknownFiles > 0);
+    this.bar.classList.toggle('is-activity', this.externalActivity || !projection.terminal
+      || !this.completeHeld);
     if (projection.fraction === null) {
       // The byte phase may already be visually full; an indeterminate
       // preparation phase removes the numeric claim without moving backwards.
@@ -552,7 +563,9 @@ export class LoadProgress {
       description = `${status}.${describeIdentity(this.identity) ? ` ${describeIdentity(this.identity)}.` : ''}`;
     } else if (projection.exactBytes) {
       const percent = Math.floor(projection.fraction * 100);
-      status = `Loading ${label}`;
+      const received = formatLoadBytes(projection.actualReceivedBytes);
+      const total = formatLoadBytes(projection.totalBytes);
+      status = `Loading ${label}${received && total ? ` · ${received} of ${total}` : ''}`;
       const remaining = projection.pendingUnknownFiles;
       description = `${status}, ${percent}% of known published bytes received.`
         + (remaining > 0 ? ` ${remaining} file${remaining === 1 ? '' : 's'} with no published size still loading.` : '');
@@ -582,10 +595,13 @@ export class LoadProgress {
     if (this.resourceOnly || this.blockingKeys !== null) return projection.label;
     const file = DATA_FILES.find((entry) => entry.name === projection.label);
     if (!file) return projection.label;
-    if (projection.phase === 'transfer' && this.snapshot?.currentTier) {
-      return this.tierLabels[this.snapshot.currentTier] ?? dataFileLabel(file, this.organism);
-    }
-    return dataFileLabel(file, this.organism);
+    return `${dataFileLabel(file, this.organism)} (${file.name})`;
+  }
+
+  /** Keep the truthful extent visibly active through a presentation-only wait. */
+  setExternalActivity(active) {
+    this.externalActivity = Boolean(active);
+    if (this.review) this.renderTruthfulStage();
   }
 
   /** Stable slots weighted by published bytes, or equally when sizes are unknown. */

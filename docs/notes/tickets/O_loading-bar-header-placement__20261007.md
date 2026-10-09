@@ -3,7 +3,7 @@
 Scope: Move the additional, post-reveal loading bar from the top of the center panel into the empty area beneath the top-right Jump to map / Reset panel widths controls.
 Status: open
 Opened: 2026-10-07
-Updated: 2026-10-07
+Updated: 2026-10-09
 
 ## Current State
 
@@ -49,7 +49,24 @@ Related: `A_loading-scramble-and-progress__20261006.md` holds the separate owner
 choices for reveal timing and grouped/continuous progress. This ticket changes
 placement and layout stability, not those pending presentation defaults.
 
+Implementation on `work/ui-loading-20261008` moves the one post-reveal
+presentation into a fixed-height slot beneath the top-right controls and removes
+the centre-panel host. Toggling the settled presentation on the rendered page
+produced 0 px change in controls, slot, main and tab x/y/width/height. No owner
+clarification is needed: the intervening layout still has the named controls and
+the requested empty header area. Integration and closure remain with the
+coordinator.
+
 ## Verification
+
+Final branch verification: `npm test` passed 1,342; `.venv/bin/python -m
+pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
+tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,
+layout, overlay and chromosome checks passed 150. The real-app matrix rendered
+and inspected screenshots plus semantic snapshots at 375x812, 768x1024,
+1280x800 and 1440x900, and breakpoint screenshots at 959/960 and 1239/1240.
+The browser check reported no runtime errors or failed requests outside the
+deliberately aborted failure scenario.
 
 Ticket opening: source locations and the related loading ticket inspected;
 queue link checked. UI behavior has not been rendered or changed.

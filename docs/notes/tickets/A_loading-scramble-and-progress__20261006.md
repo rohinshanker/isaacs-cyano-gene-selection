@@ -3,7 +3,7 @@
 Scope: Select and promote the loading/reveal presentation in `site/` after the owner's visual comparison.
 Status: active
 Opened: 2026-10-06
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
@@ -62,7 +62,24 @@ extent changes only for actual completed work. Grouped/continuous geometry was
 not explicitly selected in this answer and remains a separate pending choice.
 **Record only; do not change code, production defaults or previews yet.**
 
+The owner's later instruction to proceed supersedes the record-only hold.
+Implementation on `work/ui-loading-20261008` promotes B/500 ms and continuous
+truthful aggregate progress to production, with activity through transfer stalls,
+preparation and the hold. Default `cyano:core` to `cyano:revealed` measured
+637.8 ms on a warm local load; reduced motion measured 130.1 ms with no animation,
+confirming the 500 ms hold was removed. Integration and closure remain with the
+coordinator.
+
 ## Verification
+
+Final branch verification: `npm test` passed 1,342; `.venv/bin/python -m
+pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
+tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,
+layout, overlay and chromosome checks passed 150. The real-app matrix rendered
+and inspected screenshots plus semantic snapshots at 375x812, 768x1024,
+1280x800 and 1440x900, and breakpoint screenshots at 959/960 and 1239/1240.
+The browser check reported no runtime errors or failed requests outside the
+deliberately aborted failure scenario.
 
 Final combined gates: `npm test` 1,116 passed; pytest 494 passed, 1 skipped,
 36 subtests; contract 116 passed, 1 declared contiguity skip. Manifest, module

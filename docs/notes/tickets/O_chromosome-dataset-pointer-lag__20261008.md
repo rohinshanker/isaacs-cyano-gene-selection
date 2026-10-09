@@ -3,7 +3,7 @@
 Scope: Diagnose and remove mouse-movement lag in the chromosome viewer while dataset-based coloring is active.
 Status: open
 Opened: 2026-10-08
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
@@ -40,7 +40,28 @@ non-pooling quantities. These observations do not establish the cause of lag.
   organism isolation. Verify abundance pools and named/non-pooling quantities;
   do not drop contributors or suppress needed updates to improve timing.
 
+Implementation on `work/ui-loading-20261008` caches each full chromosome paint
+in an offscreen canvas; ordinary hover now copies that base and draws selection
+marks rather than resolving and painting every CDS. UTEX 2973 Chrome/macOS at
+1440x900 reproduced a 71.7 ms worst two-frame hover before the change. The same
+120-move method after the change measured 48.1 ms worst; the final 80-move matrix
+for function category, protein abundance, transcription initiation and transcript
+abundance measured 0.1-0.2 ms dispatch p95, 33.5-33.6 ms two-frame p95 and no long
+tasks. E. coli GC3 measured 0.2 ms dispatch and 34.4 ms two-frame p95. Source/value
+hashes remained stable across four-source pooling, named selection, hover,
+filtering, view changes and reload. Integration and closure remain with the
+coordinator.
+
 ## Verification
+
+Final branch verification: `npm test` passed 1,342; `.venv/bin/python -m
+pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
+tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,
+layout, overlay and chromosome checks passed 150. The real-app matrix rendered
+and inspected screenshots plus semantic snapshots at 375x812, 768x1024,
+1280x800 and 1440x900, and breakpoint screenshots at 959/960 and 1239/1240.
+The browser check reported no runtime errors or failed requests outside the
+deliberately aborted failure scenario.
 
 At opening, source locations, related guidance and queue links were checked.
 The owner's lag report remains to be reproduced.

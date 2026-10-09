@@ -3,7 +3,7 @@
 Scope: Complete open UI/interactivity work and coordinate the owner's remaining loading choice.
 Status: active
 Opened: 2026-10-06
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## Current State
 
@@ -28,7 +28,21 @@ stays open for keep/move/merge/remove marks, as explicitly requested; its
 refreshed 20-render/211-entry packet is in the ignored `cyano-ui-resume/` folder.
 Scientific extensions retain their original evidence and owner-decision gates.
 
+The owner's later instruction to proceed supersedes the loading record-only
+hold. The loading/default/header/map-feedback and chromosome-hover stream is
+implemented and rendered on `work/ui-loading-20261008`; integration and ticket
+closure remain with the coordinator.
+
 ## Verification
+
+Final branch verification: `npm test` passed 1,342; `.venv/bin/python -m
+pytest -q` passed 891 with 1 skip and 36 subtests; `.venv/bin/python
+tools/validate_contract.py` passed 117 with 1 declared skip. Focused loading,
+layout, overlay and chromosome checks passed 150. The real-app matrix rendered
+and inspected screenshots plus semantic snapshots at 375x812, 768x1024,
+1280x800 and 1440x900, and breakpoint screenshots at 959/960 and 1239/1240.
+The browser check reported no runtime errors or failed requests outside the
+deliberately aborted failure scenario.
 
 Combined JavaScript 1,116 passed; Python 494 passed, 1 skip, 36 subtests;
 contract 116 passed, 1 skip. Generated manifest/preload/load-bar checks pass.

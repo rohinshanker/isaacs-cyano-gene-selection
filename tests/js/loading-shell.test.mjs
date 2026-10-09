@@ -31,6 +31,8 @@ test('the page opens as an empty shell with the stage in the map frame', async (
     'concise visible stage text ships with the bar');
   assert.match(html, /<line class="load-chromosome-axis"/, 'the axis is drawn before any script runs');
   assert.match(html, /<div id="load-tail" class="load-tail" hidden><\/div>/);
+  assert.ok(html.indexOf('id="load-tail"') < html.indexOf('id="load-stage"'),
+    'post-reveal progress is hosted beneath the header actions, outside the map card');
   // The shell shows no text, so its status line is for assistive technology
   // until it has a failure to report.
   assert.match(html, /<p id="load-status" class="load-status visually-hidden" role="status">Loading gene data…<\/p>/);
@@ -70,10 +72,11 @@ test('the reveal waits for its own files while the one bar measures the whole cy
   // explicitly whole-cycle and includes the independently fetched ledger.
   assert.match(boot, /const requested = defaultState\(organism\);\s*applyDecoded\(requested, decodeState\(window\.location\.hash, organism\), organism\);\s*const promoted = promotedFileKeys\(requested\);\s*loadProgress\.setBlocking\(null\);\s*loadProgress\.beginResource\('citations'/);
   // Review C adds a measured-byte latch but cannot bypass the same readiness
-  // promise. Production retains its approved presentation minimum.
+  // promise. Production uses the selected B/500 ms presentation.
   assert.match(boot, /const ready = load\.when\(promoted\);/);
   assert.match(boot, /loadReview\?\.reveal === 'half'[\s\S]*Promise\.all\(\[ready, loadProgress\.whenTransferAtLeast\(0\.5\)\]\)/);
-  assert.match(boot, /if \(!loadReview\) await loadProgress\.ready\(\);/);
+  assert.match(boot, /if \(!reducedMotion && loadTiming\.minimumBarMs > 0\) await loadProgress\.ready\(\);/);
+  assert.match(boot, /if \(loadPresentation\.holdMs > 0 && !reducedMotion\)[\s\S]*loadProgress\.setExternalActivity\(true\)[\s\S]*loadProgress\.setExternalActivity\(false\)/);
   assert.match(boot, /await cleanRevealFrame\(\);\s*revealPage\(\);/);
   assert.match(progressSource, /this\.tail\.append\(this\.presentation, this\.failures\)/);
   const order = ['renderAll();\n  loadProgress.completePreparation(\'initial-view\');\n  booted = true;', 'flushLandings();', 'revealPage();',

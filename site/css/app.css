@@ -116,7 +116,15 @@ pre {
    beside them the strain and assembly being shown. */
 .organism-selector { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
 .organism-identity { color: var(--ink-muted); font-size: 0.8rem; }
-.header-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.header-actions {
+  display: grid;
+  gap: 0.35rem;
+  flex: 1 1 24rem;
+  max-width: 34rem;
+  min-width: min(100%, 19rem);
+}
+.header-action-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+.header-load-slot { height: 4.75rem; min-width: 0; }
 
 .upstream-source-catalogue { margin-top: 0.6rem; }
 .upstream-source-catalogue summary { cursor: pointer; }
@@ -230,16 +238,15 @@ pre {
   .load-progress.is-activity .load-chromosome { animation: none; opacity: 0.65; }
 }
 
-/* After the reveal the same chromosome presentation continues in the map card.
-   It stays in normal flow, with a reserved minimum height, so progress settling
-   does not move the controls below it. Failures remain here with their Retry. */
-#map-section { position: relative; }
+/* After reveal the same chromosome presentation continues in the fixed header
+   slot beneath its actions. The slot, buttons and header geometry do not move
+   when progress completes; long failures scroll inside it and keep Retry reachable. */
 .load-tail {
   display: grid;
   place-items: center;
   gap: 0.3rem;
-  min-height: 3.75rem;
-  margin-bottom: 0.35rem;
+  height: 100%;
+  overflow: auto;
   font-size: 0.8rem;
   color: var(--ink-muted);
 }
@@ -250,6 +257,53 @@ pre {
 .load-failures { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
 .load-failure { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--danger); }
 .load-failure .chip-button { min-height: 28px; padding: 0.1rem 0.6rem; }
+
+/* One selection-scoped, measured bar overlays whichever map is active. */
+.dataset-color-progress {
+  position: absolute;
+  inset: 0.65rem 0.75rem auto;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.3rem 0.55rem;
+  align-items: center;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: var(--shadow);
+}
+.dataset-color-progress[hidden] { display: none; }
+.dataset-color-progress-label {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.dataset-color-progress-meter {
+  height: 0.45rem;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-sunken);
+}
+.dataset-color-progress-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.dataset-color-progress.is-activity .dataset-color-progress-meter {
+  animation: load-activity-pulse 1.2s ease-in-out infinite alternate;
+}
+.dataset-color-progress.is-error { border-color: var(--danger); }
+.dataset-color-progress-retry { min-height: 28px; padding: 0.1rem 0.6rem; }
+@media (prefers-reduced-motion: reduce) {
+  .dataset-color-progress.is-activity .dataset-color-progress-meter { animation: none; }
+}
 
 /* Evidence whose file has not landed, or could not be loaded: never drawn as
    absent, and never as a value. */
@@ -1010,6 +1064,7 @@ input[type="range"] { width: 100%; }
   font-variant-numeric: tabular-nums;
 }
 .chromosome-canvas-host {
+  position: relative;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);

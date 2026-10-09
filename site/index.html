@@ -78,6 +78,7 @@
 <link rel="modulepreload" href="js/ui/condition-guides.js">
 <link rel="modulepreload" href="js/ui/confirm-dialog.js">
 <link rel="modulepreload" href="js/ui/data-sources.js">
+<link rel="modulepreload" href="js/ui/dataset-color-progress.js">
 <link rel="modulepreload" href="js/ui/draw-direction.js">
 <link rel="modulepreload" href="js/ui/filters.js">
 <link rel="modulepreload" href="js/ui/folding-panel.js">
@@ -134,16 +135,23 @@
     </p>
   </div>
   <div class="header-actions">
-    <button type="button" class="chip-button header-link map-jump" aria-controls="map-section">Jump to map</button>
-    <button type="button" id="reset-panel-widths" class="chip-button" hidden>Reset panel widths</button>
-    <button type="button" id="reset-panel-layout" class="chip-button"
-            title="Restore the controls column to its original order, with the gene visualizer collapsed">Reset panel layout</button>
-    <button type="button" id="help-toggle" class="chip-button" aria-expanded="false" aria-controls="help">
-      How to read this
-      <svg class="help-toggle-caret" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
-        <path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </button>
+    <div class="header-action-controls">
+      <button type="button" class="chip-button header-link map-jump" aria-controls="map-section">Jump to map</button>
+      <button type="button" id="reset-panel-widths" class="chip-button" hidden>Reset panel widths</button>
+      <button type="button" id="reset-panel-layout" class="chip-button"
+              title="Restore the controls column to its original order, with the gene visualizer collapsed">Reset panel layout</button>
+      <button type="button" id="help-toggle" class="chip-button" aria-expanded="false" aria-controls="help">
+        How to read this
+        <svg class="help-toggle-caret" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
+          <path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+    <div class="header-load-slot">
+      <!-- The initial chromosome presentation moves here after reveal. The slot
+           remains the same size while progress or Retry appears and disappears. -->
+      <div id="load-tail" class="load-tail" hidden></div>
+    </div>
   </div>
 </header>
 
@@ -577,9 +585,6 @@ if (window.location.protocol === 'file:') {
           <p id="load-progress-status" class="load-progress-status" role="status">Loading genes</p>
         </div>
       </div>
-      <!-- The same chromosome presentation moves here after the reveal. This is
-           also where a failed file stays listed with its Retry control. -->
-      <div id="load-tail" class="load-tail" hidden></div>
       <div class="tablist" role="tablist" id="panel-tabs" aria-label="Map views and sources"></div>
       <p class="panel-blurb" id="panel-blurb"></p>
       <details id="features-used" class="method-help" hidden>

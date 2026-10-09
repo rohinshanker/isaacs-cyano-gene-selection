@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FULL_HOLD_MS, LOAD_BAR_GENES, LOAD_BAR_VIEW, LoadProgress, describeIdentity, describeLoad,
-  displayedFraction, loadBarGenes, loadFraction, loadGeneAttributes, loadSchedule, truthfulProgress,
+  displayedFraction, formatLoadBytes, loadBarGenes, loadFraction, loadGeneAttributes, loadSchedule,
+  truthfulProgress,
 } from '../../site/js/ui/load-progress.js';
 import { DATA_FILES, FILE_STATE, tierLabelsFor } from '../../site/js/core/data-files.js';
 import { organismById } from '../../site/js/core/organisms.js';
@@ -10,6 +11,14 @@ import { CATEGORICAL } from '../../site/js/ui/colors.js';
 import { withFakeDocument } from './fake-dom.mjs';
 
 const IDENTITY = { releaseId: 'GCF_000817325.1-RS_2026_05_13', geneCount: 2715 };
+
+test('visible byte counts use compact measured units', () => {
+  assert.equal(formatLoadBytes(999), '999 B');
+  assert.equal(formatLoadBytes(1024), '1.0 KB');
+  assert.equal(formatLoadBytes(256 * 1024), '256 KB');
+  assert.equal(formatLoadBytes(1.5 * 1024 * 1024), '1.5 MB');
+  assert.equal(formatLoadBytes(null), null);
+});
 
 function snapshot(overrides = {}) {
   const value = {
@@ -278,7 +287,7 @@ for (const mode of ['grouped','continuous']) {
       assert.match(bar.getAttribute('aria-valuetext'),/known published bytes.*no published size/);
       assert.equal(await progress.whenTransferAtLeast(0.5),true);
       assert.equal(bar.hasClass('is-activity'),true);
-      assert.equal(status.textContent,'Loading genes');
+      assert.equal(status.textContent,'Loading genes (genes.json) · 50 B of 100 B');
       assert.equal(status.getAttribute('data-no-scramble'),'');
       progress.settleResource('download');
       progress.update(value(50,FILE_STATE.FAILED));
@@ -849,7 +858,9 @@ for (const mode of [null, 'grouped', 'continuous']) {
       assert.equal(progress.cycle, priorCycle + 1);
       assert.equal(presentation.hidden, false);
       assert.equal(tail.querySelector('.load-progress'), bar, 'the original bar is reused');
-      assert.equal(status.textContent, 'Loading expression_layers.json');
+      assert.equal(status.textContent, mode
+        ? 'Loading expression_layers.json · 50 B of 200 B'
+        : 'Loading expression_layers.json');
       assert.equal(bar.getAttribute('aria-valuenow'), '25', 'old completed bytes leave the new denominator');
       progress.update(value(file('expression_layers.json', 200, 80, true, FILE_STATE.FAILED)));
       progress.setFiles(records({ expressionLayers: {
