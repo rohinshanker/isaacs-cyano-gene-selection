@@ -666,14 +666,10 @@ type. Report that distinction when describing browser and unit coverage.
 
 Hover and keyboard previews use `ChromosomeView.setInteraction`: keep the colour
 values, scales, tracks, layers and source controls, update emphasis and the gene
-detail, and repaint. A full paint writes the chromosome tracks, colour values,
-column winners and hit map into an offscreen base canvas. Ordinary pointer hover
-copies that cached base and draws only selection marks; it must not resolve and
-redraw every CDS. A keyboard move that can shift the camera still performs a
-full paint so the new locus becomes visible. Pinning, filters, source changes,
-colour changes and file landings also use the full path. The accessible
-description stays live on both paths, and reusing the pixels must not freeze the
-measurement model or hit targets.
+detail, and repaint. A new keyboard selection still reveals its locus at the
+current zoom. Pinning, filters, source changes, colour changes and file landings
+use the full render. The paint still owns column winners, hit testing and the
+accessible description; reusing measurement values must not freeze those.
 
 A source change invalidates the scatter projection and calls `renderAll` once.
 That dispatcher refreshes the active panel. Do not call `renderMap` first:

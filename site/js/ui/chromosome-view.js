@@ -437,10 +437,7 @@ export class ChromosomeView {
     const incoming = this.reconcileSelection();
     if (incoming >= 0) this.revealIndex(incoming);
     this.detailJump.hidden = !hasSelection;
-    // A keyboard preview that changes the camera needs a new base; ordinary
-    // hover changes only the lightweight selection layer.
-    if (incoming >= 0) this.draw();
-    else this.drawInteraction();
+    this.draw();
   }
 
   /**
@@ -615,11 +612,6 @@ export class ChromosomeView {
     this.canvas.setAttribute('role', 'img');
     this.canvas.setAttribute('aria-describedby', 'chromosome-instructions');
     this.context = this.canvas.getContext('2d');
-    // The full chromosome picture changes on data, filter, camera or source
-    // updates. Pointer hover changes only its outlines, so keep that base off
-    // screen and copy it instead of resolving and repainting every CDS again.
-    this.baseCanvas = document.createElement('canvas');
-    this.baseContext = this.baseCanvas.getContext('2d');
     this.canvasHost.append(this.canvas);
 
     this.instructions = document.createElement('p');
@@ -945,9 +937,6 @@ export class ChromosomeView {
     this.canvas.width = Math.round(width * ratio);
     this.canvas.height = Math.round(height * ratio);
     this.context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    this.baseCanvas.width = this.canvas.width;
-    this.baseCanvas.height = this.canvas.height;
-    this.baseContext.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
 
   /** Bands with their layouts and scales, top to bottom. */
@@ -974,33 +963,8 @@ export class ChromosomeView {
     });
   }
 
-  /** Repaint only selection marks over the cached base picture. */
-  drawInteraction() {
-    if (!this.model?.verified || !this.width) return;
-    if (typeof this.context.drawImage !== 'function') {
-      this.draw();
-      return;
-    }
-    if (this.pendingInteractionFrame) return;
-    this.pendingInteractionFrame = window.requestAnimationFrame(() => {
-      this.pendingInteractionFrame = 0;
-      this.paintInteraction();
-      this.updateDescription();
-    });
-  }
-
-  paintInteraction() {
-    const ctx = this.context;
-    ctx.clearRect(0, 0, this.width, this.height);
-    ctx.drawImage(this.baseCanvas, 0, 0, this.width, this.height);
-    for (const band of this.bands()) {
-      this.paintSelectionMarks(ctx, band, visibleMarks(band.track.marks, band.window));
-    }
-  }
-
   paint() {
-    const cached = typeof this.context.drawImage === 'function';
-    const ctx = cached ? this.baseContext : this.context;
+    const ctx = this.context;
     ctx.clearRect(0, 0, this.width, this.height);
     ctx.font = '11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
     ctx.textBaseline = 'alphabetic';
@@ -1010,17 +974,12 @@ export class ChromosomeView {
     for (const band of this.bands()) {
       this.paintBand(ctx, band);
     }
-    if (cached) this.paintInteraction();
     // Written after the bands, not with the other summaries: how many CDSs
     // share a column and how many derived categories lost their hollow style
     // are properties of the picture that was just painted, at the zoom it was
     // painted at, and are not knowable before it. The disclosure and the
     // description are the two places that carry them, and they are the only two.
     this.syncDrawDirection();
-    this.updateDescription();
-  }
-
-  updateDescription() {
     this.canvas.setAttribute('aria-label', describeChromosomeView({
       tracks: this.model.tracks,
       window: this.windowFor(this.primaryTrack()),
@@ -1206,7 +1165,7 @@ export class ChromosomeView {
     this.paintMarks(ctx, band, marks);
     this.paintOperons(ctx, band);
     this.paintTss(ctx, band);
-    if (typeof this.context.drawImage !== 'function') this.paintSelectionMarks(ctx, band, marks);
+    this.paintSelectionMarks(ctx, band, marks);
   }
 
   passes(mark) {
