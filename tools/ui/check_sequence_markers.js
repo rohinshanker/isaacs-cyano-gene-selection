@@ -441,10 +441,9 @@ async (page) => {
       [...document.querySelectorAll('g.gene-sequence-marker')].map((mark) => [
         mark.dataset.markerId,
         {
-          // `instant-hints.js` moves every SVG `<title>` into a description
-          // node and points `aria-describedby` at it, so that is where a
-          // mark's own text lives once the app is running.
-          title: (mark.getAttribute('aria-describedby') ?? '').split(/\s+/)
+          // Instant hints consume SVG titles; the annotation retains its
+          // accessible label, with description/title fallbacks for older hosts.
+          title: mark.getAttribute('aria-label') || (mark.getAttribute('aria-describedby') ?? '').split(/\s+/)
             .filter(Boolean)
             .map((id) => document.getElementById(id)?.textContent ?? '')
             .join(' ') || mark.querySelector('title')?.textContent || '',

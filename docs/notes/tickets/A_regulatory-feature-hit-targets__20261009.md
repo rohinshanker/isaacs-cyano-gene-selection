@@ -114,3 +114,7 @@ The accessible-name observation is addressed by letting the visible changing
 action text name the button. The interval-render observation is being checked
 with the existing native-only/wrapping fixture contract on a temporary site copy;
 no admitted data file is changed. Final results and resolving commit follow at closure.
+
+- **UI-CHECK-1:** the optional interval-fixture gate read consumed SVG titles
+  without using the annotation's retained accessible label. The helper now reads
+  `aria-label` first; the application already displayed the correct mapping text.

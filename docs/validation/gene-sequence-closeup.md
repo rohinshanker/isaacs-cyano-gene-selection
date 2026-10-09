@@ -661,9 +661,9 @@ Two things it needs to be given:
   that file's `bytes` and `sha256` updated in `data/data-manifest.json`). That
   leg checks the two outlines, the gap over the uncovered bases with their
   letters still drawn, and that no description claims an agreement. Browser-only
-  detail: `instant-hints.js` moves every SVG `<title>` into a description node,
-  so a mark's own text is read through its `aria-describedby`, not from a
-  `<title>` child.
+  detail: instant hints consume SVG titles. Read a marker's accessible text from
+  its `aria-label`, falling back to `aria-describedby` or a title child when
+  inspecting an older host.
 
 The published site pins `color-scheme: light`, so a dark operating-system
 preference renders it identically; emulating dark is still part of the check and
