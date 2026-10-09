@@ -58,8 +58,7 @@ test('the stylesheet hides text, not structure, while loading', async () => {
   assert.ok(!/transition|transform|animation/.test(genes), 'no segment is eased, grown, or faded in');
   const track = /\.load-chromosome \{[^}]*\}/.exec(css)[0];
   assert.ok(!/transition|transform|animation/.test(track), 'the ordinary track has no activity animation');
-  assert.match(css, /\.load-progress\.is-activity \.load-chromosome \{ animation: load-activity-pulse/);
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.load-progress\.is-activity \.load-chromosome \{ animation: none/);
+  assert.ok(!css.includes('load-activity-pulse'), 'loading bars never fade during activity');
 });
 
 test('the reveal waits for its own files while the one bar measures the whole cycle', async () => {

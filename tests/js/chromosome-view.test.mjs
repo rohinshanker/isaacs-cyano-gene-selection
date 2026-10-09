@@ -1246,11 +1246,14 @@ test('Scale sits beside Colour by, offers every scale, and disables the ones wit
     const [colourField, scaleField] = fieldsRow.children;
     assert.equal(fieldsRow.children.length, 2, 'nothing else shares the colour row');
     assert.equal(colourField.children[1], view.colorSelect);
-    assert.equal(scaleField.children[0].textContent, 'Scale');
-    assert.equal(scaleField.children[1].className, 'info-popover');
-    assert.equal(scaleField.children[1].children[0].getAttribute('aria-label'),
+    const scaleLabelRow = scaleField.children[0];
+    assert.equal(scaleLabelRow.className, 'scale-label-row');
+    assert.equal(scaleLabelRow.children[0].textContent, 'Scale');
+    assert.equal(scaleLabelRow.children[0].htmlFor, view.colorScaleSelect.id);
+    assert.equal(scaleLabelRow.children[1].className, 'info-popover');
+    assert.equal(scaleLabelRow.children[1].children[0].getAttribute('aria-label'),
       'About the chromosome colour scale');
-    assert.equal(scaleField.children[2], view.colorScaleSelect);
+    assert.equal(scaleField.children[1], view.colorScaleSelect);
     assert.equal(notice, view.scaleNotice);
     assert.equal(help.id, 'chromosome-colour-help');
     assert.equal(viewRow.className, 'chromosome-toolbar-row');

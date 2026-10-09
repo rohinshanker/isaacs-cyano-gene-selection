@@ -534,7 +534,10 @@ export class ChromosomeView {
     this.colorScaleSelect.addEventListener('change', () => {
       this.handlers.onColorScaleChange?.(this.colorScaleSelect.value);
     });
-    scaleField.append(scaleLabel, scaleInfoHost, this.colorScaleSelect);
+    const scaleLabelRow = document.createElement('span');
+    scaleLabelRow.className = 'scale-label-row';
+    scaleLabelRow.append(scaleLabel, scaleInfoHost);
+    scaleField.append(scaleLabelRow, this.colorScaleSelect);
     fieldsRow.append(colorField, scaleField);
 
     // Every reason a scale is unavailable, in visible text, because the titles

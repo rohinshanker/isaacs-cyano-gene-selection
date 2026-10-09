@@ -325,9 +325,17 @@ change what the bar measures.
 sizes form one byte-weighted aggregate and the completed extent changes only
 when measured bytes arrive. The status names the friendly dataset tier, the
 actual filename, and compact received/total bytes. Unknown-size transfer and
-preparation remove the numeric claim while the existing chromosome pulses;
-known-byte stalls and the final presentation hold pulse without advancing the
-extent. Reduced motion keeps the truthful state but disables the pulse.
+preparation remove the numeric claim while the status names the ongoing work;
+known-byte stalls and the final presentation hold never advance the extent.
+The chromosome and selected-dataset loading bars stay at full opacity in every
+phase, including reduced motion. Activity never fades them in or pulses them.
+
+With the actual site open at `?uiArtifacts=<absolute ignored artifact directory>`,
+run `playwright-cli -s=<unique-session> run-code --filename=tools/ui/check_loading_opacity.js`.
+It holds the expression-layer request, selects the waiting dataset in the live
+map, and samples both activity bars over time at 375, 768, 1280 and 1440 px under
+normal and reduced motion. Each bar must compute to opacity 1 and animation
+`none`; releasing the request must settle both surfaces without runtime errors.
 
 The deterministic uneven schedule remains available to focused component tests
 and explicit `load-min` diagnostics, but it is not the production source of
@@ -543,9 +551,9 @@ usable page and its actionable error remain available.
 Once all known bytes have arrived but validation, application, context, state,
 initial-view, or final-geometry tasks remain, the same chromosome switches to a
 named Preparing activity state. Preparation is completed registered tasks over
-registered tasks; it is not assigned byte weight. Activity gently pulses the
-existing track without advancing its completed extent, and reduced motion
-disables that animation. The status is excluded from text scrambling. Initial
+registered tasks; it is not assigned byte weight. Activity preserves the
+existing track's opacity and completed extent; the status names the ongoing
+work. The status is excluded from text scrambling. Initial
 tiers retain their approved organism-specific wording; post-settle requests,
 including Retry, name the file. Failure actions retain their friendly labels. A failed cycle preserves the received-byte extent, removes its
 numeric completion claim, and terminates with Retry. Grouped mode gives known
