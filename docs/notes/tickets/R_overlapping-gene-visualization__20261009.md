@@ -1,17 +1,18 @@
-# A_overlapping-gene-visualization__20261009 — Active
+# R_overlapping-gene-visualization__20261009 — Resolved
 
 - **Scope:** Visualize overlapping genes in the chromosome, expanded gene viewer and smaller gene viewer, with an OG tag usable for filtering and colouring.
-- **Status:** active
+- **Status:** resolved
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Owned by `cyano-ui-fixes` (coordinator and closer). Implementation and
-coordinator verification are complete in
-`work/overlapping-genes-integration-20261009`, based on main `90d3f36`.
-Independent review and deployment remain open; this ticket is not closed.
-The owner has authorized pushing the accepted result to main.
+Closed by `cyano-ui-fixes` (Agent Deck `80c81443-1791314087`) on
+2026-10-09. The three viewers and OG filter/colour/export context are implemented
+for all five native annotations. Independent Multica review DEM-339 approved
+`497564ac4a5151a600d7a07f65b0b1fc8f975884` after rechecking OG-R1 and OG-R2.
+No open finding remains. Other sessions' tickets remain open and unchanged by
+this closure. The owner authorized integration and push to main.
 
 ## Owner questions
 
@@ -103,11 +104,13 @@ class-selection channel, and `og=` in the hash.
 
 ## Verification
 
-Coordinator gates: 1,461 JavaScript tests pass at `80130a8`; 958 Python tests
+Coordinator gates: 1,463 JavaScript tests pass at `497564a`; 958 Python tests
 and 46 subtests pass with one declared skip at `1cf01c3`; all five organism
 contracts pass (126 / 88 / 94 / 94 / 100 checks, one declared skip each).
-The only subsequent runtime change is the categorical scale explanation in
-`80130a8`, covered by the repeated JavaScript suite and fresh browser render.
+Subsequent changes are the categorical scale explanation and the two keyboard
+repairs, covered by the repeated JavaScript suite and fresh browser checks.
+The reviewer reran both original keyboard reproductions and 113 focused tests
+on `497564a`; both findings are resolved.
 
 Independent exhaustive native-GFF intersections agree with all 3,121 pairs
 across 19,588 annotated loci. A separate 1,000-case finite-base oracle checks
@@ -146,7 +149,7 @@ required resolved-ticket lifecycle.
 
 `cyano-ui-fixes` owns integration and closure; Multica `DEM-337` delivered the
 isolated implementation, integrated as `fb4daa3`. Independent exact-patch review
-is pending. No other session's tickets are included in this closure.
+DEM-339 approved `497564a` with no remaining actionable findings. No other session's tickets are included in this closure.
 
 | Finding | Resolving commit | Resolution |
 | --- | --- | --- |
@@ -161,11 +164,12 @@ is pending. No other session's tickets are included in this closure.
 | OG-UI3 | `fb4daa3` | Partner navigation restores focus to a named viewer region. |
 | OG-UI4 | `fb4daa3` | Pair identity plus explicit keyboard/touch steppers reaches coincident pairs. |
 | OG-UI5 | `80130a8` | Generic categorical-scale explanation also describes OG mode accurately. |
-| OG-R1 | open | DEM-339 found Enter pins a stale overlap partner after arrow navigation; repair and exact-patch recheck in progress. |
-| OG-R2 | open | DEM-339 found OG radio changes lose focus; repair and consecutive browser-key regression checks in progress. |
-| OG-REVIEW | open | DEM-339 requested these two changes on `30f2c9e`; no other actionable findings in its bounded review. |
+| OG-R1 | `497564a` | Arrow navigation clears pair inspection; the announced gene is pinned by Enter. Browser reproduction and regression tests pass. |
+| OG-R2 | `497564a` | Consecutive radio changes retain focus; unavailable choices fall back to the enabled clear option. Browser reproduction and regression tests pass. |
+| OG-REVIEW | `497564a` | DEM-339 approved this exact patch after rechecking both requested repairs. |
 
-Before closure, record the reviewer result and named closer/date here, preserve
-any new findings, then follow the resolved-ticket lifecycle. The permanent
-contract is already distilled into `docs/validation/gene-overlaps.md` and
-`data-contract.md`, with a validation index row.
+The overlap definition, coverage/provenance contract, viewer interactions and
+regression checks are distilled into `docs/validation/gene-overlaps.md` and
+`data-contract.md`, with the validation index row present. Nothing reusable is
+left only in this ticket. Remove this resolved record after verifying that
+those documents and tests are present; deletion is the final cleanup step.
