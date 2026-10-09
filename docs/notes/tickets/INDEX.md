@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_regulatory-feature-hit-targets__20261009](O_regulatory-feature-hit-targets__20261009.md) | Enlarge hover/click targets for initiation sites and regulatory annotations in both gene viewers; preserve coordinate accuracy, overlap selection and navigation; implementation not started |
 | [O_tan-sites-large-gene-viewer__20261009](O_tan-sites-large-gene-viewer__20261009.md) | Make admitted Tan initiation sites visible in the larger sequence viewer; reproduce the reported absence and check pinned gene, marker visibility, upstream extent and loading/camera state; implementation not started |
 | [O_trna-viewer-tab__20261009](O_trna-viewer-tab__20261009.md) | Move the full tRNA viewer into its own application tab; preserve independent selection, evidence labels and coordinate navigation; implementation not started |
 | [O_strain-fitness-dataset-selector__20261009](O_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; implementation not started |
