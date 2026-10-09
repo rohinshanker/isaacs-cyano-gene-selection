@@ -555,6 +555,82 @@ function tssEvidenceDisclosure(gene, meta, organism) {
   return details;
 }
 
+/** Build the rows for one metric family against the current gene and data. */
+function metricFamilyTable(metrics, index, gene, state) {
+  const table = document.createElement('table');
+  table.className = 'metric-table';
+  const body = document.createElement('tbody');
+  for (const metric of metrics) {
+    const value = metric.read(index);
+    const tr = document.createElement('tr');
+    const label = document.createElement('th');
+    label.scope = 'row';
+    const labelText = document.createElement('span');
+    labelText.className = 'metric-label';
+    labelText.textContent = metric.label;
+    const desc = document.createElement('span');
+    desc.className = 'metric-desc';
+    desc.textContent = metric.desc ?? '';
+    label.append(labelText, desc);
+
+    const valueCell = document.createElement('td');
+    valueCell.className = 'numeric';
+    valueCell.textContent = formatValue(metric, value);
+    const unit = document.createElement('span');
+    unit.className = 'row-unit';
+    unit.textContent = metric.unit ?? '';
+    valueCell.append(' ', unit);
+    if (!Number.isFinite(value)) {
+      valueCell.classList.add('missing');
+      const hidden = document.createElement('span');
+      hidden.className = 'visually-hidden';
+      hidden.textContent = 'no value';
+      valueCell.append(hidden);
+    }
+    // A measured expression value says per gene whether it is a measurement,
+    // a proxy standing in, or nothing at all. The proxy metric is its own row.
+    if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
+      const { basis, short, text } = expressionBasisOf(gene, metric, value);
+      const tag = document.createElement('span');
+      tag.className = `basis-tag basis-${basis}`;
+      tag.textContent = short;
+      tag.title = text;
+      valueCell.append(document.createElement('br'), tag);
+    }
+
+    const percentile = state.percentileOf(metric.key, value);
+    const rankCell = document.createElement('td');
+    rankCell.className = 'rank-cell';
+    const rankText = document.createElement('span');
+    rankText.className = 'rank-text';
+    rankText.textContent = formatPercentile(percentile);
+    const track = document.createElement('span');
+    track.className = 'rank-track';
+    const fill = document.createElement('span');
+    fill.className = 'rank-fill';
+    fill.style.width = Number.isFinite(percentile) ? `${percentile * 100}%` : '0%';
+    track.append(fill);
+    rankCell.append(rankText, track);
+
+    tr.append(label, valueCell, rankCell);
+    body.append(tr);
+
+    // A borrowed measurement says so beside the number, not in a tooltip.
+    if (metric.provenance) {
+      const noteRow = document.createElement('tr');
+      const noteCell = document.createElement('td');
+      noteCell.colSpan = 3;
+      noteCell.className = metric.provenance.isTargetOrganism === false
+        ? 'provenance-warning' : 'panel-note';
+      noteCell.textContent = formatExpressionSource(metric.provenance);
+      noteRow.append(noteCell);
+      body.append(noteRow);
+    }
+  }
+  table.append(body);
+  return table;
+}
+
 export class SidePanel {
   /**
    * @param {HTMLElement} host
@@ -594,10 +670,37 @@ export class SidePanel {
     details.dataset.disclosure = key;
     const remembered = this.disclosureState.get(key);
     if (remembered !== undefined) details.open = remembered;
+    details.dataset.disclosureOpen = String(details.open);
     details.addEventListener('toggle', () => {
+      // Native toggle events can be delivered after a hover rebuild has
+      // detached this disclosure. An obsolete element must not overwrite the
+      // state chosen in the current panel.
+      if (!details.isConnected || !this.host.contains(details)) return;
+      // Setting `open` while constructing or restoring a disclosure queues the
+      // same native event as a user gesture. The recorded starting value lets
+      // that no-change event pass without turning a scheme-dependent default
+      // into a remembered reader choice.
+      if (details.dataset.disclosureOpen === String(details.open)) return;
       this.disclosureState.set(key, details.open);
+      details.dataset.disclosureOpen = String(details.open);
     });
     return details;
+  }
+
+  /**
+   * Capture a user toggle whose native event has not been delivered yet.
+   *
+   * Untouched disclosures are deliberately skipped, so their next rebuild can
+   * still follow scheme-dependent defaults. `rememberDisclosure` records the
+   * state each attached element started with; a difference is a real change
+   * that must survive replacing the panel for another gene or source.
+   */
+  capturePendingDisclosureState() {
+    for (const details of this.host.querySelectorAll('details')) {
+      const key = details.dataset.disclosure;
+      if (!key || details.dataset.disclosureOpen === String(details.open)) continue;
+      this.disclosureState.set(key, details.open);
+    }
   }
 
   /**
@@ -613,6 +716,7 @@ export class SidePanel {
     if (typeof state.startSitesVisible === 'boolean') {
       this.startSitesVisible = state.startSitesVisible;
     }
+    this.capturePendingDisclosureState();
     const focusedAction = this.host.contains(document.activeElement)
       ? document.activeElement.dataset.detailAction : null;
     this.host.replaceChildren();
@@ -831,79 +935,22 @@ export class SidePanel {
       this.rememberDisclosure(details, `metric:${family}`);
       const summary = document.createElement('summary');
       summary.textContent = `${family} (${metrics.length})`;
-      const table = document.createElement('table');
-      table.className = 'metric-table';
-      const body = document.createElement('tbody');
-      for (const metric of metrics) {
-        const value = metric.read(index);
-        const tr = document.createElement('tr');
-        const label = document.createElement('th');
-        label.scope = 'row';
-        const labelText = document.createElement('span');
-        labelText.className = 'metric-label';
-        labelText.textContent = metric.label;
-        const desc = document.createElement('span');
-        desc.className = 'metric-desc';
-        desc.textContent = metric.desc ?? '';
-        label.append(labelText, desc);
-
-        const valueCell = document.createElement('td');
-        valueCell.className = 'numeric';
-        valueCell.textContent = formatValue(metric, value);
-        const unit = document.createElement('span');
-        unit.className = 'row-unit';
-        unit.textContent = metric.unit ?? '';
-        valueCell.append(' ', unit);
-        if (!Number.isFinite(value)) {
-          valueCell.classList.add('missing');
-          const hidden = document.createElement('span');
-          hidden.className = 'visually-hidden';
-          hidden.textContent = 'no value';
-          valueCell.append(hidden);
-        }
-        // A measured expression value says per gene whether it is a measurement,
-        // a proxy standing in, or nothing at all. The proxy metric is its own row.
-        if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-          const { basis, short, text } = expressionBasisOf(gene, metric, value);
-          const tag = document.createElement('span');
-          tag.className = `basis-tag basis-${basis}`;
-          tag.textContent = short;
-          tag.title = text;
-          valueCell.append(document.createElement('br'), tag);
-        }
-
-        const percentile = state.percentileOf(metric.key, value);
-        const rankCell = document.createElement('td');
-        rankCell.className = 'rank-cell';
-        const rankText = document.createElement('span');
-        rankText.className = 'rank-text';
-        rankText.textContent = formatPercentile(percentile);
-        const track = document.createElement('span');
-        track.className = 'rank-track';
-        const fill = document.createElement('span');
-        fill.className = 'rank-fill';
-        fill.style.width = Number.isFinite(percentile) ? `${percentile * 100}%` : '0%';
-        track.append(fill);
-        rankCell.append(rankText, track);
-
-        tr.append(label, valueCell, rankCell);
-        body.append(tr);
-
-        // A borrowed measurement says so beside the number, not in a tooltip.
-        if (metric.provenance) {
-          const noteRow = document.createElement('tr');
-          const noteCell = document.createElement('td');
-          noteCell.colSpan = 3;
-          noteCell.className = metric.provenance.isTargetOrganism === false
-            ? 'provenance-warning' : 'panel-note';
-          noteCell.textContent = formatExpressionSource(metric.provenance);
-          noteRow.append(noteCell);
-          body.append(noteRow);
-        }
-      }
-      table.append(body);
-      details.append(summary, table);
+      details.append(summary);
       this.host.append(details);
+      if (details.open) {
+        details.append(metricFamilyTable(metrics, index, gene, state));
+        continue;
+      }
+      // Closed native disclosures hide their descendants from readers, so do
+      // not build those rows or prepare their whole-genome percentile cohorts
+      // until the reader asks for them. A toggle event can be queued while a
+      // hover, source change or late file landing replaces the panel; detached
+      // disclosures must never append rows computed from that obsolete state.
+      details.addEventListener('toggle', () => {
+        if (!details.open || !details.isConnected || !this.host.contains(details)
+          || details.querySelector('table.metric-table')) return;
+        details.append(metricFamilyTable(metrics, index, gene, state));
+      });
     }
   }
 }
