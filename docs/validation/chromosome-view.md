@@ -635,6 +635,17 @@ current zoom. Pinning, filters, source changes, colour changes and file landings
 use the full render. The paint still owns column winners, hit testing and the
 accessible description; reusing measurement values must not freeze those.
 
+The shared gene detail panel must not read metric values or prepare percentile
+cohorts for a closed metric-family disclosure. Build its table when the reader
+opens it; rebuild every open family from the current gene, source selection and
+late-arriving data on the next panel update. Native `toggle` delivery is queued,
+so capture an attached disclosure whose `open` state actually changed before
+replacing the panel, ignore a queued event from a detached element, and do not
+remember an automatic construction/restoration event whose state did not
+change. These rules preserve reader choices without freezing scheme-dependent
+defaults. `tests/js/side-panel-lazy.test.mjs` covers the lazy work, focus,
+current-value, stale-event and queued-toggle cases.
+
 A source change invalidates the scatter projection and calls `renderAll` once.
 That dispatcher refreshes the active panel. Do not call `renderMap` first:
 Chromosome/Gene is not a scatter panel, so that extra call has no panel descriptor
