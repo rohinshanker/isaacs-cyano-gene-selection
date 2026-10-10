@@ -20,7 +20,7 @@ export function renderRecodedGenomePanel(host, model) {
   host.hidden = true;
   if (!model) return;
 
-  const heading = document.createElement('h2');
+  const heading = document.createElement('h3');
   heading.id = 'recoded-genome-heading';
   heading.textContent = 'Recoded Genome Scheme';
   host.setAttribute('aria-labelledby', heading.id);

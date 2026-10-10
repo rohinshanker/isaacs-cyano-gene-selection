@@ -36,9 +36,9 @@ async (page) => {
     await settle();
     check(await page.title() === 'Ec_Syn57 complete-design recoding-diversity map',
       'Syn57 title did not load');
-    check(await page.getByRole('heading', { name: 'Recoded Genome Scheme' }).isVisible(),
+    check(await page.getByRole('heading', { name: 'Recoded Genome Scheme', level: 3 }).isVisible(),
       'Syn57 recoded-genome facts are missing');
-    const facts = await page.getByRole('heading', { name: 'Recoded Genome Scheme' })
+    const facts = await page.getByRole('heading', { name: 'Recoded Genome Scheme', level: 3 })
       .locator('..').innerText();
     check(/446 across 3,588/.test(facts), 'Syn57 residual count is missing');
     check(/Design only.*no omics, growth, or fitness/is.test(facts),
@@ -46,18 +46,18 @@ async (page) => {
     check(!/Syn61/i.test(facts), 'Syn57 facts substituted Syn61 content');
     check(await page.locator('[data-panel-id]').count() === 3,
       'the standard three movable panels are not present');
-    check(await page.getByRole('heading', { name: 'Recoded Genome Scheme' })
+    check(await page.getByRole('heading', { name: 'Recoded Genome Scheme', level: 3 })
       .locator('xpath=ancestor::*[@data-panel-id][1]').getAttribute('data-panel-id') === 'scheme',
     'the record facts are not inside the standard scheme panel');
     await page.locator('#panel-toggle-scheme').click();
-    check(!(await page.getByRole('heading', { name: 'Recoded Genome Scheme' }).isVisible()),
+    check(!(await page.getByRole('heading', { name: 'Recoded Genome Scheme', level: 3 }).isVisible()),
       'collapsing the scheme panel did not hide its record facts');
     const collapsedSchemeUrl = page.url();
     check(/pc=/.test(collapsedSchemeUrl), 'scheme collapse was not encoded in the address');
     await page.reload();
     await waitLoaded();
     await settle();
-    check(!(await page.getByRole('heading', { name: 'Recoded Genome Scheme' }).isVisible()),
+    check(!(await page.getByRole('heading', { name: 'Recoded Genome Scheme', level: 3 }).isVisible()),
       'scheme facts did not remain collapsed after reload');
     await page.locator('#panel-toggle-scheme').click();
 
