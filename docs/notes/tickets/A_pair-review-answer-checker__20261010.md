@@ -45,6 +45,12 @@ than the documented source error. Disposable reproductions are in
 `/tmp/cyano-pair-review-20261010/`. Repair must reject these inputs before emitting
 any template, retain the actual 32-pair order, and add regression tests.
 
+Coordinator finding **PRA-C2 open** against `6bf1b86`: a 5,000-digit pair number
+passes the decimal spelling test and raises Python's integer-conversion limit
+error. Reject an out-of-range identifier with a row/field diagnostic rather than
+a traceback; do not alter interpreter-wide limits. Reproduction:
+`/tmp/cyano-pair-review-20261010/huge-pair.tsv` against the pinned source table.
+
 Implemented by `claude-implementer` on DEM-356, 2026-10-10:
 `tools/check_pair_review_answers.py` (`template PAIRS` to stdout,
 `check PAIRS ANSWERS` read-only), `tests/test_check_pair_review_answers.py`, and
