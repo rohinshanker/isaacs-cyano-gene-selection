@@ -1,6 +1,7 @@
 import copy
 import csv
 import hashlib
+import itertools
 import json
 import subprocess
 import sys
@@ -28,8 +29,7 @@ def layer(
     band=True,
     reason=None,
 ):
-    correlations = [value for stratum in strata for value in stratum[1]]
-    defined = [value for value in correlations if value is not None]
+    defined = [value for _, values, _ in strata for value in values if value is not None]
     sample_range = {
         "id": f"{layer_id}:empirical-sample-range",
         "label": "Empirical within-stratum sample Spearman range (processed data; not a confidence interval)",
@@ -70,9 +70,7 @@ def layer(
                     for index, value in enumerate(values)
                 ],
             }
-            for stratum_id, values, columns in (
-                (item[0], item[1], item[2]) for item in strata
-            )
+            for stratum_id, values, columns in strata
         ],
         "empiricalSampleRange": sample_range,
     }
@@ -596,6 +594,15 @@ def test_destinations_cannot_overwrite_a_pinned_input(workspace, alias):
     assert plan.read_text(encoding="utf-8") == "pinned plan\n"
 
 
+def test_a_destination_cannot_overwrite_the_exporter_itself(workspace):
+    source = exporter.SELF_PATH
+    before = source.read_bytes()
+    workspace["json"] = source
+    with pytest.raises(ValueError, match="would overwrite the exporter itself"):
+        run_export(workspace)
+    assert source.read_bytes() == before
+
+
 @pytest.mark.parametrize("alias", ["path", "symlink", "hardlink"])
 def test_two_destinations_naming_the_same_file_are_rejected(workspace, alias):
     if alias == "path":
@@ -610,6 +617,63 @@ def test_two_destinations_naming_the_same_file_are_rejected(workspace, alias):
         workspace["responses"].hardlink_to(workspace["replicates"])
     with pytest.raises(ValueError, match="outputs name the same file"):
         run_export(workspace)
+
+
+OTHER_LABELS = {
+    "json": ("replicates", "responses"),
+    "replicates": ("json", "responses"),
+    "responses": ("json", "replicates"),
+}
+
+
+def preserve_others(workspace, label):
+    """Write a sentinel into the two destinations the test is not redirecting."""
+    for other in OTHER_LABELS[label]:
+        workspace[other].write_text(f"preserve {other}\n", encoding="utf-8")
+
+
+def assert_others_intact(workspace, label):
+    for other in OTHER_LABELS[label]:
+        assert workspace[other].read_text(encoding="utf-8") == f"preserve {other}\n"
+
+
+@pytest.mark.parametrize("label", ["json", "replicates", "responses"])
+@pytest.mark.parametrize("blocker", ["file", "file-symlink", "symlink-loop"])
+def test_a_destination_under_a_non_directory_ancestor_is_rejected(workspace, label, blocker):
+    """EXP-R1: a destination below a non-directory must be rejected before any write."""
+    preserve_others(workspace, label)
+    out = workspace["json"].parent
+    if blocker == "file":
+        ancestor = out / "regular-file"
+        ancestor.write_text("i am a file\n", encoding="utf-8")
+    elif blocker == "file-symlink":
+        (out / "regular-file").write_text("i am a file\n", encoding="utf-8")
+        ancestor = out / "alias"
+        ancestor.symlink_to(out / "regular-file")
+    else:
+        ancestor = out / "loop"
+        ancestor.symlink_to(ancestor)
+    workspace[label] = ancestor / "nested" / "export.out"
+    expected = "cannot be resolved" if blocker == "symlink-loop" else "which is not a directory"
+    with pytest.raises(ValueError, match=expected):
+        run_export(workspace)
+    assert_others_intact(workspace, label)
+    assert not (ancestor / "nested").exists()
+    assert ancestor.is_symlink() or ancestor.read_text(encoding="utf-8") == "i am a file\n"
+
+
+@pytest.mark.parametrize(("parent", "child"), list(itertools.permutations(
+    ["json", "replicates", "responses"], 2)))
+def test_one_output_cannot_become_a_parent_directory_of_another(workspace, parent, child):
+    """EXP-R1: distinct paths still collide when the first output becomes the second's parent."""
+    nest = workspace["json"].parent / "new-output"
+    workspace[parent] = nest
+    workspace[child] = nest / "nested.out"
+    with pytest.raises(ValueError, match=f"{parent} output would become a parent directory"):
+        run_export(workspace)
+    assert not nest.exists()
+    remaining, = set(OTHER_LABELS[parent]) & set(OTHER_LABELS[child])
+    assert not workspace[remaining].exists()
 
 
 def test_an_invalid_request_leaves_existing_destinations_intact(workspace):
@@ -711,3 +775,309 @@ def test_module_entry_point_returns_zero(workspace, monkeypatch):
         "--responses", str(workspace["responses"]),
     ]) == 0
     assert workspace["json"].is_file()
+
+
+def preserve_destinations(workspace):
+    """Write a sentinel into all three destinations before a rejected request."""
+    for label in ("json", "replicates", "responses"):
+        workspace[label].write_text(f"preserve {label}\n", encoding="utf-8")
+
+
+def assert_destinations_intact(workspace):
+    for label in ("json", "replicates", "responses"):
+        assert workspace[label].read_text(encoding="utf-8") == f"preserve {label}\n"
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        # The three statistics the review reported, together and on their own.
+        (lambda payload: payload["responsePairs"][0].update(
+            sharedGeneCount=-7, spearman="not-a-number", sameDirectionCount=999999),
+         "response pair 0 sharedGeneCount must be a non-negative integer"),
+        (lambda payload: payload["responsePairs"][0].update(spearman="not-a-number"),
+         "response pair 0 spearman must be a finite number"),
+        (lambda payload: payload["responsePairs"][0].update(spearman=True),
+         "response pair 0 spearman must be a finite number"),
+        (lambda payload: payload["responsePairs"][0].update(sameDirectionCount=999999),
+         "sameDirectionCount exceeds its direction denominator"),
+        (lambda payload: payload["responsePairs"][0].update(nonzeroDirectionGeneCount=3),
+         "nonzeroDirectionGeneCount exceeds its shared genes"),
+        (lambda payload: payload["responsePairs"][0].update(sharedGeneCount=3),
+         "sharedGeneCount exceeds the responses of its contrasts"),
+        (lambda payload: payload["responsePairs"][0].update(spearman=1.5),
+         r"spearman must lie between -1.0 and 1.0, not 1.5"),
+        (lambda payload: payload["responsePairs"][0].update(pearson=-1.5),
+         r"pearson must lie between -1.0 and 1.0"),
+        (lambda payload: payload["responsePairs"][0].update(signAgreementFraction=1.5),
+         r"signAgreementFraction must lie between 0.0 and 1.0"),
+        (lambda payload: payload["responsePairs"][0].update(signAgreementFraction=None),
+         "signAgreementFraction must be null exactly when no shared response is directional"),
+        (lambda payload: payload["responsePairs"][1].update(signAgreementFraction=0.5),
+         "signAgreementFraction must be null exactly when no shared response is directional"),
+        (lambda payload: payload["responsePairs"][0].update(signAgreementReason="unexpected"),
+         "must state a signAgreementReason exactly when no shared response is directional"),
+        (lambda payload: payload["responsePairs"][1].pop("signAgreementReason"),
+         "must state a signAgreementReason exactly when no shared response is directional"),
+        (lambda payload: payload["responsePairs"][1].pop("spearmanReason"),
+         "response pair 1 spearmanReason must be a non-empty string"),
+        (lambda payload: payload["responsePairs"][0].update(spearmanReason="unexpected"),
+         "response pair 0 states a spearmanReason but its spearman is defined"),
+        (lambda payload: payload["responsePairs"][0].update(pearsonReason="unexpected"),
+         "response pair 0 states a pearsonReason but its pearson is defined"),
+        (lambda payload: payload["responsePairs"][0].pop("caveat"),
+         "response pair 0 has no 'caveat'"),
+        (lambda payload: payload["responsePairs"][0].update(caveat=""),
+         "response pair 0 caveat must be a non-empty string"),
+        (lambda payload: payload["responsePairs"][0].update(right="alpha_shift"),
+         "response pair 0 compares a contrast with itself"),
+        # A null response value is not a statistic, and neither is a text one.
+        (lambda payload: payload["contrasts"][0]["vector"].update(U1=None),
+         "contrast 'alpha_shift' response 'U1' must be a finite number"),
+        (lambda payload: payload["layers"][0]["means"].update(U1="high"),
+         "layer 'alpha_ll' mean 'U1' must be a finite number"),
+        # Layer structure the generator always writes.
+        (lambda payload: payload["layers"][0].pop("conditions"),
+         "layer 'alpha_ll' has no 'conditions'"),
+        (lambda payload: payload["layers"][0].pop("units"), "layer 'alpha_ll' has no 'units'"),
+        (lambda payload: payload["layers"][0].update(conditions=[]),
+         "layer 'alpha_ll' conditions must be a JSON object"),
+        (lambda payload: payload["layers"][0]["conditions"].update(temperature="hot"),
+         "layer 'alpha_ll' condition 'temperature' must be a JSON object"),
+        (lambda payload: payload["layers"][0].update(replicates="two"),
+         "layer 'alpha_ll' replicates must be a JSON object"),
+        (lambda payload: payload["layers"][0].update(normalization=""),
+         "layer 'alpha_ll' normalization must be a non-empty string"),
+        (lambda payload: payload["layers"][0].update(replicateType=None),
+         "layer 'alpha_ll' replicateType must be a non-empty string"),
+        (lambda payload: payload["layers"][0].update(label=7),
+         "layer 'alpha_ll' label must be a non-empty string or null"),
+        (lambda payload: payload["layers"][0].update(biologicalBandAvailable="yes"),
+         "layer 'alpha_ll' biologicalBandAvailable must be true or false"),
+        (lambda payload: payload["layers"][1].update(
+            biologicalBandId="beta_single:empirical-sample-range"),
+         "layer 'beta_single' names a biological band it does not declare available"),
+        # Empirical ranges, their nulls and their stated reasons.
+        (lambda payload: payload["layers"][0]["empiricalSampleRange"].pop("label"),
+         "empiricalSampleRange has no 'label'"),
+        (lambda payload: payload["layers"][0]["empiricalSampleRange"].update(label=""),
+         "empiricalSampleRange label must be a non-empty string"),
+        (lambda payload: payload["layers"][0]["empiricalSampleRange"].update(min=None),
+         "min, median and max must be null exactly when no sample correlation is defined"),
+        (lambda payload: payload["layers"][1]["empiricalSampleRange"].update(min=0.5),
+         "min, median and max must be null exactly when no sample correlation is defined"),
+        (lambda payload: payload["layers"][1]["empiricalSampleRange"].update(
+            min=0.1, median=0.2, max=0.3),
+         "min, median and max must be null exactly when no sample correlation is defined"),
+        (lambda payload: payload["layers"][0]["empiricalSampleRange"].update(min=0.9),
+         "empiricalSampleRange is not ordered min <= median <= max"),
+        (lambda payload: payload["layers"][0]["empiricalSampleRange"].update(max=1.5),
+         r"empiricalSampleRange max must lie between -1.0 and 1.0"),
+        (lambda payload: payload["layers"][0]["empiricalSampleRange"].update(reason="unexpected"),
+         "empiricalSampleRange states a reason but has defined sample correlations"),
+        (lambda payload: payload["layers"][1]["empiricalSampleRange"].pop("reason"),
+         "empiricalSampleRange reason must be a non-empty string"),
+        # Strata, their columns and their sample correlations.
+        (lambda payload: payload["layers"][0]["strata"][0].update(columns=[]),
+         "columns must not be empty"),
+        (lambda payload: payload["layers"][0]["strata"][0].update(columns=["t0_r1", "t0_r1"]),
+         "columns repeats a name"),
+        (lambda payload: payload["layers"][0]["strata"][0].update(columns=[None, "t0_r2"]),
+         "columns entry 0 must be a non-empty string"),
+        (lambda payload: payload["layers"][0]["strata"][0]["sampleCorrelations"][0].pop(
+            "sampleLeft"),
+         "correlation 0 has no 'sampleLeft'"),
+        (lambda payload: payload["layers"][0]["strata"][0]["sampleCorrelations"][0].update(
+            sampleRight="t0_r1"),
+         "correlation 0 correlates a sample with itself"),
+        (lambda payload: payload["layers"][0]["strata"][0]["sampleCorrelations"][0].update(
+            sharedGeneCount=-1),
+         "correlation 0 sharedGeneCount must be a non-negative integer"),
+        (lambda payload: payload["layers"][0]["strata"][0]["sampleCorrelations"][0].update(
+            spearman=1.2),
+         r"correlation 0 spearman must lie between -1.0 and 1.0"),
+        (lambda payload: payload["layers"][0]["strata"][0]["sampleCorrelations"][0].update(
+            spearmanReason="unexpected"),
+         "correlation 0 states a spearmanReason but its spearman is defined"),
+        (lambda payload: payload["layers"][0]["strata"][0]["sampleCorrelations"][0].update(
+            spearman=None),
+         "correlation 0 spearmanReason must be a non-empty string"),
+        # Contrast arms.
+        (lambda payload: payload["contrasts"][0].update(label=""),
+         "contrast 'alpha_shift' label must be a non-empty string"),
+        (lambda payload: payload["contrasts"][0].pop("caveat"),
+         "contrast 'alpha_shift' has no 'caveat'"),
+        (lambda payload: payload["contrasts"][0].update(treatment=[]),
+         "contrast 'alpha_shift' treatment must not be empty"),
+        (lambda payload: payload["contrasts"][0].update(control=["c1", "c1"]),
+         "contrast 'alpha_shift' control repeats a name"),
+        (lambda payload: payload["contrasts"][0].update(control=["t1"]),
+         r"contrast 'alpha_shift' names \['t1'\] in both arms"),
+        # Level pairs and the references they carry.
+        (lambda payload: payload["levelPairs"][0].update(sharedGeneCount=3),
+         "level pair 0 sharedGeneCount exceeds the means of its layers"),
+        (lambda payload: payload["levelPairs"][0].pop("spearman"),
+         "level pair 0 has no 'spearman'"),
+        (lambda payload: payload["levelPairs"][0].update(spearman=-2.0),
+         r"level pair 0 spearman must lie between -1.0 and 1.0"),
+        (lambda payload: payload["levelPairs"][0].update(spearman=None),
+         "level pair 0 spearmanReason must be a non-empty string"),
+        (lambda payload: payload["levelPairs"][0]["leftReference"].update(
+            biologicalBandId="no-such-band"),
+         "level pair 0 leftReference does not carry the biological band of layer 'alpha_ll'"),
+        (lambda payload: payload["levelPairs"][0]["leftReference"].pop("biologicalBandId"),
+         "level pair 0 leftReference does not carry the biological band of layer 'alpha_ll'"),
+        (lambda payload: payload["levelPairs"][0]["rightReference"].update(
+            biologicalBandId="beta_single:empirical-sample-range"),
+         "level pair 0 rightReference does not carry the biological band of layer 'beta_single'"),
+        # Methods and limitations.
+        (lambda payload: payload.update(methods={}), "report methods must not be empty"),
+        (lambda payload: payload.update(methods=[]), "report methods must be a JSON object"),
+        (lambda payload: payload["methods"].update(contrast=""),
+         "report method 'contrast' must be a non-empty string"),
+        (lambda payload: payload.update(limitations=[]), "report limitations must not be empty"),
+        (lambda payload: payload.update(limitations={}),
+         "report limitations must be a JSON array"),
+        (lambda payload: payload.update(limitations=[None]),
+         "report limitation 0 must be a non-empty string"),
+        # Input pins, including the checksums the report was read at.
+        (lambda payload: payload["inputs"]["plan"].pop("sha256"),
+         "report inputs plan sha256 must be a 64-character lowercase hexadecimal SHA-256"),
+        (lambda payload: payload["inputs"]["plan"].update(sha256="A" * 64),
+         "report inputs plan sha256 must be a 64-character lowercase hexadecimal SHA-256"),
+        (lambda payload: payload["inputs"]["plan"].update(sha256="0" * 63),
+         "report inputs plan sha256 must be a 64-character lowercase hexadecimal SHA-256"),
+        (lambda payload: payload["inputs"].pop("crosswalk"),
+         "report inputs crosswalk must be a JSON object"),
+        (lambda payload: payload["inputs"]["crosswalk"].pop("sha256"),
+         "report inputs crosswalk sha256 must be a 64-character"),
+        (lambda payload: payload["inputs"].pop("specs"),
+         "report inputs specs must be a JSON array"),
+        (lambda payload: payload["inputs"].update(specs=[]),
+         "report inputs specs must not be empty"),
+        (lambda payload: payload["inputs"]["specs"][0].pop("studyId"),
+         "report inputs spec 0 studyId must be a non-empty string"),
+        (lambda payload: payload["inputs"]["specs"][0].pop("sha256"),
+         "report inputs spec 0 sha256 must be a 64-character"),
+        (lambda payload: payload["inputs"].pop("downloads"),
+         "report inputs downloads must be a JSON array"),
+        (lambda payload: payload["inputs"]["downloads"][0].pop("url"),
+         "report inputs download 0 url must be a non-empty string"),
+        (lambda payload: payload["inputs"]["downloads"][0].update(sha256="not-a-hash"),
+         "report inputs download 0 sha256 must be a 64-character"),
+    ],
+)
+def test_malformed_scientific_values_are_rejected(workspace, mutate, message):
+    """EXP-R2: a complete-looking report with an invalid value writes nothing."""
+    preserve_destinations(workspace)
+    payload = copy.deepcopy(workspace["payload"])
+    mutate(payload)
+    write_report(workspace, payload)
+    with pytest.raises(ValueError, match=message):
+        run_export(workspace)
+    assert_destinations_intact(workspace)
+
+
+def test_the_valid_fixture_still_exports_after_the_value_checks(workspace):
+    """The strengthened validator accepts the report the generator actually writes."""
+    assert exporter.validate_full_report(copy.deepcopy(workspace["payload"]))
+    run_export(workspace)
+    assert json.loads(workspace["json"].read_text(encoding="utf-8"))["schemaVersion"] == 1
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    [("result", "RESULT"), ("café.tsv", "café.tsv")],
+)
+def test_destinations_differing_only_by_alias_are_rejected(workspace, left, right):
+    """EXP-R3: letter case and Unicode form name one file on this Mac's filesystem."""
+    out = workspace["json"].parent
+    workspace["json"] = out / left
+    workspace["replicates"] = out / right
+    with pytest.raises(ValueError, match="differ only in letter case or Unicode form"):
+        run_export(workspace)
+    assert list(out.iterdir()) == []
+
+
+@pytest.mark.parametrize("label", ["json", "replicates", "responses"])
+@pytest.mark.parametrize("directory", ["DATA", "Site"])
+def test_publication_through_a_case_aliased_directory_is_rejected(workspace, label, directory):
+    """EXP-R3: root/DATA is root/data wherever the filesystem folds case."""
+    preserve_others(workspace, label)
+    workspace[label] = workspace["root"] / directory / "export.out"
+    with pytest.raises(ValueError, match=f"inside {directory.lower()}/"):
+        run_export(workspace)
+    assert_others_intact(workspace, label)
+    assert list((workspace["root"] / directory.lower()).iterdir()) == []
+
+
+def test_a_case_aliased_nested_destination_is_rejected(workspace):
+    """EXP-R3: the EXP-R1 nesting check must fold aliases too."""
+    nest = workspace["json"].parent / "new-output"
+    workspace["json"] = nest
+    workspace["replicates"] = nest.parent / "NEW-OUTPUT" / "nested.out"
+    with pytest.raises(ValueError, match="json output would become a parent directory"):
+        run_export(workspace)
+    assert not nest.exists()
+    assert not workspace["responses"].exists()
+
+
+def test_a_case_aliased_pinned_input_cannot_be_overwritten(workspace):
+    """EXP-R3: a protected source reached through a case variant is still protected."""
+    plan = workspace["root"] / "config/expression_agreement.json"
+    plan.write_text("pinned plan\n", encoding="utf-8")
+    workspace["replicates"] = workspace["root"] / "CONFIG/expression_agreement.json"
+    with pytest.raises(ValueError, match="would overwrite the pinned input config/"):
+        run_export(workspace)
+    assert plan.read_text(encoding="utf-8") == "pinned plan\n"
+
+
+def test_alias_key_folds_case_and_unicode_form(tmp_path):
+    assert exporter._alias_key(tmp_path / "Result") == exporter._alias_key(tmp_path / "rESULT")
+    assert exporter._alias_key(tmp_path / "café") == exporter._alias_key(
+        tmp_path / "café")
+    assert exporter._alias_key(tmp_path / "one") != exporter._alias_key(tmp_path / "two")
+
+
+@pytest.mark.parametrize("through", ["resolved-path", "declared-symlink"])
+def test_a_pinned_input_outside_the_root_cannot_be_overwritten(workspace, through):
+    """EXP-R4: a declared input is protected wherever it resolves, inside the root or not."""
+    payload = copy.deepcopy(workspace["payload"])
+    payload["inputs"]["plan"]["path"] = "config/pinned-plan.json"
+    write_report(workspace, payload)
+    outside = workspace["root"].parent / "external-plan.json"
+    outside.write_text("ORIGINAL SOURCE\n", encoding="utf-8")
+    declared = workspace["root"] / "config/pinned-plan.json"
+    declared.symlink_to(outside)
+    workspace["replicates"] = outside if through == "resolved-path" else declared
+    with pytest.raises(ValueError, match="would overwrite the pinned input config/pinned-plan.json"):
+        run_export(workspace)
+    assert outside.read_text(encoding="utf-8") == "ORIGINAL SOURCE\n"
+    assert not workspace["json"].exists()
+
+
+def test_a_pinned_input_declared_above_the_root_cannot_be_overwritten(workspace):
+    """EXP-R4: a relative pin that climbs out of the root is protected as well."""
+    payload = copy.deepcopy(workspace["payload"])
+    payload["inputs"]["specs"][0]["path"] = "../outside-spec.json"
+    write_report(workspace, payload)
+    outside = workspace["root"].parent / "outside-spec.json"
+    outside.write_text("ORIGINAL SPEC\n", encoding="utf-8")
+    workspace["responses"] = outside
+    with pytest.raises(ValueError, match=r"would overwrite the pinned input \.\./outside-spec"):
+        run_export(workspace)
+    assert outside.read_text(encoding="utf-8") == "ORIGINAL SPEC\n"
+    assert not workspace["json"].exists()
+
+
+def test_an_unresolvable_pinned_input_is_rejected(workspace):
+    """EXP-R4: a declared input that cannot be resolved is named, not skipped."""
+    preserve_destinations(workspace)
+    payload = copy.deepcopy(workspace["payload"])
+    payload["inputs"]["plan"]["path"] = "config/loop.json"
+    write_report(workspace, payload)
+    loop = workspace["root"] / "config/loop.json"
+    loop.symlink_to(loop)
+    with pytest.raises(ValueError, match="the pinned input config/loop.json cannot be resolved"):
+        run_export(workspace)
+    assert_destinations_intact(workspace)

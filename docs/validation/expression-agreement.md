@@ -69,8 +69,10 @@ unchanged. Output is deterministic: sorted JSON keys, the established column
 order, the same float repr and empty cells for nulls, CSV-quoted cells, and LF
 line endings. The three destinations are preflighted together — never inside
 `data/` or `site/`, never the input report or a pinned input through a path,
-symlink or hard link, and never two destinations naming one file — so a rejected
-request leaves existing files intact.
+symlink or hard link, never two destinations naming one file, never below a path
+component that already exists as something other than a directory, never one
+destination inside another, and never an unresolvable path such as a symlink
+loop — so a rejected request leaves existing files intact.
 
 The export records its own path and checksum and the input report's exact bytes
 and SHA-256 in an `export` block. It writes no `implementation` block: it did not
