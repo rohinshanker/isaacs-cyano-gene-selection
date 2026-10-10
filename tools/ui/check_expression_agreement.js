@@ -123,6 +123,10 @@ async (page) => {
   'Source disclosure must preserve strain and the sample-pair denominator');
   check(await dialog.getByText(/No value is a pass\/fail threshold or a comparability decision/).count() === 1,
     'The report must not imply an automatic comparability decision');
+  const reportScope = await dialog.locator('.ds-agreement-limitations').textContent();
+  check(reportScope.includes('log2(mean normalized treatment / mean normalized control)')
+    && reportScope.includes('before exact one-to-one crosswalk mapping'),
+  'The report methods must explain response units and source-to-UTEX mapping');
 
   await choose(dialog, 'GSE103462_wt_subjective_dawn', 'GSE103462_wt_subjective_dusk');
   check(await dialog.getByText(/No response comparison with an explicit control arm/).count() === 1,
@@ -142,7 +146,7 @@ async (page) => {
   'Report-wide aggregation and no-threshold caveats must survive a coverage-gap early return');
 
   await choose(dialog, 'GSE103462_wt_subjective_dawn', 'GSE103463_rel_relA_subjective_dawn');
-  const viewports = [[375, 812], [419, 812], [420, 812], [421, 812], [699, 900], [700, 900], [768, 1024], [1280, 800], [1319, 900], [1320, 900], [1440, 900]];
+  const viewports = [[375, 812], [419, 812], [420, 812], [421, 812], [599, 900], [600, 900], [601, 900], [699, 900], [700, 900], [768, 1024], [1280, 800], [1319, 900], [1320, 900], [1440, 900]];
   const matrix = [];
   for (const [width, height] of viewports) {
     await page.setViewportSize({ width, height });
@@ -155,6 +159,9 @@ async (page) => {
         .some((entry) => entry.scrollWidth > entry.clientWidth + 1),
       responseRows: node.querySelectorAll('.ds-agreement-responses li').length,
       optionCount: node.querySelectorAll('.ds-agreement-left option').length,
+      sideHeight: node.querySelector('.peek-side').clientHeight,
+      cardHeight: node.querySelector('.ds-agreement-source').getBoundingClientRect().height,
+      footerLast: node.querySelector('.peek-body').lastElementChild.classList.contains('peek-foot'),
     }));
     check(!layout.pageOverflow, `page horizontal overflow at ${width}px`);
     check(!layout.dialogOverflow, `dialog horizontal overflow at ${width}px`);
@@ -162,6 +169,10 @@ async (page) => {
     check(!layout.agreementOverflow, `agreement evidence horizontal overflow at ${width}px`);
     check(layout.responseRows === 1, `response evidence lost at ${width}px`);
     check(layout.optionCount === 55, `bounded source discovery lost at ${width}px`);
+    if (width <= 600) {
+      check(layout.sideHeight >= layout.cardHeight + 24, `phone comparison pane cannot fit a source card at ${width}px`);
+      check(layout.footerLast, `phone footer must follow the comparison in focus order at ${width}px`);
+    }
     matrix.push({ width, height, ...layout });
     await page.screenshot({ path: `${root}/agreement-${width}.png`, fullPage: true });
   }

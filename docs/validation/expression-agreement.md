@@ -226,7 +226,15 @@ the two selected layer conditions. Each response disclosure names both studies,
 treatment and reference samples, each contrast's caveat and the pair caveat.
 Direction agreement retains its nonzero-response denominator separately from the
 shared-response count. Missing comparisons and null results remain explicit;
-correlations do not supply a comparability decision or pass mark.
+correlations do not supply a comparability decision or pass mark. The report
+disclosure also exposes the exact calculation and mapping methods, including
+positive-arm filtering, no pseudocount and normalization before crosswalk mapping.
+A single observed correlation does not estimate a sampling distribution.
+
+At phone widths the data-selection dialog fills the viewport, gives the comparison
+pane enough space for a complete standard source card and places Done after that
+pane in both visual and keyboard order. Condition labels stack above their scales
+on the smallest screens so the scale geometry stays intact.
 
 Exports include agreement provenance only when the validated report is loaded
 and the export contains a report-backed source. The manifest names those covered

@@ -65,6 +65,10 @@ function agreementFixture({ withResponse = false } = {}) {
   const sourceById = new Map(sources.map((entry) => [entry.id, entry]));
   return {
     sources, sourceById,
+    methods: {
+      contrast: 'log2(mean normalized treatment / mean normalized control); strictly positive arm means; no pseudocount.',
+      sampleNormalization: 'Normalize each sample before the exact one-to-one crosswalk to UTEX loci.',
+    },
     limitations: [
       'Time-course layer means may pool time points while replicate correlations remain within exact time strata.',
       'No statistic is a pass/fail rule and no layer is merged by this report.',
@@ -635,6 +639,9 @@ test('agreement discovery stays bounded, preserves coverage gaps, and reports no
     assert.match(side.textContent, /Strain: PCC 7942. Units: CPM. Normalization: cpm/);
     assert.match(side.textContent, /No response comparison with an explicit control arm/);
     assert.match(side.textContent, /No value is a pass\/fail threshold or a comparability decision/);
+    assert.match(side.textContent, /log2\(mean normalized treatment \/ mean normalized control\)/);
+    assert.match(side.textContent, /before the exact one-to-one crosswalk to UTEX loci/);
+    assert.match(side.textContent, /One observed within-stratum correlation does not estimate/);
     assert.equal(document.activeElement.className, 'ds-agreement-right');
     panel.peek.settle(null);
   });
@@ -690,6 +697,33 @@ test('agreement loading and failed retry states never imply unavailable evidence
       'the open picker replaces its failed state when the retry lands');
     assert.doesNotMatch(document.querySelector('.peek-side').textContent,
       /could not be loaded or validated/);
+    panel.peek.settle(null);
+  });
+});
+
+test('agreement row details and unavailable scopes show their own evidence state', async () => {
+  await withFakeDocument(async (document) => {
+    const { panel } = mount(document);
+    const agreement = agreementFixture();
+    panel.update({ agreement: { state: 'ready', value: agreement }, colorMetricKey: 'expression' });
+    panel.open({ dataType: 'transcriptomics' });
+    panel.peek.state.info = 'GSE9.5';
+    panel.renderSide();
+    assert.match(panel.peek.side.textContent, /Processed-expression agreement/);
+    assert.match(panel.peek.side.textContent, /2,450 shared genes/);
+    panel.update({ agreement: { state: 'loading', value: null } });
+    assert.match(panel.peek.side.textContent, /Loading/i);
+    panel.peek.state.info = null;
+    panel.update({ agreement: { state: 'absent', value: null } });
+    assert.match(panel.peek.side.textContent, /No processed-expression agreement report is published/);
+    panel.update({ agreement: { state: 'ready', value: agreement } });
+    panel.peek.state.type = 'proteomics';
+    panel.peek.side.replaceChildren();
+    panel.renderAgreement([]);
+    assert.match(panel.peek.side.textContent, /not this data type/);
+    panel.peek.state.type = 'transcriptomics';
+    panel.update({ agreement: { state: 'ready', value: { ...agreement, sources: agreement.sources.slice(0, 1) } } });
+    assert.match(panel.peek.side.textContent, /Fewer than two RNA-seq sources/);
     panel.peek.settle(null);
   });
 });

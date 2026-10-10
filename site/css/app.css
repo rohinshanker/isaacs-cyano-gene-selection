@@ -2400,6 +2400,15 @@ input[type="range"] { width: 100%; }
   .peek-list { border-right: 0; }
   .peek-side { grid-row: 3; grid-column: 1; border-top: 1px solid var(--line); }
 }
+@media (max-width: 600px) {
+  .data-selection-backdrop { padding: 0; }
+  .data-selection { width: 100%; height: 100dvh; border-radius: 0; }
+  .data-selection .peek-body {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr) auto;
+  }
+  .data-selection .peek-side { grid-row: 2; }
+  .data-selection .peek-foot { grid-row: 3; }
+}
 
 .ds-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.3rem; vertical-align: -1px; }
 .ds-swatch-hatched { border-radius: 2px; border: 1px solid #cfd4da; background: repeating-linear-gradient(135deg, #fff, #fff 2px, #cfd4da 2px, #cfd4da 4px); }

@@ -188,3 +188,42 @@ def test_cli_input_collision_reports_failure_without_modification(
     assert status == 1
     assert "would overwrite the input report" in capsys.readouterr().err
     assert report_path.read_bytes() == before
+
+
+@pytest.mark.parametrize("contents", [None, b"\xff", b"{", b"NaN", b"[]"])
+def test_load_json_names_invalid_inputs(tmp_path: Path, contents: bytes | None) -> None:
+    path = tmp_path / "invalid.json"
+    if contents is not None:
+        path.write_bytes(contents)
+    with pytest.raises(ValueError):
+        promotion.load_json(path, "test input")
+
+
+def test_external_path_provenance_omits_private_parent_directories(tmp_path: Path) -> None:
+    path = tmp_path / "private-parent" / "report.json"
+    assert promotion.display_path(path) == "report.json"
+
+
+def test_atomic_failure_preserves_existing_destination(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "output.json"
+    output.write_text("preserve existing output\n")
+
+    def fail_replace(*_args: object) -> None:
+        raise OSError("simulated replacement failure")
+
+    monkeypatch.setattr(promotion.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="simulated replacement failure"):
+        promotion.write_atomically(output, "new payload\n")
+    assert output.read_text() == "preserve existing output\n"
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["output.json"]
+
+
+def test_cli_success_creates_the_validated_browser_payload(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    output = tmp_path / "browser.json"
+    assert promotion.main(["--output", str(output)]) == 0
+    assert json.loads(output.read_text())["coverage"]["reportBackedSourceCount"] == 53
+    assert "53 report-backed RNA-seq sources" in capsys.readouterr().out

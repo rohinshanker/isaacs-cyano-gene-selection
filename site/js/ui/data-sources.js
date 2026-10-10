@@ -190,12 +190,12 @@ function focusables(root) {
   return out;
 }
 
-/** Match reading/focus order to the two responsive pane arrangements. */
-export function arrangePeekBody(body, { list, foot, side }, wide) {
-  const order = wide ? [list, side, foot] : [list, foot, side];
+/** Match reading/focus order to responsive footer placement. */
+export function arrangePeekBody(body, { list, foot, side }, footerLast) {
+  const order = footerLast ? [list, side, foot] : [list, foot, side];
   if (order.every((node, index) => body.children[index] === node)) return;
   const active = body.contains(document.activeElement) ? document.activeElement : null;
-  body.insertBefore(foot, wide ? null : side);
+  body.insertBefore(foot, footerLast ? null : side);
   if (active && document.activeElement !== active) active.focus({ preventScroll: true });
   const pane = list.contains(active) ? list : side.contains(active) ? side : null;
   if (!pane || !active?.getBoundingClientRect || !pane.getBoundingClientRect) return;
@@ -678,7 +678,7 @@ export class DataSourcesPanel {
   }
 
   buildPeek() {
-    const backdrop = el('div', { className: 'peek-backdrop' });
+    const backdrop = el('div', { className: 'peek-backdrop data-selection-backdrop' });
     backdrop.hidden = true;
     const titleId = `${this.idPrefix}-title`;
     const dialog = el('div', { className: 'peek data-selection', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId } });
@@ -695,10 +695,14 @@ export class DataSourcesPanel {
     const foot = el('div', { className: 'peek-foot', children: [count, done] });
     const body = el('div', { className: 'peek-body', children: [list, foot, side] });
     const stacked = globalThis.window?.matchMedia?.('(max-width: 1320px)');
+    const phone = globalThis.window?.matchMedia?.('(max-width: 600px)');
     const arrange = () => arrangePeekBody(body, { list, foot, side },
-      stacked ? !stacked.matches : (globalThis.window?.innerWidth ?? 0) > 1320);
+      stacked ? (!stacked.matches || phone?.matches)
+        : ((globalThis.window?.innerWidth ?? 0) > 1320
+          || (globalThis.window?.innerWidth ?? Infinity) <= 600));
     if (stacked?.addEventListener) stacked.addEventListener('change', arrange);
     else globalThis.window?.addEventListener?.('resize', arrange);
+    phone?.addEventListener?.('change', arrange);
     arrange();
     dialog.append(head, bar, legend, body);
     backdrop.append(dialog);
@@ -1354,7 +1358,11 @@ export class DataSourcesPanel {
     const details = el('details', { className: 'ds-agreement-caveat' });
     details.append(el('summary', { text: 'Report scope and caveats' }));
     const list = el('ul');
+    for (const method of Object.values(agreement.methods)) list.append(el('li', { text: method }));
     for (const limitation of agreement.limitations) list.append(el('li', { text: limitation }));
+    list.append(el('li', {
+      text: 'One observed within-stratum correlation does not estimate a correlation sampling distribution.',
+    }));
     details.append(list);
     block.append(details);
     return block;
@@ -1456,10 +1464,6 @@ export class DataSourcesPanel {
     // Report-wide limitations apply even when this particular lookup ends in
     // a coverage gap or undefined pair statistic.
     side.append(this.agreementLimitations(agreement));
-    if (leftId === rightId) {
-      side.append(el('p', { className: 'panel-note', text: 'Choose two different sources for a pair-level statistic.' }));
-      return;
-    }
     const pair = agreement.levelPair(leftId, rightId);
     if (!pair) {
       side.append(el('p', {
@@ -1501,7 +1505,7 @@ export class DataSourcesPanel {
             + `(${response.sameDirectionCount.toLocaleString()} of ${response.nonzeroDirectionGeneCount.toLocaleString()}; `
             + `${response.sharedGeneCount.toLocaleString()} shared responses).`,
         }));
-        const caveat = el('details', { className: 'ds-agreement-caveat' });
+    const caveat = el('details', { className: 'ds-agreement-caveat' });
         caveat.append(el('summary', { text: 'Arms and response caveats' }));
         for (const contrast of [response.leftContrast, response.rightContrast]) {
           caveat.append(el('p', {
