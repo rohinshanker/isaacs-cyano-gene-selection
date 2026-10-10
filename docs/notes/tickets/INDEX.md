@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [A_worktree-reconciliation__20261009](A_worktree-reconciliation__20261009.md) | Audit linked worktrees for missing versus integrated/superseded changes; cyano-ui-fixes owns reconciliation; other sessions' files remain untouched |
 | [O_overlap-visibility-and-base-pairs__20261009](O_overlap-visibility-and-base-pairs__20261009.md) | Make small OG marks readable with a fixed-size arrowhead proposal; use chromosome hover hints that do not shift the canvas; expose aligned partner base letters and strand direction in the gene viewers; implementation unassigned |
 | [O_pca-grid-wheel-zoom__20261009](O_pca-grid-wheel-zoom__20261009.md) | Restrict PCA wheel zoom to the plotted grid; scrolling over axes and outer margins should scroll the page; implementation unassigned |
 | [O_trna-viewer-tab__20261009](O_trna-viewer-tab__20261009.md) | Move the full tRNA viewer into its own application tab; preserve independent selection, evidence labels and coordinate navigation; implementation not started |
