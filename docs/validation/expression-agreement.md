@@ -181,3 +181,69 @@ Keep the frozen processed-source report separate from Package E's seven-table
 pilot and from uniform raw reprocessing. It supplies additional descriptive
 evidence; it cannot establish reproduction of an undelivered pilot program or
 close the pilot's bootstrap and intake requirements.
+
+## Browser presentation
+
+`tools/promote_expression_agreement.py` projects the accepted current summary
+into `site/data/expression_agreement.json`. This separate promotion step keeps
+the scientific exporter's prohibition on writing to `site/` intact. It validates
+the report and joins its layers to admitted `meta.expressionSources[].id` values,
+never metric keys or approximate names. The payload retains report, metadata,
+promotion-code and statistics-code identities, input pins and regeneration notes.
+It omits per-gene vectors, while preserving correlations, source caveats, strata,
+sample-pair denominators, exact response arms and contrast caveats.
+
+```sh
+.venv/bin/python tools/promote_expression_agreement.py
+.venv/bin/python tools/build_data_manifest.py build
+.venv/bin/python -m pytest -q tests/test_promote_expression_agreement.py
+node --test tests/js/expression-agreement.test.mjs tests/js/data-sources-panel.test.mjs
+```
+
+The deterministic-promotion test compares the committed payload with a fresh
+projection. A change to the report, metadata or promotion code requires rebuilding
+the payload and manifest together. Promotion refuses output aliases of its report,
+site metadata, pinned inputs and implementation files (including symlink, hard-link,
+case and Unicode aliases), and rejects unusable output paths before writing.
+Unknown source IDs, mismatched study identities
+and malformed statistics are errors; a source absent from the report remains an
+explicit coverage gap. The organism registry declares this optional companion for
+UTEX only. The staged loader checks its published integrity and validates its
+shape before exposing statistics; a failed load can be retried without closing
+the Data Selection dialog, and no previous report remains visible on failure.
+
+In Data Sources, **Processed-expression agreement** offers two source selectors
+beside the condition comparison. Choosing comparison sources does not change the
+selected measurement layers or their grouping. Source cards distinguish the
+layer-mean gene count from the counts behind within-stratum sample correlations.
+Evidence disclosures retain strain, units, normalization, sample identities and
+their denominators. An empirical range is not a confidence interval, and unknown
+replication never receives a biological-replicate band.
+
+Layer-level Spearman is displayed with its shared-gene count. Response comparisons
+are the report's explicitly recorded **study contrasts**, which need not describe
+the two selected layer conditions. Each response disclosure names both studies,
+treatment and reference samples, each contrast's caveat and the pair caveat.
+Direction agreement retains its nonzero-response denominator separately from the
+shared-response count. Missing comparisons and null results remain explicit;
+correlations do not supply a comparability decision or pass mark.
+
+Exports include agreement provenance only when the validated report is loaded
+and the export contains a report-backed source. The manifest names those covered
+source IDs and retains report/input/code identities and global limitations. This
+provenance does not imply that an unavailable source or an arbitrary selected
+pair has an agreement statistic.
+
+For rendered regression, serve the repository root on an unused task-specific
+port and open `/site/?uiArtifacts=/absolute/artifact/directory` in a uniquely named
+`playwright-cli` session, then run:
+
+```sh
+playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_expression_agreement.js
+```
+
+The harness exercises known level/response evidence, exact arms and caveats,
+unknown replication, missing comparisons, source gaps, loading, absent and
+failed/retry states, keyboard dismissal/focus return and the responsive matrix.
+Inspect its screenshots and supplement them with readable viewport captures of
+open evidence disclosures. The ordinary repository and release gates still apply.
