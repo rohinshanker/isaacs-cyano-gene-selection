@@ -187,14 +187,16 @@ Rendered, from this checkout on a task-specific port:
 
 ```sh
 python3 -m http.server 8886 --bind 127.0.0.1 --directory "$PWD"
-mkdir -p /tmp/cyano-fitness-selector-20261010/implementer
-PLAYWRIGHT_MCP_OUTPUT_DIR="$PWD/.playwright-cli/<session>" playwright-cli -s=<session> \
-  open "http://127.0.0.1:8886/site/index.html?uiArtifacts=/tmp/cyano-fitness-selector-20261010/implementer"
-playwright-cli -s=<session> run-code --filename=tools/ui/check_strain_fitness.js
+fitness_session="fitness-check-$(date +%s)"
+fitness_artifacts="$(mktemp -d /tmp/cyano-fitness.XXXXXX)"
+PLAYWRIGHT_MCP_OUTPUT_DIR="$fitness_artifacts" playwright-cli -s="$fitness_session" \
+  open "http://127.0.0.1:8886/site/index.html?uiArtifacts=$fitness_artifacts"
+playwright-cli -s="$fitness_session" run-code --filename=tools/ui/check_strain_fitness.js
 ```
 
-Use session `browsercyano-fitness-impl-1010` for DEM-350. The check renders the
-real production Syn61 catalogue, an absent UTEX catalogue, and temporary
+Verify the port is free before starting the server; use a different port if
+another session owns it. The check renders the real production Syn61 catalogue,
+an absent UTEX catalogue, and temporary
 synthetic local-multiple, external, ambiguous, invalid, error/retry, and race
 states. Synthetic catalogues and payloads exist only in Playwright network
 routes. It covers 375, 768, 1280 and 1440 widths and exact edges 959/960 and
@@ -202,13 +204,10 @@ routes. It covers 375, 768, 1280 and 1440 widths and exact edges 959/960 and
 table overflow, clipped cells, unexpected console/page errors, or failed
 requests.
 
-Inspect the screenshots as well as the assertions. Two repairs came from
-looking rather than from asserting: `overflow-wrap: anywhere` on automatic
-table layout collapsed the strain column to one character per line, which the
-fixed `colgroup` widths now prevent; and the shared `.numeric` rule's
-`white-space: nowrap` kept a declared unit and a replicate series on one line
-and cut them off inside their columns, which `.fitness-table .numeric` now
-overrides. Both were invisible to an assertion on text content.
+Inspect the screenshots as well as the assertions. Keep strain labels readable
+within the fixed `colgroup` widths, and check that units and replicate series
+wrap inside numeric cells. Text-content assertions alone cannot detect these
+layout failures. Close only the browser and server started for this check.
 
 Also apply the repository's [release gate](release-gate.md) before publication.
 

@@ -7,23 +7,17 @@
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Claimed 2026-10-10 by
-`cyano-ui-fixes` (`80c81443-1791314087`), which owns integration and closure.
-Implementation runs in an isolated worktree from main `24490ea`; no other live
-session is implementing this selector. The prior scoping owner completed only
-its navigation/documentation batch and left this separate engineering task open. The existing Strain fitness panel has strain, condition,
-and substrate/well filters over one loaded layer; these are not dataset choices.
-No dedicated open ticket for this selector was found in the live queue.
+Owned by `cyano-ui-fixes` (`80c81443-1791314087`), which owns integration
+and closure. Runtime implementation is committed as `824793e` in the isolated
+`work/strain-fitness-selector-20261010` worktree. Multica DEM-350 implemented
+it; independent Claude review DEM-354 is in progress. This ticket remains
+active until that audit is resolved.
 
-Engineering scoping by `cyano-regulatory-sites` / DEM-346 on 2026-10-10:
-the loader currently has one `strainFitness` file/slot and only Syn61 publishes
-a whole-strain dataset. Existing `sources` / `typeSources` choices identify
-gene-level datasets and cannot identify that payload. Completing this ticket
-therefore requires a whole-strain dataset catalogue, compatible external-choice
-representation, per-dataset load/retry state, and selection identity in both
-strain exports, beyond adding a dropdown. Keep this as a separate engineering
-task; it is not part of the small documentation/navigation batch. Existing
-gene-fitness screens must remain incompatible with whole-strain selection.
+The panel now uses an organism-owned catalogue and lazy, independently
+validated load records. Data Sources exposes a separately typed whole-strain
+choice; no per-gene source alias can inherit into the panel. Both exports name
+the actual dataset and selection origin. No measurements or new datasets were
+admitted.
 
 Owner rule: **Strain fitness has its own dataset selector unless a dataset is
 already selected elsewhere.** Reuse an existing compatible fitness selection
@@ -64,16 +58,26 @@ does not count as a compatible strain-fitness choice.
 
 ## Verification
 
-Ticket-only intake; the current UI has not changed. Intake validation on
-2026-10-09 passed metadata/link checks and the repository gates: 1,395 JavaScript
-tests; 925 Python tests and 36 subtests with one skip; 119 contract checks with
-one declared skip. This validates the baseline, not the unimplemented selector.
+Implementation `824793e` passed 1,489 JavaScript tests; 958 Python tests
+and 46 subtests, with one declared skip; annotation verification/reproduction
+and readiness checks; and contract/live-metric checks for all five organisms.
+The RNA browser gate passed all 32 parity cases, lifecycle, UI source coverage,
+exports and breakpoint checks with no unexpected diagnostics.
 
-For implementation, test no external selection, compatible selection, unrelated
-selection, ambiguous selection, and later selection changes. Check filtering,
-source/units/export consistency, organism switching, and missing/error states.
-Render at mobile, tablet, and desktop widths, including keyboard selector use.
-Run the gates in `AGENTS.md`.
+The real browser covered local and shared selection, URL restore, foreign
+organism rejection, missing/error/retry states, multiple and ambiguous synthetic
+catalogues, races, filters, both exports, keyboard operation and focus. Renders
+at 375, 768, 1280 and 1440 px plus 959/960 and 1239/1240 edges passed without
+page overflow or unexpected browser errors. Screenshots were inspected.
+The independent export oracle preserved measurement rows, units and source
+headers for 65 selections. Actual browser downloads retained all 69 growth
+records and 5,280 wells. No formal axe audit was run; the repository does not
+install axe. No visual baselines changed.
+
+Transient evidence is in `/tmp/cyano-fitness-selector-20261010/`;
+`coordinator-evidence.md`, `implementer-evidence.md`, the browser outputs and
+`release/results.json` identify the exact commands and artifacts. Independent
+review and ticket closure are still pending.
 
 ## Cleanup
 
