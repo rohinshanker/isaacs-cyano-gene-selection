@@ -7,7 +7,7 @@ No Syn61 sequence, preset, measurements or coordinates may fill a Syn57 field.
 
 ## Source identity
 
-The private build input is `data/raw/recoded-ecoli/Ec_Syn57.gb`. It must have
+The ignored, publisher-supplied build input is `data/raw/recoded-ecoli/Ec_Syn57.gb`. It must have
 SHA-256
 `8c61aeebfb8fef71a9d01ceba2a2acdb8babdf96ac0aa01aae36b10d08f77f96`, one
 circular `Ec_Syn57` record, and exactly 3,973,902 bases. The builder also gates
@@ -17,9 +17,11 @@ admits 3,588 coding genes after the shared CDS-quality exclusions.
 The sequence-only SHA-256 is
 `5ad86e64fa142b009c159dddd4c1eccf5cce6e8bafa8c374cbfb6e9bc8e07033`.
 
-Rebuild or compare the checked-in publication with:
+Fetch the pinned publisher inputs, then rebuild or compare the checked-in
+publication:
 
 ```bash
+.venv/bin/python tools/fetch_recoded_ecoli.py
 .venv/bin/python tools/build_syn57_design.py
 .venv/bin/python tools/build_syn57_design.py --check
 .venv/bin/python tools/validate_contract.py --organism ecoli-syn57-design
@@ -43,10 +45,15 @@ no supported note and are excluded from the decoding pool. The audit keeps each
 decision; tAI and its dependent proxy label this inference and are not
 experimental anticodon, charging, expression or fitness measurements.
 
-The source article calls the artifact a complete *E. coli* genome and separately
-describes a strain with a distinct recoding scheme, supporting the design/strain
-boundary. Its permissions state CC BY-NC-ND 4.0; publication follows the owner's
-2026-10-06 citation-only derived-data decision.
+The article evidence is the [Europe PMC fullTextXML](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/fullTextXML),
+retrieved 2026-10-10: 318,246 bytes, SHA-256
+`0f819b794c2bd9e83669157439552b16555d75d97153676e2c348b2eb9381a69`.
+Mechanical text matches locate "complete E. coli genome" and "a strain with a
+distinct recoding scheme" in Introduction, and "Creative Commons
+Attribution-NonCommercial-NoDerivatives 4.0 International License" in permissions.
+These distinguish the complete design from the other Syn57 strain and retain
+source terms. Publication follows the owner's 2026-10-06 citation-only
+derived-data decision. A changed source pin requires a new identity check.
 
 ## Product contract
 

@@ -15,17 +15,22 @@ written before there was a second organism keeps its meaning, and the canonical
 cyanobacterial address carries no `org`. The hash carries the view and is read
 under the organism the address names; it has no organism of its own.
 
-**A switch is a full page navigation.** Cyanobacteria and Syn61 are direct
-links. The conventional E. coli disclosure contains ordinary links for MG1655,
-MDS42, and DH10B. The browser resets every module, worker, cache, listener, and
+**A switch is a full page navigation.** Cyanobacteria is a direct link. The
+Recoded E. Coli disclosure contains ordinary links for Syn57 design and the
+exact Syn61Δ3(ev5) strain; the conventional E. coli disclosure contains links
+for MG1655, MDS42, and DH10B. The browser resets every module, worker, cache, listener, and
 the DOM on the way. There is no in-page dataset swap and none should be added.
 
 ## Navigation grouping
 
 There are exactly three top-level controls, in this order: **Cyanobacteria**,
-**E. coli Syn61**, **E. coli**. The last is a disclosure, not a dataset-switching
-button. Its links are **MG1655**, **MDS42 public reference**, and **DH10B public
-reference**, in that order. MG1655 is shown as the default when no conventional
+**Recoded E. Coli**, **E. coli**. Both E. coli groups are disclosures with real
+links. Recoded choices are **Syn57 design**, then **Syn61Δ3(ev5) strain**, with
+no fresh default: outside those organisms the trigger names only the group.
+The selected recoded trigger and link expose the current page. The conventional
+links are **MG1655**, **MDS42 public reference**, and **DH10B public reference**,
+in that order. Syn57 is the complete publisher design, not a measured isolate;
+its source and interpretation contract is [syn57-design.md](syn57-design.md). MG1655 is shown as the default when no conventional
 strain is in view; its accessible name says `default`, not `selected`. On a conventional-strain page the trigger names that strain,
 and both the trigger and its matching link expose the current page.
 
@@ -36,13 +41,13 @@ stock. Every option keeps a real `href`; copying, modified clicking, and direct
 navigation therefore retain the exact `org` id and that organism's remembered
 hash.
 
-The disclosure uses a button with `aria-expanded` and `aria-controls`, followed
+Each disclosure uses a button with `aria-expanded` and `aria-controls`, followed
 by a named list of links. Enter or Space toggles it; Arrow Down/Up opens it at
 the first/last strain; Arrow keys, Home, and End move among links. Escape closes
 it and returns focus to the trigger. Tabbing out or pressing elsewhere closes it
 without trapping focus.
 
-The fixed dropdown uses `positionViewportOverlay` to keep a 16 px margin at
+Each fixed dropdown uses `positionViewportOverlay` to keep a 16 px margin at
 both viewport edges and follows scroll, resize, and changes to the header or
 trigger size while open. A short trigger can wrap to the left edge on phones;
 right-aligning a wider menu to it clips labels without increasing the page's
@@ -78,6 +83,7 @@ for different addresses or for anything else.
 | `?org=ecoli-mds42-public-reference` | MDS42 public reference | `data/organisms/ecoli-mds42-public-reference/` |
 | `?org=ecoli-dh10b-public-reference` | DH10B public reference | `data/organisms/ecoli-dh10b-public-reference/` |
 | `?org=ecoli-syn61-delta3-ev5` | Syn61 delta 3 evolved variant 5 | `data/organisms/ecoli-syn61-delta3-ev5/` |
+| `?org=ecoli-syn57-design` | Ec_Syn57 complete design; no measured isolate | `data/organisms/ecoli-syn57-design/` |
 | `?org=<anything else>` | default; `org` **and the hash** are removed, and the page announces it | `data/` |
 | any of the above with `&data=<dir>` | unchanged | `<dir>/` |
 
@@ -258,7 +264,7 @@ default/selected names, keyboard dismissal and focus return.
   conventional links and current strain; visible public-reference labels and
   focus ring; pointer, Enter, Space, arrows, Escape and Tab operation; no
   horizontal overflow;
-- all five direct organism addresses: exact id, strain, assembly, data
+- all six direct organism addresses: exact id, design/strain and genome identity, data
   directory and selected navigation state;
 - each non-default organism: map, gene detail, chromosome view, filters, legend, the
   tabs whose layers are absent, a scheme applied, and an export, with no name of
