@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import {
   findNeighbor, clampZoom, projectionCanZoom, enterTarget, togglePinTarget, shortlistTarget,
   buildMarkerBuckets, formatTick, tickTarget, fitAxisTitle, MIN_ZOOM, MAX_ZOOM,
-  SQUARE_TO_CIRCLE_RADIUS,
+  SQUARE_TO_CIRCLE_RADIUS, ScatterPlot,
 } from '../../site/js/ui/scatter.js';
 import { buildCategoryColorScale } from '../../site/js/ui/colors.js';
 import {
@@ -110,6 +110,105 @@ test('an unavailable projection cannot enter the zoom path', () => {
   assert.equal(projectionCanZoom({ available: false }), false);
   assert.equal(projectionCanZoom({ available: true }), false);
   assert.equal(projectionCanZoom({ available: true, x: projection.x, y: projection.y }), true);
+});
+
+/** Bind actual map events to a canvas stand-in, retaining the real camera math. */
+function wheelHarness() {
+  const listeners = new Map();
+  const canvasRect = { left: 130, top: 240, width: 800, height: 400 };
+  let changed = 0;
+  const plot = Object.assign(Object.create(ScatterPlot.prototype), {
+    canvas: {
+      addEventListener: (type, listener) => listeners.set(type, listener),
+      getBoundingClientRect: () => canvasRect,
+    },
+    width: canvasRect.width,
+    height: canvasRect.height,
+    projection: { ...projection, available: true },
+    handlers: { onViewChange: () => { changed += 1; } },
+    zoom: 1, panX: 0, panY: 0, fit: null,
+    draw: () => {},
+  });
+  plot.bindEvents();
+  return {
+    plot, canvasRect,
+    get changed() { return changed; },
+    wheel(x, y) {
+      let prevented = false;
+      listeners.get('wheel')({
+        clientX: canvasRect.left + x, clientY: canvasRect.top + y, deltaY: -100,
+        preventDefault: () => { prevented = true; },
+      });
+      return prevented;
+    },
+  };
+}
+
+test('wheel zoom uses the grid boundary on all four sides and leaves margins scrollable', () => {
+  const scene = wheelHarness();
+  const { left, top, width, height } = scene.plot.plotRect;
+  const right = left + width;
+  const bottom = top + height;
+  const middleX = left + width / 2;
+  const middleY = top + height / 2;
+  const outside = [[left - 0.5, middleY], [right + 0.5, middleY],
+    [middleX, top - 0.5], [middleX, bottom + 0.5], [0, 0], [800, 400]];
+  for (const [x, y] of outside) {
+    assert.equal(scene.wheel(x, y), false, `page can scroll at ${x}, ${y}`);
+  }
+  assert.equal(scene.plot.zoom, 1);
+  assert.equal(scene.plot.panX, 0);
+  assert.equal(scene.plot.panY, 0);
+  assert.equal(scene.changed, 0, 'margin scrolling must not persist a new camera');
+  const inside = [[left, middleY], [right, middleY], [middleX, top],
+    [middleX, bottom], [left, top], [right, bottom], [middleX, middleY]];
+  for (const [x, y] of inside) {
+    assert.equal(scene.wheel(x, y), true, `grid zooms at ${x}, ${y}`);
+  }
+  assert.equal(scene.changed, inside.length);
+  assert.ok(scene.plot.zoom > 1);
+});
+
+test('accepted wheel zoom keeps the pointed data position fixed for shared scatter projections', () => {
+  for (const independentAxes of [false, true]) {
+    const scene = wheelHarness();
+    scene.plot.projection.independentAxes = independentAxes;
+    const pointer = { x: 210, y: 160 };
+    const before = scene.plot.toData(pointer.x, pointer.y);
+    assert.equal(scene.wheel(pointer.x, pointer.y), true);
+    const after = scene.plot.toScreen(before.x, before.y);
+    assert.ok(Math.abs(after.x - pointer.x) < 1e-9);
+    assert.ok(Math.abs(after.y - pointer.y) < 1e-9);
+  }
+});
+
+test('wheel bounds follow current canvas size and page position after resizing or scrolling', () => {
+  const scene = wheelHarness();
+  assert.equal(scene.wheel(650, 300), true);
+  scene.plot.width = 500;
+  scene.plot.height = 250;
+  scene.canvasRect.left = 25;
+  scene.canvasRect.top = -90;
+  scene.plot.invalidate();
+  const zoom = scene.plot.zoom;
+  assert.equal(scene.wheel(490, 100), false, 'new right margin');
+  assert.equal(scene.wheel(200, 230), false, 'new bottom margin');
+  assert.equal(scene.plot.zoom, zoom);
+  assert.equal(scene.wheel(300, 100), true, 'new grid with moved canvas');
+  scene.plot.width = 900;
+  scene.plot.height = 500;
+  scene.plot.invalidate();
+  assert.equal(scene.wheel(650, 300), true, 'expanded grid');
+});
+
+test('wheel events never prevent page scrolling while the projection is unavailable', () => {
+  const scene = wheelHarness();
+  for (const value of [null, { available: false }, { available: true }]) {
+    scene.plot.projection = value;
+    assert.equal(scene.wheel(200, 100), false);
+  }
+  assert.equal(scene.plot.zoom, 1);
+  assert.equal(scene.changed, 0);
 });
 
 test('Enter only ever pins the explicitly active gene, never the pinned one by default', () => {

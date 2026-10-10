@@ -10,9 +10,11 @@
 Implementation owned by `cyano-regulatory-sites` at the owner's request, in
 `worktrees/pca-grid-wheel-zoom-20261009` on branch
 `work/pca-grid-wheel-zoom-20261009`, baseline `3e6651e`. Other chat worktrees,
-browsers and processes are out of scope. The owner wants wheel zoom to require the
-pointer to be inside the PCA grid itself. Scrolling over the areas containing
-axis labels or ticks, or outside the grid, should scroll the page normally.
+browsers and processes are out of scope. The shared scatter wheel handler now
+checks its live drawing rectangle before cancelling an event. Axes and margins
+scroll the page; the grid retains pointer-centred zoom. Visible and accessible
+instructions describe the boundary. Four regression tests exercise the real
+handler and camera mathematics.
 
 ## Acceptance
 
@@ -27,10 +29,21 @@ axis labels or ticks, or outside the grid, should scroll the page normally.
 
 ## Verification
 
-Ticket-only intake. The requested wheel boundary has not been reproduced or
-implemented. Before closure, use the real application at mobile, tablet and
-desktop widths, wheel over grid/axes/margins and immediately across each edge,
-resize the map, and run the gates in `AGENTS.md`.
+- `npm test`: 1,467 passed.
+- `.venv/bin/python -m pytest -q`: 958 passed, 1 skipped, 46 subtests passed.
+- `.venv/bin/python tools/validate_contract.py`: 126 passed, 0 failed, 1 declared
+  spliced-CDS exemption.
+- Chromium reproduced the original margin interception using the baseline
+  handler. The final handler passes every grid edge in native, metric X/Y,
+  recoding-risk, UMAP, perturbation, and Syn61 parent-reference projections.
+- Rendered screenshots and semantic state inspected at 375, 768, 959, 960, 1239,
+  1240, 1280 and 1440 px. No horizontal overflow or browser/console/request errors.
+  Real grid wheel input zooms without page scrolling; real wheel input in all four
+  margins scrolls the page without changing zoom. Resized rail, unavailable map,
+  pointer-centred zoom, drag and keyboard pan, button/keyboard zoom, reset and
+  double-click reset pass. Chromosome wheel zoom remains functional independently.
+- `git diff --check` passes. Temporary browser scripts, screenshots and logs are
+  ignored under this worktree's `.playwright-cli/pca-wheel/`.
 
 ## Cleanup
 

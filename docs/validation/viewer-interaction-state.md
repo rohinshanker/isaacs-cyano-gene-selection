@@ -16,6 +16,24 @@ With the canvas focused:
 
 Unavailable projections disable all view buttons and canvas navigation/zoom is a
 defensive no-op. The canvas instructions are linked with `aria-describedby`.
+Wheel zoom accepts only pointers inside the scatter plot's current `plotRect`,
+including its boundary. Both axes and all outer canvas margins leave the event
+uncancelled so the page can scroll. Use the same CSS-pixel rectangle that draws
+the grid, recalculated after viewport or rail resizing, and subtract the live
+canvas position from the pointer coordinates. Accepted zoom keeps the pointed
+data position fixed. This applies to every shared scatter projection, including
+parent-reference codon space; chromosome navigation has its own input contract.
+
+Regression coverage in `tests/js/scatter-navigation.test.mjs` checks every edge,
+corner, resize, moved canvas, unavailable projection, and pointer anchoring with
+both shared and independent axis scales. Rendered verification must additionally
+use actual wheel input to confirm grid zoom leaves page position fixed and axis
+or margin scrolling moves the page without changing the camera. Check mobile,
+tablet, desktop, both workspace column breakpoints, and a resized rail; retain
+pan, reset, button zoom and keyboard navigation. Chromium's synthetic wheel events
+round client coordinates to integers, so test the nearest integer on each side
+of a fractional rendered edge; unit tests cover the exact and half-pixel edges.
+
 The legend names filtered CDSs only when they are rendered. In Function
 category colour mode, excluded reviewed CDSs are grey outlined squares and
 excluded unknown or unclassified CDSs are smaller filled grey dots with no
