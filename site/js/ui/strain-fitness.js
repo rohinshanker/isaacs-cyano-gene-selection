@@ -28,6 +28,8 @@ import {
   GROWTH_STATUS, GROWTH_STATUS_LABELS, growthSummary, growthTsv, selectGrowth, selectWells,
   selectionLabels, wellsTsv,
 } from '../core/strain-fitness.js';
+import { FILE_STATE } from '../core/data-files.js';
+import { FITNESS_IDLE } from '../core/strain-fitness-datasets.js';
 
 export const STRAIN_FITNESS_TAB = Object.freeze({
   id: 'strain-fitness',
@@ -185,53 +187,122 @@ function slug(text) {
 export class StrainFitnessPanel {
   /**
    * @param {HTMLElement} host
-   * @param {{organism?: object, onAnnounce?: (message: string) => void}} options
+   * @param {{organism?: object, onAnnounce?: (message: string) => void,
+   *   onDatasetSelect?: (id: string) => void, onRetry?: (id: string) => void}} options
    */
-  constructor(host, { organism = null, onAnnounce = () => {} } = {}) {
+  constructor(host, {
+    organism = null, onAnnounce = () => {}, onDatasetSelect = () => {}, onRetry = () => {},
+  } = {}) {
     this.host = host;
     this.organism = organism;
     this.onAnnounce = onAnnounce;
+    this.onDatasetSelect = onDatasetSelect;
+    this.onRetry = onRetry;
     this.selection = { strainId: 'all', conditionId: 'all', query: '' };
     this.page = 0;
     this.built = false;
     this.layer = null;
+    this.datasetSelection = null;
   }
 
   /**
-   * @param {object|null} layer the validated layer, or null when the release
-   *   does not publish it or it has not landed.
-   * @param {'loading'|'failed'|null} pending the file's unsettled state.
+   * @param {{catalogue: object[], selection: object, resource: object|null}} model
    */
-  update(layer, pending = null) {
-    if (!layer) {
-      // Loading and failed are not "unavailable": one is unknown and the other
-      // is a layer that exists and could not be read.
-      this.host.replaceChildren(pending
-        ? pendingNote(pending, 'strain fitness measurements')
-        : paragraph(UNAVAILABLE_TEXT, 'panel-note'));
+  update({ catalogue = [], selection = null, resource = null } = {}) {
+    const focusKey = this.host.contains(document.activeElement)
+      ? document.activeElement?.dataset?.fitnessFocus ?? null : null;
+    const dataset = selection?.dataset ?? null;
+    if (!dataset) {
+      this.host.replaceChildren(paragraph(UNAVAILABLE_TEXT, 'panel-note'));
       this.built = false;
       this.layer = null;
+      this.datasetSelection = null;
       return;
     }
+    const layer = resource?.state === FILE_STATE.READY ? resource.data : null;
     const changed = this.layer !== layer;
     this.layer = layer;
-    if (changed) {
+    this.datasetSelection = {
+      id: dataset.id,
+      label: dataset.label,
+      origin: selection.origin,
+      originIds: [...selection.originIds],
+    };
+    if (changed || this.activeDatasetId !== dataset.id) {
       this.selection = { strainId: 'all', conditionId: 'all', query: '' };
       this.page = 0;
-      this.built = false;
     }
-    if (!this.built) this.build();
+    this.activeDatasetId = dataset.id;
+    this.built = false;
+    this.buildDatasetShell(catalogue, selection);
+    if (!layer) {
+      const state = resource?.state ?? FITNESS_IDLE;
+      if (state === FILE_STATE.FAILED) this.renderDatasetFailure(resource.error);
+      else this.host.append(pendingNote(FILE_STATE.LOADING, 'strain fitness measurements'));
+      this.restoreFocus(focusKey);
+      return;
+    }
+    this.buildLayer();
     this.renderResults();
+    this.restoreFocus(focusKey);
   }
 
-  build() {
-    const layer = this.layer;
+  /** Keep the active fitness control active across loader and shared-state rerenders. */
+  restoreFocus(key) {
+    if (!key) return;
+    this.host.querySelector(`[data-fitness-focus="${key}"]`)?.focus({ preventScroll: true });
+  }
+
+  buildDatasetShell(catalogue, selection) {
     this.host.replaceChildren();
     const title = document.createElement('h2');
     title.textContent = 'Strain fitness';
+    this.host.append(title);
+    const block = document.createElement('div');
+    block.className = 'fitness-dataset';
+    if (selection.showLocalSelector) {
+      const select = document.createElement('select');
+      select.dataset.fitnessFocus = 'dataset';
+      select.setAttribute('aria-label', 'Strain fitness dataset');
+      for (const entry of catalogue) select.append(option(entry.id, entry.label));
+      select.value = selection.dataset.id;
+      select.disabled = catalogue.length < 2;
+      select.addEventListener('change', () => this.onDatasetSelect(select.value));
+      block.append(field('Dataset', select));
+      this.datasetSelect = select;
+    } else {
+      this.datasetSelect = null;
+    }
+    const origin = selection.origin === 'external'
+      ? `Shared Data Sources selection (${selection.originIds.join(', ')})`
+      : `Local Strain fitness selector (${selection.dataset.id})`;
+    block.append(paragraph(`Active dataset: ${selection.dataset.label} · Selected by: ${origin}.`,
+      'fitness-dataset-context'));
+    if (selection.ambiguousIds.length > 1) {
+      block.append(paragraph(`The shared selection matches multiple whole-strain datasets `
+        + `(${selection.ambiguousIds.join(', ')}), so the local choice remains active.`,
+      'fitness-dataset-ambiguity'));
+    }
+    this.host.append(block);
+  }
+
+  renderDatasetFailure(error) {
+    this.host.append(pendingNote(FILE_STATE.FAILED, 'strain fitness measurements'));
+    if (error?.message) this.host.append(paragraph(error.message, 'panel-note fitness-load-error'));
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.dataset.fitnessFocus = 'retry';
+    retry.className = 'chip-button';
+    retry.textContent = 'Retry this dataset';
+    retry.addEventListener('click', () => this.onRetry(this.activeDatasetId));
+    this.host.append(retry);
+  }
+
+  buildLayer() {
+    const layer = this.layer;
     // The tab's own blurb already stands above the panel and says what these
     // rows are; repeating it here would be the same sentence twice on screen.
-    const children = [title];
+    const children = [];
     if (layer.provenanceClass !== 'published') {
       children.push(tanDisclosure(paragraph('These values are synthetic test data, not measurements. '
         + 'They exist so the interface can be exercised and must not be read as evidence.',
@@ -316,22 +387,28 @@ export class StrainFitnessPanel {
     const controls = document.createElement('div');
     controls.className = 'fitness-controls';
     this.strain = document.createElement('select');
+    this.strain.dataset.fitnessFocus = 'strain';
     this.strain.append(option('all', 'All strains'));
     for (const strain of this.layer.strains) {
       this.strain.append(option(strain.id, `${strain.label} — ${strain.scheme.label}`));
     }
-    this.strain.value = 'all';
+    this.strain.value = this.layer.strains.some((entry) => entry.id === this.selection.strainId)
+      ? this.selection.strainId : 'all';
+    this.selection.strainId = this.strain.value;
     this.strain.addEventListener('change', () => {
       this.selection = { ...this.selection, strainId: this.strain.value };
       this.page = 0;
       this.renderResults();
     });
     this.condition = document.createElement('select');
+    this.condition.dataset.fitnessFocus = 'condition';
     this.condition.append(option('all', 'All conditions'));
     for (const condition of this.layer.conditions) {
       this.condition.append(option(condition.id, condition.label));
     }
-    this.condition.value = 'all';
+    this.condition.value = this.layer.conditions.some((entry) => entry.id === this.selection.conditionId)
+      ? this.selection.conditionId : 'all';
+    this.selection.conditionId = this.condition.value;
     this.condition.addEventListener('change', () => {
       this.selection = { ...this.selection, conditionId: this.condition.value };
       this.page = 0;
@@ -341,7 +418,9 @@ export class StrainFitnessPanel {
     if (this.layer.biolog) {
       this.query = document.createElement('input');
       this.query.type = 'search';
+      this.query.dataset.fitnessFocus = 'query';
       this.query.placeholder = 'Substrate, well, or plate';
+      this.query.value = this.selection.query;
       this.query.addEventListener('input', () => {
         this.selection = { ...this.selection, query: this.query.value };
         this.page = 0;
@@ -360,6 +439,8 @@ export class StrainFitnessPanel {
       `Scheme: ${labels.scheme}${labels.segments
         ? ` (${labels.segments})` : ''}`,
       `Condition: ${labels.condition}`,
+      `Dataset: ${this.datasetSelection.label} (${this.datasetSelection.id})`,
+      `Selected by: ${this.datasetSelection.origin}`,
       `Source: ${this.layer.source.studyId ?? this.layer.source.sourceFile}`,
     ];
     this.context.textContent = parts.join(' · ');
@@ -416,7 +497,7 @@ export class StrainFitnessPanel {
         `Growth of ${plural(rows.length, 'strain-condition pair')}. `
         + `Doubling time in ${units.doublingTime}; maximum OD600 as ${units.maximumOd600}.`));
       children.push(this.exportButton('growth', records.length,
-        () => growthTsv(this.layer, this.selection)));
+        () => growthTsv(this.layer, this.selection, this.datasetSelection)));
     }
     this.growthHost.replaceChildren(...children);
   }
@@ -456,7 +537,7 @@ export class StrainFitnessPanel {
         + `Values in ${units.value}, referenced to ${units.reference}.`));
       children.push(this.buildPaging(pages, records.length));
       children.push(this.exportButton('biolog', records.length,
-        () => wellsTsv(this.layer, this.selection)));
+        () => wellsTsv(this.layer, this.selection, this.datasetSelection)));
     }
     this.wellHost.replaceChildren(...children);
   }
@@ -503,7 +584,8 @@ export class StrainFitnessPanel {
     button.addEventListener('click', () => {
       // A non-default organism's files carry its tag, as its other exports do.
       const tag = this.organism?.exportTag ?? null;
-      const name = [tag, 'strain-fitness', kind, slug(this.selection.strainId),
+      const name = [tag, 'strain-fitness', slug(this.datasetSelection.id), kind,
+        slug(this.selection.strainId),
         slug(this.selection.conditionId)].filter(Boolean).join('_');
       downloadTsv(build(), `${name}.tsv`);
       status.textContent = `Downloaded ${name}.tsv with ${plural(rows, 'row')}, `

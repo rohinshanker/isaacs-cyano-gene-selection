@@ -71,7 +71,6 @@ export const DATA_FILES = Object.freeze([
     { needs: ['candidateEvidence'] }),
   file('goTerms', 'go-term-names-v1.json', 3, 'GO term names', { needs: ['annotations'] }),
   file('regulatoryTss', 'regulatory_tss.json', 4, 'regulatory start sites'),
-  file('strainFitness', 'strain_fitness.json', 5, 'strain fitness measurements'),
 ]);
 
 /** Files by key, for consumers that ask about one. */
@@ -121,9 +120,6 @@ export const TIER_LABELS = Object.freeze({
   2: 'function categories and filters',
   3: 'per-gene evidence',
   4: 'regulatory sites',
-  // Last, and alone in its tier: the only layer whose rows are strains rather
-  // than genes, so nothing the map or the gene detail draws waits on it.
-  5: 'strain fitness',
 });
 
 /** What tier 2 is for an organism that publishes no function categories. */

@@ -109,7 +109,9 @@ test('a link is opened onto its own data: what each view promotes', async () => 
   assert.match(promoted, /view\.categoryFilter\.length > 0\) keys\.add\('sourceDerivedCategories'\)/);
   assert.match(promoted, /view\.proteinFilter !== 'any' \|\| view\.panel === LENGTH_TAB\.id\) keys\.add\('lengthCohorts'\)/);
   assert.match(promoted, /view\.panel === REGULATORY_TAB\.id\) keys\.add\('regulatoryTss'\)/);
-  assert.match(promoted, /view\.panel === STRAIN_FITNESS_TAB\.id\) keys\.add\('strainFitness'\)/);
+  assert.doesNotMatch(promoted, /strainFitness/,
+    'whole-strain datasets use their independent lazy catalogue loader');
+  assert.match(source, /strainFitnessLoader\?\.ensure\(selection\.dataset\.id\)/);
   // The tRNA layer is promoted by the tab that shows it, not by the chromosome.
   assert.match(promoted, /view\.panel === TRNA_TAB\.id\) keys\.add\('trnaLoci'\)/);
   for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',

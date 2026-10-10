@@ -16,13 +16,8 @@ import {
   EXPORT_MISSING, GROWTH_COLUMNS, GROWTH_STATUS, WELL_COLUMNS, growthSummary, growthTsv,
   selectGrowth, selectWells, selectionLabels, validateStrainFitness, wellsTsv,
 } from '../../site/js/core/strain-fitness.js';
-import {
-  DEFAULT_ORGANISM, STUDY_LAYER_KEYS, organismById,
-} from '../../site/js/core/organisms.js';
-import {
-  DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, TIER_LABELS, publishesFile,
-} from '../../site/js/core/data-files.js';
-import { loadDatasetStaged } from '../../site/js/core/dataset.js';
+import { DEFAULT_ORGANISM, organismById } from '../../site/js/core/organisms.js';
+import { loadDataset } from '../../site/js/core/dataset.js';
 import { buildFixture } from '../fixtures/make_fixture.mjs';
 import { memoryDirectory } from './helpers.mjs';
 
@@ -319,12 +314,20 @@ function parse(text) {
 test('an export names its source, units and selection, and is the same bytes every time', () => {
   const layer = load();
   const selection = { strainId: 'seg-b', conditionId: 'minimal-37' };
-  const text = growthTsv(layer, selection);
-  assert.equal(text, growthTsv(layer, selection), 'deterministic');
+  const datasetSelection = {
+    id: 'fixture-fitness', label: 'Fixture whole-strain fitness',
+    origin: 'external', originIds: ['shared-fixture'],
+  };
+  const text = growthTsv(layer, selection, datasetSelection);
+  assert.equal(text, growthTsv(layer, selection, datasetSelection), 'deterministic');
   assert.ok(text.endsWith('\n'));
   const { meta, header, rows } = parse(text);
   assert.deepEqual(header, [...GROWTH_COLUMNS]);
   assert.equal(meta.get('organism'), 'utex2973 GCF_000817325.1');
+  assert.equal(meta.get('datasetId'), 'fixture-fitness');
+  assert.equal(meta.get('datasetLabel'), 'Fixture whole-strain fitness');
+  assert.equal(meta.get('datasetSelectionOrigin'), 'external');
+  assert.equal(meta.get('datasetSelectionIds'), 'shared-fixture');
   assert.equal(meta.get('provenance'), 'synthetic-test-fixture');
   assert.equal(meta.get('source'), 'Synthetic strain-fitness fixture, not a publication');
   assert.match(meta.get('sourceFileSha256'), /^[0-9a-f]{64}$/);
@@ -429,81 +432,24 @@ test('the fixture directory the rendered checks read holds the layer the generat
   assert.ok(layer.strains.every((strain) => strain.label.includes('synthetic')));
 });
 
-// --- Through the loader ---------------------------------------------------
-
-/** The fixture as an in-memory data directory, with `strain_fitness.json` replaced. */
-function directory(replacement) {
+test('the single-step directory loader preserves legacy whole-strain validation', async () => {
   const files = buildFixture({ genes: 40, strainFitness: true }).files;
-  if (replacement === undefined) delete files['strain_fitness.json'];
-  else files['strain_fitness.json'] = replacement;
-  return memoryDirectory(DATA_URL, files);
-}
+  const valid = memoryDirectory(DATA_URL, files);
+  const dataset = await loadDataset({
+    baseUrl: DATA_URL, fetchImpl: valid.fetchImpl, organism: DEFAULT_ORGANISM,
+  });
+  assert.equal(dataset.files.strainFitness.state, 'ready');
+  assert.equal(dataset.strainFitness.growth.records.length, 6);
+  assert.ok(dataset.genes.every((gene) => !('strainFitness' in gene)));
 
-async function loadWith(replacement) {
-  const { fetchImpl, requested } = directory(replacement);
-  const staged = loadDatasetStaged({ baseUrl: DATA_URL, fetchImpl, organism: DEFAULT_ORGANISM });
-  const dataset = await staged.core;
-  await staged.settled;
-  return { dataset, requested };
-}
-
-test('the layer is asked for whatever the organism is, and joins nothing onto a gene', async () => {
-  const { dataset, requested } = await loadWith();
-  // Organism-neutral: no record declares this layer, so the request is made for
-  // every organism and the file itself is what says whose data it is.
-  assert.ok(requested.includes('strain_fitness.json'));
-  const { dataset: loaded } = await loadWith(
-    buildFixture({ genes: 40, strainFitness: true }).files['strain_fitness.json'],
-  );
-  assert.equal(loaded.files.strainFitness.state, FILE_STATE.READY);
-  assert.equal(loaded.strainFitness.growth.records.length, 6);
-  assert.ok(loaded.genes.every((gene) => !('strainFitness' in gene)),
-    'no gene carries a strain measurement');
-  // A release that does not publish it is absent, not failed, and the layer is
-  // null rather than an empty table.
-  assert.equal(dataset.files.strainFitness.state, FILE_STATE.ABSENT);
-  assert.equal(dataset.strainFitness, null);
+  const invalid = memoryDirectory(DATA_URL, {
+    ...files,
+    'strain_fitness.json': JSON.stringify({ ...raw(), organismId: 'ecoli-k12-mg1655' }),
+  });
+  await assert.rejects(loadDataset({
+    baseUrl: DATA_URL, fetchImpl: invalid.fetchImpl, organism: DEFAULT_ORGANISM,
+  }), /declares organism ecoli-k12-mg1655, not utex2973/);
 });
-
-test('a malformed layer fails on its own and leaves the gene dataset usable', async () => {
-  for (const [name, body] of [
-    ['invalid JSON', '{not json'],
-    ['a wrong organism', JSON.stringify({ ...raw(), organismId: 'ecoli-k12-mg1655' })],
-    ['a no-growth row with a doubling time', JSON.stringify((() => {
-      const document = raw();
-      document.growth.records[5].doublingTimeMinutes = 90;
-      return document;
-    })())],
-  ]) {
-    const { dataset } = await loadWith(body);
-    assert.equal(dataset.files.strainFitness.state, FILE_STATE.FAILED, name);
-    assert.equal(dataset.strainFitness, null, name);
-    assert.equal(dataset.files.strainFitness.blockedBy, null, name);
-    // The whole point of the tier: nothing the map or the gene detail draws
-    // waits on this file, so a file that cannot be read costs only its own tab.
-    assert.equal(dataset.genes.length, 40, name);
-    assert.equal(dataset.files.genes.state, FILE_STATE.READY, name);
-    for (const key of ['meta', 'codonPca', 'excluded']) {
-      assert.equal(dataset.files[key].state, FILE_STATE.READY, `${name}: ${key}`);
-    }
-  }
-});
-
-test('the layer is last in the loading order and has a tier name of its own', () => {
-  const file = DATA_FILE_BY_KEY.strainFitness;
-  assert.equal(file.name, 'strain_fitness.json');
-  assert.equal(file.required, false);
-  assert.deepEqual([...file.needs], [], 'it reads no other file');
-  assert.equal(file.tier, Math.max(...DATA_FILES.map((entry) => entry.tier)));
-  assert.equal(TIER_LABELS[file.tier], 'strain fitness');
-  // It must never be mistaken for a study-bound layer: those are skipped for an
-  // organism whose record does not declare them, which would make the file
-  // unreachable, since no record declares this one.
-  assert.ok(!STUDY_LAYER_KEYS.includes('strainFitness'));
-  assert.equal(publishesFile(DEFAULT_ORGANISM, file), true);
-  assert.equal(publishesFile(organismById('ecoli-k12-mg1655'), file), true);
-});
-
 
 test('replicates enforce measurement bounds and categorical no-growth absence', () => {
   const row = (d) => d.growth.records.find((r) => r.growthStatus === GROWTH_STATUS.NO_GROWTH);

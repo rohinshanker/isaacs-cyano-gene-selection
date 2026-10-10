@@ -28,6 +28,9 @@
  * - `layers`: the study-bound evidence layers it publishes, keyed by data-file
  *   key, each with the labels its views read. A layer that is not declared is
  *   never requested, whatever its data directory holds.
+ * - `strainFitnessDatasets`: admitted whole-strain payloads, separate from all
+ *   gene metric registries. Data Sources carries their ids in a separately
+ *   typed whole-strain selection, never through per-gene source aliases.
  * - `sequenceContext`: the optional expanded upstream-sequence payload and the
  *   selectable extents it supports, or null when only the core 30 nt exist.
  * - `copy`: whole sentences that state organism facts.

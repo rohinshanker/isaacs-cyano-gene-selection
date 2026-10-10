@@ -219,7 +219,6 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     lengthCohorts: null,
     regulatoryTss: null,
     trnaLoci: null,
-    strainFitness: null,
     candidateEvidence: null,
     goIeaEssentiality: null,
     goTerms: null,
@@ -542,13 +541,6 @@ export const DATA_APPLIERS = Object.freeze({
     dataset.trnaLoci = trnaLoci;
   },
 
-  // Whole-strain measurements. The file declares the organism and assembly it
-  // belongs to and is checked against this dataset's, because the layer is
-  // organism-neutral and so nothing else would catch a file published into the
-  // wrong data directory. It joins nothing onto a gene.
-  strainFitness(dataset, strainFitness) {
-    dataset.strainFitness = strainFitness ? validateStrainFitness(strainFitness, dataset) : null;
-  },
 });
 
 /**
@@ -561,7 +553,7 @@ export const DATA_APPLIERS = Object.freeze({
  *
  * @returns {Promise<{data: any}|{raw: Uint8Array}>}
  */
-async function readBody(response, onBytes) {
+export async function readBody(response, onBytes) {
   const reader = response.body?.getReader?.();
   if (!reader) return { data: await response.json() };
   const chunks = [];
@@ -591,7 +583,7 @@ async function readBody(response, onBytes) {
  * Where the platform has no `crypto.subtle`, which is a page served over plain
  * HTTP from a host other than localhost, the size is all there is to check.
  */
-async function matchesManifest(raw, entry) {
+export async function matchesManifest(raw, entry) {
   if (raw.byteLength !== entry.bytes) return false;
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) return true;
@@ -632,7 +624,7 @@ export const TIER_LEAD_BYTES = 128 * 1024;
 const LEGACY_FAILURE_ORDER = Object.freeze([
   'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
   'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca',
-  'codonPcaReference', 'excluded', 'strainFitness', 'trnaLoci', 'sequenceContext',
+  'codonPcaReference', 'excluded', 'trnaLoci', 'sequenceContext',
 ]);
 
 /**
@@ -1075,6 +1067,60 @@ export async function loadDataset({ baseUrl, fetchImpl = fetch, organism = null 
   const staged = loadDatasetStaged({ baseUrl, fetchImpl, organism, lenientOptional: true });
   const dataset = await staged.core;
   await staged.settled;
+  // Compatibility for validators and tools that read one directory to
+  // completion: the interactive app uses the independent catalogue loader,
+  // but a legacy `strain_fitness.json` still validates fail-closed here.
+  const base = new URL(baseUrl, globalThis.location?.href ?? 'http://localhost/');
+  const manifest = await staged.manifest;
+  const entry = manifest?.files.get('strain_fitness.json') ?? null;
+  const record = { state: FILE_STATE.LOADING, error: null, blockedBy: null };
+  dataset.files.strainFitness = record;
+  const request = dataRequest(base, 'strain_fitness.json', entry, 5);
+  const attempt = async (reload = false) => {
+    const response = await fetchImpl(request.url,
+      reload ? { ...request.init, cache: 'reload' } : request.init);
+    if (!response.ok) {
+      // Match the historical lenient-optional single-step contract when no
+      // manifest establishes publication. A manifest entry makes every HTTP
+      // failure a deployment failure instead.
+      if (!entry) return { absent: true };
+      throw new Error(`could not read ${request.plainUrl}: HTTP ${response.status}`);
+    }
+    return readBody(response, () => {});
+  };
+  try {
+    let result = manifest && !entry ? { absent: true } : await attempt();
+    if (entry && result.raw && !(await matchesManifest(result.raw, entry))) {
+      result = await attempt(true);
+      if (result.raw && !(await matchesManifest(result.raw, entry))) {
+        throw new Error(`${request.plainUrl} does not match the published data manifest; `
+          + 'the site may be mid-update');
+      }
+    }
+    if (result.absent) {
+      dataset.strainFitness = null;
+      record.state = FILE_STATE.ABSENT;
+    } else {
+      const raw = result.raw
+        ? JSON.parse(new TextDecoder().decode(result.raw))
+        : result.data;
+      // The former staged applier treated a JSON null as an absent optional
+      // layer. Preserve that tool-facing compatibility while still validating
+      // every non-null document fail-closed.
+      if (raw === null) {
+        dataset.strainFitness = null;
+        record.state = FILE_STATE.ABSENT;
+      } else {
+        dataset.strainFitness = validateStrainFitness(raw, dataset);
+        record.state = FILE_STATE.READY;
+      }
+    }
+  } catch (error) {
+    dataset.strainFitness = null;
+    record.state = FILE_STATE.FAILED;
+    record.error = error;
+    throw error;
+  }
   const failed = (key) => dataset.files[key].state === FILE_STATE.FAILED;
   // A file blocked by another names a consequence; the cause is thrown first.
   const first = LEGACY_FAILURE_ORDER.find((key) => failed(key) && !dataset.files[key].blockedBy)

@@ -14,11 +14,30 @@ import {
 import { validateStrainFitness } from '../../site/js/core/strain-fitness.js';
 import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
 import { MISSING } from '../../site/js/ui/format.js';
+import { FILE_STATE } from '../../site/js/core/data-files.js';
 import { buildFixture } from '../fixtures/make_fixture.mjs';
 import { withFakeDocument } from './fake-dom.mjs';
 
 const raw = JSON.parse(buildFixture({ genes: 40, strainFitness: true })
   .files['strain_fitness.json']);
+const catalogue = Object.freeze([Object.freeze({
+  id: 'fixture-fitness', label: 'Fixture whole-strain fitness', file: 'strain_fitness.json',
+})]);
+
+function model(layer, pending = null, overrides = {}) {
+  if (!layer && !pending) return { catalogue: [], selection: null, resource: null };
+  return {
+    catalogue,
+    selection: {
+      dataset: catalogue[0], origin: 'local', originIds: ['fixture-fitness'],
+      ambiguousIds: [], showLocalSelector: true,
+      ...overrides.selection,
+    },
+    resource: layer
+      ? { state: FILE_STATE.READY, data: layer, error: null }
+      : { state: pending, data: null, error: pending === FILE_STATE.FAILED ? new Error('fixture failed') : null },
+  };
+}
 
 function layerFor(mutate = () => {}) {
   const document = JSON.parse(JSON.stringify(raw));
@@ -34,7 +53,7 @@ function mount(document, layer, pending = null, options = {}) {
   const host = document.createElement('div');
   document.body.append(host);
   const panel = new StrainFitnessPanel(host, { organism: DEFAULT_ORGANISM, ...options });
-  panel.update(layer, pending);
+  panel.update(model(layer, pending));
   return { host, panel };
 }
 
@@ -57,6 +76,75 @@ test('the tab says in its own blurb that these rows are not genes', () => {
   assert.match(STRAIN_FITNESS_TAB.blurb, /none of them colours the map/);
 });
 
+test('dataset identity, local choice, external origin, and ambiguity are explicit', async () => {
+  await withFakeDocument((document) => {
+    const chosen = [];
+    const second = Object.freeze({
+      id: 'fixture-fitness-b', label: 'Fixture fitness B', file: 'b.json',
+    });
+    const host = document.createElement('div');
+    const panel = new StrainFitnessPanel(host, { onDatasetSelect: (id) => chosen.push(id) });
+    panel.update({
+      catalogue: [catalogue[0], second],
+      selection: {
+        dataset: catalogue[0], origin: 'local', originIds: ['fixture-fitness'],
+        ambiguousIds: [], showLocalSelector: true,
+      },
+      resource: { state: FILE_STATE.READY, data: layerFor(), error: null },
+    });
+    assert.match(host.querySelector('.fitness-dataset-context').textContent,
+      /Active dataset: Fixture whole-strain fitness.*Local Strain fitness selector/);
+    panel.datasetSelect.value = second.id;
+    panel.datasetSelect.dispatch('change');
+    assert.deepEqual(chosen, [second.id]);
+
+    panel.datasetSelect.focus();
+    const settledLayer = layerFor();
+    const localModel = {
+      catalogue: [catalogue[0], second],
+      selection: {
+        dataset: catalogue[0], origin: 'local', originIds: ['fixture-fitness'],
+        ambiguousIds: [], showLocalSelector: true,
+      },
+      resource: { state: FILE_STATE.READY, data: settledLayer, error: null },
+    };
+    panel.update(localModel);
+    assert.equal(document.activeElement, panel.datasetSelect,
+      'the local selector keeps focus when its dataset finishes loading');
+    panel.query.value = 'glucose';
+    panel.query.dispatch('input');
+    panel.query.focus();
+    panel.update(localModel);
+    assert.equal(document.activeElement, panel.query,
+      'the query keeps focus through an unrelated app rerender');
+    assert.equal(panel.query.value, 'glucose');
+
+    panel.update({
+      catalogue: [catalogue[0], second],
+      selection: {
+        dataset: second, origin: 'external', originIds: ['fixture-fitness-b'],
+        ambiguousIds: [], showLocalSelector: false,
+      },
+      resource: { state: FILE_STATE.READY, data: layerFor(), error: null },
+    });
+    assert.equal(panel.datasetSelect, null);
+    assert.match(host.querySelector('.fitness-dataset-context').textContent,
+      /Shared Data Sources selection \(fixture-fitness-b\)/);
+
+    panel.update({
+      catalogue: [catalogue[0], second],
+      selection: {
+        dataset: catalogue[0], origin: 'local', originIds: ['fixture-fitness'],
+        ambiguousIds: ['fixture-fitness', 'fixture-fitness-b'], showLocalSelector: true,
+      },
+      resource: { state: FILE_STATE.READY, data: layerFor(), error: null },
+    });
+    assert.match(host.querySelector('.fitness-dataset-ambiguity').textContent,
+      /matches multiple whole-strain datasets/);
+    assert.ok(panel.datasetSelect);
+  });
+});
+
 test('absent, loading and failed are three different sentences', async () => {
   await withFakeDocument((document) => {
     const { host, panel } = mount(document, null);
@@ -64,17 +152,18 @@ test('absent, loading and failed are three different sentences', async () => {
     assert.match(UNAVAILABLE_TEXT, /unavailable in this dataset/);
 
     // Loading is unknown, not absent, and must not borrow the absent wording.
-    panel.update(null, 'loading');
-    assert.equal(host.textContent, 'Loading strain fitness measurements…');
-    assert.equal(host.querySelector('p').dataset.pending, 'loading');
+    panel.update(model(null, FILE_STATE.LOADING));
+    assert.ok(host.textContent.includes('Loading strain fitness measurements…'));
+    assert.equal(host.querySelector('p[data-pending="loading"]').dataset.pending, 'loading');
 
     // A malformed file is a layer that exists and could not be read. The gene
     // app is untouched: this panel is the only thing that says so.
-    panel.update(null, 'failed');
-    assert.equal(host.textContent, 'Strain fitness measurements could not be loaded.');
-    assert.equal(host.querySelector('p').dataset.pending, 'failed');
+    panel.update(model(null, FILE_STATE.FAILED));
+    assert.ok(host.textContent.includes('Strain fitness measurements could not be loaded.'));
+    assert.equal(host.querySelector('p[data-pending="failed"]').dataset.pending, 'failed');
+    assert.ok(host.textContent.includes('Retry this dataset'));
 
-    panel.update(layerFor());
+    panel.update(model(layerFor()));
     assert.ok(host.textContent.includes('Strain fitness'));
     assert.ok(!host.textContent.includes(UNAVAILABLE_TEXT));
   });
@@ -173,7 +262,8 @@ test('every row names its strain, scheme and condition, and the context line nam
     }
     const context = host.querySelector('p.fitness-context').textContent;
     assert.equal(context, 'Strain: All strains · Scheme: All schemes · '
-      + 'Condition: All conditions · Source: FIXTURE_STRAIN_FITNESS');
+      + 'Condition: All conditions · Dataset: Fixture whole-strain fitness (fixture-fitness) · '
+      + 'Selected by: local · Source: FIXTURE_STRAIN_FITNESS');
     assert.equal(host.querySelector('p.fitness-context').getAttribute('role'), 'status');
     assert.equal(host.querySelector('p.length-summary').textContent,
       '6 growth records, 3 growth strains, 1 with no growth detected, 24 Biolog wells.');
@@ -189,7 +279,8 @@ test('filtering by strain and condition narrows both tables and the context line
     assert.equal(rowsOf(host, 1).length, 8);
     assert.equal(host.querySelector('p.fitness-context').textContent,
       'Strain: Segment set B (synthetic) · Scheme: seven-codon recoding (synthetic) (70-81) · '
-      + 'Condition: All conditions · Source: FIXTURE_STRAIN_FITNESS');
+      + 'Condition: All conditions · Dataset: Fixture whole-strain fitness (fixture-fitness) · '
+      + 'Selected by: local · Source: FIXTURE_STRAIN_FITNESS');
 
     panel.condition.value = 'minimal-37';
     panel.condition.dispatch('change');
@@ -268,7 +359,7 @@ test('a download names its file, its rows and its provenance, and is announced',
       assert.match(text, /# selectedStrain\tSegment set B \(synthetic\)\n/);
       assert.match(text, /# rows\t2\n/);
       const status = growthExport.querySelector('p.panel-note').textContent;
-      assert.equal(status, 'Downloaded strain-fitness_growth_seg-b_all.tsv with 2 rows, '
+      assert.equal(status, 'Downloaded strain-fitness_fixture-fitness_growth_seg-b_all.tsv with 2 rows, '
         + 'its units and its source provenance.');
       assert.deepEqual(announced, [status]);
     } finally {
@@ -300,11 +391,11 @@ test('a second layer replaces the first rather than filtering it through a stale
     assert.equal(rowsOf(host, 0).length, 2);
     // A reload or an organism switch hands over a different layer, whose strain
     // ids need not be the layer the selection was made against.
-    panel.update(layerFor((file) => {
+    panel.update(model(layerFor((file) => {
       file.strains = file.strains.filter((entry) => entry.id !== 'seg-b');
       file.growth.records = file.growth.records.filter((entry) => entry.strainId !== 'seg-b');
       file.biolog.records = file.biolog.records.filter((entry) => entry.strainId !== 'seg-b');
-    }));
+    })));
     assert.equal(panel.selection.strainId, 'all');
     assert.equal(rowsOf(host, 0).length, 4);
     assert.ok(host.querySelector('p.fitness-context').textContent.includes('Strain: All strains'));

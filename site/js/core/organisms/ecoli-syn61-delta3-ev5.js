@@ -43,6 +43,11 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
   locusExample: 'PPG85_00005',
   annotationSources: [],
   layers: {},
+  strainFitnessDatasets: [{
+    id: 'nyerges-2026-syn61-fitness',
+    label: 'Nyerges 2026 strain growth and Biolog fitness',
+    file: 'strain_fitness.json',
+  }],
   recoding: {
     schemeId: 'syn61',
     schemeName: 'Syn61 three-codon scheme',

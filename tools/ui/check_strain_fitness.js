@@ -1,13 +1,10 @@
 /**
  * Run with playwright-cli run-code --filename=tools/ui/check_strain_fitness.js.
  *
- * Open the page first with the strain-fitness fixture as its data directory and
- * an absolute `uiArtifacts` directory; `docs/validation/strain-fitness.md` has
- * the exact commands. The check walks the states the tab has to draw — full
- * data, a strain that did not grow, a narrowed selection, the expanded units
- * block, a keyboard pass, a download, the absent layer and a malformed one —
- * at phone, tablet, desktop and wide widths and on both sides of the two
- * column breakpoints.
+ * Open the real app with an absolute `uiArtifacts` directory;
+ * `docs/validation/strain-fitness.md` has the exact commands. Network routes
+ * create temporary, clearly synthetic catalogue variants from the generated
+ * fixture without adding fake shipped data.
  */
 async (page) => {
   const { root, base } = await page.evaluate(() => ({
@@ -15,21 +12,81 @@ async (page) => {
     base: location.href.split('#')[0].split('?')[0],
   }));
   if (!root?.startsWith('/')) throw new Error('An absolute uiArtifacts directory is required.');
-  // The script drives every state itself, from directories relative to the
-  // page, so a rerun does not depend on whichever one the last run ended on.
-  const fixtures = {
-    full: '../tests/fixtures/data-strain-fitness/',
-    absent: '../tests/fixtures/data/',
-    malformed: '../.playwright-cli/dem-312-strain-fitness/data-malformed/',
-  };
-
   const check = (ok, message) => { if (!ok) throw new Error(message); };
+  const fixtureUrl = base.replace(/\/site\/index\.html$/, '/tests/fixtures/data-strain-fitness/strain_fitness.json');
+  const fixtureResponse = await page.request.get(fixtureUrl);
+  check(fixtureResponse.ok(), `could not read synthetic fixture: ${fixtureResponse.status()}`);
+  const synthetic = await fixtureResponse.json();
+  synthetic.organismId = 'ecoli-syn61-delta3-ev5';
+  synthetic.genome.accession = 'GCA_028355435.1';
+  const payloadText = (name) => {
+    const payload = JSON.parse(JSON.stringify(synthetic));
+    if (scenario === 'invalid' && name === 'synthetic-a.json') {
+      payload.growth.records[5].doublingTimeMinutes = 90;
+    }
+    return JSON.stringify(payload);
+  };
+  let scenario = 'production';
+  let failedOnce = false;
+  let releaseSlow = null;
+  const catalogues = {
+    full: [
+      { id: 'synthetic-a', label: 'Synthetic fixture A', file: 'synthetic-a.json' },
+      { id: 'synthetic-b', label: 'Synthetic fixture B', file: 'synthetic-b.json' },
+    ],
+  };
+  const entryFor = async (body) => page.evaluate(async (text) => {
+    const bytes = new TextEncoder().encode(text);
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+    return {
+      bytes: bytes.byteLength,
+      sha256: [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join(''),
+    };
+  }, body);
+  const validEntry = await entryFor(payloadText('synthetic-b.json'));
+  scenario = 'invalid';
+  const invalidEntry = await entryFor(payloadText('synthetic-a.json'));
+  scenario = 'production';
+  await page.route('**/js/core/organisms/ecoli-syn61-delta3-ev5.js', async (route) => {
+    if (scenario === 'production' || scenario === 'absent') return route.continue();
+    const response = await route.fetch();
+    const catalogue = catalogues.full;
+    const body = (await response.text()).replace(
+      /  strainFitnessDatasets: [\s\S]*?\n  recoding:/,
+      `  strainFitnessDatasets: ${JSON.stringify(catalogue)},\n  recoding:`,
+    );
+    await route.fulfill({ response, body });
+  });
+  await page.route('**/data/organisms/ecoli-syn61-delta3-ev5/data-manifest.json', async (route) => {
+    if (scenario === 'production' || scenario === 'absent') return route.continue();
+    const response = await route.fetch();
+    const manifest = await response.json();
+    for (const name of ['synthetic-a.json', 'synthetic-b.json']) {
+      manifest.files[name] = scenario === 'invalid' && name === 'synthetic-a.json'
+        ? invalidEntry : validEntry;
+    }
+    await route.fulfill({ response, json: manifest });
+  });
+  await page.route('**/data/organisms/ecoli-syn61-delta3-ev5/synthetic-*.json*', async (route) => {
+    const name = route.request().url().split('?')[0].split('/').pop();
+    if (scenario === 'error-retry' && name === 'synthetic-a.json' && !failedOnce) {
+      failedOnce = true;
+      return route.fulfill({ status: 500, body: 'synthetic first-attempt failure' });
+    }
+    if (scenario === 'race' && name === 'synthetic-a.json') {
+      await new Promise((resolve) => { releaseSlow = resolve; });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: payloadText(name) });
+  });
+
   let errors = [];
   // A 404 for an optional data file is the loader's absent path, which every
   // fixture exercises; it is the page working, not an error. Anything else is.
   // The message text carries no address; the location does.
-  const expected = (message) => /status of 404/.test(message.text())
-    && /\/(?:tests\/fixtures|\.playwright-cli)\/[^?]*\.json/.test(message.location()?.url ?? '');
+  const expected = (message) => (/status of 404/.test(message.text())
+    && /\/(?:tests\/fixtures|\.playwright-cli)\/[^?]*\.json/.test(message.location()?.url ?? ''))
+    || (scenario === 'error-retry' && /status of 500/.test(message.text())
+      && /synthetic-a\.json/.test(message.location()?.url ?? ''));
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() !== 'error' || expected(message)) return;
@@ -48,19 +105,23 @@ async (page) => {
   const evidence = [];
   // Phone, tablet, desktop, wide, and both sides of the 960 px two-column and
   // 1240 px three-column breakpoints, where #main changes its grid.
-  const sizes = [[375, 812], [768, 1024], [959, 900], [961, 900], [1239, 900], [1241, 900],
+  const sizes = [[375, 812], [768, 1024], [959, 900], [960, 900], [1239, 900], [1240, 900],
     [1280, 800], [1440, 900]];
   const view = page.locator('#strain-fitness-view');
   const tab = page.getByRole('tab', { name: 'Strain fitness', exact: true });
   const context = view.locator('p.fitness-context');
   const growthRows = view.locator('table.fitness-table >> nth=0').locator('tbody tr');
 
-  const open = async (directory, hash = '') => {
+  const open = async (nextScenario, hash = '', panel = 'strain-fitness') => {
     errors = [];
+    scenario = nextScenario;
+    failedOnce = false;
+    releaseSlow = null;
     // A fresh document, so no module or dataset is carried over between states.
     await page.goto('about:blank');
-    await page.goto(`${base}?data=${encodeURIComponent(directory)}`
-      + `&uiArtifacts=${encodeURIComponent(root)}#ver=6&p=strain-fitness${hash}`);
+    const organism = nextScenario === 'absent' ? '' : 'org=ecoli-syn61-delta3-ev5&';
+    await page.goto(`${base}?${organism}uiArtifacts=${encodeURIComponent(root)}`
+      + `#ver=7&p=${panel}${hash}`);
     await page.waitForFunction(() => !document.querySelector('#main')?.hidden);
   };
 
@@ -110,12 +171,33 @@ async (page) => {
   };
 
   try {
+    // --- Real production Syn61 ------------------------------------------
+    await open('production');
+    await page.waitForFunction(() =>
+      document.querySelector('#strain-fitness-view table.fitness-table') !== null);
+    const productionIdentity = await view.locator('.fitness-dataset-context').innerText();
+    check(/Nyerges 2026 strain growth and Biolog fitness/.test(productionIdentity)
+      && /nyerges-2026-syn61-fitness/.test(productionIdentity),
+    `production dataset identity: ${productionIdentity}`);
+    check(!/synthetic test data/.test((await view.innerText()).toLowerCase()),
+      'production Syn61 is not labelled synthetic');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await layout('fitness-production-syn61-1440');
+    quiet('production Syn61');
+
     // --- Full data -------------------------------------------------------
-    await open(fixtures.full);
+    await open('full');
     check(await tab.getAttribute('aria-selected') === 'true', 'the link opens on the tab');
     await page.waitForFunction(() =>
       document.querySelector('#strain-fitness-view table.fitness-table') !== null);
     check((await view.locator('h2').innerText()) === 'Strain fitness', 'the panel heading');
+    check(await view.locator('.fitness-dataset select').count() === 1,
+      'the synthetic multiple catalogue exposes the local selector');
+    check(await view.locator('.fitness-dataset select option').count() === 2,
+      'both admitted synthetic datasets are selectable');
+    const datasetIdentity = await view.locator('.fitness-dataset-context').innerText();
+    check(/Synthetic fixture A/.test(datasetIdentity) && /Local Strain fitness selector/.test(datasetIdentity),
+      `local identity and origin: ${datasetIdentity}`);
     const blurb = await page.locator('#panel-blurb').innerText();
     check(/whole strain/.test(blurb) && /colours the map/.test(blurb),
       'the tab blurb says these rows are not genes');
@@ -132,9 +214,9 @@ async (page) => {
     const offered = channels.flat()
       .filter((text) => /doubling time|biolog|maximum od600|strain fitness/i.test(text));
     check(offered.length === 0, `offered as a gene channel: ${offered.join(', ')}`);
-    check(await view.locator('p.provenance-warning').innerText()
-      .then((text) => /synthetic test data/.test(text)), 'the fixture is labelled synthetic');
     const sourceText = await view.locator('div.fitness-source').innerText();
+    check(/Synthetic strain-fitness fixture, not a publication/.test(sourceText),
+      'the fixture is labelled synthetic');
     check(/retrieved 2026-10-07/.test(sourceText) && /[0-9a-f]{64}/.test(sourceText),
       'the source is cited, dated and pinned by checksum');
     check(await growthRows.count() === 6, 'six growth rows');
@@ -236,7 +318,7 @@ async (page) => {
     await page.keyboard.press('ArrowRight');
     // Every control inside the panel is reachable by Tab, in reading order.
     const reached = [];
-    for (let step = 0; step < 24 && reached.length < 6; step += 1) {
+    for (let step = 0; step < 28 && reached.length < 7; step += 1) {
       await page.keyboard.press('Tab');
       const landed = await page.evaluate(() => {
         const node = document.activeElement;
@@ -246,8 +328,8 @@ async (page) => {
       if (landed) reached.push(landed);
     }
     check(reached.some((entry) => entry.startsWith('summary')), 'the units block is reachable');
-    check(reached.filter((entry) => entry.startsWith('select')).length === 2,
-      `both filters are reachable: ${reached.join(' | ')}`);
+    check(reached.filter((entry) => entry.startsWith('select')).length === 3,
+      `the dataset selector and both filters are reachable: ${reached.join(' | ')}`);
     check(reached.some((entry) => entry.startsWith('input:search')), 'the search is reachable');
     check(reached.some((entry) => /Download growth summary/.test(entry)),
       `the growth export is reachable: ${reached.join(' | ')}`);
@@ -260,27 +342,111 @@ async (page) => {
       page.waitForEvent('download'),
       growthDownload.click(),
     ]);
-    check(growthFile.suggestedFilename() === 'strain-fitness_growth_all_all.tsv',
+    check(growthFile.suggestedFilename()
+      === 'ecoli-syn61-delta3-ev5_strain-fitness_synthetic-a_growth_all_all.tsv',
       `growth export file name: ${growthFile.suggestedFilename()}`);
     const growthPath = `${root}/${growthFile.suggestedFilename()}`;
     await growthFile.saveAs(growthPath);
     const status = await view.locator('div.fitness-export >> nth=0').locator('p.panel-note')
       .innerText();
-    check(/Downloaded strain-fitness_growth_all_all\.tsv with 6 rows, its units and its source provenance\./
+    check(/Downloaded ecoli-syn61-delta3-ev5_strain-fitness_synthetic-a_growth_all_all\.tsv with 6 rows, its units and its source provenance\./
       .test(status), `the export states what it wrote: ${status}`);
     const wellDownload = view.getByRole('button', { name: 'Download Biolog values (TSV)' });
     const [wellFile] = await Promise.all([
       page.waitForEvent('download'),
       wellDownload.click(),
     ]);
-    check(wellFile.suggestedFilename() === 'strain-fitness_biolog_all_all.tsv',
+    check(wellFile.suggestedFilename()
+      === 'ecoli-syn61-delta3-ev5_strain-fitness_synthetic-a_biolog_all_all.tsv',
       `well export file name: ${wellFile.suggestedFilename()}`);
     await wellFile.saveAs(`${root}/${wellFile.suggestedFilename()}`);
     evidence.push({ label: 'downloads', growth: growthPath });
     quiet('export');
 
+    // --- External, ambiguous, race, invalid and retry states -------------
+    await open('external', '', 'native');
+    const dataSources = page.locator('#data-sources');
+    await dataSources.locator('summary').click();
+    const sharedA = dataSources.getByRole('checkbox', {
+      name: 'Select whole-strain fitness dataset Synthetic fixture A',
+    });
+    await sharedA.focus();
+    await page.keyboard.press('Space');
+    check(await sharedA.evaluate((node) => node === document.activeElement),
+      'the shared whole-strain checkbox keeps focus after its synchronous rerender');
+    await tab.click();
+    await page.waitForFunction(() =>
+      document.querySelector('#strain-fitness-view table.fitness-table') !== null);
+    check(await view.locator('.fitness-dataset select').count() === 0,
+      'an unambiguous shared choice hides the duplicate local selector');
+    check(/Shared Data Sources selection/.test(
+      await view.locator('.fitness-dataset-context').innerText()),
+    'the external origin is named');
+    await layout('fitness-external-selection-1280');
+
+    await page.getByRole('tab', { name: 'Native codon space', exact: true }).click();
+    const sharedB = dataSources.getByRole('checkbox', {
+      name: 'Select whole-strain fitness dataset Synthetic fixture B',
+    });
+    await sharedB.focus();
+    await page.keyboard.press('Space');
+    check(await sharedB.evaluate((node) => node === document.activeElement),
+      'a second shared whole-strain checkbox also keeps focus');
+    await tab.click();
+    check(await view.locator('.fitness-dataset select').count() === 1,
+      'ambiguous external matches retain the local selector');
+    check(/matches multiple whole-strain datasets/.test(
+      await view.locator('.fitness-dataset-ambiguity').innerText()),
+    'the ambiguity is explicit');
+    await layout('fitness-ambiguous-selection-1280');
+
+    await open('race');
+    await page.waitForFunction(() =>
+      document.querySelector('#strain-fitness-view p[data-pending="loading"]') !== null);
+    const datasetSelect = view.locator('.fitness-dataset select');
+    await datasetSelect.focus();
+    await datasetSelect.selectOption('synthetic-b');
+    await page.waitForFunction(() =>
+      document.querySelector('#strain-fitness-view table.fitness-table') !== null);
+    check(await datasetSelect.evaluate((node) => node === document.activeElement),
+      'the local dataset selector keeps focus as the selected payload lands');
+    check(/Synthetic fixture B/.test(await view.locator('.fitness-dataset-context').innerText()),
+      'switching while A loads shows B');
+    check(typeof releaseSlow === 'function', 'the delayed A request is in flight');
+    const raceQuery = view.locator('div.fitness-controls input[type=search]');
+    await raceQuery.focus();
+    releaseSlow();
+    await page.waitForTimeout(50);
+    check(await raceQuery.evaluate((node) => node === document.activeElement),
+      'the environment query keeps focus when an unrelated payload settles');
+    check(/Synthetic fixture B/.test(await view.locator('.fitness-dataset-context').innerText()),
+      'the late A response cannot replace B');
+    await layout('fitness-race-stays-on-b-1280');
+
+    await open('invalid');
+    await page.waitForFunction(() => document.querySelector('#strain-fitness-view')
+      ?.textContent.includes('could not be loaded'));
+    check(/Synthetic fixture A/.test(await view.locator('.fitness-dataset-context').innerText()),
+      'invalid payload retains its dataset identity');
+    check(/no growth and a doubling time/.test(await view.locator('.fitness-load-error').innerText()),
+      'schema failure is named');
+    await layout('fitness-invalid-1280');
+
+    await open('error-retry');
+    await page.waitForFunction(() => document.querySelector('#strain-fitness-view')
+      ?.textContent.includes('could not be loaded'));
+    check(/HTTP 500/.test(await view.locator('.fitness-load-error').innerText()),
+      'transport failure is named');
+    await view.getByRole('button', { name: 'Retry this dataset' }).click();
+    await page.waitForFunction(() =>
+      document.querySelector('#strain-fitness-view table.fitness-table') !== null);
+    check(/Synthetic fixture A/.test(await view.locator('.fitness-dataset-context').innerText()),
+      'retry restores the same identified dataset');
+    await layout('fitness-retry-ready-1280');
+    quiet('selection resolution and independent loading');
+
     // --- The layer absent -------------------------------------------------
-    await open(fixtures.absent);
+    await open('absent');
     await page.waitForFunction(() => document.querySelector('#strain-fitness-view')
       ?.textContent.length > 0);
     check(await view.innerText() === 'Strain fitness measurements are unavailable in this dataset.',
@@ -296,30 +462,7 @@ async (page) => {
     check(await page.locator('#map-canvas').isVisible(), 'the map is still there');
     quiet('absent');
 
-    // --- The layer malformed ----------------------------------------------
-    await open(fixtures.malformed);
-    await page.waitForFunction(() => document.querySelector('#strain-fitness-view')
-      ?.textContent.includes('could not be loaded'));
-    const failedText = await view.innerText();
-    check(failedText === 'Strain fitness measurements could not be loaded.',
-      `the failed sentence names the layer: ${failedText}`);
-    check(await view.locator('p[data-pending="failed"]').count() === 1,
-      'and is marked as a failed layer, not an absent one');
-    // The loading tail offers a retry for exactly this file, and nothing else
-    // on the page is in a failed state.
-    check(await page.locator('.load-tail.has-failures, .has-failures').count() >= 1,
-      'the loading tail reports the failure');
-    for (const [width, height] of [[375, 812], [1280, 800]]) {
-      await page.setViewportSize({ width, height });
-      await layout(`fitness-failed-${width}`);
-    }
-    await page.getByRole('tab', { name: 'Native codon space', exact: true }).click();
-    await page.waitForFunction(() => !document.querySelector('#map-view')?.hidden);
-    check(await page.locator('#map-canvas').isVisible(),
-      'the normal gene app stays usable with a malformed layer');
-    check(await page.locator('#legend').innerText().then((text) => text.length > 0),
-      'and still colours and describes its genes');
-    quiet('malformed');
+    quiet('absent');
   } finally {
     page.removeAllListeners('pageerror');
     page.removeAllListeners('console');

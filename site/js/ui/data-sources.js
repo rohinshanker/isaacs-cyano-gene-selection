@@ -242,13 +242,21 @@ export class DataSourcesPanel {
   /**
    * @param {HTMLElement} host the toolbar row the section renders into.
    * @param {{datasets: object[], judgements?: object[], onChange?: function(string[]): void,
+   *   wholeStrainDatasets?: object[], wholeStrainSelection?: string[],
+   *   onWholeStrainChange?: function(string[]): void,
    *   storage?: {getItem: function, setItem: function}|null, section?: boolean}} options
    */
-  constructor(host, { datasets, judgements = [], onChange, storage = null, section = true }) {
+  constructor(host, {
+    datasets, judgements = [], onChange, wholeStrainDatasets = [], wholeStrainSelection = [],
+    onWholeStrainChange, storage = null, section = true,
+  }) {
     this.host = host;
     this.datasets = datasets;
     this.judgements = judgements;
     this.onChange = onChange;
+    this.wholeStrainDatasets = wholeStrainDatasets;
+    this.wholeStrainSelection = wholeStrainSelection;
+    this.onWholeStrainChange = onWholeStrainChange;
     this.storage = storage;
     this.selection = normalizeSelection([], datasets);
     this.colorMetricKey = null;
@@ -309,10 +317,14 @@ export class DataSourcesPanel {
    * data sources too (owner decision, 2026-10-06) and the section shows them
    * in place of the dataset list.
    */
-  update({ selection, colorMetricKey = this.colorMetricKey, annotation = null, informing = null } = {}) {
+  update({
+    selection, colorMetricKey = this.colorMetricKey, annotation = null, informing = null,
+    wholeStrainSelection = null,
+  } = {}) {
     if (selection) this.selection = normalizeSelection(selection, this.datasets);
     this.colorMetricKey = colorMetricKey;
     this.annotation = annotation;
+    if (Array.isArray(wholeStrainSelection)) this.wholeStrainSelection = wholeStrainSelection;
     // `{typeOf(dataset) → {key, label}, chosen(typeKey) → dataset|null, onInform(typeKey, id)}`:
     // which dataset informs each type metric, chosen here when a type has
     // more than one selected dataset.
@@ -328,12 +340,48 @@ export class DataSourcesPanel {
    */
   relevant() {
     if (this.annotation) return true;
-    return Boolean(dataTypeOfMetric(this.colorMetricKey, this.datasets));
+    return this.wholeStrainDatasets.length > 0
+      || Boolean(dataTypeOfMetric(this.colorMetricKey, this.datasets));
   }
 
   selectedDatasets() {
     const chosen = new Set(this.selection);
     return this.datasets.filter((d) => chosen.has(d.id));
+  }
+
+  /** Explicit whole-strain choices; never inferred from per-gene source rows. */
+  renderWholeStrainRows() {
+    if (this.wholeStrainDatasets.length === 0) return;
+    this.list.append(el('li', {
+      className: 'data-sources-type', text: 'Whole-strain fitness (separate from gene metrics)',
+    }));
+    const selected = new Set(this.wholeStrainSelection);
+    for (const dataset of this.wholeStrainDatasets) {
+      const item = el('li', { className: 'data-sources-item data-sources-whole-strain' });
+      item.dataset.id = dataset.id;
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = selected.has(dataset.id);
+      input.setAttribute('aria-label', `Select whole-strain fitness dataset ${dataset.label}`);
+      input.addEventListener('change', () => {
+        if (input.checked) selected.add(dataset.id); else selected.delete(dataset.id);
+        this.wholeStrainSelection = this.wholeStrainDatasets
+          .filter((entry) => selected.has(entry.id)).map((entry) => entry.id);
+        this.onWholeStrainChange?.([...this.wholeStrainSelection]);
+        // The app callback synchronously rerenders all shared controls. Rebuild
+        // once more from the settled selection, then return keyboard focus to
+        // the checkbox that initiated the change rather than dropping it on
+        // the document body.
+        this.renderSection();
+        const replacement = [...this.list.querySelectorAll('li.data-sources-whole-strain')]
+          .find((row) => row.dataset.id === dataset.id)?.querySelector('input');
+        replacement?.focus({ preventScroll: true });
+      });
+      item.append(input, ' ', el('span', { className: 'data-sources-acc', text: dataset.id }),
+        ' ', el('span', { className: 'data-sources-label', text: dataset.label }));
+      if (input.checked) item.append(' ', chip('shared whole-strain choice', 'ds-chip ds-chip-active'));
+      this.list.append(item);
+    }
   }
 
   renderSection() {
@@ -348,10 +396,14 @@ export class DataSourcesPanel {
     if (this.annotation) {
       const { toggles, sources, onToggle, explanation } = this.annotation;
       const names = toggles.filter((t) => sources.includes(t.id)).map((t) => t.label);
-      this.summary.textContent = `Data Sources (${names.length ? names.join(', ') : 'no annotation source'})`;
+      const base = `Data Sources (${names.length ? names.join(', ') : 'no annotation source'})`;
+      this.summary.textContent = this.wholeStrainDatasets.length
+        ? base.replace(/\)$/, `; ${this.wholeStrainSelection.length} whole-strain selected)`)
+        : base;
       this.toggles.append(renderSourceToggles(sources, onToggle, toggles));
       this.annotationExplanation.textContent = explanation;
       this.annotationExplanation.hidden = !explanation;
+      this.renderWholeStrainRows();
       this.actions.hidden = true;
       this.details.hidden = this.hidden;
       this.hideButton.textContent = this.hidden ? 'Show Data Sources' : 'Hide';
@@ -365,9 +417,14 @@ export class DataSourcesPanel {
     const forType = colorType ? this.informing.allOfType(colorType) : [];
     const kindLabel = forType.length ? this.informing.typeOf(forType[0]).label : null;
     const included = forType.filter((d) => chosenIds.has(d.id));
-    this.summary.textContent = colorType
+    const baseSummary = colorType
       ? `Data Sources (${included.length} of ${forType.length} for ${kindLabel}; ${chosen.length} selected in all)`
       : `Data Sources (${chosen.length} selected)`;
+    this.summary.textContent = this.wholeStrainDatasets.length
+      ? baseSummary.replace(/\)$/, `; ${this.wholeStrainSelection.length} whole-strain selected)`)
+      : baseSummary;
+
+    this.renderWholeStrainRows();
 
     // The colouring type first: every dataset of it, included or not (owner
     // report, 2026-10-06), with inclusion edited here and the one that informs
@@ -445,7 +502,7 @@ export class DataSourcesPanel {
     // Everything else selected, by data type, as a record of the selection.
     const rest = chosen.filter((d) => !rendered.has(d.id));
     if (!chosen.length && !forType.length) {
-      this.list.append(el('li', { className: 'data-sources-empty', text: 'No data source selected.' }));
+      this.list.append(el('li', { className: 'data-sources-empty', text: 'No per-gene data source selected.' }));
     }
     for (const type of DATA_TYPES) {
       const ofType = rest.filter((d) => d.record.dataType === type.id);
