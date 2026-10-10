@@ -110,6 +110,37 @@ Implementation handoff by `codex-implementer` for DEM-344, 2026-10-10:
   this isolated implementation worktree. No remaining selector-scope finding is
   known; integration review and ticket closure remain with the coordinator.
 
+NAV-R1 through NAV-R5 repair handoff by `codex-implementer`, 2026-10-10:
+
+- Repair commit `e4a5102` follows implementation `89d199b` and verification
+  `56a1b3d`. NAV-R1 is resolved by the shared viewport-overlay placement helper:
+  the fixed strain menu is clamped on both axes and follows resize, scroll, and
+  observed header, trigger, or menu size changes while it remains open.
+- NAV-R2 is resolved with a real `0.35rem` flex gap rather than collapsible text
+  whitespace. The browser measured 5.59 px before the separator in every state
+  and width. NAV-R3 now names the visible label in the accessible name and says
+  `default` on Cyanobacteria/Syn61 versus `selected` on conventional-strain
+  pages; the non-link trigger no longer carries `data-organism`.
+- NAV-R4 is resolved by a registry-to-navigation set-equality assertion. NAV-R5's
+  unused returned `close` API is removed; the outside-press listener's safe
+  once-per-document lifetime is documented, with no new lifecycle framework.
+- Focused selector and shared-overlay tests passed 23/23. Final `npm test` passed
+  1,476/1,476 after the last code and style change.
+- `tools/ui/check_organism_navigation.js` passed default, MG1655, MDS42, and
+  DH10B at 320, 375, 420, 439, 440, 768, 1280, and 1440 px while keeping the
+  menu open through reflow. All 32 combinations kept 16 px viewport margins,
+  showed no clipped option or page overflow, and retained ArrowDown, End,
+  Escape, and focus return. A live trigger-size change also repositioned the
+  open menu. The Syn61 default name passed separately.
+- Final screenshots for every matrix cell, resized-trigger renders, the Syn61
+  state, and the 375 px semantic snapshot are in the original stable
+  `/tmp/cyano-small-20261010/nav-artifacts` directory. Representative renders
+  were inspected; browser page errors, console errors/warnings, request failures,
+  and HTTP errors were all zero. Visual baselines were not changed.
+- Python pytest and the contract validator remain delegated to the coordinator
+  after integration. The independent review remains coordinator-owned; this
+  ticket stays active and is not being closed by this repair session.
+
 ## Cleanup
 
 The implementing session owns closure. Record every remaining finding before
