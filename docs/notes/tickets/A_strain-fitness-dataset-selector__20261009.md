@@ -10,7 +10,7 @@
 Owned by `cyano-ui-fixes` (`80c81443-1791314087`), which owns integration
 and closure. Runtime implementation is committed as `824793e` in the isolated
 `work/strain-fitness-selector-20261010` worktree. Multica DEM-350 implemented
-it; independent Claude review DEM-354 is in progress. This ticket remains
+it; independent Claude review DEM-354 returned the findings below; repairs and targeted confirmation are in progress. This ticket remains
 active until that audit is resolved.
 
 The panel now uses an organism-owned catalogue and lazy, independently
@@ -51,6 +51,14 @@ does not count as a compatible strain-fitness choice.
 
 | ID | State | Requirement |
 | --- | --- | --- |
+| FDS-R1 | open | Retry loses keyboard focus when its button is replaced during loading and success; restore a stable panel focus target and test real keyboard retry. |
+| FDS-R2 | open | Schema and rejected-fetch errors must name the selected catalogue id and actual file, never a hardcoded filename or an unqualified transport message. |
+| FDS-R3 | `2b7d5f5` | Replace task-specific runbook commands and narration with reusable instructions. |
+| FDS-R4 | open | Record the deliberate URL policy for the effective default dataset id, including reproducibility when catalogue order changes. |
+| FDS-R5 | open | Remove the now write-only panel `built` flag. |
+| FDS-R6 | open | Remove the duplicate absent-state harness assertion. |
+| FDS-R7 | open | Use reader-facing selection-origin labels in the context status line. |
+| FDS-C5 | open | Restore the real-browser regression proving a malformed fitness dataset leaves the gene map usable. |
 | FDS-C3 | open | Real keyboard Space on the shared whole-strain checkbox moves focus to BODY after rerender. Keep focus on the matching control across shared/local choice and loader updates. |
 | FDS-C4 | open | The dataset label must describe the whole study fitness collection, which includes controls and partially recoded backgrounds; calling it only Syn61 growth narrows the apparent measured scope. |
 | FDS-C2 | open | A selected gene-level Nyerges source must never become a whole-strain choice through a catalogue alias. The external-selection path needs explicit whole-strain typing and a real shared-control route; synthetic browser cases must not relabel actual gene datasets as compatible. |
