@@ -54,6 +54,12 @@ That later change must preserve this grouping and top-level order.
 
 ## Verification
 
+Independent review DEM-347, 2026-10-10: **NAV-R1 open**. At 375 px in the
+MG1655/default-selector state, the open dropdown extends 58 px beyond the left
+viewport edge, clipping its strain names. Reproduced by the coordinator from
+the review screenshot. Repair placement for every group-label width and verify
+both viewport edges; document-level horizontal overflow alone misses this case.
+
 Ticket-only intake; no UI behavior has changed. Intake validation, 2026-10-09:
 ticket metadata and queue links passed; `npm test` passed 1,395 tests; `pytest -q`
 passed 925 tests and 36 subtests with one skip; the contract validator passed 119
