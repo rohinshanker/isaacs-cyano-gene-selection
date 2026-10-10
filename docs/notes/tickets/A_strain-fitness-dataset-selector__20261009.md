@@ -53,6 +53,12 @@ does not count as a compatible strain-fitness choice.
   [Data Sources](O_data-sources-selection__20261005.md); this ticket does not
   admit new datasets or take over their outstanding source work.
 
+## Implementation findings
+
+| ID | State | Requirement |
+| --- | --- | --- |
+| FDS-C1 | open | The new per-dataset loader must verify response byte size and SHA-256 against the release manifest, including stale-cache reload and hard failure on mismatch; a digest in the URL alone does not establish integrity. |
+
 ## Verification
 
 Ticket-only intake; the current UI has not changed. Intake validation on
