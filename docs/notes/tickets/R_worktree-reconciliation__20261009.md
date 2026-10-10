@@ -1,7 +1,7 @@
-# A_worktree-reconciliation__20261009 — Active
+# R_worktree-reconciliation__20261009 — Resolved
 
 - **Scope:** Audit the repository's linked worktrees for unmerged work versus stale copies, then preserve any live findings before resuming an unblocked implementation ticket.
-- **Status:** active
+- **Status:** resolved
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
@@ -37,14 +37,24 @@ current RBS/method tickets; their prior closure is 32e6e42. Tracked .venv
 symlinks in DEM-320 and gene-fix-review are excluded from integration. No
 audit finding remains open. No checkout, branch, local edit or cache was removed.
 
-Repository gates will run with the following tRNA implementation before final
-closure; this audit itself changed only documentation. Transient evidence belongs under
+Repository gates at integrated audit commit fae23ce passed: 1,467 JavaScript
+tests; 958 Python tests and 46 subtests with one skip; 126 contract checks
+with one declared skip. This audit changed only documentation.
+
+The concurrent PCA owner subsequently integrated and closed its work at
+0bd8eb8; coordinator merge fae23ce preserves that closure and the tRNA claim. Transient evidence belongs under
 `/tmp/cyano-worktree-audit-20261009/`. The new coordinator worktree is excluded
 from the original 47-checkout inventory.
 
 ## Cleanup
 
-The owning coordinator records its name/date, every finding and resolving commit
-before closure. Retain reusable reconciliation instructions in validation docs;
-remove the resolved ticket and index entry after distillation. Do not retain an
-ongoing completion ledger or one-off terminal output in the repository.
+Closing owner: `cyano-ui-fixes`, 2026-10-09. W1 (divergent histories) and W4
+(local artifacts) were reconciled in 9404ae4; W2 staged content was already
+integrated at 495bea3; W3 stale ticket copies preserve no missing decision
+after closure 32e6e42 and reconciliation 9404ae4. No open audit finding remains.
+No old worktree requires a feature merge, and no worktree has been removed.
+
+Reusable procedure is distilled in docs/validation/worktree-reconciliation.md
+and its index row. Per-checkout evidence remains outside Git under the transient
+audit directory. The separate active tRNA ticket retains its own implementation,
+review and localhost-preview requirements. Remove this resolved ticket last.
