@@ -3,7 +3,7 @@
 - **Scope:** Provide a dataset selector in Strain fitness when a suitable dataset has not already been selected elsewhere.
 - **Status:** open
 - **Opened:** 2026-10-09
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-10
 
 ## Current State
 
@@ -11,6 +11,16 @@ Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
 and has not started. The existing Strain fitness panel has strain, condition,
 and substrate/well filters over one loaded layer; these are not dataset choices.
 No dedicated open ticket for this selector was found in the live queue.
+
+Engineering scoping by `cyano-regulatory-sites` / DEM-346 on 2026-10-10:
+the loader currently has one `strainFitness` file/slot and only Syn61 publishes
+a whole-strain dataset. Existing `sources` / `typeSources` choices identify
+gene-level datasets and cannot identify that payload. Completing this ticket
+therefore requires a whole-strain dataset catalogue, compatible external-choice
+representation, per-dataset load/retry state, and selection identity in both
+strain exports, beyond adding a dropdown. Keep this as a separate engineering
+task; it is not part of the small documentation/navigation batch. Existing
+gene-fitness screens must remain incompatible with whole-strain selection.
 
 Owner rule: **Strain fitness has its own dataset selector unless a dataset is
 already selected elsewhere.** Reuse an existing compatible fitness selection
