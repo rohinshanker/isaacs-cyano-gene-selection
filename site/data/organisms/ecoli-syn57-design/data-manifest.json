@@ -18,19 +18,19 @@
     },
     "gene_overlaps.json": {
       "bytes": 179287,
-      "sha256": "02b6ca26ad337db270d7cf808ca282e238f2326da604c7010e70a0024439cd7f"
+      "sha256": "52ddac608fcc6698c0a02ed199ab74da9393c97433ffe5c1d34dc025785fd581"
     },
     "genes.json": {
       "bytes": 5303872,
       "sha256": "4d5f319965f1731b0be183302b94874085921ebc995e0e565e4a67f5dfa09aa7"
     },
     "meta.json": {
-      "bytes": 22287,
-      "sha256": "12c3b67bf7b4aa9cd27c5263a4c45af2ddc7d87ce250d39a9add5d96782d31a7"
+      "bytes": 22582,
+      "sha256": "06a8733adcf86703f59a5563767101a32ef33d6eea871ea12c2c449050b67271"
     },
     "source_feature_audit.json": {
-      "bytes": 1813525,
-      "sha256": "3e8bc785b259a202fa1452f7592d4850dc425d1403c3d3fbc112d82c9008f1f0"
+      "bytes": 2201377,
+      "sha256": "ffc664b1c29639dca133bcac31851bf47426db42d414e552cfd3bbd9ca66d7f9"
     }
   },
   "schemaVersion": 1

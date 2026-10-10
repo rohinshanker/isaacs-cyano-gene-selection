@@ -70,15 +70,14 @@ export const ECOLI_SYN57_DESIGN = {
     goSearchNote: 'No GO relationship layer is admitted for this design record.',
     metricOrigin: 'Derived from the publisher-deposited Ec_Syn57 complete-design CDSs in native design coordinates; this is not a RefSeq assembly or a measurement.',
     metricMethods: {
-      tai: 'Dos Reis tAI over genomic anticodons computationally reverse-complemented from 79 source codon-recognition notes. Six tRNA features without a supported note are excluded; this is not an experimental anticodon or charging call.',
-      minLocalTai: 'Minimum sliding-window mean of the same source-note-inferred tAI weights; six unsupported tRNA features remain excluded.',
-      expressionProxy: 'Tie-aware rank of √(CAI × tAI), where tAI uses the source-note-inferred pool. This is a sequence model, not measured expression.',
+      tai: 'Dos Reis tAI over a defined approximate annotation model: 75 ordinary codon-recognition notes are reverse-complemented, three explicit initiator anticodon notes are used as stated, one Sec special convention is excluded from the elongator pool, and six unsupported tRNAs are excluded from the model. These are not established genomic anticodons or charging calls.',
+      minLocalTai: 'Minimum sliding-window mean of the same qualified approximate tAI weights; the Sec convention is excluded from the elongator pool and six unsupported tRNAs are excluded from the model.',
+      expressionProxy: 'Tie-aware rank of √(CAI × tAI), where tAI uses the qualified approximate tRNA annotation model. This is a sequence model, not measured expression.',
     },
     metricReading: {
       cai: 'A sequence-derived convention, not a measurement: use it as design context only.',
-      tai: 'A computational convention inferred from 79 source codon-recognition notes; six tRNAs '
-        + 'without such a note are excluded. It is not an experimental anticodon or charging measurement.',
-      expressionProxy: 'A rank built from CAI and the source-note-inferred tAI; it is design context, not expression.',
+      tai: 'A defined approximate annotation model using 75 reverse-complemented ordinary notes and three explicit initiator notes; one Sec convention is excluded from the elongator pool and six unsupported tRNAs are excluded from the model. These are not established anticodons or charging measurements.',
+      expressionProxy: 'A rank built from CAI and the qualified approximate tAI model; it is design context, not expression.',
     },
     goTermsCaveat: 'No GO relationship layer is admitted for this design record.',
   },

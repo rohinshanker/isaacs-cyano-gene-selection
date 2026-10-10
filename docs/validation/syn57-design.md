@@ -38,12 +38,24 @@ native location, fuzzy/compound status and deterministic local ID, including
 four repeated source identifiers and two CDSs without a `locus_tag`. It also
 records every CDS inclusion/exclusion result.
 
-None of the 85 tRNA features has an explicit anticodon qualifier. Seventy-nine
-carry a source codon-recognition note from which the build reverse-complements a
-genomic anticodon as a documented computational convention. Six features have
-no supported note and are excluded from the decoding pool. The audit keeps each
-decision; tAI and its dependent proxy label this inference and are not
-experimental anticodon, charging, expression or fitness measurements.
+None of the 85 tRNA features has an explicit anticodon qualifier. The defined
+approximate annotation model follows four distinct source-backed routes: it
+reverse-complements 75 ordinary codon-recognition notes, uses three explicit
+initiator anticodon notes as stated, applies one Sec special convention but
+excludes it from the elongator decoding pool, and excludes six features with no
+supported note. The audit keeps each route and decision. These modeled labels
+are not established genomic anticodons or experimental charging, expression or
+fitness measurements; tAI and its dependent proxy say so explicitly.
+
+Every normalized CDS receives a deterministic `Ec_Syn57_local_protein_feature_*`
+translation ID. Those IDs are local derived identifiers, never NCBI accessions;
+the source audit separately preserves the publisher's original `protein_id`
+qualifiers. Forty-seven source CDS records omit that qualifier, including two of
+the 3,588 admitted genes; local IDs cover them without inventing accessions.
+Translation treats the annotated first triplet as bacterial initiation
+methionine, retains internal residues and stops, and removes only one terminal
+stop. This keeps all 3,640 translations independently addressable without
+changing public CDS IDs, coordinates or packed sequences.
 
 The article evidence is the [Europe PMC fullTextXML](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13287592/fullTextXML),
 retrieved 2026-10-10: 318,246 bytes, SHA-256
@@ -98,3 +110,17 @@ contain no page errors, failed requests or console errors during healthy loads.
 The final repository gates are `npm test`, `.venv/bin/python -m pytest -q`,
 `.venv/bin/python tools/validate_contract.py`, and
 `node tools/build_module_preloads.mjs --check`.
+
+For the stronger source-backed protein gate, normalize the admitted GenBank
+record into a temporary raw directory and run:
+
+```bash
+.venv/bin/python tools/validate_contract.py \
+  --organism ecoli-syn57-design --raw-dir <normalized-temp-directory>
+```
+
+The persistent Syn57 tests perform this check when the pinned ignored publisher
+source is present. Standalone `tools/build_syn57_design.py --check` first
+validates both content manifests, then rebuilds in a temporary directory and
+performs timestamp-normalized comparison; a stale checksum is never normalized
+into acceptance.

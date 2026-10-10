@@ -60,7 +60,12 @@ EXPECTED_FEATURE_COUNTS = {
     "tmRNA": 1,
     "rep_origin": 1,
 }
-UNIDENTIFIED_TRNA_COUNT = 6
+EXPECTED_TRNA_ANNOTATION_ROUTES = {
+    "codon-recognition-note-reverse-complement": 75,
+    "explicit-initiator-anticodon-note": 3,
+    "selenocysteine-special-convention": 1,
+    "unsupported": 6,
+}
 
 
 class Syn57BuildError(ValueError):
@@ -151,21 +156,57 @@ def gff_attributes(values: dict[str, str]) -> str:
     return ";".join(f"{key}={quote(str(value), safe=':(),._-')}" for key, value in values.items())
 
 
-def anticodon_note(feature) -> str | None:
-    """Translate the deposited recognized-codon note into a genomic anticodon."""
+def trna_model_annotation(feature) -> dict[str, str] | None:
+    """Return one explicitly qualified route through the approximate tRNA model."""
     qualifiers = feature.qualifiers
     product = (qualifiers.get("product") or [""])[0]
     note = (qualifiers.get("note") or [""])[0]
     if note.startswith("tRNA-initiator Met("):
-        return note.replace("U", "T")
+        return {
+            "label": note.replace("U", "T"),
+            "evidenceRoute": "explicit-initiator-anticodon-note",
+            "inferenceMethod": (
+                "explicit initiator anticodon note, with RNA U represented as DNA T; "
+                "approximate annotation model, not an experimental anticodon or charging call"
+            ),
+        }
     match = re.search(r"codon recognized: ([ACGU]{3})", note)
     if match:
         codon = match.group(1).replace("U", "T")
-        anticodon = str(Seq(codon).reverse_complement())
         if product == "tRNA-Sec":
-            anticodon = "TCA"
-        return f"{product}({anticodon})"
+            return {
+                "label": f"{product}(TCA)",
+                "evidenceRoute": "selenocysteine-special-convention",
+                "inferenceMethod": (
+                    "Sec special convention from the source recognition note; excluded from "
+                    "the elongator decoding pool and not an experimental anticodon or charging call"
+                ),
+            }
+        anticodon = str(Seq(codon).reverse_complement())
+        return {
+            "label": f"{product}({anticodon})",
+            "evidenceRoute": "codon-recognition-note-reverse-complement",
+            "inferenceMethod": (
+                "reverse complement of an ordinary source codon-recognition note; approximate "
+                "annotation model, not an experimental anticodon or charging call"
+            ),
+        }
     return None
+
+
+def local_protein_id(source_feature_index: int) -> str:
+    """Return a deterministic local ID that cannot be mistaken for an accession."""
+    return f"Ec_Syn57_local_protein_feature_{source_feature_index:05d}"
+
+
+def translate_local_protein(cds: Seq) -> Seq:
+    """Translate a design CDS using bacterial initiation and one terminal-stop trim."""
+    residues = str(cds.translate(table=11, cds=False))
+    if residues:
+        residues = "M" + residues[1:]
+    if residues.endswith("*"):
+        residues = residues[:-1]
+    return Seq(residues)
 
 
 def gzip_text(path: Path, text: str) -> None:
@@ -214,11 +255,15 @@ def normalize(record, directory: Path) -> dict[str, int]:
         cds_audit.append({
             "sourceFeatureIndex": source_index,
             "localId": cds_loci[feature_key(feature)],
+            "localDerivedProteinId": local_protein_id(source_index),
             "sourceIdentifier": source_id,
             "sourceIdentifierBasis": basis,
             "sourceIdentifierOccurrence": source_id_seen[source_id],
             "sourceIdentifierOccurrences": source_id_counts[source_id],
             "sourceQualifiers": qualifiers,
+            "originalSourceProteinIds": [
+                str(value) for value in feature.qualifiers.get("protein_id", [])
+            ],
             "sourceLocation": str(feature.location),
             "parts": parts,
             "compound": isinstance(feature.location, CompoundLocation),
@@ -232,7 +277,8 @@ def normalize(record, directory: Path) -> dict[str, int]:
         if feature.type != "tRNA":
             continue
         source_note = (feature.qualifiers.get("note") or [None])[0]
-        inferred = anticodon_note(feature)
+        annotation = trna_model_annotation(feature)
+        route = annotation["evidenceRoute"] if annotation else "unsupported"
         trna_audit.append({
             "sourceFeatureIndex": source_index,
             "sourceIdentifier": source_locus(feature),
@@ -241,11 +287,15 @@ def normalize(record, directory: Path) -> dict[str, int]:
             "sourceNote": source_note,
             "sourceAnticodonQualifier": (feature.qualifiers.get("anticodon") or [None])[0],
             "sourceLocation": str(feature.location),
-            "decodingPoolStatus": "included-from-source-note" if inferred else "excluded-no-supported-note",
-            "inferredGenomicAnticodonLabel": inferred,
-            "inferenceMethod": ("reverse complement of the source codon-recognition note; "
-                                "computational convention, not an experimental anticodon call")
-                               if inferred else None,
+            "evidenceRoute": route,
+            "decodingPoolStatus": (
+                "excluded-selenocysteine-special-convention"
+                if route == "selenocysteine-special-convention"
+                else "included-approximate-model"
+                if annotation else "excluded-no-supported-note"
+            ),
+            "modeledAnticodonLabel": annotation["label"] if annotation else None,
+            "inferenceMethod": annotation["inferenceMethod"] if annotation else None,
         })
     write_json(directory / SOURCE_AUDIT_NAME, {
         "schemaVersion": 1,
@@ -315,8 +365,7 @@ def normalize(record, directory: Path) -> dict[str, int]:
     gff_rows = ["##gff-version 3", f"##sequence-region Ec_Syn57 1 {len(sequence)}"]
     cds_records: list[SeqRecord] = []
     protein_records: list[SeqRecord] = []
-    identified_trna = 0
-    unidentified_trna = 0
+    trna_route_counts: Counter[str] = Counter()
     for position, (feature, locus, child) in enumerate(gene_rows):
         kind = child.type if child is not None else "gene"
         pseudo = "pseudo" in feature.qualifiers or (
@@ -347,7 +396,7 @@ def normalize(record, directory: Path) -> dict[str, int]:
         if feature.type == "CDS":
             locus = cds_loci[feature_key(feature)]
             qualifiers = feature.qualifiers
-            protein = (qualifiers.get("protein_id") or [""])[0]
+            protein = local_protein_id(position)
             attributes = {
                 "ID": f"cds-{locus}",
                 "locus_tag": locus,
@@ -356,8 +405,7 @@ def normalize(record, directory: Path) -> dict[str, int]:
                 "gene_biotype": "pseudogene" if "pseudo" in qualifiers else "protein_coding",
                 "Parent": f"gene-{locus}",
             }
-            if protein:
-                attributes["protein_id"] = protein
+            attributes["protein_id"] = protein
             if "pseudo" in qualifiers:
                 attributes["pseudo"] = "true"
             if "ribosomal_slippage" in qualifiers:
@@ -376,25 +424,27 @@ def normalize(record, directory: Path) -> dict[str, int]:
                 f"[gene={attributes['gene']}]",
                 f"[product={attributes['product']}]",
                 f"[location={location_text(feature)}]",
-                *([f"[protein_id={protein}]"] if protein else []),
+                f"[protein_id={protein}]",
                 *(["[pseudo=true]"] if "pseudo" in qualifiers else []),
             ])
             cds_records.append(SeqRecord(extracted, id=f"cds-{position + 1}", description=description))
-            if protein and len(extracted) >= 3:
-                protein_sequence = extracted.translate(table=11, cds=False).rstrip("*")
-                protein_records.append(SeqRecord(protein_sequence, id=protein, description=locus))
+            if len(extracted) >= 3:
+                protein_records.append(SeqRecord(
+                    translate_local_protein(extracted), id=protein,
+                    description=f"{locus} local derived translation",
+                ))
         elif feature.type == "tRNA":
-            note = anticodon_note(feature)
+            annotation = trna_model_annotation(feature)
+            route = annotation["evidenceRoute"] if annotation else "unsupported"
+            trna_route_counts[route] += 1
             product = (feature.qualifiers.get("product") or [""])[0]
-            if not note or not product:
-                unidentified_trna += 1
+            if not annotation or not product:
                 continue
-            identified_trna += 1
             locus = (feature.qualifiers.get("locus_tag")
                      or feature.qualifiers.get("gene") or [f"trna-{position + 1}"])[0]
             parent = parent_locus(feature) or locus
             attributes = {"ID": f"rna-{locus}", "locus_tag": locus,
-                          "product": product, "Note": note,
+                          "product": product, "Note": annotation["label"],
                           "Parent": f"gene-{parent}"}
             gff_rows.append("\t".join([
                 "Ec_Syn57", "Nyerges2026", "tRNA",
@@ -424,8 +474,10 @@ def normalize(record, directory: Path) -> dict[str, int]:
 
     require(len(cds_records) == organism.expectedCdsRecords,
             f"normalized CDS count changed: {len(cds_records)}")
-    require(unidentified_trna == UNIDENTIFIED_TRNA_COUNT,
-            f"unidentified tRNA count changed: {unidentified_trna}")
+    require(dict(trna_route_counts) == EXPECTED_TRNA_ANNOTATION_ROUTES,
+            f"tRNA annotation routes changed: {dict(trna_route_counts)}")
+    require(len(protein_records) == organism.expectedCdsRecords,
+            f"normalized protein count changed: {len(protein_records)}")
     gzip_text(directory / f"{prefix}_genomic.gff.gz", "\n".join(gff_rows) + "\n")
     for suffix, records in (("cds_from_genomic.fna", cds_records),
                             ("protein.faa", protein_records)):
@@ -439,8 +491,7 @@ def normalize(record, directory: Path) -> dict[str, int]:
         "# Design source identifier: Ec_Syn57\n",
         encoding="utf-8",
     )
-    return {"cds": len(cds_records), "identifiedTrna": identified_trna,
-            "unidentifiedTrna": unidentified_trna}
+    return {"cds": len(cds_records), **dict(trna_route_counts)}
 
 
 def citations() -> dict:
@@ -494,25 +545,43 @@ def build(source: Path = SOURCE, output: Path | None = None) -> dict[str, int]:
                     "the RefSeq coding sequence", "the publisher-deposited Ec_Syn57 design CDS"
                 )
         meta["metrics"]["tai"]["desc"] = (
-            "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1. Genomic "
-            "anticodons are computationally inferred from 79 source codon-recognition notes; "
-            "six tRNAs without a supported note are excluded, and this is not an experimental "
-            f"anticodon or charging measurement; {meta['metrics']['tai']['desc'].split(';')[-1].strip()}"
+            "tRNA adaptation index (dos Reis et al.), ranging from 0 to 1. Its approximate "
+            "annotation model reverse-complements 75 ordinary codon-recognition notes, uses "
+            "three explicit initiator anticodon notes, excludes one Sec special convention "
+            "from the elongator pool, and excludes six unsupported tRNAs from the model. "
+            "These are not "
+            "established genomic anticodons or charging measurements; "
+            f"{meta['metrics']['tai']['desc'].split(';')[-1].strip()}"
         )
         meta["metrics"]["minLocalTai"]["desc"] += (
-            " Its tRNA pool has the same source-note inference and six-feature exclusion as tAI."
+            " Its tRNA pool uses the same qualified approximate annotation routes as tAI."
         )
         meta["metrics"]["expressionProxy"]["desc"] = (
             "Tie-aware average rank of sqrt(CAI × tAI) across all genes, scaled from 0 to 1; "
-            "its tAI component uses the explicitly source-note-inferred decoding pool, and it "
+            "its tAI component uses the qualified approximate tRNA annotation model, and it "
             "is a codon-adaptation proxy, not measured transcript or protein abundance."
         )
-        meta["tai"]["method"] = "dos Reis model over source-note-inferred genomic anticodon copy number"
+        meta["tai"]["method"] = "dos Reis model over an approximate source-note-derived tRNA annotation model"
         meta["tai"]["annotationBasis"] = {
             "sourceAnticodonQualifiers": 0,
-            "includedFromCodonRecognitionNotes": counts["identifiedTrna"],
-            "excludedWithoutSupportedNote": counts["unidentifiedTrna"],
-            "interpretation": "Computational reverse-complement convention, not an experimental anticodon, decoding, charging, or expression measurement.",
+            "ordinaryCodonRecognitionNotesReverseComplemented": counts[
+                "codon-recognition-note-reverse-complement"
+            ],
+            "explicitInitiatorAnticodonNotes": counts[
+                "explicit-initiator-anticodon-note"
+            ],
+            "selenocysteineSpecialConventionExcludedFromElongatorPool": counts[
+                "selenocysteine-special-convention"
+            ],
+            "excludedWithoutSupportedNote": counts["unsupported"],
+            "modeledAnnotations": sum(
+                counts[key] for key in EXPECTED_TRNA_ANNOTATION_ROUTES if key != "unsupported"
+            ),
+            "trnaCopyTableAnnotationsAfterSecExclusion": (
+                counts["codon-recognition-note-reverse-complement"]
+                + counts["explicit-initiator-anticodon-note"]
+            ),
+            "interpretation": "Defined approximate annotation model, not established genomic anticodons, decoding, charging, or expression measurements.",
         }
         meta["designSource"] = {
             "recordType": "complete-design",
@@ -570,6 +639,14 @@ def payload_differences(expected: Path, rebuilt: Path) -> list[str]:
             or comparable_payload(name, before[name]) != comparable_payload(name, after[name])]
 
 
+def validate_manifest(directory: Path, label: str) -> None:
+    """Translate a publication-manifest failure into the builder's domain error."""
+    try:
+        build_data_manifest.check_manifest(directory)
+    except build_data_manifest.DataManifestError as error:
+        raise Syn57BuildError(f"{label} manifest is invalid: {error}") from error
+
+
 def main(argv: list[str] | None = None) -> int:
     """Build or verify that a rebuild matches the shipped payload."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -582,12 +659,14 @@ def main(argv: list[str] | None = None) -> int:
         counts = build(args.source)
         print(f"built {ORGANISM_ID}: {counts}")
         return 0
+    expected = organism.path("outputDirectory")
+    if not expected.is_dir():
+        raise Syn57BuildError(f"missing shipped payload: {expected}")
+    validate_manifest(expected, "shipped payload")
     with tempfile.TemporaryDirectory(prefix="syn57-check-") as temporary:
-        expected = organism.path("outputDirectory")
-        if not expected.is_dir():
-            raise Syn57BuildError(f"missing shipped payload: {expected}")
         rebuilt = Path(temporary) / "payload"
         build(args.source, rebuilt)
+        validate_manifest(rebuilt, "rebuilt payload")
         changed = payload_differences(expected, rebuilt)
         require(not changed, f"rebuild differs for: {', '.join(changed)}")
     print(f"ok: {ORGANISM_ID} rebuild matches shipped payload")
