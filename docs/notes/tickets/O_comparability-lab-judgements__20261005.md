@@ -82,9 +82,12 @@ valid answer and keeps the pair or rule as it is.
 The review sheet was generated 2026-10-05 at the owner's request, ahead of the
 formal intake record, after the mechanical checks named above passed. The owner
 is reviewing the sheet directly. The shared page remains unbuilt and requires
-the owner's say-so. The validate-only TSV checker is being implemented under
-[its scoped ticket](A_pair-review-answer-checker__20261010.md), owned by
-`cyano-regulatory-sites`; historical answers and lab decisions remain unchanged.
+the owner's say-so. The validate-only TSV checker is implemented; its
+[format and commands](../../validation/pair-review-intake.md) bind future answers
+to exact source bytes and pair identities, validate explicit review metadata, and
+keep blank/omitted answers distinct from explicit undecided answers. Historical
+free-form answers and dates are not converted. Lab decisions and their admission
+remain separate; this parent ticket stays open for that work.
 
 ## Verification
 
