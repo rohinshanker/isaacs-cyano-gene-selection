@@ -37,9 +37,34 @@ already-admitted judgement JSON, not a returned human review sheet.
 
 ## Verification
 
-Pending implementation, focused tests, independent exact-patch review and required
-repository gates. No UI or scientific calculation changes are in scope. All
-findings will be recorded here before repair and closure.
+Implemented by `claude-implementer` on DEM-356, 2026-10-10:
+`tools/check_pair_review_answers.py` (`template PAIRS` to stdout,
+`check PAIRS ANSWERS` read-only), `tests/test_check_pair_review_answers.py`, and
+the contract in [docs/validation/pair-review-intake.md](../../validation/pair-review-intake.md).
+Standard library only. `tools/pair_review_sheet.py`, the historical handoffs, the
+admitted judgement data and the site are unchanged.
+
+`.venv/bin/python -m pytest -q tests/test_check_pair_review_answers.py
+tests/test_pair_review_sheet.py tests/test_pair_judgements.py
+tests/test_rescore_condition_pairs.py` passes. The suite pins the actual 32
+escalated identities and their order against both the pinned table and the
+Markdown sheet the owner answered, the four pairs that differ only by a condition
+row, template determinism, input immutability on both commands, every decision
+path, and the malformed paths: stale checksum, changed identity, unknown or
+non-canonical pair, duplicate and ragged rows, header defects, broken quoting,
+non-UTF-8 bytes, empty input, metadata without a decision, bad dates and
+mishandled conditions.
+
+Smoke-checked against `docs/notes/handoff/cyano_package_D_pairs_20261004.tsv`
+(sha256 `9a45d838…f799c`): the template reproduces the 32 pairs byte-identically
+on repeat runs, a synthetic filled sheet reports 28 decided, 1 explicitly
+undecided, 2 blank and 1 omitted, and a one-byte checksum edit is rejected once
+with exit 1. Synthetic answers were written outside the repository; no tool run
+filled an answer or a date.
+
+No UI or scientific calculation changes are in scope. Open: the full repository
+gates and the independent exact-patch review, both owned by the coordinator. All
+findings go here before repair and closure.
 
 ## Cleanup
 
