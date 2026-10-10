@@ -13,10 +13,10 @@
 
 ## Current state
 
-The existing-report portion of S6 is claimed by `cyano-ui-fixes` in
-[A_dataset-agreement-ui__20261010](A_dataset-agreement-ui__20261010.md).
-This is presentation of accepted statistics; further admission and statistical
-work remain in this parent ticket.
+The existing-report portion of S6 is implemented and independently reviewed by
+`cyano-ui-fixes`; its [browser contract](../../validation/expression-agreement.md#browser-presentation)
+covers level/response agreement, empirical sample ranges, provenance and explicit
+coverage gaps. Further admission and statistical work remain in this parent ticket.
 
 Design settled by the owner in three rounds on 2026-10-04 and 2026-10-05; the
 decisions are listed below and the second-round requirements are recorded in the
@@ -238,10 +238,12 @@ S6's reproducible export prerequisite is complete: the
 [agreement runbook](../../validation/expression-agreement.md) documents a CLI
 that projects a full report into statistics-only JSON and both review TSVs,
 retaining metadata, denominators and caveats with exact input/exporter checksums.
-The tables reproduce the preserved artifacts byte for byte. S6's UI integration,
-further data admission and remaining statistical work stay open here.
+The tables reproduce the preserved artifacts byte for byte. S6's current-report
+UI integration is complete: 53 report-backed RNA-seq sources, two explicit coverage
+gaps, 1,378 level pairs and 26 recorded response pairs. Further data admission,
+new statistical work and distribution-comparison presentation stay open here.
 
-UI verification is active. Condition-guide rendered checks cover the Data Selection peek at eight widths and found two repaired defects: mobile tabs/Close overflow and keyboard focus falling to the body after tab or row replacement. Tabs now support arrow/Home/End navigation. The provenance disclosure and dataset provenance now read every per-condition declaration. Export manifests/caveats carry compact provenance only for contributing measurement columns, including pooled contributors, with legacy single-source fallback. S1’s source readers and S4’s current-release UI are covered. Further data admission, replicate-based agreement statistics and judgement-dependent overlays remain under their original gates. The current-release UI and export repairs are accepted by independent DEM-259 review; its data-admission and statistical stages retain their stated gates. Each stage runs the gates:
+UI verification is active. Condition-guide rendered checks cover the Data Selection peek at eight widths and found two repaired defects: mobile tabs/Close overflow and keyboard focus falling to the body after tab or row replacement. Tabs now support arrow/Home/End navigation. The provenance disclosure and dataset provenance now read every per-condition declaration. Export manifests/caveats carry compact provenance only for contributing measurement columns, including pooled contributors, with legacy single-source fallback. S1’s source readers and S4’s current-release UI are covered. Further data admission, statistics beyond the accepted report and judgement-dependent overlays remain under their original gates. The current-release UI and export repairs are accepted by independent DEM-259 review; its data-admission and statistical stages retain their stated gates. Each stage runs the gates:
 
 ```sh
 npm test

@@ -11,7 +11,6 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_dataset-agreement-ui__20261010](A_dataset-agreement-ui__20261010.md) | Existing expression-agreement report in Data Sources with correlations, replicate ranges, denominators and caveats; owned by cyano-ui-fixes, isolated implementation |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | All selected methods now have sourced routes for very rough cross-organism UTEX predictions, with donor/native-coordinate distinctions, controls and limits. Owns Promoter Calculator, standalone TransTermHP, STREME, Rfam/Infernal, IntaRNA and new ViennaRNA regulatory uses; no new predictor run or layer admitted; iDOG execution hold retained |
 | [O_array-expression-reader__20261007](O_array-expression-reader__20261007.md) | Array reader and the separate array platform listing for the seven raw-only PCC 7942 microarray series, split from the licence-unblocked ticket 2026-10-07; four scientific rules (channel, normalisation, dye swap, probe-to-gene) to decide before any layer ships |
