@@ -28,7 +28,7 @@ from typing import Sequence
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from tools.pair_review_sheet import parse_condition_set, select_pairs
+from tools.pair_review_sheet import AXES, parse_condition_set, select_pairs
 
 IDENTITY_COLUMNS = (
     "source_sha256",
@@ -58,6 +58,15 @@ SOURCE_COLUMNS = (
 )
 """Source-table columns the review order and the pair identities are read from."""
 
+AXES_PASSED_COUNTS = {
+    f"{count} of {len(AXES)}": count for count in range(len(AXES) + 1)
+}
+"""The ``axes_passed`` cells the pair table writes, and the count each means.
+
+``select_pairs`` sorts on this cell, so a cell it cannot read has to be caught
+before the sort rather than as an exception out of the generator.
+"""
+
 DEFAULT_VERDICT = "escalate"
 
 
@@ -65,16 +74,17 @@ class SourceError(Exception):
     """The pinned pair table cannot be read, or does not identify its pairs."""
 
 
-def canonical_int(text: str) -> int | None:
-    """Return the value of a canonical non-negative decimal integer, else None.
+def is_canonical_int(text: str) -> bool:
+    """Report whether the text is a canonical positive decimal integer.
 
     Canonical means exactly the digits Python's ``str`` would write: no sign, no
-    leading zero, no surrounding whitespace, no other spelling of a number.
+    leading zero, no surrounding whitespace, no other spelling of a number. The
+    text is only read, never converted, so however long it is costs nothing.
     """
     # ``isdigit`` also accepts superscripts and other numeric scripts.
     if not text.isascii() or not text.isdigit() or text.startswith("0"):
-        return None
-    return int(text)
+        return False
+    return True
 
 
 def is_calendar_date(text: str) -> bool:
@@ -94,6 +104,12 @@ def is_calendar_date(text: str) -> bool:
 def checksum(data: bytes) -> str:
     """Return the SHA-256 of exactly these bytes."""
     return hashlib.sha256(data).hexdigest()
+
+
+def _clip(text: str, limit: int = 80) -> str:
+    """Quote a cell for an error message, shortened and with no raw newline."""
+    shown = text if len(text) <= limit else text[:limit] + "…"
+    return repr(shown)
 
 
 @dataclass(frozen=True)
@@ -137,6 +153,20 @@ class PairIdentity:
 
 
 @dataclass(frozen=True)
+class SourceRow:
+    """One data row of a pair table, and where the table wrote it."""
+
+    number: int
+    line: int
+    cells: dict[str, str]
+
+    @property
+    def where(self) -> str:
+        """Name the row the way an error message should."""
+        return f"data row {self.number} (line {self.line})"
+
+
+@dataclass(frozen=True)
 class SourceTable:
     """The pairs one exact pair table escalates, with that table's checksum."""
 
@@ -148,6 +178,98 @@ class SourceTable:
     def by_number(self) -> dict[int, PairIdentity]:
         """Index the pairs by their review number."""
         return {pair.number: pair for pair in self.pairs}
+
+
+def _read_source_rows(path: Path, text: str) -> list[SourceRow]:
+    """Parse a pair table's records, checking its header and every row width.
+
+    A checksum fixes which bytes a sheet was made from; it says nothing about
+    whether those bytes are a well-formed table, so the structure is checked
+    here before any pair is identified.
+
+    Raises:
+        SourceError: If the table is not well-formed TSV, has no header, names a
+            column blank or twice, lacks a column the review order needs, or has
+            a data row whose field count is not the header's or whose record does
+            not end on the line it starts.
+    """
+    csv.field_size_limit(sys.maxsize)
+    reader = csv.reader(io.StringIO(text, newline=""), delimiter="\t", strict=True)
+    records: list[tuple[int, list[str]]] = []
+    try:
+        for record in reader:
+            records.append((reader.line_num, record))
+    except csv.Error as error:
+        raise SourceError(
+            f"pair table {path} cannot be read as TSV at line {reader.line_num}: "
+            f"{error}"
+        ) from error
+    if not records:
+        raise SourceError(f"pair table {path} has no header row")
+
+    header = records[0][1]
+    blank = [index for index, name in enumerate(header, start=1) if not name.strip()]
+    if blank:
+        raise SourceError(
+            f"pair table {path} leaves header column(s) "
+            f"{', '.join(str(index) for index in blank)} unnamed"
+        )
+    repeated = sorted({name for name in header if header.count(name) > 1})
+    if repeated:
+        raise SourceError(
+            f"pair table {path} names column(s) more than once: "
+            f"{', '.join(repeated)}; one value would overwrite the other"
+        )
+    missing = [name for name in SOURCE_COLUMNS if name not in header]
+    if missing:
+        raise SourceError(
+            f"pair table {path} is missing column(s): {', '.join(missing)}"
+        )
+
+    rows: list[SourceRow] = []
+    previous = records[0][0]
+    # Every column of the header counts, not only the ones the review reads, and
+    # a record has to end where it starts: both say the boundaries are where
+    # they look, which is what a missing or merged pair would break.
+    for number, (line, record) in enumerate(records[1:], start=1):
+        row = SourceRow(number, line, dict(zip(header, record)))
+        if len(record) != len(header):
+            raise SourceError(
+                f"pair table {path} {row.where} has {len(record)} field(s), not "
+                f"the {len(header)} of its header"
+            )
+        if line != previous + 1:
+            raise SourceError(
+                f"pair table {path} {row.where} starts on line {previous + 1} and "
+                f"ends on line {line}; the table writes one pair per line, and a "
+                "quote that runs on joins two pairs into one"
+            )
+        previous = line
+        rows.append(row)
+    return rows
+
+
+def _condition_row(path: Path, number: int, row: SourceRow, name: str) -> int:
+    """Read one side's condition-table row number from a selected source row.
+
+    Raises:
+        SourceError: If the cell is not in the generator's form, or numbers the
+            condition row in a way no table row can have.
+    """
+    try:
+        source_row, _, _ = parse_condition_set(row.cells[name])
+    except ValueError as error:
+        raise SourceError(
+            f"pair table {path} pair {number}, {row.where} has an unreadable "
+            f"{name}: {error}"
+        ) from error
+    if source_row < 1:
+        raise SourceError(
+            f"pair table {path} pair {number}, {row.where} gives {name} the "
+            f"condition-table row {source_row}; rows are numbered from 1, so this "
+            "identifies no condition"
+        )
+    return source_row
 
 
 def load_source(path: Path, verdict: str = DEFAULT_VERDICT) -> SourceTable:
@@ -162,9 +284,10 @@ def load_source(path: Path, verdict: str = DEFAULT_VERDICT) -> SourceTable:
         The table's checksum and its selected pairs, in review order.
 
     Raises:
-        SourceError: If the table is unreadable, lacks a column the review order
-            needs, has a row whose condition-set cell is not in the generator's
-            form, selects no pair, or identifies two selected pairs alike.
+        SourceError: If the table is unreadable, not well-formed TSV, structured
+            unlike its own header, unreadable to the review order, missing an
+            artifact or condition a pair is identified by, selects no pair, or
+            identifies two selected pairs alike.
     """
     try:
         data = path.read_bytes()
@@ -175,36 +298,38 @@ def load_source(path: Path, verdict: str = DEFAULT_VERDICT) -> SourceTable:
     except UnicodeDecodeError as error:
         raise SourceError(f"pair table {path} is not valid UTF-8: {error}") from error
 
-    csv.field_size_limit(sys.maxsize)
-    reader = csv.DictReader(io.StringIO(text, newline=""), delimiter="\t")
-    header = reader.fieldnames
-    if not header:
-        raise SourceError(f"pair table {path} has no header row")
-    missing = [name for name in SOURCE_COLUMNS if name not in header]
-    if missing:
-        raise SourceError(
-            f"pair table {path} is missing column(s): {', '.join(missing)}"
-        )
-    rows = list(reader)
-    for index, row in enumerate(rows, start=1):
-        for name in SOURCE_COLUMNS:
-            if row.get(name) is None:
-                raise SourceError(
-                    f"pair table {path} data row {index} has no {name} value"
-                )
+    rows = _read_source_rows(path, text)
+    for row in rows:
+        if row.cells["axes_passed"] not in AXES_PASSED_COUNTS:
+            raise SourceError(
+                f"pair table {path} {row.where} has axes_passed "
+                f"{_clip(row.cells['axes_passed'])}, not a count of the "
+                f"{len(AXES)} screened axes written "
+                f"'0 of {len(AXES)}' through '{len(AXES)} of {len(AXES)}'; the "
+                "review order sorts on it"
+            )
 
+    # ``select_pairs`` returns the very row dicts it was given, so their ids
+    # lead back to where the table wrote them. ``rows`` keeps them alive.
+    located = {id(row.cells): row for row in rows}
     pairs: list[PairIdentity] = []
     seen: dict[tuple[str, str, int, int], int] = {}
-    for number, row in enumerate(select_pairs(rows, verdict), start=1):
-        try:
-            row_a = parse_condition_set(row["condition_set_a"])[0]
-            row_b = parse_condition_set(row["condition_set_b"])[0]
-        except ValueError as error:
-            raise SourceError(
-                f"pair table {path} pair {number} has an unreadable condition set: "
-                f"{error}"
-            ) from error
-        pair = PairIdentity(number, row["artifact_a"], row["artifact_b"], row_a, row_b)
+    selected = select_pairs([row.cells for row in rows], verdict)
+    for number, cells in enumerate(selected, start=1):
+        row = located[id(cells)]
+        for name in ("artifact_a", "artifact_b"):
+            if not cells[name].strip():
+                raise SourceError(
+                    f"pair table {path} pair {number}, {row.where} has no {name}; "
+                    "a pair is identified by both of its artifacts"
+                )
+        pair = PairIdentity(
+            number,
+            cells["artifact_a"],
+            cells["artifact_b"],
+            _condition_row(path, number, row, "condition_set_a"),
+            _condition_row(path, number, row, "condition_set_b"),
+        )
         if pair.key in seen:
             raise SourceError(
                 f"pair table {path} identifies pair {number} exactly like pair "
@@ -308,12 +433,6 @@ def _numbers(values: Sequence[int]) -> str:
     return ", ".join(str(value) for value in values)
 
 
-def _clip(text: str, limit: int = 80) -> str:
-    """Quote a cell for an error message, shortened and with no raw newline."""
-    shown = text if len(text) <= limit else text[:limit] + "…"
-    return repr(shown)
-
-
 def check_header(header: Sequence[str]) -> list[Problem]:
     """Check the header names the required columns exactly once, in order."""
     problems: list[Problem] = []
@@ -342,27 +461,31 @@ def _check_identity(
 ) -> tuple[PairIdentity | None, list[Problem]]:
     """Resolve a row's pair and check its identity cells against the source."""
     problems: list[Problem] = []
-    number = canonical_int(cells["pair"])
-    pairs = source.by_number()
-    if number is None:
+    text = cells["pair"]
+    if not is_canonical_int(text):
         problems.append(
             Problem(
                 where,
-                f"pair {_clip(cells['pair'])} is not a pair number written as "
+                f"pair {_clip(text)} is not a pair number written as "
                 f"1 to {len(source.pairs)}",
             )
         )
         return None, problems
-    pair = pairs.get(number)
+    # The spelling's length settles the range before any conversion: CPython
+    # refuses to convert more than 4,300 digits, and a number that long is out
+    # of range whatever it says.
+    in_range = len(text) <= len(str(len(source.pairs)))
+    pair = source.by_number().get(int(text)) if in_range else None
     if pair is None:
         problems.append(
             Problem(
                 where,
-                f"pair {number} is not in {source.path}, which escalates pairs 1 to "
-                f"{len(source.pairs)}",
+                f"pair {_clip(text)} is not in {source.path}, which escalates "
+                f"pairs 1 to {len(source.pairs)}",
             )
         )
         return None, problems
+    number = pair.number
     for name, expected in (
         ("artifact_a", pair.artifact_a),
         ("artifact_b", pair.artifact_b),

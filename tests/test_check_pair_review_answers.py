@@ -163,9 +163,20 @@ def test_review_order_matches_the_original_markdown_sheet(real_source):
         assert (pair.condition_row_a, pair.condition_row_b) == (int(row_a), int(row_b))
 
 
-@pytest.mark.parametrize("numbers", [(20, 21), (24, 25), (26, 27), (28, 29)])
+# The pairs of the pinned table that name the same two artifacts and differ only
+# by a condition row, with the condition_set_a rows that tell them apart.
+SHARED_ARTIFACT_GROUPS = (
+    ((7, 8), (72, 74)),
+    ((20, 21), (11, 12)),
+    ((24, 25), (19, 20)),
+    ((26, 27), (19, 20)),
+    ((28, 29), (19, 20)),
+)
+
+
+@pytest.mark.parametrize(("numbers", "rows_a"), SHARED_ARTIFACT_GROUPS)
 def test_load_source_keeps_distinct_pairs_that_share_both_artifacts(
-    real_source, numbers
+    real_source, numbers, rows_a
 ):
     """These pairs differ only by a condition row, so both rows are identity."""
     pairs = real_source.by_number()
@@ -173,8 +184,20 @@ def test_load_source_keeps_distinct_pairs_that_share_both_artifacts(
     assert first.artifact_a == second.artifact_a
     assert first.artifact_b == second.artifact_b
     assert first.condition_row_b == second.condition_row_b
-    assert first.condition_row_a != second.condition_row_a
+    assert (first.condition_row_a, second.condition_row_a) == rows_a
     assert first.key != second.key
+
+
+def test_the_pinned_table_has_exactly_these_shared_artifact_groups(real_source):
+    """The documented groups are every group, counted from the table itself."""
+    grouped = {}
+    for pair in real_source.pairs:
+        grouped.setdefault((pair.artifact_a, pair.artifact_b), []).append(pair.number)
+    found = tuple(
+        sorted(tuple(numbers) for numbers in grouped.values() if len(numbers) > 1)
+    )
+    assert found == tuple(numbers for numbers, _ in SHARED_ARTIFACT_GROUPS)
+    assert len(found) == 5
 
 
 def test_load_source_selects_a_verdict_by_its_first_word(small_source):
@@ -210,12 +233,148 @@ def test_load_source_rejects_a_missing_column(tmp_path):
         checker.load_source(path)
 
 
-def test_load_source_rejects_a_short_data_row(tmp_path):
+@pytest.mark.parametrize(
+    ("row", "expected"),
+    [
+        ("GSE1\tGSE2", "data row 1 (line 2) has 2 field(s), not the 6 of its header"),
+        (
+            "\t".join(["x"] * 7),
+            "data row 1 (line 2) has 7 field(s), not the 6 of its header",
+        ),
+        ("", "data row 1 (line 2) has 0 field(s), not the 6 of its header"),
+    ],
+)
+def test_load_source_rejects_a_row_that_is_not_the_header_width(
+    tmp_path, row, expected
+):
+    """A checksum fixes the bytes; only the widths show the record boundaries."""
     path = tmp_path / "pairs.tsv"
     path.write_text(
-        "\t".join(checker.SOURCE_COLUMNS) + "\nGSE1\tGSE2\n", encoding="utf-8"
+        "\t".join(checker.SOURCE_COLUMNS) + "\n" + row + "\n", encoding="utf-8"
     )
-    with pytest.raises(checker.SourceError, match="data row 1 has no condition_set_a"):
+    with pytest.raises(checker.SourceError, match=re.escape(expected)):
+        checker.load_source(path)
+
+
+def test_load_source_rejects_a_column_the_table_names_twice(tmp_path):
+    """A duplicate header silently overwrote one of the two values."""
+    path = tmp_path / "pairs.tsv"
+    header = list(checker.SOURCE_COLUMNS) + ["artifact_a"]
+    path.write_text(
+        "\t".join(header)
+        + "\nGSE1\tGSE2\trow 1 [a] temperature=30\trow 2 [b] temperature=30"
+        "\tescalate\t2 of 6\tWRONG\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        checker.SourceError, match="names column\\(s\\) more than once: artifact_a"
+    ):
+        checker.load_source(path)
+
+
+def test_load_source_rejects_an_unnamed_header_column(tmp_path):
+    path = tmp_path / "pairs.tsv"
+    path.write_text(
+        "\t".join(checker.SOURCE_COLUMNS) + "\t \n" + "\t".join(["x"] * 7) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(checker.SourceError, match="leaves header column\\(s\\) 7 unnamed"):
+        checker.load_source(path)
+
+
+def test_load_source_keeps_columns_the_review_does_not_read(tmp_path, small_source):
+    """The real table has sixteen columns; the extra ones are legitimate."""
+    rows = [make_source_row("GSE1", "GSE2", "escalate", 2)]
+    rows[0]["source_a"] = "package B data row 58"
+    rows[0]["notes"] = "kept, unread"
+    source = checker.load_source(write_source(tmp_path / "pairs.tsv", rows))
+    assert [pair.artifact_a for pair in source.pairs] == ["GSE1"]
+
+
+def test_load_source_rejects_a_quoted_field_that_runs_past_its_record(tmp_path):
+    """An unclosed quote would otherwise swallow the next pair's whole line."""
+    path = tmp_path / "pairs.tsv"
+    header = "\t".join(checker.SOURCE_COLUMNS) + "\tsource_a\n"
+    body = (
+        "GSE1\tGSE2\trow 1 [a] temperature=30\trow 2 [b] temperature=30"
+        '\tescalate\t2 of 6\t"package B'
+        "\nGSE3\tGSE4\trow 3 [a] temperature=30\trow 4 [b] temperature=30"
+        '\tescalate\t2 of 6\tpackage B"\n'
+    )
+    path.write_text(header + body, encoding="utf-8")
+    with pytest.raises(
+        checker.SourceError, match="starts on line 2 and ends on line 3"
+    ):
+        checker.load_source(path)
+    assert len(path.read_text(encoding="utf-8").splitlines()) == 3
+
+
+def test_load_source_rejects_a_quoted_field_left_open_at_the_end(tmp_path):
+    path = tmp_path / "pairs.tsv"
+    path.write_text(
+        "\t".join(checker.SOURCE_COLUMNS)
+        + '\nGSE1\t"GSE2\trow 1 [a] temperature=30\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(checker.SourceError, match="cannot be read as TSV at line 2"):
+        checker.load_source(path)
+
+
+# --- rejected source identities and ordering fields --------------------------
+
+
+@pytest.mark.parametrize("artifact", ["", "   "])
+def test_load_source_rejects_a_pair_with_a_blank_artifact(tmp_path, artifact):
+    """A blank artifact would generate an identity that identifies nothing."""
+    rows = [make_source_row(artifact, "GSE2", "escalate", 2)]
+    path = write_source(tmp_path / "pairs.tsv", rows)
+    with pytest.raises(
+        checker.SourceError, match="pair 1, data row 1 \\(line 2\\) has no artifact_a"
+    ):
+        checker.load_source(path)
+
+
+@pytest.mark.parametrize("name", ["condition_set_a", "condition_set_b"])
+def test_load_source_rejects_a_condition_row_below_one(tmp_path, name):
+    """``row 0`` is no row of the condition table, so it identifies nothing."""
+    rows = [make_source_row("GSE1", "GSE2", "escalate", 2)]
+    rows[0][name] = "row 0 [control] temperature=30 °C"
+    path = write_source(tmp_path / "pairs.tsv", rows)
+    with pytest.raises(
+        checker.SourceError,
+        match=f"pair 1, data row 1 \\(line 2\\) gives {name} the condition-table row 0",
+    ):
+        checker.load_source(path)
+
+
+@pytest.mark.parametrize(
+    "cell", ["oops", "", "7 of 6", "2 of 5", " 2 of 6", "2 of 6 ", "02 of 6", "2of6"]
+)
+def test_load_source_rejects_an_axes_passed_cell_the_order_cannot_read(tmp_path, cell):
+    """``select_pairs`` sorts on this cell, and would raise on these."""
+    rows = [make_source_row("GSE1", "GSE2", "escalate", 2)]
+    rows[0]["axes_passed"] = cell
+    path = write_source(tmp_path / "pairs.tsv", rows)
+    with pytest.raises(checker.SourceError, match="has axes_passed"):
+        checker.load_source(path)
+
+
+@pytest.mark.parametrize("count", range(7))
+def test_load_source_reads_every_count_of_the_six_screened_axes(tmp_path, count):
+    rows = [make_source_row("GSE1", "GSE2", "escalate", count)]
+    source = checker.load_source(write_source(tmp_path / "pairs.tsv", rows))
+    assert source.pairs[0].number == 1
+
+
+def test_load_source_rejects_a_bad_axes_passed_on_an_unselected_row(tmp_path):
+    """The whole table is the scoring output, not only the escalated rows."""
+    rows = [
+        make_source_row("GSE1", "GSE2", "escalate", 2),
+        make_source_row("GSE3", "GSE4", "not comparable", 1),
+    ]
+    rows[1]["axes_passed"] = "one"
+    path = write_source(tmp_path / "pairs.tsv", rows)
+    with pytest.raises(checker.SourceError, match="data row 2 \\(line 3\\) has axes_passed"):
         checker.load_source(path)
 
 
@@ -223,7 +382,10 @@ def test_load_source_rejects_an_unreadable_condition_set(tmp_path):
     rows = [make_source_row("GSE1", "GSE2", "escalate", 2)]
     rows[0]["condition_set_b"] = "GSE2 control"
     path = write_source(tmp_path / "pairs.tsv", rows)
-    with pytest.raises(checker.SourceError, match="pair 1 has an unreadable condition set"):
+    with pytest.raises(
+        checker.SourceError,
+        match="pair 1, data row 1 \\(line 2\\) has an unreadable condition_set_b",
+    ):
         checker.load_source(path)
 
 
@@ -487,8 +649,25 @@ def test_a_pair_number_outside_the_table_is_rejected(small_source):
     report = checker.check_answers(
         small_source, "\n".join([rows[0], "\t".join(cells)]).encode("utf-8")
     )
-    assert "pair 33 is not in" in problems(report)[0]
+    assert "pair '33' is not in" in problems(report)[0]
     assert "escalates pairs 1 to 2" in problems(report)[0]
+
+
+def test_a_pair_number_of_thousands_of_digits_is_a_row_error_not_a_traceback(
+    small_source,
+):
+    """CPython will not convert 5,000 digits; the cell is reported instead."""
+    sheet = answer_sheet(small_source, {1: dict(ANSWERED)})
+    rows = sheet.splitlines()
+    cells = rows[1].split("\t")
+    cells[1] = "1" * 5000
+    report = checker.check_answers(
+        small_source, "\n".join([rows[0], "\t".join(cells)]).encode("utf-8")
+    )
+    assert not report.ok
+    assert len(problems(report)) == 1
+    assert "is not in" in problems(report)[0]
+    assert len(problems(report)[0]) < 300
 
 
 def test_a_repeated_pair_is_rejected(small_source):
@@ -533,6 +712,46 @@ def test_a_ragged_row_is_rejected(small_source, fields):
     )
     assert not report.ok
     assert f"has {fields} field(s), not the 11 of the header" in problems(report)[0]
+
+
+def test_a_bare_quote_in_an_unquoted_cell_is_kept_as_the_text_it_is(small_source):
+    """Python's TSV dialect reads a quote inside an unquoted cell literally.
+
+    The checker accepts that rather than parsing TSV itself, so free text with
+    one quotation mark in it survives a round trip unchanged.
+    """
+    basis = 'synthetic "unclosed basis'
+    header = "\t".join(checker.COLUMNS)
+    cells = small_source.by_number()[1].cells(small_source.sha256) + [
+        "share",
+        "test reviewer",
+        "2026-10-10",
+        basis,
+        "",
+    ]
+    # Written by hand: ``csv`` would quote and escape the cell on the way out.
+    report = checker.check_answers(
+        small_source, (header + "\n" + "\t".join(cells) + "\n").encode("utf-8")
+    )
+    assert report.ok, problems(report)
+    assert [answer.basis for answer in report.answers] == [basis]
+
+
+def test_a_quoted_cell_that_is_never_closed_is_rejected(small_source):
+    """An opening quote is the one place a stray quote changes the record."""
+    header = "\t".join(checker.COLUMNS)
+    cells = small_source.by_number()[1].cells(small_source.sha256) + [
+        "share",
+        "test reviewer",
+        "2026-10-10",
+        '"synthetic unclosed basis',
+        "",
+    ]
+    report = checker.check_answers(
+        small_source, (header + "\n" + "\t".join(cells) + "\n").encode("utf-8")
+    )
+    assert not report.ok
+    assert "cannot be read as TSV" in problems(report)[0]
 
 
 def test_broken_quoting_is_rejected_with_its_line(small_source):
@@ -672,11 +891,12 @@ def test_every_problem_in_a_sheet_is_reported_at_once(small_source):
 
 @pytest.mark.parametrize(
     ("text", "expected"),
-    [("1", 1), ("32", 32), ("0", None), ("01", None), ("", None), ("³", None),
-     ("-1", None), ("1_0", None), ("1.0", None), (" 1", None), ("１", None)],
+    [("1", True), ("32", True), ("9" * 5000, True), ("0", False), ("01", False),
+     ("", False), ("³", False), ("-1", False), ("1_0", False), ("1.0", False),
+     (" 1", False), ("１", False)],
 )
-def test_canonical_int_accepts_only_plain_positive_decimals(text, expected):
-    assert checker.canonical_int(text) == expected
+def test_is_canonical_int_accepts_only_plain_positive_decimals(text, expected):
+    assert checker.is_canonical_int(text) is expected
 
 
 @pytest.mark.parametrize(
