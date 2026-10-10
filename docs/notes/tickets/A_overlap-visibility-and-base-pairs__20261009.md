@@ -25,6 +25,9 @@ This ticket changes presentation and interaction, not which genes overlap.
 | --- | --- | --- |
 | OG-V1 | open | Small overlaps must remain clearly visible and easy to inspect in the gene visualizers. The owner suggests a fixed-size directional arrowhead with a tail representing the actual overlapping sequence. |
 | OG-V2 | open | Chromosome overlap hover should show a hover hint without expanding in-flow text above the chromosome or moving the hovered mark away from the pointer. |
+| OG-C1 | open | Coordinator render inspection: compact exact-base rows must align letters despite unequal selected/partner label widths. |
+| OG-C2 | open | Coordinator render inspection: shared-span line must not strike through the expanded partner nucleotide letters. |
+| OG-C3 | open | Verify tooltip bounds against the visible viewport when the canvas is partially scrolled; host-only clamping is insufficient. |
 | OG-V3 | open | Show the overlapping partner's actual base letters, aligned with the selected gene, rather than conveying the overlap only through a coloured block. Make same-strand versus opposite-strand relationships clear. |
 
 ### Small marks and direction
