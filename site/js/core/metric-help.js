@@ -217,6 +217,7 @@ export function metricHelp(metric, dataset) {
   const name = organism.shortName;
   const known = genes.reduce((sum, _gene, index) => sum + Number.isFinite(metric.read(index)), 0);
   const release = meta.annotationRelease?.releaseId ?? meta.genome?.accession ?? `the pinned ${name} genome`;
+  const declaredGenomeOrigin = organism.copy.metricOrigin ?? null;
   // A measurement the manifest names: an expression layer, a proteome, or a
   // fitness screen. Each is explained from its own source, not the genome.
   const expression = Boolean(metric.provenance?.citationId)
@@ -224,10 +225,14 @@ export function metricHelp(metric, dataset) {
   const origin = expression
     ? (describeExpressionSource(metric.provenance) ?? 'Expression source is not declared in this dataset.')
     : metric.key === 'expressionProxy'
-      ? `Derived from codon adaptation in ${name} release ${release}; it is not measured abundance.`
+      ? declaredGenomeOrigin
+        ? `Derived from codon adaptation in ${declaredGenomeOrigin}; it is not measured abundance.`
+        : `Derived from codon adaptation in ${name} release ${release}; it is not measured abundance.`
       : metric.source === 'live'
-        ? `Computed in this browser from the active scheme and ${name} release ${release}.`
-        : `Derived from ${name} RefSeq release ${release}.`;
+        ? declaredGenomeOrigin
+          ? `Computed in this browser from the active scheme and ${declaredGenomeOrigin}.`
+          : `Computed in this browser from the active scheme and ${name} release ${release}.`
+        : declaredGenomeOrigin ?? `Derived from ${name} RefSeq release ${release}.`;
   const formatCount = (value) => value.toLocaleString('en-US');
   return {
     key: metric.key,

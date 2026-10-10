@@ -9,6 +9,7 @@ import {
 } from '../../site/js/core/recoded-genome.js';
 import { defaultState } from '../../site/js/core/url-state.js';
 import { LEFT_PANEL_IDS } from '../../site/js/core/left-panels.js';
+import { PRESETS } from '../../site/js/core/scheme.js';
 import { defaultValueScale, valueScaleTransform } from '../../site/js/core/value-scales.js';
 import { buildColorScale } from '../../site/js/ui/colors.js';
 import { renderRecodedGenomePanel } from '../../site/js/ui/recoded-genome.js';
@@ -16,8 +17,10 @@ import { standardTable } from './helpers.mjs';
 import { withFakeDocument } from './fake-dom.mjs';
 
 const SYN61 = organismById('ecoli-syn61-delta3-ev5');
+const SYN57 = organismById('ecoli-syn57-design');
 const NATIVE = organismById('ecoli-k12-mg1655');
 const DATA = new URL('../../site/data/organisms/ecoli-syn61-delta3-ev5/', import.meta.url);
+const DESIGN_DATA = new URL('../../site/data/organisms/ecoli-syn57-design/', import.meta.url);
 
 let actualDatasetPromise = null;
 function actualDataset() {
@@ -26,6 +29,15 @@ function actualDataset() {
     readFile(new URL('genes.json', DATA), 'utf8'),
   ]).then(([meta, genes]) => buildCoreDataset(JSON.parse(meta), JSON.parse(genes), null));
   return actualDatasetPromise;
+}
+
+let designDatasetPromise = null;
+function designDataset() {
+  designDatasetPromise ??= Promise.all([
+    readFile(new URL('meta.json', DESIGN_DATA), 'utf8'),
+    readFile(new URL('genes.json', DESIGN_DATA), 'utf8'),
+  ]).then(([meta, genes]) => buildCoreDataset(JSON.parse(meta), JSON.parse(genes), null));
+  return designDatasetPromise;
 }
 
 test('the pure counter includes the actual codon body and a terminal TAG, preserving 0 and 1', () => {
@@ -81,6 +93,33 @@ test('the deposited Syn61 genome exposes 148 residuals over 3,549 included codin
   assert.match(metric.desc, /terminal target stop counted once per gene/i);
 });
 
+test('the complete Syn57 design uses its own seven targets and design-only labels', async () => {
+  const dataset = await designDataset();
+  const model = buildRecodedGenomeModel(SYN57, dataset);
+  assert.ok(model);
+  assert.equal(model.recordType, 'design');
+  assert.deepEqual(model.targets, ['AGC', 'AGT', 'TTA', 'TTG', 'AGA', 'AGG', 'TAG']);
+  assert.equal(model.includedGeneCount, 3588);
+  assert.equal(model.total, 446);
+  assert.ok(!JSON.stringify(model).includes('Syn61'));
+  const ownPreset = PRESETS.find(({ id }) => id === SYN57.recoding.schemeId);
+  assert.ok(ownPreset, 'the Syn57 record resolves to its declared recoding preset');
+  assert.deepEqual(ownPreset.targets, model.targets);
+  assert.notEqual(ownPreset.id, SYN61.recoding.schemeId);
+
+  await withFakeDocument(() => {
+    const host = document.createElement('section');
+    renderRecodedGenomePanel(host, model);
+    assert.equal(host.hidden, false);
+    assert.match(host.textContent, /complete published design/i);
+    assert.match(host.textContent, /Design and scheme source/i);
+    assert.match(host.textContent, /Design only.*no omics, growth, or fitness/i);
+    assert.match(host.textContent, /native design coordinates/i);
+    assert.match(host.textContent, /Design replacements.*3,490 matched design\/MG1655 CDS pairs/i);
+    assert.doesNotMatch(host.textContent, /deposited recoded strain|Syn61/i);
+  });
+});
+
 test('native and incomplete records fail closed with no panel or metric', async () => {
   const dataset = await actualDataset();
   assert.equal(buildRecodedGenomeModel(NATIVE, dataset), null);
@@ -109,13 +148,17 @@ test('native and incomplete records fail closed with no panel or metric', async 
   });
 });
 
-test('the recoded information panel stays above and outside persisted control layout', async () => {
+test('recoded information lives inside the standard movable scheme panel', async () => {
   const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
   const infoAt = html.indexOf('id="recoded-genome-panel"');
-  const firstControlAt = html.indexOf('data-panel-id="gene-viewer"');
-  assert.ok(infoAt >= 0 && infoAt < firstControlAt);
+  const schemeAt = html.indexOf('data-panel-id="scheme"');
+  const editorAt = html.indexOf('id="scheme-editor"');
+  assert.ok(schemeAt >= 0 && schemeAt < infoAt && infoAt < editorAt);
   assert.ok(!LEFT_PANEL_IDS.includes('recoded-genome'));
   assert.deepEqual(defaultState(SYN61).panelOrder, defaultState(NATIVE).panelOrder);
   assert.deepEqual(defaultState(SYN61).panelCollapsed, defaultState(NATIVE).panelCollapsed);
+  assert.deepEqual(defaultState(SYN57).panelOrder, defaultState(NATIVE).panelOrder);
+  assert.deepEqual(defaultState(SYN57).panelCollapsed, defaultState(NATIVE).panelCollapsed);
   assert.notDeepEqual(storageKeys(SYN61), storageKeys(NATIVE));
+  assert.notDeepEqual(storageKeys(SYN57), storageKeys(SYN61));
 });

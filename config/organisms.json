@@ -247,6 +247,54 @@
         "PPG85_12095": "ribosomal_slippage"
       },
       "sequenceContextNt": 30
+    },
+    "ecoli-syn57-design": {
+      "accession": "Ec_Syn57",
+      "assemblyAccessionField": "Design source identifier",
+      "assemblyPrefix": "Ec_Syn57_design",
+      "ftpDirectory": "",
+      "expectedTotalLength": 3973902,
+      "organismIdentity": "synthetic Escherichia coli Ec_Syn57",
+      "strainIdentity": "Ec_Syn57 complete design (not a measured isolate)",
+      "taxid": 562,
+      "umapSeed": 5700,
+      "caiReferenceRule": "ecoli-translation-machinery-product-match-v1",
+      "caiReferenceMethod": "ecoli-translation-machinery-product-match-v1",
+      "caiReferenceDescription": "translation-machinery",
+      "trnaSpecialCases": {
+        "inosineAtWobble": true,
+        "lysidine": {
+          "aminoAcid": "Ile",
+          "genomicAnticodon": "CAT",
+          "effectiveAnticodon": "LAT"
+        },
+        "excludedFromDecodingPool": [
+          "Sec"
+        ]
+      },
+      "optionalLayers": [],
+      "rawDirectory": "data/raw/recoded-ecoli",
+      "outputDirectory": "site/data/organisms/ecoli-syn57-design",
+      "expressionDirectory": "data/expression/organisms/ecoli-syn57-design",
+      "primaryExpressionMetric": null,
+      "geneCountRange": [
+        3588,
+        3588
+      ],
+      "expectedGeneCount": 3588,
+      "expectedCdsRecords": 3640,
+      "expectedTerminalStops": {
+        "TAG": 8,
+        "TAA": 2454,
+        "TGA": 1126
+      },
+      "expectedSpliced": [
+        "b2891"
+      ],
+      "expectedExceptions": {
+        "b2891": "ribosomal_slippage"
+      },
+      "sequenceContextNt": 30
     }
   }
 }

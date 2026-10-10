@@ -92,6 +92,7 @@ export function buildRecodedGenomeModel(organism, dataset) {
     read: (index) => values[index],
   };
   return {
+    recordType: declaration.recordType === 'design' ? 'design' : 'strain',
     schemeName: declaration.schemeName,
     targets,
     scope: declaration.scope,

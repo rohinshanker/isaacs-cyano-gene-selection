@@ -27,6 +27,7 @@ import { dataDirectoryPath, searchCopy } from '../../site/js/ui/organism-selecto
 const ECOLI = organismById('ecoli-k12-mg1655');
 const MDS42 = organismById('ecoli-mds42-public-reference');
 const DH10B = organismById('ecoli-dh10b-public-reference');
+const SYN57 = organismById('ecoli-syn57-design');
 const SYN61 = organismById('ecoli-syn61-delta3-ev5');
 const PAGE = 'https://example.test/site/';
 const SHA = (digit) => digit.repeat(64);
@@ -38,15 +39,15 @@ function strings(value) {
   return [];
 }
 
-test('the registry contains five frozen records, the default organism first', () => {
+test('the registry contains six frozen records, the default organism first', () => {
   assert.deepEqual(ORGANISMS.map((organism) => organism.id), [
     'utex2973', 'ecoli-k12-mg1655', 'ecoli-mds42-public-reference',
-    'ecoli-dh10b-public-reference', 'ecoli-syn61-delta3-ev5',
+    'ecoli-dh10b-public-reference', 'ecoli-syn57-design', 'ecoli-syn61-delta3-ev5',
   ]);
   assert.equal(DEFAULT_ORGANISM, ORGANISMS[0]);
   assert.deepEqual(ORGANISMS.map((organism) => organism.label), [
     'Cyanobacteria', 'E. coli', 'MDS42 public reference',
-    'DH10B public reference', 'E. coli Syn61',
+    'DH10B public reference', 'E. coli Syn57 design', 'E. coli Syn61',
   ]);
   assert.equal(ORGANISM_PARAM, 'org');
   assert.equal(DATA_PARAM, 'data');
@@ -160,6 +161,33 @@ test('Syn61 delta 3 ev5 mirrors config metadata and declares only sourced recodi
   assert.deepEqual(SYN61.annotationSources, []);
 });
 
+test('Syn57 is the complete design in native coordinates and declares no measured layer', async () => {
+  const config = JSON.parse(await readFile(
+    new URL('../../config/organisms.json', import.meta.url), 'utf8',
+  )).organisms[SYN57.id];
+  assert.deepEqual(organismIdentity(SYN57), {
+    id: 'ecoli-syn57-design', label: 'E. coli Syn57 design', species: 'Escherichia coli',
+    strain: 'Ec_Syn57 complete design · design only', assembly: 'Ec_Syn57',
+  });
+  assert.deepEqual(SYN57.genome.replicons, [{
+    accession: 'Ec_Syn57', lengthBp: config.expectedTotalLength,
+    role: 'chromosome', label: 'Design chromosome', primary: true,
+  }]);
+  assert.equal(SYN57.dataDirectory, `${config.outputDirectory.replace(/^site\//, '')}/`);
+  assert.equal(SYN57.storageNamespace, 'recoding-map.ecoli-syn57-design');
+  assert.equal(SYN57.exportTag, 'ecoli-syn57-design');
+  assert.equal(SYN57.recoding.recordType, 'design');
+  assert.equal(SYN57.recoding.schemeId, 'ec-syn57');
+  assert.deepEqual(SYN57.recoding.targets, ['AGC', 'AGT', 'TTA', 'TTG', 'AGA', 'AGG', 'TAG']);
+  assert.match(SYN57.recoding.scope, /Complete 3,973,902 bp.*native design coordinates/);
+  assert.match(SYN57.recoding.replacementNote, /not.*partial isolate/i);
+  assert.equal(SYN57.referenceCodonPca, null);
+  assert.deepEqual(SYN57.layers, {});
+  assert.deepEqual(SYN57.annotationSources, []);
+  assert.match(strings(SYN57).join(' '), /design only|not a measured isolate/i);
+  assert.ok(!strings(SYN57).some((value) => /Syn61/.test(value)));
+});
+
 test('public parent records are assembly-pinned and refuse experimental-value claims', async () => {
   const config = JSON.parse(await readFile(
     new URL('../../config/organisms.json', import.meta.url), 'utf8',
@@ -194,6 +222,8 @@ test('an address names its organism in the query string, and no org means the de
     { organism: ECOLI, requestedId: 'ecoli-k12-mg1655', recognised: true });
   assert.deepEqual(resolveOrganism('?org=ecoli-syn61-delta3-ev5'),
     { organism: SYN61, requestedId: 'ecoli-syn61-delta3-ev5', recognised: true });
+  assert.deepEqual(resolveOrganism('?org=ecoli-syn57-design'),
+    { organism: SYN57, requestedId: 'ecoli-syn57-design', recognised: true });
   assert.equal(resolveOrganism('?org=ecoli-mds42-public-reference').organism, MDS42);
   assert.equal(resolveOrganism('?org=ecoli-dh10b-public-reference').organism, DH10B);
   assert.deepEqual(resolveOrganism('org=ecoli-k12-mg1655&load-min=0').organism, ECOLI);
@@ -247,6 +277,8 @@ test('the data directory follows the organism, and ?data= overrides it for eithe
   assert.equal(resolveDataDirectory('?org=ecoli-k12-mg1655'), 'data/organisms/ecoli-k12-mg1655/');
   assert.equal(resolveDataDirectory('?org=ecoli-syn61-delta3-ev5'),
     'data/organisms/ecoli-syn61-delta3-ev5/');
+  assert.equal(resolveDataDirectory('?org=ecoli-syn57-design'),
+    'data/organisms/ecoli-syn57-design/');
   assert.equal(resolveDataDirectory('?org=ecoli-mds42-public-reference'),
     'data/organisms/ecoli-mds42-public-reference/');
   assert.equal(resolveDataDirectory('?org=ecoli-dh10b-public-reference'),
