@@ -24,6 +24,10 @@
       "bytes": 447,
       "sha256": "41ff2d44a0fb08242cdc6282401f51e3c677cd3ccd75757aa9b2e4cabe98cd06"
     },
+    "expression_agreement.json": {
+      "bytes": 333502,
+      "sha256": "4a9ec62ab646863df4b51e905466838d9e712aec741645554dfff0572a99f3ef"
+    },
     "expression_layers.json": {
       "bytes": 3009046,
       "sha256": "8fe9b7f0f3f9c6d19514d080d6d2fdd21200ac3f437f826ab904335b35dcfef9"

@@ -70,6 +70,8 @@ export const DATA_FILES = Object.freeze([
   file('goIeaEssentiality', 'go-iea-essentiality-v1.json', 3, 'GO IEA essentiality context',
     { needs: ['candidateEvidence'] }),
   file('goTerms', 'go-term-names-v1.json', 3, 'GO term names', { needs: ['annotations'] }),
+  file('expressionAgreement', 'expression_agreement.json', 4,
+    'processed-expression agreement'),
   file('regulatoryTss', 'regulatory_tss.json', 4, 'regulatory start sites'),
 ]);
 

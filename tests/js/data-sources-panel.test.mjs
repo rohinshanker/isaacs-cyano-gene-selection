@@ -32,6 +32,64 @@ function mount(document, { onChange = () => {}, storage = memoryStorage() } = {}
 const rowsOf = (document) => document.querySelectorAll('tr').filter((row) => row.dataset.id);
 const rowBoxes = (document) => rowsOf(document).map((row) => row.querySelector('input'));
 
+function agreementFixture({ withResponse = false } = {}) {
+  const source = (id, studyId, { covered = true, biological = true } = {}) => ({
+    id, studyId, label: id, conditionSet: `${id} condition`,
+    agreement: covered ? {
+      studyId, label: id, conditionSet: `${id} condition`, strain: 'PCC 7942',
+      units: 'CPM', normalization: 'cpm',
+      caveat: `${id} is descriptive processed data.`, replicateType: biological ? 'biological' : 'unknown',
+      replicates: { count: 2, text: 'two samples' }, meanGeneCount: 2500,
+      biologicalBandAvailable: biological,
+      ...(biological ? { biologicalBandId: `${id}:range` } : {}),
+      empiricalSampleRange: {
+        id: `${id}:range`, label: 'Empirical range', definedCorrelationCount: 1,
+        min: 0.8, median: 0.85, max: 0.9,
+      },
+      strata: [{
+        id: `${id}:stratum`, columns: [`${id} sample A`, `${id} sample B`],
+        sampleCorrelations: [{
+          sampleLeft: `${id} sample A`, sampleRight: `${id} sample B`,
+          sharedGeneCount: 2450, spearman: 0.85,
+        }],
+      }],
+    } : null,
+    ...(covered ? {} : { coverageGap: 'not_present_in_current_statistics_report' }),
+  });
+  const sources = [
+    source('GSE205444', 'GSE205444', { covered: false }),
+    source('TAN2018_TSS', 'PRJNA420395', { covered: false }),
+    source('GSE9.5', 'GSE9'),
+    source('GSE9.6', 'GSE9', { biological: false }),
+  ];
+  const sourceById = new Map(sources.map((entry) => [entry.id, entry]));
+  return {
+    sources, sourceById,
+    limitations: [
+      'Time-course layer means may pool time points while replicate correlations remain within exact time strata.',
+      'No statistic is a pass/fail rule and no layer is merged by this report.',
+    ],
+    levelPair: (left, right) => new Set([left, right]).size === 2
+      && sourceById.get(left)?.agreement && sourceById.get(right)?.agreement
+      ? { left, right, sharedGeneCount: 2400, spearman: 0.75 } : null,
+    responsePairsForSources: () => withResponse ? [{
+      leftContrast: {
+        studyId: 'GSE9A', label: 'treated relative to baseline',
+        treatment: ['A treated 1', 'A treated 2'], control: ['A control 1', 'A control 2'],
+        caveat: 'A time and treatment are confounded.',
+      },
+      rightContrast: {
+        studyId: 'GSE9B', label: 'stress relative to baseline',
+        treatment: ['B stress 1', 'B stress 2'], control: ['B control 1', 'B control 2'],
+        caveat: 'B control is a phase reference.',
+      },
+      spearman: 0.5, pearson: 0.6, signAgreementFraction: 0.7,
+      sameDirectionCount: 1400, nonzeroDirectionGeneCount: 2000, sharedGeneCount: 2200,
+      caveat: 'Different study designs; descriptive response comparison only.',
+    }] : [],
+  };
+}
+
 test('the section lists the selection by data type and marks the colouring source', async () => {
   await withFakeDocument(async (document) => {
     const { host, panel } = mount(document);
@@ -547,6 +605,92 @@ test('focused list controls stay below the opaque sticky header after reflow', a
     control.focus(); arrangePeekBody(body, { list, foot, side }, false);
     assert.equal(list.scrollTop, 585, 'scrolls sufficiently past the header despite integer rounding');
     assert.equal(document.activeElement, control);
+  });
+});
+
+test('agreement discovery stays bounded, preserves coverage gaps, and reports no-response honestly', async () => {
+  await withFakeDocument(async (document) => {
+    const { panel } = mount(document);
+    const agreement = agreementFixture();
+    panel.update({ agreement: { state: 'ready', value: agreement }, colorMetricKey: 'expression' });
+    panel.open({ dataType: 'transcriptomics' });
+    assert.equal(document.querySelectorAll('.ds-agreement-select')
+      .flatMap((label) => label.querySelectorAll('option')).length, 8,
+      'two source selectors expose four sources without rendering all source pairs');
+    assert.match(document.querySelector('.peek-side').textContent,
+      /No summary for this admitted RNA-seq source/);
+    assert.match(document.querySelector('.peek-side').textContent,
+      /Time-course layer means may pool time points/,
+    'report limitations remain visible for a coverage-gap pair');
+
+    const left = document.querySelector('select.ds-agreement-left');
+    left.value = 'GSE9.5'; left.dispatch('change');
+    const right = document.querySelector('select.ds-agreement-right');
+    right.value = 'GSE9.6'; right.dispatch('change');
+    const side = document.querySelector('.peek-side');
+    assert.match(side.textContent, /Layer-level Spearman 0.750 over 2,400 shared genes/);
+    assert.match(side.textContent, /no biological-replicate band is claimed because replication is unknown/i);
+    assert.match(side.textContent, /2,450 shared genes/,
+      'the sample-pair denominator is preserved separately from the layer mean count');
+    assert.match(side.textContent, /Strain: PCC 7942. Units: CPM. Normalization: cpm/);
+    assert.match(side.textContent, /No response comparison with an explicit control arm/);
+    assert.match(side.textContent, /No value is a pass\/fail threshold or a comparability decision/);
+    assert.equal(document.activeElement.className, 'ds-agreement-right');
+    panel.peek.settle(null);
+  });
+});
+
+test('response evidence names recorded studies, exact arms, and both contrast caveats', async () => {
+  await withFakeDocument(async (document) => {
+    const { panel } = mount(document);
+    panel.update({
+      agreement: { state: 'ready', value: agreementFixture({ withResponse: true }) },
+      colorMetricKey: 'expression',
+    });
+    panel.open({ dataType: 'transcriptomics' });
+    const left = document.querySelector('select.ds-agreement-left');
+    left.value = 'GSE9.5'; left.dispatch('change');
+    const right = document.querySelector('select.ds-agreement-right');
+    right.value = 'GSE9.6'; right.dispatch('change');
+    const text = document.querySelector('.peek-side').textContent;
+    assert.match(text, /recorded study contrasts.*not necessarily the two selected layer conditions/i);
+    for (const expected of [
+      'GSE9A: treated relative to baseline', 'GSE9B: stress relative to baseline',
+      'Treatment: A treated 1; A treated 2', 'Control: A control 1; A control 2',
+      'A time and treatment are confounded', 'B control is a phase reference',
+      '1,400 of 2,000', '2,200 shared responses',
+    ]) assert.match(text, new RegExp(expected));
+    panel.peek.settle(null);
+  });
+});
+
+test('agreement loading and failed retry states never imply unavailable evidence loaded', async () => {
+  await withFakeDocument(async (document) => {
+    const { panel } = mount(document);
+    panel.update({ agreement: { state: 'loading', value: null }, colorMetricKey: 'expression' });
+    panel.open({ dataType: 'transcriptomics' });
+    assert.match(document.querySelector('.peek-side').textContent, /still loading|Loading the validated/i);
+
+    let retried = 0;
+    panel.update({
+      agreement: { state: 'failed', value: null, retry: () => { retried += 1; } },
+      colorMetricKey: 'expression',
+    });
+    const alert = document.querySelector('.ds-agreement-error');
+    assert.equal(alert.getAttribute('role'), 'alert');
+    assert.match(alert.textContent, /No agreement statistic is shown/);
+    alert.querySelector('button').dispatch('click');
+    assert.equal(retried, 1);
+
+    panel.update({
+      agreement: { state: 'ready', value: agreementFixture() },
+      colorMetricKey: 'expression',
+    });
+    assert.equal(document.querySelectorAll('.ds-agreement-select').length, 2,
+      'the open picker replaces its failed state when the retry lands');
+    assert.doesNotMatch(document.querySelector('.peek-side').textContent,
+      /could not be loaded or validated/);
+    panel.peek.settle(null);
   });
 });
 

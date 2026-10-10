@@ -34,6 +34,7 @@ import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
 import { validateTrnaPayload } from './trna-loci.js';
 import { validateCodonPcaReference } from './codon-pca-reference.js';
 import { OVERLAP_CLASS_IDS, validateGeneOverlaps } from './gene-overlaps.js';
+import { validateExpressionAgreement } from './expression-agreement.js';
 
 /** One shared empty list, so a gene with no partner costs no allocation. */
 const NO_PARTNERS = Object.freeze([]);
@@ -524,6 +525,12 @@ export const DATA_APPLIERS = Object.freeze({
       }
     }
     dataset.goTerms = goTerms;
+  },
+
+  expressionAgreement(dataset, payload) {
+    dataset.expressionAgreement = payload
+      ? validateExpressionAgreement(payload, dataset.meta)
+      : null;
   },
 
   regulatoryTss(dataset, regulatoryTss) {

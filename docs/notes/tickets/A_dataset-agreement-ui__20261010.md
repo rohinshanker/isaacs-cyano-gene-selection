@@ -21,7 +21,30 @@ This closes only the existing report presentation slice. Further data admission,
 
 ## Verification
 
-Pending implementation and rendered checks. No completion claim yet.
+- `tools/promote_expression_agreement.py` deterministically reproduced the published
+  statistics-only sidecar: 55 admitted RNA-seq sources, 53 report-backed sources,
+  explicit `GSE205444` and `TAN2018_TSS` gaps, 1,378 level pairs and 26 response
+  pairs. Promotion and browser validation reject malformed/stale joins; the payload
+  omits the report's per-gene `means` and `vector` fields while retaining exact arms,
+  strata, sample-pair denominators, null reasons, caveats and provenance.
+- Focused checks passed: 4 promotion tests and 118 agreement, loader, export,
+  organism and Data Sources tests.
+- Full repository gates passed: 15 pinned annotation inputs and four generated
+  artifacts verified; 74 readiness tests passed; every configured organism passed
+  contract validation, data-manifest validation and live-metric checks with
+  `failed=0`; 1,498 JavaScript tests passed; 1,158 Python tests plus 46 subtests
+  passed with one declared skip. Both working-tree diff checks passed. The final
+  Python run used temporary read-only links to the canonical pinned raw corpus
+  because this worktree carries checksum sentinels only; the links were removed.
+- `tools/ui/check_expression_agreement.js` passed against the real worktree app at
+  375, 699, 700, 768, 1280, 1319, 1320 and 1440 px with no page, dialog or agreement
+  overflow and no unexpected console/page/request diagnostics. It exercised the
+  report-backed level/response pair, exact response arms and both contrast caveats,
+  unknown-replication band suppression, no-response and coverage-gap pairs, bounded
+  55-source selectors, missing/loading/failed+retry states, Escape and focus return.
+  Screenshots are in `/tmp/cyano-dataset-agreement-ui-20261010/`, including
+  `agreement-{width}.png`, `agreement-{failed,absent,loading}.png`, and
+  `agreement-1440-disclosures.png`.
 
 ## Cleanup
 

@@ -261,6 +261,7 @@ export class DataSourcesPanel {
     this.selection = normalizeSelection([], datasets);
     this.colorMetricKey = null;
     this.annotation = null;
+    this.agreement = { state: 'absent', value: null, error: null, retry: null };
     this.hidden = this.readHidden();
     this.peek = null;
     this.gridPeek = null;
@@ -319,17 +320,22 @@ export class DataSourcesPanel {
    */
   update({
     selection, colorMetricKey = this.colorMetricKey, annotation = null, informing = null,
-    wholeStrainSelection = null,
+    wholeStrainSelection = null, agreement = this.agreement,
   } = {}) {
     if (selection) this.selection = normalizeSelection(selection, this.datasets);
     this.colorMetricKey = colorMetricKey;
     this.annotation = annotation;
+    this.agreement = agreement;
     if (Array.isArray(wholeStrainSelection)) this.wholeStrainSelection = wholeStrainSelection;
     // `{typeOf(dataset) → {key, label}, chosen(typeKey) → dataset|null, onInform(typeKey, id)}`:
     // which dataset informs each type metric, chosen here when a type has
     // more than one selected dataset.
     this.informing = informing;
     if (this.sectionEnabled) this.renderSection();
+    // Later-tier evidence can settle while the picker is open. Keep its side
+    // panel on the same file state as the rest of the page so loading, failure,
+    // retry, and success never leave stale agreement copy on screen.
+    if (this.peek) this.renderSide();
   }
 
   /**
@@ -1276,6 +1282,241 @@ export class DataSourcesPanel {
     return row;
   }
 
+  agreementSourceCard(source) {
+    const card = el('article', { className: 'ds-agreement-source' });
+    card.append(el('h5', { text: `${source.studyId} · ${source.conditionSet}` }));
+    if (!source.agreement) {
+      card.append(el('p', {
+        className: 'panel-note',
+        text: 'No summary for this admitted RNA-seq source is present in the current agreement report.',
+      }));
+      return card;
+    }
+    const evidence = source.agreement;
+    card.append(el('p', {
+      text: `${evidence.replicates.text} · ${evidence.meanGeneCount.toLocaleString()} genes in the layer mean.`,
+    }));
+    const range = evidence.empiricalSampleRange;
+    if (evidence.biologicalBandAvailable) {
+      card.append(el('p', {
+        className: 'ds-agreement-range',
+        text: `Empirical within-condition sample Spearman range: ${formatStatistic(range.min)}–${formatStatistic(range.median)}–${formatStatistic(range.max)} `
+          + `(min / median / max across ${range.definedCorrelationCount.toLocaleString()} defined within-stratum sample pair${range.definedCorrelationCount === 1 ? '' : 's'}; not a confidence interval).`,
+      }));
+    } else if (range.definedCorrelationCount > 0) {
+      card.append(el('p', {
+        className: 'ds-agreement-range',
+        text: `Processed sample correlations span ${formatStatistic(range.min)}–${formatStatistic(range.max)}, `
+          + `across ${range.definedCorrelationCount.toLocaleString()} defined within-stratum sample pair${range.definedCorrelationCount === 1 ? '' : 's'}, `
+          + `but no biological-replicate band is claimed because replication is ${evidence.replicateType}.`,
+      }));
+    } else {
+      card.append(el('p', {
+        className: 'ds-agreement-range',
+        text: `No within-condition replicate correlation is defined (${range.reason.replaceAll('_', ' ')}); `
+          + `replication type: ${evidence.replicateType}.`,
+      }));
+    }
+    const evidenceDetail = el('details', { className: 'ds-agreement-caveat' });
+    evidenceDetail.append(el('summary', { text: 'Source evidence and sample-pair counts' }));
+    evidenceDetail.append(el('p', {
+      text: `Strain: ${evidence.strain}. Units: ${evidence.units}. Normalization: ${evidence.normalization}.`,
+    }));
+    for (const stratum of evidence.strata) {
+      evidenceDetail.append(el('p', {
+        className: 'ds-agreement-stratum',
+        text: `Stratum ${stratum.id}: ${stratum.columns.join('; ')}.`,
+      }));
+      if (stratum.sampleCorrelations.length === 0) {
+        evidenceDetail.append(el('p', { text: 'No within-stratum sample pair is available.' }));
+      } else {
+        const pairs = el('ul', { className: 'ds-agreement-sample-pairs' });
+        for (const pair of stratum.sampleCorrelations) {
+          pairs.append(el('li', {
+            text: `${pair.sampleLeft} ↔ ${pair.sampleRight}: Spearman ${formatStatistic(pair.spearman)} `
+              + `over ${pair.sharedGeneCount.toLocaleString()} shared genes.`,
+          }));
+        }
+        evidenceDetail.append(pairs);
+      }
+    }
+    evidenceDetail.append(el('p', { text: `Caveat: ${evidence.caveat}` }));
+    card.append(evidenceDetail);
+    return card;
+  }
+
+  agreementLimitations(agreement) {
+    const block = el('div', { className: 'ds-agreement-limitations' });
+    block.append(el('p', {
+      className: 'panel-note ds-agreement-no-threshold',
+      text: 'Descriptive processed-data statistics only. No value is a pass/fail threshold or a comparability decision.',
+    }));
+    const details = el('details', { className: 'ds-agreement-caveat' });
+    details.append(el('summary', { text: 'Report scope and caveats' }));
+    const list = el('ul');
+    for (const limitation of agreement.limitations) list.append(el('li', { text: limitation }));
+    details.append(list);
+    block.append(details);
+    return block;
+  }
+
+  agreementSelector(className, label, sources, value, selectedIds) {
+    const wrapper = el('label', { className: 'ds-agreement-select', text: `${label} ` });
+    const select = document.createElement('select');
+    select.className = className;
+    select.setAttribute('aria-label', `${label} for expression agreement`);
+    for (const source of sources) {
+      const option = document.createElement('option');
+      option.value = source.id;
+      option.textContent = `${source.studyId} · ${source.conditionSet}`
+        + (source.agreement ? '' : ' · not covered')
+        + (selectedIds.has(source.id) ? ' · selected' : '');
+      option.selected = source.id === value;
+      select.append(option);
+    }
+    select.value = value;
+    wrapper.append(select);
+    return { wrapper, select };
+  }
+
+  renderAgreement(chosen) {
+    const { side, state } = this.peek;
+    side.append(el('h4', { className: 'ds-agreement-heading', text: 'Processed-expression agreement' }));
+    const status = this.agreement?.state ?? 'absent';
+    if (status === 'loading') {
+      side.append(el('p', {
+        className: 'panel-note', text: 'Loading the validated statistics-only agreement report…',
+        attrs: { role: 'status' },
+      }));
+      return;
+    }
+    if (status === 'failed') {
+      const note = el('div', { className: 'ds-agreement-error', attrs: { role: 'alert' } });
+      note.append(el('p', {
+        text: 'The agreement report could not be loaded or validated. No agreement statistic is shown.',
+      }));
+      const retry = el('button', {
+        className: 'chip-button', text: 'Retry agreement report', attrs: { type: 'button' },
+      });
+      retry.addEventListener('click', () => this.agreement?.retry?.());
+      note.append(retry);
+      side.append(note);
+      return;
+    }
+    const agreement = this.agreement?.value;
+    if (status === 'absent' || !agreement) {
+      side.append(el('p', {
+        className: 'panel-note',
+        text: 'No processed-expression agreement report is published for this organism.',
+      }));
+      return;
+    }
+    if (state.type !== 'transcriptomics') {
+      side.append(el('p', {
+        className: 'panel-note',
+        text: 'The current agreement report covers admitted RNA-seq sources only, not this data type.',
+      }));
+      return;
+    }
+
+    const sources = agreement.sources;
+    if (sources.length < 2) {
+      side.append(el('p', { className: 'panel-note', text: 'Fewer than two RNA-seq sources are available to compare.' }));
+      return;
+    }
+    const selectedIds = new Set(chosen.map((source) => source.id));
+    const preferred = [...sources.filter((source) => selectedIds.has(source.id)), ...sources]
+      .filter((source, index, all) => all.findIndex((entry) => entry.id === source.id) === index);
+    let [leftId, rightId] = state.agreementPair ?? [];
+    if (!agreement.sourceById.has(leftId)) leftId = preferred[0].id;
+    if (!agreement.sourceById.has(rightId) || rightId === leftId) {
+      rightId = preferred.find((source) => source.id !== leftId).id;
+    }
+    state.agreementPair = [leftId, rightId];
+
+    const controls = el('div', { className: 'ds-agreement-controls' });
+    const left = this.agreementSelector('ds-agreement-left', 'Source A', sources, leftId, selectedIds);
+    const right = this.agreementSelector('ds-agreement-right', 'Source B', sources, rightId, selectedIds);
+    const changed = (which, select) => {
+      const next = [...state.agreementPair];
+      next[which] = select.value;
+      state.agreementPair = next;
+      this.renderSide();
+      side.querySelector(which === 0 ? 'select.ds-agreement-left' : 'select.ds-agreement-right')
+        ?.focus({ preventScroll: true });
+    };
+    left.select.addEventListener('change', () => changed(0, left.select));
+    right.select.addEventListener('change', () => changed(1, right.select));
+    controls.append(left.wrapper, right.wrapper);
+    side.append(controls);
+
+    const leftSource = agreement.sourceById.get(leftId);
+    const rightSource = agreement.sourceById.get(rightId);
+    side.append(this.agreementSourceCard(leftSource), this.agreementSourceCard(rightSource));
+    // Report-wide limitations apply even when this particular lookup ends in
+    // a coverage gap or undefined pair statistic.
+    side.append(this.agreementLimitations(agreement));
+    if (leftId === rightId) {
+      side.append(el('p', { className: 'panel-note', text: 'Choose two different sources for a pair-level statistic.' }));
+      return;
+    }
+    const pair = agreement.levelPair(leftId, rightId);
+    if (!pair) {
+      side.append(el('p', {
+        className: 'panel-note',
+        text: 'No layer-level statistic is present for this pair because at least one source is outside the current report.',
+      }));
+      return;
+    }
+    side.append(el('p', {
+      className: 'ds-agreement-pair',
+      text: pair.spearman === null
+        ? `Layer-level Spearman is undefined (${pair.spearmanReason.replaceAll('_', ' ')}); ${pair.sharedGeneCount.toLocaleString()} shared genes.`
+        : `Layer-level Spearman ${formatStatistic(pair.spearman)} over ${pair.sharedGeneCount.toLocaleString()} shared genes.`,
+    }));
+
+    const responses = agreement.responsePairsForSources(leftId, rightId);
+    side.append(el('h5', { text: 'Explicit control-relative responses' }));
+    side.append(el('p', {
+      className: 'panel-note',
+      text: 'These are recorded study contrasts discovered from the selected studies; they are not necessarily the two selected layer conditions.',
+    }));
+    if (responses.length === 0) {
+      side.append(el('p', {
+        className: 'panel-note',
+        text: 'No response comparison with an explicit control arm is recorded for these two studies.',
+      }));
+    } else {
+      const list = el('ul', { className: 'ds-agreement-responses' });
+      for (const response of responses) {
+        const item = el('li');
+        item.append(el('strong', {
+          text: `${response.leftContrast.studyId}: ${response.leftContrast.label} ↔ `
+            + `${response.rightContrast.studyId}: ${response.rightContrast.label}`,
+        }));
+        item.append(el('span', {
+          text: `Spearman ${formatNullable(response.spearman, response.spearmanReason)} · `
+            + `Pearson ${formatNullable(response.pearson, response.pearsonReason)} · `
+            + `same direction ${formatNullable(response.signAgreementFraction, response.signAgreementReason)} `
+            + `(${response.sameDirectionCount.toLocaleString()} of ${response.nonzeroDirectionGeneCount.toLocaleString()}; `
+            + `${response.sharedGeneCount.toLocaleString()} shared responses).`,
+        }));
+        const caveat = el('details', { className: 'ds-agreement-caveat' });
+        caveat.append(el('summary', { text: 'Arms and response caveats' }));
+        for (const contrast of [response.leftContrast, response.rightContrast]) {
+          caveat.append(el('p', {
+            text: `${contrast.studyId} — ${contrast.label}. Treatment: ${contrast.treatment.join('; ')}. `
+              + `Control: ${contrast.control.join('; ')}. Caveat: ${contrast.caveat}`,
+          }));
+        }
+        caveat.append(el('p', { text: `Pair caveat: ${response.caveat}` }));
+        item.append(caveat);
+        list.append(item);
+      }
+      side.append(list);
+    }
+  }
+
   renderSide() {
     const { side, state } = this.peek;
     side.replaceChildren();
@@ -1289,6 +1530,10 @@ export class DataSourcesPanel {
       side.append(el('p', { className: 'panel-note', text: 'Tick datasets on the left. Their conditions are laid on one enlarged scale per axis so they can be read against each other. Nothing here decides comparability.' }));
       return;
     }
+    // Keep the bounded evidence lookup at the top of this independently
+    // scrolling pane. The condition comparison below can be several screens
+    // tall when many sources are selected, especially on a phone.
+    this.renderAgreement(chosen);
     for (const axis of ['temperature', 'lightIntensity', 'co2']) {
       const scale = CONDITION_SCALES[axis];
       side.append(el('h4', { text: scale.name }));
@@ -1357,5 +1602,22 @@ export class DataSourcesPanel {
     archive.append(el('a', { text: `Open the archive record ${record.studyId}`, attrs: { href: record.archiveUrl, target: '_blank', rel: 'noopener' } }));
     side.append(archive);
     if (dataset.source?.provenanceDoc) side.append(el('p', { className: 'ds-where', text: `Provenance: ${dataset.source.provenanceDoc}` }));
+    if (this.agreement?.state === 'ready' && this.agreement.value) {
+      side.append(el('h4', { text: 'Processed-expression agreement' }));
+      const source = this.agreement.value.sourceById.get(dataset.id);
+      side.append(source
+        ? this.agreementSourceCard(source)
+        : el('p', { className: 'panel-note', text: 'This source is outside the agreement report’s RNA-seq scope.' }));
+    } else if (this.agreement?.state === 'loading') {
+      side.append(el('p', { className: 'panel-note', text: 'Agreement evidence is still loading.', attrs: { role: 'status' } }));
+    }
   }
+}
+
+function formatStatistic(value) {
+  return Number(value).toFixed(3);
+}
+
+function formatNullable(value, reason) {
+  return value === null ? `undefined (${String(reason).replaceAll('_', ' ')})` : formatStatistic(value);
 }

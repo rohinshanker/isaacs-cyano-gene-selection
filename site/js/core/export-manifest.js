@@ -33,6 +33,7 @@ import {
 } from './annotation-source.js';
 import { categoryResolutionFor, conflictNote } from './source-derived-categories.js';
 import { csvField } from '../ui/format.js';
+import { agreementExportEvidence } from './expression-agreement.js';
 
 export const MANIFEST_VERSION = 2;
 export const WILD_TYPE_SCHEME_ID = 'wild-type';
@@ -367,6 +368,11 @@ export function buildExport({
   const { meta, genes, indexById, table } = dataset;
   const schemeList = normaliseSchemes(schemes);
   const metrics = registry.metrics;
+  const measurementSources = measurementSourcesForExport(meta, metrics);
+  const expressionAgreement = agreementExportEvidence(
+    dataset.expressionAgreement,
+    measurementSources.map((source) => source.id ?? source.accession).filter(Boolean),
+  );
   const tssMetric = tssLayerMetric(registry, meta.tssEvidenceSource);
   const columns = [
     ...identityColumnsFor(organism), ...metrics.map((metric) => metric.key), ...SEQUENCE_COLUMNS,
@@ -534,7 +540,8 @@ export function buildExport({
       loadedGeneCount: genes.length,
     }, undeclared(LAYER_DATASET_KEYS, organism)),
     expressionSource: meta.expressionSource ?? null,
-    expressionSources: measurementSourcesForExport(meta, metrics),
+    expressionSources: measurementSources,
+    ...(expressionAgreement ? { expressionAgreement } : {}),
     filterState: filterState ?? null,
     viewState: viewState ?? null,
     // Which sources were enabled for category colouring when this file was made.

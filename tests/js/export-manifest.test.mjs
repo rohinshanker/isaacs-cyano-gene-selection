@@ -806,6 +806,27 @@ test('shipped fitness provenance stays a measurement, and a pooled export record
   assert.ok(pooled.manifest.expressionSources.every((source) => !('record' in source)));
 });
 
+test('a report-backed measurement export carries loaded agreement provenance and no stale fallback', async () => {
+  const { dataset, registry } = await shippedContext();
+  const source = dataset.meta.expressionSources
+    .find((entry) => entry.id === 'GSE103462_wt_subjective_dawn');
+  const metric = registry.byKey.get(source.metricKey);
+  const exported = exportFor(
+    dataset, { ...registry, metrics: [metric] }, [dataset.genes[0].id], [{ map: {} }],
+  );
+  assert.deepEqual(exported.manifest.expressionAgreement.sources, [source.id]);
+  assert.equal(exported.manifest.expressionAgreement.report.sha256,
+    dataset.expressionAgreement.sourceReport.sha256);
+  assert.equal(exported.manifest.expressionAgreement.inputs.plan.sha256,
+    dataset.expressionAgreement.inputs.plan.sha256);
+  const without = exportFor(
+    { ...dataset, expressionAgreement: null },
+    { ...registry, metrics: [metric] }, [dataset.genes[0].id], [{ map: {} }],
+  );
+  assert.equal('expressionAgreement' in without.manifest, false,
+    'an unavailable report is omitted rather than claimed');
+});
+
 test('the export carries the overlapping-gene identity beside the legacy flag', async () => {
   const { dataset, registry } = await shippedContext();
   // A locus the shipped layer reports two partners for, and one it reports

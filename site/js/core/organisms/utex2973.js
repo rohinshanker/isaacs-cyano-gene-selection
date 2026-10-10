@@ -160,6 +160,10 @@ export const UTEX2973 = {
       fileLabel: 'UTEX 2973 tRNA loci',
       label: 'UTEX 2973 tRNA loci',
     },
+    expressionAgreement: {
+      fileLabel: 'processed-expression agreement',
+      label: 'Processed-expression agreement',
+    },
     regulatoryTss: {
       intro: 'Tan et al. measured transcription initiation in UTEX 2973. These 2,333 '
         + 'antisense, internal, and orphan or novel sites are separate from the gene-linked TSSs '

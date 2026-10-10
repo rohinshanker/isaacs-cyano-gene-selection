@@ -476,7 +476,7 @@ test('the staged loader and the single-step loader build the same dataset', asyn
   const dataset = await staged.settled;
   const whole = await loadDataset({ baseUrl: BASE, fetchImpl: siteFetch().fetchImpl });
   for (const file of DATA_FILES) {
-    const expected = file.key === 'sequenceContext' ? 'ready'
+    const expected = ['sequenceContext', 'expressionAgreement'].includes(file.key) ? 'ready'
       : file.organismField ? 'absent' : 'ready';
     assert.equal(dataset.files[file.key].state, expected, file.key);
     assert.equal(whole.files[file.key].state, expected, file.key);

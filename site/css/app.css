@@ -2480,6 +2480,38 @@ input[type="range"] { width: 100%; }
 .ds-kv th { width: 92px; color: var(--ink-muted); font-weight: 600; }
 .ds-kv q { display: block; color: var(--ink-muted); font-style: italic; }
 .ds-cite { margin: 0.4rem 0; font-size: 0.8rem; }
+.ds-agreement-heading { padding-top: 0.7rem; border-top: 1px solid var(--line); }
+.ds-agreement-controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.45rem; }
+.ds-agreement-select { display: grid; gap: 0.15rem; color: var(--ink-muted); font-size: 0.75rem; }
+.ds-agreement-select select { width: 100%; min-width: 0; }
+.ds-agreement-source {
+  margin-top: 0.5rem; padding: 0.5rem 0.6rem; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--surface-sunken); overflow-wrap: anywhere;
+}
+.ds-agreement-source h5, .peek-side .ds-agreement-source h5 {
+  margin: 0 0 0.25rem; color: var(--ink); font-size: 0.78rem;
+}
+.ds-agreement-source p { margin: 0.25rem 0; font-size: 0.76rem; line-height: 1.4; }
+.ds-agreement-range, .ds-agreement-pair { font-variant-numeric: tabular-nums; }
+.ds-agreement-pair {
+  margin: 0.55rem 0; padding: 0.45rem 0.55rem; border-left: 3px solid var(--accent);
+  background: var(--accent-soft); font-size: 0.8rem; line-height: 1.4;
+}
+.ds-agreement-caveat { margin-top: 0.3rem; font-size: 0.74rem; color: var(--ink-muted); }
+.ds-agreement-caveat summary { cursor: pointer; font-weight: 600; }
+.ds-agreement-caveat p { overflow-wrap: anywhere; }
+.ds-agreement-sample-pairs, .ds-agreement-limitations ul { margin: 0.3rem 0; padding-left: 1.1rem; }
+.ds-agreement-sample-pairs li, .ds-agreement-limitations li { margin: 0.25rem 0; }
+.ds-agreement-responses { margin: 0.35rem 0; padding-left: 1.1rem; }
+.ds-agreement-responses li { margin: 0.45rem 0; font-size: 0.76rem; line-height: 1.4; }
+.ds-agreement-responses strong, .ds-agreement-responses span { display: block; }
+.ds-agreement-error { padding: 0.5rem; border: 1px solid var(--danger, #b42318); border-radius: var(--radius); }
+.ds-agreement-error p { margin-top: 0; }
+.ds-agreement-no-threshold { padding-bottom: 0.5rem; }
+
+@media (min-width: 700px) {
+  .ds-agreement-controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
 
 /* Two-thumb range slider: two native range inputs over one track, a filled bar between. */
 .range-slider { position: relative; height: 1.6rem; margin: 0.35rem 0 0.15rem; }

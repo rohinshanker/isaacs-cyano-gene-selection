@@ -2012,6 +2012,12 @@ function dataSourcesState() {
   return {
     selection: sourceSelection(), colorMetricKey: state.colorBy, annotation, informing,
     wholeStrainSelection: state.strainFitnessSources,
+    agreement: {
+      state: context.dataset.files?.expressionAgreement?.state ?? FILE_STATE.ABSENT,
+      value: context.dataset.expressionAgreement ?? null,
+      error: context.dataset.files?.expressionAgreement?.error ?? null,
+      retry: () => retryFile('expressionAgreement'),
+    },
   };
 }
 
