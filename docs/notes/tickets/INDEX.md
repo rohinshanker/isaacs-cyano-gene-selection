@@ -11,7 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [O_strain-fitness-dataset-selector__20261009](O_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; implementation not started |
+| [A_strain-fitness-dataset-selector__20261009](A_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; owned by cyano-ui-fixes, isolated implementation active |
 | [O_syn57-visualizer-inclusion__20261009](O_syn57-visualizer-inclusion__20261009.md) | Add Syn57 from the Nyerges radical-recoding paper with explicit design/strain provenance; then replace Syn61 button with Recoded E. Coli dropdown containing Syn57 and Syn61; owner approved the ticket; implementation not started |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | All selected methods now have sourced routes for very rough cross-organism UTEX predictions, with donor/native-coordinate distinctions, controls and limits. Owns Promoter Calculator, standalone TransTermHP, STREME, Rfam/Infernal, IntaRNA and new ViennaRNA regulatory uses; no new predictor run or layer admitted; iDOG execution hold retained |

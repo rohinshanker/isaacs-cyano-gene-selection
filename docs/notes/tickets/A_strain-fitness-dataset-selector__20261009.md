@@ -1,14 +1,17 @@
-# O_strain-fitness-dataset-selector__20261009 — Open
+# A_strain-fitness-dataset-selector__20261009 — Active
 
 - **Scope:** Provide a dataset selector in Strain fitness when a suitable dataset has not already been selected elsewhere.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-10
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. The existing Strain fitness panel has strain, condition,
+Opened by `cyano-ui-fixes` at the owner's request. Claimed 2026-10-10 by
+`cyano-ui-fixes` (`80c81443-1791314087`), which owns integration and closure.
+Implementation runs in an isolated worktree from main `24490ea`; no other live
+session is implementing this selector. The prior scoping owner completed only
+its navigation/documentation batch and left this separate engineering task open. The existing Strain fitness panel has strain, condition,
 and substrate/well filters over one loaded layer; these are not dataset choices.
 No dedicated open ticket for this selector was found in the live queue.
 
