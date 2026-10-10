@@ -1505,7 +1505,7 @@ export class DataSourcesPanel {
             + `(${response.sameDirectionCount.toLocaleString()} of ${response.nonzeroDirectionGeneCount.toLocaleString()}; `
             + `${response.sharedGeneCount.toLocaleString()} shared responses).`,
         }));
-    const caveat = el('details', { className: 'ds-agreement-caveat' });
+        const caveat = el('details', { className: 'ds-agreement-caveat' });
         caveat.append(el('summary', { text: 'Arms and response caveats' }));
         for (const contrast of [response.leftContrast, response.rightContrast]) {
           caveat.append(el('p', {

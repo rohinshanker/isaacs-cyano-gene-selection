@@ -205,6 +205,9 @@ projection. A change to the report, metadata or promotion code requires rebuildi
 the payload and manifest together. Promotion refuses output aliases of its report,
 site metadata, pinned inputs and implementation files (including symlink, hard-link,
 case and Unicode aliases), and rejects unusable output paths before writing.
+The guard protects inputs, not arbitrary output files: an explicit `--output`
+replaces its destination. Use the default browser path for publication and a
+fresh temporary path for inspection; do not target another published artifact.
 Unknown source IDs, mismatched study identities
 and malformed statistics are errors; a source absent from the report remains an
 explicit coverage gap. The organism registry declares this optional companion for
