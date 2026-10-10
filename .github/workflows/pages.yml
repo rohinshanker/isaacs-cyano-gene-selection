@@ -23,6 +23,7 @@ jobs:
       ORGANISMS: >-
         utex2973 ecoli-k12-mg1655 ecoli-mds42-public-reference
         ecoli-dh10b-public-reference ecoli-syn61-delta3-ev5
+      DESIGN_ORGANISMS: ecoli-syn57-design
     steps:
       - uses: actions/checkout@v4
         with:
@@ -118,7 +119,7 @@ jobs:
         continue-on-error: true
         run: |
           status=0
-          for organism in $ORGANISMS; do
+          for organism in $ORGANISMS $DESIGN_ORGANISMS; do
             if python3 tools/validate_contract.py --organism "$organism"; then
               echo "PASS contract $organism"
             else
@@ -136,7 +137,7 @@ jobs:
         continue-on-error: true
         run: |
           status=0
-          for organism in $ORGANISMS; do
+          for organism in $ORGANISMS $DESIGN_ORGANISMS; do
             if python3 tools/build_data_manifest.py check --organism "$organism"; then
               echo "PASS manifest $organism"
             else
@@ -159,7 +160,7 @@ jobs:
         continue-on-error: true
         run: |
           status=0
-          for organism in $ORGANISMS; do
+          for organism in $ORGANISMS $DESIGN_ORGANISMS; do
             if node tools/check_live_metrics.mjs --organism "$organism"; then
               echo "PASS live metrics $organism"
             else
