@@ -84,6 +84,20 @@ before closure.
 - Ship the Recoded E. Coli dropdown only when Syn57 has an admitted, working
   record. Preserve the conventional MG1655/MDS42/DH10B dropdown.
 
+## Open implementation findings
+
+| Id | Status | Required resolution |
+| --- | --- | --- |
+| S57-C1 | open | Rebuild `--check` must build outside the shipped directory and leave it byte-identical after both success and failure; test rejected/interrupted builds and file inventory changes. |
+| S57-C2 | open | Do not present anticodons inferred from codon-recognition notes or gene names as a complete genomic anticodon pool. Use a supported, explicitly qualified convention or mark tAI and dependent metrics unavailable; no borrowed organism pool. |
+| S57-C3 | open | Reconcile every plotted CDS with the overlap annotation universe without losing source feature identity or silently dropping unmatched source rows. |
+
+The coordinator's independent first-payload check matched all 3,588 plotted CDSs
+to unique source feature coordinates and exact decoded CDS sequences, with zero
+mismatches. The 52 exclusions reconcile the 3,640 source CDS records. Included
+terminal stops are TGA 1,126, TAA 2,454 and TAG 8. Repeat this check on the final
+reviewed payload; these results do not approve the remaining draft or its tAI.
+
 ## Verification
 
 Ticket-only intake; no organism or data has been added. The source boundary above
