@@ -142,13 +142,15 @@ async (page) => {
   'Report-wide aggregation and no-threshold caveats must survive a coverage-gap early return');
 
   await choose(dialog, 'GSE103462_wt_subjective_dawn', 'GSE103463_rel_relA_subjective_dawn');
-  const viewports = [[375, 812], [699, 900], [700, 900], [768, 1024], [1280, 800], [1319, 900], [1320, 900], [1440, 900]];
+  const viewports = [[375, 812], [419, 812], [420, 812], [421, 812], [699, 900], [700, 900], [768, 1024], [1280, 800], [1319, 900], [1320, 900], [1440, 900]];
   const matrix = [];
   for (const [width, height] of viewports) {
     await page.setViewportSize({ width, height });
     const layout = await dialog.evaluate((node) => ({
       pageOverflow: document.documentElement.scrollWidth > innerWidth + 1,
       dialogOverflow: node.scrollWidth > node.clientWidth + 1,
+      sideOverflow: node.querySelector('.peek-side').scrollWidth
+        > node.querySelector('.peek-side').clientWidth + 1,
       agreementOverflow: [...node.querySelectorAll('.ds-agreement-controls, .ds-agreement-source, .ds-agreement-pair, .ds-agreement-responses')]
         .some((entry) => entry.scrollWidth > entry.clientWidth + 1),
       responseRows: node.querySelectorAll('.ds-agreement-responses li').length,
@@ -156,6 +158,7 @@ async (page) => {
     }));
     check(!layout.pageOverflow, `page horizontal overflow at ${width}px`);
     check(!layout.dialogOverflow, `dialog horizontal overflow at ${width}px`);
+    check(!layout.sideOverflow, `comparison pane horizontal overflow at ${width}px`);
     check(!layout.agreementOverflow, `agreement evidence horizontal overflow at ${width}px`);
     check(layout.responseRows === 1, `response evidence lost at ${width}px`);
     check(layout.optionCount === 55, `bounded source discovery lost at ${width}px`);

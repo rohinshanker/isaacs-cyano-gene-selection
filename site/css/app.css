@@ -2474,6 +2474,10 @@ input[type="range"] { width: 100%; }
 .ds-cmp-row { display: grid; grid-template-columns: 104px 1fr; gap: 0.4rem; align-items: center; padding: 0.1rem 0; font-size: 0.8rem; }
 .ds-cmp-who { overflow-wrap: anywhere; color: var(--ink-muted); }
 .ds-cmp-who small { display: block; font-size: 0.7rem; }
+@media (max-width: 420px) {
+  .ds-cmp-row { grid-template-columns: minmax(0, 1fr); }
+  .ds-cmp-who:empty { display: none; }
+}
 .ds-spread { color: var(--ink-muted); font-size: 0.8rem; margin: 0.1rem 0 0 110px; }
 .ds-kv { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
 .ds-kv th, .ds-kv td { border-bottom: 1px solid #edf0f2; padding: 0.3rem 0.4rem; text-align: left; vertical-align: top; }
