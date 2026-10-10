@@ -351,6 +351,8 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (Array.isArray(state.sources) && state.sources.length > 0) {
     push(KEYS.sources, state.sources.join(','));
   }
+  // Pin the effective whole-strain dataset, including the initial catalogue
+  // entry, so a shared link survives later changes to catalogue ordering.
   if (typeof state.fitnessDatasetId === 'string') {
     push(KEYS.fitnessDatasetId, state.fitnessDatasetId);
   }

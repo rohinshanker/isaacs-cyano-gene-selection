@@ -126,6 +126,29 @@ test('a stale cached payload is reloaded once and only verified bytes are shown'
   assert.equal(calls[1][1], 'reload');
 });
 
+test('schema and rejected requests identify the actual catalogue file', async () => {
+  const invalid = raw();
+  invalid.schemaVersion = 2;
+  const networkError = new TypeError('Failed to fetch');
+  for (const fetchImpl of [
+    async () => new Response(JSON.stringify(invalid), { status: 200 }),
+    async () => { throw networkError; },
+    async () => { throw 'offline'; },
+  ]) {
+    const loader = new StrainFitnessDatasetLoader({
+      catalogue, baseUrl: 'https://example.test/data/', dataset: host(), fetchImpl,
+    });
+    loader.ensure('fit-a');
+    await loader.when('fit-a');
+    const { state, error } = loader.snapshot('fit-a');
+    assert.equal(state, FILE_STATE.FAILED);
+    assert.match(error.message, /^could not load strain fitness dataset fit-a \(a\.json\): /);
+    assert.doesNotMatch(error.message, /strain_fitness\.json/);
+    assert.match(error.message, /declares schema version 2|Failed to fetch|offline/);
+    assert.ok(error.cause, 'the original failure remains available for diagnosis');
+  }
+});
+
 test('persistent tampering and malformed verified JSON fail closed', async () => {
   const good = JSON.stringify(raw());
   const tampered = `${good} `;

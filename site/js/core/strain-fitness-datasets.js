@@ -58,8 +58,10 @@ export function resolveStrainFitnessSelection(catalogue, {
   });
 }
 
+class DatasetLoadError extends Error {}
+
 function errorFor(dataset, message, cause = null) {
-  return new Error(`could not load strain fitness dataset ${dataset.id} (${dataset.file}): ${message}`,
+  return new DatasetLoadError(`could not load strain fitness dataset ${dataset.id} (${dataset.file}): ${message}`,
     cause ? { cause } : undefined);
 }
 
@@ -148,7 +150,10 @@ export class StrainFitnessDatasetLoader {
       Object.assign(record, { state: FILE_STATE.READY, data, error: null });
     } catch (cause) {
       if (record.attempt !== attempt) return;
-      const error = cause instanceof Error ? cause : errorFor(entry, String(cause));
+      // The schema reader also serves the legacy single-file API. Its fixed
+      // filename must not misidentify a different catalogue entry here.
+      const message = String(cause?.message ?? cause).replace(/^strain_fitness\.json\b/, 'dataset');
+      const error = cause instanceof DatasetLoadError ? cause : errorFor(entry, message, cause);
       Object.assign(record, { state: FILE_STATE.FAILED, data: null, error });
     }
     this.onChange(id, this.snapshot(id));

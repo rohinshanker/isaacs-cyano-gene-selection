@@ -200,7 +200,6 @@ export class StrainFitnessPanel {
     this.onRetry = onRetry;
     this.selection = { strainId: 'all', conditionId: 'all', query: '' };
     this.page = 0;
-    this.built = false;
     this.layer = null;
     this.datasetSelection = null;
   }
@@ -214,7 +213,6 @@ export class StrainFitnessPanel {
     const dataset = selection?.dataset ?? null;
     if (!dataset) {
       this.host.replaceChildren(paragraph(UNAVAILABLE_TEXT, 'panel-note'));
-      this.built = false;
       this.layer = null;
       this.datasetSelection = null;
       return;
@@ -233,7 +231,6 @@ export class StrainFitnessPanel {
       this.page = 0;
     }
     this.activeDatasetId = dataset.id;
-    this.built = false;
     this.buildDatasetShell(catalogue, selection);
     if (!layer) {
       const state = resource?.state ?? FITNESS_IDLE;
@@ -250,13 +247,17 @@ export class StrainFitnessPanel {
   /** Keep the active fitness control active across loader and shared-state rerenders. */
   restoreFocus(key) {
     if (!key) return;
-    this.host.querySelector(`[data-fitness-focus="${key}"]`)?.focus({ preventScroll: true });
+    const target = this.host.querySelector(`[data-fitness-focus="${key}"]`)
+      ?? this.host.querySelector('[data-fitness-focus="heading"]');
+    target?.focus({ preventScroll: true });
   }
 
   buildDatasetShell(catalogue, selection) {
     this.host.replaceChildren();
     const title = document.createElement('h2');
     title.textContent = 'Strain fitness';
+    title.dataset.fitnessFocus = 'heading';
+    title.setAttribute('tabindex', '-1');
     this.host.append(title);
     const block = document.createElement('div');
     block.className = 'fitness-dataset';
@@ -318,7 +319,6 @@ export class StrainFitnessPanel {
     this.wellHost.className = 'fitness-section';
     children.push(this.context, this.summary, this.growthHost, this.wellHost);
     this.host.append(...children);
-    this.built = true;
   }
 
   /** The citation, the pinned source file, and the comparison the source made. */
@@ -440,7 +440,8 @@ export class StrainFitnessPanel {
         ? ` (${labels.segments})` : ''}`,
       `Condition: ${labels.condition}`,
       `Dataset: ${this.datasetSelection.label} (${this.datasetSelection.id})`,
-      `Selected by: ${this.datasetSelection.origin}`,
+      `Selected by: ${this.datasetSelection.origin === 'external'
+        ? 'Shared Data Sources' : 'Local Strain fitness selector'}`,
       `Source: ${this.layer.source.studyId ?? this.layer.source.sourceFile}`,
     ];
     this.context.textContent = parts.join(' · ');

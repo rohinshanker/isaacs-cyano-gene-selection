@@ -180,6 +180,32 @@ test('a synthetic file is labelled as one, and a published file is not', async (
   });
 });
 
+test('retry retains a stable focus target through loading, repeated failure and success', async () => {
+  await withFakeDocument((document) => {
+    const { host, panel } = mount(document, null, FILE_STATE.FAILED, {
+      onRetry: () => panel.update(model(null, FILE_STATE.LOADING)),
+    });
+    const retry = host.querySelector('[data-fitness-focus="retry"]');
+    retry.focus();
+    retry.dispatch('click');
+    const focusedHeading = () => {
+      const heading = host.querySelector('[data-fitness-focus="heading"]');
+      assert.equal(document.activeElement, heading);
+      assert.equal(heading.getAttribute('tabindex'), '-1');
+    };
+    focusedHeading();
+    panel.update(model(null, FILE_STATE.FAILED));
+    focusedHeading();
+    panel.update(model(layerFor()));
+    focusedHeading();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    panel.update(model(layerFor()));
+    assert.equal(document.activeElement, outside, 'a background load never steals focus');
+  });
+});
+
 test('the source, its checksum and its comparison are on screen', async () => {
   await withFakeDocument((document) => {
     const { host } = mount(document, layerFor());
@@ -263,7 +289,7 @@ test('every row names its strain, scheme and condition, and the context line nam
     const context = host.querySelector('p.fitness-context').textContent;
     assert.equal(context, 'Strain: All strains · Scheme: All schemes · '
       + 'Condition: All conditions · Dataset: Fixture whole-strain fitness (fixture-fitness) · '
-      + 'Selected by: local · Source: FIXTURE_STRAIN_FITNESS');
+      + 'Selected by: Local Strain fitness selector · Source: FIXTURE_STRAIN_FITNESS');
     assert.equal(host.querySelector('p.fitness-context').getAttribute('role'), 'status');
     assert.equal(host.querySelector('p.length-summary').textContent,
       '6 growth records, 3 growth strains, 1 with no growth detected, 24 Biolog wells.');
@@ -280,7 +306,7 @@ test('filtering by strain and condition narrows both tables and the context line
     assert.equal(host.querySelector('p.fitness-context').textContent,
       'Strain: Segment set B (synthetic) · Scheme: seven-codon recoding (synthetic) (70-81) · '
       + 'Condition: All conditions · Dataset: Fixture whole-strain fitness (fixture-fitness) · '
-      + 'Selected by: local · Source: FIXTURE_STRAIN_FITNESS');
+      + 'Selected by: Local Strain fitness selector · Source: FIXTURE_STRAIN_FITNESS');
 
     panel.condition.value = 'minimal-37';
     panel.condition.dispatch('change');

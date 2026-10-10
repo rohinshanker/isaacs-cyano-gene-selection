@@ -29,6 +29,7 @@ async (page) => {
   let scenario = 'production';
   let failedOnce = false;
   let releaseSlow = null;
+  let releaseRetry = null;
   const catalogues = {
     full: [
       { id: 'synthetic-a', label: 'Synthetic fixture A', file: 'synthetic-a.json' },
@@ -72,6 +73,9 @@ async (page) => {
     if (scenario === 'error-retry' && name === 'synthetic-a.json' && !failedOnce) {
       failedOnce = true;
       return route.fulfill({ status: 500, body: 'synthetic first-attempt failure' });
+    }
+    if (scenario === 'error-retry' && name === 'synthetic-a.json') {
+      await new Promise((resolve) => { releaseRetry = resolve; });
     }
     if (scenario === 'race' && name === 'synthetic-a.json') {
       await new Promise((resolve) => { releaseSlow = resolve; });
@@ -430,18 +434,36 @@ async (page) => {
       'invalid payload retains its dataset identity');
     check(/no growth and a doubling time/.test(await view.locator('.fitness-load-error').innerText()),
       'schema failure is named');
+    check(/synthetic-a \(synthetic-a\.json\)/.test(await view.locator('.fitness-load-error').innerText())
+      && !/strain_fitness\.json/.test(await view.locator('.fitness-load-error').innerText()),
+    'schema failure names the actual selected file');
     await layout('fitness-invalid-1280');
+    await page.getByRole('tab', { name: 'Native codon space', exact: true }).click();
+    await page.waitForFunction(() => !document.querySelector('#map-view')?.hidden
+      && document.querySelector('#legend')?.textContent.length > 0);
+    check(await page.locator('#map-canvas').isVisible(),
+      'a malformed fitness dataset leaves the normal gene map usable');
+    await page.screenshot({ path: `${root}/fitness-invalid-map-1280.png` });
+    quiet('gene map after malformed fitness dataset');
 
     await open('error-retry');
     await page.waitForFunction(() => document.querySelector('#strain-fitness-view')
       ?.textContent.includes('could not be loaded'));
     check(/HTTP 500/.test(await view.locator('.fitness-load-error').innerText()),
       'transport failure is named');
-    await view.getByRole('button', { name: 'Retry this dataset' }).click();
+    await view.getByRole('button', { name: 'Retry this dataset' }).focus();
+    await page.keyboard.press('Enter');
+    await view.locator('p[data-pending="loading"]').waitFor();
+    const headingFocused = () => view.locator('[data-fitness-focus="heading"]')
+      .evaluate((node) => node === document.activeElement);
+    check(await headingFocused(), 'keyboard retry retains focus during loading');
+    check(typeof releaseRetry === 'function', 'the retry response is held for inspection');
+    releaseRetry();
     await page.waitForFunction(() =>
       document.querySelector('#strain-fitness-view table.fitness-table') !== null);
     check(/Synthetic fixture A/.test(await view.locator('.fitness-dataset-context').innerText()),
       'retry restores the same identified dataset');
+    check(await headingFocused(), 'keyboard retry retains focus after success');
     await layout('fitness-retry-ready-1280');
     quiet('selection resolution and independent loading');
 
@@ -461,9 +483,8 @@ async (page) => {
     await page.waitForFunction(() => !document.querySelector('#map-view')?.hidden);
     check(await page.locator('#map-canvas').isVisible(), 'the map is still there');
     quiet('absent');
-
-    quiet('absent');
   } finally {
+    releaseRetry?.();
     page.removeAllListeners('pageerror');
     page.removeAllListeners('console');
     page.removeAllListeners('requestfailed');

@@ -27,6 +27,9 @@ legacy `strain_fitness.json` path for directory validators.
 ## Dataset selection
 
 The local whole-strain choice is `fitnessDatasetId` (`fd` in a shared link).
+The effective id is written even for the first catalogue entry: shared links
+pin that dataset if later releases add entries or change their order. This
+records the effective choice, not whether a reader manually changed it.
 It is separate from strain, condition, search, and page filters. Switching the
 dataset clears those subordinate filters and page before the new payload is
 shown, so ids from one schema cannot silently filter another.
