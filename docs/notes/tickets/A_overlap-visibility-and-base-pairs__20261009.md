@@ -1,14 +1,14 @@
-# O_overlap-visibility-and-base-pairs__20261009 — Open
+# A_overlap-visibility-and-base-pairs__20261009 — Active
 
 - **Scope:** Improve small overlapping-gene marks, prevent chromosome overlap hover from moving the canvas, and display strand-aware nucleotide sequences for overlapping partners.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-10
 
 ## Current State
 
 Opened by `cyano-ui-fixes` at the owner's request, following the initial OG
-release on main `74c79db`. Implementation is unassigned and has not started.
+release on main `74c79db`. Claimed 2026-10-10 by `cyano-ui-fixes` (session `80c81443-1791314087`), which owns integration and closure. Implementation uses an isolated worker worktree based on `5431386`; no other active session owns these overlap changes.
 The owner reports that small overlaps are hard to see, and that chromosome
 hover text increases the space above the canvas, moving the overlap away from
 the pointer. These are owner-reported findings; this intake does not claim a
