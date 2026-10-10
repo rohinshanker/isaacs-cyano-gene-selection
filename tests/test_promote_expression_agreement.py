@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -110,3 +111,80 @@ def test_malformed_statistics_are_rejected_before_output() -> None:
     broken["contrasts"][0]["control"] = broken["contrasts"][0]["treatment"]
     with pytest.raises(ValueError, match="shares a treatment and control arm"):
         payload(broken, meta)
+
+
+@pytest.mark.parametrize("input_kind", ["report", "meta", "plan", "crosswalk", "spec",
+                                         "promotion", "validator", "statistics"])
+@pytest.mark.parametrize("alias", ["direct", "symlink", "hardlink", "case"])
+def test_promotion_refuses_input_aliases_without_writing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, input_kind: str, alias: str,
+) -> None:
+    report, report_raw, _, meta_raw = loaded()
+    report_path = tmp_path / "report.json"
+    meta_path = tmp_path / "meta.json"
+    report_path.write_bytes(report_raw)
+    meta_path.write_bytes(meta_raw)
+    monkeypatch.setattr(promotion, "ROOT", tmp_path)
+    tool_path = tmp_path / "tools/promote_expression_agreement.py"
+    monkeypatch.setattr(promotion, "SELF_PATH", tool_path)
+    paths = {
+        "report": report_path,
+        "meta": meta_path,
+        "plan": tmp_path / report["inputs"]["plan"]["path"],
+        "crosswalk": tmp_path / report["inputs"]["crosswalk"]["path"],
+        "spec": tmp_path / report["inputs"]["specs"][0]["path"],
+        "promotion": tool_path,
+        "validator": tmp_path / "tools/export_expression_agreement.py",
+        "statistics": tmp_path / report["implementation"]["path"],
+    }
+    for name, path in paths.items():
+        if name not in ("report", "meta"):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(f"preserve {name}\n")
+    source = paths[input_kind]
+    output = source
+    if alias in ("symlink", "hardlink"):
+        output = tmp_path / "output.json"
+        if alias == "symlink":
+            output.symlink_to(source)
+        else:
+            os.link(source, output)
+    elif alias == "case":
+        output = source.with_name(source.name.upper())
+    originals = {path: path.read_bytes() for path in paths.values()}
+    with pytest.raises(ValueError, match="would overwrite"):
+        promotion.promote(report_path, meta_path, output)
+    assert all(path.read_bytes() == content for path, content in originals.items())
+    assert not list(tmp_path.rglob("*.partial"))
+
+
+def test_promotion_preflights_paths_and_allows_browser_publication(tmp_path: Path) -> None:
+    report_path = tmp_path / "report.json"
+    meta_path = tmp_path / "meta.json"
+    report_path.write_bytes(REPORT.read_bytes())
+    meta_path.write_bytes(META.read_bytes())
+    with pytest.raises(ValueError, match="is a directory"):
+        promotion.promote(report_path, meta_path, tmp_path)
+    with pytest.raises(ValueError, match="not a directory"):
+        promotion.promote(report_path, meta_path, meta_path / "child.json")
+    loop = tmp_path / "loop"
+    loop.symlink_to(loop)
+    with pytest.raises(ValueError, match="cannot be resolved"):
+        promotion.promote(report_path, meta_path, loop / "output.json")
+    output = tmp_path / "site/data/expression_agreement.json"
+    result = promotion.promote(report_path, meta_path, output)
+    assert json.loads(output.read_text()) == result
+    assert not list(tmp_path.rglob("*.partial"))
+
+
+def test_cli_input_collision_reports_failure_without_modification(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    report_path = tmp_path / "report.json"
+    report_path.write_bytes(REPORT.read_bytes())
+    before = report_path.read_bytes()
+    status = promotion.main(["--report", str(report_path), "--meta", str(META),
+                             "--output", str(report_path)])
+    assert status == 1
+    assert "would overwrite the input report" in capsys.readouterr().err
+    assert report_path.read_bytes() == before

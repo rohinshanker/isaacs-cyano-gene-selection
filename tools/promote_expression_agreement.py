@@ -30,6 +30,7 @@ try:  # Importable as tools.promote_expression_agreement and executable as a scr
         LAYER_VECTOR_FIELD,
         REPORT_FORMAT,
         SCHEMA_VERSION,
+        _alias_key,
         _declared_input_paths,
         _expect_count,
         _expect_distinct_names,
@@ -39,6 +40,9 @@ try:  # Importable as tools.promote_expression_agreement and executable as a scr
         _expect_text,
         _reject_json_constant,
         _reject_non_finite,
+        _reject_unusable_ancestors,
+        _resolve,
+        _same_file,
         _validate_layer_description,
         _validate_level_pairs,
         _validate_response_pairs,
@@ -52,6 +56,7 @@ except ModuleNotFoundError:  # Direct execution puts tools/ rather than ROOT on 
         LAYER_VECTOR_FIELD,
         REPORT_FORMAT,
         SCHEMA_VERSION,
+        _alias_key,
         _declared_input_paths,
         _expect_count,
         _expect_distinct_names,
@@ -61,6 +66,9 @@ except ModuleNotFoundError:  # Direct execution puts tools/ rather than ROOT on 
         _expect_text,
         _reject_json_constant,
         _reject_non_finite,
+        _reject_unusable_ancestors,
+        _resolve,
+        _same_file,
         _validate_layer_description,
         _validate_level_pairs,
         _validate_response_pairs,
@@ -338,12 +346,38 @@ def write_atomically(path: Path, text: str) -> None:
         raise
 
 
+def preflight_destination(
+    output_path: Path, report_path: Path, meta_path: Path, report: Mapping[str, Any],
+) -> Path:
+    """Allow browser publication while refusing input and implementation aliases."""
+    target = _resolve(output_path, "promotion output")
+    if target.is_dir():
+        raise ValueError(f"promotion output is a directory: {output_path}")
+    _reject_unusable_ancestors("promotion output", target)
+    protected = [
+        (report_path, "the input report"),
+        (meta_path, "the site metadata"),
+        (SELF_PATH, "the promotion tool"),
+        (ROOT / "tools/export_expression_agreement.py", "the report validator"),
+        (ROOT / report["implementation"]["path"], "the statistics implementation"),
+    ]
+    protected.extend((ROOT / path, f"the pinned input {path}")
+                     for path in _declared_input_paths(report))
+    key = _alias_key(target)
+    for path, description in protected:
+        source = _resolve(path, description)
+        if key == _alias_key(source) or _same_file(target, source):
+            raise ValueError(f"promotion output would overwrite {description}")
+    return target
+
+
 def promote(report_path: Path, meta_path: Path, output_path: Path) -> dict[str, Any]:
     """Build and atomically write one browser agreement payload."""
     report, report_raw = load_json(report_path, "agreement report")
     meta, meta_raw = load_json(meta_path, "site metadata")
     payload = build_payload(report, report_path, report_raw, meta, meta_path, meta_raw)
-    write_atomically(output_path, render(payload))
+    target = preflight_destination(output_path, report_path, meta_path, report)
+    write_atomically(target, render(payload))
     return payload
 
 
