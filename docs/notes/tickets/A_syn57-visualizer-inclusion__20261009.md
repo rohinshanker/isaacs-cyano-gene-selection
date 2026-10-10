@@ -1,14 +1,17 @@
-# O_syn57-visualizer-inclusion__20261009 — Open (approved by Rohin)
+# A_syn57-visualizer-inclusion__20261009 — Active
 
 - **Scope:** Add the owner's requested Syn57 from the Nyerges radical-recoding paper and group recoded E. coli choices.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-10
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. When Syn57 is added, replace the **E. coli Syn61** button
+Opened by `cyano-ui-fixes` at the owner's request. Claimed 2026-10-10 by
+`cyano-ticket-closing` (Agent Deck `4fb20911-1791401042`). Implementation and
+review use isolated worktrees; fitness-selection and agreement-export scopes
+remain with their existing owners. No new default is introduced: opening the
+recoded disclosure presents both explicit links, retaining Syn61 saved links. When Syn57 is added, replace the **E. coli Syn61** button
 with **Recoded E. Coli**. Its dropdown contains **Syn57** and **Syn61**, in that
 order. The top-level sequence is then **Cyanobacteria → Recoded E. Coli →
 E. coli**. The owner has not specified a fresh default for the recoded group;
