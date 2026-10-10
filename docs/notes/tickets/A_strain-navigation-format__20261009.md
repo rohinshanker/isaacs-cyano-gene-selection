@@ -60,6 +60,16 @@ viewport edge, clipping its strain names. Reproduced by the coordinator from
 the review screenshot. Repair placement for every group-label width and verify
 both viewport edges; document-level horizontal overflow alone misses this case.
 
+Other DEM-347 findings: **NAV-R2 open** (separator has no rendered gap),
+**NAV-R3 open** (default MG1655 is called selected on other-organism pages;
+accessible name must contain the visible label), **NAV-R4 open** (restore the
+registry-to-navigation completeness test), and **NAV-R5 open** (remove unused
+returned `close`). NAV-R5's listener-lifetime observation is not a current defect:
+the sole production caller renders once per page, and each organism switch is a
+full navigation. Retain that lifecycle rather than adding unused disposal APIs.
+The existing owner rule distinguishes default MG1655 from the active strain, so
+NAV-R3's truthful default/selected wording needs no new owner decision.
+
 Ticket-only intake; no UI behavior has changed. Intake validation, 2026-10-09:
 ticket metadata and queue links passed; `npm test` passed 1,395 tests; `pytest -q`
 passed 925 tests and 36 subtests with one skip; the contract validator passed 119
