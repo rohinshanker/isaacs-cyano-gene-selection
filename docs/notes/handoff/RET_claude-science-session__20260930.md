@@ -27,7 +27,7 @@ source, grants a licence, performs a join, or settles a lab decision.
 At the time of this review, `main` is at `4218254`, clean, four commits ahead of
 `origin/main`. DEM-174 is dispatched on `fix/dem-171-review` from `b6e21e9` in a
 scratchpad worktree, repairing the review findings on
-[A_zoomed-out-visual-priority__20260929](../tickets/A_zoomed-out-visual-priority__20260929.md).
+[A_zoomed-out-visual-priority__20260929](../../validation/chromosome-view.md#checks).
 
 This session therefore changed **no** file under `site/`, no test, no validation
 document, no ticket, and not `docs/notes/tickets/INDEX.md`. Every queue change
@@ -274,7 +274,7 @@ this return no rendered completeness check had been performed, so this was a
 possible live defect in shipped evidence display ranked below two tickets that
 could not move at all.
 
-[pinned-gene-sequence-viewer](../tickets/O_pinned-gene-sequence-viewer__20260930.md)
+[pinned-gene-sequence-viewer](../../validation/gene-sequence-closeup.md)
 is the second-most actionable: also claim-free, gated only on owner answers to
 its eight layout questions.
 

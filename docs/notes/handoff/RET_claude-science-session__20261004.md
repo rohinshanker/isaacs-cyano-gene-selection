@@ -19,7 +19,7 @@ updated:     20261004
 
 Everything below is **evidence and recommendation**. No pair is admitted, no
 threshold is set, and no escalated pair is resolved. Rows 13 to 15 of
-[AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md)
+[AAA-biological-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md#evidence-boundary-for-each-question)
 stay with the lab.
 
 ## D.1 What was returned

@@ -10,7 +10,7 @@ The working list of every scientific and scope decision this project is waiting 
 as of 2026-10-05. It holds the fifteen standing lab decisions, the ten comparability
 questions J1 to J10 raised by the Claude Science pair scoring and pilot, the other
 owner questions that hold tickets open, and the work each answer releases.
-[AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md)
+[AAA-biological-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md#evidence-boundary-for-each-question)
 keeps the full evidence boundary for rows 1 to 15; this document keeps their state.
 
 **How to answer.** Reply by id with a decision and, where it is a judgement, its
@@ -33,7 +33,7 @@ scoring, 941 pairs, none comparable under the thresholds alone) and
 | J6 | What counts as data evidence that two datasets are one condition? | **Decided 2026-10-05, owner:** fold-change agreement and level correlation against each dataset's replicate band; distribution comparison is a units check only | Nothing |
 | J7 | The literature offers no numerical comparability threshold. Set one, or judge case by case? | **Decided 2026-10-05, owner,** through the confirmed instruction: no pass mark, a person judges each pair from the statistics and the conditions | Nothing, unless a number is wanted after all |
 | J8 | No cross-study sample pair reaches the replicate band. Is pooling levels across studies off the table unless the data are reprocessed uniformly? | **Decided 2026-10-05, owner:** proceed with reprocessing | Nothing |
-| J9 | Is condition-resolved fitness (RB-TnSeq, GSE205443) a wanted data type? | **Decided 2026-10-05, owner:** yes, in its own tab. Admitted as a data type in the data contract; the work is [O_fitness-screen-data-type__20261005](../tickets/O_fitness-screen-data-type__20261005.md) | Nothing |
+| J9 | Is condition-resolved fitness (RB-TnSeq, GSE205443) a wanted data type? | **Decided 2026-10-05, owner:** yes, in its own tab. Admitted as a data type in the data contract; the work is [O_fitness-screen-data-type__20261005](../../validation/fitness-screen-data.md) | Nothing |
 | J10 | The 32 escalated pairs, one by one: may each share a layer? | **Reviewed 2026-10-05, owner:** 23 may share, 5 keep separate, 1 undecided, 3 left blank; three of the 23 are qualified or conditional (pairs 9, 10 and 24). The table is in section 1b | Pairs 8, 11 and 30 were extrapolated on 2026-10-05 at the owner's instruction (8 undecided as pair 7, 11 and 30 may share); pair 7 stays the owner's "maybe" |
 
 Also decided 2026-10-05 and recorded in the contract: decisions D1 to D5 of your

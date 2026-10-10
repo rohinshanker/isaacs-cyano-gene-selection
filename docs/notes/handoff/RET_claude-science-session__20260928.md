@@ -26,7 +26,7 @@ entry point for one session's output and the list of what to do with it.
 **1. The capability gate is closed.** The offload and audit tickets were both blocked
 on unverified Claude Science capabilities. Confirmed by probe and recorded, with the
 call behind each answer, in
-[Confirmed 2026-09-28](../tickets/O_claude-science-offload__20260927.md#confirmed-2026-09-28).
+[Confirmed 2026-09-28](../../validation/claude-science-handoff.md#what-claude-science-is-for-this-repository).
 Seven hosts were refused by the sandbox allowlist and granted on request; six now
 reachable. `journals.asm.org` refuses at ASM's own server and was left alone — no
 User-Agent spoofing, no mirror — because it turned out to be unnecessary.
@@ -136,7 +136,7 @@ Two Claude Science profiles were created this session, per the owner's instructi
 | `CYANO_CROSSWALK_VERIFIER` | **Curated** — `self-awareness` skill; `genomes`, `genes-ontologies`, `protein-annotation`, `omics-archives` connectors | Its job is narrow and read-only; a tight loadout is part of the guarantee that it cannot wander into the work it is supposed to be checking |
 
 `CYANO_DATA_AUDITOR` was specified in
-[O_agent-topology-and-handoff__20260928](../tickets/O_agent-topology-and-handoff__20260928.md)
+[the agent topology ticket's resolution](../../validation/claude-science-handoff.md#second-checking-not-just-fetching)
 but **not created**, because the audit's loadout should follow the same review.
 
 **Review request for the agent team.** Judge this design and make it leaner. Three
