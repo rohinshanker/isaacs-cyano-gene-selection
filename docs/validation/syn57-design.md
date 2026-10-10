@@ -120,7 +120,10 @@ record into a temporary raw directory and run:
 ```
 
 The persistent Syn57 tests perform this check when the pinned ignored publisher
-source is present. Standalone `tools/build_syn57_design.py --check` first
+source is present. They pin `passed=94 failed=0 skipped=1`: the sole
+permitted skip is the declared spliced-CDS contiguity exemption. If the contract
+adds checks, review the new complete result before changing this count; do not
+allow missing raw-input checks to turn into a passing regression gate. Standalone `tools/build_syn57_design.py --check` first
 validates both content manifests, then rebuilds in a temporary directory and
 performs timestamp-normalized comparison; a stale checksum is never normalized
 into acceptance.

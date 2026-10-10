@@ -133,7 +133,10 @@ organism but the default.
 
 **Where organism wording lives.** A sentence that states an organism fact is in
 its record, or composed from the record's names, or read from the dataset's own
-`meta.json`. A module that draws takes the organism from `organismOf(dataset)`
+`meta.json`. `copy.metricOrigin`, when declared, is a noun phrase: the
+metric-help branches supply their own pipeline, proxy or live-calculation prefix.
+Every method citation exposed by a metric or projection must resolve through
+that organism's citation ledger. A module that draws takes the organism from `organismOf(dataset)`
 or as an argument. A dataset built by hand, as tests and tools build them,
 carries no organism and is the default's, which is what keeps every earlier
 test unchanged; the page's loader always stamps one.
