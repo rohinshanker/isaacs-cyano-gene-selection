@@ -57,6 +57,7 @@ does not count as a compatible strain-fitness choice.
 
 | ID | State | Requirement |
 | --- | --- | --- |
+| FDS-C2 | open | A selected gene-level Nyerges source must never become a whole-strain choice through a catalogue alias. The external-selection path needs explicit whole-strain typing and a real shared-control route; synthetic browser cases must not relabel actual gene datasets as compatible. |
 | FDS-C1 | open | The new per-dataset loader must verify response byte size and SHA-256 against the release manifest, including stale-cache reload and hard failure on mismatch; a digest in the URL alone does not establish integrity. |
 
 ## Verification
