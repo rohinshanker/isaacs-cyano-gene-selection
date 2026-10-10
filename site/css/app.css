@@ -526,7 +526,7 @@ input[type="range"] { width: 100%; }
 
 /* Deposited recoded-genome facts ---------------------------------------- */
 
-.recoded-genome-panel { border-left: 3px solid var(--accent); }
+.recoded-genome-panel { border-left: 3px solid var(--accent); padding-inline-start: 1rem; }
 .recoded-genome-lead { font-weight: 600; }
 .recoded-genome-facts { display: grid; gap: 0.45rem; margin: 0.75rem 0; }
 .recoded-genome-fact {

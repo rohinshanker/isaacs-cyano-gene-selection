@@ -278,6 +278,21 @@ bytes with a fresh build and fails on a stale or hand-edited layer. Run `build`
 before `tools/build_data_manifest.py build`, which is the gate that refuses a
 manifest that no longer matches.
 
+The complete `ecoli-syn57-design` record uses its publisher GenBank input and
+normalizes the GFF only in a temporary directory. Rebuild and verify its overlap
+layer together with the design payload using:
+
+```sh
+.venv/bin/python tools/build_syn57_design.py
+.venv/bin/python tools/build_syn57_design.py --check
+```
+
+The generic `build_gene_overlaps.py check` command requires a retained raw GFF
+and is therefore the path for the assembly organisms above. For the design,
+`--check` includes the overlap JSON and manifest in its read-only comparison;
+the persistent original-source contract test also verifies overlap re-derivation
+using a temporary normalized GFF and requires all 94 checks to pass.
+
 The producer needs only that organism's `*_genomic.gff.gz`. In a worktree where
 `data/raw` is gitignored and empty, link the canonical inputs read-only first;
 without them the contract validator **skips** its re-derivation rather than

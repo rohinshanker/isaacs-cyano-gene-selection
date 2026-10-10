@@ -26,13 +26,18 @@ async (page) => {
   page.on('response', onResponse);
 
   const states = [
-    ['default', null, 'E. coli · MG1655, default; choose conventional E. coli strain'],
-    ['mg1655', 'ecoli-k12-mg1655',
+    ['default', null, 'conventional-ecoli',
+      'E. coli · MG1655, default; choose conventional E. coli strain'],
+    ['mg1655', 'ecoli-k12-mg1655', 'conventional-ecoli',
       'E. coli · MG1655, selected; choose conventional E. coli strain'],
-    ['mds42', 'ecoli-mds42-public-reference',
+    ['mds42', 'ecoli-mds42-public-reference', 'conventional-ecoli',
       'E. coli · MDS42 public reference, selected; choose conventional E. coli strain'],
-    ['dh10b', 'ecoli-dh10b-public-reference',
+    ['dh10b', 'ecoli-dh10b-public-reference', 'conventional-ecoli',
       'E. coli · DH10B public reference, selected; choose conventional E. coli strain'],
+    ['syn57', 'ecoli-syn57-design', 'recoded-ecoli',
+      'Recoded E. Coli · Syn57 design, selected; choose recoded E. coli design or strain'],
+    ['syn61', 'ecoli-syn61-delta3-ev5', 'recoded-ecoli',
+      'Recoded E. Coli · Syn61Δ3(ev5) strain, selected; choose recoded E. coli design or strain'],
   ];
   const widths = [1440, 1280, 768, 440, 439, 420, 375, 320];
   const heightFor = (width) => width <= 420 ? 812 : width <= 768 ? 1024 : 900;
@@ -42,9 +47,9 @@ async (page) => {
       requestAnimationFrame(() => requestAnimationFrame(resolve));
     }));
   };
-  const geometry = () => page.evaluate(() => {
-    const trigger = document.querySelector('.organism-group-trigger');
-    const menu = document.querySelector('.organism-strain-menu');
+  const geometry = (group) => page.evaluate((groupId) => {
+    const trigger = document.querySelector(`#${groupId}-trigger`);
+    const menu = document.querySelector(`#${groupId}-options`);
     const groupName = trigger.querySelector('.organism-group-name');
     const selection = trigger.querySelector('.organism-group-selection');
     const bounds = (node) => {
@@ -67,7 +72,7 @@ async (page) => {
         label: option.textContent.trim(), ...bounds(option),
       })),
     };
-  });
+  }, group);
   const checkGeometry = (state, width, result) => {
     check(result.open, `${state} ${width}: menu closed during responsive reflow`);
     check(result.menuPosition === 'fixed', `${state} ${width}: menu is not a viewport overlay`);
@@ -89,14 +94,16 @@ async (page) => {
   const matrix = [];
   try {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    for (const [state, organism, accessibleName] of states) {
+    for (const [state, organism, group, accessibleName] of states) {
       const url = `${initial.base}?uiArtifacts=${initial.root}`
         + (organism ? `&org=${organism}` : '');
       await page.setViewportSize({ width: widths[0], height: heightFor(widths[0]) });
       await page.goto(url);
       await settle();
-      const trigger = page.locator('.organism-group-trigger');
-      const menu = page.locator('.organism-strain-menu');
+      const trigger = page.locator(`#${group}-trigger`);
+      const menu = page.locator(`#${group}-options`);
+      check(await page.locator('#organism-selector > *').count() === 4,
+        `${state}: expected three top-level choices followed by identity`);
       check(await trigger.getAttribute('aria-label') === accessibleName,
         `${state}: selected/default accessible label changed`);
       await trigger.focus();
@@ -106,7 +113,7 @@ async (page) => {
       for (const width of widths) {
         await page.setViewportSize({ width, height: heightFor(width) });
         await settle();
-        const result = await geometry();
+        const result = await geometry(group);
         checkGeometry(state, width, result);
         matrix.push({ state, width, ...result });
         await page.locator('.site-header').screenshot({
@@ -116,7 +123,7 @@ async (page) => {
 
       await trigger.evaluate((node) => { node.style.fontSize = '1.25rem'; });
       await settle();
-      const resized = await geometry();
+      const resized = await geometry(group);
       checkGeometry(state, 'resized-trigger', resized);
       check(Math.abs(resized.menu.top - resized.trigger.bottom - 6) <= 1,
         `${state}: menu did not follow a trigger size change while open`);
@@ -128,11 +135,11 @@ async (page) => {
 
       await trigger.focus();
       await page.keyboard.press('ArrowDown');
-      check(await page.locator('.organism-strain-option').first()
+      check(await menu.locator('.organism-strain-option').first()
         .evaluate((node) => node === document.activeElement),
       `${state}: ArrowDown did not focus the first strain`);
       await page.keyboard.press('End');
-      check(await page.locator('.organism-strain-option').last()
+      check(await menu.locator('.organism-strain-option').last()
         .evaluate((node) => node === document.activeElement),
       `${state}: End did not focus the last strain`);
       await page.keyboard.press('Escape');
@@ -140,14 +147,9 @@ async (page) => {
       check(await trigger.evaluate((node) => node === document.activeElement),
         `${state}: Escape did not return focus to the trigger`);
     }
-    await page.goto(`${initial.base}?uiArtifacts=${initial.root}&org=ecoli-syn61-delta3-ev5`);
-    await settle();
-    check(await page.locator('.organism-group-trigger').getAttribute('aria-label')
+    check(await page.locator('#conventional-ecoli-trigger').getAttribute('aria-label')
       === 'E. coli · MG1655, default; choose conventional E. coli strain',
     'Syn61: inactive conventional group did not identify MG1655 as its default');
-    await page.locator('.site-header').screenshot({
-      path: `${initial.root}/repair-syn61-320-default-label.png`,
-    });
     check(errors.length === 0, `runtime diagnostics: ${errors.join('; ')}`);
     return { ok: true, matrix, keyboard: 'ArrowDown, End, Escape, and focus return passed', errors };
   } finally {

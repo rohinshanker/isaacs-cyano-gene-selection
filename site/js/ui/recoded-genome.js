@@ -20,14 +20,16 @@ export function renderRecodedGenomePanel(host, model) {
   host.hidden = true;
   if (!model) return;
 
-  const heading = document.createElement('h2');
+  const heading = document.createElement('h3');
   heading.id = 'recoded-genome-heading';
   heading.textContent = 'Recoded Genome Scheme';
   host.setAttribute('aria-labelledby', heading.id);
 
   const lead = document.createElement('p');
   lead.className = 'recoded-genome-lead';
-  lead.textContent = `${model.schemeName}. This selected dataset is the deposited recoded organism.`;
+  lead.textContent = model.recordType === 'design'
+    ? `${model.schemeName}. This selected dataset is the complete published design; it is not a measured isolate.`
+    : `${model.schemeName}. This selected dataset is the deposited recoded strain.`;
 
   const facts = document.createElement('dl');
   facts.className = 'recoded-genome-facts';
@@ -35,9 +37,15 @@ export function renderRecodedGenomePanel(host, model) {
     fact('Targeted codons', model.targets.join(', ')),
     fact('Observed residuals', `${model.total.toLocaleString('en-US')} across `
       + `${model.includedGeneCount.toLocaleString('en-US')} included coding genes`),
-    fact('Genome scope', `${model.scope}; not a partial Ec_Syn57 segment set.`),
-    fact('Strain and scheme source', model.source),
-    fact('Historical replacements', model.replacements ?? model.replacementNote),
+    fact('Record status', model.recordType === 'design'
+      ? 'Design only · no omics, growth, or fitness measurements are attached.'
+      : 'Deposited strain genome · measured layers must name this exact strain.'),
+    fact('Genome scope', model.recordType === 'design'
+      ? `${model.scope}; complete design, not a measured isolate.`
+      : `${model.scope}; not a partial Ec_Syn57 segment set.`),
+    fact(model.recordType === 'design' ? 'Design and scheme source' : 'Strain and scheme source', model.source),
+    fact(model.recordType === 'design' ? 'Design replacements' : 'Historical replacements',
+      model.replacements ?? model.replacementNote),
   );
 
   const convention = document.createElement('p');

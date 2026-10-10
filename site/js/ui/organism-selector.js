@@ -5,8 +5,8 @@
  * it, Enter follows it, and the browser resets every module, worker, cache,
  * and listener on the way. Nothing here swaps a dataset in place.
  *
- * Cyanobacteria and Syn61 are direct links. Conventional E. coli strains share
- * one disclosure whose options remain ordinary links, so their addresses can
+ * Cyanobacteria is a direct link. Recoded and conventional E. coli records each
+ * share a disclosure whose options remain ordinary links, so their addresses can
  * still be copied, opened in another tab, or followed without JavaScript
  * navigation. Each organism remembers the view it was last left in. That view
  * is stored under the organism's own key by the page as it changes, and an
@@ -64,7 +64,11 @@ const BEFORE_READ = Object.freeze(['pointerdown', 'contextmenu', 'keydown', 'cli
 
 const DIRECT_NAVIGATION_IDS = Object.freeze([
   'utex2973',
-  'ecoli-syn61-delta3-ev5',
+]);
+
+const RECODED_ECOLI = Object.freeze([
+  { id: 'ecoli-syn57-design', label: 'Syn57 design' },
+  { id: 'ecoli-syn61-delta3-ev5', label: 'Syn61Δ3(ev5) strain' },
 ]);
 
 const CONVENTIONAL_ECOLI = Object.freeze([
@@ -133,133 +137,143 @@ export function renderOrganismSelector(host, {
     host.append(option);
   }
 
-  const conventional = CONVENTIONAL_ECOLI.map(({ id, label }) => ({
-    organism: recordFor(organisms, id), label,
-  }));
-  const selectedConventional = conventional.find(({ organism }) => organism === current)
-    ?? conventional[0];
-  const dropdown = document.createElement('div');
-  dropdown.className = 'organism-dropdown';
-  const trigger = document.createElement('button');
-  trigger.type = 'button';
-  trigger.className = 'chip-button organism-top-level organism-group-trigger';
-  trigger.id = 'conventional-ecoli-trigger';
-  trigger.setAttribute('aria-controls', 'conventional-ecoli-options');
-  trigger.setAttribute('aria-expanded', 'false');
-  const hasSelectedConventional = selectedConventional.organism === current;
-  const selectedState = hasSelectedConventional ? 'selected' : 'default';
-  trigger.setAttribute('aria-label',
-    `E. coli · ${selectedConventional.label}, ${selectedState}; choose conventional E. coli strain`);
-  if (hasSelectedConventional) {
-    trigger.classList.add('active');
-    trigger.setAttribute('aria-current', 'page');
-  }
-  const groupName = document.createElement('span');
-  groupName.className = 'organism-group-name';
-  groupName.textContent = 'E. coli';
-  const selection = document.createElement('span');
-  selection.className = 'organism-group-selection';
-  selection.textContent = `· ${selectedConventional.label}`;
-  const caret = document.createElement('span');
-  caret.className = 'organism-group-caret';
-  caret.setAttribute('aria-hidden', 'true');
-  caret.textContent = '\u25be';
-  trigger.append(groupName, selection, caret);
-
-  const menu = document.createElement('ul');
-  menu.className = 'organism-strain-menu';
-  menu.id = 'conventional-ecoli-options';
-  menu.setAttribute('aria-label', 'Conventional E. coli strains');
-  menu.hidden = true;
-  const optionLinks = [];
-  let viewportListenersActive = false;
-  const onViewportChange = () => {
-    if (!menu.hidden && positionViewportOverlay(trigger, menu, { gap: 6 }) === false) close();
-  };
-  const resizeObserver = typeof globalThis.ResizeObserver === 'function'
-    ? new globalThis.ResizeObserver(onViewportChange) : null;
-  const addViewportListeners = () => {
-    if (viewportListenersActive) return;
-    globalThis.window?.addEventListener?.('resize', onViewportChange);
-    globalThis.window?.addEventListener?.('scroll', onViewportChange, true);
-    resizeObserver?.observe(host);
-    resizeObserver?.observe(trigger);
-    resizeObserver?.observe(menu);
-    viewportListenersActive = true;
-  };
-  const removeViewportListeners = () => {
-    if (!viewportListenersActive) return;
-    globalThis.window?.removeEventListener?.('resize', onViewportChange);
-    globalThis.window?.removeEventListener?.('scroll', onViewportChange, true);
-    resizeObserver?.disconnect();
-    viewportListenersActive = false;
-  };
-  const close = ({ returnFocus = false } = {}) => {
-    menu.hidden = true;
+  const appendGroup = ({ id, name, choices, choiceLabel, defaultChoice = false }) => {
+    const entries = choices.map(({ id: organismId, label }) => ({
+      organism: recordFor(organisms, organismId), label,
+    }));
+    const selected = entries.find(({ organism }) => organism === current) ?? null;
+    const displayed = selected ?? (defaultChoice ? entries[0] : null);
+    const dropdown = document.createElement('div');
+    dropdown.className = 'organism-dropdown';
+    dropdown.dataset.organismGroup = id;
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'chip-button organism-top-level organism-group-trigger';
+    trigger.id = `${id}-trigger`;
+    trigger.setAttribute('aria-controls', `${id}-options`);
     trigger.setAttribute('aria-expanded', 'false');
-    removeViewportListeners();
-    if (returnFocus) trigger.focus();
-  };
-  const open = (focusAt = null) => {
-    menu.hidden = false;
-    trigger.setAttribute('aria-expanded', 'true');
-    onViewportChange();
-    if (!menu.hidden) addViewportListeners();
-    if (focusAt === 'first') optionLinks[0]?.focus();
-    if (focusAt === 'last') optionLinks.at(-1)?.focus();
-  };
-  for (const { organism, label } of conventional) {
-    const item = document.createElement('li');
-    const { option, refresh } = organismLink({
-      organism, label, current, location, store,
-      onCurrent: () => close({ returnFocus: true }),
+    trigger.setAttribute('aria-label', displayed
+      ? `${name} · ${displayed.label}, ${selected ? 'selected' : 'default'}; ${choiceLabel}`
+      : `${name}; ${choiceLabel}`);
+    if (selected) {
+      trigger.classList.add('active');
+      trigger.setAttribute('aria-current', 'page');
+    }
+    const groupName = document.createElement('span');
+    groupName.className = 'organism-group-name';
+    groupName.textContent = name;
+    const selection = document.createElement('span');
+    selection.className = 'organism-group-selection';
+    selection.textContent = displayed ? `· ${displayed.label}` : '';
+    if (!displayed) selection.hidden = true;
+    const caret = document.createElement('span');
+    caret.className = 'organism-group-caret';
+    caret.setAttribute('aria-hidden', 'true');
+    caret.textContent = '\u25be';
+    trigger.append(groupName, selection, caret);
+
+    const menu = document.createElement('ul');
+    menu.className = 'organism-strain-menu';
+    menu.id = `${id}-options`;
+    menu.setAttribute('aria-label', `${name} choices`);
+    menu.hidden = true;
+    const optionLinks = [];
+    let viewportListenersActive = false;
+    const onViewportChange = () => {
+      if (!menu.hidden && positionViewportOverlay(trigger, menu, { gap: 6 }) === false) close();
+    };
+    const resizeObserver = typeof globalThis.ResizeObserver === 'function'
+      ? new globalThis.ResizeObserver(onViewportChange) : null;
+    const addViewportListeners = () => {
+      if (viewportListenersActive) return;
+      globalThis.window?.addEventListener?.('resize', onViewportChange);
+      globalThis.window?.addEventListener?.('scroll', onViewportChange, true);
+      resizeObserver?.observe(host);
+      resizeObserver?.observe(trigger);
+      resizeObserver?.observe(menu);
+      viewportListenersActive = true;
+    };
+    const removeViewportListeners = () => {
+      if (!viewportListenersActive) return;
+      globalThis.window?.removeEventListener?.('resize', onViewportChange);
+      globalThis.window?.removeEventListener?.('scroll', onViewportChange, true);
+      resizeObserver?.disconnect();
+      viewportListenersActive = false;
+    };
+    const close = ({ returnFocus = false } = {}) => {
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+      removeViewportListeners();
+      if (returnFocus) trigger.focus();
+    };
+    const open = (focusAt = null) => {
+      menu.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+      onViewportChange();
+      if (!menu.hidden) addViewportListeners();
+      if (focusAt === 'first') optionLinks[0]?.focus();
+      if (focusAt === 'last') optionLinks.at(-1)?.focus();
+    };
+    for (const { organism, label } of entries) {
+      const item = document.createElement('li');
+      const { option, refresh } = organismLink({
+        organism, label, current, location, store,
+        onCurrent: () => close({ returnFocus: true }),
+      });
+      option.classList.add('organism-strain-option');
+      item.append(option);
+      menu.append(item);
+      optionLinks.push(option);
+      refreshers.push({ organism, refresh });
+    }
+    trigger.addEventListener('click', () => {
+      if (menu.hidden) open(); else close();
     });
-    option.classList.add('organism-strain-option');
-    item.append(option);
-    menu.append(item);
-    optionLinks.push(option);
-    refreshers.push({ organism, refresh });
-  }
-  trigger.addEventListener('click', () => {
-    if (menu.hidden) open(); else close();
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        open(event.key === 'ArrowDown' ? 'first' : 'last');
+      } else if (event.key === 'Escape' && !menu.hidden) {
+        event.preventDefault();
+        close({ returnFocus: true });
+      }
+    });
+    menu.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close({ returnFocus: true });
+        return;
+      }
+      const index = optionLinks.indexOf(event.target);
+      if (index < 0) return;
+      let next = null;
+      if (event.key === 'ArrowDown') next = (index + 1) % optionLinks.length;
+      if (event.key === 'ArrowUp') next = (index - 1 + optionLinks.length) % optionLinks.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = optionLinks.length - 1;
+      if (next !== null) {
+        event.preventDefault();
+        optionLinks[next].focus();
+      }
+    });
+    dropdown.addEventListener('focusout', (event) => {
+      if (!dropdown.contains(event.relatedTarget)) close();
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (!menu.hidden && !dropdown.contains(event.target)) close();
+    });
+    dropdown.append(trigger, menu);
+    host.append(dropdown);
+  };
+
+  appendGroup({
+    id: 'recoded-ecoli', name: 'Recoded E. Coli', choices: RECODED_ECOLI,
+    choiceLabel: 'choose recoded E. coli design or strain',
   });
-  trigger.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      open(event.key === 'ArrowDown' ? 'first' : 'last');
-    } else if (event.key === 'Escape' && !menu.hidden) {
-      event.preventDefault();
-      close({ returnFocus: true });
-    }
+  appendGroup({
+    id: 'conventional-ecoli', name: 'E. coli', choices: CONVENTIONAL_ECOLI,
+    choiceLabel: 'choose conventional E. coli strain', defaultChoice: true,
   });
-  menu.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      close({ returnFocus: true });
-      return;
-    }
-    const index = optionLinks.indexOf(event.target);
-    if (index < 0) return;
-    let next = null;
-    if (event.key === 'ArrowDown') next = (index + 1) % optionLinks.length;
-    if (event.key === 'ArrowUp') next = (index - 1 + optionLinks.length) % optionLinks.length;
-    if (event.key === 'Home') next = 0;
-    if (event.key === 'End') next = optionLinks.length - 1;
-    if (next !== null) {
-      event.preventDefault();
-      optionLinks[next].focus();
-    }
-  });
-  dropdown.addEventListener('focusout', (event) => {
-    if (!dropdown.contains(event.relatedTarget)) close();
-  });
-  // The selector is mounted once for this document; organism switches replace
-  // the whole page, so this outside-press listener has the same document lifetime.
-  document.addEventListener('pointerdown', (event) => {
-    if (!menu.hidden && !dropdown.contains(event.target)) close();
-  });
-  dropdown.append(trigger, menu);
-  host.append(dropdown);
 
   const refreshAll = () => { for (const { refresh } of refreshers) refresh(); };
   // `storage` fires only for writes by another tab, which is the one case no

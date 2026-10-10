@@ -1,0 +1,37 @@
+{
+  "files": {
+    "citations.json": {
+      "bytes": 6753,
+      "sha256": "7d70a467a5cec1bbf16f36a0758eedf5477ee5e824a83b37d6b1d905b88304d6"
+    },
+    "codon_pca.json": {
+      "bytes": 20911,
+      "sha256": "efefe67f8c72ca5e02446a441095b3aca233e9b36aeed0e3e59ddc8b62b66831"
+    },
+    "codon_rscu.json": {
+      "bytes": 1429852,
+      "sha256": "474139a0750787943e055877b25d4e20135223bb52aa92e56adcf2eb23555aae"
+    },
+    "excluded.json": {
+      "bytes": 3167,
+      "sha256": "f5a0e3d5e8fe091f1d6f4806a509d362c24946e3723fc8f231d8db50721fb53b"
+    },
+    "gene_overlaps.json": {
+      "bytes": 179287,
+      "sha256": "52ddac608fcc6698c0a02ed199ab74da9393c97433ffe5c1d34dc025785fd581"
+    },
+    "genes.json": {
+      "bytes": 5303872,
+      "sha256": "4d5f319965f1731b0be183302b94874085921ebc995e0e565e4a67f5dfa09aa7"
+    },
+    "meta.json": {
+      "bytes": 22582,
+      "sha256": "06a8733adcf86703f59a5563767101a32ef33d6eea871ea12c2c449050b67271"
+    },
+    "source_feature_audit.json": {
+      "bytes": 2201377,
+      "sha256": "ffc664b1c29639dca133bcac31851bf47426db42d414e552cfd3bbd9ca66d7f9"
+    }
+  },
+  "schemaVersion": 1
+}

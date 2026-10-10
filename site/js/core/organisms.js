@@ -40,6 +40,7 @@ import { ECOLI_K12_MG1655 } from './organisms/ecoli-k12-mg1655.js';
 import { ECOLI_MDS42_PUBLIC_REFERENCE } from './organisms/ecoli-mds42-public-reference.js';
 import { ECOLI_DH10B_PUBLIC_REFERENCE } from './organisms/ecoli-dh10b-public-reference.js';
 import { ECOLI_SYN61_DELTA3_EV5 } from './organisms/ecoli-syn61-delta3-ev5.js';
+import { ECOLI_SYN57_DESIGN } from './organisms/ecoli-syn57-design.js';
 
 /** The query parameter that names the organism. Its absence means the default. */
 export const ORGANISM_PARAM = 'org';
@@ -82,6 +83,7 @@ export const ORGANISMS = deepFreeze([
   ECOLI_K12_MG1655,
   ECOLI_MDS42_PUBLIC_REFERENCE,
   ECOLI_DH10B_PUBLIC_REFERENCE,
+  ECOLI_SYN57_DESIGN,
   ECOLI_SYN61_DELTA3_EV5,
 ]);
 

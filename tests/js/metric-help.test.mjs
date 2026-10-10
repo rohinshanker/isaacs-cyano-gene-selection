@@ -8,6 +8,7 @@ import { projectionHelp } from '../../site/js/core/projection-help.js';
 import { renderMetricHelp, renderProjectionHelp } from '../../site/js/ui/metric-help.js';
 import { buildTypeMetrics } from '../../site/js/core/type-metrics.js';
 import { datasetsFrom } from '../../site/js/core/data-sources.js';
+import { organismById } from '../../site/js/core/organisms.js';
 
 const file = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const meta = file('../../site/data/meta.json');
@@ -20,6 +21,33 @@ const live = Object.fromEntries(LIVE_METRICS.map((metric) =>
   [metric.key, new Float64Array(genes.length)]));
 const registry = buildMetricRegistry(meta, genes, live);
 const dataset = { meta, genes, codonPca };
+
+test('Syn57 pipeline, proxy and live origins use a readable design source phrase', () => {
+  const organism = organismById('ecoli-syn57-design');
+  const designMeta = file('../../site/data/organisms/ecoli-syn57-design/meta.json');
+  const designGenes = file('../../site/data/organisms/ecoli-syn57-design/genes.json');
+  const designLive = Object.fromEntries(LIVE_METRICS.map((metric) =>
+    [metric.key, new Float64Array(designGenes.length)]));
+  const designRegistry = buildMetricRegistry(designMeta, designGenes, designLive);
+  const designDataset = { meta: designMeta, genes: designGenes, organism };
+  for (const [key, prefix] of [
+    ['gc3', 'Derived from the publisher-deposited'],
+    ['expressionProxy', 'Derived from codon adaptation in the publisher-deposited'],
+    ['recodedCai', 'Computed in this browser from the active scheme and the publisher-deposited'],
+  ]) {
+    const explanation = metricHelp(designRegistry.byKey.get(key), designDataset);
+    assert.ok(explanation.origin.startsWith(prefix), key);
+    assert.match(explanation.origin, /Ec_Syn57 complete-design CDSs in native design coordinates/);
+    assert.doesNotMatch(explanation.origin, /in Derived from|and Derived from|measurement\.\.|measurement\.;/);
+  }
+  const designCitations = file('../../site/data/organisms/ecoli-syn57-design/citations.json');
+  const ids = new Set(designCitations.sections.flatMap((section) =>
+    section.items.map((item) => item.id)));
+  for (const metric of designRegistry.metrics) {
+    assert.ok(metricHelp(metric, designDataset).citations.every((id) => ids.has(id)),
+      `${metric.key} must link to its declared method references`);
+  }
+});
 
 test('all 215 selectable metrics have a calculation, origin, missingness and real citations', () => {
   assert.equal(registry.metrics.length, 215);

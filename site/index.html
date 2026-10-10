@@ -50,6 +50,7 @@
 <link rel="modulepreload" href="js/core/organisms/ecoli-dh10b-public-reference.js">
 <link rel="modulepreload" href="js/core/organisms/ecoli-k12-mg1655.js">
 <link rel="modulepreload" href="js/core/organisms/ecoli-mds42-public-reference.js">
+<link rel="modulepreload" href="js/core/organisms/ecoli-syn57-design.js">
 <link rel="modulepreload" href="js/core/organisms/ecoli-syn61-delta3-ev5.js">
 <link rel="modulepreload" href="js/core/organisms/utex2973.js">
 <link rel="modulepreload" href="js/core/paint-priority.js">
@@ -356,6 +357,11 @@ if (window.location.protocol === 'file:') {
       directory: 'data/organisms/ecoli-syn61-delta3-ev5/',
       title: 'Escherichia coli Syn61Δ3(ev5) recoding-diversity map',
       core: ['meta.json', 'genes.json']
+    },
+    'ecoli-syn57-design': {
+      directory: 'data/organisms/ecoli-syn57-design/',
+      title: 'Ec_Syn57 complete-design recoding-diversity map',
+      core: ['meta.json', 'genes.json']
     }
   };
   var query = new URLSearchParams(window.location.search);
@@ -408,7 +414,6 @@ if (window.location.protocol === 'file:') {
        collapsed from a shared link. The head, caret, and move buttons are added
        by ui/left-panels.js, which needs only the id, the heading, and the body. -->
   <aside class="column controls" id="controls-column" aria-label="Genome and gene controls">
-    <section class="card recoded-genome-panel" id="recoded-genome-panel" hidden></section>
     <section class="card panel-card" data-panel-id="gene-viewer">
       <h2>Gene visualizer</h2>
       <div class="panel-body" id="panel-body-gene-viewer" data-panel-body>
@@ -418,6 +423,7 @@ if (window.location.protocol === 'file:') {
     <section class="card panel-card" data-panel-id="scheme">
       <h2>Recoding scheme</h2>
       <div class="panel-body" id="panel-body-scheme" data-panel-body>
+        <section class="recoded-genome-panel" id="recoded-genome-panel" hidden></section>
         <p class="panel-note">
           Choose the codons to remove. Each gets a synonymous replacement you can change.
         </p>

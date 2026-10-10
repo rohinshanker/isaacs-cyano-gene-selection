@@ -14,3 +14,10 @@ test('the live-metric CLI validates Syn61 with its declared parent-reference lay
   assert.match(stdout, /PASS  dataset loads every gene: 3549 of 3549/);
   assert.match(stdout, /failed=0\s*$/);
 });
+test('the live-metric CLI validates the complete Syn57 design without a parent layer', async () => {
+  const { stdout, stderr } = await run(process.execPath,
+    [script, '--organism', 'ecoli-syn57-design'], { timeout: 60_000 });
+  assert.equal(stderr, '');
+  assert.match(stdout, /PASS  dataset loads every gene: 3588 of 3588/);
+  assert.match(stdout, /failed=0\s*$/);
+});

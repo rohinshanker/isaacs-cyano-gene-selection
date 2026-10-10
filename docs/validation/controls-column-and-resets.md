@@ -60,7 +60,8 @@ encode into the URL hash as `po` and `pc` at encoder version 5.
 Organism navigation does not create or pin a scheme-specific panel. Every
 organism, including Syn61 and any future organism with a declared recoding
 scheme, uses these same three panel ids and the same ordering, collapse,
-movement, focus, and URL-state machinery. A navigation grouping change must
+movement, focus, and URL-state machinery. Recoded genome facts live inside the
+`scheme` panel body, so the facts and editor move and collapse together. A navigation grouping change must
 exercise scheme-panel movement and collapse across reload; it must not move the
 scheme content outside this column.
 

@@ -1045,14 +1045,14 @@ def cross_check_against_genome(
         raw_dir, f"{organism.assemblyPrefix}_cds_from_genomic.fna.gz"
     )
     if not os.path.exists(cds_path):
-        report.skip("codon strings reproduce NCBI CDS sequences",
+        report.skip("codon strings reproduce raw CDS sequences",
                     f"raw CDS file not found at {cds_path}")
         return
 
     symbol_to_codon = {e["sym"]: e["codon"] for e in meta.get("codonAlphabet", [])
                        if isinstance(e, dict)}
     if not symbol_to_codon:
-        report.skip("codon strings reproduce NCBI CDS sequences",
+        report.skip("codon strings reproduce raw CDS sequences",
                     "codon alphabet unavailable")
         return
 
@@ -1160,7 +1160,7 @@ def cross_check_against_genome(
                  f"{unmatched} unresolved")
 
     if not os.path.exists(protein_path):
-        report.skip("translated CDSs match NCBI proteins",
+        report.skip("translated CDSs match reference proteins",
                     f"not found at {protein_path}")
         return
 
@@ -1193,12 +1193,12 @@ def cross_check_against_genome(
                 diff_examples.append(
                     f"{gid}/{pid}: len {len(translated)} vs {len(reference)}")
 
-    report.check(compared > 0, "translated CDSs were compared to NCBI proteins",
+    report.check(compared > 0, "translated CDSs were compared to reference proteins",
                  f"compared {compared}, no protein record for {no_protein}")
     report.check(differing == 0,
-                 "every translated CDS matches its NCBI protein exactly",
+                 "every translated CDS matches its reference protein exactly",
                  f"{differing} of {compared} differ, e.g. {diff_examples}")
-    report.check(no_protein == 0, "every gene resolves to an NCBI protein record",
+    report.check(no_protein == 0, "every gene resolves to a reference protein record",
                  f"{no_protein} unresolved")
 
     excluded_loci = {

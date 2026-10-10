@@ -1042,7 +1042,7 @@ def verify_assembly_identity(raw_dir: Path, config: OrganismConfig) -> None:
         for line in report.splitlines()
         if line.startswith("# ") and ":" in line
     }
-    accession_field = (
+    accession_field = config.values.get("assemblyAccessionField") or (
         "GenBank assembly accession" if config.accession.startswith("GCA_")
         else "RefSeq assembly accession"
     )

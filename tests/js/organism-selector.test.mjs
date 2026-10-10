@@ -23,6 +23,7 @@ import { FakeElement, withFakeDocument } from './fake-dom.mjs';
 const ECOLI = organismById('ecoli-k12-mg1655');
 const MDS42 = organismById('ecoli-mds42-public-reference');
 const DH10B = organismById('ecoli-dh10b-public-reference');
+const SYN57 = organismById('ecoli-syn57-design');
 const SYN61 = organismById('ecoli-syn61-delta3-ev5');
 
 function memoryStore() {
@@ -58,12 +59,16 @@ function selectorFor(current, search, store = memoryStore(), view = fakeView()) 
   });
   const options = host.querySelectorAll('a');
   const optionFor = (organism) => options.find((option) => option.dataset.organism === organism.id);
+  const byId = (tag, id) => host.querySelectorAll(tag).find((node) => node.id === id);
   return {
     host, options, optionFor, store, view, handle,
     identity: host.querySelector('span.organism-identity'),
-    trigger: host.querySelector('button.organism-group-trigger'),
-    menu: host.querySelector('ul.organism-strain-menu'),
-    dropdown: host.querySelector('div.organism-dropdown'),
+    trigger: byId('button', 'conventional-ecoli-trigger'),
+    menu: byId('ul', 'conventional-ecoli-options'),
+    dropdown: host.querySelector('[data-organism-group="conventional-ecoli"]'),
+    recodedTrigger: byId('button', 'recoded-ecoli-trigger'),
+    recodedMenu: byId('ul', 'recoded-ecoli-options'),
+    recodedDropdown: host.querySelector('[data-organism-group="recoded-ecoli"]'),
   };
 }
 
@@ -71,21 +76,21 @@ test('the selector has three ordered top-level controls and grouped strain links
   await withFakeDocument(() => {
     const { host, options, trigger, menu, identity } = selectorFor(DEFAULT_ORGANISM, '');
     const topLevel = host.querySelectorAll('.organism-top-level');
-    assert.deepEqual(topLevel.map((option) => option.tagName), ['a', 'a', 'button']);
+    assert.deepEqual(topLevel.map((option) => option.tagName), ['a', 'button', 'button']);
     assert.deepEqual(topLevel.map((option) => option.textContent), [
-      'Cyanobacteria', 'E. coli Syn61', 'E. coli· MG1655\u25be',
+      'Cyanobacteria', 'Recoded E. Coli\u25be', 'E. coli· MG1655\u25be',
     ]);
     assert.deepEqual(options.map((option) => option.textContent),
-      ['Cyanobacteria', 'E. coli Syn61', 'MG1655',
+      ['Cyanobacteria', 'Syn57 design', 'Syn61Δ3(ev5) strain', 'MG1655',
         'MDS42 public reference', 'DH10B public reference']);
     assert.deepEqual(options.map((option) => option.dataset.organism), [
-      DEFAULT_ORGANISM.id, SYN61.id, ECOLI.id, MDS42.id, DH10B.id,
+      DEFAULT_ORGANISM.id, SYN57.id, SYN61.id, ECOLI.id, MDS42.id, DH10B.id,
     ]);
     assert.deepEqual(options.map((option) => option.dataset.organism).toSorted(),
       ORGANISMS.map((organism) => organism.id).toSorted(),
       'every registry record belongs to exactly one navigation group');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      ['page', null, null, null, null]);
+      ['page', null, null, null, null, null]);
     assert.ok(options[0].classList.contains('active'));
     assert.ok(!trigger.classList.contains('active'));
     assert.equal(trigger.dataset.organism, undefined, 'the disclosure is not itself a strain link');
@@ -93,14 +98,14 @@ test('the selector has three ordered top-level controls and grouped strain links
       'E. coli · MG1655, default; choose conventional E. coli strain');
     assert.equal(trigger.getAttribute('aria-expanded'), 'false');
     assert.equal(menu.hidden, true);
-    assert.equal(menu.getAttribute('aria-label'), 'Conventional E. coli strains');
+    assert.equal(menu.getAttribute('aria-label'), 'E. coli choices');
     // Every destination remains an ordinary link with a usable deep-link address.
     for (const option of options) {
       assert.equal(option.tagName, 'a');
       assert.ok(option.classList.contains('organism-option'));
     }
     assert.deepEqual(options.map((option) => option.href), [
-      '/site/', '/site/?org=ecoli-syn61-delta3-ev5',
+      '/site/', '/site/?org=ecoli-syn57-design', '/site/?org=ecoli-syn61-delta3-ev5',
       '/site/?org=ecoli-k12-mg1655',
       '/site/?org=ecoli-mds42-public-reference',
       '/site/?org=ecoli-dh10b-public-reference',
@@ -116,14 +121,14 @@ test('in the native E. coli view the selector names that strain and nothing of t
   await withFakeDocument(() => {
     const { options, trigger, identity } = selectorFor(ECOLI, '?org=ecoli-k12-mg1655');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      [null, null, 'page', null, null]);
-    assert.ok(options[2].classList.contains('active'));
+      [null, null, null, 'page', null, null]);
+    assert.ok(options[3].classList.contains('active'));
     assert.ok(trigger.classList.contains('active'));
     assert.equal(trigger.getAttribute('aria-current'), 'page');
     assert.equal(trigger.getAttribute('aria-label'),
       'E. coli · MG1655, selected; choose conventional E. coli strain');
     assert.deepEqual(options.map((option) => option.href), [
-      '/site/', '/site/?org=ecoli-syn61-delta3-ev5',
+      '/site/', '/site/?org=ecoli-syn57-design', '/site/?org=ecoli-syn61-delta3-ev5',
       '/site/?org=ecoli-k12-mg1655',
       '/site/?org=ecoli-mds42-public-reference',
       '/site/?org=ecoli-dh10b-public-reference',
@@ -133,18 +138,32 @@ test('in the native E. coli view the selector names that strain and nothing of t
   });
 });
 
-test('in the recoded E. coli view the selector and identity name the deposited strain', async () => {
+test('the recoded disclosure is neutral elsewhere and names only the current design or strain', async () => {
   await withFakeDocument(() => {
-    const { options, trigger, identity } = selectorFor(SYN61, '?org=ecoli-syn61-delta3-ev5');
+    const neutral = selectorFor(DEFAULT_ORGANISM, '');
+    assert.equal(neutral.recodedTrigger.textContent, 'Recoded E. Coli\u25be');
+    assert.equal(neutral.recodedTrigger.getAttribute('aria-label'),
+      'Recoded E. Coli; choose recoded E. coli design or strain');
+
+    const { options, trigger, recodedTrigger, identity } = selectorFor(
+      SYN61, '?org=ecoli-syn61-delta3-ev5',
+    );
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      [null, 'page', null, null, null]);
-    assert.ok(options[1].classList.contains('active'));
+      [null, null, 'page', null, null, null]);
+    assert.ok(options[2].classList.contains('active'));
+    assert.equal(recodedTrigger.textContent, 'Recoded E. Coli· Syn61Δ3(ev5) strain\u25be');
+    assert.equal(recodedTrigger.getAttribute('aria-current'), 'page');
     assert.ok(!trigger.classList.contains('active'));
     assert.equal(trigger.getAttribute('aria-label'),
       'E. coli · MG1655, default; choose conventional E. coli strain');
     assert.equal(identity.textContent,
       'Escherichia coli Syn61 substr. delta 3 (ev5) · GCA_028355435.1');
     assert.ok(!/Synechococcus|UTEX|GCF_000817325|MG1655/.test(identity.textContent));
+
+    const design = selectorFor(SYN57, '?org=ecoli-syn57-design');
+    assert.equal(design.recodedTrigger.textContent, 'Recoded E. Coli· Syn57 design\u25be');
+    assert.equal(design.identity.textContent,
+      'Escherichia coli Ec_Syn57 complete design · design only · Ec_Syn57');
   });
 });
 
