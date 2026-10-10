@@ -46,6 +46,40 @@ and contrast `vector` fields; the command above regenerates those full vectors.
 It records the implementation checksum and numerical-library versions as well
 as the input pins. Never read an omitted vector as a missing measurement.
 
+`tools/export_expression_agreement.py` re-serialises an existing full report into
+that statistics-only shape and both review tables without recomputing a number:
+
+```sh
+.venv/bin/python tools/export_expression_agreement.py \
+  /tmp/cyano-expression-agreement.json \
+  --json /tmp/cyano-agreement-exports/summary.json \
+  --replicates /tmp/cyano-agreement-exports/replicates.tsv \
+  --responses /tmp/cyano-agreement-exports/responses.tsv
+.venv/bin/python -m pytest -q tests/test_export_expression_agreement.py
+```
+
+It accepts only a complete schema-1 report. A summary whose vectors are already
+omitted, a duplicate layer, stratum or contrast identity, a broken layer or
+contrast cross-reference, a denominator that disagrees with its own vector, and a
+non-finite or overflowed number are each refused by name before any destination
+is touched. The export omits exactly the layer `means` and contrast `vector`
+fields, declares that omission with its regeneration command, and copies every
+other metadata field, denominator, null, zero value, limitation and caveat
+unchanged. Output is deterministic: sorted JSON keys, the established column
+order, the same float repr and empty cells for nulls, CSV-quoted cells, and LF
+line endings. The three destinations are preflighted together — never inside
+`data/` or `site/`, never the input report or a pinned input through a path,
+symlink or hard link, and never two destinations naming one file — so a rejected
+request leaves existing files intact.
+
+The export records its own path and checksum and the input report's exact bytes
+and SHA-256 in an `export` block. It writes no `implementation` block: it did not
+compute the statistics it carries, and the generator's report does not declare
+its own identity. The preserved summary above carries that block from its
+original generation, so when comparing an export of a regenerated report with
+it, expect exactly two provenance differences — the export's `export` block and
+the preserved summary's `implementation` block — and identical statistics.
+
 The [original frozen summary](../notes/handoff/cyano_processed_expression_agreement_20261007.json)
 preserves the earlier metadata snapshot and its original pins. Use the current
 summary for condition interpretation. The corrections change seven layer

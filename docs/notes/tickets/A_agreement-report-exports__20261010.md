@@ -44,11 +44,28 @@ not scientific methods, source admission or the site's display.
 
 ## Verification
 
-Pending implementation and independent exact-patch review. Run focused exporter
-checks plus `npm test`, `.venv/bin/python -m pytest -q`, and
-`.venv/bin/python tools/validate_contract.py` on integration. No visible UI
-changes are planned. Final push must include the earlier completed commits and
-pass the repository deployment workflow.
+`tools/export_expression_agreement.py` and
+`tests/test_export_expression_agreement.py` are implemented on the implementer's
+task branch and await independent exact-patch review.
+`.venv/bin/python -m pytest -q tests/test_export_expression_agreement.py` passes
+85 focused checks: nulls, zeros and explicit reasons; input non-mutation; TSV
+quoting of tabs, newlines, quotes and carriage returns; duplicate layer, stratum
+and contrast identities; broken layer and contrast cross-references;
+denominators disagreeing with their own vectors; non-finite and overflowed
+numbers; summary-only and malformed input; destination preflight through paths,
+symlinks and hard links; destinations left intact after a rejected request; and
+byte-identical repeat exports. Two of them reproduce the preserved replicate and
+response tables byte for byte from the shipped current summary and pin the
+exported JSON layout to it. Whole-suite collection is clean (1044 tests).
+
+Coordinator-owned and still pending: `npm test`, `.venv/bin/python -m pytest -q`,
+`.venv/bin/python tools/validate_contract.py`, and the real-data pass —
+regenerate a full report, export it, and compare every statistic with the
+current preserved summary, expecting only the `export` and `implementation`
+provenance difference recorded in
+[the agreement contract](../../validation/expression-agreement.md). No visible
+UI changes. Final push must include the earlier completed commits and pass the
+repository deployment workflow.
 
 ## Cleanup
 
