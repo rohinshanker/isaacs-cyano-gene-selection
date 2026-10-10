@@ -6,7 +6,7 @@
   small generator under `tools/`. Decides nothing itself.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-06 (J2 decided)
+- **Updated:** 2026-10-10
 
 ## Current state
 
@@ -80,9 +80,11 @@ valid answer and keeps the pair or rule as it is.
   owner to send are in [O_depositor-condition-correspondence__20261007](O_depositor-condition-correspondence__20261007.md).
 
 The review sheet was generated 2026-10-05 at the owner's request, ahead of the
-formal intake record, after the mechanical checks named above passed. The shared
-page and the answer checker are not built; the owner is reviewing the sheet
-directly.
+formal intake record, after the mechanical checks named above passed. The owner
+is reviewing the sheet directly. The shared page remains unbuilt and requires
+the owner's say-so. The validate-only TSV checker is being implemented under
+[its scoped ticket](A_pair-review-answer-checker__20261010.md), owned by
+`cyano-regulatory-sites`; historical answers and lab decisions remain unchanged.
 
 ## Verification
 
