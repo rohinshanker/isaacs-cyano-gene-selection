@@ -57,6 +57,8 @@ does not count as a compatible strain-fitness choice.
 
 | ID | State | Requirement |
 | --- | --- | --- |
+| FDS-C3 | open | Real keyboard Space on the shared whole-strain checkbox moves focus to BODY after rerender. Keep focus on the matching control across shared/local choice and loader updates. |
+| FDS-C4 | open | The dataset label must describe the whole study fitness collection, which includes controls and partially recoded backgrounds; calling it only Syn61 growth narrows the apparent measured scope. |
 | FDS-C2 | open | A selected gene-level Nyerges source must never become a whole-strain choice through a catalogue alias. The external-selection path needs explicit whole-strain typing and a real shared-control route; synthetic browser cases must not relabel actual gene datasets as compatible. |
 | FDS-C1 | open | The new per-dataset loader must verify response byte size and SHA-256 against the release manifest, including stale-cache reload and hard failure on mismatch; a digest in the URL alone does not establish integrity. |
 
