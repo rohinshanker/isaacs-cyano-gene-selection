@@ -125,11 +125,19 @@ drawn over one of them.
   is kept and the colour the bar has is still readable through it;
 - hovering a block, or pressing **O** (**Shift+O** backwards) with the track
   focused, names both genes, their strands, the shared interval and the shared
-  base count in a `role="status"` readout, and outlines the block **and both
-  partner bars at once**;
+  base count in a pointer-transparent fixed overlay anchored to the canvas mark
+  but clamped to the usable viewport outside any visible header,
+  and outlines the block **and both partner bars at once**. The matching
+  `role="status"` announcement is visually hidden, so changing or dismissing
+  the hint cannot change the figure height or canvas coordinates;
 - clicking a block, or **Enter** while one is inspected, pins the plotted gene
   that is not already pinned, so the pair can be walked; a pair with no plotted
   gene pins nothing and says why;
+- a first touch on one non-coincident block shows its hint and a second touch
+  opens its plotted gene; the touch contact's browser-generated `pointerleave`
+  does not dismiss that first-tap hint. **Escape** dismisses a keyboard hint
+  from the canvas or either overlap stepper. The overlay has no pointer events,
+  so it cannot break hover or steal the second touch;
 - **a mark is a pair, not an interval.** Two different pairs can cover exactly
   the same bases — MG1655's `b4793`/`b4647` and `b4793`/`b4455` both cover
   3,720,448–3,720,471 — so every mark carries a `key` built from the replicon,
@@ -147,12 +155,18 @@ drawn over one of them.
 One **aligned partner track per partner** under the residue ruler, on the
 strip's own coordinate scale, so a partner's bases sit under this gene's bases:
 
-- a pale bar over every column the partner's own annotated segments occupy, and
-  a solid overlay over the columns the two genes share, placed through the same
-  column map a marker is placed through, so the track and the base row cannot
-  disagree about which base belongs to the partner;
-- a direction arrow on the end the partner reads towards; none at all where the
-  release records no strand;
+- a pale bar over every column the partner's own annotated segments occupy,
+  with a thin tail whose exact endpoints are the shared coordinates. A
+  fixed-size outlined arrowhead is a visibility aid rather than genomic extent;
+  both use the same column map as the letters, so the tail and base row cannot
+  disagree about which base belongs to the partner. Tail and head occupy a
+  narrow lower lane beneath the base letters, never striking through them;
+- at letter-readable zoom, the actual shared partner bases are text aligned
+  under the selected gene's native bases. A same-strand row repeats those
+  letters and reads 5′→3′; an opposite-strand row shows their Watson-Crick
+  complements and reads 3′→5′ from left to right. Both orientations are
+  labelled in the row gutter. An unrecorded strand gets `?→?`, no arrow and no
+  inferred bases; unavailable native sequence is named rather than fabricated;
 - **edge continuation** is a chevron at the clipped edge, drawn from the genomic
   answer — whether the partner occupies the next base beyond what is drawn,
   stepped around the replicon — and not from the bar reaching the edge. Both
@@ -190,16 +204,22 @@ Owner decision Q3, and only this:
   badge that is always there can tell *nothing shares a base with this gene*
   apart from *nobody looked*;
 - a **compact overlap strip** in one reserved lane under the coding track, with
-  a mark over each shared stretch and an explicit direction arrow per partner.
+  a thin tail over each exact shared stretch and a fixed-size directional head
+  per partner. The head is outlined and documented as a visibility aid, while
+  only the proportional tail encodes genomic extent.
   The lane is reserved on every gene, so selecting a gene with no overlap moves
   no other row — the same rule the close-up's marker row follows;
-- a one-base overlap is widened to `MIN_OVERLAP_WIDTH` so it can be seen and hit
-  at all, and marks that share drawn space are **counted in the label**, the way
-  this view already treats crowded start-site heads. The strip is a compact
-  display of the relationships and is labelled as such;
+- a one-base tail keeps its proportional width while the fixed-size head and a
+  separately padded hit target keep it visible and reachable. Marks that share
+  drawn space are **counted in the label**, the way this view already treats
+  crowded start-site heads. The strip is a compact display of the relationships
+  and is labelled as such;
 - every mark is focusable, carries a `<title>`, and names its partner;
 - a complete **partner list** under the picture, with an **Open `<id>`** button
-  for each plotted partner and a stated reason for each one that is not.
+  for each plotted partner and a stated reason for each one that is not. Each
+  row also has an exact-base disclosure with aligned selected/partner sequences,
+  genomic coordinates and 5′/3′ labels; long rows scroll inside the disclosure
+  rather than overflowing the page, and missing sequence or strand is explicit.
 
 ## OG colour mode
 
@@ -288,17 +308,21 @@ Behavioural, in `tests/js/chromosome-view.test.mjs`,
 `tests/js/export-manifest.test.mjs`, `tests/js/panel-design.test.mjs` and
 `tests/js/url-state.test.mjs`: the row's own band and blocks, the arrows at a
 readable zoom and none at whole-genome zoom, the underline inside the bar, the
-pointer and keyboard readout with both partners outlined, partner opening and
-the pair with nothing plotted, the row surviving a mask that hides every gene,
-the aligned partner tracks and their chevrons, the partner the strip cannot
-place keeping its row, the badge's three states, the strip's arrows and its
-one-base minimum, the filter's three options and its custom-selection notice,
+pointer, touch and keyboard overlay with both partners outlined, partner
+opening and the pair with nothing plotted, the row surviving a mask that hides
+every gene, the aligned partner tracks, actual same/opposite-strand bases,
+orientation labels and chevrons, the partner the strip cannot place keeping its
+row, the badge's three states, the compact strip's exact tails, fixed heads and
+exact-base disclosures, the filter's three options and its custom-selection notice,
 the colour key's five rows and its unread state, the export columns in both
 states, the ambiguity caveat in both, and the hash round-trip. Ordinary arrow
 navigation ends overlap inspection so Enter pins the gene just announced.
 Consecutive arrow changes in the OG radio group retain focus; if a focused
 choice becomes unavailable, focus moves to the enabled Show all genes option.
 Unrelated updates never take focus from another control.
+Chromosome overlap hints are overlay-only, pointer-transparent and viewport
+clamped; hover content changes, pointer exit, keyboard stepping, Escape and the
+two-tap touch path preserve the canvas and panel geometry.
 
 Rendered: all three views at 375×812, 768×1024, 1280×800 and 1440×900, and
 across the 960 px and 1240 px column breakpoints. Exercise a gene with no

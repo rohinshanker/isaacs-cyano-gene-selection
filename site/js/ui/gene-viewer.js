@@ -32,6 +32,7 @@ import {
 import {
   OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, biotypeLabel, describePartner,
 } from '../core/gene-overlaps.js';
+import { alignedPartnerBases, geneSequenceModel } from '../core/gene-sequence-model.js';
 import { markerPaintOrder, markerPresentation } from '../core/marker-layers.js';
 import { formatCount } from './format.js';
 
@@ -54,10 +55,10 @@ const RULER_Y = 90;
  */
 const OVERLAP_Y = 68;
 const OVERLAP_HEIGHT = 8;
-/** Smallest drawn width of a shared interval, so a one-base overlap is visible. */
-export const MIN_OVERLAP_WIDTH = 4;
+/** Fixed width of the directional visibility head on an exact overlap tail. */
+export const MIN_OVERLAP_WIDTH = 8;
 /** Drawn width of the direction arrow on one overlap mark. */
-const OVERLAP_ARROW = 5;
+const OVERLAP_ARROW = MIN_OVERLAP_WIDTH;
 /** Invisible padding around an overlap mark. */
 export const OVERLAP_HIT_PADDING = 4;
 /** Smallest drawn width for a three-nucleotide mark, in view units. */
@@ -417,17 +418,24 @@ function drawOverlaps(root, model, x) {
       : '';
     const label = `${describePartner(track)} Shared bases drawn from `
       + `${signedNt(run.from)} to ${signedNt(run.to)} of this gene.${shares}`;
-    const rect = interactiveAnnotation(svg('rect', {
+    const annotation = interactiveAnnotation(svg('g', {
       class: `gene-view-overlap gene-view-overlap-${track.direction ?? 'unknown'}`
         + ' gene-view-annotation',
       'data-overlap-partner': track.id,
-      x: from, y: OVERLAP_Y, width: to - from, height: OVERLAP_HEIGHT, rx: 1,
     }), label);
     const title = svg('title');
     title.textContent = label;
-    rect.append(title);
+    annotation.append(title);
+    const exactFrom = x(run.from);
+    const exactTo = x(run.to + 1);
+    annotation.append(svg('line', {
+      class: 'gene-view-overlap-tail',
+      x1: exactFrom, x2: exactTo,
+      y1: OVERLAP_Y + OVERLAP_HEIGHT / 2,
+      y2: OVERLAP_Y + OVERLAP_HEIGHT / 2,
+    }));
     const hit = paddedHitRange(ranges, index, OVERLAP_HIT_PADDING);
-    group.append(rect, annotationHitTarget(rect, {
+    group.append(annotation, annotationHitTarget(annotation, {
       class: 'gene-view-overlap-hit-target',
       'data-overlap-partner': track.id,
       x: hit.from, y: OVERLAP_Y - OVERLAP_HIT_PADDING,
@@ -444,8 +452,8 @@ function drawOverlaps(root, model, x) {
     const forward = track.direction === 'with';
     const tip = forward ? to : from;
     const base = forward ? to - OVERLAP_ARROW : from + OVERLAP_ARROW;
-    group.append(svg('path', {
-      class: 'gene-view-overlap-arrow',
+    annotation.append(svg('path', {
+      class: 'gene-view-overlap-arrow gene-view-overlap-visibility-aid',
       'aria-hidden': 'true',
       d: `M ${tip} ${mid} L ${base} ${OVERLAP_Y} L ${base} ${OVERLAP_Y + OVERLAP_HEIGHT} Z`,
     }));
@@ -768,6 +776,71 @@ export function overlapBadge(model) {
   return badge;
 }
 
+function exactPartnerBases(gene, table, track) {
+  const sequence = geneSequenceModel(gene, table);
+  if (!sequence) {
+    return {
+      status: 'sequence-unavailable', runs: [], orientation: { left: '?', right: '?' },
+    };
+  }
+  return alignedPartnerBases(sequence, track);
+}
+
+/** Accessible exact-base inspection for one compact overlap mark. */
+function baseInspection(gene, table, track) {
+  const alignment = exactPartnerBases(gene, table, track);
+  const details = document.createElement('details');
+  details.className = 'gene-view-overlap-bases';
+  const summary = document.createElement('summary');
+  summary.textContent = `Inspect exact shared bases for ${track.id}`;
+  details.append(summary);
+  const note = document.createElement('p');
+  note.className = 'panel-note';
+  if (alignment.status === 'strand-unrecorded') {
+    note.textContent = 'Partner bases and 5′/3′ direction are unknown because the release does not '
+      + 'record this partner’s strand. No complement is inferred.';
+    details.append(note);
+    return details;
+  }
+  if (alignment.status !== 'available') {
+    note.textContent = 'Exact shared bases are unavailable because this gene has no readable native '
+      + 'sequence at those annotated coordinates. No bases are fabricated.';
+    details.append(note);
+    return details;
+  }
+  note.textContent = 'Each pair is aligned by genomic position. The selected row reads 5′ to 3′; '
+    + 'an opposite-strand partner reads 3′ to 5′ from left to right and shows complements.';
+  details.append(note);
+  for (const run of alignment.runs) {
+    const block = document.createElement('div');
+    block.className = 'gene-view-overlap-base-block';
+    const coordinates = document.createElement('p');
+    coordinates.textContent = `Genomic ${formatCount(run.fromPosition)}`
+      + `${run.fromPosition === run.toPosition ? '' : ` → ${formatCount(run.toPosition)}`}`
+      + ' in selected-gene order';
+    const bases = document.createElement('div');
+    bases.className = 'gene-view-overlap-base-grid';
+    const row = (label, left, sequence, right) => {
+      const name = document.createElement('span');
+      name.className = 'gene-view-overlap-base-label';
+      name.textContent = label;
+      const leftEnd = document.createElement('span');
+      leftEnd.textContent = left;
+      const letters = document.createElement('code');
+      letters.className = 'gene-view-overlap-base-sequence';
+      letters.textContent = sequence;
+      const rightEnd = document.createElement('span');
+      rightEnd.textContent = right;
+      bases.append(name, leftEnd, letters, rightEnd);
+    };
+    row('Selected', '5′', run.selected, '3′');
+    row(track.id, alignment.orientation.left, run.partner, alignment.orientation.right);
+    block.append(coordinates, bases);
+    details.append(block);
+  }
+  return details;
+}
+
 /**
  * Every overlapping partner, in full, with a route to the ones this map plots.
  *
@@ -779,7 +852,7 @@ export function overlapBadge(model) {
  * rRNA, a pseudogene, an excluded locus — says so instead of offering a route
  * that would go nowhere.
  */
-function overlapList(model, onOpenPartner) {
+function overlapList(model, onOpenPartner, gene = null, table = null) {
   const tracks = model?.overlaps;
   const section = document.createElement('div');
   section.className = 'gene-view-overlap-list';
@@ -815,6 +888,7 @@ function overlapList(model, onOpenPartner) {
     text.textContent = describePartner(track)
       + (track.extendsBeyond ? ' It continues past this gene\u2019s own span.' : '');
     item.append(text);
+    item.append(baseInspection(gene, table, track));
     if (track.selectable && onOpenPartner) {
       const open = document.createElement('button');
       open.type = 'button';
@@ -901,7 +975,7 @@ function factsFor(model) {
 export function renderGeneViewer(host, gene, {
   tssPending = null, organism = DEFAULT_ORGANISM,
   startSitesVisible = true, onStartSitesVisibleChange = null,
-  onOpenPartner = null,
+  onOpenPartner = null, table = null,
 } = {}) {
   const startSites = layerOf(organism, 'tssEvidence');
   host.classList.add('gene-view');
@@ -1013,7 +1087,7 @@ export function renderGeneViewer(host, gene, {
       if (sites) host.append(sites);
     }
 
-    host.append(overlapList(model, onOpenPartner));
+    host.append(overlapList(model, onOpenPartner, gene, table));
 
     if (model.spliced) {
       const spliced = document.createElement('p');

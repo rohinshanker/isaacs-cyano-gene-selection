@@ -432,6 +432,86 @@ function occupies(segments, position) {
   return segments.some((piece) => position >= piece.from && position <= piece.to);
 }
 
+/** The exact native base this sequence model draws at one offset, or null. */
+export function nativeBaseAtOffset(model, offset) {
+  if (!model || !Number.isInteger(offset)) return null;
+  if (offset < 0) {
+    return model.upstream.find((entry) => entry.offset === offset)?.base ?? null;
+  }
+  const codon = model.codons[Math.floor(offset / 3)];
+  if (!codon || typeof codon.codon !== 'string') return null;
+  return codon.codon[offset - codon.offset] ?? null;
+}
+
+/** Watson-Crick complement of one unambiguous DNA base, or null. */
+export function complementBase(base) {
+  return ({ A: 'T', C: 'G', G: 'C', T: 'A' })[base] ?? null;
+}
+
+/**
+ * Actual shared bases aligned in this gene's transcription-oriented columns.
+ *
+ * The selected row is the native sequence already carried by `genes.json`.
+ * A same-strand partner reads the same letters; an opposite-strand partner
+ * reads their complements and therefore runs 3′ to 5′ from left to right.
+ * An unrecorded strand stays explicitly unknown. No base is reconstructed from
+ * an identifier, colour, or coordinate alone.
+ */
+export function alignedPartnerBases(model, partner, columns = sequenceColumns(model)) {
+  const orientation = partner?.relation === 'same'
+    ? { left: '5′', right: '3′' }
+    : partner?.relation === 'opposite'
+      ? { left: '3′', right: '5′' }
+      : { left: '?', right: '?' };
+  if (!model || !partner || !Array.isArray(partner.sharedIntervals)) {
+    return { status: 'sequence-unavailable', orientation, cells: [], runs: [] };
+  }
+  const cells = [];
+  for (const [position, offset] of columns) {
+    if (!occupies(partner.sharedIntervals, position)) continue;
+    const selectedBase = nativeBaseAtOffset(model, offset);
+    const partnerBase = partner.relation === 'same' ? selectedBase
+      : partner.relation === 'opposite' ? complementBase(selectedBase) : null;
+    cells.push({ position, offset, selectedBase, partnerBase });
+  }
+  cells.sort((a, b) => a.offset - b.offset);
+  const lengthBp = repliconLength(model.replicon);
+  const nextGenomicPosition = (position) => {
+    const raw = model.strand === '-' ? position - 1 : position + 1;
+    if (!(lengthBp > 0)) return raw;
+    return ((raw - 1) % lengthBp + lengthBp) % lengthBp + 1;
+  };
+  const runs = [];
+  for (const cell of cells) {
+    const last = runs[runs.length - 1];
+    // Consecutive strip columns are not necessarily consecutive genomic bases:
+    // a split CDS places the two exons side by side. Keep that junction visible
+    // instead of describing the gap as one exact genomic run. Circular-origin
+    // joins remain contiguous because the expected position wraps at the known
+    // replicon length.
+    if (last && cell.offset === last.toOffset + 1
+      && cell.position === nextGenomicPosition(last.toPosition)) {
+      last.toOffset = cell.offset;
+      last.toPosition = cell.position;
+      last.selected += cell.selectedBase ?? '?';
+      last.partner += cell.partnerBase ?? '?';
+    } else {
+      runs.push({
+        fromOffset: cell.offset,
+        toOffset: cell.offset,
+        fromPosition: cell.position,
+        toPosition: cell.position,
+        selected: cell.selectedBase ?? '?',
+        partner: cell.partnerBase ?? '?',
+      });
+    }
+  }
+  const status = partner.relation === 'unknown' ? 'strand-unrecorded'
+    : cells.length === 0 || cells.some((cell) => !cell.selectedBase || !cell.partnerBase)
+      ? 'sequence-unavailable' : 'available';
+  return { status, orientation, cells, runs };
+}
+
 /**
  * Overlapping partners aligned onto this strip's own columns.
  *
@@ -480,6 +560,7 @@ export function partnerPlacements(model, partners, columns = sequenceColumns(mod
     const firstPosition = covered.length > 0 ? offsetToPosition.get(covered[0]) : null;
     const lastPosition = covered.length > 0
       ? offsetToPosition.get(covered[covered.length - 1]) : null;
+    const alignment = alignedPartnerBases(model, partner, columns);
     return {
       id: partner.id,
       name: partner.name ?? null,
@@ -495,6 +576,7 @@ export function partnerPlacements(model, partners, columns = sequenceColumns(mod
       status: covered.length > 0 ? 'placed' : 'outside-shown-sequence',
       runs,
       sharedRuns: runsOf(shared),
+      alignment,
       shownNt: covered.length,
       partnerNt,
       continuesBefore: firstPosition !== null

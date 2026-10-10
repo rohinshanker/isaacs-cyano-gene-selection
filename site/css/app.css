@@ -2007,15 +2007,24 @@ input[type="range"] { width: 100%; }
   color: var(--ink-muted);
 }
 
-.gene-view-overlap { fill: var(--og-unknown); }
-.gene-view-overlap-with { fill: var(--og-same); }
-.gene-view-overlap-against { fill: var(--og-opposite); }
-.gene-view-overlap-arrow { fill: var(--surface); }
+.gene-view-overlap-tail {
+  stroke: var(--og-unknown);
+  stroke-width: 3;
+  stroke-linecap: butt;
+}
+.gene-view-overlap-with .gene-view-overlap-tail { stroke: var(--og-same); }
+.gene-view-overlap-against .gene-view-overlap-tail { stroke: var(--og-opposite); }
+.gene-view-overlap-arrow {
+  fill: var(--surface);
+  stroke: currentColor;
+  stroke-width: 1;
+}
+.gene-view-overlap-with { color: var(--og-same); }
+.gene-view-overlap-against { color: var(--og-opposite); }
 
-.gene-view-overlap.gene-view-annotation:hover,
-.gene-view-overlap.gene-view-annotation:focus-visible {
-  stroke: var(--og-shared);
-  stroke-width: 1.4;
+.gene-view-overlap.gene-view-annotation:hover .gene-view-overlap-tail,
+.gene-view-overlap.gene-view-annotation:focus-visible .gene-view-overlap-tail {
+  stroke-width: 5;
   outline: none;
 }
 
@@ -2037,20 +2046,60 @@ input[type="range"] { width: 100%; }
   color: var(--ink-muted);
 }
 
-.gene-view-partners li { overflow-wrap: anywhere; }
+.gene-view-partners li { min-width: 0; overflow-wrap: anywhere; }
 .gene-view-partner-note { color: var(--ink-muted); }
 .gene-view-open-partner { margin-left: 0.35rem; }
+.gene-view-overlap-bases { width: 100%; min-width: 0; margin-top: 0.25rem; }
+.gene-view-overlap-bases summary { cursor: pointer; font-weight: 600; }
+.gene-view-overlap-base-block {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 0.3rem;
+  padding: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  overflow-x: auto;
+}
+.gene-view-overlap-base-block p { margin: 0 0 0.2rem; }
+.gene-view-overlap-base-grid {
+  display: grid;
+  grid-template-columns: max-content max-content max-content max-content;
+  column-gap: 0.35rem;
+  width: max-content;
+  min-width: 100%;
+  align-items: baseline;
+}
+.gene-view-overlap-base-grid code {
+  white-space: pre;
+}
+.gene-view-overlap-base-label { font-family: var(--mono); }
 
 .chromosome-overlap-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.25rem 0.5rem;
+  min-height: 1.9rem;
 }
 
-.chromosome-overlap-readout { margin-top: 0.1rem; flex: 1 1 18rem; }
+.chromosome-overlap-steppers { flex: 0 0 auto; min-height: 1.9rem; }
 
-.chromosome-overlap-steppers { flex: 0 0 auto; }
+.chromosome-overlap-hint {
+  position: fixed;
+  z-index: 2;
+  width: min(20rem, calc(100% - 1rem));
+  overflow: auto;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}
 
 .overlap-filter { margin-bottom: 0.5rem; }
 
@@ -2063,6 +2112,11 @@ input[type="range"] { width: 100%; }
   font-size: 9px;
   fill: var(--ink-muted);
 }
+.gene-sequence-labels text.gene-sequence-partner-orientation {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-muted);
+}
 
 .gene-sequence-partner-bar {
   fill: var(--surface-sunken);
@@ -2070,14 +2124,24 @@ input[type="range"] { width: 100%; }
   stroke-width: 1;
 }
 
-.gene-sequence-partner-same .gene-sequence-partner-shared { fill: var(--og-same); }
-.gene-sequence-partner-opposite .gene-sequence-partner-shared { fill: var(--og-opposite); }
-.gene-sequence-partner-unknown .gene-sequence-partner-shared { fill: var(--og-unknown); }
-.gene-sequence-partner-shared { stroke: none; }
+.gene-sequence-partner-shared-tail { stroke-width: 3; stroke-linecap: butt; }
+.gene-sequence-partner-same .gene-sequence-partner-shared-tail { stroke: var(--og-same); }
+.gene-sequence-partner-opposite .gene-sequence-partner-shared-tail { stroke: var(--og-opposite); }
+.gene-sequence-partner-unknown .gene-sequence-partner-shared-tail { stroke: var(--og-unknown); }
 
-.gene-sequence-partner-same .gene-sequence-partner-arrow { fill: var(--og-same); }
-.gene-sequence-partner-opposite .gene-sequence-partner-arrow { fill: var(--og-opposite); }
+.gene-sequence-partner-arrow {
+  fill: var(--surface);
+  stroke-width: 1.2;
+}
+.gene-sequence-partner-same .gene-sequence-partner-arrow { stroke: var(--og-same); }
+.gene-sequence-partner-opposite .gene-sequence-partner-arrow { stroke: var(--og-opposite); }
 .gene-sequence-partner-continues { fill: var(--og-shared); }
+.gene-sequence-partner-base {
+  fill: var(--ink);
+  font-family: var(--mono);
+  font-weight: 700;
+  pointer-events: none;
+}
 
 .gene-sequence-partner:hover .gene-sequence-partner-bar,
 .gene-sequence-partner:focus-visible .gene-sequence-partner-bar {

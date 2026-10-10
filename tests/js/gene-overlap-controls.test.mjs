@@ -14,6 +14,7 @@ import {
   OVERLAP_CLASSES, OVERLAP_CLASS_IDS, overlapFilterOf, overlapSelectionFor,
 } from '../../site/js/core/gene-overlaps.js';
 import { withFakeDocument } from './fake-dom.mjs';
+import { standardTable } from './helpers.mjs';
 
 const GENE = {
   id: 'M744_RS00025', name: null, product: 'YheT family hydrolase', seqid: 'NZ_CP006471.1',
@@ -42,7 +43,7 @@ function partner(id, from, to, options = {}) {
 }
 
 const badge = (host) => host.querySelector('span.gene-view-og-badge');
-const marks = (host) => host.querySelectorAll('rect.gene-view-overlap');
+const marks = (host) => host.querySelectorAll('g.gene-view-overlap');
 const arrows = (host) => host.querySelectorAll('path.gene-view-overlap-arrow');
 const partnerItems = (host) => host.querySelector('ul.gene-view-partners')?.children ?? [];
 
@@ -107,7 +108,10 @@ test('the compact strip marks the shared bases with a direction arrow each', asy
       overlapClass: 'overlap-same-strand',
     });
     assert.equal(marks(host).length, 1);
-    assert.ok(Number(marks(host)[0].getAttribute('width')) >= MIN_OVERLAP_WIDTH);
+    const tail = marks(host)[0].querySelector('line.gene-view-overlap-tail');
+    assert.ok(Number(tail.getAttribute('x2')) - Number(tail.getAttribute('x1'))
+      < MIN_OVERLAP_WIDTH, 'the tail keeps the exact proportional one-base width');
+    assert.equal(arrows(host).length, 1, 'the fixed-size head supplies visibility separately');
 
     // A partner whose strand the release does not record gets no arrow, because
     // an arrow would assert a direction nobody annotated.
@@ -118,6 +122,65 @@ test('the compact strip marks the shared bases with a direction arrow each', asy
     });
     assert.equal(marks(host).length, 1);
     assert.equal(arrows(host).length, 0);
+  });
+});
+
+test('the compact disclosure exposes exact strand-aware bases and explicit unknowns', async () => {
+  const table = standardTable();
+  const pack = (codons) => table.encode(codons.map((codon) => table.indexOf(codon)));
+  await withFakeDocument((document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const selected = {
+      ...GENE,
+      start: 100, end: 108, lengthNt: 9, lengthCodons: 2,
+      codons: pack(['ATG', 'GCT']), terminalStop: 'TAG',
+      overlapPartners: [partner('ANTI', 106, 108, {
+        strand: '-', relation: 'opposite', sharedIntervals: [{ from: 106, to: 108 }],
+        segments: [{ from: 106, to: 108 }], sharedBases: 3,
+      })],
+      overlapClass: 'overlap-opposite-strand',
+    };
+    renderGeneViewer(host, selected, { table });
+    const details = host.querySelector('details.gene-view-overlap-bases');
+    assert.match(details.querySelector('summary').textContent, /Inspect exact shared bases for ANTI/);
+    assert.deepEqual(details.querySelectorAll('code').map((node) => node.textContent), ['TAG', 'ATC']);
+    const grid = details.querySelector('.gene-view-overlap-base-grid');
+    assert.deepEqual(grid.children.map((node) => node.textContent), [
+      'Selected', '5′', 'TAG', '3′', 'ANTI', '3′', 'ATC', '5′',
+    ], 'both sequences occupy the same grid column regardless of label length');
+
+    renderGeneViewer(host, {
+      ...selected,
+      overlapPartners: [partner('UNKNOWN', 106, 108, {
+        strand: null, relation: 'unknown', sharedIntervals: [{ from: 106, to: 108 }],
+        segments: [{ from: 106, to: 108 }], sharedBases: 3,
+      })],
+      overlapClass: 'overlap-strand-unrecorded',
+    }, { table });
+    assert.equal(host.querySelectorAll('code').length, 0);
+    assert.match(host.querySelector('details.gene-view-overlap-bases').textContent,
+      /strand.*unknown|unknown.*strand/i);
+
+    renderGeneViewer(host, { ...selected, codons: undefined }, { table });
+    assert.match(host.querySelector('details.gene-view-overlap-bases').textContent,
+      /Exact shared bases are unavailable/);
+
+    renderGeneViewer(host, {
+      ...selected,
+      end: 203,
+      cdsSegments: [[100, 104], [200, 203]],
+      overlapPartners: [partner('ACROSS_GAP', 100, 203, {
+        strand: '+', relation: 'same',
+        sharedIntervals: [{ from: 100, to: 104 }, { from: 200, to: 203 }],
+        segments: [{ from: 100, to: 203 }], sharedBases: 9,
+      })],
+      overlapClass: 'overlap-same-strand',
+    }, { table });
+    const blocks = host.querySelectorAll('.gene-view-overlap-base-block');
+    assert.equal(blocks.length, 2, 'a genomic gap stays two exact-base disclosures');
+    assert.match(blocks[0].textContent, /Genomic 100 → 104 in selected-gene order/);
+    assert.match(blocks[1].textContent, /Genomic 200 → 203 in selected-gene order/);
   });
 });
 

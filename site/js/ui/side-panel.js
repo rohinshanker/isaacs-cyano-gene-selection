@@ -841,6 +841,7 @@ export class SidePanel {
         this.handlers.onStartSitesVisibleChange?.(visible);
       },
       onOpenPartner: (id, index) => this.handlers.onOpenPartner?.(id, index),
+      table: dataset.table,
     });
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);

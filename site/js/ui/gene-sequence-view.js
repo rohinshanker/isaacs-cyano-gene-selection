@@ -110,7 +110,7 @@ const RESIDUE_RULER_HEIGHT = 14;
  * in one row would hide each other wherever they share a base of this gene,
  * which is exactly the case the view exists to show.
  */
-export const PARTNER_ROW_HEIGHT = 13;
+export const PARTNER_ROW_HEIGHT = 22;
 export const PARTNER_ROW_GAP = 2;
 /**
  * Partner tracks the strip draws before it stops adding rows.
@@ -1272,7 +1272,7 @@ export class GeneSequenceView {
     if (cells) this.drawCells(area, rows, x, perNt, firstVisible, lastVisible, width);
     else this.drawBars(area, rows, x, perNt, firstVisible, lastVisible);
     this.drawJunctions(area, rows, x, firstVisible, lastVisible);
-    this.drawPartners(area, rows, x, firstVisible, lastVisible, width);
+    this.drawPartners(area, rows, x, firstVisible, lastVisible, width, perNt);
     // Last, so a mark sits over the letter it names rather than under it.
     this.drawMarkers(area, rows, x, crowding);
     root.append(area);
@@ -1332,9 +1332,14 @@ export class GeneSequenceView {
     // a long tag cannot run under the sequence. The full identity, biotype and
     // shared interval are in the row's own label and in the list below.
     for (const { partner, y } of rows.partners) {
-      labels.append(text(LABEL_WIDTH - 6, y + PARTNER_ROW_HEIGHT - 3, fitPartnerLabel(partner.id), {
+      labels.append(text(LABEL_WIDTH - 6, y + 9, fitPartnerLabel(partner.id), {
         'text-anchor': 'end', class: 'gene-sequence-partner-label',
       }));
+      const orientation = partner.alignment.orientation;
+      labels.append(text(LABEL_WIDTH - 6, y + 20,
+        `${orientation.left}→${orientation.right}`, {
+          'text-anchor': 'end', class: 'gene-sequence-partner-orientation',
+        }));
     }
     root.append(labels);
   }
@@ -1687,13 +1692,15 @@ export class GeneSequenceView {
    * gets no chevron, and one that continues past a window the reader has panned
    * to gets one at that window's edge.
    */
-  drawPartners(area, rows, x, firstVisible, lastVisible, width) {
+  drawPartners(area, rows, x, firstVisible, lastVisible, width, perNt) {
     if (rows.partners.length === 0) return;
     const group = svg('g', { class: 'gene-sequence-partners' });
     const left = LABEL_WIDTH;
     const right = LABEL_WIDTH + width;
     for (const { partner, y } of rows.partners) {
       const mid = y + PARTNER_ROW_HEIGHT / 2;
+      const sharedY = y + PARTNER_ROW_HEIGHT - 3;
+      const letterBaseline = y + 13;
       const row = svg('g', {
         class: `gene-sequence-partner gene-sequence-partner-${partner.relation}`,
         'data-overlap-partner': partner.id,
@@ -1709,19 +1716,38 @@ export class GeneSequenceView {
         }));
       };
       for (const run of partner.runs) bar(run, 'gene-sequence-partner-bar');
-      for (const run of partner.sharedRuns) bar(run, 'gene-sequence-partner-shared');
-      if (partner.relation !== 'unknown') {
-        const forward = partner.relation === 'same';
-        const last = partner.runs[partner.runs.length - 1];
-        const first = partner.runs[0];
-        const tipOffset = forward ? last.toOffset + 1 : first.fromOffset;
-        const tip = Math.min(right, Math.max(left, x(tipOffset)));
-        const base = forward ? tip - PARTNER_ARROW : tip + PARTNER_ARROW;
-        row.append(svg('path', {
-          class: 'gene-sequence-partner-arrow',
-          'aria-hidden': 'true',
-          d: `M ${tip} ${mid} L ${base} ${y + 1} L ${base} ${y + PARTNER_ROW_HEIGHT - 1} Z`,
+      // The thin tail alone carries genomic extent. Its endpoints use the same
+      // base-column map as the letters; the fixed-size head is a visibility aid
+      // and is outlined so it cannot be mistaken for extra shared bases.
+      for (const run of partner.sharedRuns) {
+        if (run.toOffset + 1 < firstVisible || run.fromOffset > lastVisible) continue;
+        const x0 = Math.max(left, x(run.fromOffset));
+        const x1 = Math.min(right, x(run.toOffset + 1));
+        row.append(svg('line', {
+          class: 'gene-sequence-partner-shared-tail',
+          x1: x0, x2: x1, y1: sharedY, y2: sharedY,
         }));
+        if (partner.relation !== 'unknown') {
+          const forward = partner.relation === 'same';
+          const tip = forward ? x1 : x0;
+          const base = forward ? tip - PARTNER_ARROW : tip + PARTNER_ARROW;
+          row.append(svg('path', {
+            class: 'gene-sequence-partner-arrow',
+            'aria-hidden': 'true',
+            d: `M ${tip} ${sharedY} L ${base} ${y + 17} L ${base} ${y + PARTNER_ROW_HEIGHT} Z`,
+          }));
+        }
+      }
+      if (perNt >= LETTER_PX_PER_NT && partner.alignment.status === 'available') {
+        const fontSize = perNt >= 11 ? 12 : 10;
+        for (const cell of partner.alignment.cells) {
+          if (cell.offset + 1 < firstVisible || cell.offset > lastVisible) continue;
+          row.append(text(x(cell.offset) + perNt / 2, letterBaseline,
+            cell.partnerBase, {
+              'text-anchor': 'middle', 'font-size': fontSize,
+              class: 'gene-sequence-partner-base',
+            }));
+        }
       }
       // The chevrons: one at each edge of the *drawn window* the partner has
       // bases beyond, pointing out of it. Two things put bases there — more of
@@ -1766,6 +1792,17 @@ export class GeneSequenceView {
         : `${signedOffset(run.fromOffset)} to ${signedOffset(run.toOffset)}`))
       .join(', ');
     parts.push(`Drawn on this close-up at ${placed}, on the same coordinates as the bases above.`);
+    if (partner.alignment.status === 'available') {
+      parts.push(`Its actual shared bases are aligned letter by letter, ${partner.alignment.orientation.left} `
+        + `to ${partner.alignment.orientation.right} from left to right; opposite-strand letters are `
+        + 'the strand-correct complements of the selected gene row.');
+    } else if (partner.alignment.status === 'strand-unrecorded') {
+      parts.push('Its base row is unknown because the release does not record its strand; no '
+        + 'complement or reading direction is inferred.');
+    } else {
+      parts.push('Its base row is unavailable because this view has no exact native sequence for '
+        + 'the shared columns; no bases are fabricated.');
+    }
     if (partner.continuesBefore || partner.continuesAfter) {
       const sides = partner.continuesBefore && partner.continuesAfter
         ? 'both ends of the sequence this close-up holds'

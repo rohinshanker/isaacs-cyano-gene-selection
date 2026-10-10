@@ -490,6 +490,7 @@ export class ChromosomeView {
      * both partners at once so neither can hide the other.
      */
     this.activeOverlap = null;
+    this.overlapHintAnchor = null;
   }
 
   /**
@@ -770,7 +771,7 @@ export class ChromosomeView {
     this.overlapRow = document.createElement('div');
     this.overlapRow.className = 'chromosome-overlap-row';
     this.overlapReadout = document.createElement('p');
-    this.overlapReadout.className = 'chromosome-window chromosome-overlap-readout';
+    this.overlapReadout.className = 'chromosome-overlap-readout visually-hidden';
     this.overlapReadout.id = 'chromosome-overlap-readout';
     this.overlapReadout.setAttribute('role', 'status');
     this.overlapPrevious = this.chip('\u25c0 Previous overlap',
@@ -782,6 +783,11 @@ export class ChromosomeView {
     const overlapButtons = document.createElement('div');
     overlapButtons.className = 'chromosome-toolbar-row chromosome-overlap-steppers';
     overlapButtons.append(this.overlapPrevious, this.overlapNext);
+    for (const button of [this.overlapPrevious, this.overlapNext]) {
+      button.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') this.dismissOverlapHint(event);
+      });
+    }
     this.overlapRow.append(this.overlapReadout, overlapButtons);
 
     this.canvasHost = document.createElement('div');
@@ -792,7 +798,11 @@ export class ChromosomeView {
     this.canvas.setAttribute('role', 'img');
     this.canvas.setAttribute('aria-describedby', 'chromosome-instructions');
     this.context = this.canvas.getContext('2d');
-    this.canvasHost.append(this.canvas);
+    this.overlapHint = document.createElement('div');
+    this.overlapHint.className = 'chromosome-overlap-hint';
+    this.overlapHint.setAttribute('role', 'tooltip');
+    this.overlapHint.hidden = true;
+    this.canvasHost.append(this.canvas, this.overlapHint);
 
     this.instructions = document.createElement('p');
     this.instructions.className = 'hint';
@@ -807,7 +817,9 @@ export class ChromosomeView {
       + 'it, Up and Down cross to the next lane or replicon, Shift and an arrow pans the '
       + 'chromosome the same step the buttons do, O steps through the overlapping-gene blocks in '
       + 'the chromosome window and Shift and O steps back, Enter pins the active CDS or, with an '
-      + 'overlap being inspected, its other gene, and S adds or removes it from the shortlist.';
+      + 'overlap being inspected, its other gene, Escape dismisses the overlap hint, and S adds or '
+      + 'removes it from the shortlist. On touch, the first tap shows an overlap hint and a second '
+      + 'tap on the same single pair opens its plotted gene.';
 
     this.detailJump = document.createElement('button');
     this.detailJump.type = 'button';
@@ -1071,7 +1083,9 @@ export class ChromosomeView {
       + `${formatCount(this.model.passing)} of ${formatCount(this.model.total)} plotted CDSs pass `
       + 'all filters.';
 
+    if (this.activeOverlap) this.overlapHintAnchor = this.overlapAnchor(this.activeOverlap);
     this.writeOverlapReadout();
+    this.syncOverlapHint();
 
     this.trackSummaries.replaceChildren();
     for (const track of this.model.tracks) {
@@ -1878,13 +1892,87 @@ export class ChromosomeView {
    * Inspect one overlap, or none: it outlines the block and both its genes and
    * writes the readout. Nothing is pinned, filtered or recoloured.
    */
-  setActiveOverlap(active, { announce = false } = {}) {
+  setActiveOverlap(active, { announce = false, anchor = null } = {}) {
     // By pair, not by coordinates: two pairs can cover exactly the same bases.
-    if ((this.activeOverlap?.mark?.key ?? null) === (active?.mark?.key ?? null)) return;
+    if ((this.activeOverlap?.mark?.key ?? null) === (active?.mark?.key ?? null)) {
+      if (active && anchor) {
+        this.overlapHintAnchor = anchor;
+        this.syncOverlapHint();
+      }
+      return;
+    }
     this.activeOverlap = active ?? null;
+    this.overlapHintAnchor = active ? (anchor ?? this.overlapAnchor(active)) : null;
     this.writeOverlapReadout();
+    this.syncOverlapHint();
     this.draw();
     if (announce && active) this.handlers.onAnnounce?.(this.describeOverlap(active));
+  }
+
+  /** Dismiss an overlap preview from any focused control that exposes it. */
+  dismissOverlapHint(event) {
+    if (!this.activeOverlap) return false;
+    event?.preventDefault?.();
+    this.setActiveOverlap(null);
+    this.handlers.onAnnounce?.('Overlap hint dismissed.');
+    return true;
+  }
+
+  /** Canvas-local anchor for a keyboard-selected overlap. */
+  overlapAnchor(active) {
+    const band = this.bands().find((entry) => entry.track.accession === active?.accession);
+    if (!band) return null;
+    const { left, width } = pieceRect(band.scale, active.mark);
+    return {
+      x: Math.max(band.left, Math.min(band.left + band.width, left + width / 2)),
+      y: band.layout.overlapBottom,
+    };
+  }
+
+  /** Show the active pair in a pointer-transparent viewport overlay. */
+  syncOverlapHint() {
+    if (!this.overlapHint) return;
+    if (!this.activeOverlap || !this.overlapHintAnchor) {
+      this.overlapHint.hidden = true;
+      this.overlapHint.textContent = '';
+      return;
+    }
+    this.overlapHint.textContent = this.overlapReadout.textContent;
+    this.overlapHint.hidden = false;
+    const hostWidth = this.canvasHost.clientWidth || this.canvas.clientWidth || this.canvas.width || 320;
+    const hostHeight = this.canvasHost.clientHeight || this.canvas.clientHeight || this.canvas.height || 160;
+    const hostRect = this.canvasHost.getBoundingClientRect?.()
+      ?? { left: 0, top: 0, width: hostWidth, height: hostHeight };
+    const viewportWidth = Number.isFinite(window.innerWidth)
+      ? window.innerWidth : hostRect.left + hostWidth;
+    const viewportHeight = Number.isFinite(window.innerHeight)
+      ? window.innerHeight : hostRect.top + hostHeight;
+    const headerBottom = Math.max(0,
+      document.querySelector?.('header')?.getBoundingClientRect?.().bottom ?? 0);
+    const viewportLeft = 8;
+    const viewportRight = Math.max(viewportLeft, viewportWidth - 8);
+    const viewportTop = Math.min(viewportHeight - 8, Math.max(8, headerBottom + 8));
+    const viewportBottom = Math.max(viewportTop, viewportHeight - 8);
+    // Fixed positioning lets the prose leave a partly visible canvas while
+    // remaining anchored to its mark. Do not size the hint to the visible
+    // canvas slice: pointer-events are intentionally disabled, so clipped
+    // scrollable prose would have no usable scroll route.
+    this.overlapHint.style.maxWidth = `${Math.max(0, viewportRight - viewportLeft)}px`;
+    this.overlapHint.style.maxHeight = 'none';
+    const hintWidth = this.overlapHint.offsetWidth
+      || Math.min(320, Math.max(0, viewportRight - viewportLeft));
+    const hintHeight = this.overlapHint.offsetHeight || 72;
+    const anchorX = hostRect.left + this.overlapHintAnchor.x;
+    const anchorY = hostRect.top + this.overlapHintAnchor.y;
+    const gap = 10;
+    let left = anchorX + gap;
+    if (left + hintWidth > viewportRight) left = anchorX - hintWidth - gap;
+    left = Math.max(viewportLeft, Math.min(left, viewportRight - hintWidth));
+    let top = anchorY + gap;
+    if (top + hintHeight > viewportBottom) top = anchorY - hintHeight - gap;
+    top = Math.max(viewportTop, Math.min(top, viewportBottom - hintHeight));
+    this.overlapHint.style.left = `${Math.round(left)}px`;
+    this.overlapHint.style.top = `${Math.round(top)}px`;
   }
 
   /** Step through the overlaps of the primary track's window. */
@@ -2093,7 +2181,7 @@ export class ChromosomeView {
       // The overlap row first: it is its own band of pixels, so a pointer in
       // it is asking about an overlap and not about a gene.
       const overlap = this.overlapAt(x, y);
-      this.setActiveOverlap(overlap);
+      this.setActiveOverlap(overlap, { anchor: { x, y } });
       if (overlap) {
         canvas.style.cursor = 'pointer';
         this.handlers.onHover?.(-1);
@@ -2103,7 +2191,13 @@ export class ChromosomeView {
       canvas.style.cursor = index >= 0 ? 'pointer' : this.bandAt(y) ? 'grab' : 'default';
       this.handlers.onHover?.(index);
     });
-    canvas.addEventListener('pointerleave', () => this.handlers.onHover?.(-1));
+    canvas.addEventListener('pointerleave', (event) => {
+      // A real touchscreen emits pointerleave as the contact ends. That is not
+      // the reader leaving a hover target: it is the end of the first tap, and
+      // its hint must remain for the promised second-tap action.
+      if (event.pointerType !== 'touch') this.setActiveOverlap(null);
+      this.handlers.onHover?.(-1);
+    });
     canvas.addEventListener('pointerdown', (event) => {
       if (!this.model?.verified) return;
       const { x, y } = this.pointerPosition(event);
@@ -2126,16 +2220,21 @@ export class ChromosomeView {
       // and touch route and not only O and Shift+O.
       const overlap = this.overlapAt(x, y, { advance: true });
       if (overlap) {
+        const wasActive = this.activeOverlap?.mark?.key === overlap.mark.key;
         const shared = this.coincidentAt(x, y);
-        this.setActiveOverlap(overlap, { announce: true });
+        this.setActiveOverlap(overlap, { announce: true, anchor: { x, y } });
         if (shared > 1) {
           this.handlers.onAnnounce?.(`${formatCount(shared)} overlapping pairs share these `
             + 'pixels. Click or tap again for the next one, or press O.');
+        } else if (event.pointerType === 'touch' && !wasActive) {
+          this.handlers.onAnnounce?.('Overlap hint shown. Tap the same mark again to open its '
+            + 'plotted gene.');
         } else {
           this.selectOverlapPartner(overlap);
         }
         return;
       }
+      this.setActiveOverlap(null);
       const index = this.hitTest(x, y);
       if (index >= 0) {
         this.cursor = locateIndex(this.lanes, index);
@@ -2285,6 +2384,7 @@ export class ChromosomeView {
    */
   resetView({ announce = true } = {}) {
     this.activeOverlap = null;
+    this.overlapHintAnchor = null;
     if (!this.model?.verified) {
       this.windows.clear();
       return;
@@ -2350,6 +2450,10 @@ export class ChromosomeView {
         this.handlers.onAnnounce?.('Move to a CDS with the arrow keys first, then press Enter to '
           + 'pin it.');
       }
+      return;
+    }
+    if (event.key === 'Escape' && this.activeOverlap) {
+      this.dismissOverlapHint(event);
       return;
     }
     if (event.key === '+' || event.key === '=') {

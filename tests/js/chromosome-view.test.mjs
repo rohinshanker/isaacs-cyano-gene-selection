@@ -3238,6 +3238,11 @@ test('hovering the overlap row names both genes and outlines them together', () 
     // one-pixel gene bar gets.
     view.canvas.dispatch('pointermove', { clientX: block.left + 0.5, clientY: y });
     const ops = flush();
+    assert.match(view.overlapReadout.className, /\bvisually-hidden\b/,
+      'the live announcement occupies no document flow');
+    assert.equal(view.overlapHint.parent, view.canvasHost,
+      'the visible hint is over the canvas, not above it');
+    assert.equal(view.overlapHint.hidden, false);
     assert.match(view.overlapReadout.textContent,
       /PLUS \(protein-coding gene, forward strand\) and NEIGHBOUR \(protein-coding gene, forward strand\) on the same strand share/);
     assert.match(view.overlapReadout.textContent, /101 bases at NZ_CP006471\.1 100,900–101,000/);
@@ -3252,11 +3257,90 @@ test('hovering the overlap row names both genes and outlines them together', () 
     assert.ok(outlines.some((op) => op.y < band.layout.overlapTop + 1
       && op.h >= OVERLAP_ROW_HEIGHT), 'the block itself');
     assert.ok(outlines.some((op) => op.y <= band.layout.axisY), 'the partner in the plus lane');
+    view.canvas.dispatch('pointerleave', {});
+    assert.equal(view.overlapHint.hidden, true);
 
     // Keyboard: O steps through the window's overlaps and announces one.
     view.setActiveOverlap(null);
     view.onKeyDown({ key: 'o', preventDefault() {} });
     assert.match(announced.at(-1), /PLUS \(protein-coding gene, forward strand\) and NEIGHBOUR/);
+    assert.equal(view.overlapHint.hidden, false, 'keyboard inspection shows the same overlay');
+    view.onKeyDown({ key: 'Escape', preventDefault() {} });
+    assert.equal(view.overlapHint.hidden, true);
+    assert.match(announced.at(-1), /hint dismissed/);
+    for (const button of [view.overlapPrevious, view.overlapNext]) {
+      view.onKeyDown({ key: 'o', preventDefault() {} });
+      button.focus();
+      button.dispatch('keydown', { key: 'Escape', preventDefault() {} });
+      assert.equal(view.overlapHint.hidden, true, 'Escape works from either overlap stepper');
+    }
+  } finally {
+    restore();
+  }
+});
+
+test('the overlap hint stays inside the visible viewport when the canvas is partly on screen', () => {
+  const { view, restore } = mount({ geneOverlaps: overlapIndexFor() });
+  try {
+    view.canvasHost.clientWidth = CANVAS_WIDTH + HOST_CHROME;
+    view.canvasHost.clientHeight = 400;
+    view.overlapHint.offsetWidth = 300;
+    view.overlapHint.offsetHeight = 100;
+    window.innerWidth = 1000;
+    window.innerHeight = 800;
+    const active = view.overlapsInView()[0];
+
+    view.canvasHost.getBoundingClientRect = () => ({
+      left: 20, top: 650, width: CANVAS_WIDTH + HOST_CHROME, height: 400,
+    });
+    view.setActiveOverlap(active, { anchor: { x: 450, y: 120 } });
+    let top = Number.parseFloat(view.overlapHint.style.top);
+    assert.ok(top + 100 <= 792, 'bottom edge stays above the viewport inset');
+    assert.equal(view.overlapHint.style.maxHeight, 'none', 'the prose is not clipped to the canvas');
+
+    view.canvasHost.getBoundingClientRect = () => ({
+      left: 20, top: -250, width: CANVAS_WIDTH + HOST_CHROME, height: 400,
+    });
+    view.setActiveOverlap(active, { anchor: { x: 450, y: 120 } });
+    top = Number.parseFloat(view.overlapHint.style.top);
+    assert.ok(top >= 8, 'top edge stays below the viewport inset');
+  } finally {
+    restore();
+  }
+});
+
+test('touch shows a hint before a second tap opens a single overlap pair', () => {
+  const selected = [];
+  const announced = [];
+  const { view, restore } = mount({
+    geneOverlaps: overlapIndexFor(),
+    handlers: {
+      onSelect: (index) => selected.push(index),
+      onAnnounce: (message) => announced.push(message),
+    },
+  });
+  try {
+    const band = view.bands()[0];
+    const block = pieceRect(band.scale, { from: 100900, to: 101000 });
+    const point = {
+      clientX: block.left + 0.5,
+      clientY: band.layout.overlapTop + 4,
+      pointerId: 17,
+      pointerType: 'touch',
+    };
+    const tap = () => {
+      view.canvas.dispatch('pointerdown', point);
+      view.canvas.dispatch('pointerup', point);
+    };
+    tap();
+    assert.deepEqual(selected, []);
+    assert.equal(view.overlapHint.hidden, false);
+    assert.match(announced.at(-1), /Tap the same mark again/);
+    view.canvas.dispatch('pointerleave', { pointerType: 'touch' });
+    assert.equal(view.overlapHint.hidden, false,
+      'the browser-generated touch pointerleave keeps the first-tap hint');
+    tap();
+    assert.deepEqual(selected, [0]);
   } finally {
     restore();
   }

@@ -1485,6 +1485,7 @@ function renderControlsGeneViewer(index) {
     startSitesVisible: markersVisibleIn('gene-controls'),
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-controls', visible),
     onOpenPartner: (id, partnerIndex) => openOverlapPartner(id, partnerIndex),
+    table: context.dataset.table,
   });
 }
 

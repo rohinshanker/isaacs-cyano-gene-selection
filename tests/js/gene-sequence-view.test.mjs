@@ -7,6 +7,7 @@ import {
   PARTNER_LABEL_CHARS, clampCamera, fitPartnerLabel, fittingCamera, openingCamera, residueTicks,
 } from '../../site/js/ui/gene-sequence-view.js';
 import { compileScheme } from '../../site/js/core/scheme.js';
+import { alignedPartnerBases } from '../../site/js/core/gene-sequence-model.js';
 import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
 import { withFakeDocument } from './fake-dom.mjs';
 import { standardTable } from './helpers.mjs';
@@ -664,12 +665,85 @@ test('a partner is drawn as its own track, on this gene’s own coordinates', as
     // The shared stretch is drawn over the partner's own bar, so the bases the
     // two genes share read against the letters above them.
     assert.equal(rows[0].querySelectorAll('rect.gene-sequence-partner-bar').length, 1);
-    assert.equal(rows[0].querySelectorAll('rect.gene-sequence-partner-shared').length, 1);
+    assert.equal(rows[0].querySelectorAll('line.gene-sequence-partner-shared-tail').length, 1);
     // And an arrow for the direction it is read in.
     assert.equal(rows[0].querySelectorAll('path.gene-sequence-partner-arrow').length, 1);
+    assert.equal(rows[0].querySelectorAll('text.gene-sequence-partner-base').length, 8);
+    assert.equal(rows[0].querySelectorAll('text.gene-sequence-partner-base')
+      .map((node) => node.textContent).join(''), 'CCGGGATC');
+    assert.ok(view.strip.querySelectorAll('text.gene-sequence-partner-orientation')
+      .some((node) => node.textContent === '3′→5′'));
     assert.match(rows[0].getAttribute('aria-label'), /PARTNER, a protein-coding gene/);
     assert.match(rows[0].getAttribute('aria-label'), /on the same coordinates as the bases above/);
   });
+});
+
+test('same-strand bases remain literal and an unrecorded strand stays unknown', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    view.update({
+      gene: gene({
+        overlapPartners: [partner('SAME', [{ from: 1024, to: 1027 }], {
+          strand: '+', relation: 'same',
+        })],
+        overlapClass: 'overlap-same-strand',
+      }),
+      table, scheme: null, schemeVersion: 1,
+    });
+    assert.equal(partnerRows(view)[0].querySelectorAll('text.gene-sequence-partner-base')
+      .map((node) => node.textContent).join(''), 'CTAG');
+    assert.ok(view.strip.querySelectorAll('text.gene-sequence-partner-orientation')
+      .some((node) => node.textContent === '5′→3′'));
+
+    view.update({
+      gene: gene({
+        overlapPartners: [partner('UNKNOWN', [{ from: 1024, to: 1027 }], {
+          strand: null, relation: 'unknown',
+        })],
+        overlapClass: 'overlap-strand-unrecorded',
+      }),
+      table, scheme: null, schemeVersion: 2,
+    });
+    const unknown = partnerRows(view)[0];
+    assert.equal(unknown.querySelectorAll('text.gene-sequence-partner-base').length, 0);
+    assert.match(unknown.getAttribute('aria-label'), /base row is unknown/);
+  });
+});
+
+test('exact-base runs split at genomic gaps but stay joined across the circular origin', () => {
+  const splitModel = {
+    replicon: 'NZ_CP006471.1',
+    strand: '+',
+    upstream: [],
+    codons: [{ offset: 0, codon: 'ATG', positions: [100, 101, 200] }],
+  };
+  const split = alignedPartnerBases(splitModel, partner('SPLIT', [
+    { from: 100, to: 101 }, { from: 200, to: 200 },
+  ], {
+    strand: '+', relation: 'same',
+    sharedIntervals: [{ from: 100, to: 101 }, { from: 200, to: 200 }],
+  }));
+  assert.deepEqual(split.runs.map((run) => ({
+    fromPosition: run.fromPosition, toPosition: run.toPosition, selected: run.selected,
+  })), [
+    { fromPosition: 100, toPosition: 101, selected: 'AT' },
+    { fromPosition: 200, toPosition: 200, selected: 'G' },
+  ]);
+
+  const originModel = {
+    replicon: 'NZ_CP006471.1',
+    strand: '+',
+    upstream: [],
+    codons: [{ offset: 0, codon: 'ATG', positions: [2690418, 1, 2] }],
+  };
+  const origin = alignedPartnerBases(originModel, partner('ORIGIN', [
+    { from: 2690418, to: 2690418 }, { from: 1, to: 2 },
+  ], {
+    strand: '+', relation: 'same',
+    sharedIntervals: [{ from: 2690418, to: 2690418 }, { from: 1, to: 2 }],
+  }));
+  assert.equal(origin.runs.length, 1);
+  assert.equal(origin.runs[0].selected, 'ATG');
 });
 
 test('a partner that runs past the drawn window gets a chevron at that edge', async () => {
