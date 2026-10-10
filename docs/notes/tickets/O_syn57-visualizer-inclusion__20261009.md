@@ -15,7 +15,7 @@ E. coli**. The owner has not specified a fresh default for the recoded group;
 settle that before introducing a default that chooses between the two.
 
 Apply the collapsible/movable recoding-scheme panel requirement from
-[strain navigation](O_strain-navigation-format__20261009.md) to both choices.
+[strain navigation](A_strain-navigation-format__20261009.md) to both choices.
 
 ## Source and identity boundary
 
