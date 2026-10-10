@@ -4,6 +4,7 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
+| [pair-review-intake.md](pair-review-intake.md) | Blank review TSV generation, source checksum and pair identity checks, explicit human review fields, partial-answer reporting and the boundary from lab decision admission |
 | [documentation-links.md](documentation-links.md) | Redirecting retired ticket/document links to durable contracts, preserving frozen handoffs, and checking relative paths, heading fragments and explicit anchors after cleanup |
 | [worktree-reconciliation.md](worktree-reconciliation.md) | Distinguishing integrated or superseded branches from active work and missing changes; checking dirty files and preserving owners, findings and local artifacts |
 | [recoded-parent-reference-records.md](recoded-parent-reference-records.md) | Public reference accession pins, stock caveats, CDS exclusions and fixed-reference PCA regeneration |
