@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFAULT_ORGANISM, organismById, storageKeys,
+  DEFAULT_ORGANISM, ORGANISMS, organismById, storageKeys,
 } from '../../site/js/core/organisms.js';
 import {
   applyGeneCount, applyOrganismIdentity, dataDirectoryPath, rememberView, renderOrganismSelector,
@@ -73,7 +73,7 @@ test('the selector has three ordered top-level controls and grouped strain links
     const topLevel = host.querySelectorAll('.organism-top-level');
     assert.deepEqual(topLevel.map((option) => option.tagName), ['a', 'a', 'button']);
     assert.deepEqual(topLevel.map((option) => option.textContent), [
-      'Cyanobacteria', 'E. coli Syn61', 'E. coli · MG1655\u25be',
+      'Cyanobacteria', 'E. coli Syn61', 'E. coli· MG1655\u25be',
     ]);
     assert.deepEqual(options.map((option) => option.textContent),
       ['Cyanobacteria', 'E. coli Syn61', 'MG1655',
@@ -81,11 +81,16 @@ test('the selector has three ordered top-level controls and grouped strain links
     assert.deepEqual(options.map((option) => option.dataset.organism), [
       DEFAULT_ORGANISM.id, SYN61.id, ECOLI.id, MDS42.id, DH10B.id,
     ]);
+    assert.deepEqual(options.map((option) => option.dataset.organism).toSorted(),
+      ORGANISMS.map((organism) => organism.id).toSorted(),
+      'every registry record belongs to exactly one navigation group');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
       ['page', null, null, null, null]);
     assert.ok(options[0].classList.contains('active'));
     assert.ok(!trigger.classList.contains('active'));
-    assert.equal(trigger.getAttribute('aria-label'), 'E. coli strains; selected MG1655');
+    assert.equal(trigger.dataset.organism, undefined, 'the disclosure is not itself a strain link');
+    assert.equal(trigger.getAttribute('aria-label'),
+      'E. coli · MG1655, default; choose conventional E. coli strain');
     assert.equal(trigger.getAttribute('aria-expanded'), 'false');
     assert.equal(menu.hidden, true);
     assert.equal(menu.getAttribute('aria-label'), 'Conventional E. coli strains');
@@ -115,7 +120,8 @@ test('in the native E. coli view the selector names that strain and nothing of t
     assert.ok(options[2].classList.contains('active'));
     assert.ok(trigger.classList.contains('active'));
     assert.equal(trigger.getAttribute('aria-current'), 'page');
-    assert.equal(trigger.getAttribute('aria-label'), 'E. coli strains; selected MG1655');
+    assert.equal(trigger.getAttribute('aria-label'),
+      'E. coli · MG1655, selected; choose conventional E. coli strain');
     assert.deepEqual(options.map((option) => option.href), [
       '/site/', '/site/?org=ecoli-syn61-delta3-ev5',
       '/site/?org=ecoli-k12-mg1655',
@@ -134,7 +140,8 @@ test('in the recoded E. coli view the selector and identity name the deposited s
       [null, 'page', null, null, null]);
     assert.ok(options[1].classList.contains('active'));
     assert.ok(!trigger.classList.contains('active'));
-    assert.equal(trigger.getAttribute('aria-label'), 'E. coli strains; selected MG1655');
+    assert.equal(trigger.getAttribute('aria-label'),
+      'E. coli · MG1655, default; choose conventional E. coli strain');
     assert.equal(identity.textContent,
       'Escherichia coli Syn61 substr. delta 3 (ev5) · GCA_028355435.1');
     assert.ok(!/Synechococcus|UTEX|GCF_000817325|MG1655/.test(identity.textContent));
@@ -146,9 +153,9 @@ test('a public-reference view keeps its caveat in the trigger and selected link'
     const { optionFor, trigger, identity } = selectorFor(
       MDS42, '?org=ecoli-mds42-public-reference',
     );
-    assert.equal(trigger.textContent, 'E. coli · MDS42 public reference\u25be');
+    assert.equal(trigger.textContent, 'E. coli· MDS42 public reference\u25be');
     assert.equal(trigger.getAttribute('aria-label'),
-      'E. coli strains; selected MDS42 public reference');
+      'E. coli · MDS42 public reference, selected; choose conventional E. coli strain');
     assert.equal(trigger.getAttribute('aria-current'), 'page');
     assert.equal(optionFor(MDS42).getAttribute('aria-current'), 'page');
     assert.equal(identity.textContent,
@@ -212,6 +219,56 @@ test('the strain disclosure opens, navigates, dismisses, and restores focus by k
     assert.equal(menu.hidden, true);
     assert.equal(page.activeElement, trigger, 'selecting the current strain returns focus');
   });
+});
+
+test('the open strain menu follows viewport and header geometry without losing its bounds', async () => {
+  const previousObserver = globalThis.ResizeObserver;
+  let observerCallback = null;
+  let observed = [];
+  let disconnects = 0;
+  globalThis.ResizeObserver = class {
+    constructor(callback) { observerCallback = callback; }
+    observe(node) { observed.push(node); }
+    disconnect() { observed = []; disconnects += 1; }
+  };
+  try {
+    await withFakeDocument(() => {
+      globalThis.window.innerWidth = 375;
+      globalThis.window.innerHeight = 812;
+      const { host, trigger, menu, optionFor } = selectorFor(DEFAULT_ORGANISM, '');
+      let triggerBox = { left: 96, right: 260, top: 58, bottom: 92 };
+      trigger.getBoundingClientRect = () => triggerBox;
+      menu.getBoundingClientRect = () => ({ width: 288, height: 116 });
+
+      trigger.dispatch('click');
+      assert.equal(menu.style.left, '16px', 'a short trigger cannot pull the menu off the left edge');
+      assert.equal(menu.style.top, '98px');
+      assert.equal(globalThis.window.listeners.resize.length, 1);
+      assert.equal(globalThis.window.listeners.scroll.length, 1);
+      assert.deepEqual(observed, [host, trigger, menu]);
+
+      globalThis.window.innerWidth = 340;
+      triggerBox = { left: 176, right: 340, top: 140, bottom: 176 };
+      globalThis.window.dispatch('resize');
+      assert.equal(menu.style.left, '36px', 'the right edge keeps the same viewport margin');
+      assert.equal(menu.style.top, '182px', 'the menu follows a wrapped header on resize');
+
+      triggerBox = { left: 120, right: 330, top: 190, bottom: 234 };
+      observerCallback();
+      assert.equal(menu.style.left, '36px');
+      assert.equal(menu.style.top, '240px', 'a resized trigger repositions an already-open menu');
+
+      menu.dispatch('keydown', {
+        key: 'Escape', target: optionFor(ECOLI), preventDefault() {},
+      });
+      assert.equal(menu.hidden, true);
+      assert.equal(globalThis.window.listeners.resize.length, 0);
+      assert.equal(globalThis.window.listeners.scroll.length, 0);
+      assert.equal(disconnects, 1);
+    });
+  } finally {
+    globalThis.ResizeObserver = previousObserver;
+  }
 });
 
 test('a switch returns to the view that organism was last left in, as saved by any tab', async () => {

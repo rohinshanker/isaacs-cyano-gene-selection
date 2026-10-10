@@ -231,6 +231,14 @@ registry directory, or pass it as `?org=ecoli-k12-mg1655&data=<dir>`. For a
 realistic size, write one with
 `node tests/fixtures/make_fixture.mjs --organism ecoli-k12-mg1655 --genes 4287`.
 
+For grouped-navigation geometry, open the real site with an absolute
+`?uiArtifacts=<directory>` value and run
+`playwright-cli -s=<task-session> run-code --filename=tools/ui/check_organism_navigation.js`.
+It keeps the menu open while moving default, MG1655, MDS42, and DH10B through
+320, 375, 420, 439, 440, 768, 1280, and 1440 px, asserting both viewport edges,
+rendered separator spacing, option clipping, live anchor resizing, accessible
+default/selected names, keyboard dismissal and focus return.
+
 - the default view and existing shareable links (one with a scheme, one with a
   pinned gene and shortlist, one on the chromosome tab) read exactly as before;
 - the selector: three top-level controls in the contracted order; the three

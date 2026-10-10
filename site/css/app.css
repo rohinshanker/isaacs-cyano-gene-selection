@@ -117,18 +117,16 @@ pre {
 .organism-selector { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
 .organism-identity { color: var(--ink-muted); font-size: 0.8rem; }
 .organism-dropdown { position: relative; }
-.organism-group-trigger { display: inline-flex; align-items: center; }
+.organism-group-trigger { display: inline-flex; align-items: center; gap: 0.35rem; }
 .organism-group-selection { font-size: 0.8rem; }
-.organism-group-caret { margin-left: 0.35rem; transition: transform 120ms ease; }
+.organism-group-caret { transition: transform 120ms ease; }
 .organism-group-trigger[aria-expanded="true"] .organism-group-caret { transform: rotate(180deg); }
 .organism-strain-menu {
-  position: absolute;
+  position: fixed;
   z-index: 20;
-  top: calc(100% + 0.35rem);
-  right: 0;
   width: max-content;
-  min-width: max(100%, 13.5rem);
-  max-width: calc(100vw - 2.5rem);
+  min-width: 13.5rem;
+  max-width: calc(100vw - 2rem);
   margin: 0;
   padding: 0.3rem;
   list-style: none;
@@ -136,6 +134,7 @@ pre {
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
+  overflow-wrap: anywhere;
 }
 .organism-strain-option {
   width: 100%;

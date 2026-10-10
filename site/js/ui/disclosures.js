@@ -17,6 +17,34 @@ export function tanDisclosure(content, label) {
 }
 
 /**
+ * Place an overlay beside its anchor while keeping every edge inside the viewport.
+ *
+ * Fixed overlays use viewport coordinates, so the same calculation serves menus
+ * and explanatory popovers. `null` means the test DOM cannot provide geometry;
+ * `false` means the anchor itself has left the viewport.
+ */
+export function positionViewportOverlay(anchor, overlay, { margin = 16, gap = 4 } = {}) {
+  if (!anchor.getBoundingClientRect || !overlay.getBoundingClientRect) return null;
+  const viewportWidth = globalThis.window?.innerWidth;
+  const viewportHeight = globalThis.window?.innerHeight;
+  if (!Number.isFinite(viewportWidth) || !Number.isFinite(viewportHeight)) return null;
+  const anchorBox = anchor.getBoundingClientRect();
+  if (anchorBox.bottom <= 0 || anchorBox.top >= viewportHeight
+    || anchorBox.right <= 0 || anchorBox.left >= viewportWidth) return false;
+  const overlayBox = overlay.getBoundingClientRect();
+  const left = Math.max(margin,
+    Math.min(anchorBox.right - overlayBox.width, viewportWidth - overlayBox.width - margin));
+  const below = anchorBox.bottom + gap;
+  const preferredTop = below + overlayBox.height <= viewportHeight - margin
+    ? below : Math.max(margin, anchorBox.top - overlayBox.height - gap);
+  const top = Math.max(margin,
+    Math.min(preferredTop, viewportHeight - overlayBox.height - margin));
+  overlay.style.left = `${left}px`;
+  overlay.style.top = `${top}px`;
+  return true;
+}
+
+/**
  * Text popover that can be read by pointer, touch, or keyboard users.
  *
  * Hover and focus expose it transiently; click pins it. A second click, Escape,
@@ -176,25 +204,8 @@ export class InfoPopover {
 
   /** Keep the fixed popover inside the current viewport, above if needed. */
   position() {
-    if (!this.button.getBoundingClientRect || !this.popover.getBoundingClientRect) return;
-    const viewportWidth = globalThis.window?.innerWidth;
-    const viewportHeight = globalThis.window?.innerHeight;
-    if (!Number.isFinite(viewportWidth) || !Number.isFinite(viewportHeight)) return;
-    const margin = 16;
-    const gap = 4;
-    const button = this.button.getBoundingClientRect();
-    if (button.bottom <= 0 || button.top >= viewportHeight
-      || button.right <= 0 || button.left >= viewportWidth) {
+    if (positionViewportOverlay(this.button, this.popover) === false) {
       this.close({ suppressUntilExit: true });
-      return;
     }
-    const box = this.popover.getBoundingClientRect();
-    const left = Math.max(margin, Math.min(button.right - box.width, viewportWidth - box.width - margin));
-    const below = button.bottom + gap;
-    const top = below + box.height <= viewportHeight - margin
-      ? below : Math.max(margin, button.top - box.height - gap);
-    this.popover.style.left = `${left}px`;
-    this.popover.style.top = `${Math.max(margin,
-      Math.min(top, viewportHeight - box.height - margin))}px`;
   }
 }
