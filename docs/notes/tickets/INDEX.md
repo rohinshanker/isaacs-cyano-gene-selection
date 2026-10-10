@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [A_agreement-report-exports__20261010](A_agreement-report-exports__20261010.md) | Reproducible statistics JSON and replicate/response TSV export for Data Sources S6; serialization only, owned by cyano-regulatory-sites |
 | [A_strain-fitness-dataset-selector__20261009](A_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; owned by cyano-ui-fixes, isolated implementation active |
 | [O_syn57-visualizer-inclusion__20261009](O_syn57-visualizer-inclusion__20261009.md) | Add Syn57 from the Nyerges radical-recoding paper with explicit design/strain provenance; then replace Syn61 button with Recoded E. Coli dropdown containing Syn57 and Syn61; owner approved the ticket; implementation not started |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
