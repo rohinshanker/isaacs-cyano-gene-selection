@@ -44,6 +44,15 @@ not scientific methods, source admission or the site's display.
 
 ## Verification
 
+Coordinator review status, 2026-10-10: **EXP-R1 open** (invalid later-output
+parent or output ancestry can replace an earlier destination), **EXP-R2 open**
+(malformed scientific values, required fields and references pass validation),
+**EXP-R3 open** (case-insensitive filesystem aliases bypass containment and
+collision guards), and **EXP-R4 open** (declared input symlinks resolving outside
+the repository lose overwrite protection). EXP-R1 is independently reproduced
+by the coordinator; EXP-R2–R4 are reproduced by independent review DEM-353.
+All are assigned to DEM-351 for repair; this ticket cannot close until reviewed.
+
 `tools/export_expression_agreement.py` and
 `tests/test_export_expression_agreement.py` are implemented on the implementer's
 task branch and await independent exact-patch review.
