@@ -550,7 +550,7 @@ does 'how likely' mean the tool score or a calibrated probability?"**
   the standard reference database that was checked publishes only the count, 48,
   and nothing in it enumerates the three. Whether a fresh scan would recover them
   is not established. See
-  [the tRNA viewer questions](../notes/tickets/O_trna-identification-viewer__20260930.md).
+  [the tRNA viewer questions](trna-annotation-validation.md#first-version-viewer-scope-and-future-scoring).
 - Useful expertise: a tRNA/translation specialist.
 - Reviewer and date:
 - Decision (retrieve the three dropped candidates and the score breakdown):
@@ -709,7 +709,7 @@ map, and constraints appropriate for the intended experiment?"**
 - What's known and not known: for each exported panel, review the locus
   identities as exported, starts, overlaps, joined CDS segments, terminal stops, `prfB` frameshift,
   substitution map, and experimental constraints. See
-  [the panel review checklist](AAA-manual-review-checklist.md#2-review-the-actual-biological-panel).
+  [the panel review checklist](#before-an-exported-panel-becomes-an-experiment).
 - Useful expertise: an experimental lead and a genome-annotation reviewer.
 - Reviewer and date:
 - Decision (for the named panel: loci, gene models, recoding map and constraints):
@@ -838,7 +838,7 @@ Rules the owner stated along the way, to apply to later pairs:
 
 For the fuller evidence trail behind any of the decided or open items above —
 exact figures, citations, and the reviewer roles suggested for each — see
-[the companion evidence document](AAA-biological-decisions-to-review.md).
+[the evidence boundary for each question](#evidence-boundary-for-each-question).
 
 ## Evidence boundary for each question
 

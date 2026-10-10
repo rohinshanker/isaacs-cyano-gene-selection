@@ -499,7 +499,7 @@ modified.
 Ticket `docs/notes/tickets/O_claude-science-data-use-audit__20260928.md`, dispatched
 2026-10-02. **Findings only.** No code, data, site file, ticket or validation
 document was changed. Nothing below resolves rows 13 to 15 of
-[AAA-biological-decisions-to-review.md](../../validation/AAA-biological-decisions-to-review.md).
+[AAA-biological-decisions-to-review.md](../../validation/AAAA-new-bio-decisions-to-review.md#evidence-boundary-for-each-question).
 
 | | |
 | --- | --- |

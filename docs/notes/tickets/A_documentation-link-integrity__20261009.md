@@ -48,9 +48,15 @@ need a Markdown-aware verification before they are treated as defects.
 ## Verification
 
 A fresh file-existence walk confirmed the listed targets are absent on main and
-the tRNA integration baseline. No documents have been repaired by this ticket.
-Before closure, verify relative paths and rendered Markdown anchors in the
-changed documents and run the repository gates.
+the tRNA integration baseline. On 2026-10-10, the 15 listed links were repointed
+to their current validation contracts or preserved sections. A scoped checker
+resolved every relative file target and GitHub-style heading fragment in all
+nine affected documents. It also recognizes explicit HTML anchors: the earlier
+suspected `#what-must-not-land-without-a-claude-science-claim-or-package`
+finding is valid because `claude-science-handoff.md` preserves that exact anchor.
+No additional file or anchor defects remain in the affected documents.
+
+The coordinator still owns the repository-wide gates and ticket closure.
 
 ## Cleanup
 

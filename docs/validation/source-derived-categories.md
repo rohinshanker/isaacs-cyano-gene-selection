@@ -19,7 +19,7 @@ node --test tests/js/source-derived-categories.test.mjs tests/js/annotation-sour
 
 **Status: awaiting the owner's decision.** The layer is built, labelled, and
 gated, but the lab has not accepted its rubric or threshold. The row in
-[AAA-biological-decisions-to-review.md](AAA-biological-decisions-to-review.md)
+[AAA-biological-decisions-to-review.md](AAAA-new-bio-decisions-to-review.md#function-and-pathway-annotation)
 records what to accept or reject.
 
 ## Colour resolution
