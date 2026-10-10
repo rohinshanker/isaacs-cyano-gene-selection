@@ -494,6 +494,109 @@ def normalize(record, directory: Path) -> dict[str, int]:
     return {"cds": len(cds_records), **dict(trna_route_counts)}
 
 
+METHOD_CITATIONS = [{'id': 'sharp-li-cai',
+  'citation': 'Sharp PM, Li WH. The codon adaptation index—a measure of directional '
+              'synonymous codon usage bias, and its potential applications. Nucleic Acids '
+              'Research 15, 1281–1295 (1987). doi:10.1093/nar/15.3.1281.',
+  'url': 'https://doi.org/10.1093/nar/15.3.1281',
+  'contribution': 'Defines CAI. The design uses its own 84-gene translation-machinery '
+                  'reference set, a sequence-derived convention rather than measured '
+                  'expression.',
+  'downloads': []},
+ {'id': 'dos-reis-tai',
+  'citation': 'dos Reis M, Savva R, Wernisch L. Solving the riddle of codon usage '
+              'preferences: a test for translational selection. Nucleic Acids Research 32, '
+              '5036–5044 (2004). doi:10.1093/nar/gkh834.',
+  'url': 'https://doi.org/10.1093/nar/gkh834',
+  'contribution': 'Defines the tRNA adaptation index and wobble/zero-weight conventions. This '
+                  'design uses the explicitly qualified approximate source-note annotation '
+                  'model, not established genomic anticodons, charging or expression '
+                  'measurements.',
+  'downloads': []},
+ {'id': 'soma-lysidine',
+  'citation': 'Soma A et al. An RNA-modifying enzyme that governs both the codon and amino '
+              'acid specificities of isoleucine tRNA. Molecular Cell 12, 689–698 (2003). '
+              'doi:10.1016/S1097-2765(03)00346-0.',
+  'url': 'https://doi.org/10.1016/S1097-2765(03)00346-0',
+  'contribution': 'Supports the bacterial lysidine/TilS convention for Ile-CAT decoding ATA. '
+                  'The design model applies this convention to interpreted source notes; it '
+                  'is not a direct modification or charging measurement.',
+  'downloads': []},
+ {'id': 'wright-enc',
+  'citation': 'Wright F. The ‘effective number of codons’ used in a gene. Gene 87, 23–29 '
+              '(1990). doi:10.1016/0378-1119(90)90491-9.',
+  'url': 'https://doi.org/10.1016/0378-1119(90)90491-9',
+  'contribution': 'Defines ENC and its GC3-based expected curve. Short-family substitutions '
+                  'remain labelled implementation conventions.',
+  'downloads': []},
+ {'id': 'coleman-codon-pairs',
+  'citation': 'Coleman JR et al. Virus attenuation by genome-scale changes in codon pair '
+              'bias. Science 320, 1784–1787 (2008). doi:10.1126/science.1155761.',
+  'url': 'https://doi.org/10.1126/science.1155761',
+  'contribution': 'Motivates the codon-pair log-odds feature. Scores are fitted to the design '
+                  'sequence; no viral measurements or attenuation outcomes are transferred.',
+  'downloads': []},
+ {'id': 'umap',
+  'citation': 'McInnes L, Healy J, Saul N, Großberger L. UMAP: Uniform Manifold Approximation '
+              'and Projection. Journal of Open Source Software 3, 861 (2018). '
+              'doi:10.21105/joss.00861; umap-learn software.',
+  'url': 'https://doi.org/10.21105/joss.00861',
+  'contribution': 'umap-learn computes the design risk-feature embedding. Proximity is a '
+                  'visualization of calculated features, not evidence of shared function.',
+  'downloads': []},
+ {'id': 'scikit-learn',
+  'citation': 'Pedregosa F et al. Scikit-learn: Machine Learning in Python. Journal of '
+              'Machine Learning Research 12, 2825–2830 (2011).',
+  'url': 'https://jmlr.org/papers/v12/pedregosa11a.html',
+  'contribution': 'StandardScaler and PCA fit the design native codon coordinates. No '
+                  'parent-fixed projection or empirical phenotype is inferred.',
+  'downloads': []},
+ {'id': 'viennarna',
+  'citation': 'Lorenz R et al. ViennaRNA Package 2.0. Algorithms for Molecular Biology 6, 26 '
+              '(2011). doi:10.1186/1748-7188-6-26; ViennaRNA 2.7.2.',
+  'url': 'https://doi.org/10.1186/1748-7188-6-26',
+  'contribution': 'ViennaRNA computes minimum-free-energy folds for design RNA windows and '
+                  'recoded simulations. The browser ships the locally compiled 2.7.2 engine. '
+                  'Credit to the ViennaRNA authors and the Institute for Theoretical '
+                  'Chemistry, University of Vienna; its license and build record are retained '
+                  'at site/vendor/viennarna/PROVENANCE.md.',
+  'downloads': []},
+ {'id': 'emscripten',
+  'citation': 'Emscripten 4.0.15 and bundled runtime components: musl, LLVM compiler-rt, '
+              'Joseph A. Adams’s JSON library, and Doug Lea’s dlmalloc; upstream licenses '
+              'retained with the ViennaRNA browser build.',
+  'url': 'https://emscripten.org/',
+  'contribution': 'Emscripten compiled the ViennaRNA engine to WebAssembly and supplied its '
+                  'JavaScript/runtime glue. The component-specific notices and licenses are '
+                  'retained under site/vendor/viennarna/; this is software attribution, not a '
+                  'source of biological data.',
+  'downloads': []},
+ {'id': 'biopython',
+  'citation': 'Cock PJA et al. Biopython: freely available Python tools for computational '
+              'molecular biology and bioinformatics. Bioinformatics 25, 1422–1423 (2009). '
+              'doi:10.1093/bioinformatics/btp163.',
+  'url': 'https://doi.org/10.1093/bioinformatics/btp163',
+  'contribution': 'The data-build and consistency checks use Biopython to parse biological '
+                  'sequence records, translate CDSs, and apply codon tables. No Biopython '
+                  'code is bundled with the site.',
+  'downloads': []},
+ {'id': 'ncbi-genetic-code',
+  'citation': 'NCBI. The Genetic Codes: The Bacterial, Archaeal and Plant Plastid Code '
+              '(translation table 11).',
+  'url': 'https://www.ncbi.nlm.nih.gov/datasets/docs/v2/data-processing/taxonomy-processing/genetic-codes/',
+  'contribution': 'Defines bacterial codon assignments and initiation semantics for local '
+                  'design translations and synonymous simulations. Local derived-protein '
+                  'identifiers are not NCBI accessions.',
+  'downloads': []},
+ {'id': 'numpy',
+  'citation': 'Harris CR et al. Array programming with NumPy. Nature 585, 357–362 (2020). '
+              'doi:10.1038/s41586-020-2649-2.',
+  'url': 'https://doi.org/10.1038/s41586-020-2649-2',
+  'contribution': 'NumPy arrays support the feature build and independent consistency checks; '
+                  'this package provides computation, not external gene measurements.',
+  'downloads': []}]
+
+
 def citations() -> dict:
     """Return the design-only source ledger copied into the viewer payload."""
     return {
@@ -516,7 +619,7 @@ def citations() -> dict:
                 "id": "methods-and-tools",
                 "title": "Methods and tools",
                 "description": "Sequence-derived calculations applied to the design, not measurements.",
-                "items": [],
+                "items": METHOD_CITATIONS,
             },
         ]
     }

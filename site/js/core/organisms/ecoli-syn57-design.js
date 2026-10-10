@@ -68,7 +68,7 @@ export const ECOLI_SYN57_DESIGN = {
       + 'design record, so none of those tracks is drawn.',
     directProteomicsLabel: 'Direct proteomics detection',
     goSearchNote: 'No GO relationship layer is admitted for this design record.',
-    metricOrigin: 'Derived from the publisher-deposited Ec_Syn57 complete-design CDSs in native design coordinates; this is not a RefSeq assembly or a measurement.',
+    metricOrigin: 'the publisher-deposited Ec_Syn57 complete-design CDSs in native design coordinates (not a RefSeq assembly or a measurement)',
     metricMethods: {
       tai: 'Dos Reis tAI over a defined approximate annotation model: 75 ordinary codon-recognition notes are reverse-complemented, three explicit initiator anticodon notes are used as stated, one Sec special convention is excluded from the elongator pool, and six unsupported tRNAs are excluded from the model. These are not established genomic anticodons or charging calls.',
       minLocalTai: 'Minimum sliding-window mean of the same qualified approximate tAI weights; the Sec convention is excluded from the elongator pool and six unsupported tRNAs are excluded from the model.',

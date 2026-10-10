@@ -113,6 +113,23 @@ mismatches. The 52 exclusions reconcile the 3,640 source CDS records. Included
 terminal stops are TGA 1,126, TAA 2,454 and TAG 8. Repeat this check on the final
 reviewed payload; these results do not approve the remaining draft or its tAI.
 
+## Independent review findings
+
+DEM-359 reviewed `e8aaef7` read-only and independently confirmed every S57-C1
+through S57-C8 correction. Closure remains held on its five additional findings:
+
+| Id | Status | Required resolution |
+| --- | --- | --- |
+| S57-R1 | open | Readable source-origin grammar for pipeline, proxy and live metric help; cover all three branches. |
+| S57-R2 | open | Populate the design methods ledger and resolve every metric/projection citation to a real method link with design-specific contributions. |
+| S57-R3 | open | Restore spacing between the nested scheme facts and their accent border; inspect all required viewports. |
+| S57-R4 | open | Document the design-specific overlap rebuild/check route instead of promising an unavailable retained-GFF command. |
+| S57-R5 | open | Require the complete source-backed contract result, including all raw cross-checks, rather than accepting a zero-failure result with skips. |
+
+The coordinator implemented these five corrections in the integration worktree;
+17 focused JS tests and 21 Syn57 source tests pass. Exact fix review, refreshed
+renders and final gates are still required before closure.
+
 ## Verification
 
 Ticket-only intake; no organism or data has been added. The source boundary above

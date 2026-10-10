@@ -232,7 +232,9 @@ export function metricHelp(metric, dataset) {
         ? declaredGenomeOrigin
           ? `Computed in this browser from the active scheme and ${declaredGenomeOrigin}.`
           : `Computed in this browser from the active scheme and ${name} release ${release}.`
-        : declaredGenomeOrigin ?? `Derived from ${name} RefSeq release ${release}.`;
+        : declaredGenomeOrigin
+          ? `Derived from ${declaredGenomeOrigin}.`
+          : `Derived from ${name} RefSeq release ${release}.`;
   const formatCount = (value) => value.toLocaleString('en-US');
   return {
     key: metric.key,

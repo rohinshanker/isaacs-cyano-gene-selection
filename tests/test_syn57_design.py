@@ -320,4 +320,6 @@ def test_normalized_original_source_passes_full_contract(tmp_path: Path) -> None
         cwd=ROOT, text=True, capture_output=True, check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "failed=0" in result.stdout
+    assert "passed=94 failed=0 skipped=1" in result.stdout
+    assert "raw CDS file not found" not in result.stdout
+    assert "missing raw input" not in result.stdout
