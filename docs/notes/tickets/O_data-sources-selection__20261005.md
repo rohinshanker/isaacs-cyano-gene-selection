@@ -9,7 +9,7 @@
   `data/`, `tests/`, and `docs/validation/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-05
+- **Updated:** 2026-10-10
 
 ## Current state
 
@@ -228,6 +228,13 @@ the map with its spectral-count unit (576 genes valued).
 | S6 | Agreement statistics beside the conditions: level correlation against replicate bands and fold-change agreement where both sides have a control; distribution comparison as a units check only; no pass mark | S5 with replicates; reprocessed data for the rest |
 
 ## Verification
+
+S6's reproducible export prerequisite is complete: the
+[agreement runbook](../../validation/expression-agreement.md) documents a CLI
+that projects a full report into statistics-only JSON and both review TSVs,
+retaining metadata, denominators and caveats with exact input/exporter checksums.
+The tables reproduce the preserved artifacts byte for byte. S6's UI integration,
+further data admission and remaining statistical work stay open here.
 
 UI verification is active. Condition-guide rendered checks cover the Data Selection peek at eight widths and found two repaired defects: mobile tabs/Close overflow and keyboard focus falling to the body after tab or row replacement. Tabs now support arrow/Home/End navigation. The provenance disclosure and dataset provenance now read every per-condition declaration. Export manifests/caveats carry compact provenance only for contributing measurement columns, including pooled contributors, with legacy single-source fallback. S1’s source readers and S4’s current-release UI are covered. Further data admission, replicate-based agreement statistics and judgement-dependent overlays remain under their original gates. The current-release UI and export repairs are accepted by independent DEM-259 review; its data-admission and statistical stages retain their stated gates. Each stage runs the gates:
 

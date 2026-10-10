@@ -62,17 +62,38 @@ It accepts only a complete schema-1 report. A summary whose vectors are already
 omitted, a duplicate layer, stratum or contrast identity, a broken layer or
 contrast cross-reference, a denominator that disagrees with its own vector, and a
 non-finite or overflowed number are each refused by name before any destination
-is touched. The export omits exactly the layer `means` and contrast `vector`
-fields, declares that omission with its regeneration command, and copies every
-other metadata field, denominator, null, zero value, limitation and caveat
-unchanged. Output is deterministic: sorted JSON keys, the established column
-order, the same float repr and empty cells for nulls, CSV-quoted cells, and LF
-line endings. The three destinations are preflighted together — never inside
-`data/` or `site/`, never the input report or a pinned input through a path,
-symlink or hard link, never two destinations naming one file, never below a path
-component that already exists as something other than a directory, never one
-destination inside another, and never an unresolvable path such as a symlink
-loop — so a rejected request leaves existing files intact.
+is touched. Structure and value types are checked the same way, and never by
+recomputing a statistic: every field the generator writes must be present; every
+mean, response value and correlation must be a finite number; a correlation must
+lie in [-1, 1] and a fraction in [0, 1]; a null statistic must state its reason
+and a defined one must not carry one; an empirical range must be null exactly
+when it has no defined correlation and otherwise ordered min ≤ median ≤ max; a
+shared-gene count may not exceed the means or responses it is drawn from, nor a
+direction count its own denominator; a reference must carry the sample range and
+biological band of the layer it names; and every input pin must carry a
+64-character lowercase SHA-256. The export omits exactly the layer `means` and
+contrast `vector` fields, declares that omission with its regeneration command,
+and copies every other metadata field, denominator, null, zero value,
+limitation and caveat unchanged. Output is deterministic: sorted JSON keys, the
+established column order, the same float repr and empty cells for nulls,
+CSV-quoted cells, and LF line endings. The three destinations are preflighted
+together — never inside `data/` or `site/`, never the input report or a pinned
+input through a path, symlink or hard link, never two destinations naming one
+file, never below a path component that already exists as something other than a
+directory, never one destination inside another, and never an unresolvable path
+such as a symlink loop — so a request rejected by validation or preflight leaves
+existing files intact. Each output is replaced atomically; an unexpected I/O
+failure after writing begins does not roll back outputs already replaced.
+
+Path identity for those checks folds letter case and Unicode composition, because
+case-insensitive volumes can treat such names as one file while a resolved path
+keeps the spelling it was given and two destinations that do not exist yet cannot
+be compared by inode. The deliberate consequence is that paths differing only in
+case or Unicode form are refused on every filesystem, including case-sensitive
+ones where they would be distinct; name destinations that differ by more than
+case. A declared input is protected wherever it resolves — inside the repository
+root or outside it, including through a symlink that leaves the root — and one
+that cannot be resolved at all is named rather than skipped.
 
 The export records its own path and checksum and the input report's exact bytes
 and SHA-256 in an `export` block. It writes no `implementation` block: it did not
