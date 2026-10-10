@@ -341,7 +341,7 @@ reads as a narrow window and not as a missing layer.
 detail and does nothing else: no pin, no preview, no shortlist, no CDS filter,
 no recomputed metric, and no camera movement on another tab. The one route out
 is the explicit **Show on chromosome** button on that detail, which switches to
-Chromosome/Gene and centres the locus's native coordinates while leaving the
+Chromosome/Gene and brings the locus's native coordinates into view while leaving the
 pinned gene, the shortlist, the filters and the colouring exactly as they were.
 Its announcement says so. The search text, the four recorded-value filters, the
 candidate checkbox and the selected locus survive every switch away from this

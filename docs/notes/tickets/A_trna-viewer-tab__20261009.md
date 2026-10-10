@@ -40,8 +40,8 @@ no rail handles. The chromosome figure no longer hosts the viewer; the only
 state crossing between them is the coordinate window, through `trnaViewport()`,
 with `defaultTrnaViewport(organism.genome)` supplying the full primary replicon
 before that view has drawn. Selection stays in this layer, and an explicit
-**Show on chromosome** button is the one hand-off: it switches tab and centres
-the native coordinates, leaving the pin, shortlist, filters and colouring
+**Show on chromosome** button is the one hand-off: it switches tab and brings
+the native coordinates into view, leaving the pin, shortlist, filters and colouring
 unchanged. The link promotes `trnaLoci` for this tab instead of the chromosome.
 
 Rendered checks at 375x812, 768x1024, 1280x800, 1440x900 and both sides of the

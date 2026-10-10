@@ -447,7 +447,7 @@ in
 and
 [gene-sequence-closeup.md](gene-sequence-closeup.md#admitted-marker-layers-on-the-sequence).
 
-### A tab's id is its `p` token, and the tablist is the only way in
+### Tab registration, navigation and shared state
 
 Every view that is a tab — the map projections, Chromosome/Gene, tRNA, Lengths,
 Regulatory sites, Strain fitness, Citations — is one entry in `ALL_TABS` with a
@@ -459,9 +459,10 @@ and the local persistence of the view last left. A `p` naming no registered tab
 falls back to the first map panel rather than leaving the page blank, so a
 link from a build with another tab still opens.
 
-A new view therefore adds a tab record, a `<div role="tabpanel">`, one branch
-in `renderCurrentView`, and nothing else. It does not add a URL field, a
-version bump, or a second persistence path. A tab whose rows are not
+A new view adds a tab record, a `<div role="tabpanel">`, and a branch in
+`renderCurrentView`. Declare any data files its direct links must await in
+`promotedFileKeys`. The existing `p` token needs no URL version bump or second
+persistence path. A tab whose rows are not
 protein-coding genes also adds a one-column layout class — the CDS controls
 rail and the gene detail rail have nothing to act on beside it — and names that
 class in `workspaceColumns`, so the rail handles go with the rails rather than
