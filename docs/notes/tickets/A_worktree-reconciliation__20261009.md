@@ -22,9 +22,23 @@ session's files or revive a resolved ticket merely because a stale copy exists.
 
 ## Verification
 
-Pending: refreshed per-worktree status and ancestry; exact/equivalent patch or
-content/history comparisons for divergent heads and remaining edits; an explicit
-disposition for every original checkout. Transient evidence belongs under
+Audit complete: 47 original checkouts and one newly active PCA checkout have
+explicit dispositions. Thirty HEADs (including canonical main) are ancestors
+of main. The other 17 original checkouts are equivalent, adapted integrations
+or superseded versions; no substantive missing feature requires a merge. The
+new PCA checkout is active under cyano-regulatory-sites and is left with its
+owner. DEM-340 independently compared all 11 divergent UI checkouts.
+
+Findings W1 (divergent commits), W2 (four staged DEM-303 files), W3 (ten old
+ticket copies), and W4 (environment/artifact residue) are reconciled by exact
+patch/content history and existing integration commits. W2 exactly matches
+main-history blobs at 495bea3. W3 decisions are implemented or retained in the
+current RBS/method tickets; their prior closure is 32e6e42. Tracked .venv
+symlinks in DEM-320 and gene-fix-review are excluded from integration. No
+audit finding remains open. No checkout, branch, local edit or cache was removed.
+
+Repository gates will run with the following tRNA implementation before final
+closure; this audit itself changed only documentation. Transient evidence belongs under
 `/tmp/cyano-worktree-audit-20261009/`. The new coordinator worktree is excluded
 from the original 47-checkout inventory.
 

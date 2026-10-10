@@ -1,14 +1,16 @@
-# O_trna-viewer-tab__20261009 — Open
+# A_trna-viewer-tab__20261009 — Active
 
 - **Scope:** Give the tRNA viewer its own application tab.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. At baseline `4ad4163`, the tRNA viewer is embedded below the
+Owned by `cyano-ui-fixes`; implementation begins after the worktree audit.
+A scoped implementer uses its own worktree; this session retains integration,
+independent review, owner preview and closure. PCA wheel zoom remains owned
+by `cyano-regulatory-sites` in its separate worktree. At baseline `4ad4163`, the tRNA viewer is embedded below the
 CDS viewer in Chromosome/Gene. Move the full tRNA viewer into a separate
 application tab, using the existing tab framework.
 
