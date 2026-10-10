@@ -207,6 +207,7 @@ function install({ canvasWidth = CANVAS_WIDTH, devicePixelRatio = DEVICE_PIXEL_R
     ResizeObserver: globalThis.ResizeObserver,
   };
   const frames = [];
+  const viewportListeners = new Map();
   let frameId = 0;
   const document = {
     activeElement: null,
@@ -223,6 +224,15 @@ function install({ canvasWidth = CANVAS_WIDTH, devicePixelRatio = DEVICE_PIXEL_R
   // set forever and silently suppress every later redraw.
   globalThis.window = {
     devicePixelRatio,
+    addEventListener: (name, callback, capture = false) => {
+      viewportListeners.set(name, { callback, capture });
+    },
+    removeEventListener: (name, callback, capture = false) => {
+      const listener = viewportListeners.get(name);
+      if (listener?.callback === callback && listener.capture === capture) {
+        viewportListeners.delete(name);
+      }
+    },
     requestAnimationFrame: (callback) => {
       frames.push(callback);
       frameId += 1;
@@ -243,6 +253,7 @@ function install({ canvasWidth = CANVAS_WIDTH, devicePixelRatio = DEVICE_PIXEL_R
       Object.assign(globalThis, previous);
     },
     frames,
+    viewportListeners,
   };
 }
 
@@ -444,6 +455,7 @@ function mount({ handlers = {}, viewport = undefined, ...modelOptions } = {}) {
   const ops = flush();
   return {
     host, view, tracks: model.tracks, restore, flush, ops, frames, document: fake.document,
+    viewportListeners: fake.viewportListeners,
   };
 }
 
@@ -3214,6 +3226,29 @@ test('an overlapping CDS is underlined inside its own bar, in its own strand lan
     assert.deepEqual(byIndex.get(band.track.marks.find((mark) => mark.id === 'NOVALUE').index),
       undefined);
     assert.equal(sharedIntervalsByIndex(band.track, GENES, null).size, 0);
+  } finally {
+    restore();
+  }
+});
+
+test('scrolling or resizing dismisses overlap hints and releases viewport listeners', () => {
+  const { view, restore, viewportListeners } = mount({ geneOverlaps: overlapIndexFor() });
+  try {
+    assert.equal(viewportListeners.size, 0, 'closed hints retain no global listeners');
+    for (const event of ['scroll', 'resize']) {
+      view.stepOverlap(1);
+      assert.equal(view.overlapHint.hidden, false);
+      assert.equal(viewportListeners.get('scroll').capture, true,
+        'nested scroll containers also dismiss the fixed hint');
+      assert.equal(viewportListeners.size, 2);
+      viewportListeners.get(event).callback();
+      assert.equal(view.activeOverlap, null);
+      assert.equal(view.overlapHint.hidden, true);
+      assert.equal(viewportListeners.size, 0, 'dismissal removes both listeners');
+    }
+    view.stepOverlap(1);
+    view.resetView({ announce: false });
+    assert.equal(viewportListeners.size, 0, 'camera reset also releases listeners');
   } finally {
     restore();
   }

@@ -129,7 +129,9 @@ drawn over one of them.
   but clamped to the usable viewport outside any visible header,
   and outlines the block **and both partner bars at once**. The matching
   `role="status"` announcement is visually hidden, so changing or dismissing
-  the hint cannot change the figure height or canvas coordinates;
+  the hint cannot change the figure height or canvas coordinates. Scrolling the
+  page or a nested container, or resizing the viewport, dismisses the fixed hint
+  so it cannot float over unrelated content;
 - clicking a block, or **Enter** while one is inspected, pins the plotted gene
   that is not already pinned, so the pair can be walked; a pair with no plotted
   gene pins nothing and says why;

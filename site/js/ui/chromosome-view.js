@@ -491,6 +491,8 @@ export class ChromosomeView {
      */
     this.activeOverlap = null;
     this.overlapHintAnchor = null;
+    this.overlapViewportListening = false;
+    this.dismissOverlapOnViewportChange = () => this.setActiveOverlap(null);
   }
 
   /**
@@ -1932,7 +1934,16 @@ export class ChromosomeView {
   /** Show the active pair in a pointer-transparent viewport overlay. */
   syncOverlapHint() {
     if (!this.overlapHint) return;
-    if (!this.activeOverlap || !this.overlapHintAnchor) {
+    const visible = Boolean(this.activeOverlap && this.overlapHintAnchor);
+    if (visible !== this.overlapViewportListening) {
+      this.overlapViewportListening = visible;
+      const method = visible ? 'addEventListener' : 'removeEventListener';
+      // A fixed hint must not remain over unrelated content after its anchor
+      // moves. Capture nested scrollers too, and listen only while it is open.
+      window[method]('scroll', this.dismissOverlapOnViewportChange, true);
+      window[method]('resize', this.dismissOverlapOnViewportChange);
+    }
+    if (!visible) {
       this.overlapHint.hidden = true;
       this.overlapHint.textContent = '';
       return;

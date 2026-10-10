@@ -23,13 +23,14 @@ This ticket changes presentation and interaction, not which genes overlap.
 
 | ID | State | Requirement |
 | --- | --- | --- |
-| OG-V1 | open | Small overlaps must remain clearly visible and easy to inspect in the gene visualizers. The owner suggests a fixed-size directional arrowhead with a tail representing the actual overlapping sequence. |
-| OG-V2 | open | Chromosome overlap hover should show a hover hint without expanding in-flow text above the chromosome or moving the hovered mark away from the pointer. |
-| OG-C1 | open | Coordinator render inspection: compact exact-base rows must align letters despite unequal selected/partner label widths. |
-| OG-C2 | open | Coordinator render inspection: shared-span line must not strike through the expanded partner nucleotide letters. |
-| OG-C4 | open | Real emulated touch ends with pointerleave: the first-tap hint must persist and a subsequent tap remain usable; Escape must also dismiss from overlap controls. |
-| OG-C3 | open | Verify tooltip bounds against the visible viewport when the canvas is partially scrolled; host-only clamping is insufficient. |
-| OG-V3 | open | Show the overlapping partner's actual base letters, aligned with the selected gene, rather than conveying the overlap only through a coloured block. Make same-strand versus opposite-strand relationships clear. |
+| OG-V1 | `b09f0c7` | Small overlaps must remain clearly visible and easy to inspect in the gene visualizers. The owner suggests a fixed-size directional arrowhead with a tail representing the actual overlapping sequence. |
+| OG-V2 | `b09f0c7` | Chromosome overlap hover should show a hover hint without expanding in-flow text above the chromosome or moving the hovered mark away from the pointer. |
+| OG-C1 | `b09f0c7` | Coordinator render inspection: compact exact-base rows must align letters despite unequal selected/partner label widths. |
+| OG-C2 | `b09f0c7` | Coordinator render inspection: shared-span line must not strike through the expanded partner nucleotide letters. |
+| OG-C5 | open | Combined browser render: dismiss fixed hints on viewport or nested scrolling/resizing so they cannot float over unrelated sequence content. |
+| OG-C4 | `b09f0c7` | Real emulated touch ends with pointerleave: the first-tap hint must persist and a subsequent tap remain usable; Escape must also dismiss from overlap controls. |
+| OG-C3 | `b09f0c7` | Verify tooltip bounds against the visible viewport when the canvas is partially scrolled; host-only clamping is insufficient. |
+| OG-V3 | `b09f0c7` | Show the overlapping partner's actual base letters, aligned with the selected gene, rather than conveying the overlap only through a coloured block. Make same-strand versus opposite-strand relationships clear. |
 
 ### Small marks and direction
 
@@ -76,6 +77,9 @@ do not infer it from a colour or fabricate bases. Use admitted native sequence
 and actual annotated segments, including split and origin-crossing features.
 
 ## Verification
+
+Implementation `b09f0c7` (worker `7acc3a7`, DEM-345) resolves OG-V1/V2/V3 and OG-C1/C2/C3/C4. Integrated with concurrent navigation/documentation work at `74615a8`. Final combined gates: `npm test` 1,481 pass; pytest 958 pass, 46 subtests pass, one declared skip; all five organism contracts and live-metric checks, annotation verification/reproduction, and readiness pass. Native FASTA oracle confirms 1,980 shared bases across 18 pairs and all five organisms. RNA browser regression passes 32 parity cases with zero error, lifecycle states and diagnostics. Mobile/tablet/desktop viewport-edge, actual touch, compact-column alignment and expanded-base readability checks pass; eight-width geometry matrix is being rechecked on the combined tree. Independent read-only review DEM-348 is pending; do not close until its findings are resolved.
+
 
 Intake: checked the live ticket index and existing OG contract; this is the
 only open ticket for these three requested improvements. Check the ticket
