@@ -52,6 +52,19 @@ a traceback; do not alter interpreter-wide limits. Reproduction:
 `/tmp/cyano-pair-review-20261010/huge-pair.tsv` against the pinned source table.
 
 Implemented by `claude-implementer` on DEM-356, 2026-10-10:
+Independent review DEM-358 against `6bf1b86` requires the following repairs;
+all are **open**. PRA-R1–R3 overlap PRA-C1; PRA-R4 overlaps PRA-C2.
+
+| Finding | Required repair |
+| --- | --- |
+| PRA-R1 | Reject duplicate source headers, malformed quoted records and record widths differing from the complete source header; a bad quote can otherwise consume a pair and falsely report no pending answers. |
+| PRA-R2 | Reject blank source artifacts and nonpositive condition-row identities. |
+| PRA-R3 | Validate ordering counts and report malformed values as source errors with row/field context. |
+| PRA-R4 | Reject oversized answer identifiers without an integer-conversion traceback. |
+| PRA-R5 | Correct the quoted-field dialect claim and test an embedded quote in an unquoted free-text cell. |
+| PRA-R6 | Correct the repeated-artifact groups to five, including pairs 7/8 (PXD030282 versus PXD062851, condition rows 72/74). |
+
+Initial implementation:
 `tools/check_pair_review_answers.py` (`template PAIRS` to stdout,
 `check PAIRS ANSWERS` read-only), `tests/test_check_pair_review_answers.py`, and
 the contract in [docs/validation/pair-review-intake.md](../../validation/pair-review-intake.md).
