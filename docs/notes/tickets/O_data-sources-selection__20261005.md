@@ -13,6 +13,11 @@
 
 ## Current state
 
+The existing-report portion of S6 is claimed by `cyano-ui-fixes` in
+[A_dataset-agreement-ui__20261010](A_dataset-agreement-ui__20261010.md).
+This is presentation of accepted statistics; further admission and statistical
+work remain in this parent ticket.
+
 Design settled by the owner in three rounds on 2026-10-04 and 2026-10-05; the
 decisions are listed below and the second-round requirements are recorded in the
 scan ticket under step 6. A working prototype with every requested behaviour is

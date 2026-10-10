@@ -11,6 +11,8 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [A_dataset-agreement-ui__20261010](A_dataset-agreement-ui__20261010.md) | Existing expression-agreement report in Data Sources with correlations, replicate ranges, denominators and caveats; owned by cyano-ui-fixes, isolated implementation |
+| [A_pair-review-answer-checker__20261010](A_pair-review-answer-checker__20261010.md) | Validate returned pair-review TSVs against their pinned source and human review metadata; owned by cyano-regulatory-sites, isolated implementation |
 | [A_syn57-visualizer-inclusion__20261009](A_syn57-visualizer-inclusion__20261009.md) | Add Syn57 from the Nyerges radical-recoding paper with explicit design/strain provenance; then replace Syn61 button with Recoded E. Coli dropdown containing Syn57 and Syn61; owner approved; owned by cyano-ticket-closing, isolated implementation active |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | All selected methods now have sourced routes for very rough cross-organism UTEX predictions, with donor/native-coordinate distinctions, controls and limits. Owns Promoter Calculator, standalone TransTermHP, STREME, Rfam/Infernal, IntaRNA and new ViennaRNA regulatory uses; no new predictor run or layer admitted; iDOG execution hold retained |
