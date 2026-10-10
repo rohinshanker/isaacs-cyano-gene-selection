@@ -12,7 +12,6 @@ finding is reverted rather than argued about.
 | Ticket | Scope |
 | --- | --- |
 | [O_overlap-visibility-and-base-pairs__20261009](O_overlap-visibility-and-base-pairs__20261009.md) | Make small OG marks readable with a fixed-size arrowhead proposal; use chromosome hover hints that do not shift the canvas; expose aligned partner base letters and strand direction in the gene viewers; implementation unassigned |
-| [A_pca-grid-wheel-zoom__20261009](A_pca-grid-wheel-zoom__20261009.md) | Restrict shared scatter wheel zoom to the plotted grid; axes/margins retain page scrolling; active in isolated worktree, owned by cyano-regulatory-sites |
 | [O_trna-viewer-tab__20261009](O_trna-viewer-tab__20261009.md) | Move the full tRNA viewer into its own application tab; preserve independent selection, evidence labels and coordinate navigation; implementation not started |
 | [O_strain-fitness-dataset-selector__20261009](O_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; implementation not started |
 | [O_strain-navigation-format__20261009](O_strain-navigation-format__20261009.md) | Order Cyanobacteria → E. coli Syn61 → E. coli; conventional E. coli dropdown MG1655 (default), MDS42, DH10B; retain collapsible/movable recoding panels; implementation not started |

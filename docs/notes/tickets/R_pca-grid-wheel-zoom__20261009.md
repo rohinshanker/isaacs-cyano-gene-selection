@@ -1,11 +1,11 @@
-# A_pca-grid-wheel-zoom__20261009 — Active
+# R_pca-grid-wheel-zoom__20261009 — Resolved
 
 - **Scope:** Restrict PCA wheel zoom to the plotted grid, excluding axes and outer canvas margins.
-- **Status:** active
+- **Status:** resolved
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
-## Current State
+## Outcome
 
 Implementation owned by `cyano-regulatory-sites` at the owner's request, in
 `worktrees/pca-grid-wheel-zoom-20261009` on branch
@@ -47,7 +47,12 @@ handler and camera mathematics.
 
 ## Cleanup
 
-The implementing session owns closure, records every remaining finding, and
-distills the reusable wheel hit-boundary and page-scroll contract into
-[viewer-interaction-state.md](../../validation/viewer-interaction-state.md).
-Follow the resolved-ticket lifecycle; retain no completion ledger.
+- **Closer:** `cyano-regulatory-sites`, session `e6e54b6e-1791581192`, 2026-10-09.
+- **Findings:** WZ-1 (axes and canvas margins intercepted page scrolling) resolved
+  in `9fa59d5`. No remaining findings or unresolved audit against this scope.
+- **Preserved context:** drawing-boundary, pointer-anchor and page-scroll rules,
+  unit coverage and rendered verification procedure are distilled into
+  [viewer-interaction-state.md](../../validation/viewer-interaction-state.md#map-input)
+  and indexed in `docs/validation/INDEX.md`.
+- Remove this resolved ticket after recording closure. Other sessions' tickets
+  remain open and untouched.
