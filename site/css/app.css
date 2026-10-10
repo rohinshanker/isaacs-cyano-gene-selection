@@ -112,10 +112,40 @@ pre {
 }
 .header-text { max-width: 62ch; }
 .tagline { color: var(--ink-muted); margin: 0; }
-/* The organism selector: one chip per organism, the one in view filled, and
-   beside them the strain and assembly being shown. */
+/* The organism selector: two direct organism links, one conventional-strain
+   disclosure, and the exact strain and assembly being shown. */
 .organism-selector { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
 .organism-identity { color: var(--ink-muted); font-size: 0.8rem; }
+.organism-dropdown { position: relative; }
+.organism-group-trigger { display: inline-flex; align-items: center; }
+.organism-group-selection { font-size: 0.8rem; }
+.organism-group-caret { margin-left: 0.35rem; transition: transform 120ms ease; }
+.organism-group-trigger[aria-expanded="true"] .organism-group-caret { transform: rotate(180deg); }
+.organism-strain-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  width: max-content;
+  min-width: max(100%, 13.5rem);
+  max-width: calc(100vw - 2.5rem);
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.organism-strain-option {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: calc(var(--radius) - 2px);
+  white-space: normal;
+}
+.organism-strain-option:hover,
+.organism-strain-option:focus-visible { background: var(--accent-soft); }
+.organism-strain-option.active { background: var(--accent); color: #fff; }
 .header-actions {
   display: grid;
   gap: 0.35rem;

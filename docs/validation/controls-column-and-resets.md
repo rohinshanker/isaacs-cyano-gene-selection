@@ -57,6 +57,13 @@ below the fold on a first visit.
 Order and collapsed set are shareable state, not browser-local preferences. They
 encode into the URL hash as `po` and `pc` at encoder version 5.
 
+Organism navigation does not create or pin a scheme-specific panel. Every
+organism, including Syn61 and any future organism with a declared recoding
+scheme, uses these same three panel ids and the same ordering, collapse,
+movement, focus, and URL-state machinery. A navigation grouping change must
+exercise scheme-panel movement and collapse across reload; it must not move the
+scheme content outside this column.
+
 - `po` is the full order, comma separated, written only when it differs from the
   fresh order.
 - `pc` is the collapsed set in panel order, written only when it differs from the

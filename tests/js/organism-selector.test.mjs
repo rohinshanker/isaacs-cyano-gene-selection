@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFAULT_ORGANISM, ORGANISMS, organismById, storageKeys,
+  DEFAULT_ORGANISM, organismById, storageKeys,
 } from '../../site/js/core/organisms.js';
 import {
   applyGeneCount, applyOrganismIdentity, dataDirectoryPath, rememberView, renderOrganismSelector,
@@ -21,6 +21,8 @@ import { CITATIONS_TAB, CitationsPanel, citationsBlurb } from '../../site/js/ui/
 import { FakeElement, withFakeDocument } from './fake-dom.mjs';
 
 const ECOLI = organismById('ecoli-k12-mg1655');
+const MDS42 = organismById('ecoli-mds42-public-reference');
+const DH10B = organismById('ecoli-dh10b-public-reference');
 const SYN61 = organismById('ecoli-syn61-delta3-ev5');
 
 function memoryStore() {
@@ -55,34 +57,48 @@ function selectorFor(current, search, store = memoryStore(), view = fakeView()) 
     current, location: { pathname: '/site/', search }, store, view,
   });
   const options = host.querySelectorAll('a');
-  return { host, options, store, view, handle, identity: host.querySelector('span') };
+  const optionFor = (organism) => options.find((option) => option.dataset.organism === organism.id);
+  return {
+    host, options, optionFor, store, view, handle,
+    identity: host.querySelector('span.organism-identity'),
+    trigger: host.querySelector('button.organism-group-trigger'),
+    menu: host.querySelector('ul.organism-strain-menu'),
+    dropdown: host.querySelector('div.organism-dropdown'),
+  };
 }
 
-test('the selector offers every organism, Cyanobacteria first and selected by default', async () => {
+test('the selector has three ordered top-level controls and grouped strain links', async () => {
   await withFakeDocument(() => {
-    const { options, identity } = selectorFor(DEFAULT_ORGANISM, '');
+    const { host, options, trigger, menu, identity } = selectorFor(DEFAULT_ORGANISM, '');
+    const topLevel = host.querySelectorAll('.organism-top-level');
+    assert.deepEqual(topLevel.map((option) => option.tagName), ['a', 'a', 'button']);
+    assert.deepEqual(topLevel.map((option) => option.textContent), [
+      'Cyanobacteria', 'E. coli Syn61', 'E. coli · MG1655\u25be',
+    ]);
     assert.deepEqual(options.map((option) => option.textContent),
-      ['Cyanobacteria', 'E. coli', 'MDS42 public reference',
-        'DH10B public reference', 'E. coli Syn61']);
-    assert.deepEqual(options.map((option) => option.dataset.organism), ORGANISMS.map((o) => o.id));
+      ['Cyanobacteria', 'E. coli Syn61', 'MG1655',
+        'MDS42 public reference', 'DH10B public reference']);
+    assert.deepEqual(options.map((option) => option.dataset.organism), [
+      DEFAULT_ORGANISM.id, SYN61.id, ECOLI.id, MDS42.id, DH10B.id,
+    ]);
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
       ['page', null, null, null, null]);
     assert.ok(options[0].classList.contains('active'));
-    assert.ok(!options[1].classList.contains('active'));
-    assert.ok(!options[2].classList.contains('active'));
-    assert.ok(!options[3].classList.contains('active'));
-    assert.ok(!options[4].classList.contains('active'));
-    // Each is a link, which is what makes it keyboard-operable, styled as the page's chips are.
+    assert.ok(!trigger.classList.contains('active'));
+    assert.equal(trigger.getAttribute('aria-label'), 'E. coli strains; selected MG1655');
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+    assert.equal(menu.hidden, true);
+    assert.equal(menu.getAttribute('aria-label'), 'Conventional E. coli strains');
+    // Every destination remains an ordinary link with a usable deep-link address.
     for (const option of options) {
       assert.equal(option.tagName, 'a');
-      assert.ok(option.classList.contains('chip-button'));
       assert.ok(option.classList.contains('organism-option'));
     }
     assert.deepEqual(options.map((option) => option.href), [
-      '/site/', '/site/?org=ecoli-k12-mg1655',
+      '/site/', '/site/?org=ecoli-syn61-delta3-ev5',
+      '/site/?org=ecoli-k12-mg1655',
       '/site/?org=ecoli-mds42-public-reference',
       '/site/?org=ecoli-dh10b-public-reference',
-      '/site/?org=ecoli-syn61-delta3-ev5',
     ]);
     // The strain and reference assembly of the organism in view, species in italics.
     assert.equal(identity.id, 'organism-identity');
@@ -93,15 +109,18 @@ test('the selector offers every organism, Cyanobacteria first and selected by de
 
 test('in the native E. coli view the selector names that strain and nothing of the others', async () => {
   await withFakeDocument(() => {
-    const { options, identity } = selectorFor(ECOLI, '?org=ecoli-k12-mg1655');
+    const { options, trigger, identity } = selectorFor(ECOLI, '?org=ecoli-k12-mg1655');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      [null, 'page', null, null, null]);
-    assert.ok(options[1].classList.contains('active'));
+      [null, null, 'page', null, null]);
+    assert.ok(options[2].classList.contains('active'));
+    assert.ok(trigger.classList.contains('active'));
+    assert.equal(trigger.getAttribute('aria-current'), 'page');
+    assert.equal(trigger.getAttribute('aria-label'), 'E. coli strains; selected MG1655');
     assert.deepEqual(options.map((option) => option.href), [
-      '/site/', '/site/?org=ecoli-k12-mg1655',
+      '/site/', '/site/?org=ecoli-syn61-delta3-ev5',
+      '/site/?org=ecoli-k12-mg1655',
       '/site/?org=ecoli-mds42-public-reference',
       '/site/?org=ecoli-dh10b-public-reference',
-      '/site/?org=ecoli-syn61-delta3-ev5',
     ]);
     assert.equal(identity.textContent, 'Escherichia coli K-12 MG1655 · GCF_000005845.2');
     assert.ok(!/Synechococcus|UTEX|GCF_000817325/.test(identity.textContent));
@@ -110,25 +129,88 @@ test('in the native E. coli view the selector names that strain and nothing of t
 
 test('in the recoded E. coli view the selector and identity name the deposited strain', async () => {
   await withFakeDocument(() => {
-    const { options, identity } = selectorFor(SYN61, '?org=ecoli-syn61-delta3-ev5');
+    const { options, trigger, identity } = selectorFor(SYN61, '?org=ecoli-syn61-delta3-ev5');
     assert.deepEqual(options.map((option) => option.getAttribute('aria-current')),
-      [null, null, null, null, 'page']);
-    assert.ok(options[4].classList.contains('active'));
+      [null, 'page', null, null, null]);
+    assert.ok(options[1].classList.contains('active'));
+    assert.ok(!trigger.classList.contains('active'));
+    assert.equal(trigger.getAttribute('aria-label'), 'E. coli strains; selected MG1655');
     assert.equal(identity.textContent,
       'Escherichia coli Syn61 substr. delta 3 (ev5) · GCA_028355435.1');
     assert.ok(!/Synechococcus|UTEX|GCF_000817325|MG1655/.test(identity.textContent));
   });
 });
 
+test('a public-reference view keeps its caveat in the trigger and selected link', async () => {
+  await withFakeDocument(() => {
+    const { optionFor, trigger, identity } = selectorFor(
+      MDS42, '?org=ecoli-mds42-public-reference',
+    );
+    assert.equal(trigger.textContent, 'E. coli · MDS42 public reference\u25be');
+    assert.equal(trigger.getAttribute('aria-label'),
+      'E. coli strains; selected MDS42 public reference');
+    assert.equal(trigger.getAttribute('aria-current'), 'page');
+    assert.equal(optionFor(MDS42).getAttribute('aria-current'), 'page');
+    assert.equal(identity.textContent,
+      'Escherichia coli K-12 MDS42 public reference · GCF_000350185.1');
+  });
+});
+
 test('the option for the organism in view goes nowhere, and the other follows its link', async () => {
   await withFakeDocument(() => {
-    const { options } = selectorFor(DEFAULT_ORGANISM, '');
+    const { optionFor } = selectorFor(DEFAULT_ORGANISM, '');
     let prevented = 0;
-    options[0].dispatch('click', { preventDefault: () => { prevented += 1; } });
+    optionFor(DEFAULT_ORGANISM).dispatch('click', { preventDefault: () => { prevented += 1; } });
     assert.equal(prevented, 1, 'already here: a reload would discard the view on screen');
     let followed = 0;
-    options[1].dispatch('click', { preventDefault: () => { followed += 1; } });
+    optionFor(SYN61).dispatch('click', { preventDefault: () => { followed += 1; } });
     assert.equal(followed, 0, 'the other organism is an ordinary navigation');
+  });
+});
+
+test('the strain disclosure opens, navigates, dismisses, and restores focus by keyboard', async () => {
+  await withFakeDocument((page) => {
+    const { trigger, menu, dropdown, optionFor } = selectorFor(ECOLI, '?org=ecoli-k12-mg1655');
+    let prevented = 0;
+    trigger.dispatch('keydown', {
+      key: 'ArrowDown', preventDefault: () => { prevented += 1; },
+    });
+    assert.equal(menu.hidden, false);
+    assert.equal(trigger.getAttribute('aria-expanded'), 'true');
+    assert.equal(page.activeElement, optionFor(ECOLI));
+    assert.equal(prevented, 1);
+
+    menu.dispatch('keydown', {
+      key: 'ArrowDown', target: optionFor(ECOLI), preventDefault() {},
+    });
+    assert.equal(page.activeElement, optionFor(MDS42));
+    menu.dispatch('keydown', {
+      key: 'End', target: optionFor(MDS42), preventDefault() {},
+    });
+    assert.equal(page.activeElement, optionFor(DH10B));
+    menu.dispatch('keydown', {
+      key: 'Escape', target: optionFor(DH10B), preventDefault() {},
+    });
+    assert.equal(menu.hidden, true);
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+    assert.equal(page.activeElement, trigger, 'Escape returns focus to the disclosure');
+
+    trigger.dispatch('click');
+    assert.equal(menu.hidden, false, 'pointer activation opens the disclosure');
+    page.dispatch('pointerdown', { target: new FakeElement('main') });
+    assert.equal(menu.hidden, true, 'a pointer press outside dismisses it');
+    trigger.dispatch('click');
+    dropdown.dispatch('focusout', { relatedTarget: new FakeElement('button') });
+    assert.equal(menu.hidden, true, 'tabbing out dismisses it');
+
+    trigger.dispatch('click');
+    let currentPrevented = 0;
+    optionFor(ECOLI).dispatch('click', {
+      preventDefault: () => { currentPrevented += 1; },
+    });
+    assert.equal(currentPrevented, 1);
+    assert.equal(menu.hidden, true);
+    assert.equal(page.activeElement, trigger, 'selecting the current strain returns focus');
   });
 });
 
@@ -136,23 +218,24 @@ test('a switch returns to the view that organism was last left in, as saved by a
   await withFakeDocument(() => {
     const store = memoryStore();
     rememberView(store, ECOLI, 'ver=6&p=umap&g=b0002');
-    const { options } = selectorFor(DEFAULT_ORGANISM, '?load-min=0', store);
-    assert.equal(options[1].href, '/site/?org=ecoli-k12-mg1655&load-min=0#ver=6&p=umap&g=b0002');
+    const { optionFor } = selectorFor(DEFAULT_ORGANISM, '?load-min=0', store);
+    const ecoli = optionFor(ECOLI);
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655&load-min=0#ver=6&p=umap&g=b0002');
     // Another tab leaves E. coli on a different view after this page drew its link.
     rememberView(store, ECOLI, 'ver=6&p=chromosome');
-    options[1].dispatch('click', {});
-    assert.equal(options[1].href, '/site/?org=ecoli-k12-mg1655&load-min=0#ver=6&p=chromosome',
+    ecoli.dispatch('click', {});
+    assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655&load-min=0#ver=6&p=chromosome',
       'the address is refreshed as the link is activated');
     // The view this page is leaving is its own organism's, never carried across.
-    assert.ok(!/M744|cs=/.test(options[1].href));
+    assert.ok(!/M744|cs=/.test(ecoli.href));
   });
 });
 
 test('a link is current whenever its address can be read, not only when followed', async () => {
   await withFakeDocument(() => {
     const store = memoryStore();
-    const { options, view, handle } = selectorFor(DEFAULT_ORGANISM, '', store);
-    const ecoli = options[1];
+    const { optionFor, view, handle } = selectorFor(DEFAULT_ORGANISM, '', store);
+    const ecoli = optionFor(ECOLI);
     assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655', 'nothing saved yet');
 
     // Another tab leaves E. coli on the chromosome with a gene pinned. This tab
@@ -175,9 +258,9 @@ test('a link is current whenever its address can be read, not only when followed
     // still goes nowhere when it is followed.
     rememberView(store, DEFAULT_ORGANISM, 'ver=6&p=native');
     view.wrote(storageKeys(DEFAULT_ORGANISM).lastView);
-    assert.equal(options[0].href, '/site/#ver=6&p=native');
+    assert.equal(optionFor(DEFAULT_ORGANISM).href, '/site/#ver=6&p=native');
     let prevented = 0;
-    options[0].dispatch('click', { preventDefault: () => { prevented += 1; } });
+    optionFor(DEFAULT_ORGANISM).dispatch('click', { preventDefault: () => { prevented += 1; } });
     assert.equal(prevented, 1);
 
     // A key neither organism keeps a view under is no reason to rewrite anything.
@@ -204,7 +287,8 @@ test('the selector works where a window cannot be reached, and listens for nothi
     renderOrganismSelector(host, {
       current: DEFAULT_ORGANISM, location: { pathname: '/site/', search: '' }, store, view: null,
     });
-    const ecoli = host.querySelectorAll('a')[1];
+    const ecoli = host.querySelectorAll('a')
+      .find((option) => option.dataset.organism === ECOLI.id);
     assert.equal(ecoli.href, '/site/?org=ecoli-k12-mg1655#ver=6&p=umap');
     rememberView(store, ECOLI, 'ver=6&p=chromosome');
     ecoli.dispatch('pointerdown', {});

@@ -15,9 +15,32 @@ written before there was a second organism keeps its meaning, and the canonical
 cyanobacterial address carries no `org`. The hash carries the view and is read
 under the organism the address names; it has no organism of its own.
 
-**A switch is a full page navigation.** Each selector option is a link. The
-browser resets every module, worker, cache, listener, and the DOM on the way.
-There is no in-page dataset swap and none should be added.
+**A switch is a full page navigation.** Cyanobacteria and Syn61 are direct
+links. The conventional E. coli disclosure contains ordinary links for MG1655,
+MDS42, and DH10B. The browser resets every module, worker, cache, listener, and
+the DOM on the way. There is no in-page dataset swap and none should be added.
+
+## Navigation grouping
+
+There are exactly three top-level controls, in this order: **Cyanobacteria**,
+**E. coli Syn61**, **E. coli**. The last is a disclosure, not a dataset-switching
+button. Its links are **MG1655**, **MDS42 public reference**, and **DH10B public
+reference**, in that order. MG1655 is the selection shown when no conventional
+strain is in view. On a conventional-strain page the trigger names that strain,
+and both the trigger and its matching link expose the current page.
+
+The words "public reference" are part of both affected option labels and the
+selected-strain label. Grouping never weakens the organism record's longer
+public-reference caveats or implies that either assembly is an experimental
+stock. Every option keeps a real `href`; copying, modified clicking, and direct
+navigation therefore retain the exact `org` id and that organism's remembered
+hash.
+
+The disclosure uses a button with `aria-expanded` and `aria-controls`, followed
+by a named list of links. Enter or Space toggles it; Arrow Down/Up opens it at
+the first/last strain; Arrow keys, Home, and End move among links. Escape closes
+it and returns focus to the trigger. Tabbing out or pressing elsewhere closes it
+without trapping focus.
 
 **It is known before the first request.** The classic inline script in
 `site/index.html` reads `org`, sets the tab title, and starts the manifest and
@@ -39,6 +62,9 @@ for different addresses or for anything else.
 | no `org` | default | `data/` |
 | `?org=utex2973` | default; the address is rewritten without `org`, hash kept | `data/` |
 | `?org=ecoli-k12-mg1655` | E. coli | `data/organisms/ecoli-k12-mg1655/` |
+| `?org=ecoli-mds42-public-reference` | MDS42 public reference | `data/organisms/ecoli-mds42-public-reference/` |
+| `?org=ecoli-dh10b-public-reference` | DH10B public reference | `data/organisms/ecoli-dh10b-public-reference/` |
+| `?org=ecoli-syn61-delta3-ev5` | Syn61 delta 3 evolved variant 5 | `data/organisms/ecoli-syn61-delta3-ev5/` |
 | `?org=<anything else>` | default; `org` **and the hash** are removed, and the page announces it | `data/` |
 | any of the above with `&data=<dir>` | unchanged | `<dir>/` |
 
@@ -120,14 +146,16 @@ is null, so its file names are unchanged.
 1. Add a record file under `site/js/core/organisms/` with every field the
    contract at the top of `organisms.js` lists, and add it to `ORGANISMS`.
    Declare a study-bound layer only with the labels its views read.
-2. Add its directory and title to the table in the inline script in
+2. Put its id in the intended navigation group in `ui/organism-selector.js`;
+   do not infer conventional or recoded membership from species alone.
+3. Add its directory and title to the table in the inline script in
    `site/index.html`.
-3. Add its tier 1 file list to that same table, from `coreFileNames`.
-4. Add a profile to `tests/fixtures/make_fixture.mjs` if its tests need data,
+4. Add its tier 1 file list to that same table, from `coreFileNames`.
+5. Add a profile to `tests/fixtures/make_fixture.mjs` if its tests need data,
    with its replicon lengths: the generator bounds every coordinate it places to
    the replicon, scaling the gaps it drew when a realistic gene count would run
    past the end, and refuses a count whose coding sequence cannot fit at all.
-5. Run `node tools/build_module_preloads.mjs`, then the gates.
+6. Run `node tools/build_module_preloads.mjs`, then the gates.
 
 ### What its dataset must declare
 
@@ -189,8 +217,9 @@ address, storage keys, the inline script run against the real loader, the static
 page against the default record), `tests/js/organism-isolation.test.mjs`
 (loader gating and the assembly check, the replicon model, links, storage, view
 memory, both sweeps, export naming, and the annotated release),
-`tests/js/organism-selector.test.mjs` (the selector, link freshness, the
-identity rewrite, truthful absence), and `tests/js/fixture-generator.test.mjs`
+`tests/js/organism-selector.test.mjs` (grouping, disclosure keyboard/focus
+behavior, link freshness, the identity rewrite, truthful absence), and
+`tests/js/fixture-generator.test.mjs`
 (each organism's fixture, its coordinate bounds at a realistic gene count, and
 the default fixtures against digests pinned outside the generator).
 
@@ -204,10 +233,13 @@ realistic size, write one with
 
 - the default view and existing shareable links (one with a scheme, one with a
   pinned gene and shortlist, one on the chromosome tab) read exactly as before;
-- the selector: both options, the organism in view marked, the strain and
-  assembly beside them, a visible focus ring, Tab and Enter operation, no
+- the selector: three top-level controls in the contracted order; the three
+  conventional links and current strain; visible public-reference labels and
+  focus ring; pointer, Enter, Space, arrows, Escape and Tab operation; no
   horizontal overflow;
-- the second organism: map, gene detail, chromosome view, filters, legend, the
+- all five direct organism addresses: exact id, strain, assembly, data
+  directory and selected navigation state;
+- each non-default organism: map, gene detail, chromosome view, filters, legend, the
   tabs whose layers are absent, a scheme applied, and an export, with no name of
   the other organism anywhere;
 - switching there and back with state in each: each returns to its own view,
