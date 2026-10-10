@@ -869,6 +869,7 @@ export class ChromosomeView {
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {
+      this.setActiveOverlap(null);
       this.resize();
       this.draw();
     });

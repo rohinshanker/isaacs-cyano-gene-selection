@@ -280,6 +280,8 @@ visible columns. Long compact base disclosures are named, focusable scroll
 groups: Tab reaches the sequence block and arrow keys reveal its remaining
 bases. Padded overlap targets use the same visible hover feedback as their
 marks. Verify these states using actual keyboard and pointer input.
+Hints also dismiss when a panel splitter resizes the chromosome canvas host,
+even when the window dimensions and scroll position do not change.
 
 ## Checks
 

@@ -33,6 +33,7 @@ This ticket changes presentation and interaction, not which genes overlap.
 | OG-R4 | open | Give long exact-base scrollers a named keyboard-focusable group. |
 | OG-R5 | open | Apply overlap hover feedback to the padded hit target state. |
 | OG-R6 | open | Hide the duplicate visual hint from assistive readers; preserve the live announcement. |
+| OG-R7 | open | Dismiss an overlap hint when a panel splitter resizes its canvas host without a viewport resize or scroll. |
 | OG-C5 | `ccf3f9d` | Combined browser render: dismiss fixed hints on viewport or nested scrolling/resizing so they cannot float over unrelated sequence content. |
 | OG-C4 | `b09f0c7` | Real emulated touch ends with pointerleave: the first-tap hint must persist and a subsequent tap remain usable; Escape must also dismiss from overlap controls. |
 | OG-C3 | `b09f0c7` | Verify tooltip bounds against the visible viewport when the canvas is partially scrolled; host-only clamping is insufficient. |

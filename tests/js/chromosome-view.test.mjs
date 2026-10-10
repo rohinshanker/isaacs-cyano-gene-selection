@@ -240,6 +240,8 @@ function install({ canvasWidth = CANVAS_WIDTH, devicePixelRatio = DEVICE_PIXEL_R
     },
   };
   globalThis.ResizeObserver = class {
+    constructor(callback) { this.callback = callback; }
+
     observe() {}
 
     disconnect() {}
@@ -3238,9 +3240,9 @@ test('scrolling or resizing dismisses overlap hints and releases viewport listen
     for (const event of ['scroll', 'resize']) {
       view.stepOverlap(1);
       assert.equal(view.overlapHint.hidden, false);
-    assert.equal(view.overlapHint.getAttribute('aria-hidden'), 'true',
-      'the visual copy is hidden from assistive readers; the live region announces once');
-    assert.equal(view.overlapReadout.getAttribute('role'), 'status');
+      assert.equal(view.overlapHint.getAttribute('aria-hidden'), 'true',
+        'the visual copy is hidden from assistive readers; the live region announces once');
+      assert.equal(view.overlapReadout.getAttribute('role'), 'status');
       assert.equal(viewportListeners.get('scroll').capture, true,
         'nested scroll containers also dismiss the fixed hint');
       assert.equal(viewportListeners.size, 2);
@@ -3252,6 +3254,12 @@ test('scrolling or resizing dismisses overlap hints and releases viewport listen
     view.stepOverlap(1);
     view.resetView({ announce: false });
     assert.equal(viewportListeners.size, 0, 'camera reset also releases listeners');
+    view.stepOverlap(1);
+    view.resizeObserver.callback();
+    assert.equal(view.activeOverlap, null);
+    assert.equal(view.overlapHint.hidden, true,
+      'a panel splitter resize dismisses the hint without a window resize');
+    assert.equal(viewportListeners.size, 0, 'host resize also releases listeners');
   } finally {
     restore();
   }
