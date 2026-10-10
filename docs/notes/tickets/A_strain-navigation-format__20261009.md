@@ -1,14 +1,18 @@
-# O_strain-navigation-format__20261009 — Open
+# A_strain-navigation-format__20261009 — Active
 
 - **Scope:** Group and order the organism selector; preserve collapsible, movable recoding panels.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-10
 
 ## Current State
 
-Opened by `cyano-ui-fixes` at the owner's request. Implementation is unassigned
-and has not started. At baseline `67c8e74`, the selector renders five peer links;
+Claimed by `cyano-regulatory-sites` (session `e6e54b6e-1791581192`) on
+2026-10-10 for isolated delegated implementation. Coordinator branch
+`work/small-unblocked-20261010`, baseline `5431386`. Other chat worktrees,
+browsers and processes are out of scope.
+
+Opened by `cyano-ui-fixes` at the owner's request. Implementation is claimed by the coordinator above. At baseline `67c8e74`, the selector renders five peer links;
 the owner wants three top-level buttons, in this order:
 
 1. **Cyanobacteria**

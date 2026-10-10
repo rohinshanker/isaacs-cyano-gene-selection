@@ -1,16 +1,20 @@
-# O_documentation-link-integrity__20261009 — Open
+# A_documentation-link-integrity__20261009 — Active
 
 - **Scope:** Repair verified stale internal documentation links left by earlier ticket cleanup and validation-document renames.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-10
 
 ## Current State
 
+Claimed by `cyano-regulatory-sites` (session `e6e54b6e-1791581192`) on
+2026-10-10 for isolated delegated implementation. Coordinator branch
+`work/small-unblocked-20261010`, baseline `5431386`. Other chat worktrees,
+browsers and processes are out of scope.
+
 Found during tRNA-tab validation by DEM-341; `cyano-ui-fixes` independently
 verified these 15 missing-file targets. They predate the tRNA placement change
-and none occurs in its changed validation documents. Implementation is
-unassigned. The worker also reported possible broken heading anchors; those
+and none occurs in its changed validation documents. Implementation is delegated under the coordinator above. The worker also reported possible broken heading anchors; those
 need a Markdown-aware verification before they are treated as defects.
 
 | Source file | Missing target |
