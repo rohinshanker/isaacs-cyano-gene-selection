@@ -838,10 +838,13 @@ export class ScatterPlot {
     });
     canvas.addEventListener('wheel', (event) => {
       if (!projectionCanZoom(this.projection)) return;
-      event.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const px = event.clientX - rect.left;
       const py = event.clientY - rect.top;
+      const grid = this.plotRect;
+      if (px < grid.left || px > grid.left + grid.width
+        || py < grid.top || py > grid.top + grid.height) return;
+      event.preventDefault();
       this.zoomAt(px, py, Math.exp(-event.deltaY * 0.0016));
     }, { passive: false });
     canvas.addEventListener('dblclick', () => this.resetView());
