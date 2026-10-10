@@ -15,7 +15,7 @@ E. coli**. The owner has not specified a fresh default for the recoded group;
 settle that before introducing a default that chooses between the two.
 
 Apply the collapsible/movable recoding-scheme panel requirement from
-[strain navigation](A_strain-navigation-format__20261009.md) to both choices.
+[the controls-panel contract](../../validation/controls-column-and-resets.md#the-controls-column-is-view-state) to both choices.
 
 ## Source and identity boundary
 

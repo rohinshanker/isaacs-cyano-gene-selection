@@ -25,8 +25,8 @@ the DOM on the way. There is no in-page dataset swap and none should be added.
 There are exactly three top-level controls, in this order: **Cyanobacteria**,
 **E. coli Syn61**, **E. coli**. The last is a disclosure, not a dataset-switching
 button. Its links are **MG1655**, **MDS42 public reference**, and **DH10B public
-reference**, in that order. MG1655 is the selection shown when no conventional
-strain is in view. On a conventional-strain page the trigger names that strain,
+reference**, in that order. MG1655 is shown as the default when no conventional
+strain is in view; its accessible name says `default`, not `selected`. On a conventional-strain page the trigger names that strain,
 and both the trigger and its matching link expose the current page.
 
 The words "public reference" are part of both affected option labels and the
@@ -41,6 +41,19 @@ by a named list of links. Enter or Space toggles it; Arrow Down/Up opens it at
 the first/last strain; Arrow keys, Home, and End move among links. Escape closes
 it and returns focus to the trigger. Tabbing out or pressing elsewhere closes it
 without trapping focus.
+
+The fixed dropdown uses `positionViewportOverlay` to keep a 16 px margin at
+both viewport edges and follows scroll, resize, and changes to the header or
+trigger size while open. A short trigger can wrap to the left edge on phones;
+right-aligning a wider menu to it clips labels without increasing the page's
+`scrollWidth`. Check the menu's own bounding rectangle for every strain label,
+including the shorter default/MG1655 label. Use CSS gaps for separator spacing;
+leading text whitespace can collapse at flex-item boundaries.
+
+The selector mounts once per document. Its outside-press listener lasts until
+full-page navigation; resize/scroll listeners and geometry observation run only
+while the menu is open. The registry-to-navigation test requires every organism
+to appear exactly once, so adding a record also requires choosing its group.
 
 **It is known before the first request.** The classic inline script in
 `site/index.html` reads `org`, sets the tab title, and starts the manifest and
