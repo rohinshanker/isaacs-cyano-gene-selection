@@ -254,6 +254,15 @@ caveats, naming the partners and the bases shared, and falls back to
 `overlapsNeighbor` under that field's own wording when no layer is joined, so a
 deployment without the layer never silently loses the caveat.
 
+The continuation chevrons share the lower indicator lane, clear of nucleotide
+glyphs. Partner labels describe letter availability conditionally on zoom and
+visible columns. Long compact base disclosures are named, focusable scroll
+groups: Tab reaches the sequence block and arrow keys reveal its remaining
+bases. Padded overlap targets use the same visible hover feedback as their
+marks. Verify these states using actual keyboard and pointer input.
+Hints also dismiss when a panel splitter resizes the chromosome canvas host,
+even when the window dimensions and scroll position do not change.
+
 ## Rebuilding
 
 ```sh
@@ -273,15 +282,6 @@ The producer needs only that organism's `*_genomic.gff.gz`. In a worktree where
 `data/raw` is gitignored and empty, link the canonical inputs read-only first;
 without them the contract validator **skips** its re-derivation rather than
 failing, and the skip is the thing to notice.
-
-The continuation chevrons share the lower indicator lane, clear of nucleotide
-glyphs. Partner labels describe letter availability conditionally on zoom and
-visible columns. Long compact base disclosures are named, focusable scroll
-groups: Tab reaches the sequence block and arrow keys reveal its remaining
-bases. Padded overlap targets use the same visible hover feedback as their
-marks. Verify these states using actual keyboard and pointer input.
-Hints also dismiss when a panel splitter resizes the chromosome canvas host,
-even when the window dimensions and scroll position do not change.
 
 ## Checks
 

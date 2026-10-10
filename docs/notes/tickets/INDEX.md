@@ -11,7 +11,6 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_overlap-visibility-and-base-pairs__20261009](A_overlap-visibility-and-base-pairs__20261009.md) | Make small OG marks readable with a fixed-size arrowhead proposal; use chromosome hover hints that do not shift the canvas; expose aligned partner base letters and strand direction in the gene viewers; owned by cyano-ui-fixes in an isolated worktree |
 | [O_strain-fitness-dataset-selector__20261009](O_strain-fitness-dataset-selector__20261009.md) | Local Strain fitness dataset selector when no compatible dataset is already selected elsewhere; reuse an unambiguous existing selection and retain source/units/export identity; implementation not started |
 | [O_syn57-visualizer-inclusion__20261009](O_syn57-visualizer-inclusion__20261009.md) | Add Syn57 from the Nyerges radical-recoding paper with explicit design/strain provenance; then replace Syn61 button with Recoded E. Coli dropdown containing Syn57 and Syn61; owner approved the ticket; implementation not started |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
