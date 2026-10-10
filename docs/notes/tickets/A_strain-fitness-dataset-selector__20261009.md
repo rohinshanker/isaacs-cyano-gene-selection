@@ -51,6 +51,7 @@ does not count as a compatible strain-fitness choice.
 
 | ID | State | Requirement |
 | --- | --- | --- |
+| FDS-R8 | open | Final review's non-blocking harness notes: reset the retry resolver between scenarios and measure overflow in the malformed-fitness map render. |
 | FDS-R1 | open | Retry loses keyboard focus when its button is replaced during loading and success; restore a stable panel focus target and test real keyboard retry. |
 | FDS-R2 | open | Schema and rejected-fetch errors must name the selected catalogue id and actual file, never a hardcoded filename or an unqualified transport message. |
 | FDS-R3 | `2b7d5f5` | Replace task-specific runbook commands and narration with reusable instructions. |

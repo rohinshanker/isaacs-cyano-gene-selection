@@ -121,6 +121,7 @@ async (page) => {
     scenario = nextScenario;
     failedOnce = false;
     releaseSlow = null;
+    releaseRetry = null;
     // A fresh document, so no module or dataset is carried over between states.
     await page.goto('about:blank');
     const organism = nextScenario === 'absent' ? '' : 'org=ecoli-syn61-delta3-ev5&';
@@ -443,6 +444,9 @@ async (page) => {
       && document.querySelector('#legend')?.textContent.length > 0);
     check(await page.locator('#map-canvas').isVisible(),
       'a malformed fitness dataset leaves the normal gene map usable');
+    const mapOverflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    check(mapOverflow === 0, 'the gene map has no overflow after malformed fitness data');
+    evidence.push({ label: 'fitness-invalid-map-1280', overflow: mapOverflow });
     await page.screenshot({ path: `${root}/fitness-invalid-map-1280.png` });
     quiet('gene map after malformed fitness dataset');
 
