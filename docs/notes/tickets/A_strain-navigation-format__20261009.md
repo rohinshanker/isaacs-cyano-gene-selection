@@ -65,6 +65,35 @@ and desktop widths. Exercise all three conventional strains, Syn61, dropdown
 pointer/keyboard behavior, copied/direct links, browser reload, and recoding
 panel movement/collapse persistence. Run the gates in `AGENTS.md`.
 
+Implementation handoff by `codex-implementer` for DEM-344, 2026-10-10:
+
+- Managed branch `agent/codex-implementer/dem-344`, worktree marker `cea1ad6`,
+  effective code baseline `70814d1`; implementation commit `89d199b`.
+- The selector now has Cyanobacteria, E. coli Syn61, and E. coli as its three
+  top-level controls. The E. coli disclosure holds MG1655, MDS42 public
+  reference, and DH10B public reference as ordinary deep links and names the
+  selected conventional strain without weakening either public-reference
+  caveat.
+- Focused selector, panel-layout, recoded-genome, and asset-graph checks passed
+  36 tests. Final `npm test` passed 1,475 tests.
+- The real site was served from this worktree on isolated port 8891 and checked
+  in Playwright session `dem-strain-nav-20261010`. All five direct organism
+  addresses resolved to their exact id, strain, assembly, selected navigation
+  state, and declared dataset; no request failures, HTTP errors, console errors,
+  or horizontal overflow were observed.
+- Pointer open/select/outside-dismiss and keyboard Enter, arrows, Home/End,
+  Escape focus return, Tab traversal/dismissal, and strain selection passed.
+  MDS42/DH10B stayed visibly labelled public references. Syn61's scheme panel
+  moved from second to third, collapsed, encoded `po`/`pc`, and retained both
+  order and collapse after reload.
+- Screenshots and semantic snapshots were inspected at 375x812, 768x1024,
+  1280x800, and 1440x900, plus 420 and both sides of the 960 breakpoint. Stable
+  local artifacts are under `/tmp/cyano-small-20261010/nav-artifacts`.
+- Per the delegated assignment, the coordinator owns the Python pytest and
+  contract-validator gates once after integration. They were not duplicated in
+  this isolated implementation worktree. No remaining selector-scope finding is
+  known; integration review and ticket closure remain with the coordinator.
+
 ## Cleanup
 
 The implementing session owns closure. Record every remaining finding before
