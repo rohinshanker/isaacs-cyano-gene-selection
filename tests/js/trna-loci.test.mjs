@@ -2,9 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  clusterTrnaMarkers, matchesTrnaFilters, overlappingTrnas, validateTrnaPayload,
+  clusterTrnaMarkers, defaultTrnaViewport, matchesTrnaFilters, overlappingTrnas,
+  validateTrnaPayload,
 } from '../../site/js/core/trna-loci.js';
-import { TrnaViewer } from '../../site/js/ui/trna-viewer.js';
+import { TRNA_TAB, TrnaViewer } from '../../site/js/ui/trna-viewer.js';
+import { ORGANISMS } from '../../site/js/core/organisms.js';
 import { FakeElement, withFakeDocument } from './fake-dom.mjs';
 
 const payload = JSON.parse(readFileSync(
@@ -217,13 +219,14 @@ test('viewer selection is independent and retained across filters', async () => 
     const host = new FakeElement('div');
     document.body.append(host);
     const revealed = [];
-    const viewer = new TrnaViewer(host, { onReveal: (locus) => revealed.push(locus.id) });
+    const viewer = new TrnaViewer(host,
+      { onShowOnChromosome: (locus) => revealed.push(locus.id) });
     viewer.update({ payload, fileState: 'ready', viewport: {
       replicon: 'NZ_CP006471.1', from: 1, to: 2690418,
     } });
     const first = payload.loci.find((locus) => locus.kind === 'refseq');
     viewer.selectLocus(first);
-    assert.deepEqual(revealed, [first.id]);
+    assert.deepEqual(revealed, [], 'selecting a locus does not move another tab');
     assert.equal(viewer.selectedId, first.id);
     assert.match(viewer.detail.textContent, new RegExp(first.locusTag));
     viewer.filters.query = 'no such locus';
@@ -252,4 +255,123 @@ test('candidate opt-in exposes an undetermined, pseudo, scan-only detail without
     assert.match(viewer.detail.textContent, /Undetermined \(NNN\)/);
     assert.doesNotMatch(viewer.detail.textContent, /probability|mature structure|3D/i);
   });
+});
+
+test('the tRNA tab is an organism-neutral registered tab', () => {
+  assert.equal(TRNA_TAB.id, 'trna');
+  assert.equal(TRNA_TAB.name, 'tRNA');
+  assert.ok(Object.isFrozen(TRNA_TAB));
+  assert.match(TRNA_TAB.blurb, /moves the chromosome view to its native coordinate/);
+  assert.match(TRNA_TAB.source, /published tRNA layer/);
+  // The tab's own words name no organism, assembly, locus or study.
+  for (const text of [TRNA_TAB.blurb, TRNA_TAB.source]) {
+    assert.doesNotMatch(text, /UTEX|Synechococcus|PCC|Escherichia|E\. coli|M744_|NZ_CP|GCF_/);
+  }
+});
+
+test('the track opens on the full primary replicon before any chromosome render', () => {
+  const utex = ORGANISMS.find((organism) => organism.id === 'utex2973');
+  assert.deepEqual(defaultTrnaViewport(utex.genome),
+    { replicon: 'NZ_CP006471.1', from: 1, to: 2690418 });
+  // Order in the record does not decide it; the declared primary does.
+  assert.deepEqual(defaultTrnaViewport({
+    replicons: [
+      { accession: 'p1', lengthBp: 10, primary: false },
+      { accession: 'c1', lengthBp: 900, primary: true },
+    ],
+  }), { replicon: 'c1', from: 1, to: 900 });
+  // With no primary declared the first replicon is the track's window.
+  assert.deepEqual(defaultTrnaViewport({ replicons: [{ accession: 'only', lengthBp: 5 }] }),
+    { replicon: 'only', from: 1, to: 5 });
+  assert.equal(defaultTrnaViewport({ replicons: [] }), null);
+  assert.equal(defaultTrnaViewport(undefined), null);
+});
+
+test('that default window draws the whole published layer on a direct tab visit', async () => {
+  await withTrnaDom((document) => {
+    const host = new FakeElement('div');
+    document.body.append(host);
+    const utex = ORGANISMS.find((organism) => organism.id === 'utex2973');
+    const viewer = new TrnaViewer(host);
+    viewer.update({
+      payload, fileState: 'ready', viewport: defaultTrnaViewport(utex.genome),
+    });
+    assert.match(viewer.trackCaption.textContent, /NZ_CP006471\.1 1–2,690,418/);
+    assert.equal(viewer.trackMarkers.querySelectorAll('.trna-track-empty').length, 0);
+    const placed = viewer.trackMarkers.querySelectorAll('.trna-marker')
+      .flatMap((marker) => marker.dataset.trnaIds.split('\n'));
+    assert.equal(placed.length, 44, 'every visible locus reaches the track');
+    assert.match(viewer.trackWindowNote.textContent,
+      /track follows the Chromosome\/Gene coordinate window/);
+    assert.match(viewer.trackWindowNote.textContent, /list below is never limited/);
+  });
+});
+
+test('the detail hands a native coordinate to the chromosome without pinning anything', async () => {
+  await withTrnaDom((document) => {
+    const host = new FakeElement('div');
+    document.body.append(host);
+    const handed = [];
+    const viewer = new TrnaViewer(host, {
+      onShowOnChromosome: (locus) => handed.push(locus),
+    });
+    viewer.update({ payload, fileState: 'ready', viewport: {
+      replicon: 'NZ_CP006471.1', from: 1, to: 2690418,
+    } });
+    const locus = payload.loci.find((entry) => entry.kind === 'refseq');
+    viewer.selectLocus(locus);
+    const button = viewer.detail.querySelector('.trna-show-on-chromosome');
+    assert.equal(button.textContent, 'Show on chromosome');
+    assert.match(button.getAttribute('aria-label'), /without changing the pinned gene/);
+    button.dispatch('click');
+    assert.deepEqual(handed.map((entry) => entry.id), [locus.id]);
+    assert.deepEqual(handed.map((entry) => entry.replicon), [locus.replicon]);
+    // The hand-off is the only route out, and it carries no gene identity.
+    assert.equal(viewer.selectedId, locus.id);
+    assert.ok(!('geneId' in handed[0]));
+  });
+});
+
+test('search, filters, candidate visibility and selection survive a tab switch', async () => {
+  await withTrnaDom((document) => {
+    const host = new FakeElement('div');
+    document.body.append(host);
+    const viewer = new TrnaViewer(host);
+    const viewport = { replicon: 'NZ_CP006471.1', from: 1, to: 2690418 };
+    viewer.update({ payload, fileState: 'ready', viewport });
+    viewer.showCandidate = true;
+    viewer.candidateToggle.checked = true;
+    viewer.search.value = 'leu';
+    viewer.filters.query = 'leu';
+    viewer.filters.strand = '-';
+    viewer.renderContent();
+    const shown = viewer.list.querySelectorAll('.trna-row').map((row) => row.dataset.trnaId);
+    const selected = payload.loci.find((locus) => locus.id === shown[0]);
+    viewer.selectLocus(selected);
+
+    // What a tab switch does: the host is hidden and the same instance is
+    // updated again when it comes back. Nothing is rebuilt, so nothing resets.
+    host.hidden = true;
+    host.hidden = false;
+    viewer.update({ payload, fileState: 'ready', viewport });
+    assert.equal(viewer.selectedId, selected.id);
+    assert.equal(viewer.search.value, 'leu');
+    assert.equal(viewer.filters.strand, '-');
+    assert.equal(viewer.showCandidate, true);
+    assert.equal(viewer.candidateToggle.checked, true);
+    assert.deepEqual(viewer.list.querySelectorAll('.trna-row').map((row) => row.dataset.trnaId),
+      shown);
+    assert.match(viewer.detail.textContent, new RegExp(selected.locusTag ?? selected.id));
+  });
+});
+
+test('the tRNA tab is one column with no CDS rails to resize', () => {
+  const rules = appCss.slice(appCss.indexOf('#main.trna-active {'),
+    appCss.indexOf('.trna-heading-row'));
+  assert.match(rules, /grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(rules, /#main\.trna-active > \.controls,[\s\S]*?#main\.trna-active > \.detail,/);
+  assert.match(rules, /#main\.trna-active \.analysis > :not\(#map-section\) \{ display: none; \}/);
+  assert.match(rules, /#trna-view \{ display: flex; flex-direction: column;/);
+  // The layer no longer hangs off the chromosome figure.
+  assert.doesNotMatch(appCss, /\.chromosome-trna/);
 });

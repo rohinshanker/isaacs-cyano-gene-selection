@@ -13,6 +13,7 @@ test('desktop breakpoints and single-column views expose only relevant handles',
   assert.equal(workspaceColumns(1440, classes('lengths-active')), 2);
   assert.equal(workspaceColumns(1440, classes('citations-active')), 0);
   assert.equal(workspaceColumns(1440, classes('regulatory-active')), 0);
+  assert.equal(workspaceColumns(1440, classes('trna-active')), 0);
 });
 
 test('the chromosome view keeps both rails, because selection hands off to them', () => {

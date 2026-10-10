@@ -841,12 +841,6 @@ export class ChromosomeView {
     viewerInfoContent.append(this.markerNote, this.trackSummaries, this.evidenceNote);
     this.viewerInfo.append(viewerInfoSummary, viewerInfoContent);
 
-    // The tRNA layer is a separate noncoding population with its own selection,
-    // filters, list, and detail. The app mounts it here; it never enters the
-    // CDS canvas's pin, shortlist, colour, or filter model.
-    this.trnaHost = document.createElement('div');
-    this.trnaHost.className = 'chromosome-trna';
-
     // The pinned gene's sequence close-up sits at the foot of the figure, by
     // owner decision of 2026-09-30, below the tracks and their key. The app
     // mounts its own view here through `sequenceElement`, as it does the legend.
@@ -855,7 +849,7 @@ export class ChromosomeView {
 
     this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
       this.instructions, this.detailJump, this.legendHost, this.viewerInfo,
-      this.trnaHost, this.sequenceHost);
+      this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -898,12 +892,10 @@ export class ChromosomeView {
     return this.sequenceHost;
   }
 
-  /** Host for the independent noncoding tRNA layer. */
-  trnaElement() {
-    return this.trnaHost;
-  }
-
-  /** Give the tRNA layer the primary coordinate window without sharing selection state. */
+  /**
+   * Give the tRNA tab the primary coordinate window without sharing selection
+   * state. The layer itself lives in its own tab; only this window crosses.
+   */
   trnaViewport() {
     if (!this.model?.verified) return null;
     const track = this.primaryTrack();

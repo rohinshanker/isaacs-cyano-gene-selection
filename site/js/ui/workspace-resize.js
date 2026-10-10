@@ -27,7 +27,10 @@ export function clampPanelWidths(requested, innerWidth, columns, gap = 16) {
 
 /** Determine which desktop handles exist for the current view and viewport. */
 export function workspaceColumns(width, classList) {
-  if (classList.contains('citations-active') || classList.contains('regulatory-active')) return 0;
+  // A one-column tab has no rail to resize, so it has no handle either.
+  for (const single of ['citations-active', 'regulatory-active', 'trna-active']) {
+    if (classList.contains(single)) return 0;
+  }
   if (width < 960) return 0;
   if (width < 1240 || classList.contains('lengths-active')) return 2;
   return 3;

@@ -85,41 +85,31 @@ breakpoint rule hides it once the sticky side rail begins. See
    selected colour draws as an empty outline, never as a colour that would imply
    a measurement.
 
-## The independent tRNA layer
+## The independent tRNA layer lives in its own tab
 
-The Chromosome/Gene tab mounts one optional noncoding layer below the CDS
-viewer. UTEX 2973 publishes `trna-loci-v1.json`; an organism without that
-declared layer gets a truthful unavailable state and does not request the file.
-Loading, integrity or validation failure with retry, and ready are distinct
-states.
+The tRNA layer is a tab of its own, beside Chromosome/Gene, not a block under
+the CDS viewer. This view hosts no copy of it; the one thing that crosses
+between them is a coordinate window, and `trnaViewport()` is the only route.
+The full placement and state rules are in
+[trna-annotation-validation.md](trna-annotation-validation.md#the-trna-tab);
+what belongs here is the chromosome side of the contract.
 
-The tRNA track reads the primary chromosome's current coordinate window, so a
-chromosome pan or zoom changes its marker grouping and selecting a list row or
-single marker can centre that native locus. It otherwise shares no state with
-the CDS viewer: tRNA selection does not pin, preview, shortlist, filter, or
-recompute a protein-coding gene. Its own track toggle controls only tRNA marks.
+**The chromosome publishes its window, and nothing else.** `trnaViewport()`
+returns the primary track's current window, and `renderSummaries` emits it
+through `onViewportChange`, so a pan or zoom here regroups the markers there.
+It carries no selection, no pin, no filter and no colour. Before this view has
+ever drawn, it returns `null` and the tab supplies its own full-replicon window
+rather than showing an unavailable one.
 
-The 44 RefSeq loci are visible by default. The one scan-only predicted
-pseudogene candidate is counted in the heading but is hidden behind an explicit
-checkbox. RefSeq loci use circular markers; a marker containing the candidate
-uses a diamond as well as an accessible label. Markers that overlap at the
-current width become a numbered cluster, while the searchable list keeps every
-record reachable and zooming recomputes the clusters.
+**A hand-off from that tab moves the camera and the tab, and nothing else.**
+`revealCoordinate` centres a native coordinate in its replicon's existing
+window, keeping the span, and leaves the pinned gene, the shortlist, the
+filters and the colouring untouched. A tRNA locus is not a selection in the
+protein-coding population and must never become one.
 
-Search covers stable or locus identity, RefSeq product/isotype and anticodon,
-scan isotype and anticodon, effective anticodon, and replicon. Strand, record
-type, isotype, and anticodon have recorded-value selectors. The isotype and
-anticodon selectors preserve the union of RefSeq and scan values instead of
-collapsing one source into the other. List and track use the same filtered
-population, so every displayed cluster has a reachable row; a selected row is
-the only deliberate exception and remains in both with an explicit retained
-label if later filters or candidate hiding would otherwise remove it. Rows and
-markers are buttons. Marker identity survives responsive reclustering, so a
-focused marker restores focus to the replacement marker that still contains at
-least one of its loci after resize. Selection opens a separate tRNA detail with
-source/run identity, native coordinates, sequence and the annotation-versus-scan
-status. It never invents a RefSeq id or nearest-CDS join, calls a scan score a
-probability, or presents a genomic sequence as a mature or modified tRNA.
+Applying a hash — a pasted link, Back, or Forward — resets this camera to the
+whole genome, as it always has, so the tRNA track opens on the whole replicon
+after a history step too.
 
 ### Replicon accessions are compared normalised
 
@@ -578,7 +568,8 @@ dims them.
   visibility checkbox or hash field changes, and no CDS is selected, because the
   buttons are outside the canvas the hit test reads. The aligned layers follow
   the one window — the tick labels, the start-site row, the operon brackets, and
-  the tRNA track through the `onViewportChange` that `renderSummaries` emits.
+  the tRNA tab's track through the `onViewportChange` that `renderSummaries`
+  emits.
 
 
 ## The dosage statement
@@ -646,10 +637,10 @@ inspection does not substitute for it. Serve `site/` over HTTP and check, at
   once zoomed; a step in each direction keeping the span and most of the window;
   repeated activation by click, by tap and by Enter or Space; each coordinate
   limit reached, dimming only that direction and handing the focus to the other;
-  a drag to base 1 dimming **Pan left** by itself; the tRNA track caption and the
-  axis labels following the window; a pinned gene still pinned afterwards; and
-  the buttons reachable with a visible focus ring at every width above,
-  including where the button row wraps;
+  a drag to base 1 dimming **Pan left** by itself; the axis labels following the
+  window, and the tRNA tab's track caption naming it after a switch to that
+  tab; a pinned gene still pinned afterwards; and the buttons reachable with a
+  visible focus ring at every width above, including where the button row wraps;
 - at 1440 px, click the centre of a CDS at the far right of the chromosome at
   whole-genome zoom and confirm the gene detail names that CDS, not its
   neighbour;

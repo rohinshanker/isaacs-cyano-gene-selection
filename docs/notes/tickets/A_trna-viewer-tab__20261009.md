@@ -3,7 +3,7 @@
 - **Scope:** Give the tRNA viewer its own application tab.
 - **Status:** active
 - **Opened:** 2026-10-09
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-10
 
 ## Current State
 
@@ -31,12 +31,40 @@ application tab, using the existing tab framework.
   keyboard navigation. Keep unavailable, loading, failure/retry, and ready states
   truthful for each organism; request only declared tRNA inputs.
 
+## Implementation (scoped implementer, DEM-341, worktree `trna-tab-20261009`)
+
+The tab is built and validated; integration, owner preview and closure remain
+with `cyano-ui-fixes`. `TRNA_TAB` (`id: trna`) sits beside Chromosome/Gene in
+`ALL_TABS`, with its own `#trna-view` tabpanel, a one-column layout class, and
+no rail handles. The chromosome figure no longer hosts the viewer; the only
+state crossing between them is the coordinate window, through `trnaViewport()`,
+with `defaultTrnaViewport(organism.genome)` supplying the full primary replicon
+before that view has drawn. Selection stays in this layer, and an explicit
+**Show on chromosome** button is the one hand-off: it switches tab and centres
+the native coordinates, leaving the pin, shortlist, filters and colouring
+unchanged. The link promotes `trnaLoci` for this tab instead of the chromosome.
+
+Rendered checks at 375x812, 768x1024, 1280x800, 1440x900 and both sides of the
+600, 960 and 1240 px breakpoints: no horizontal scroll, no overflow, filters
+collapsing to one column at 600 and two above, zero console messages in every
+scenario. Exercised: direct `#p=trna` link before any chromosome render, reload,
+Back, tablist arrow keys, search, each filter, no matches, candidate opt-in,
+track off, hover and focus states, marker focus, the hand-off with a pinned gene
+and a shortlist present (both verified unchanged afterwards), camera sharing
+after a chromosome zoom, the unavailable state for conventional and recoded
+E. coli with no file requested, and — on a separate mirrored server, so the
+expected failure is isolated from the passing runs — a corrupt payload producing
+the failure state and its retry recovering in place.
+
 ## Verification
 
 Ticket-only intake; the current UI has not changed. Intake validation on
 2026-10-09 passed metadata/link checks and the repository gates: 1,395 JavaScript
 tests; 925 Python tests and 36 subtests with one skip; 119 contract checks with
 one declared skip. This validates the baseline, not the unimplemented tab.
+
+Gates re-run on the implemented patch: 1,469 JavaScript tests; 958 Python tests
+with 46 subtests and one skip; 126 contract checks with one declared skip.
 
 Before implementation closure, use the UI render skill to exercise the tRNA tab
 and return to Chromosome/Gene at mobile, tablet, and desktop widths. Check search,

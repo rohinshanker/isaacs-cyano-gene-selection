@@ -123,6 +123,21 @@ export function overlappingTrnas(locus, loci) {
     && other.start <= locus.end && other.end >= locus.start);
 }
 
+/**
+ * The coordinate window the tRNA track opens on with no chromosome camera yet.
+ *
+ * The tab is reachable directly, from a link or a reload, so its track cannot
+ * wait for the chromosome canvas to publish a window. The primary replicon at
+ * full length is what a fresh chromosome view would hand it anyway, so a direct
+ * visit and a visit through that tab start from the same picture.
+ */
+export function defaultTrnaViewport(genome) {
+  const replicons = genome?.replicons ?? [];
+  const replicon = replicons.find((entry) => entry.primary) ?? replicons[0];
+  if (!replicon) return null;
+  return { replicon: replicon.accession, from: 1, to: replicon.lengthBp };
+}
+
 /** Group visible loci whose centres land within ``minimumGap`` pixels. */
 export function clusterTrnaMarkers(loci, window, width, minimumGap = 18) {
   if (!window || !Number.isFinite(width) || width <= 0) return [];

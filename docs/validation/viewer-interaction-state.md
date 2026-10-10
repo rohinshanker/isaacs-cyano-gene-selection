@@ -447,6 +447,36 @@ in
 and
 [gene-sequence-closeup.md](gene-sequence-closeup.md#admitted-marker-layers-on-the-sequence).
 
+### A tab's id is its `p` token, and the tablist is the only way in
+
+Every view that is a tab — the map projections, Chromosome/Gene, tRNA, Lengths,
+Regulatory sites, Strain fitness, Citations — is one entry in `ALL_TABS` with a
+permanent id, and that id is the `p` field. One registration buys the whole
+contract: the tablist button with its roving tabindex and arrow-key movement,
+the `aria-selected` state, the `role="tabpanel"` container hidden whenever it
+is not current, the shared blurb line, the link, the reload, Back and Forward,
+and the local persistence of the view last left. A `p` naming no registered tab
+falls back to the first map panel rather than leaving the page blank, so a
+link from a build with another tab still opens.
+
+A new view therefore adds a tab record, a `<div role="tabpanel">`, one branch
+in `renderCurrentView`, and nothing else. It does not add a URL field, a
+version bump, or a second persistence path. A tab whose rows are not
+protein-coding genes also adds a one-column layout class — the CDS controls
+rail and the gene detail rail have nothing to act on beside it — and names that
+class in `workspaceColumns`, so the rail handles go with the rails rather than
+being left behind a `display: none`.
+
+A tab that reads data another tab owns takes that state through one named
+accessor and supplies its own default when the owner has not run. The tRNA tab
+is the worked example: it reads the chromosome's coordinate window through
+`trnaViewport()`, falls back to the full primary replicon when that view has
+never drawn, and says on screen which window it is showing. Selection never
+crosses; an explicit, labelled hand-off button is what moves another tab's
+camera, and it changes no selection there. Panel state that is not in the link
+survives a tab switch by construction: the panel is built once and updated, not
+rebuilt on each visit.
+
 Before applying a decoded snapshot, all state fields reset to fresh defaults;
 omitted default-valued fields therefore cannot leak from the prior view. One
 malformed percent-encoded field is ignored without discarding valid neighboring

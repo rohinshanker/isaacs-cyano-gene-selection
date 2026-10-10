@@ -44,6 +44,7 @@ import { REGULATORY_TAB, RegulatorySitesPanel } from '../../site/js/ui/regulator
 import { STRAIN_FITNESS_TAB, StrainFitnessPanel, UNAVAILABLE_TEXT }
   from '../../site/js/ui/strain-fitness.js';
 import { CITATIONS_TAB } from '../../site/js/ui/citations.js';
+import { TRNA_TAB } from '../../site/js/ui/trna-viewer.js';
 import { describeGeneView, renderGeneViewer } from '../../site/js/ui/gene-viewer.js';
 import { renderMetricHelp } from '../../site/js/ui/metric-help.js';
 import { describeLoad } from '../../site/js/ui/load-progress.js';
@@ -419,7 +420,7 @@ test('each organism remembers its own last view, and a bare link opens fresh', (
 async function everythingSaid(dataset, registry, organism) {
   const said = [];
   const panels = panelsFor(organism);
-  const tabs = [...panels.slice(0, 2), CHROMOSOME_TAB, ...panels.slice(2), LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB];
+  const tabs = [...panels.slice(0, 2), CHROMOSOME_TAB, TRNA_TAB, ...panels.slice(2), LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB];
   for (const tab of tabs) {
     said.push(`${panelName(tab, organism)}. ${tabBlurb(tab, organism)} ${tab.source ?? ''}`);
   }

@@ -157,17 +157,27 @@ test('the colour scale is resolved once and named in both accessible description
     /colorScaleControl: colors\.scaleControl,\s*scaleInformation: scaleInformation\(colors\),\s*colorScaleClause: colorScaleClause\(colors\),/);
 });
 
-test('the chromosome tab is a registered tab with its own tabpanel container', () => {
+test('the chromosome and tRNA tabs are registered tabs with their own tabpanels', () => {
   assert.match(app,
-    /const ALL_TABS = \[\s*\.\.\.MAP_PANELS\.slice\(0, 2\), CHROMOSOME_TAB, \.\.\.MAP_PANELS\.slice\(2\),\s*LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,\s*\];/,
-    'the chromosome view is the third selectable tab in the shared tablist');
+    /const ALL_TABS = \[\s*\.\.\.MAP_PANELS\.slice\(0, 2\), CHROMOSOME_TAB, TRNA_TAB, \.\.\.MAP_PANELS\.slice\(2\),\s*LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,\s*\];/,
+    'the chromosome view is the third selectable tab and the tRNA tab follows it');
   assert.match(html,
     /<div id="chromosome-view" role="tabpanel" aria-labelledby="panel-tab-chromosome" hidden><\/div>/);
   assert.equal((html.match(/id="chromosome-view"/g) ?? []).length, 1);
-  // The map tabpanel and this one are never both on screen.
+  assert.match(html,
+    /<div id="trna-view" role="tabpanel" aria-labelledby="panel-tab-trna" hidden><\/div>/);
+  assert.equal((html.match(/id="trna-view"/g) ?? []).length, 1);
+  // The map tabpanel and these are never both on screen.
   assert.match(app, /element\('chromosome-view'\)\.hidden = !chromosomeActive;/);
+  assert.match(app, /element\('trna-view'\)\.hidden = !trnaActive;/);
   assert.match(app, /element\('map-view'\)\.hidden = !mapActive;/);
   assert.match(app, /classList\.toggle\('chromosome-active', chromosomeActive\)/);
+  assert.match(app, /classList\.toggle\('trna-active', trnaActive\)/);
+  // The tRNA layer is in that tab and nowhere else: no chromosome-hosted copy.
+  assert.ok(!/trnaElement\(\)/.test(app), 'the chromosome view hosts no tRNA viewer');
+  assert.equal((app.match(/new TrnaViewer\(/g) ?? []).length, 1,
+    'one viewer, built once, so its search and selection survive a tab switch');
+  assert.match(app, /trnaViewer = new TrnaViewer\(element\('trna-view'\), \{/);
 });
 
 /**

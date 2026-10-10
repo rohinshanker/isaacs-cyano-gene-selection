@@ -1096,12 +1096,25 @@ input[type="range"] { width: 100%; }
 .chromosome-unavailable p { margin: 0 0 0.35rem; }
 .chromosome-unavailable ul { margin: 0; padding-left: 1.1rem; font-size: 0.85rem; }
 
-/* Independent noncoding tRNA layer -------------------------------------- */
-.chromosome-trna { margin-top: 0.85rem; }
-.trna-viewer {
-  border-top: 1px solid var(--line);
-  padding-top: 0.85rem;
+/* Independent noncoding tRNA tab ---------------------------------------- */
+
+/* One column, like the other tabs whose rows are not protein-coding genes:
+   there is no CDS to select here, so the controls rail and the gene detail rail
+   have nothing to act on and are hidden rather than left beside a list they
+   cannot touch. The hand-off button is how this tab reaches the chromosome. */
+#main.trna-active {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1100px;
+  margin-inline: auto;
 }
+#main.trna-active > .analysis { grid-column: 1; grid-row: 1; }
+#main.trna-active > .controls,
+#main.trna-active > .resize-handle,
+#main.trna-active > .detail,
+#main.trna-active .analysis > :not(#map-section) { display: none; }
+#trna-view { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.75rem; }
+.trna-viewer { display: grid; gap: 0.5rem; }
+.trna-show-on-chromosome { margin-bottom: 0.65rem; }
 .trna-heading-row {
   display: flex;
   align-items: baseline;
@@ -1152,6 +1165,7 @@ input[type="range"] { width: 100%; }
   border-top: 2px solid #536774;
 }
 .trna-track-markers { position: absolute; inset: 0; }
+.trna-track-window-note { margin: 0; }
 .trna-marker {
   position: absolute;
   top: 0.46rem;

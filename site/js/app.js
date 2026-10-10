@@ -41,7 +41,8 @@ import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.j
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { STRAIN_FITNESS_TAB, StrainFitnessPanel } from './ui/strain-fitness.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
-import { TrnaViewer } from './ui/trna-viewer.js';
+import { TRNA_TAB, TrnaViewer, trnaLabel } from './ui/trna-viewer.js';
+import { defaultTrnaViewport } from './core/trna-loci.js';
 import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
 import { metricHelp, functionCategoryHelp, overlapColorHelp } from './core/metric-help.js';
@@ -171,13 +172,15 @@ const STORAGE_COMPARE_AXES = STORAGE.compareAxes;
 const COLOR_SOURCE_TOGGLES = organism.annotationSources;
 
 /**
- * The shared tablist: the first two map panels, chromosome/gene, the remaining
- * map panels, then length, regulatory, strain fitness, and source views. A tab's id is the
- * permanent `p` token in the URL hash.
+ * The shared tablist: the first two map panels, chromosome/gene and the tRNA
+ * layer beside it, the remaining map panels, then length, regulatory, strain
+ * fitness, and source views. A tab's id is the permanent `p` token in the URL
+ * hash. tRNA follows Chromosome/Gene because the two read the same coordinate
+ * window, and is its own tab because it is its own population.
  */
 const MAP_PANELS = panelsFor(organism);
 const ALL_TABS = [
-  ...MAP_PANELS.slice(0, 2), CHROMOSOME_TAB, ...MAP_PANELS.slice(2),
+  ...MAP_PANELS.slice(0, 2), CHROMOSOME_TAB, TRNA_TAB, ...MAP_PANELS.slice(2),
   LENGTH_TAB, REGULATORY_TAB, STRAIN_FITNESS_TAB, CITATIONS_TAB,
 ];
 
@@ -1360,20 +1363,48 @@ function renderChromosomeView() {
   });
   // The toolbar exists once the view has rendered, so its section follows.
   chromosomeDataSources()?.update(dataSourcesState());
-  trnaViewer ??= new TrnaViewer(chromosomeView.trnaElement(), {
-    onReveal: (locus) => chromosomeView.revealCoordinate(
-      locus.replicon, locus.start, locus.end,
-    ),
-    onRetry: () => retryFile('trnaLoci'),
-    onAnnounce: announce,
-  });
-  const trnaFile = context.dataset.files?.trnaLoci;
+}
+
+/**
+ * Draw the tRNA tab.
+ *
+ * Its track reads one coordinate window and nothing else from the chromosome
+ * view, so a direct visit that has never drawn that canvas opens on the
+ * genome of record's full primary replicon instead of an unavailable window.
+ */
+function renderTrnaView() {
+  const file = context.dataset.files?.trnaLoci;
   trnaViewer.update({
     payload: context.dataset.trnaLoci,
-    fileState: trnaFile?.state ?? FILE_STATE.ABSENT,
-    fileError: trnaFile?.error ?? null,
-    viewport: chromosomeView.trnaViewport(),
+    fileState: file?.state ?? FILE_STATE.ABSENT,
+    fileError: file?.error ?? null,
+    viewport: chromosomeView.trnaViewport() ?? defaultTrnaViewport(organism.genome),
   });
+}
+
+/**
+ * The tRNA tab's one route into the chromosome view.
+ *
+ * It moves the tab and the camera and nothing else: the pinned gene, the
+ * shortlist, the filters and the colouring are left exactly as they were,
+ * because a tRNA locus is not a selection in the protein-coding population.
+ * The reveal follows the render, since a reader who came straight to the tRNA
+ * tab has never built the chromosome model the reveal reads.
+ */
+function showTrnaOnChromosome(locus) {
+  state.panel = CHROMOSOME_TAB.id;
+  updatePanelTabs();
+  renderCurrentView();
+  persist();
+  const placed = chromosomeView.revealCoordinate(locus.replicon, locus.start, locus.end);
+  element('map-section').scrollIntoView({ block: 'start' });
+  chromosomeView.focusCanvas();
+  announce(placed
+    ? `${trnaLabel(locus)} is in the chromosome window at ${locus.replicon} `
+      + `${locus.start.toLocaleString('en-US')}–${locus.end.toLocaleString('en-US')}. `
+      + 'The pinned gene and the shortlist are unchanged.'
+    : `This view draws no track for ${locus.replicon}, so ${trnaLabel(locus)} cannot be `
+      + 'placed on it.');
 }
 
 /**
@@ -1850,17 +1881,20 @@ function renderCurrentView() {
   const regulatoryActive = state.panel === REGULATORY_TAB.id;
   const fitnessActive = state.panel === STRAIN_FITNESS_TAB.id;
   const chromosomeActive = state.panel === CHROMOSOME_TAB.id;
+  const trnaActive = state.panel === TRNA_TAB.id;
   const mapActive = !citationsActive && !lengthsActive && !regulatoryActive && !fitnessActive
-    && !chromosomeActive;
+    && !chromosomeActive && !trnaActive;
   element('features-used').hidden = !mapActive;
   element('main').classList.toggle('citations-active', citationsActive);
   element('main').classList.toggle('lengths-active', lengthsActive);
   element('main').classList.toggle('regulatory-active', regulatoryActive);
   element('main').classList.toggle('fitness-active', fitnessActive);
   element('main').classList.toggle('chromosome-active', chromosomeActive);
+  element('main').classList.toggle('trna-active', trnaActive);
   workspaceResizer?.update();
   element('map-view').hidden = !mapActive;
   element('chromosome-view').hidden = !chromosomeActive;
+  element('trna-view').hidden = !trnaActive;
   element('length-view').hidden = !lengthsActive;
   element('regulatory-view').hidden = !regulatoryActive;
   element('strain-fitness-view').hidden = !fitnessActive;
@@ -1873,6 +1907,11 @@ function renderCurrentView() {
     // pending dataset operation again once that host exists so a view switch
     // cannot leave its progress bar attached to the hidden map.
     datasetColorProgress.moveTo(activeDatasetColorHost());
+    return;
+  }
+  if (trnaActive) {
+    element('panel-blurb').textContent = `${tabBlurb(TRNA_TAB, organism)} ${TRNA_TAB.source}`;
+    renderTrnaView();
     return;
   }
   if (citationsActive) {
@@ -2777,7 +2816,7 @@ function promotedFileKeys(view) {
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
   if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
-  if (view.panel === CHROMOSOME_TAB.id) keys.add('trnaLoci');
+  if (view.panel === TRNA_TAB.id) keys.add('trnaLoci');
   if (view.panel === STRAIN_FITNESS_TAB.id) keys.add('strainFitness');
   if (view.pinnedId) {
     for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
@@ -3465,6 +3504,14 @@ async function boot() {
     onDetailJump: () => jumpToDetail(),
     onAnnounce: announce,
   }, { organism });
+
+  // Built once, so the tab keeps its search, filters, candidate visibility and
+  // selected locus across every switch away from it and back.
+  trnaViewer = new TrnaViewer(element('trna-view'), {
+    onShowOnChromosome: (locus) => showTrnaOnChromosome(locus),
+    onRetry: () => retryFile('trnaLoci'),
+    onAnnounce: announce,
+  });
 
   regulatorySitesPanel = new RegulatorySitesPanel(element('regulatory-view'), {
     organism,

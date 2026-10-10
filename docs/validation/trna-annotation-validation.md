@@ -317,6 +317,69 @@ all 45 identities and lengths, both strands, the candidate fields, and the
 published browser schema, filtering, overlap grouping, marker clustering, and
 loading/error/unavailable/selection states.
 
+## The tRNA tab
+
+The layer is its own application tab, named **tRNA**, next to Chromosome/Gene
+in the shared tablist, and it exists in exactly one place: there is no second
+copy under the CDS viewer. Its id is `trna`, the permanent `p` token in the URL
+hash, so a direct link, a reload, Back and Forward and the tablist's arrow keys
+all reach it through the same framework every other tab uses. Being its own
+population, it is a one-column layout: the CDS controls rail and the gene
+detail rail have nothing to act on here and are hidden, and that tab offers no
+rail handles to resize.
+
+**The window is the chromosome's; the list is not.** The track draws the
+coordinate window `ChromosomeView.trnaViewport()` publishes, so a pan or zoom
+on that tab regroups these markers. Before that view has ever drawn — a direct
+link or a reload straight onto this tab — `defaultTrnaViewport` supplies the
+genome of record's primary replicon at full length, which is what a fresh
+chromosome view would have handed it. The track says which window it is showing
+and states that the locus list below is never limited by it, so a narrow window
+reads as a narrow window and not as a missing layer.
+
+**Selection is this layer's alone.** Choosing a locus opens this tab's own
+detail and does nothing else: no pin, no preview, no shortlist, no CDS filter,
+no recomputed metric, and no camera movement on another tab. The one route out
+is the explicit **Show on chromosome** button on that detail, which switches to
+Chromosome/Gene and centres the locus's native coordinates while leaving the
+pinned gene, the shortlist, the filters and the colouring exactly as they were.
+Its announcement says so. The search text, the four recorded-value filters, the
+candidate checkbox and the selected locus survive every switch away from this
+tab and back, because the viewer is built once and updated, never rebuilt.
+
+**Truthful states, for declared inputs only.** Loading, integrity or validation
+failure with a retry that recovers in place, unavailable, and ready are
+distinct. An organism whose record does not declare `trnaLoci` shows the
+unavailable sentence and never requests the file — verified for conventional
+and recoded E. coli, which publish no such layer. A link that opens straight
+onto this tab promotes `trnaLoci` so the tab does not open onto data it is
+still waiting for.
+
+The 44 RefSeq loci are visible by default. The one scan-only predicted
+pseudogene candidate is counted in the heading but is hidden behind an explicit
+checkbox. RefSeq loci use circular markers; a marker containing the candidate
+uses a diamond as well as an accessible label. Markers that overlap at the
+current width become a numbered cluster, while the searchable list keeps every
+record reachable and zooming recomputes the clusters.
+
+Search covers stable or locus identity, RefSeq product/isotype and anticodon,
+scan isotype and anticodon, effective anticodon, and replicon. Strand, record
+type, isotype, and anticodon have recorded-value selectors. The isotype and
+anticodon selectors preserve the union of RefSeq and scan values instead of
+collapsing one source into the other. List and track use the same filtered
+population, so every displayed cluster has a reachable row; a selected row is
+the only deliberate exception and remains in both with an explicit retained
+label if later filters or candidate hiding would otherwise remove it. Rows and
+markers are buttons. Marker identity survives responsive reclustering, so a
+focused marker restores focus to the replacement marker that still contains at
+least one of its loci after resize. Selection opens a separate tRNA detail with
+source/run identity, native coordinates, sequence and the annotation-versus-scan
+status. It never invents a RefSeq id or nearest-CDS join, calls a scan score a
+probability, or presents a genomic sequence as a mature or modified tRNA.
+
+The chromosome side of this contract is in
+[chromosome-view.md](chromosome-view.md#the-independent-trna-layer-lives-in-its-own-tab).
+
 ## First-version viewer scope and future scoring
 
 The bounded viewer uses the existing 44 concordant RefSeq loci plus the one

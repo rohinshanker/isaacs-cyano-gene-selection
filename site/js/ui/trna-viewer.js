@@ -1,4 +1,13 @@
-/** Accessible tRNA track, searchable locus list, and independent detail panel. */
+/**
+ * The tRNA tab: an accessible track, a searchable locus list, and this layer's
+ * own detail panel.
+ *
+ * It is its own application tab rather than a block under the CDS viewer
+ * because it is its own population. Nothing here pins, previews, shortlists,
+ * filters or recomputes a protein-coding gene, and the one route into the
+ * chromosome view is the explicit hand-off below, which moves the camera and
+ * the tab and leaves the protein selection where it was.
+ */
 
 import {
   clusterTrnaMarkers, matchesTrnaFilters, overlappingTrnas,
@@ -6,6 +15,20 @@ import {
 import { formatCount } from './format.js';
 
 const CANDIDATE_KIND = 'scan-only-candidate';
+
+export const TRNA_TAB = Object.freeze({
+  id: 'trna',
+  name: 'tRNA',
+  // The panel's own boundary note states the independence rule, so this says
+  // what the tab is and how it reaches the chromosome, and does not repeat it.
+  blurb: 'The annotated tRNA loci of the genome of record, on their own track and in a '
+    + 'searchable list, each with its own detail. Selecting one opens this layer\'s detail '
+    + 'alone; the button on that detail moves the chromosome view to its native coordinate. An '
+    + 'organism whose release publishes no validated tRNA layer says so here instead.',
+  source: 'Read from the organism\'s published tRNA layer: release-pinned annotation beside the '
+    + 'pinned local scan it was compared against. No coordinate from another strain is placed '
+    + 'on this track.',
+});
 
 function option(value, label) {
   const node = document.createElement('option');
@@ -119,7 +142,15 @@ export class TrnaViewer {
     this.trackMarkers = document.createElement('div');
     this.trackMarkers.className = 'trna-track-markers';
     this.track.append(this.trackAxis, this.trackMarkers);
-    this.trackFigure.append(this.trackCaption, this.track);
+    // The window is the chromosome view's, so the track says so: a reader who
+    // left that tab zoomed in must be able to tell a narrow window from an
+    // empty layer. The list below is never limited by it.
+    this.trackWindowNote = document.createElement('p');
+    this.trackWindowNote.className = 'panel-note trna-track-window-note';
+    this.trackWindowNote.textContent = 'The track follows the Chromosome/Gene coordinate '
+      + 'window, which starts at the whole primary replicon. The locus list below is never '
+      + 'limited by that window.';
+    this.trackFigure.append(this.trackCaption, this.track, this.trackWindowNote);
 
     const filters = document.createElement('div');
     filters.className = 'trna-filters';
@@ -330,7 +361,6 @@ export class TrnaViewer {
   selectLocus(locus, focusTarget = null) {
     this.selectedId = locus.id;
     this.renderContent();
-    this.handlers.onReveal?.(locus);
     this.handlers.onAnnounce?.(`${trnaLabel(locus)} selected in the independent tRNA detail.`);
     const restored = this.list.querySelector?.(`[data-trna-id="${CSS.escape(locus.id)}"]`);
     (restored ?? focusTarget)?.focus?.();
@@ -420,6 +450,13 @@ export class TrnaViewer {
     status.textContent = locus.kind === CANDIDATE_KIND
       ? 'Scan-only predicted pseudogene candidate; excluded from the 44-locus copy-count model.'
       : 'RefSeq annotation and the pinned local scan are coordinate-concordant.';
+    const reveal = document.createElement('button');
+    reveal.type = 'button';
+    reveal.className = 'chip-button trna-show-on-chromosome';
+    reveal.textContent = 'Show on chromosome';
+    reveal.setAttribute('aria-label', `Show ${trnaLabel(locus)} on the chromosome view without `
+      + 'changing the pinned gene');
+    reveal.addEventListener('click', () => this.handlers.onShowOnChromosome?.(locus));
     const facts = document.createElement('dl');
     facts.className = 'trna-facts';
     const rows = [
@@ -472,7 +509,7 @@ export class TrnaViewer {
     run.textContent = `${this.payload.assembly} · ${this.payload.annotationRelease} · `
       + `${this.payload.run.tool} ${this.payload.run.version}, ${this.payload.run.mode} · `
       + `run ${this.payload.run.id}`;
-    this.detail.append(title, status, facts, sequenceHeading, sequence, sequenceNote,
+    this.detail.append(title, status, reveal, facts, sequenceHeading, sequence, sequenceNote,
       sourcesHeading, sources, run);
   }
 }
