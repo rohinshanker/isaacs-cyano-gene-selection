@@ -1,14 +1,16 @@
-# O_pca-grid-wheel-zoom__20261009 — Open
+# A_pca-grid-wheel-zoom__20261009 — Active
 
 - **Scope:** Restrict PCA wheel zoom to the plotted grid, excluding axes and outer canvas margins.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-09
 - **Updated:** 2026-10-09
 
 ## Current State
 
-Opened by `cyano-ticket-closing` at the owner's request. Implementation is
-unassigned and has not started. The owner wants wheel zoom to require the
+Implementation owned by `cyano-regulatory-sites` at the owner's request, in
+`worktrees/pca-grid-wheel-zoom-20261009` on branch
+`work/pca-grid-wheel-zoom-20261009`, baseline `3e6651e`. Other chat worktrees,
+browsers and processes are out of scope. The owner wants wheel zoom to require the
 pointer to be inside the PCA grid itself. Scrolling over the areas containing
 axis labels or ticks, or outside the grid, should scroll the page normally.
 
