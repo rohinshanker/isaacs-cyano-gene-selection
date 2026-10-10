@@ -86,6 +86,16 @@ before closure.
 
 ## Open implementation findings
 
+Integration is isolated on `work/syn57-integrated-20261010`, based on completed
+main `2e6839f`. Initial merged gates passed (1,493 JS, 1,159 Python tests), but
+the stronger normalized-source validation revealed S57-C8. The bounded DEM-352
+repair pass remains on its original implementation worktree; the coordinator
+separately enrolled the design in CI. S57-C2 also requires distinct descriptions
+for 75 reverse-complement notes, three initiator anticodon notes and the one Sec
+convention; S57-C1 requires actual manifest verification before ignoring build-time
+digest differences. No closure until exact final patch review and validation.
+
+
 | Id | Status | Required resolution |
 | --- | --- | --- |
 | S57-C1 | open | Rebuild `--check` must build outside the shipped directory and leave it byte-identical after both success and failure; test rejected/interrupted builds and file inventory changes. |
@@ -95,6 +105,7 @@ before closure.
 | S57-C5 | open | Update the documented navigation render harness for two disclosures; its generic selectors must not confuse recoded and conventional menus. |
 | S57-C6 | open | Put all Recoded Genome Scheme facts inside the standard movable/collapsible scheme panel for both recoded records, preserving the same three panel IDs and URL state; no fixed summary card. |
 | S57-C7 | open | Remove false RefSeq coding-sequence source claims from design-specific metric metadata, UI methods and exports; name the publisher design source. |
+| S57-C8 | open | Full normalized-source validation found 336 incorrect protein translations at alternative initiation codons and two missing protein records. Normalize all CDS proteins under unique local design IDs, retain source protein qualifiers, apply initiation M, and persist a source-backed regression test; no NCBI accession is invented. |
 
 The coordinator's independent first-payload check matched all 3,588 plotted CDSs
 to unique source feature coordinates and exact decoded CDS sequences, with zero
