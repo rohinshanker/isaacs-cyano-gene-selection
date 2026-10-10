@@ -128,7 +128,8 @@ drawn over one of them.
   base count in a pointer-transparent fixed overlay anchored to the canvas mark
   but clamped to the usable viewport outside any visible header,
   and outlines the block **and both partner bars at once**. The matching
-  `role="status"` announcement is visually hidden, so changing or dismissing
+  `role="status"` announcement is visually hidden and the duplicate visual hint
+  is hidden from assistive readers, so changing or dismissing
   the hint cannot change the figure height or canvas coordinates. Scrolling the
   page or a nested container, or resizing the viewport, dismisses the fixed hint
   so it cannot float over unrelated content;
@@ -272,6 +273,13 @@ The producer needs only that organism's `*_genomic.gff.gz`. In a worktree where
 `data/raw` is gitignored and empty, link the canonical inputs read-only first;
 without them the contract validator **skips** its re-derivation rather than
 failing, and the skip is the thing to notice.
+
+The continuation chevrons share the lower indicator lane, clear of nucleotide
+glyphs. Partner labels describe letter availability conditionally on zoom and
+visible columns. Long compact base disclosures are named, focusable scroll
+groups: Tab reaches the sequence block and arrow keys reveal its remaining
+bases. Padded overlap targets use the same visible hover feedback as their
+marks. Verify these states using actual keyboard and pointer input.
 
 ## Checks
 

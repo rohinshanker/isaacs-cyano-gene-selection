@@ -312,6 +312,25 @@ upstream edge, −32: at a 1,440 px viewport it measures 732 px, about 672 drawa
 and some 56 nucleotides. A gene with no shipped upstream context opens at −2
 either way.
 
+## Overlapping partners
+
+Each annotated partner keeps its own aligned row. At readable nucleotide zoom,
+shared positions show the native partner bases: the same letters for a
+same-strand partner and complements for an opposite-strand partner. Labels
+state 5′→3′ or 3′→5′ in the selected gene's transcription-oriented columns;
+unrecorded strands and unavailable sequence remain explicitly unknown.
+
+The thin tail spans the exact shared columns. A fixed outlined direction head
+is a visibility aid, not additional shared sequence. Both sit below the base
+letters. Compact gene viewers expose aligned exact-base disclosures with local
+horizontal scrolling for long runs. Split-coordinate gaps remain separate
+blocks, and no sequence is filled across an unrecorded gap.
+
+Use the native, coincident-partner, noncoding, split/origin and unavailable
+fixtures in [the OG validation contract](gene-overlaps.md#checks). Check actual
+letter values, orientation, common column positions, readable glyphs and exact
+tail endpoints at mobile and desktop widths.
+
 ## Admitted marker layers on the sequence
 
 An admitted positional feature is marked in a row **above the ruler**, each mark

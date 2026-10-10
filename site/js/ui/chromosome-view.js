@@ -803,6 +803,8 @@ export class ChromosomeView {
     this.overlapHint = document.createElement('div');
     this.overlapHint.className = 'chromosome-overlap-hint';
     this.overlapHint.setAttribute('role', 'tooltip');
+    // The identical live readout announces the pair once to assistive readers.
+    this.overlapHint.setAttribute('aria-hidden', 'true');
     this.overlapHint.hidden = true;
     this.canvasHost.append(this.canvas, this.overlapHint);
 

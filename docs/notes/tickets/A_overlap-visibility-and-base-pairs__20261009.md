@@ -27,7 +27,13 @@ This ticket changes presentation and interaction, not which genes overlap.
 | OG-V2 | `b09f0c7` | Chromosome overlap hover should show a hover hint without expanding in-flow text above the chromosome or moving the hovered mark away from the pointer. |
 | OG-C1 | `b09f0c7` | Coordinator render inspection: compact exact-base rows must align letters despite unequal selected/partner label widths. |
 | OG-C2 | `b09f0c7` | Coordinator render inspection: shared-span line must not strike through the expanded partner nucleotide letters. |
-| OG-C5 | open | Combined browser render: dismiss fixed hints on viewport or nested scrolling/resizing so they cannot float over unrelated sequence content. |
+| OG-R1 | `ccf3f9d` | Independent review confirmed the viewport-movement defect recorded as OG-C5; fixed with listener cleanup and rendered regression. |
+| OG-R2 | open | Keep continuation chevrons below the partner base letters at clipped edges. |
+| OG-R3 | open | Describe letters conditionally on readable zoom and the visible shared interval. |
+| OG-R4 | open | Give long exact-base scrollers a named keyboard-focusable group. |
+| OG-R5 | open | Apply overlap hover feedback to the padded hit target state. |
+| OG-R6 | open | Hide the duplicate visual hint from assistive readers; preserve the live announcement. |
+| OG-C5 | `ccf3f9d` | Combined browser render: dismiss fixed hints on viewport or nested scrolling/resizing so they cannot float over unrelated sequence content. |
 | OG-C4 | `b09f0c7` | Real emulated touch ends with pointerleave: the first-tap hint must persist and a subsequent tap remain usable; Escape must also dismiss from overlap controls. |
 | OG-C3 | `b09f0c7` | Verify tooltip bounds against the visible viewport when the canvas is partially scrolled; host-only clamping is insufficient. |
 | OG-V3 | `b09f0c7` | Show the overlapping partner's actual base letters, aligned with the selected gene, rather than conveying the overlap only through a coloured block. Make same-strand versus opposite-strand relationships clear. |

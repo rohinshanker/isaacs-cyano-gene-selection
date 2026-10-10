@@ -675,6 +675,15 @@ test('a partner is drawn as its own track, on this gene’s own coordinates', as
       .some((node) => node.textContent === '3′→5′'));
     assert.match(rows[0].getAttribute('aria-label'), /PARTNER, a protein-coding gene/);
     assert.match(rows[0].getAttribute('aria-label'), /on the same coordinates as the bases above/);
+    view.update({
+      gene: { ...longGene(), overlapPartners: view.gene.overlapPartners },
+      table, scheme: null, schemeVersion: 0,
+    });
+    view.fitGene();
+    const zoomedOut = partnerRows(view)[0];
+    assert.equal(zoomedOut.querySelectorAll('text.gene-sequence-partner-base').length, 0);
+    assert.match(zoomedOut.getAttribute('aria-label'),
+      /At readable nucleotide zoom, shared bases within the visible window appear as letters/);
   });
 });
 

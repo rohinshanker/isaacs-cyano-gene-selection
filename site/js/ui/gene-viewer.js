@@ -814,6 +814,9 @@ function baseInspection(gene, table, track) {
   for (const run of alignment.runs) {
     const block = document.createElement('div');
     block.className = 'gene-view-overlap-base-block';
+    block.tabIndex = 0;
+    block.setAttribute('role', 'group');
+    block.setAttribute('aria-label', `Shared native bases with ${track.id}, in selected-gene order`);
     const coordinates = document.createElement('p');
     coordinates.textContent = `Genomic ${formatCount(run.fromPosition)}`
       + `${run.fromPosition === run.toPosition ? '' : ` → ${formatCount(run.toPosition)}`}`

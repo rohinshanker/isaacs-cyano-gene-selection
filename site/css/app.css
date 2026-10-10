@@ -2052,6 +2052,7 @@ input[type="range"] { width: 100%; }
 .gene-view-overlap-against { color: var(--og-opposite); }
 
 .gene-view-overlap.gene-view-annotation:hover .gene-view-overlap-tail,
+.gene-view-overlap.gene-view-annotation.is-hit-hovered .gene-view-overlap-tail,
 .gene-view-overlap.gene-view-annotation:focus-visible .gene-view-overlap-tail {
   stroke-width: 5;
   outline: none;

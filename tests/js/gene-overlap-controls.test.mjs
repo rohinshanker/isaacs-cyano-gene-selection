@@ -145,6 +145,10 @@ test('the compact disclosure exposes exact strand-aware bases and explicit unkno
     const details = host.querySelector('details.gene-view-overlap-bases');
     assert.match(details.querySelector('summary').textContent, /Inspect exact shared bases for ANTI/);
     assert.deepEqual(details.querySelectorAll('code').map((node) => node.textContent), ['TAG', 'ATC']);
+    const block = details.querySelector('.gene-view-overlap-base-block');
+    assert.equal(block.tabIndex, 0, 'long base rows can receive keyboard scroll focus');
+    assert.equal(block.getAttribute('role'), 'group');
+    assert.match(block.getAttribute('aria-label'), /Shared native bases with ANTI/);
     const grid = details.querySelector('.gene-view-overlap-base-grid');
     assert.deepEqual(grid.children.map((node) => node.textContent), [
       'Selected', '5′', 'TAG', '3′', 'ANTI', '3′', 'ATC', '5′',

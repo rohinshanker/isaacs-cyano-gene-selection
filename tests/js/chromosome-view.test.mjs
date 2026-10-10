@@ -3238,6 +3238,9 @@ test('scrolling or resizing dismisses overlap hints and releases viewport listen
     for (const event of ['scroll', 'resize']) {
       view.stepOverlap(1);
       assert.equal(view.overlapHint.hidden, false);
+    assert.equal(view.overlapHint.getAttribute('aria-hidden'), 'true',
+      'the visual copy is hidden from assistive readers; the live region announces once');
+    assert.equal(view.overlapReadout.getAttribute('role'), 'status');
       assert.equal(viewportListeners.get('scroll').capture, true,
         'nested scroll containers also dismiss the fixed hint');
       assert.equal(viewportListeners.size, 2);

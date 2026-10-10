@@ -1698,7 +1698,6 @@ export class GeneSequenceView {
     const left = LABEL_WIDTH;
     const right = LABEL_WIDTH + width;
     for (const { partner, y } of rows.partners) {
-      const mid = y + PARTNER_ROW_HEIGHT / 2;
       const sharedY = y + PARTNER_ROW_HEIGHT - 3;
       const letterBaseline = y + 13;
       const row = svg('g', {
@@ -1770,7 +1769,7 @@ export class GeneSequenceView {
         row.append(svg('path', {
           class: 'gene-sequence-partner-continues',
           'aria-hidden': 'true',
-          d: `M ${tip} ${mid} L ${base} ${y + 2} L ${base} ${y + PARTNER_ROW_HEIGHT - 2} Z`,
+          d: `M ${tip} ${sharedY} L ${base} ${sharedY - 2} L ${base} ${sharedY + 2} Z`,
         }));
       }
       const label = this.describePartnerTrack(partner);
@@ -1793,7 +1792,8 @@ export class GeneSequenceView {
       .join(', ');
     parts.push(`Drawn on this close-up at ${placed}, on the same coordinates as the bases above.`);
     if (partner.alignment.status === 'available') {
-      parts.push(`Its actual shared bases are aligned letter by letter, ${partner.alignment.orientation.left} `
+      parts.push('At readable nucleotide zoom, shared bases within the visible window appear as letters, '
+        + `${partner.alignment.orientation.left} `
         + `to ${partner.alignment.orientation.right} from left to right; opposite-strand letters are `
         + 'the strand-correct complements of the selected gene row.');
     } else if (partner.alignment.status === 'strand-unrecorded') {
