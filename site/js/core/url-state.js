@@ -35,6 +35,8 @@ const KEYS = {
   panelOrder: 'po', panelCollapsed: 'pc', colorScale: 'csc', drawOnTop: 'dt',
   sources: 'ds',
   typeSources: 'src',
+  fitnessDatasetId: 'fd',
+  strainFitnessSources: 'fds',
   axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
   overlapClassFilter: 'og',
@@ -155,6 +157,13 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // Which dataset informs each type metric, where it differs from the default;
     // empty means the defaults. Resolved by the app against the loaded sources.
     typeSources: {},
+    // The local whole-strain dataset choice. It is resolved against the
+    // organism catalogue after data loads; a valid shared selection may
+    // temporarily override it without erasing it.
+    fitnessDatasetId: null,
+    // Explicit whole-strain choices made in Data Sources. This separate typed
+    // collection cannot contain or alias a per-gene measurement source.
+    strainFitnessSources: [],
     // Null means this axis has not yet copied an older link's contributors or
     // received the defaults for a newly selected metric. The app resolves it
     // once against the loaded catalogue, then keeps an independent array.
@@ -226,6 +235,8 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     // number, but it decides what is visible in the image, so a manifest that
     // omitted it could not reproduce the figure it describes.
     drawOnTop: state.drawOnTop ?? DEFAULT_DRAW_DIRECTION,
+    fitnessDatasetId: state.fitnessDatasetId ?? null,
+    strainFitnessSources: [...(state.strainFitnessSources ?? [])],
   };
 }
 
@@ -339,6 +350,14 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   // written `ds` always names a selection that differs from the fresh view.
   if (Array.isArray(state.sources) && state.sources.length > 0) {
     push(KEYS.sources, state.sources.join(','));
+  }
+  // Pin the effective whole-strain dataset, including the initial catalogue
+  // entry, so a shared link survives later changes to catalogue ordering.
+  if (typeof state.fitnessDatasetId === 'string') {
+    push(KEYS.fitnessDatasetId, state.fitnessDatasetId);
+  }
+  if (Array.isArray(state.strainFitnessSources) && state.strainFitnessSources.length > 0) {
+    push(KEYS.strainFitnessSources, state.strainFitnessSources.join(','));
   }
   // Likewise `src` names only the informing datasets that differ from the default.
   const informing = Object.entries(state.typeSources ?? {});
@@ -468,6 +487,14 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   // the shape is read, and an empty or malformed field means the default.
   if (values.has(KEYS.sources)) {
     state.sources = values.get(KEYS.sources).split(',').filter((id) => /^[\w.-]+$/.test(id));
+  }
+  if (values.has(KEYS.fitnessDatasetId)
+    && /^[\w.-]+$/.test(values.get(KEYS.fitnessDatasetId))) {
+    state.fitnessDatasetId = values.get(KEYS.fitnessDatasetId);
+  }
+  if (values.has(KEYS.strainFitnessSources)) {
+    state.strainFitnessSources = values.get(KEYS.strainFitnessSources).split(',')
+      .filter((id) => /^[\w.-]+$/.test(id));
   }
   // An unknown layer or view name is dropped rather than kept: a hash from a
   // build that drew a layer this one does not have cannot hide it here, and a

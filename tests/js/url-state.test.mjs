@@ -477,6 +477,23 @@ test('the dataset selection and the informing datasets ride in the link only whe
   assert.deepEqual(messy.typeSources, { 'type.a.b.c': 'GSE1', 'type.x.y.z': 'PXD1.1' });
 });
 
+test('the local whole-strain dataset choice survives a shared link and export state', () => {
+  const state = {
+    ...defaultState(),
+    fitnessDatasetId: 'nyerges-2026-syn61-fitness',
+    strainFitnessSources: ['nyerges-2026-syn61-fitness'],
+  };
+  const hash = encodeState(state);
+  assert.match(hash, /(?:^|&)fd=nyerges-2026-syn61-fitness(?:&|$)/);
+  assert.equal(decodeState(hash).fitnessDatasetId, 'nyerges-2026-syn61-fitness');
+  assert.equal(applyDecoded(defaultState(), decodeState(hash)).fitnessDatasetId,
+    'nyerges-2026-syn61-fitness');
+  assert.equal(viewStateOf(state).fitnessDatasetId, 'nyerges-2026-syn61-fitness');
+  assert.deepEqual(decodeState(hash).strainFitnessSources, ['nyerges-2026-syn61-fitness']);
+  assert.deepEqual(viewStateOf(state).strainFitnessSources, ['nyerges-2026-syn61-fitness']);
+  assert.equal(decodeState('#fd=not%20safe').fitnessDatasetId, undefined);
+});
+
 test('X and Y dataset selections round-trip independently of each other and global sources', () => {
   const state = {
     ...defaultState(),

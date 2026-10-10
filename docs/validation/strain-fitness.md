@@ -1,22 +1,46 @@
 # Strain fitness layer
 
-`strain_fitness.json` is the first admitted layer whose row unit is a strain
-rather than a gene. It colours no gene, filters no map, and is reachable only
-from the **Strain fitness** tab. The reader is `site/js/core/strain-fitness.js`;
-the tab is `site/js/ui/strain-fitness.js`.
+Whole-strain fitness datasets are the first admitted layers whose row unit is a
+strain rather than a gene. They colour no gene, filter no map, and are reachable
+only from the **Strain fitness** tab. The schema reader is
+`site/js/core/strain-fitness.js`; catalogue selection and loading are in
+`site/js/core/strain-fitness-datasets.js`; the tab is
+`site/js/ui/strain-fitness.js`.
 
-The layer is **organism-neutral**. It is not in `STUDY_LAYER_KEYS`, so the
-loader asks for it in every organism's data directory and a release that does
-not publish it settles as `absent`. The file itself declares which organism and
-assembly it belongs to, and the validator refuses it against the dataset's own
-— without that, a file copied into the wrong data directory would be drawn
-under another organism's labels. Never add `strainFitness` to a metric, colour,
-or axis registry: those are registries of per-gene values, and no gene has one
-of these.
+Each organism owns a `strainFitnessDatasets` catalogue. An organism with no
+entries makes no request; every admitted entry has a stable id, visible label,
+and payload file. The file itself still declares which organism and assembly it
+belongs to, and the validator refuses a mismatch. Never add a whole-strain
+catalogue entry to a metric, colour, axis, or gene-filter registry: those
+registries contain per-gene values, and no gene has one of these.
 
-It loads in **tier 5**, alone, after every per-gene layer. Nothing the map or
-the gene detail draws waits on it, which is why a file that cannot be read
-costs only its own tab.
+The catalogue loader is independent of the staged gene loader and starts the
+active payload lazily when the tab is rendered. Each dataset has its own
+idle/loading/ready/failed record and retry attempt. Nothing the map or gene
+detail draws waits on it. A response is stored only under the dataset id that
+requested it; attempt tokens also prevent an older request from replacing a
+newer retry. Manifest-addressed responses must match both the declared byte
+length and SHA-256. A stale cached response is reloaded once; a second mismatch
+fails closed. The single-step `loadDataset` tool contract still validates the
+legacy `strain_fitness.json` path for directory validators.
+
+## Dataset selection
+
+The local whole-strain choice is `fitnessDatasetId` (`fd` in a shared link).
+The effective id is written even for the first catalogue entry: shared links
+pin that dataset if later releases add entries or change their order. This
+records the effective choice, not whether a reader manually changed it.
+It is separate from strain, condition, search, and page filters. Switching the
+dataset clears those subordinate filters and page before the new payload is
+shown, so ids from one schema cannot silently filter another.
+
+Data Sources carries whole-strain choices in its separately typed
+`strainFitnessSources` collection (`fds` in a shared link). Its checkboxes use
+catalogue ids directly. Exactly one checked dataset takes over and the local
+selector is hidden. With two or more checked, the app never pools or chooses:
+it keeps the local choice, shows the selector, and states the ambiguity. A
+per-gene source id has no representation path into this collection, even when
+it shares a study or citation with the whole-strain payload.
 
 ## Schema
 
@@ -125,9 +149,9 @@ Three states, three sentences, which must not borrow each other's wording:
 
 | State | What the tab says |
 | --- | --- |
-| the release publishes no layer | `Strain fitness measurements are unavailable in this dataset.` |
-| the file is still in flight | `Loading strain fitness measurements…` |
-| the file failed its schema | `Strain fitness measurements could not be loaded.` plus the loading tail's named failure and its Retry |
+| the organism admits no dataset | `Strain fitness measurements are unavailable in this dataset.` |
+| the active dataset is still in flight | active dataset identity plus `Loading strain fitness measurements…` |
+| the active dataset failed | active dataset identity plus `Strain fitness measurements could not be loaded.`, its named error, and `Retry this dataset` |
 
 A malformed layer leaves the gene application untouched: the map, its colours
 and every other tab still work.
@@ -135,9 +159,11 @@ and every other tab still work.
 ## Export
 
 Two TSVs, `growthTsv` and `wellsTsv`. Each is a `#`-prefixed preamble of fixed
-key-value lines — organism, provenance class, citation, DOI, study id, source
-file and its SHA-256, retrieval date, comparison strain, every declared unit,
-the selection, and the row count — then a header row, then the rows.
+key-value lines — catalogue dataset id and label, selection origin and origin
+ids, organism, provenance class, citation, DOI, study id, source file and its
+SHA-256, retrieval date, comparison strain, every declared unit, the subordinate
+strain/condition/search selection, and the row count — then a header row, then
+the rows. Download names include the catalogue dataset id.
 
 Rows are sorted by strain, condition, plate, well and record id, not by their
 order in the file, so one selection is one byte string however the source was
@@ -147,10 +173,12 @@ source label are collapsed to spaces. Replicates are written `1=24.1;2=NA;3=25`.
 
 ## Validation
 
-Automated: `tests/js/strain-fitness.test.mjs` (schema refusals, selection,
-export determinism, and the layer through the staged loader) and
-`tests/js/strain-fitness-panel.test.mjs` (the rendered states). Both read the
-layer the fixture generator builds, so the fixture and the reader cannot drift.
+Automated: `tests/js/strain-fitness.test.mjs` (schema refusals, filtering, and
+export determinism), `tests/js/strain-fitness-datasets.test.mjs` (zero/one/many
+catalogues, shared-choice resolution, per-dataset load/failure/retry and races),
+and `tests/js/strain-fitness-panel.test.mjs` (rendered states and identity).
+They read the layer the fixture generator builds, so the fixture and reader
+cannot drift.
 
 Fixtures: `npm run generate:test-fixtures` writes
 `tests/fixtures/data-strain-fitness/`, which carries every state the panel must
@@ -161,34 +189,28 @@ itself `synthetic-test-fixture`; nothing in it is a measurement.
 Rendered, from this checkout on a task-specific port:
 
 ```sh
-python3 -m http.server <port> --bind 127.0.0.1 --directory "$PWD"
-mkdir -p .playwright-cli/<session>/data-malformed
-cp tests/fixtures/data-strain-fitness/*.json .playwright-cli/<session>/data-malformed/
-# Give the copy a no-growth row with a doubling time, which the schema refuses:
-python3 -c "import json,pathlib;p=pathlib.Path('.playwright-cli/<session>/data-malformed/strain_fitness.json');d=json.loads(p.read_text());d['growth']['records'][5]['doublingTimeMinutes']=90;p.write_text(json.dumps(d,indent=1)+chr(10))"
-PLAYWRIGHT_MCP_OUTPUT_DIR="$PWD/.playwright-cli/<session>" playwright-cli -s=<session> \
-  open "http://127.0.0.1:<port>/site/index.html?uiArtifacts=$PWD/.playwright-cli/<session>"
-playwright-cli -s=<session> run-code --filename=tools/ui/check_strain_fitness.js
+python3 -m http.server 8886 --bind 127.0.0.1 --directory "$PWD"
+fitness_session="fitness-check-$(date +%s)"
+fitness_artifacts="$(mktemp -d /tmp/cyano-fitness.XXXXXX)"
+PLAYWRIGHT_MCP_OUTPUT_DIR="$fitness_artifacts" playwright-cli -s="$fitness_session" \
+  open "http://127.0.0.1:8886/site/index.html?uiArtifacts=$fitness_artifacts"
+playwright-cli -s="$fitness_session" run-code --filename=tools/ui/check_strain_fitness.js
 ```
 
-The check script names its own fixture directories and uses
-`.playwright-cli/dem-312-strain-fitness/data-malformed/` for the malformed one;
-point it elsewhere by editing `fixtures` at the top of the script. It walks full
-data, the no-growth row, the expanded units block, a narrowed selection, a
-keyboard pass over the tablist and the panel's controls, both downloads, the
-absent layer and the malformed one, at 375, 768, 1280 and 1440 and on both
-sides of the 960 px and 1240 px column breakpoints. It fails on page overflow,
-on anything outside the panel, on a table that escapes its scroller or cannot
-be scrolled to, on a cell clipped inside its own column, and on any console or
-page error other than the 404 an absent optional file produces.
+Verify the port is free before starting the server; use a different port if
+another session owns it. The check renders the real production Syn61 catalogue,
+an absent UTEX catalogue, and temporary
+synthetic local-multiple, external, ambiguous, invalid, error/retry, and race
+states. Synthetic catalogues and payloads exist only in Playwright network
+routes. It covers 375, 768, 1280 and 1440 widths and exact edges 959/960 and
+1239/1240. It fails on page overflow, content outside the panel, inaccessible
+table overflow, clipped cells, unexpected console/page errors, or failed
+requests.
 
-Inspect the screenshots as well as the assertions. Two repairs came from
-looking rather than from asserting: `overflow-wrap: anywhere` on automatic
-table layout collapsed the strain column to one character per line, which the
-fixed `colgroup` widths now prevent; and the shared `.numeric` rule's
-`white-space: nowrap` kept a declared unit and a replicate series on one line
-and cut them off inside their columns, which `.fitness-table .numeric` now
-overrides. Both were invisible to an assertion on text content.
+Inspect the screenshots as well as the assertions. Keep strain labels readable
+within the fixed `colgroup` widths, and check that units and replicate series
+wrap inside numeric cells. Text-content assertions alone cannot detect these
+layout failures. Close only the browser and server started for this check.
 
 Also apply the repository's [release gate](release-gate.md) before publication.
 

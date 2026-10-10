@@ -474,10 +474,20 @@ function rowSource(layer) {
  * filtered table is not the whole layer, and a file that did not say so would
  * read as if it were.
  */
-function preamble(layer, title, selection, extra, rows) {
+function preamble(layer, title, selection, datasetSelection, extra, rows) {
   const labels = selectionLabels(layer, selection);
+  const identity = datasetSelection ?? {
+    id: layer.source.studyId ?? layer.source.sourceFile,
+    label: layer.source.citation,
+    origin: 'local',
+    originIds: [],
+  };
   const lines = [
     ['table', title],
+    ['datasetId', identity.id],
+    ['datasetLabel', identity.label],
+    ['datasetSelectionOrigin', identity.origin],
+    ['datasetSelectionIds', identity.originIds?.join(',') || null],
     ['organism', `${layer.organismId} ${layer.genome.accession}`],
     ['provenance', layer.provenanceClass],
     ['source', layer.source.citation],
@@ -523,13 +533,13 @@ export const WELL_COLUMNS = Object.freeze([
  * Rows are sorted by strain, condition and record id rather than left in the
  * file's order, so the bytes depend on the selection alone.
  */
-export function growthTsv(layer, selection = {}) {
+export function growthTsv(layer, selection = {}, datasetSelection = null) {
   const records = [...selectGrowth(layer, selection)].sort(compareBy([
     (record) => record.strain.label, (record) => record.condition.label, (record) => record.id,
   ]));
   const { units } = layer.growth;
   return tsv([
-    ...preamble(layer, 'strain fitness — growth', selection, [
+    ...preamble(layer, 'strain fitness — growth', selection, datasetSelection, [
       ['doublingTimeUnit', units.doublingTime],
       ['maximumOd600Unit', units.maximumOd600],
     ], records.length),
@@ -547,14 +557,14 @@ export function growthTsv(layer, selection = {}) {
 }
 
 /** The Biolog wells as TSV, sorted by strain, condition, plate and well. */
-export function wellsTsv(layer, selection = {}) {
+export function wellsTsv(layer, selection = {}, datasetSelection = null) {
   const records = [...selectWells(layer, selection)].sort(compareBy([
     (record) => record.strain.label, (record) => record.condition.label,
     (record) => record.plate.id, (record) => record.well, (record) => record.id,
   ]));
   const { units } = layer.biolog;
   return tsv([
-    ...preamble(layer, 'strain fitness — biolog wells', selection, [
+    ...preamble(layer, 'strain fitness — biolog wells', selection, datasetSelection, [
       ['valueUnit', units.value],
       ['valueReference', units.reference],
       ['valueNormalization', units.normalization],

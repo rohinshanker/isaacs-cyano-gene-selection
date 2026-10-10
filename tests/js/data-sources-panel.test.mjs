@@ -58,6 +58,37 @@ test('an organism with no measured source has no Data Sources section', async ()
   });
 });
 
+test('whole-strain choices are a separately typed Data Sources selection', async () => {
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const changed = [];
+    const choices = [
+      { id: 'fit-a', label: 'Whole-strain fitness A' },
+      { id: 'fit-b', label: 'Whole-strain fitness B' },
+    ];
+    const panel = new DataSourcesPanel(host, {
+      datasets: [], wholeStrainDatasets: choices, wholeStrainSelection: ['fit-a'],
+      onWholeStrainChange: (ids) => changed.push(ids), storage: memoryStorage(),
+    });
+    panel.update({ wholeStrainSelection: ['fit-a'] });
+    assert.equal(host.hidden, false);
+    assert.match(host.querySelector('summary').textContent, /1 whole-strain selected/);
+    const rows = host.querySelectorAll('li.data-sources-whole-strain');
+    assert.deepEqual(rows.map((row) => row.dataset.id), ['fit-a', 'fit-b']);
+    assert.equal(rows[0].querySelector('input').checked, true);
+    assert.equal(rows[1].querySelector('input').checked, false);
+    rows[1].querySelector('input').checked = true;
+    rows[1].querySelector('input').focus();
+    rows[1].querySelector('input').dispatch('change');
+    assert.deepEqual(changed, [['fit-a', 'fit-b']]);
+    assert.equal(document.activeElement.getAttribute('aria-label'),
+      'Select whole-strain fitness dataset Whole-strain fitness B');
+    assert.ok(rows.every((row) => !/expression|gene/i.test(row.textContent)),
+      'whole-strain rows carry no per-gene aliases');
+  });
+});
+
 test('the section opens closed, and is shown only where a data selection informs the colour', async () => {
   await withFakeDocument(async (document) => {
     const { host, panel } = mount(document);

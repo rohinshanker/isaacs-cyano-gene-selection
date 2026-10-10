@@ -100,7 +100,7 @@ test('the file registry orders dependencies before their dependents', () => {
 
 test('the site fetches every registered file and nothing the registry omits', async () => {
   const published = JSON.parse(await site(DATA_MANIFEST_NAME)).files;
-  for (const file of DATA_FILES.filter((entry) => !entry.organismField && entry.key !== 'strainFitness')) {
+  for (const file of DATA_FILES.filter((entry) => !entry.organismField)) {
     assert.ok(published[file.name], `${file.name} is published`);
   }
   assert.ok(!published['codon_pca_reference.json']);
@@ -477,11 +477,14 @@ test('the staged loader and the single-step loader build the same dataset', asyn
   const whole = await loadDataset({ baseUrl: BASE, fetchImpl: siteFetch().fetchImpl });
   for (const file of DATA_FILES) {
     const expected = file.key === 'sequenceContext' ? 'ready'
-      : file.organismField || file.key === 'strainFitness' ? 'absent' : 'ready';
+      : file.organismField ? 'absent' : 'ready';
     assert.equal(dataset.files[file.key].state, expected, file.key);
     assert.equal(whole.files[file.key].state, expected, file.key);
   }
-  assert.equal(dataset.strainFitness, null);
+  assert.equal('strainFitness' in dataset, false,
+    'whole-strain payloads live in their independent catalogue loader');
+  assert.equal(whole.files.strainFitness.state, 'absent',
+    'the single-step tool contract still accounts for the legacy optional file');
   assert.equal(dataset.genes.length, whole.genes.length);
   assert.deepEqual(dataset.genes[100], whole.genes[100]);
   assert.deepEqual(dataset.provenance, whole.provenance);

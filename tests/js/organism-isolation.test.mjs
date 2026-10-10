@@ -472,10 +472,12 @@ async function everythingSaid(dataset, registry, organism) {
       dataset.regulatoryTss ?? null, null,
     );
     said.push(regulatory.textContent);
-    // The strain-fitness layer is organism-neutral: its words come from the
-    // file, so a release without one must say nothing about any organism.
+    // An organism with no admitted whole-strain catalogue says only that the
+    // measurements are unavailable; nothing is borrowed across organisms.
     const fitness = document.createElement('div');
-    new StrainFitnessPanel(fitness, { organism }).update(dataset.strainFitness ?? null, null);
+    new StrainFitnessPanel(fitness, { organism }).update({
+      catalogue: [], selection: null, resource: null,
+    });
     assert.equal(fitness.textContent, UNAVAILABLE_TEXT);
     said.push(fitness.textContent);
     for (const metric of registry.metrics.slice(0, 6)) {

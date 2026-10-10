@@ -40,6 +40,10 @@ import {
 import { LENGTH_TAB, LengthExplorer, lengthsBlurb } from './ui/length-explorer.js';
 import { REGULATORY_TAB, RegulatorySitesPanel } from './ui/regulatory-sites.js';
 import { STRAIN_FITNESS_TAB, StrainFitnessPanel } from './ui/strain-fitness.js';
+import {
+  StrainFitnessDatasetLoader, normalizeStrainFitnessDatasetIds,
+  resolveStrainFitnessSelection, strainFitnessDatasetsFor,
+} from './core/strain-fitness-datasets.js';
 import { CHROMOSOME_TAB, ChromosomeView } from './ui/chromosome-view.js';
 import { TRNA_TAB, TrnaViewer, trnaLabel } from './ui/trna-viewer.js';
 import { defaultTrnaViewport } from './core/trna-loci.js';
@@ -207,10 +211,12 @@ const store = {
 };
 
 const state = defaultState(organism);
+const strainFitnessCatalogue = strainFitnessDatasetsFor(organism);
 let pendingMapJump = false;
 
 /** The staged load in progress, its progress surfaces, and what has landed since the last render. */
 let staged = null;
+let strainFitnessLoader = null;
 let loadProgress = null;
 let foldingActivityId = 0;
 const landed = new Set();
@@ -1940,8 +1946,16 @@ function renderCurrentView() {
   }
   if (fitnessActive) {
     element('panel-blurb').textContent = tabBlurb(STRAIN_FITNESS_TAB, organism);
-    strainFitnessPanel.update(context.dataset.strainFitness,
-      pendingState(context.dataset, 'strainFitness'));
+    const selection = resolveStrainFitnessSelection(strainFitnessCatalogue, {
+      localId: state.fitnessDatasetId,
+      selectedDatasetIds: state.strainFitnessSources,
+    });
+    if (selection.dataset) strainFitnessLoader?.ensure(selection.dataset.id);
+    strainFitnessPanel.update({
+      catalogue: strainFitnessCatalogue,
+      selection,
+      resource: selection.dataset ? strainFitnessLoader?.snapshot(selection.dataset.id) : null,
+    });
     return;
   }
   renderMap();
@@ -1995,7 +2009,10 @@ function dataSourcesState() {
       announce(`${id} ${on ? 'added to' : 'removed from'} the data selection.`);
     },
   };
-  return { selection: sourceSelection(), colorMetricKey: state.colorBy, annotation, informing };
+  return {
+    selection: sourceSelection(), colorMetricKey: state.colorBy, annotation, informing,
+    wholeStrainSelection: state.strainFitnessSources,
+  };
 }
 
 /** The chromosome tab's own Data Sources section, built once its toolbar exists. */
@@ -2008,6 +2025,9 @@ function chromosomeDataSources() {
       judgements: context.dataset.meta.pairJudgements ?? [],
       storage,
       onChange: (ids) => setSources(ids),
+      wholeStrainDatasets: strainFitnessCatalogue,
+      wholeStrainSelection: state.strainFitnessSources,
+      onWholeStrainChange: setStrainFitnessSources,
     });
   }
   return chromosomeDataSourcesPanel;
@@ -2197,6 +2217,14 @@ function setSources(ids) {
   announce(`Data sources: ${sourceSelection().length} selected.`);
 }
 
+/** Apply the separately typed whole-strain choices made in Data Sources. */
+function setStrainFitnessSources(ids) {
+  state.strainFitnessSources = normalizeStrainFitnessDatasetIds(strainFitnessCatalogue, ids);
+  renderAll();
+  persist();
+  announce(`Whole-strain fitness datasets: ${state.strainFitnessSources.length} selected.`);
+}
+
 /**
  * A type metric with several admitted datasets gets its own dataset-selection
  * action. The applied ids belong to that axis, regardless of the global
@@ -2260,6 +2288,9 @@ function buildColorControls() {
     judgements: context.dataset.meta.pairJudgements ?? [],
     storage,
     onChange: (ids) => setSources(ids),
+    wholeStrainDatasets: strainFitnessCatalogue,
+    wholeStrainSelection: state.strainFitnessSources,
+    onWholeStrainChange: setStrainFitnessSources,
   });
   dataSourcesPanel.update(dataSourcesState());
   installColorControls({
@@ -2619,6 +2650,12 @@ function normalizeAndApply(decoded) {
   context.datasets = datasetsFrom(context.dataset.meta);
   state.sources = isDefaultSelection(state.sources, context.datasets)
     ? [] : normalizeSelection(state.sources, context.datasets);
+  state.fitnessDatasetId = resolveStrainFitnessSelection(strainFitnessCatalogue, {
+    localId: state.fitnessDatasetId,
+  }).dataset?.id ?? null;
+  state.strainFitnessSources = normalizeStrainFitnessDatasetIds(
+    strainFitnessCatalogue, state.strainFitnessSources,
+  );
   installTypeMetrics();
   // A link that names a dataset's own metric (an older link, or one written by
   // the per-dataset menus) means that type informed by that dataset.
@@ -2818,7 +2855,6 @@ function promotedFileKeys(view) {
   if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
   if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
   if (view.panel === TRNA_TAB.id) keys.add('trnaLoci');
-  if (view.panel === STRAIN_FITNESS_TAB.id) keys.add('strainFitness');
   if (view.pinnedId) {
     for (const key of ['sourceDerivedCategories', 'annotations', 'candidateEvidence',
       'goIeaEssentiality', 'goTerms', 'tssEvidence']) keys.add(key);
@@ -3242,6 +3278,16 @@ async function boot() {
   performance.mark('cyano:core');
   performance.mark('cyano:prepare-start');
   context.dataset = dataset;
+  strainFitnessLoader = new StrainFitnessDatasetLoader({
+    catalogue: strainFitnessCatalogue,
+    baseUrl: dataBase,
+    dataset,
+    fetchImpl,
+    manifest: load.manifest,
+    onChange: () => {
+      if (booted) queueMicrotask(() => renderAll());
+    },
+  });
   context.recodedGenome = buildRecodedGenomeModel(organism, dataset);
   renderRecodedGenomePanel(element('recoded-genome-panel'), context.recodedGenome);
   applyGeneCount(document, dataset.genes.length);
@@ -3528,6 +3574,18 @@ async function boot() {
   strainFitnessPanel = new StrainFitnessPanel(element('strain-fitness-view'), {
     organism,
     onAnnounce: announce,
+    onDatasetSelect: (id) => {
+      state.fitnessDatasetId = id;
+      renderAll();
+      persist();
+      const label = strainFitnessCatalogue.find((entry) => entry.id === id)?.label ?? id;
+      announce(`Strain fitness dataset: ${label}.`);
+    },
+    onRetry: (id) => {
+      if (!strainFitnessLoader?.retry(id)) return;
+      renderAll();
+      announce(`Retrying strain fitness dataset ${id}.`);
+    },
   });
 
   sidePanel = new SidePanel(element('detail'), {
