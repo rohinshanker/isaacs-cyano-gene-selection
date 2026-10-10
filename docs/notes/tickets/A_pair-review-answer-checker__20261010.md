@@ -37,6 +37,14 @@ already-admitted judgement JSON, not a returned human review sheet.
 
 ## Verification
 
+Coordinator finding **PRA-C1 open** against `6bf1b86`: malformed source tables
+are not fully validated. A repeated `artifact_a` header silently substitutes its
+last value and emits a successful template; `row 0` is accepted as a condition
+identity; and an invalid `axes_passed` value raises an uncaught traceback rather
+than the documented source error. Disposable reproductions are in
+`/tmp/cyano-pair-review-20261010/`. Repair must reject these inputs before emitting
+any template, retain the actual 32-pair order, and add regression tests.
+
 Implemented by `claude-implementer` on DEM-356, 2026-10-10:
 `tools/check_pair_review_answers.py` (`template PAIRS` to stdout,
 `check PAIRS ANSWERS` read-only), `tests/test_check_pair_review_answers.py`, and
