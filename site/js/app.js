@@ -27,6 +27,7 @@ import {
   orderMeasuredFirst, freshViewColorKey,
 } from './core/metric-registry.js';
 import {
+  TAN_CONDITION_SELECTION_VERSION,
   encodeState, decodeState, defaultState, applyDecoded, clearSelections, viewStateOf,
   resetPanelLayout,
 } from './core/url-state.js';
@@ -102,7 +103,7 @@ import { confirmedReset, confirmReset } from './ui/confirm-dialog.js';
 import { DataSourcesPanel } from './ui/data-sources.js';
 import { InfoPopover, tanDisclosure } from './ui/disclosures.js';
 import {
-  datasetsFrom, isDefaultSelection, normalizeSelection, selectedMetricKeys,
+  datasetsFrom, defaultSelection, isDefaultSelection, normalizeSelection, selectedMetricKeys,
 } from './core/data-sources.js';
 import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
@@ -112,7 +113,7 @@ import {
 } from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
-  normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor, typePools,
+  normalizeTypeSources, TAN_CONTROL_SOURCE, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor, typePools,
 } from './core/type-metrics.js';
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
@@ -2661,6 +2662,13 @@ function normalizeAndApply(decoded) {
     );
   }
   context.datasets = datasetsFrom(context.dataset.meta);
+  // Older snapshots omitted the global selection when the pooled Tan source
+  // was the default. Preserve that choice; new and unversioned views use control.
+  if (Number.isFinite(decoded.version) && decoded.version < TAN_CONDITION_SELECTION_VERSION
+    && !decoded.sources?.length && context.datasets.some((dataset) => dataset.id === 'TAN2018_TSS')) {
+    state.sources = defaultSelection(context.datasets)
+      .map((id) => id === TAN_CONTROL_SOURCE ? 'TAN2018_TSS' : id);
+  }
   state.sources = isDefaultSelection(state.sources, context.datasets)
     ? [] : normalizeSelection(state.sources, context.datasets);
   state.fitnessDatasetId = resolveStrainFitnessSelection(strainFitnessCatalogue, {

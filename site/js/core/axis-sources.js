@@ -94,6 +94,6 @@ export function axisDatasetSelectionLabel(metricKey, ids, datasets, pools = true
     return `${dataset?.record?.studyId ?? selected[0]} · ${dataset?.record?.conditionSet ?? 'selected dataset'}`;
   }
   if (pools) return `Pooled (${selected.length} of ${available.length} datasets)`;
-  const first = available.find((candidate) => candidate.id === selected[0]);
-  return `${first?.record?.studyId ?? selected[0]} reads alone (${selected.length} selected)`;
+  const first = contributingDatasets(metricKey, {}, datasets, selected)[0];
+  return `${first?.record?.studyId ?? selected[0]} · ${first?.record?.conditionSet ?? 'selected dataset'} reads alone (${selected.length} selected)`;
 }

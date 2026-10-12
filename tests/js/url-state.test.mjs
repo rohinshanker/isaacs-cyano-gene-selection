@@ -233,14 +233,14 @@ test('an explicit axis in an old link still wins over both defaults', () => {
 test('a fresh view, and a hash this encoder did not write, keep the measured default', () => {
   // No hash at all, and a hand-written fragment with no version: neither is an
   // old snapshot, so neither is migrated.
-  assert.equal(applyDecoded(defaultState(), decodeState('')).axisY, 'tssInitiation');
+  assert.equal(applyDecoded(defaultState(), decodeState('')).axisY, 'tssInitiationControl');
   const handWritten = decodeState('#p=axes&c=gc3');
   assert.ok(!Object.hasOwn(handWritten, 'axisY'));
-  assert.equal(applyDecoded(defaultState(), handWritten).axisY, 'tssInitiation');
+  assert.equal(applyDecoded(defaultState(), handWritten).axisY, 'tssInitiationControl');
 });
 
 test('this encoder writes the migrated version and round-trips its own snapshot', () => {
-  assert.equal(STATE_VERSION, 7);
+  assert.equal(STATE_VERSION, 8);
   assert.ok(STATE_VERSION >= MEASURED_AXES_VERSION);
   const state = defaultState();
   state.panel = 'axes';
@@ -248,7 +248,7 @@ test('this encoder writes the migrated version and round-trips its own snapshot'
   assert.ok(hash.startsWith(`ver=${STATE_VERSION}`), hash);
   const restored = applyDecoded(defaultState(), decodeState(hash));
   assert.equal(restored.axisX, 'lengthNt');
-  assert.equal(restored.axisY, 'tssInitiation');
+  assert.equal(restored.axisY, 'tssInitiationControl');
 
   // A current snapshot that really wants CAI says so, and says so explicitly.
   state.axisY = 'cai';
@@ -259,7 +259,7 @@ test('this encoder writes the migrated version and round-trips its own snapshot'
 
 test('the fresh-view axes are CDS length against measured evidence, never CAI or tAI', () => {
   const state = defaultState();
-  assert.deepEqual({ x: state.axisX, y: state.axisY }, { x: 'lengthNt', y: 'tssInitiation' });
+  assert.deepEqual({ x: state.axisX, y: state.axisY }, { x: 'lengthNt', y: 'tssInitiationControl' });
   assert.ok(!['cai', 'tai'].includes(state.axisY));
   // A plain view carries no axis fields at all.
   const hash = encodeState(state);
@@ -439,11 +439,11 @@ test('the draw direction field remains readable across the later axis-source ver
   // An older link has no `dt`, which means highest — and highest is what every
   // earlier viewer drew, so the two agree and no reader can misread the other's
   // hash. That is the test the version number exists for.
-  assert.equal(STATE_VERSION, 7);
+  assert.equal(STATE_VERSION, 8);
   const older = decodeState('#ver=6&p=native&c=cai');
   assert.equal(applyDecoded(defaultState(), older).drawOnTop, 'highest');
   const newer = decodeState(encodeState({ ...defaultState(), drawOnTop: 'lowest' }));
-  assert.equal(newer.version, 7);
+  assert.equal(newer.version, 8);
 });
 
 test('the export manifest records the direction the picture was drawn in', () => {
@@ -526,7 +526,7 @@ test('a fresh view draws every marker layer everywhere and writes no field for i
   // which is why it did not bump the encoder version.
   assert.deepEqual(defaultState().hiddenMarkers, []);
   assert.doesNotMatch(encodeState(defaultState()), /(^|&)mk=/);
-  assert.equal(STATE_VERSION, 7, 'the hidden marker views did not cause the later version bump');
+  assert.equal(STATE_VERSION, 8, 'the hidden marker views did not cause the later version bump');
 });
 
 test('each view hides its own marks in a shared link, independently of the others', () => {

@@ -45,16 +45,16 @@ test('defaults to CDS length versus measured UTEX evidence and preserves registr
   const registry = registryOf([
     metric('lengthNt', 'CDS length', 'nt', [300, 600]),
     metric('cai', 'CAI', 'index', [0.4, 0.8]),
-    nativeMeasurement('tssInitiation', 'TSS initiation (UTEX 2973)', [12, 40]),
+    nativeMeasurement('tssInitiationControl', 'TSS initiation (UTEX 2973)', [12, 40]),
   ]);
   const projection = buildMetricAxesProjection(registry, 2);
 
-  assert.deepEqual(DEFAULT_METRIC_AXES, { x: 'lengthNt', y: 'tssInitiation' });
-  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'lengthNt', y: 'tssInitiation' });
+  assert.deepEqual(DEFAULT_METRIC_AXES, { x: 'lengthNt', y: 'tssInitiationControl' });
+  assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'lengthNt', y: 'tssInitiationControl' });
   assert.equal(projection.x.key, 'lengthNt');
   assert.equal(projection.x.label, 'CDS length');
   assert.equal(projection.x.unit, 'nt');
-  assert.equal(projection.y.key, 'tssInitiation');
+  assert.equal(projection.y.key, 'tssInitiationControl');
   assert.equal(projection.y.label, 'TSS initiation (UTEX 2973)');
   assert.equal(projection.y.unit, 'counts');
   assert.deepEqual([...projection.x.values], [300, 600]);
@@ -67,7 +67,7 @@ test('a requested CAI axis is still built exactly as asked', () => {
   const registry = registryOf([
     metric('lengthNt', 'CDS length', 'nt', [300, 600]),
     metric('cai', 'CAI', 'index', [0.4, 0.8]),
-    nativeMeasurement('tssInitiation', 'TSS initiation (UTEX 2973)', [12, 40]),
+    nativeMeasurement('tssInitiationControl', 'TSS initiation (UTEX 2973)', [12, 40]),
   ]);
   const projection = buildMetricAxesProjection(registry, 2, { x: 'lengthNt', y: 'cai' });
 
@@ -112,7 +112,7 @@ test('a dataset publishing only conventions falls back rather than drawing nothi
 
   assert.deepEqual(resolveDefaultMetricAxes(registry), { x: 'cai', y: 'cai' });
   assert.deepEqual(resolveDefaultMetricAxes({ metrics: [], byKey: new Map() }),
-    { x: 'lengthNt', y: 'tssInitiation' });
+    { x: 'lengthNt', y: 'tssInitiationControl' });
 });
 
 test('keeps every row slot and counts only finite X/Y pairs', () => {
@@ -167,7 +167,7 @@ test('represents an unavailable metric as NaN rows instead of throwing', () => {
 test('an empty projection is typed, available, and has no finite pairs', () => {
   const registry = registryOf([
     metric('lengthNt', 'CDS length', 'nt', []),
-    nativeMeasurement('tssInitiation', 'TSS initiation (UTEX 2973)', []),
+    nativeMeasurement('tssInitiationControl', 'TSS initiation (UTEX 2973)', []),
   ]);
   const projection = buildMetricAxesProjection(registry, 0);
 

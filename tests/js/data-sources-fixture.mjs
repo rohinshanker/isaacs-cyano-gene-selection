@@ -30,6 +30,9 @@ export function conditionRecord({ id = 'GSE1', row = 1, group = 'standard', trea
  * them is exactly what a declared source looks like to it.
  */
 const QUANTITY_FACTS = {
+  tss_initiation: {
+    'RNA-seq': ['initiation', 'Transcription initiation (RNA-seq)'],
+  },
   rpkm: {
     'RNA-seq': ['abundance', 'RNA abundance'],
     'Ribo-seq': ['occupancy', 'Ribosome occupancy'],
@@ -57,6 +60,7 @@ const QUANTITY_FACTS = {
 };
 
 const QUANTITY_RULES = {
+  tss_initiation: ['Expression', false, false, { nonnegative: true, integral: false, unitInterval: false }],
   rpkm: ['Expression', true, false, { nonnegative: true, integral: false, unitInterval: false }],
   read_count: ['Expression', true, false, { nonnegative: true, integral: true, unitInterval: false }],
   log2_fold_change: ['Fold change', false, true, { nonnegative: false, integral: false, unitInterval: false }],

@@ -158,7 +158,7 @@ test('map help lists the actual distinct feature matrices', () => {
 
 test('explicit-axis help defaults to the fresh-view measured axes', () => {
   const help = projectionHelp('axes', dataset, registry);
-  assert.deepEqual(help.features.map((feature) => feature.key), ['lengthNt', 'tssInitiation']);
+  assert.deepEqual(help.features.map((feature) => feature.key), ['lengthNt', 'tssInitiationControl']);
   assert.match(help.features[1].label, /^Y: TSS initiation/);
   assert.match(help.features[1].role, /UTEX 2973/);
 });
