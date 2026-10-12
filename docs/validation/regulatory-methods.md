@@ -22,14 +22,76 @@ regulation or calibrated biological probability.
 | Method | Source and useful output | Input/runtime boundary |
 | --- | --- | --- |
 | RBS Calculator | [Public Salis-lab model harness](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/ModelTestSystem/examples/RBS/test_RBS_Calculator_v2_1_1.py), translation-initiation modeling | The public v2.1.1 harness imports private `DNAc` code. Original v1.0 needs Python 2 and NUPACK. Code/API/backend access is an open dependency; do not substitute an SD scan under this name. |
-| iDOG / TransTermHP | [iDOG](https://github.com/jayman1466/iDOG) design/screening components; [TransTermHP 2.09](https://transterm.cbcb.umd.edu/) intrinsic terminators | iDOG's promoter-parts library is distinct from genomic promoter-location prediction. Its owner-review hold remains. Evaluate standalone terminator inputs and score semantics separately. |
-| Promoter Calculator | [v1.0 source](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/Promoter_Calculator/Promoter_Calculator_v1_0.py), sigma-70 promoter/TSS model | Source still has Python 2 syntax and GPL v3-or-later terms. Apart from the explicit in-vitro mode, other organism names use E. coli calibration constants. A UTEX string is not a UTEX calibration. |
+| iDOG / TransTermHP | [iDOG](https://github.com/jayman1466/iDOG) design/screening components; [TransTermHP 2.09](https://transterm.cbcb.umd.edu/) intrinsic terminators | iDOG's promoter-parts library is distinct from genomic promoter-location prediction. Its owner-review hold remains. The [standalone pilot](regulatory-transterm.md) pins native inputs, annotation context and score semantics separately. |
+| Promoter Calculator | [v1.0 source](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/Promoter_Calculator/Promoter_Calculator_v1_0.py), sigma-70 promoter/TSS model | The [pinned preparation tool](regulatory-promoter.md) adapts the public Python 2 source for a local Python 3 smoke check while preserving coefficients and GPL v3-or-later terms. Apart from the explicit in-vitro mode, other organism names use E. coli calibration constants. A UTEX string is not a UTEX calibration. |
 | ViennaRNA | Existing [2.7.2 folding contract](rna-folding.md), folding/accessibility comparisons | Preserve model, window and parameter identity. A structure or accessibility value alone is not a regulatory-site call. |
-| STREME | [MEME Suite 5.5.9](https://meme-suite.org/meme-software/index.html), enriched motif discovery | Pin foreground, controls and evaluation split. Motif discovery and genomic site scanning are distinct steps. |
-| Rfam + Infernal | [Rfam release 15.1](https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/README) family models; [Infernal 1.1.5](http://eddylab.org/infernal/) searches | Pin family models/cutoffs and query coordinates. Existing `trna-validate` environment has Infernal 1.1.5; this does not admit a new family layer. |
+| STREME | [MEME Suite 5.5.9](https://meme-suite.org/meme-software/index.html), enriched motif discovery | A [local build recipe](#local-streme-build) is available. Pin foreground, controls and evaluation split; motif discovery and genomic site scanning are distinct steps. |
+| Rfam + Infernal | [Rfam release 15.1](https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/README) family models; [Infernal 1.1.5](http://eddylab.org/infernal/) searches | The [RF01116 pilot](regulatory-rfam.md) pins family bytes, gathering cutoffs and native coordinates with Infernal 1.1.5. A new family search remains computed evidence; the pilot does not admit a browser layer. |
 | IntaRNA | [v3.4.1](https://github.com/BackofenLab/IntaRNA/releases/tag/v3.4.1), candidate RNA interactions | Query/target RNAs, seed/accessibility parameters and coordinate provenance are required. |
 
 These are candidate/runtime boundaries verified against primary sources on
 2026-10-09. They are not a record of seven deployed predictors or validated UTEX
 regulatory annotations. The existing ViennaRNA and tRNA pipelines keep their
 own validated contracts; source-specific additions require evaluated producers.
+
+## Local accessibility indexing
+
+ViennaRNA 2.7.2 provides local unpaired-segment probabilities through
+`RNA.pfl_fold_up(sequence, ulength, window_size, max_bp_span)`. The returned matrix
+is indexed by **segment end**: `matrix[end][length]` describes the oriented
+one-based interval `[end-length+1, end]`. Rows where `end < length` are padding,
+not measured zero accessibility. The installed Python docstring's statement that
+the row is the segment start disagrees with both the runtime and
+[the pinned C implementation](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/partfunc/pf_window.c#L1559).
+The source defines the stretch as starting at `i-x+1`; `store_pU_callback` keeps
+that row index. Check the runtime with a sequence that cannot pair:
+
+```python
+import RNA
+assert RNA.__version__ == "2.7.2"
+p = RNA.pfl_fold_up("A" * 30, 10, 20, 15)
+assert all(p[end][10] == 0 for end in range(1, 10))  # invalid padding
+assert all(abs(p[end][10] - 1) < 1e-12 for end in range(10, 31))
+```
+
+For a native window whose one-based start is `w`, a segment ending at `e` with
+length `k` maps to `[w+e-k, w+e-1]` on the plus strand. For an oriented reverse
+complement of window length `L`, it maps to `[w+L-e, w+L-e+k-1]` on the minus
+strand. A regulatory consumer must preserve window identity, orientation,
+segment length, folding window, maximum pairing span and model temperature.
+The simplified wrapper uses default model settings; use the documented
+`fold_compound.probs_window()` interface for custom model settings. Neither
+unpaired probability nor MFE is a probability of regulatory function.
+
+## Local STREME build
+
+Use the author's [MEME Suite 5.5.9 archive](https://meme-suite.org/meme/meme-software/5.5.9/meme-5.5.9.tar.gz),
+SHA-256 `0406fb7b1dc27f6aab3d6d3a29ecdf617bbdd946690cfa97ca2129bc210bfd12`.
+Verify it before extraction. Keep the archive and generated files in ignored
+scratch, and retain its `COPYING` file. That file states the source terms for
+“educational, research and non-profit purposes”; this recipe does not make a
+separate permission or source-admission decision.
+
+Inside a fresh extracted source tree, the following builds only the selected
+STREME executable and its libraries with an isolated installation prefix. Supply
+the absolute path to the project Python interpreter; no shared installation or
+shell-profile change is needed.
+
+```sh
+./configure --prefix="$PWD/../local" --enable-serial --disable-web \
+  --enable-build-libxml2 --enable-build-libxslt \
+  --with-python=/absolute/path/to/project/.venv/bin/python
+make -C src/libxml2 -j2
+make -C src/libxslt -j2
+make -C src dir.h projrel.h citation.js.h
+make -C src -j2 streme
+src/streme --version
+```
+
+The generated headers are prerequisites when selecting the `streme` target
+rather than the suite's default target. Record the archive, binary, compiler,
+input, flags and output hashes. Runtime success and deterministic motif output
+are not motif-boundary accuracy or UTEX validation. In particular, a motif may
+capture only part of a planted pattern; evaluate recovery independently before
+using such a check as an accuracy benchmark. A native TSS-window producer still
+needs explicit foreground/control cohorts and independent locus/overlap blocks.
