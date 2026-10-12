@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [A_pcc7942-essentiality-color-filter__20261012](A_pcc7942-essentiality-color-filter__20261012.md) | cyano-ui-fixes: add strain-labelled PCC 7942 essentiality coloring and filtering using the Rubin evidence and exact UTEX joins |
 | [O_recoded-genome-functional-annotations__20261012](O_recoded-genome-functional-annotations__20261012.md) | Add missing functional annotations to recoded genomes from exact nonrecoded references, with verified crosswalks and explicit transfer provenance |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | Active 2026-10-12, owned by cyano-regulatory-sites: TransTermHP/RF01116 pilots and Promoter Calculator preparation implemented; ViennaRNA accessibility and isolated STREME runtime checked. Independent reviews accepted; remaining cohort/family/interaction evaluation, RBS code dependency and iDOG hold retained |
