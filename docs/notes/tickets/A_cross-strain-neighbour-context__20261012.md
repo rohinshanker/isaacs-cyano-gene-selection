@@ -39,6 +39,16 @@ CDS-envelope metrics.
 
 ## Verification
 
+- **NC-QA1 — open:** the initial loader eagerly resolved every focal neighbour
+  query (~464 ms for 2,715 native CDSs in a coordinator Node probe). Resolve/cache
+  only the viewed gene, preserving atomic clear/reload and export serialization.
+- **NC-QA2 — open:** a draft change to the shared transcription-piece helper was
+  justified by randomly generated multi-piece origin joins whose transcript
+  boundary is ambiguous. Keep current viewer coordinate behavior unless native
+  annotation supplies a proven ordering; an oracle must not choose that boundary
+  from an arbitrary array index.
+
+
 Before completion: exact geometry tests for both strands, origin wrapping,
 joined features, ties/containment, overlaps versus gaps, unavailable annotations
 and organism isolation; tests for pin/preview and keyboard behavior; render the
