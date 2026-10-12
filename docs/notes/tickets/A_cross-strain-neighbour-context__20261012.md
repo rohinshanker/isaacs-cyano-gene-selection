@@ -50,6 +50,10 @@ CDS-envelope metrics.
 - **NC-QA3 — open:** at 375 px the direction schematic wraps the entire 3′
   downstream label to the left edge of a new row. Preserve the deliberate
   upstream–focal–downstream ordering at narrow widths and inspect the rerender.
+- **NC-QA4 — open:** the complete Syn57 catalogue exposes adjacent CDS pieces
+  for b2891 that normalize to one occupied interval. Reconcile canonical occupied
+  bases without changing the native CDS segments or frameshift metadata; verify
+  all six published catalogues and the independent source contract.
 
 
 Before completion: exact geometry tests for both strands, origin wrapping,
