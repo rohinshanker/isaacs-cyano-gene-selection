@@ -147,6 +147,10 @@ Their raw hashes (and JSON hashes that include them) therefore depend on the
 build and checkout path. Compare candidate TSVs and recorded parameters for
 cross-checkout result reproduction; do not require identical raw-report hashes.
 
+The JSON schema is version 2. It separates gene/pseudogene counts and adds the
+near-boundary indicator also present in TSV. Preserve the producer commit and
+artifact hashes when comparing earlier scratch runs.
+
 ## Failure and edge-case contract
 
 - FASTA records must have unique, non-empty IDs and only `A`, `C`, `G`, or `T`;

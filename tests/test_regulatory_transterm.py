@@ -7,6 +7,7 @@ import gzip
 import hashlib
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -396,7 +397,7 @@ def test_build_payload_pins_provenance_and_control_meaning(tmp_path):
     assert "not a calibrated probability" in payload["confidenceContract"]["limitation"]
     assert payload["provenance"]["control"]["interpretation"].startswith("null hit")
     assert payload["runs"][0]["counts"]["total"] == 1
-    assert json.loads(json.dumps(payload))["schemaVersion"] == 1
+    assert json.loads(json.dumps(payload))["schemaVersion"] == 2
 
 
 def test_argument_parser_requires_all_artifact_paths():
@@ -449,8 +450,8 @@ def test_output_creation_errors_are_user_facing(tmp_path):
     assert blocker.read_text() == "preserve"
 
 
-@pytest.mark.parametrize("failure", [regulatory_transterm.PilotError("write failed"), KeyboardInterrupt()])
-def test_failed_report_batch_removes_previously_created_outputs(tmp_path, monkeypatch, failure):
+@pytest.fixture
+def synthetic_pilot(tmp_path, monkeypatch):
     inputs = {}
     for key in ("transterm", "expterm", "source_archive", "fasta", "gff"):
         inputs[key] = write(tmp_path / key, key)
@@ -463,6 +464,12 @@ def test_failed_report_batch_removes_previously_created_outputs(tmp_path, monkey
     monkeypatch.setattr(regulatory_transterm, "load_gff_genes", lambda *a: ([], {"chr": True}, "test"))
     monkeypatch.setattr(regulatory_transterm, "validate_pinned_utex", lambda *a: None)
     monkeypatch.setattr(regulatory_transterm, "run_transterm", lambda *a: report(PLUS))
+    return args, inputs, outputs
+
+
+@pytest.mark.parametrize("failure", [regulatory_transterm.PilotError("write failed"), KeyboardInterrupt()])
+def test_failed_report_batch_removes_previously_created_outputs(synthetic_pilot, monkeypatch, failure):
+    args, inputs, outputs = synthetic_pilot
     real_writer = regulatory_transterm._write_exclusive
 
     def fail_third(path, data):
@@ -495,4 +502,98 @@ def test_near_boundary_hits_are_flagged_not_silently_excluded():
     assert rows[0]["nearLinearizedBoundary"] is False
     near_end = PLUS.replace("20 - 30", "220 - 230")
     rows, _ = regulatory_transterm.parse_report(report(near_end, length=300), {"chr": 300}, "native")
-    assert rows[0]["nearLinearizedBoundary"] is True  # the scored tail enters the band
+    assert rows[0]["nearLinearizedBoundary"] is True  # hairpin and tail enter the band
+
+
+@pytest.mark.parametrize("loader,suffix", [
+    (regulatory_transterm.load_fasta, "fna.gz"),
+    (lambda path: regulatory_transterm.load_gff_genes(path, {"chr": "A" * 100}), "gff.gz"),
+])
+def test_corrupt_compressed_inputs_fail_cleanly(tmp_path, loader, suffix):
+    path = tmp_path / suffix
+    path.write_bytes(b"not gzip")
+    with pytest.raises(regulatory_transterm.PilotError, match="could not read"):
+        loader(path)
+
+
+@pytest.mark.parametrize("end,circular", [(120, False), (190, True), (201, True)])
+def test_invalid_origin_wrapping_intervals_are_rejected(tmp_path, end, circular):
+    gff = write(tmp_path / "wrap.gff", (
+        f"chr\tR\tregion\t1\t100\t.\t+\t.\tIs_circular={str(circular).lower()}\n"
+        f"chr\tR\tgene\t90\t{end}\t.\t-\t.\tID=bad\n"
+    ))
+    with pytest.raises(regulatory_transterm.PilotError, match="out-of-bounds"):
+        regulatory_transterm.load_gff_genes(gff, {"chr": "A" * 100})
+
+
+@pytest.mark.parametrize("wrap", [False, True])
+def test_unrepresentable_minus_strand_annotations_are_rejected(tmp_path, monkeypatch, wrap):
+    monkeypatch.setattr(regulatory_transterm, "EXPECTED_REPLICON_LENGTHS", {"chr": 100})
+    gene = {"id": "single", "replicon": "chr", "start": 100 if wrap else 20,
+            "end": 5 if wrap else 20, "strand": "-", "wrapsOrigin": wrap}
+    with pytest.raises(regulatory_transterm.PilotError, match="one-base minus-strand"):
+        regulatory_transterm._write_coords(tmp_path / "coords", [gene])
+
+
+@pytest.mark.parametrize("failure", [OSError("exec failed"), subprocess.TimeoutExpired("tool", 1)])
+def test_execution_failures_are_typed(monkeypatch, failure):
+    def fail(*args, **kwargs):
+        raise failure
+    monkeypatch.setattr(regulatory_transterm.subprocess, "run", fail)
+    with pytest.raises(regulatory_transterm.PilotError, match="execution failed"):
+        regulatory_transterm.run_transterm(Path("tool"), Path("model"), [], Path("coords"), 76, 1)
+
+
+def test_inconsistent_banners_fail_before_outputs(synthetic_pilot, monkeypatch):
+    args, _, outputs = synthetic_pilot
+    reports = iter([report(PLUS), report(PLUS).replace("v2.08", "v2.09")])
+    monkeypatch.setattr(regulatory_transterm, "run_transterm", lambda *a: next(reports))
+    with pytest.raises(regulatory_transterm.PilotError, match="different runtime banners"):
+        regulatory_transterm.run_pilot(args)
+    assert all(not p.exists() for p in outputs.values())
+
+
+def test_wrong_model_pin_fails_before_outputs(synthetic_pilot):
+    args, _, outputs = synthetic_pilot
+    args.expterm.write_text("changed model")
+    with pytest.raises(regulatory_transterm.PilotError, match="expterm.dat SHA-256"):
+        regulatory_transterm.run_pilot(args)
+    assert all(not p.exists() for p in outputs.values())
+
+
+def test_successful_report_batch_is_complete(synthetic_pilot):
+    args, _, outputs = synthetic_pilot
+    payload = regulatory_transterm.run_pilot(args)
+    assert all(p.is_file() for p in outputs.values())
+    assert json.loads(outputs["output_json"].read_text()) == payload
+    assert outputs["output_tsv"].read_bytes() == regulatory_transterm.tsv_bytes(payload)
+    assert [r["counts"]["total"] for r in payload["runs"]] == [1, 1]
+
+
+@pytest.mark.parametrize("interrupt", [False, True])
+def test_batch_cleanup_retains_original_error_and_attempts_all_files(synthetic_pilot, monkeypatch, interrupt):
+    args, _, outputs = synthetic_pilot
+    real_writer = regulatory_transterm._write_exclusive
+    real_unlink = Path.unlink
+    failure = KeyboardInterrupt() if interrupt else regulatory_transterm.PilotError("original failure")
+    def fail_third(path, data):
+        if path == outputs["output_tsv"]:
+            raise failure
+        real_writer(path, data)
+    def refuse_native(path, *a, **kw):
+        if path == outputs["native_raw"]:
+            raise PermissionError("unlink denied")
+        return real_unlink(path, *a, **kw)
+    monkeypatch.setattr(regulatory_transterm, "_write_exclusive", fail_third)
+    monkeypatch.setattr(Path, "unlink", refuse_native)
+    with pytest.raises(type(failure)) as exc:
+        regulatory_transterm.run_pilot(args)
+    if interrupt:
+        assert exc.value is failure
+        assert "unlink denied" in exc.value.__notes__[0]
+    else:
+        assert "original failure" in str(exc.value)
+        assert "unlink denied" in str(exc.value)
+        assert exc.value.__cause__ is failure
+    assert outputs["native_raw"].exists()
+    assert not outputs["control_raw"].exists()

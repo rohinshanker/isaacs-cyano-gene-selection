@@ -287,6 +287,8 @@ def _write_coords(path: Path, genes: Iterable[dict[str, object]]) -> None:
                 segments = ((int(gene["start"]), sequence_length), (1, int(gene["end"])))
                 for part, (segment_start, segment_end) in enumerate(segments, 1):
                     if gene["strand"] == "-":
+                        if segment_start == segment_end:
+                            raise PilotError("cannot encode a one-base minus-strand annotation")
                         segment_start, segment_end = segment_end, segment_start
                     handle.write(
                         f"{gene['id']}__origin_part_{part}\t{segment_start}\t{segment_end}"
@@ -296,6 +298,8 @@ def _write_coords(path: Path, genes: Iterable[dict[str, object]]) -> None:
             start = int(gene["start"])
             end = int(gene["end"])
             if gene["strand"] == "-":
+                if start == end:
+                    raise PilotError("cannot encode a one-base minus-strand annotation")
                 start, end = end, start
             handle.write(f"{gene['id']}\t{start}\t{end}\t{gene['replicon']}\n")
 
@@ -473,7 +477,7 @@ def build_payload(
     shuffle_seed: int,
 ) -> dict[str, object]:
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "method": "TransTermHP",
         "recordOrigin": "computed",
         "evidenceBasis": "proxy",
@@ -511,7 +515,7 @@ def build_payload(
                     "replace": "if(i == EOF) return false;",
                     "with": "if(i == EOF) return 0;",
                     "occurrences": 3,
-                    "scope": "documented macOS compatibility recipe; not binary attestation",
+                    "scope": "documented C++ compatibility recipe; not binary attestation",
                 },
             },
             "toolRuntime": {
@@ -607,6 +611,9 @@ def tsv_bytes(payload: dict[str, object]) -> bytes:
 def _write_exclusive(path: Path, data: bytes) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise PilotError(f"could not create output directory {path.parent}: {error}") from error
+    try:
         handle = path.open("xb")
     except FileExistsError as error:
         raise PilotError(f"refusing to overwrite {path}") from error
@@ -724,9 +731,18 @@ def run_pilot(arguments: argparse.Namespace) -> dict[str, object]:
         for path, data in writes:
             _write_exclusive(path, data)
             created.append(path)
-    except BaseException:
+    except BaseException as error:
+        cleanup_errors = []
         for path in created:
-            path.unlink(missing_ok=True)
+            try:
+                path.unlink(missing_ok=True)
+            except OSError as cleanup_error:
+                cleanup_errors.append(f"{path}: {cleanup_error}")
+        if cleanup_errors:
+            note = "partial outputs could not be removed: " + "; ".join(cleanup_errors)
+            if isinstance(error, PilotError):
+                raise PilotError(f"{error}; {note}") from error
+            error.add_note(note)
         raise
     return payload
 
