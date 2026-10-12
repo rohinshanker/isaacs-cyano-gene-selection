@@ -70,8 +70,9 @@ test('native neighbour disclosure keeps open state and focus through preview and
     update(index + 1);
     details = host.querySelector('details.gene-neighbours');
     assert.equal(details.open, true);
-    assert.equal(details.querySelector('.gene-neighbours-schematic').querySelector('strong').getAttribute('aria-label'),
-      'M744_RS00010, focal transcription direction');
+    assert.equal(details.querySelector('.gene-neighbours-schematic').getAttribute('role'), 'img');
+    assert.match(details.querySelector('.gene-neighbours-schematic').getAttribute('aria-label'),
+      /M744_RS00010 in focal transcription direction/);
     assert.strictEqual(document.activeElement, details.querySelector('summary'));
   });
 });

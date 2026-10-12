@@ -78,7 +78,7 @@ function oracle(focal, catalogue, length) {
     const next = nextBase(boundary);
     if (arc.has(next)) return { status: 'no-flank', ids: [] };
     const blocking = catalogue.filter((record) => partnerIds.has(record.id)
-      && bases(record).has(boundary) && bases(record).has(next)).map((record) => record.id).sort();
+      && bases(record).has(next)).map((record) => record.id).sort();
     if (blocking.length) return { status: 'overlap-blocked', blockedBy: blocking, ids: [] };
     while (true) {
       current = nextBase(current);
@@ -247,4 +247,34 @@ test('joined OG outward pieces block farther flanks, including ties, on both str
     const secondOG = feature('OG2', [[22, 24], [40, 42]]);
     assert.deepEqual(result(focal, [outward, secondOG, tie])[key].blockedBy, ['OG', 'OG2']);
   }
+});
+
+
+test('all OG partners on the first outward base block, including joined ties', () => {
+  for (const strand of ['+', '-']) {
+    const focal = feature('focal', [[20, 30]], strand);
+    const crossing = feature('P', [[25, 35]]);
+    const joined = feature('Q', [[22, 24], [31, 34]]);
+    const separated = feature('R', [[31, 36]]);
+    const key = strand === '+' ? 'downstream' : 'upstream';
+    const answer = result(focal, [crossing, joined, separated])[key];
+    assert.equal(answer.status, 'overlap-blocked');
+    assert.deepEqual(answer.blockedBy, ['P', 'Q']);
+    assert.deepEqual(answer.neighbours, []);
+  }
+});
+
+test('pseudogene metadata appears once for either a biotype or a flag', async () => {
+  await withFakeDocument(() => {
+    for (const biotype of ['pseudogene', 'protein_coding']) {
+      const details = createNeighbourDisclosure();
+      const focal = feature('focal', [[20, 30]]);
+      const pseudo = { ...feature('P', [[31, 40]]), biotype, pseudo: true };
+      focal.flankingNeighbours = result(focal, [pseudo]);
+      updateNeighbourDisclosure(details, focal, null);
+      for (const row of details.querySelectorAll('.gene-view-partner-text')) {
+        assert.equal(row.textContent.match(/pseudogene/g).length, 1);
+      }
+    }
+  });
 });

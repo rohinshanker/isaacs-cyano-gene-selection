@@ -1963,6 +1963,9 @@ def _overlap_universe(
             "seqid": seqid,
             "strand": strand if strand in ("+", "-") else None,
             "biotype": attrs.get("gene_biotype") or kind,
+            "name": attrs.get("gene") or None,
+            "pseudo": (kind == "pseudogene" or attrs.get("pseudo") == "true"
+                       or attrs.get("gene_biotype") == "pseudogene"),
             "segmentSource": source_kind,
         }
     return segments, identity, lengths
@@ -2269,8 +2272,9 @@ def validate_gene_overlaps(
             continue
         if [list(piece) for piece in segments[locus]] != feature.get("segments"):
             differences.append(f"{locus} segments differ from the annotation")
-        if record["strand"] != feature.get("strand") or record["biotype"] != feature.get("biotype"):
-            differences.append(f"{locus} strand or biotype differs from the annotation")
+        for field in ("seqid", "strand", "biotype", "name", "pseudo", "segmentSource"):
+            if record[field] != feature.get(field):
+                differences.append(f"{locus} {field} differs from the annotation")
     declared = {
         entry.get("accession"): entry.get("lengthBp")
         for entry in payload.get("replicons", []) if isinstance(entry, dict)

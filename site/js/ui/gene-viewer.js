@@ -989,7 +989,7 @@ export function renderGeneViewer(host, gene, {
   host.setAttribute('aria-label', 'Gene visualizer');
   const model = geneViewModel(gene);
   if (!model) {
-    const action = document.activeElement.dataset?.detailAction;
+    const action = document.activeElement?.dataset?.detailAction;
     const held = host.contains(document.activeElement)
       && (action === START_SITES_CONTROL || action?.startsWith('neighbour-'));
     host.replaceChildren();

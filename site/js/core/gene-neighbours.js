@@ -38,7 +38,7 @@ export function nativeNeighbours(focal, catalogue, lengthBp, partners = []) {
   const answer = (boundary, step) => {
     if (outside <= 0) return side('no-flank');
     const next = mod(boundary - 1 + step, lengthBp) + 1;
-    const blockedBy = partners.filter((partner) => occupies(partner, boundary) && occupies(partner, next))
+    const blockedBy = partners.filter((partner) => occupies(partner, next))
       .map((partner) => partner.id).sort();
     if (blockedBy.length) return side('overlap-blocked', EMPTY, blockedBy);
     let best = Infinity;

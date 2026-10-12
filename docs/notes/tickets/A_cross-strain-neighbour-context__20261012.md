@@ -56,6 +56,13 @@ camera, loading, missing and failed states were exercised. Ordinary browser
 console: no errors or warnings. Evidence is task-local under
 `/tmp/cyano-cross-strain-context-20261012/`.
 
+- **NC-R1 — open:** raw-annotation comparison must reject replicon, pseudogene flag,
+  name and segment-source drift for every native catalogue entry.
+- **NC-R2 — open:** retain every tied OG partner occupying the first outward base.
+- **NC-R3 — open:** show the pseudogene label once when both biotype and flag name it.
+- **NC-R4 — open:** expose the schematic's focal identity through a nameable accessible role.
+- **NC-R5 — open:** direct unittest execution must collect ContextCatalogueTest.
+- **NC-N1 — open:** null-safe activeElement access and accurate lazy-hover documentation.
 - **NC-REVIEW — open:** DEM-374 independent Claude review of immutable snapshot
   `091733e` and the two-file empty-focus delta to final code `905f420`. Do not
   close or publish before its findings and confirmation are incorporated.

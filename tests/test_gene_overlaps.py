@@ -362,9 +362,6 @@ class ShippedLayerTest(unittest.TestCase):
                                      f"{features[first]['id']}/{features[second]['id']}")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 class ContextCatalogueTest(unittest.TestCase):
     def test_complement_covers_every_native_gene_once_without_changing_pairs(self):
         payload = build([
@@ -411,3 +408,32 @@ class ContextCatalogueTest(unittest.TestCase):
                 else:
                     broken["contextFeatures"][0]["segments"] = [[11, 20]]
                 self.assertTrue(verify(broken).failures, mutation)
+
+    def test_contract_rejects_native_identity_drift_in_context(self):
+        import copy
+        import validate_contract as contract
+        named = gene("rna", "chr1", 30, 40, "+", "tRNA")
+        named = (*named[:-1], named[-1] + ";gene=trnA")
+        rows = [gene("A", "chr1", 10, 20, "+"), child("A", "chr1", 10, 20, "+"), named]
+        lengths = {"chr1": 100, "plasmid": 100}
+        payload = build(rows, lengths)
+        genes = [{"id": "A", "start": 10, "end": 20, "seqid": "chr1", "strand": "+"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            with gzip.open(directory / "ASM0v1_genomic.gff.gz", "wt") as handle:
+                handle.write(gff(rows, lengths))
+            for field, value in (("seqid", "plasmid"), ("name", "wrong"),
+                                 ("pseudo", True), ("segmentSource", "child")):
+                with self.subTest(field=field):
+                    broken = copy.deepcopy(payload)
+                    record = next(item for item in broken["contextFeatures"] if item["id"] == "rna")
+                    record[field] = value
+                    (directory / "gene_overlaps.json").write_text(producer.serialize(broken))
+                    report = contract.Report()
+                    contract.validate_gene_overlaps(str(directory), str(directory), genes, report, FakeOrganism())
+                    self.assertTrue(any(f"rna {field} differs from the annotation" in failure
+                                        for failure in report.failures), report.failures)
+
+
+if __name__ == "__main__":
+    unittest.main()

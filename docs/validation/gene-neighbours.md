@@ -14,7 +14,9 @@ childless censuses must reconcile, and every selectable CDS must match
 merge without changing any base or gap). The producer derives both arrays
 from the same pinned annotation; OG feature positions, pairs, coverage and
 legacy `neighborUpstreamNt`/`neighborDownstreamNt` metrics retain their meaning.
-The contract gate independently compares the full catalogue with raw annotation.
+The contract gate independently compares the full catalogue with raw annotation,
+including occupied segments, replicon, strand, biotype, name, pseudogene flag
+and segment source.
 
 An old payload lacking the optional array retains valid OG data and explicitly
 unavailable native context. Loading, failed, unavailable and no eligible flank
@@ -25,7 +27,8 @@ configurable, non-enumerable lazy accessor on each plotted gene: attachment and
 JSON serialization resolve no focal queries. Only the requested locus scans
 its replicon's catalogue; repeated reads reuse the same frozen answer. Clearing
 or replacing the layer removes/replaces the accessor and its catalogue cache.
-Filters, hover, redraw and sequence camera operations do not enter the index.
+Hovering or pinning a new locus resolves it once. Filters, repeated redraws and
+sequence camera operations reuse that result without recomputation.
 `resolvedGeneCount` permits checking this load/lookup contract.
 
 ## Geometry
@@ -95,7 +98,7 @@ sets; it does not reuse interval-distance arithmetic. It covers both strands,
 valid circular origins, joined pieces, abutting/positive gaps, internal and
 crossing overlaps, ties, no flank and organism/replicon isolation. Catalogue
 negative fixtures cover missing/duplicate/stale records, wrong census and CDS
-geometry; loader tests check lazy load, serialization, replacement and clearing.
+geometry, replicon, name, pseudogene flag and segment source; loader tests check lazy load, serialization, replacement and clearing.
 
 Render the real site on an unused port owned by the assigned worktree. Inspect
 both compact mounts and the sequence close-up at 375×812, 768×1024, 1280×800,

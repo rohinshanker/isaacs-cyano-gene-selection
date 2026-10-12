@@ -43,9 +43,9 @@ export function updateNeighbourDisclosure(details, gene, pending, onOpenPartner)
       + 'Separate from OG shared bases and the adjacent-CDS gap metrics. Gaps count unoccupied bases; '
       + 'abutting genes have a 0 bp gap.'));
     const schematic = node('div', 'panel-note gene-neighbours-schematic');
-    schematic.setAttribute('aria-label', '5′ upstream, focal gene in transcription direction, 3′ downstream; schematic not to scale');
+    schematic.setAttribute('role', 'img');
+    schematic.setAttribute('aria-label', `5′ upstream, ${gene.id} in focal transcription direction, 3′ downstream; schematic not to scale`);
     const focalLabel = node('strong', '', 'This gene →');
-    focalLabel.setAttribute('aria-label', `${gene.id}, focal transcription direction`);
     focalLabel.title = gene.id;
     schematic.append(node('span', '', '5′'), focalLabel,
       node('span', '', '3′'));
@@ -71,7 +71,7 @@ export function updateNeighbourDisclosure(details, gene, pending, onOpenPartner)
           const name = neighbour.name ? ` ${neighbour.name}` : '';
           const segments = neighbour.segments.map(({ from, to }) => `${from}–${to}`).join(', ');
           item.append(node('span', 'gene-view-partner-text',
-            `${neighbour.id}${name} · ${neighbour.biotype}${noncoding ? ' (noncoding gene)' : ''}${neighbour.pseudo ? ' · pseudogene' : ''} · `
+            `${neighbour.id}${name} · ${neighbour.biotype}${noncoding ? ' (noncoding gene)' : ''}${neighbour.pseudo && neighbour.biotype !== 'pseudogene' ? ' · pseudogene' : ''} · `
             + `${strandWords(neighbour.strand)} · ${relative} · gap ${neighbour.gapNt} bp. `
             + `${neighbour.seqid}: ${segments} (1-based inclusive; ${neighbour.segmentSource} segments).`));
           if (neighbour.selectable && onOpenPartner) {
