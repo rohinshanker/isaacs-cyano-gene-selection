@@ -8,7 +8,7 @@
   `site/`.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-12
 
 ## Current state
 
@@ -17,9 +17,21 @@ sister strains of UTEX 2973 for gene annotations, transcriptomics, proteomics,
 ribosome occupancy, TIS, TSS, and TTS. See
 [the sister-strain rules](../../validation/data-contract.md#sister-strains-admitted-for-utex-2973-data)
 and [condition comparability](../../validation/data-contract.md#condition-comparability).
-Nothing has been scanned or ingested against that widened scope yet. The site
-currently ships one PCC 7942 abundance table, native Tan 2018 TSS evidence, borrowed
-PCC 7942 essentiality, and computed sequence metrics.
+The initial sweep, condition/licence intake, exact crosswalk and multiple source
+admissions have since shipped. The current UTEX source manifest declares 55
+RNA-seq, 10 proteomics and 99 fitness condition layers (the latter were admitted
+under their separate fitness scope), alongside native Tan start-site evidence.
+These are layer counts, not independent studies. The source register and the
+[source ledger](../../validation/source-ledger.md) retain individual admission
+and mapping boundaries; a scan candidate is not a shipped layer.
+
+Work resumed 2026-10-12 by **cyano-ui-fixes** on the remaining native
+flanking-neighbour viewer context, tracked in
+[A_cross-strain-neighbour-context__20261012](A_cross-strain-neighbour-context__20261012.md).
+Its isolated worktree does not own regulatory method pilots, raw-read execution
+or other sessions' source-intake scopes. Existing crosswalks, chromosome view,
+dataset selectors and current-report agreement presentation are complete; the
+parent remains open for the remaining source and lab-dependent work.
 
 The goal is larger than one more column. The site should bring many published
 *S. elongatus* datasets into one coordinate system, so a scientist can look up a gene
