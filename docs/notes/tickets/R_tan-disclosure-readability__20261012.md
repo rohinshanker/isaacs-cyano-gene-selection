@@ -1,7 +1,7 @@
-# A_tan-disclosure-readability__20261012 — Active
+# R_tan-disclosure-readability__20261012 — Resolved
 
 Scope: Concise tan disclosure titles, skimmable paragraphs/lists and unified collapsed Controls guidance across chromosome/scatter/sequence views.
-Status: active
+Status: resolved
 Opened: 2026-10-12
 Updated: 2026-10-12
 
@@ -34,11 +34,18 @@ stable Controls disclosures for chromosome, five scatter tabs and expanded seque
   and code passed on rerun after that load finished. Keyboard automation now
   waits until the existing text entrance animation removes inert.
 
-No open audit findings against this work. Integration with concurrent main and
-successful Pages/public verification remain before final completion.
+No open audit findings against this work. Concurrent main (0100c6d) merged
+cleanly; the combined Python suite passes 1,682 tests and 51 subtests with 10
+expected skips for optional scientific runtimes/source inputs. UI source and
+scientific payloads are unchanged by that merge. Pages/public verification follows
+publication under the existing release gate.
 
 ## Cleanup
 
-Close only this owned ticket after validation, distill reusable presentation rules
-to responsive-workspace.md, remove the resolved ticket last, and clean only this
-worktree/server. Existing owner preview on port 8871 remains untouched.
+Closed by cyano-ui-fixes on 2026-10-12. No open findings; no unfinished UI work.
+Reusable presentation, stable Controls and accessibility rules are distilled in
+[responsive-workspace.md](../../validation/responsive-workspace.md). The requested
+[recoded-genome annotation ticket](O_recoded-genome-functional-annotations__20261012.md)
+remains open. No other session's ticket is closed. Remove this resolved ticket
+last; clean only this worktree/server after deployment verification. Existing
+owner preview on port 8871 remains untouched.

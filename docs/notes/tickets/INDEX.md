@@ -12,7 +12,6 @@ finding is reverted rather than argued about.
 | Ticket | Scope |
 | --- | --- |
 | [O_recoded-genome-functional-annotations__20261012](O_recoded-genome-functional-annotations__20261012.md) | Add missing functional annotations to recoded genomes from exact nonrecoded references, with verified crosswalks and explicit transfer provenance |
-| [A_tan-disclosure-readability__20261012](A_tan-disclosure-readability__20261012.md) | cyano-ui-fixes: simplify tan disclosure titles and format dense contents as paragraphs/lists |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md) | Active 2026-10-12, owned by cyano-regulatory-sites: TransTermHP/RF01116 pilots and Promoter Calculator preparation implemented; ViennaRNA accessibility and isolated STREME runtime checked. Independent reviews accepted; remaining cohort/family/interaction evaluation, RBS code dependency and iDOG hold retained |
 | [O_array-expression-reader__20261007](O_array-expression-reader__20261007.md) | Array reader and the separate array platform listing for the seven raw-only PCC 7942 microarray series, split from the licence-unblocked ticket 2026-10-07; four scientific rules (channel, normalisation, dye swap, probe-to-gene) to decide before any layer ships |
