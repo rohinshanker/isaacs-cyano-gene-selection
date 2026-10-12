@@ -47,6 +47,9 @@ CDS-envelope metrics.
   boundary is ambiguous. Keep current viewer coordinate behavior unless native
   annotation supplies a proven ordering; an oracle must not choose that boundary
   from an arbitrary array index.
+- **NC-QA3 — open:** at 375 px the direction schematic wraps the entire 3′
+  downstream label to the left edge of a new row. Preserve the deliberate
+  upstream–focal–downstream ordering at narrow widths and inspect the rerender.
 
 
 Before completion: exact geometry tests for both strands, origin wrapping,
