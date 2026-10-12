@@ -112,7 +112,7 @@
     "id": "TAN2018_TSS",
     "file": "tan2018_utex2973_tss_initiation.tsv",
     "metricKey": "tssInitiation",
-    "label": "TSS initiation (UTEX 2973)",
+    "label": "TSS initiation, four conditions pooled (UTEX 2973)",
     "organism": "Synechococcus elongatus UTEX 2973",
     "isTargetOrganism": true,
     "assay": "dRNA-seq transcription initiation strength",
@@ -120,7 +120,7 @@
     "condition": "Tan et al. 2018: control (33 °C, 50 µmol photons m⁻² s⁻¹, 3% CO2), high light, high temperature, and dark conditions pooled",
     "sha256": "5ebd8043e70309a2ea04fcec37e475069cb8540397f9d052bd246401aa6325be",
     "licence": "CC BY 4.0",
-    "caveat": "Transcription initiation strength, not transcript abundance; genes without an associated TSS are unknown, not zero.",
+    "caveat": "Transcription initiation strength, not transcript abundance; genes without an associated TSS are unknown, not zero. Its derivation was recovered, not documented: the values are reproduced exactly when fractional published counts are truncated and a TSS counts only at or after the gene's lowest coordinate, which drops most upstream gTSS of forward-strand genes but keeps those of reverse-strand genes.",
     "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
     "citationId": "tan-2018",
     "record": {
@@ -177,7 +177,7 @@
           "text": "constant illumination in the control, pooled with a 2 h dark condition"
         },
         "co2": {
-          "quote": "3% CO2 aeration",
+          "quote": "3% CO 2 aeration",
           "where": "paper PMC6091082, Methods",
           "status": "reported",
           "lo": 3,
@@ -196,7 +196,7 @@
           "text": "BG-11"
         },
         "format": {
-          "quote": "3% CO2 aeration",
+          "quote": "3% CO 2 aeration",
           "where": "paper PMC6091082, Methods",
           "status": "reported",
           "value": "planktonic liquid",
@@ -212,7 +212,8 @@
           "text": "growth phase at sampling not recorded in the shipped provenance"
         }
       }
-    }
+    },
+    "quantity": "tss_initiation"
   },
   {
     "record": {

@@ -238,6 +238,32 @@ QUANTITIES: Mapping[str, Quantity] = {
             },
         ),
         Quantity(
+            # A dRNA-seq start-site count summed over a gene's associated TSSs:
+            # how much transcription initiates there, not how much transcript
+            # is present. It is a level, so it sits in Expression, but it does
+            # not pool: each Tan 2018 layer is one condition (or the authors'
+            # four-condition pool), and ranking several of them together would
+            # rebuild a pooled score the reader did not choose. It heads its
+            # values ``abundance`` because the pooled table shipped under that
+            # header before quantities existed, and its bytes are pinned; the
+            # kind and label, not the header, say what the number is.
+            name="tss_initiation",
+            column=ABUNDANCE_COLUMN,
+            data_types=("transcriptomics",),
+            family="Expression",
+            scale="sequential",
+            signed=False,
+            log_scale=False,
+            nonnegative=True,
+            integral=False,
+            unit_interval=False,
+            exact=False,
+            pools=False,
+            by_platform={
+                RNA_PLATFORM: ("initiation", "Transcription initiation (RNA-seq)"),
+            },
+        ),
+        Quantity(
             name="translation_efficiency_log2_fold_change",
             column=TRANSLATION_EFFICIENCY_COLUMN,
             data_types=("transcriptomics",),

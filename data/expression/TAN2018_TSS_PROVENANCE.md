@@ -13,8 +13,8 @@ score for 1,727 of the 2,715 UTEX 2973 protein-coding genes, or 63.6 percent.
 | **Organism measured** | ***S. elongatus* UTEX 2973 — the target strain** |
 | Assay | dRNA-seq, transcription start site mapping |
 | Conditions | Control 33 °C, 50 µmol photons m⁻² s⁻¹ continuous light, 3% CO2; plus high light 1,000 µmol (duration conflicts between Results and Methods); high temperature 45 °C for 30 min; dark for 2 h |
-| Derivation | Per locus, the sum over its separately pinned Figshare TSS feature set of the arithmetic mean of the eight per-TSS sample count fields; this is not a sum over the Table S1 site list (see [Exact layer mismatch](#exact-layer-mismatch)) |
-| Retrieved | 2026-09-18 |
+| Derivation | Per locus, the sum over its separately pinned Figshare TSS feature set of the arithmetic mean of the eight per-TSS sample count fields; this is not a sum over the Table S1 site list (see [Exact layer mismatch](#exact-layer-mismatch)). No script was committed; the rule recovered on 2026-10-12 is in [Pooled score audit](#pooled-score-audit) |
+| Retrieved | 2026-09-18; Figshare archive and article re-retrieved 2026-10-12 |
 
 The site also carries `tan2018_utex2973_tss_table_s1.tsv`, an exact-column
 extraction of the 2,475 gene-associated TSS (`gTSS`) rows in the publisher's
@@ -42,6 +42,101 @@ The authors' differential-transcript threshold is `|log2FC| ≥ 1` and adjusted
 `p ≤ 0.01`; identified TSSs had at least 300 raw reads in one library. These
 are source-selection and significance conventions, not a site's gene-level
 expression call.
+
+## Pooled score audit
+
+The pooled table was committed on 2026-09-18 (commit `615ed16`) with this
+document and no script, so its exact feature set was undocumented.
+`tools/tan2018_pooled_audit.py` recovers it from the authors' archive. The rule
+below is **inferred, not documented**: it has no tuned numeric parameter and
+rebuilds the committed table byte for byte (SHA-256
+`5ebd8043e70309a2ea04fcec37e475069cb8540397f9d052bd246401aa6325be`, LF header and
+CRLF rows included), including every row's `_<n>TSS` site count, which is an
+independent check on membership. Another rule could in principle reproduce the
+same bytes; none simpler was found. Simpler candidates fail: with the printed
+counts, every site its score names matches 1,196 of the 1,727 values, and gTSS
+sites alone match 431.
+
+| Input | Value |
+| --- | --- |
+| Archive | Figshare 5712016 file 10060636, `Supplymentary_Dataset_2.tar.gz`, <https://ndownloader.figshare.com/files/10060636>, retrieved 2026-10-12 |
+| Archive bytes and checksums | 1,679,986 bytes; MD5 `ff227555b1a28dbbd974a83d549e16b5`, equal to Figshare's supplied and computed MD5; SHA-256 `6de018947f165acb99f01deb7628a52cd89f0f34ca07d3286b25dbfef780a0e8` |
+| Members | `Supplymentary_Dataset_2/UTEX2973_genome_with_TSS.gbk`, 9,114,585 bytes, SHA-256 `407d960f4d417c58f975bce6d47a3ddc47689970f92aec050d7295bab0eccc80`; `Supplymentary_Dataset_2/UTEX2973_CP006472_with_TSS.gbk`, 155,175 bytes, SHA-256 `02d9493a317f88d202c9ca9363985fbb1b4bd866e46b83ead521b5caf5d7fa63` |
+| Archive licence | Figshare record `license`: CC BY 4.0, <https://creativecommons.org/licenses/by/4.0/> |
+| Article | Europe PMC `PMC6091082/fullTextXML`, 190,589 bytes, SHA-256 `7063969b6577a330390269bec64df5f22c696203239257cb06fc21ef5148f7d8`, retrieved 2026-10-12; licence block: "Open Access This article is distributed under the terms of the Creative Commons Attribution 4.0 International License" |
+
+**Sample fields.** The archive's 4,827 TSS features carry eight counts named only
+`tSSCount_Sample_0` to `_7`. Matched to the pinned Table S1 extracts by type,
+strand and position, 4,805 features have a Table S1 row, and in every one all
+eight counts equal Table S1's `<replicate>_RawReads` columns in this order:
+
+| Archive field | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Table S1 replicate | CT1 | CT2 | D1 | D2 | HL1 | HL2 | HT1 | HT2 |
+
+No other pairing matched more than 48 times. Twenty-two archive features have no
+Table S1 row and three Table S1 rows have no archive feature. Every audit run
+re-checks the order and the 4,805 count.
+
+**The recovered rule.**
+
+- A site belongs to every `M744_RS` locus its `/score` sentence names, when that
+  locus is a `gene` feature with `gene_biotype="protein_coding"` in the same
+  GenBank file, is in the current 2,715-gene target set, and the site's position
+  is at or after the gene's lowest coordinate, on either strand.
+- Each published count is truncated to a whole number.
+- A locus scores the sum over its sites of the eight-count mean.
+
+**What the rule does, and why it matters.**
+
+- **It is strand-asymmetric.** An upstream gTSS of a reverse-strand gene lies
+  above the gene's coordinates and is kept; one of a forward-strand gene lies
+  below and is dropped. Of the named site–locus pairs it drops, 1,286 are
+  forward-strand gTSS, 145 forward-strand nTSS, 42 forward-strand aTSS, 32
+  reverse-strand aTSS and 19 reverse-strand nTSS (1,524). It keeps 1,113
+  reverse-strand gTSS pairs and only 26 forward-strand ones, those at or inside
+  the start. 1,008 current genes lose at least one named site and 486 lose every
+  one, so have no score. This is not a biological selection; it is an open
+  finding against the pooled layer (DEM-381), for the owner to decide.
+- **It truncates.** 137 published count fields are fractional (`.5`, `.33`, …).
+  Twelve pooled values sit below the sum of the printed counts, by 0.0625 to
+  3.28: `M744_RS02730`, `03145`, `03175`, `05310`, `09190`, `09455`, `10840`,
+  `10895`, `10920`, `11690`, `12905` and `13455`. `M744_RS03175` scores 256.125
+  from one nTSS whose printed counts give 256.25 (442.5 and 629.5 lose their
+  halves).
+- Pseudogenes earn no score, nor does the origin-spanning plasmid gene
+  `M744_RS13290`, whose `gene` feature has no `gene_biotype`. Of the 2,670
+  paper-era protein-coding genes, 51 are not current targets. 85 site mentions
+  name a locus that is not paper-era protein-coding and 60 one that is not a
+  current target; the earlier figure of 77 unresolved mentions was not
+  reproduced and its definition is unknown. A site naming two eligible loci
+  counts for both.
+
+**Examples against the Table S1 gTSS rows.** Summing the eight-count mean over
+each gene's exact-locus Table S1 gTSS rows gives 1,789 genes; 1,317 are shared
+with the pooled table and 431 of those carry the same value.
+
+| Gene | Strand | Pooled score | Pooled site set | Table S1 gTSS sum |
+| --- | --- | ---: | --- | ---: |
+| `M744_RS00010` | + | 164.375 | one iTSS | none |
+| `M744_RS00015` | + | 843.75 | its gTSS at the start codon | 843.75 |
+| `M744_RS00020` | − | 884.125 | its gTSS 26 nt upstream | 884.125 |
+| `M744_RS00025` | + | 208.0 | one antisense aTSS; its gTSS 46 nt upstream dropped | 167.875 |
+| `M744_RS00030` | + | none | its gTSS 25 nt upstream dropped | 434.875 |
+| `M744_RS09190` | + | 3,308.625 | 19 iTSS and 2 aTSS, truncated; its 3 upstream gTSS dropped | 2,136.5 |
+
+Reproduce with:
+
+```sh
+.venv/bin/python tools/tan2018_pooled_audit.py fetch    # archive and article into data/interim/expression/tan2018/
+.venv/bin/python tools/tan2018_pooled_audit.py check    # fails unless the rule rebuilds the committed table
+.venv/bin/python tools/tan2018_pooled_audit.py summary  # the counts above
+.venv/bin/python -m pytest tests/test_tan2018_pooled_audit.py
+```
+
+Without the fetched archive the archive-backed tests skip. The same tests
+re-match every article-sourced Tan condition quote in `sources.json` against the
+pinned article text, element runs joined by spaces.
 
 ## What it measures, and what it does not
 

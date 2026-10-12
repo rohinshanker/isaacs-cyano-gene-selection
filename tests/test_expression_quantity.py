@@ -43,6 +43,7 @@ QUANTITY_PLATFORMS = {
     "edger_log2_fold_change": "RNA-seq",
     "p_value": "RNA-seq",
     "translation_efficiency_log2_fold_change": "Ribo-seq",
+    "tss_initiation": "RNA-seq",
 }
 
 
@@ -106,11 +107,12 @@ def test_every_quantity_loads_from_its_own_column(tmp_path):
     # The declaration, not the file, is what every later reader sees.
     assert [source["quantityKind"] for source in sources] == [
         "abundance", "read-count", "log2-fold-change", "edger-log2-fold-change",
-        "p-value", "te-log2-fold-change",
+        "p-value", "te-log2-fold-change", "initiation",
     ]
     assert [source["quantityLabel"] for source in sources] == [
         "RNA abundance", "RNA read count", "RNA log2FC", "RNA log2FC (EdgeR)",
         "RNA reported P-value (adjustment unspecified)", "TE log2FC",
+        "Transcription initiation (RNA-seq)",
     ]
 
 
@@ -253,6 +255,7 @@ def test_a_metric_takes_its_family_and_ramp_from_its_quantity(tmp_path):
         "edger_log2_fold_change": ("Fold change", "diverging"),
         "p_value": ("Significance", "sequential"),
         "translation_efficiency_log2_fold_change": ("Translation efficiency", "diverging"),
+        "tss_initiation": ("Expression", "sequential"),
     }
     for index, (quantity, want) in enumerate(expected.items()):
         value = {"read_count": 3, "p_value": 0.01}.get(quantity, 1.0)
@@ -276,10 +279,15 @@ def test_a_metric_takes_its_family_and_ramp_from_its_quantity(tmp_path):
     write_manifest(tmp_path, [quantity_source("r.tsv", "mR", digest, "rpkm")])
     sources, _ = load_expression_sources(tmp_path, set())
     assert "within-dataset rank" in expression_metric_definition(sources[0], 1, 1)["desc"]
+    # A non-pooling level is not a contrast, and its sentence does not call it one.
+    digest = write_table(tmp_path, "i.tsv", [("a", 164.375)], "tss_initiation")
+    write_manifest(tmp_path, [quantity_source("i.tsv", "mI", digest, "tss_initiation")])
+    sources, _ = load_expression_sources(tmp_path, set())
+    assert "never pooled across datasets." in expression_metric_definition(sources[0], 1, 1)["desc"]
 
 
 def test_no_two_declared_quantities_group_into_one_metric_on_one_platform(tmp_path):
-    """Six quantities on one platform are six distinct type keys.
+    """Seven quantities on one platform are seven distinct type keys.
 
     The browser groups by data type, platform and kind, so a shared kind would
     average a p-value into a fold change.
@@ -294,7 +302,7 @@ def test_no_two_declared_quantities_group_into_one_metric_on_one_platform(tmp_pa
     keys = {
         (s["record"]["dataType"], s["record"]["platform"], s["quantityKind"]) for s in sources
     }
-    assert len(keys) == len(sources) == 6
+    assert len(keys) == len(sources) == 7
     # The same quantity on the other platform is a different measurement again.
     ribo_digest = write_table(tmp_path, "ribo.tsv", [("a", 2.0)], "rpkm")
     write_manifest(tmp_path, [
@@ -379,15 +387,15 @@ def test_a_source_that_declares_no_quantity_is_untouched(tmp_path):
 def test_every_shipped_source_declaring_a_quantity_declares_a_known_one():
     """The release itself, not a synthetic manifest.
 
-    No shipped source declares a quantity yet. When one does, this fails unless
-    the declaration is in the contract and is defined for that source's own data
-    type and platform, so a new layer cannot arrive under a quantity nobody has
-    decided the meaning of.
+    The Tan 2018 pooled layer declares ``tss_initiation``. Every declaration must
+    be in the contract and defined for that source's own data type and platform,
+    so a new layer cannot arrive under a quantity nobody has decided the meaning
+    of.
     """
     for manifest in sorted(ROOT.glob("data/expression/**/sources.json")):
         for source in json.loads(manifest.read_text(encoding="utf-8")):
             if "quantity" in source:
-                # Once sources do declare one, they must declare a known one.
+                # A declared quantity must be a known one.
                 assert source["quantity"] in expression_table.QUANTITIES, (
                     f"{manifest}: {source['id']} declares an unknown quantity")
                 expression_table.check_declaration(

@@ -273,7 +273,7 @@ test('a promoted measurement states its replicate depth and coverage in the comp
   const note = measurementLimitNote([tss], shippedDataset);
 
   assert.match(note, /^Measurement limits —/);
-  assert.match(note, /TSS initiation \(UTEX 2973\)/);
+  assert.match(note, /TSS initiation, four conditions pooled \(UTEX 2973\)/);
   assert.match(note, /2 replicates per condition across 4 conditions/);
   assert.match(note, /1,727 of 2,715 genes have a value/);
 });
@@ -283,7 +283,7 @@ test('every measurement on display is covered once, and conventions add nothing'
     .map((key) => shippedRegistry.byKey.get(key));
   const note = measurementLimitNote(metrics, shippedDataset);
 
-  assert.equal(note.match(/TSS initiation \(UTEX 2973\):/g).length, 1, 'no repeats');
+  assert.equal(note.match(/TSS initiation, four conditions pooled \(UTEX 2973\):/g).length, 1, 'no repeats');
   assert.match(note, /Expression \(PCC 7942\): WT, fresh BG-11, day 1, mean of 3 replicates/);
   // A percentile derived from the same study does not repeat that study's limits.
   const withPercentile = measurementLimitNote(

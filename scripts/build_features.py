@@ -797,11 +797,14 @@ def expression_metric_definition(
     # sentence cannot: "transcriptomics by RNA-seq" covers an abundance, a fold
     # change and a p-value alike. Saying it here keeps a reader who meets the
     # metric on its own from having to read the contrast out of the condition.
+    # A non-pooling level, such as one condition's initiation count, is not a
+    # contrast, so its sentence says datasets rather than contrasts.
+    unpooled = "contrasts" if source.get("quantityFamily") != "Expression" else "datasets"
     quantity = (
         f" Quantity: {source['quantityLabel']} ({source['quantity']}), which "
         + ("pools across selected datasets as a within-dataset rank."
            if source["quantityPools"]
-           else "is read from one selected dataset and never pooled across contrasts.")
+           else f"is read from one selected dataset and never pooled across {unpooled}.")
         if source.get("quantity")
         else ""
     )

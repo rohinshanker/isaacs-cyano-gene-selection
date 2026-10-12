@@ -566,13 +566,14 @@ names every selected source explicitly, and the loader reads only what it lists:
     "id": "TAN2018_TSS",
     "file": "tan2018_utex2973_tss_initiation.tsv",
     "metricKey": "tssInitiation",
-    "label": "TSS initiation (UTEX 2973)",
+    "label": "TSS initiation, four conditions pooled (UTEX 2973)",
     "organism": "Synechococcus elongatus UTEX 2973",
     "isTargetOrganism": true,
     "assay": "dRNA-seq transcription start site initiation",
     "units": "summed mean TSS counts",
     "condition": "Tan et al. 2018, four conditions pooled",
-    "caveat": "Initiation strength, NOT transcript abundance."
+    "caveat": "Initiation strength, NOT transcript abundance.",
+    "quantity": "tss_initiation"   // see measured-quantity-contract.md
   }
 ]
 ```

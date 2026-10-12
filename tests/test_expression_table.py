@@ -125,6 +125,7 @@ QUANTITY_COLUMNS = {
     "log2_fold_change": "log2_fold_change",
     "edger_log2_fold_change": "log2_fold_change",
     "p_value": "p_value",
+    "tss_initiation": "abundance",
     "translation_efficiency_log2_fold_change": "translation_efficiency_log2_fold_change",
 }
 
@@ -173,11 +174,19 @@ def test_the_platform_distinguishes_rna_from_ribosome_in_every_kind_and_label():
 
     The same quantity is therefore a different measurement on each platform, and
     the reader-facing label says which molecule was counted rather than leaving
-    an occupancy to read as an abundance.
+    an occupancy to read as an abundance. Transcription initiation is a dRNA-seq
+    start-site count and has no Ribo-seq meaning, so it is defined on RNA-seq only.
     """
+    both = {q: spec for q, spec in table.QUANTITIES.items() if q != "tss_initiation"}
+    assert table.QUANTITIES["tss_initiation"].platforms == ("RNA-seq",)
+    assert table.QUANTITIES["tss_initiation"].kind("RNA-seq") == "initiation"
+    assert table.QUANTITIES["tss_initiation"].label("RNA-seq") == (
+        "Transcription initiation (RNA-seq)")
+    with pytest.raises(ValueError, match="not defined for platform 'Ribo-seq'"):
+        table.QUANTITIES["tss_initiation"].kind("Ribo-seq")
     kinds = {
         quantity: (spec.kind("RNA-seq"), spec.kind("Ribo-seq"))
-        for quantity, spec in table.QUANTITIES.items()
+        for quantity, spec in both.items()
     }
     assert kinds == {
         "rpkm": ("abundance", "occupancy"),
@@ -190,7 +199,7 @@ def test_the_platform_distinguishes_rna_from_ribosome_in_every_kind_and_label():
     }
     labels = {
         quantity: (spec.label("RNA-seq"), spec.label("Ribo-seq"))
-        for quantity, spec in table.QUANTITIES.items()
+        for quantity, spec in both.items()
     }
     assert labels == {
         "rpkm": ("RNA abundance", "Ribosome occupancy"),
@@ -217,7 +226,8 @@ def test_no_two_quantities_collapse_into_one_type_metric():
     out.
     """
     for platform in ("RNA-seq", "Ribo-seq"):
-        kinds = [spec.kind(platform) for spec in table.QUANTITIES.values()]
+        kinds = [spec.kind(platform) for spec in table.QUANTITIES.values()
+                 if platform in spec.platforms]
         assert len(kinds) == len(set(kinds)), platform
     # The three bases that must never be averaged together, named explicitly.
     assert len({
@@ -227,7 +237,8 @@ def test_no_two_quantities_collapse_into_one_type_metric():
         table.QUANTITIES["edger_log2_fold_change"].kind("RNA-seq"),
         table.QUANTITIES["p_value"].kind("RNA-seq"),
         table.QUANTITIES["translation_efficiency_log2_fold_change"].kind("RNA-seq"),
-    }) == 6
+        table.QUANTITIES["tss_initiation"].kind("RNA-seq"),
+    }) == 7
 
 
 def test_a_fold_change_a_p_value_and_a_ratio_are_not_abundance_families():
@@ -244,6 +255,7 @@ def test_a_fold_change_a_p_value_and_a_ratio_are_not_abundance_families():
         "log2_fold_change": "Fold change",
         "edger_log2_fold_change": "Fold change",
         "p_value": "Significance",
+        "tss_initiation": "Expression",
         "translation_efficiency_log2_fold_change": "Translation efficiency",
     }
     scales = {q: spec.scale for q, spec in table.QUANTITIES.items()}
@@ -253,11 +265,13 @@ def test_a_fold_change_a_p_value_and_a_ratio_are_not_abundance_families():
         "log2_fold_change": "diverging",
         "edger_log2_fold_change": "diverging",
         "p_value": "sequential",
+        "tss_initiation": "sequential",
         "translation_efficiency_log2_fold_change": "diverging",
     }
 
 
 def test_only_an_abundance_or_a_count_pools_across_selected_datasets():
+    """An initiation layer is one condition, so ranking several together would re-pool them."""
     pools = {q: spec.pools for q, spec in table.QUANTITIES.items()}
     assert pools == {
         "rpkm": True,
@@ -265,6 +279,7 @@ def test_only_an_abundance_or_a_count_pools_across_selected_datasets():
         "log2_fold_change": False,
         "edger_log2_fold_change": False,
         "p_value": False,
+        "tss_initiation": False,
         "translation_efficiency_log2_fold_change": False,
     }
 
@@ -275,7 +290,7 @@ def test_the_sign_convention_follows_the_quantity_and_not_a_manifest():
     assert table.declared_flags("edger_log2_fold_change") == {"signed": True, "logScale": False}
     assert table.declared_flags("translation_efficiency_log2_fold_change") == {
         "signed": True, "logScale": False}
-    for one_sided in ("rpkm", "read_count", "p_value"):
+    for one_sided in ("rpkm", "read_count", "p_value", "tss_initiation"):
         assert table.declared_flags(one_sided) == {"signed": False, "logScale": False}
 
 
@@ -292,6 +307,10 @@ def test_each_quantity_admits_only_the_values_it_can_hold():
         assert good(signed, 3.25) is None
         assert "finite" in good(signed, float("inf"))
         assert "finite" in good(signed, float("nan"))
+    # A summed mean of start-site counts may be fractional or zero, never negative.
+    assert good("tss_initiation", 0.0) is None and good("tss_initiation", 164.375) is None
+    assert "never negative" in good("tss_initiation", -0.5)
+    assert "finite" in good("tss_initiation", float("inf"))
     assert good("p_value", 0.0) is None and good("p_value", 1.0) is None
     assert good("p_value", 3e-300) is None
     assert "probability in [0, 1]" in good("p_value", 1.0000001)
@@ -334,8 +353,18 @@ def test_quantity_facts_are_what_the_pipeline_publishes_for_the_browser():
         "quantityPools": True,
         "quantityBounds": {"nonnegative": True, "integral": True, "unitInterval": False},
     }
+    assert table.quantity_facts("transcriptomics", "RNA-seq", "tss_initiation", "s") == {
+        "quantity": "tss_initiation",
+        "quantityKind": "initiation",
+        "quantityLabel": "Transcription initiation (RNA-seq)",
+        "quantityFamily": "Expression",
+        "quantityPools": False,
+        "quantityBounds": {"nonnegative": True, "integral": False, "unitInterval": False},
+    }
     with pytest.raises(ValueError, match="is defined for platform"):
         table.quantity_facts("transcriptomics", "array", "p_value", "s")
+    with pytest.raises(ValueError, match="is defined for platform"):
+        table.quantity_facts("transcriptomics", "Ribo-seq", "tss_initiation", "s")
 
 
 def test_a_source_that_declares_no_quantity_keeps_its_former_behaviour():
