@@ -32,6 +32,13 @@ allow independent condition selection without automatically recombining them.
   It includes non-gTSS feature classes. This is a matching reconstruction, not
   evidence that these operations were scientifically justified. Independently
   review the derivation, attribution and labels before publishing either split.
+  DEM-381's origin audit also found an equivalent single-pass file-order rule:
+  sites are retained only once their named gene has already appeared. This
+  drops 1,524 site–locus pairs (including 1,286 forward-strand gTSS pairs), leaves
+  486 named loci without any score, and lowers 12 values through truncation.
+  The surviving DEM-33 documentation does not specify these operations. Treat
+  this as a likely parser defect, not an author-defined biological association;
+  the Table S1 derivation remains the recommendation for new condition layers.
 - **TAN-SPLIT-3 — open:** owner choice requested asynchronously on 2026-10-12.
   Only the new layer derivation depends on this choice; source plumbing and
   selection/URL work continue. No response yet. Do not publish either alternative
@@ -48,7 +55,16 @@ the data layer: the fresh-axis help fixture currently has no control metric.
 Pending: independent source/checksum/column and pooled-score reproduction;
 owner-approved derivation; condition-aware selector, colouring, axes, filters and
 exports; final unit/integration tests, rendered mobile/tablet/desktop checks and
-release gates. No current-task change has reached main or the public site.
+release gates. Only the active ticket has reached main; implementation and
+data changes remain unpublished.
+
+DEM-381 returned audit/quantity-plumbing commits `51c167c` and `f04d3cd` on
+`agent/claude-implementer/dem-381`. The latter has 38 focused audit tests passing;
+the former passed the worker's full suites. Both await coordinator review and
+integration into this isolated branch. Do not merge that branch wholesale:
+platform-generated `6057ad5` includes unrelated PCC UI changes already on main.
+`dem-381-legacy-split-held` at `1101d1f` is reference only and predates the current
+quantity contract; it is not an approved condition-layer implementation.
 
 ## Cleanup
 
