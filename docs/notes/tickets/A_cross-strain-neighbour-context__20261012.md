@@ -26,15 +26,16 @@ viewer work is flanking neighbours; existing OG displays cover shared bases but
 not separated neighbouring genes. Existing adjacent-CDS gap metrics keep their
 meaning. No sister-strain genomic position will be placed on the UTEX axis.
 
-An optional owner question is pending: all annotated neighbours (including
-noncoding genes) in both viewers, protein-coding only in both, or all annotations
-in the expanded viewer only. Default proposal: all annotations in both, using a
-compact disclosure and preserving the existing sequence camera and OG display.
-The question is optional; work proceeds with the stated all-annotation default
-while accepting later owner steering. No sequence will be inferred or padded and
-no missing annotation becomes absence. The implementation keeps a complete
-coordinate inventory beside the existing overlap layer, without repeating OG
-features or changing the existing CDS-envelope metrics.
+Owner decision, 2026-10-12: **all annotated neighbours in both viewers**.
+Noncoding genes must have a visual distinction, such as grey. Use neutral grey
+for their annotation marks/cards plus explicit biotype text, so colour is not the
+only distinction. Keep protein-coding, pseudogene and unrecorded-type labels
+accurate; noncoding context does not become a selectable recoding candidate.
+
+No sequence will be inferred or padded and no missing annotation becomes
+absence. The implementation keeps a complete coordinate inventory beside the
+existing overlap layer, without repeating OG features or changing the existing
+CDS-envelope metrics.
 
 ## Verification
 
