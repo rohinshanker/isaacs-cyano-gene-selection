@@ -45,25 +45,28 @@ allow independent condition selection without automatically recombining them.
 
 ## Verification
 
-Focused JavaScript selection, URL, metric and organism-isolation checks pass (120 tests).
-New tests cover separate conditions, native zero/missing values, independent
-axes and explicit legacy selection. URL version 8 defaults to control; older
-encoded views retain their legacy pooled selection. Full JavaScript checks await
-the data layer: the fresh-axis help fixture currently has no control metric.
+Integrated data `f0b1f29` (worker `7d61e8c`) and frontend/test patch through
+`3d59a69`. Original Table S1 independently re-fetched and checked against SHA-256
+`098ecbd204cd1042a6edee1d2a500eaeca4efe034c503e2ade3db1c605e79b00`.
+A separate openpyxl/Decimal calculation exactly matches all 10,860 values and
+missing entries across 2,715 genes and four conditions. Each layer has 1,789
+values and 926 unknowns. Legacy pooled TSV and `genes.json` are unchanged.
 
-Pending: independent source/checksum/column and pooled-score reproduction;
-owner-approved derivation; condition-aware selector, colouring, axes, filters and
-exports; final unit/integration tests, rendered mobile/tablet/desktop checks and
-release gates. Only the active ticket has reached main; implementation and
-data changes remain unpublished.
+Coordinator gates pass: 1,546 JavaScript tests; 1,757 Python tests, 10 existing
+skips and 51 subtests; source and pooled-audit checks; annotation verification and
+reproduction; readiness tests; contract, data-manifest and live-metric checks for
+all six organisms; module-preload and diff integrity. Artifacts are outside Git
+under `/tmp/cyano-tan-conditions-20261012/`.
 
-DEM-381 returned audit/quantity-plumbing commits `51c167c` and `f04d3cd` on
-`agent/claude-implementer/dem-381`. The latter has 38 focused audit tests passing;
-the former passed the worker's full suites. Both await coordinator review and
-integration into this isolated branch. Do not merge that branch wholesale:
-platform-generated `6057ad5` includes unrelated PCC UI changes already on main.
-`dem-381-legacy-split-held` at `1101d1f` is reference only and predates the current
-quantity contract; it is not an approved condition-layer implementation.
+Independent review DEM-384 covers `b6a6604..3d59a69`, including TAN-SPLIT-1/2
+scientific attribution and legacy derivation. Browser checks are in progress on
+port 8896 and session `tan-condition-20261012`. Pending: rendered completion,
+review disposition, final closure, push, gated deployment and production smoke.
+
+DEM-381 source work is fully integrated through the clean `dem-381-s1` branch.
+Do not merge its original task branch wholesale: platform snapshots contain
+unrelated work. The earlier held legacy-split branch is not an approved data
+source or condition implementation.
 
 ## Cleanup
 
