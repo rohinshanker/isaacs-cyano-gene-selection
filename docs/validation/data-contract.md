@@ -595,6 +595,20 @@ Adding a source is a manifest entry plus its table. Nothing downstream is hardco
 particular source, and the existing `cai`, `tai`, `expressionProxy` and every other
 metric remain filterable exactly as before.
 
+A source that is one condition of a multi-condition study names it in
+`conditionLayer`: `{"condition", "replicates", "siteSet"}`. The four Tan 2018 layers
+(`TAN2018_TSS_CONTROL`, `_DARK`, `_HIGH_LIGHT`, `_HIGH_TEMPERATURE`; metric keys
+`tssInitiationControl`, `…Dark`, `…HighLight`, `…HighTemperature`) carry it. Each is,
+per gene, the sum over its Table S1 gTSS rows (exact current locus tag) of one
+condition's two-replicate mean, published fractions kept; 1,789 genes have a value and
+the other 926 are `null`. They declare `quantity: "tss_initiation"`, so
+`quantityPools` is `false` and the browser must not combine them; each is selected on
+its own. They do not average to the legacy `tssInitiation` pool, whose recovered site
+set and 1,727-gene membership differ. Groups: control `other` (33 °C is outside the
+standard range), high light `elevated`, dark and high temperature `stress`.
+`tools/tan2018_condition_initiation.py check` rebuilds the four tables and their
+manifest checksums.
+
 ### Expression: measured first, proxy as a labelled fallback
 
 The threshold axis prefers a real measurement and falls back to a codon-adaptation

@@ -17,8 +17,10 @@ the contract exists so that cannot happen.
 
 The contract is **opt-in**. A source that declares no `quantity` behaves exactly
 as it did before — same column, same sign rule, same family. Of the shipped
-sources only the Tan 2018 pooled TSS layer, `TAN2018_TSS`, declares one
-(`tss_initiation`).
+sources only the five Tan 2018 TSS-initiation layers declare one
+(`tss_initiation`): the legacy pool `TAN2018_TSS` and the four Table S1
+condition layers `TAN2018_TSS_CONTROL`, `_DARK`, `_HIGH_LIGHT` and
+`_HIGH_TEMPERATURE`.
 
 ## The quantities
 
@@ -45,11 +47,15 @@ reinterpreted.
 count summed over a gene's associated TSSs, labelled "Transcription initiation
 (RNA-seq)" with kind `initiation`: how much transcription starts there, not how
 much transcript is present. It sits in `Expression` because it is a level, but
-each Tan 2018 layer is one condition or the authors' four-condition pool, and
+each Tan 2018 layer is one condition or the retained legacy calculation that
+pools all four (a project-side score whose rule was recovered, not documented,
+and not an aggregate the authors published), and
 ranking several together would rebuild a pooled score nobody chose. It heads its
 values `abundance` only because the pooled table shipped under that header
 before quantities existed and its bytes are pinned by
-`tools/tan2018_pooled_audit.py`; the kind and label carry the meaning. A
+`tools/tan2018_pooled_audit.py`; the four condition tables, built by
+`tools/tan2018_condition_initiation.py`, use the same header so all five read
+alike. The kind and label carry the meaning. A
 non-pooling `Expression` metric's description says it is "never pooled across
 datasets", not contrasts.
 

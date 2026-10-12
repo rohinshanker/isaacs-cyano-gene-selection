@@ -241,8 +241,9 @@ QUANTITIES: Mapping[str, Quantity] = {
             # A dRNA-seq start-site count summed over a gene's associated TSSs:
             # how much transcription initiates there, not how much transcript
             # is present. It is a level, so it sits in Expression, but it does
-            # not pool: each Tan 2018 layer is one condition (or the authors'
-            # four-condition pool), and ranking several of them together would
+            # not pool: each Tan 2018 layer is one condition (or the retained
+            # legacy project calculation that pools all four, not an aggregate
+            # the authors published), and ranking several of them together would
             # rebuild a pooled score the reader did not choose. It heads its
             # values ``abundance`` because the pooled table shipped under that
             # header before quantities existed, and its bytes are pinned; the

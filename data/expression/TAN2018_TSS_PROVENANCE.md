@@ -2,8 +2,15 @@
 
 **This is not transcript abundance. Read the next section before using it.**
 
-`tan2018_utex2973_tss_initiation.tsv` gives a transcription-start-site initiation
-score for 1,727 of the 2,715 UTEX 2973 protein-coding genes, or 63.6 percent.
+Five TSS-initiation layers ship, all declaring the `tss_initiation` quantity:
+
+- four **condition layers** built from Table S1 (owner decision, 2026-10-12: "use
+  the s1 table"), one per condition, each with 1,789 of the 2,715 UTEX 2973
+  protein-coding genes; see [Condition layers](#condition-layers-table-s1);
+- the **legacy pooled** `tan2018_utex2973_tss_initiation.tsv`, a score for 1,727
+  genes (63.6 percent) whose site set was recovered, not documented; see
+  [Pooled score audit](#pooled-score-audit). Its bytes are unchanged and it is
+  not the average of the condition layers.
 
 | Field | Value |
 | --- | --- |
@@ -13,7 +20,8 @@ score for 1,727 of the 2,715 UTEX 2973 protein-coding genes, or 63.6 percent.
 | **Organism measured** | ***S. elongatus* UTEX 2973 — the target strain** |
 | Assay | dRNA-seq, transcription start site mapping |
 | Conditions | Control 33 °C, 50 µmol photons m⁻² s⁻¹ continuous light, 3% CO2; plus high light 1,000 µmol (duration conflicts between Results and Methods); high temperature 45 °C for 30 min; dark for 2 h |
-| Derivation | Per locus, the sum over its separately pinned Figshare TSS feature set of the arithmetic mean of the eight per-TSS sample count fields; this is not a sum over the Table S1 site list (see [Exact layer mismatch](#exact-layer-mismatch)). No script was committed; the rule recovered on 2026-10-12 is in [Pooled score audit](#pooled-score-audit) |
+| Condition layers | Per gene, the sum over its exact-locus Table S1 gTSS rows of one condition's two-replicate mean, published fractions kept; built and checked by `tools/tan2018_condition_initiation.py` |
+| Legacy pooled derivation | Per locus, the sum over its separately pinned Figshare TSS feature set of the arithmetic mean of the eight per-TSS sample count fields; this is not a sum over the Table S1 site list (see [Exact layer mismatch](#exact-layer-mismatch)). No script was committed; the rule recovered on 2026-10-12 is in [Pooled score audit](#pooled-score-audit) |
 | Retrieved | 2026-09-18; Figshare archive and article re-retrieved 2026-10-12 |
 
 The site also carries `tan2018_utex2973_tss_table_s1.tsv`, an exact-column
@@ -42,6 +50,83 @@ The authors' differential-transcript threshold is `|log2FC| ≥ 1` and adjusted
 `p ≤ 0.01`; identified TSSs had at least 300 raw reads in one library. These
 are source-selection and significance conventions, not a site's gene-level
 expression call.
+
+## Condition layers (Table S1)
+
+| Source id | Metric key | Replicates (Table S1 columns) | Group | File | SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| `TAN2018_TSS_CONTROL` | `tssInitiationControl` | `CT1_RawReads`, `CT2_RawReads` | `other` | `tan2018_utex2973_tss_initiation_control.tsv` | `1264631c1fd9f041082c970828cf2a3a40c87999b692601f6de8aa4d53b4eb65` |
+| `TAN2018_TSS_DARK` | `tssInitiationDark` | `D1_RawReads`, `D2_RawReads` | `stress` | `tan2018_utex2973_tss_initiation_dark.tsv` | `330c4bd5536f1fa0740b8ccc7c80156b4e0a3710957b785ab093409ee4a0ee51` |
+| `TAN2018_TSS_HIGH_LIGHT` | `tssInitiationHighLight` | `HL1_RawReads`, `HL2_RawReads` | `elevated` | `tan2018_utex2973_tss_initiation_high_light.tsv` | `e45a034a78ff42541ff334e2bd2a5929656e91fc091411daaf986a368e513e13` |
+| `TAN2018_TSS_HIGH_TEMPERATURE` | `tssInitiationHighTemperature` | `HT1_RawReads`, `HT2_RawReads` | `stress` | `tan2018_utex2973_tss_initiation_high_temperature.tsv` | `92b865680c18388794a1636a3a8ffd7b66d0f8d1541c56dc35caac9233ae6816` |
+
+**Derivation.** Input is the pinned gTSS extract above (2,475 rows), itself
+re-extracted byte for byte from the pinned workbook by `verify-source`. A row
+joins a gene only when its `Locus_tags` value is exactly a current `M744_RS`
+locus tag: 2,432 rows join 1,789 genes; 33 name a locus absent from the current
+CDS set and 10 carry a gene symbol, and all 43 stay unjoined. Per gene and
+condition, the value is the sum over its joined rows of the mean of the
+condition's two replicates, in exact arithmetic, written at six decimals. The
+26 published `.5` counts are kept, so values may end in `.25`, `.5` or `.75`.
+No distance window, coordinate condition, truncation or file-order rule is
+applied; none of the legacy pool's recovered rule carries over.
+
+**Zero versus unknown.** A gene with joined rows whose counts are all zero would
+score `0.000000`; none does today, though three dark rows and one high-light row
+are zero. The 926 genes with no joined row have no table row and are `null` in
+`expression_layers.json`, never zero.
+
+**Each table** is `locus_tag`, `abundance` (the quantity's pinned column name),
+and `source_gene_id`, the joined Table S1 TSS ids in position order, `;`-separated.
+Rows are sorted by locus tag, lines end in LF.
+
+| Gene | Table S1 gTSS rows | Control | Dark | High light | High temp. |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `M744_RS00030` | `gTSS+5332` (CT 635/764, D 148/177, HL 295/437, HT 703/320) | 699.5 | 162.5 | 366 | 511.5 |
+| `M744_RS09190` | `gTSS+1828797`, `+1828807`, `+1828837` (HL 574.5/472.5 at the last) | 982 | 10.5 | 7,502 | 51.5 |
+| `M744_RS00020` | `gTSS-4241` | 670 | 27 | 2,481.5 | 358 |
+| `M744_RS00010` | none | unknown | unknown | unknown | unknown |
+
+`M744_RS00030` has no legacy pooled score at all, and `M744_RS00025`'s four-layer
+mean is 167.875 against a legacy 208.0; `M744_RS00020` agrees (884.125). Of
+1,789 condition-layer genes and 1,727 legacy ones, 1,317 are shared.
+
+**Conditions, quoted from the Methods** (PMC6091082, Strains and culture
+conditions): control "subjected to standard (control) culture conditions
+(33 °C, 50 μmol photons/m 2 /s constant illumination, 3% CO 2 aeration)"; the
+treatments "(i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high
+temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h."
+Two source conflicts are kept, not resolved: the Results say "transferred to
+darkness or high light for 2 h", so the high-light duration is 30 min or 2 h;
+and the Background calls the high-temperature condition "high light coupled with
+high-temperature", which the Methods do not mention, so its light level is
+recorded as conflicting. Control at 33 °C is outside the 28–32 °C standard range
+and is grouped `other`.
+
+**Source and licence.** The workbook is the publisher's Additional file 1,
+<https://static-content.springer.com/esm/art%3A10.1186%2Fs13068-018-1215-8/MediaObjects/13068_2018_1215_MOESM1_ESM.xlsx>,
+re-retrieved 2026-10-12 (3,339,692 bytes, SHA-256 `098ecbd2…5e79b00`, HTTP
+`last-modified` 2022-06-21, ETag `a89eea95493414a204af355eaa2fe73d`). Its `Table S1`
+header row is pinned in full, including the eight `<replicate>_RawReads` columns.
+The article (pinned above) states: "Open Access This article is distributed
+under the terms of the Creative Commons Attribution 4.0 International License"
+and "The Creative Commons Public Domain Dedication waiver
+( http://creativecommons.org/publicdomain/zero/1.0/ ) applies to the data made
+available in this article, unless otherwise stated." The layers carry the
+stricter CC BY 4.0 attribution; `verify-source` re-matches both lines.
+
+```sh
+.venv/bin/python tools/tan2018_pooled_audit.py fetch                 # article (and archive)
+.venv/bin/python tools/tan2018_condition_initiation.py fetch         # workbook into data/interim/expression/tan2018/
+.venv/bin/python tools/tan2018_condition_initiation.py verify-source # workbook checksum, header, re-extraction; licence lines
+.venv/bin/python tools/tan2018_condition_initiation.py write         # the four tables
+.venv/bin/python tools/tan2018_condition_initiation.py check         # rebuild equals the tables and sources.json checksums
+.venv/bin/python tools/tan2018_condition_initiation.py summary       # the counts above
+.venv/bin/python -m pytest tests/test_tan2018_condition_initiation.py
+```
+
+`check`, `summary` and the tests need only committed files; the workbook and
+article tests skip until fetched.
 
 ## Pooled score audit
 
@@ -177,9 +262,10 @@ table, not a gene-body coverage or abundance table. It does not alter that bound
 
 ## Coverage and what is missing
 
-- 1,727 of 2,715 target genes carry a score. All locus tags validate against the
-  current annotation, with no duplicates, no zeros, and no negative values.
-- **988 target genes have no TSS association at all** and must render as unknown, never
+- In the legacy pooled layer, 1,727 of 2,715 target genes carry a score. All locus tags
+  validate against the current annotation, with no duplicates, no zeros, and no negative
+  values. In each condition layer 1,789 genes carry a value and 926 are unknown.
+- **988 target genes have no legacy pooled score** and must render as unknown, never
   as zero. A gene with no mapped start site is not a gene with no transcription.
 - The published annotation carries 2,670 protein-coding loci; 51 are absent from the
   current target set and 77 TSS locus mentions do not resolve, reflecting nine years of
@@ -203,7 +289,9 @@ table, not a gene-body coverage or abundance table. It does not alter that bound
 The older pooled score and Table S1 are distinct processed artifacts with distinct
 selection and mapping rules, so their coverage differs (1,727 versus 1,789 genes).
 The site does not fill a missing pooled score from Table S1 or infer a score by
-averaging raw counts across conditions.
+averaging raw counts across conditions. The four condition layers use the same
+exact join as the Table S1 site layer and so share its 1,789 genes; a test pins
+each layer value to the sum of that gene's `tss_evidence.json` replicate means.
 
 ### Exact layer mismatch
 

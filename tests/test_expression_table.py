@@ -57,7 +57,7 @@ def test_check_header_accepts_the_declared_header_and_names_a_mismatch():
 
 
 MANIFESTS = {
-    "data/expression/sources.json": {"fitness": 99, "abundance": 64, "ratio": 1},
+    "data/expression/sources.json": {"fitness": 99, "abundance": 68, "ratio": 1},
     "data/expression/organisms/ecoli-k12-mg1655/sources.json": {"abundance": 78},
     "data/expression/organisms/ecoli-syn61-delta3-ev5/sources.json": {
         "abundance": 6, "read_count": 3, "log2_fold_change": 4, "p_value": 2,
