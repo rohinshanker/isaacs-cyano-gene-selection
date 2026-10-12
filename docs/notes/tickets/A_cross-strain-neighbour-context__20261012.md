@@ -58,6 +58,9 @@ CDS-envelope metrics.
   outward piece was skipped, allowing a farther gene to be called immediate and
   its distance unoccupied. Consider all outward occupied segments; if the nearest
   belongs to an OG partner, report that side overlap-blocked, retaining ties.
+- **NC-QA6 — open:** clearing the compact viewer while a new neighbour control
+  holds focus must restore focus to the surviving labelled viewer, as the
+  existing start-site control already does. Verify the empty-state transition.
 
 
 Before completion: exact geometry tests for both strands, origin wrapping,
