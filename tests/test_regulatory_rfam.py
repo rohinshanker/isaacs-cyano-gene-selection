@@ -2469,3 +2469,111 @@ def test_real_hit_is_intergenic_in_the_pinned_annotation():
             if int(fields[3]) <= end and start <= int(fields[4]):
                 overlapping.append(fields[2])
     assert overlapping == []
+
+
+@pytest.mark.parametrize("report_name", ["r.tsv", "r.json"])
+@pytest.mark.parametrize("failure_mode", ["write", "close", "interrupt"])
+def test_report_pair_cleans_partial_writes_and_interruptions(
+    tmp_path, monkeypatch, report_name, failure_mode
+):
+    json_path, tsv_path = tmp_path / "r.json", tmp_path / "r.tsv"
+    real_open = Path.open
+
+    class FailingReport:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            self.handle.close()
+            if failure_mode == "close":
+                raise OSError("flush failed on close")
+
+        def write(self, text):
+            self.handle.write(text[:16])
+            self.handle.flush()
+            if failure_mode == "write":
+                raise OSError("disk full during write")
+            if failure_mode == "interrupt":
+                raise KeyboardInterrupt()
+
+    def fail_selected(path, *args, **kwargs):
+        handle = real_open(path, *args, **kwargs)
+        return FailingReport(handle) if path.name == report_name else handle
+
+    monkeypatch.setattr(Path, "open", fail_selected)
+    expected = KeyboardInterrupt if failure_mode == "interrupt" else rr.RegulatoryRfamError
+    with pytest.raises(expected):
+        rr.write_report(REPORT, json_path, tsv_path)
+    assert not json_path.exists()
+    assert not tsv_path.exists()
+
+
+@pytest.mark.parametrize("limit", [16, 1024])
+def test_real_child_process_file_limit_leaves_no_partial_report(tmp_path, limit):
+    # Limit only the child: the test runner and other sessions are unaffected.
+    script = f'''
+import resource
+import runpy
+import signal
+from pathlib import Path
+module = runpy.run_path({str(REPO_ROOT / "tools/regulatory_rfam.py")!r})
+json_path, tsv_path = Path({str(tmp_path / "r.json")!r}), Path({str(tmp_path / "r.tsv")!r})
+resource.setrlimit(resource.RLIMIT_FSIZE, ({limit}, {limit}))
+signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
+try:
+    module["write_report"]({{"hits": [], "padding": "x" * 5000}}, json_path, tsv_path)
+except module["RegulatoryRfamError"]:
+    pass
+else:
+    raise AssertionError("expected an OS file-size failure")
+assert not json_path.exists() and not tsv_path.exists()
+'''
+    subprocess.run([sys.executable, "-c", script], check=True, capture_output=True, text=True)
+
+
+@pytest.mark.parametrize("interrupt", [False, True])
+def test_report_cleanup_attempts_every_file_and_preserves_failure(tmp_path, monkeypatch, interrupt):
+    json_path, tsv_path = tmp_path / "r.json", tmp_path / "r.tsv"
+    real_open, real_unlink = Path.open, Path.unlink
+    original = KeyboardInterrupt() if interrupt else OSError("original write failure")
+
+    class BrokenJson:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            self.handle.close()
+
+        def write(self, text):
+            self.handle.write(text[:16])
+            raise original
+
+    def fail_json(path, *args, **kwargs):
+        handle = real_open(path, *args, **kwargs)
+        return BrokenJson(handle) if path == json_path else handle
+
+    def deny_tsv_unlink(path, *args, **kwargs):
+        if path == tsv_path:
+            raise PermissionError("cleanup denied")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", fail_json)
+    monkeypatch.setattr(Path, "unlink", deny_tsv_unlink)
+    expected = KeyboardInterrupt if interrupt else rr.RegulatoryRfamError
+    with pytest.raises(expected) as error:
+        rr.write_report(REPORT, json_path, tsv_path)
+    if interrupt:
+        assert error.value is original
+        assert "cleanup denied" in error.value.__notes__[0]
+    else:
+        assert error.value.__cause__ is original
+        assert "original write failure" in str(error.value)
+        assert "cleanup denied" in str(error.value)
+    assert tsv_path.exists()
+    assert not json_path.exists()

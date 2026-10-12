@@ -1136,15 +1136,31 @@ def write_report(report: dict[str, Any], json_path: Path, tsv_path: Path) -> Non
         for path, text in pending:
             _refuse_blocked_ancestor(path, "report")
             path.parent.mkdir(parents=True, exist_ok=True)
-            _create_exclusive(path, text)
+            handle = path.open("x", encoding="utf-8", newline="")
             created.append(path)
-    except (OSError, RegulatoryRfamError) as error:
+            with handle:
+                handle.write(text)
+    except BaseException as error:
+        removed = 0
+        cleanup_errors = []
         for path in created:
-            path.unlink()
-        raise RegulatoryRfamError(
-            f"could not create the report pair; removed only the "
-            f"{len(created)} file(s) this run created: {error}"
-        ) from error
+            try:
+                path.unlink(missing_ok=True)
+                removed += 1
+            except OSError as cleanup_error:
+                cleanup_errors.append(f"{path}: {cleanup_error}")
+        cleanup_note = (
+            "; partial reports could not be removed: " + "; ".join(cleanup_errors)
+            if cleanup_errors else ""
+        )
+        if isinstance(error, (OSError, RegulatoryRfamError)):
+            raise RegulatoryRfamError(
+                f"could not create the report pair; removed only the "
+                f"{removed} file(s) this run created: {error}{cleanup_note}"
+            ) from error
+        if cleanup_note:
+            error.add_note(cleanup_note)
+        raise
 
 
 # --------------------------------------------------------------------------
