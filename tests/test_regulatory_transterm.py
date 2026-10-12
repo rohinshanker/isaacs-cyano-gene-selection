@@ -401,3 +401,76 @@ def test_build_payload_pins_provenance_and_control_meaning(tmp_path):
 def test_argument_parser_requires_all_artifact_paths():
     with pytest.raises(SystemExit):
         regulatory_transterm.parser().parse_args([])
+
+
+@pytest.mark.parametrize("header", [">", "> ", ">\t"])
+def test_empty_fasta_headers_are_user_facing_errors(tmp_path, header):
+    fasta = write(tmp_path / "empty.fna", header + "\nACGT\n")
+    with pytest.raises(regulatory_transterm.PilotError, match="empty FASTA identifier"):
+        regulatory_transterm.load_fasta(fasta)
+
+
+@pytest.mark.parametrize("failure", [OSError("disk full"), KeyboardInterrupt()])
+def test_partial_current_output_is_removed(tmp_path, monkeypatch, failure):
+    output = tmp_path / "partial.tsv"
+    real_open = Path.open
+
+    class FailingWriter:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            self.handle.close()
+
+        def write(self, data):
+            self.handle.write(data[:3])
+            self.handle.flush()
+            raise failure
+
+    def fail_write(path, *args, **kwargs):
+        handle = real_open(path, *args, **kwargs)
+        return FailingWriter(handle) if path == output else handle
+
+    monkeypatch.setattr(Path, "open", fail_write)
+    expected = regulatory_transterm.PilotError if isinstance(failure, OSError) else KeyboardInterrupt
+    with pytest.raises(expected):
+        regulatory_transterm._write_exclusive(output, b"a partial report")
+    assert not output.exists()
+
+
+def test_output_creation_errors_are_user_facing(tmp_path):
+    blocker = write(tmp_path / "parent", "preserve")
+    with pytest.raises(regulatory_transterm.PilotError, match="refusing to overwrite|could not create"):
+        regulatory_transterm._write_exclusive(blocker / "file.tsv", b"report")
+    assert blocker.read_text() == "preserve"
+
+
+@pytest.mark.parametrize("failure", [regulatory_transterm.PilotError("write failed"), KeyboardInterrupt()])
+def test_failed_report_batch_removes_previously_created_outputs(tmp_path, monkeypatch, failure):
+    inputs = {}
+    for key in ("transterm", "expterm", "source_archive", "fasta", "gff"):
+        inputs[key] = write(tmp_path / key, key)
+    inputs["transterm"].chmod(0o755)
+    outputs = {key: tmp_path / key for key in ("output_json", "output_tsv", "native_raw", "control_raw")}
+    args = argparse.Namespace(**inputs, **outputs, min_confidence=76, shuffle_seed=2973, timeout_seconds=1)
+    monkeypatch.setattr(regulatory_transterm, "TRANSTERM_SOURCE_SHA256", regulatory_transterm.sha256_file(inputs["source_archive"]))
+    monkeypatch.setattr(regulatory_transterm, "EXPTERM_SHA256", regulatory_transterm.sha256_file(inputs["expterm"]))
+    monkeypatch.setattr(regulatory_transterm, "load_fasta", lambda _: {"chr": "A" * 100})
+    monkeypatch.setattr(regulatory_transterm, "load_gff_genes", lambda *a: ([], {"chr": True}, "test"))
+    monkeypatch.setattr(regulatory_transterm, "validate_pinned_utex", lambda *a: None)
+    monkeypatch.setattr(regulatory_transterm, "run_transterm", lambda *a: report(PLUS))
+    real_writer = regulatory_transterm._write_exclusive
+
+    def fail_third(path, data):
+        if path == outputs["output_tsv"]:
+            raise failure
+        real_writer(path, data)
+
+    monkeypatch.setattr(regulatory_transterm, "_write_exclusive", fail_third)
+    with pytest.raises(type(failure)):
+        regulatory_transterm.run_pilot(args)
+    assert all(not path.exists() for path in outputs.values())
+    assert all(path.read_text() == key for key, path in inputs.items())

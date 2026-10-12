@@ -90,9 +90,10 @@ def load_fasta(path: Path) -> dict[str, str]:
                 if not line:
                     continue
                 if line.startswith(">"):
-                    identifier = line[1:].split(maxsplit=1)[0]
-                    if not identifier:
+                    header = line[1:].split(maxsplit=1)
+                    if not header:
                         raise PilotError(f"{path.name}:{line_number}: empty FASTA identifier")
+                    identifier = header[0]
                     if identifier in sequences:
                         raise PilotError(f"{path.name}:{line_number}: duplicate FASTA ID {identifier}")
                     current = identifier
@@ -588,13 +589,25 @@ def tsv_bytes(payload: dict[str, object]) -> bytes:
 
 
 def _write_exclusive(path: Path, data: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        handle = path.open("xb")
     except FileExistsError as error:
         raise PilotError(f"refusing to overwrite {path}") from error
-    with os.fdopen(descriptor, "wb") as handle:
-        handle.write(data)
+    except OSError as error:
+        raise PilotError(f"could not create output {path}: {error}") from error
+    try:
+        with handle:
+            handle.write(data)
+    except BaseException as error:
+        cleanup_note = ""
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            cleanup_note = f"; partial output could not be removed: {cleanup_error}"
+        if isinstance(error, OSError):
+            raise PilotError(f"could not write output {path}: {error}{cleanup_note}") from error
+        raise
 
 
 def _validate_output_paths(outputs: list[Path], inputs: list[Path]) -> None:
@@ -695,7 +708,7 @@ def run_pilot(arguments: argparse.Namespace) -> dict[str, object]:
         for path, data in writes:
             _write_exclusive(path, data)
             created.append(path)
-    except Exception:
+    except BaseException:
         for path in created:
             path.unlink(missing_ok=True)
         raise
