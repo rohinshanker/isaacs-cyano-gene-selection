@@ -54,6 +54,10 @@ CDS-envelope metrics.
   for b2891 that normalize to one occupied interval. Reconcile canonical occupied
   bases without changing the native CDS segments or frameshift metadata; verify
   all six published catalogues and the independent source contract.
+- **NC-QA5 — open:** a joined OG partner with one internal piece and a separate
+  outward piece was skipped, allowing a farther gene to be called immediate and
+  its distance unoccupied. Consider all outward occupied segments; if the nearest
+  belongs to an OG partner, report that side overlap-blocked, retaining ties.
 
 
 Before completion: exact geometry tests for both strands, origin wrapping,
