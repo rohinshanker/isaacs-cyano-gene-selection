@@ -86,7 +86,10 @@ failed loading and an unresolved mapping must never imply non-essentiality.
 The essentiality filter is independent of the color choice and combines with
 other active filters. Class choices within it are alternatives (OR); an empty
 selection imposes no essentiality filter. Shared links and exported views retain
-the selection. Organisms without this admitted PCC layer do not offer the option
+the selection (`pe` in shared URLs and `pccEssentialityFilter` in view state).
+The CSV retains `pcc7942Essentiality` and adds `pcc7942EssentialityBucket`; the
+manifest records the four display buckets and their exact source-status lists.
+Organisms without this admitted PCC layer do not offer the option
 or inherit a UTEX essentiality filter. A fresh view retains its existing function
 color and unfiltered state.
 
@@ -127,5 +130,5 @@ conditions before publishing.
 python3 tools/build_pcc7942_essentiality.py --check
 python3 tools/candidate_evidence.py check
 python3 -m pytest -q tests/test_pcc7942_essentiality.py tests/test_candidate_evidence.py
-node --test tests/js/candidate-evidence.test.mjs tests/js/export-manifest.test.mjs
+node --test tests/js/pcc-essentiality.test.mjs tests/js/candidate-evidence.test.mjs tests/js/export-manifest.test.mjs
 ```

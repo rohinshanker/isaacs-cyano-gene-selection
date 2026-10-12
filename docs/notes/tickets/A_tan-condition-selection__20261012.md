@@ -48,7 +48,7 @@ the data layer: the fresh-axis help fixture currently has no control metric.
 Pending: independent source/checksum/column and pooled-score reproduction;
 owner-approved derivation; condition-aware selector, colouring, axes, filters and
 exports; final unit/integration tests, rendered mobile/tablet/desktop checks and
-release gates. No current-task change has reached main or the public site.
+release gates. No Tan runtime or data change has reached main or the public site.
 
 ## Cleanup
 
