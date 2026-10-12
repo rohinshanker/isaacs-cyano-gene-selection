@@ -2045,9 +2045,15 @@ def validate_gene_overlaps(
         for entry in payload.get("replicons", []) if isinstance(entry, dict)
     }
 
+    context = payload.get("contextFeatures")
+    has_context = "contextFeatures" in payload
+    if has_context and not isinstance(context, list):
+        report.check(False, "native context catalogue is an array")
+        return
+    catalogue = features + (context if has_context else [])
     shape: list[str] = []
     listed: dict[str, dict[str, Any]] = {}
-    for position, feature in enumerate(features):
+    for position, feature in enumerate(catalogue):
         locus = feature.get("id") if isinstance(feature, dict) else None
         if not isinstance(locus, str) or not locus:
             shape.append(f"feature {position} has no locus tag")
@@ -2172,16 +2178,36 @@ def validate_gene_overlaps(
         "; ".join(named[:4]),
     )
 
+    if has_context:
+        context_problems = []
+        if set(listed) != covered or len(catalogue) != len(covered):
+            context_problems.append("catalogue does not cover coveredGenes exactly once")
+        actual_census = collections.Counter(feature.get("biotype") for feature in catalogue
+                                            if isinstance(feature, dict))
+        if dict(actual_census) != coverage.get("byBiotype"):
+            context_problems.append("catalogue does not reconcile with the biotype census")
+        if sum(feature.get("segmentSource") == "gene" for feature in catalogue
+               if isinstance(feature, dict)) != coverage.get("childlessGenes"):
+            context_problems.append("catalogue does not reconcile with childlessGenes")
+        report.check(not context_problems, "native context catalogue reconciles exactly",
+                     "; ".join(context_problems))
+
     joined: list[str] = []
     by_id = {gene.get("id"): gene for gene in genes if isinstance(gene, dict)}
     for locus, feature in listed.items():
         gene = by_id.get(locus)
         if gene is None:
             continue
-        own = sorted(
+        own_pieces = sorted(
             [list(piece) for piece in (gene.get("cdsSegments")
                                        or [[gene.get("start"), gene.get("end")]])]
         )
+        own = []
+        for start, end in own_pieces:
+            if own and start <= own[-1][1] + 1:
+                own[-1][1] = max(own[-1][1], end)
+            else:
+                own.append([start, end])
         if own != sorted(feature.get("segments", [])):
             joined.append(f"{locus} segments differ from genes.json")
         if gene.get("strand") != feature.get("strand") or gene.get("seqid") != feature.get("seqid"):

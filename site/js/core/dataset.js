@@ -335,6 +335,7 @@ export const DATA_APPLIERS = Object.freeze({
       for (const gene of dataset.genes) {
         delete gene.overlapPartners;
         delete gene.overlapClass;
+        delete gene.flankingNeighbours;
       }
       return;
     }
@@ -346,6 +347,12 @@ export const DATA_APPLIERS = Object.freeze({
       const gene = dataset.genes[position];
       gene.overlapPartners = index.partnersById.get(gene.id) ?? NO_PARTNERS;
       gene.overlapClass = OVERLAP_CLASS_IDS[index.values[position]];
+      // Non-enumerable: JSON/export/object spreads cannot resolve the whole
+      // catalogue accidentally. A load validates once; only viewed loci scan.
+      if (index.neighbours) Object.defineProperty(gene, 'flankingNeighbours', {
+        configurable: true, enumerable: false, get: () => index.neighbours.get(gene.id),
+      });
+      else delete gene.flankingNeighbours;
     }
     dataset.geneOverlaps = index;
   },

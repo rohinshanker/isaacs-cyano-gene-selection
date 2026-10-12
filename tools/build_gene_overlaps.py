@@ -29,6 +29,10 @@ What counts, by owner decision of 2026-10-09 (DEM-337 Q1/Q2):
   a one-base overlap counts, abutting ends do not, and no envelope, tolerance,
   minimum length, or cross-replicon or cross-organism join is ever used.
 
+The optional ``contextFeatures`` array completes the inventory with only the
+non-overlap participants, in the same schema. Native flank context consumes this
+catalogue separately; OG positions, pairs and coverage are unchanged.
+
 Usage:
     tools/build_gene_overlaps.py build [--organism ID] [--raw-dir DIR] [--data-dir DIR]
     tools/build_gene_overlaps.py check [--organism ID] [--raw-dir DIR] [--data-dir DIR]
@@ -276,7 +280,7 @@ def build_payload(gff_path: Path, organism: OrganismConfig) -> dict[str, Any]:
         partner_counts[first] += 1
         partner_counts[second] += 1
 
-    return {
+    payload = {
         "schemaVersion": SCHEMA_VERSION,
         "datasetVersion": DATASET_VERSION,
         "origin": "computed",
@@ -329,6 +333,12 @@ def build_payload(gff_path: Path, organism: OrganismConfig) -> dict[str, Any]:
             for first, second, pieces in pairs
         ],
     }
+    # Complement only: OG feature positions and pairs remain byte-for-byte stable.
+    payload["contextFeatures"] = [
+        {**record, "segments": [list(piece) for piece in record["segments"]]}
+        for index, record in enumerate(records) if index not in position
+    ]
+    return payload
 
 
 def serialize(payload: Mapping[str, Any]) -> str:

@@ -427,3 +427,70 @@ test('the drawn frame counts a minus-strand gene downwards from its own start', 
   assert.equal(track.direction, 'with');
   assert.equal(track.extendsBeyond, false);
 });
+
+test('optional complement validates every CDS, census and identity without changing OG', () => {
+  const plotted = [geneRow('A'), geneRow('B', { start: 201, end: 220 })];
+  const complete = payload({ covers: ['A', 'B', 'rna'], byBiotype: { protein_coding: 2, tRNA: 1 } });
+  complete.contextFeatures = [feature('A'), feature('B', { segments: [[201, 220]] }),
+    feature('rna', { segments: [[90, 99]], biotype: 'tRNA', strand: null })];
+  const index = validateGeneOverlaps(complete, plotted, ORGANISM);
+  assert.equal(index.features.length, 0);
+  assert.equal(index.partnersById.size, 0);
+  assert.deepEqual(index.neighbours.get('A').downstream.neighbours.map((entry) => [entry.id, entry.gapNt]), [['B', 0]]);
+  assert.equal(index.neighbours.get('A').upstream.neighbours[0].biotype, 'tRNA');
+  for (const mutate of [
+    (data) => { data.contextFeatures.pop(); },
+    (data) => { data.contextFeatures.push(data.contextFeatures[0]); },
+    (data) => { data.contextFeatures[2].id = 'uncovered'; },
+    (data) => { data.contextFeatures[2].biotype = 'ncRNA'; },
+    (data) => { data.contextFeatures[2].segments = [[0, 10]]; },
+    (data) => { data.contextFeatures[0].segments = [[100, 199]]; },
+    (data) => { data.contextFeatures = null; },
+    (data) => { data.contextFeatures[0].name = 17; },
+    (data) => { data.contextFeatures[0].segmentSource = 'gene'; },
+  ]) {
+    const broken = structuredClone(complete);
+    mutate(broken);
+    assert.throws(() => validateGeneOverlaps(broken, plotted, ORGANISM), /gene_overlaps.json/);
+  }
+  const old = structuredClone(complete);
+  delete old.contextFeatures;
+  assert.equal(validateGeneOverlaps(old, plotted, ORGANISM).neighbours, null);
+});
+
+test('loader late-loads and clears context atomically, old payloads cannot retain native answers', () => {
+  const dataset = { genes: [geneRow('A')], organism: ORGANISM };
+  const complete = payload({ covers: ['A'] });
+  complete.contextFeatures = [feature('A')];
+  DATA_APPLIERS.geneOverlaps(dataset, null);
+  assert.equal(dataset.genes[0].flankingNeighbours, undefined);
+  DATA_APPLIERS.geneOverlaps(dataset, complete);
+  assert.equal(dataset.geneOverlaps.neighbours.resolvedGeneCount, 0);
+  assert.equal(Object.getOwnPropertyDescriptor(dataset.genes[0], 'flankingNeighbours').enumerable, false);
+  assert.doesNotMatch(JSON.stringify(dataset.genes), /flankingNeighbours/);
+  assert.equal(dataset.geneOverlaps.neighbours.resolvedGeneCount, 0);
+  const answer = dataset.genes[0].flankingNeighbours;
+  assert.equal(dataset.geneOverlaps.neighbours.resolvedGeneCount, 1);
+  assert.equal(answer.upstream.status, 'no-flank');
+  const broken = structuredClone(complete);
+  broken.contextFeatures[0].segments = [[101, 200]];
+  assert.throws(() => DATA_APPLIERS.geneOverlaps(dataset, broken));
+  assert.strictEqual(dataset.genes[0].flankingNeighbours, answer); // No partial join.
+  delete complete.contextFeatures;
+  DATA_APPLIERS.geneOverlaps(dataset, complete);
+  assert.equal(dataset.genes[0].flankingNeighbours, undefined);
+  complete.contextFeatures = [feature('A')];
+  DATA_APPLIERS.geneOverlaps(dataset, complete);
+  DATA_APPLIERS.geneOverlaps(dataset, null);
+  assert.equal(dataset.geneOverlaps, null);
+  assert.equal(dataset.genes[0].flankingNeighbours, undefined);
+});
+
+test('CDS joins compare occupied union: abutting Syn57 pieces agree, a real gap does not', () => {
+  const data = payload({ covers: ['A'] });
+  data.contextFeatures = [feature('A')];
+  const plotted = [geneRow('A', { cdsSegments: [[100, 150], [151, 200]] })];
+  assert.ok(validateGeneOverlaps(data, plotted, ORGANISM).neighbours);
+  plotted[0].cdsSegments = [[100, 150], [152, 200]];
+  assert.throws(() => validateGeneOverlaps(data, plotted, ORGANISM), /disagrees/);
+});

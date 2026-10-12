@@ -1,3 +1,4 @@
+import { createNeighbourDisclosure, updateNeighbourDisclosure } from './gene-neighbours.js';
 /**
  * The pinned gene's sequence close-up, at the foot of the Chromosome tab.
  *
@@ -381,7 +382,7 @@ export class GeneSequenceView {
   }) {
     if (!this.built) this.build();
     const id = gene?.id ?? null;
-    const geneChanged = id !== this.geneId;
+    const geneChanged = id !== this.geneId || organism !== this.organism;
     const schemeChanged = schemeVersion !== this.schemeVersion;
     const nextAvailableUpstream = availableUpstreamNt(gene);
     const contextChanged = nextAvailableUpstream !== this.availableUpstream
@@ -393,12 +394,14 @@ export class GeneSequenceView {
     // The overlap layer landing changes this gene's partner tracks without
     // changing the gene, so it is its own reason to redraw: without it the
     // tracks would stay empty until the reader pinned something else.
+    const neighbourChanged = gene?.flankingNeighbours !== this.neighbourContext;
     const overlapChanged = overlapsPending !== this.overlapsPending
       || Array.isArray(gene?.overlapPartners) !== Array.isArray(this.partners);
     // Hover re-renders the tab; nothing here depends on hover, so they cost nothing.
-    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged) {
+    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged) {
       return;
     }
+    this.neighbourContext = gene?.flankingNeighbours;
     this.gene = gene;
     this.table = table;
     this.scheme = scheme;
@@ -684,6 +687,7 @@ export class GeneSequenceView {
     this.partnerDetails.append(this.partnerSummary, this.partnerNote, this.partnerList);
     this.partnerDetails.hidden = true;
     this.partnerListHost.append(this.partnerDetails);
+    this.neighbourDetails = createNeighbourDisclosure();
 
     this.selection = element('p', 'gene-sequence-selection');
     this.selection.setAttribute('role', 'status');
@@ -696,7 +700,7 @@ export class GeneSequenceView {
       + 'zoom, 0 or Home returns to the start, and End goes to the stop. Click a codon to read it out.';
 
     this.figure.append(this.heading, toolbar, this.readout, this.strip, this.markerControlHost,
-      this.selection, this.instructions, this.markerListHost, this.partnerListHost);
+      this.selection, this.instructions, this.markerListHost, this.partnerListHost, this.neighbourDetails);
     this.host.append(this.empty, this.figure);
     this.bindEvents();
     if (typeof ResizeObserver !== 'undefined') {
@@ -725,9 +729,13 @@ export class GeneSequenceView {
 
   render() {
     const model = this.model;
+    const neighbourHeld = this.heldIn(this.neighbourDetails);
+    updateNeighbourDisclosure(this.neighbourDetails, this.gene, this.overlapsPending,
+      (id, index) => this.handlers.onOpenPartner?.(id, index));
     this.figure.hidden = !model;
     this.empty.hidden = Boolean(model);
     if (!model) {
+      this.carryFocus(neighbourHeld);
       this.strip.replaceChildren();
       this.readout.textContent = '';
       // Through the same writers as any other render, so a reader holding the

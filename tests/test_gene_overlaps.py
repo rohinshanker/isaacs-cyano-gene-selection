@@ -364,3 +364,50 @@ class ShippedLayerTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class ContextCatalogueTest(unittest.TestCase):
+    def test_complement_covers_every_native_gene_once_without_changing_pairs(self):
+        payload = build([
+            gene("A", "chr1", 10, 20, "+"), child("A", "chr1", 10, 20, "+"),
+            gene("B", "chr1", 18, 25, "-"), child("B", "chr1", 18, 25, "-"),
+            gene("rna", "chr1", 30, 40, "+", "tRNA"), child("rna", "chr1", 30, 40, "+", "tRNA"),
+            gene("pseudo", "chr1", 50, 60, "+", "pseudogene", "pseudogene"),
+        ], {"chr1": 100})
+        self.assertEqual([record["id"] for record in payload["features"]], ["A", "B"])
+        self.assertEqual([record["id"] for record in payload["contextFeatures"]], ["rna", "pseudo"])
+        self.assertEqual(payload["pairs"], [[0, 1, [[18, 20]]]])
+        catalogue = payload["features"] + payload["contextFeatures"]
+        self.assertEqual(sorted(record["id"] for record in catalogue), payload["coveredGenes"])
+        self.assertEqual(set(catalogue[0]), set(catalogue[-1]))
+        self.assertTrue(catalogue[-1]["pseudo"])
+
+    def test_contract_rejects_missing_duplicate_stale_and_wrong_census_context(self):
+        import copy
+        import validate_contract as contract
+        rows = [gene("A", "chr1", 10, 20, "+"), child("A", "chr1", 10, 20, "+"),
+                gene("rna", "chr1", 30, 40, "+", "tRNA")]
+        payload = build(rows, {"chr1": 100})
+        genes = [{"id": "A", "start": 10, "end": 20, "seqid": "chr1", "strand": "+"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            with gzip.open(directory / "ASM0v1_genomic.gff.gz", "wt") as handle:
+                handle.write(gff(rows, {"chr1": 100}))
+            def verify(data):
+                (directory / "gene_overlaps.json").write_text(producer.serialize(data))
+                report = contract.Report()
+                contract.validate_gene_overlaps(str(directory), str(directory), genes, report, FakeOrganism())
+                return report
+            self.assertEqual(verify(payload).failures, [])
+            for mutation in ("missing", "duplicate", "stale", "census", "plotted"):
+                broken = copy.deepcopy(payload)
+                if mutation == "missing":
+                    broken["contextFeatures"].pop()
+                elif mutation == "duplicate":
+                    broken["contextFeatures"].append(broken["contextFeatures"][0])
+                elif mutation == "stale":
+                    broken["contextFeatures"][1]["segments"] = [[31, 40]]
+                elif mutation == "census":
+                    broken["contextFeatures"][1]["biotype"] = "ncRNA"
+                else:
+                    broken["contextFeatures"][0]["segments"] = [[11, 20]]
+                self.assertTrue(verify(broken).failures, mutation)

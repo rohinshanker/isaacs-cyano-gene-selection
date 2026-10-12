@@ -944,3 +944,33 @@ test('a chevron marks an edge the partner has bases beyond, drawn or not', async
     assert.equal(ends.length, 1, 'the rest of its track is now off to the left');
   });
 });
+
+test('neighbour late load preserves camera, disclosure and focus; camera redraws retain content', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    const focal = gene();
+    view.update({ gene: focal, table, scheme: null, schemeVersion: 0, overlapsPending: 'loading' });
+    const details = view.neighbourDetails;
+    details.open = true;
+    const summary = details.querySelector('summary');
+    summary.focus();
+    view.panBy(10);
+    const camera = { ...view.camera };
+    focal.flankingNeighbours = {
+      upstream: { status: 'no-flank', neighbours: [], blockedBy: [] },
+      downstream: { status: 'overlap-blocked', neighbours: [], blockedBy: ['partner'] },
+    };
+    view.update({ gene: focal, table, scheme: null, schemeVersion: 0 });
+    assert.deepEqual(view.camera, camera);
+    assert.strictEqual(document.activeElement, summary);
+    assert.equal(details.open, true);
+    assert.match(details.textContent, /Overlap-blocked by partner/);
+    const content = [...details.querySelector('div').children];
+    view.panBy(10);
+    assert.deepEqual(details.querySelector('div').children, content);
+    delete focal.flankingNeighbours;
+    view.update({ gene: focal, table, scheme: null, schemeVersion: 0 });
+    assert.match(details.textContent, /unavailable/);
+    assert.deepEqual(view.model.domain, { min: -30, max: 27 });
+  });
+});
