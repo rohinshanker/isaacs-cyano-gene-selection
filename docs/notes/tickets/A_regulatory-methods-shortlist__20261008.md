@@ -36,6 +36,110 @@ Owner: cyano-source-ingestion. Code baseline 7bf8811 in isolated worktree
 worktrees/ui-choices-20261008. This is a candidate shortlist, not method execution,
 new source admission, genomic remapping or a calibrated-confidence claim.
 
+## Implementation and evaluation, 2026-10-12
+
+Coordinator: `cyano-regulatory-sites`. DEM-361 implements standalone TransTermHP;
+DEM-362 implements the bounded RF01116/Infernal pilot. Each writer uses a separate
+Multica worktree. Other Agent Deck sessions are neither contacted nor interrupted.
+DEM-363's optional evidence-analyst run failed at its provider's biology filter;
+no replacement dispatch was made. The coordinator checked remaining inputs and
+primary documentation directly. No existing iDOG hold or RBS code dependency changed.
+
+### Promoter Calculator
+
+`04452cc` adds checksum-pinned preparation of all six public upstream files;
+`4c59426` addresses the independent DEM-371 review. Only four print statements and
+two encoder keyword arguments change. Coefficients, intercept, README and licence
+are preserved. Real-source preparation, 25 focused tests (including the opt-in
+actual-artifact test), and the native-window recipe pass under Python 3.12.4,
+NumPy 2.5.3, scikit-learn 1.9.1, SciPy 1.18.1 and Biopython 1.88.
+
+The chromosome's first 250 bases yield 91 finite model states on each strand;
+component slices and initiation bases round-trip to native sequence. This is
+runtime/coordinate verification, not a promoter benchmark or historical Python 2
+parity claim. Full scoring requires 67 bases upstream and 20 bases from the start
+through the initially transcribed region. Partial window coverage is explicit in
+[the reproducible contract](../../validation/regulatory-promoter.md).
+
+DEM-371 findings: P1 window-edge coverage, P2 real-pin/indented-source test,
+P3 execution/failure/base checks, P4 interruption/cleanup behavior, P5 reverse-key
+basis, and P6 documentation links/current state. P1–P5 resolved by `4c59426`;
+P6 is being completed in this integration. No biological calibration was asserted.
+
+### Standalone TransTermHP
+
+Worker `1179e56`, integrated as `6a66fa2`; independent review DEM-372 is in progress.
+Official source 2.09 reports an unchanged internal 2.08 banner; both are retained.
+The scratch compiler adaptation changes three pointer-returning `false` values
+to `0`, without changing the scoring code. All three pinned native replicons are
+searched. Two origin-spanning plasmid genes are split into physical annotation
+segments for tool input; origin-spanning terminators remain outside coverage.
+
+| Run | Total | + | − | Chromosome | Plasmid CP006472 | Plasmid CP006473 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Native | 878 | 459 | 419 | 866 | 9 | 3 |
+| Mononucleotide-shuffled control | 319 | 140 | 179 | 313 | 4 | 2 |
+
+These are candidate/null counts, not measured termination or a false-positive
+rate. The `TERM` interval is a hairpin; the adjacent 15-nt scoring tail is recorded
+separately. Every reported interval was bounds-checked. Initial focused tests: 40
+passed. Evidence is preserved outside the managed worktree at
+`/tmp/cyano-regulatory-pilots-20261012/transterm/`; the
+[runbook](../../validation/regulatory-transterm.md) pins inputs and build steps.
+
+| Initial evaluation artifact | SHA-256 |
+| --- | --- |
+| Native raw output | `ba651ac99aaba567dd19b606aba872d7cfe6cbc555bee6a16379af258b699851` |
+| Shuffled raw output | `c4205b002e540d973ab798b37a45aa74b48e908ce42254c7d2c993dbe9576330` |
+| JSON | `12408fadb30c8f519e4bd46523750a206a719883f12c2f08e397c91fc3bfcf44` |
+| TSV | `897f6107e4f3d0ee1d590911450ce013e4119a8c91dd76a2f3eaa9fee47a2741` |
+
+### Remaining selected methods and executable boundaries
+
+- **Rfam/Infernal:** DEM-362 is running a single regulatory-family pilot, RF01116
+  (Yfr1), using gathering cutoffs and the native assembly. This is model transfer;
+  no donor coordinate is relabelled as a UTEX coordinate.
+- **ViennaRNA:** local 2.7.2 structure/accessibility smoke passes on the same
+  250-base native window and a seed-2973 mononucleotide shuffle. With default
+  37 °C model settings, window 150, maximum span 100 and unpaired length 10,
+  each sequence has 241 valid segment probabilities. Native MFE is about −72.1
+  kcal/mol and shuffled MFE about −74.2 kcal/mol; those values do not identify a
+  regulatory site. V1 indexing finding is resolved by checking the C source and
+  an all-A oracle: the matrix row is a segment **end**, unlike the Python
+  docstring's start wording. The first nine rows for length 10 are padding.
+  [The contract](../../validation/regulatory-methods.md#local-accessibility-indexing)
+  records this for future consumers. A dedicated interval producer and biological
+  evaluation remain work, rather than a runtime-access blocker.
+- **STREME:** the admitted Tan gTSS table supplies 2,475 initiation anchors
+  (`d06524cf492aa8f009bf004c596a5d305ac54acbe7537ec98bbc7992ce164bff`),
+  not full promoter boundaries or validated negative loci. The checked local
+  executable paths have no STREME. Next engineering step is a pinned 5.5.9 build
+  and explicit native-window cohort with matched controls and independent locus/
+  overlap blocks. Its default order-2 shuffle preserves trinucleotide counts.
+  Final motifs include its internal holdout, so a separate external evaluation
+  cohort is necessary. New-sequence scanning needs a separately selected scanner;
+  FIMO remains a candidate, not an implicitly selected additional method.
+- **IntaRNA:** no executable was found on PATH or in the checked project/tool
+  environments. The source supports accessibility/seed-aware interactions, but
+  existing Tan TSS records do not define complete sRNA transcript ends. A Yfr1
+  covariance-model interval also is not automatically a full transcript.
+  Next steps are a pinned runtime and explicit, source-backed query/target RNA
+  sequence/window identities; approximate windows can only be sensitivity inputs.
+  Retain seed-disrupting/shuffled controls and independent interaction evidence.
+
+### New direct source checks
+
+Retrieved 2026-10-12; short quotes mechanically matched after whitespace/HTML
+normalization where needed. Raw receipts are in the coordinator worktree's ignored
+`.playwright-cli/regulatory-methods-20261012/` directory.
+
+| Source | Located evidence | SHA-256 |
+| --- | --- | --- |
+| Pinned Promoter Calculator source / `util.py` | Four print statements / two `OneHotEncoder(sparse=False)` calls; local prepared source hashes verified | `67d2733b0be1968668c6710e56262b00d9b4725b98b4f94749519591b48d1cdb` / `abd561c6f1a4669dace3f783903f2779133cdc4ce5319919302303982eba23cc` |
+| [STREME manual](https://meme-suite.org/meme/doc/streme.html), `--hofract` | “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
+| [IntaRNA 3.4.1 README](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/README.md), opening description | “incorporating accessibility and seeding” | `67ae5c17c94ccff9a68484d4b7fefb950587dc22b0f85d91afd8c3742c0c0fc8` |
+| [ViennaRNA 2.7.2 `pf_window.c`](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/partfunc/pf_window.c#L1559), lines 1559–1561; storage callback lines 2092–2104 | “starting at i-x+1” | `79f07a777c3bba635f26894576b27206635db77e7b9ce522058a0e7f4f34e338` |
+
 ## Owner selection, 2026-10-08
 
 **Record only; do not work on these methods or their viewer changes yet.**
@@ -91,7 +195,7 @@ code contracts; no new regulatory prediction layer is admitted by this assessmen
 | --- | --- | --- |
 | RBS Calculator | Public SalisLabCode head `46da913`; its v2.1.1 test imports a private `DNAc` package. Original v1.0 remains Python 2/NUPACK dependent. | Owner has no existing code/API/runtime access and explicitly retains this dependency as open. No surrogate SD scan is substituted. |
 | iDOG / TransTermHP | Existing iDOG review/hold retained; standalone author download is TransTermHP 2.09 C++ source. | iDOG execution still waits on the owner's own review. Standalone intrinsic-terminator evaluation needs a reproducible tool build and its stated score/input contract. |
-| Promoter Calculator | Public v1.0 at SalisLabCode `46da913`, GPL v3 or later; implementation still contains Python 2 syntax. Organism names other than the explicit E. coli or in-vitro modes fall through to E. coli calibration constants. | Python 3 compatibility/evaluation and explicit model/host labels before scores are published; selecting UTEX as a string does not supply UTEX calibration. |
+| Promoter Calculator | Public v1.0 at SalisLabCode `46da913`, GPL v3 or later; implementation still contains Python 2 syntax. Organism names other than the explicit E. coli or in-vitro modes fall through to E. coli calibration constants. | Pinned Python 3 preparation and a native-window smoke check implemented 2026-10-12; whole-genome evaluation and explicit model/host labels remain before publication. A UTEX string does not supply UTEX calibration. |
 | ViennaRNA | Existing project Python/browser model is 2.7.2; Python-library smoke returned a finite MFE/structure. | Structure/accessibility is computational evidence, not a validated regulatory-site call; select windows/parameters for any new annotation method. |
 | STREME | Current author MEME Suite source download is 5.5.9. | Foreground/control cohort and evaluation split are required for motif discovery; a discovered motif alone is not an admitted site layer. |
 | Rfam + Infernal | Current official Rfam release is 15.1; existing user-owned `trna-validate` environment has Infernal 1.1.5. | Pin family models/cutoffs and native input coordinates. Fresh cmsearch matches are calculated outputs even though their models come from a library. |
@@ -123,7 +227,7 @@ parts do not become ordinary cyanobacterial promoters by sequence similarity.
 | --- | --- | --- |
 | [RBS Calculator](O_rbs-calculator-gene-visualizer__20260930.md) | Once executable code is available, score native UTEX initiation contexts with pinned model/host parameters; use conserved donor start-region alignments as supporting evidence. | PCC 6803 experiments reported poor relative-expression prediction [S1]. Treat outputs as candidate initiation contexts, not measured binding boundaries or reliable rates. Compare rankings with independent translation/reporter evidence where available; RNA abundance alone is not an RBS benchmark. Code access remains open. |
 | [iDOG](O_idog-promoter-prediction__20260930.md) | Assess reusable RBS and terminator components under their own contracts; use bacterial/cyanobacterial parts as comparison inputs where appropriate. | Its yeast promoter library and fixed T7 promoter do not supply a native UTEX promoter locator. Preserve the owner hold and bytecode/source gaps. Standalone TransTermHP is the practical independent route; do not call another predictor's output iDOG promoter predictions. |
-| Promoter Calculator | Run the pinned E. coli sigma-70 model on native UTEX windows on both strands as an explicitly out-of-domain ranking. Conserved donor promoter regions supply additional candidates, checked against native sequence. | The paper's in-vivo tests use E. coli [S2], not UTEX calibration. Test localization/enrichment near held-out Tan TSSs, separating alternative starts and conditions from independent loci. A TSS is an initiation anchor, not a complete promoter boundary; do not convert raw counts into calibrated promoter strength. Runtime compatibility is still outstanding. |
+| Promoter Calculator | Run the pinned E. coli sigma-70 model on native UTEX windows on both strands as an explicitly out-of-domain ranking. Conserved donor promoter regions supply additional candidates, checked against native sequence. | The paper's in-vivo tests use E. coli [S2], not UTEX calibration. Test localization/enrichment near held-out Tan TSSs, separating alternative starts and conditions from independent loci. A TSS is an initiation anchor, not a complete promoter boundary; do not convert raw counts into calibrated promoter strength. The 2026-10-12 preparation and native-window smoke establish runtime feasibility; independent localization/ranking evaluation remains. |
 | TransTermHP | Score native UTEX sequence for intrinsic terminator candidates, then compare with uniquely aligned PCC 7942 transcript-end contexts. Cascino 2026 / GSE309256 is a concrete donor-data candidate [S3]. Gale 2021's UTEX-tested terminator parts can support a separate sequence-level check [S4]. | This addresses intrinsic terminators only. PCC 7942 intrinsic features cover a minority of transcript units [S3]; a transcript end need not be a termination site. Report candidate recovery and shuffled-background hits separately from termination efficiency. Gale's reporter-part strengths transfer poorly between hosts [S4]; they are not native genomic coordinates. Tool scores are not calibrated UTEX probabilities. |
 | STREME | Discover motifs in TSS-anchored native UTEX sequences and, separately, admitted donor promoter/regulon cohorts; compare them and score motifs against native UTEX sequence. | Use length/composition-matched controls and an independent locus/ortholog-block test set. STREME's final motifs include its internal holdout [S5], so that holdout is not an external generalization test. Its sites output covers the discovery input; new-sequence scanning needs an explicitly chosen, evaluated scanner (FIMO is a candidate, not a newly selected method). A motif hit alone does not identify a regulator or establish function. |
 | Rfam + Infernal | Search native UTEX sequence with pinned covariance models and their family-specific gathering cutoffs [S6]; prioritize cyanobacterial regulatory families, with Yfr1/RF01116 as one concrete candidate [S7]. | This transfers sequence/structure family models, not donor coordinates. Report homology and family identity, not demonstrated regulatory action. Separate regulatory families from tRNA/rRNA/other RNA classes; retain overlaps/truncation and unmatched regions. Check conserved donor homologues and native transcript evidence, without treating missing expression or missing family hits as negatives. |

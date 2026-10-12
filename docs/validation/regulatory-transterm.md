@@ -132,27 +132,6 @@ other printed 2.09 defaults in each raw report. The control applies a reproducib
 SHA-256-indexed Fisher–Yates mononucleotide shuffle independently to each replicon
 with seed 2973, preserving per-replicon length and nucleotide composition.
 
-## Verified pilot result
-
-The 2026-10-12 run used the runtime banner
-`TransTermHP v2.08 (built on Oct 12 2026)` and produced:
-
-| Run | Total | `+` | `−` | Chromosome | Plasmid `NZ_CP006472.1` | Plasmid `NZ_CP006473.1` |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Native UTEX | 878 | 459 | 419 | 866 | 9 | 3 |
-| Shuffled control | 319 | 140 | 179 | 313 | 4 | 2 |
-
-| Ignored artifact | SHA-256 |
-| --- | --- |
-| `native.raw.tt` | `ba651ac99aaba567dd19b606aba872d7cfe6cbc555bee6a16379af258b699851` |
-| `shuffled-control.raw.tt` | `c4205b002e540d973ab798b37a45aa74b48e908ce42254c7d2c993dbe9576330` |
-| `utex-pilot.json` | `12408fadb30c8f519e4bd46523750a206a719883f12c2f08e397c91fc3bfcf44` |
-| `utex-pilot.tsv` | `897f6107e4f3d0ee1d590911450ce013e4119a8c91dd76a2f3eaa9fee47a2741` |
-
-The TSV contains 1,197 records plus its header. An independent post-run check
-confirmed every normalized hairpin interval is within its named native replicon
-and every strand is `+` or `-`.
-
 ## Failure and edge-case contract
 
 - FASTA records must have unique, non-empty IDs and only `A`, `C`, `G`, or `T`;
