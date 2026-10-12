@@ -3,9 +3,22 @@
 Scope: Assess computational candidates for RBS and other regulatory/cryptic-site predictions requested by the owner, using repository/open-ticket context and primary sources.
 Status: active
 Opened: 2026-10-08
-Updated: 2026-10-09
+Updated: 2026-10-12
 
 ## Current State
+
+Owner resumed this ticket on 2026-10-12. `cyano-regulatory-sites` now owns
+coordination, integration and closure for this work; earlier ownership and
+record-only statements below are historical. Baseline: `dfaa046` in the canonical
+Desktop repository. Work proceeds in an isolated regulatory-methods worktree.
+
+Current bounded implementation: reproducible, non-release native-UTEX pilots
+for standalone TransTermHP and selected regulatory Rfam/Infernal families, with
+source/tool/input pins, strand-aware coordinates, explicit score meaning and
+controls. Assess Promoter Calculator runtime compatibility and the remaining
+methods' concrete input requirements in parallel. Preserve the RBS missing-code
+dependency and iDOG execution hold. No computed output becomes a measured site;
+site publication requires the existing admission and validation contracts.
 
 Owner direction, 2026-10-09: investigate transfer from other cyanobacteria,
 E. coli and other prokaryotes for **very rough UTEX regulatory-site candidates**
