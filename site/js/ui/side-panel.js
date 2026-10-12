@@ -834,6 +834,7 @@ export class SidePanel {
     const viewerBody = document.createElement('div');
     renderGeneViewer(viewerBody, gene, {
       tssPending: pendingState(dataset, 'tssEvidence'),
+      overlapsPending: pendingState(dataset, 'geneOverlaps'),
       organism,
       startSitesVisible: this.startSitesVisible,
       onStartSitesVisibleChange: (visible) => {
@@ -843,6 +844,7 @@ export class SidePanel {
       onOpenPartner: (id, index) => this.handlers.onOpenPartner?.(id, index),
       table: dataset.table,
     });
+    this.rememberDisclosure(viewerBody.querySelector('details.gene-neighbours'), 'gene-neighbours');
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
 

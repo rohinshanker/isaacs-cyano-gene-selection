@@ -1,3 +1,5 @@
+import { createNeighbourDisclosure, updateNeighbourDisclosure } from './gene-neighbours.js';
+const neighbourMounts = new WeakMap();
 /**
  * The gene visualizer: one gene drawn in transcription orientation.
  *
@@ -976,7 +978,7 @@ function factsFor(model) {
  * re-render in response.
  */
 export function renderGeneViewer(host, gene, {
-  tssPending = null, organism = DEFAULT_ORGANISM,
+  tssPending = null, overlapsPending = null, organism = DEFAULT_ORGANISM,
   startSitesVisible = true, onStartSitesVisibleChange = null,
   onOpenPartner = null, table = null,
 } = {}) {
@@ -987,8 +989,9 @@ export function renderGeneViewer(host, gene, {
   host.setAttribute('aria-label', 'Gene visualizer');
   const model = geneViewModel(gene);
   if (!model) {
+    const action = document.activeElement?.dataset?.detailAction;
     const held = host.contains(document.activeElement)
-      && document.activeElement.dataset?.detailAction === START_SITES_CONTROL;
+      && (action === START_SITES_CONTROL || action?.startsWith('neighbour-'));
     host.replaceChildren();
     const empty = document.createElement('p');
     empty.className = 'panel-note';
@@ -1015,6 +1018,9 @@ export function renderGeneViewer(host, gene, {
     // panel around this view and restores focus by the same attribute.
     const held = host.contains(document.activeElement)
       && document.activeElement.dataset?.detailAction === START_SITES_CONTROL;
+    const neighbourDetails = neighbourMounts.get(host) ?? createNeighbourDisclosure();
+    neighbourMounts.set(host, neighbourDetails);
+    const neighbourFocus = neighbourDetails.contains(document.activeElement) ? document.activeElement : null;
     host.replaceChildren();
 
     const heading = document.createElement('p');
@@ -1091,6 +1097,9 @@ export function renderGeneViewer(host, gene, {
     }
 
     host.append(overlapList(model, onOpenPartner, gene, table));
+    host.append(neighbourDetails);
+    if (neighbourFocus?.isConnected) neighbourFocus.focus({ preventScroll: true });
+    updateNeighbourDisclosure(neighbourDetails, gene, overlapsPending, onOpenPartner);
 
     if (model.spliced) {
       const spliced = document.createElement('p');

@@ -1130,6 +1130,17 @@ estimate, not a measurement, and neither has been re-measured against the
 smaller core file. A further joined payload remains the remedy if a core file
 outgrows the per-gene budget again.
 
+## Native neighbouring genes
+
+The optional `contextFeatures` complement in `gene_overlaps.json` completes the
+native annotation catalogue without duplicating overlap participants. Native
+flanks use that catalogue independently of OG and the existing adjacent-CDS
+metrics. Both gene viewers show transcription-oriented, exact unoccupied gaps,
+all nearest ties, grey and explicitly labelled noncoding context, and truthful
+loading/unavailable/no-flank/overlap-blocked states. No sequence is inferred.
+See [the neighbour contract](gene-neighbours.md) for geometry, lazy indexing,
+source reconciliation and rendered checks.
+
 ## Overlapping genes, and what `overlapsNeighbor` is not
 
 Two different quantities, and they are not interchangeable.

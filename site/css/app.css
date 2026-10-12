@@ -2555,3 +2555,15 @@ input[type="range"] { width: 100%; }
 .range-slider-thumb:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--focus); outline-offset: 2px; }
 .range-slider-thumb:focus-visible::-moz-range-thumb { outline: 2px solid var(--focus); outline-offset: 2px; }
 .length-slider-host { max-width: 32rem; }
+
+/* Native flanks have their own disclosure; annotation geometry never changes the sequence camera. */
+.gene-neighbours { margin-top: 8px; min-width: 0; }
+.gene-neighbours-content { overflow-wrap: anywhere; }
+.gene-neighbours-schematic { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); align-items: center; gap: 8px; }
+.gene-neighbours-schematic > strong { text-align: center; white-space: nowrap; color: var(--ink); }
+.gene-neighbours-schematic > :last-child { text-align: right; }
+.gene-neighbours-side .gene-view-partners { margin-top: 4px; }
+.gene-neighbours summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.gene-neighbours .gene-neighbour-noncoding { color: var(--ink-muted); background: var(--surface-sunken); border-left: 3px solid var(--line-strong); padding: 4px 8px; }
+.gene-neighbours .gene-neighbour-coding { color: var(--ink); }

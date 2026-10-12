@@ -25,11 +25,12 @@ These are layer counts, not independent studies. The source register and the
 [source ledger](../../validation/source-ledger.md) retain individual admission
 and mapping boundaries; a scan candidate is not a shipped layer.
 
-Work resumed 2026-10-12 by **cyano-ui-fixes** on the remaining native
-flanking-neighbour viewer context, tracked in
-[A_cross-strain-neighbour-context__20261012](A_cross-strain-neighbour-context__20261012.md).
-Its isolated worktree does not own regulatory method pilots, raw-read execution
-or other sessions' source-intake scopes. Existing crosswalks, chromosome view,
+Native flanking-neighbour context was implemented 2026-10-12 by
+**cyano-ui-fixes** in both gene viewers for all six organisms. See
+[the native neighbour contract](../../validation/gene-neighbours.md): all
+annotated neighbours, explicit biotypes, grey noncoding context, strand and exact
+gap, with OG blockers kept separate. Regulatory method pilots, raw-read execution
+and source intake retain their existing sessions. Existing crosswalks, chromosome view,
 dataset selectors and current-report agreement presentation are complete; the
 parent remains open for the remaining source and lab-dependent work.
 
@@ -476,23 +477,29 @@ model, the splice and translational-exception flags, and a sentence-level access
 description. Verified against the spliced `M744_RS00920` and the multi-site
 `M744_RS08615`.
 
-Still to build. The 2026-09-28 sweep returned no new ribosome-occupancy, TIS, TSS,
-or TTS candidate for any admitted strain; its one TTS hit, `GSE309256`, is already
-ranked in the roadmap and not admitted. The first two items below are therefore
-gated on data that is not admitted, not on this ticket's progress. The viewer states
-that absence in its accessible description rather than leaving an empty track
-(built 2026-10-02; see "The recorded absence" in
-[controls-column-and-resets.md](../../validation/controls-column-and-resets.md)),
-and the overlay code is not built ahead of a source.
+Remaining viewer work is separated by dependency:
 
-- sister-strain TSS, TIS, and TTS overlays, drawn as offsets against a named UTEX
-  locus and labelled with strain, study, and condition, visibly transferred;
-- ribosome occupancy as a positional track where a source supports one, and as a
-  per-gene value otherwise;
-- the flanking-neighbour context; the explicit [-30,60) start window is now drawn
-  base by base, by the pinned gene's sequence close-up, shipped 2026-09-30 (see
-  [gene-sequence-closeup.md](../../validation/gene-sequence-closeup.md)). Whether
-  the small gene visualizer also needs it as a separate band is still open.
+- Sister-strain TSS, TIS and TTS overlays still require admitted positional data.
+  The older sweep's zero-candidate statement is superseded by the 2026-10-05
+  correction above: GSE29264 is a PCC 7942 TSS candidate, and GSE309256 remains
+  the ranked RNA 3′-end candidate. Neither candidate alone supplies a released
+  offset layer. Native Tan start-site display is already implemented.
+- Ribosome occupancy remains a per-gene value unless an admitted source actually
+  supports positional coverage. Predictors and new regulatory layers belong to
+  [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md),
+  not this viewer task.
+- Native flanking-neighbour context is implemented in both viewers for all six
+  organisms; the linked contract preserves its coordinate and annotation rules.
+  The explicit start window and adjustable upstream sequence through 1,000 bases
+  already ship in [gene-sequence-closeup.md](../../validation/gene-sequence-closeup.md).
+  The [OG layer](../../validation/gene-overlaps.md) already shows actual shared
+  bases in both gene viewers and the chromosome; it is not a list of separated
+  neighbours. Native neighbour context preserves that distinction and the
+  existing adjacent-CDS gap metrics.
+
+The viewer's absence statements describe admitted evidence, not the absence of
+literature candidates. New data still require the source-ledger, exact-join and
+coordinate-basis gates before an overlay can appear.
 
 ### 5. Chromosome visualizer
 
@@ -696,26 +703,27 @@ which carries the third round of owner decisions (where a source is chosen in th
 filters, the axes and the projection views; per-study row colours with a legend)
 and the build stages. Step 6 is complete in this ticket when that one ships.
 
-Still to design: placement at each breakpoint, URL-hash encoding, interaction with the
-existing colour, axis, and filter selectors, and what happens to genes missing from
-one selected dataset. Follow
-[responsive-workspace.md](../../validation/responsive-workspace.md) and
-[viewer-interaction-state.md](../../validation/viewer-interaction-state.md).
+The current selectors, responsive placement, per-condition selection, URL state,
+source-specific metric controls and explicit missingness are implemented. The
+[current-report agreement panel](../../validation/expression-agreement.md#browser-presentation)
+also ships with descriptive level/response correlations, empirical sample ranges,
+exact denominators and caveats. Remaining admission, additional statistical work
+and distribution-comparison presentation stay with the dedicated Data Sources
+ticket; this parent does not reassign them.
 
 ## Open questions for the lab
 
-1. **Default view.** When several datasets cover one gene, does the site open on the
-   native UTEX value, the newest, the best-replicated, or a combined estimate?
-2. **Disagreement.** When two datasets in the same condition disagree sharply, does
-   the site show both, show neither, or show both with the conflict flagged?
-3. **Scope of the reference.** Is the audience the recoding-panel workflow this site
-   was built for, or general *S. elongatus* lookup? The second implies genes and
-   features outside the 2,715 screened CDSs, which is a schema change.
-4. **PCA retirement.** The chromosome view ships as its own tab, so retiring the
-   native codon-space PCA is now a separate decision rather than a consequence of
-   building it. Confirm whether that PCA is removed once the chromosome tab exists,
-   since that deletes a view and its audit trail, and state whether the live
-   recoding-risk and perturbation PCA maps are also retired or stay.
+The default-selection and disagreement questions formerly numbered 1 and 2 were
+answered by the 2026-10-05 design above: standard-group plus existing-layer
+selection, separate source values and a visible conflict. They are not new gates.
+
+- **Scope of the reference.** The plotted/selectable set remains the screened CDSs.
+  Noncoding annotation context does not turn this into general annotation lookup
+  or admit those loci as recoding candidates. A broader selectable reference set
+  still needs its own decision and schema work.
+- **PCA retirement.** No retirement is authorized by this task. The chromosome view
+  remains its own tab alongside the native PCA and other existing views; deleting
+  a view and its audit trail still requires the owner's explicit decision.
 
 ## Verification
 
@@ -740,8 +748,10 @@ comparable on the thresholds alone, 32 escalated and all judged by the owner on
 owner's 2026-10-05 decisions (thresholds a default screen; J1, J3, J4, J10) the
 comparable sets are computed by `site/js/core/data-sources.js` from the
 structured condition records and those judgements, which is what the Data
-Sources peek shows. The dataset and condition selectors (step 6) are built
-under the dedicated ticket. Any source ingested later still needs its own manifest entry, checksum,
+Sources peek shows. The dataset and condition selectors (step 6) and the accepted current-report
+agreement display are implemented under their dedicated scopes. The latter
+passed independent review and shipped at `dfaa046` on 2026-10-10; the broad
+Data Sources ticket retains its remaining admission/statistical work. Any source ingested later still needs its own manifest entry, checksum,
 mapping audit with matched, unmatched, and ambiguous counts, contract tests, and
 the sister-strain, condition-comparability, and UTEX 3055 coverage rows of
 [release-gate.md](../../validation/release-gate.md)
