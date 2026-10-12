@@ -37,6 +37,7 @@
  * {@link OVERLAP_UNAVAILABLE} state, which every surface states in words, and
  * no other field is allowed to stand in for it.
  */
+import { createNeighbourIndex } from './gene-neighbours.js';
 import { sameReplicon } from './chromosome-model.js';
 
 /** The payload version this reader accepts. */
@@ -286,11 +287,14 @@ export function validateGeneOverlaps(payload, genes, organism) {
     geneIndexById.set(genes[index].id, index);
   }
   const seen = new Set();
-  const features = rawFeatures.map((feature, position) => {
+  const readFeature = (feature, position) => {
     const id = feature?.id;
     if (typeof id !== 'string' || id.length === 0) fail(`has an unnamed feature at ${position}`);
     if (seen.has(id)) fail(`lists ${id} more than once`);
     seen.add(id);
+    if (feature.name !== null && feature.name !== undefined && typeof feature.name !== 'string') {
+      fail(`gives ${id} an unreadable name`);
+    }
     const lengthBp = lengthByAccession.get(feature.seqid);
     if (lengthBp === undefined) fail(`places ${id} on ${feature.seqid}, which is not a replicon`);
     if (typeof feature.biotype !== 'string' || feature.biotype.length === 0) {
@@ -307,9 +311,17 @@ export function validateGeneOverlaps(payload, genes, organism) {
     const geneIndex = geneIndexById.get(id);
     if (geneIndex !== undefined) {
       const gene = genes[geneIndex];
-      const own = Array.isArray(gene.cdsSegments) && gene.cdsSegments.length > 0
+      const ownPieces = Array.isArray(gene.cdsSegments) && gene.cdsSegments.length > 0
         ? [...gene.cdsSegments].map(([from, to]) => ({ from, to })).sort((a, b) => a.from - b.from)
         : [{ from: gene.start, to: gene.end }];
+      // Compare occupied geometry: Syn57 b2891 has two abutting CDS pieces,
+      // while the catalogue canonically merges them. No base or gap differs.
+      const own = [];
+      for (const piece of ownPieces) {
+        const last = own[own.length - 1];
+        if (last && piece.from <= last.to + 1) last.to = Math.max(last.to, piece.to);
+        else own.push({ ...piece });
+      }
       if (!sameReplicon(gene.seqid, feature.seqid) || gene.strand !== feature.strand
         || own.length !== segments.length
         || own.some((piece, i) => piece.from !== segments[i].from || piece.to !== segments[i].to)) {
@@ -328,7 +340,13 @@ export function validateGeneOverlaps(payload, genes, organism) {
       selectable: geneIndex !== undefined,
       geneIndex: geneIndex === undefined ? -1 : geneIndex,
     });
-  });
+  };
+  const features = rawFeatures.map(readFeature);
+  let catalogue = null;
+  if (Object.hasOwn(payload, 'contextFeatures')) {
+    if (!Array.isArray(payload.contextFeatures)) fail('has no contextFeatures array');
+    catalogue = [...features, ...payload.contextFeatures.map(readFeature)];
+  }
 
   const rawPairs = payload.pairs;
   if (!Array.isArray(rawPairs)) fail('has no pairs array');
@@ -454,6 +472,19 @@ export function validateGeneOverlaps(payload, genes, organism) {
     fail('reports coverage the features and pairs it lists do not support');
   }
 
+  if (catalogue) {
+    if (catalogue.length !== covered.size || catalogue.some((feature) => !covered.has(feature.id))) {
+      fail('context catalogue must cover coveredGenes exactly once');
+    }
+    const census = {};
+    for (const feature of catalogue) census[feature.biotype] = (census[feature.biotype] ?? 0) + 1;
+    if (Object.keys(census).length !== Object.keys(byBiotype).length
+      || Object.entries(census).some(([key, count]) => byBiotype[key] !== count)
+      || catalogue.filter((feature) => feature.segmentSource === 'gene').length
+        !== coverage.childlessGenes) fail('context catalogue disagrees with the census');
+  }
+  const neighbours = catalogue ? createNeighbourIndex(catalogue, lengthByAccession, partnersById) : null;
+
   const total = genes?.length ?? 0;
   const values = new Int16Array(total);
   const counts = new Int32Array(OVERLAP_CLASSES.length);
@@ -468,6 +499,7 @@ export function validateGeneOverlaps(payload, genes, organism) {
 
   return Object.freeze({
     state: 'ready',
+    neighbours,
     definition: Object.freeze({ ...definition }),
     release: Object.freeze({ ...payload.release }),
     replicons: Object.freeze(replicons.map((replicon) => Object.freeze({ ...replicon }))),

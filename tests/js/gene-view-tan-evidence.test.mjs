@@ -109,16 +109,15 @@ test('the absence reaches the accessible description and adds no visible text', 
       assert.doesNotMatch(visible, ABSENCE);
       assert.doesNotMatch(visible, /is admitted for this strain/);
       assert.equal(host.querySelectorAll('button').length, 0);
-      // The one disclosure this view has is the start-site list the owner asked
-      // for on 2026-10-07, built only for a gene that has sites to list; it
-      // carries none of this statement, open or closed.
+      // The requested start-site and native-neighbour disclosures carry none
+      // of the unadmitted-track absence statement, open or closed.
       for (const disclosure of host.querySelectorAll('details')) {
-        assert.ok(disclosure.hasClass('gene-view-sites'));
+        assert.ok(disclosure.hasClass('gene-view-sites') || disclosure.hasClass('gene-neighbours'));
         assert.ok(!disclosure.open);
         assert.doesNotMatch(disclosure.textContent, ABSENCE);
         assert.doesNotMatch(disclosure.textContent, /is admitted for this strain/);
       }
-      assert.equal(host.querySelectorAll('details').length, id === WITH_SITES ? 1 : 0);
+      assert.equal(host.querySelectorAll('details').length, id === WITH_SITES ? 2 : 1);
     }
   });
 });

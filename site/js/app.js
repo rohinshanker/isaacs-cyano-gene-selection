@@ -1487,6 +1487,7 @@ function renderControlsGeneViewer(index) {
   if (!host) return;
   renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null, {
     tssPending: pendingState(context.dataset, 'tssEvidence'),
+    overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
     organism,
     startSitesVisible: markersVisibleIn('gene-controls'),
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-controls', visible),
