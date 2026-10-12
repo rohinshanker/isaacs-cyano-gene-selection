@@ -1,3 +1,4 @@
+import { controlsDisclosure } from './disclosures.js';
 import { createNeighbourDisclosure, updateNeighbourDisclosure } from './gene-neighbours.js';
 /**
  * The pinned gene's sequence close-up, at the foot of the Chromosome tab.
@@ -693,14 +694,18 @@ export class GeneSequenceView {
     this.selection.setAttribute('role', 'status');
     this.selection.hidden = true;
 
-    this.instructions = element('p', 'hint');
+    this.instructions = element('ul', 'hint');
     this.instructions.id = 'gene-sequence-instructions';
-    this.instructions.textContent = 'Drag the strip to pan it and scroll over it to zoom. With the '
-      + 'strip focused: Left and Right pan, Shift and an arrow pans a whole window, plus and minus '
-      + 'zoom, 0 or Home returns to the start, and End goes to the stop. Click a codon to read it out.';
+    for (const text of [
+      'Drag the strip to pan it and scroll over it to zoom.',
+      'With the strip focused: Left and Right pan, Shift and an arrow pans a whole window, and plus and minus zoom.',
+      '0 or Home returns to the start, and End goes to the stop. Click a codon to read it out.',
+    ]) this.instructions.append(element('li', null, text));
+    this.controls = controlsDisclosure(this.instructions);
+    this.controls.id = 'gene-sequence-controls';
 
     this.figure.append(this.heading, toolbar, this.readout, this.strip, this.markerControlHost,
-      this.selection, this.instructions, this.markerListHost, this.partnerListHost, this.neighbourDetails);
+      this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails);
     this.host.append(this.empty, this.figure);
     this.bindEvents();
     if (typeof ResizeObserver !== 'undefined') {

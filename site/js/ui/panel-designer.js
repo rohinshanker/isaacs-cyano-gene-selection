@@ -466,12 +466,14 @@ export class PanelDesigner {
         },
       );
       input.setAttribute('aria-describedby', 'panel-borrowed-note');
-      const note = element('p', 'provenance-warning');
+      const note = element('div', 'provenance-warning');
       note.id = 'panel-borrowed-note';
-      note.textContent = `${borrowed.map((metric) => metric.label).join(', ')} come from a different `
-        + 'organism and condition. Off by default: a panel spread on a borrowed measurement is '
-        + 'spread on something this genome was never measured for.';
-      wrap.append(row, tanDisclosure(note, 'Borrowed measurements / information'));
+      note.append(element('p', null, 'These measurements come from a different organism and condition:'));
+      const list = element('ul');
+      for (const metric of borrowed) list.append(element('li', null, metric.label));
+      note.append(list, element('p', null, 'Off by default: a panel spread on a borrowed measurement is '
+        + 'spread on something this genome was never measured for.'));
+      wrap.append(row, tanDisclosure(note, 'Borrowed measurements'));
     }
 
     wrap.append(this.renderRanges(registry, dataset));
@@ -585,7 +587,7 @@ export class PanelDesigner {
     if (isBorrowedMetric(metric)) {
       row.append(tanDisclosure(element('p', 'provenance-warning',
         'This is a borrowed measurement, so this constraint filters on another organism.'),
-      'Borrowed measurement / information'));
+      'Borrowed measurement'));
     }
     return row;
   }
@@ -661,7 +663,7 @@ export class PanelDesigner {
           + 'removes, counting a gene once per constraint it fails:'));
         alert.append(this.renderRejectionSummary());
       }
-      this.resultHost.append(design.feasible ? tanDisclosure(alert, 'Result information') : alert);
+      this.resultHost.append(design.feasible ? tanDisclosure(alert, 'Result notes') : alert);
     }
 
     if (design.selected.length === 0) return;

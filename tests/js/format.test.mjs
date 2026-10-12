@@ -73,3 +73,37 @@ test('expression provenance formats coverage counts for the interface', () => {
   };
   assert.match(formatExpressionSource(source), /2,551 of 2,715 genes carry a value/);
 });
+
+test('source paragraphs retain full field text and match the plain-text description', async () => {
+  const { expressionSourceParagraphs } = await import('../../site/js/core/metric-registry.js');
+  const { expressionSourceNote } = await import('../../site/js/ui/measurement-provenance.js');
+  const { withFakeDocument } = await import('./fake-dom.mjs');
+  const source = {
+    id: 'study.1', organism: 'S. elongatus PCC 7942', isTargetOrganism: false,
+    condition: '1.5% CO2; 30 °C. Two conditions pooled', units: 'log2 ratios',
+    coverage: { withValue: 2551, total: 2715 }, caveat: 'Measured elsewhere. Not a native measurement.',
+  };
+  await withFakeDocument(() => {
+    const note = expressionSourceNote(source, 'provenance-warning');
+    const paragraphs = note.querySelectorAll('p').map(item => item.textContent);
+    assert.equal(paragraphs.length, 6);
+    assert.equal(paragraphs.join(' '), formatExpressionSource(source));
+    assert.equal(paragraphs[1], `Condition: ${source.condition}.`);
+    assert.equal(paragraphs[5], source.caveat);
+    assert.deepEqual(expressionSourceParagraphs(null), []);
+    assert.equal(expressionSourceNote(null, 'panel-note').childNodes.length, 0);
+    assert.equal(formatExpressionSource(null), null);
+    const pooled = expressionSourceNote({ ...source, pooledConditions: ['1.5% CO2. Replicate 1', '0.04% CO2'] }, 'provenance-warning');
+    assert.deepEqual(pooled.querySelectorAll('li').map(item => item.textContent), ['1.5% CO2. Replicate 1', '0.04% CO2']);
+    assert.match(pooled.textContent, /Conditions \(2 datasets pooled\)/);
+    assert.ok(!pooled.textContent.includes(source.condition));
+    const cautions = expressionSourceNote({ ...source, pooledConditions: ['A', 'B'], poolingCaveat: 'Pooled ranks.', pooledCaveats: ['A is borrowed.', 'B has no growth phase.'] }, 'provenance-warning');
+    assert.deepEqual(cautions.querySelectorAll('li').map(item => item.textContent), ['A', 'B', 'A is borrowed.', 'B has no growth phase.']);
+    assert.ok(cautions.textContent.includes('Pooled ranks.'));
+    assert.ok(!cautions.textContent.includes(source.caveat));
+    const identified = expressionSourceNote({ ...source, pooledConditions: ['A', 'B'], pooled: ['dataset-1', 'dataset-2'] }, 'provenance-warning');
+    assert.deepEqual(identified.querySelectorAll('li').map(item => item.textContent), ['dataset-1: A', 'dataset-2: B']);
+    assert.match(identified.textContent, /Sources and conditions/);
+    assert.ok(!identified.textContent.includes(`Source: ${source.id}`));
+  });
+});

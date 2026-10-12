@@ -116,7 +116,9 @@ test('the value legend states no draw order, whatever it is handed', async () =>
 test('the category legend states no draw order either', async () => {
   await withFakeDocument((document) => {
     const host = document.createElement('div');
+    const controlsHost = document.createElement('div');
     renderCategoryLegend(host, {
+      controlsHost,
       labels: ['Photosynthesis'],
       categoryIds: ['photosynthesis'],
       multipleLabel: 'Multiple functions',
@@ -130,6 +132,8 @@ test('the category legend states no draw order either', async () => {
       hasDerivedData: true,
       drawOrderNote: 'Overlapping marks: reviewed over derived, over no category.',
     });
+    assert.match(controlsHost.textContent, /Hover or focus a category/);
+    assert.doesNotMatch(host.textContent, /Hover or focus a category/);
     for (const note of host.querySelectorAll('.legend-ramp-note').map((n) => n.textContent)) {
       assert.doesNotMatch(note, /Overlapping marks|Overlaps|draws over|Draw on top/i,
         `no category legend note may mention paint order: ${note}`);

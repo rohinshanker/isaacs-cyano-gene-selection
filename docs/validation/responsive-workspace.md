@@ -110,9 +110,25 @@ borrowed-source, constraint, result-status/result-information, and per-gene
 caveat notes; regulatory-source cautions; RNA handoff warnings; shortlist filter
 status; synthetic strain-fitness evidence; recomputation warnings; and the
 center-column filter banner. Each keeps a concise summary visible, starts closed
-when created, retains its original content and controls when opened, and leaves
+when created, retains its evidence and controls when opened, and leaves
 no explanatory gap when closed. A red blocking/error treatment such as
 `.metric-alert` is not a tan information box and remains immediately visible.
+
+Use the subject alone for disclosure titles (for example, “Function category”,
+“Source”, or “Provenance”); omit redundant “/ information” suffixes. Render
+independent items as semantic list items, and source identity, conditions, units,
+coverage and caveats as separate paragraphs. Keep spacing between paragraphs and
+list items. Build those blocks from the existing structured fields; never split
+source text at punctuation, which may occur inside names, units or conditions.
+
+Navigation help lives in a stable, initially collapsed **Controls** disclosure in
+chromosome, scatter-map and expanded-sequence views. Group input actions into
+bullets. Categorical/OG legend guidance joins the same view's navigation text;
+it is cleared for numeric colours or unavailable projections. Updating colour,
+filters or camera must preserve the disclosure node, open state and summary
+focus. Canvas `aria-describedby` still targets the relevant instruction list.
+Other tabs retain their existing field labels, data explanations and help
+rather than receiving instructions for interactions they do not support.
 
 ## Regression checks
 

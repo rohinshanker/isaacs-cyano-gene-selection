@@ -15,6 +15,7 @@
  * Geometry and every coordinate decision live in `core/chromosome-model.js`.
  * This module only turns that model into pixels and events.
  */
+import { controlsDisclosure } from './disclosures.js';
 import {
   MIN_WINDOW_BP, clampWindow, describeChromosomeView, describePaintOrder, formatBasePairs,
   formatCoordinate, fullWindow, locateIndex, navigationLanes, neighborMark, operonBrackets,
@@ -808,22 +809,24 @@ export class ChromosomeView {
     this.overlapHint.hidden = true;
     this.canvasHost.append(this.canvas, this.overlapHint);
 
-    this.instructions = document.createElement('p');
+    this.instructions = document.createElement('ul');
     this.instructions.className = 'hint';
     this.instructions.id = 'chromosome-instructions';
-    this.instructions.textContent = 'Drag a track to pan it and scroll over it to zoom it; each '
-      + 'replicon keeps its own scale and its own window. The Pan left, Pan right, Zoom in and '
-      + 'Zoom out buttons, and the plus and minus keys, act on the chromosome track. Each pan '
-      + 'step keeps most of the window on screen, and a pan button is dimmed when that direction '
-      + 'has reached the end of the chromosome or the whole chromosome is already in view. '
-      + 'Double-click, 0, or Reset view returns every track to its full length. With a track '
-      + 'focused: Left and Right move along one strand lane and announce the CDS without pinning '
-      + 'it, Up and Down cross to the next lane or replicon, Shift and an arrow pans the '
-      + 'chromosome the same step the buttons do, O steps through the overlapping-gene blocks in '
-      + 'the chromosome window and Shift and O steps back, Enter pins the active CDS or, with an '
-      + 'overlap being inspected, its other gene, Escape dismisses the overlap hint, and S adds or '
-      + 'removes it from the shortlist. On touch, the first tap shows an overlap hint and a second '
-      + 'tap on the same single pair opens its plotted gene.';
+    for (const text of [
+      'Drag a track to pan it and scroll over it to zoom it; each replicon keeps its own scale and its own window.',
+      'The Pan left, Pan right, Zoom in and Zoom out buttons, and the plus and minus keys, act on the chromosome track. Each pan step keeps most of the window on screen, and a pan button is dimmed when that direction has reached the end of the chromosome or the whole chromosome is already in view.',
+      'Double-click, 0, or Reset view returns every track to its full length.',
+      'With a track focused: Left and Right move along one strand lane and announce the CDS without pinning it; Up and Down cross to the next lane or replicon; Shift and an arrow pans the chromosome the same step the buttons do.',
+      'O steps through the overlapping-gene blocks in the chromosome window and Shift and O steps back. Enter pins the active CDS or, with an overlap being inspected, its other gene. Escape dismisses the overlap hint. S adds or removes the active CDS from the shortlist.',
+      'On touch, the first tap shows an overlap hint and a second tap on the same single pair opens its plotted gene.',
+    ]) {
+      const item = document.createElement('li');
+      item.textContent = text;
+      this.instructions.append(item);
+    }
+    this.legendInstructions = document.createElement('div');
+    this.controls = controlsDisclosure(this.instructions, this.legendInstructions);
+    this.controls.id = 'chromosome-controls';
 
     this.detailJump = document.createElement('button');
     this.detailJump.type = 'button';
@@ -864,7 +867,7 @@ export class ChromosomeView {
     this.sequenceHost.className = 'chromosome-sequence';
 
     this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
-      this.instructions, this.detailJump, this.legendHost, this.viewerInfo,
+      this.controls, this.detailJump, this.legendHost, this.viewerInfo,
       this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
@@ -892,6 +895,11 @@ export class ChromosomeView {
   /** The host for the shared colour legend, so this view uses the map's key. */
   legendElement() {
     return this.legendHost;
+  }
+
+  /** Shared legend interaction guidance stays with the navigation instructions. */
+  legendInstructionsElement() {
+    return this.legendInstructions;
   }
 
   /** The host for the shared colour-metric explanation disclosure. */

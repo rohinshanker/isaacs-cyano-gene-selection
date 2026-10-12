@@ -721,14 +721,16 @@ if (window.location.protocol === 'file:') {
           <canvas id="map-canvas" tabindex="0" role="img" aria-describedby="map-instructions"
                   aria-label="Scatter plot of genes. Use the arrow keys to move between genes."></canvas>
         </div>
-        <p class="hint" id="map-instructions">
-          Drag to pan, scroll inside the grid or use the Zoom in/out buttons to zoom,
-          double-click or 0 to reset. Scroll over the axes or margins to scroll the page. With the
-          map focused: arrow keys move an active gene without pinning it and announce what it is,
-          Shift and an arrow pans, plus and minus zoom, Enter pins the active gene, S adds or removes
-          the active gene (or, with nothing active, the pinned gene) from the shortlist. The zoom
-          buttons also work by touch. Click a pinned dot again to unpin it.
-        </p>
+        <details class="method-help view-controls" id="map-controls">
+          <summary>Controls</summary>
+          <ul class="hint" id="map-instructions">
+            <li>Drag to pan, scroll inside the grid or use the Zoom in/out buttons to zoom, double-click or 0 to reset. Scroll over the axes or margins to scroll the page.</li>
+            <li>With the map focused: arrow keys move an active gene without pinning it and announce what it is; Shift and an arrow pans; plus and minus zoom.</li>
+            <li>Enter pins the active gene. S adds or removes the active gene (or, with nothing active, the pinned gene) from the shortlist. Click a pinned dot again to unpin it.</li>
+            <li>The zoom buttons also work by touch.</li>
+          </ul>
+          <div id="map-legend-instructions"></div>
+        </details>
         <div class="map-footer">
           <div id="legend" class="legend"></div>
           <div id="timing" class="timing"></div>

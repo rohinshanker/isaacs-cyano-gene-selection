@@ -315,6 +315,11 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, selected, g
       const defaultCompendium = contributing(group.key).every(
         (dataset) => DEFAULT_POOLED_STUDIES.includes(dataset.record?.studyId),
       );
+      const poolingCaveat = `Pooled by owner decision of ${defaultCompendium ? '2026-10-07' : '2026-10-06'}. `
+          + (kind === 'fitness' ? 'Fitness values share a log2 scale and are averaged as published.'
+            : kind === 'ratio' ? 'Each value is a fold change against its own reference, so an average of them is not itself a measured ratio.'
+              : 'The deposits report different units, so each is ranked within itself before averaging; the pooled value is a rank, not an abundance.')
+          + ' Choose one dataset under Data Sources to read its own values.';
       return {
         ...first,
         // Spaces, so the id can wrap wherever it is printed; an unbroken token
@@ -331,17 +336,15 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, selected, g
         isTargetOrganism: list.every((metric) => metric.provenance?.isTargetOrganism === true),
         organism: [...new Set(list.map((metric) => metric.provenance?.organism).filter(Boolean))].join('; '),
         condition: `${list.length} datasets pooled: ${list.map((metric) => metric.provenance?.condition ?? metric.key).join(' | ')}`,
+        pooledConditions: list.map((metric) => metric.provenance?.condition ?? metric.key),
         units: kind === 'fitness'
           ? `mean gene fitness across ${list.length} condition sets (shared log2 scale)`
           : kind === 'ratio'
             ? `mean of ${list.length} ratios, each a fold change against its own reference`
             : `pooled percentile across ${list.length} datasets: mean of each dataset's within-dataset mid-rank, 0 to 1`,
-        caveat: `Pooled by owner decision of ${defaultCompendium ? '2026-10-07' : '2026-10-06'}. `
-          + (kind === 'fitness' ? 'Fitness values share a log2 scale and are averaged as published.'
-            : kind === 'ratio' ? 'Each value is a fold change against its own reference, so an average of them is not itself a measured ratio.'
-              : 'The deposits report different units, so each is ranked within itself before averaging; the pooled value is a rank, not an abundance.')
-          + ' Choose one dataset under Data Sources to read its own values.'
-          + (sourceCaveats.length ? ` ${sourceCaveats.join(' ')}` : ''),
+        poolingCaveat,
+        pooledCaveats: sourceCaveats,
+        caveat: poolingCaveat + (sourceCaveats.length ? ` ${sourceCaveats.join(' ')}` : ''),
         citationIds: [...new Set(list.map((metric) => metric.provenance?.citationId).filter(Boolean))],
       };
     };

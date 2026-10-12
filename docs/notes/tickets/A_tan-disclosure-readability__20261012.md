@@ -1,0 +1,44 @@
+# A_tan-disclosure-readability__20261012 — Active
+
+Scope: Concise tan disclosure titles, skimmable paragraphs/lists and unified collapsed Controls guidance across chromosome/scatter/sequence views.
+Status: active
+Opened: 2026-10-12
+Updated: 2026-10-12
+
+## Current State
+
+Owner: cyano-ui-fixes. User requests removing redundant / information title suffixes
+and breaking dense lists into bullets or paragraphs. Work is isolated from active
+regulatory/source work in work/tan-disclosure-readability-20261012, based on 90bcf91.
+Preserve evidence wording, source labels, links and collapsed/keyboard behavior.
+Owner steering: merge chromosome navigation and class-hover guidance into one
+Controls disclosure, adapt it for other tabs/data types, and open the separate
+recoded-genome functional-annotation transfer ticket.
+
+## Verification
+
+Implemented subject-only titles, structured provenance/condition/caveat lists and
+stable Controls disclosures for chromosome, five scatter tabs and expanded sequence.
+
+- JavaScript: 1,521 tests pass. Python: 1,371 pass, 2 expected skips and 51
+  subtests pass on the isolated patch. All six organism contract, manifest and
+  live-metric checks pass; annotation verify/check and readiness pass.
+- Browser: 375, 768, 959/960, 1239/1240, 1280 and 1440 px; collapsed/expanded,
+  keyboard, focus persistence, class/category/numeric guidance, unavailable
+  projection, source lists, aliases and licence links pass with no runtime or
+  console errors and no horizontal overflow. Native details/list semantics checked.
+- RNA browser regression: all 32 parity cases, lifecycle, exports and UI states
+  pass. No visual baseline changes or new test dependencies.
+- Evidence: /tmp/cyano-tan-disclosures-20261012. An initial performance test run
+  under concurrent Python/browser load failed its timing budget; unchanged test
+  and code passed on rerun after that load finished. Keyboard automation now
+  waits until the existing text entrance animation removes inert.
+
+No open audit findings against this work. Integration with concurrent main and
+successful Pages/public verification remain before final completion.
+
+## Cleanup
+
+Close only this owned ticket after validation, distill reusable presentation rules
+to responsive-workspace.md, remove the resolved ticket last, and clean only this
+worktree/server. Existing owner preview on port 8871 remains untouched.

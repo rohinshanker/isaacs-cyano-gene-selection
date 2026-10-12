@@ -9,7 +9,7 @@
 import { firstUnsettled, pendingState } from '../core/data-files.js';
 import { pendingNote } from './loading-note.js';
 import {
-  formatValue, formatDelta, formatPercentile, formatCount, formatExpressionSource,
+  formatValue, formatDelta, formatPercentile, formatCount,
   formatSpan, MISSING,
 } from './format.js';
 import {
@@ -22,6 +22,7 @@ import { createLocusTag } from './locus-tag.js';
 import { candidateEvidenceFor } from '../core/candidate-evidence.js';
 import { renderGeneViewer } from './gene-viewer.js';
 import { tanDisclosure } from './disclosures.js';
+import { expressionSourceNote } from './measurement-provenance.js';
 import { essentialityEvidenceFor } from '../core/go-iea-essentiality.js';
 import {
   categoryResolutionFor, conflictNote, sourceDisplayNames,
@@ -317,12 +318,14 @@ function functionCategoryBlock(gene, dataset, sources) {
     goLicense.textContent = derivedData.attribution.goIea.license;
     note.append('Derived categories are computational judgments by TypeSafe '
       + `${derivedData.judgment.model} (rubric ${derivedData.judgment.rubricVersion}) over `
-      + 'automated annotations. They never change the reviewed table and are not lab review. '
-      + `${names.go}: ${derivedData.attribution.goIea.creator}, `, goLicense,
+      + 'automated annotations. They never change the reviewed table and are not lab review.');
+    const attribution = document.createElement('p');
+    attribution.className = 'panel-note';
+    attribution.append(`${names.go}: ${derivedData.attribution.goIea.creator}, `, goLicense,
       layerOf(organism, 'sourceDerivedCategories').attribution);
-    block.append(note);
+    block.append(note, attribution);
   }
-  return tanDisclosure(block, 'Function category / information');
+  return tanDisclosure(block, 'Function category');
 }
 
 /**
@@ -376,7 +379,7 @@ function candidateEvidenceDisclosure(gene, data, goData, organism) {
     details.append(claim, identity, condition, citation);
   }
 
-  const borrowed = document.createElement('p');
+  const borrowed = document.createElement('div');
   borrowed.className = 'candidate-borrowed-caution';
   const badge = document.createElement('strong');
   const call = model.pccCall;
@@ -394,8 +397,12 @@ function candidateEvidenceDisclosure(gene, data, goData, organism) {
   const callText = call?.pccLocusTag
     ? fillTemplate(copy.callAt, { locus: call.pccLocusTag, status: statusLabel })
     : fillTemplate(copy.noCall, { status: statusLabel });
-  borrowed.append(badge, callText, copy.assumption);
-  details.append(tanDisclosure(borrowed, 'Cross-organism evidence / information'));
+  const callParagraph = document.createElement('p');
+  callParagraph.append(badge, callText);
+  const assumption = document.createElement('p');
+  assumption.textContent = copy.assumption;
+  borrowed.append(callParagraph, assumption);
+  details.append(tanDisclosure(borrowed, 'Cross-organism evidence'));
   if (call?.status === 'unknown' && call.mappingReason) {
     const reason = document.createElement('p');
     reason.className = 'panel-note';
@@ -487,12 +494,18 @@ function tssEvidenceDisclosure(gene, meta, organism) {
   details.open = model.count > 0;
   details.append(summary);
 
-  const caveat = document.createElement('p');
+  const caveat = document.createElement('ul');
   caveat.className = 'panel-note tss-caveat';
-  caveat.textContent = 'Start-site initiation evidence, not gene-body RNA abundance. The study has '
-    + 'only two biological cultures per condition. Published gene links use 2018 start models, '
-    + 'so a site can fall inside the current CDS. Missing DESeq2 results are unknown, not zero; '
-    + 'no gene-level fold-change aggregate is calculated.';
+  for (const text of [
+    'Start-site initiation evidence, not gene-body RNA abundance.',
+    'The study has only two biological cultures per condition.',
+    'Published gene links use 2018 start models, so a site can fall inside the current CDS.',
+    'Missing DESeq2 results are unknown, not zero; no gene-level fold-change aggregate is calculated.',
+  ]) {
+    const item = document.createElement('li');
+    item.textContent = text;
+    caveat.append(item);
+  }
   details.append(caveat);
 
   if (model.count === 0) {
@@ -621,12 +634,10 @@ function metricFamilyTable(metrics, index, gene, state) {
       const noteRow = document.createElement('tr');
       const noteCell = document.createElement('td');
       noteCell.colSpan = 3;
-      const note = document.createElement('p');
-      note.className = metric.provenance.isTargetOrganism === false
-        ? 'provenance-warning' : 'panel-note';
-      note.textContent = formatExpressionSource(metric.provenance);
+      const note = expressionSourceNote(metric.provenance,
+        metric.provenance.isTargetOrganism === false ? 'provenance-warning' : 'panel-note');
       noteCell.append(metric.provenance.isTargetOrganism === false
-        ? tanDisclosure(note, 'Source / information') : note);
+        ? tanDisclosure(note, 'Source') : note);
       noteRow.append(noteCell);
       body.append(noteRow);
     }
@@ -802,7 +813,7 @@ export class SidePanel {
       text.textContent = 'This gene only translates correctly through a programmed event in the '
         + 'ribosome, so recoding it is high risk.';
       flag.append(label, text);
-      header.append(tanDisclosure(flag, 'Translational exception / information'));
+      header.append(tanDisclosure(flag, 'Translational exception'));
     }
     if (Array.isArray(gene.cdsSegments) && gene.cdsSegments.length > 1) {
       const spliced = document.createElement('p');
@@ -812,7 +823,7 @@ export class SidePanel {
       const text = document.createElement('span');
       text.textContent = 'The coding length is shorter than the span between its coordinates.';
       spliced.append(label, text);
-      header.append(tanDisclosure(spliced, 'Sequence structure / information'));
+      header.append(tanDisclosure(spliced, 'Sequence structure'));
     }
 
     const actions = document.createElement('div');

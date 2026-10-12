@@ -485,6 +485,12 @@ test('viewer information is one closed disclosure that stays live without moving
   const mounted = mount();
   const { view, restore, flush } = mounted;
   try {
+    assert.equal(view.controls.tagName, 'details');
+    assert.equal(view.controls.getAttribute('open'), null);
+    assert.equal(view.controls.children[0].textContent, 'Controls');
+    assert.deepEqual(view.controls.children.slice(1), [view.instructions, view.legendInstructions]);
+    view.controls.open = true;
+    const controls = view.controls;
     assert.equal(view.viewerInfo.tagName, 'details');
     assert.equal(view.viewerInfo.getAttribute('open'), null, 'closed in a fresh view');
     assert.equal(view.viewerInfo.children[0].tagName, 'summary');
@@ -504,6 +510,8 @@ test('viewer information is one closed disclosure that stays live without moving
     flush();
     assert.equal(view.figure.children[infoIndex], view.viewerInfo, 'updates reuse the disclosure');
     assert.equal(view.viewerInfo.open, true, 'a live zoom does not close it');
+    assert.strictEqual(view.controls, controls);
+    assert.equal(view.controls.open, true, 'a live zoom preserves Controls');
     const primarySummary = view.trackSummaries.children[0].text();
     assert.match(primarySummary, /Showing [\d,]+–[\d,]+\./);
     assert.doesNotMatch(primarySummary, /Showing the whole replicon/);
@@ -1292,8 +1300,8 @@ test('the pan buttons are offered only in a direction the window can move', () =
       { from: 1, to: track.lengthBp, span: track.lengthBp });
     assert.equal(view.panLeft.disabled, true);
     assert.equal(view.panRight.disabled, true);
-    assert.match(view.instructions.textContent, /a pan button is dimmed when that direction has /);
-    assert.match(view.instructions.textContent,
+    assert.match(view.instructions.text(), /a pan button is dimmed when that direction has /);
+    assert.match(view.instructions.text(),
       /reached the end of the chromosome or the whole chromosome is already in view/);
 
     // Zoomed about the centre, both directions open.

@@ -1106,7 +1106,7 @@ export function renderGeneViewer(host, gene, {
       spliced.className = 'gene-flag';
       spliced.textContent = `Discontinuous coding sequence: ${model.segments.length} genomic `
         + 'segments, so the drawn span is longer than the coding length.';
-      host.append(tanDisclosure(spliced, 'Sequence structure / information'));
+      host.append(tanDisclosure(spliced, 'Sequence structure'));
     }
 
     host.append(factsFor(model));

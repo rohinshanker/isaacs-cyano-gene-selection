@@ -394,8 +394,14 @@ export function declaredMeasurementSources(meta) {
  * @returns {string|null}
  */
 export function describeExpressionSource(source, formatCoverageCount = String) {
+  const parts = expressionSourceParagraphs(source, formatCoverageCount);
+  return parts.length ? parts.join(' ') : null;
+}
+
+/** Separate provenance topics without splitting punctuation inside source text. */
+export function expressionSourceParagraphs(source, formatCoverageCount = String) {
   const normalized = normalizeExpressionSource(source);
-  if (!normalized) return null;
+  if (!normalized) return [];
   const parts = [];
   parts.push(normalized.isTargetOrganism
     ? `Measured in ${normalized.organism}, this genome's own organism.`
@@ -409,7 +415,7 @@ export function describeExpressionSource(source, formatCoverageCount = String) {
   }
   if (normalized.id) parts.push(`Source: ${normalized.id}.`);
   if (normalized.caveat) parts.push(normalized.caveat);
-  return parts.join(' ');
+  return parts;
 }
 
 /**

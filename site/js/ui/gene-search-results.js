@@ -162,17 +162,24 @@ export class GeneSearchResults {
     if (result.aliasesUsed.length > 0) {
       // A match reached through an alias is not what the user literally typed, so
       // the page says so rather than presenting it as a direct hit.
-      const note = document.createElement('p');
+      const note = document.createElement('div');
       note.className = 'search-alias-note';
-      note.textContent = `Also searched for the wording this genome's annotation uses for `
-        + `${result.aliasesUsed.join(', ')}.`;
-      host.append(tanDisclosure(note, 'Search information'));
+      const intro = document.createElement('p');
+      intro.textContent = `Also searched for the wording this genome's annotation uses for:`;
+      const aliases = document.createElement('ul');
+      for (const alias of result.aliasesUsed) {
+        const item = document.createElement('li');
+        item.textContent = alias;
+        aliases.append(item);
+      }
+      note.append(intro, aliases);
+      host.append(tanDisclosure(note, 'Search aliases'));
     }
     if (result.shown.some((hit) => hit.goMatch)) {
       const note = document.createElement('p');
       note.className = 'search-alias-note';
       note.textContent = organism.copy.goSearchNote;
-      host.append(tanDisclosure(note, 'Annotation search information'));
+      host.append(tanDisclosure(note, 'Annotation search'));
     }
 
     const list = document.createElement('ul');

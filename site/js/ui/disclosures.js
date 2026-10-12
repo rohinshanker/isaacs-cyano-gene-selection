@@ -16,6 +16,16 @@ export function tanDisclosure(content, label) {
   return details;
 }
 
+/** A stable, initially collapsed home for view-specific navigation instructions. */
+export function controlsDisclosure(...contents) {
+  const details = document.createElement('details');
+  details.className = 'method-help view-controls';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Controls';
+  details.append(summary, ...contents);
+  return details;
+}
+
 /**
  * Place an overlay beside its anchor while keeping every edge inside the viewport.
  *

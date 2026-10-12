@@ -14,11 +14,12 @@ import {
   isExpressionMetric, isExpressionProxyMetric, metricValues,
   expressionSourceScope, metricsInDisplayOrder,
 } from '../core/metric-registry.js';
-import { formatCount, formatExpressionSource, formatValue } from './format.js';
+import { formatCount, formatValue } from './format.js';
 import { sortedFinite, quantileSorted } from '../core/stats.js';
 import { RangeSlider, hasUsableSpread } from './range-slider.js';
 import { DEFAULT_ORGANISM } from '../core/organisms.js';
 import { tanDisclosure } from './disclosures.js';
+import { expressionSourceNote } from './measurement-provenance.js';
 import {
   OVERLAP_CLASSES, OVERLAP_FILTERS, OVERLAP_FILTER_LABELS, OVERLAP_TAG_EXPANSION,
   OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, overlapFilterOf,
@@ -487,13 +488,13 @@ export class FilterPanel {
     const metric = this.registry.byKey.get(this.trafficKey);
 
     if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-      const notice = document.createElement('p');
-      notice.className = metric.provenance?.isTargetOrganism === false
-        ? 'provenance-warning' : 'panel-note';
-      notice.textContent = formatExpressionSource(metric.provenance)
-        ?? 'This expression measurement carries no recorded provenance, so treat it with care.';
+      const notice = expressionSourceNote(metric.provenance,
+        metric.provenance?.isTargetOrganism === false ? 'provenance-warning' : 'panel-note');
+      if (!notice.childNodes.length) {
+        notice.textContent = 'This expression measurement carries no recorded provenance, so treat it with care.';
+      }
       this.trafficHost.append(metric.provenance?.isTargetOrganism === false
-        ? tanDisclosure(notice, 'Source / information') : notice);
+        ? tanDisclosure(notice, 'Source') : notice);
     } else if (isExpressionProxyMetric(metric)) {
       const notice = document.createElement('p');
       notice.className = 'panel-note';
@@ -800,12 +801,10 @@ export class FilterPanel {
       row.append(heading);
 
       if (metric.provenance) {
-        const notice = document.createElement('p');
-        notice.className = metric.provenance.isTargetOrganism === false
-          ? 'provenance-warning' : 'panel-note';
-        notice.textContent = formatExpressionSource(metric.provenance);
+        const notice = expressionSourceNote(metric.provenance,
+          metric.provenance.isTargetOrganism === false ? 'provenance-warning' : 'panel-note');
         row.append(metric.provenance.isTargetOrganism === false
-          ? tanDisclosure(notice, 'Source / information') : notice);
+          ? tanDisclosure(notice, 'Source') : notice);
       }
 
       const canvas = document.createElement('canvas');

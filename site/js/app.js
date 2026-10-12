@@ -1010,10 +1010,12 @@ function drawOrderExplanation(colors) {
  * shapes, for a view that draws the same evidence states differently and states
  * its own conventions beside the key.
  */
-function renderColorLegend(host, colors, { markerConventions = true } = {}) {
+function renderColorLegend(host, colors, { markerConventions = true, controlsHost = element('map-legend-instructions') } = {}) {
+  controlsHost.replaceChildren();
   const { categorical, categories, metric, values, scale } = colors;
   if (colors.overlap) {
     renderOverlapLegend(host, {
+      controlsHost,
       scale,
       counts: colors.overlaps.counts,
       index: colors.overlaps.index,
@@ -1038,6 +1040,7 @@ function renderColorLegend(host, colors, { markerConventions = true } = {}) {
       }
     }
     renderCategoryLegend(host, {
+      controlsHost,
       ...categories,
       organism,
       hasDerivedData: categories.hasDerivedData,
@@ -1234,6 +1237,7 @@ function renderMap() {
   element('zoom-in').disabled = !projection.available;
   element('zoom-out').disabled = !projection.available;
   if (projection.available) renderColorLegend(legendHost, colors);
+  else element('map-legend-instructions').replaceChildren();
 
   const loadingsHost = element('loadings-details');
   loadingsHost.hidden = !projection.available;
@@ -1346,7 +1350,9 @@ function renderChromosomeView() {
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
   if (verified) {
-    renderColorLegend(chromosomeView.legendElement(), colors, { markerConventions: false });
+    renderColorLegend(chromosomeView.legendElement(), colors, {
+      markerConventions: false, controlsHost: chromosomeView.legendInstructionsElement(),
+    });
   }
   // The sequence close-up follows the pinned gene only, never a hover or a
   // keyboard preview, and re-renders only when that gene or the scheme changes.

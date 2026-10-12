@@ -15,6 +15,7 @@ import { defaultColorSources } from '../core/annotation-source.js';
 import { DEFAULT_ORGANISM, sourceIds, sourceLabels } from '../core/organisms.js';
 import { describeReviewed } from '../core/source-derived-categories.js';
 import { tanDisclosure } from './disclosures.js';
+import { expressionSourceNote } from './measurement-provenance.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -190,7 +191,7 @@ export function renderCategoryLegend(host, {
   organism = DEFAULT_ORGANISM,
   sources = defaultColorSources(organism.annotationSources), hasDerivedData = false,
   evidenceCounts = null, reviewedColouredCount = null, derivedThreshold = null, conflictCount = 0,
-  markerConventions = true, pending = null,
+  markerConventions = true, pending = null, controlsHost = null,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {}, onToggleSource = () => {},
 }) {
@@ -321,7 +322,8 @@ export function renderCategoryLegend(host, {
     evidence.textContent = summary;
     host.append(evidence);
   }
-  host.append(resetButton, note);
+  host.append(resetButton);
+  (controlsHost ?? host).append(note);
 
   // Restore focus only once the new row is actually attached to the document:
   // `.focus()` on a still-detached element is a silent no-op.
@@ -352,7 +354,7 @@ export function renderCategoryLegend(host, {
  *   onResetCategoryFilter?: () => void}} state
  */
 export function renderOverlapLegend(host, {
-  scale, counts, index = null, selected = [], pending = null,
+  scale, counts, index = null, selected = [], pending = null, controlsHost = null,
   onHoverCategory = () => {}, onFocusCategory = () => {},
   onToggleCategory = () => {}, onResetCategoryFilter = () => {},
 }) {
@@ -432,7 +434,8 @@ export function renderOverlapLegend(host, {
   note.textContent = 'Hover or focus a class to preview it; click, Enter, or Space toggles it as '
     + 'a filter. The class is genomic context and does not change when a filter hides a partner. '
     + 'The full definition and what it covers are in the colour explanation.';
-  host.append(title, list, rule, resetButton, note);
+  host.append(title, list, rule, resetButton);
+  (controlsHost ?? host).append(note);
 
   if (focusedId !== null) {
     const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
@@ -735,9 +738,8 @@ export function renderLegend(host, state) {
     host.append(note);
   }
   if (state.provenanceNote) {
-    const note = document.createElement('p');
-    note.className = 'provenance-warning';
-    note.textContent = state.provenanceNote;
-    host.append(tanDisclosure(note, 'Provenance / information'));
+    const note = expressionSourceNote(state.metric.provenance, 'provenance-warning');
+    if (!note.childNodes.length) note.textContent = state.provenanceNote;
+    host.append(tanDisclosure(note, 'Provenance'));
   }
 }

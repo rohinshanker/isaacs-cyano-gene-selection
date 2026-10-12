@@ -9,10 +9,10 @@ test('tan information uses a closed native disclosure without changing its conte
     const content = document.createElement('p');
     content.className = 'provenance-warning';
     content.textContent = 'Source, caveat, and link remain here.';
-    const details = tanDisclosure(content, 'Provenance / information');
+    const details = tanDisclosure(content, 'Provenance');
     assert.equal(details.tagName, 'details');
     assert.equal(details.open, undefined);
-    assert.equal(details.querySelector('summary').textContent, 'Provenance / information');
+    assert.equal(details.querySelector('summary').textContent, 'Provenance');
     assert.equal(details.querySelector('p.provenance-warning'), content);
   });
 });

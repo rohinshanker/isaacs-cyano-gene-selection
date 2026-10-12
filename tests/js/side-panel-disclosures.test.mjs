@@ -30,7 +30,7 @@ test('function-category detail is collapsed while GO context keeps its own prese
     assert.ok(category.parentNode.hasClass('tan-disclosure'));
     assert.equal(category.parentNode.open, undefined);
     assert.equal(category.parentNode.querySelector('summary').textContent,
-      'Function category / information');
+      'Function category');
     assert.match(category.textContent, /probability/);
 
     const goContextIndex = dataset.genes.findIndex((gene) => gene.id === 'M744_RS00725');
@@ -40,7 +40,7 @@ test('function-category detail is collapsed while GO context keeps its own prese
     assert.ok(goContext);
     assert.ok(!goContext.parentNode.hasClass('tan-disclosure'));
     assert.notEqual(goContext.parentNode.querySelector('summary')?.textContent,
-      'Function category / information');
+      'Function category');
   });
 });
 
