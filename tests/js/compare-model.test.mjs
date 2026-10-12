@@ -166,13 +166,27 @@ test('an axis with no values at all is named as unavailable, not silently empty'
 test('the default axis list is the documented one, measured evidence first', () => {
   assert.ok(DEFAULT_AXES.includes('gc3'));
   assert.ok(DEFAULT_AXES.includes('targetFraction'));
-  assert.equal(DEFAULT_AXES[0], 'tssInitiation');
+  assert.equal(DEFAULT_AXES[0], 'tssInitiationControl');
   // CAI and tAI stay available, below every other default axis.
   assert.deepEqual(DEFAULT_AXES.slice(-2), ['cai', 'tai']);
-  assert.ok(DEFAULT_AXES.indexOf('tssInitiation') < DEFAULT_AXES.indexOf('cai'));
+  assert.ok(DEFAULT_AXES.indexOf('tssInitiationControl') < DEFAULT_AXES.indexOf('cai'));
   // A borrowed measurement is never an implicit default axis.
   assert.ok(!DEFAULT_AXES.includes('expression'));
   assert.ok(!DEFAULT_AXES.includes('expressionPercentile'));
+});
+
+test('comparison defaults prefer control and retain the pooled fallback only for older data', () => {
+  const metrics = ['tssInitiation', 'tssInitiationControl', 'gc3', 'enc']
+    .map((key) => ({ key, read: (i) => i }));
+  const registry = { metrics, byKey: new Map(metrics.map((metric) => [metric.key, metric])) };
+  const scaleFor = () => robustScale([1, 2, 3]);
+  assert.deepEqual(defaultAxes(registry, scaleFor).axes.map((metric) => metric.key),
+    ['tssInitiationControl', 'gc3', 'enc']);
+  registry.byKey.delete('tssInitiationControl');
+  assert.deepEqual(defaultAxes(registry, scaleFor).axes.map((metric) => metric.key),
+    ['tssInitiation', 'gc3', 'enc']);
+  assert.deepEqual(normalizeCompareAxes(['tssInitiation', 'gc3', 'enc']),
+    ['tssInitiation', 'gc3', 'enc'], 'explicit legacy comparisons stay explicit');
 });
 
 test('a gap in the data becomes a gap in the line', () => {
@@ -308,7 +322,7 @@ test('the default comparison axes always come with a measurement note', () => {
     const values = shippedGenes.map((gene) => gene[metric.key]);
     return robustScale(values);
   });
-  assert.equal(axes[0].key, 'tssInitiation');
+  assert.equal(axes[0].key, 'tssInitiationControl');
   assert.ok(measurementLimitNote(axes, shippedDataset));
 });
 

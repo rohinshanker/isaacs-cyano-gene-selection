@@ -34,7 +34,11 @@ and its gene coverage, so a thin measurement is read as thin rather than
 hidden. A metric that is neither a declared measurement nor one of those
 conventions has no such row. PCC 7942 transcript abundance and its percentile
 are borrowed measurements. Tan 2018 TSS initiation counts are UTEX 2973
-start-site evidence, not gene-body abundance. Recoded metrics use the active
+start-site evidence, not gene-body abundance. The four Table S1 condition
+metrics sum the two-replicate mean across exactly joined gTSS rows, preserving
+fractional counts. Each stays separate from the other conditions and the
+explicitly labelled legacy pooled calculation; its method, coverage and
+condition must follow the selected source. Recoded metrics use the active
 scheme. The colour disclosure remains open and updates in place when selection
 changes or a URL-restored metric is loaded.
 

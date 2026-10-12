@@ -19,10 +19,11 @@
  *
  * A source may declare the `quantity` its values are, and then that
  * declaration — not the assay sentence — decides the kind, the label, the
- * metric family and whether the type pools at all. Three quantities do not
- * pool: a log2 fold change, a p-value and a translation-efficiency ratio each
+ * metric family and whether the type pools at all. A log2 fold change,
+ * a p-value and a translation-efficiency ratio each
  * belong to one contrast evaluated by one method, so such a type reads one
- * dataset however many are selected and says which. See
+ * dataset however many are selected and says which. Condition-specific TSS
+ * initiation counts also remain separate. See
  * `scripts/expression_table.py` for the contract and
  * `docs/validation/data-contract.md` for the reader-facing rules.
  */
@@ -238,7 +239,8 @@ export function normalizeTypeSources(value, datasets, selection) {
  *
  * A type that does not pool always names one, because there is no pooled value
  * for it to fall back to: with several selected and none named, the first of
- * them in manifest order is read. That choice is deterministic rather than
+ * them in manifest order is read, with Tan control preferred when present.
+ * That choice is deterministic rather than
  * clever, and the interface says a single dataset is being read so the reader
  * is never shown one contrast while believing they are shown several.
  */

@@ -15,14 +15,14 @@ import { metricHelp } from '../core/metric-help.js';
  * Metrics the comparison views prefer when the user has not chosen, measured
  * evidence first.
  *
- * Native TSS initiation leads, so the default radar and table read a candidate
+ * Native control-condition TSS initiation leads, so the default radar and table read a candidate
  * on this organism's own measurement before any codon-usage convention. CAI
  * and tAI keep their place in the list, at its end, and stay selectable. A
  * borrowed PCC 7942 measurement is not an implicit default here, matching the
  * rule the low-traffic threshold and the panel designer already follow.
  */
 export const DEFAULT_AXES = [
-  'tssInitiation', 'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'targetFraction',
+  'tssInitiationControl', 'gc3', 'enc', 'rareFraction', 'cps', 'mfeStart', 'targetFraction',
   'cai', 'tai',
 ];
 
@@ -212,7 +212,8 @@ export function defaultAxes(registry, scaleFor) {
     return !reason;
   };
   const preferred = DEFAULT_AXES
-    .map((key) => registry.byKey.get(key))
+    .map((key) => registry.byKey.get(key)
+      ?? (key === 'tssInitiationControl' ? registry.byKey.get('tssInitiation') : undefined))
     .filter(Boolean)
     .filter(usable);
   if (preferred.length >= MIN_AXES) return { axes: preferred, dropped };
