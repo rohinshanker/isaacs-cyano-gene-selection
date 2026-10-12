@@ -16,6 +16,7 @@ import { CATEGORICAL } from '../../site/js/ui/colors.js';
 import { readFileSync } from 'node:fs';
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { LIVE_METRICS } from '../../site/js/core/live-metrics.js';
+import { DATA_APPLIERS } from '../../site/js/core/dataset.js';
 
 test('a missing value has no z-score, so it cannot land on the median ring', () => {
   const scale = robustScale([1, 2, 3, 4, 5]);
@@ -277,6 +278,8 @@ test('dropped-axis guidance separates its lead-in without a double colon', () =>
 const shippedFile = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const shippedMeta = shippedFile('../../site/data/meta.json');
 const shippedGenes = shippedFile('../../site/data/genes.json');
+DATA_APPLIERS.expressionLayers({ meta: shippedMeta, genes: shippedGenes },
+  shippedFile('../../site/data/expression_layers.json'));
 const shippedRegistry = buildMetricRegistry(shippedMeta, shippedGenes, Object.fromEntries(
   LIVE_METRICS.map((metric) => [metric.key, new Float64Array(shippedGenes.length)]),
 ));

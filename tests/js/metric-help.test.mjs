@@ -9,10 +9,12 @@ import { renderMetricHelp, renderProjectionHelp } from '../../site/js/ui/metric-
 import { buildTypeMetrics } from '../../site/js/core/type-metrics.js';
 import { datasetsFrom } from '../../site/js/core/data-sources.js';
 import { organismById } from '../../site/js/core/organisms.js';
+import { DATA_APPLIERS } from '../../site/js/core/dataset.js';
 
 const file = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const meta = file('../../site/data/meta.json');
 const genes = file('../../site/data/genes.json');
+DATA_APPLIERS.expressionLayers({ meta, genes }, file('../../site/data/expression_layers.json'));
 const codonPca = file('../../site/data/codon_pca.json');
 const citations = file('../../site/data/citations.json');
 const citationIds = new Set(citations.sections.flatMap((section) =>
