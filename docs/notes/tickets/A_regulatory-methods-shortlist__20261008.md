@@ -74,9 +74,9 @@ These are candidate/null counts, not measured termination or a false-positive
 rate. The `TERM` interval is a hairpin; the adjacent 15-nt scoring tail is recorded
 separately. Every reported interval was bounds-checked. All 2,769 genes and seven
 pseudogenes are supplied as annotation context; including the previously omitted
-pseudogenes changes the native count from 878 to 860. The 50 focused tests pass.
+pseudogenes changes the native count from 878 to 860. The 64 focused tests pass.
 The corrected run is in the coordinator worktree's ignored
-`.playwright-cli/regulatory-methods-20261012/transterm-repaired/`; upstream build
+`.playwright-cli/regulatory-methods-20261012/transterm-final/`; upstream build
 artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. The
 [runbook](../../validation/regulatory-transterm.md) pins inputs and build steps.
 
@@ -84,7 +84,7 @@ artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. T
 | --- | --- |
 | Native raw output | `2f79a9ba0a4d57a691e3256433f82fac0074a617b58eb89bccd4f9790d2728e3` |
 | Shuffled raw output | `6f7ddfd526c4b4e92cb10763f478f6214e420095bfebf71a498854122de8755c` |
-| JSON | `ad44c6ff3cdb73b6dbeeb8ff93be9adfcf4b08529923a192ec21edda935edf7c` |
+| JSON | `e2376a0a7dc7acee767ffc91930c117ffb4065765b2bdfd69c24946015485cae` |
 | TSV | `951c7294768836440408e24abc50ba4143ffe21600ece1dba63caf08ecdaaa8a` |
 
 ### Integration findings
@@ -112,17 +112,14 @@ DEM-372 independently accepted TT1–TT7 at `e6f13bb`. Its rerun produced a
 byte-identical TSV and confirmed every tail score against native sequence.
 These findings must be resolved before final integration of the affected methods.
 
-Non-blocking review limitations retained for future consumers: TT8, schema 1 was
-edited during this unreleased pilot and does not distinguish its scratch artifact
-revisions; retain producing commit and hashes. TT9, the reference patch's metadata
-says macOS although the runbook applies it for both Linux/macOS. TT10, output-parent
-file errors can read as overwrite errors, and a cleanup unlink failure can mask
-the initial error. TT11, a one-base minus-strand annotation would lose direction;
-the exact pinned annotation cannot produce it. TT12, rare banner, corrupt-gzip,
-wrap-rejection and subprocess timeout/error branches lack focused regression
-coverage. The shared-annotation shuffled-control limitation is now explicit in
-the runbook. These are open, non-blocking findings; this ticket remains active.
-
+TT8–TT12 are fixed in `bb1038b`: schema 2 distinguishes the revised fields;
+compatibility provenance is platform-neutral; output-parent errors are precise;
+failed cleanup preserves the initial error and tries every newly created file;
+unrepresentable one-base minus-strand annotations fail explicitly. Added corrupt
+compression, circular-wrap, timeout/execution, banner mismatch, model pin and
+successful report-batch tests. The shared-annotation shuffle limitation is
+explicit in the runbook. DEM-372 accepted `bb1038b` with no material issues. A real repeat
+still yields 860/319 with a byte-identical TSV.
 
 ### Remaining selected methods and executable boundaries
 
@@ -224,7 +221,7 @@ code contracts; no new regulatory prediction layer is admitted by this assessmen
 | Selected method | Verified current source/runtime | Remaining method-specific input or access |
 | --- | --- | --- |
 | RBS Calculator | Public SalisLabCode head `46da913`; its v2.1.1 test imports a private `DNAc` package. Original v1.0 remains Python 2/NUPACK dependent. | Owner has no existing code/API/runtime access and explicitly retains this dependency as open. No surrogate SD scan is substituted. |
-| iDOG / TransTermHP | Existing iDOG review/hold retained; standalone author download is TransTermHP 2.09 C++ source. | iDOG execution still waits on the owner's own review. Standalone intrinsic-terminator evaluation needs a reproducible tool build and its stated score/input contract. |
+| iDOG / TransTermHP | Existing iDOG review/hold retained; standalone author download is TransTermHP 2.09 C++ source. | iDOG execution still waits on the owner's own review. The pinned standalone TransTermHP pilot and native/control evaluation are implemented; UTEX functional calibration remains separate. |
 | Promoter Calculator | Public v1.0 at SalisLabCode `46da913`, GPL v3 or later; implementation still contains Python 2 syntax. Organism names other than the explicit E. coli or in-vitro modes fall through to E. coli calibration constants. | Pinned Python 3 preparation and a native-window smoke check implemented 2026-10-12; whole-genome evaluation and explicit model/host labels remain before publication. A UTEX string does not supply UTEX calibration. |
 | ViennaRNA | Existing project Python/browser model is 2.7.2; Python-library smoke returned a finite MFE/structure. | Structure/accessibility is computational evidence, not a validated regulatory-site call; select windows/parameters for any new annotation method. |
 | STREME | Current author MEME Suite source download is 5.5.9. | Foreground/control cohort and evaluation split are required for motif discovery; a discovered motif alone is not an admitted site layer. |
