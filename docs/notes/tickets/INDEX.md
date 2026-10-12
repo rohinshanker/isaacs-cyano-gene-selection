@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_neighbor-tss-coding-overlap__20261012](O_neighbor-tss-coding-overlap__20261012.md) | Filter and colour genes by neighbouring-gene TSSs inside their coding segments, and show the exact sites and gene associations in chromosome and gene viewers |
 | [O_overlap-length-filter-color__20261012](O_overlap-length-filter-color__20261012.md) | Add a 5′/3′ overlap-length filter with minimum and maximum bp bounds, plus Color by options for 5′ length, 3′ length and their sum |
 | [A_tan-condition-selection__20261012](A_tan-condition-selection__20261012.md) | cyano-ui-fixes: split Tan PRJNA420395 conditions; source derivation awaits owner choice between published Table S1 and reconstructed legacy counts; work isolated on work/tan-condition-selection-20261012 |
 | [O_recoded-genome-functional-annotations__20261012](O_recoded-genome-functional-annotations__20261012.md) | Add missing functional annotations to recoded genomes from exact nonrecoded references, with verified crosswalks and explicit transfer provenance |
