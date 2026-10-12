@@ -97,6 +97,13 @@ artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. T
   searched model/window, without asserting biological absence from zero hits.
 - **RF4, open:** keep dated outcomes in this ticket; permanent documentation keeps
   reproducible contracts and quoted source terms, without a new licence decision.
+- **RF5, open:** DEM-375 reproduced overlapping linear/truncated and origin-spanning
+  hits on a rotated chromosome; circular overlap accounting omits junction rows.
+- **RF6, open:** preserve the actual junction search target and emitted raw endpoints
+  separately from correctly remapped native intervals, in JSON and TSV.
+- **RF7, open:** shuffled-control positions must identify the shuffled replicate,
+  rather than claim a contiguous native-assembly locus. Disclose that native
+  searches include junctions while control searches are linear-only.
 - **TT1, fixed `ba6f70b`:** reject empty FASTA headers with a typed error.
 - **TT2, fixed `ba6f70b`:** remove newly created partial files after a write failure.
 - **TT3, fixed `e6f13bb`:** include seven pseudogenes in annotation/scoring context.
@@ -107,7 +114,10 @@ artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. T
 - **TT6, fixed `e6f13bb`:** record the reference compatibility-build recipe.
 - **TT7, fixed `e6f13bb`:** name the pilot as the checksum enforcer, not the fetch script.
 
-RF1–RF4 were sent to the existing DEM-362 implementer for one bounded repair pass.
+RF1–RF7 are assigned to the existing DEM-362 implementer. DEM-375 independently
+reproduced the one-hit baseline and source/data-row digests, with 167 focused
+tests passing; rotated real-genome probes exposed RF5/RF6 and a nonempty control
+fixture exposed RF7. Final repaired-commit acceptance remains pending.
 DEM-372 independently accepted TT1–TT7 at `e6f13bb`. Its rerun produced a
 byte-identical TSV and confirmed every tail score against native sequence.
 These findings must be resolved before final integration of the affected methods.
