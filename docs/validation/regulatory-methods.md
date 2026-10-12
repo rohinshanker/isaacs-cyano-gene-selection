@@ -25,7 +25,7 @@ regulation or calibrated biological probability.
 | iDOG / TransTermHP | [iDOG](https://github.com/jayman1466/iDOG) design/screening components; [TransTermHP 2.09](https://transterm.cbcb.umd.edu/) intrinsic terminators | iDOG's promoter-parts library is distinct from genomic promoter-location prediction. Its owner-review hold remains. The [standalone pilot](regulatory-transterm.md) pins native inputs, annotation context and score semantics separately. |
 | Promoter Calculator | [v1.0 source](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/Promoter_Calculator/Promoter_Calculator_v1_0.py), sigma-70 promoter/TSS model | The [pinned preparation tool](regulatory-promoter.md) adapts the public Python 2 source for a local Python 3 smoke check while preserving coefficients and GPL v3-or-later terms. Apart from the explicit in-vitro mode, other organism names use E. coli calibration constants. A UTEX string is not a UTEX calibration. |
 | ViennaRNA | Existing [2.7.2 folding contract](rna-folding.md), folding/accessibility comparisons | Preserve model, window and parameter identity. A structure or accessibility value alone is not a regulatory-site call. |
-| STREME | [MEME Suite 5.5.9](https://meme-suite.org/meme-software/index.html), enriched motif discovery | Pin foreground, controls and evaluation split. Motif discovery and genomic site scanning are distinct steps. |
+| STREME | [MEME Suite 5.5.9](https://meme-suite.org/meme-software/index.html), enriched motif discovery | A [local build recipe](#local-streme-build) is available. Pin foreground, controls and evaluation split; motif discovery and genomic site scanning are distinct steps. |
 | Rfam + Infernal | [Rfam release 15.1](https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/README) family models; [Infernal 1.1.5](http://eddylab.org/infernal/) searches | Pin family models/cutoffs and query coordinates. Existing `trna-validate` environment has Infernal 1.1.5; this does not admit a new family layer. |
 | IntaRNA | [v3.4.1](https://github.com/BackofenLab/IntaRNA/releases/tag/v3.4.1), candidate RNA interactions | Query/target RNAs, seed/accessibility parameters and coordinate provenance are required. |
 
@@ -62,3 +62,36 @@ segment length, folding window, maximum pairing span and model temperature.
 The simplified wrapper uses default model settings; use the documented
 `fold_compound.probs_window()` interface for custom model settings. Neither
 unpaired probability nor MFE is a probability of regulatory function.
+
+## Local STREME build
+
+Use the author's [MEME Suite 5.5.9 archive](https://meme-suite.org/meme/meme-software/5.5.9/meme-5.5.9.tar.gz),
+SHA-256 `0406fb7b1dc27f6aab3d6d3a29ecdf617bbdd946690cfa97ca2129bc210bfd12`.
+Verify it before extraction. Keep the archive and generated files in ignored
+scratch, and retain its `COPYING` file. That file states the source terms for
+“educational, research and non-profit purposes”; this recipe does not make a
+separate permission or source-admission decision.
+
+Inside a fresh extracted source tree, the following builds only the selected
+STREME executable and its libraries with an isolated installation prefix. Supply
+the absolute path to the project Python interpreter; no shared installation or
+shell-profile change is needed.
+
+```sh
+./configure --prefix="$PWD/../local" --enable-serial --disable-web \
+  --enable-build-libxml2 --enable-build-libxslt \
+  --with-python=/absolute/path/to/project/.venv/bin/python
+make -C src/libxml2 -j2
+make -C src/libxslt -j2
+make -C src dir.h projrel.h citation.js.h
+make -C src -j2 streme
+src/streme --version
+```
+
+The generated headers are prerequisites when selecting the `streme` target
+rather than the suite's default target. Record the archive, binary, compiler,
+input, flags and output hashes. Runtime success and deterministic motif output
+are not motif-boundary accuracy or UTEX validation. In particular, a motif may
+capture only part of a planted pattern; evaluate recovery independently before
+using such a check as an accuracy benchmark. A native TSS-window producer still
+needs explicit foreground/control cohorts and independent locus/overlap blocks.

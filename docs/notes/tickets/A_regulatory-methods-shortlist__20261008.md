@@ -149,10 +149,17 @@ still yields 860/319 with a byte-identical TSV.
   evaluation remain work, rather than a runtime-access blocker.
 - **STREME:** the admitted Tan gTSS table supplies 2,475 initiation anchors
   (`d06524cf492aa8f009bf004c596a5d305ac54acbe7537ec98bbc7992ce164bff`),
-  not full promoter boundaries or validated negative loci. The checked local
-  executable paths have no STREME. Next engineering step is a pinned 5.5.9 build
-  and explicit native-window cohort with matched controls and independent locus/
-  overlap blocks. Its default order-2 shuffle preserves trinucleotide counts.
+  not full promoter boundaries or validated negative loci. A source-only 5.5.9
+  build now passes locally in this worktree's ignored `streme/` scratch, without
+  modifying shared environments. The [recipe](../../validation/regulatory-methods.md#local-streme-build)
+  records its archive pin and required generated headers. Two executions of a
+  100-foreground/100-control random-DNA fixture yield the same finite normalized
+  PWM. The planted consensus `ACGTCGAT` was not recovered exactly: output
+  `CGTCGATC` retains a shifted seven-base fragment. S1, open: exact motif-recovery
+  and native-cohort accuracy are not established by this runtime check. Binary
+  SHA-256: `ae3939a2230f9a03654339b661656033eb6aad5a047700f332203cd3e67c2bd8`.
+  Next step is the explicit native-window cohort with matched controls and
+  independent locus/overlap blocks. Its default order-2 shuffle preserves trinucleotide counts.
   Final motifs include its internal holdout, so a separate external evaluation
   cohort is necessary. New-sequence scanning needs a separately selected scanner;
   FIMO remains a candidate, not an implicitly selected additional method.
@@ -176,6 +183,7 @@ normalization where needed. Raw receipts are in the coordinator worktree's ignor
 | [STREME manual](https://meme-suite.org/meme/doc/streme.html), `--hofract` | “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
 | [IntaRNA 3.4.1 README](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/README.md), opening description | “incorporating accessibility and seeding” | `67ae5c17c94ccff9a68484d4b7fefb950587dc22b0f85d91afd8c3742c0c0fc8` |
 | [ViennaRNA 2.7.2 `pf_window.c`](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/partfunc/pf_window.c#L1559), lines 1559–1561; storage callback lines 2092–2104 | “starting at i-x+1” | `79f07a777c3bba635f26894576b27206635db77e7b9ce522058a0e7f4f34e338` |
+| [MEME Suite 5.5.9 archive](https://meme-suite.org/meme/meme-software/5.5.9/meme-5.5.9.tar.gz), `COPYING` | “educational, research and non-profit purposes”; quote matched after whitespace normalization; unmodified source build | archive `0406fb7b1dc27f6aab3d6d3a29ecdf617bbdd946690cfa97ca2129bc210bfd12`; `COPYING` `ecf04a70ce5a5f5232d5e279af6f85ffca10d61b35d158ffb68b627c98bba373` |
 
 ## Owner selection, 2026-10-08
 
