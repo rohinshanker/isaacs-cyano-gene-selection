@@ -51,8 +51,8 @@ test('Syn57 pipeline, proxy and live origins use a readable design source phrase
   }
 });
 
-test('all 215 selectable metrics have a calculation, origin, missingness and real citations', () => {
-  assert.equal(registry.metrics.length, 215);
+test('all 219 selectable metrics have a calculation, origin, missingness and real citations', () => {
+  assert.equal(registry.metrics.length, 219);
   // Hand-written method lines cover every metric except the layers the
   // ingestion tool made, whose method is derived from their provenance.
   const ingested = registry.metrics.filter((metric) => metric.provenance?.ingest);
@@ -87,12 +87,28 @@ test('priority conventions and measured-source boundaries are explicit', () => {
   assert.match(help('tssInitiation').origin, /UTEX 2973/);
   assert.match(help('tssInitiation').method, /separately pinned Figshare per-TSS feature set/);
   assert.match(help('tssInitiation').method, /independent of the Table S1 site list/);
+  assert.match(help('tssInitiation').method, /Legacy.*truncating counts.*undocumented/);
   assert.match(help('targetFraction').method, /stop edit/);
   assert.match(help('encExpected').method, /2 \+ s \+ 29/);
   assert.doesNotMatch(help('encExpected').summary, /20 to 61/);
   assert.match(help('lengthCodons').summary, /target fraction\./);
   assert.match(help('lengthCodons').summary, /Targets per kilobase instead uses full CDS length/);
   assert.match(help('targetPerKb').method, /full CDS length in nt/);
+});
+
+test('each Table S1 condition explains its own two-replicate counts and exact mapping', () => {
+  for (const suffix of ['Control', 'Dark', 'HighLight', 'HighTemperature']) {
+    const metric = registry.byKey.get(`tssInitiation${suffix}`);
+    const help = metricHelp(metric, dataset);
+    assert.match(help.method, /two biological-replicate raw counts/);
+    assert.match(help.method, /Table S1 gTSS rows with an exact locus-tag match/);
+    assert.match(help.method, /fractional counts are preserved/);
+    assert.match(help.method, /conditions are never averaged together/);
+    assert.match(help.coverage, /1,789 of 2,715/);
+    assert.match(help.origin, /UTEX 2973/);
+    assert.ok(help.citations.includes('tan-2018'));
+    assert.equal(metric.provenance.quantityPools, false);
+  }
 });
 
 test('CAI and tAI are explained as convention-derived supporting context', () => {
