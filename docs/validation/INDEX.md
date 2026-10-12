@@ -42,7 +42,7 @@ Reusable contracts and runbooks for this repository.
 | [protein-evidence.md](protein-evidence.md) | Pinned CDS-to-protein reconciliation, PASS00399 admission limits, tested-allele joins, and distinct evidence tiers |
 | [go-iea-essentiality-context.md](go-iea-essentiality-context.md) | GO IEA fallback tier and precedence, Jev question wording, thresholds, calibration, blinded spot check, and discrepancy contract |
 | [source-derived-categories.md](source-derived-categories.md) | Jev-derived PCC 7942 and GO IEA function categories under evidence labels, reviewed-wins resolution, the width below which the hollow marker gives way to full category colour and what that discloses, toggle legend counts, threshold calibration, blinded spot check, and export contract |
-| [pcc-essentiality.md](pcc-essentiality.md) | Licensed Adomako/Rubin PCC 7942 calls, exact UTEX cross-strain joins, growth-context citation, missingness, and assumption boundary |
+| [pcc-essentiality.md](pcc-essentiality.md) | Adomako/Rubin PCC 7942 calls, exact UTEX joins, categorical coloring/filtering, growth context, missingness and cross-strain assumptions |
 | [length-cohorts.md](length-cohorts.md) | Annotated-locus and joined-CDS denominators, inclusive length filtering, short-CDS review flag, and protein filter evidence boundary |
 | [future-data-roadmap.md](future-data-roadmap.md) | Ranked remaining downloadable evidence after Tan 2018 integration, joins, licence gates, version pins, and admission rules |
 | [source-ledger.md](source-ledger.md) | Public citation coverage, tracked downloads and dated upstream source checks, attribution boundaries, release checks, and the per-artifact licence decisions for the package A candidates |
