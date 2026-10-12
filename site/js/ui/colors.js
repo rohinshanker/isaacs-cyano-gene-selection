@@ -69,6 +69,17 @@ export const OVERLAP_CLASS_COLORS = Object.freeze([
 ]);
 
 /**
+ * The determinate PCC 7942 essentiality calls' colours: essential, beneficial,
+ * non-essential, in `PCC_ESSENTIALITY_BUCKETS` order.
+ *
+ * Tol's wine, Okabe-Ito orange and Tol's teal: three hues that also differ in
+ * lightness, so they stay apart under deuteranopia, protanopia and tritanopia.
+ * An unresolved call takes no colour at all; it draws as the open unknown ring,
+ * so it cannot be read as non-essential.
+ */
+export const PCC_ESSENTIALITY_COLORS = Object.freeze(['#882255', '#e69f00', '#44aa99']);
+
+/**
  * A categorical scale over an explicit colour list.
  *
  * Every categorical channel reaches the canvas through this one bucket
@@ -108,6 +119,16 @@ export function buildOverlapColorScale({ pending = false } = {}) {
   return buildCategoricalScale(pending
     ? [...OVERLAP_CLASS_COLORS, PENDING_CATEGORY_COLOR]
     : OVERLAP_CLASS_COLORS);
+}
+
+/**
+ * The PCC 7942 essentiality scale. While the calls are not read every CDS takes
+ * one further neutral bucket: not loaded yet must not look like unresolved.
+ */
+export function buildPccEssentialityColorScale({ pending = false } = {}) {
+  return buildCategoricalScale(pending
+    ? [...PCC_ESSENTIALITY_COLORS, PENDING_CATEGORY_COLOR]
+    : PCC_ESSENTIALITY_COLORS);
 }
 
 function interpolate(stops, t) {

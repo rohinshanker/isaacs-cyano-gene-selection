@@ -34,6 +34,7 @@ import {
 import { categoryResolutionFor, conflictNote } from './source-derived-categories.js';
 import { csvField } from '../ui/format.js';
 import { agreementExportEvidence } from './expression-agreement.js';
+import { PCC_ESSENTIALITY_BUCKETS, pccBucketPosition } from './pcc-essentiality.js';
 
 export const MANIFEST_VERSION = 2;
 export const WILD_TYPE_SCHEME_ID = 'wild-type';
@@ -52,7 +53,7 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
   'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
   'tssInitiationBasisReason', 'tssMappedSiteCount', 'passesCurrentFilters',
-  'pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus',
+  'pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag', 'pcc7942MappingStatus',
   'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
   'annotationDiscrepancies',
 ]);
@@ -64,7 +65,8 @@ const LAYER_COLUMNS = Object.freeze({
   sourceDerivedCategories: ['pcc7942DerivedCategory', 'pcc7942DerivedProbability',
     'goIeaDerivedCategory', 'goIeaDerivedProbability'],
   tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount'],
-  candidateEvidence: ['pcc7942Essentiality', 'pcc7942LocusTag', 'pcc7942MappingStatus'],
+  candidateEvidence: ['pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag',
+    'pcc7942MappingStatus'],
   goIeaEssentiality: ['essentialityEvidenceTier', 'goIeaEssentialityContext',
     'goIeaCoreProcessProbability', 'annotationDiscrepancies'],
 });
@@ -465,6 +467,10 @@ export function buildExport({
         tssMappedSiteCount: tssBasis.siteCount ?? '',
         passesCurrentFilters: filterMask ? String(Boolean(filterMask[index])) : '',
         pcc7942Essentiality: pccCall?.status ?? '',
+        // The display bucket the essentiality colour and filter group this
+        // exact status into; the status itself stays in the column before.
+        pcc7942EssentialityBucket: pccCall
+          ? PCC_ESSENTIALITY_BUCKETS[pccBucketPosition(pccCall.status)].label : '',
         pcc7942LocusTag: pccCall?.pccLocusTag ?? '',
         pcc7942MappingStatus: pccCall?.mappingStatus ?? '',
         essentialityEvidenceTier: evidence?.tier ?? '',
@@ -511,6 +517,10 @@ export function buildExport({
           status: dataset.candidateEvidence.borrowedEssentiality.status,
           source: dataset.candidateEvidence.borrowedEssentiality.source,
           summary: dataset.candidateEvidence.borrowedEssentiality.summary,
+          // How pcc7942EssentialityBucket groups the exact statuses, for display only.
+          displayBuckets: PCC_ESSENTIALITY_BUCKETS.map((bucket) => ({
+            id: bucket.id, label: bucket.label, statuses: [...bucket.statuses],
+          })),
         } : null,
       } : null,
       goIeaEssentiality: dataset.goIeaEssentiality ? {

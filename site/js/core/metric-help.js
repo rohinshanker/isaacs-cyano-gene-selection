@@ -12,6 +12,9 @@ import {
   OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, describeOverlapCoverage,
   describeOverlapDefinition,
 } from './gene-overlaps.js';
+import {
+  PCC_ESSENTIALITY_BUCKETS, PCC_ESSENTIALITY_LABEL, describeBucketStatuses, pccPendingSentence,
+} from './pcc-essentiality.js';
 
 /**
  * How each metric is calculated, in words that hold for any organism.
@@ -326,6 +329,48 @@ export function overlapColorHelp(model) {
       + `${model.index.coverage.annotatedGenes.toLocaleString('en-US')} annotated gene records.`,
     coverage: describeOverlapCoverage(model.index),
     citations: [],
+  };
+}
+
+/**
+ * The PCC 7942 essentiality channel's explanation: what the call is, how it is
+ * joined, why the grouping never turns an unresolved call into a non-essential
+ * one, and how many CDSs fall in each bucket and exact status.
+ *
+ * @param {object} model from `resolvePccEssentiality`.
+ * @param {object} [organism] whose `candidateEvidence` layer supplies the copy;
+ *   null for an organism that declares none.
+ */
+export function pccEssentialityHelp(model, organism = DEFAULT_ORGANISM) {
+  const copy = layerOf(organism, 'candidateEvidence');
+  if (!copy?.essentialityColour) return null;
+  const words = copy.essentialityColour;
+  const base = {
+    title: PCC_ESSENTIALITY_LABEL,
+    summary: words.summary,
+    unit: 'category (not a numeric metric)',
+    method: words.method,
+    citations: [...words.citations],
+  };
+  if (model.pending) {
+    return {
+      ...base,
+      origin: 'Adomako et al. 2022 Data Set S1, republishing Rubin et al. 2015.',
+      coverage: `Not counted: ${pccPendingSentence(model.pending)}`,
+    };
+  }
+  const total = model.counts.reduce((sum, count) => sum + count, 0);
+  const [essential, beneficial, nonEssential, unresolved] = PCC_ESSENTIALITY_BUCKETS;
+  return {
+    ...base,
+    origin: `${copy.assayLabel}: ${model.source.rubinCondition} ${copy.assumption.trim()} `
+      + copy.growthContext,
+    coverage: `Of ${formatCount(total)} plotted CDSs: `
+      + `${formatCount(model.counts[0])} ${essential.label.toLowerCase()}, `
+      + `${formatCount(model.counts[1])} ${beneficial.label.toLowerCase()}, `
+      + `${formatCount(model.counts[2])} ${nonEssential.label.toLowerCase()}, and `
+      + `${formatCount(model.counts[3])} ${unresolved.label.toLowerCase()} `
+      + `(${describeBucketStatuses(unresolved, model.statusCounts)}).`,
   };
 }
 

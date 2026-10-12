@@ -4,6 +4,7 @@
  * production wording instead of `app.js` inlining its own copy.
  */
 import { formatCount } from './format.js';
+import { PCC_ESSENTIALITY_COLOR_KEY } from '../core/pcc-essentiality.js';
 
 /**
  * The lead sentence of the axis note: how many gene pairs are plotted, or,
@@ -43,6 +44,8 @@ export function axisTitlesNote(projection) {
  * The filter-exclusion banner. When the active panel has nothing plotted
  * (e.g. an empty percentile ranking cohort), states the projection's own
  * reason rather than promising markers that are not on the canvas.
+ * A channel with an open no-value bucket, function category or PCC 7942
+ * essentiality, leaves that bucket's excluded genes as grey dots.
  *
  * @param {{hidden: number, total: number, showHidden: boolean,
  *   projectionAvailable: boolean, projectionMessage: string|null,
@@ -57,5 +60,6 @@ export function filterBannerText({
     return `Filters exclude ${formatCount(hidden)} of ${formatCount(total)} genes from the active set. ${projectionMessage}`;
   }
   return `Filters exclude ${formatCount(hidden)} of ${formatCount(total)} genes from the active set; `
-    + `${colorBy === functionColorKey ? 'grey dots and outlined squares' : 'grey outlined squares'} remain on the map.`;
+    + `${[functionColorKey, PCC_ESSENTIALITY_COLOR_KEY].includes(colorBy)
+      ? 'grey dots and outlined squares' : 'grey outlined squares'} remain on the map.`;
 }
