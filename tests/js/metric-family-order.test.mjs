@@ -145,13 +145,16 @@ test('the production registry leads with measured UTEX evidence, before Translat
   const expression = orderMeasuredFirst(
     registry.metrics.filter((metric) => metric.family === 'Expression'),
   ).map((metric) => metric.key);
-  assert.deepEqual(expression.slice(0, 2), ['tssInitiation', 'expression']);
-  // The ingested PCC 7942 layers follow in manifest order, after the two
-  // original measurements; a fitness screen is its own family, not Expression.
-  assert.deepEqual(expression.slice(2), dataset.meta.expressionSources.slice(2)
+  assert.deepEqual(expression.slice(0, 6), [
+    'tssInitiation', 'tssInitiationControl', 'tssInitiationDark',
+    'tssInitiationHighLight', 'tssInitiationHighTemperature', 'expression',
+  ]);
+  // The ingested PCC 7942 layers follow in manifest order, after the native
+  // initiation layers and the original abundance measurement; a fitness screen is its own family, not Expression.
+  assert.deepEqual(expression.slice(6), dataset.meta.expressionSources.slice(6)
     .filter((source) => source.record.dataType !== 'fitness')
     .map((source) => source.metricKey));
-  assert.equal(expression.length, 65);
+  assert.equal(expression.length, 69);
   // Nine GSE205443 biofilm fractions plus the Fitness Browser's 90 condition sets.
   assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 99);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
@@ -163,7 +166,10 @@ test('the whole-registry display order leads with measurements and keeps every m
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, dataset.baseline);
   const order = metricsInDisplayOrder(registry).map((metric) => metric.key);
 
-  assert.deepEqual(order.slice(0, 2), ['tssInitiation', 'expression']);
+  assert.deepEqual(order.slice(0, 6), [
+    'tssInitiation', 'tssInitiationControl', 'tssInitiationDark',
+    'tssInitiationHighLight', 'tssInitiationHighTemperature', 'expression',
+  ]);
   assert.ok(order.indexOf('tssInitiation') < order.indexOf('cai'));
   assert.ok(order.indexOf('expression') < order.indexOf('tai'));
   // Nothing is dropped or shown twice: this replaces `registry.metrics` in
