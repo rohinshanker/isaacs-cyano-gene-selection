@@ -18,12 +18,16 @@ UTEX 2973. The shuffled control estimates a null hit rate for
 composition-matched sequence; shuffled sequence is not a proven biological
 negative.
 
+Identity is enforced, not recorded after the fact: the command line refuses to
+run unless the model, the compressed genome FASTA, the GenBank flat file, the
+replicon set and the Infernal version are exactly the pinned ones (``PINNED``).
+
 Coordinates are reported on the native pinned assembly only, one-based and
 inclusive, with strand. Nothing is transferred from a donor strain. The raw
 cmsearch orientation endpoints (``seq from``/``seq to``, which run high-to-low
 on the minus strand) are preserved alongside the normalised interval.
 
-See docs/validation/regulatory-rfam.md for the retrieval receipts, the exact
+See docs/validation/regulatory-rfam.md for the pinned identities, the exact
 commands, and how to reproduce a run from the official artifacts.
 """
 
@@ -34,15 +38,17 @@ import csv
 import dataclasses
 import gzip
 import hashlib
+import io
 import json
 import math
+import os
 import random
 import re
 import subprocess
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 PILOT_ID = "rfam-regulatory-family-native-utex"
 
 # The Rfam-documented genome-annotation settings. --cut_ga applies the
@@ -63,6 +69,7 @@ TBLOUT_COLUMNS = 17
 _HIT_FIELDNAMES = (
     "replicon",
     "search_space",
+    "search_target",
     "model_accession",
     "model_name",
     "strand",
@@ -86,6 +93,62 @@ _HIT_FIELDNAMES = (
 
 class RegulatoryRfamError(ValueError):
     """Any refusal to produce a report: bad input, bad row, failed check."""
+
+
+# --------------------------------------------------------------------------
+# Pinned identity
+# --------------------------------------------------------------------------
+
+
+@dataclasses.dataclass(frozen=True)
+class PinnedIdentity:
+    """Every byte and fact a run must match before its first search.
+
+    ``assembly_label`` is the only wording the report uses for the searched
+    genome, so a report can never name an assembly its inputs were not.
+    """
+
+    assembly_label: str
+    model_accession: str
+    model_name: str
+    model_sha256: str
+    model_clen: int
+    model_window: int
+    gathering_cutoff: float
+    fasta_sha256: str
+    fasta_md5: str
+    gbff_sha256: str
+    gbff_md5: str
+    searched_fasta_sha256: str
+    replicons: tuple[tuple[str, int, str], ...]
+    infernal_version: str
+
+
+# Rfam 15.1 RF01116 extracted with cmfetch; NCBI's compressed assembly files
+# (MD5s from NCBI's own md5checksums.txt); the decompressed FASTA SHA-256 that
+# trna-annotation-validation.md records. See docs/validation/regulatory-rfam.md.
+PINNED = PinnedIdentity(
+    assembly_label="native pinned UTEX 2973 assembly GCF_000817325.1_ASM81732v1",
+    model_accession="RF01116",
+    model_name="Yfr1",
+    model_sha256="4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc",
+    model_clen=59,
+    model_window=86,
+    gathering_cutoff=38.0,
+    fasta_sha256="22a2b07881c1099c32454778de0e90b1c40f74f44c0f59e000507106c0deb567",
+    fasta_md5="610ceb15a9859046e143d80915d4c984",
+    gbff_sha256="331ef3bd7c0e9ec2fc3140dd200d2a89109ded72babe4102d0fe4aa361401e56",
+    gbff_md5="fc86ce730ae02cc1cbad14129d50cd45",
+    searched_fasta_sha256=(
+        "4716bbf61cfeb296587c94e90e6b6ce037752f9b9d4d225addd15eea02124984"
+    ),
+    replicons=(
+        ("NZ_CP006471.1", 2690418, "circular"),
+        ("NZ_CP006472.1", 46366, "circular"),
+        ("NZ_CP006473.1", 7842, "circular"),
+    ),
+    infernal_version="1.1.5 (Sep 2023)",
+)
 
 
 # --------------------------------------------------------------------------
@@ -151,6 +214,53 @@ def require_file(path: Path, label: str) -> Path:
     if not path.is_file():
         raise RegulatoryRfamError(f"{label} is not a file: {path}")
     return path
+
+
+def verify_pinned_inputs(
+    pins: PinnedIdentity, cm_path: Path, fasta_path: Path, gbff_path: Path
+) -> dict[str, dict[str, Any]]:
+    """Refuses any input whose bytes are not the pinned ones.
+
+    Runs before anything is parsed or written. Every mismatch is reported at
+    once, and the returned digests are the ones the report records.
+    """
+    for path, label in (
+        (cm_path, "covariance model"),
+        (fasta_path, "sequence FASTA"),
+        (gbff_path, "GenBank flat file"),
+    ):
+        require_file(path, label)
+    inputs = {
+        "covarianceModel": {"path": cm_path.name, "sha256": sha256_file(cm_path)},
+        "genomeFasta": {
+            "path": fasta_path.name,
+            "sha256": sha256_file(fasta_path),
+            "md5": md5_file(fasta_path),
+        },
+        "genomeFlatFile": {
+            "path": gbff_path.name,
+            "sha256": sha256_file(gbff_path),
+            "md5": md5_file(gbff_path),
+        },
+    }
+    expected = {
+        ("covarianceModel", "sha256"): pins.model_sha256,
+        ("genomeFasta", "sha256"): pins.fasta_sha256,
+        ("genomeFasta", "md5"): pins.fasta_md5,
+        ("genomeFlatFile", "sha256"): pins.gbff_sha256,
+        ("genomeFlatFile", "md5"): pins.gbff_md5,
+    }
+    problems = [
+        f"{key} {algorithm} {inputs[key][algorithm]} is not the pinned {value}"
+        for (key, algorithm), value in expected.items()
+        if inputs[key][algorithm] != value
+    ]
+    if problems:
+        raise RegulatoryRfamError(
+            f"inputs are not the pinned {pins.model_accession} model and "
+            f"{pins.assembly_label}:\n  " + "\n  ".join(problems)
+        )
+    return inputs
 
 
 def parse_covariance_model(cm_path: Path) -> CovarianceModel:
@@ -221,6 +331,29 @@ def parse_covariance_model(cm_path: Path) -> CovarianceModel:
         gathering_cutoff=gathering_cutoff,
         format_line=format_line,
     )
+
+
+def check_model_header(model: CovarianceModel, pins: PinnedIdentity) -> None:
+    """Refuses a model header that disagrees with the pinned family."""
+    observed = (
+        model.accession,
+        model.name,
+        model.clen,
+        model.window,
+        model.gathering_cutoff,
+    )
+    expected = (
+        pins.model_accession,
+        pins.model_name,
+        pins.model_clen,
+        pins.model_window,
+        pins.gathering_cutoff,
+    )
+    if observed != expected:
+        raise RegulatoryRfamError(
+            "covariance model header (ACC, NAME, CLEN, W, GA) is "
+            f"{observed}, not the pinned {expected}"
+        )
 
 
 def load_fasta(fasta_path: Path) -> list[tuple[str, str, str]]:
@@ -333,6 +466,15 @@ def build_replicons(
             )
         )
     return replicons
+
+
+def check_replicon_set(replicons: Sequence[Replicon], pins: PinnedIdentity) -> None:
+    """Refuses any replicon set other than the pinned accessions, lengths, topologies."""
+    observed = tuple((r.accession, r.length, r.topology) for r in replicons)
+    if observed != pins.replicons:
+        raise RegulatoryRfamError(
+            f"replicons {observed} are not the pinned set {pins.replicons}"
+        )
 
 
 # --------------------------------------------------------------------------
@@ -493,6 +635,65 @@ def tblout_rows_digest(tblout_path: Path) -> str:
     return sha256_text("\n".join(rows) + "\n")
 
 
+_SUMMARY_PATTERNS = {
+    "queryModels": re.compile(r"^Query model\(s\):\s+(\d+)\s+\("),
+    "targetSequences": re.compile(r"^Target sequences:\s+(\d+)\s+\((\d+) residues"),
+    "hitsReported": re.compile(r"^Total CM hits reported:\s+(\d+)\s"),
+}
+
+
+def parse_search_summary(stdout_path: Path) -> dict[str, int]:
+    """Reads cmsearch's own pipeline summary from its main output.
+
+    This is cmsearch's statement of what it actually searched, so a run that
+    silently covered fewer sequences or residues than were given is caught.
+    ``residuesSearched`` counts both strands.
+    """
+    require_file(stdout_path, "cmsearch main output")
+    summary: dict[str, int] = {}
+    for line in stdout_path.read_text(encoding="utf-8").splitlines():
+        for key, pattern in _SUMMARY_PATTERNS.items():
+            match = pattern.match(line)
+            if match is None:
+                continue
+            if key in summary:
+                raise RegulatoryRfamError(
+                    f"{stdout_path} reports more than one '{key}' summary; "
+                    "this pilot runs exactly one model"
+                )
+            summary[key] = int(match.group(1))
+            if key == "targetSequences":
+                summary["residuesSearched"] = int(match.group(2))
+    missing = sorted(set(_SUMMARY_PATTERNS) - set(summary))
+    if missing:
+        raise RegulatoryRfamError(
+            f"{stdout_path} has no cmsearch pipeline summary for {', '.join(missing)}"
+        )
+    return summary
+
+
+def check_search_summary(
+    summary: dict[str, int], *, sequences: int, residues: int, hits: int
+) -> None:
+    """Refuses a search whose own summary disagrees with what was submitted."""
+    expected = {
+        "queryModels": 1,
+        "targetSequences": sequences,
+        "residuesSearched": 2 * residues,
+        "hitsReported": hits,
+    }
+    problems = [
+        f"{key} {summary[key]} != expected {value}"
+        for key, value in expected.items()
+        if summary[key] != value
+    ]
+    if problems:
+        raise RegulatoryRfamError(
+            "cmsearch did not search what it was given (both strands of every "
+            "submitted sequence): " + "; ".join(problems)
+        )
+
+
 # --------------------------------------------------------------------------
 # Checks
 # --------------------------------------------------------------------------
@@ -566,13 +767,42 @@ def require_clean(problems: Sequence[str]) -> None:
         )
 
 
-def overlap_pairs(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+def native_segments(start: int, end: int, length: int) -> list[tuple[int, int]]:
+    """Linear pieces of a native interval; a wrap (start > end) is two pieces."""
+    if start <= end:
+        return [(start, end)]
+    return [(start, length), (1, end)]
+
+
+def shared_intervals(
+    first: tuple[int, int], second: tuple[int, int], length: int
+) -> list[list[int]]:
+    """Bases two native intervals share, as native intervals.
+
+    Either interval may wrap the origin. A shared run that crosses the origin
+    is returned as one wrapped interval, in the report's own convention.
+    """
+    pieces = sorted(
+        (max(a_start, b_start), min(a_end, b_end))
+        for a_start, a_end in native_segments(*first, length)
+        for b_start, b_end in native_segments(*second, length)
+        if max(a_start, b_start) <= min(a_end, b_end)
+    )
+    if len(pieces) >= 2 and pieces[0][0] == 1 and pieces[-1][1] == length:
+        head, tail = pieces.pop(0), pieces.pop()
+        pieces.append((tail[0], head[1]))
+    return [list(piece) for piece in pieces]
+
+
+def overlap_pairs(
+    rows: Sequence[dict[str, Any]], lengths: dict[str, int]
+) -> list[dict[str, Any]]:
     """Overlapping native intervals among report rows on the same replicon.
 
-    Strand is deliberately ignored: a plus- and a minus-strand hit covering the
-    same bases is exactly the overlap a reader needs to see. Origin-spanning
-    rows are excluded by the caller, because a wrapped interval is not a single
-    range and would compare wrongly here.
+    Covers linear and origin-spanning rows alike, using each replicon's
+    native length to unwrap the origin. Strand is deliberately ignored: a plus-
+    and a minus-strand hit covering the same bases is exactly the overlap a
+    reader needs to see.
     """
     pairs: list[dict[str, Any]] = []
     for left in range(len(rows)):
@@ -580,15 +810,24 @@ def overlap_pairs(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
             first, second = rows[left], rows[right]
             if first["replicon"] != second["replicon"]:
                 continue
-            start = max(first["native_start"], second["native_start"])
-            end = min(first["native_end"], second["native_end"])
-            if start <= end:
+            length = lengths[first["replicon"]]
+            intervals = shared_intervals(
+                (first["native_start"], first["native_end"]),
+                (second["native_start"], second["native_end"]),
+                length,
+            )
+            if intervals:
                 pairs.append(
                     {
                         "first": left,
                         "second": right,
                         "replicon": first["replicon"],
-                        "interval": [start, end],
+                        "intervals": intervals,
+                        "sharedBases": sum(
+                            end - start + 1
+                            for piece in intervals
+                            for start, end in native_segments(piece[0], piece[1], length)
+                        ),
                     }
                 )
     return pairs
@@ -607,10 +846,11 @@ def junction_flank(window: int) -> int:
 def junction_sequence(sequence: str, window: int) -> str:
     """The origin-spanning window of a circular replicon, 5' side first.
 
-    A linear FASTA search cannot find an element that crosses position 1, so
+    A linear FASTA search cannot report an element that crosses position 1, so
     this pilot searches an explicit junction sequence as well. ``window`` is
     the model's own ``W`` (the longest hit Infernal will consider), so a
-    ``W - 1`` flank on each side covers every interval that crosses the origin.
+    ``W - 1`` flank on each side presents every origin-crossing interval to
+    the model.
     """
     flank = junction_flank(window)
     if flank == 0:
@@ -671,6 +911,24 @@ def cmsearch_version(cmsearch: Path) -> str:
     )
 
 
+def describe_tool(cmsearch: Path, expected_version: str) -> dict[str, Any]:
+    """Refuses any Infernal but the pinned version; records the executable's hash."""
+    version = cmsearch_version(cmsearch)
+    if version != expected_version:
+        raise RegulatoryRfamError(
+            f"{cmsearch} is Infernal {version}, not the pinned {expected_version}"
+        )
+    resolved = cmsearch.resolve()
+    return {
+        "program": "cmsearch",
+        "package": "Infernal",
+        "version": version,
+        "executable": str(cmsearch),
+        "resolvedExecutable": str(resolved),
+        "sha256": sha256_file(resolved),
+    }
+
+
 def search_space_mb(total_residues: int) -> float:
     """Infernal's ``-Z``: millions of nucleotides searched, counting both strands.
 
@@ -688,14 +946,16 @@ def search_space_mb(total_residues: int) -> float:
 def cmsearch_argv(
     cmsearch: Path,
     cm_path: Path,
-    target_fasta: Path,
-    tblout_path: Path,
-    stdout_path: Path,
+    target_fasta: str,
+    tblout: str,
+    stdout: str,
     search_space: float,
 ) -> list[str]:
     """The exact, reproducible argument vector for one search.
 
-    Both strands are searched: cmsearch does so by default and this pilot never
+    Run files are named relative to the work directory cmsearch runs in, so
+    the recorded vector does not depend on where the work directory is. Both
+    strands are searched: cmsearch does so by default and this pilot never
     passes --toponly or --bottomonly.
     """
     return [
@@ -704,17 +964,19 @@ def cmsearch_argv(
         f"{search_space:.6f}",
         *CMSEARCH_FLAGS,
         "--tblout",
-        str(tblout_path),
+        tblout,
         "-o",
-        str(stdout_path),
+        stdout,
         str(cm_path),
-        str(target_fasta),
+        target_fasta,
     ]
 
 
-def run_cmsearch(argv: Sequence[str]) -> None:
+def run_cmsearch(argv: Sequence[str], cwd: Path) -> None:
     try:
-        completed = subprocess.run(argv, capture_output=True, text=True, check=False)
+        completed = subprocess.run(
+            argv, capture_output=True, text=True, check=False, cwd=cwd
+        )
     except OSError as error:
         raise RegulatoryRfamError(f"cannot run {argv[0]}: {error}") from error
     if completed.returncode != 0:
@@ -746,10 +1008,8 @@ def shuffled_sequence(sequence: str, seed_key: str) -> str:
     return "".join(bases)
 
 
-def write_fasta(
-    path: Path, records: Iterable[tuple[str, str]], width: int = 80
-) -> None:
-    """Writes ``(header, sequence)`` records at NCBI's 80-column line width.
+def fasta_text(records: Iterable[tuple[str, str]], width: int = 80) -> str:
+    """Serialises ``(header, sequence)`` records at NCBI's 80-column width.
 
     The header is written verbatim after ``>``, so the native copy keeps the
     pinned assembly's own descriptions and cmsearch echoes them back in the
@@ -763,71 +1023,165 @@ def write_fasta(
         lines.extend(
             sequence[start : start + width] for start in range(0, len(sequence), width)
         )
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return "\n".join(lines) + "\n"
+
+
+def native_records(records: Sequence[tuple[str, str, str]]) -> list[tuple[str, str]]:
+    """The assembly's records as ``(header, sequence)``, headers as published."""
+    return [
+        (f"{name} {description}".strip(), sequence)
+        for name, description, sequence in records
+    ]
 
 
 # --------------------------------------------------------------------------
-# Output files
+# Paths: preflight, fresh work directory, exclusive report creation
 # --------------------------------------------------------------------------
 
 
-def prepare_directory(path: Path, label: str) -> Path:
-    """Creates ``path`` as a directory, refusing a non-directory ancestor.
+def _refuse_blocked_ancestor(path: Path, label: str) -> None:
+    """Refuses a path whose would-be parent directory is an existing non-directory.
 
-    ``Path.resolve`` normalises without touching the filesystem, so a file
+    ``Path.resolve`` normalises without requiring the path to exist, so a file
     sitting where a parent directory is expected only fails at mkdir time —
     after earlier steps may already have written something.
     """
-    for ancestor in reversed((path, *path.parents)):
+    for ancestor in reversed(path.absolute().parents):
         if ancestor.exists() and not ancestor.is_dir():
             raise RegulatoryRfamError(
                 f"{label} {path}: {ancestor} exists and is not a directory"
             )
-    path.mkdir(parents=True, exist_ok=True)
-    return path
 
 
-def check_writable(path: Path, overwrite: bool, label: str) -> None:
-    if path.exists() and not overwrite:
+def _path_key(path: Path) -> str:
+    """Resolved, case-folded path: macOS's default filesystem ignores case."""
+    return str(path.resolve()).casefold()
+
+
+def preflight_paths(inputs: dict[str, Path], outputs: dict[str, Path]) -> None:
+    """Checks every destination before anything runs. Writes nothing.
+
+    Every output (the work directory and both reports) must not exist yet —
+    not even as a dangling symlink — because this tool never replaces or
+    reuses a path. After resolving symlinks and case, no two artifacts,
+    inputs and the tool included, may be the same path or nested in one
+    another.
+    """
+    for label, path in outputs.items():
+        if os.path.lexists(path):
+            raise RegulatoryRfamError(
+                f"{label} {path} already exists; this tool never replaces or "
+                "reuses an existing path"
+            )
+        _refuse_blocked_ancestor(path, label)
+    keyed = [(label, _path_key(path)) for label, path in {**inputs, **outputs}.items()]
+    for index, (first_label, first) in enumerate(keyed):
+        for second_label, second in keyed[index + 1 :]:
+            if first == second:
+                raise RegulatoryRfamError(
+                    f"{first_label} and {second_label} resolve to the same path {first}"
+                )
+            if second.startswith(first + os.sep) or first.startswith(second + os.sep):
+                raise RegulatoryRfamError(
+                    f"{first_label} and {second_label} are nested in one another "
+                    f"({first}, {second})"
+                )
+
+
+def reserve_workdir(workdir: Path) -> Path:
+    """Creates a fresh work directory, refusing one that already exists."""
+    _refuse_blocked_ancestor(workdir, "work directory")
+    workdir.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        workdir.mkdir()
+    except FileExistsError as error:
         raise RegulatoryRfamError(
-            f"{label} {path} already exists; pass --overwrite to replace it"
-        )
-    if path.exists() and not path.is_file():
-        raise RegulatoryRfamError(f"{label} {path} exists and is not a file")
-    prepare_directory(path.parent, f"parent directory of {label}")
+            f"work directory {workdir} already exists; each run needs a fresh one "
+            "so no earlier raw output is overwritten"
+        ) from error
+    return workdir
+
+
+def _create_exclusive(path: Path, text: str) -> None:
+    with path.open("x", encoding="utf-8", newline="") as handle:
+        handle.write(text)
+
+
+def report_tsv_text(report: dict[str, Any]) -> str:
+    buffer = io.StringIO()
+    # csv defaults to CRLF even on POSIX, which reads as trailing whitespace
+    # to `git diff --check`.
+    writer = csv.DictWriter(
+        buffer, fieldnames=_HIT_FIELDNAMES, delimiter="\t", lineterminator="\n"
+    )
+    writer.writeheader()
+    for row in report["hits"]:
+        writer.writerow({key: row[key] for key in _HIT_FIELDNAMES})
+    return buffer.getvalue()
 
 
 def write_report(report: dict[str, Any], json_path: Path, tsv_path: Path) -> None:
-    with tsv_path.open("w", encoding="utf-8", newline="") as handle:
-        # csv defaults to CRLF even on POSIX, which reads as trailing
-        # whitespace to `git diff --check`.
-        writer = csv.DictWriter(
-            handle, fieldnames=_HIT_FIELDNAMES, delimiter="\t", lineterminator="\n"
-        )
-        writer.writeheader()
-        for row in report["hits"]:
-            writer.writerow({key: row[key] for key in _HIT_FIELDNAMES})
-    json_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", "utf-8")
+    """Creates both reports exclusively, or neither.
+
+    Each file is opened with exclusive creation, so a path that appeared since
+    preflight — or a second name for the first report — is refused rather than
+    replaced. On failure, only files this call created are removed.
+    """
+    pending = (
+        (tsv_path, report_tsv_text(report)),
+        (json_path, json.dumps(report, indent=2, sort_keys=True) + "\n"),
+    )
+    created: list[Path] = []
+    try:
+        for path, text in pending:
+            _refuse_blocked_ancestor(path, "report")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            _create_exclusive(path, text)
+            created.append(path)
+    except (OSError, RegulatoryRfamError) as error:
+        for path in created:
+            path.unlink()
+        raise RegulatoryRfamError(
+            f"could not create the report pair; removed only the "
+            f"{len(created)} file(s) this run created: {error}"
+        ) from error
 
 
 # --------------------------------------------------------------------------
 # Report
 # --------------------------------------------------------------------------
 
-EVIDENCE_BOUNDARY = (
-    "Exploratory computed evidence: a pinned Rfam covariance model matched the "
-    "native pinned UTEX 2973 assembly above that family's Rfam gathering (GA) "
-    "bit score. This is homology to a curated RNA family, not measured "
-    "regulation, not demonstrated regulatory activity, and not a calibrated "
-    "probability for UTEX 2973. Shuffled-background hits estimate a null rate "
-    "for composition-matched sequence and are not proven biological negatives."
-)
+
+def evidence_boundary(pins: PinnedIdentity) -> str:
+    return (
+        f"Exploratory computed evidence: a pinned Rfam covariance model matched the "
+        f"{pins.assembly_label} above that family's Rfam gathering (GA) bit score. "
+        "This is homology to a curated RNA family, not measured regulation, not "
+        "demonstrated regulatory activity, and not a calibrated probability for "
+        "UTEX 2973. Shuffled-background hits estimate a null rate for "
+        "composition-matched sequence and are not proven biological negatives."
+    )
+
 
 COVERAGE_BOUNDARY = (
     "One family only (the pinned model). No other Rfam family was searched, so "
     "a position with no hit is uncovered by this pilot rather than negative. "
     "Covariance-model search finds homologues of a curated family and will miss "
     "unrelated or novel elements."
+)
+
+SEARCHED_NOT_DISCOVERED = (
+    "Searched is not discovered: a searched region without a hit produced no "
+    "match at or above the family GA threshold under cmsearch's filter "
+    "pipeline, which does not establish that no element of the family is there."
+)
+
+
+NATIVE_BASIS = "native pinned assembly, one-based inclusive, stranded"
+JUNCTION_BASIS = (
+    NATIVE_BASIS + "; native_start > native_end is a wrap across the origin; "
+    "raw_seq_from/raw_seq_to are as emitted on search_target, the origin-junction "
+    "sequence"
 )
 
 
@@ -839,21 +1193,22 @@ def _hit_row(
     replicon: str,
     native_start: int,
     native_end: int,
-    raw_seq_from: int,
-    raw_seq_to: int,
     origin_spanning: bool,
+    coordinate_basis: str,
 ) -> dict[str, Any]:
+    """One native report row. ``raw_*`` and ``search_target`` are always as emitted."""
     return {
         "replicon": replicon,
         "search_space": search_space,
+        "search_target": hit.target,
         "model_accession": model.accession,
         "model_name": model.name,
         "strand": hit.strand,
         "native_start": native_start,
         "native_end": native_end,
         "native_length": hit.native_length,
-        "raw_seq_from": raw_seq_from,
-        "raw_seq_to": raw_seq_to,
+        "raw_seq_from": hit.seq_from,
+        "raw_seq_to": hit.seq_to,
         "mdl_from": hit.mdl_from,
         "mdl_to": hit.mdl_to,
         "trunc": hit.trunc,
@@ -864,27 +1219,24 @@ def _hit_row(
         "evalue": hit.evalue,
         "inc": hit.inc,
         "origin_spanning": origin_spanning,
-        "coordinate_basis": "native pinned assembly, one-based inclusive, stranded",
+        "coordinate_basis": coordinate_basis,
     }
 
 
 def linear_hit_rows(
-    hits: Sequence[TabularHit],
-    model: CovarianceModel,
-    search_space: str = SEARCH_SPACE_NATIVE,
+    hits: Sequence[TabularHit], model: CovarianceModel
 ) -> list[dict[str, Any]]:
-    """Report rows for a search over linear sequence, native or control."""
+    """Report rows for the native linear search."""
     return [
         _hit_row(
             hit,
             model,
-            search_space,
+            SEARCH_SPACE_NATIVE,
             replicon=hit.target,
             native_start=hit.native_start,
             native_end=hit.native_end,
-            raw_seq_from=hit.seq_from,
-            raw_seq_to=hit.seq_to,
             origin_spanning=False,
+            coordinate_basis=NATIVE_BASIS,
         )
         for hit in hits
     ]
@@ -898,8 +1250,10 @@ def junction_hit_rows(
 ) -> tuple[list[dict[str, Any]], int]:
     """Origin-crossing junction hits, remapped to native circular coordinates.
 
-    Returns the rows and the count of junction hits discarded because they do
-    not cross the origin and the linear search therefore already found them.
+    Only ``native_start``/``native_end`` are remapped; the search target and
+    the endpoints cmsearch emitted on it are kept as they were. Returns the
+    rows and the count of junction hits discarded because they do not cross
+    the origin and the linear search therefore already found them.
     """
     by_junction_id = {
         junction_ids[replicon.accession]: replicon
@@ -929,20 +1283,101 @@ def junction_hit_rows(
                 native_end=map_junction_position(
                     hit.native_end, replicon.length, model.window
                 ),
-                raw_seq_from=map_junction_position(
-                    hit.seq_from, replicon.length, model.window
-                ),
-                raw_seq_to=map_junction_position(
-                    hit.seq_to, replicon.length, model.window
-                ),
                 origin_spanning=True,
+                coordinate_basis=JUNCTION_BASIS,
             )
         )
     return rows, discarded
 
 
+def control_sequence_id(accession: str, replicate: int) -> str:
+    """The FASTA id of one shuffled replicon: never a native accession."""
+    return f"{accession}_shuffled_{replicate:02d}"
+
+
+def control_hit_rows(
+    hits: Sequence[TabularHit],
+    model: CovarianceModel,
+    replicate: int,
+    source_by_target: dict[str, str],
+) -> list[dict[str, Any]]:
+    """Control hits, positioned on the shuffled sequence they were found in.
+
+    These rows deliberately carry no ``replicon``/``native_start``/
+    ``native_end``: a position in a permuted sequence is not a native locus, and
+    the source replicon is kept only as provenance.
+    """
+    return [
+        {
+            "search_space": SEARCH_SPACE_CONTROL,
+            "search_target": hit.target,
+            "source_replicon": source_by_target[hit.target],
+            "replicate": replicate,
+            "model_accession": model.accession,
+            "model_name": model.name,
+            "strand": hit.strand,
+            "shuffled_start": hit.native_start,
+            "shuffled_end": hit.native_end,
+            "raw_seq_from": hit.seq_from,
+            "raw_seq_to": hit.seq_to,
+            "mdl_from": hit.mdl_from,
+            "mdl_to": hit.mdl_to,
+            "trunc": hit.trunc,
+            "pipeline_pass": hit.pipeline_pass,
+            "gc": hit.gc,
+            "bias": hit.bias,
+            "score": hit.score,
+            "evalue": hit.evalue,
+            "inc": hit.inc,
+            "coordinate_basis": (
+                f"shuffled control replicate {replicate}, sequence {hit.target}: a "
+                f"composition-matched permutation of {source_by_target[hit.target]}, "
+                "one-based inclusive, stranded; not native assembly positions and "
+                "not a site call"
+            ),
+        }
+        for hit in hits
+    ]
+
+
+def search_coverage(
+    replicons: Sequence[Replicon],
+    native_summary: dict[str, int],
+    junction: dict[str, Any],
+) -> dict[str, Any]:
+    """What was actually searched, per replicon, as cmsearch itself counted it."""
+    skipped = {entry["replicon"]: entry["reason"] for entry in junction["skippedReplicons"]}
+    total = sum(replicon.length for replicon in replicons)
+    return {
+        "statement": (
+            f"All {len(replicons)} replicons of the pinned FASTA ({total} residues) "
+            "were searched end to end on both strands; cmsearch's own pipeline "
+            f"summary counted {native_summary['targetSequences']} target sequences "
+            f"and {native_summary['residuesSearched']} residues (both strands). "
+            + SEARCHED_NOT_DISCOVERED
+        ),
+        "repliconCount": len(replicons),
+        "residues": total,
+        "replicons": [
+            {
+                "accession": replicon.accession,
+                "length": replicon.length,
+                "topology": replicon.topology,
+                "linearInterval": [1, replicon.length],
+                "strands": "both",
+                "originJunction": "searched"
+                if replicon.accession in junction["searchedReplicons"]
+                else f"not searched: {skipped[replicon.accession]}",
+            }
+            for replicon in replicons
+        ],
+        "shuffledControl": CONTROL_COVERAGE,
+    }
+
+
 def build_report(
     *,
+    pins: PinnedIdentity,
     model: CovarianceModel,
     model_path: Path,
     replicons: Sequence[Replicon],
@@ -953,15 +1388,17 @@ def build_report(
     junction: dict[str, Any],
     control: dict[str, Any],
 ) -> dict[str, Any]:
-    native_rows = list(native["rows"])
-    hits = native_rows + list(junction["rows"])
-    overlaps = overlap_pairs(native_rows)
+    hits = list(native["rows"]) + list(junction["rows"])
+    overlaps = overlap_pairs(
+        hits, {replicon.accession: replicon.length for replicon in replicons}
+    )
     return {
         "schemaVersion": SCHEMA_VERSION,
         "pilot": PILOT_ID,
         "recordOrigin": "computed",
-        "evidenceBoundary": EVIDENCE_BOUNDARY,
+        "evidenceBoundary": evidence_boundary(pins),
         "coverageBoundary": COVERAGE_BOUNDARY,
+        "pinnedIdentity": {"verified": True, **dataclasses.asdict(pins)},
         "model": {
             "accession": model.accession,
             "name": model.name,
@@ -978,6 +1415,9 @@ def build_report(
         "strandsSearched": "both",
         "inputs": inputs,
         "replicons": [dataclasses.asdict(replicon) for replicon in replicons],
+        "searchCoverage": search_coverage(
+            replicons, native["provenance"]["cmsearchSummary"], junction["summary"]
+        ),
         "nativeSearch": native["provenance"],
         "originJunctionSearch": junction["summary"],
         "control": control,
@@ -1007,6 +1447,7 @@ class SearchRun:
     argv: list[str]
     fasta: Path
     tblout: Path
+    summary: dict[str, int]
 
     def provenance(self) -> dict[str, Any]:
         """The reproducible record of this search: arguments and digests."""
@@ -1014,6 +1455,7 @@ class SearchRun:
             "argv": self.argv,
             "fasta": {"path": self.fasta.name, "sha256": sha256_file(self.fasta)},
             "tbloutRowsSha256": tblout_rows_digest(self.tblout),
+            "cmsearchSummary": self.summary,
             "hitCount": len(self.hits),
         }
 
@@ -1029,37 +1471,27 @@ class SearchContext:
     search_space: float
 
     def search(self, label: str, records: Sequence[tuple[str, str]]) -> SearchRun:
-        """Writes a FASTA, runs one cmsearch over it, parses the hit table."""
+        """Writes a FASTA, runs one cmsearch over it, checks and parses its output."""
         fasta = self.workdir / f"{label}.fna"
-        write_fasta(fasta, records)
-        tblout = self.workdir / f"{label}.tblout"
+        _create_exclusive(fasta, fasta_text(records))
         argv = cmsearch_argv(
             self.cmsearch,
             self.cm_path,
-            fasta,
-            tblout,
-            self.workdir / f"{label}.cmsearch",
+            fasta.name,
+            f"{label}.tblout",
+            f"{label}.cmsearch",
             self.search_space,
         )
-        run_cmsearch(argv)
-        return SearchRun(parse_tblout(tblout), argv, fasta, tblout)
-
-
-def resolve_model(
-    cm_path: Path, expect_accession: str | None, expect_name: str | None
-) -> CovarianceModel:
-    """Reads the pinned model and refuses a family other than the expected one."""
-    model = parse_covariance_model(cm_path)
-    if expect_accession is not None and model.accession != expect_accession:
-        raise RegulatoryRfamError(
-            f"covariance model is {model.accession} ({model.name}), not the expected "
-            f"{expect_accession}"
+        run_cmsearch(argv, self.workdir)
+        hits = parse_tblout(self.workdir / f"{label}.tblout")
+        summary = parse_search_summary(self.workdir / f"{label}.cmsearch")
+        check_search_summary(
+            summary,
+            sequences=len(records),
+            residues=sum(len(sequence) for _, sequence in records),
+            hits=len(hits),
         )
-    if expect_name is not None and model.name != expect_name:
-        raise RegulatoryRfamError(
-            f"covariance model is named {model.name}, not the expected {expect_name}"
-        )
-    return model
+        return SearchRun(hits, argv, fasta, self.workdir / f"{label}.tblout", summary)
 
 
 def plan_origin_junctions(
@@ -1122,12 +1554,15 @@ def search_origin_junctions(
         "searchedReplicons": sorted(junction_ids),
         "skippedReplicons": skipped,
         "coverageNote": (
-            "Each circular replicon's origin is covered by searching a "
+            "Each circular replicon's origin was searched as a "
             f"{2 * flank}-base junction sequence built from its last {flank} and "
-            f"first {flank} bases, so any hit up to the model's W={model.window} "
-            "window that crosses position 1 is found and remapped to native "
-            "circular coordinates. An origin-spanning interval is reported with "
-            "native_start > native_end, which is the wrap, not an error."
+            f"first {flank} bases, so every interval up to the model's "
+            f"W={model.window} window that crosses position 1 was presented to "
+            "the model, under the same flags, GA threshold and -Z as the linear "
+            "search. " + SEARCHED_NOT_DISCOVERED + " Zero origin-spanning hits "
+            "therefore does not show that no family element crosses an origin. An "
+            "origin-spanning interval is reported with native_start > native_end, "
+            "which is the wrap, not an error."
         ),
         "argv": [],
         "hitCount": 0,
@@ -1161,7 +1596,14 @@ CONTROL_BOUNDARY = (
     "Preserves each replicon's length and base composition but not dinucleotide "
     "frequency or structural propensity. A shuffled hit rate is a null rate for "
     "composition-matched sequence, not a biological false-positive rate against "
-    "proven negatives."
+    "proven negatives, and not a false-discovery rate for the native hits."
+)
+
+CONTROL_COVERAGE = (
+    "Linear only: each shuffled replicon is searched end to end on both strands, "
+    "with no origin-junction search. The native search adds one junction per "
+    "circular replicon, so control and native coverage differ and the control "
+    "count is not directly comparable to the native count."
 )
 
 
@@ -1169,37 +1611,53 @@ def run_shuffled_control(
     context: SearchContext,
     replicons: Sequence[Replicon],
     sequences: dict[str, str],
-    replicon_lengths: dict[str, int],
     *,
     replicate_count: int,
     seed: int,
 ) -> dict[str, Any]:
-    """Searches composition-matched shuffles of every replicon, once per replicate."""
+    """Searches composition-matched shuffles of every replicon, once per replicate.
+
+    Each shuffled replicon is searched under its own id, so no control hit
+    can carry a native accession.
+    """
     replicates: list[dict[str, Any]] = []
     for replicate in range(replicate_count):
         seed_keys = [
             control_seed_key(seed, replicate, replicon.accession)
             for replicon in replicons
         ]
+        source_by_target = {
+            control_sequence_id(replicon.accession, replicate): replicon.accession
+            for replicon in replicons
+        }
         shuffled = [
-            (replicon.accession, shuffled_sequence(sequences[replicon.accession], key))
+            (
+                control_sequence_id(replicon.accession, replicate),
+                shuffled_sequence(sequences[replicon.accession], key),
+            )
             for replicon, key in zip(replicons, seed_keys)
         ]
         run = context.search(f"control_{replicate:02d}", shuffled)
         require_clean(
             [
                 f"control replicate {replicate}: {problem}"
-                for problem in validate_hits(run.hits, context.model, replicon_lengths)
+                for problem in validate_hits(
+                    run.hits,
+                    context.model,
+                    {name: len(sequence) for name, sequence in shuffled},
+                    scope="shuffled control sequences",
+                )
             ]
         )
         replicates.append(
             {
                 "replicate": replicate,
                 "seedKeys": seed_keys,
+                "sequences": source_by_target,
                 **run.provenance(),
                 "bestScore": max((hit.score for hit in run.hits), default=None),
-                "hits": linear_hit_rows(
-                    run.hits, context.model, SEARCH_SPACE_CONTROL
+                "hits": control_hit_rows(
+                    run.hits, context.model, replicate, source_by_target
                 ),
             }
         )
@@ -1207,72 +1665,63 @@ def run_shuffled_control(
         "method": "mononucleotide shuffle, per replicon, fixed seed",
         "seed": seed,
         "boundary": CONTROL_BOUNDARY,
+        "coverage": CONTROL_COVERAGE,
         "replicates": replicates,
         "hitsTotal": sum(replicate["hitCount"] for replicate in replicates),
     }
 
 
-def run_pilot(
+def _run_pilot(
     *,
+    pins: PinnedIdentity,
     cm_path: Path,
     fasta_path: Path,
     gbff_path: Path,
     workdir: Path,
     cmsearch: Path,
-    expect_accession: str | None,
-    expect_name: str | None,
     control_replicates: int,
     control_seed: int,
 ) -> dict[str, Any]:
-    """Runs the whole pilot and returns the report payload.
+    """Runs the pilot against ``pins``; production goes through ``run_pilot``.
 
-    Order matters: everything that can refuse the run — the model identity, the
-    inputs, the tool, the work directory — is resolved before the first search.
+    Order matters: every identity check — input bytes, model header, replicon
+    set, Infernal version, searched-FASTA bytes — passes before the work
+    directory is created or anything is written.
     """
     if control_replicates < 1:
         raise RegulatoryRfamError(
             f"--control-replicates must be at least 1, got {control_replicates}"
         )
-    model = resolve_model(cm_path, expect_accession, expect_name)
+    inputs = verify_pinned_inputs(pins, cm_path, fasta_path, gbff_path)
+    model = parse_covariance_model(cm_path)
+    check_model_header(model, pins)
     records = load_fasta(fasta_path)
     replicons = build_replicons(records, parse_locus_topologies(gbff_path))
-    version = cmsearch_version(cmsearch)
-    prepare_directory(workdir, "work directory")
+    check_replicon_set(replicons, pins)
+    tool = describe_tool(cmsearch, pins.infernal_version)
+    # cmsearch reads plain FASTA only, so a decompressed working copy is
+    # searched. It must be byte-identical to the official decompressed FASTA.
+    native_fasta = native_records(records)
+    searched_sha256 = sha256_text(fasta_text(native_fasta))
+    if searched_sha256 != pins.searched_fasta_sha256:
+        raise RegulatoryRfamError(
+            f"the decompressed FASTA to be searched hashes {searched_sha256}, not the "
+            f"pinned {pins.searched_fasta_sha256}"
+        )
+    reserve_workdir(workdir)
 
     total_residues = sum(replicon.length for replicon in replicons)
     replicon_lengths = {replicon.accession: replicon.length for replicon in replicons}
     sequences = {name: sequence for name, _, sequence in records}
     context = SearchContext(
-        cmsearch=cmsearch,
-        cm_path=cm_path,
+        cmsearch=cmsearch.absolute(),
+        cm_path=cm_path.absolute(),
         workdir=workdir,
         model=model,
         search_space=search_space_mb(total_residues),
     )
 
-    inputs: dict[str, dict[str, Any]] = {
-        "covarianceModel": {"path": cm_path.name, "sha256": sha256_file(cm_path)},
-        "genomeFasta": {
-            "path": fasta_path.name,
-            "sha256": sha256_file(fasta_path),
-            "md5": md5_file(fasta_path),
-        },
-        "genomeFlatFile": {
-            "path": gbff_path.name,
-            "sha256": sha256_file(gbff_path),
-            "md5": md5_file(gbff_path),
-        },
-    }
-
-    # cmsearch reads plain FASTA only, so a decompressed working copy is
-    # written and hashed as the sequence actually searched.
-    native = context.search(
-        "native",
-        [
-            (f"{name} {description}".strip(), sequence)
-            for name, description, sequence in records
-        ],
-    )
+    native = context.search("native", native_fasta)
     inputs["searchedFasta"] = {
         "path": native.fasta.name,
         "sha256": sha256_file(native.fasta),
@@ -1287,22 +1736,17 @@ def run_pilot(
         context,
         replicons,
         sequences,
-        replicon_lengths,
         replicate_count=control_replicates,
         seed=control_seed,
     )
 
     return build_report(
+        pins=pins,
         model=model,
         model_path=cm_path,
         replicons=replicons,
         inputs=inputs,
-        tool={
-            "program": "cmsearch",
-            "package": "Infernal",
-            "version": version,
-            "executable": str(cmsearch),
-        },
+        tool=tool,
         search_space=context.search_space,
         native={
             "provenance": native.provenance(),
@@ -1313,59 +1757,90 @@ def run_pilot(
     )
 
 
+def run_pilot(
+    *,
+    cm_path: Path,
+    fasta_path: Path,
+    gbff_path: Path,
+    workdir: Path,
+    cmsearch: Path,
+    control_replicates: int,
+    control_seed: int,
+) -> dict[str, Any]:
+    """The production pilot: refuses anything but the ``PINNED`` identity."""
+    return _run_pilot(
+        pins=PINNED,
+        cm_path=cm_path,
+        fasta_path=fasta_path,
+        gbff_path=gbff_path,
+        workdir=workdir,
+        cmsearch=cmsearch,
+        control_replicates=control_replicates,
+        control_seed=control_seed,
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--cm", type=Path, required=True, help="pinned single-family Rfam .cm file"
+        "--cm",
+        type=Path,
+        required=True,
+        help="Rfam 15.1 RF01116.cm extracted with cmfetch (SHA-256 pinned)",
     )
     parser.add_argument(
         "--fasta",
         type=Path,
         required=True,
-        help="native pinned assembly FASTA (.fna or .fna.gz)",
+        help="NCBI GCF_000817325.1_ASM81732v1_genomic.fna.gz as downloaded (pinned)",
     )
     parser.add_argument(
         "--gbff",
         type=Path,
         required=True,
-        help="pinned GenBank flat file, read for replicon topology only",
+        help="NCBI GCF_000817325.1_ASM81732v1_genomic.gbff.gz (pinned), for topology",
     )
     parser.add_argument(
         "--workdir",
         type=Path,
         required=True,
-        help="scratch directory for the decompressed input and raw cmsearch output",
+        help="fresh scratch directory for raw cmsearch input and output; must not exist",
     )
     parser.add_argument(
-        "--cmsearch", type=Path, required=True, help="path to the cmsearch executable"
+        "--cmsearch",
+        type=Path,
+        required=True,
+        help="Infernal 1.1.5 cmsearch executable",
     )
-    parser.add_argument("--json-out", type=Path, required=True)
-    parser.add_argument("--tsv-out", type=Path, required=True)
-    parser.add_argument("--expect-accession", default=None)
-    parser.add_argument("--expect-name", default=None)
+    parser.add_argument("--json-out", type=Path, required=True, help="must not exist")
+    parser.add_argument("--tsv-out", type=Path, required=True, help="must not exist")
     parser.add_argument("--control-replicates", type=int, default=5)
     parser.add_argument("--control-seed", type=int, default=20261012)
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="replace existing report files instead of refusing",
-    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        check_writable(args.json_out, args.overwrite, "JSON report")
-        check_writable(args.tsv_out, args.overwrite, "TSV report")
+        preflight_paths(
+            inputs={
+                "covariance model": args.cm,
+                "genome FASTA": args.fasta,
+                "GenBank flat file": args.gbff,
+                "cmsearch executable": args.cmsearch,
+            },
+            outputs={
+                "work directory": args.workdir,
+                "JSON report": args.json_out,
+                "TSV report": args.tsv_out,
+            },
+        )
         report = run_pilot(
             cm_path=args.cm,
             fasta_path=args.fasta,
             gbff_path=args.gbff,
             workdir=args.workdir,
             cmsearch=args.cmsearch,
-            expect_accession=args.expect_accession,
-            expect_name=args.expect_name,
             control_replicates=args.control_replicates,
             control_seed=args.control_seed,
         )
@@ -1375,6 +1850,7 @@ def main(argv: list[str] | None = None) -> int:
     counts = report["counts"]
     print(
         f"model={report['model']['accession']} ({report['model']['name']}) "
+        f"replicons={report['searchCoverage']['repliconCount']} "
         f"native_hits={counts['nativeLinearHits']} "
         f"origin_spanning={counts['originSpanningHits']} "
         f"overlapping_pairs={counts['overlappingNativePairs']} "

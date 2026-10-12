@@ -1,13 +1,17 @@
 """Tests for tools/regulatory_rfam.py, the pinned Rfam/Infernal native pilot.
 
 Every code path is exercised with synthetic fixtures and a stub cmsearch, so
-the suite runs without Infernal installed. Two real-tool tests at the end run
-the actual `cmsearch` from the user-owned `trna-validate` environment against
-the pinned UTEX 2973 assembly, and skip when either is absent.
+the suite runs without Infernal installed. Synthetic runs go through the
+private ``_run_pilot`` with pins computed from the fixtures; the production
+``run_pilot`` and ``main`` are tested only to refuse anything but ``PINNED``.
+The real-tool tests at the end run the actual `cmsearch` from the user-owned
+`trna-validate` environment against the pinned UTEX 2973 assembly, and skip
+when either is absent.
 """
 
+import gzip
+import hashlib
 import json
-import os
 import stat
 import subprocess
 import sys
@@ -22,7 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 REAL_CMSEARCH = Path("/opt/miniconda3/envs/trna-validate/bin/cmsearch")
 PINNED_FASTA = REPO_ROOT / "data/raw/GCF_000817325.1_ASM81732v1_genomic.fna.gz"
 PINNED_GBFF = REPO_ROOT / "data/raw/GCF_000817325.1_ASM81732v1_genomic.gbff.gz"
-PINNED_MODEL_SHA256 = "4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc"
+SCRATCH_MODEL = REPO_ROOT / ".playwright-cli/regulatory-rfam/source/RF01116.cm"
 
 TBLOUT_HEADER = (
     "#target name         accession query name           accession mdl mdl from"
@@ -110,6 +114,7 @@ def write_model(
     models=1,
     omit=(),
     format_line="INFERNAL1/a [1.1.5 | Sep 2023]",
+    coefficient="1.0",
 ) -> Path:
     header = [
         ("NAME", name),
@@ -129,7 +134,9 @@ def write_model(
         )
         # The model body: parse_covariance_model must stop collecting header
         # fields here, so a body line that looks like "GA 1.0" is ignored.
-        lines.extend(["CM", "          GA       1.0", "          [ ROOT    0 ]", "//"])
+        lines.extend(
+            ["CM", f"          GA       {coefficient}", "          [ ROOT    0 ]", "//"]
+        )
         blocks.append("\n".join(lines))
     path.write_text("\n".join(blocks) + "\n", encoding="utf-8")
     return path
@@ -159,12 +166,41 @@ def write_gbff(path: Path, records: dict[str, tuple[int, str]]) -> Path:
     return path
 
 
+def pins_for(cm_path: Path, fasta_path: Path, gbff_path: Path, **overrides):
+    """Pins describing exactly these fixture files, with optional overrides."""
+    model = rr.parse_covariance_model(cm_path)
+    records = rr.load_fasta(fasta_path)
+    replicons = rr.build_replicons(records, rr.parse_locus_topologies(gbff_path))
+    fields = {
+        "assembly_label": "synthetic test assembly",
+        "model_accession": model.accession,
+        "model_name": model.name,
+        "model_sha256": rr.sha256_file(cm_path),
+        "model_clen": model.clen,
+        "model_window": model.window,
+        "gathering_cutoff": model.gathering_cutoff,
+        "fasta_sha256": rr.sha256_file(fasta_path),
+        "fasta_md5": rr.md5_file(fasta_path),
+        "gbff_sha256": rr.sha256_file(gbff_path),
+        "gbff_md5": rr.md5_file(gbff_path),
+        "searched_fasta_sha256": rr.sha256_text(
+            rr.fasta_text(rr.native_records(records))
+        ),
+        "replicons": tuple((r.accession, r.length, r.topology) for r in replicons),
+        "infernal_version": "1.1.5 (Sep 2023)",
+    }
+    fields.update(overrides)
+    return rr.PinnedIdentity(**fields)
+
+
 STUB_CMSEARCH = '''#!/usr/bin/env python3
-"""Stub cmsearch: echoes the real version banner and replays canned rows.
+"""Stub cmsearch: echoes a version banner and replays canned rows.
 
 Rows for a search come from $STUB_ROWS/<target fasta stem>.rows, so one
 directory drives the native, origin-junction and control searches
-independently. A stem with no file produces a zero-hit table.
+independently. A stem with no file produces a zero-hit table. The main output
+carries cmsearch's pipeline summary, counted from the target FASTA, less
+$STUB_DROP_SEQUENCES sequences to imitate a run that covered too little.
 """
 import os
 import sys
@@ -172,7 +208,7 @@ from pathlib import Path
 
 if "-h" in sys.argv:
     print("# cmsearch :: search CM(s) against a sequence database")
-    print("# INFERNAL 1.1.5 (Sep 2023)")
+    print("# INFERNAL " + os.environ.get("STUB_VERSION", "1.1.5 (Sep 2023)"))
     raise SystemExit(0)
 
 if os.environ.get("STUB_FAIL"):
@@ -186,12 +222,25 @@ target = Path(argv[-1])
 rows_file = Path(os.environ["STUB_ROWS"]) / f"{target.stem}.rows"
 rows = rows_file.read_text() if rows_file.exists() else ""
 tblout.write_text(HEADER + rows + TRAILER)
-stdout_path.write_text(f"# stub cmsearch over {target.name}\\n")
+sequences = residues = 0
+for line in target.read_text().splitlines():
+    if line.startswith(">"):
+        sequences += 1
+    else:
+        residues += len(line.strip())
+sequences -= int(os.environ.get("STUB_DROP_SEQUENCES", "0"))
+hits = sum(1 for line in rows.splitlines() if line.strip())
+stdout_path.write_text(
+    f"# stub cmsearch over {target.name}\\n"
+    "Query model(s):          1  (4 consensus positions)\\n"
+    f"Target sequences:        {sequences}  ({2 * residues} residues searched)\\n"
+    f"Total CM hits reported:  {hits}  (0); includes 0 truncated hit(s)\\n"
+)
 '''
 
 
 @pytest.fixture
-def stub_cmsearch(tmp_path):
+def stub_cmsearch(tmp_path, monkeypatch):
     """An executable stub cmsearch plus the directory that feeds it rows."""
     rows_dir = tmp_path / "rows"
     rows_dir.mkdir()
@@ -203,10 +252,8 @@ def stub_cmsearch(tmp_path):
         encoding="utf-8",
     )
     script.chmod(script.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-    os.environ["STUB_ROWS"] = str(rows_dir)
-    yield script, rows_dir
-    os.environ.pop("STUB_ROWS", None)
-    os.environ.pop("STUB_FAIL", None)
+    monkeypatch.setenv("STUB_ROWS", str(rows_dir))
+    return script, rows_dir
 
 
 # --------------------------------------------------------------------------
@@ -215,15 +262,49 @@ def stub_cmsearch(tmp_path):
 
 
 def test_file_digests_match_hashlib(tmp_path):
+    payload = b"ACGT" * 1000
     target = tmp_path / "bytes.bin"
-    target.write_bytes(b"ACGT" * 1000)
-    assert rr.sha256_file(target) == (
-        "c0bc5ba7b08e1b2b1f1f2d3df8f7dba9d5fbe3f3b1e6eb2a0b1a0a4e4b0e3bc5"
-    ) or len(rr.sha256_file(target)) == 64
-    assert len(rr.md5_file(target)) == 32
+    target.write_bytes(payload)
+    assert rr.sha256_file(target) == hashlib.sha256(payload).hexdigest()
+    assert rr.md5_file(target) == hashlib.md5(payload).hexdigest()
     assert rr.sha256_text("") == (
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     )
+
+
+# --------------------------------------------------------------------------
+# Production pins
+# --------------------------------------------------------------------------
+
+
+def test_production_pins_name_the_rfam_family_and_native_assembly():
+    pins = rr.PINNED
+    assert (pins.model_accession, pins.model_name) == ("RF01116", "Yfr1")
+    assert (pins.model_clen, pins.model_window, pins.gathering_cutoff) == (59, 86, 38.0)
+    # NCBI's own md5checksums.txt values for the compressed assembly files.
+    assert pins.fasta_md5 == "610ceb15a9859046e143d80915d4c984"
+    assert pins.gbff_md5 == "fc86ce730ae02cc1cbad14129d50cd45"
+    # The decompressed FASTA SHA-256 trna-annotation-validation.md records.
+    assert pins.searched_fasta_sha256 == (
+        "4716bbf61cfeb296587c94e90e6b6ce037752f9b9d4d225addd15eea02124984"
+    )
+    assert pins.replicons == (
+        ("NZ_CP006471.1", 2690418, "circular"),
+        ("NZ_CP006472.1", 46366, "circular"),
+        ("NZ_CP006473.1", 7842, "circular"),
+    )
+    assert pins.infernal_version == "1.1.5 (Sep 2023)"
+    assert "GCF_000817325.1_ASM81732v1" in pins.assembly_label
+
+
+def test_md5_pins_agree_with_the_committed_ncbi_manifest():
+    manifest = (REPO_ROOT / "data/raw/md5checksums.txt").read_text(encoding="utf-8")
+    entries = {
+        name: md5
+        for md5, name in (line.split() for line in manifest.splitlines() if line.strip())
+    }
+    assert entries["./GCF_000817325.1_ASM81732v1_genomic.fna.gz"] == rr.PINNED.fasta_md5
+    assert entries["./GCF_000817325.1_ASM81732v1_genomic.gbff.gz"] == rr.PINNED.gbff_md5
 
 
 # --------------------------------------------------------------------------
@@ -696,24 +777,29 @@ def _overlap_row(replicon, start, end):
     return {"replicon": replicon, "native_start": start, "native_end": end}
 
 
+OVERLAP_LENGTHS = {"NZ_TEST001.1": 100, "a": 100, "b": 100}
+
+
 def test_overlap_pairs_finds_an_overlap_across_strands():
     rows = [
         _overlap_row("NZ_TEST001.1", 10, 20),
         _overlap_row("NZ_TEST001.1", 18, 30),
     ]
-    assert rr.overlap_pairs(rows) == [
+    assert rr.overlap_pairs(rows, OVERLAP_LENGTHS) == [
         {
             "first": 0,
             "second": 1,
             "replicon": "NZ_TEST001.1",
-            "interval": [18, 20],
+            "intervals": [[18, 20]],
+            "sharedBases": 3,
         }
     ]
 
 
 def test_overlap_pairs_counts_a_single_shared_base():
     rows = [_overlap_row("a", 1, 10), _overlap_row("a", 10, 20)]
-    assert rr.overlap_pairs(rows)[0]["interval"] == [10, 10]
+    (pair,) = rr.overlap_pairs(rows, OVERLAP_LENGTHS)
+    assert (pair["intervals"], pair["sharedBases"]) == ([[10, 10]], 1)
 
 
 def test_overlap_pairs_ignores_adjacent_and_other_replicons():
@@ -722,12 +808,42 @@ def test_overlap_pairs_ignores_adjacent_and_other_replicons():
         _overlap_row("a", 10, 20),
         _overlap_row("b", 5, 15),
     ]
-    assert rr.overlap_pairs(rows) == []
+    assert rr.overlap_pairs(rows, OVERLAP_LENGTHS) == []
 
 
 def test_overlap_pairs_is_empty_for_fewer_than_two_rows():
-    assert rr.overlap_pairs([]) == []
-    assert rr.overlap_pairs([_overlap_row("a", 1, 10)]) == []
+    assert rr.overlap_pairs([], OVERLAP_LENGTHS) == []
+    assert rr.overlap_pairs([_overlap_row("a", 1, 10)], OVERLAP_LENGTHS) == []
+
+
+def test_overlap_pairs_finds_a_wrap_overlapping_a_linear_hit_after_the_origin():
+    # 95..5 wraps the origin of a 100-base replicon; 1..62 shares 1..5.
+    rows = [_overlap_row("a", 95, 5), _overlap_row("a", 1, 62)]
+    (pair,) = rr.overlap_pairs(rows, OVERLAP_LENGTHS)
+    assert (pair["intervals"], pair["sharedBases"]) == ([[1, 5]], 5)
+
+
+def test_overlap_pairs_finds_a_wrap_overlapping_a_linear_hit_before_the_origin():
+    rows = [_overlap_row("a", 90, 100), _overlap_row("a", 95, 5)]
+    (pair,) = rr.overlap_pairs(rows, OVERLAP_LENGTHS)
+    assert (pair["intervals"], pair["sharedBases"]) == ([[95, 100]], 6)
+
+
+def test_overlap_pairs_finds_two_wraps_sharing_the_origin():
+    # Both wrap; the shared run crosses the origin and is one wrapped interval.
+    rows = [_overlap_row("a", 90, 10), _overlap_row("a", 95, 20)]
+    (pair,) = rr.overlap_pairs(rows, OVERLAP_LENGTHS)
+    assert (pair["intervals"], pair["sharedBases"]) == ([[95, 10]], 16)
+
+
+def test_overlap_pairs_ignores_a_wrap_beside_a_linear_hit():
+    rows = [_overlap_row("a", 95, 5), _overlap_row("a", 6, 94)]
+    assert rr.overlap_pairs(rows, OVERLAP_LENGTHS) == []
+
+
+def test_shared_intervals_keeps_two_separate_runs():
+    # A long linear interval meets a wrap at both of its ends.
+    assert rr.shared_intervals((90, 10), (5, 95), 100) == [[5, 10], [90, 95]]
 
 
 # --------------------------------------------------------------------------
@@ -794,8 +910,13 @@ def test_junction_hit_rows_remaps_a_wrapping_hit_to_native_coordinates(tmp_path)
     assert [r["replicon"] for r in rows] == ["NZ_TEST001.1"] * 2
     # The wrap is reported as native_start > native_end, not as an error.
     assert (rows[0]["native_start"], rows[0]["native_end"]) == (19, 2)
-    assert (rows[0]["raw_seq_from"], rows[0]["raw_seq_to"]) == (19, 2)
-    assert (rows[1]["raw_seq_from"], rows[1]["raw_seq_to"]) == (2, 19)
+    assert (rows[1]["native_start"], rows[1]["native_end"]) == (19, 2)
+    # The search target and the endpoints cmsearch emitted on it stay as they
+    # were; only the native interval is remapped.
+    assert all(r["search_target"] == "NZ_TEST001.1_origin_junction" for r in rows)
+    assert (rows[0]["raw_seq_from"], rows[0]["raw_seq_to"]) == (4, 7)
+    assert (rows[1]["raw_seq_from"], rows[1]["raw_seq_to"]) == (7, 4)
+    assert all("wrap across the origin" in r["coordinate_basis"] for r in rows)
     assert all(r["origin_spanning"] for r in rows)
     assert all(r["search_space"] == rr.SEARCH_SPACE_JUNCTION for r in rows)
 
@@ -826,9 +947,9 @@ def test_cmsearch_argv_pins_the_rfam_flags_and_searches_both_strands(tmp_path):
     argv = rr.cmsearch_argv(
         Path("/bin/cmsearch"),
         tmp_path / "m.cm",
-        tmp_path / "g.fna",
-        tmp_path / "t.tblout",
-        tmp_path / "t.out",
+        "g.fna",
+        "t.tblout",
+        "t.out",
         5.489252,
     )
     assert argv[:6] == [
@@ -839,7 +960,15 @@ def test_cmsearch_argv_pins_the_rfam_flags_and_searches_both_strands(tmp_path):
         "--rfam",
         "--nohmmonly",
     ]
-    assert argv[-2:] == [str(tmp_path / "m.cm"), str(tmp_path / "g.fna")]
+    # Run files are relative to the work directory, inputs are as given.
+    assert argv[6:] == [
+        "--tblout",
+        "t.tblout",
+        "-o",
+        "t.out",
+        str(tmp_path / "m.cm"),
+        "g.fna",
+    ]
     # Neither strand is excluded: cmsearch searches both by default.
     assert "--toponly" not in argv and "--bottomonly" not in argv
 
@@ -869,17 +998,116 @@ def test_cmsearch_version_reports_an_unrunnable_file(tmp_path):
         rr.cmsearch_version(target)
 
 
-def test_run_cmsearch_reports_a_nonzero_exit(stub_cmsearch, tmp_path):
+def test_describe_tool_records_the_executable_hash(stub_cmsearch, tmp_path):
     script, _ = stub_cmsearch
-    os.environ["STUB_FAIL"] = "1"
+    link = tmp_path / "linked-cmsearch"
+    link.symlink_to(script)
+    tool = rr.describe_tool(link, "1.1.5 (Sep 2023)")
+    assert tool["version"] == "1.1.5 (Sep 2023)"
+    assert tool["executable"] == str(link)
+    # The hash is of the file that actually runs, behind any symlink.
+    assert tool["resolvedExecutable"] == str(script.resolve())
+    assert tool["sha256"] == hashlib.sha256(script.read_bytes()).hexdigest()
+
+
+def test_describe_tool_refuses_another_infernal_version(stub_cmsearch, monkeypatch):
+    script, _ = stub_cmsearch
+    monkeypatch.setenv("STUB_VERSION", "1.1.4 (Dec 2020)")
+    with pytest.raises(rr.RegulatoryRfamError, match="not the pinned 1.1.5"):
+        rr.describe_tool(script, "1.1.5 (Sep 2023)")
+
+
+def test_run_cmsearch_reports_a_nonzero_exit(stub_cmsearch, tmp_path, monkeypatch):
+    script, _ = stub_cmsearch
+    monkeypatch.setenv("STUB_FAIL", "1")
     with pytest.raises(rr.RegulatoryRfamError, match="cmsearch exited 3"):
-        rr.run_cmsearch([str(script), "--tblout", str(tmp_path / "t"), "-o",
-                         str(tmp_path / "o"), "m", "g"])
+        rr.run_cmsearch(
+            [str(script), "--tblout", "t", "-o", "o", "m", "g"], tmp_path
+        )
 
 
 def test_run_cmsearch_reports_a_missing_binary(tmp_path):
     with pytest.raises(rr.RegulatoryRfamError, match="cannot run"):
-        rr.run_cmsearch([str(tmp_path / "absent")])
+        rr.run_cmsearch([str(tmp_path / "absent")], tmp_path)
+
+
+# --------------------------------------------------------------------------
+# cmsearch's own pipeline summary
+# --------------------------------------------------------------------------
+
+SUMMARY_TEXT = (
+    "Query:       Yfr1  [CLEN=59]\n"
+    "Query model(s):                                                  1  (59 "
+    "consensus positions)\n"
+    "Target sequences:                                                3  "
+    "(5489252 residues searched)\n"
+    "Target sequences re-searched for truncated hits:                 3  "
+    "(3096 residues re-searched)\n"
+    "Total CM hits reported:                                          1  (0.00001); "
+    "includes 0 truncated hit(s)\n"
+)
+
+
+def test_parse_search_summary_reads_sequences_residues_and_hits(tmp_path):
+    path = tmp_path / "native.cmsearch"
+    path.write_text(SUMMARY_TEXT, encoding="utf-8")
+    # The re-search line for truncated hits must not be read as the main count.
+    assert rr.parse_search_summary(path) == {
+        "queryModels": 1,
+        "targetSequences": 3,
+        "residuesSearched": 5489252,
+        "hitsReported": 1,
+    }
+
+
+def test_parse_search_summary_refuses_a_missing_summary(tmp_path):
+    path = tmp_path / "native.cmsearch"
+    path.write_text("Query model(s):   1  (59 consensus positions)\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="hitsReported, targetSequences"):
+        rr.parse_search_summary(path)
+
+
+def test_parse_search_summary_refuses_a_multi_model_summary(tmp_path):
+    path = tmp_path / "native.cmsearch"
+    path.write_text(SUMMARY_TEXT + SUMMARY_TEXT, encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="more than one"):
+        rr.parse_search_summary(path)
+
+
+def test_parse_search_summary_reports_a_missing_file(tmp_path):
+    with pytest.raises(rr.RegulatoryRfamError, match="missing cmsearch main output"):
+        rr.parse_search_summary(tmp_path / "absent")
+
+
+def test_check_search_summary_accepts_a_full_both_strand_search():
+    summary = {
+        "queryModels": 1,
+        "targetSequences": 3,
+        "residuesSearched": 5489252,
+        "hitsReported": 1,
+    }
+    rr.check_search_summary(summary, sequences=3, residues=2744626, hits=1)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("targetSequences", 1, "targetSequences 1 != expected 3"),
+        ("residuesSearched", 2744626, "residuesSearched 2744626 != expected 5489252"),
+        ("hitsReported", 0, "hitsReported 0 != expected 1"),
+        ("queryModels", 2, "queryModels 2 != expected 1"),
+    ],
+)
+def test_check_search_summary_refuses_partial_coverage(field, value, message):
+    summary = {
+        "queryModels": 1,
+        "targetSequences": 3,
+        "residuesSearched": 5489252,
+        "hitsReported": 1,
+    }
+    summary[field] = value
+    with pytest.raises(rr.RegulatoryRfamError, match=message):
+        rr.check_search_summary(summary, sequences=3, residues=2744626, hits=1)
 
 
 # --------------------------------------------------------------------------
@@ -911,104 +1139,235 @@ def test_shuffled_sequence_differs_by_replicate_and_replicon():
 
 
 # --------------------------------------------------------------------------
-# Output files
+# FASTA serialisation
 # --------------------------------------------------------------------------
 
 
-def test_write_fasta_wraps_at_eighty_columns_and_keeps_the_header(tmp_path):
-    path = tmp_path / "out.fna"
-    rr.write_fasta(path, [("x.1 a description", "A" * 85)])
-    lines = path.read_text().splitlines()
+def test_fasta_text_wraps_at_eighty_columns_and_keeps_the_header():
+    lines = rr.fasta_text([("x.1 a description", "A" * 85)]).splitlines()
     assert lines[0] == ">x.1 a description"
     assert [len(line) for line in lines[1:]] == [80, 5]
 
 
-def test_write_fasta_rejects_a_nonpositive_width(tmp_path):
+def test_fasta_text_rejects_a_nonpositive_width():
     with pytest.raises(rr.RegulatoryRfamError, match="width must be positive"):
-        rr.write_fasta(tmp_path / "out.fna", [("x", "ACGT")], width=0)
+        rr.fasta_text([("x", "ACGT")], width=0)
 
 
-def test_prepare_directory_creates_nested_directories(tmp_path):
-    target = tmp_path / "a" / "b" / "c"
-    assert rr.prepare_directory(target, "work directory") == target
+def test_native_records_keep_published_headers():
+    records = [("a.1", "chromosome", "ACGT"), ("b.1", "", "TT")]
+    assert rr.native_records(records) == [("a.1 chromosome", "ACGT"), ("b.1", "TT")]
+
+
+# --------------------------------------------------------------------------
+# Path preflight, fresh work directory, exclusive reports
+# --------------------------------------------------------------------------
+
+
+def _preflight(tmp_path, **outputs):
+    model = tmp_path / "m.cm"
+    model.write_text("model\n", encoding="utf-8")
+    defaults = {
+        "work directory": tmp_path / "work",
+        "JSON report": tmp_path / "out" / "r.json",
+        "TSV report": tmp_path / "out" / "r.tsv",
+    }
+    defaults.update({key.replace("_", " "): value for key, value in outputs.items()})
+    rr.preflight_paths(inputs={"covariance model": model}, outputs=defaults)
+    return model
+
+
+def test_preflight_accepts_fresh_distinct_paths_and_writes_nothing(tmp_path):
+    _preflight(tmp_path)
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["m.cm"]
+
+
+def test_preflight_refuses_an_existing_report(tmp_path):
+    existing = tmp_path / "r.json"
+    existing.write_text("previous\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="never replaces or reuses"):
+        _preflight(tmp_path, JSON_report=existing)
+    assert existing.read_text() == "previous\n"
+
+
+def test_preflight_refuses_a_dangling_symlink_as_a_report(tmp_path):
+    dangling = tmp_path / "r.json"
+    dangling.symlink_to(tmp_path / "nowhere" / "target.json")
+    with pytest.raises(rr.RegulatoryRfamError, match="already exists"):
+        _preflight(tmp_path, JSON_report=dangling)
+
+
+def test_preflight_refuses_an_existing_work_directory(tmp_path):
+    (tmp_path / "work").mkdir()
+    (tmp_path / "work" / "native.tblout").write_text("raw evidence\n")
+    with pytest.raises(rr.RegulatoryRfamError, match="work directory .* already exists"):
+        _preflight(tmp_path)
+    assert (tmp_path / "work" / "native.tblout").read_text() == "raw evidence\n"
+
+
+def test_preflight_refuses_the_same_path_for_both_reports(tmp_path):
+    same = tmp_path / "out" / "r.out"
+    with pytest.raises(rr.RegulatoryRfamError, match="resolve to the same path"):
+        _preflight(tmp_path, JSON_report=same, TSV_report=same)
+
+
+def test_preflight_refuses_reports_aliased_through_a_symlinked_directory(tmp_path):
+    (tmp_path / "out").mkdir()
+    (tmp_path / "alias").symlink_to(tmp_path / "out")
+    with pytest.raises(rr.RegulatoryRfamError, match="resolve to the same path"):
+        _preflight(
+            tmp_path,
+            JSON_report=tmp_path / "out" / "r.txt",
+            TSV_report=tmp_path / "alias" / "r.txt",
+        )
+
+
+def test_preflight_refuses_reports_that_differ_only_in_case(tmp_path):
+    # The default macOS filesystem would make these one file.
+    with pytest.raises(rr.RegulatoryRfamError, match="resolve to the same path"):
+        _preflight(
+            tmp_path,
+            JSON_report=tmp_path / "out" / "R.txt",
+            TSV_report=tmp_path / "out" / "r.txt",
+        )
+
+
+def test_preflight_refuses_an_input_named_as_an_output(tmp_path):
+    model = tmp_path / "m.cm"
+    model.write_text("model\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="already exists"):
+        rr.preflight_paths(
+            inputs={"covariance model": model},
+            outputs={"JSON report": model},
+        )
+    assert model.read_text() == "model\n"
+
+
+def test_preflight_refuses_a_report_inside_the_work_directory(tmp_path):
+    with pytest.raises(rr.RegulatoryRfamError, match="nested in one another"):
+        _preflight(tmp_path, JSON_report=tmp_path / "work" / "r.json")
+
+
+def test_preflight_refuses_a_work_directory_inside_a_report_path(tmp_path):
+    with pytest.raises(rr.RegulatoryRfamError, match="nested in one another"):
+        _preflight(
+            tmp_path,
+            JSON_report=tmp_path / "out",
+            work_directory=tmp_path / "out" / "work",
+        )
+
+
+def test_preflight_refuses_a_file_where_an_ancestor_belongs(tmp_path):
+    blocker = tmp_path / "blocker"
+    blocker.write_text("a file\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="is not a directory"):
+        _preflight(tmp_path, TSV_report=blocker / "r.tsv")
+
+
+def test_reserve_workdir_creates_a_fresh_nested_directory(tmp_path):
+    target = tmp_path / "a" / "b" / "work"
+    assert rr.reserve_workdir(target) == target
     assert target.is_dir()
-    # Idempotent: a second call on an existing directory is fine.
-    rr.prepare_directory(target, "work directory")
 
 
-def test_prepare_directory_refuses_a_file_where_an_ancestor_belongs(tmp_path):
+def test_reserve_workdir_refuses_to_reuse_a_directory(tmp_path):
+    target = tmp_path / "work"
+    target.mkdir()
+    with pytest.raises(rr.RegulatoryRfamError, match="needs a fresh one"):
+        rr.reserve_workdir(target)
+
+
+def test_reserve_workdir_refuses_a_file_where_an_ancestor_belongs(tmp_path):
     blocker = tmp_path / "a"
     blocker.write_text("not a directory\n", encoding="utf-8")
     with pytest.raises(rr.RegulatoryRfamError, match="is not a directory"):
-        rr.prepare_directory(tmp_path / "a" / "b", "work directory")
+        rr.reserve_workdir(blocker / "work")
 
 
-def test_prepare_directory_refuses_a_file_at_the_target(tmp_path):
-    blocker = tmp_path / "work"
-    blocker.write_text("not a directory\n", encoding="utf-8")
-    with pytest.raises(rr.RegulatoryRfamError, match="is not a directory"):
-        rr.prepare_directory(blocker, "work directory")
-
-
-def test_check_writable_refuses_an_existing_report(tmp_path):
-    target = tmp_path / "report.json"
-    target.write_text("{}\n", encoding="utf-8")
-    with pytest.raises(rr.RegulatoryRfamError, match="pass --overwrite"):
-        rr.check_writable(target, False, "JSON report")
-    rr.check_writable(target, True, "JSON report")
-
-
-def test_check_writable_refuses_a_directory_in_place_of_a_report(tmp_path):
-    target = tmp_path / "report.json"
-    target.mkdir()
-    with pytest.raises(rr.RegulatoryRfamError, match="is not a file"):
-        rr.check_writable(target, True, "JSON report")
-
-
-def test_check_writable_creates_a_missing_parent(tmp_path):
-    target = tmp_path / "nested" / "report.json"
-    rr.check_writable(target, False, "JSON report")
-    assert target.parent.is_dir()
+REPORT = {
+    "schemaVersion": rr.SCHEMA_VERSION,
+    "hits": [
+        dict.fromkeys(rr._HIT_FIELDNAMES, 1)
+        | {"replicon": "NZ_TEST001.1", "strand": "+"}
+    ],
+}
 
 
 def test_write_report_emits_lf_only_tsv_and_sorted_json(tmp_path):
-    report = {
-        "schemaVersion": 1,
-        "hits": [
-            dict.fromkeys(rr._HIT_FIELDNAMES, 1)
-            | {"replicon": "NZ_TEST001.1", "strand": "+"}
-        ],
-    }
-    json_path, tsv_path = tmp_path / "r.json", tmp_path / "r.tsv"
-    rr.write_report(report, json_path, tsv_path)
+    json_path, tsv_path = tmp_path / "out" / "r.json", tmp_path / "out" / "r.tsv"
+    rr.write_report(REPORT, json_path, tsv_path)
     raw = tsv_path.read_bytes()
     assert b"\r" not in raw
     assert raw.decode().splitlines()[0].split("\t") == list(rr._HIT_FIELDNAMES)
-    assert json.loads(json_path.read_text())["schemaVersion"] == 1
+    assert json.loads(json_path.read_text())["schemaVersion"] == rr.SCHEMA_VERSION
+
+
+def test_write_report_never_replaces_a_file_that_appeared_after_preflight(tmp_path):
+    json_path, tsv_path = tmp_path / "r.json", tmp_path / "r.tsv"
+    json_path.write_text("someone else's file\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="removed only the 1 file"):
+        rr.write_report(REPORT, json_path, tsv_path)
+    # The pre-existing file is untouched; the TSV this call created is gone.
+    assert json_path.read_text() == "someone else's file\n"
+    assert not tsv_path.exists()
+
+
+def test_write_report_refuses_one_file_under_two_names(tmp_path):
+    same = tmp_path / "r.out"
+    with pytest.raises(rr.RegulatoryRfamError, match="removed only the 1 file"):
+        rr.write_report(REPORT, same, same)
+    # The TSV half was created by this call, so it is the one removed.
+    assert not same.exists()
+
+
+def test_write_report_leaves_a_preexisting_tsv_alone(tmp_path):
+    json_path, tsv_path = tmp_path / "r.json", tmp_path / "r.tsv"
+    tsv_path.write_text("keep me\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="removed only the 0 file"):
+        rr.write_report(REPORT, json_path, tsv_path)
+    assert tsv_path.read_text() == "keep me\n"
+    assert not json_path.exists()
+
+
+def test_write_report_refuses_a_blocked_report_directory(tmp_path):
+    blocker = tmp_path / "blocker"
+    blocker.write_text("a file\n", encoding="utf-8")
+    with pytest.raises(rr.RegulatoryRfamError, match="is not a directory"):
+        rr.write_report(REPORT, tmp_path / "r.json", blocker / "r.tsv")
+    assert blocker.read_text() == "a file\n"
 
 
 # --------------------------------------------------------------------------
 # Search stages
 # --------------------------------------------------------------------------
 
+MODEL_CONTEXT = rr.CovarianceModel(
+    accession="RF01116",
+    name="Yfr1",
+    description="Cyanobacterial functional RNA 1",
+    clen=4,
+    window=6,
+    gathering_cutoff=38.0,
+    format_line="INFERNAL1/a [1.1.5 | Sep 2023]",
+)
 
-def test_resolve_model_accepts_the_pinned_family(tmp_path):
-    model = rr.resolve_model(write_model(tmp_path / "m.cm"), "RF01116", "Yfr1")
-    assert (model.accession, model.name) == ("RF01116", "Yfr1")
+
+def _context(script, tmp_path):
+    return rr.SearchContext(
+        cmsearch=script,
+        cm_path=write_model(tmp_path / "m.cm"),
+        workdir=rr.reserve_workdir(tmp_path / "work"),
+        model=MODEL_CONTEXT,
+        search_space=5.489252,
+    )
 
 
-def test_search_run_provenance_records_arguments_and_digests(
+def test_search_run_provenance_records_arguments_digests_and_summary(
     stub_cmsearch, tmp_path
 ):
     script, rows_dir = stub_cmsearch
     (rows_dir / "probe.rows").write_text(row() + "\n")
-    context = rr.SearchContext(
-        cmsearch=script,
-        cm_path=write_model(tmp_path / "m.cm"),
-        workdir=rr.prepare_directory(tmp_path / "work", "work directory"),
-        model=MODEL,
-        search_space=5.489252,
-    )
+    context = _context(script, tmp_path)
     run = context.search("probe", [("NZ_TEST001.1 d", "ACGTACGT")])
     assert len(run.hits) == 1
     assert run.fasta.name == "probe.fna"
@@ -1016,11 +1375,38 @@ def test_search_run_provenance_records_arguments_and_digests(
     provenance = run.provenance()
     assert provenance["hitCount"] == 1
     assert provenance["fasta"]["path"] == "probe.fna"
-    assert len(provenance["fasta"]["sha256"]) == 64
+    assert provenance["fasta"]["sha256"] == rr.sha256_file(run.fasta)
     assert provenance["argv"] == run.argv
+    # Run files are named relative to the work directory, never by its path.
+    assert str(context.workdir) not in " ".join(run.argv)
     assert provenance["tbloutRowsSha256"] == rr.tblout_rows_digest(run.tblout)
+    assert provenance["cmsearchSummary"] == {
+        "queryModels": 1,
+        "targetSequences": 1,
+        "residuesSearched": 16,
+        "hitsReported": 1,
+    }
     # The stdout capture is written alongside, so the raw run is inspectable.
     assert (context.workdir / "probe.cmsearch").exists()
+
+
+def test_search_refuses_a_run_that_covered_fewer_sequences(
+    stub_cmsearch, tmp_path, monkeypatch
+):
+    script, _ = stub_cmsearch
+    monkeypatch.setenv("STUB_DROP_SEQUENCES", "1")
+    context = _context(script, tmp_path)
+    with pytest.raises(rr.RegulatoryRfamError, match="did not search what it was"):
+        context.search("probe", [("a.1", "ACGT"), ("b.1", "ACGT")])
+
+
+def test_search_never_overwrites_a_run_file(stub_cmsearch, tmp_path):
+    script, _ = stub_cmsearch
+    context = _context(script, tmp_path)
+    (context.workdir / "probe.fna").write_text(">earlier\nACGT\n")
+    with pytest.raises(FileExistsError):
+        context.search("probe", [("a.1", "ACGT")])
+    assert (context.workdir / "probe.fna").read_text() == ">earlier\nACGT\n"
 
 
 def test_plan_origin_junctions_splits_circular_from_skipped():
@@ -1059,7 +1445,7 @@ def test_plan_origin_junctions_skips_everything_for_a_one_base_window():
 
 
 # --------------------------------------------------------------------------
-# run_pilot, end to end against the stub
+# Identity enforcement (R1): inputs, model header, replicons, tool
 # --------------------------------------------------------------------------
 
 # Twenty-base circular replicon and a twelve-base linear one. Window 6 gives a
@@ -1070,13 +1456,15 @@ TOPOLOGIES = {"NZ_TEST001.1": (20, "circular"), "NZ_TEST002.1": (12, "linear")}
 
 @pytest.fixture
 def pilot_inputs(tmp_path):
+    cm_path = write_model(tmp_path / "RF01116.cm")
+    fasta_path = write_genome(tmp_path / "g.fna", GENOME)
+    gbff_path = write_gbff(tmp_path / "g.gbff", TOPOLOGIES)
     return {
-        "cm_path": write_model(tmp_path / "RF01116.cm"),
-        "fasta_path": write_genome(tmp_path / "g.fna", GENOME),
-        "gbff_path": write_gbff(tmp_path / "g.gbff", TOPOLOGIES),
+        "pins": pins_for(cm_path, fasta_path, gbff_path),
+        "cm_path": cm_path,
+        "fasta_path": fasta_path,
+        "gbff_path": gbff_path,
         "workdir": tmp_path / "work",
-        "expect_accession": "RF01116",
-        "expect_name": "Yfr1",
         "control_replicates": 2,
         "control_seed": 20261012,
     }
@@ -1084,7 +1472,124 @@ def pilot_inputs(tmp_path):
 
 def run_stub_pilot(stub_cmsearch, pilot_inputs, **overrides):
     script, _ = stub_cmsearch
-    return rr.run_pilot(cmsearch=script, **dict(pilot_inputs, **overrides))
+    return rr._run_pilot(cmsearch=script, **dict(pilot_inputs, **overrides))
+
+
+def test_verify_pinned_inputs_returns_the_recorded_digests(pilot_inputs):
+    inputs = rr.verify_pinned_inputs(
+        pilot_inputs["pins"],
+        pilot_inputs["cm_path"],
+        pilot_inputs["fasta_path"],
+        pilot_inputs["gbff_path"],
+    )
+    assert inputs["covarianceModel"]["sha256"] == pilot_inputs["pins"].model_sha256
+    assert inputs["genomeFasta"]["md5"] == pilot_inputs["pins"].fasta_md5
+    assert inputs["genomeFlatFile"]["path"] == "g.gbff"
+
+
+def test_run_pilot_refuses_changed_model_coefficients(
+    stub_cmsearch, pilot_inputs, tmp_path
+):
+    # Same accession, name, CLEN, W and GA; one body coefficient differs.
+    altered = write_model(tmp_path / "altered.cm", coefficient="1.5")
+    with pytest.raises(rr.RegulatoryRfamError, match="covarianceModel sha256"):
+        run_stub_pilot(stub_cmsearch, pilot_inputs, cm_path=altered)
+    assert not pilot_inputs["workdir"].exists()
+
+
+def test_run_pilot_refuses_a_changed_same_name_sequence(
+    stub_cmsearch, pilot_inputs, tmp_path
+):
+    mutated = dict(GENOME, **{"NZ_TEST001.1": "ACGTACGTACGTACGTACGA"})
+    fasta = write_genome(tmp_path / "mutated.fna", mutated)
+    with pytest.raises(rr.RegulatoryRfamError, match="genomeFasta sha256") as info:
+        run_stub_pilot(stub_cmsearch, pilot_inputs, fasta_path=fasta)
+    assert "genomeFasta md5" in str(info.value)
+    assert not pilot_inputs["workdir"].exists()
+
+
+def test_run_pilot_refuses_another_assembly(stub_cmsearch, pilot_inputs, tmp_path):
+    other = {"NZ_OTHER9.1": "GGGGCCCCAAAATTTTGGGG"}
+    with pytest.raises(rr.RegulatoryRfamError, match="genomeFasta sha256") as info:
+        run_stub_pilot(
+            stub_cmsearch,
+            pilot_inputs,
+            fasta_path=write_genome(tmp_path / "other.fna", other),
+            gbff_path=write_gbff(
+                tmp_path / "other.gbff", {"NZ_OTHER9.1": (20, "circular")}
+            ),
+        )
+    assert "genomeFlatFile sha256" in str(info.value)
+
+
+def test_run_pilot_refuses_a_model_header_that_disagrees_with_the_pins(
+    stub_cmsearch, pilot_inputs
+):
+    pins = pilot_inputs["pins"]
+    for field, value in (
+        ("model_accession", "RF00050"),
+        ("model_name", "PsrR1"),
+        ("gathering_cutoff", 40.0),
+        ("model_clen", 5),
+        ("model_window", 7),
+    ):
+        wrong = rr.PinnedIdentity(**{**pins.__dict__, field: value})
+        with pytest.raises(rr.RegulatoryRfamError, match="not the pinned"):
+            run_stub_pilot(stub_cmsearch, pilot_inputs, pins=wrong)
+
+
+@pytest.mark.parametrize(
+    "replicons",
+    [
+        (("NZ_TEST001.1", 20, "circular"),),
+        (("NZ_TEST001.1", 21, "circular"), ("NZ_TEST002.1", 12, "linear")),
+        (("NZ_TEST001.1", 20, "circular"), ("NZ_TEST002.1", 12, "circular")),
+        (("NZ_TEST002.1", 12, "linear"), ("NZ_TEST001.1", 20, "circular")),
+    ],
+)
+def test_run_pilot_refuses_a_replicon_set_other_than_the_pinned_one(
+    stub_cmsearch, pilot_inputs, replicons
+):
+    wrong = rr.PinnedIdentity(**{**pilot_inputs["pins"].__dict__, "replicons": replicons})
+    with pytest.raises(rr.RegulatoryRfamError, match="not the pinned set"):
+        run_stub_pilot(stub_cmsearch, pilot_inputs, pins=wrong)
+    assert not pilot_inputs["workdir"].exists()
+
+
+def test_run_pilot_refuses_another_infernal_version(
+    stub_cmsearch, pilot_inputs, monkeypatch
+):
+    monkeypatch.setenv("STUB_VERSION", "1.1.4 (Dec 2020)")
+    with pytest.raises(rr.RegulatoryRfamError, match="not the pinned 1.1.5"):
+        run_stub_pilot(stub_cmsearch, pilot_inputs)
+    assert not pilot_inputs["workdir"].exists()
+
+
+def test_run_pilot_refuses_a_searched_fasta_that_is_not_the_official_bytes(
+    stub_cmsearch, pilot_inputs
+):
+    wrong = rr.PinnedIdentity(
+        **{**pilot_inputs["pins"].__dict__, "searched_fasta_sha256": "0" * 64}
+    )
+    with pytest.raises(rr.RegulatoryRfamError, match="decompressed FASTA"):
+        run_stub_pilot(stub_cmsearch, pilot_inputs, pins=wrong)
+    assert not pilot_inputs["workdir"].exists()
+
+
+def test_production_run_pilot_refuses_synthetic_inputs(stub_cmsearch, pilot_inputs):
+    script, _ = stub_cmsearch
+    inputs = {key: value for key, value in pilot_inputs.items() if key != "pins"}
+    with pytest.raises(rr.RegulatoryRfamError, match="not the pinned RF01116") as info:
+        rr.run_pilot(cmsearch=script, **inputs)
+    message = str(info.value)
+    for problem in ("covarianceModel sha256", "genomeFasta sha256", "genomeFlatFile md5"):
+        assert problem in message
+    assert not pilot_inputs["workdir"].exists()
+
+
+# --------------------------------------------------------------------------
+# _run_pilot, end to end against the stub
+# --------------------------------------------------------------------------
 
 
 def test_run_pilot_reports_zero_hits_without_inventing_a_negative(
@@ -1103,12 +1608,55 @@ def test_run_pilot_reports_zero_hits_without_inventing_a_negative(
     assert "uncovered by this pilot rather than negative" in report["coverageBoundary"]
     assert report["recordOrigin"] == "computed"
     assert "not measured regulation" in report["evidenceBoundary"]
+    # The report names only the assembly its pins describe.
+    assert "synthetic test assembly" in report["evidenceBoundary"]
+    assert "GCF_000817325" not in json.dumps(report)
+
+
+def test_run_pilot_declares_whole_assembly_coverage_from_cmsearch_itself(
+    stub_cmsearch, pilot_inputs
+):
+    report = run_stub_pilot(stub_cmsearch, pilot_inputs)
+    coverage = report["searchCoverage"]
+    assert coverage["repliconCount"] == 2
+    assert coverage["residues"] == 32
+    assert coverage["replicons"] == [
+        {
+            "accession": "NZ_TEST001.1",
+            "length": 20,
+            "topology": "circular",
+            "linearInterval": [1, 20],
+            "strands": "both",
+            "originJunction": "searched",
+        },
+        {
+            "accession": "NZ_TEST002.1",
+            "length": 12,
+            "topology": "linear",
+            "linearInterval": [1, 12],
+            "strands": "both",
+            "originJunction": "not searched: linear",
+        },
+    ]
+    assert report["nativeSearch"]["cmsearchSummary"]["targetSequences"] == 2
+    assert report["nativeSearch"]["cmsearchSummary"]["residuesSearched"] == 64
+    assert "Searched is not discovered" in coverage["statement"]
+
+
+def test_run_pilot_refuses_a_first_record_only_search(
+    stub_cmsearch, pilot_inputs, monkeypatch
+):
+    # cmsearch claiming one sequence fewer than the two submitted is the
+    # first-record-only failure, and the whole run is refused.
+    monkeypatch.setenv("STUB_DROP_SEQUENCES", "1")
+    with pytest.raises(rr.RegulatoryRfamError, match="targetSequences 1 != expected 2"):
+        run_stub_pilot(stub_cmsearch, pilot_inputs)
 
 
 def test_run_pilot_records_both_strands_and_the_pinned_provenance(
     stub_cmsearch, pilot_inputs
 ):
-    _, rows_dir = stub_cmsearch
+    script, rows_dir = stub_cmsearch
     (rows_dir / "native.rows").write_text(
         row() + "\n" + row(seq_from="19", seq_to="12", strand="-") + "\n"
     )
@@ -1120,6 +1668,9 @@ def test_run_pilot_records_both_strands_and_the_pinned_provenance(
     assert report["searchSpaceMb"] == rr.search_space_mb(32)
     assert report["model"]["gatheringCutoff"] == 38.0
     assert report["tool"]["version"] == "1.1.5 (Sep 2023)"
+    assert report["tool"]["sha256"] == rr.sha256_file(script)
+    assert report["pinnedIdentity"]["verified"] is True
+    assert report["pinnedIdentity"]["model_sha256"] == pilot_inputs["pins"].model_sha256
     assert set(report["inputs"]) == {
         "covarianceModel",
         "genomeFasta",
@@ -1127,6 +1678,10 @@ def test_run_pilot_records_both_strands_and_the_pinned_provenance(
         "searchedFasta",
     }
     assert report["inputs"]["searchedFasta"]["residues"] == 32
+    assert (
+        report["inputs"]["searchedFasta"]["sha256"]
+        == pilot_inputs["pins"].searched_fasta_sha256
+    )
     assert all("sha256" in entry for entry in report["inputs"].values())
     # The raw tabular output's own digest is recorded for every search.
     assert len(report["nativeSearch"]["tbloutRowsSha256"]) == 64
@@ -1167,7 +1722,8 @@ def test_run_pilot_reports_overlapping_native_hits(stub_cmsearch, pilot_inputs):
     )
     report = run_stub_pilot(stub_cmsearch, pilot_inputs)
     assert report["counts"]["overlappingNativePairs"] == 1
-    assert report["overlaps"][0]["interval"] == [12, 14]
+    assert report["overlaps"][0]["intervals"] == [[12, 14]]
+    assert report["overlaps"][0]["sharedBases"] == 3
 
 
 def test_run_pilot_searches_only_circular_origins_and_remaps_the_wrap(
@@ -1196,15 +1752,29 @@ def test_run_pilot_searches_only_circular_origins_and_remaps_the_wrap(
     assert "W=6" in junction["coverageNote"]
 
 
+def test_junction_coverage_note_claims_search_not_discovery(
+    stub_cmsearch, pilot_inputs
+):
+    note = run_stub_pilot(stub_cmsearch, pilot_inputs)["originJunctionSearch"][
+        "coverageNote"
+    ]
+    assert "was presented to the model" in note
+    assert "Searched is not discovered" in note
+    assert "does not show that no family element crosses an origin" in note
+    assert " is found" not in note
+
+
 def test_run_pilot_skips_a_replicon_shorter_than_the_junction_window(
     stub_cmsearch, pilot_inputs, tmp_path
 ):
-    genome = {"NZ_TINY.1": "ACGTACGT"}
+    fasta = write_genome(tmp_path / "tiny.fna", {"NZ_TINY.1": "ACGTACGT"})
+    gbff = write_gbff(tmp_path / "tiny.gbff", {"NZ_TINY.1": (8, "circular")})
     report = run_stub_pilot(
         stub_cmsearch,
         pilot_inputs,
-        fasta_path=write_genome(tmp_path / "tiny.fna", genome),
-        gbff_path=write_gbff(tmp_path / "tiny.gbff", {"NZ_TINY.1": (8, "circular")}),
+        fasta_path=fasta,
+        gbff_path=gbff,
+        pins=pins_for(pilot_inputs["cm_path"], fasta, gbff),
     )
     junction = report["originJunctionSearch"]
     assert junction["searchedReplicons"] == []
@@ -1214,11 +1784,16 @@ def test_run_pilot_skips_a_replicon_shorter_than_the_junction_window(
     ]
     assert junction["argv"] == []
     assert junction["hitCount"] == 0
+    assert report["searchCoverage"]["replicons"][0]["originJunction"] == (
+        "not searched: length 8 is under the 10-base junction window"
+    )
 
 
 def test_run_pilot_runs_a_deterministic_shuffled_control(stub_cmsearch, pilot_inputs):
     _, rows_dir = stub_cmsearch
-    (rows_dir / "control_00.rows").write_text(row() + "\n")
+    (rows_dir / "control_00.rows").write_text(
+        row(target="NZ_TEST001.1_shuffled_00") + "\n"
+    )
     report = run_stub_pilot(stub_cmsearch, pilot_inputs)
     control = report["control"]
     assert control["seed"] == 20261012
@@ -1227,15 +1802,19 @@ def test_run_pilot_runs_a_deterministic_shuffled_control(stub_cmsearch, pilot_in
         "20261012:0:NZ_TEST001.1",
         "20261012:0:NZ_TEST002.1",
     ]
+    assert control["replicates"][0]["sequences"] == {
+        "NZ_TEST001.1_shuffled_00": "NZ_TEST001.1",
+        "NZ_TEST002.1_shuffled_00": "NZ_TEST002.1",
+    }
     assert control["replicates"][0]["hitCount"] == 1
     assert control["replicates"][0]["bestScore"] == 62.1
     assert control["replicates"][1]["hitCount"] == 0
     assert control["replicates"][1]["bestScore"] is None
     assert control["hitsTotal"] == 1
-    # A control hit is never labelled as a native-sequence hit.
-    assert control["replicates"][0]["hits"][0]["search_space"] == "shuffled_control"
-    assert all(hit["search_space"] != "shuffled_control" for hit in report["hits"])
     assert "not a biological false-positive rate" in control["boundary"]
+    assert "not a false-discovery rate" in control["boundary"]
+    assert "no origin-junction search" in control["coverage"]
+    assert report["searchCoverage"]["shuffledControl"] == control["coverage"]
     # Each replicate's shuffled FASTA differs but its digest is reproducible.
     digests = {
         replicate["fasta"]["sha256"] for replicate in control["replicates"]
@@ -1243,40 +1822,89 @@ def test_run_pilot_runs_a_deterministic_shuffled_control(stub_cmsearch, pilot_in
     assert len(digests) == 2
 
 
-def test_run_pilot_is_byte_identical_across_runs(stub_cmsearch, pilot_inputs, tmp_path):
+def test_control_positions_cannot_be_read_as_native_site_calls(
+    stub_cmsearch, pilot_inputs
+):
+    _, rows_dir = stub_cmsearch
+    (rows_dir / "control_01.rows").write_text(
+        row(target="NZ_TEST002.1_shuffled_01", seq_from="9", seq_to="3", strand="-")
+        + "\n"
+    )
+    report = run_stub_pilot(stub_cmsearch, pilot_inputs)
+    (hit,) = report["control"]["replicates"][1]["hits"]
+    # No native fields at all, so nothing downstream can mistake it for a locus.
+    assert not {"replicon", "native_start", "native_end", "origin_spanning"} & set(hit)
+    assert hit["search_space"] == "shuffled_control"
+    assert hit["search_target"] == "NZ_TEST002.1_shuffled_01"
+    assert (hit["source_replicon"], hit["replicate"]) == ("NZ_TEST002.1", 1)
+    assert (hit["shuffled_start"], hit["shuffled_end"]) == (3, 9)
+    assert (hit["raw_seq_from"], hit["raw_seq_to"]) == (9, 3)
+    assert "not native assembly positions" in hit["coordinate_basis"]
+    assert "shuffled control replicate 1" in hit["coordinate_basis"]
+    # Control hits never reach the native hit table or the TSV.
+    assert report["hits"] == []
+
+
+def test_run_pilot_refuses_a_control_hit_named_with_a_native_accession(
+    stub_cmsearch, pilot_inputs
+):
+    _, rows_dir = stub_cmsearch
+    (rows_dir / "control_00.rows").write_text(row(target="NZ_TEST001.1") + "\n")
+    with pytest.raises(
+        rr.RegulatoryRfamError, match="not a sequence of the shuffled control"
+    ):
+        run_stub_pilot(stub_cmsearch, pilot_inputs)
+
+
+def test_run_pilot_counts_a_wrap_overlapping_a_truncated_linear_hit(
+    stub_cmsearch, pilot_inputs
+):
+    _, rows_dir = stub_cmsearch
+    # Native 1..2 truncated at its 5' end, and the junction hit 4..7, which
+    # remaps to the wrap 19..2: they share bases 1..2.
+    (rows_dir / "native.rows").write_text(
+        row(seq_from="1", seq_to="2", trunc="5'", mdl_from="3", score="40.0") + "\n"
+    )
+    (rows_dir / "origin_junction.rows").write_text(
+        row(target="NZ_TEST001.1_origin_junction", seq_from="4", seq_to="7") + "\n"
+    )
+    report = run_stub_pilot(stub_cmsearch, pilot_inputs)
+    assert report["counts"]["totalHits"] == 2
+    assert report["counts"]["overlappingNativePairs"] == 1
+    assert report["overlaps"] == [
+        {
+            "first": 0,
+            "second": 1,
+            "replicon": "NZ_TEST001.1",
+            "intervals": [[1, 2]],
+            "sharedBases": 2,
+        }
+    ]
+    wrapped = report["hits"][1]
+    assert (wrapped["raw_seq_from"], wrapped["raw_seq_to"]) == (4, 7)
+    assert (wrapped["native_start"], wrapped["native_end"]) == (19, 2)
+
+
+def test_run_pilot_is_byte_identical_across_work_directories(
+    stub_cmsearch, pilot_inputs, tmp_path
+):
     _, rows_dir = stub_cmsearch
     (rows_dir / "native.rows").write_text(row() + "\n")
     first = run_stub_pilot(stub_cmsearch, pilot_inputs)
-    second = run_stub_pilot(stub_cmsearch, pilot_inputs)
+    second = run_stub_pilot(stub_cmsearch, pilot_inputs, workdir=tmp_path / "again")
     assert json.dumps(first, sort_keys=True) == json.dumps(second, sort_keys=True)
-    # No timestamp anywhere in the report: that is what makes it reproducible.
+    # No timestamp and no work-directory path: that is what makes it reproducible.
     assert "Date" not in json.dumps(first)
+    assert str(pilot_inputs["workdir"]) not in json.dumps(first)
 
 
-def test_run_pilot_rejects_the_wrong_family(stub_cmsearch, pilot_inputs, tmp_path):
-    other = write_model(tmp_path / "other.cm", accession="RF00050", name="RFN")
-    with pytest.raises(rr.RegulatoryRfamError, match="not the expected RF01116"):
-        run_stub_pilot(stub_cmsearch, pilot_inputs, cm_path=other)
-
-
-def test_run_pilot_rejects_the_wrong_family_name(stub_cmsearch, pilot_inputs, tmp_path):
-    other = write_model(tmp_path / "other.cm", name="PsrR1")
-    with pytest.raises(rr.RegulatoryRfamError, match="not the expected Yfr1"):
-        run_stub_pilot(stub_cmsearch, pilot_inputs, cm_path=other)
-
-
-def test_run_pilot_accepts_any_family_when_no_expectation_is_given(
-    stub_cmsearch, pilot_inputs, tmp_path
-):
-    other = write_model(tmp_path / "other.cm", accession="RF00050", name="RFN")
-    report = run_stub_pilot(
-        stub_cmsearch,
-        pilot_inputs,
-        cm_path=other,
-        expect_accession=None,
-        expect_name=None,
-    )
-    assert report["model"]["accession"] == "RF00050"
+def test_run_pilot_refuses_to_reuse_a_work_directory(stub_cmsearch, pilot_inputs):
+    workdir = pilot_inputs["workdir"]
+    workdir.mkdir()
+    (workdir / "native.tblout").write_text("earlier raw evidence\n")
+    with pytest.raises(rr.RegulatoryRfamError, match="needs a fresh one"):
+        run_stub_pilot(stub_cmsearch, pilot_inputs)
+    assert (workdir / "native.tblout").read_text() == "earlier raw evidence\n"
 
 
 def test_run_pilot_rejects_a_hit_naming_another_family(stub_cmsearch, pilot_inputs):
@@ -1336,7 +1964,9 @@ def test_run_pilot_rejects_a_bad_junction_hit_before_remapping(
 
 def test_run_pilot_rejects_a_bad_control_hit(stub_cmsearch, pilot_inputs):
     _, rows_dir = stub_cmsearch
-    (rows_dir / "control_01.rows").write_text(row(score="1.0") + "\n")
+    (rows_dir / "control_01.rows").write_text(
+        row(target="NZ_TEST001.1_shuffled_01", score="1.0") + "\n"
+    )
     with pytest.raises(rr.RegulatoryRfamError, match="control replicate 1: .*GA"):
         run_stub_pilot(stub_cmsearch, pilot_inputs)
 
@@ -1365,23 +1995,34 @@ def test_run_pilot_reports_a_missing_model(stub_cmsearch, pilot_inputs, tmp_path
 
 def test_run_pilot_reports_a_missing_tool(pilot_inputs, tmp_path):
     with pytest.raises(rr.RegulatoryRfamError, match="missing cmsearch executable"):
-        rr.run_pilot(cmsearch=tmp_path / "absent", **pilot_inputs)
+        rr._run_pilot(cmsearch=tmp_path / "absent", **pilot_inputs)
+    assert not pilot_inputs["workdir"].exists()
 
 
 def test_run_pilot_refuses_a_genome_sequence_with_no_topology(
     stub_cmsearch, pilot_inputs, tmp_path
 ):
     partial = write_gbff(tmp_path / "partial.gbff", {"NZ_TEST001.1": (20, "circular")})
+    pins = rr.PinnedIdentity(
+        **{
+            **pilot_inputs["pins"].__dict__,
+            "gbff_sha256": rr.sha256_file(partial),
+            "gbff_md5": rr.md5_file(partial),
+        }
+    )
     with pytest.raises(rr.RegulatoryRfamError, match="no topology in the pinned"):
-        run_stub_pilot(stub_cmsearch, pilot_inputs, gbff_path=partial)
+        run_stub_pilot(stub_cmsearch, pilot_inputs, gbff_path=partial, pins=pins)
 
 
 def test_run_pilot_refuses_a_multi_family_library(
     stub_cmsearch, pilot_inputs, tmp_path
 ):
     library = write_model(tmp_path / "Rfam.cm", models=3)
+    pins = rr.PinnedIdentity(
+        **{**pilot_inputs["pins"].__dict__, "model_sha256": rr.sha256_file(library)}
+    )
     with pytest.raises(rr.RegulatoryRfamError, match="more than one model"):
-        run_stub_pilot(stub_cmsearch, pilot_inputs, cm_path=library)
+        run_stub_pilot(stub_cmsearch, pilot_inputs, cm_path=library, pins=pins)
 
 
 def test_run_pilot_refuses_a_workdir_blocked_by_a_file(
@@ -1397,8 +2038,7 @@ def test_run_pilot_writes_the_raw_outputs_into_the_workdir(
     stub_cmsearch, pilot_inputs
 ):
     run_stub_pilot(stub_cmsearch, pilot_inputs)
-    workdir = pilot_inputs["workdir"]
-    produced = {path.name for path in workdir.iterdir()}
+    produced = {path.name for path in pilot_inputs["workdir"].iterdir()}
     assert {
         "native.fna",
         "native.tblout",
@@ -1430,15 +2070,42 @@ def cli_args(stub_cmsearch, pilot_inputs, json_out, tsv_out, extra=()):
     ]
 
 
-def test_main_writes_both_reports_and_prints_a_summary(
+def test_main_refuses_synthetic_inputs_before_writing_anything(
+    stub_cmsearch, pilot_inputs, tmp_path
+):
+    json_out, tsv_out = tmp_path / "out" / "r.json", tmp_path / "out" / "r.tsv"
+    with pytest.raises(SystemExit, match="not the pinned RF01116 model"):
+        rr.main(cli_args(stub_cmsearch, pilot_inputs, json_out, tsv_out))
+    assert not (tmp_path / "out").exists()
+    assert not pilot_inputs["workdir"].exists()
+
+
+def test_main_has_no_overwrite_or_expectation_override(
     stub_cmsearch, pilot_inputs, tmp_path, capsys
 ):
+    for flag in ("--overwrite", "--expect-accession=RF00050"):
+        with pytest.raises(SystemExit):
+            rr.main(
+                cli_args(
+                    stub_cmsearch, pilot_inputs, tmp_path / "r.json",
+                    tmp_path / "r.tsv", [flag],
+                )
+            )
+        assert "unrecognized arguments" in capsys.readouterr().err
+
+
+def test_main_writes_both_reports_and_prints_a_summary(
+    stub_cmsearch, pilot_inputs, tmp_path, capsys, monkeypatch
+):
+    # Only here are the production pins swapped for the fixture's own, so
+    # main's success path is reachable without the real assembly.
+    monkeypatch.setattr(rr, "PINNED", pilot_inputs["pins"])
     _, rows_dir = stub_cmsearch
     (rows_dir / "native.rows").write_text(row() + "\n")
     json_out, tsv_out = tmp_path / "out" / "r.json", tmp_path / "out" / "r.tsv"
     assert rr.main(cli_args(stub_cmsearch, pilot_inputs, json_out, tsv_out)) == 0
     printed = capsys.readouterr().out
-    assert "model=RF01116 (Yfr1) native_hits=1" in printed
+    assert "model=RF01116 (Yfr1) replicons=2 native_hits=1" in printed
     assert "control_hits=0 over 2 replicates" in printed
     report = json.loads(json_out.read_text())
     assert report["schemaVersion"] == rr.SCHEMA_VERSION
@@ -1448,41 +2115,69 @@ def test_main_writes_both_reports_and_prints_a_summary(
     assert data.split("\t")[:2] == ["NZ_TEST001.1", "native_linear"]
 
 
-def test_main_refuses_to_overwrite_before_running(
-    stub_cmsearch, pilot_inputs, tmp_path
+def test_main_refuses_an_existing_report_before_running(
+    stub_cmsearch, pilot_inputs, tmp_path, monkeypatch
 ):
+    monkeypatch.setattr(rr, "PINNED", pilot_inputs["pins"])
     json_out, tsv_out = tmp_path / "r.json", tmp_path / "r.tsv"
     json_out.write_text("previous\n", encoding="utf-8")
-    with pytest.raises(SystemExit, match="pass --overwrite"):
+    with pytest.raises(SystemExit, match="never replaces or reuses"):
         rr.main(cli_args(stub_cmsearch, pilot_inputs, json_out, tsv_out))
     # The refusal happens before any work, so the earlier report is intact and
-    # no partial second report was left behind.
+    # no partial second report or work directory was left behind.
     assert json_out.read_text() == "previous\n"
     assert not tsv_out.exists()
     assert not pilot_inputs["workdir"].exists()
 
 
-def test_main_overwrites_only_when_asked(stub_cmsearch, pilot_inputs, tmp_path):
-    json_out, tsv_out = tmp_path / "r.json", tmp_path / "r.tsv"
-    json_out.write_text("previous\n", encoding="utf-8")
-    assert (
+def test_main_refuses_a_report_named_as_an_input(
+    stub_cmsearch, pilot_inputs, tmp_path, monkeypatch
+):
+    monkeypatch.setattr(rr, "PINNED", pilot_inputs["pins"])
+    model_bytes = pilot_inputs["cm_path"].read_bytes()
+    with pytest.raises(SystemExit, match="already exists"):
         rr.main(
-            cli_args(stub_cmsearch, pilot_inputs, json_out, tsv_out, ["--overwrite"])
+            cli_args(
+                stub_cmsearch, pilot_inputs, pilot_inputs["cm_path"], tmp_path / "r.tsv"
+            )
         )
-        == 0
-    )
-    assert json.loads(json_out.read_text())["counts"]["totalHits"] == 0
+    assert pilot_inputs["cm_path"].read_bytes() == model_bytes
+
+
+def test_main_refuses_one_report_path_for_both(
+    stub_cmsearch, pilot_inputs, tmp_path, monkeypatch
+):
+    monkeypatch.setattr(rr, "PINNED", pilot_inputs["pins"])
+    same = tmp_path / "out" / "r.out"
+    with pytest.raises(SystemExit, match="resolve to the same path"):
+        rr.main(cli_args(stub_cmsearch, pilot_inputs, same, same))
+    assert not same.exists()
+    assert not pilot_inputs["workdir"].exists()
 
 
 def test_main_reports_an_error_without_a_traceback(
-    stub_cmsearch, pilot_inputs, tmp_path
+    stub_cmsearch, pilot_inputs, tmp_path, monkeypatch
 ):
+    monkeypatch.setattr(rr, "PINNED", pilot_inputs["pins"])
     _, rows_dir = stub_cmsearch
     (rows_dir / "native.rows").write_text(row(target="NZ_ELSEWHERE.1") + "\n")
     json_out, tsv_out = tmp_path / "r.json", tmp_path / "r.tsv"
     with pytest.raises(SystemExit, match="error: cmsearch output failed"):
         rr.main(cli_args(stub_cmsearch, pilot_inputs, json_out, tsv_out))
     assert not json_out.exists()
+    assert not tsv_out.exists()
+
+
+def test_module_runs_as_a_script():
+    """The CLI is reachable the way the runbook invokes it."""
+    completed = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "tools/regulatory_rfam.py"), "--help"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "pinned" in completed.stdout
+    assert "--overwrite" not in completed.stdout
 
 
 # --------------------------------------------------------------------------
@@ -1497,56 +2192,95 @@ requires_real_tool = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def pinned_model():
-    """Extracts RF01116 from an Rfam library, or skips if none is available.
+    """The extracted RF01116.cm, or a skip if the runbook has not been followed.
 
     The 44 MB Rfam 15.1 library is a third-party blob and is never committed,
-    so this looks for the extracted single-family model left in the ignored
-    scratch directory by the run in docs/validation/regulatory-rfam.md.
+    so this looks for the single-family model the runbook in
+    docs/validation/regulatory-rfam.md extracts into ignored scratch.
     """
-    candidate = (
-        REPO_ROOT
-        / ".playwright-cli/regulatory-rfam-20261012/source/RF01116.cm"
-    )
-    if not candidate.exists():
+    if not SCRATCH_MODEL.exists():
         pytest.skip("no extracted RF01116.cm in the ignored scratch directory")
-    if rr.sha256_file(candidate) != PINNED_MODEL_SHA256:
+    if rr.sha256_file(SCRATCH_MODEL) != rr.PINNED.model_sha256:
         pytest.skip("scratch RF01116.cm does not match the pinned SHA-256")
-    return candidate
+    return SCRATCH_MODEL
 
 
 @requires_real_tool
 def test_real_cmsearch_reports_infernal_115():
-    assert rr.cmsearch_version(REAL_CMSEARCH) == "1.1.5 (Sep 2023)"
+    tool = rr.describe_tool(REAL_CMSEARCH, rr.PINNED.infernal_version)
+    assert tool["version"] == "1.1.5 (Sep 2023)"
+    assert len(tool["sha256"]) == 64
 
 
 @requires_real_tool
-def test_real_pinned_model_header_matches_rfam_151(pinned_model):
+def test_real_pinned_inputs_verify(pinned_model):
+    inputs = rr.verify_pinned_inputs(rr.PINNED, pinned_model, PINNED_FASTA, PINNED_GBFF)
+    assert inputs["genomeFasta"]["md5"] == "610ceb15a9859046e143d80915d4c984"
     model = rr.parse_covariance_model(pinned_model)
-    assert (model.accession, model.name) == ("RF01116", "Yfr1")
+    rr.check_model_header(model, rr.PINNED)
     assert model.description == "Cyanobacterial functional RNA 1"
-    assert model.gathering_cutoff == 38.0
-    assert (model.clen, model.window) == (59, 86)
     assert model.format_line == "INFERNAL1/a [1.1.5 | Sep 2023]"
-
-
-@requires_real_tool
-def test_real_pinned_assembly_is_three_circular_replicons():
     records = rr.load_fasta(PINNED_FASTA)
     replicons = rr.build_replicons(records, rr.parse_locus_topologies(PINNED_GBFF))
-    assert [(r.accession, r.length, r.topology) for r in replicons] == [
-        ("NZ_CP006471.1", 2690418, "circular"),
-        ("NZ_CP006472.1", 46366, "circular"),
-        ("NZ_CP006473.1", 7842, "circular"),
-    ]
+    rr.check_replicon_set(replicons, rr.PINNED)
     assert rr.search_space_mb(sum(r.length for r in replicons)) == 5.489252
+    assert (
+        rr.sha256_text(rr.fasta_text(rr.native_records(records)))
+        == rr.PINNED.searched_fasta_sha256
+    )
+
+
+@requires_real_tool
+def test_real_production_refuses_a_one_base_change_to_the_chromosome(
+    pinned_model, tmp_path
+):
+    (chromosome, description, sequence), *rest = rr.load_fasta(PINNED_FASTA)
+    changed = ("C" if sequence[999] != "C" else "G").join(
+        (sequence[:999], sequence[1000:])
+    )
+    mutated = tmp_path / "GCF_000817325.1_ASM81732v1_genomic.fna.gz"
+    with gzip.open(mutated, "wt", encoding="utf-8") as handle:
+        handle.write(
+            rr.fasta_text(
+                rr.native_records([(chromosome, description, changed), *rest])
+            )
+        )
+    with pytest.raises(rr.RegulatoryRfamError, match="genomeFasta sha256"):
+        rr.run_pilot(
+            cm_path=pinned_model,
+            fasta_path=mutated,
+            gbff_path=PINNED_GBFF,
+            workdir=tmp_path / "work",
+            cmsearch=REAL_CMSEARCH,
+            control_replicates=1,
+            control_seed=20261012,
+        )
+    assert not (tmp_path / "work").exists()
+
+
+@requires_real_tool
+def test_real_production_refuses_the_decompressed_fasta(pinned_model, tmp_path):
+    plain = tmp_path / "GCF_000817325.1_ASM81732v1_genomic.fna"
+    with gzip.open(PINNED_FASTA, "rb") as source:
+        plain.write_bytes(source.read())
+    with pytest.raises(rr.RegulatoryRfamError, match="genomeFasta sha256"):
+        rr.run_pilot(
+            cm_path=pinned_model,
+            fasta_path=plain,
+            gbff_path=PINNED_GBFF,
+            workdir=tmp_path / "work",
+            cmsearch=REAL_CMSEARCH,
+            control_replicates=1,
+            control_seed=20261012,
+        )
 
 
 @requires_real_tool
 def test_real_search_finds_the_single_recorded_yfr1_locus(pinned_model, tmp_path):
-    """The recorded result: one native hit, no origin-spanning hit, no control hit.
+    """Regression oracle: one native hit, no origin-spanning hit, no control hit.
 
-    This is the run docs/validation/regulatory-rfam.md documents. A changed
-    count here means the model, the assembly or the Infernal build changed.
+    A changed count here means the model, the assembly or the Infernal build
+    changed — and the pins should have refused the first two.
     """
     report = rr.run_pilot(
         cm_path=pinned_model,
@@ -1554,8 +2288,6 @@ def test_real_search_finds_the_single_recorded_yfr1_locus(pinned_model, tmp_path
         gbff_path=PINNED_GBFF,
         workdir=tmp_path / "work",
         cmsearch=REAL_CMSEARCH,
-        expect_accession="RF01116",
-        expect_name="Yfr1",
         control_replicates=2,
         control_seed=20261012,
     )
@@ -1575,13 +2307,20 @@ def test_real_search_finds_the_single_recorded_yfr1_locus(pinned_model, tmp_path
     assert hit["trunc"] == "no"
     assert hit["score"] == 62.1
     assert hit["evalue"] == 6.7e-12
-    # The decompressed copy this tool searches is byte-identical to the
-    # official FASTA, so its SHA-256 is the one genome-provenance records.
-    assert report["inputs"]["searchedFasta"]["sha256"] == (
-        "4716bbf61cfeb296587c94e90e6b6ce037752f9b9d4d225addd15eea02124984"
-    )
-    assert report["inputs"]["genomeFasta"]["md5"] == "610ceb15a9859046e143d80915d4c984"
+    # cmsearch itself counted all three replicons, both strands.
+    assert report["nativeSearch"]["cmsearchSummary"] == {
+        "queryModels": 1,
+        "targetSequences": 3,
+        "residuesSearched": 5489252,
+        "hitsReported": 1,
+    }
+    assert [entry["accession"] for entry in report["searchCoverage"]["replicons"]] == [
+        "NZ_CP006471.1",
+        "NZ_CP006472.1",
+        "NZ_CP006473.1",
+    ]
     assert report["originJunctionSearch"]["flankBases"] == 85
+    assert report["originJunctionSearch"]["cmsearchSummary"]["targetSequences"] == 3
     assert report["originJunctionSearch"]["searchedReplicons"] == [
         "NZ_CP006471.1",
         "NZ_CP006472.1",
@@ -1589,47 +2328,67 @@ def test_real_search_finds_the_single_recorded_yfr1_locus(pinned_model, tmp_path
     ]
 
 
-@requires_real_tool
-def test_real_origin_spanning_hit_is_found_and_remapped(pinned_model, tmp_path):
-    """Rotates the pinned chromosome so the Yfr1 locus straddles position 1.
+def _run_rotated(pinned_model, tmp_path, offset):
+    """Runs the private pipeline on the pinned chromosome rotated left by ``offset``.
 
-    The linear search alone cannot report that hit; the origin-junction search
-    must find it and remap it to the wrapped native interval. This exercises
-    the circular-boundary path with the real Infernal, which the unrotated
-    genome cannot (it has no origin-spanning hit of this family).
+    A rotated chromosome is not the pinned assembly, so the production
+    ``run_pilot`` refuses it (asserted here) and the run goes through the
+    private runner with pins describing the rotated copy.
     """
     (chromosome, description, sequence), *_ = rr.load_fasta(PINNED_FASTA)
-    assert chromosome == "NZ_CP006471.1"
-    length = len(sequence)
-    # Rotate so the midpoint of the recorded 1364716..1364778 hit lands on 1.
-    offset = (1364716 + 1364778) // 2 - 1
     rotated = tmp_path / "rotated.fna"
-    rr.write_fasta(
+    rotated.write_text(
+        rr.fasta_text(
+            [(f"{chromosome} {description}", sequence[offset:] + sequence[:offset])]
+        ),
+        encoding="utf-8",
+    )
+    gbff = write_gbff(
+        tmp_path / "rotated.gbff", {chromosome: (len(sequence), "circular")}
+    )
+    common = {
+        "cm_path": pinned_model,
+        "fasta_path": rotated,
+        "gbff_path": gbff,
+        "cmsearch": REAL_CMSEARCH,
+        "control_replicates": 1,
+        "control_seed": 20261012,
+    }
+    with pytest.raises(rr.RegulatoryRfamError, match="not the pinned"):
+        rr.run_pilot(workdir=tmp_path / "refused", **common)
+    assert not (tmp_path / "refused").exists()
+    pins = pins_for(
+        pinned_model,
         rotated,
-        [(f"{chromosome} {description}", sequence[offset:] + sequence[:offset])],
+        gbff,
+        assembly_label="rotated test copy of the pinned chromosome",
     )
-    gbff = write_gbff(tmp_path / "rotated.gbff", {chromosome: (length, "circular")})
+    return rr._run_pilot(pins=pins, workdir=tmp_path / "work", **common)
 
-    report = rr.run_pilot(
-        cm_path=pinned_model,
-        fasta_path=rotated,
-        gbff_path=gbff,
-        workdir=tmp_path / "work",
-        cmsearch=REAL_CMSEARCH,
-        expect_accession="RF01116",
-        expect_name="Yfr1",
-        control_replicates=1,
-        control_seed=20261012,
-    )
+
+@requires_real_tool
+def test_real_origin_spanning_hit_is_found_and_remapped(pinned_model, tmp_path):
+    """The Yfr1 locus rotated to straddle position 1 at its midpoint.
+
+    The linear search alone cannot report that hit; the origin-junction search
+    must find it and remap it to the wrapped native interval, keeping the
+    endpoints cmsearch emitted on the junction sequence.
+    """
+    length = 2690418
+    # Rotate so the midpoint of the recorded 1364716..1364778 hit lands on 1.
+    report = _run_rotated(pinned_model, tmp_path, (1364716 + 1364778) // 2 - 1)
     assert report["counts"]["nativeLinearHits"] == 0
     assert report["counts"]["originSpanningHits"] == 1
     (wrapped,) = report["hits"]
     assert wrapped["origin_spanning"] is True
     assert wrapped["search_space"] == rr.SEARCH_SPACE_JUNCTION
-    assert wrapped["replicon"] == chromosome
+    assert wrapped["replicon"] == "NZ_CP006471.1"
+    assert wrapped["search_target"] == "NZ_CP006471.1_origin_junction"
     # 1364716 - offset wraps to length - 30; 1364778 - offset stays at 32.
     assert (wrapped["native_start"], wrapped["native_end"]) == (length - 30, 32)
     assert wrapped["native_start"] > wrapped["native_end"]  # the wrap itself
+    # As emitted on the 170-base junction: flank 85, so native L-30 is 55.
+    assert (wrapped["raw_seq_from"], wrapped["raw_seq_to"]) == (55, 117)
     assert wrapped["native_length"] == 63
     assert (wrapped["mdl_from"], wrapped["mdl_to"]) == (1, 59)
     assert wrapped["score"] == 62.1
@@ -1637,24 +2396,52 @@ def test_real_origin_spanning_hit_is_found_and_remapped(pinned_model, tmp_path):
 
 
 @requires_real_tool
-def test_real_cli_round_trip_is_reproducible(pinned_model, tmp_path):
-    json_out, tsv_out = tmp_path / "r.json", tmp_path / "r.tsv"
-    argv = [
-        "--cm", str(pinned_model),
-        "--expect-accession", "RF01116",
-        "--expect-name", "Yfr1",
-        "--fasta", str(PINNED_FASTA),
-        "--gbff", str(PINNED_GBFF),
-        "--workdir", str(tmp_path / "work"),
-        "--cmsearch", str(REAL_CMSEARCH),
-        "--json-out", str(json_out),
-        "--tsv-out", str(tsv_out),
-        "--control-replicates", "1",
+def test_real_truncated_linear_hit_overlaps_the_wrapped_hit(pinned_model, tmp_path):
+    """Rotated so the locus starts at the last base: a 5'-truncated linear hit.
+
+    The linear search reports the truncated 1..62 and the junction search the
+    complete wrap 2690418..62. Both are kept, and they overlap on 62 bases.
+    """
+    report = _run_rotated(pinned_model, tmp_path, 1364716)
+    assert report["counts"]["nativeLinearHits"] == 1
+    assert report["counts"]["originSpanningHits"] == 1
+    linear, wrapped = report["hits"]
+    assert (linear["native_start"], linear["native_end"]) == (1, 62)
+    assert linear["trunc"] != "no"
+    assert linear["score"] == 55.3
+    assert (wrapped["native_start"], wrapped["native_end"]) == (2690418, 62)
+    assert (wrapped["trunc"], wrapped["score"]) == ("no", 62.1)
+    assert report["counts"]["overlappingNativePairs"] == 1
+    assert report["overlaps"] == [
+        {
+            "first": 0,
+            "second": 1,
+            "replicon": "NZ_CP006471.1",
+            "intervals": [[1, 62]],
+            "sharedBases": 62,
+        }
     ]
-    assert rr.main(argv) == 0
-    first = json_out.read_bytes()
-    assert rr.main(argv + ["--overwrite"]) == 0
-    assert json_out.read_bytes() == first
+
+
+@requires_real_tool
+def test_real_cli_round_trip_is_reproducible(pinned_model, tmp_path):
+    def run(name):
+        json_out = tmp_path / name / "r.json"
+        argv = [
+            "--cm", str(pinned_model),
+            "--fasta", str(PINNED_FASTA),
+            "--gbff", str(PINNED_GBFF),
+            "--workdir", str(tmp_path / name / "work"),
+            "--cmsearch", str(REAL_CMSEARCH),
+            "--json-out", str(json_out),
+            "--tsv-out", str(tmp_path / name / "r.tsv"),
+            "--control-replicates", "1",
+        ]
+        assert rr.main(argv) == 0
+        return json_out.read_bytes()
+
+    # Two fresh work directories, byte-identical reports.
+    assert run("first") == run("second")
 
 
 @requires_real_tool
@@ -1665,8 +2452,6 @@ def test_real_hit_is_intergenic_in_the_pinned_annotation():
     annotation; it is not evidence that the interval is transcribed or
     regulatory, and RefSeq's silence there is not a negative.
     """
-    import gzip
-
     gff = REPO_ROOT / "data/raw/GCF_000817325.1_ASM81732v1_genomic.gff.gz"
     if not gff.exists():
         pytest.skip("pinned GFF not fetched")
@@ -1684,14 +2469,3 @@ def test_real_hit_is_intergenic_in_the_pinned_annotation():
             if int(fields[3]) <= end and start <= int(fields[4]):
                 overlapping.append(fields[2])
     assert overlapping == []
-
-
-def test_module_runs_as_a_script():
-    """The CLI is reachable the way the runbook invokes it."""
-    completed = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "tools/regulatory_rfam.py"), "--help"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    assert "--cut_ga" in completed.stdout or "pinned Rfam" in completed.stdout
