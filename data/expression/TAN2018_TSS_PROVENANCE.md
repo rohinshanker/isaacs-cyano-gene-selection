@@ -46,16 +46,25 @@ expression call.
 ## Pooled score audit
 
 The pooled table was committed on 2026-09-18 (commit `615ed16`) with this
-document and no script, so its exact feature set was undocumented.
-`tools/tan2018_pooled_audit.py` recovers it from the authors' archive. The rule
-below is **inferred, not documented**: it has no tuned numeric parameter and
-rebuilds the committed table byte for byte (SHA-256
+document and no script. It is, byte for byte, the TSV the DEM-33 agent attached
+that day (SHA-256 `c3e1b6bac26ff80db7d16c00f38e227407d6fd4debaa4f41a7fb1cc0fd607fd9`,
+every line CRLF); commit `e5122f9` later rewrote only its header line ending.
+The only documented derivation is that run's sentence: sum the eight-count means
+"across TSS features whose published feature text names that locus". Read
+literally, that names 2,213 current loci and matches 1,196 of the 1,727 values,
+so it does not reproduce the table.
+
+`tools/tan2018_pooled_audit.py` recovers the actual feature set from the
+authors' archive. The rule below is **inferred, not documented**: it has no tuned
+numeric parameter and rebuilds the committed table byte for byte (SHA-256
 `5ebd8043e70309a2ea04fcec37e475069cb8540397f9d052bd246401aa6325be`, LF header and
 CRLF rows included), including every row's `_<n>TSS` site count, which is an
-independent check on membership. Another rule could in principle reproduce the
-same bytes; none simpler was found. Simpler candidates fail: with the printed
-counts, every site its score names matches 1,196 of the 1,727 values, and gTSS
-sites alone match 431.
+independent check on membership. Its position condition gives exactly the same
+membership as a single pass through each GenBank file that resolves a named
+locus only once that locus's `gene` feature has been read, which is the likely
+mechanism; a test pins that equivalence. Neither reading is the authors'
+association, and no surviving script or transcript of the DEM-33 run shows which
+one ran. Simpler candidates fail: gTSS sites alone match 431 values.
 
 | Input | Value |
 | --- | --- |

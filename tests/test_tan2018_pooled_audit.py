@@ -423,6 +423,32 @@ def test_pinned_archive_reproduces_the_committed_pooled_table():
 
 
 @pytest.mark.skipif(not audit.ARCHIVE.is_file(), reason="pinned ignored source not fetched")
+def test_pinned_archive_coordinate_rule_equals_a_single_pass_file_order_rule():
+    """'At or after the gene's lowest coordinate' is, on this archive, the same
+    membership as resolving a named locus only once its gene feature has been read."""
+    members = audit.read_members(audit.ARCHIVE.read_bytes(), audit.ARCHIVE_SHA256,
+                                 audit.MEMBERS)
+    sites, genes = audit.read_archive(members)
+    targets = set(audit.target_loci(audit.GENES))
+    by_coordinate = {(locus, s.member, s.key, s.strand, s.position)
+                     for locus, kept in audit.associate(sites, genes, targets).items()
+                     for s in kept}
+    by_file_order = set()
+    for member in sorted(members):
+        seen: set[str] = set()
+        for feature in audit.parse_features(members[member].decode("utf-8"), member):
+            if feature.key == "gene":
+                seen.update(filter(None, map(audit.unquoted, feature.values("locus_tag"))))
+            elif feature.key in audit.TSS_KEYS:
+                site = audit.read_site(feature, member)
+                by_file_order.update(
+                    (locus, member, site.key, site.strand, site.position)
+                    for locus in site.loci if locus in seen and locus in targets
+                    and locus in genes and genes[locus].member == member)
+    assert by_file_order == by_coordinate
+
+
+@pytest.mark.skipif(not audit.ARCHIVE.is_file(), reason="pinned ignored source not fetched")
 def test_pinned_archive_summary():
     result = audit.summary(audit.ARCHIVE.read_bytes(), audit.target_loci(audit.GENES))
     assert result == {

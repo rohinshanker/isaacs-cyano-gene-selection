@@ -25,6 +25,10 @@ the committed table byte for byte:
 * each published count is truncated to a whole number;
 * a locus scores the sum over its sites of the eight-count mean.
 
+The position condition equals a single file-order pass that resolves a named
+locus only after reading its gene feature; the run that made the table
+documented neither, only that a site's feature text names the locus.
+
 The tool is audit evidence: ``check`` fails unless the rebuild equals the
 committed table, and ``summary`` reports what the rule keeps and drops. It
 never writes a table.
