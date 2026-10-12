@@ -84,7 +84,10 @@ for strand in ('+', '-'):
                 sequence = str(Seq(sequence).reverse_complement())
             assert sequence == state[feature]
         tss = index + 1 if strand == '+' else 250 - index
-        assert 1 <= tss <= 250
+        base = native[tss - 1]
+        if strand == '-':
+            base = str(Seq(base).complement())
+        assert base == state['ITR'][0]
     counts[strand] = len(states)
 print(json.dumps({'native_window': [1, 250], 'states': counts, 'runtime_and_coordinates': 'pass'}))
 PY
@@ -97,7 +100,14 @@ one-based `w` with length `L` to `[w+a,w+b-1]` on `+`, or
 `[w+L-b,w+L-a-1]` on `-`. The corresponding start base is `w+i` or `w+L-1-i`.
 Use `predict()` on each oriented strand explicitly: `run()` remaps reverse output
 keys but leaves the component positions and inner `TSS` in their oriented frame.
-Mixing those fields silently mixes coordinate conventions.
+Its reverse keys use `L-i`, while its forward keys use `i`: those keys differ
+in coordinate basis by one. Mixing those fields silently mixes conventions.
+
+Full model coverage requires `67 <= i <= L-20`. Starts below index 58 or beyond
+`L-20` have no output; indices 58–66 consider fewer than all 30 spacer/discriminator
+layouts. Tiled windows must overlap enough to score each retained start with all
+layouts, or record partial coverage explicitly. Moving the same genomic start
+near a window edge can change its score without any sequence change.
 
 ## Interpretation and further evaluation
 
@@ -112,3 +122,19 @@ selection, independent Tan-TSS localization checks and matched controls. Keep
 homologous/overlapping loci together when partitioning evaluation data. Do not fit
 thresholds on the same sites reported as evaluation. Source and computed evidence
 retain the separate origin contract in [regulatory-methods.md](regulatory-methods.md).
+
+## Automated verification
+
+Offline tests use small synthetic source files to exercise validation, adaptation
+and failure cleanup. Run the opt-in integration test against the actual pinned
+upstream downloads when changing the preparation or dependency environment:
+
+```sh
+PROMOTER_CALCULATOR_SOURCE_DIR="$PWD/.playwright-cli/regulatory-promoter/source" \
+  .venv/bin/python -m pytest -q tests/test_prepare_promoter_calculator.py
+```
+
+Without that variable the external-artifact integration test is explicitly
+skipped; the other tests run without downloads. The integration test checks the
+real pins and runs both orientations of a synthetic input in a separate process.
+The native-window smoke above supplies the separate native-coordinate check.

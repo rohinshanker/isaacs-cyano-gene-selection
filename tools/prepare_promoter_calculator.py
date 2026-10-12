@@ -96,8 +96,11 @@ def prepare(source_dir: Path, output_dir: Path) -> dict:
         (output_dir / "preparation.json").write_text(
             json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
         )
-    except OSError:
-        shutil.rmtree(output_dir)
+    except BaseException as error:
+        try:
+            shutil.rmtree(output_dir)
+        except OSError as cleanup_error:
+            raise error from cleanup_error
         raise
     return manifest
 

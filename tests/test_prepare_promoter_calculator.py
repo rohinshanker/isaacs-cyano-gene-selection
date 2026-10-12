@@ -145,3 +145,98 @@ def test_cli_requires_explicit_directories():
     with pytest.raises(SystemExit) as error:
         prep.main([])
     assert error.value.code == 2
+
+
+def test_compile_really_does_not_execute_source(sources, monkeypatch):
+    _, payloads, expected = sources
+    name = "Promoter_Calculator_v1_0.py"
+    payloads[name] += b'raise RuntimeError("must not execute")\n'
+    expected[name] += b'raise RuntimeError("must not execute")\n'
+    monkeypatch.setitem(prep.ADAPTED_HASHES, name, prep.sha256(expected[name]))
+    assert prep.adapt_sources(payloads)[name] == expected[name]
+
+
+def test_indented_print_syntax_is_preserved(sources, monkeypatch):
+    _, payloads, _ = sources
+    name = "Promoter_Calculator_v1_0.py"
+    payloads[name] = b'def probe():\n    print "a"\n    print "b"\n    print "c"\n    print "d"\n'
+    expected = b'def probe():\n    print("a")\n    print("b")\n    print("c")\n    print("d")\n'
+    monkeypatch.setitem(prep.ADAPTED_HASHES, name, prep.sha256(expected))
+    assert prep.adapt_sources(payloads)[name] == expected
+
+
+def test_failed_adaptation_and_missing_parent_create_nothing(sources, tmp_path, monkeypatch):
+    directory, _, _ = sources
+    output = tmp_path / "missing-parent" / "prepared"
+    with pytest.raises(FileNotFoundError):
+        prep.prepare(directory, output)
+    assert not output.exists()
+    monkeypatch.setitem(prep.ADAPTED_HASHES, "util.py", "0" * 64)
+    output = tmp_path / "prepared"
+    with pytest.raises(ValueError, match="Adapted checksum"):
+        prep.prepare(directory, output)
+    assert not output.exists()
+
+
+def test_interrupt_removes_new_directory(sources, tmp_path, monkeypatch):
+    directory, _, _ = sources
+    output = tmp_path / "prepared"
+
+    def interrupted(*args):
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(Path, "write_bytes", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        prep.prepare(directory, output)
+    assert not output.exists()
+
+
+def test_cleanup_failure_preserves_original_error(sources, tmp_path, monkeypatch):
+    directory, _, _ = sources
+    output = tmp_path / "prepared"
+
+    def write_failure(*args):
+        raise OSError("original write error")
+
+    def cleanup_failure(*args):
+        raise OSError("cleanup error")
+
+    monkeypatch.setattr(Path, "write_bytes", write_failure)
+    monkeypatch.setattr(prep.shutil, "rmtree", cleanup_failure)
+    with pytest.raises(OSError, match="original write error") as error:
+        prep.prepare(directory, output)
+    assert str(error.value.__cause__) == "cleanup error"
+
+
+def test_actual_pinned_upstream_preparation_and_runtime(tmp_path):
+    """Optional external-artifact test: no download and no mocked source pins."""
+    import os
+    import subprocess
+
+    path = os.environ.get("PROMOTER_CALCULATOR_SOURCE_DIR")
+    if not path:
+        pytest.skip("Set PROMOTER_CALCULATOR_SOURCE_DIR to verified upstream downloads")
+    output = tmp_path / "prepared"
+    manifest = prep.prepare(Path(path), output)
+    assert manifest["upstream_commit"] == "46da9132740bce30bccd107f02808adf2215e2f0"
+    script = '''
+import math, sys
+sys.path.insert(0, sys.argv[1])
+from Promoter_Calculator_v1_0 import Promoter_Calculator, _revcomp
+model = Promoter_Calculator()
+sequence = ('ACGTTGCA' * 32)[:250]
+for oriented in (sequence, _revcomp(sequence)):
+    states, layouts = model.predict(oriented, [80, 171])
+    assert set(states) == set(range(80, 171))
+    assert all(len(layouts[i]) == 30 for i in states)
+    for i, state in states.items():
+        assert state['ITR'] == oriented[i:i+20]
+        assert math.isfinite(float(state['dG_total']))
+        assert math.isfinite(float(state['Tx_rate']))
+print('182 full-coverage states passed')
+'''
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(output)], check=True,
+        capture_output=True, text=True, timeout=30,
+    )
+    assert result.stdout.strip() == "182 full-coverage states passed"
