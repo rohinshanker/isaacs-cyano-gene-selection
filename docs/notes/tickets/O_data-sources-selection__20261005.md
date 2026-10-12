@@ -9,7 +9,7 @@
   `data/`, `tests/`, and `docs/validation/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-10
+- **Updated:** 2026-10-12
 
 ## Current state
 
@@ -22,11 +22,14 @@ Design settled by the owner in three rounds on 2026-10-04 and 2026-10-05; the
 decisions are listed below and the second-round requirements are recorded in the
 scan ticket under step 6. A working prototype with every requested behaviour is
 `docs/notes/handoff/cyano_dataset_panel_mockup_v2_20261005.html`, rendered and
-exercised at four widths. The site ships values for two sources today
-(the GSE205444 PCC 7942 abundance table and Tan 2018 initiation); the 59
-condition sets in the prototype are descriptions with quotes and citations, not
-loaded values. Built in the main checkout on `main`, by owner instruction, and
-pushed when ready; no interim version with placeholder rows is shipped.
+exercised at four widths. The two sentences that follow were written on
+2026-10-05, when the site shipped values for two sources only (the GSE205444
+PCC 7942 abundance table and Tan 2018 initiation) and the prototype's 59
+condition sets were descriptions rather than loaded values; both have been
+overtaken by S5, and the measured current counts are under "Shipped sources,
+measured 2026-10-12" below. Built in the main checkout on `main`, by owner
+instruction, and pushed when ready; no interim version with placeholder rows is
+shipped.
 
 ### Owner decisions that fix the design
 
@@ -122,9 +125,10 @@ Engineered strain; its deposit is DTASelect search output, not a table, so the
 tool gained a `dtaselect` reader (one count column per report, accession from
 the UniProt FASTA locus, decoys dropped; 576 and 703 genes). Its other archive
 (L1118 against Lsps) holds only `.sepr` search-engine state and is not
-readable. Twenty-nine sources ship. Still waiting: PXD019731 and PXD074299
-deposit no proteome-wide table; GSE45762 is excluded for contradictory sample
-labels.
+readable. Twenty-nine sources shipped as of that date; the current count is in
+"Shipped sources, measured 2026-10-12" below. Still waiting: PXD019731 and
+PXD074299 deposit no proteome-wide table; GSE45762 is excluded for
+contradictory sample labels.
 
 The pair judgements are a data file since 2026-10-06
 (`data/expression/pair_judgements.json`, 33 pairs since J2 on 2026-10-06, emitted as
@@ -196,6 +200,8 @@ over the informing dataset is a follow-up.
    agents request; per the gated-pages ticket the owner opens the site in their
    own browser with the agent present, or supplies the terms text and the
    PCC 7942 fitness and experiment tables.
+   Resolved: the owner's two tables are staged by hand and the compendium ships
+   as 90 condition sets. This item is no longer blocked.
 
 ## Owner report, 2026-10-06, and design round 6
 
@@ -221,6 +227,72 @@ dataset hides it. Verified at 1280: Protein abundance shows "1 of 3", the two
 L1118 layers listed under their engineered-strain chip, and naming one colours
 the map with its spectral-count unit (576 genes valued).
 
+## Shipped sources, measured 2026-10-12
+
+Counted from `data/expression/sources.json` rather than from this ticket's
+narrative, which had drifted: 164 layers over 27 studies, 162 of them carrying
+an `ingest` block (GSE205444 and the Tan 2018 initiation source, PRJNA420395,
+predate the tool).
+
+| Data type | Layers |
+| --- | --- |
+| fitness | 99 |
+| transcriptomics | 55 |
+| proteomics | 10 |
+
+Fitness is 90 Fitness Browser condition sets plus 9 GSE205443 biofilm
+fractions, over 2 studies. Transcriptomics is 20 studies; proteomics is 5:
+PXD000510 (4 layers), PXD005851 (2), PXD030282 (2), PXD005105 (1) and
+PXD062851 (1).
+
+This supersedes "Twenty-nine sources ship" above and design round 5 item 3:
+the Fitness Browser is no longer blocked by Cloudflare, because its two tables
+are staged by hand under the [fitness-source
+contract](../../validation/fitness-screen-data.md) rather than fetched.
+
+## Remaining admission shortlist, 2026-10-12
+
+**No RNA-seq candidate remains.** Every row of the package B/C register that
+deposits a per-gene table is ingested. The unshipped rows are each accounted
+for, and none is waiting on this ticket: the seven raw-only microarray series
+belong to the [array reader ticket](O_array-expression-reader__20261007.md);
+GSE122841 is the [raw-read pilot](A_raw-read-pilot-execution__20261007.md);
+GSE140121, GSE205445, GSE227397 and GSE50922 deposit raw files only;
+GSE103606 is a SuperSeries container whose five RNA SubSeries all ship;
+GSE106824 is ChIP-seq, which is not an admitted data type; GSE104204 is a
+mixed 37-ChIP-seq/60-RNA-seq series escalated in package B; GSE45762 is
+excluded for contradictory sample labels.
+
+**The five undetermined PRIDE deposits are now determined.** The package A
+register recorded their contents as "not determined — PRIDE per-project protein
+listing is not served for classic PXD submissions", so none had been through
+the three-step check in the [deposit-reader
+contract](../../validation/proteomics-deposit-readers.md). Each file listing was
+paged from the PRIDE v3 API
+(`https://www.ebi.ac.uk/pride/ws/archive/v3/projects/<acc>/files`, 100 per page)
+on 2026-10-12. Metadata only; nothing was downloaded.
+
+| Deposit | Strain | What the deposit serves | Route | Gate |
+| --- | --- | --- | --- | --- |
+| PXD023591 | PCC 7942 | 3 files: one mzIdentML (`hf2019103123.mzid.gz`), its MGF, one raw | the existing `mzidentml` reader, one spectral-count layer | its condition record. Growth details are unreported and the depositor query is drafted and deferred by the owner |
+| PXD027430 | PCC 7942 | 9 files: three mzIdentML with their MGFs and raws | the same reader, three runs | its condition record, and that this is a TMT study whose reporter-ion quantification is not in the deposit, so counts are the only quantity it can yield. Conditions and the 0 h baseline assignments are open depositor questions, deferred |
+| PXD014590 | **UTEX 2973, native** | 135 files: 27 top-down runs as `.raw`, 27 `.ms1ft` MS1 feature files, 27 search archives and 54 `*_MSAlign_Results_XML.zip` | no protein-level table; an MSAlign result-XML reader would be new | a scientific decision before any code: top-down results identify proteoforms, not gene-level amounts. Roadmap item 7 already directs a presence overlay first, not a quantitative layer |
+| PXD036717 | PCC 7942 CscB-SPS, engineered | 24 files: APEX2 proximity labelling, four baits (CikB, ManS, NblS, RpaA) each against the CscB-SPS parent; every search and peak result inside `.rar` | a `.rar` reader, and the layer would be an enrichment ratio | the 2026-10-07 ratio rule: a bait-against-parent enrichment is not an amount, so it ships apart from abundances and labelled a ratio, if at all |
+| PXD044412 | multi-organism; PCC 7942 among them | 2,002 files. The PCC 7942 arms serve `quant_report_7942_*.elib.peptides.txt` only; the *Cupriavidus* arms serve `.elib.proteins.txt`. Arms are metabolites: 2PG, ADP, AcCoA, G6P, Mal, Ru5P, RuBP | peptide-level EncyclopeDIA reports, with an SDRF experimental design | two blocks: a peptide-to-protein roll-up would be ours to define, and the measured quantity is metabolite–protein interaction, not protein abundance |
+
+Unchanged and still outside the shortlist: PXD019731 and PXD074299 deposit no
+proteome-wide table and wait on reprocessing; PXD011485 is PCC 11801, outside
+the admitted strains, so it has no admission route; PXD010000 was rejected by
+package B with no grant over its files.
+
+**What this leaves S5.** Two deposits, PXD023591 and PXD027430, are readable
+today by a reader that already exists and is already tested. Neither is blocked
+by licence, by tooling or by the crosswalk. Both are blocked by the same thing:
+a condition record, which needs depositor answers the owner has deferred. The
+other three each need a new reader *and* a prior scientific decision, so none is
+a next step without the owner. S5 therefore has no unblocked admission left.
+
+
 ## Work
 
 | Stage | Work | Depends on |
@@ -229,7 +301,7 @@ the map with its spectral-count unit (576 genes valued).
 | S2 | Structured condition records on every entry of the expression sources manifest: study, data type, platform, strain, basis, replicates, one object per axis with value, status and quote, treatment tags, group; writer in the pipeline, checks in the contract validator; back-fill the two shipped sources | S1 |
 | S3 | Build-time grouping and subgrouping from the records under decision 4, with the pair judgements as a data file; group recipe in `meta.json` | S2 |
 | S4 | The section, the peek, the filters toggle and button, the per-axis and projection-view controls, the `ds` link field with a state-version bump, the export manifest fields, unit tests, and rendered checks at mobile, tablet and desktop widths with the accessible description read | S2, S3 |
-| S5 | Load datasets one at a time under the admission contract: the processed table, checksum, the join through the exact shared-protein crosswalk with matched, unmatched and ambiguous counts, one layer per condition set, contract tests. First candidates are the licence-permitted series with deposited per-gene tables and replicates: GSE104203, GSE222067, GSE288532, GSE327989, GSE79726, GSE89999, then the CC0 proteomes with tables | S2; each needs its condition record |
+| S5 | Load datasets one at a time under the admission contract: the processed table, checksum, the join through the exact shared-protein crosswalk with matched, unmatched and ambiguous counts, one layer per condition set, contract tests. The original first-candidate list (GSE104203, GSE222067, GSE288532, GSE327989, GSE79726, GSE89999, then the CC0 proteomes with tables) is fully consumed: all six series and five proteomes ship. The remaining candidates, each with the route and the gate that actually holds it, are under "Remaining admission shortlist, 2026-10-12" below | S2; each needs its condition record |
 | S6 | Agreement statistics beside the conditions: level correlation against replicate bands and fold-change agreement where both sides have a control; distribution comparison as a units check only; no pass mark | S5 with replicates; reprocessed data for the rest |
 
 ## Verification
