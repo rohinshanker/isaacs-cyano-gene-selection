@@ -39,26 +39,47 @@ CDS-envelope metrics.
 
 ## Verification
 
-- **NC-QA1 — open:** the initial loader eagerly resolved every focal neighbour
+Implementation `0c09511dcaa4f652e9564b9e6ca298d834a4bd95` is integrated locally
+at `905f420`. All six published catalogues reconcile with their pinned source;
+pre-existing OG payload fields and every `genes.json` are unchanged. Required
+checks passed: 1,518 JavaScript tests; 1,370 Python tests, 47 subtests and two
+expected skips; all-six contract/manifest/live checks; 15 annotation inputs,
+four reproduced annotation artifacts, 75 readiness tests; and all 32 RNA-browser
+parity cases plus lifecycle, coverage and diagnostic checks.
+
+The independent native-source oracle agrees on every one of 5,430 gene sides.
+Actual three-mount content checks cover noncoding, abutting, overlap-blocked,
+joined and both origin-wrapping cases. Renders at 375, 768, 1280 and 1440 px and
+six nearby breakpoint widths show no page overflow; final schematic and grey
+noncoding states were visually inspected. Keyboard, preview/pin, filtering,
+camera, loading, missing and failed states were exercised. Ordinary browser
+console: no errors or warnings. Evidence is task-local under
+`/tmp/cyano-cross-strain-context-20261012/`.
+
+- **NC-REVIEW — open:** DEM-374 independent Claude review of immutable snapshot
+  `091733e` and the two-file empty-focus delta to final code `905f420`. Do not
+  close or publish before its findings and confirmation are incorporated.
+
+- **NC-QA1 — resolved by `0c09511`:** the initial loader eagerly resolved every focal neighbour
   query (~464 ms for 2,715 native CDSs in a coordinator Node probe). Resolve/cache
   only the viewed gene, preserving atomic clear/reload and export serialization.
-- **NC-QA2 — open:** a draft change to the shared transcription-piece helper was
+- **NC-QA2 — resolved by `0c09511`:** a draft change to the shared transcription-piece helper was
   justified by randomly generated multi-piece origin joins whose transcript
   boundary is ambiguous. Keep current viewer coordinate behavior unless native
   annotation supplies a proven ordering; an oracle must not choose that boundary
   from an arbitrary array index.
-- **NC-QA3 — open:** at 375 px the direction schematic wraps the entire 3′
+- **NC-QA3 — resolved by `0c09511`:** at 375 px the direction schematic wraps the entire 3′
   downstream label to the left edge of a new row. Preserve the deliberate
   upstream–focal–downstream ordering at narrow widths and inspect the rerender.
-- **NC-QA4 — open:** the complete Syn57 catalogue exposes adjacent CDS pieces
+- **NC-QA4 — resolved by `0c09511`:** the complete Syn57 catalogue exposes adjacent CDS pieces
   for b2891 that normalize to one occupied interval. Reconcile canonical occupied
   bases without changing the native CDS segments or frameshift metadata; verify
   all six published catalogues and the independent source contract.
-- **NC-QA5 — open:** a joined OG partner with one internal piece and a separate
+- **NC-QA5 — resolved by `0c09511`:** a joined OG partner with one internal piece and a separate
   outward piece was skipped, allowing a farther gene to be called immediate and
   its distance unoccupied. Consider all outward occupied segments; if the nearest
   belongs to an OG partner, report that side overlap-blocked, retaining ties.
-- **NC-QA6 — open:** clearing the compact viewer while a new neighbour control
+- **NC-QA6 — resolved by `0c09511`:** clearing the compact viewer while a new neighbour control
   holds focus must restore focus to the surviving labelled viewer, as the
   existing start-site control already does. Verify the empty-state transition.
 
