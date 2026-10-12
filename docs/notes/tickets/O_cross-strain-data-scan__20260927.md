@@ -25,11 +25,12 @@ These are layer counts, not independent studies. The source register and the
 [source ledger](../../validation/source-ledger.md) retain individual admission
 and mapping boundaries; a scan candidate is not a shipped layer.
 
-Work resumed 2026-10-12 by **cyano-ui-fixes** on the remaining native
-flanking-neighbour viewer context, tracked in
-[A_cross-strain-neighbour-context__20261012](A_cross-strain-neighbour-context__20261012.md).
-Its isolated worktree does not own regulatory method pilots, raw-read execution
-or other sessions' source-intake scopes. Existing crosswalks, chromosome view,
+Native flanking-neighbour context was implemented 2026-10-12 by
+**cyano-ui-fixes** in both gene viewers for all six organisms. See
+[the native neighbour contract](../../validation/gene-neighbours.md): all
+annotated neighbours, explicit biotypes, grey noncoding context, strand and exact
+gap, with OG blockers kept separate. Regulatory method pilots, raw-read execution
+and source intake retain their existing sessions. Existing crosswalks, chromosome view,
 dataset selectors and current-report agreement presentation are complete; the
 parent remains open for the remaining source and lab-dependent work.
 
@@ -487,13 +488,14 @@ Remaining viewer work is separated by dependency:
   supports positional coverage. Predictors and new regulatory layers belong to
   [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md),
   not this viewer task.
-- Native flanking-neighbour context is active in the child ticket linked above.
+- Native flanking-neighbour context is implemented in both viewers for all six
+  organisms; the linked contract preserves its coordinate and annotation rules.
   The explicit start window and adjustable upstream sequence through 1,000 bases
   already ship in [gene-sequence-closeup.md](../../validation/gene-sequence-closeup.md).
   The [OG layer](../../validation/gene-overlaps.md) already shows actual shared
   bases in both gene viewers and the chromosome; it is not a list of separated
-  neighbours. Their new context must preserve that distinction and the existing
-  adjacent-CDS gap metrics.
+  neighbours. Native neighbour context preserves that distinction and the
+  existing adjacent-CDS gap metrics.
 
 The viewer's absence statements describe admitted evidence, not the absence of
 literature candidates. New data still require the source-ledger, exact-join and

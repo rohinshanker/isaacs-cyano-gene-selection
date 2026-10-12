@@ -1,11 +1,11 @@
-# A_cross-strain-neighbour-context__20261012 — Active
+# R_cross-strain-neighbour-context__20261012 — Resolved
 
 Scope: Native flanking-neighbour context and current-state reconciliation for O_cross-strain-data-scan__20260927; no new external source admission or predictor execution.
-Status: active
+Status: resolved
 Opened: 2026-10-12
 Updated: 2026-10-12
 
-## Current State
+## Outcome
 
 Owner and integration/closure coordinator: **cyano-ui-fixes** (80c81443-1791314087).
 Isolated branch `work/cross-strain-context-20261012`, worktree
@@ -16,13 +16,12 @@ The owner requested work on the cross-strain scan ticket without interrupting
 other sessions. Regulatory method pilots belong to cyano-regulatory-sites;
 source intake and raw-read work remain with their existing sessions. This scope
 uses pinned native annotations and leaves those operations, inputs and worktrees
-alone. DEM-364 completed read-only reconnaissance. DEM-370 is the sole implementation
-writer in the separate `cross-strain-neighbours-impl-20261012` worktree from
-`c33a874`; this coordinator worktree owns ticket updates and integration.
+alone. DEM-364 completed read-only reconnaissance. DEM-370 completed implementation in the separate `cross-strain-neighbours-impl-20261012` worktree from
+`c33a874`; this coordinator worktree owns review repairs, ticket updates and integration.
 
 The parent already shipped its exact crosswalk, chromosome viewer, dataset
-selectors and the current agreement-report display. The remaining unblocked
-viewer work is flanking neighbours; existing OG displays cover shared bases but
+selectors and the current agreement-report display. This completed scope adds
+flanking neighbours; existing OG displays cover shared bases but
 not separated neighbouring genes. Existing adjacent-CDS gap metrics keep their
 meaning. No sister-strain genomic position will be placed on the UTEX axis.
 
@@ -56,16 +55,16 @@ camera, loading, missing and failed states were exercised. Ordinary browser
 console: no errors or warnings. Evidence is task-local under
 `/tmp/cyano-cross-strain-context-20261012/`.
 
-- **NC-R1 — open:** raw-annotation comparison must reject replicon, pseudogene flag,
+- **NC-R1 — resolved by `0f9768a`:** raw-annotation comparison must reject replicon, pseudogene flag,
   name and segment-source drift for every native catalogue entry.
-- **NC-R2 — open:** retain every tied OG partner occupying the first outward base.
-- **NC-R3 — open:** show the pseudogene label once when both biotype and flag name it.
-- **NC-R4 — open:** expose the schematic's focal identity through a nameable accessible role.
-- **NC-R5 — open:** direct unittest execution must collect ContextCatalogueTest.
-- **NC-N1 — open:** null-safe activeElement access and accurate lazy-hover documentation.
-- **NC-REVIEW — open:** DEM-374 independent Claude review of immutable snapshot
-  `091733e` and the two-file empty-focus delta to final code `905f420`. Do not
-  close or publish before its findings and confirmation are incorporated.
+- **NC-R2 — resolved by `0f9768a`:** retain every tied OG partner occupying the first outward base.
+- **NC-R3 — resolved by `0f9768a`:** show the pseudogene label once when both biotype and flag name it.
+- **NC-R4 — resolved by `0f9768a`:** expose the schematic's focal identity through a nameable accessible role.
+- **NC-R5 — resolved by `0f9768a`:** direct unittest execution must collect ContextCatalogueTest.
+- **NC-N1 — resolved by `0f9768a`:** null-safe activeElement access and accurate lazy-hover documentation.
+- **NC-REVIEW — resolved by `0f9768a`:** DEM-374 independently approved the exact
+  repair commit after checking all R1–R5 and both nits. Its independent six-organism
+  base-walk oracle agrees on all 43,904 sides. No review findings remain open.
 
 - **NC-QA1 — resolved by `0c09511`:** the initial loader eagerly resolved every focal neighbour
   query (~464 ms for 2,715 native CDSs in a coordinator Node probe). Resolve/cache
@@ -91,15 +90,25 @@ console: no errors or warnings. Evidence is task-local under
   existing start-site control already does. Verify the empty-state transition.
 
 
-Before completion: exact geometry tests for both strands, origin wrapping,
-joined features, ties/containment, overlaps versus gaps, unavailable annotations
-and organism isolation; tests for pin/preview and keyboard behavior; render the
-actual affected views at mobile, tablet, desktop and wide widths; required
-repository/release gates and independent review of the exact patch.
+Final repair gates: **1,520 JavaScript tests; 1,371 Python tests, 51 subtests,
+two expected skips; all-six source contracts with zero failures and only the
+declared contiguity skip**. Syn57 uses verified normalized source inputs. The
+repair renders at 375/768/1280/1440 px have no overflow; the real accessibility
+tree exposes all three schematic identities and psbQ is labelled pseudogene
+once. Empty-view focus remains on the labelled surviving host. Earlier manifest,
+live metrics, annotation/readiness and RNA-browser gates remain valid: their
+inputs and paths did not change in the repair. Reviewer confirmation and full
+logs are under the task-local evidence directory above.
 
 ## Cleanup
 
-Keep the broad parent open for its remaining source/admission/lab dependencies.
-Record every review finding and resolving commit before closing this child;
-distill reusable coordinate/display checks to docs/validation and delete the
-resolved ticket last. Remove only this scope's temporary worktrees and servers.
+Closing session: **cyano-ui-fixes**, **2026-10-12**. Every finding is resolved
+above; no audit remains open. The broad parent remains open for source admission,
+lab-dependent comparability and reference-view decisions. Other sessions retain
+regulatory pilot, source-intake and raw-read ownership.
+
+Reusable inventory, geometry, display/focus and verification rules are preserved
+in [gene-neighbours.md](../../validation/gene-neighbours.md), indexed in validation,
+and linked from the reconciled parent ticket. No ticket-only rule needs retention.
+Remove this resolved file last, after the resolution and queue update; remove
+only this scope's temporary worktrees and servers after publication verification.
