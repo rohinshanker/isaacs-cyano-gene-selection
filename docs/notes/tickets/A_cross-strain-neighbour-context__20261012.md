@@ -16,7 +16,9 @@ The owner requested work on the cross-strain scan ticket without interrupting
 other sessions. Regulatory method pilots belong to cyano-regulatory-sites;
 source intake and raw-read work remain with their existing sessions. This scope
 uses pinned native annotations and leaves those operations, inputs and worktrees
-alone. DEM-364 is read-only reconnaissance; the coordinator alone writes here.
+alone. DEM-364 completed read-only reconnaissance. DEM-370 is the sole implementation
+writer in the separate `cross-strain-neighbours-impl-20261012` worktree from
+`c33a874`; this coordinator worktree owns ticket updates and integration.
 
 The parent already shipped its exact crosswalk, chromosome viewer, dataset
 selectors and the current agreement-report display. The remaining unblocked
@@ -28,7 +30,11 @@ An optional owner question is pending: all annotated neighbours (including
 noncoding genes) in both viewers, protein-coding only in both, or all annotations
 in the expanded viewer only. Default proposal: all annotations in both, using a
 compact disclosure and preserving the existing sequence camera and OG display.
-No sequence will be inferred or padded and no missing annotation becomes absence.
+The question is optional; work proceeds with the stated all-annotation default
+while accepting later owner steering. No sequence will be inferred or padded and
+no missing annotation becomes absence. The implementation keeps a complete
+coordinate inventory beside the existing overlap layer, without repeating OG
+features or changing the existing CDS-envelope metrics.
 
 ## Verification
 
