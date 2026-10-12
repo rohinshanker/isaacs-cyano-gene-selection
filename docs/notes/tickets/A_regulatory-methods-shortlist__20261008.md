@@ -7,34 +7,23 @@ Updated: 2026-10-12
 
 ## Current State
 
-Owner resumed this ticket on 2026-10-12. `cyano-regulatory-sites` now owns
-coordination, integration and closure for this work; earlier ownership and
-record-only statements below are historical. Baseline: `dfaa046` in the canonical
-Desktop repository. Work proceeds in an isolated regulatory-methods worktree.
+Owner resumed implementation on 2026-10-12. `cyano-regulatory-sites` owns
+coordination, integration and closure. Work uses an isolated checkout; other
+Agent Deck sessions are neither contacted nor interrupted.
 
-Current bounded implementation: reproducible, non-release native-UTEX pilots
-for standalone TransTermHP and selected regulatory Rfam/Infernal families, with
-source/tool/input pins, strand-aware coordinates, explicit score meaning and
-controls. Assess Promoter Calculator runtime compatibility and the remaining
-methods' concrete input requirements in parallel. Preserve the RBS missing-code
-dependency and iDOG execution hold. No computed output becomes a measured site;
-site publication requires the existing admission and validation contracts.
+The current implementation provides non-release native-UTEX pilots for standalone
+TransTermHP and Rfam/Infernal RF01116, pinned Promoter Calculator preparation, and
+ViennaRNA accessibility runtime/indexing checks. Source/tool/input identity,
+strand-aware coordinates, score meaning and controls remain explicit. No output
+is admitted to the browser by this work.
 
-Owner direction, 2026-10-09: investigate transfer from other cyanobacteria,
-E. coli and other prokaryotes for **very rough UTEX regulatory-site candidates**
-where evaluated UTEX sites are missing. This ticket owns Promoter Calculator,
+The owner authorized transfer from other cyanobacteria, E. coli and other
+prokaryotes for very rough regulatory-site candidates where evaluated UTEX sites
+are missing. Lack of UTEX validation limits labels and evaluation; it does not
+by itself preclude exploratory candidates. This ticket owns Promoter Calculator,
 standalone TransTermHP, STREME, Rfam/Infernal, IntaRNA and new ViennaRNA regulatory
-uses; RBS and iDOG retain their linked tickets. Evidence assessment and ticket
-updates are authorized. No new predictor was run or prediction layer published
-in this pass. Lack of UTEX validation is a label/evaluation limitation, not by
-itself a reason to reject exploratory candidates. Existing source/runtime,
-coordinate and licence requirements remain; the iDOG execution hold remains.
-
-Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
-
-Owner: cyano-source-ingestion. Code baseline 7bf8811 in isolated worktree
-worktrees/ui-choices-20261008. This is a candidate shortlist, not method execution,
-new source admission, genomic remapping or a calibrated-confidence claim.
+uses. RBS's missing-code dependency and iDOG's execution hold remain in their
+linked tickets. No donor coordinates are relabelled as native UTEX coordinates.
 
 ## Implementation and evaluation, 2026-10-12
 
@@ -68,7 +57,8 @@ P6 resolved by `ab1a471`. DEM-371 independently accepted all P1–P6 fixes at `a
 
 ### Standalone TransTermHP
 
-Worker `1179e56`, integrated as `6a66fa2`; independent review DEM-372 is in progress.
+Worker `1179e56`, integrated as `6a66fa2`; DEM-372 accepted the repaired
+implementation at `e6f13bb` after independently rebuilding and rerunning it.
 Official source 2.09 reports an unchanged internal 2.08 banner; both are retained.
 The scratch compiler adaptation changes three pointer-returning `false` values
 to `0`, without changing the scoring code. All three pinned native replicons are
@@ -77,24 +67,27 @@ segments for tool input; origin-spanning terminators remain outside coverage.
 
 | Run | Total | + | − | Chromosome | Plasmid CP006472 | Plasmid CP006473 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Native | 878 | 459 | 419 | 866 | 9 | 3 |
+| Native | 860 | 458 | 402 | 848 | 9 | 3 |
 | Mononucleotide-shuffled control | 319 | 140 | 179 | 313 | 4 | 2 |
 
 These are candidate/null counts, not measured termination or a false-positive
 rate. The `TERM` interval is a hairpin; the adjacent 15-nt scoring tail is recorded
-separately. Every reported interval was bounds-checked. Initial focused tests: 40
-passed. Evidence is preserved outside the managed worktree at
-`/tmp/cyano-regulatory-pilots-20261012/transterm/`; the
+separately. Every reported interval was bounds-checked. All 2,769 genes and seven
+pseudogenes are supplied as annotation context; including the previously omitted
+pseudogenes changes the native count from 878 to 860. The 50 focused tests pass.
+The corrected run is in the coordinator worktree's ignored
+`.playwright-cli/regulatory-methods-20261012/transterm-repaired/`; upstream build
+artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. The
 [runbook](../../validation/regulatory-transterm.md) pins inputs and build steps.
 
-| Initial evaluation artifact | SHA-256 |
+| Corrected evaluation artifact | SHA-256 |
 | --- | --- |
-| Native raw output | `ba651ac99aaba567dd19b606aba872d7cfe6cbc555bee6a16379af258b699851` |
-| Shuffled raw output | `c4205b002e540d973ab798b37a45aa74b48e908ce42254c7d2c993dbe9576330` |
-| JSON | `12408fadb30c8f519e4bd46523750a206a719883f12c2f08e397c91fc3bfcf44` |
-| TSV | `897f6107e4f3d0ee1d590911450ce013e4119a8c91dd76a2f3eaa9fee47a2741` |
+| Native raw output | `2f79a9ba0a4d57a691e3256433f82fac0074a617b58eb89bccd4f9790d2728e3` |
+| Shuffled raw output | `6f7ddfd526c4b4e92cb10763f478f6214e420095bfebf71a498854122de8755c` |
+| JSON | `ad44c6ff3cdb73b6dbeeb8ff93be9adfcf4b08529923a192ec21edda935edf7c` |
+| TSV | `951c7294768836440408e24abc50ba4143ffe21600ece1dba63caf08ecdaaa8a` |
 
-### Open integration findings
+### Integration findings
 
 - **RF1, open:** enforce model and native-assembly input identities before writes;
   recording arbitrary input hashes does not establish the advertised pinned pilot.
@@ -104,11 +97,19 @@ passed. Evidence is preserved outside the managed worktree at
   searched model/window, without asserting biological absence from zero hits.
 - **RF4, open:** keep dated outcomes in this ticket; permanent documentation keeps
   reproducible contracts and quoted source terms, without a new licence decision.
-- **TT1, open:** empty FASTA header can escape as `IndexError` from the parser.
-- **TT2, open:** a mid-write failure can leave a partial output file behind.
+- **TT1, fixed `ba6f70b`:** reject empty FASTA headers with a typed error.
+- **TT2, fixed `ba6f70b`:** remove newly created partial files after a write failure.
+- **TT3, fixed `e6f13bb`:** include seven pseudogenes in annotation/scoring context.
+- **TT4, fixed `e6f13bb`:** flag hits near incomplete linearized boundaries;
+  origin-spanning terminators remain outside coverage.
+- **TT5, fixed `e6f13bb`:** distinguish portable TSV hashes from path-dependent
+  raw/JSON hashes.
+- **TT6, fixed `e6f13bb`:** record the reference compatibility-build recipe.
+- **TT7, fixed `e6f13bb`:** name the pilot as the checksum enforcer, not the fetch script.
 
 RF1–RF4 were sent to the existing DEM-362 implementer for one bounded repair pass.
-TT1–TT2 are independently reproduced by DEM-372; its complete findings are pending.
+DEM-372 independently accepted TT1–TT7 at `e6f13bb`. Its rerun produced a
+byte-identical TSV and confirmed every tail score against native sequence.
 These findings must be resolved before final integration of the affected methods.
 
 ### Remaining selected methods and executable boundaries
@@ -159,7 +160,7 @@ normalization where needed. Raw receipts are in the coordinator worktree's ignor
 
 ## Owner selection, 2026-10-08
 
-**Record only; do not work on these methods or their viewer changes yet.**
+The original record-only instruction was superseded by the owner's implementation request. The selected scope remains:
 Include RBS Calculator, iDOG/TransTermHP, Promoter Calculator, ViennaRNA, STREME,
 Rfam + Infernal, and IntaRNA. The broader assessment table below is retained as
 research context; it does not add independently approved methods beyond this list.
