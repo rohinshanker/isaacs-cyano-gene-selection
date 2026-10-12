@@ -20,8 +20,8 @@ scoring function. `scoredTerminatorStart` and `scoredTerminatorEnd` are the unio
 of those two computed spans; they are not asserted biological boundaries.
 
 All three replicons are circular, but TransTermHP linearizes them and cannot search
-across an origin. The output therefore records an excluded conservative seam span
-of 74 nt at each linearized end: the default maximum 59-nt hairpin plus the 15-nt
+across an origin. The output therefore records a conservative incomplete-context span
+of 74 nt at each linearized end and flags any reported hairpin/tail span entering it: the default maximum 59-nt hairpin plus the 15-nt
 scored tail. The pinned GFF has two origin-wrapping genes. The wrapper preserves
 their physical gene coverage as two same-strand tool-only annotation segments:
 
@@ -30,7 +30,11 @@ their physical gene coverage as two same-strand tool-only annotation segments:
 | `M744_RS13290` | `NZ_CP006472.1` | 45877–48876 | 45877–46366; 1–2510 | − |
 | `M744_RS13620` | `NZ_CP006473.1` | 7830–8123 | 7830–7842; 1–281 | + |
 
-This split preserves gene/intergenic context away from the seam. It does not make
+Both gene and pseudogene features are passed as annotation intervals: 2,769 genes
+and seven pseudogenes. The JSON records the feature counts separately; these are
+annotation categories, not claims that a pseudogene is functional.
+
+This split preserves annotation context away from the seam. It does not make
 cross-origin terminator prediction available.
 
 ## Verified source receipts
@@ -90,7 +94,9 @@ make clean transterm \
 The verified arm64 macOS binary SHA-256 was
 `d76ce6315049411e2a48b772b41e96164fd0de94a7ee4cb3aba697fe4395c3c2`.
 Binary hashes can differ with compiler, path, or build date; every JSON result pins
-the binary it actually executed as well as the immutable source archive.
+the binary it actually executed as well as the immutable source archive and the
+reference compatibility recipe. The recipe records how to reproduce the verified
+build; it does not attest how an arbitrary supplied executable was compiled.
 
 ## Reproduce the native and control run
 
@@ -100,7 +106,8 @@ Acquire the configured genome if it is not already present:
 ./tools/fetch_genome.sh
 ```
 
-The command rejects anything except these exact compressed inputs:
+The pilot command below, rather than the fetch script, rejects anything except
+these exact compressed inputs:
 
 | Input | SHA-256 |
 | --- | --- |
@@ -131,6 +138,11 @@ with `-S`, uses the documented default minimum confidence 76, and preserves all
 other printed 2.09 defaults in each raw report. The control applies a reproducible
 SHA-256-indexed Fisher–Yates mononucleotide shuffle independently to each replicon
 with seed 2973, preserving per-replicon length and nucleotide composition.
+
+Raw reports contain the absolute `expterm.dat` path and a build-date banner.
+Their raw hashes (and JSON hashes that include them) therefore depend on the
+build and checkout path. Compare candidate TSVs and recorded parameters for
+cross-checkout result reproduction; do not require identical raw-report hashes.
 
 ## Failure and edge-case contract
 

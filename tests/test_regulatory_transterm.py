@@ -82,9 +82,9 @@ chr\tRefSeq\tgene\t40\t60\t.\t-\t.\tID=gene-b;locus_tag=b
     assert circular == {"chr": True}
     assert genes == [
         {"id": "a", "replicon": "chr", "start": 2, "end": 20, "strand": "+",
-         "wrapsOrigin": False, "sourceEnd": 20},
+         "wrapsOrigin": False, "sourceEnd": 20, "featureType": "gene"},
         {"id": "b", "replicon": "chr", "start": 40, "end": 60, "strand": "-",
-         "wrapsOrigin": False, "sourceEnd": 60},
+         "wrapsOrigin": False, "sourceEnd": 60, "featureType": "gene"},
     ]
     coords = tmp_path / "genes.coords"
     regulatory_transterm._write_coords(coords, genes)
@@ -99,7 +99,7 @@ chr\tR\tgene\t90\t120\t.\t-\t.\tID=gene-wrap;locus_tag=wrap
     assert circular == {"chr": True}
     assert genes == [{
         "id": "wrap", "replicon": "chr", "start": 90, "end": 20,
-        "strand": "-", "wrapsOrigin": True, "sourceEnd": 120,
+        "strand": "-", "wrapsOrigin": True, "sourceEnd": 120, "featureType": "gene",
     }]
     monkeypatch.setattr(regulatory_transterm, "EXPECTED_REPLICON_LENGTHS", {"chr": 100})
     coords = tmp_path / "wrap.coords"
@@ -223,6 +223,7 @@ def test_parse_report_preserves_both_raw_strands_and_derives_tail_intervals():
         "hairpinScore": -12.7,
         "tailScore": -4.0,
         "regionContext": "F",
+        "nearLinearizedBoundary": True,
         "notes": "gap 1",
     }
     assert records[1]["rawStart"] == 80
@@ -390,7 +391,7 @@ def test_build_payload_pins_provenance_and_control_meaning(tmp_path):
     assert payload["coordinateContract"]["system"] == "one-based inclusive"
     assert payload["coordinateContract"]["reportedInterval"].startswith("hairpin only")
     assert payload["coordinateContract"]["circularBoundaryPolicy"][
-        "conservativeExcludedSpanAtEachLinearizedEndNt"
+        "conservativeIncompleteContextSpanAtEachLinearizedEndNt"
     ] == 74
     assert "not a calibrated probability" in payload["confidenceContract"]["limitation"]
     assert payload["provenance"]["control"]["interpretation"].startswith("null hit")
@@ -474,3 +475,24 @@ def test_failed_report_batch_removes_previously_created_outputs(tmp_path, monkey
         regulatory_transterm.run_pilot(args)
     assert all(not path.exists() for path in outputs.values())
     assert all(path.read_text() == key for key, path in inputs.items())
+
+
+def test_pseudogenes_are_preserved_as_tool_annotation_spans(tmp_path):
+    gff = write(tmp_path / "pseudo.gff", "chr\tR\tpseudogene\t10\t30\t.\t+\t.\tID=pseudo;locus_tag=p\n")
+    genes, _, _ = regulatory_transterm.load_gff_genes(gff, {"chr": "A" * 100})
+    assert genes[0]["id"] == "p"
+    assert genes[0]["featureType"] == "pseudogene"
+    coords = tmp_path / "annotations.coords"
+    regulatory_transterm._write_coords(coords, genes)
+    assert coords.read_text() == "p\t10\t30\tchr\n"
+
+
+def test_near_boundary_hits_are_flagged_not_silently_excluded():
+    rows, _ = regulatory_transterm.parse_report(report(PLUS), {"chr": 100}, "native")
+    assert rows[0]["nearLinearizedBoundary"] is True
+    middle = PLUS.replace("20 - 30", "120 - 130")
+    rows, _ = regulatory_transterm.parse_report(report(middle, length=300), {"chr": 300}, "native")
+    assert rows[0]["nearLinearizedBoundary"] is False
+    near_end = PLUS.replace("20 - 30", "220 - 230")
+    rows, _ = regulatory_transterm.parse_report(report(near_end, length=300), {"chr": 300}, "native")
+    assert rows[0]["nearLinearizedBoundary"] is True  # the scored tail enters the band

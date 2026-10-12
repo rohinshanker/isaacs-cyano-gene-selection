@@ -30,7 +30,7 @@ EXPECTED_REPLICON_LENGTHS = {
     "NZ_CP006473.1": 7_842,
 }
 EXPECTED_TOTAL_LENGTH = 2_744_626
-EXPECTED_GENE_COUNT = 2_769
+EXPECTED_GENE_COUNT = 2_776  # 2,769 genes plus seven annotated pseudogenes.
 FASTA_SHA256 = "22a2b07881c1099c32454778de0e90b1c40f74f44c0f59e000507106c0deb567"
 GFF_SHA256 = "7f606a08892b061667a1988cc05dee889a82f9407066dcf81010ec2e25bb215f"
 TRANSTERM_VERSION = "2.09"
@@ -53,7 +53,7 @@ TSV_FIELDS = (
     "run", "id", "replicon", "start", "end", "strand", "raw_start",
     "raw_end", "tail_start", "tail_end", "scored_terminator_start",
     "scored_terminator_end", "confidence", "hairpin_score", "tail_score",
-    "region_context", "notes",
+    "region_context", "near_linearized_boundary", "notes",
 )
 
 
@@ -137,7 +137,7 @@ def _attributes(value: str) -> dict[str, str]:
 def load_gff_genes(
     path: Path, sequences: dict[str, str]
 ) -> tuple[list[dict[str, object]], dict[str, bool], str | None]:
-    """Read one gene span per GFF gene feature in one-based coordinates."""
+    """Read GFF gene and pseudogene spans in one-based coordinates."""
     genes: list[dict[str, object]] = []
     identifiers: set[str] = set()
     circular: dict[str, bool] = {}
@@ -155,7 +155,7 @@ def load_gff_genes(
                 if len(fields) != 9:
                     raise PilotError(f"{path.name}:{line_number}: expected 9 GFF columns")
                 seqid, _, feature_type, start_text, end_text, _, strand, _, attrs_text = fields
-                if feature_type not in {"region", "gene"}:
+                if feature_type not in {"region", "gene", "pseudogene"}:
                     continue
                 if seqid not in sequences:
                     raise PilotError(f"{path.name}:{line_number}: unknown replicon {seqid}")
@@ -201,6 +201,7 @@ def load_gff_genes(
                 identifiers.add(identifier)
                 genes.append({
                     "id": identifier,
+                    "featureType": feature_type,
                     "replicon": seqid,
                     "start": start,
                     "end": wrapped_end,
@@ -412,6 +413,10 @@ def parse_report(
             "confidence": confidence,
             "hairpinScore": hairpin_score,
             "tailScore": tail_score,
+            "nearLinearizedBoundary": (
+                min(start, tail_start) <= LINEAR_SEAM_EXCLUSION_NT
+                or max(end, tail_end) > length - LINEAR_SEAM_EXCLUSION_NT
+            ),
             "regionContext": context,
             "notes": notes.strip(),
         })
@@ -481,9 +486,9 @@ def build_payload(
             "scoredTailLengthNt": SCORED_TAIL_NT,
             "scoredTerminatorInterval": "union of the reported hairpin and adjacent 15-nt tail used by the source scoring function",
             "circularBoundaryPolicy": {
-                "mode": "excluded",
+                "mode": "origin-crossing predictions unavailable; nearby hits flagged",
                 "reason": "TransTermHP linearizes each replicon and does not search across the origin",
-                "conservativeExcludedSpanAtEachLinearizedEndNt": LINEAR_SEAM_EXCLUSION_NT,
+                "conservativeIncompleteContextSpanAtEachLinearizedEndNt": LINEAR_SEAM_EXCLUSION_NT,
                 "maxHairpinLengthNt": MAX_HAIRPIN_NT,
                 "scoredTailLengthNt": SCORED_TAIL_NT,
             },
@@ -501,6 +506,13 @@ def build_payload(
                 "url": TRANSTERM_SOURCE_URL,
                 "archive": source_archive.name,
                 "sha256": sha256_file(source_archive),
+                "referenceBuildRecipe": {
+                    "file": "seq.cc",
+                    "replace": "if(i == EOF) return false;",
+                    "with": "if(i == EOF) return 0;",
+                    "occurrences": 3,
+                    "scope": "documented macOS compatibility recipe; not binary attestation",
+                },
             },
             "toolRuntime": {
                 "binary": binary.name,
@@ -520,7 +532,10 @@ def build_payload(
                 "fasta": {"file": fasta.name, "sha256": sha256_file(fasta)},
                 "gff": {"file": gff.name, "sha256": sha256_file(gff)},
                 "repliconLengths": EXPECTED_REPLICON_LENGTHS,
-                "geneFeatures": len(genes),
+                "annotationFeatures": len(genes),
+                "annotationFeatureCounts": dict(sorted(Counter(
+                    str(gene.get("featureType", "gene")) for gene in genes
+                ).items())),
                 "geneRowsPassedToTool": sum(
                     2 if gene.get("wrapsOrigin") else 1 for gene in genes
                 ),
@@ -583,6 +598,7 @@ def tsv_bytes(payload: dict[str, object]) -> bytes:
                 "hairpin_score": record["hairpinScore"],
                 "tail_score": record["tailScore"],
                 "region_context": record["regionContext"],
+                "near_linearized_boundary": record["nearLinearizedBoundary"],
                 "notes": record["notes"],
             })
     return buffer.getvalue().encode("utf-8")
