@@ -50,7 +50,14 @@ import { TRNA_TAB, TrnaViewer, trnaLabel } from './ui/trna-viewer.js';
 import { defaultTrnaViewport } from './core/trna-loci.js';
 import { renderMeasurementSources } from './ui/measurement-provenance.js';
 import { describePaintOrder, repliconTracks } from './core/chromosome-model.js';
-import { metricHelp, functionCategoryHelp, overlapColorHelp } from './core/metric-help.js';
+import {
+  metricHelp, functionCategoryHelp, overlapColorHelp, pccEssentialityHelp,
+} from './core/metric-help.js';
+import {
+  PCC_ESSENTIALITY_BUCKETS, PCC_ESSENTIALITY_BUCKET_IDS, PCC_ESSENTIALITY_COLOR_KEY,
+  PCC_ESSENTIALITY_LABEL, normalizePccEssentialitySelection, passesPccEssentialityFilter,
+  pccBucketIdAt, resolvePccEssentiality, togglePccEssentialitySelection,
+} from './core/pcc-essentiality.js';
 import {
   FUNCTION_COLOR_KEY, categoryBucketId, passesCategoryFilter, toggleCategorySelection,
   UNKNOWN_CATEGORY_ID,
@@ -69,10 +76,11 @@ import { renderMetricHelp, renderProjectionHelp } from './ui/metric-help.js';
 import { renderLoadings } from './ui/loadings.js';
 import {
   annotationSourceExplanation, describeValueScale, renderLegend, renderCategoryLegend,
-  renderOverlapLegend,
+  renderOverlapLegend, renderPccEssentialityLegend,
 } from './ui/legend.js';
 import {
-  buildColorScale, buildCategoryColorScale, buildOverlapColorScale, isDivergingRamp,
+  buildColorScale, buildCategoryColorScale, buildOverlapColorScale,
+  buildPccEssentialityColorScale, isDivergingRamp,
 } from './ui/colors.js';
 import {
   OVERLAP_CLASSES, OVERLAP_CLASS_IDS, OVERLAP_COLOR_KEY, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE,
@@ -175,6 +183,12 @@ const STORAGE_COMPARE_AXES = STORAGE.compareAxes;
 
 /** The organism's colour-source toggles, empty when it has no category colour. */
 const COLOR_SOURCE_TOGGLES = organism.annotationSources;
+
+/**
+ * The PCC 7942 essentiality channel's copy, or null for an organism that does
+ * not publish the calls: then there is no menu entry, filter, legend or link field.
+ */
+const PCC_ESSENTIALITY_COPY = layerOf(organism, 'candidateEvidence')?.essentialityColour ?? null;
 
 /**
  * The shared tablist: the first two map panels, chromosome/gene and the tRNA
@@ -434,6 +448,42 @@ function toggleOverlapClassFilter(id) {
   setOverlapSelection([...selected]);
 }
 
+/**
+ * The PCC 7942 essentiality model for this render: every CDS's bucket, or the
+ * pending state while the candidate evidence is not read. Null for an organism
+ * without the calls.
+ */
+function resolvePccEssentialityModel() {
+  if (!PCC_ESSENTIALITY_COPY) return null;
+  const { dataset } = context;
+  const pending = isLoading(dataset, 'candidateEvidence') ? FILE_STATE.LOADING
+    : hasFailed(dataset, 'candidateEvidence') ? FILE_STATE.FAILED : null;
+  return resolvePccEssentiality({
+    candidateEvidence: dataset.candidateEvidence, genes: dataset.genes, pending,
+  });
+}
+
+function pccEssentialityModel() {
+  return context.pccEssentiality ?? resolvePccEssentialityModel();
+}
+
+/**
+ * Adopt a PCC 7942 essentiality selection, the one channel the Filters panel's
+ * checkboxes and the colour key's rows both write. It narrows what is drawn and
+ * counted, whatever Colour by shows; it never changes a call.
+ */
+function setPccEssentialitySelection(selection) {
+  const next = normalizePccEssentialitySelection(selection);
+  if (next.join(',') === state.pccEssentialityFilter.join(',')) return;
+  state.pccEssentialityFilter = next;
+  renderAll();
+  const labels = PCC_ESSENTIALITY_BUCKETS.filter((bucket) => next.includes(bucket.id))
+    .map((bucket) => bucket.label).join('; ');
+  announce(next.length === 0
+    ? 'PCC 7942 essentiality filter cleared.'
+    : `PCC 7942 essentiality filter: showing ${labels}.`);
+}
+
 /** Flip one colour-source checkbox: only colouring and the legend counts change. */
 function toggleColorSource(id, enabled) {
   const next = new Set(state.colorSources);
@@ -453,6 +503,7 @@ function toggleColorSource(id, enabled) {
 function computeMask() {
   resolveCategoryModel();
   context.overlaps = resolveOverlapModel();
+  context.pccEssentiality = resolvePccEssentialityModel();
   const { dataset, registry } = context;
   const count = dataset.genes.length;
   const mask = new Uint8Array(count).fill(1);
@@ -520,20 +571,22 @@ function computeMask() {
     }
   }
 
-  // Kept separate from the category-filtered mask below: a legend hover
-  // preview narrows this base mask to one category without ever touching
-  // `state.categoryFilter`, so numeric/exception/expression/protein filters
-  // still apply during a preview but the current category selection does not.
+  // Kept separate from the category- and essentiality-filtered mask below: a
+  // legend hover preview narrows this base mask to one bucket of its own
+  // channel without touching that channel's selection, so every other filter,
+  // the other channel's selection included, still applies during a preview.
   context.baseMask = mask;
 
   let finalMask = mask;
-  const categories = context.categories;
-  // A pending category model has no categories to filter by; the selection is
-  // kept and applied when the categories land.
-  if (state.categoryFilter.length > 0 && categories && !categories.pending) {
+  // A pending model has nothing to filter by; its selection is kept and
+  // applied when the file lands.
+  const categoryActive = categoryFilterActive();
+  const essentialityActive = state.pccEssentialityFilter.length > 0
+    && context.pccEssentiality && !context.pccEssentiality.pending;
+  if (categoryActive || essentialityActive) {
     finalMask = new Uint8Array(count);
     for (let i = 0; i < count; i += 1) {
-      finalMask[i] = mask[i] && passesCategoryFilter(categories, i, state.categoryFilter) ? 1 : 0;
+      finalMask[i] = mask[i] && passesOtherChannels(i, null) ? 1 : 0;
     }
   }
 
@@ -542,6 +595,23 @@ function computeMask() {
   context.mask = finalMask;
   context.passing = passing;
   context.missingHidden = missingHidden;
+}
+
+/** Whether a function-category selection is in force on a resolved model. */
+function categoryFilterActive() {
+  const categories = context.categories;
+  return state.categoryFilter.length > 0 && Boolean(categories) && !categories.pending;
+}
+
+/**
+ * Whether gene `i` passes the function-category and essentiality selections,
+ * leaving out `skip` ('category' or 'essentiality'), the channel being previewed.
+ */
+function passesOtherChannels(i, skip) {
+  if (skip !== 'category' && categoryFilterActive()
+    && !passesCategoryFilter(context.categories, i, state.categoryFilter)) return false;
+  return skip === 'essentiality'
+    || passesPccEssentialityFilter(context.pccEssentiality, i, state.pccEssentialityFilter);
 }
 
 /**
@@ -564,26 +634,41 @@ function previewCategory(id) {
     return;
   }
   const base = context.baseMask;
-  // An OG class previews through the overlap index, a function category
-  // through the category model: one preview channel, two vocabularies, and
-  // neither can be read against the other's buckets.
-  if (OVERLAP_CLASS_IDS.includes(id)) {
-    const overlaps = overlapModel();
-    if (!overlaps.index) return;
-    const preview = new Uint8Array(base.length);
-    for (let i = 0; i < base.length; i += 1) {
-      preview[i] = base[i] && OVERLAP_CLASS_IDS[overlaps.values[i]] === id ? 1 : 0;
-    }
-    apply(preview);
-    return;
-  }
-  const categories = context.categories;
-  if (!categories) return;
+  const channel = previewChannel(id);
+  if (!channel) return;
+  // One composition for every channel, so no preview can drop a selection:
+  // the base mask carries every other filter, and only the previewed
+  // channel's own selection is left out.
   const preview = new Uint8Array(base.length);
   for (let i = 0; i < base.length; i += 1) {
-    preview[i] = base[i] && categoryBucketId(categories, i) === id ? 1 : 0;
+    preview[i] = base[i] && channel.bucketAt(i) === id
+      && passesOtherChannels(i, channel.skip) ? 1 : 0;
   }
   apply(preview);
+}
+
+/**
+ * How a legend id previews: the gene's bucket in that id's own vocabulary, and
+ * which selection the preview stands in for. An OG class reads the overlap
+ * index, an essentiality bucket the PCC 7942 calls, a function category the
+ * category model; none can be read against another's buckets. Null while the
+ * channel's file has not been read.
+ */
+function previewChannel(id) {
+  if (OVERLAP_CLASS_IDS.includes(id)) {
+    const overlaps = overlapModel();
+    // The OG selection is already in the base mask, so nothing is skipped.
+    return overlaps.index
+      ? { skip: null, bucketAt: (i) => OVERLAP_CLASS_IDS[overlaps.values[i]] } : null;
+  }
+  if (PCC_ESSENTIALITY_BUCKET_IDS.includes(id)) {
+    const essentiality = context.pccEssentiality;
+    return essentiality?.positions
+      ? { skip: 'essentiality', bucketAt: (i) => pccBucketIdAt(essentiality, i) } : null;
+  }
+  const categories = context.categories;
+  return categories
+    ? { skip: 'category', bucketAt: (i) => categoryBucketId(categories, i) } : null;
 }
 
 // Hover (mouse) and keyboard focus are independent preview channels. Losing
@@ -842,6 +927,13 @@ function resolveColorScale() {
       scale: null, availability: null,
     };
   }
+  if (state.colorBy === PCC_ESSENTIALITY_COLOR_KEY && PCC_ESSENTIALITY_COPY) {
+    state.colorScale = null;
+    return {
+      categorical: true, essentiality: true, metric: null,
+      values: pccEssentialityModel().values, scale: null, availability: null,
+    };
+  }
   const categories = context.categories ?? resolveCategoryModel();
   if (state.colorBy === FUNCTION_COLOR_KEY && categories) {
     // No scale is in effect, so the link and the export manifest say so rather
@@ -904,6 +996,24 @@ function colorModel() {
       metric: { label },
       values: overlaps.values,
       scale: buildOverlapColorScale({ pending: Boolean(overlaps.pending) }),
+      valueScale: null,
+      derived: null,
+      label,
+    };
+  }
+  if (resolved.essentiality) {
+    const essentiality = pccEssentialityModel();
+    const label = essentiality.pending
+      ? `${PCC_ESSENTIALITY_LABEL} (not loaded yet)` : PCC_ESSENTIALITY_LABEL;
+    return {
+      ...shared,
+      categories: null,
+      pccEssentiality: essentiality,
+      categorical: true,
+      essentiality: true,
+      metric: { label },
+      values: essentiality.values,
+      scale: buildPccEssentialityColorScale({ pending: Boolean(essentiality.pending) }),
       valueScale: null,
       derived: null,
       label,
@@ -1029,6 +1139,36 @@ function renderColorLegend(host, colors, { markerConventions = true, controlsHos
     });
     return;
   }
+  if (colors.essentiality) {
+    const essentiality = colors.pccEssentiality;
+    let hiddenCalledCount = 0;
+    let hiddenUnresolvedCount = 0;
+    if (!essentiality.pending) {
+      for (let i = 0; i < context.mask.length; i += 1) {
+        if (context.mask[i]) continue;
+        if (essentiality.values[i] >= 0) hiddenCalledCount += 1;
+        else hiddenUnresolvedCount += 1;
+      }
+    }
+    renderPccEssentialityLegend(host, {
+      controlsHost,
+      scale,
+      model: essentiality,
+      note: PCC_ESSENTIALITY_COPY.legendNote,
+      selected: state.pccEssentialityFilter,
+      hiddenCalledCount,
+      hiddenUnresolvedCount,
+      showHidden: state.showHidden,
+      markerConventions,
+      onHoverCategory: (id) => hoverCategory(id),
+      onFocusCategory: (id) => focusCategory(id),
+      onToggleCategory: (id) => setPccEssentialitySelection(
+        togglePccEssentialitySelection(state.pccEssentialityFilter, id),
+      ),
+      onResetCategoryFilter: () => setPccEssentialitySelection([]),
+    });
+    return;
+  }
   if (categorical) {
     let hiddenReviewedCount = 0;
     let hiddenUnknownCount = 0;
@@ -1093,6 +1233,13 @@ function colorSelectOptions() {
   if (context.dataset.functionCategories) {
     options.push({ group: 'Reviewed function', value: FUNCTION_COLOR_KEY, label: 'Function category' });
   }
+  // Directly below Function category, and only for an organism that publishes
+  // the PCC 7942 calls.
+  if (PCC_ESSENTIALITY_COPY) {
+    options.push({
+      group: 'Reviewed function', value: PCC_ESSENTIALITY_COLOR_KEY, label: PCC_ESSENTIALITY_LABEL,
+    });
+  }
   // Offered for every organism, whatever its overlap layer has done: the
   // channel's own legend says when nothing has been read, which is a state a
   // reader has to be able to reach rather than an option that quietly vanishes.
@@ -1112,6 +1259,11 @@ function colorSelectOptions() {
 function renderColorHelp(host) {
   if (state.colorBy === OVERLAP_COLOR_KEY) {
     renderMetricHelp(host, overlapColorHelp(overlapModel()), citationsManifest, organism);
+    return;
+  }
+  if (state.colorBy === PCC_ESSENTIALITY_COLOR_KEY && PCC_ESSENTIALITY_COPY) {
+    renderMetricHelp(host, pccEssentialityHelp(pccEssentialityModel(), organism),
+      citationsManifest, organism);
     return;
   }
   const categories = context.categories ?? resolveCategoryModel();
@@ -1599,6 +1751,9 @@ function renderAll({ schemeErrors = [] } = {}) {
     } : null,
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
     overlapClassFilter: state.overlapClassFilter,
+    pccEssentiality: PCC_ESSENTIALITY_COPY
+      ? { model: pccEssentialityModel(), note: PCC_ESSENTIALITY_COPY.filterNote } : null,
+    pccEssentialityFilter: state.pccEssentialityFilter,
     // Of the whole plotted set, not of what the other filters leave: the tag
     // records genomic context, so these two counts must not move as a reader
     // narrows something else. Null while nothing has been read.
@@ -1616,6 +1771,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     filterState: {
       ranges: state.filters,
       categoryFilter: state.categoryFilter,
+      ...(PCC_ESSENTIALITY_COPY ? { pcc7942Essentiality: state.pccEssentialityFilter } : {}),
       proteinEvidence: state.proteinFilter,
       expression: state.expressionFilter,
       translationalException: state.exceptionFilter,
@@ -2649,6 +2805,9 @@ function normalizeAndApply(decoded) {
   // A category selection means nothing in a dataset with no function
   // categories, so it is not kept in the state, the address, or an export.
   if (!context.dataset.functionCategories) state.categoryFilter = [];
+  // Likewise an essentiality selection for an organism without the calls.
+  state.pccEssentialityFilter = PCC_ESSENTIALITY_COPY
+    ? normalizePccEssentialitySelection(state.pccEssentialityFilter) : [];
 
   const schemeErrors = recomputeScheme();
   if (schemeErrors.length > 0) {
@@ -2695,6 +2854,7 @@ function normalizeAndApply(decoded) {
   if (!state.colorBy || !((context.registry.byKey.has(state.colorBy)
     && metricInScope(context.registry.byKey.get(state.colorBy)))
     || state.colorBy === OVERLAP_COLOR_KEY
+    || (state.colorBy === PCC_ESSENTIALITY_COLOR_KEY && PCC_ESSENTIALITY_COPY)
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
     state.colorBy = freshViewColorKey(scopedRegistry(), context.dataset.functionCategories);
   }
@@ -2873,6 +3033,9 @@ function refreshProteinRecords() {
 function promotedFileKeys(view) {
   const keys = new Set();
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
+  // The essentiality colour and filter read the candidate evidence alone.
+  if (PCC_ESSENTIALITY_COPY && (view.colorBy === PCC_ESSENTIALITY_COLOR_KEY
+    || view.pccEssentialityFilter.length > 0)) keys.add('candidateEvidence');
   if (view.proteinFilter !== 'any' || view.panel === LENGTH_TAB.id) keys.add('lengthCohorts');
   if (view.panel === REGULATORY_TAB.id) keys.add('regulatoryTss');
   if (view.panel === TRNA_TAB.id) keys.add('trnaLoci');
@@ -2948,6 +3111,7 @@ function colorMetricFileKeys(key) {
   };
   if (key === FUNCTION_COLOR_KEY) addWithDependencies('sourceDerivedCategories');
   if (key === OVERLAP_COLOR_KEY) addWithDependencies('geneOverlaps');
+  if (key === PCC_ESSENTIALITY_COLOR_KEY) addWithDependencies('candidateEvidence');
   const direct = context.registry.byKey.get(key)?.fileKey ?? null;
   if (direct) addWithDependencies(direct);
   if (isTypeKey(key)) {
@@ -2978,7 +3142,8 @@ async function renderSelectedColorMetric(key) {
     fileKeys,
     metricLabel: metric?.label
       ?? (key === FUNCTION_COLOR_KEY ? 'Function category'
-        : key === OVERLAP_COLOR_KEY ? `Overlapping genes (${OVERLAP_TAG_LABEL})` : key),
+        : key === OVERLAP_COLOR_KEY ? `Overlapping genes (${OVERLAP_TAG_LABEL})`
+          : key === PCC_ESSENTIALITY_COLOR_KEY ? PCC_ESSENTIALITY_LABEL : key),
     host,
     snapshot: staged.snapshot(),
   });
@@ -3075,6 +3240,11 @@ function flushLandings() {
   // same not-loaded neutral.
   if (revealed && keys.has('geneOverlaps') && state.colorBy === OVERLAP_COLOR_KEY
     && !isLoading(dataset, 'geneOverlaps') && !plot.introActive) {
+    startMapIntro({ appearMs: 0, colourMs: loadTiming.mapIntro.colourMs });
+  }
+  // And for the PCC 7942 essentiality calls.
+  if (revealed && keys.has('candidateEvidence') && state.colorBy === PCC_ESSENTIALITY_COLOR_KEY
+    && !isLoading(dataset, 'candidateEvidence') && !plot.introActive) {
     startMapIntro({ appearMs: 0, colourMs: loadTiming.mapIntro.colourMs });
   }
 }
@@ -3458,6 +3628,7 @@ async function boot() {
     onOverlapFilterChange: (mode) => {
       setOverlapSelection(overlapSelectionFor(mode));
     },
+    onPccEssentialityFilterChange: (selection) => setPccEssentialitySelection(selection),
     onExceptionFilterChange: (mode) => {
       state.exceptionFilter = mode;
       renderAll();

@@ -1022,14 +1022,17 @@ export class ChromosomeView {
     // While the function categories are pending every CDS sits in the one
     // not-loaded bucket, which counts as a value above. Reporting "0 CDSs have
     // no value" would be a resolved zero beside a legend that says not loaded.
-    const pendingCategories = colors.categories?.pending ?? null;
+    // The PCC 7942 essentiality calls have the same not-loaded bucket.
+    const pendingCategories = colors.categories?.pending ?? colors.pccEssentiality?.pending ?? null;
+    const pendingNoun = colors.pccEssentiality ? 'PCC 7942 essentiality calls' : 'function categories';
+    const pendingVerb = { failed: 'could not be loaded', absent: 'are not published' }[pendingCategories]
+      ?? 'are still loading';
     const parts = [
       'Plus-strand CDSs sit above each axis and minus-strand CDSs below it, each drawn as one '
         + 'bar per annotated segment.',
       pendingCategories
-        ? `The function categories ${pendingCategories === 'failed' ? 'could not be loaded'
-          : 'are still loading'}, so every CDS draws in one neutral colour that means not `
-          + 'loaded, not unknown.'
+        ? `The ${pendingNoun} ${pendingVerb}, so every CDS draws in one neutral colour that `
+          + 'means not loaded, not unknown.'
         : `${formatCount(missing)} CDS${missing === 1 ? ' has' : 's have'} no value for this colour `
           + 'and draw as an empty outline, never as a colour that would imply a measurement.',
     ];

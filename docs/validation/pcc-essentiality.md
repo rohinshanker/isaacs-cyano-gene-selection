@@ -20,8 +20,9 @@ S1](https://doi.org/10.1128/mbio.00862-22), sheet `PG_metadata`, column
 Rubin and publishes PCC 7942 and UTEX 2973 locus IDs in the same pangenome
 rows. The article's Data Set S1 legend names Adomako et al. as copyright
 holders and states **CC BY 4.0**; the spreadsheet does not include that notice.
-The original Rubin Dataset S3 is not yet offered here; since the owner decision of 2026-10-06 it may be, cited to Rubin et al., and is queued in the unblocked-sources ticket. The
-unmodified Adomako workbook is pinned at
+The original Rubin Dataset S3 is an upstream catalogue pointer, not a retained
+input. Do not claim original-S3 parity without obtaining and comparing that
+file. The unmodified Adomako workbook is pinned at
 `data/essentiality/source/mbio.00862-22-s0001.xlsx` (1,359,396 bytes,
 SHA-256 `b988b744c4c939ce6f47232eacfc30338907a9b911830999eb23414cbe6c331b`).
 It was obtained from the [Europe PMC supplemental-file
@@ -63,6 +64,40 @@ assay context, citations, and export fields retain source strain and
 assumption wording. The panel objective does not use borrowed essentiality
 as a fitness or viability prediction.
 
+## Coloring and filtering
+
+“PCC 7942 essentiality” appears immediately after “Function category” under
+“Reviewed function” in the map and chromosome color menus. It reads the admitted
+PCC call directly, independently of the candidate-evidence tier described below.
+Tested UTEX alleles and GO predictions never change a gene's PCC color.
+
+| Display class | Source states | Current mapped UTEX count |
+| --- | --- | --- |
+| Essential | `essential` | 660 |
+| Beneficial | `beneficial` | 154 |
+| Non-essential | `non-essential` | 1,617 |
+| Unresolved | `ambiguous`, `not_analyzed`, `missing`, `unknown` | 284 |
+
+These counts describe the 2,715 plotted UTEX genes and their associated PCC
+evidence, not Rubin's full PCC genome. Unresolved is a display group only: gene
+details and exports retain each exact source state and mapping reason. No call,
+failed loading and an unresolved mapping must never imply non-essentiality.
+
+The essentiality filter is independent of the color choice and combines with
+other active filters. Class choices within it are alternatives (OR); an empty
+selection imposes no essentiality filter. Shared links and exported views retain
+the selection (`pe` in shared URLs and `pccEssentialityFilter` in view state).
+The CSV retains `pcc7942Essentiality` and adds `pcc7942EssentialityBucket`; the
+manifest records the four display buckets and their exact source-status lists.
+Organisms without this admitted PCC layer do not offer the option
+or inherit a UTEX essentiality filter. A fresh view retains its existing function
+color and unfiltered state.
+
+Check all four classes in map and chromosome views, combined filters, clear/reset,
+shared-link restoration, exports, loading/failure/retry and switching organisms.
+Check keyboard operation and narrow layouts. Keep the evidence-strain statement
+and Rubin/Adomako citations visible in the relevant legend/help.
+
 ## Precedence and GO IEA fallback
 
 Candidate evidence uses one precedence: tested UTEX allele, then admitted PCC
@@ -95,5 +130,5 @@ conditions before publishing.
 python3 tools/build_pcc7942_essentiality.py --check
 python3 tools/candidate_evidence.py check
 python3 -m pytest -q tests/test_pcc7942_essentiality.py tests/test_candidate_evidence.py
-node --test tests/js/candidate-evidence.test.mjs tests/js/export-manifest.test.mjs
+node --test tests/js/pcc-essentiality.test.mjs tests/js/candidate-evidence.test.mjs tests/js/export-manifest.test.mjs
 ```

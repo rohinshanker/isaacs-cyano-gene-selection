@@ -10,6 +10,10 @@ import {
   OVERLAP_CLASSES, OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE,
   describeOverlapRule,
 } from '../core/gene-overlaps.js';
+import {
+  PCC_COLOURED_BUCKET_COUNT, PCC_ESSENTIALITY_BUCKETS, PCC_ESSENTIALITY_LABEL,
+  describeBucketStatuses, pccPendingSentence,
+} from '../core/pcc-essentiality.js';
 import { VALUE_SCALE_LABELS } from '../core/value-scales.js';
 import { defaultColorSources } from '../core/annotation-source.js';
 import { DEFAULT_ORGANISM, sourceIds, sourceLabels } from '../core/organisms.js';
@@ -436,6 +440,133 @@ export function renderOverlapLegend(host, {
     + 'The full definition and what it covers are in the colour explanation.';
   host.append(title, list, rule, resetButton);
   (controlsHost ?? host).append(note);
+
+  if (focusedId !== null) {
+    const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))
+      .find((row) => row.dataset.categoryId === focusedId);
+    if (toFocus) toFocus.focus();
+  }
+}
+
+/**
+ * The PCC 7942 essentiality colour key: four buckets with their counts over
+ * the whole plotted set, the exact statuses behind Unresolved, and the
+ * cross-strain statement.
+ *
+ * Each row toggles the one essentiality selection the Filters panel also
+ * writes. While the calls are not read there are no rows, only the neutral
+ * swatch and the sentence saying why: zero counts would read as a result.
+ *
+ * @param {HTMLElement} host emptied and rebuilt.
+ * @param {{scale: object, model: object, note: string, selected?: string[],
+ *   hiddenCalledCount?: number, hiddenUnresolvedCount?: number, showHidden?: boolean,
+ *   markerConventions?: boolean, controlsHost?: HTMLElement|null,
+ *   onHoverCategory?: (id: string|null) => void,
+ *   onFocusCategory?: (id: string|null) => void,
+ *   onToggleCategory?: (id: string) => void,
+ *   onResetCategoryFilter?: () => void}} state
+ */
+export function renderPccEssentialityLegend(host, {
+  scale, model, note, selected = [], hiddenCalledCount = 0, hiddenUnresolvedCount = 0,
+  showHidden = true, markerConventions = true, controlsHost = null,
+  onHoverCategory = () => {}, onFocusCategory = () => {},
+  onToggleCategory = () => {}, onResetCategoryFilter = () => {},
+}) {
+  const focusedId = host.contains(document.activeElement)
+    ? document.activeElement.dataset.categoryId ?? null
+    : null;
+  host.replaceChildren();
+  host.classList.add('category-mode');
+  const title = document.createElement('p');
+  title.className = 'legend-title';
+  title.textContent = `${PCC_ESSENTIALITY_LABEL} (whole CDS set)`;
+  const list = document.createElement('ul');
+  list.className = 'legend-notes category-legend';
+  const caution = document.createElement('p');
+  caution.className = 'legend-ramp-note';
+  caution.textContent = note;
+  if (model.pending) {
+    title.textContent = PCC_ESSENTIALITY_LABEL;
+    const item = document.createElement('li');
+    item.className = 'evidence-pending';
+    item.dataset.pending = model.pending;
+    item.setAttribute('role', 'status');
+    const color = scale.buckets[scale.buckets.length - 1];
+    item.append(makeSwatch('filled-circle', color, color),
+      document.createTextNode(` ${pccPendingSentence(model.pending)}`));
+    list.append(item);
+    host.append(title, list);
+    if (selected.length > 0) {
+      const held = document.createElement('p');
+      held.className = 'legend-ramp-note';
+      held.setAttribute('role', 'status');
+      held.textContent = 'An essentiality selection is held and hides no gene until the calls '
+        + 'are read.';
+      host.append(held);
+    }
+    host.append(caution);
+    return;
+  }
+  PCC_ESSENTIALITY_BUCKETS.forEach((bucket, position) => {
+    const coloured = position < PCC_COLOURED_BUCKET_COUNT;
+    const item = document.createElement('li');
+    const button = document.createElement('div');
+    button.className = 'category-legend-row';
+    button.setAttribute('role', 'checkbox');
+    button.tabIndex = 0;
+    const isSelected = selected.includes(bucket.id);
+    button.setAttribute('aria-checked', String(isSelected));
+    button.classList.toggle('selected', isSelected);
+    button.dataset.categoryId = bucket.id;
+    button.append(coloured
+      ? makeSwatch('filled-circle', REVIEWED_MARKER_BORDER, scale.buckets[position])
+      : makeSwatch('open-circle', CATEGORY_UNKNOWN_COLOR),
+    document.createTextNode(` ${bucket.label} (${formatCount(model.counts[position])})`));
+    button.title = `PCC 7942 status: ${describeBucketStatuses(bucket, model.statusCounts)}`;
+    button.addEventListener('mouseenter', () => onHoverCategory(bucket.id));
+    button.addEventListener('mouseleave', () => onHoverCategory(null));
+    button.addEventListener('focus', () => onFocusCategory(bucket.id));
+    button.addEventListener('blur', () => onFocusCategory(null));
+    button.addEventListener('click', () => onToggleCategory(bucket.id));
+    button.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+      event.preventDefault();
+      onToggleCategory(bucket.id);
+    });
+    item.append(button);
+    list.append(item);
+  });
+  if (markerConventions && showHidden) {
+    for (const [label, shape, color, fill, count] of [
+      ['Excluded, with a call: grey outlined square', 'ghost-square', GHOST_BORDER, GHOST_COLOR,
+        hiddenCalledCount],
+      ['Excluded, unresolved: grey dot', 'filled-dot', CATEGORY_UNKNOWN_COLOR,
+        CATEGORY_UNKNOWN_COLOR, hiddenUnresolvedCount],
+    ]) {
+      if (count <= 0) continue;
+      const item = document.createElement('li');
+      item.append(makeSwatch(shape, color, fill),
+        document.createTextNode(`${label} (${formatCount(count)})`));
+      list.append(item);
+    }
+  }
+  const unresolved = PCC_ESSENTIALITY_BUCKETS[PCC_ESSENTIALITY_BUCKETS.length - 1];
+  const breakdown = document.createElement('p');
+  breakdown.className = 'legend-ramp-note';
+  breakdown.textContent = `${unresolved.label}: `
+    + `${describeBucketStatuses(unresolved, model.statusCounts)}.`;
+  const resetButton = document.createElement('button');
+  resetButton.type = 'button';
+  resetButton.className = 'chip-button category-legend-reset';
+  resetButton.textContent = 'Clear essentiality selection';
+  resetButton.disabled = selected.length === 0;
+  resetButton.addEventListener('click', () => onResetCategoryFilter());
+  const controls = document.createElement('p');
+  controls.className = 'legend-ramp-note';
+  controls.textContent = 'Hover or focus a call to preview it; click, Enter, or Space toggles it '
+    + 'as a filter.';
+  host.append(title, list, breakdown, caution, resetButton);
+  (controlsHost ?? host).append(controls);
 
   if (focusedId !== null) {
     const toFocus = Array.from(list.querySelectorAll('.category-legend-row'))

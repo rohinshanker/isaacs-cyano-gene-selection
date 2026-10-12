@@ -32,6 +32,9 @@ export const UTEX2973 = {
   citationLabels: {
     'simkovsky-2022': 'Simkovsky et al. 2022, RNA-seq and RB-TnSeq',
     'tan-2018': 'Tan et al., UTEX TSS',
+    'rubin-2015-assessed': 'Rubin et al. 2015, PCC 7942 essentiality',
+    'adomako-2022-essentiality': 'Adomako et al. 2022, Data Set S1',
+    'ungerer-2018-mbio-growth': 'Ungerer et al. 2018, growth comparison',
   },
   searchAliases: {
     rubisco: ['ribulose bisphosphate carboxylase'],
@@ -123,10 +126,33 @@ export const UTEX2973 = {
         ['Rubin 2015 assay', 'rubinDoi'],
         ['Ungerer 2018 growth comparison', 'growthDoi'],
       ],
+      // The "PCC 7942 essentiality" colour and filter, which read the borrowed
+      // call alone and group its seven statuses into four display buckets.
+      essentialityColour: {
+        summary: 'The PCC 7942 transposon-screen call for the PCC 7942 gene joined to each '
+          + 'UTEX 2973 CDS, grouped as essential, beneficial, non-essential or unresolved.',
+        method: 'Calls are the Rubin et al. 2015 categories republished in Adomako et al. 2022 '
+          + 'Data Set S1, joined only where that pangenome row and the pinned RefSeq crosswalk '
+          + 'agree on one exact shared-protein PCC 7942 locus. Beneficial means insertions '
+          + 'reduced PCC 7942 fitness and is never promoted to essential. Unresolved groups '
+          + 'ambiguous, not analysed and missing source calls with CDSs that have no admitted '
+          + 'join; it is never non-essential and draws as the open ring. Tested UTEX alleles '
+          + 'and GO IEA context never change this colour. The detail panel and the export keep '
+          + 'each exact status.',
+        legendNote: 'PCC 7942 calls (Rubin et al. 2015, BG-11 at 30 °C) at exact shared-protein '
+          + 'joins. Using them for UTEX 2973 is a cross-strain assumption, not a UTEX '
+          + 'measurement; unresolved is never non-essential.',
+        filterNote: 'Keeps CDSs by their PCC 7942 call (Rubin et al. 2015), a cross-strain '
+          + 'assumption for UTEX 2973. Unresolved is never non-essential. Independent of '
+          + 'Colour by.',
+        citations: ['rubin-2015-assessed', 'adomako-2022-essentiality', 'ungerer-2018-mbio-growth'],
+      },
       exportCaveat: 'PCC 7942 essentiality was measured by Rubin et al. 2015 under its laboratory '
         + 'conditions and republished in Adomako et al. 2022 Data Set S1. Applying each mapped '
         + 'call to a UTEX 2973 candidate is a cross-strain assumption, not a UTEX measurement '
         + 'or a recoding outcome. Unknown or ambiguous calls never mean non-essential. '
+        + 'pcc7942EssentialityBucket groups ambiguous, not_analyzed, missing and unknown as '
+        + 'Unresolved for colour and filtering only; pcc7942Essentiality keeps the exact status. '
         + 'Ungerer et al. 2018 reported similar growth at PCC-compatible light, but the strains '
         + 'have different growth optima and Rubin used different conditions.',
     },

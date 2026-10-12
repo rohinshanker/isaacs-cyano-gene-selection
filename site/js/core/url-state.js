@@ -18,7 +18,8 @@ import {
   defaultColorSources, isAllSources, normalizeAnnotationSources, parseAnnotationSources,
   NO_SOURCES,
 } from './annotation-source.js';
-import { DEFAULT_ORGANISM } from './organisms.js';
+import { DEFAULT_ORGANISM, layerOf } from './organisms.js';
+import { normalizePccEssentialitySelection } from './pcc-essentiality.js';
 import {
   DEFAULT_PANEL_ORDER, DEFAULT_PANEL_COLLAPSED, NO_PANELS_COLLAPSED,
   normalizePanelOrder, normalizeCollapsed, isDefaultPanelOrder, isDefaultCollapsed,
@@ -40,6 +41,7 @@ const KEYS = {
   axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
   overlapClassFilter: 'og',
+  pccEssentialityFilter: 'pe',
 };
 
 /**
@@ -144,6 +146,12 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // before the field existed drew, so its absence has exactly one meaning
     // and the encoder version did not move for it.
     overlapClassFilter: [],
+    // The PCC 7942 essentiality buckets the reader is keeping, written by the
+    // Filters panel and the colour key alike. An omitted `pe` means the empty
+    // set, which hides nothing and is what every earlier link drew, so the
+    // encoder version did not move for it. Only an organism that publishes the
+    // calls reads or writes it.
+    pccEssentialityFilter: [],
     trafficKey: null,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
@@ -233,6 +241,9 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     axisXSources: Array.isArray(state.axisXSources) ? [...state.axisXSources] : [],
     axisYSources: Array.isArray(state.axisYSources) ? [...state.axisYSources] : [],
     categoryFilter: state.categoryFilter,
+    ...(publishesPccCalls(organism)
+      ? { pccEssentialityFilter: normalizePccEssentialitySelection(state.pccEssentialityFilter) }
+      : {}),
     colorSources: normalizeAnnotationSources(state.colorSources, organism.annotationSources),
     // Which of two overlapping marks the exported picture shows. It changes no
     // number, but it decides what is visible in the image, so a manifest that
@@ -241,6 +252,11 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     fitnessDatasetId: state.fitnessDatasetId ?? null,
     strainFitnessSources: [...(state.strainFitnessSources ?? [])],
   };
+}
+
+/** Whether this organism publishes the PCC 7942 calls the essentiality filter reads. */
+function publishesPccCalls(organism) {
+  return Boolean(layerOf(organism, 'candidateEvidence')?.essentialityColour);
 }
 
 function encodeFilters(filters) {
@@ -321,6 +337,10 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   push(KEYS.pinned, state.pinnedId ?? '');
   push(KEYS.compareTab, state.compareTab);
   push(KEYS.overlapClassFilter, [...(state.overlapClassFilter ?? [])].sort().join(','));
+  if (publishesPccCalls(organism)) {
+    push(KEYS.pccEssentialityFilter,
+      normalizePccEssentialitySelection(state.pccEssentialityFilter).join(','));
+  }
   if (state.exceptionFilter && state.exceptionFilter !== 'any') {
     push(KEYS.exceptionFilter, state.exceptionFilter);
   }
@@ -421,6 +441,11 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
     const ids = values.get(KEYS.overlapClassFilter).split(',')
       .filter((id) => OVERLAP_CLASS_IDS.includes(id));
     state.overlapClassFilter = [...new Set(ids)].sort();
+  }
+  if (values.has(KEYS.pccEssentialityFilter) && publishesPccCalls(organism)) {
+    state.pccEssentialityFilter = normalizePccEssentialitySelection(
+      values.get(KEYS.pccEssentialityFilter).split(','),
+    );
   }
   if (values.has(KEYS.exceptionFilter)) {
     const mode = values.get(KEYS.exceptionFilter);

@@ -24,6 +24,10 @@ import {
   OVERLAP_CLASSES, OVERLAP_FILTERS, OVERLAP_FILTER_LABELS, OVERLAP_TAG_EXPANSION,
   OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, overlapFilterOf,
 } from '../core/gene-overlaps.js';
+import {
+  PCC_ESSENTIALITY_BUCKETS, PCC_ESSENTIALITY_LABEL, describeBucketStatuses, pccPendingSentence,
+  togglePccEssentialitySelection,
+} from '../core/pcc-essentiality.js';
 
 const HISTOGRAM_BINS = 44;
 
@@ -115,6 +119,7 @@ export function clearedFilterState() {
     trafficKey: null,
     proteinFilter: 'any',
     overlapClassFilter: [],
+    pccEssentialityFilter: [],
   };
 }
 
@@ -192,6 +197,8 @@ export class FilterPanel {
 
     this.basisHost = document.createElement('div');
     this.basisHost.className = 'basis-filter';
+    this.essentialityHost = document.createElement('div');
+    this.essentialityHost.className = 'essentiality-filter';
     this.overlapHost = document.createElement('div');
     this.overlapHost.className = 'overlap-filter';
     this.proteinHost = document.createElement('div');
@@ -224,7 +231,8 @@ export class FilterPanel {
     this.clearButton.addEventListener('click', () => this.handlers.onClear());
 
     this.host.append(
-      this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost, this.overlapHost,
+      this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost,
+      this.essentialityHost, this.overlapHost,
       addRow, this.list, this.summary,
       this.clearButton,
     );
@@ -297,6 +305,7 @@ export class FilterPanel {
     this.renderProteinFilter(state);
     this.renderBasisFilter(state);
     this.renderExceptionFilter(state);
+    this.renderPccEssentialityFilter(state);
     this.renderOverlapFilter(state);
     this.renderRows(state);
 
@@ -305,6 +314,7 @@ export class FilterPanel {
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
       && (state.overlapClassFilter ?? []).length === 0
+      && (state.pccEssentialityFilter ?? []).length === 0
       && (state.categoryFilter ?? []).length === 0;
   }
 
@@ -749,6 +759,73 @@ export class FilterPanel {
     if (focusedValue != null) {
       // A change rerenders synchronously during native radio-key traversal.
       // Keep the newly checked option focused so the next arrow still works.
+      const inputs = [...fieldset.querySelectorAll('input')];
+      const target = inputs.find((input) => input.value === focusedValue && !input.disabled)
+        ?? inputs.find((input) => !input.disabled);
+      target?.focus({ preventScroll: true });
+    }
+  }
+
+  /**
+   * The PCC 7942 essentiality filter: one checkbox per display bucket, OR
+   * across the checked ones, independent of Colour by. The colour key's rows
+   * write the same selection. Absent for an organism without the calls; while
+   * they are not read the counts are withheld and a held selection says it
+   * hides nothing, and only its checked boxes stay enabled so it can be cleared.
+   *
+   * @param {{pccEssentiality?: {model: object, note: string}|null,
+   *   pccEssentialityFilter?: string[]}} state
+   */
+  renderPccEssentialityFilter(state) {
+    const focusedValue = this.essentialityHost.contains(document.activeElement)
+      ? document.activeElement.value : null;
+    this.essentialityHost.replaceChildren();
+    const channel = state.pccEssentiality ?? null;
+    if (!channel) return;
+    const { model } = channel;
+    const selection = state.pccEssentialityFilter ?? [];
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'flag-filter';
+    const legend = document.createElement('legend');
+    legend.textContent = PCC_ESSENTIALITY_LABEL;
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    note.textContent = channel.note;
+    fieldset.append(legend, note);
+    PCC_ESSENTIALITY_BUCKETS.forEach((bucket, position) => {
+      const row = document.createElement('div');
+      row.className = 'checkbox-row';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = `essentiality-filter-${bucket.id}`;
+      input.value = bucket.id;
+      input.checked = selection.includes(bucket.id);
+      input.disabled = Boolean(model.pending) && !input.checked;
+      input.addEventListener('change', () => this.handlers.onPccEssentialityFilterChange?.(
+        togglePccEssentialitySelection(selection, bucket.id),
+      ));
+      const label = document.createElement('label');
+      label.htmlFor = input.id;
+      label.textContent = model.pending
+        ? bucket.label : `${bucket.label} (${formatCount(model.counts[position])})`;
+      row.append(input, label);
+      fieldset.append(row);
+    });
+    const detail = document.createElement('p');
+    detail.className = 'panel-note';
+    if (model.pending) {
+      detail.setAttribute('role', 'status');
+      detail.textContent = pccPendingSentence(model.pending) + (selection.length > 0
+        ? ' The saved essentiality filter is paused and hides no gene until the calls are read.'
+        : '');
+    } else {
+      const unresolved = PCC_ESSENTIALITY_BUCKETS[PCC_ESSENTIALITY_BUCKETS.length - 1];
+      detail.textContent = `${unresolved.label}: `
+        + `${describeBucketStatuses(unresolved, model.statusCounts)}.`;
+    }
+    fieldset.append(detail);
+    this.essentialityHost.append(fieldset);
+    if (focusedValue != null) {
       const inputs = [...fieldset.querySelectorAll('input')];
       const target = inputs.find((input) => input.value === focusedValue && !input.disabled)
         ?? inputs.find((input) => !input.disabled);

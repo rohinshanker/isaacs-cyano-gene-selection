@@ -11,11 +11,11 @@ Owner: cyano-ui-fixes. The owner requests individually selecting the control,
 dark, high-light and high-temperature data currently exposed only as a pooled
 TSS-initiation score. Work is isolated from other sessions at baseline 425a753.
 
-The source worker is DEM-381, isolated at baseline 425a753. Source derivation is
-awaiting the owner's choice between the published Table S1 gene-linked counts
-(recommended; 1,789 current genes) and the reconstructed legacy calculation
-(1,727 genes). Preserve the existing pooled values and the distinct Table S1
-site-evidence layer; no imputation or unlabelled switch of membership.
+The source worker is DEM-381. Owner decision, 2026-10-12: "use the s1 table".
+The four new layers use Table S1 exact gene-associated gTSS counts (1,789 current
+genes), preserving fractional counts. Keep the existing pooled values
+(1,727 genes) available as explicitly labelled legacy data and preserve the
+distinct Table S1 site-evidence layer. No imputation or silent membership change.
 Keep source conditions, two replicates per condition, the high-light duration
 conflict and the initiation-versus-abundance boundary visible. Retain the old
 pooled source for explicit legacy selection; fresh views should use control and
@@ -39,10 +39,9 @@ allow independent condition selection without automatically recombining them.
   The surviving DEM-33 documentation does not specify these operations. Treat
   this as a likely parser defect, not an author-defined biological association;
   the Table S1 derivation remains the recommendation for new condition layers.
-- **TAN-SPLIT-3 — open:** owner choice requested asynchronously on 2026-10-12.
-  Only the new layer derivation depends on this choice; source plumbing and
-  selection/URL work continue. No response yet. Do not publish either alternative
-  as an approved derivation.
+- **TAN-SPLIT-3 — resolved by owner decision, 2026-10-12:** use Table S1 for
+  the four new condition datasets; preserve legacy pooled data separately.
+  DEM-381 resumed with this explicit derivation and the existing quantity contract.
 
 ## Verification
 
