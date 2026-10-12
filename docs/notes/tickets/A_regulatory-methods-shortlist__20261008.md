@@ -64,7 +64,7 @@ through the initially transcribed region. Partial window coverage is explicit in
 DEM-371 findings: P1 window-edge coverage, P2 real-pin/indented-source test,
 P3 execution/failure/base checks, P4 interruption/cleanup behavior, P5 reverse-key
 basis, and P6 documentation links/current state. P1–P5 resolved by `4c59426`;
-P6 is being completed in this integration. No biological calibration was asserted.
+P6 resolved by `ab1a471`. DEM-371 independently accepted all P1–P6 fixes at `ab1a471`. No biological calibration was asserted.
 
 ### Standalone TransTermHP
 
@@ -93,6 +93,23 @@ passed. Evidence is preserved outside the managed worktree at
 | Shuffled raw output | `c4205b002e540d973ab798b37a45aa74b48e908ce42254c7d2c993dbe9576330` |
 | JSON | `12408fadb30c8f519e4bd46523750a206a719883f12c2f08e397c91fc3bfcf44` |
 | TSV | `897f6107e4f3d0ee1d590911450ce013e4119a8c91dd76a2f3eaa9fee47a2741` |
+
+### Open integration findings
+
+- **RF1, open:** enforce model and native-assembly input identities before writes;
+  recording arbitrary input hashes does not establish the advertised pinned pilot.
+- **RF2, open:** reject destination/input/scratch aliases and partial report pairs;
+  preserve prior user data and reserve a fresh run directory.
+- **RF3, open:** pin the executable digest and limit origin-coverage claims to the
+  searched model/window, without asserting biological absence from zero hits.
+- **RF4, open:** keep dated outcomes in this ticket; permanent documentation keeps
+  reproducible contracts and quoted source terms, without a new licence decision.
+- **TT1, open:** empty FASTA header can escape as `IndexError` from the parser.
+- **TT2, open:** a mid-write failure can leave a partial output file behind.
+
+RF1–RF4 were sent to the existing DEM-362 implementer for one bounded repair pass.
+TT1–TT2 are independently reproduced by DEM-372; its complete findings are pending.
+These findings must be resolved before final integration of the affected methods.
 
 ### Remaining selected methods and executable boundaries
 
@@ -135,7 +152,7 @@ normalization where needed. Raw receipts are in the coordinator worktree's ignor
 
 | Source | Located evidence | SHA-256 |
 | --- | --- | --- |
-| Pinned Promoter Calculator source / `util.py` | Four print statements / two `OneHotEncoder(sparse=False)` calls; local prepared source hashes verified | `67d2733b0be1968668c6710e56262b00d9b4725b98b4f94749519591b48d1cdb` / `abd561c6f1a4669dace3f783903f2779133cdc4ce5319919302303982eba23cc` |
+| Pinned Promoter Calculator source / `util.py` | Four print statements / two `OneHotEncoder(sparse=False)` calls; hashes shown are upstream bytes, with prepared hashes checked separately | `67d2733b0be1968668c6710e56262b00d9b4725b98b4f94749519591b48d1cdb` / `abd561c6f1a4669dace3f783903f2779133cdc4ce5319919302303982eba23cc` |
 | [STREME manual](https://meme-suite.org/meme/doc/streme.html), `--hofract` | “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
 | [IntaRNA 3.4.1 README](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/README.md), opening description | “incorporating accessibility and seeding” | `67ae5c17c94ccff9a68484d4b7fefb950587dc22b0f85d91afd8c3742c0c0fc8` |
 | [ViennaRNA 2.7.2 `pf_window.c`](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/partfunc/pf_window.c#L1559), lines 1559–1561; storage callback lines 2092–2104 | “starting at i-x+1” | `79f07a777c3bba635f26894576b27206635db77e7b9ce522058a0e7f4f34e338` |
