@@ -30,7 +30,7 @@ different tool over the same genome.
 - **Searched is not discovered.** A searched region without a hit produced no
   match at or above the GA threshold under cmsearch's filter pipeline. That
   does not establish that no element of the family is there.
-- **Not a donor coordinate.** Every reported interval is a native coordinate on
+- **Not a donor coordinate.** Every native hit interval is a native coordinate on
   the pinned assembly, computed from native sequence. No interval is transferred
   from another strain, and the tool has no mechanism to do so.
 - **Record origin is `computed`.** Under
@@ -82,8 +82,8 @@ mechanically against the retrieved bytes after collapsing whitespace runs.
 | --- | --- | --- | --- |
 | R1 | [Rfam 15.1 `README`](https://ftp.ebi.ac.uk/pub/databases/Rfam/15.1/README) | §1 Introduction: "Rfam 15.1 contains 4227 families" | `3644c076ee3420a6b37bd8f7b8759dff408eea64067e4973ac5e0d54ec72a807` |
 | R2 | [Rfam 15.1 `COPYING`](https://ftp.ebi.ac.uk/pub/databases/Rfam/15.1/COPYING) | "Rfam is freely available under the Creative Commons Zero ("CC0") licence." | `4366e90e0da3df45363e4c1d1bba140b3036ff3f78967f1b5f9ba23685b889d5` |
-| R3 | [Rfam genome-annotation documentation source](https://raw.githubusercontent.com/Rfam/rfam-docs/master/docs/source/genome-annotation.rst) | `--cut_ga`: "specifies that the special Rfam GA (gathering) thresholds be used to determine which hits are reported." | `96c1d7ea64650381292733cff2457c289abb7c8161faa98bada76f0d601e1ee2` |
-| R4 | same file as R3 | step 4: "Because we want millions of nucleotides on both strands, we multiply this by 2, and divide by 1,000,000" | `96c1d7ea64650381292733cff2457c289abb7c8161faa98bada76f0d601e1ee2` |
+| R3 | [Rfam genome-annotation documentation source](https://raw.githubusercontent.com/Rfam/rfam-docs/master/docs/source/genome-annotation.rst) | `--cut_ga`: "special Rfam GA (gathering) thresholds" | `96c1d7ea64650381292733cff2457c289abb7c8161faa98bada76f0d601e1ee2` |
+| R4 | same file as R3 | step 4: "multiply this by 2" | `96c1d7ea64650381292733cff2457c289abb7c8161faa98bada76f0d601e1ee2` |
 | R5 | `RF01116.cm`, extracted from [Rfam 15.1 `Rfam.cm.gz`](https://ftp.ebi.ac.uk/pub/databases/Rfam/15.1/Rfam.cm.gz) | header lines: "ACC RF01116", "DESC Cyanobacterial functional RNA 1", "GA 38.00", "INFERNAL1/a [1.1.5 \| Sep 2023]" | `4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc` |
 
 `Rfam.cm.gz` is 45,753,387 bytes, SHA-256
@@ -97,10 +97,10 @@ licence or permission decision for this project; that stays with the
 [source ledger](source-ledger.md) and the owner. No third-party model or
 executable is committed either way: the runbook fetches them.
 
-R4 is the source of the `-Z` value; R3 of `--cut_ga`. The same document states
-`--rfam` runs "the same mode used for Rfam annotation and determination of GA
-thresholds" and `--nohmmonly` keeps those "GA cutoffs, which were determined in
-CM mode for each model" valid, so the tool pins all three flags together.
+R4 supports calculating `-Z` for both strands in millions of bases; R3 supports
+`--cut_ga`. The same document prescribes the Rfam search mode and covariance-model
+scoring used when setting the gathering thresholds, so the tool retains
+`--rfam` and `--nohmmonly` together with `--cut_ga`.
 
 ## Tool and arguments
 
@@ -145,7 +145,7 @@ why not. Its statement carries the searched-not-discovered boundary, and
 
 ## Coordinates and preserved metadata
 
-Every reported interval is **one-based inclusive on the native pinned
+Every native hit interval is **one-based inclusive on the native pinned
 assembly**, with strand. Alongside it each row keeps what cmsearch actually
 emitted: `search_target`, the sequence searched, and `raw_seq_from` /
 `raw_seq_to`, the endpoints on that sequence — high-to-low on the minus strand.
@@ -250,8 +250,10 @@ control count does not convert a native hit into measured regulation.
 - **Exclusive creation.** Every FASTA the tool writes and both reports are
   opened with exclusive create, so a path that appears after preflight is
   refused, not replaced; cmsearch writes its own outputs only inside the fresh
-  work directory. If the report pair cannot both be created, only the file this run
-  created is removed; a pre-existing file is never deleted.
+  work directory. Ownership is recorded immediately after exclusive open, before
+  writing or closing. Write/flush/close errors and interruption clean only this
+  run's report files; a pre-existing file is never deleted. Cleanup failures
+  preserve the original error and identify any file that could not be removed.
 - **Determinism.** The report carries no timestamp and no work-directory path.
   Because cmsearch writes the date and working directory into its tabular
   trailer, the report hashes the tabular **data rows only**
@@ -363,33 +365,6 @@ correct, that the family model suits this organism, or anything about
 regulatory function. A different Infernal build can move bit scores at the
 margins, as [trna-annotation-validation.md](trna-annotation-validation.md) notes
 for its own run.
-
-## Repair notes
-
-- **Identity recorded but not enforced.** Symptom: the report claimed the pinned
-  model and UTEX assembly while accepting any model, FASTA or flat file, with
-  family expectations optional. Fix: `PINNED` checked at the production
-  boundary before any write; synthetic data only through `_run_pilot`, whose
-  reports are labelled from their own pins. Regression: the pin-mismatch tests
-  and `test_production_run_pilot_refuses_synthetic_inputs`.
-- **Report aliasing and overwrite.** Symptom: the JSON and TSV checks ran
-  separately, so one report could replace the other, and `--overwrite` could
-  replace an input or reused raw output. Fix: no overwrite option, fresh work
-  directory, resolved and case-folded distinctness, exclusive creation with
-  cleanup limited to this run's own files. Regression: the preflight and
-  `write_report` tests.
-- **Coverage claimed, not measured.** Every search is now checked against
-  cmsearch's own pipeline summary, which catches first-record-only coverage.
-- **Origin-spanning overlaps missed.** Overlaps were computed among linear rows
-  only, so a truncated linear hit inside a wrapped junction hit reported zero
-  overlaps. Fix: overlaps over all rows on the native circle. Regression:
-  `test_real_truncated_linear_hit_overlaps_the_wrapped_hit`.
-- **Junction raw endpoints overwritten.** Remapped native endpoints replaced
-  what cmsearch emitted. Fix: `search_target` plus emitted `raw_*`, separate
-  from the remapped native interval.
-- **Control positions labelled native.** Control rows reused the native row
-  shape and basis. Fix: own sequence ids and a control row with no native
-  fields. Regression: `test_control_positions_cannot_be_read_as_native_site_calls`.
 
 ## Before any of this becomes a published layer
 

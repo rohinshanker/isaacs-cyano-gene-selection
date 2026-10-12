@@ -112,24 +112,40 @@ controls search linear shuffled sequences only, so their coverage differs.
 The source model pin is
 `4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc`,
 extracted with `cmfetch` from the official Rfam 15.1 model library. Infernal 1.1.5
-uses `--cut_ga --rfam --nohmmonly -Z 5.489252`. Production admission of this pilot
-implementation awaits the RF1–RF7 repairs below; no browser layer is added.
+uses `--cut_ga --rfam --nohmmonly -Z 5.489252`. Worker `f2e7e24`, integrated as
+`7f460a7`, implements RF1–RF7. The final RF2 write-failure repair is `0fd5e35`;
+230 focused tests pass, including nine real Infernal checks and actual OS
+file-size-limit failures in isolated child processes. DEM-375 accepted RF1 and
+RF3–RF7 at `f2e7e24` and RF2 at `0fd5e35`; no material integration findings remain. No browser
+layer is added. The [runbook](../../validation/regulatory-rfam.md) records the
+reproducible contracts. Final bundle: `/tmp/cyano-regulatory-pilots-20261012/rfam/`.
+The saved worker bundle contains `f2e7e24`; the coordinator's `0fd5e35` repeat
+in ignored `.playwright-cli/regulatory-methods-20261012/rfam-final/` produces
+byte-identical JSON/TSV and preserves the final producer separately.
+
+| Final Rfam artifact | SHA-256 |
+| --- | --- |
+| JSON | `3ee3f8d2551f75926a6098ba907c922109a1bec3dd2288d6743121055e8f257d` |
+| TSV | `545e8cf99863842f014755b31cc6352ec68e2dd33aea7962dd0ee6fc2eca74a1` |
+| Bundle manifest | `16593310158a7a4f644ad22b2e9a002ab48720b7de94e9897c392e3a159e8c37` |
 
 ### Integration findings
 
-- **RF1, open:** enforce model and native-assembly input identities before writes;
+- **RF1, fixed `7f460a7`:** enforce model and native-assembly input identities before writes;
   recording arbitrary input hashes does not establish the advertised pinned pilot.
-- **RF2, open:** reject destination/input/scratch aliases and partial report pairs;
-  preserve prior user data and reserve a fresh run directory.
-- **RF3, open:** pin the executable digest and limit origin-coverage claims to the
+- **RF2, fixed `7f460a7` and `0fd5e35`:** reject aliases/reuse, reserve fresh
+  scratch and register each report immediately after exclusive open. Partial
+  write/flush/close failures and interruption clean only this run's files;
+  cleanup-denial errors retain the original cause and name remaining files.
+- **RF3, fixed `7f460a7`:** record the executable digest and limit origin-coverage claims to the
   searched model/window, without asserting biological absence from zero hits.
-- **RF4, open:** keep dated outcomes in this ticket; permanent documentation keeps
+- **RF4, fixed `7f460a7`:** keep dated outcomes in this ticket; permanent documentation keeps
   reproducible contracts and quoted source terms, without a new licence decision.
-- **RF5, open:** DEM-375 reproduced overlapping linear/truncated and origin-spanning
-  hits on a rotated chromosome; circular overlap accounting omits junction rows.
-- **RF6, open:** preserve the actual junction search target and emitted raw endpoints
+- **RF5, fixed `7f460a7`:** DEM-375 reproduced overlapping linear/truncated and origin-spanning
+  hits on a rotated chromosome; circular overlap accounting now includes junction rows.
+- **RF6, fixed `7f460a7`:** preserve the actual junction search target and emitted raw endpoints
   separately from correctly remapped native intervals, in JSON and TSV.
-- **RF7, open:** shuffled-control positions must identify the shuffled replicate,
+- **RF7, fixed `7f460a7`:** shuffled-control positions must identify the shuffled replicate,
   rather than claim a contiguous native-assembly locus. Disclose that native
   searches include junctions while control searches are linear-only.
 - **TT1, fixed `ba6f70b`:** reject empty FASTA headers with a typed error.
@@ -142,13 +158,16 @@ implementation awaits the RF1–RF7 repairs below; no browser layer is added.
 - **TT6, fixed `e6f13bb`:** record the reference compatibility-build recipe.
 - **TT7, fixed `e6f13bb`:** name the pilot as the checksum enforcer, not the fetch script.
 
-RF1–RF7 are assigned to the existing DEM-362 implementer. DEM-375 independently
+RF1–RF7 are implemented by DEM-362. DEM-375 independently
 reproduced the one-hit baseline and source/data-row digests, with 167 focused
 tests passing; rotated real-genome probes exposed RF5/RF6 and a nonempty control
-fixture exposed RF7. Final repaired-commit acceptance remains pending.
+fixture exposed RF7. At `f2e7e24` it accepted RF1/RF3–RF7 and found RF2 still
+left partial files after a write failure. `0fd5e35` fixes that case; its final
+RF2 recheck is accepted (29 focused checks and both real OS failure probes).
 DEM-372 independently accepted TT1–TT7 at `e6f13bb`. Its rerun produced a
 byte-identical TSV and confirmed every tail score against native sequence.
-These findings must be resolved before final integration of the affected methods.
+All current RF and TT integration findings are resolved. This ticket remains
+active for S1 and the method/input/evaluation work described below.
 
 TT8–TT12 are fixed in `bb1038b`: schema 2 distinguishes the revised fields;
 compatibility provenance is platform-neutral; output-parent errors are precise;
@@ -161,9 +180,8 @@ still yields 860/319 with a byte-identical TSV.
 
 ### Remaining selected methods and executable boundaries
 
-- **Rfam/Infernal:** DEM-362 is running a single regulatory-family pilot, RF01116
-  (Yfr1), using gathering cutoffs and the native assembly. This is model transfer;
-  no donor coordinate is relabelled as a UTEX coordinate.
+- **Rfam/Infernal:** the RF01116 pilot is implemented. Broader regulatory-family
+  selection, native-site validation and any published layer remain separate work.
 - **ViennaRNA:** local 2.7.2 structure/accessibility smoke passes on the same
   250-base native window and a seed-2973 mononucleotide shuffle. With default
   37 °C model settings, window 150, maximum span 100 and unpaired length 10,
@@ -271,7 +289,7 @@ code contracts; no new regulatory prediction layer is admitted by this assessmen
 | Promoter Calculator | Public v1.0 at SalisLabCode `46da913`, GPL v3 or later; implementation still contains Python 2 syntax. Organism names other than the explicit E. coli or in-vitro modes fall through to E. coli calibration constants. | Pinned Python 3 preparation and a native-window smoke check implemented 2026-10-12; whole-genome evaluation and explicit model/host labels remain before publication. A UTEX string does not supply UTEX calibration. |
 | ViennaRNA | Existing project Python/browser model is 2.7.2; Python-library smoke returned a finite MFE/structure. | Structure/accessibility is computational evidence, not a validated regulatory-site call; select windows/parameters for any new annotation method. |
 | STREME | Current author MEME Suite source download is 5.5.9. | Foreground/control cohort and evaluation split are required for motif discovery; a discovered motif alone is not an admitted site layer. |
-| Rfam + Infernal | Current official Rfam release is 15.1; existing user-owned `trna-validate` environment has Infernal 1.1.5. | Pin family models/cutoffs and native input coordinates. Fresh cmsearch matches are calculated outputs even though their models come from a library. |
+| Rfam + Infernal | Current official Rfam release is 15.1; existing user-owned `trna-validate` environment has Infernal 1.1.5. | The pinned RF01116 pilot is implemented, with native/control evaluation and circular-coordinate tests. Broader family selection and biological evaluation remain; fresh cmsearch matches are calculated outputs. |
 | IntaRNA | Current official release tag is v3.4.1. | Query/target RNAs, accessibility/seed parameters and an evaluated local runtime are required for an interaction layer. |
 
 The record-origin distinction is now resolved: newly calculated outputs receive
@@ -364,23 +382,27 @@ decision.
 
 ## Verification
 
-Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
-all five affected ticket identities, live queue/local links and transfer anchors
-pass; all 11 quotes match their retrieved sources and hashes. `git diff --check`
-passes. Repository gates: `npm test` 1,415 passed; pytest 938 passed, 1 skipped,
-36 subtests passed; contract 119 passed, 0 failed, 1 declared skip. Documentation
-only: no new predictor, data layer or UI was run/changed. All method tickets stay
-open/active for their remaining work.
+`cyano-regulatory-sites`, 2026-10-12, final integration at code commit `0fd5e35`
+with main `90bcf91` merged: `npm test` **1,520 passed**; Python **1,690 passed,
+2 skipped, 51 subtests passed**; contract **127 passed, 0 failed, 1 declared skip**.
+The Python skips are existing missing local caches (Syn57 pinned GFF and GO OBO),
+not regulatory-method test skips. The contract skip is the declared spliced-CDS
+contiguity exception. Actual Promoter source and RF01116 model were supplied, so
+all 25 Promoter and 230 Rfam tests ran; 64 TransTermHP tests passed.
 
-Primary source capability descriptions were retrieved and short located quotations
-matched mechanically on 2026-10-08. Receipt/raw snapshots are in ignored
-.playwright-cli/regulatory-shortlist-20261008. Rfam's plain HTTP client got 403;
-the public-page web extraction was readable and its processed snippet is hashed
-separately, never represented as raw HTML. No restricted session was accessed.
-No model was executed, fitted, benchmarked or admitted into the browser here.
-Documentation gates at baseline 7bf8811 passed: JS 1,274; pytest 783 with 1 skip
-and 36 subtests; contract 116 with 1 declared skip. Local queue links and
-filename/H1/status fields checked; no browser UI changed in this documentation.
+Independent acceptance: DEM-371 accepted Promoter P1–P6, DEM-372 accepted
+TransTermHP TT1–TT12, and DEM-375 accepted RF1–RF7 including both real OS
+write-failure probes after `0fd5e35`. No material integration findings remain.
+Method/evaluation limits, including S1 and the RBS/iDOG dependencies, remain open.
+The ticket is active and is not being closed in this pass.
+
+The new regulatory work changes only tools, tests and documentation. No computed
+regulatory layer was admitted or published. Existing other-session commits were
+merged without contacting or interrupting those sessions. `git diff --check`,
+ticket identity/status/queue membership and local documentation links pass.
+Source receipts below are retained for the selected-method assessment: the
+2026-10-08 Rfam public-page extraction has a processed-text checksum rather than
+being labelled raw HTML. New Rfam execution uses the official pinned model bytes.
 
 | Source | Retrieved | Located quotation | Checksum |
 | --- | --- | --- | --- |
