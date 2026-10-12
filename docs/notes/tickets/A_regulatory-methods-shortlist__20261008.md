@@ -87,6 +87,34 @@ artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. T
 | JSON | `e2376a0a7dc7acee767ffc91930c117ffb4065765b2bdfd69c24946015485cae` |
 | TSV | `951c7294768836440408e24abc50ba4143ffe21600ece1dba63caf08ecdaaa8a` |
 
+### Rfam / Infernal
+
+The initial RF01116 (Yfr1) search, independently reproduced by DEM-375, yields:
+
+| Field | Result |
+| --- | --- |
+| Native replicon / interval | `NZ_CP006471.1:1364716–1364778`, one-based inclusive |
+| Strand / length | `+`, 63 nt |
+| Model interval / truncation | 1–59 of 59; `no` |
+| Bit score / family gathering cutoff | 62.1 / 38.0 |
+| E-value at the recorded search space | `6.7e-12` |
+| Other native hits | No reported plasmid or origin-junction hits |
+| Shuffled controls | Five assembly replicates (15 linear replicon sequences), zero hits |
+
+This is computed family homology, not measured regulation, a complete-transcript
+boundary or a calibrated UTEX probability. Zero hits do not establish absence.
+The single native interval is intergenic in the pinned GFF: `M744_RS07005` ends
+at 1364610 and `M744_RS07010` / `trxA` begins at 1364916, both on `+`.
+Annotation context does not establish transcription or target interaction.
+Native searches include an extra 170-nt origin junction per circular replicon;
+controls search linear shuffled sequences only, so their coverage differs.
+
+The source model pin is
+`4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc`,
+extracted with `cmfetch` from the official Rfam 15.1 model library. Infernal 1.1.5
+uses `--cut_ga --rfam --nohmmonly -Z 5.489252`. Production admission of this pilot
+implementation awaits the RF1–RF7 repairs below; no browser layer is added.
+
 ### Integration findings
 
 - **RF1, open:** enforce model and native-assembly input identities before writes;
