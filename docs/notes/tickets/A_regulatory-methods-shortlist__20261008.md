@@ -112,6 +112,18 @@ DEM-372 independently accepted TT1–TT7 at `e6f13bb`. Its rerun produced a
 byte-identical TSV and confirmed every tail score against native sequence.
 These findings must be resolved before final integration of the affected methods.
 
+Non-blocking review limitations retained for future consumers: TT8, schema 1 was
+edited during this unreleased pilot and does not distinguish its scratch artifact
+revisions; retain producing commit and hashes. TT9, the reference patch's metadata
+says macOS although the runbook applies it for both Linux/macOS. TT10, output-parent
+file errors can read as overwrite errors, and a cleanup unlink failure can mask
+the initial error. TT11, a one-base minus-strand annotation would lose direction;
+the exact pinned annotation cannot produce it. TT12, rare banner, corrupt-gzip,
+wrap-rejection and subprocess timeout/error branches lack focused regression
+coverage. The shared-annotation shuffled-control limitation is now explicit in
+the runbook. These are open, non-blocking findings; this ticket remains active.
+
+
 ### Remaining selected methods and executable boundaries
 
 - **Rfam/Infernal:** DEM-362 is running a single regulatory-family pilot, RF01116
@@ -299,7 +311,7 @@ decision.
 | S2: [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML) | Results, four test datasets: “inside E. coli cells” | `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625` |
 | S3: [Cascino et al. 2026](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13289151/fullTextXML) | Introduction; Results on intrinsic termination; data availability: “only 22% of all TUs” | `395f7369492c25359e86df0ae479d864ddb14edd35100dc7fefdfd10a356b279` |
 | S4: [Gale et al. 2021](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7843447/fullTextXML) | Results, UTEX terminator library / Fig. 4: “correlation of TE values between UTEX 2973 and E. coli was low” | `a392ca971b6ab1e75f754ef125a01edc82d72a0c5d5ee17487fdca15f3347350` |
-| S5: [STREME manual](https://meme-suite.org/meme/doc/streme.html) | --hofract: “The letter frequencies in the final motifs reported by STREME are based on all primary sequences, including those in the hold-out set.” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
+| S5: [STREME manual](https://meme-suite.org/meme/doc/streme.html) | --hofract: “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
 | S6: [Rfam genome annotation documentation source](https://raw.githubusercontent.com/Rfam/rfam-docs/master/docs/source/genome-annotation.rst) | Opening paragraph; --cut_ga: “The Rfam library of covariance models can be used to search sequences” | `96c1d7ea64650381292733cff2457c289abb7c8161faa98bada76f0d601e1ee2` |
 | S7: [Rfam RF01116, release 15.1](https://rfam.org/family/RF01116) | JSON rfam.description / cm.cutoffs: “Cyanobacterial functional RNA 1” | `b48fb2b880ea556a2ef0f9d420a071c48a7904781f15b024fdf3f0112b7cd4d0` |
 | S8: [Richter et al. 2010](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC2796815/fullTextXML) | Abstract Results; Methods reporter assay: “We show that Yfr1 inhibits the translation of two predicted targets.” | `8a2c5cc84eb9bc2f68aa991e4ffc10b3c3a6ae40009547cd7cd3c2b35a2d81c8` |

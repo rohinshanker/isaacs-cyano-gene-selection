@@ -138,6 +138,9 @@ with `-S`, uses the documented default minimum confidence 76, and preserves all
 other printed 2.09 defaults in each raw report. The control applies a reproducible
 SHA-256-indexed Fisher–Yates mononucleotide shuffle independently to each replicon
 with seed 2973, preserving per-replicon length and nucleotide composition.
+The control reuses native annotation positions to hold the tool's gene/intergenic
+context assignment fixed. Shuffling removes local sequence structure and coding
+constraints; this comparison is not a set of validated non-terminator loci.
 
 Raw reports contain the absolute `expterm.dat` path and a build-date banner.
 Their raw hashes (and JSON hashes that include them) therefore depend on the
