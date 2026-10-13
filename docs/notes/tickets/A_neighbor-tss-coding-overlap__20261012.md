@@ -88,6 +88,32 @@ Related work: [native neighbouring genes](../../validation/gene-neighbours.md),
 [Tan condition-selection contract](../../validation/data-contract.md). Preserve
 the accepted four-condition source-selection semantics.
 
+## Findings
+
+- **NS-1 — open:** The initial rendered implementation counted 617 genes by
+  treating regulatory rows with unmapped source locus IDs as known neighboring
+  associations. Only exact mapped current associations enter this count;
+  unresolved IDs remain inspectable context. Independent baseline oracle:
+  805 site/focal relationships across 603 focal genes (gTSS 795/598; mapped
+  non-gTSS 10/10; five focal genes shared). Repair guidance is recorded in DEM-387.
+
+- **NS-2 — open:** Neighboring Tan markers bypass existing per-view TSS
+  visibility. The all-hidden `mk` URL still produced 18 compact markers for
+  `M744_RS01690`. Hide marks and their interaction targets consistently without
+  changing evidence counts; offer visibility controls for neighbor-only sites.
+- **NS-3 — open:** E. coli unavailable evidence currently instructs selection of
+  a Tan source the organism does not offer. Distinguish undeclared evidence from
+  UTEX source deselection in the shared reason.
+- **NS-4 — open:** The neighboring-site scatter legend currently drops the
+  existing shortlisted, pinned and filtered-out marker conventions. Preserve
+  applicable conventions using the shared legend presentation.
+
+- **NS-5 — open (validation):** The coincident-site browser fixture changes a
+  manifest-pinned payload without updating its byte/hash entry, so the loader
+  correctly rejects it. Supply consistent fixture metadata and keep unexpected
+  request failures in the asserted diagnostic collector; scope exceptions only
+  to the deliberate failure phase. Production integrity checks remain intact.
+
 ## Verification
 
 Before implementation closes: test inside/outside and exact-boundary anchors,
