@@ -1766,13 +1766,21 @@ export class ChromosomeView {
 
   paintNeighborSites(ctx, band) {
     ctx.lineCap = 'butt';
-    for (const mark of this.drawnNeighborSitesInBand(band)) {
+    const marks = this.drawnNeighborSitesInBand(band);
+    // Paint the inspected tick last so nearby ticks cannot cover its focus ring.
+    const ordered = [...marks.filter((mark) => mark !== this.activeNeighborSite),
+      ...marks.filter((mark) => mark === this.activeNeighborSite)];
+    for (const mark of ordered) {
       const x = band.scale.bpToX(mark.site.position);
       const y = (mark.strand === '-' ? band.layout.laneBelowTop : band.layout.laneAboveTop) + band.layout.laneHeight / 2;
       ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5);
       if (mark === this.activeNeighborSite) {
+        // Two-pixel teal ring, isolated from the CDS and central line by white.
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 12;
+        ctx.stroke();
         ctx.strokeStyle = ACTIVE_FOCUS_COLOR;
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 8;
         ctx.stroke();
       }
       ctx.strokeStyle = '#ffffff';

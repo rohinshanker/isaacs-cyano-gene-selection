@@ -401,7 +401,8 @@ test('the wheel zooms about the pointer and pans with Shift or a horizontal delt
 
 test('bounded zoom preserves the pointer anchor entering max and leaves max/min cameras fixed', async () => {
   await withFakeDocument((document) => {
-    const view = mount(document);
+    const announcements = [];
+    const view = mount(document, { onAnnounce: (message) => announcements.push(message) });
     view.update({ gene: longGene(), table, scheme: null, schemeVersion: 0 });
     view.setCamera({ from: 1000, perNt: MAX_PX_PER_NT / 1.1 });
     const pointerPx = LABEL_WIDTH + view.width() * 0.2;
@@ -413,8 +414,12 @@ test('bounded zoom preserves the pointer anchor entering max and leaves max/min 
     const atMax = { ...view.camera };
     for (let i = 0; i < 4; i += 1) {
       view.zoomInButton.click();
+      assert.match(announcements.at(-1), /Maximum sequence zoom reached/);
       keydown(view, '+');
+      assert.match(announcements.at(-1), /Maximum sequence zoom reached/);
+      const beforeWheel = announcements.length;
       view.strip.dispatch('wheel', { deltaY: -2000, clientX: pointerPx, preventDefault() {} });
+      assert.equal(announcements.length, beforeWheel, 'wheel at max does not repeat live announcements');
       assert.deepEqual(view.camera, atMax, 'buttons, keyboard and wheel cannot drift at max');
     }
     view.fitGene();
@@ -422,8 +427,12 @@ test('bounded zoom preserves the pointer anchor entering max and leaves max/min 
     assert.equal(atMin.perNt, view.width() / (view.model.domain.max - view.model.domain.min + 2 * EDGE_PAD_NT));
     for (let i = 0; i < 4; i += 1) {
       view.zoomOutButton.click();
+      assert.match(announcements.at(-1), /Minimum sequence zoom reached/);
       keydown(view, '-');
+      assert.match(announcements.at(-1), /Minimum sequence zoom reached/);
+      const beforeWheel = announcements.length;
       view.strip.dispatch('wheel', { deltaY: 2000, clientX: pointerPx, preventDefault() {} });
+      assert.equal(announcements.length, beforeWheel, 'wheel at min does not repeat live announcements');
       assert.deepEqual(view.camera, atMin, 'buttons, keyboard and wheel cannot drift at min');
     }
   });

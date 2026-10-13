@@ -169,6 +169,7 @@ class FakeElement {
       stroke: () => record({
         op: 'stroke',
         stroke: context.strokeStyle,
+        lineWidth: context.lineWidth,
         bounds: intersectBoxes(clip(),
           pathBox(path, (context.lineWidth / 2) * Math.max(1, context.miterLimit))),
       }),
@@ -3661,8 +3662,14 @@ test('native neighbouring-site inspection reaches coincident points, reveals exa
     const first = view.neighborSiteAt(x,y); view.inspectNeighborSite(first);
     view.canvas.ops.length = 0;
     view.paintNeighborSites(view.canvas.getContext('2d'), band);
-    assert.deepEqual(view.canvas.ops.filter((op) => op.op === 'stroke').slice(0, 3).map((op) => op.stroke),
-      [ACTIVE_FOCUS_COLOR, '#ffffff', '#882255'], 'active line retains white contrast inside its focus outline');
+    const activeStrokes = view.canvas.ops.filter((op) => op.op === 'stroke');
+    assert.deepEqual(activeStrokes.slice(-4).map((op) => op.stroke),
+      ['#ffffff', ACTIVE_FOCUS_COLOR, '#ffffff', '#882255'], 'active ring is white on both sides and paints last');
+    assert.deepEqual(activeStrokes.slice(-4).map((op) => op.lineWidth), [12, 8, 4, 2],
+      'two-pixel teal ring has a two-pixel outer white gap, without widening the central purple line');
+    assert.deepEqual(activeStrokes.slice(0, 2).map((op) => op.lineWidth), [4, 2], 'inactive line stays narrow');
+    assert.ok(view.canvas.ops.filter((op) => op.op === 'moveTo' || op.op === 'lineTo').every((op) => op.x === x),
+      'activation never shifts the exact base coordinate');
     const second = view.neighborSiteAt(x,y); assert.notEqual(first,second);
     view.inspectNeighborSite(second);
     assert.match(view.neighborSitePanel.summary.textContent, /2 distinct sites/);

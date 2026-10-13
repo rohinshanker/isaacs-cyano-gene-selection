@@ -1194,13 +1194,18 @@ export class GeneSequenceView {
   }
 
   /** Zoom about an offset, or about the centre of the window when none is given. */
-  zoomBy(factor, anchorOffset = null) {
+  zoomBy(factor, anchorOffset = null, { announceLimit = true } = {}) {
     if (!this.model || !this.camera) return;
     const window = this.visibleWindow();
     const anchor = anchorOffset ?? (window.from + window.to) / 2;
     const perNt = clampCamera({ ...this.camera, perNt: this.camera.perNt * factor },
       this.model.domain, this.width()).perNt;
-    if (perNt === this.camera.perNt) return;
+    if (perNt === this.camera.perNt) {
+      if (announceLimit) this.handlers.onAnnounce?.(factor > 1
+        ? 'Maximum sequence zoom reached.'
+        : 'Minimum sequence zoom reached; the whole gene is shown.');
+      return;
+    }
     const fraction = (anchor - window.from) / window.spanNt;
     const span = this.width() / perNt;
     this.setCamera({ from: anchor - fraction * span, perNt });
@@ -2033,7 +2038,7 @@ export class GeneSequenceView {
         this.panBy((deltaX || deltaY) / this.camera.perNt);
         return;
       }
-      this.zoomBy(Math.exp(-deltaY * 0.0016), this.pointerOffset(event));
+      this.zoomBy(Math.exp(-deltaY * 0.0016), this.pointerOffset(event), { announceLimit: false });
     }, { passive: false });
     strip.addEventListener('dblclick', () => this.goToStart());
     strip.addEventListener('keydown', (event) => this.onKeyDown(event));
