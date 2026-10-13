@@ -23,8 +23,12 @@ Other sessions and their worktrees remain untouched.
 
 ## Verification
 
-Pending focused tests, real rendered UI at mobile/tablet/desktop and breakpoint
-widths, independent review, full repository gates and production verification.
+Colour grouping implemented in `d0832ea`. Browser checks passed both selectors
+across all six organisms, exact grouping/uniqueness, saved colour state and
+keyboard focus; inspected 375/768/959/961/1239/1241/1280/1440 px renders.
+Marker implementation is owned by Multica DEM-391 in the assigned writer
+worktree. Its focused tests and render loop are in progress. Independent review,
+full integrated repository gates and production verification remain.
 No findings yet; discovered findings will be recorded before closure.
 
 ## Cleanup
