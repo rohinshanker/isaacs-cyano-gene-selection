@@ -43,6 +43,15 @@ allow independent condition selection without automatically recombining them.
   the four new condition datasets; preserve legacy pooled data separately.
   DEM-381 resumed with this explicit derivation and the existing quantity contract.
 
+- **TAN-SPLIT-4 — resolved `add1a66`:** browser profiling found whole-catalogue
+  membership scans per axis gene read. Cache immutable membership per axis;
+  metric objects and file readiness remain live. Regression tests cover all
+  2,715 reads, invalidation, independent axes and loading/failure/recovery.
+- **TAN-REVIEW-1 — open:** independent reviewer DEM-384 requests Legacy in
+  both the old source label and condition-set summary, not only its caveat.
+- **TAN-REVIEW-2 — open:** independent reviewer requests removing the
+  unsupported 77-mention assertion and causal annotation-revision claim.
+
 ## Verification
 
 Integrated data `f0b1f29` (worker `7d61e8c`) and frontend/test patch through

@@ -78,6 +78,12 @@ file settles. A transient empty in-memory column therefore does not disable
 Log10, reset the URL to linear, claim that the metric is absent, or emit
 coverage conclusions that require loaded values.
 
+Axis membership is resolved once per immutable catalogue and selected-ID array,
+using `createAxisContributorResolver`. Per-gene reads reuse that membership while
+looking up metric objects and file readiness live. This avoids whole-catalogue
+scans during plotting without caching stale loading, retry, or newly joined data.
+Replace the selection arrays when changing them; never mutate a snapshot.
+
 The shared scatter renderer applies independent X/Y fit factors only to this
 tab. Hit testing, keyboard neighbor selection, zoom, pan, ticks, pin and
 shortlist marks use those factors. A length filter changes visibility only and

@@ -190,8 +190,9 @@ re-checks the order and the 4,805 count.
   reverse-strand aTSS and 19 reverse-strand nTSS (1,524). It keeps 1,113
   reverse-strand gTSS pairs and only 26 forward-strand ones, those at or inside
   the start. 1,008 current genes lose at least one named site and 486 lose every
-  one, so have no score. This is not a biological selection; it is an open
-  finding against the pooled layer (DEM-381), for the owner to decide.
+  one, so have no score. This is not a biological selection. The owner chose
+  Table S1 for new condition layers; retain this recovered legacy score only
+  for explicitly labelled historical analyses, never as the fresh default.
 - **It truncates.** 137 published count fields are fractional (`.5`, `.33`, …).
   Twelve pooled values sit below the sum of the printed counts, by 0.0625 to
   3.28: `M744_RS02730`, `03145`, `03175`, `05310`, `09190`, `09455`, `10840`,
@@ -267,9 +268,10 @@ table, not a gene-body coverage or abundance table. It does not alter that bound
   values. In each condition layer 1,789 genes carry a value and 926 are unknown.
 - **988 target genes have no legacy pooled score** and must render as unknown, never
   as zero. A gene with no mapped start site is not a gene with no transcription.
-- The published annotation carries 2,670 protein-coding loci; 51 are absent from the
-  current target set and 77 TSS locus mentions do not resolve, reflecting nine years of
-  annotation revision between the 2017 model and the current one.
+- The paper-era annotation carries 2,670 protein-coding loci; 51 are absent
+  from the current target set. The verified site-mention denominators are
+  recorded in the reconstruction audit above; a missing current target does
+  not by itself establish the reason for an annotation difference.
 - Of 2,475 gTSS rows in Table S1, 2,432 map by exact historical locus tag to
   1,789 current genes. Ten rows have no direct locus identifier and 33 name a
   locus outside the current target set. The other 926 current genes have no

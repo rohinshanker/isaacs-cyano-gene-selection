@@ -402,7 +402,7 @@ def test_article_helpers_refuse_a_wrong_checksum_and_report_misses():
 def test_the_pooled_source_declares_initiation_and_keeps_its_table():
     source = next(s for s in SOURCES if s["id"] == "TAN2018_TSS")
     assert source["quantity"] == "tss_initiation"
-    assert source["label"] == "TSS initiation, four conditions pooled (UTEX 2973)"
+    assert source["label"] == "Legacy TSS initiation, four conditions pooled (UTEX 2973)"
     assert source["sha256"] == audit.POOLED_SHA256
     assert hashlib.sha256(audit.POOLED.read_bytes()).hexdigest() == audit.POOLED_SHA256
     assert "recovered, not documented" in source["caveat"]

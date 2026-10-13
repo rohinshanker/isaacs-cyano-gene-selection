@@ -112,7 +112,7 @@
     "id": "TAN2018_TSS",
     "file": "tan2018_utex2973_tss_initiation.tsv",
     "metricKey": "tssInitiation",
-    "label": "TSS initiation, four conditions pooled (UTEX 2973)",
+    "label": "Legacy TSS initiation, four conditions pooled (UTEX 2973)",
     "organism": "Synechococcus elongatus UTEX 2973",
     "isTargetOrganism": true,
     "assay": "dRNA-seq transcription initiation strength",
@@ -129,7 +129,7 @@
       "platform": "RNA-seq",
       "strain": "UTEX 2973",
       "basis": "direct",
-      "conditionSet": "Control, dark, high light and high temperature, pooled (summed mean TSS counts)",
+      "conditionSet": "Legacy pool: control, dark, high light and high temperature",
       "samples": "two replicate cultures per condition, four conditions pooled into one score per gene",
       "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
       "citation": {
@@ -222,7 +222,7 @@
       "platform": "RNA-seq",
       "strain": "UTEX 2973",
       "basis": "direct",
-      "conditionSet": "Control, two-replicate mean (CT1, CT2) summed over each gene's Table S1 gTSS rows",
+      "conditionSet": "Control (CT1, CT2)",
       "samples": "CT1 and CT2: Additional file 1, Table S1 columns CT1_RawReads and CT2_RawReads",
       "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
       "citation": {
@@ -336,7 +336,7 @@
       "platform": "RNA-seq",
       "strain": "UTEX 2973",
       "basis": "direct",
-      "conditionSet": "Dark, two-replicate mean (D1, D2) summed over each gene's Table S1 gTSS rows",
+      "conditionSet": "Dark (D1, D2)",
       "samples": "D1 and D2: Additional file 1, Table S1 columns D1_RawReads and D2_RawReads",
       "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
       "citation": {
@@ -455,7 +455,7 @@
       "platform": "RNA-seq",
       "strain": "UTEX 2973",
       "basis": "direct",
-      "conditionSet": "High light, two-replicate mean (HL1, HL2) summed over each gene's Table S1 gTSS rows",
+      "conditionSet": "High light (HL1, HL2)",
       "samples": "HL1 and HL2: Additional file 1, Table S1 columns HL1_RawReads and HL2_RawReads",
       "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
       "citation": {
@@ -574,7 +574,7 @@
       "platform": "RNA-seq",
       "strain": "UTEX 2973",
       "basis": "direct",
-      "conditionSet": "High temperature, two-replicate mean (HT1, HT2) summed over each gene's Table S1 gTSS rows",
+      "conditionSet": "High temperature (HT1, HT2)",
       "samples": "HT1 and HT2: Additional file 1, Table S1 columns HT1_RawReads and HT2_RawReads",
       "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
       "citation": {
