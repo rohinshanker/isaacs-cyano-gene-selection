@@ -44,6 +44,12 @@ test('compact marks stay exact, visibility hides targets but retains evidence an
       assert.equal(mark.getAttribute('data-position'), '15');
       assert.equal(mark.getAttribute('tabindex'), '0');
       assert.match(mark.getAttribute('aria-label'), /source-associated: owner/);
+      assert.match(mark.getAttribute('aria-label'), /Purple line at the exact source base/);
+      const tick = mark.querySelector('.neighbor-site-tick');
+      assert.equal(tick.getAttribute('x1'), tick.getAttribute('x2'));
+      assert.equal(Number(tick.getAttribute('y2')) - Number(tick.getAttribute('y1')), 10);
+      assert.equal(mark.querySelectorAll('path').length, 0);
+      assert.equal(mark.querySelector('.neighbor-site-halo').getAttribute('stroke'), '#ffffff');
     }
     const summary = host.querySelector('details.neighbor-site-details').querySelector('summary');
     summary.focus(); renderGeneViewer(host, focal, { neighborSites:model });

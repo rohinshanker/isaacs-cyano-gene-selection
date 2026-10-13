@@ -78,7 +78,7 @@ const WRAP_MARKER_PX = 5;
  * Exported so a test can pin both sides of that rule at the width it turns on.
  */
 export const MIN_TSS_SPACING_PX = 3;
-/** Room for an eight-pixel diamond and a gap at chromosome overview scale. */
+/** Conservative spacing gate for neighbouring-site lines at chromosome overview scale. */
 export const MIN_NEIGHBOR_SITE_SPACING_PX = 12;
 /**
  * Narrowest bar, in drawing units, on which the hollow source-derived style can
@@ -873,7 +873,7 @@ export class ChromosomeView {
     this.neighborSitePanel = new NeighborSitePanel();
     this.siteInstruction = document.createElement('p');
     this.siteInstruction.className = 'panel-note';
-    this.siteInstruction.textContent = 'Purple diamonds mark neighbouring-gene TSS points in CDS segments. Crowded diamonds are hidden until you zoom in or inspect a site. Press N (Shift+N backwards) on the chromosome to inspect every site in the window, including coincident points; open associated genes in the site list.';
+    this.siteInstruction.textContent = 'Purple lines mark exact neighbouring-gene TSS bases in CDS segments. Crowded lines are hidden until you zoom in or inspect a site. Press N (Shift+N backwards) on the chromosome to inspect every site in the window, including coincident points; open associated genes in the site list.';
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
@@ -1765,13 +1765,21 @@ export class ChromosomeView {
   }
 
   paintNeighborSites(ctx, band) {
-    ctx.fillStyle = NEIGHBOR_SITE_COLORS[1];
+    ctx.lineCap = 'butt';
     for (const mark of this.drawnNeighborSitesInBand(band)) {
       const x = band.scale.bpToX(mark.site.position);
       const y = (mark.strand === '-' ? band.layout.laneBelowTop : band.layout.laneAboveTop) + band.layout.laneHeight / 2;
-      ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 5); ctx.lineTo(x - 4, y); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5);
+      if (mark === this.activeNeighborSite) {
+        ctx.strokeStyle = ACTIVE_FOCUS_COLOR;
+        ctx.lineWidth = 6;
+        ctx.stroke();
+      }
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = mark === this.activeNeighborSite ? 2 : 1;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = NEIGHBOR_SITE_COLORS[1];
+      ctx.lineWidth = 2;
       ctx.stroke();
     }
   }

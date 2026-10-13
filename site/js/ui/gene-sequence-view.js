@@ -613,7 +613,7 @@ export class GeneSequenceView {
     this.writeMarkerList();
     this.writeNeighborSitePanel();
     if (this.neighborVisibilityNote) this.neighborVisibilityNote.textContent = next
-      ? 'Purple diamonds in the Sites row mark neighbouring-gene TSS points inside this CDS; use their inspection list to reveal individual sites.'
+      ? 'Purple lines in the Sites row align with exact neighbouring-gene TSS bases inside this CDS. At nucleotide zoom, each source base is underlined in the Original and Recoded rows when shown; use the inspection list to reveal individual sites. These are single-base TSS coordinates, not promoter or RBS footprints.'
       : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.';
     this.handlers.onAnnounce?.(`${this.markerLayer.label} start sites `
       + `${next ? 'shown' : 'hidden'} on the sequence close-up.`);
@@ -856,7 +856,7 @@ export class GeneSequenceView {
     this.markerToggle = box;
     if (this.neighborSites?.forGene(this.gene)?.count > 0) {
       this.neighborVisibilityNote = element('p', 'panel-note', this.markersVisible
-        ? 'Purple diamonds in the Sites row mark neighbouring-gene TSS points inside this CDS; use their inspection list to reveal individual sites.'
+        ? 'Purple lines in the Sites row align with exact neighbouring-gene TSS bases inside this CDS. At nucleotide zoom, each source base is underlined in the Original and Recoded rows when shown; use the inspection list to reveal individual sites. These are single-base TSS coordinates, not promoter or RBS footprints.'
         : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.');
       host.append(this.neighborVisibilityNote);
     }
@@ -1198,7 +1198,9 @@ export class GeneSequenceView {
     if (!this.model || !this.camera) return;
     const window = this.visibleWindow();
     const anchor = anchorOffset ?? (window.from + window.to) / 2;
-    const perNt = this.camera.perNt * factor;
+    const perNt = clampCamera({ ...this.camera, perNt: this.camera.perNt * factor },
+      this.model.domain, this.width()).perNt;
+    if (perNt === this.camera.perNt) return;
     const fraction = (anchor - window.from) / window.spanNt;
     const span = this.width() / perNt;
     this.setCamera({ from: anchor - fraction * span, perNt });
@@ -1327,8 +1329,11 @@ export class GeneSequenceView {
     const sites = this.neighborSites?.forGene(this.gene)?.sites ?? [];
     if (this.markersVisible) drawNeighborSiteMarks(area, sites.filter((site) => {
       const offset = columns.get(site.position);
-      return offset != null && offset >= window.from && offset <= window.to;
-    }), this.gene, (site) => x(columns.get(site.position) + 0.5), rows.markers + MARKER_ROW_HEIGHT / 2);
+      return offset != null && offset + 1 > window.from && offset < window.to;
+    }), this.gene, (site) => x(columns.get(site.position) + 0.5), rows.markers + MARKER_ROW_HEIGHT / 2, {
+      baseWidth: cells ? perNt : 0,
+      baseRows: [rows.bases, rows.recoded].filter((row) => row != null).map((row) => row + ROW_HEIGHT),
+    });
     root.append(area);
     this.strip.replaceChildren(root);
     this.writeReadout(window);

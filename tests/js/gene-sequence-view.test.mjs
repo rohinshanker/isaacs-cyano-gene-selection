@@ -66,18 +66,70 @@ test('neighbouring sites align with the native base without covering its letter'
     view.update({ gene: focal, table, scheme: null, schemeVersion: 0, neighborSites });
     const mark = view.strip.querySelector('g.neighbor-site-mark');
     assert.ok(mark, 'neighbor-only gene draws a site');
-    assert.match(view.neighborVisibilityNote.textContent, /Purple diamonds in the Sites row/);
-    const [x, y] = mark.querySelector('path').getAttribute('d').match(/[-\d.]+/g).map(Number);
+    assert.match(view.neighborVisibilityNote.textContent, /Purple lines in the Sites row/);
+    const tick = mark.querySelector('.neighbor-site-tick');
+    const x = Number(tick.getAttribute('x1'));
+    assert.equal(tick.getAttribute('x2'), tick.getAttribute('x1'));
+    assert.equal(mark.querySelectorAll('path').length, 0);
     const base = codonCells(view)[1].querySelectorAll('text')[1];
     assert.equal(Number(base.getAttribute('x')), x, 'site shares the exact nucleotide column');
     assert.equal(base.textContent, 'C');
-    assert.ok(y + 10 < view.rowLayout().bases, 'the entire filled diamond clears the base row');
+    assert.ok(Number(tick.getAttribute('y2')) < view.rowLayout().bases, 'the tick clears the base row');
+    const underline = mark.querySelector('.neighbor-site-base');
+    assert.equal(Number(underline.getAttribute('x1')), x - view.camera.perNt / 2);
+    assert.equal(Number(underline.getAttribute('x2')), x + view.camera.perNt / 2);
+    assert.equal(mark.querySelectorAll('.neighbor-site-base').length, 1);
     const before = view.rowLayout();
     view.update({ gene: focal, table, scheme: null, schemeVersion: 0, neighborSites, markersVisible: false });
     assert.equal(view.strip.querySelectorAll('g.neighbor-site-mark').length, 0);
     assert.deepEqual(view.rowLayout(), before, 'hiding sites preserves sequence geometry');
     view.update({ gene: focal, table, scheme: null, schemeVersion: 0 });
     assert.equal(view.rowLayout().markers, null, 'unavailable evidence adds no site row');
+  });
+});
+
+test('one-base neighbouring TSS underlines follow both strands, split CDS and origin columns in both sequence rows', async () => {
+  const cases = [
+    { overrides: {}, points: [[1005, 4], [1008, 7]] },
+    { overrides: { strand: '-' }, points: [[1023, 4], [1020, 7]] },
+    { overrides: { end: 1032, cdsSegments: [[1001, 1009], [1015, 1032]] }, points: [[1009, 8], [1015, 9]], gap: 1012 },
+    { overrides: { strand: '-', end: 1032, cdsSegments: [[1001, 1009], [1015, 1032]] }, points: [[1015, 17], [1009, 18]], gap: 1012 },
+    { overrides: { seqid: 'NZ_CP006473.1', start: 1, end: 7842, cdsSegments: [[7830, 7842], [1, 14]] }, points: [[7842, 12], [1, 13]] },
+  ];
+  for (const { overrides, points, gap } of cases) await withFakeDocument((document) => {
+    const focal = gene(overrides);
+    const records = [...points.map(([position]) => position), ...(gap ? [gap] : [])].map((position) => ({
+      locus: 'other', row: { id: `site-${position}`, type: 'gTSS', position,
+        replicon: focal.seqid, strand: focal.strand },
+    }));
+    const neighborSites = neighborSiteModel({ genes: [focal],
+      neighborSites: indexNativeSites([focal], records, DEFAULT_ORGANISM),
+    }, { sources: ['TAN2018_TSS_CONTROL'] });
+    const view = mount(document);
+    const scheme = compileScheme({ TCG: 'AGC' }, table);
+    view.update({ gene: focal, table, scheme, schemeVersion: 1, neighborSites });
+    view.fitGene();
+    assert.equal(view.strip.querySelectorAll('.neighbor-site-mark').length, points.length);
+    for (const [position, offset] of points) {
+      const mark = view.strip.querySelectorAll('.neighbor-site-mark').find((node) => Number(node.getAttribute('data-position')) === position);
+      const tick = mark.querySelector('.neighbor-site-tick');
+      const expectedX = LABEL_WIDTH + (offset + 0.5 - view.camera.from) * view.camera.perNt;
+      assert.equal(Number(tick.getAttribute('x1')), expectedX, `exact offset ${offset} on ${focal.strand}`);
+      const underlines = mark.querySelectorAll('.neighbor-site-base');
+      assert.equal(underlines.length, 2, 'original and recoded base only');
+      for (const [index, row] of [view.rowLayout().bases, view.rowLayout().recoded].entries()) {
+        const underline = underlines[index];
+        assert.equal(Number(underline.getAttribute('x1')), expectedX - view.camera.perNt / 2);
+        assert.equal(Number(underline.getAttribute('x2')), expectedX + view.camera.perNt / 2);
+        assert.equal(Number(underline.getAttribute('y1')), row + 20, 'below the readable letters');
+        assert.equal(underline.getAttribute('stroke-linecap'), 'butt', 'ends do not cover adjacent bases');
+      }
+    }
+    const before = view.rowLayout();
+    view.setMarkersVisible(false);
+    assert.equal(view.strip.querySelectorAll('.neighbor-site-base').length, 0);
+    assert.equal(view.strip.querySelectorAll('.neighbor-site-mark').length, 0);
+    assert.deepEqual(view.rowLayout(), before);
   });
 });
 
@@ -344,6 +396,36 @@ test('the wheel zooms about the pointer and pans with Shift or a horizontal delt
     wheel({ deltaX: -100, deltaY: 10, clientX: pointerPx });
     assert.ok(view.camera.from < panned, 'a mostly horizontal wheel pans');
     assert.equal(prevented, 3);
+  });
+});
+
+test('bounded zoom preserves the pointer anchor entering max and leaves max/min cameras fixed', async () => {
+  await withFakeDocument((document) => {
+    const view = mount(document);
+    view.update({ gene: longGene(), table, scheme: null, schemeVersion: 0 });
+    view.setCamera({ from: 1000, perNt: MAX_PX_PER_NT / 1.1 });
+    const pointerPx = LABEL_WIDTH + view.width() * 0.2;
+    const anchor = view.camera.from + (pointerPx - LABEL_WIDTH) / view.camera.perNt;
+    view.zoomBy(1.25, anchor);
+    assert.equal(view.camera.perNt, MAX_PX_PER_NT);
+    assert.ok(Math.abs(view.camera.from + (pointerPx - LABEL_WIDTH) / view.camera.perNt - anchor) < 1e-9,
+      'pointer stays on the same base while entering the max clamp');
+    const atMax = { ...view.camera };
+    for (let i = 0; i < 4; i += 1) {
+      view.zoomInButton.click();
+      keydown(view, '+');
+      view.strip.dispatch('wheel', { deltaY: -2000, clientX: pointerPx, preventDefault() {} });
+      assert.deepEqual(view.camera, atMax, 'buttons, keyboard and wheel cannot drift at max');
+    }
+    view.fitGene();
+    const atMin = { ...view.camera };
+    assert.equal(atMin.perNt, view.width() / (view.model.domain.max - view.model.domain.min + 2 * EDGE_PAD_NT));
+    for (let i = 0; i < 4; i += 1) {
+      view.zoomOutButton.click();
+      keydown(view, '-');
+      view.strip.dispatch('wheel', { deltaY: 2000, clientX: pointerPx, preventDefault() {} });
+      assert.deepEqual(view.camera, atMin, 'buttons, keyboard and wheel cannot drift at min');
+    }
   });
 });
 

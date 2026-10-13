@@ -1042,7 +1042,7 @@ export function renderGeneViewer(host, gene, {
     const relation = neighborSites?.forGene(gene);
     if (visible) drawNeighborSiteMarks(picture, relation?.sites ?? [], gene,
       (site) => xScale(model)(neighborSiteOffset(gene, site) + 0.5), TRACK_Y + TRACK_HEIGHT / 2);
-    const siteDescription = relation ? ` ${relation.count} distinct native neighbouring-gene TSS points in actual CDS segments, ${visible ? 'shown as purple diamonds' : 'hidden by the start-sites control'}; contributors remain in the neighbouring-site list.` : ` ${neighborSites?.reason ?? 'Native neighbouring-site evidence unavailable.'}`;
+    const siteDescription = relation ? ` ${relation.count} distinct native neighbouring-gene TSS points in actual CDS segments, ${visible ? 'shown as purple lines at exact source bases' : 'hidden by the start-sites control'}; contributors remain in the neighbouring-site list.` : ` ${neighborSites?.reason ?? 'Native neighbouring-site evidence unavailable.'}`;
     picture.setAttribute('aria-label', picture.getAttribute('aria-label') + siteDescription);
     const sitePanel = neighborSiteMounts.get(host) ?? new NeighborSitePanel();
     neighborSiteMounts.set(host, sitePanel);
@@ -1080,7 +1080,7 @@ export function renderGeneViewer(host, gene, {
       items.push(['gene-view-key-tss', `${startSites.label} start site`]);
     }
     if (visible && relation?.count > 0) {
-      items.push(['gene-view-key-neighbor-site', 'Neighbouring-gene TSS in CDS']);
+      items.push(['gene-view-key-neighbor-site', 'Neighbouring-gene TSS: line at exact base in CDS']);
     }
     if (Array.isArray(model.overlaps) && model.overlaps.length > 0) {
       items.push(['gene-view-key-overlap',

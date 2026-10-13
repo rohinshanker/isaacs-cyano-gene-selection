@@ -104,8 +104,16 @@ async (page) => {
   check(await sequencePanel.innerText().then((text) => text.includes('multiple associations')), 'multiple native owners explicit');
   const coincident = page.locator('.chromosome-sequence .neighbor-site-mark[data-position="319780"]');
   check(await coincident.count() === 2, 'both coincident marks retained');
+  check(await coincident.evaluateAll((marks) => marks.every((mark) => {
+    const tick = mark.querySelector('.neighbor-site-tick');
+    return tick && tick.getAttribute('x1') === tick.getAttribute('x2') && !mark.querySelector('path');
+  })), 'coincident records retain independent exact-base lines');
   await coincident.first().focus();
-  check(await coincident.first().evaluate((node) => node === document.activeElement), 'coincident native target keyboard focus');
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  check(await coincident.first().evaluate((node) => node === document.activeElement
+    && getComputedStyle(node.querySelector('rect')).stroke !== 'none'
+    && getComputedStyle(node.querySelector('.neighbor-site-halo')).stroke === 'rgb(255, 255, 255)'), 'coincident line has visible keyboard focus and retains its white contrast');
   const firstRow = sequencePanel.locator('.neighbor-site-row').filter({ hasText: 'ui-coincident+' });
   await firstRow.locator('.neighbor-site-provenance > summary').click();
   await firstRow.locator('dl').first().waitFor();

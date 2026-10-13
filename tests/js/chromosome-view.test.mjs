@@ -11,7 +11,7 @@ import {
   describePaintOrder, formatCoordinate, positionTicks, repliconTracks, visibleMarks,
 } from '../../site/js/core/chromosome-model.js';
 import {
-  DERIVED_MARKER_FILL, buildCategoryColorScale, buildColorScale,
+  ACTIVE_FOCUS_COLOR, DERIVED_MARKER_FILL, buildCategoryColorScale, buildColorScale,
 } from '../../site/js/ui/colors.js';
 import {
   valueScaleAvailability, valueScaleClause, valueScaleTransform,
@@ -3648,12 +3648,21 @@ test('native neighbouring-site inspection reaches coincident points, reveals exa
     const y = band.layout.laneAboveTop + band.layout.laneHeight / 2;
     assert.equal(view.neighborSitesInBand(band).length, 2);
     view.paintNeighborSites(view.canvas.getContext('2d'), band);
-    const fills = view.canvas.ops.filter((op) => op.op === 'fill');
-    const outlines = view.canvas.ops.filter((op) => op.op === 'stroke');
-    assert.equal(fills.length, 2);
-    assert.equal(outlines.length, fills.length, 'every inactive site has a contrasting outline');
-    assert.ok(outlines.every((op) => op.stroke !== fills[0].fill));
+    view.canvas.ops.length = 0;
+    view.paintNeighborSites(view.canvas.getContext('2d'), band);
+    const strokes = view.canvas.ops.filter((op) => op.op === 'stroke');
+    assert.equal(strokes.length, 4, 'each line has a contrasting halo plus purple stroke');
+    assert.deepEqual(strokes.map((op) => op.stroke), ['#ffffff', '#882255', '#ffffff', '#882255']);
+    assert.equal(view.canvas.ops.filter((op) => op.op === 'fill').length, 0, 'no diamond fill');
+    const vertices = view.canvas.ops.filter((op) => op.op === 'moveTo' || op.op === 'lineTo');
+    assert.equal(vertices.length, 4);
+    assert.ok(vertices.every((op) => op.x === x), 'all line vertices use the exact base coordinate');
+    assert.equal(vertices[1].y - vertices[0].y, 10);
     const first = view.neighborSiteAt(x,y); view.inspectNeighborSite(first);
+    view.canvas.ops.length = 0;
+    view.paintNeighborSites(view.canvas.getContext('2d'), band);
+    assert.deepEqual(view.canvas.ops.filter((op) => op.op === 'stroke').slice(0, 3).map((op) => op.stroke),
+      [ACTIVE_FOCUS_COLOR, '#ffffff', '#882255'], 'active line retains white contrast inside its focus outline');
     const second = view.neighborSiteAt(x,y); assert.notEqual(first,second);
     view.inspectNeighborSite(second);
     assert.match(view.neighborSitePanel.summary.textContent, /2 distinct sites/);

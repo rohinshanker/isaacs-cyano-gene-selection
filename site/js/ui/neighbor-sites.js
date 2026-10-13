@@ -93,8 +93,8 @@ export class NeighborSitePanel {
   }
 }
 
-/** Mark centres retain exact geometry; the inspection list resolves crowded/coincident targets. */
-export function drawNeighborSiteMarks(root, sites, gene, positionX, y) {
+/** One-coordinate ticks and optional one-base underlines; lists resolve coincident targets. */
+export function drawNeighborSiteMarks(root, sites, gene, positionX, y, { baseWidth = 0, baseRows = [] } = {}) {
   const ns = 'http://www.w3.org/2000/svg';
   const group = document.createElementNS(ns, 'g');
   group.setAttribute('class', 'neighbor-site-marks');
@@ -109,18 +109,34 @@ export function drawNeighborSiteMarks(root, sites, gene, positionX, y) {
     mark.setAttribute('data-position', site.position);
     mark.setAttribute('tabindex', '0');
     mark.setAttribute('role', 'img');
-    mark.setAttribute('aria-label', `${describeNeighborSite(site, gene)} All coincident sites remain in the neighbouring-site list.`);
+    mark.setAttribute('aria-label', `${describeNeighborSite(site, gene)} Purple line at the exact source base${baseWidth > 0 ? '; underlined in each nucleotide row' : ''}. All coincident sites remain in the neighbouring-site list.`);
     mark.addEventListener('click', () => mark.focus?.({ preventScroll: true }));
     const title = document.createElementNS(ns, 'title');
     title.textContent = mark.getAttribute('aria-label');
-    const path = document.createElementNS(ns, 'path');
-    path.setAttribute('d', `M${x} ${y - 5} l4 5 -4 5 -4 -5 Z`);
-    path.setAttribute('fill', NEIGHBOR_SITE_COLORS[1]);
-    path.setAttribute('stroke', '#ffffff');
+    const line = (className, x1, x2, y1, y2, stroke, strokeWidth) => {
+      const result = document.createElementNS(ns, 'line');
+      for (const [key, value] of Object.entries({ class: className, x1, x2, y1, y2,
+        stroke, 'stroke-width': strokeWidth, 'stroke-linecap': 'butt', 'pointer-events': 'none' })) {
+        result.setAttribute(key, value);
+      }
+      if (typeof result.className === 'string') result.className = className;
+      return result;
+    };
+    mark.append(title,
+      line('neighbor-site-halo', x, x, y - 5, y + 5, '#ffffff', 4),
+      line('neighbor-site-tick', x, x, y - 5, y + 5, NEIGHBOR_SITE_COLORS[1], 2));
+    // Exact cell edges, with butt caps: distinct points never paint a span between them.
+    if (baseWidth > 0) for (const rowBottom of baseRows) {
+      mark.append(
+        line('neighbor-site-base-halo', x - baseWidth / 2, x + baseWidth / 2,
+          rowBottom - 2, rowBottom - 2, '#ffffff', 4),
+        line('neighbor-site-base', x - baseWidth / 2, x + baseWidth / 2,
+          rowBottom - 2, rowBottom - 2, NEIGHBOR_SITE_COLORS[1], 2));
+    }
     const target = document.createElementNS(ns, 'rect');
     for (const [key, value] of Object.entries({ x: x - 5, y: y - 7, width: 10, height: 14, fill: 'transparent' })) target.setAttribute(key, value);
     target.addEventListener('click', () => mark.focus?.({ preventScroll: true }));
-    mark.append(title, path, target);
+    mark.append(target);
     group.append(mark);
   }
   root.append(group);
