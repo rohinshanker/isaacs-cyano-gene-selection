@@ -11,6 +11,7 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
+| [O_filter-status-temporary-disable__20261013](O_filter-status-temporary-disable__20261013.md) | Add Filter status to Chromosome/Gene, a Turn filters off toggle and temporarily-disabled title, automatic reactivation on filter edits, and accessible shared filtered-out-gene visibility |
 | [O_custom-filters-panel__20261013](O_custom-filters-panel__20261013.md) | Add a collapsed Custom filters panel above Filters; move Add filter and its custom range editors into it, preserving filter and saved-layout behavior |
 | [O_low-traffic-provenance-disclosure__20261013](O_low-traffic-provenance-disclosure__20261013.md) | Add multi-dataset selection/pooling to Hide low-traffic genes using colouring rules; collapse contributor/provenance explanation into a tan Provenance box, closed by default |
 | [O_neighbor-tss-overlap-count__20261013](O_neighbor-tss-overlap-count__20261013.md) | Count distinct neighbouring-gene TSS sites inside each CDS for numeric colouring/filtering and consistent viewer totals; include both same and opposite strands, preserve deduplication and unavailable evidence |
