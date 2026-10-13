@@ -613,7 +613,7 @@ export class GeneSequenceView {
     this.writeMarkerList();
     this.writeNeighborSitePanel();
     if (this.neighborVisibilityNote) this.neighborVisibilityNote.textContent = next
-      ? 'Neighbouring-gene TSS points are marked inside the CDS; use their inspection list to reveal individual sites.'
+      ? 'Purple diamonds in the Sites row mark neighbouring-gene TSS points inside this CDS; use their inspection list to reveal individual sites.'
       : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.';
     this.handlers.onAnnounce?.(`${this.markerLayer.label} start sites `
       + `${next ? 'shown' : 'hidden'} on the sequence close-up.`);
@@ -854,11 +854,13 @@ export class GeneSequenceView {
     row.append(box, document.createTextNode(` ${this.markerControlLabel()}`));
     host.append(row);
     this.markerToggle = box;
-    if (revealExtent === null) {
+    if (this.neighborSites?.forGene(this.gene)?.count > 0) {
       this.neighborVisibilityNote = element('p', 'panel-note', this.markersVisible
-        ? 'Neighbouring-gene TSS points are marked inside the CDS; use their inspection list to reveal individual sites.'
+        ? 'Purple diamonds in the Sites row mark neighbouring-gene TSS points inside this CDS; use their inspection list to reveal individual sites.'
         : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.');
       host.append(this.neighborVisibilityNote);
+    }
+    if (revealExtent === null) {
       if (held) box.focus({ preventScroll: true });
       return;
     }

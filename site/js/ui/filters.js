@@ -689,18 +689,6 @@ export class FilterPanel {
     this.exceptionHost.append(fieldset);
   }
 
-  /**
-   * The overlapping-gene filter: all genes, only the overlapping ones, or only
-   * the ones that overlap nothing.
-   *
-   * Built whatever the counts are, including zero, because the three states are
-   * about what the reader wants to see and not about this organism. While the
-   * overlap layer has not landed the fieldset says so and the options are
-   * disabled: filtering on an unread layer would turn a file in flight into a
-   * claim about which genes overlap. The counts quoted are of the whole plotted
-   * set, not of what the other filters leave, so they do not move as the reader
-   * narrows something else.
-   */
   renderNeighborSiteFilter(state) {
     const held = this.neighborSiteHost.contains(document.activeElement) ? document.activeElement.value : null;
     this.neighborSiteHost.replaceChildren();
@@ -725,7 +713,7 @@ export class FilterPanel {
       const label = document.createElement('label'); label.htmlFor = input.id;
       const count = value === 'unavailable' ? model?.counts[2] : !model?.available ? null
         : value === 'with' ? model.counts[1] : model.counts[0];
-      label.textContent = `${labels[i]}${value === 'any' || count == null ? '' : ` (${count})`}`;
+      label.textContent = `${labels[i]}${value === 'any' || count == null ? '' : ` (${formatCount(count)})`}`;
       row.append(input, label); fieldset.append(row);
     });
     if (!model?.available && ['with', 'without'].includes(state.neighborSiteFilter)) {
@@ -736,6 +724,18 @@ export class FilterPanel {
     if (held) [...fieldset.querySelectorAll('input')].find((input) => input.value === held && !input.disabled)?.focus();
   }
 
+  /**
+   * The overlapping-gene filter: all genes, only the overlapping ones, or only
+   * the ones that overlap nothing.
+   *
+   * Built whatever the counts are, including zero, because the three states are
+   * about what the reader wants to see and not about this organism. While the
+   * overlap layer has not landed the fieldset says so and the options are
+   * disabled: filtering on an unread layer would turn a file in flight into a
+   * claim about which genes overlap. The counts quoted are of the whole plotted
+   * set, not of what the other filters leave, so they do not move as the reader
+   * narrows something else.
+   */
   renderOverlapFilter(state) {
     const focusedValue = this.overlapHost.contains(document.activeElement)
       ? document.activeElement.value : null;

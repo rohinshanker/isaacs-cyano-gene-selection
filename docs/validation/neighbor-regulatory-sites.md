@@ -22,6 +22,8 @@ association, condition, raw record and recorded warning remains inspectable.
 A self-only site is excluded; a self-and-other site retains both associations.
 Orphan and unresolved native-association records remain explicit in the focal
 list but do not create an owner or contribute to its neighbouring-gene count.
+Their coordinates and source records remain readable; they offer no marker
+inspection action because they have no resolved neighbouring-gene marker.
 Antisense locus associations are source context, not proven regulation;
 Table S8 potential-target hypotheses do not produce extra associations.
 
@@ -38,6 +40,11 @@ The `ns` share-link field carries `any`, `with`, `without` or `unavailable`;
 fresh links omit `any`. Clear all filters clears it. Selection reset preserves
 analysis filters, existing self-TSS visibility and the source-selection contract.
 Existing per-organism storage and navigation carry this field with the view.
+Exported `viewState` preserves the requested mode. `filterState.neighborSiteFilter`
+records effective narrowing, with `neighborSiteFilterStatus` carrying requested
+and effective modes, suspension, evidence availability and its reason. A suspended
+with/without request therefore exports an effective `any`, matching the CSV's
+`passesCurrentFilters` values.
 
 Purple diamonds centre on the native base inside the compact CDS track and
 align to that base in the expanded sequence's Sites row, leaving nucleotide
@@ -45,7 +52,13 @@ letters readable. The persistent inspection list exposes every crowded
 site and selectable source-associated gene. On the chromosome, N/Shift+N walks
 all sites in the current camera, including coincident marks and sites belonging
 to hidden genes; Enter focuses their list. Repeated pointer/touch clicks cycle
-sites sharing pixels. Existing per-view TSS visibility controls govern both
+sites sharing pixels. At dense chromosome zoom, diamonds and their pointer
+targets are suppressed when fewer than 12 pixels per mark are available; N and
+the list still inspect every site, with the active site drawn explicitly. This
+keeps gene colours and gene selection usable. Every diamond has a contrasting
+outline, including on a CDS with the same categorical colour. Both gene viewers
+explain the diamond separately from self-associated start sites.
+Existing per-view TSS visibility controls govern both
 self-associated and neighbouring Tan marks. Hidden marks have no pointer or keyboard targets; lists
 and evidence counts remain, with an explicit hidden-state explanation. A gene
 with only neighbouring markers still has its control.
@@ -53,9 +66,10 @@ with only neighbouring markers still has its control.
 Run `tests/js/neighbor-sites.test.mjs` for segment boundaries/gaps, both strands,
 origin ordering, identities, self/multiple/unassigned source links, condition
 repeats, source suspension and the independent shipped-data membership oracle.
-For rendered checks, serve `site/` on an unused port. Open
-`http://127.0.0.1:PORT/index.html?uiArtifacts=ABSOLUTE_ARTIFACT_DIRECTORY` in a
-unique Playwright CLI session; create the artifact directory first. Run
+For rendered checks, serve the repository root on an unused port. Open
+`http://127.0.0.1:PORT/site/index.html?uiArtifacts=ABSOLUTE_ARTIFACT_DIRECTORY` in
+a unique Playwright CLI session; create the artifact directory first. Serving
+`site/` directly also works; both helpers resolve the current app directory. Run
 `tools/ui/check_neighbor_sites.js` and `tools/ui/check_neighbor_sites_states.js`
 with `playwright-cli -s=SESSION run-code --filename=SCRIPT`. Inspect their
 screenshots and semantic output. Treat a CLI `### Error` as failure even when

@@ -3647,6 +3647,12 @@ test('native neighbouring-site inspection reaches coincident points, reveals exa
     const x = band.scale.bpToX(100100);
     const y = band.layout.laneAboveTop + band.layout.laneHeight / 2;
     assert.equal(view.neighborSitesInBand(band).length, 2);
+    view.paintNeighborSites(view.canvas.getContext('2d'), band);
+    const fills = view.canvas.ops.filter((op) => op.op === 'fill');
+    const outlines = view.canvas.ops.filter((op) => op.op === 'stroke');
+    assert.equal(fills.length, 2);
+    assert.equal(outlines.length, fills.length, 'every inactive site has a contrasting outline');
+    assert.ok(outlines.every((op) => op.stroke !== fills[0].fill));
     const first = view.neighborSiteAt(x,y); view.inspectNeighborSite(first);
     const second = view.neighborSiteAt(x,y); assert.notEqual(first,second);
     view.inspectNeighborSite(second);
@@ -3664,5 +3670,32 @@ test('native neighbouring-site inspection reaches coincident points, reveals exa
     assert.equal(model.forGene(GENES[0]).count,2, 'hiding is never an evidence change');
     view.setStartSitesVisible(true);
     view.stepNeighborSite(1); assert.ok(view.activeNeighborSite);
+  } finally { restore(); }
+});
+
+test('crowded neighbouring sites leave gene bars clickable but remain keyboard-inspectable', async () => {
+  const { indexNativeSites, neighborSiteModel } = await import('../../site/js/core/neighbor-sites.js');
+  const { DEFAULT_ORGANISM } = await import('../../site/js/core/organisms.js');
+  const records = Array.from({ length: 200 }, (_, i) => ({ locus: 'MINUS', row: {
+    id: `dense-${i}`, type: 'gTSS', position: 100020 + i, replicon: 'CP006471', strand: '+',
+  } }));
+  const model = neighborSiteModel({ genes: GENES, neighborSites: indexNativeSites(GENES, records, DEFAULT_ORGANISM) }, { sources: ['TAN2018_TSS_CONTROL'] });
+  const { view, restore, flush } = mount();
+  try {
+    view.update({ ...view.model, neighborSites: model }); flush();
+    const band = view.bands()[0];
+    assert.equal(view.neighborSitesInBand(band).length, 200);
+    assert.equal(view.drawnNeighborSitesInBand(band).length, 0);
+    const x = band.scale.bpToX(100020);
+    const y = band.layout.laneAboveTop + band.layout.laneHeight / 2;
+    assert.equal(view.neighborSiteAt(x, y), null, 'undrawn markers cannot intercept gene clicks');
+    view.stepNeighborSite(1);
+    assert.equal(view.drawnNeighborSitesInBand(band).length, 1, 'explicit inspection reveals the selected site');
+    assert.equal(view.activeNeighborSite.site.position, 100020);
+    view.stepNeighborSite(1);
+    assert.equal(view.activeNeighborSite.site.position, 100021);
+    assert.equal(model.forGene(GENES[0]).count, 200, 'crowding does not change evidence');
+    view.windows.set(CHROMOSOME, { from: 100020, to: 100030 });
+    assert.equal(view.drawnNeighborSitesInBand(view.bands()[0]).length, 11, 'zoom restores separate marks');
   } finally { restore(); }
 });

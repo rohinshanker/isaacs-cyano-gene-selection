@@ -1,4 +1,4 @@
-import { neighborSiteModel, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
+import { neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
 import { renderNeighborSiteLegend } from './ui/neighbor-sites.js';
 import { buildCategoricalScale } from './ui/colors.js';
 import { overlapLengthFilterActive, passesOverlapLengthFilter } from './core/overlap-length.js';
@@ -861,15 +861,6 @@ function scheduleTiming() {
   }, 250);
 }
 
-/**
- * The OG colour channel: one bucket per class, and the state nothing is known in.
- *
- * It reads the overlap index the loader built, so the classes a gene is
- * coloured by, the classes the legend counts and the classes the filter keeps
- * are one resolution. While the layer is loading or has failed every gene
- * falls in one further neutral bucket, exactly as the function categories do:
- * not loaded yet must not look like no overlap.
- */
 function resolveNeighborSiteModel() {
   const dataset = context.dataset;
   const states = ['tssEvidence', 'regulatoryTss'].map((key) => pendingState(dataset, key));
@@ -881,6 +872,15 @@ function resolveNeighborSiteModel() {
     sourcePending: metric?.fileKey ? pendingState(dataset, metric.fileKey) : null });
 }
 
+/**
+ * The OG colour channel: one bucket per class, and the state nothing is known in.
+ *
+ * It reads the overlap index the loader built, so the classes a gene is
+ * coloured by, the classes the legend counts and the classes the filter keeps
+ * are one resolution. While the layer is loading or has failed every gene
+ * falls in one further neutral bucket, exactly as the function categories do:
+ * not loaded yet must not look like no overlap.
+ */
 function resolveOverlapModel() {
   const { dataset } = context;
   const pending = isLoading(dataset, 'geneOverlaps') ? FILE_STATE.LOADING
@@ -1833,7 +1833,8 @@ function renderAll({ schemeErrors = [] } = {}) {
     filterState: {
       ranges: state.filters,
       overlapLength: state.overlapLengthFilter,
-      neighborSiteFilter: state.neighborSiteFilter,
+      neighborSiteFilter: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter).effective,
+      neighborSiteFilterStatus: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter),
       overlapClasses: state.overlapClassFilter,
       categoryFilter: state.categoryFilter,
       ...(PCC_ESSENTIALITY_COPY ? { pcc7942Essentiality: state.pccEssentialityFilter } : {}),

@@ -1,8 +1,8 @@
 /** Browser regression for failures/retry, empty results, source conditions and coincident targets. */
 async (page) => {
-  const { root, origin } = await page.evaluate(() => ({ root: new URL(location.href).searchParams.get('uiArtifacts'), origin: location.origin }));
+  const { root, appUrl } = await page.evaluate(() => ({ root: new URL(location.href).searchParams.get('uiArtifacts'), appUrl: new URL('index.html', location.href).href }));
   if (!root?.startsWith('/')) throw new Error('Pass an absolute uiArtifacts path in the app URL.');
-  const base = `${origin}/index.html?uiArtifacts=${encodeURIComponent(root)}`;
+  const base = `${appUrl}?uiArtifacts=${encodeURIComponent(root)}`;
   const check = (ok, label) => { if (!ok) throw new Error(label); };
   const errors = []; const failures = []; const evidence = [];
   let expectedHttpFailure = false;
@@ -52,7 +52,7 @@ async (page) => {
   await page.waitForFunction(() => document.querySelector('.neighbor-site-filter')?.innerText.includes('failed to load'));
   check(await page.locator('#neighbor-site-filter-without').isDisabled(), 'error suspends narrowing');
   check(await page.locator('.neighbor-site-mark').count() === 0, 'error has no marker targets');
-  check(await page.locator('#chromosome-view .neighbor-site-legend').innerText().then((text) => text.includes('Evidence unavailable (2715)')), 'error unknown colour bucket');
+  check(await page.locator('#chromosome-view .neighbor-site-legend').innerText().then((text) => text.includes('Evidence unavailable (2,715)')), 'error unknown colour bucket');
   await save('site-error');
   await page.unroute('**/data/regulatory_tss.json*');
   await page.getByRole('button', { name: /Retry loading.*regulatory/i }).click();
@@ -120,6 +120,15 @@ async (page) => {
   await page.locator('.chromosome-sequence .neighbor-site-details > summary').click();
   check(await page.locator('.chromosome-sequence .neighbor-site-details').innerText().then((text) => text.includes('iTSS+125110') && text.includes('M744_RS00660')), 'mapped internal site kept');
   await save('mapped-internal-tss');
+  await goto('&g=M744_RS14095&ds=TAN2018_TSS_CONTROL');
+  await page.waitForFunction(() => document.querySelector('.neighbor-site-filter')?.textContent.includes('With recorded overlap (603)'));
+  for (const panel of [page.locator('#chromosome-view .neighbor-site-details').first(), page.locator('.chromosome-sequence .neighbor-site-details')]) {
+    if (await panel.getAttribute('open') === null) await panel.locator('summary').first().click();
+    const unassigned = panel.locator('.neighbor-site-row').filter({ hasText: 'nTSS+228011' });
+    check(await unassigned.count() === 1, 'unassigned source evidence is retained');
+    check(await unassigned.locator('button').count() === 0, 'no unassigned marker action without a resolved neighbour');
+  }
+  await save('unassigned-site-context');
   check(errors.length === 0, `Unexpected runtime errors: ${errors.join('; ')}`);
   check(failures.length === 0, `Unexpected failed requests: ${failures.join('; ')}`);
   return { passed: true, states: evidence, errors, failures };

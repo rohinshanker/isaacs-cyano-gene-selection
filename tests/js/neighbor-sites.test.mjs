@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
 import { indexNativeSites, buildNeighborSiteIndex, neighborSiteModel, passesNeighborSiteFilter,
-  neighborSiteOffset, describeNeighborSite } from '../../site/js/core/neighbor-sites.js';
+  neighborSiteOffset, describeNeighborSite, neighborSiteFilterSummary } from '../../site/js/core/neighbor-sites.js';
 import { defaultState, encodeState, decodeState, viewStateOf } from '../../site/js/core/url-state.js';
 import { clearedFilterState } from '../../site/js/ui/filters.js';
 const organism = { ...DEFAULT_ORGANISM, genome: { accession: 'GCF_test.1', replicons: [
@@ -86,6 +86,21 @@ test('saved filter round-trips, default/invalid values and clear follow the exis
   assert.equal(decodeState('#ns=wrong').neighborSiteFilter, undefined);
   assert.equal(clearedFilterState().neighborSiteFilter, 'any');
   assert.equal(viewStateOf({ ...defaultState(), neighborSiteFilter: 'with' }).neighborSiteFilter, 'with');
+});
+
+test('export distinguishes a suspended request from the filter actually applied', () => {
+  for (const requested of ['any', 'with', 'without', 'unavailable']) {
+    const available = neighborSiteFilterSummary({ available: true, reason: null }, requested);
+    assert.equal(available.effective, requested);
+    assert.equal(available.suspended, false);
+    assert.equal(available.evidenceAvailable, true);
+    const unavailable = neighborSiteFilterSummary({ available: false, reason: 'Source unavailable' }, requested);
+    assert.equal(unavailable.requested, requested);
+    assert.equal(unavailable.effective, ['with', 'without'].includes(requested) ? 'any' : requested);
+    assert.equal(unavailable.suspended, ['with', 'without'].includes(requested));
+    assert.equal(unavailable.evidenceAvailable, false);
+    assert.equal(unavailable.reason, 'Source unavailable');
+  }
 });
 
 test('shipped full Tan inventory agrees with independent base membership, includes mapped non-gTSS and isolates other organisms', async () => {

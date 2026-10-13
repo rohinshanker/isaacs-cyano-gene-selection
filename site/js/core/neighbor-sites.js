@@ -119,6 +119,13 @@ export function passesNeighborSiteFilter(model, geneIndex, filter = 'any') {
   return model.values[geneIndex] === (filter === 'with' ? 1 : 0);
 }
 
+/** Preserve the requested saved view while exports identify actual narrowing. */
+export function neighborSiteFilterSummary(model, requested = 'any') {
+  const suspended = !model.available && ['with', 'without'].includes(requested);
+  return { requested, effective: suspended ? 'any' : requested, suspended,
+    evidenceAvailable: model.available, reason: model.reason };
+}
+
 /** Exact compact offset including real join gaps, with origin order supplied by the shared helper. */
 export function neighborSiteOffset(gene, site) {
   const piece = offsetPieces(gene).find(({ low, high }) => site.position >= low && site.position <= high);

@@ -1998,6 +1998,7 @@ input[type="range"] { width: 100%; }
 .gene-view-key-start { background: var(--accent); }
 .gene-view-key-stop { background: var(--danger); }
 .gene-view-key-tss { background: #6b4f9e; border-radius: 50%; }
+.gene-view-key-neighbor-site { background: #882255; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
 .gene-view-key-join { background: repeating-linear-gradient(90deg, var(--line-strong) 0 3px, transparent 3px 6px); }
 
 .gene-view-scale { font-size: 0.78rem; }

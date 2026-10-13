@@ -1,4 +1,5 @@
 import { makeSwatch } from './legend.js';
+import { formatCount } from './format.js';
 import { GHOST_BORDER, GHOST_COLOR, PINNED_COLOR, SHORTLIST_COLOR } from './colors.js';
 import {
   describeNeighborSite, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_BUCKETS, NEIGHBOR_SITE_COLORS,
@@ -39,8 +40,9 @@ export class NeighborSitePanel {
     for (const site of [...new Set([...(relation?.sites ?? []), ...(relation?.unassigned ?? [])])]) {
       const item = node('li', null, 'neighbor-site-row');
       item.append(node('p', describeNeighborSite(site, gene)));
-      if (site.associations.length === 0) item.append(node('p', 'Unassigned source site; excluded from neighbouring-gene counts.'));
-      if (onReveal) {
+      const hasNeighbor = relation.sites.includes(site);
+      if (!hasNeighbor) item.append(node('p', 'No resolved neighbouring-gene association; excluded from neighbouring-gene counts and markers.'));
+      if (onReveal && hasNeighbor) {
         const reveal = node('button', `Inspect ${site.ids.join(', ')}`, 'chip-button');
         reveal.type = 'button';
         reveal.disabled = !visible;
@@ -131,7 +133,7 @@ export function renderNeighborSiteLegend(host, model, { markerConventions = true
     if (!model.available && i !== 2) return;
     const row = node('li');
     const swatch = makeSwatch('filled-circle', NEIGHBOR_SITE_COLORS[i]);
-    row.append(swatch, document.createTextNode(` ${label} (${model.counts[i]})`));
+    row.append(swatch, document.createTextNode(` ${label} (${formatCount(model.counts[i])})`));
     list.append(row);
   });
   host.append(list, node('p', model.reason ?? SITE_CAVEAT, 'panel-note'));
@@ -140,7 +142,7 @@ export function renderNeighborSiteLegend(host, model, { markerConventions = true
     const row = (shape, color, label, fill = color) => {
       const item = node('li'); item.append(makeSwatch(shape, color, fill), document.createTextNode(` ${label}`)); notes.append(item);
     };
-    if (showHidden) row('ghost-square', GHOST_BORDER, `${hiddenCount} excluded by filters: grey outlined squares`, GHOST_COLOR);
+    if (showHidden) row('ghost-square', GHOST_BORDER, `${formatCount(hiddenCount)} excluded by filters: grey outlined squares`, GHOST_COLOR);
     row('diamond', SHORTLIST_COLOR, 'Shortlisted: diamond outline');
     row('pin', PINNED_COLOR, 'Pinned: ring with crosshairs');
     host.append(notes);

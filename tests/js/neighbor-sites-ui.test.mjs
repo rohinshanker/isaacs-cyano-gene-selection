@@ -39,6 +39,7 @@ test('compact marks stay exact, visibility hides targets but retains evidence an
     renderGeneViewer(host, focal, { neighborSites:model, startSitesVisible: true });
     const marks = host.querySelectorAll('g.neighbor-site-mark');
     assert.equal(marks.length, 2);
+    assert.equal(host.querySelectorAll('.gene-view-key-neighbor-site').length, 1);
     for (const mark of marks) {
       assert.equal(mark.getAttribute('data-position'), '15');
       assert.equal(mark.getAttribute('tabindex'), '0');
@@ -49,6 +50,7 @@ test('compact marks stay exact, visibility hides targets but retains evidence an
     assert.equal(document.activeElement, summary);
     renderGeneViewer(host, focal, { neighborSites:model, startSitesVisible:false });
     assert.equal(host.querySelectorAll('g.neighbor-site-mark').length, 0);
+    assert.equal(host.querySelectorAll('.gene-view-key-neighbor-site').length, 0);
     assert.match(host.textContent, /marks are hidden/);
     renderGeneViewer(host, null, { neighborSites:model }); assert.equal(document.activeElement,host);
   });
@@ -60,8 +62,30 @@ test('legend has separate known absence, overlap and unavailable counts', async 
     assert.match(host.textContent, /No recorded neighbouring-gene TSS \(1\)/);
     assert.match(host.textContent, /Recorded neighbouring-gene TSS \(1\)/);
     assert.match(host.textContent, /Evidence unavailable \(0\)/);
+    renderNeighborSiteLegend(host, { ...model, counts: [2112,603,0] }, { hiddenCount: 2112 });
+    assert.match(host.textContent, /No recorded neighbouring-gene TSS \(2,112\)/);
+    assert.match(host.textContent, /2,112 excluded by filters/);
     const root = document.createElementNS('svg','svg');
     drawNeighborSiteMarks(root, model.forGene(focal).sites, focal, () => null, 10);
     assert.equal(root.querySelectorAll('g.neighbor-site-mark').length, 0);
+  });
+});
+
+test('unassigned and unresolved rows retain evidence without offering a nonexistent marker', async () => {
+  await withFakeDocument((document) => {
+    const unknownRecords = [
+      { ...records[0], locus: null },
+      { ...records[1], locus: 'unresolved', nativeAssociation: false },
+    ];
+    const unknown = neighborSiteModel({ genes: [focal],
+      neighborSites: indexNativeSites([focal], unknownRecords, DEFAULT_ORGANISM),
+    }, { sources: ['TAN2018_TSS_CONTROL'] });
+    const panel = new NeighborSitePanel();
+    panel.update(unknown, focal, () => {}, () => assert.fail('no marker can be revealed'));
+    assert.equal(panel.list.children.length, 2);
+    assert.equal(panel.list.querySelectorAll('button').length, 0);
+    assert.match(panel.summary.textContent, /0 distinct sites/);
+    assert.match(panel.list.textContent, /excluded from neighbouring-gene counts and markers/);
+    assert.equal(panel.list.querySelectorAll('.neighbor-site-provenance').length, 2);
   });
 });

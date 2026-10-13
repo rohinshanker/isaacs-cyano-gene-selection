@@ -1079,6 +1079,9 @@ export function renderGeneViewer(host, gene, {
     if (startSites && visible && model.tss.length > 0) {
       items.push(['gene-view-key-tss', `${startSites.label} start site`]);
     }
+    if (visible && relation?.count > 0) {
+      items.push(['gene-view-key-neighbor-site', 'Neighbouring-gene TSS in CDS']);
+    }
     if (Array.isArray(model.overlaps) && model.overlaps.length > 0) {
       items.push(['gene-view-key-overlap',
         `Shared bases with an overlapping gene (${OVERLAP_TAG_LABEL}), arrow for its direction`]);

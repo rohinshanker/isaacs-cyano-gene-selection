@@ -78,6 +78,8 @@ const WRAP_MARKER_PX = 5;
  * Exported so a test can pin both sides of that rule at the width it turns on.
  */
 export const MIN_TSS_SPACING_PX = 3;
+/** Room for an eight-pixel diamond and a gap at chromosome overview scale. */
+export const MIN_NEIGHBOR_SITE_SPACING_PX = 12;
 /**
  * Narrowest bar, in drawing units, on which the hollow source-derived style can
  * be read — and therefore the width at and above which it is drawn.
@@ -871,7 +873,7 @@ export class ChromosomeView {
     this.neighborSitePanel = new NeighborSitePanel();
     this.siteInstruction = document.createElement('p');
     this.siteInstruction.className = 'panel-note';
-    this.siteInstruction.textContent = 'Purple diamonds mark neighbouring-gene TSS points in CDS segments. Press N (Shift+N backwards) on the chromosome to inspect every visible site, including coincident points; open associated genes in the site list.';
+    this.siteInstruction.textContent = 'Purple diamonds mark neighbouring-gene TSS points in CDS segments. Crowded diamonds are hidden until you zoom in or inspect a site. Press N (Shift+N backwards) on the chromosome to inspect every site in the window, including coincident points; open associated genes in the site list.';
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
@@ -1750,32 +1752,27 @@ export class ChromosomeView {
     }
   }
 
-  /**
-   * Gene-linked start sites, at the absolute positions their study published
-   * on this assembly.
-   *
-   * Drawn only while the ticks are far enough apart to be separate ticks. At
-   * whole-chromosome zoom 2,413 of them over a few hundred pixels merge into a
-   * solid bar, which reads as continuous evidence across the genome rather than
-   * as the discrete start sites it is.
-   *
-   * Hidden outright when the reader turns the layer off; see
-   * {@link ChromosomeView#setStartSitesVisible}. The density rule below is
-   * unchanged by that control in either direction.
-   */
   neighborSitesInBand(band) {
     if (!this.showStartSites) return [];
     return (this.neighborSiteMarks ?? []).filter((mark) => mark.site.replicon === band.track.accession
       && mark.site.position >= band.window.from && mark.site.position <= band.window.to);
   }
 
+  drawnNeighborSitesInBand(band) {
+    const marks = this.neighborSitesInBand(band);
+    if (marks.length * MIN_NEIGHBOR_SITE_SPACING_PX <= band.width) return marks;
+    return marks.filter((mark) => mark === this.activeNeighborSite);
+  }
+
   paintNeighborSites(ctx, band) {
     ctx.fillStyle = NEIGHBOR_SITE_COLORS[1];
-    for (const mark of this.neighborSitesInBand(band)) {
+    for (const mark of this.drawnNeighborSitesInBand(band)) {
       const x = band.scale.bpToX(mark.site.position);
       const y = (mark.strand === '-' ? band.layout.laneBelowTop : band.layout.laneAboveTop) + band.layout.laneHeight / 2;
       ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 5); ctx.lineTo(x - 4, y); ctx.closePath(); ctx.fill();
-      if (mark === this.activeNeighborSite) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = mark === this.activeNeighborSite ? 2 : 1;
+      ctx.stroke();
     }
   }
 
@@ -1813,7 +1810,7 @@ export class ChromosomeView {
   neighborSiteAt(x, y) {
     const band = this.bandAt(y);
     if (!band) return null;
-    const candidates = this.neighborSitesInBand(band).filter((mark) => {
+    const candidates = this.drawnNeighborSitesInBand(band).filter((mark) => {
       const top = mark.strand === '-' ? band.layout.laneBelowTop : band.layout.laneAboveTop;
       return Math.abs(band.scale.bpToX(mark.site.position) - x) <= 6 && Math.abs(top + band.layout.laneHeight / 2 - y) <= 7;
     });
@@ -1829,6 +1826,19 @@ export class ChromosomeView {
     this.inspectNeighborSite(marks[(current < 0 ? (step > 0 ? 0 : marks.length - 1) : current + step + marks.length) % marks.length]);
   }
 
+  /**
+   * Gene-linked start sites, at the absolute positions their study published
+   * on this assembly.
+   *
+   * Drawn only while the ticks are far enough apart to be separate ticks. At
+   * whole-chromosome zoom 2,413 of them over a few hundred pixels merge into a
+   * solid bar, which reads as continuous evidence across the genome rather than
+   * as the discrete start sites it is.
+   *
+   * Hidden outright when the reader turns the layer off; see
+   * {@link ChromosomeView#setStartSitesVisible}. The density rule below is
+   * unchanged by that control in either direction.
+   */
   paintTss(ctx, band) {
     if (!this.showStartSites) return;
     const { layout, scale } = band;

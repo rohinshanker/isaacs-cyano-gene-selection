@@ -1,8 +1,8 @@
 /** Run via playwright-cli run-code --filename from the assigned worktree. */
 async (page) => {
-  const { root, origin } = await page.evaluate(() => ({ root: new URL(location.href).searchParams.get('uiArtifacts'), origin: location.origin }));
+  const { root, appUrl } = await page.evaluate(() => ({ root: new URL(location.href).searchParams.get('uiArtifacts'), appUrl: new URL('index.html', location.href).href }));
   if (!root?.startsWith('/')) throw new Error('Pass an absolute uiArtifacts path in the app URL.');
-  const base = `${origin}/index.html?uiArtifacts=${encodeURIComponent(root)}`;
+  const base = `${appUrl}?uiArtifacts=${encodeURIComponent(root)}`;
   const errors = [];
   const failures = [];
   const check = (ok, label) => { if (!ok) throw new Error(label); };
@@ -66,6 +66,12 @@ async (page) => {
     });
   }), 'diamonds clear nucleotide letters');
   await save('sequence-site-letters');
+  await open('&g=M744_RS00250');
+  if (await page.locator('#panel-toggle-gene-viewer').getAttribute('aria-expanded') === 'false') await page.locator('#panel-toggle-gene-viewer').click();
+  check(await page.locator('.gene-view-key-neighbor-site').count() === 2, 'both compact views name the neighbouring-site diamond');
+  check(await page.locator('.gene-view-key-tss').count() === 2, 'self-associated TSS key remains separate');
+  check((await page.locator('.chromosome-sequence').innerText()).includes('Purple diamonds in the Sites row'), 'mixed self/neighbour sequence has a diamond key');
+  await save('mixed-site-keys');
   await open();
   // Dense list retains all 18 rows and permits keyboard navigation to a hidden owner.
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -101,7 +107,7 @@ async (page) => {
   await open('&ns=without&ds=GSE205444');
   check(await page.locator('#neighbor-site-filter-without').isDisabled(), 'unselected sources suspend filter');
   check(await page.locator('.neighbor-site-mark').count() === 0, 'source removal suspends marks');
-  check(await page.locator('#chromosome-view .neighbor-site-legend').innerText().then((text) => text.includes('Evidence unavailable (2715)')), 'source removal unknown colour bucket');
+  check(await page.locator('#chromosome-view .neighbor-site-legend').innerText().then((text) => text.includes('Evidence unavailable (2,715)')), 'source removal unknown colour bucket');
   await save('source-unavailable');
   // No native site layer in a different organism; no cross-strain joins.
   await open('&ns=without', '&org=ecoli-k12-mg1655');

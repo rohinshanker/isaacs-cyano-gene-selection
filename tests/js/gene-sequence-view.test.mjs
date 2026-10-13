@@ -66,6 +66,7 @@ test('neighbouring sites align with the native base without covering its letter'
     view.update({ gene: focal, table, scheme: null, schemeVersion: 0, neighborSites });
     const mark = view.strip.querySelector('g.neighbor-site-mark');
     assert.ok(mark, 'neighbor-only gene draws a site');
+    assert.match(view.neighborVisibilityNote.textContent, /Purple diamonds in the Sites row/);
     const [x, y] = mark.querySelector('path').getAttribute('d').match(/[-\d.]+/g).map(Number);
     const base = codonCells(view)[1].querySelectorAll('text')[1];
     assert.equal(Number(base.getAttribute('x')), x, 'site shares the exact nucleotide column');

@@ -121,6 +121,19 @@ the accepted four-condition source-selection semantics.
   M744_RS01690 +64). Reserve the existing sites row for these markers and keep
   them aligned to the exact column; test letter clearance and visibility.
 
+Independent review DEM-389 rejected `0205070` pending these repairs (NS-1 through
+NS-5 confirmed fixed; NS-6 independently reproduced):
+
+- **NS-R1 — open:** Dense chromosome diamonds obscure gene colours.
+- **NS-R2 — open:** Dense invisible/oversized marker targets intercept gene selection.
+- **NS-R3 — open:** Purple chromosome diamonds disappear on purple overlap-coloured CDSs.
+- **NS-R4 — open:** Both gene viewers need an explicit diamond key, including genes with self and neighbouring sites.
+- **NS-R5 — open:** Exports must distinguish a suspended requested filter from applied narrowing.
+- **NS-R6 — open:** Unassigned/unresolved-only rows offer Inspect actions with no drawable marker.
+- **NS-R7 — open:** New counts lack the shared thousands-separator formatting.
+- **NS-R8 — open:** Three existing JSDoc blocks were displaced from their functions.
+- **NS-R9 — open:** Browser helpers assume site-root hosting instead of the actual app URL.
+
 ## Verification
 
 Implementation gates at `0205070`: JavaScript 1,577 passed; Python 1,751 passed,
