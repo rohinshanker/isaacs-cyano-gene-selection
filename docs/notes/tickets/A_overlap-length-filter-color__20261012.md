@@ -18,6 +18,33 @@ Tan condition-selection session and its branch; merge its completed changes
 before final integration when available. Do not edit another session's worktree,
 restart its servers, or contact/interrupt its active run.
 
+## Implementation contract
+
+Coordinator: cyano-regulatory-sites. Implementer: Multica DEM-385, isolated in
+`work/overlap-length-impl-20261012` from `ffbfa0b`; coordinator integrates and
+closes the ticket. No other session or worktree is to be interrupted.
+
+Count the union of shared bases continuously inward from each transcriptional
+end, stopping at the first uncovered base or real inter-segment gap. Crossing
+the circular origin is continuous. Internal-only overlaps contribute zero;
+multiple partners never double-count within an end. A fully covered continuous
+gene contributes its length to each end, so the requested sum can be twice its
+length. Unknown strand or unsupported origin-piece ordering stays unavailable.
+
+Coordinator verification includes an independent per-base oracle over 3,000
+seeded small genomes, followed by exact-patch review and rendered checks.
+The initial pure metric agrees with the independent oracle and all 21,952
+shipped gene records across six organisms. Final integrated checks remain
+pending; no feature has shipped yet.
+
+### Findings
+
+- **OL1 — fixed in `6685917`, independent review pending:** derive applier lengths from the validated dataset
+  `index.replicons`, not the global shipped-organism lookup. A valid custom
+  replicon must produce values and survive removal/reapplication correctly.
+  The applier now reads validated dataset lengths; custom-replicon removal
+  and reapplication tests pass. Pure metric arithmetic is unaffected.
+
 ## Requested behaviour
 
 - **Filters:** an overlap-length control lets the user choose either **5′** or
