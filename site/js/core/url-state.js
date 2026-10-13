@@ -1,4 +1,4 @@
-import { parseOverlapLengthFilter } from './overlap-length.js';
+import { overlapLengthFilterActive, parseOverlapLengthFilter } from './overlap-length.js';
 /**
  * URL hash serialization.
  *
@@ -339,7 +339,7 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   parts.push(`${KEYS.shortlist}=${encodeURIComponent(state.shortlist.join(','))}`);
   push(KEYS.pinned, state.pinnedId ?? '');
   push(KEYS.compareTab, state.compareTab);
-  if (state.overlapLengthFilter) {
+  if (overlapLengthFilterActive(state.overlapLengthFilter)) {
     const { end, min, max } = state.overlapLengthFilter;
     push(KEYS.overlapLengthFilter, `${end},${min ?? ''},${max ?? ''}`);
   }

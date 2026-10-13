@@ -88,7 +88,8 @@ test('invalid bp input is rejected without clamping, swapping or fractional roun
   assert.ok(parseOverlapLengthFilter('other', '', '').error);
   assert.deepEqual(parseOverlapLengthFilter('3prime', ' 0 ', '9007199254740991').value,
     { end: '3prime', min: 0, max: Number.MAX_SAFE_INTEGER });
-  assert.deepEqual(parseOverlapLengthFilter('5prime', '', '').value, { end: '5prime', min: null, max: null });
+  assert.equal(parseOverlapLengthFilter('5prime', '', '').value, null);
+  assert.equal(parseOverlapLengthFilter('3prime', ' ', '').value, null);
 });
 
 test('registry metrics exist before the late OG join and read cached values dynamically', () => {
@@ -120,30 +121,33 @@ test('URL and export view state round trip independently of colour without a ver
   }
   applyDecoded(restored, decodeState('#ver=7&c=overlap5PrimeNt'));
   assert.equal(restored.overlapLengthFilter, null, 'old and default links clear the range');
+  restored.overlapLengthFilter = { end: '3prime', min: null, max: null };
+  assert.doesNotMatch(encodeState(restored), /[&#]ol=/, 'an unbounded selection is not a saved constraint');
+  assert.equal(decodeState('#ver=8&ol=3prime%2C%2C').overlapLengthFilter, null);
 });
 
 test('controls retain focus, invalid drafts and valid applied state across unrelated updates', async () => {
   await withFakeDocument((document) => {
-    let applied = null; const owner = {};
+    let applied = null;
     const ui = new OverlapLengthFilter((value) => { applied = value; });
     document.body.append(ui.element);
-    ui.update({ available: true, owner });
+    ui.update({ available: true });
     ui.fields.min.value = '5'; ui.commit();
-    ui.update({ available: true, filter: applied, owner });
+    ui.update({ available: true, filter: applied });
     ui.fields.min.focus();
     ui.fields.max.value = '2'; ui.commit();
     assert.equal(applied.min, 5); assert.equal(applied.max, null);
     assert.equal(ui.fields.max.getAttribute('aria-invalid'), 'true');
-    ui.update({ available: false, pending: 'failed', filter: applied, owner });
+    ui.update({ available: false, pending: 'failed', filter: applied });
     assert.equal(ui.fields.max.value, '2'); assert.equal(document.activeElement, ui.fields.min);
     assert.match(ui.note.textContent, /paused and hides no genes/);
     ui.fields.max.value = '6'; ui.commit();
     assert.deepEqual(applied, { end: '5prime', min: 5, max: 6 });
-    ui.update({ available: true, filter: null, owner });
+    ui.update({ available: true, filter: null });
     assert.equal(ui.fields.min.value, ''); assert.equal(ui.error.hidden, true);
     ui.fields.min.value = '-1'; ui.commit();
-    ui.update({ available: true, filter: null, owner: {} });
-    assert.equal(ui.fields.min.value, '', 'organism/new state ownership resets an invalid draft');
+    ui.reset();
+    assert.equal(ui.fields.min.value, '', 'explicit view restoration resets an invalid draft');
   });
 });
 
@@ -176,12 +180,34 @@ test('input, end-selection and clear events preserve bounds and announce unavail
     assert.equal(ui.fields.min.value, '');
     assert.equal(ui.fields.max.value, '');
     assert.equal(ui.clear.disabled, true);
+    assert.equal(document.activeElement, ui.fields.min, 'clear leaves keyboard focus at the minimum');
     ui.update({ available: false, pending: 'failed' });
     assert.match(ui.note.textContent, /could not be loaded/);
     assert.doesNotMatch(ui.note.textContent, /saved range is paused/);
     ui.reset({ end: '3prime', min: null, max: 12 });
     assert.equal(ui.fields.min.value, '');
     assert.equal(ui.fields.max.value, '12');
+    assert.equal(ui.end.value, '3prime');
+  });
+});
+
+test('choosing an end with blank bounds stays unfiltered and ready for input', async () => {
+  await withFakeDocument(() => {
+    const changes = [];
+    const ui = new OverlapLengthFilter((value) => {
+      changes.push(value);
+      ui.update({ available: true, filter: value });
+    });
+    ui.end.value = '3prime'; ui.end.dispatch('change');
+    assert.equal(changes.at(-1), null);
+    assert.equal(ui.clear.disabled, true);
+    assert.equal(ui.end.value, '3prime', 'empty range keeps the selected end ready for input');
+    ui.fields.min.value = '0'; ui.fields.min.dispatch('input');
+    assert.deepEqual(changes.at(-1), { end: '3prime', min: 0, max: null });
+    assert.equal(ui.clear.disabled, false);
+    ui.fields.min.value = ''; ui.fields.min.dispatch('input');
+    assert.equal(changes.at(-1), null);
+    assert.equal(ui.clear.disabled, true);
     assert.equal(ui.end.value, '3prime');
   });
 });

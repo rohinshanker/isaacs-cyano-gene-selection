@@ -1,4 +1,4 @@
-import { passesOverlapLengthFilter } from './core/overlap-length.js';
+import { overlapLengthFilterActive, passesOverlapLengthFilter } from './core/overlap-length.js';
 /**
  * Application wiring.
  *
@@ -1766,7 +1766,6 @@ function renderAll({ schemeErrors = [] } = {}) {
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
     overlapClassFilter: state.overlapClassFilter,
     overlapLengthFilter: state.overlapLengthFilter,
-    overlapLengthOwner: state,
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
     pccEssentiality: PCC_ESSENTIALITY_COPY
       ? { model: pccEssentialityModel(), note: PCC_ESSENTIALITY_COPY.filterNote } : null,
@@ -3056,7 +3055,7 @@ function refreshProteinRecords() {
  */
 function promotedFileKeys(view) {
   const keys = new Set();
-  if (view.overlapLengthFilter || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
+  if (overlapLengthFilterActive(view.overlapLengthFilter) || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   // The essentiality colour and filter read the candidate evidence alone.
   if (PCC_ESSENTIALITY_COPY && (view.colorBy === PCC_ESSENTIALITY_COLOR_KEY

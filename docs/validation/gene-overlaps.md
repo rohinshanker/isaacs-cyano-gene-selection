@@ -83,6 +83,10 @@ colour key both say the selection cannot act yet. Applying it would either hide
 everything or — worse — present every unknown as a satisfied *only
 non-overlapping* result.
 
+Numerical filtering and colouring by 5′, 3′ and summed end-overlap lengths use
+the same validated partners. Their counting, range and missing-value rules are
+documented in [end-specific overlap lengths](overlap-length.md).
+
 ## The tag never depends on what is visible
 
 This is the rule the whole feature rests on, and it is the one to re-check after

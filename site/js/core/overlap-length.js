@@ -79,7 +79,7 @@ export function parseOverlapLengthFilter(end, minText, maxText) {
     return { error: 'Enter nonnegative whole numbers in bp, up to 9007199254740991, or leave a bound blank.' };
   }
   if (min !== null && max !== null && min > max) return { error: 'Minimum must be no greater than maximum.' };
-  return { value: { end, min, max }, error: null };
+  return { value: min === null && max === null ? null : { end, min, max }, error: null };
 }
 
 export function overlapLengthFilterActive(filter) {

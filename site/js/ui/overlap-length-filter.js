@@ -40,7 +40,9 @@ export class OverlapLengthFilter {
     this.note.className = 'panel-note'; this.note.setAttribute('role', 'status');
     this.clear = document.createElement('button'); this.clear.type = 'button';
     this.clear.className = 'chip-button'; this.clear.textContent = 'Clear overlap length';
-    this.clear.addEventListener('click', () => { this.reset(); this.onChange(null); });
+    this.clear.addEventListener('click', () => {
+      this.reset(); this.onChange(null); this.fields.min.focus();
+    });
     this.end.addEventListener('change', () => this.commit());
     this.element.append(legend, row, inputs, this.error, this.note, this.clear);
     this.reset();
@@ -62,16 +64,15 @@ export class OverlapLengthFilter {
     this.error.textContent = parsed.error ? `${parsed.error} The last valid range remains applied.` : '';
     this.error.hidden = !parsed.error;
     for (const input of Object.values(this.fields)) input.setAttribute('aria-invalid', String(Boolean(parsed.error)));
-    this.clear.disabled = false;
+    this.clear.disabled = !parsed.error && !overlapLengthFilterActive(parsed.value);
     this.onDraftChange?.();
     if (parsed.error) return;
     this.applied = JSON.stringify(parsed.value);
     this.onChange(parsed.value);
   }
 
-  update({ filter = null, available, pending, owner }) {
-    if (this.owner !== owner || this.applied !== JSON.stringify(filter)) this.reset(filter);
-    this.owner = owner;
+  update({ filter = null, available, pending }) {
+    if (this.applied !== JSON.stringify(filter)) this.reset(filter);
     const active = overlapLengthFilterActive(filter);
     this.note.textContent = available
       ? 'Inclusive bounds; blank means unbounded. Counts contiguous shared bases inward from this end, stopping at the first uncovered base or real coding gap. 0 bp means no end overlap. Unavailable lengths stay visible. Color by is independent.'

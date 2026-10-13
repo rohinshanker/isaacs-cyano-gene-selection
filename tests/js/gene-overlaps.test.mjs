@@ -368,6 +368,21 @@ test('the applier joins every gene, so no partner is not confused with not loade
   assert.deepEqual([genes[0].overlap5PrimeNt, genes[0].overlap3PrimeNt, genes[0].overlapTotalNt], [0, 0, 0], 'replacement clears previously measured lengths');
 });
 
+test('overlap lengths use validated replicon lengths through accession aliases', () => {
+  const dataset = { genes: [geneRow('A', { seqid: 'NZ_chr1.2' })], organism: ORGANISM };
+  const data = payload({
+    features: [feature('A'), feature('B', { strand: '-', segments: [[190, 400]] })],
+    pairs: [[0, 1, [[190, 200]]]],
+  });
+  DATA_APPLIERS.geneOverlaps(dataset, data);
+  assert.deepEqual([dataset.genes[0].overlap5PrimeNt, dataset.genes[0].overlap3PrimeNt,
+    dataset.genes[0].overlapTotalNt], [0, 11, 11]);
+  DATA_APPLIERS.geneOverlaps(dataset, null);
+  assert.equal(dataset.genes[0].overlapTotalNt, undefined);
+  DATA_APPLIERS.geneOverlaps(dataset, data);
+  assert.equal(dataset.genes[0].overlapTotalNt, 11);
+});
+
 test('a partner reads as a sentence that names what it is and what it shares', () => {
   const index = validateGeneOverlaps(payload({
     features: [

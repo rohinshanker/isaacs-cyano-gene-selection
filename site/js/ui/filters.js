@@ -1,5 +1,5 @@
 import { OverlapLengthFilter } from './overlap-length-filter.js';
-import { OVERLAP_LENGTH_METRICS } from '../core/overlap-length.js';
+import { OVERLAP_LENGTH_METRICS, overlapLengthFilterActive } from '../core/overlap-length.js';
 /**
  * Metric filters.
  *
@@ -313,14 +313,14 @@ export class FilterPanel {
     this.renderPccEssentialityFilter(state);
     this.renderOverlapFilter(state);
     this.overlapLength.update({ filter: state.overlapLengthFilter, available: Boolean(state.overlapCounts),
-      pending: state.overlapsPending, owner: state.overlapLengthOwner });
+      pending: state.overlapsPending });
     this.renderRows(state);
 
     this.renderSummary(state.count, state.passing);
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
-      && !state.overlapLengthFilter && this.overlapLength.clear.disabled
+      && !overlapLengthFilterActive(state.overlapLengthFilter) && this.overlapLength.clear.disabled
       && (state.overlapClassFilter ?? []).length === 0
       && (state.pccEssentialityFilter ?? []).length === 0
       && (state.categoryFilter ?? []).length === 0;
