@@ -4,8 +4,8 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
-| [neighbor-regulatory-sites.md](neighbor-regulatory-sites.md) | Native source-associated TSS points inside actual CDS segments, mapped-owner and deduplication rules, shared filtering/colouring/viewers, missing RBS evidence, source and visibility state, and rendered regression checks |
-| [overlap-length.md](overlap-length.md) | Strand-aware 5′/3′ overlap lengths, union and gap rules, inclusive range filtering, numeric colours, unavailable values, saved views, exports and independent geometry/rendered checks |
+| [neighbor-regulatory-sites.md](neighbor-regulatory-sites.md) | Native source-associated TSS points inside actual CDS segments, mapped-owner and deduplication rules, shared filtering/colouring/viewers, purple lines and exact-base underlines with visible active focus, missing RBS evidence, source and visibility state, and rendered regression checks |
+| [overlap-length.md](overlap-length.md) | Strand-aware 5′/3′ overlap lengths, union and gap rules, inclusive range filtering, numeric colours in Genomic context, unavailable values, saved views, exports and independent geometry/rendered checks |
 | [pair-review-intake.md](pair-review-intake.md) | Blank review TSV generation, source checksum and pair identity checks, explicit human review fields, partial-answer reporting and the boundary from lab decision admission |
 | [documentation-links.md](documentation-links.md) | Redirecting retired ticket/document links to durable contracts, preserving frozen handoffs, and checking relative paths, heading fragments and explicit anchors after cleanup |
 | [worktree-reconciliation.md](worktree-reconciliation.md) | Distinguishing integrated or superseded branches from active work and missing changes; checking dirty files and preserving owners, findings and local artifacts |
