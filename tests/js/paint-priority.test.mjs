@@ -248,7 +248,7 @@ test('there is no second, shorter wording for a legend to carry', async () => {
 
 test('the reason a category colour cannot choose a direction is stated, not implied', () => {
   assert.match(CATEGORICAL_DIRECTION_REASON, /no value order to reverse/);
-  assert.match(CATEGORICAL_DIRECTION_REASON, /lab-reviewed above source-derived/);
+  assert.doesNotMatch(CATEGORICAL_DIRECTION_REASON, /Function category|lab-reviewed|source-derived/);
 });
 
 test('a category model with no evidence accessor reads every category as reviewed', () => {

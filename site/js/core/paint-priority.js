@@ -31,13 +31,12 @@ export const DRAW_DIRECTION_LABELS = Object.freeze({
 });
 
 /**
- * Why a function-category colour cannot choose a draw direction. Category
+ * Why a categorical colour cannot choose a draw direction. Category
  * colours are a set of names, not an ordered quantity, so "highest" has no
- * meaning to reverse; the reviewed-above-derived rule applies instead.
+ * meaning to reverse. Each view explains its category-specific paint order.
  */
-export const CATEGORICAL_DIRECTION_REASON = 'Function category has no value order to reverse: '
-  + 'its colours are named categories, not a ramp over values. Overlapping marks there are '
-  + 'ordered lab-reviewed above source-derived, above genes with no category.';
+export const CATEGORICAL_DIRECTION_REASON = 'This colour setting has no value order to reverse: '
+  + 'its colours are named categories, not a ramp over values.';
 
 /** An unknown or absent direction is the default, never an error. */
 export function normalizeDrawDirection(value) {
