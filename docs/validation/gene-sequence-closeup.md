@@ -268,7 +268,9 @@ does on the chromosome tracks.
   the left edge and the annotated start in view (`openingCamera`).
 - **Zoom** by the wheel about the offset under the pointer, by `+` and `-`, and by
   the Zoom in and Zoom out chips, in steps of 1.6; each announces the number of
-  nucleotides now shown.
+  nucleotides now shown. Clamp the requested scale before calculating the
+  anchored window. At either scale limit, repeated button, keyboard or wheel
+  zoom leaves the window fixed, so an inspected site cannot drift out of view.
 - **Pan** by dragging the strip, by Shift with the wheel or a mostly horizontal
   wheel, and by Left and Right, which move 15% of a window, or a whole window with
   Shift.

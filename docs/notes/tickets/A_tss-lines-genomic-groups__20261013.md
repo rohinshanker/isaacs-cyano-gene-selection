@@ -23,16 +23,30 @@ Other sessions and their worktrees remain untouched.
 
 ## Verification
 
-Colour grouping implemented in `d0832ea`. Browser checks passed both selectors
-across all six organisms, exact grouping/uniqueness, saved colour state and
-keyboard focus; inspected 375/768/959/961/1239/1241/1280/1440 px renders.
-Marker implementation is owned by Multica DEM-391 in the assigned writer
-worktree. Its focused tests and render loop are in progress. Independent review,
-full integrated repository gates and production verification remain.
-**TL-1 — open:** At the existing maximum/minimum sequence zoom, zoomBy uses
-the requested scale for its anchor calculation before clamping it. Repeated
-zoom-in can move an inspected TSS offscreen. Bound the scale before computing
-the anchored window and verify repeated button/wheel zoom preserves the site.
+Integrated implementation: `edf2eee` (marker worker DEM-391 commit `3179b9e`;
+colour grouping `d0832ea`). Both selectors pass exact grouping/uniqueness and
+saved colour state across all six organisms. Rendered marker/base checks cover
+375/768/959/961/1239/1241/1280/1440 px, both strands, mapped-owner sites,
+coincident positions, Original/Recoded rows, visibility/source states, keyboard
+inspection/focus, and contrast. No unexpected browser errors.
+
+Integrated repository gates pass: 1,584 JavaScript tests; 1,751 Python tests
+(16 skips and 51 subtests); data contract 130 passed, zero failures, one declared
+split-CDS exemption. `git diff --check` passes. Artifacts are in
+`/tmp/cyano-tss-lines-20261013/`; independent review DEM-392 found TL-R1 and TL-R2 below. Production
+verification remains pending.
+
+**TL-1 — resolved in `edf2eee`:** Clamp sequence scale before the anchored-window
+calculation. Unit and browser checks confirm that repeated button/wheel zoom
+at the limit preserves an inspected site's position. The reusable contract is
+in `docs/validation/gene-sequence-closeup.md`.
+
+**TL-R1 — open:** DEM-392 found the active chromosome line too subtle on purple
+CDS (only a 1 px teal edge against purple). DEM-391 owns a focused contrast and
+active-state repair, with rendered inactive/active comparison.
+
+**TL-R2 — open:** The zoom-limit no-op needs feedback through the existing
+announcement channel for keyboard/button users. DEM-391 owns this small repair.
 
 ## Cleanup
 
