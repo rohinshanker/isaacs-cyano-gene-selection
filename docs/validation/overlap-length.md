@@ -63,7 +63,7 @@ and colour choice; restoring a view clears stale invalid drafts.
 ## Regression checks
 
 ```sh
-node --test tests/js/overlap-length.test.mjs tests/js/overlap-length-oracle.test.mjs tests/js/gene-overlaps.test.mjs tests/js/export-manifest.test.mjs
+node --test tests/js/overlap-length.test.mjs tests/js/overlap-length-oracle.test.mjs tests/js/gene-overlaps.test.mjs tests/js/export-manifest.test.mjs tests/js/legend.test.mjs
 ```
 
 The independent oracle expands 3,000 seeded small genomes and walks individual
