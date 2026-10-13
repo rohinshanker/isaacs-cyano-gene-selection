@@ -756,10 +756,42 @@ export function describeBasisCounts(basisCounts) {
   return `Expression basis: ${parts.join(', ')}. Only measured values are coloured here.`;
 }
 
+/** Marker conventions remain useful even when no numerical ramp is available. */
+function numericalLegendNotes(state) {
+  const notes = document.createElement('ul');
+  notes.className = 'legend-notes';
+  const addNote = (shape, color, text, fill = color) => {
+    const item = document.createElement('li');
+    item.append(makeSwatch(shape, color, fill), document.createTextNode(` ${text}`));
+    notes.append(item);
+  };
+  if (state.markerConventions !== false) {
+    addNote(
+      'open-circle', MISSING_COLOR,
+      state.unavailableNote ? 'Unavailable value: open circles'
+        : `${formatCount(state.missingCount)} genes have no value: open circles`,
+    );
+    // Only true when those grey dots are actually drawn: with "Show filtered-out
+    // genes" unchecked, the map has nothing this note could be describing.
+    if (state.showHidden) {
+      addNote(
+        'ghost-square', GHOST_BORDER,
+        `${formatCount(state.hiddenCount)} excluded by filters: grey outlined squares`,
+        GHOST_COLOR,
+      );
+    }
+    addNote('diamond', SHORTLIST_COLOR, 'Shortlisted: diamond outline');
+    addNote('pin', PINNED_COLOR, 'Pinned: ring with crosshairs');
+  }
+
+  return notes;
+}
+
 /**
  * @param {HTMLElement} host
  * @param {{metric: object, scale: object, missingCount: number, hiddenCount: number,
  *   showHidden: boolean, provenanceNote: string|null, markerConventions?: boolean,
+ *   unavailableNote?: string|null,
  *   basisCounts?: {counts: Map<string, number>, recorded: boolean}}} state
  *   `markerConventions` false omits the rows naming the scatter map's point
  *   shapes, for a view that draws the same evidence states as something else.
@@ -777,6 +809,15 @@ export function renderLegend(host, state) {
   unit.className = 'legend-unit';
   unit.textContent = metric.unit ? ` (${metric.unit})` : '';
   title.append(unit);
+
+  if (state.unavailableNote) {
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    note.setAttribute('role', 'status');
+    note.textContent = state.unavailableNote;
+    host.append(title, note, numericalLegendNotes(state));
+    return;
+  }
 
   const canvas = document.createElement('canvas');
   canvas.className = 'legend-ramp';
@@ -831,30 +872,7 @@ export function renderLegend(host, state) {
     ticks.append(label);
   }
 
-  const notes = document.createElement('ul');
-  notes.className = 'legend-notes';
-  const addNote = (shape, color, text, fill = color) => {
-    const item = document.createElement('li');
-    item.append(makeSwatch(shape, color, fill), document.createTextNode(` ${text}`));
-    notes.append(item);
-  };
-  if (state.markerConventions !== false) {
-    addNote(
-      'open-circle', MISSING_COLOR,
-      `${formatCount(state.missingCount)} genes have no value: open circles`,
-    );
-    // Only true when those grey dots are actually drawn: with "Show filtered-out
-    // genes" unchecked, the map has nothing this note could be describing.
-    if (state.showHidden) {
-      addNote(
-        'ghost-square', GHOST_BORDER,
-        `${formatCount(state.hiddenCount)} excluded by filters: grey outlined squares`,
-        GHOST_COLOR,
-      );
-    }
-    addNote('diamond', SHORTLIST_COLOR, 'Shortlisted: diamond outline');
-    addNote('pin', PINNED_COLOR, 'Pinned: ring with crosshairs');
-  }
+  const notes = numericalLegendNotes(state);
 
   const ramp = document.createElement('p');
   ramp.className = 'legend-ramp-note';

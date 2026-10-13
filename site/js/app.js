@@ -1206,18 +1206,12 @@ function renderColorLegend(host, colors, { markerConventions = true, controlsHos
     });
     return;
   }
+  let unavailableNote = null;
   if (metric.fileKey === 'geneOverlaps' && !context.dataset.geneOverlaps) {
-    const title = document.createElement('strong');
-    title.textContent = `${metric.label} (bp)`;
-    const note = document.createElement('p');
-    note.className = 'panel-note';
-    note.setAttribute('role', 'status');
     const pending = pendingState(context.dataset, 'geneOverlaps');
-    note.textContent = `Overlap lengths ${pending === FILE_STATE.LOADING ? 'are still loading'
+    unavailableNote = `Overlap lengths ${pending === FILE_STATE.LOADING ? 'are still loading'
       : pending === FILE_STATE.FAILED ? 'could not be loaded' : 'are unavailable'}. `
       + 'Every gene has a neutral unavailable colour. Values are not counted until the layer is ready; unavailable is not 0 bp.';
-    host.replaceChildren(title, note);
-    return;
   }
   let missing = 0;
   for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
@@ -1227,6 +1221,7 @@ function renderColorLegend(host, colors, { markerConventions = true, controlsHos
   renderLegend(host, {
     metric,
     scale,
+    unavailableNote,
     missingCount: missing,
     hiddenCount: context.dataset.genes.length - context.passing,
     showHidden: state.showHidden,

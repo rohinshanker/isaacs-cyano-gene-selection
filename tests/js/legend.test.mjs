@@ -140,3 +140,36 @@ test('the category legend states no draw order either', async () => {
     }
   });
 });
+
+test('unavailable numerical layers retain marker conventions without a ramp or value count', async () => {
+  await withFakeDocument((document) => {
+    const host = document.createElement('div');
+    host.classList.add('category-mode');
+    const state = {
+      metric: { key: 'overlap5PrimeNt', label: '5′ overlap length', unit: 'bp' },
+      unavailableNote: 'Overlap lengths could not be loaded. Unavailable is not 0 bp.',
+      hiddenCount: 2055, showHidden: true,
+    };
+    // No scale or missingCount: unavailable data cannot define a numerical ramp/count.
+    renderLegend(host, state);
+    assert.equal(host.classList.contains('category-mode'), false);
+    assert.match(host.textContent, /5′ overlap length \(bp\)/);
+    assert.equal(host.querySelector('.panel-note').textContent, state.unavailableNote);
+    assert.equal(host.querySelector('.panel-note').getAttribute('role'), 'status');
+    assert.equal(host.querySelector('canvas'), null);
+    assert.match(host.textContent, /Unavailable value: open circles/);
+    assert.match(host.textContent, /2,055 excluded by filters: grey outlined squares/);
+    assert.match(host.textContent, /Shortlisted: diamond outline/);
+    assert.match(host.textContent, /Pinned: ring with crosshairs/);
+    assert.doesNotMatch(host.textContent, /genes have no value|NaN|undefined/);
+
+    renderLegend(host, { ...state, showHidden: false });
+    assert.doesNotMatch(host.textContent, /excluded by filters/);
+    assert.match(host.textContent, /Pinned: ring with crosshairs/);
+
+    renderLegend(host, { ...state, markerConventions: false });
+    assert.equal(host.querySelectorAll('li').length, 0,
+      'chromosome view supplies its own mark conventions');
+    assert.equal(host.querySelector('canvas'), null);
+  });
+});
