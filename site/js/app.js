@@ -1,7 +1,7 @@
 import { neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
 import { renderNeighborSiteLegend } from './ui/neighbor-sites.js';
 import { buildCategoricalScale } from './ui/colors.js';
-import { overlapLengthFilterActive, passesOverlapLengthFilter } from './core/overlap-length.js';
+import { OVERLAP_LENGTH_METRICS, overlapLengthFilterActive, passesOverlapLengthFilter } from './core/overlap-length.js';
 /**
  * Application wiring.
  *
@@ -1296,9 +1296,16 @@ function colorSelectOptions() {
     label: `Overlapping genes (${OVERLAP_TAG_LABEL})`,
   });
   options.push({ group: 'Genomic context', value: NEIGHBOR_SITE_COLOR_KEY, label: NEIGHBOR_SITE_LABEL });
+  const overlapKeys = new Set(OVERLAP_LENGTH_METRICS.map(({ key }) => key));
+  for (const { key } of OVERLAP_LENGTH_METRICS) {
+    const metric = context.registry.byKey.get(key);
+    options.push({ group: 'Genomic context', value: key, label: optionLabel(metric) });
+  }
   for (const family of context.registry.families) {
     for (const metric of familyMetrics(family)) {
-      options.push({ group: family, value: metric.key, label: optionLabel(metric) });
+      if (overlapKeys.has(metric.key)) continue;
+      const group = family === 'Genomic context' ? 'Genomic neighborhood' : family;
+      options.push({ group, value: metric.key, label: optionLabel(metric) });
     }
   }
   return options;

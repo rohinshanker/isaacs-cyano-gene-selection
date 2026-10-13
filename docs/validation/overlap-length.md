@@ -49,6 +49,11 @@ unavailable colour. Gene detail and exports read the same cached fields.
 Loading, failed and absent layers omit the numerical ramp and value count while
 retaining the map's unavailable, filtered, shortlisted and pinned marker key.
 Chromosome legends use their own marker conventions.
+In both Colour by selectors, the 5′, 3′ and summed overlap lengths follow the
+OG and neighbouring-TSS categories in the first **Genomic context** group.
+The later **Genomic neighborhood** group contains neighbour distances and
+operon metrics. This is selector organization only: metric keys, numerical
+families, values, exported columns and saved colour choices stay unchanged.
 Exports carry known zero as zero, unavailable as blank, and the applied range
 in their manifest. The metric registry owns the three numerical CSV columns;
 do not also add them to identity columns. Regression checks require each header
@@ -80,3 +85,7 @@ absent/failed data and successful retry. Inspect help and gene values as well
 as controls, collect diagnostics, and run the repository completion gates.
 Test invalid-draft clearing through real organism and URL navigation; the app's
 explicit view restoration owns that reset.
+Run `tools/ui/check_genomic_color_groups.js` with Playwright CLI from a served
+app URL carrying `uiArtifacts=ABSOLUTE_ARTIFACT_DIRECTORY`. It checks both
+selectors across all six organisms, option uniqueness, group order, selections,
+shared-link persistence and responsive focus without changing data fixtures.
