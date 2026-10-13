@@ -46,6 +46,7 @@ test('clear all filters resets numeric and categorical channels together', () =>
     // filter's three options and the OG colour key's class rows both write it,
     // so Clear all filters has to clear it too.
     overlapClassFilter: [],
+    overlapLengthFilter: null,
     // So is the PCC 7942 essentiality selection, which the Filters panel and
     // the essentiality colour key both write.
     pccEssentialityFilter: [],

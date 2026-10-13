@@ -1,3 +1,4 @@
+import { OVERLAP_LENGTH_METRICS, OVERLAP_LENGTH_METHOD } from './overlap-length.js';
 /** One reusable explanation contract for every selectable colour metric. */
 import { describeReviewed } from './source-derived-categories.js';
 import {
@@ -25,6 +26,7 @@ import {
  * entry here, and {@link methodFor} reads both.
  */
 const METHODS = Object.freeze({
+  ...Object.fromEntries(OVERLAP_LENGTH_METRICS.map((metric) => [metric.key, OVERLAP_LENGTH_METHOD])),
   gc: 'G or C bases divided by all bases in sense codons; terminal stop excluded.',
   gc1: 'G or C at the first position of each sense codon, divided by sense-codon count.',
   gc2: 'G or C at the second position of each sense codon, divided by sense-codon count.',
@@ -246,7 +248,9 @@ export function metricHelp(metric, dataset) {
     method: methodFor(metric, organism),
     unit: metric.unit || 'unit not declared',
     origin,
-    coverage: `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
+    coverage: metric.fileKey === 'geneOverlaps' && !dataset.geneOverlaps
+      ? 'Not counted: overlap lengths are unavailable until the native overlapping-gene layer is ready. Unavailable is not 0 bp.'
+      : `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
     reading: readingNote(metric, dataset, formatCount),
     limits: shortLimits(metric, dataset, formatCount),
     sourceLinks: metric.provenance?.sourceLinks

@@ -345,10 +345,12 @@ test('the applier joins every gene, so no partner is not confused with not loade
   assert.equal(dataset.geneOverlaps.state, 'ready');
   assert.equal(genes[0].overlapPartners.length, 1);
   assert.equal(genes[0].overlapClass, 'overlap-opposite-strand');
+  assert.deepEqual([genes[0].overlap5PrimeNt, genes[0].overlap3PrimeNt, genes[0].overlapTotalNt], [0, 11, 11]);
   // A gene with no partner carries an empty list, not nothing: an array is how
   // every consumer tells a measured absence from an unread file.
   assert.deepEqual(genes[1].overlapPartners, []);
   assert.equal(genes[1].overlapClass, 'no-overlap');
+  assert.deepEqual([genes[1].overlap5PrimeNt, genes[1].overlap3PrimeNt, genes[1].overlapTotalNt], [0, 0, 0]);
 
   const unread = { genes: [geneRow('A')], organism: ORGANISM };
   DATA_APPLIERS.geneOverlaps(unread, null);
@@ -361,6 +363,9 @@ test('the applier joins every gene, so no partner is not confused with not loade
   DATA_APPLIERS.geneOverlaps(dataset, null);
   assert.equal(dataset.geneOverlaps, null);
   assert.ok(genes.every((gene) => !('overlapPartners' in gene) && !('overlapClass' in gene)));
+  assert.ok(genes.every((gene) => !('overlap5PrimeNt' in gene) && !('overlap3PrimeNt' in gene) && !('overlapTotalNt' in gene)));
+  DATA_APPLIERS.geneOverlaps(dataset, payload({ covers: ['A', 'C'] }));
+  assert.deepEqual([genes[0].overlap5PrimeNt, genes[0].overlap3PrimeNt, genes[0].overlapTotalNt], [0, 0, 0], 'replacement clears previously measured lengths');
 });
 
 test('a partner reads as a sentence that names what it is and what it shares', () => {

@@ -1,3 +1,5 @@
+import { OverlapLengthFilter } from './overlap-length-filter.js';
+import { OVERLAP_LENGTH_METRICS } from '../core/overlap-length.js';
 /**
  * Metric filters.
  *
@@ -119,6 +121,7 @@ export function clearedFilterState() {
     trafficKey: null,
     proteinFilter: 'any',
     overlapClassFilter: [],
+    overlapLengthFilter: null,
     pccEssentialityFilter: [],
   };
 }
@@ -201,6 +204,7 @@ export class FilterPanel {
     this.essentialityHost.className = 'essentiality-filter';
     this.overlapHost = document.createElement('div');
     this.overlapHost.className = 'overlap-filter';
+    this.overlapLength = new OverlapLengthFilter((filter) => this.handlers.onOverlapLengthChange?.(filter));
     this.proteinHost = document.createElement('div');
 
     const addRow = document.createElement('div');
@@ -228,11 +232,12 @@ export class FilterPanel {
     this.clearButton.type = 'button';
     this.clearButton.className = 'chip-button';
     this.clearButton.textContent = 'Clear all filters';
-    this.clearButton.addEventListener('click', () => this.handlers.onClear());
+    this.overlapLength.onDraftChange = () => { this.clearButton.disabled = false; };
+    this.clearButton.addEventListener('click', () => { this.overlapLength.reset(); this.handlers.onClear(); });
 
     this.host.append(
       this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost,
-      this.essentialityHost, this.overlapHost,
+      this.essentialityHost, this.overlapHost, this.overlapLength.element,
       addRow, this.list, this.summary,
       this.clearButton,
     );
@@ -278,7 +283,7 @@ export class FilterPanel {
     // Grouped in the shared display order, so the "Add filter" list offers
     // measured evidence before the codon-usage conventions.
     for (const metric of metricsInDisplayOrder(state.registry)) {
-      if (active.includes(metric.key)) continue;
+      if (active.includes(metric.key) || OVERLAP_LENGTH_METRICS.some((entry) => entry.key === metric.key)) continue;
       if (!byFamily.has(metric.family)) byFamily.set(metric.family, []);
       byFamily.get(metric.family).push(metric);
     }
@@ -307,12 +312,15 @@ export class FilterPanel {
     this.renderExceptionFilter(state);
     this.renderPccEssentialityFilter(state);
     this.renderOverlapFilter(state);
+    this.overlapLength.update({ filter: state.overlapLengthFilter, available: Boolean(state.overlapCounts),
+      pending: state.overlapsPending, owner: state.overlapLengthOwner });
     this.renderRows(state);
 
     this.renderSummary(state.count, state.passing);
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
+      && !state.overlapLengthFilter && this.overlapLength.clear.disabled
       && (state.overlapClassFilter ?? []).length === 0
       && (state.pccEssentialityFilter ?? []).length === 0
       && (state.categoryFilter ?? []).length === 0;

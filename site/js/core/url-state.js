@@ -1,3 +1,4 @@
+import { parseOverlapLengthFilter } from './overlap-length.js';
 /**
  * URL hash serialization.
  *
@@ -40,7 +41,7 @@ const KEYS = {
   strainFitnessSources: 'fds',
   axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
-  overlapClassFilter: 'og',
+  overlapClassFilter: 'og', overlapLengthFilter: 'ol',
   pccEssentialityFilter: 'pe',
 };
 
@@ -143,6 +144,7 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // before the field existed drew, so its absence has exactly one meaning
     // and the encoder version did not move for it.
     overlapClassFilter: [],
+    overlapLengthFilter: null,
     // The PCC 7942 essentiality buckets the reader is keeping, written by the
     // Filters panel and the colour key alike. An omitted `pe` means the empty
     // set, which hides nothing and is what every earlier link drew, so the
@@ -238,6 +240,7 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     axisXSources: Array.isArray(state.axisXSources) ? [...state.axisXSources] : [],
     axisYSources: Array.isArray(state.axisYSources) ? [...state.axisYSources] : [],
     categoryFilter: state.categoryFilter,
+    overlapLengthFilter: state.overlapLengthFilter ?? null,
     ...(publishesPccCalls(organism)
       ? { pccEssentialityFilter: normalizePccEssentialitySelection(state.pccEssentialityFilter) }
       : {}),
@@ -333,6 +336,10 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   parts.push(`${KEYS.shortlist}=${encodeURIComponent(state.shortlist.join(','))}`);
   push(KEYS.pinned, state.pinnedId ?? '');
   push(KEYS.compareTab, state.compareTab);
+  if (state.overlapLengthFilter) {
+    const { end, min, max } = state.overlapLengthFilter;
+    push(KEYS.overlapLengthFilter, `${end},${min ?? ''},${max ?? ''}`);
+  }
   push(KEYS.overlapClassFilter, [...(state.overlapClassFilter ?? [])].sort().join(','));
   if (publishesPccCalls(organism)) {
     push(KEYS.pccEssentialityFilter,
@@ -434,6 +441,13 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   }
   if (values.has(KEYS.pinned)) state.pinnedId = values.get(KEYS.pinned) || null;
   if (values.has(KEYS.compareTab)) state.compareTab = values.get(KEYS.compareTab);
+  if (values.has(KEYS.overlapLengthFilter)) {
+    const parts = values.get(KEYS.overlapLengthFilter).split(',');
+    if (parts.length === 3) {
+      const parsed = parseOverlapLengthFilter(...parts);
+      if (!parsed.error) state.overlapLengthFilter = parsed.value;
+    }
+  }
   if (values.has(KEYS.overlapClassFilter)) {
     const ids = values.get(KEYS.overlapClassFilter).split(',')
       .filter((id) => OVERLAP_CLASS_IDS.includes(id));

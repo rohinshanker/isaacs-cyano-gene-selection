@@ -1,3 +1,4 @@
+import { OVERLAP_LENGTH_METRICS } from './overlap-length.js';
 /**
  * The single list of metrics the interface can plot, filter, colour, or tabulate.
  *
@@ -507,6 +508,10 @@ export function buildMetricRegistry(meta, genes, liveFields, additionalMetrics =
       integer: isCountMetric(definition.key),
       read: (index) => values[index],
     });
+  }
+
+  for (const definition of OVERLAP_LENGTH_METRICS) {
+    metrics.push({ ...definition, read: (index) => genes[index][definition.key] ?? NaN });
   }
 
   const byKey = new Map(metrics.map((metric) => [metric.key, metric]));

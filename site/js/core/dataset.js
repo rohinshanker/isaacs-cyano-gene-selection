@@ -33,6 +33,8 @@ import { validateSourceDerivedCategories } from './source-derived-categories.js'
 import { validateGoIeaEssentiality } from './go-iea-essentiality.js';
 import { validateTrnaPayload } from './trna-loci.js';
 import { validateCodonPcaReference } from './codon-pca-reference.js';
+import { endOverlapLengths, OVERLAP_LENGTH_METRICS } from './overlap-length.js';
+import { sameReplicon } from './chromosome-model.js';
 import { OVERLAP_CLASS_IDS, validateGeneOverlaps } from './gene-overlaps.js';
 import { validateExpressionAgreement } from './expression-agreement.js';
 
@@ -335,11 +337,13 @@ export const DATA_APPLIERS = Object.freeze({
       for (const gene of dataset.genes) {
         delete gene.overlapPartners;
         delete gene.overlapClass;
+        for (const metric of OVERLAP_LENGTH_METRICS) delete gene[metric.key];
         delete gene.flankingNeighbours;
       }
       return;
     }
     const index = validateGeneOverlaps(payload, dataset.genes, organismOf(dataset));
+    const lengthsByReplicon = new Map(index.replicons.map(({ accession, lengthBp }) => [accession, lengthBp]));
     // Every gene, not only the ones with a partner: an array of no partners is
     // how a consumer tells a gene measured to overlap nothing from a gene whose
     // layer has not landed, which carries no array at all.
@@ -347,6 +351,9 @@ export const DATA_APPLIERS = Object.freeze({
       const gene = dataset.genes[position];
       gene.overlapPartners = index.partnersById.get(gene.id) ?? NO_PARTNERS;
       gene.overlapClass = OVERLAP_CLASS_IDS[index.values[position]];
+      const lengths = endOverlapLengths(gene, gene.overlapPartners, lengthsByReplicon.get(gene.seqid)
+        ?? index.replicons.find((replicon) => sameReplicon(replicon.accession, gene.seqid))?.lengthBp);
+      for (const metric of OVERLAP_LENGTH_METRICS) gene[metric.key] = lengths?.[metric.field] ?? null;
       // Non-enumerable: JSON/export/object spreads cannot resolve the whole
       // catalogue accidentally. A load validates once; only viewed loci scan.
       if (index.neighbours) Object.defineProperty(gene, 'flankingNeighbours', {

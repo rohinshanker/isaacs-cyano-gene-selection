@@ -836,13 +836,16 @@ test('the export carries the overlapping-gene identity beside the legacy flag', 
   assert.ok(overlapping && alone, 'the shipped layer has both states');
   const result = exportFor(dataset, registry, [overlapping.id, alone.id], [{ map: {} }]);
   const columns = result.columns;
-  for (const name of ['overlapsNeighbor', 'overlapClass', 'overlapPartnerCount',
+  for (const name of ['overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt', 'overlapsNeighbor', 'overlapClass', 'overlapPartnerCount',
     'overlapSharedBases', 'overlapPartners']) {
     assert.ok(columns.includes(name), name);
   }
   const rows = new Map(result.rows.map((row) => [row.id, row]));
   const row = rows.get(overlapping.id);
   assert.equal(row.overlapPartnerCount, 2);
+  assert.equal(row.overlap5PrimeNt, overlapping.overlap5PrimeNt);
+  assert.equal(row.overlap3PrimeNt, overlapping.overlap3PrimeNt);
+  assert.equal(row.overlapTotalNt, row.overlap5PrimeNt + row.overlap3PrimeNt);
   assert.equal(row.overlapClass, overlapping.overlapClass);
   assert.equal(
     row.overlapSharedBases,
@@ -862,6 +865,9 @@ test('the export carries the overlapping-gene identity beside the legacy flag', 
   // A gene the layer reports no partner for exports an explicit zero, not a
   // blank: the measurement is that it shares no base.
   assert.equal(rows.get(alone.id).overlapPartnerCount, 0);
+  for (const key of ['overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt']) {
+    assert.equal(rows.get(alone.id)[key], 0, `${key} exports measured zero`);
+  }
   assert.equal(rows.get(alone.id).overlapClass, 'no-overlap');
   assert.equal(rows.get(alone.id).overlapPartners, '');
   // The adjacent-CDS envelope flag keeps its own column and its own meaning.
@@ -875,6 +881,9 @@ test('a gene with no overlap layer exports the columns empty rather than false',
   const result = exportFor(dataset, registry, [first.id], [{ map: {} }]);
   const [row] = result.rows;
   assert.equal(row.overlapClass, '');
+  for (const key of ['overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt']) {
+    assert.equal(row[key], '', `${key} exports unavailable as blank`);
+  }
   assert.equal(row.overlapPartnerCount, '');
   assert.equal(row.overlapSharedBases, '');
   assert.equal(row.overlapPartners, '');

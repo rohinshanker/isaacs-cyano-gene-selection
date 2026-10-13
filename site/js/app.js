@@ -1,3 +1,4 @@
+import { passesOverlapLengthFilter } from './core/overlap-length.js';
 /**
  * Application wiring.
  *
@@ -512,6 +513,7 @@ function computeMask() {
     .filter((entry) => entry.metric);
 
   for (const { key, metric, range } of entries) {
+    if (metric.fileKey === 'geneOverlaps' && !dataset.geneOverlaps) continue;
     let droppedForMissing = 0;
     for (let i = 0; i < count; i += 1) {
       if (!mask[i]) continue;
@@ -574,6 +576,10 @@ function computeMask() {
   // legend hover preview narrows this base mask to one bucket of its own
   // channel without touching that channel's selection, so every other filter,
   // the other channel's selection included, still applies during a preview.
+  for (let i = 0; i < count; i += 1) {
+    if (mask[i] && !passesOverlapLengthFilter(dataset.genes[i], state.overlapLengthFilter,
+      Boolean(dataset.geneOverlaps))) mask[i] = 0;
+  }
   context.baseMask = mask;
 
   let finalMask = mask;
@@ -1199,6 +1205,19 @@ function renderColorLegend(host, colors, { markerConventions = true, controlsHos
     });
     return;
   }
+  if (metric.fileKey === 'geneOverlaps' && !context.dataset.geneOverlaps) {
+    const title = document.createElement('strong');
+    title.textContent = `${metric.label} (bp)`;
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    note.setAttribute('role', 'status');
+    const pending = pendingState(context.dataset, 'geneOverlaps');
+    note.textContent = `Overlap lengths ${pending === FILE_STATE.LOADING ? 'are still loading'
+      : pending === FILE_STATE.FAILED ? 'could not be loaded' : 'are unavailable'}. `
+      + 'Every gene has a neutral unavailable colour. Values are not counted until the layer is ready; unavailable is not 0 bp.';
+    host.replaceChildren(title, note);
+    return;
+  }
   let missing = 0;
   for (let i = 0; i < values.length; i += 1) if (!Number.isFinite(values[i])) missing += 1;
   // Scoped to the metric on screen: a TSS legend counts TSS coverage, not the
@@ -1750,6 +1769,9 @@ function renderAll({ schemeErrors = [] } = {}) {
     } : null,
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
     overlapClassFilter: state.overlapClassFilter,
+    overlapLengthFilter: state.overlapLengthFilter,
+    overlapLengthOwner: state,
+    overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
     pccEssentiality: PCC_ESSENTIALITY_COPY
       ? { model: pccEssentialityModel(), note: PCC_ESSENTIALITY_COPY.filterNote } : null,
     pccEssentialityFilter: state.pccEssentialityFilter,
@@ -1769,6 +1791,8 @@ function renderAll({ schemeErrors = [] } = {}) {
     colorSources: state.colorSources,
     filterState: {
       ranges: state.filters,
+      overlapLength: state.overlapLengthFilter,
+      overlapClasses: state.overlapClassFilter,
       categoryFilter: state.categoryFilter,
       ...(PCC_ESSENTIALITY_COPY ? { pcc7942Essentiality: state.pccEssentialityFilter } : {}),
       proteinEvidence: state.proteinFilter,
@@ -2784,6 +2808,7 @@ function renderProvenance() {
  */
 function normalizeAndApply(decoded) {
   applyDecoded(state, decoded, organism);
+  filterPanel?.overlapLength.reset(state.overlapLengthFilter);
   // The shortlist is the one field with a second, local source of truth: a
   // hash that never mentions it (a bare initial load, or a partial/legacy
   // link) defers to what this browser last saved, not to the empty default
@@ -3024,6 +3049,7 @@ function refreshProteinRecords() {
  */
 function promotedFileKeys(view) {
   const keys = new Set();
+  if (view.overlapLengthFilter || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   // The essentiality colour and filter read the candidate evidence alone.
   if (PCC_ESSENTIALITY_COPY && (view.colorBy === PCC_ESSENTIALITY_COLOR_KEY
@@ -3619,6 +3645,10 @@ async function boot() {
     },
     onOverlapFilterChange: (mode) => {
       setOverlapSelection(overlapSelectionFor(mode));
+    },
+    onOverlapLengthChange: (filter) => {
+      state.overlapLengthFilter = filter;
+      renderAll();
     },
     onPccEssentialityFilterChange: (selection) => setPccEssentialitySelection(selection),
     onExceptionFilterChange: (mode) => {

@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on thirty-nine metrics, symmetric log on twenty-six, linear on the rest', async () => {
+test('the shipped release opens logarithmic on thirty-nine metrics, symmetric log on twenty-nine, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -129,7 +129,8 @@ test('the shipped release opens logarithmic on thirty-nine metrics, symmetric lo
     'exprGse311172Ad2Zero', 'exprGse311172Ad3Zero', 'exprGse311172WtHigh0',
     'exprGse311172WtMedium0', 'exprGse327989Wt', 'exprGse51112OxD53eIptg',
     'exprGse51112OxD53eNoIptg', 'exprGse51112OxEmptyIptg', 'exprGse51112WtLl', 'exprGse89999Dark',
-    'exprGse89999Dawn', 'exprGse89999Dusk', 'neighborDownstreamNt', 'neighborUpstreamNt'
+    'exprGse89999Dawn', 'exprGse89999Dusk', 'neighborDownstreamNt', 'neighborUpstreamNt',
+    'overlap3PrimeNt', 'overlap5PrimeNt', 'overlapTotalNt'
   ]);
   assert.deepEqual(keysFor('sqrt'), []);
   assert.deepEqual(keysFor('percentile'), []);

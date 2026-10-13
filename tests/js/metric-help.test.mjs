@@ -49,8 +49,8 @@ test('Syn57 pipeline, proxy and live origins use a readable design source phrase
   }
 });
 
-test('all 215 selectable metrics have a calculation, origin, missingness and real citations', () => {
-  assert.equal(registry.metrics.length, 215);
+test('all 218 selectable metrics have a calculation, origin, missingness and real citations', () => {
+  assert.equal(registry.metrics.length, 218);
   // Hand-written method lines cover every metric except the layers the
   // ingestion tool made, whose method is derived from their provenance.
   const ingested = registry.metrics.filter((metric) => metric.provenance?.ingest);
