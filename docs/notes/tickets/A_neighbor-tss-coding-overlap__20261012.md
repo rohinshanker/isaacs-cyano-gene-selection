@@ -1,7 +1,7 @@
-# O_neighbor-tss-coding-overlap__20261012 — Open
+# A_neighbor-tss-coding-overlap__20261012 — Active
 
-Scope: Filter, colour and visualize genes whose coding segments contain TSSs associated with neighbouring genes.
-Status: open
+Scope: Filter, colour and visualize genes whose coding segments contain TSSs or RBSs associated with neighbouring genes, wherever admitted native-coordinate evidence exists.
+Status: active
 Opened: 2026-10-12
 Updated: 2026-10-12
 
@@ -9,7 +9,17 @@ Updated: 2026-10-12
 
 Requested by the owner. Add a shared relationship between a source-associated
 neighbouring-gene transcription start site (TSS) and each focal gene whose coding
-segments contain that site's coordinate. Implementation is unclaimed.
+segments contain that site's coordinate. Claimed by `cyano-regulatory-sites`
+(Agent Deck `e6e54b6e-1791581192`) on 2026-10-12. Coordinator owns integration,
+review, and closure. Implementation uses isolated worktrees from main
+`f0509153281550e902b78e9270a8ddd0b19bc4b8`; other sessions are not interrupted.
+
+Owner clarification: cover both RBSs and TSSs in both viewers, filters, and
+colouring. Verify current coverage and explicitly disclose if only Tan 2018
+TSSs are available. Do not invent RBS coordinates, conflate TSS with RBS, or
+resume the held RBS Calculator work. Missing RBS evidence is unavailable,
+not a negative site call. Reuse admitted native evidence; no new source admission
+or cross-strain coordinate transfer is authorized by this ticket.
 
 ## Requested behaviour
 
@@ -52,8 +62,8 @@ segments contain that site's coordinate. Implementation is unclaimed.
 
 Related work: [native neighbouring genes](../../validation/gene-neighbours.md),
 [overlapping genes](../../validation/gene-overlaps.md), and the separately owned
-[Tan condition-selection ticket](A_tan-condition-selection__20261012.md). Use its
-accepted source contract when applicable; do not take over its active work.
+[Tan condition-selection contract](../../validation/data-contract.md). Preserve
+the accepted four-condition source-selection semantics.
 
 ## Verification
 
@@ -67,7 +77,7 @@ markers. Run the required repository gates and record final results here.
 
 ## Cleanup
 
-Remain open until claimed and implemented. The owning session must account for
+Remain active until implemented and independently reviewed. The owning session must account for
 all open findings, preserve the reusable association/coordinate and display
 contracts in docs/validation, then resolve and remove this ticket and its queue
 row under the repository's closure rules.
