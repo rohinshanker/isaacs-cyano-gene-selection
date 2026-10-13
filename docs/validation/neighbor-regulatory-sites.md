@@ -39,6 +39,8 @@ The unavailable filter is explicit; saved with/without narrowing is suspended.
 Colour changes preserve the shared explanation disclosure structure. Check
 round trips between neighbouring-site, numerical and other categorical colours
 in both chromosome and scatter views, including live shared-link changes.
+Shared categorical help must not label site-evidence classes as function
+categories or imply lab-reviewed/source-derived provenance for these sites.
 
 The `ns` share-link field carries `any`, `with`, `without` or `unavailable`;
 fresh links omit `any`. Clear all filters clears it. Selection reset preserves
