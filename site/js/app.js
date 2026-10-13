@@ -1306,10 +1306,12 @@ function colorSelectOptions() {
 
 function renderColorHelp(host) {
   if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
-    host.replaceChildren();
+    host.hidden = false;
+    host.querySelector('summary').textContent = `${NEIGHBOR_SITE_LABEL} explanation`;
     const note = document.createElement('p'); note.className = 'panel-note';
     note.textContent = context.neighborSites.reason ?? 'Tan 2018 native TSS points inside another gene’s actual CDS. RBS coordinates unavailable; source associations do not establish regulation.';
-    host.append(note); return;
+    host.querySelector('.help-content').replaceChildren(note);
+    return;
   }
   if (state.colorBy === OVERLAP_COLOR_KEY) {
     renderMetricHelp(host, overlapColorHelp(overlapModel()), citationsManifest, organism);

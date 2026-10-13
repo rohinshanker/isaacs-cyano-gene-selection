@@ -36,6 +36,10 @@ the informing initiation payload suspends narrowing and marks consistently.
 Unavailable is a third colour bucket, never a count of zero or “without overlap”.
 The unavailable filter is explicit; saved with/without narrowing is suspended.
 
+Colour changes preserve the shared explanation disclosure structure. Check
+round trips between neighbouring-site, numerical and other categorical colours
+in both chromosome and scatter views, including live shared-link changes.
+
 The `ns` share-link field carries `any`, `with`, `without` or `unavailable`;
 fresh links omit `any`. Clear all filters clears it. Selection reset preserves
 analysis filters, existing self-TSS visibility and the source-selection contract.

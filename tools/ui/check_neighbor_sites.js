@@ -80,6 +80,16 @@ async (page) => {
   check(page.url().includes('g=M744_RS00660'), 'detail-view neighbour navigation persists in the shared link');
   check((await page.locator('#detail').innerText()).startsWith('M744_RS00660'), 'detail-view neighbour navigation updates the gene');
   await save('detail-site-owner-navigation');
+  // Colour explanations share one disclosure structure across every option.
+  // Leaving the neighbour category must preserve that structure in both maps.
+  for (const panelName of ['Chromosome/Gene', 'Native codon space']) {
+    await page.getByRole('tab', { name: panelName, exact: true }).click();
+    for (const value of ['lengthNt', 'neighborTssOverlap', 'functionCategory', 'neighborTssOverlap']) {
+      const picker = panelName === 'Chromosome/Gene' ? page.locator('#chromosome-view select').filter({ has: page.locator('option[value="neighborTssOverlap"]') }).first() : page.locator('#color-by');
+      await picker.selectOption(value);
+      check(page.url().includes(`c=${value}`), `${panelName} colour change persists`);
+    }
+  }
   await open();
   // Dense list retains all 18 rows and permits keyboard navigation to a hidden owner.
   await page.setViewportSize({ width: 1280, height: 800 });

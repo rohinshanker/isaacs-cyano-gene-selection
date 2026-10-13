@@ -18,6 +18,10 @@ layers remain unavailable. Data payloads and RBS Calculator hold are unchanged.
 
 ## Findings
 
+- **NS-P2 — open:** Switching from the neighboring-site colour to a normal
+  colour throws in the shared metric-help renderer because the new colour
+  branch deleted its summary/content structure. Preserve the common disclosure
+  and test colour round trips in chromosome and scatter views.
 - **NS-P1 — open:** Gene-detail focus restoration interpolates a structured site
   key into a CSS selector. Reproduce with M744_RS00665 -> Open M744_RS00660 in
   the detail viewer; `querySelector` throws and URL still pins M744_RS00665.
