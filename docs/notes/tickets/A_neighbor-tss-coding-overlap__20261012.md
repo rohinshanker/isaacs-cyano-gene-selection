@@ -21,6 +21,29 @@ resume the held RBS Calculator work. Missing RBS evidence is unavailable,
 not a negative site call. Reuse admitted native evidence; no new source admission
 or cross-strain coordinate transfer is authorized by this ticket.
 
+## Source boundary and assignments
+
+Existing release evidence, checked 2026-10-12 at baseline `4c6a8b9`:
+
+- UTEX `tss_evidence.json` carries 2,432 exact-current-locus gTSS records from
+  Tan 2018 Table S1. The four condition layers retain one coordinate set;
+  the legacy pooled score is a different metric and must not supply coordinates.
+- `regulatory_tss.json` separately carries 2,333 aTSS/iTSS/nTSS rows with source
+  associations, including unmapped and unassociated rows. Source associations
+  are context, never proof of a regulatory edge. Table S8 potential targets do
+  not become site ownership.
+- `core/marker-layers.js` has an RBS interval representation, but no RBS dataset
+  is declared in the six organism records. Its TIS vocabulary is not an RBS
+  measurement. The RBS Calculator ticket and code dependency stay separate.
+- Reuse [the admitted data contract](../../validation/data-contract.md#the-shared-marker-representation)
+  and [Tan provenance](../../../data/expression/TAN2018_TSS_PROVENANCE.md).
+  No new scientific source, measurement or transferred coordinate is admitted.
+
+Multica DEM-387 implements in `work/neighbor-sites-impl-20261012`; DEM-388 is a
+read-only inventory and independent coordinate oracle against the baseline.
+Coordinator integrates in `work/neighbor-sites-20261012` and owns this ticket.
+Independent cross-provider review and rendered verification remain pending.
+
 ## Requested behaviour
 
 - **Filters:** allow all genes, genes with a neighbouring-gene TSS in their coding
