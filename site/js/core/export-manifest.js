@@ -50,7 +50,7 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'seqid', 'start', 'end',
   'strand', 'lengthNt', 'lengthCodons', 'startCodon', 'terminalStop', 'recodedTerminalStop',
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor',
-  'overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt', 'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
+  'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
   'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
   'tssInitiationBasisReason', 'tssMappedSiteCount', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag', 'pcc7942MappingStatus',
@@ -448,9 +448,6 @@ export function buildExport({
         // own name and its own meaning. The four columns beside it are the OG
         // relation: every annotated gene, exact segments, both strands.
         overlapsNeighbor: typeof gene.overlapsNeighbor === 'boolean' ? String(gene.overlapsNeighbor) : '',
-        overlap5PrimeNt: gene.overlap5PrimeNt ?? '',
-        overlap3PrimeNt: gene.overlap3PrimeNt ?? '',
-        overlapTotalNt: gene.overlapTotalNt ?? '',
         overlapClass: gene.overlapClass ?? '',
         overlapPartnerCount: Array.isArray(gene.overlapPartners)
           ? gene.overlapPartners.length : '',

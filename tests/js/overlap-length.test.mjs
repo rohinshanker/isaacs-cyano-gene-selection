@@ -146,3 +146,42 @@ test('controls retain focus, invalid drafts and valid applied state across unrel
     assert.equal(ui.fields.min.value, '', 'organism/new state ownership resets an invalid draft');
   });
 });
+
+test('input, end-selection and clear events preserve bounds and announce unavailable states', async () => {
+  await withFakeDocument((document) => {
+    const changes = [];
+    const ui = new OverlapLengthFilter((value) => changes.push(value));
+    let drafts = 0;
+    ui.onDraftChange = () => { drafts += 1; };
+    document.body.append(ui.element);
+    ui.update({ available: false, pending: 'loading' });
+    assert.match(ui.note.textContent, /still loading/);
+    assert.doesNotMatch(ui.note.textContent, /saved range is paused/);
+    ui.fields.max.value = '0';
+    ui.fields.max.dispatch('input');
+    assert.deepEqual(changes.at(-1), { end: '5prime', min: null, max: 0 });
+    ui.end.value = '3prime';
+    ui.end.dispatch('change');
+    assert.deepEqual(changes.at(-1), { end: '3prime', min: null, max: 0 });
+    ui.fields.min.value = '0';
+    ui.fields.min.dispatch('input');
+    assert.deepEqual(changes.at(-1), { end: '3prime', min: 0, max: 0 });
+    assert.equal(drafts, 3, 'each edit refreshes the parent clear-control state');
+    ui.update({ available: false, filter: changes.at(-1) });
+    assert.match(ui.note.textContent, /are unavailable/);
+    assert.match(ui.note.textContent, /saved range is paused/);
+    ui.clear.click();
+    assert.equal(changes.at(-1), null);
+    assert.equal(ui.end.value, '5prime');
+    assert.equal(ui.fields.min.value, '');
+    assert.equal(ui.fields.max.value, '');
+    assert.equal(ui.clear.disabled, true);
+    ui.update({ available: false, pending: 'failed' });
+    assert.match(ui.note.textContent, /could not be loaded/);
+    assert.doesNotMatch(ui.note.textContent, /saved range is paused/);
+    ui.reset({ end: '3prime', min: null, max: 12 });
+    assert.equal(ui.fields.min.value, '');
+    assert.equal(ui.fields.max.value, '12');
+    assert.equal(ui.end.value, '3prime');
+  });
+});

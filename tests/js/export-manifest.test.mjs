@@ -836,6 +836,7 @@ test('the export carries the overlapping-gene identity beside the legacy flag', 
   assert.ok(overlapping && alone, 'the shipped layer has both states');
   const result = exportFor(dataset, registry, [overlapping.id, alone.id], [{ map: {} }]);
   const columns = result.columns;
+  const csv = parseCsv(result.csv);
   for (const name of ['overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt', 'overlapsNeighbor', 'overlapClass', 'overlapPartnerCount',
     'overlapSharedBases', 'overlapPartners']) {
     assert.ok(columns.includes(name), name);
@@ -866,7 +867,13 @@ test('the export carries the overlapping-gene identity beside the legacy flag', 
   // blank: the measurement is that it shares no base.
   assert.equal(rows.get(alone.id).overlapPartnerCount, 0);
   for (const key of ['overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt']) {
+    assert.equal(columns.filter((column) => column === key).length, 1,
+      `${key} has one registry-owned export column`);
+    assert.equal(csv.header.filter((column) => column === key).length, 1,
+      `${key} has one CSV header`);
     assert.equal(rows.get(alone.id)[key], 0, `${key} exports measured zero`);
+    assert.equal(csv.rows[0][key], String(overlapping[key]));
+    assert.equal(csv.rows[1][key], '0', `${key} preserves zero in CSV`);
   }
   assert.equal(rows.get(alone.id).overlapClass, 'no-overlap');
   assert.equal(rows.get(alone.id).overlapPartners, '');
@@ -880,9 +887,12 @@ test('a gene with no overlap layer exports the columns empty rather than false',
   assert.equal(first.overlapPartners, undefined, 'the fixture publishes no overlap layer');
   const result = exportFor(dataset, registry, [first.id], [{ map: {} }]);
   const [row] = result.rows;
+  const csv = parseCsv(result.csv);
   assert.equal(row.overlapClass, '');
   for (const key of ['overlap5PrimeNt', 'overlap3PrimeNt', 'overlapTotalNt']) {
     assert.equal(row[key], '', `${key} exports unavailable as blank`);
+    assert.equal(csv.header.filter((column) => column === key).length, 1);
+    assert.equal(csv.rows[0][key], '', `${key} preserves unavailable in CSV`);
   }
   assert.equal(row.overlapPartnerCount, '');
   assert.equal(row.overlapSharedBases, '');
