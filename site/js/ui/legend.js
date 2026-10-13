@@ -71,7 +71,7 @@ export function legendMarkerDescription(shape, color, fill = color) {
 }
 
 /** Decorative legend marker using the same geometry and colours as the canvas. */
-function makeSwatch(shape, color, fill = color) {
+export function makeSwatch(shape, color, fill = color) {
   const description = legendMarkerDescription(shape, color, fill);
   const svg = document.createElementNS(SVG_NS, 'svg');
   for (const [key, value] of Object.entries(description.attributes)) svg.setAttribute(key, value);

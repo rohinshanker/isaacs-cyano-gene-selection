@@ -2577,3 +2577,13 @@ input[type="range"] { width: 100%; }
 
 .gene-neighbours .gene-neighbour-noncoding { color: var(--ink-muted); background: var(--surface-sunken); border-left: 3px solid var(--line-strong); padding: 4px 8px; }
 .gene-neighbours .gene-neighbour-coding { color: var(--ink); }
+
+/* Native neighbouring-site marks retain exact coordinates; lists resolve crowding. */
+.neighbor-site-mark:focus-visible { outline: none; }
+.neighbor-site-mark:focus-visible path { stroke: var(--ink, #1b2733); stroke-width: 2; }
+.neighbor-site-details { margin-block: 0.5rem; }
+.neighbor-site-row button { margin: 0.25rem 0.35rem 0.25rem 0; }
+.neighbor-site-row, .neighbor-site-provenance dd { overflow-wrap: anywhere; }
+.neighbor-site-provenance dl { font-size: 0.8rem; }
+.neighbor-site-provenance dt { font-weight: 600; }
+.neighbor-site-provenance dd { margin: 0 0 0.35rem; }

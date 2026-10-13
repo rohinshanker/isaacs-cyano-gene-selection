@@ -14,6 +14,7 @@
  * A file that has not arrived is `loading`, which is not `absent`: see
  * docs/validation/progressive-loading.md.
  */
+import { buildNeighborSiteIndex } from './neighbor-sites.js';
 import { CodonTable } from './codon-table.js';
 import {
   buildCaiWeights, buildTaiWeights, buildCodonPairScores, encFromCounts,
@@ -402,6 +403,8 @@ export const DATA_APPLIERS = Object.freeze({
       }
     }
     for (const gene of genes) gene.tssEvidence = tssEvidence[gene.id] ?? [];
+    dataset.tssSiteRecords = tssEvidence;
+    dataset.neighborSites = buildNeighborSiteIndex(dataset);
   },
 
   /**
@@ -550,6 +553,7 @@ export const DATA_APPLIERS = Object.freeze({
   regulatoryTss(dataset, regulatoryTss) {
     if (regulatoryTss) validateRegulatoryTss(regulatoryTss, dataset.genes);
     dataset.regulatoryTss = regulatoryTss;
+    dataset.neighborSites = buildNeighborSiteIndex(dataset);
   },
 
   trnaLoci(dataset, trnaLoci) {

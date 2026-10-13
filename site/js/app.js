@@ -1,3 +1,6 @@
+import { neighborSiteModel, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
+import { renderNeighborSiteLegend } from './ui/neighbor-sites.js';
+import { buildCategoricalScale } from './ui/colors.js';
 import { overlapLengthFilterActive, passesOverlapLengthFilter } from './core/overlap-length.js';
 /**
  * Application wiring.
@@ -504,6 +507,7 @@ function toggleColorSource(id, enabled) {
 function computeMask() {
   resolveCategoryModel();
   context.overlaps = resolveOverlapModel();
+  context.neighborSites = resolveNeighborSiteModel();
   context.pccEssentiality = resolvePccEssentialityModel();
   const { dataset, registry } = context;
   const count = dataset.genes.length;
@@ -580,6 +584,9 @@ function computeMask() {
   for (let i = 0; i < count; i += 1) {
     if (mask[i] && !passesOverlapLengthFilter(dataset.genes[i], state.overlapLengthFilter,
       Boolean(dataset.geneOverlaps))) mask[i] = 0;
+  }
+  for (let i = 0; i < count; i += 1) {
+    if (mask[i] && !passesNeighborSiteFilter(context.neighborSites, i, state.neighborSiteFilter)) mask[i] = 0;
   }
   context.baseMask = mask;
 
@@ -863,6 +870,17 @@ function scheduleTiming() {
  * falls in one further neutral bucket, exactly as the function categories do:
  * not loaded yet must not look like no overlap.
  */
+function resolveNeighborSiteModel() {
+  const dataset = context.dataset;
+  const states = ['tssEvidence', 'regulatoryTss'].map((key) => pendingState(dataset, key));
+  const pending = states.includes('failed') ? 'failed' : states.includes('loading') ? 'loading' : null;
+  const sources = sourceSelection();
+  const contributing = informingDataset('type.transcriptomics.rna-seq.initiation', state.typeSources, context.datasets, sources);
+  const metric = contributing ? context.registry.byKey.get(contributing.metricKey) : null;
+  return neighborSiteModel(dataset, { sources, pending,
+    sourcePending: metric?.fileKey ? pendingState(dataset, metric.fileKey) : null });
+}
+
 function resolveOverlapModel() {
   const { dataset } = context;
   const pending = isLoading(dataset, 'geneOverlaps') ? FILE_STATE.LOADING
@@ -923,6 +941,11 @@ function overlapModel() {
  *   scale: string|null, availability: Map<string, object>|null}}
  */
 function resolveColorScale() {
+  if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
+    state.colorScale = null;
+    return { categorical: true, neighborSites: true, metric: null,
+      values: (context.neighborSites ?? resolveNeighborSiteModel()).values, scale: null, availability: null };
+  }
   if (state.colorBy === OVERLAP_COLOR_KEY) {
     // No ramp is in effect, so the link and the export manifest say so rather
     // than carrying a scale nothing is drawing.
@@ -988,6 +1011,12 @@ function colorModel() {
     drawDirectionControl: drawDirectionControlState(resolved, state.drawOnTop),
     drawOnTop: normalizeDrawDirection(state.drawOnTop),
   };
+  if (resolved.neighborSites) {
+    const model = context.neighborSites ?? resolveNeighborSiteModel();
+    return { ...shared, categories: null, neighborSites: model, categorical: true,
+      metric: { label: NEIGHBOR_SITE_LABEL }, values: model.values,
+      scale: buildCategoricalScale(NEIGHBOR_SITE_COLORS), valueScale: null, derived: null, label: NEIGHBOR_SITE_LABEL };
+  }
   if (resolved.overlap) {
     const overlaps = overlapModel();
     const label = overlaps.pending
@@ -1130,6 +1159,10 @@ function drawOrderExplanation(colors) {
 function renderColorLegend(host, colors, { markerConventions = true, controlsHost = element('map-legend-instructions') } = {}) {
   controlsHost.replaceChildren();
   const { categorical, categories, metric, values, scale } = colors;
+  if (colors.neighborSites) {
+    renderNeighborSiteLegend(host, colors.neighborSites, { markerConventions, showHidden: state.showHidden, hiddenCount: context.dataset.genes.length - context.passing });
+    return;
+  }
   if (colors.overlap) {
     renderOverlapLegend(host, {
       controlsHost,
@@ -1262,6 +1295,7 @@ function colorSelectOptions() {
     value: OVERLAP_COLOR_KEY,
     label: `Overlapping genes (${OVERLAP_TAG_LABEL})`,
   });
+  options.push({ group: 'Genomic context', value: NEIGHBOR_SITE_COLOR_KEY, label: NEIGHBOR_SITE_LABEL });
   for (const family of context.registry.families) {
     for (const metric of familyMetrics(family)) {
       options.push({ group: family, value: metric.key, label: optionLabel(metric) });
@@ -1271,6 +1305,12 @@ function colorSelectOptions() {
 }
 
 function renderColorHelp(host) {
+  if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
+    host.replaceChildren();
+    const note = document.createElement('p'); note.className = 'panel-note';
+    note.textContent = context.neighborSites.reason ?? 'Tan 2018 native TSS points inside another gene’s actual CDS. RBS coordinates unavailable; source associations do not establish regulation.';
+    host.append(note); return;
+  }
   if (state.colorBy === OVERLAP_COLOR_KEY) {
     renderMetricHelp(host, overlapColorHelp(overlapModel()), citationsManifest, organism);
     return;
@@ -1513,6 +1553,7 @@ function renderChromosomeView() {
     // stretches and the partner identities straight out of it and recomputes
     // nothing per frame.
     geneOverlaps: context.dataset.geneOverlaps ?? null,
+    neighborSites: context.neighborSites,
   });
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
@@ -1535,6 +1576,7 @@ function renderChromosomeView() {
     scheme: context.scheme,
     schemeVersion: context.schemeVersion,
     organism,
+    neighborSites: context.neighborSites,
     markerPending: pendingState(context.dataset, 'tssEvidence'),
     sequenceContextPending: pendingState(context.dataset, 'sequenceContext'),
     markersVisible: markersVisibleIn('sequence'),
@@ -1621,6 +1663,7 @@ function renderDetail() {
     live: context.live,
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
     colorSources: state.colorSources,
+    neighborSites: context.neighborSites,
     startSitesVisible: markersVisibleIn('gene-detail'),
   });
   renderControlsGeneViewer(index);
@@ -1659,6 +1702,7 @@ function renderControlsGeneViewer(index) {
   const host = body.querySelector('#gene-viewer-controls');
   if (!host) return;
   renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null, {
+    neighborSites: context.neighborSites,
     tssPending: pendingState(context.dataset, 'tssEvidence'),
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
     organism,
@@ -1764,6 +1808,8 @@ function renderAll({ schemeErrors = [] } = {}) {
       directDetectionLabel: organism.copy.directProteomicsLabel,
     } : null,
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
+    neighborSites: context.neighborSites,
+    neighborSiteFilter: state.neighborSiteFilter,
     overlapClassFilter: state.overlapClassFilter,
     overlapLengthFilter: state.overlapLengthFilter,
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
@@ -1787,6 +1833,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     filterState: {
       ranges: state.filters,
       overlapLength: state.overlapLengthFilter,
+      neighborSiteFilter: state.neighborSiteFilter,
       overlapClasses: state.overlapClassFilter,
       categoryFilter: state.categoryFilter,
       ...(PCC_ESSENTIALITY_COPY ? { pcc7942Essentiality: state.pccEssentialityFilter } : {}),
@@ -2876,6 +2923,7 @@ function normalizeAndApply(decoded) {
   if (state.trafficKey && !context.registry.byKey.has(state.trafficKey)) state.trafficKey = null;
   if (!state.colorBy || !((context.registry.byKey.has(state.colorBy)
     && metricInScope(context.registry.byKey.get(state.colorBy)))
+    || state.colorBy === NEIGHBOR_SITE_COLOR_KEY
     || state.colorBy === OVERLAP_COLOR_KEY
     || (state.colorBy === PCC_ESSENTIALITY_COLOR_KEY && PCC_ESSENTIALITY_COPY)
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
@@ -3055,6 +3103,7 @@ function refreshProteinRecords() {
  */
 function promotedFileKeys(view) {
   const keys = new Set();
+  if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
   if (overlapLengthFilterActive(view.overlapLengthFilter) || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   // The essentiality colour and filter read the candidate evidence alone.
@@ -3134,6 +3183,7 @@ function colorMetricFileKeys(key) {
     required.add(fileKey);
   };
   if (key === FUNCTION_COLOR_KEY) addWithDependencies('sourceDerivedCategories');
+  if (key === NEIGHBOR_SITE_COLOR_KEY) { addWithDependencies('tssEvidence'); addWithDependencies('regulatoryTss'); }
   if (key === OVERLAP_COLOR_KEY) addWithDependencies('geneOverlaps');
   if (key === PCC_ESSENTIALITY_COLOR_KEY) addWithDependencies('candidateEvidence');
   const direct = context.registry.byKey.get(key)?.fileKey ?? null;
@@ -3649,6 +3699,7 @@ async function boot() {
       renderAll();
       announce(`All filters cleared. Showing all ${formatCount(context.dataset.genes.length)} genes.`);
     },
+    onNeighborSiteFilterChange: (mode) => { state.neighborSiteFilter = mode; renderAll(); persist(); },
     onOverlapFilterChange: (mode) => {
       setOverlapSelection(overlapSelectionFor(mode));
     },

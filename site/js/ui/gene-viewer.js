@@ -1,3 +1,6 @@
+import { NeighborSitePanel, drawNeighborSiteMarks } from './neighbor-sites.js';
+import { neighborSiteOffset } from '../core/neighbor-sites.js';
+const neighborSiteMounts = new WeakMap();
 import { createNeighbourDisclosure, updateNeighbourDisclosure } from './gene-neighbours.js';
 const neighbourMounts = new WeakMap();
 /**
@@ -980,7 +983,7 @@ function factsFor(model) {
 export function renderGeneViewer(host, gene, {
   tssPending = null, overlapsPending = null, organism = DEFAULT_ORGANISM,
   startSitesVisible = true, onStartSitesVisibleChange = null,
-  onOpenPartner = null, table = null,
+  onOpenPartner = null, table = null, neighborSites = null,
 } = {}) {
   const startSites = layerOf(organism, 'tssEvidence');
   host.classList.add('gene-view');
@@ -991,7 +994,7 @@ export function renderGeneViewer(host, gene, {
   if (!model) {
     const action = document.activeElement?.dataset?.detailAction;
     const held = host.contains(document.activeElement)
-      && (action === START_SITES_CONTROL || action?.startsWith('neighbour-'));
+      && (action === START_SITES_CONTROL || action?.startsWith('neighbour-') || action?.startsWith('neighbor-site'));
     host.replaceChildren();
     const empty = document.createElement('p');
     empty.className = 'panel-note';
@@ -1021,6 +1024,7 @@ export function renderGeneViewer(host, gene, {
     const neighbourDetails = neighbourMounts.get(host) ?? createNeighbourDisclosure();
     neighbourMounts.set(host, neighbourDetails);
     const neighbourFocus = neighbourDetails.contains(document.activeElement) ? document.activeElement : null;
+    const priorSiteFocus = neighborSiteMounts.get(host)?.element.contains(document.activeElement) ? document.activeElement : null;
     host.replaceChildren();
 
     const heading = document.createElement('p');
@@ -1034,7 +1038,18 @@ export function renderGeneViewer(host, gene, {
       product.textContent = model.product;
       heading.append(document.createElement('br'), product);
     }
-    host.append(heading, geneViewSvg(model, tssPending, organism, visible));
+    const picture = geneViewSvg(model, tssPending, organism, visible);
+    const relation = neighborSites?.forGene(gene);
+    if (visible) drawNeighborSiteMarks(picture, relation?.sites ?? [], gene,
+      (site) => xScale(model)(neighborSiteOffset(gene, site) + 0.5), TRACK_Y + TRACK_HEIGHT / 2);
+    const siteDescription = relation ? ` ${relation.count} distinct native neighbouring-gene TSS points in actual CDS segments, ${visible ? 'shown as purple diamonds' : 'hidden by the start-sites control'}; contributors remain in the neighbouring-site list.` : ` ${neighborSites?.reason ?? 'Native neighbouring-site evidence unavailable.'}`;
+    picture.setAttribute('aria-label', picture.getAttribute('aria-label') + siteDescription);
+    const sitePanel = neighborSiteMounts.get(host) ?? new NeighborSitePanel();
+    neighborSiteMounts.set(host, sitePanel);
+    const siteFocus = priorSiteFocus;
+    sitePanel.update(neighborSites, gene, onOpenPartner, null, visible);
+    host.append(heading, picture, sitePanel.element);
+    if (siteFocus?.isConnected) siteFocus.focus?.({ preventScroll: true });
     if (startSites && tssPending) {
       host.append(pendingNote(tssPending, `the ${startSites.fileLabel}`));
     }
@@ -1045,7 +1060,7 @@ export function renderGeneViewer(host, gene, {
     // hide evidence that is not there, and would read as a promise that it
     // could be shown.
     let toggle = null;
-    if (startSites && model.tss.length > 0) {
+    if (startSites && (model.tss.length > 0 || relation?.count > 0)) {
       const control = startSitesControl(startSites, visible, (next) => {
         onStartSitesVisibleChange?.(next);
         paint(next);

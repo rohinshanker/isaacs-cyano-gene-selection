@@ -844,6 +844,7 @@ export class SidePanel {
     viewerSummary.textContent = 'Gene visualizer';
     const viewerBody = document.createElement('div');
     renderGeneViewer(viewerBody, gene, {
+      neighborSites: state.neighborSites,
       tssPending: pendingState(dataset, 'tssEvidence'),
       overlapsPending: pendingState(dataset, 'geneOverlaps'),
       organism,
@@ -856,6 +857,7 @@ export class SidePanel {
       table: dataset.table,
     });
     this.rememberDisclosure(viewerBody.querySelector('details.gene-neighbours'), 'gene-neighbours');
+    this.rememberDisclosure(viewerBody.querySelector('details.neighbor-site-details'), 'neighbor-sites');
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
 

@@ -1,3 +1,5 @@
+import { NeighborSitePanel } from './neighbor-sites.js';
+import { describeNeighborSite, NEIGHBOR_SITE_COLORS } from '../core/neighbor-sites.js';
 /**
  * The chromosome view: every plotted CDS at its coordinate on the organism's
  * genome of record.
@@ -512,6 +514,8 @@ export class ChromosomeView {
   update(model) {
     if (!this.built) this.build();
     this.model = model;
+    this.neighborSiteMarks = model.neighborSites?.marks ?? [];
+    this.activeNeighborSite = model.showStartSites === false ? null : this.neighborSiteMarks.find((mark) => mark.site.key === this.activeNeighborSite?.site.key && mark.geneId === this.activeNeighborSite?.geneId) ?? null;
     // The caller's record of this view's start-site choice, so a shared link,
     // a reload and a live hash all reach the tick row. Omitted leaves the last
     // value, which is what a receiver built by hand shows.
@@ -544,6 +548,7 @@ export class ChromosomeView {
     const incoming = this.reconcileSelection();
     this.syncControls();
     this.renderSummaries();
+    this.writeNeighborSitePanel();
     this.resize();
     // A selection that arrived from elsewhere has to be brought into the
     // window, or a zoomed track answers a search by showing the reader a
@@ -863,12 +868,16 @@ export class ChromosomeView {
     // The pinned gene's sequence close-up sits at the foot of the figure, by
     // owner decision of 2026-09-30, below the tracks and their key. The app
     // mounts its own view here through `sequenceElement`, as it does the legend.
+    this.neighborSitePanel = new NeighborSitePanel();
+    this.siteInstruction = document.createElement('p');
+    this.siteInstruction.className = 'panel-note';
+    this.siteInstruction.textContent = 'Purple diamonds mark neighbouring-gene TSS points in CDS segments. Press N (Shift+N backwards) on the chromosome to inspect every visible site, including coincident points; open associated genes in the site list.';
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
     this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
       this.controls, this.detailJump, this.legendHost, this.viewerInfo,
-      this.sequenceHost);
+      this.siteInstruction, this.neighborSitePanel.element, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -1203,7 +1212,7 @@ export class ChromosomeView {
       paintOrder: this.paintOrderFacts(),
       overlapClause: overlapConventions(this),
       copyNumberSentence: this.organism.copy.copyNumberSentence,
-    }));
+    }) + ` Neighbouring-gene TSS points: ${this.model.neighborSites?.available ? `${this.neighborSiteMarks.length} recorded CDS-site relationships; ${this.showStartSites ? 'press N or Shift+N to inspect, Enter for the complete contributor list.' : 'marks hidden by the start-sites control; no marker targets.'}` : this.model.neighborSites?.reason ?? 'evidence unavailable'}`);
   }
 
   /** Whether the colour channel is a category set rather than a value ramp. */
@@ -1379,6 +1388,7 @@ export class ChromosomeView {
     this.paintMarks(ctx, band, marks);
     this.paintOperons(ctx, band);
     this.paintTss(ctx, band);
+    this.paintNeighborSites(ctx, band);
     this.paintOverlaps(ctx, band);
     this.paintSelectionMarks(ctx, band, marks);
   }
@@ -1753,6 +1763,72 @@ export class ChromosomeView {
    * {@link ChromosomeView#setStartSitesVisible}. The density rule below is
    * unchanged by that control in either direction.
    */
+  neighborSitesInBand(band) {
+    if (!this.showStartSites) return [];
+    return (this.neighborSiteMarks ?? []).filter((mark) => mark.site.replicon === band.track.accession
+      && mark.site.position >= band.window.from && mark.site.position <= band.window.to);
+  }
+
+  paintNeighborSites(ctx, band) {
+    ctx.fillStyle = NEIGHBOR_SITE_COLORS[1];
+    for (const mark of this.neighborSitesInBand(band)) {
+      const x = band.scale.bpToX(mark.site.position);
+      const y = (mark.strand === '-' ? band.layout.laneBelowTop : band.layout.laneAboveTop) + band.layout.laneHeight / 2;
+      ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 5); ctx.lineTo(x - 4, y); ctx.closePath(); ctx.fill();
+      if (mark === this.activeNeighborSite) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke(); }
+    }
+  }
+
+  writeNeighborSitePanel() {
+    const gene = this.activeNeighborSite ? this.model.genes[this.activeNeighborSite.index]
+      : this.model.genes[this.model.pinned];
+    this.siteInstruction.hidden = !this.model.neighborSites?.available || !this.showStartSites;
+    this.neighborSitePanel.update(this.model.neighborSites, gene,
+      (id, index) => this.handlers.onSelect?.(index), (site) => {
+        const mark = this.neighborSiteMarks.find((entry) => entry.site.key === site.key && entry.geneId === gene?.id);
+        if (mark && this.showStartSites) this.inspectNeighborSite(mark);
+      }, this.showStartSites);
+  }
+
+  inspectNeighborSite(mark) {
+    if (!this.showStartSites) return;
+    const track = this.model.tracks.find((entry) => entry.accession === mark.site.replicon);
+    if (track) {
+      const view = this.windowFor(track);
+      if (mark.site.position < view.from || mark.site.position > view.to) {
+        const span = view.to - view.from + 1;
+        const from = Math.round(mark.site.position - (span - 1) / 2);
+        this.windows.set(track.accession, clampWindow({ from, to: from + span - 1 }, track.lengthBp));
+        this.renderSummaries();
+      }
+    }
+    this.activeNeighborSite = mark;
+    this.setActiveOverlap(null);
+    this.writeNeighborSitePanel();
+    this.neighborSitePanel.element.open = true;
+    this.handlers.onAnnounce?.(describeNeighborSite(mark.site, this.model.genes[mark.index]));
+    this.draw();
+  }
+
+  neighborSiteAt(x, y) {
+    const band = this.bandAt(y);
+    if (!band) return null;
+    const candidates = this.neighborSitesInBand(band).filter((mark) => {
+      const top = mark.strand === '-' ? band.layout.laneBelowTop : band.layout.laneAboveTop;
+      return Math.abs(band.scale.bpToX(mark.site.position) - x) <= 6 && Math.abs(top + band.layout.laneHeight / 2 - y) <= 7;
+    });
+    const current = candidates.indexOf(this.activeNeighborSite);
+    return candidates[(current + 1) % candidates.length] ?? null;
+  }
+
+  stepNeighborSite(step) {
+    if (!this.showStartSites) { this.handlers.onAnnounce?.('Tan 2018 start-site marks are hidden in this view.'); return; }
+    const marks = this.bands().flatMap((band) => this.neighborSitesInBand(band));
+    if (!marks.length) { this.handlers.onAnnounce?.(this.model.neighborSites?.reason ?? 'No recorded neighbouring-gene TSS points in this window.'); return; }
+    const current = marks.indexOf(this.activeNeighborSite);
+    this.inspectNeighborSite(marks[(current < 0 ? (step > 0 ? 0 : marks.length - 1) : current + step + marks.length) % marks.length]);
+  }
+
   paintTss(ctx, band) {
     if (!this.showStartSites) return;
     const { layout, scale } = band;
@@ -2259,6 +2335,9 @@ export class ChromosomeView {
         }
         return;
       }
+      const site = this.neighborSiteAt(x, y);
+      if (site) { this.inspectNeighborSite(site); return; }
+      this.activeNeighborSite = null;
       this.setActiveOverlap(null);
       const index = this.hitTest(x, y);
       if (index >= 0) {
@@ -2392,6 +2471,8 @@ export class ChromosomeView {
     const next = Boolean(visible);
     if (this.showStartSites === next) return;
     this.showStartSites = next;
+    if (!next) this.activeNeighborSite = null;
+    this.writeNeighborSitePanel();
     if (this.startSitesToggle) this.startSitesToggle.checked = next;
     this.handlers.onStartSitesVisibleChange?.(next);
     if (!this.model?.verified) return;
@@ -2460,6 +2541,8 @@ export class ChromosomeView {
       // Arrow navigation now owns Enter; an earlier pair inspection must not
       // override the gene that the preview announces as active.
       this.setActiveOverlap(null);
+      this.activeNeighborSite = null;
+      this.writeNeighborSitePanel();
       this.cursor = next;
       const mark = this.lanes[next.laneIndex].marks[next.markIndex];
       this.revealIndex(mark.index);
@@ -2469,13 +2552,18 @@ export class ChromosomeView {
     }
     if (event.key === 'Enter') {
       event.preventDefault();
-      if (this.activeOverlap) this.selectOverlapPartner(this.activeOverlap);
+      if (this.activeNeighborSite) { this.neighborSitePanel.element.open = true; this.neighborSitePanel.summary.focus(); }
+      else if (this.activeOverlap) this.selectOverlapPartner(this.activeOverlap);
       else if (this.model.active >= 0) this.handlers.onSelect?.(this.model.active);
       else {
         this.handlers.onAnnounce?.('Move to a CDS with the arrow keys first, then press Enter to '
           + 'pin it.');
       }
       return;
+    }
+    if (event.key === 'Escape' && this.activeNeighborSite) {
+      event.preventDefault(); this.activeNeighborSite = null; this.writeNeighborSitePanel(); this.draw();
+      this.handlers.onAnnounce?.('Neighbouring-site inspection cleared.'); return;
     }
     if (event.key === 'Escape' && this.activeOverlap) {
       this.dismissOverlapHint(event);
@@ -2490,6 +2578,8 @@ export class ChromosomeView {
     } else if (event.key === '0') {
       event.preventDefault();
       this.resetView();
+    } else if (event.key.toLowerCase() === 'n') {
+      event.preventDefault(); this.stepNeighborSite(event.shiftKey ? -1 : 1);
     } else if (event.key.toLowerCase() === 'o') {
       event.preventDefault();
       this.stepOverlap(event.shiftKey ? -1 : 1);

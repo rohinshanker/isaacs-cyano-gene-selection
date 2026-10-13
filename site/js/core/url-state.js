@@ -1,3 +1,4 @@
+import { NEIGHBOR_SITE_FILTERS } from './neighbor-sites.js';
 import { overlapLengthFilterActive, parseOverlapLengthFilter } from './overlap-length.js';
 /**
  * URL hash serialization.
@@ -41,7 +42,7 @@ const KEYS = {
   strainFitnessSources: 'fds',
   axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
-  overlapClassFilter: 'og', overlapLengthFilter: 'ol',
+  neighborSiteFilter: 'ns', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
   pccEssentialityFilter: 'pe',
 };
 
@@ -146,6 +147,7 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // which hides nothing — the fresh view, and also what every link written
     // before the field existed drew, so its absence has exactly one meaning
     // and the encoder version did not move for it.
+    neighborSiteFilter: 'any',
     overlapClassFilter: [],
     overlapLengthFilter: null,
     // The PCC 7942 essentiality buckets the reader is keeping, written by the
@@ -243,6 +245,7 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     axisXSources: Array.isArray(state.axisXSources) ? [...state.axisXSources] : [],
     axisYSources: Array.isArray(state.axisYSources) ? [...state.axisYSources] : [],
     categoryFilter: state.categoryFilter,
+    neighborSiteFilter: state.neighborSiteFilter ?? 'any',
     overlapLengthFilter: state.overlapLengthFilter ?? null,
     ...(publishesPccCalls(organism)
       ? { pccEssentialityFilter: normalizePccEssentialitySelection(state.pccEssentialityFilter) }
@@ -343,6 +346,7 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
     const { end, min, max } = state.overlapLengthFilter;
     push(KEYS.overlapLengthFilter, `${end},${min ?? ''},${max ?? ''}`);
   }
+  if (state.neighborSiteFilter && state.neighborSiteFilter !== 'any') push(KEYS.neighborSiteFilter, state.neighborSiteFilter);
   push(KEYS.overlapClassFilter, [...(state.overlapClassFilter ?? [])].sort().join(','));
   if (publishesPccCalls(organism)) {
     push(KEYS.pccEssentialityFilter,
@@ -451,6 +455,7 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
       if (!parsed.error) state.overlapLengthFilter = parsed.value;
     }
   }
+  if (NEIGHBOR_SITE_FILTERS.includes(values.get(KEYS.neighborSiteFilter))) state.neighborSiteFilter = values.get(KEYS.neighborSiteFilter);
   if (values.has(KEYS.overlapClassFilter)) {
     const ids = values.get(KEYS.overlapClassFilter).split(',')
       .filter((id) => OVERLAP_CLASS_IDS.includes(id));

@@ -1,3 +1,5 @@
+import { NeighborSitePanel, drawNeighborSiteMarks } from './neighbor-sites.js';
+import { sequenceColumns } from '../core/gene-sequence-model.js';
 import { controlsDisclosure } from './disclosures.js';
 import { createNeighbourDisclosure, updateNeighbourDisclosure } from './gene-neighbours.js';
 /**
@@ -379,7 +381,7 @@ export class GeneSequenceView {
   update({
     gene, table, scheme, schemeVersion, organism = DEFAULT_ORGANISM,
     markerPending = null, sequenceContextPending = null, markersVisible = true,
-    overlapsPending = null,
+    overlapsPending = null, neighborSites = null,
   }) {
     if (!this.built) this.build();
     const id = gene?.id ?? null;
@@ -396,13 +398,16 @@ export class GeneSequenceView {
     // changing the gene, so it is its own reason to redraw: without it the
     // tracks would stay empty until the reader pinned something else.
     const neighbourChanged = gene?.flankingNeighbours !== this.neighbourContext;
+    const neighborSitesChanged = this.neighborSites?.forGene(this.gene) !== neighborSites?.forGene(gene)
+      || this.neighborSites?.reason !== neighborSites?.reason;
     const overlapChanged = overlapsPending !== this.overlapsPending
       || Array.isArray(gene?.overlapPartners) !== Array.isArray(this.partners);
     // Hover re-renders the tab; nothing here depends on hover, so they cost nothing.
-    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged) {
+    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged && !neighborSitesChanged) {
       return;
     }
     this.neighbourContext = gene?.flankingNeighbours;
+    this.neighborSites = neighborSites;
     this.gene = gene;
     this.table = table;
     this.scheme = scheme;
@@ -606,6 +611,10 @@ export class GeneSequenceView {
     if (!this.model) return;
     this.draw();
     this.writeMarkerList();
+    this.writeNeighborSitePanel();
+    if (this.neighborVisibilityNote) this.neighborVisibilityNote.textContent = next
+      ? 'Neighbouring-gene TSS points are marked inside the CDS; use their inspection list to reveal individual sites.'
+      : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.';
     this.handlers.onAnnounce?.(`${this.markerLayer.label} start sites `
       + `${next ? 'shown' : 'hidden'} on the sequence close-up.`);
   }
@@ -689,6 +698,7 @@ export class GeneSequenceView {
     this.partnerDetails.hidden = true;
     this.partnerListHost.append(this.partnerDetails);
     this.neighbourDetails = createNeighbourDisclosure();
+    this.neighborSitePanel = new NeighborSitePanel();
 
     this.selection = element('p', 'gene-sequence-selection');
     this.selection.setAttribute('role', 'status');
@@ -705,7 +715,7 @@ export class GeneSequenceView {
     this.controls.id = 'gene-sequence-controls';
 
     this.figure.append(this.heading, toolbar, this.readout, this.strip, this.markerControlHost,
-      this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails);
+      this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails, this.neighborSitePanel.element);
     this.host.append(this.empty, this.figure);
     this.bindEvents();
     if (typeof ResizeObserver !== 'undefined') {
@@ -732,8 +742,21 @@ export class GeneSequenceView {
     return Math.max(120, total - LABEL_WIDTH);
   }
 
+  writeNeighborSitePanel() {
+    this.neighborSitePanel.update(this.neighborSites, this.gene,
+      (id, index) => this.handlers.onOpenPartner?.(id, index), (site) => {
+        const offset = sequenceColumns(this.model).get(site.position);
+        if (offset == null || !this.markersVisible) return;
+        const window = this.visibleWindow();
+        this.setCamera({ ...this.camera, from: offset - (window.to - window.from) / 2 });
+        this.handlers.onAnnounce?.(`Site ${site.ids.join(', ')} at native base ${site.position} shown.`);
+      }, this.markersVisible);
+  }
+
   render() {
     const model = this.model;
+    const siteHeld = this.heldIn(this.neighborSitePanel.element);
+    this.writeNeighborSitePanel();
     const neighbourHeld = this.heldIn(this.neighbourDetails);
     updateNeighbourDisclosure(this.neighbourDetails, this.gene, this.overlapsPending,
       (id, index) => this.handlers.onOpenPartner?.(id, index));
@@ -741,6 +764,7 @@ export class GeneSequenceView {
     this.empty.hidden = Boolean(model);
     if (!model) {
       this.carryFocus(neighbourHeld);
+      this.carryFocus(siteHeld);
       this.strip.replaceChildren();
       this.readout.textContent = '';
       // Through the same writers as any other render, so a reader holding the
@@ -809,8 +833,9 @@ export class GeneSequenceView {
     this.markerToggle = null;
     this.markerNavigationButton = null;
     this.markerNavigationStatus = null;
+    this.neighborVisibilityNote = null;
     const revealExtent = this.markerRevealExtent();
-    if (!this.markerLayer || this.markerPending || revealExtent === null) {
+    if (!this.markerLayer || this.markerPending || (revealExtent === null && !(this.neighborSites?.forGene(this.gene)?.count > 0))) {
       if (this.markerLayer && this.markerPending) {
         host.append(pendingNote(this.markerPending, `the ${this.markerLayer.fileLabel}`));
       }
@@ -829,6 +854,14 @@ export class GeneSequenceView {
     row.append(box, document.createTextNode(` ${this.markerControlLabel()}`));
     host.append(row);
     this.markerToggle = box;
+    if (revealExtent === null) {
+      this.neighborVisibilityNote = element('p', 'panel-note', this.markersVisible
+        ? 'Neighbouring-gene TSS points are marked inside the CDS; use their inspection list to reveal individual sites.'
+        : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.');
+      host.append(this.neighborVisibilityNote);
+      if (held) box.focus({ preventScroll: true });
+      return;
+    }
 
     const navigation = element('div', 'chromosome-toolbar-row gene-sequence-marker-navigation');
     const button = this.chip('Go to next site', 'Reveal a start site in the sequence',
@@ -1288,6 +1321,12 @@ export class GeneSequenceView {
     this.drawPartners(area, rows, x, firstVisible, lastVisible, width, perNt);
     // Last, so a mark sits over the letter it names rather than under it.
     this.drawMarkers(area, rows, x, crowding);
+    const columns = sequenceColumns(model);
+    const sites = this.neighborSites?.forGene(this.gene)?.sites ?? [];
+    if (this.markersVisible) drawNeighborSiteMarks(area, sites.filter((site) => {
+      const offset = columns.get(site.position);
+      return offset != null && offset >= window.from && offset <= window.to;
+    }), this.gene, (site) => x(columns.get(site.position) + 0.5), rows.bases + ROW_HEIGHT / 2);
     root.append(area);
     this.strip.replaceChildren(root);
     this.writeReadout(window);

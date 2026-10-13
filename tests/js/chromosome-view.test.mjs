@@ -82,6 +82,7 @@ class FakeElement {
     this.tagName = tagName;
     this.children = [];
     this.attributes = {};
+    this.dataset = {};
     this.listeners = new Map();
     this.style = {};
     this.className = '';
@@ -101,6 +102,11 @@ class FakeElement {
   replaceChildren(...children) {
     this.children = [];
     this.append(...children);
+  }
+
+  contains(node) {
+    if (!node) return false;
+    return node === this || this.children.some((child) => child.contains?.(node));
   }
 
   setAttribute(key, value) { this.attributes[key] = String(value); }
@@ -3625,4 +3631,38 @@ test('two pairs over the same bases are two marks, and both can be reached', () 
   } finally {
     restore();
   }
+});
+
+test('native neighbouring-site inspection reaches coincident points, reveals exact bases and obeys per-view hiding', async () => {
+  const { indexNativeSites, neighborSiteModel } = await import('../../site/js/core/neighbor-sites.js');
+  const { DEFAULT_ORGANISM } = await import('../../site/js/core/organisms.js');
+  const records = ['+', '-'].map((strand) => ({ locus: 'MINUS', row: {
+    id: `native-${strand}`, type: 'gTSS', position: 100100, replicon: 'CP006471', strand,
+  }, source: { doi: 'test' } }));
+  const model = neighborSiteModel({ genes: GENES, neighborSites: indexNativeSites(GENES, records, DEFAULT_ORGANISM) }, { sources: ['TAN2018_TSS_CONTROL'] });
+  const { view, restore, flush } = mount();
+  try {
+    view.update({ ...view.model, neighborSites: model }); flush();
+    const band = view.bands()[0];
+    const x = band.scale.bpToX(100100);
+    const y = band.layout.laneAboveTop + band.layout.laneHeight / 2;
+    assert.equal(view.neighborSitesInBand(band).length, 2);
+    const first = view.neighborSiteAt(x,y); view.inspectNeighborSite(first);
+    const second = view.neighborSiteAt(x,y); assert.notEqual(first,second);
+    view.inspectNeighborSite(second);
+    assert.match(view.neighborSitePanel.summary.textContent, /2 distinct sites/);
+    view.windows.set(CHROMOSOME, { from: 150000, to: 151000 });
+    view.inspectNeighborSite(first);
+    const revealed = view.windowFor(view.primaryTrack());
+    assert.ok(revealed.from <= 100100 && revealed.to >= 100100);
+    view.onKeyDown({ key: 'Escape', preventDefault() {} });
+    assert.equal(view.activeNeighborSite, null);
+    view.setStartSitesVisible(false);
+    assert.equal(view.neighborSitesInBand(view.bands()[0]).length, 0);
+    assert.equal(view.neighborSiteAt(x,y), null);
+    view.stepNeighborSite(1); assert.equal(view.activeNeighborSite,null);
+    assert.equal(model.forGene(GENES[0]).count,2, 'hiding is never an evidence change');
+    view.setStartSitesVisible(true);
+    view.stepNeighborSite(1); assert.ok(view.activeNeighborSite);
+  } finally { restore(); }
 });

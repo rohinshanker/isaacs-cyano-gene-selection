@@ -1,3 +1,4 @@
+import { NEIGHBOR_SITE_FILTERS, NEIGHBOR_SITE_LABEL, SITE_CAVEAT } from '../core/neighbor-sites.js';
 import { OverlapLengthFilter } from './overlap-length-filter.js';
 import { OVERLAP_LENGTH_METRICS, overlapLengthFilterActive } from '../core/overlap-length.js';
 /**
@@ -120,6 +121,7 @@ export function clearedFilterState() {
     expressionFilter: 'any',
     trafficKey: null,
     proteinFilter: 'any',
+    neighborSiteFilter: 'any',
     overlapClassFilter: [],
     overlapLengthFilter: null,
     pccEssentialityFilter: [],
@@ -202,6 +204,7 @@ export class FilterPanel {
     this.basisHost.className = 'basis-filter';
     this.essentialityHost = document.createElement('div');
     this.essentialityHost.className = 'essentiality-filter';
+    this.neighborSiteHost = document.createElement('div');
     this.overlapHost = document.createElement('div');
     this.overlapHost.className = 'overlap-filter';
     this.overlapLength = new OverlapLengthFilter((filter) => this.handlers.onOverlapLengthChange?.(filter));
@@ -237,7 +240,7 @@ export class FilterPanel {
 
     this.host.append(
       this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost,
-      this.essentialityHost, this.overlapHost, this.overlapLength.element,
+      this.essentialityHost, this.neighborSiteHost, this.overlapHost, this.overlapLength.element,
       addRow, this.list, this.summary,
       this.clearButton,
     );
@@ -311,6 +314,7 @@ export class FilterPanel {
     this.renderBasisFilter(state);
     this.renderExceptionFilter(state);
     this.renderPccEssentialityFilter(state);
+    this.renderNeighborSiteFilter(state);
     this.renderOverlapFilter(state);
     this.overlapLength.update({ filter: state.overlapLengthFilter, available: Boolean(state.overlapCounts),
       pending: state.overlapsPending });
@@ -321,6 +325,7 @@ export class FilterPanel {
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
       && !overlapLengthFilterActive(state.overlapLengthFilter) && this.overlapLength.clear.disabled
+      && (state.neighborSiteFilter ?? 'any') === 'any'
       && (state.overlapClassFilter ?? []).length === 0
       && (state.pccEssentialityFilter ?? []).length === 0
       && (state.categoryFilter ?? []).length === 0;
@@ -696,6 +701,41 @@ export class FilterPanel {
    * set, not of what the other filters leave, so they do not move as the reader
    * narrows something else.
    */
+  renderNeighborSiteFilter(state) {
+    const held = this.neighborSiteHost.contains(document.activeElement) ? document.activeElement.value : null;
+    this.neighborSiteHost.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    fieldset.className = 'flag-filter neighbor-site-filter';
+    const legend = document.createElement('legend');
+    legend.textContent = NEIGHBOR_SITE_LABEL;
+    const note = document.createElement('p');
+    note.className = 'panel-note';
+    const model = state.neighborSites;
+    note.textContent = `${model?.reason ?? 'Tan 2018 Table S1; all four conditions retain the same source coordinates.'} ${SITE_CAVEAT}`;
+    fieldset.append(legend, note);
+    const labels = ['Show all genes', 'With recorded overlap', 'Without recorded overlap', 'Evidence unavailable'];
+    NEIGHBOR_SITE_FILTERS.forEach((value, i) => {
+      const row = document.createElement('div');
+      row.className = 'checkbox-row';
+      const input = document.createElement('input');
+      input.type = 'radio'; input.name = 'neighbor-site-filter'; input.id = `neighbor-site-filter-${value}`;
+      input.value = value; input.checked = (state.neighborSiteFilter ?? 'any') === value;
+      input.disabled = !model?.available && (value === 'with' || value === 'without');
+      input.addEventListener('change', () => this.handlers.onNeighborSiteFilterChange?.(value));
+      const label = document.createElement('label'); label.htmlFor = input.id;
+      const count = value === 'unavailable' ? model?.counts[2] : !model?.available ? null
+        : value === 'with' ? model.counts[1] : model.counts[0];
+      label.textContent = `${labels[i]}${value === 'any' || count == null ? '' : ` (${count})`}`;
+      row.append(input, label); fieldset.append(row);
+    });
+    if (!model?.available && ['with', 'without'].includes(state.neighborSiteFilter)) {
+      const suspended = document.createElement('p'); suspended.className = 'panel-note'; suspended.setAttribute('role', 'status');
+      suspended.textContent = 'Saved neighbouring-site filter suspended until evidence is available.'; fieldset.append(suspended);
+    }
+    this.neighborSiteHost.append(fieldset);
+    if (held) [...fieldset.querySelectorAll('input')].find((input) => input.value === held && !input.disabled)?.focus();
+  }
+
   renderOverlapFilter(state) {
     const focusedValue = this.overlapHost.contains(document.activeElement)
       ? document.activeElement.value : null;
