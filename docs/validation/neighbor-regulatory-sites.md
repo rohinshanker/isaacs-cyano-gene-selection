@@ -40,7 +40,8 @@ analysis filters, existing self-TSS visibility and the source-selection contract
 Existing per-organism storage and navigation carry this field with the view.
 
 Purple diamonds centre on the native base inside the compact CDS track and
-expanded sequence track. The persistent inspection list exposes every crowded
+align to that base in the expanded sequence's Sites row, leaving nucleotide
+letters readable. The persistent inspection list exposes every crowded
 site and selectable source-associated gene. On the chromosome, N/Shift+N walks
 all sites in the current camera, including coincident marks and sites belonging
 to hidden genes; Enter focuses their list. Repeated pointer/touch clicks cycle

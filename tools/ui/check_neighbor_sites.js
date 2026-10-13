@@ -49,6 +49,24 @@ async (page) => {
     await page.locator('.gene-view').last().scrollIntoViewIfNeeded();
     await save(`compact-${width}`);
   }
+  // At nucleotide zoom, site diamonds must not obscure the original base letters.
+  await open();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const sequence = page.locator('.chromosome-sequence');
+  for (let i = 0; i < 4; i += 1) await sequence.getByRole('button', { name: 'Zoom in on the sequence', exact: true }).click();
+  const strip = sequence.locator('.gene-sequence-strip');
+  await strip.focus();
+  for (let i = 0; i < 12; i += 1) await page.keyboard.press('ArrowRight');
+  check(await strip.locator('.neighbor-site-mark').count() > 0, 'letter-scale site fixture is visible');
+  check(await strip.evaluate((host) => {
+    const base = host.querySelector('.gene-sequence-bases');
+    return base && [...host.querySelectorAll('.neighbor-site-mark path')].every((path) => {
+      const bounds = path.getBBox();
+      return bounds.y + bounds.height < Number(base.getAttribute('y'));
+    });
+  }), 'diamonds clear nucleotide letters');
+  await save('sequence-site-letters');
+  await open();
   // Dense list retains all 18 rows and permits keyboard navigation to a hidden owner.
   await page.setViewportSize({ width: 1280, height: 800 });
   const panels = page.locator('.neighbor-site-details');

@@ -9,6 +9,7 @@ import {
 import { compileScheme } from '../../site/js/core/scheme.js';
 import { alignedPartnerBases } from '../../site/js/core/gene-sequence-model.js';
 import { DEFAULT_ORGANISM } from '../../site/js/core/organisms.js';
+import { indexNativeSites, neighborSiteModel } from '../../site/js/core/neighbor-sites.js';
 import { withFakeDocument } from './fake-dom.mjs';
 import { standardTable } from './helpers.mjs';
 
@@ -52,6 +53,32 @@ function mount(document, handlers = {}) {
 const codonCells = (view) => view.strip.querySelectorAll('g.gene-sequence-codon');
 const svgOf = (view) => view.strip.querySelector('svg');
 const keydown = (view, key, extra = {}) => view.strip.dispatch('keydown', { key, preventDefault() {}, ...extra });
+
+test('neighbouring sites align with the native base without covering its letter', async () => {
+  await withFakeDocument((document) => {
+    const focal = gene();
+    const records = [{ locus: 'other', row: { id: 'native-site', type: 'gTSS',
+      position: 1005, replicon: 'CP006471', strand: '+' } }];
+    const neighborSites = neighborSiteModel({ genes: [focal],
+      neighborSites: indexNativeSites([focal], records, DEFAULT_ORGANISM),
+    }, { sources: ['TAN2018_TSS_CONTROL'] });
+    const view = mount(document);
+    view.update({ gene: focal, table, scheme: null, schemeVersion: 0, neighborSites });
+    const mark = view.strip.querySelector('g.neighbor-site-mark');
+    assert.ok(mark, 'neighbor-only gene draws a site');
+    const [x, y] = mark.querySelector('path').getAttribute('d').match(/[-\d.]+/g).map(Number);
+    const base = codonCells(view)[1].querySelectorAll('text')[1];
+    assert.equal(Number(base.getAttribute('x')), x, 'site shares the exact nucleotide column');
+    assert.equal(base.textContent, 'C');
+    assert.ok(y + 10 < view.rowLayout().bases, 'the entire filled diamond clears the base row');
+    const before = view.rowLayout();
+    view.update({ gene: focal, table, scheme: null, schemeVersion: 0, neighborSites, markersVisible: false });
+    assert.equal(view.strip.querySelectorAll('g.neighbor-site-mark').length, 0);
+    assert.deepEqual(view.rowLayout(), before, 'hiding sites preserves sequence geometry');
+    view.update({ gene: focal, table, scheme: null, schemeVersion: 0 });
+    assert.equal(view.rowLayout().markers, null, 'unavailable evidence adds no site row');
+  });
+});
 
 test('camera arithmetic: opening, fitting, clamping and the window', () => {
   const domain = { min: -30, max: 27 };

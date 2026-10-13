@@ -116,6 +116,11 @@ the accepted four-condition source-selection semantics.
   request failures in the asserted diagnostic collector; scope exceptions only
   to the deliberate failure phase. Production integrity checks remain intact.
 
+- **NS-6 — open:** At readable nucleotide zoom the expanded sequence viewer
+  paints filled neighboring-site diamonds over base letters (reproduced at
+  M744_RS01690 +64). Reserve the existing sites row for these markers and keep
+  them aligned to the exact column; test letter clearance and visibility.
+
 ## Verification
 
 Implementation gates at `0205070`: JavaScript 1,577 passed; Python 1,751 passed,

@@ -1326,7 +1326,7 @@ export class GeneSequenceView {
     if (this.markersVisible) drawNeighborSiteMarks(area, sites.filter((site) => {
       const offset = columns.get(site.position);
       return offset != null && offset >= window.from && offset <= window.to;
-    }), this.gene, (site) => x(columns.get(site.position) + 0.5), rows.bases + ROW_HEIGHT / 2);
+    }), this.gene, (site) => x(columns.get(site.position) + 0.5), rows.markers + MARKER_ROW_HEIGHT / 2);
     root.append(area);
     this.strip.replaceChildren(root);
     this.writeReadout(window);
@@ -1338,7 +1338,8 @@ export class GeneSequenceView {
     // Reserved by whether this locus has a placeable mark at all, not by
     // whether the reader is showing it: the geometry a reader is reading must
     // not move when they put the marks away.
-    const markers = this.markerRowShown() ? 0 : null;
+    const hasNeighborSites = this.neighborSites?.forGene(this.gene)?.count > 0;
+    const markers = this.markerRowShown() || hasNeighborSites ? 0 : null;
     const bases = (markers === null ? 0 : MARKER_ROW_HEIGHT) + RULER_HEIGHT;
     const recoded = active ? bases + ROW_HEIGHT + ROW_GAP : null;
     const residues = (active ? recoded : bases) + ROW_HEIGHT + ROW_GAP;
