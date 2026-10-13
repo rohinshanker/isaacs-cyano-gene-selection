@@ -52,18 +52,22 @@ and effective modes, suspension, evidence availability and its reason. A suspend
 with/without request therefore exports an effective `any`, matching the CSV's
 `passesCurrentFilters` values.
 
-Purple diamonds centre on the native base inside the compact CDS track and
-align to that base in the expanded sequence's Sites row, leaving nucleotide
-letters readable. The persistent inspection list exposes every crowded
+Purple line markers centre on the native base inside the compact CDS track
+and align to that base in the expanded sequence's Sites row. Each recorded TSS
+is one genomic base, not a measured multi-base promoter or RBS footprint.
+At nucleotide zoom, a purple underline spans exactly that base column in the
+Original and Recoded rows, leaving both letters readable. Separate sites never
+highlight the intervening bases; reverse-strand, split-CDS and circular-origin
+positions use the same exact coordinate mapping. The persistent inspection list exposes every crowded
 site and selectable source-associated gene. On the chromosome, N/Shift+N walks
 all sites in the current camera, including coincident marks and sites belonging
 to hidden genes; Enter focuses their list. Repeated pointer/touch clicks cycle
-sites sharing pixels. At dense chromosome zoom, diamonds and their pointer
+sites sharing pixels. At dense chromosome zoom, line markers and their pointer
 targets are suppressed when fewer than 12 pixels per mark are available; N and
 the list still inspect every site, with the active site drawn explicitly. This
-keeps gene colours and gene selection usable. Every diamond has a contrasting
+keeps gene colours and gene selection usable. Every line marker has a contrasting
 outline, including on a CDS with the same categorical colour. Both gene viewers
-explain the diamond separately from self-associated start sites.
+explain the line separately from self-associated start sites.
 Site action keys contain structured source identifiers. Focus restoration must
 compare these as opaque dataset values rather than interpolate them into CSS
 selectors. Exercise associated-gene navigation from the gene-detail viewer as

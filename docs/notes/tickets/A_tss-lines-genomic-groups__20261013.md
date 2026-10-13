@@ -29,7 +29,10 @@ keyboard focus; inspected 375/768/959/961/1239/1241/1280/1440 px renders.
 Marker implementation is owned by Multica DEM-391 in the assigned writer
 worktree. Its focused tests and render loop are in progress. Independent review,
 full integrated repository gates and production verification remain.
-No findings yet; discovered findings will be recorded before closure.
+**TL-1 — open:** At the existing maximum/minimum sequence zoom, zoomBy uses
+the requested scale for its anchor calculation before clamping it. Repeated
+zoom-in can move an inspected TSS offscreen. Bound the scale before computing
+the anchored window and verify repeated button/wheel zoom preserves the site.
 
 ## Cleanup
 
