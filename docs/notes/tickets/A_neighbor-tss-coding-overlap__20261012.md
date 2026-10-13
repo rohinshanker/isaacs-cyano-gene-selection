@@ -18,11 +18,15 @@ layers remain unavailable. Data payloads and RBS Calculator hold are unchanged.
 
 ## Findings
 
-- **NS-P2 — open:** Switching from the neighboring-site colour to a normal
+- **NS-P3 — resolved by `90d81b9`:** Shared categorical draw-direction help labels the new TSS
+  category as Function category. Use an accurate shared reason; preserve the
+  existing view-specific paint-order explanation.
+
+- **NS-P2 — resolved by `b553487`:** Switching from the neighboring-site colour to a normal
   colour throws in the shared metric-help renderer because the new colour
   branch deleted its summary/content structure. Preserve the common disclosure
   and test colour round trips in chromosome and scatter views.
-- **NS-P1 — open:** Gene-detail focus restoration interpolates a structured site
+- **NS-P1 — resolved by `ab15d6e` and test fixture `f688c7b`:** Gene-detail focus restoration interpolates a structured site
   key into a CSS selector. Reproduce with M744_RS00665 -> Open M744_RS00660 in
   the detail viewer; `querySelector` throws and URL still pins M744_RS00665.
   Compare opaque action values directly, preserve focus on unrelated updates,
@@ -39,8 +43,12 @@ UTEX contract 130 passed/zero failed/one declared skip; all six organism release
 data gates; RNA browser regression; eight-width UI checks. Actions validate and
 deploy succeeded, and 13 live site files matched the intended SHA. Production
 filters, all organism counts, exports, RNA and shared-link reload passed.
-The additional detail-panel owner navigation check found NS-P1, which remains
-open until repaired, tested, independently checked and verified live.
+DEM-390 independently accepted NS-P1 at `f688c7b` and NS-P2 at `b553487`.
+The repaired UI passed 1,582 JS tests, 1,751 Python tests plus 51 subtests
+(16 skips), and contract 130/0/1. Eight-width browser checks passed.
+NS-P3 was corrected locally and rendered in both colour disclosures at
+375, 768 and 1280 px with no diagnostics or overflow. Final repaired production
+verification remains; the ticket stays active until that succeeds.
 
 ## Cleanup
 
