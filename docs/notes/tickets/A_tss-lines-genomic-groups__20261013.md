@@ -8,7 +8,8 @@ Updated: 2026-10-13
 ## Current State
 
 Owned by `cyano-regulatory-sites`, coordinator branch `work/tss-lines-20261013`
-from main `8ce4774`. Marker implementation runs in a separate assigned worktree.
+from main `8ce4774`. Marker implementation and its repair were integrated from
+a separate assigned worktree.
 Other sessions and their worktrees remain untouched.
 
 - Replace purple neighbouring-TSS diamonds in chromosome, both compact gene
@@ -33,19 +34,22 @@ inspection/focus, and contrast. No unexpected browser errors.
 Integrated repository gates pass: 1,584 JavaScript tests; 1,751 Python tests
 (16 skips and 51 subtests); data contract 130 passed, zero failures, one declared
 split-CDS exemption. `git diff --check` passes. Artifacts are in
-`/tmp/cyano-tss-lines-20261013/`; independent review DEM-392 found TL-R1 and TL-R2 below. Production
-verification remains pending.
+`/tmp/cyano-tss-lines-20261013/`; independent review DEM-392 accepted `9657b8d` after resolving TL-R1 and TL-R2.
+All three gates passed again at that exact SHA. Reviewer independently verified
+all 805 site/CDS relationships across 603 genes against the RefSeq sequence,
+including Original/Recoded columns, then checked the repaired active contrast
+at 1×/2× (with worker 4× evidence). Production verification remains pending.
 
 **TL-1 — resolved in `edf2eee`:** Clamp sequence scale before the anchored-window
 calculation. Unit and browser checks confirm that repeated button/wheel zoom
 at the limit preserves an inspected site's position. The reusable contract is
 in `docs/validation/gene-sequence-closeup.md`.
 
-**TL-R1 — repaired in `a6642ce`, review pending:** DEM-392 found the active chromosome line too subtle on purple
+**TL-R1 — resolved in `a6642ce`; review accepted `9657b8d`:** DEM-392 found the active chromosome line too subtle on purple
 CDS (only a 1 px teal edge against purple). DEM-391 owns a focused contrast and
 active-state repair, with rendered inactive/active comparison.
 
-**TL-R2 — repaired in `a6642ce`, review pending:** The zoom-limit no-op needs feedback through the existing
+**TL-R2 — resolved in `a6642ce`; review accepted `9657b8d`:** The zoom-limit no-op needs feedback through the existing
 announcement channel for keyboard/button users. DEM-391 owns this small repair.
 
 ## Cleanup
