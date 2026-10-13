@@ -4,7 +4,7 @@
  * It models only what the renderers under test touch: element creation,
  * children, text, classes, data attributes, attributes, listeners, inline
  * styles, a recording 2-D canvas context, and a small query subset (tag,
- * `.class`, `tag.class`, and `tag[data-x="y"]`). Anything else throws, so a
+ * `.class`, `tag.class`, `[data-x]`, and `tag[data-x="y"]`). Anything else throws, so a
  * renderer that grows a new DOM dependency fails loudly.
  */
 
@@ -172,14 +172,14 @@ export class FakeElement {
   }
 
   matches(selector) {
-    const match = /^([a-z]*)(?:\.([\w-]+))?(?:\[data-([\w-]+)="([^"]*)"\])?$/i.exec(selector);
+    const match = /^([a-z]*)(?:\.([\w-]+))?(?:\[data-([\w-]+)(?:="([^"]*)")?\])?$/i.exec(selector);
     if (!match) throw new Error(`fake-dom cannot match selector ${selector}`);
     const [, tag, className, dataKey, dataValue] = match;
     if (tag && this.tagName !== tag) return false;
     if (className && !this.hasClass(className)) return false;
     if (dataKey) {
       const key = dataKey.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-      if (this.dataset[key] !== dataValue) return false;
+      if (dataValue === undefined ? this.dataset[key] === undefined : this.dataset[key] !== dataValue) return false;
     }
     return true;
   }

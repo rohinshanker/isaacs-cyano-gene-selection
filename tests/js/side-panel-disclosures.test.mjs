@@ -18,7 +18,7 @@ test('site actions with structured keys retain focus and navigate without treati
     const host = document.createElement('div'); document.body.append(host);
     const panel = new SidePanel(host, { onOpenPartner: (_id, next) => update(next) });
     const update = (geneIndex) => panel.update({
-      index: geneIndex, isPinned: true, dataset, neighborSites,
+      index: geneIndex, isPinned: false, dataset, neighborSites,
       registry: { families: [], metrics: [] }, percentileOf: () => NaN,
       schemeActive: false, live: {}, inShortlist: false, colorSources: [],
     });
