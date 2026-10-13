@@ -12,7 +12,7 @@ finding is reverted rather than argued about.
 | Ticket | Scope |
 | --- | --- |
 | [O_neighbor-tss-coding-overlap__20261012](O_neighbor-tss-coding-overlap__20261012.md) | Filter and colour genes by neighbouring-gene TSSs inside their coding segments, and show the exact sites and gene associations in chromosome and gene viewers |
-| [O_overlap-length-filter-color__20261012](O_overlap-length-filter-color__20261012.md) | Add a 5′/3′ overlap-length filter with minimum and maximum bp bounds, plus Color by options for 5′ length, 3′ length and their sum |
+| [A_overlap-length-filter-color__20261012](A_overlap-length-filter-color__20261012.md) | cyano-regulatory-sites, isolated on work/overlap-length-20261012: add a 5′/3′ overlap-length filter with minimum and maximum bp bounds, plus Color by options for 5′ length, 3′ length and their sum |
 | [A_tan-condition-selection__20261012](A_tan-condition-selection__20261012.md) | cyano-ui-fixes: owner approved Table S1; implementing independently selectable control, dark, high-light and high-temperature initiation datasets with legacy pooled data retained |
 | [O_recoded-genome-functional-annotations__20261012](O_recoded-genome-functional-annotations__20261012.md) | Add missing functional annotations to recoded genomes from exact nonrecoded references, with verified crosswalks and explicit transfer provenance |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |

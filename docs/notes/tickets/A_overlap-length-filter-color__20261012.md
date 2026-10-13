@@ -1,7 +1,7 @@
-# O_overlap-length-filter-color__20261012 — Open
+# A_overlap-length-filter-color__20261012 — Active
 
 Scope: Add gene filtering and colouring by 5′ and 3′ overlap length in base pairs.
-Status: open
+Status: active
 Opened: 2026-10-12
 Updated: 2026-10-12
 
@@ -9,7 +9,14 @@ Updated: 2026-10-12
 
 Requested by the owner. The existing overlapping-gene (OG) layer supplies shared
 intervals and categorical overlap controls; this ticket adds numerical,
-end-specific controls. Implementation is unclaimed.
+end-specific controls. Owner: cyano-regulatory-sites (Agent Deck
+`e6e54b6e-1791581192`). Work is isolated on
+`work/overlap-length-20261012` in
+`/Users/Rohin/Desktop/coding_stuff/ISAACS-LAB/worktrees/overlap-length-20261012`.
+Baseline: `b6a6604b940f5efad7bfdea97a5fd0b8656d8745`. Preserve the separate
+Tan condition-selection session and its branch; merge its completed changes
+before final integration when available. Do not edit another session's worktree,
+restart its servers, or contact/interrupt its active run.
 
 ## Requested behaviour
 
