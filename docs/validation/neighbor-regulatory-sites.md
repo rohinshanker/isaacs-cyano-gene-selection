@@ -6,6 +6,8 @@ assembly GCF_000817325.1. Replicons must match the pinned versioned accession or
 its published unversioned source alias. Other organism or assembly coordinates
 never join. Neither initiation scores nor source gene-model distances supply
 coordinates. No RBS coordinate layer is published; RBS is explicitly unavailable.
+See the [admitted source contract](data-contract.md#the-shared-marker-representation)
+and [Tan provenance](../../data/expression/TAN2018_TSS_PROVENANCE.md).
 
 A site counts when its point lies in the inclusive union of the focal gene's
 actual CDS segments and has an exact native source association to another gene.
@@ -42,14 +44,22 @@ expanded sequence track. The persistent inspection list exposes every crowded
 site and selectable source-associated gene. On the chromosome, N/Shift+N walks
 all sites in the current camera, including coincident marks and sites belonging
 to hidden genes; Enter focuses their list. Repeated pointer/touch clicks cycle
-sites sharing pixels. Existing per-view TSS visibility controls govern both self-associated and
-neighbouring Tan marks. Hidden marks have no pointer or keyboard targets; lists
+sites sharing pixels. Existing per-view TSS visibility controls govern both
+self-associated and neighbouring Tan marks. Hidden marks have no pointer or keyboard targets; lists
 and evidence counts remain, with an explicit hidden-state explanation. A gene
 with only neighbouring markers still has its control.
 
 Run `tests/js/neighbor-sites.test.mjs` for segment boundaries/gaps, both strands,
 origin ordering, identities, self/multiple/unassigned source links, condition
 repeats, source suspension and the independent shipped-data membership oracle.
-Serve the real app, open it in a unique Playwright CLI session, then run
-`tools/ui/check_neighbor_sites.js`; inspect its screenshots and semantic output.
-The repository's three full gates remain required. No visual baselines change.
+For rendered checks, serve `site/` on an unused port. Open
+`http://127.0.0.1:PORT/index.html?uiArtifacts=ABSOLUTE_ARTIFACT_DIRECTORY` in a
+unique Playwright CLI session; create the artifact directory first. Run
+`tools/ui/check_neighbor_sites.js` and `tools/ui/check_neighbor_sites_states.js`
+with `playwright-cli -s=SESSION run-code --filename=SCRIPT`. Inspect their
+screenshots and semantic output. Treat a CLI `### Error` as failure even when
+its process exits zero. The state check exercises loading, failure/retry,
+conditions, empty results and coincident sites; its synthetic payload must carry
+matching manifest bytes and SHA-256 rather than bypassing release integrity.
+The repository's three full gates and all-organism release checks remain required.
+No visual baselines change.

@@ -42,7 +42,9 @@ Existing release evidence, checked 2026-10-12 at baseline `4c6a8b9`:
 Multica DEM-387 implements in `work/neighbor-sites-impl-20261012`; DEM-388 is a
 read-only inventory and independent coordinate oracle against the baseline.
 Coordinator integrates in `work/neighbor-sites-20261012` and owns this ticket.
-Independent cross-provider review and rendered verification remain pending.
+Implementation is integrated as `02050704c8e8fc68db25562c4863cfd8ee46bc7a`.
+Cross-provider review DEM-389 is active against that exact commit; no closure
+until its findings are reconciled.
 
 ## Requested behaviour
 
@@ -116,13 +118,22 @@ the accepted four-condition source-selection semantics.
 
 ## Verification
 
-Before implementation closes: test inside/outside and exact-boundary anchors,
-split-CDS gaps, both strands, origin wrapping, self-only and multi-gene
-associations, duplicate condition records, several sites per gene, hidden
-neighbours, unavailable evidence, source selection and organism isolation.
-Check agreement between filters, colours and both viewers. Render mobile,
-tablet and desktop layouts, keyboard inspection/navigation and dense/coincident
-markers. Run the required repository gates and record final results here.
+Implementation gates at `0205070`: JavaScript 1,577 passed; Python 1,751 passed,
+16 skipped and 51 subtests passed; UTEX contract 130 passed, zero failed, one
+explicit spliced-CDS exemption. All six organism manifests, live metrics and
+contracts pass; annotation verify/check, readiness and Tan extract reproduction
+pass. No shipped data payloads changed.
+
+Independent baseline oracle comparison matches every one of 805 site/focal/owner
+relationships (802 distinct sites in 603 focal genes). Rendered checks cover both
+compact mounts, expanded sequence, filters/colour/counts, all eight required
+widths, all six organisms, shared-link reload and exported view/filter state.
+Worker browser checks also cover conditions, hidden markers and owners, dense and
+coincident sites, loading, failed source/retry and empty results. RNA browser
+regression passes 32-case worker parity plus lifecycle and responsive checks.
+
+NS-1 through NS-5 are candidate-fixed by `0205070`; independent review remains
+open. Final review, publication and live-content checks remain pending.
 
 ## Cleanup
 
