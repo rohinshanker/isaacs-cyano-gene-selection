@@ -11,7 +11,8 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [O_low-traffic-provenance-disclosure__20261013](O_low-traffic-provenance-disclosure__20261013.md) | Collapse Hide low-traffic genes dataset/provenance explanation into a tan Provenance disclosure, closed by default, keeping filter controls usable |
+| [O_custom-filters-panel__20261013](O_custom-filters-panel__20261013.md) | Add a collapsed Custom filters panel above Filters; move Add filter and its custom range editors into it, preserving filter and saved-layout behavior |
+| [O_low-traffic-provenance-disclosure__20261013](O_low-traffic-provenance-disclosure__20261013.md) | Add multi-dataset selection/pooling to Hide low-traffic genes using colouring rules; collapse contributor/provenance explanation into a tan Provenance box, closed by default |
 | [O_neighbor-tss-overlap-count__20261013](O_neighbor-tss-overlap-count__20261013.md) | Count distinct neighbouring-gene TSS sites inside each CDS for numeric colouring/filtering and consistent viewer totals; include both same and opposite strands, preserve deduplication and unavailable evidence |
 | [O_recoded-genome-functional-annotations__20261012](O_recoded-genome-functional-annotations__20261012.md) | Add missing functional annotations to recoded genomes from exact nonrecoded references, with verified crosswalks and explicit transfer provenance |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
