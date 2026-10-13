@@ -11,7 +11,6 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_author-credit__20261013](A_author-credit__20261013.md) | Active: cyano-ui-fixes; shared initial-loading and organism-description author credits |
 | [O_filter-status-temporary-disable__20261013](O_filter-status-temporary-disable__20261013.md) | Add Filter status to Chromosome/Gene, a Turn filters off toggle and temporarily-disabled title, automatic reactivation on filter edits, and accessible shared filtered-out-gene visibility |
 | [O_custom-filters-panel__20261013](O_custom-filters-panel__20261013.md) | Add a collapsed Custom filters panel above Filters; move Add filter and its custom range editors into it, preserving filter and saved-layout behavior |
 | [O_low-traffic-provenance-disclosure__20261013](O_low-traffic-provenance-disclosure__20261013.md) | Add multi-dataset selection/pooling to Hide low-traffic genes using colouring rules; collapse contributor/provenance explanation into a tan Provenance box, closed by default |
