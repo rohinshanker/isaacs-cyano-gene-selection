@@ -214,10 +214,10 @@ pre {
 /* One column on a narrow screen stacks controls, map, detail. The grid is what
    the visitor is waiting on, so while loading it leads and stays within view. */
 @media (max-width: 959px) {
+  .is-loading .analysis { order: -1; }
   /* Long hidden organism descriptions must not push progress below the fold.
      Failed loads restore the header text so organism navigation stays usable. */
   .is-loading:not(.load-failed) .header-text { display: none; }
-  .is-loading .analysis { order: -1; }
   .is-loading .column.controls > .card { min-height: 3.5rem; }
   .is-loading .column.detail { min-height: 5rem; }
 }
