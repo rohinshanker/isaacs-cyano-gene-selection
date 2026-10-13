@@ -72,6 +72,14 @@ async (page) => {
   check(await page.locator('.gene-view-key-tss').count() === 2, 'self-associated TSS key remains separate');
   check((await page.locator('.chromosome-sequence').innerText()).includes('Purple diamonds in the Sites row'), 'mixed self/neighbour sequence has a diamond key');
   await save('mixed-site-keys');
+  await open('&g=M744_RS00665');
+  const detailSites = page.locator('#detail .neighbor-site-details');
+  if (await detailSites.getAttribute('open') === null) await detailSites.locator('summary').first().click();
+  await detailSites.getByRole('button', { name: 'Open M744_RS00660', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  check(page.url().includes('g=M744_RS00660'), 'detail-view neighbour navigation persists in the shared link');
+  check((await page.locator('#detail').innerText()).startsWith('M744_RS00660'), 'detail-view neighbour navigation updates the gene');
+  await save('detail-site-owner-navigation');
   await open();
   // Dense list retains all 18 rows and permits keyboard navigation to a hidden owner.
   await page.setViewportSize({ width: 1280, height: 800 });

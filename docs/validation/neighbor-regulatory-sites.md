@@ -58,6 +58,10 @@ the list still inspect every site, with the active site drawn explicitly. This
 keeps gene colours and gene selection usable. Every diamond has a contrasting
 outline, including on a CDS with the same categorical colour. Both gene viewers
 explain the diamond separately from self-associated start sites.
+Site action keys contain structured source identifiers. Focus restoration must
+compare these as opaque dataset values rather than interpolate them into CSS
+selectors. Exercise associated-gene navigation from the gene-detail viewer as
+well as the expanded sequence; the selected gene and shared URL must both change.
 Existing per-view TSS visibility controls govern both
 self-associated and neighbouring Tan marks. Hidden marks have no pointer or keyboard targets; lists
 and evidence counts remain, with an explicit hidden-state explanation. A gene

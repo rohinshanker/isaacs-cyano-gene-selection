@@ -865,7 +865,8 @@ export class SidePanel {
     // visualizer carries a control too: this is the first point at which every
     // control a reader could have been holding is back in the tree.
     if (focusedAction) {
-      const replacement = this.host.querySelector(`[data-detail-action="${focusedAction}"]`);
+      const replacement = [...this.host.querySelectorAll('[data-detail-action]')]
+        .find((element) => element.dataset.detailAction === focusedAction);
       (replacement ?? this.host).focus({ preventScroll: true });
     }
 

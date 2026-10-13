@@ -3,10 +3,37 @@ import test from 'node:test';
 
 import { loadDataset } from '../../site/js/core/dataset.js';
 import { SidePanel } from '../../site/js/ui/side-panel.js';
+import { neighborSiteModel } from '../../site/js/core/neighbor-sites.js';
 import { withFakeDocument } from './fake-dom.mjs';
 import { fileFetch } from './helpers.mjs';
 
 const DATA = new URL('../../site/data/', import.meta.url);
+
+test('site actions with structured keys retain focus and navigate without treating the key as CSS', async () => {
+  const dataset = await loadDataset({ baseUrl: DATA, fetchImpl: fileFetch() });
+  const index = dataset.genes.findIndex((gene) => gene.id === 'M744_RS00665');
+  const neighborSites = neighborSiteModel(dataset, { sources: ['TAN2018_TSS_CONTROL'] });
+  assert.ok(neighborSites.forGene(dataset.genes[index]).count > 0);
+  await withFakeDocument((document) => {
+    const host = document.createElement('div'); document.body.append(host);
+    const panel = new SidePanel(host, { onOpenPartner: (_id, next) => update(next) });
+    const update = (geneIndex) => panel.update({
+      index: geneIndex, isPinned: true, dataset, neighborSites,
+      registry: { families: [], metrics: [] }, percentileOf: () => NaN,
+      schemeActive: false, live: {}, inShortlist: false, colorSources: [],
+    });
+    update(index);
+    const open = () => host.querySelectorAll('button').find((button) => button.textContent === 'Open M744_RS00660');
+    const action = open().dataset.detailAction;
+    assert.ok(action.includes('"'), 'the source-derived key is an opaque value containing quotes');
+    open().focus();
+    update(index);
+    assert.equal(document.activeElement, open(), 'unrelated rerender restores the exact action');
+    open().click();
+    assert.match(host.textContent, /M744_RS00660 cobS/);
+    assert.equal(document.activeElement, host, 'focus falls back when the old action is no longer present');
+  });
+});
 
 test('function-category detail is collapsed while GO context keeps its own presentation', async () => {
   const dataset = await loadDataset({ baseUrl: DATA, fetchImpl: fileFetch() });
